@@ -1,13 +1,13 @@
 # Appearance (light / dark / system), site-wide
 
-**Appearance** is the reader's own choice of light or dark chrome. It is one setting for the whole origin: the editor (`apps/live`), the marketing site (`apps/marketing`), the help centre (`apps/help`) and the telemetry dashboard (`liveworkspace/apps/site/app/telemetry`) all read and write the same value, so a pick made anywhere holds everywhere. It is distinct from a document's **theme**, which recolours canvas content and is stored in the document ([Live app](../007-editor/live-app.md#appearance-light--dark--system) covers the editor-specific parts: the Default theme following it, the match nudge).
+**Appearance** is the reader's own choice of light or dark chrome. It is one setting for the whole origin: the editor (`apps/live`), the marketing site (`apps/marketing`), the help centre (`apps/help`) and the telemetry dashboard (`liveworkspace/apps/site/app/telemetry`) all read and write the same value, so a pick made anywhere holds everywhere. It is distinct from a project's **theme**, which recolours canvas content and is stored in the project ([Live app](../007-editor/live-app.md#appearance-light--dark--system) covers the editor-specific parts: the Default theme following it, the match nudge).
 
 ## The setting
 
 - Three settings: **Light**, **Dark**, **System**. System resolves through `(prefers-color-scheme: dark)` and is watched, so an OS that turns dark at sunset takes every open page with it without a reload.
 - **System is the default** on every surface. Only an explicit Light or Dark pick overrides the device, and it keeps overriding it until the reader picks again.
 - Stored per browser in `localStorage` under `liveplanner:v2:ui-mode` (`'light'` / `'dark'` / `'system'`; anything else reads as System). The key keeps its historical name because it is stored data. Every app is served from one origin by the router, so they share it. A pick made in another open tab applies on the next page load there.
-- Painted as a `dark` class on `<html>`; the shared Tailwind theme maps `dark:` to that class and swaps in the Steel dark palette ([Colour scheme](color-scheme.md)). The document's CSS `color-scheme` follows the class, so form controls and native scrollbars match the painted appearance rather than the OS.
+- Painted as a `dark` class on `<html>`; the shared Tailwind theme maps `dark:` to that class and swaps in the Steel dark palette ([Colour scheme](color-scheme.md)). The project's CSS `color-scheme` follows the class, so form controls and native scrollbars match the painted appearance rather than the OS.
 
 ## No flash
 

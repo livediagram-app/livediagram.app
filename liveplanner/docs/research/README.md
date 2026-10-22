@@ -6,25 +6,26 @@ Research holds dated measurements and experiment reports. They record what was m
 
 ## Canvas performance
 
-Where a large board spends its time during pan, zoom, drag, marquee and pen strokes.
+Where a large tab spends its time during pan, zoom, drag, marquee and pen strokes: measured on a livediagram
+whiteboard, and still the record behind the canvas host every Plan tab runs on.
 
 - ./canvas-performance.md - when a large board feels slow: method, per-gesture breakdown, named hot spots
 
 ## Agent CLI
 
-How an AI agent should read, build, edit and comment on documents through a CLI, and work beside a person live.
+How an AI agent should read, build, edit and comment on projects through a CLI, and work beside a person live.
+Measured on livediagram's diagram tabs; the shape of the CLI, the views, changesets and presence carried over.
 The resulting specs live in docs/specs/024-agents/ and docs/specs/015-api/cli.md.
 
 - ./agent-cli/agent-cli-ergonomics.md - when shaping CLI help, output, refs, errors or exit codes for agents
 - ./agent-cli/compact-representations.md - when choosing how a tab reads as text: token counts per format, views
 - ./agent-cli/editing-models.md - when designing how agents edit: op vocabulary, selectors, layout on edit, conflicts
-- ./agent-cli/authoring-from-scratch.md - when building diagrams from nothing: layout experiment, lint checks, preview
 - ./agent-cli/live-collaboration.md - when an agent edits beside a person: presence, changesets, revert, comments
 - ./agent-cli/shared-core-architecture.md - when deciding what the api, MCP and CLI each own; auth, distribution
 
 ## Access levels
 
-Who may do what to a document: how other products define levels, what each identity can do in the code, the
+Who may do what to a project: how other products define levels, what each identity can do in the code, the
 constraints, and where taking part in a session belongs. The resulting spec is docs/specs/013-workspace/share-roles.md.
 
 - ./access-levels/prior-art.md - when comparing access levels with Google, Figma, Miro, Lucid, Notion and facilitation tools

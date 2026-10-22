@@ -5,7 +5,7 @@
 // capitals at its 0.59 em x-height, so brought down to 0.52 (as it once was, to stop it crowding a card) its column
 // headings and labels read too small. Inherited, so the root's setting reaches every label.
 import type { CSSProperties } from 'react';
-import { FONTS, SKETCH_FONT_ID } from '@liveplanner/document';
+import { FONTS, SKETCH_FONT_ID } from '@liveplanner/project';
 
 /** The x-height the handwriting face is drawn at on a Plan surface, as a share of its font size. */
 export const PLAN_HANDWRITING_EX = 0.52;

@@ -1,9 +1,9 @@
 // Agent changesets over REST (docs/specs/024-agents/agent-changesets.md; blueprint "Interfaces and
 // contracts"):
-//   POST /api/documents/<id>/tabs/<tabId>/changesets          submit (`?dryRun=1` plans only)
-//   GET  /api/documents/<id>/changesets[?tab=&limit=]         the history, newest first
-//   GET  /api/documents/<id>/changesets/<changesetId>         one, with its result lines
-//   POST /api/documents/<id>/changesets/<changesetId>/revert  its inverse, as a new changeset
+//   POST /api/projects/<id>/tabs/<tabId>/changesets          submit (`?dryRun=1` plans only)
+//   GET  /api/projects/<id>/changesets[?tab=&limit=]         the history, newest first
+//   GET  /api/projects/<id>/changesets/<changesetId>         one, with its result lines
+//   POST /api/projects/<id>/changesets/<changesetId>/revert  its inverse, as a new changeset
 
 import {
   CHANGESET_LIST_DEFAULT,
@@ -13,7 +13,7 @@ import {
   type ResultLine,
 } from '@liveplanner/api-schema';
 import { redactCommentAuthorIds } from '../comments';
-import { getChangeset, getChangesetPart, getDocument, getParticipant, listChangesets } from '../db';
+import { getChangeset, getChangesetPart, getProject, getParticipant, listChangesets } from '../db';
 import type { ChangesetRecord } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { personTagFor } from '../person-tag';
@@ -24,12 +24,12 @@ import { parseChangesetRequest } from '../changesets/request';
 import { revertChangeset } from '../changesets/revert';
 import { submitChangeset, type SubmitResult } from '../changesets/submit';
 import type { Author } from '../changesets/write';
-import type { DocumentDTO } from '../types';
+import type { ProjectDTO } from '../types';
 import {
   gateEdit,
   gateGrant,
   gateRead,
-  missingDocument,
+  missingProject,
   requireOwner,
   shareCodeOf,
   type RouteContext,
@@ -42,7 +42,7 @@ const FALLBACK_AUTHOR = { name: 'Someone', color: '#0ea5e9' };
 export async function handleChangesetRoutes(ctx: RouteContext): Promise<Response | null> {
   const { request, segments } = ctx;
   const id = segments[2];
-  if (!id || segments[1] !== 'documents') return null;
+  if (!id || segments[1] !== 'projects') return null;
   const submit =
     segments.length === 6 &&
     segments[3] === 'tabs' &&
@@ -59,31 +59,31 @@ export async function handleChangesetRoutes(ctx: RouteContext): Promise<Response
 
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  const document = await getDocument(ctx.env, id);
-  if (!document) return missingDocument(ctx, id);
-  if (submit) return handleSubmit(ctx, document, segments[4]!, owner);
-  if (list) return handleList(ctx, document, owner);
+  const project = await getProject(ctx.env, id);
+  if (!project) return missingProject(ctx, id);
+  if (submit) return handleSubmit(ctx, project, segments[4]!, owner);
+  if (list) return handleList(ctx, project, owner);
   const record = await getChangeset(ctx.env, id, segments[4]!);
   if (!record) return notFound();
-  if (one) return handleOne(ctx, document, record, owner);
-  return handleRevert(ctx, document, record, owner);
+  if (one) return handleOne(ctx, project, record, owner);
+  return handleRevert(ctx, project, record, owner);
 }
 
 async function handleSubmit(
   ctx: RouteContext,
-  document: DocumentDTO,
+  project: ProjectDTO,
   tabId: string,
   owner: string,
 ): Promise<Response> {
-  if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, tabId)))
+  if (!(await gateEdit(ctx, project.id, project.ownerId, project.teamId, tabId)))
     return forbidden();
   const raw = await ctx.request.json().catch(() => undefined);
-  const parsed = parseChangesetRequest(raw, engineLog({ documentId: document.id, tabId }));
+  const parsed = parseChangesetRequest(raw, engineLog({ projectId: project.id, tabId }));
   if (!parsed.ok) return json(parsed.refusal.body, { status: parsed.refusal.status });
   const author = await authorOf(ctx, owner);
   const result = await submitChangeset({
     env: ctx.env,
-    document,
+    project,
     tabId,
     request: parsed.value,
     dryRun: ctx.url.searchParams.get('dryRun') === '1',
@@ -92,16 +92,16 @@ async function handleSubmit(
     frontDoor: frontDoorOf(ctx.request),
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
-  refreshAfterWrite(ctx, document.id, tabId, author, result);
-  return respond(redactConflicts(result, document, owner));
+  refreshAfterWrite(ctx, project.id, tabId, author, result);
+  return respond(redactConflicts(result, project, owner));
 }
 
 async function handleList(
   ctx: RouteContext,
-  document: DocumentDTO,
+  project: ProjectDTO,
   owner: string,
 ): Promise<Response> {
-  const grant = await gateGrant(ctx, document.id, document.ownerId, document.teamId);
+  const grant = await gateGrant(ctx, project.id, project.ownerId, project.teamId);
   if (!grant) return notFound();
   const limit = parseLimit(ctx.url.searchParams.get('limit'));
   if (limit === null) {
@@ -116,7 +116,7 @@ async function handleList(
     return json({ changesets: [] });
   }
   const tabId = grant.tabScope ?? asked ?? undefined;
-  const records = await listChangesets(ctx.env, document.id, {
+  const records = await listChangesets(ctx.env, project.id, {
     limit,
     ...(tabId ? { tabId } : {}),
   });
@@ -125,11 +125,11 @@ async function handleList(
 
 async function handleOne(
   ctx: RouteContext,
-  document: DocumentDTO,
+  project: ProjectDTO,
   record: ChangesetRecord,
   owner: string,
 ): Promise<Response> {
-  if (!(await gateRead(ctx, document.id, document.ownerId, document.teamId, record.tabId))) {
+  if (!(await gateRead(ctx, project.id, project.ownerId, project.teamId, record.tabId))) {
     return notFound();
   }
   const part = await getChangesetPart(ctx.env, record.id, 'results');
@@ -141,24 +141,24 @@ async function handleOne(
 
 async function handleRevert(
   ctx: RouteContext,
-  document: DocumentDTO,
+  project: ProjectDTO,
   record: ChangesetRecord,
   owner: string,
 ): Promise<Response> {
-  if (!(await gateEdit(ctx, document.id, document.ownerId, document.teamId, record.tabId))) {
+  if (!(await gateEdit(ctx, project.id, project.ownerId, project.teamId, record.tabId))) {
     return forbidden();
   }
   const author = await authorOf(ctx, owner);
   const result = await revertChangeset({
     env: ctx.env,
-    document,
+    project,
     record,
     author,
     tokenId: ctx.token?.id ?? null,
     frontDoor: frontDoorOf(ctx.request),
     ...(ctx.waitUntil ? { waitUntil: ctx.waitUntil } : {}),
   });
-  refreshAfterWrite(ctx, document.id, record.tabId, author, result);
+  refreshAfterWrite(ctx, project.id, record.tabId, author, result);
   return respond(result);
 }
 
@@ -166,7 +166,7 @@ async function handleRevert(
 // "Presence"); a dry run, a refusal and a session's write leave presence alone. Off the response path.
 export function refreshAfterWrite(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   tabId: string,
   author: Author,
   result: { status: number; body: unknown },
@@ -175,9 +175,9 @@ export function refreshAfterWrite(
   if (!ctx.token || result.status !== 200 || !written) return;
   const tokenId = ctx.token.id;
   ctx.waitUntil?.(
-    personTagFor(documentId, author.id).then((personTag) =>
+    personTagFor(projectId, author.id).then((personTag) =>
       refreshAgentPresence(ctx.env, {
-        documentId,
+        projectId,
         tokenId,
         tabId,
         personTag,
@@ -228,10 +228,10 @@ function parseLimit(raw: string | null): number | null {
 // Comment author ids never leave the server for a non-owner, conflicts included.
 function redactConflicts(
   result: SubmitResult,
-  document: DocumentDTO,
+  project: ProjectDTO,
   viewer: string,
 ): SubmitResult {
-  if (viewer === document.ownerId) return result;
+  if (viewer === project.ownerId) return result;
   const body = result.body as { conflicts?: ChangesetConflict[] };
   if (!Array.isArray(body?.conflicts)) return result;
   const conflicts = body.conflicts.map((c) =>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Folder } from '@/lib/api-client';
-import type { PaneDocument } from '../views';
+import type { PaneProject } from '../views';
 import {
   DEFAULT_DETAILS_SORT,
   nextDetailsSort,
@@ -11,7 +11,7 @@ import {
 
 // docs/specs/013-workspace/explorer-details-view.md "Sorting".
 
-const doc = (id: string, over: Partial<PaneDocument> = {}): PaneDocument => ({
+const doc = (id: string, over: Partial<PaneProject> = {}): PaneProject => ({
   id,
   name: id,
   folderId: null,
@@ -25,17 +25,17 @@ const stats = (mode: 'plan', elements: number, comments: number, bytes: number) 
 const folder = (id: string, over: Partial<Folder> = {}): Folder =>
   ({ id, name: id, parentId: null, createdAt: 0, updatedAt: 0, teamId: null, ...over }) as Folder;
 
-const ids = (r: { folders: Folder[]; documents: PaneDocument[] }) => [
+const ids = (r: { folders: Folder[]; projects: PaneProject[] }) => [
   ...r.folders.map((f) => f.id),
-  ...r.documents.map((d) => d.id),
+  ...r.projects.map((d) => d.id),
 ];
 const sort = (
   column: Parameters<typeof nextDetailsSort>[1],
   direction: 'asc' | 'desc',
-  documents: PaneDocument[],
+  projects: PaneProject[],
   folders: Folder[] = [],
   itemCount: (id: string) => number = () => 0,
-) => ids(sortDetailsEntries({ folders, documents, sort: { column, direction }, itemCount }));
+) => ids(sortDetailsEntries({ folders, projects, sort: { column, direction }, itemCount }));
 
 describe('the sort choice', () => {
   it('defaults to Updated, newest first', () => {

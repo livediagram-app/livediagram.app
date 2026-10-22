@@ -8,7 +8,7 @@ import {
   type ElementId,
   type Layer,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { LockReason } from './rejections';
 
 // The lock of the layer an element with this `layerId` sits on, if that layer is locked.

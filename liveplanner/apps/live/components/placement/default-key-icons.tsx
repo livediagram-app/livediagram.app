@@ -4,7 +4,7 @@ import {
   type PlacementDefaultKey,
   type TemplateFamily,
 } from '@liveplanner/api-schema';
-import type { EditorMode } from '@liveplanner/document';
+import type { EditorMode } from '@liveplanner/project';
 import { lucideGlyph, type IconProps, EDITOR_MODE_ICONS } from '@liveplanner/ui';
 import { lucideFolderCheck, lucideHistory, lucideSquareKanban } from '@liveplanner/icons/lucide';
 

@@ -40,7 +40,7 @@ async function harness() {
   const initial = json();
   const writes: SheetWrite[] = [];
   const store = new SheetStore({
-    scope: { documentId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
     self: () => by,
     locale: 'en-GB',
     pushUndo: () => {},
@@ -133,7 +133,7 @@ async function rich(opts: { canEdit?: boolean; rows?: number; cols?: number } = 
   const initial = { ...json(), layout: emptyLayout(rand, opts.rows ?? 6, opts.cols ?? 4) };
   const announce = vi.fn();
   const store = new SheetStore({
-    scope: { documentId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
     self: () => by,
     locale: 'en-GB',
     pushUndo: () => {},

@@ -6,7 +6,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { TAB_SCHEMA_VERSION, type Element, type Tab } from '@liveplanner/document';
+import { TAB_SCHEMA_VERSION, type Element, type Tab } from '@liveplanner/project';
 import { mergeImportedTab } from '@/lib/import-merge';
 import { NOT_A_DASHBOARD, remintTabElements, useTabImport } from './useTabImport';
 

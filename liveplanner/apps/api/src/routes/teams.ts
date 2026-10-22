@@ -27,7 +27,7 @@ import {
   getTeamInviteLink,
   getTeamMember,
   joinTeamByInviteToken,
-  listDocumentsByTeam,
+  listProjectsByTeam,
   listFoldersByTeam,
   listInvitesByUser,
   listTeamMembers,
@@ -234,7 +234,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
   const isAdmin = me.role === 'admin' && me.status === 'joined';
 
   // /api/teams/<id>/library — the team's shared folder tree +
-  // documents (docs/specs/013-workspace/team-shared-documents.md). Any membership row passes the gate above,
+  // projects (docs/specs/013-workspace/team-shared-projects.md). Any membership row passes the gate above,
   // but the library is for JOINED members only — an invitee deciding
   // on an invite sees the team's shape, not its content.
   if (segments.length === 4 && segments[3] === 'library') {
@@ -242,9 +242,9 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       if (me.status !== 'joined') return forbidden();
       const [folders, liveDocs] = await Promise.all([
         listFoldersByTeam(env, teamId),
-        listDocumentsByTeam(env, teamId),
+        listProjectsByTeam(env, teamId),
       ]);
-      return json({ folders, documents: liveDocs });
+      return json({ folders, projects: liveDocs });
     }
     return notFound();
   }
@@ -469,7 +469,7 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       const audience = await audienceForTeam(env, teamId);
       // What they made stays with the team. Left owned by them, the owner
       // leg of every access gate would keep it open to somebody the team
-      // just removed (docs/specs/013-workspace/team-shared-documents.md).
+      // just removed (docs/specs/013-workspace/team-shared-projects.md).
       if (member.status === 'joined' && member.userId) {
         await handTeamWorkToHeir(env, teamId, member.userId);
       }
@@ -477,8 +477,8 @@ export async function handleTeams(ctx: RouteContext): Promise<Response> {
       // removed) never leaves the team no joined admin. Their work moved first on purpose: a refused removal
       // has only handed it to another member, where a removal before the move could leave it with them.
       if (!(await removeTeamMemberKeepingAdmin(env, member))) return conflict('last_admin');
-      // Their open sessions on the team's documents end too, or a removed member would keep
-      // reading (and editing) live until they disconnect (docs/specs/013-workspace/team-shared-documents.md).
+      // Their open sessions on the team's projects end too, or a removed member would keep
+      // reading (and editing) live until they disconnect (docs/specs/013-workspace/team-shared-projects.md).
       if (member.status === 'joined' && member.userId) {
         ctx.waitUntil?.(closeMemberTeamSessions(env, teamId, member.userId).catch(() => {}));
       }

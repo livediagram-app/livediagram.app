@@ -1,9 +1,9 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@liveplanner/document';
+import { DEFAULT_BACKGROUND_COLOR, DEFAULT_PATTERN_COLOR } from '@liveplanner/project';
 
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { commitUserPreferences } from '@/lib/user-preferences';
 
 const SettingsDialog = dynamic(
@@ -30,7 +30,6 @@ export function EditorModals() {
     userPreferences,
     setUserPreferences,
     selfParticipant,
-    aiCapable,
     canvasThemeTab,
     isReadOnly,
     activeTab,
@@ -70,7 +69,6 @@ export function EditorModals() {
           focus={settingsFocus}
           initialCategoryId={settingsCategory}
           initialSectionId={settingsSection}
-          aiCapable={aiCapable}
         />
       ) : null}
       {canvasThemeTab !== null && !isReadOnly ? (

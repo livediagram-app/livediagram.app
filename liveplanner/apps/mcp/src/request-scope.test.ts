@@ -39,7 +39,7 @@ describe('telemetry posts outlive the response', () => {
   it('still posts, unwatched, outside a request', () => {
     const { env, fetch } = stubEnv();
     postTelemetry(env, 'Mcp', 'Used', 'ListTemplates');
-    runInRequest(null, () => postTelemetry(env, 'Mcp', 'Used', 'FindDocuments'));
+    runInRequest(null, () => postTelemetry(env, 'Mcp', 'Used', 'FindProjects'));
     expect(fetch).toHaveBeenCalledTimes(2);
   });
 

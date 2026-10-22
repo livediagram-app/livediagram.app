@@ -39,7 +39,7 @@ export function scoreRound(round) {
     const snapFile = join(dir, `${name}.snapshot.json`);
     const snap = existsSync(snapFile)
       ? JSON.parse(readFileSync(snapFile, 'utf8'))
-      : { documents: [] };
+      : { projects: [] };
     runs.push({
       name,
       task: taskId,

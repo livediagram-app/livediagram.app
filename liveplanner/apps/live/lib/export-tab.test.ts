@@ -8,10 +8,10 @@ import {
   tabToJsonText,
   tabToMarkdownText,
   type ExportedTabEnvelope,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { exportScale, exportTabAsSvg, MAX_EXPORT_CANVAS_SIDE, renderTabToSvg } from './export-tab';
 import { parseImportedTab } from './import-tab';
-import { encodeStrokePoints } from '@liveplanner/document';
+import { encodeStrokePoints } from '@liveplanner/project';
 
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,

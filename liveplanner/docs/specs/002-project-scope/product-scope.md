@@ -26,8 +26,8 @@ says why; this says what. A feature outside the **In** list needs this spec chan
 - Sign-in and identity, guests included ([Identity](../014-identity/README.md)).
 - Real-time collaboration and presence, comments, mentions and assigned actions, and the session tools Plan's
   templates use: timer, vote, picker and temperature check ([Collaboration](../012-collaboration/README.md)).
-- Settings and preferences, theming, the command palette, power user mode, Offline Mode, and the AI assistant
-  where Plan uses it ([Editor](../007-editor/README.md), [Theme](../011-theme/README.md)).
+- Settings and preferences, theming, the command palette, power user mode and Offline Mode
+  ([Editor](../007-editor/README.md), [Theme](../011-theme/README.md)).
 - Export of a tab as PNG, SVG, PDF, Markdown, CSV or JSON ([Export fidelity](../020-import-export/export-fidelity.md)).
 
 **Apps**: live, api, help, marketing, mcp, cli, router and telemetry
@@ -49,6 +49,9 @@ scope change recorded here and in [Purpose](../001-project-vision/purpose.md#bou
 - **Facilitation**: the Q&A board, live polls, quizzes, avatars, laser and spotlight, and presentation mode.
 - **Distribution**: the Google Drive mirror and the community gallery.
 
+The diagram element kinds' code is not all gone yet: no Plan surface places them, but their modules are still in the
+tree and their specs stay until it goes ([Build phase](../005-project-roadmap/prototype-scope.md#next)).
+
 ## Technical constraints
 
 - **Static frontends**: every Next.js app is a static export; server logic lives in Cloudflare Workers
@@ -66,3 +69,5 @@ scope change recorded here and in [Purpose](../001-project-vision/purpose.md#bou
 - No connectors to other trackers (GitHub Issues, Jira, Linear) in the first cut
   ([Build phase](../005-project-roadmap/prototype-scope.md#later)).
 - No native desktop or mobile app; the web is the product.
+- No in-editor AI assistant and no model provider behind the api: AI tools work on projects through the
+  [MCP server](../015-api/mcp-server.md) and the CLI, under their own terms.

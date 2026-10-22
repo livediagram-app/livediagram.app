@@ -1,24 +1,11 @@
-// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): thirteen,
-// grouped by the job a person is getting done rather than the artefact a template is. Every template but the five
+// The template catalogue's categories (docs/specs/008-canvas/canvas-and-palette.md "Template categories"): five,
+// grouped by the job a person is getting done rather than the artefact a template is. Every template but the four
 // blanks has exactly one primary category and may be cross-listed in others where people would genuinely look for it.
 // Read by the template step (Quick Start and /new), the marketing gallery and the agents' catalogue. Pure data plus
 // three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
 import type { TemplateKind } from './templates';
 
-export type TemplateCategory =
-  | 'planning'
-  | 'finance'
-  | 'spreadsheets'
-  | 'forms'
-  | 'meetings'
-  | 'mindmaps'
-  | 'timelines'
-  | 'flowcharts'
-  | 'strategy'
-  | 'hierarchies'
-  | 'design'
-  | 'presentations'
-  | 'technical';
+export type TemplateCategory = 'planning' | 'finance' | 'spreadsheets' | 'forms' | 'meetings';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions are kept to a similar length (40 to 50 characters) so the folded
 // category tiles read as an even set. Ids survive where the meaning did (links, tests and the agents' catalogue name
@@ -57,55 +44,9 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'meetings',
-    label: 'Workshops',
-    searchWords: 'meetings',
-    description: 'Retros, brainstorms and workshop formats.',
-  },
-  {
-    id: 'mindmaps',
-    label: 'Brainstorm',
-    description: 'Mind maps and sketches for getting ideas out.',
-  },
-  {
-    id: 'timelines',
-    label: 'Timelines',
-    searchWords: 'roadmaps',
-    description: 'Timelines, Gantt charts, roadmaps and goals.',
-  },
-  {
-    id: 'flowcharts',
-    label: 'Flowcharts',
-    searchWords: 'processes',
-    description: 'Step-by-step processes, flows and decisions.',
-  },
-  {
-    id: 'strategy',
-    label: 'Strategy',
-    searchWords: 'decisions',
-    description: 'Frameworks for analysis, priorities and risk.',
-  },
-  {
-    id: 'hierarchies',
-    label: 'Org Charts',
-    searchWords: 'org structure hierarchies',
-    description: 'Org charts, goal trees, sitemaps and pyramids.',
-  },
-  {
-    id: 'design',
-    label: 'Design',
-    searchWords: 'ux',
-    description: 'Prototypes, personas, journeys and story maps.',
-  },
-  {
-    id: 'presentations',
-    label: 'Presentations',
-    searchWords: 'content',
-    description: 'Comic strips and stories made to be shared.',
-  },
-  {
-    id: 'technical',
-    label: 'Technical',
-    description: 'Architecture, schema and sequence diagrams.',
+    label: 'Meetings',
+    searchWords: 'workshops retros',
+    description: 'Retros and feedback boards a team runs together.',
   },
 ];
 
@@ -120,7 +61,7 @@ export const TEMPLATE_CATEGORIES: readonly Omit<CategoryInfo, 'searchWords'>[] =
 
 // The blanks: in no category, reached from Popular or by search (docs/specs/026-plan/plan-templates.md "The blanks").
 // Mirrors isBlankTemplate (BLANK_TEMPLATES); the categories test pins them together.
-type BlankKind = 'blank' | 'whiteboard' | 'blank-plan' | 'blank-spreadsheet' | 'blank-form';
+type BlankKind = 'blank' | 'blank-plan' | 'blank-spreadsheet' | 'blank-form';
 
 // Every non-blank template's primary category.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
@@ -154,83 +95,9 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'rsvp-form': 'forms',
   'job-application-form': 'forms',
   'contact-form': 'forms',
-  // Meetings and Workshops: retros and the boards a team runs together.
-  brainstorm: 'meetings',
-  'workshop-board': 'meetings',
-  retrospective: 'meetings',
-  'start-stop-continue': 'meetings',
-  'mad-sad-glad': 'meetings',
-  'four-ls': 'meetings',
-  sailboat: 'meetings',
+  // Meetings: the boards a team runs together.
   'team-retro': 'meetings',
-  'pre-mortem': 'meetings',
   'feedback-board': 'meetings',
-  // Brainstorm: getting ideas out of heads.
-  mindmap: 'mindmaps',
-  'mindmap-tree': 'mindmaps',
-  'mindmap-bubble': 'mindmaps',
-  sketchnote: 'mindmaps',
-  'idea-garden': 'mindmaps',
-  'affinity-map': 'mindmaps',
-  'crazy-eights': 'mindmaps',
-  'doodle-warmup': 'mindmaps',
-  // Timelines and Roadmaps: work laid out in time, and who owns it.
-  timeline: 'timelines',
-  'milestone-timeline': 'timelines',
-  'milestone-timeline-vertical': 'timelines',
-  gantt: 'timelines',
-  roadmap: 'timelines',
-  'objectives-planner': 'timelines',
-  'raci-matrix': 'timelines',
-  // Flowcharts and Processes.
-  flowchart: 'flowcharts',
-  swimlane: 'flowcharts',
-  'decision-tree': 'flowcharts',
-  'approval-workflow': 'flowcharts',
-  'data-flow': 'flowcharts',
-  // Strategy and Decisions: analysis frameworks, priorities and risk.
-  swot: 'strategy',
-  'business-model-canvas': 'strategy',
-  'prioritization-matrix': 'strategy',
-  'risk-matrix': 'strategy',
-  fishbone: 'strategy',
-  venn: 'strategy',
-  flywheel: 'strategy',
-  funnel: 'strategy',
-  sankey: 'strategy',
-  'comparison-table': 'strategy',
-  'stakeholder-map': 'strategy',
-  'rich-picture': 'strategy',
-  'wardley-map': 'strategy',
-  'value-proposition-canvas': 'strategy',
-  // Org and Structure: top-down structure.
-  orgchart: 'hierarchies',
-  pyramid: 'hierarchies',
-  'okr-tree': 'hierarchies',
-  sitemap: 'hierarchies',
-  'opportunity-solution-tree': 'hierarchies',
-  'metric-tree': 'hierarchies',
-  'family-tree': 'hierarchies',
-  // Design and UX: screens, research and the spaces people move through.
-  'paper-prototype': 'design',
-  journey: 'design',
-  'journey-doodle': 'design',
-  'user-persona': 'design',
-  'empathy-map': 'design',
-  'user-story-map': 'design',
-  'service-blueprint': 'design',
-  // Presentations and Content: made to be read or shared.
-  'comic-strip': 'presentations',
-  // Technical: developer diagrams.
-  'system-architecture': 'technical',
-  'cloud-architecture': 'technical',
-  'er-diagram': 'technical',
-  'sequence-diagram': 'technical',
-  'uml-class': 'technical',
-  'state-machine': 'technical',
-  'incident-postmortem': 'technical',
-  'threat-model': 'technical',
-  'value-stream-map': 'technical',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.
@@ -241,11 +108,6 @@ export const TEMPLATE_ALSO_IN: Readonly<
   // Run as a meeting, tracked as a board.
   'team-retro': ['planning'],
   'feedback-board': ['planning'],
-  // Goals are strategy as much as tracking.
-  okrs: ['strategy'],
-  'okr-tree': ['strategy'],
-  roadmap: ['strategy'],
-  'pre-mortem': ['strategy'],
   // A sheet is a spreadsheet whatever it is for.
   'task-tracker': ['spreadsheets'],
   'budget-planner': ['spreadsheets'],
@@ -254,32 +116,6 @@ export const TEMPLATE_ALSO_IN: Readonly<
   'expense-report': ['spreadsheets'],
   'loan-calculator': ['spreadsheets'],
   'sales-pipeline': ['spreadsheets'],
-  // About money, though drawn as diagrams.
-  funnel: ['finance'],
-  sankey: ['finance'],
-  'business-model-canvas': ['finance'],
-  // Diagrams a team plans its work with.
-  gantt: ['planning'],
-  'user-story-map': ['planning'],
-  'prioritization-matrix': ['planning'],
-  // Workshop formats.
-  'crazy-eights': ['meetings', 'design'],
-  'doodle-warmup': ['meetings'],
-  'incident-postmortem': ['meetings'],
-  // Research synthesis and site structure are design work too.
-  'affinity-map': ['design'],
-  sitemap: ['design'],
-  // Who does what is structure.
-  'raci-matrix': ['hierarchies'],
-  // A data-flow diagram is a developer's diagram.
-  'data-flow': ['technical'],
-  // A north star is a goal, like the OKR tree's.
-  'metric-tree': ['strategy'],
-  // A blueprint and a value stream are processes across lanes and steps.
-  'service-blueprint': ['flowcharts'],
-  'value-stream-map': ['flowcharts'],
-  // A value proposition is product design.
-  'value-proposition-canvas': ['design'],
 };
 
 /** A template's primary category; null for the blanks, which are in none. */

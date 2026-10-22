@@ -1,5 +1,5 @@
 // The Plan card functions (docs/specs/029-sheets/formulas.md "Plan cards"): CARDCOUNT, CARDSUM, CARD and CARDS
-// read the document's live cards through the frame's CardSource. Before the cards arrive they read PENDING.
+// read the project's live cards through the frame's CardSource. Before the cards arrive they read PENDING.
 import type { CardRow, CardSource } from '../../cards';
 import type { EvalValue, Frame } from '../../engine/frame';
 import { MANY, fn, intArg, scalarArg, textArg, tooBig, type FnDef } from '../fn';

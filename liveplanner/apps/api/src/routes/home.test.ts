@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { HomeResponse } from '@liveplanner/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
-import { recordDocumentOpen } from '../home/record-open';
+import { recordProjectOpen } from '../home/record-open';
 import {
   recordActionAssigned,
   recordCommentAdded,
-  recordDocumentCreated,
-  recordDocumentDuplicated,
-  recordDocumentEdited,
-  recordTeamDocumentAdded,
+  recordProjectCreated,
+  recordProjectDuplicated,
+  recordProjectEdited,
+  recordTeamProjectAdded,
 } from '../timeline';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
@@ -36,7 +36,7 @@ function addDoc(
 ) {
   db.sql
     .prepare(
-      `INSERT INTO documents (id, owner_id, name, shareable, team_id, folder_id, saved_at, created_at, trashed_at)
+      `INSERT INTO projects (id, owner_id, name, shareable, team_id, folder_id, saved_at, created_at, trashed_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
     .run(
@@ -54,21 +54,21 @@ function addDoc(
 }
 
 function shareWithMe(
-  documentId: string,
+  projectId: string,
   code: string,
   opts: { tabId?: string; expired?: boolean } = {},
 ) {
   db.sql
     .prepare(
-      `INSERT INTO share_links (code, document_id, role, tab_id, created_at, expires_at)
+      `INSERT INTO share_links (code, project_id, role, tab_id, created_at, expires_at)
        VALUES (?, ?, 'view', ?, 1, ?)`,
     )
-    .run(code, documentId, opts.tabId ?? null, opts.expired ? NOW - DAY : null);
+    .run(code, projectId, opts.tabId ?? null, opts.expired ? NOW - DAY : null);
   db.sql
     .prepare(
-      `INSERT INTO shared_with (owner_id, document_id, role, tab_id, last_seen) VALUES (?, ?, 'view', ?, 1)`,
+      `INSERT INTO shared_with (owner_id, project_id, role, tab_id, last_seen) VALUES (?, ?, 'view', ?, 1)`,
     )
-    .run(ME, documentId, opts.tabId ?? null);
+    .run(ME, projectId, opts.tabId ?? null);
 }
 
 function seed() {
@@ -142,17 +142,17 @@ afterEach(() => {
 });
 
 describe('Jump back in', () => {
-  it('places documents the person can still open, with where they live', async () => {
-    for (const d of [3, 2, 1]) await recordDocumentOpen(db.env, docs.own1!, ME, NOW - d * DAY);
-    await recordDocumentOpen(db.env, docs.own2!, ME, NOW - HOUR);
-    await recordDocumentOpen(db.env, docs.shared1!, ME, NOW - 2 * HOUR);
+  it('places projects the person can still open, with where they live', async () => {
+    for (const d of [3, 2, 1]) await recordProjectOpen(db.env, docs.own1!, ME, NOW - d * DAY);
+    await recordProjectOpen(db.env, docs.own2!, ME, NOW - HOUR);
+    await recordProjectOpen(db.env, docs.shared1!, ME, NOW - 2 * HOUR);
     for (const id of ['trashed', 'lapsed', 'other-team', 'scoped']) {
-      await recordDocumentOpen(db.env, docs[id]!, ME, NOW);
+      await recordProjectOpen(db.env, docs[id]!, ME, NOW);
     }
 
     const { jumpBackIn } = await home();
     // Most used: by use days, ties to the most recent use.
-    expect(jumpBackIn.map((d) => d.documentId)).toEqual(['own1', 'scoped', 'own2', 'shared1']);
+    expect(jumpBackIn.map((d) => d.projectId)).toEqual(['own1', 'scoped', 'own2', 'shared1']);
     expect(jumpBackIn[0]).toMatchObject({
       name: 'Doc own1',
       via: 'own',
@@ -177,17 +177,17 @@ describe('Jump back in', () => {
     // m0..m3 on 5, 4, 3, 2 days; m0 also the newest of all, so it is both, and shows once.
     for (const [i, days] of [5, 4, 3, 2].entries()) {
       for (let d = days; d >= 1; d -= 1) {
-        await recordDocumentOpen(db.env, docs[`m${i}`]!, ME, NOW - (d + 1) * DAY);
+        await recordProjectOpen(db.env, docs[`m${i}`]!, ME, NOW - (d + 1) * DAY);
       }
     }
-    await recordDocumentOpen(db.env, docs.m0!, ME, NOW - 60_000);
+    await recordProjectOpen(db.env, docs.m0!, ME, NOW - 60_000);
     // m4..m9 once each, m9 the newest of them.
     for (let i = 4; i < 10; i += 1) {
-      await recordDocumentOpen(db.env, docs[`m${i}`]!, ME, NOW - (10 - i) * HOUR);
+      await recordProjectOpen(db.env, docs[`m${i}`]!, ME, NOW - (10 - i) * HOUR);
     }
 
     const { jumpBackIn } = await home();
-    expect(jumpBackIn.map((d) => d.documentId)).toEqual([
+    expect(jumpBackIn.map((d) => d.projectId)).toEqual([
       'm0',
       'm1',
       'm2',
@@ -203,11 +203,11 @@ describe('Jump back in', () => {
 
   it('counts only the last 90 days towards most used, but keeps an older open recent', async () => {
     addDoc('old', ME);
-    for (const d of [120, 110, 100]) await recordDocumentOpen(db.env, docs.old!, ME, NOW - d * DAY);
-    await recordDocumentOpen(db.env, docs.own1!, ME, NOW - 89 * DAY);
+    for (const d of [120, 110, 100]) await recordProjectOpen(db.env, docs.old!, ME, NOW - d * DAY);
+    await recordProjectOpen(db.env, docs.own1!, ME, NOW - 89 * DAY);
 
     const { jumpBackIn } = await home();
-    expect(jumpBackIn.map((d) => [d.documentId, d.useDays])).toEqual([
+    expect(jumpBackIn.map((d) => [d.projectId, d.useDays])).toEqual([
       ['own1', 1],
       ['old', 0],
     ]);
@@ -217,19 +217,19 @@ describe('Jump back in', () => {
     // Days before opens were recorded still count, through their edits.
     for (const d of [4, 3]) {
       at(NOW - d * DAY);
-      await recordDocumentEdited(db.env, docs.own2!, ME);
+      await recordProjectEdited(db.env, docs.own2!, ME);
     }
-    await recordDocumentOpen(db.env, docs.own2!, ME, NOW - 3 * DAY - HOUR);
+    await recordProjectOpen(db.env, docs.own2!, ME, NOW - 3 * DAY - HOUR);
     // An edit after the day's open is the later use.
-    await recordDocumentOpen(db.env, docs.own1!, ME, NOW - 5 * HOUR);
+    await recordProjectOpen(db.env, docs.own1!, ME, NOW - 5 * HOUR);
     at(NOW - HOUR);
-    await recordDocumentEdited(db.env, docs.own1!, ME);
+    await recordProjectEdited(db.env, docs.own1!, ME);
     // Someone else's edit is not the person's use.
-    await recordDocumentEdited(db.env, docs.team1!, 'user_priya');
+    await recordProjectEdited(db.env, docs.team1!, 'user_priya');
     at(NOW);
 
     const { jumpBackIn } = await home();
-    expect(jumpBackIn.map((d) => [d.documentId, d.useDays, d.lastUsedAt])).toEqual([
+    expect(jumpBackIn.map((d) => [d.projectId, d.useDays, d.lastUsedAt])).toEqual([
       ['own2', 2, NOW - 3 * DAY],
       ['own1', 1, NOW - HOUR],
     ]);
@@ -237,20 +237,20 @@ describe('Jump back in', () => {
 
   it('counts a marked making as a use; an unmarked one waits for its first open', async () => {
     // A bulk import's makings carry no mark, as every making recorded before the mark.
-    await recordDocumentCreated(db.env, docs.own1!, ME, { markUsed: false });
-    await recordDocumentDuplicated(db.env, docs.own2!, 'Doc own1', ME, { markUsed: false });
+    await recordProjectCreated(db.env, docs.own1!, ME, { markUsed: false });
+    await recordProjectDuplicated(db.env, docs.own2!, 'Doc own1', ME, { markUsed: false });
     expect((await home()).jumpBackIn).toEqual([]);
 
-    await recordDocumentOpen(db.env, docs.own2!, ME, NOW - HOUR);
-    expect((await home()).jumpBackIn.map((d) => d.documentId)).toEqual(['own2']);
+    await recordProjectOpen(db.env, docs.own2!, ME, NOW - HOUR);
+    expect((await home()).jumpBackIn.map((d) => d.projectId)).toEqual(['own2']);
 
     // A single making counts at once, opened or not; a copy is one.
     addDoc('made', ME);
     addDoc('copied', ME);
-    await recordDocumentCreated(db.env, docs.made!, ME, { markUsed: true });
+    await recordProjectCreated(db.env, docs.made!, ME, { markUsed: true });
     at(NOW + 60_000);
-    await recordDocumentDuplicated(db.env, docs.copied!, 'Doc made', ME, { markUsed: true });
-    expect((await home()).jumpBackIn.map((d) => [d.documentId, d.useDays, d.lastUsedAt])).toEqual([
+    await recordProjectDuplicated(db.env, docs.copied!, 'Doc made', ME, { markUsed: true });
+    expect((await home()).jumpBackIn.map((d) => [d.projectId, d.useDays, d.lastUsedAt])).toEqual([
       ['copied', 1, NOW + 60_000],
       ['made', 1, NOW],
       ['own2', 1, NOW - HOUR],
@@ -258,7 +258,7 @@ describe('Jump back in', () => {
   });
 
   it("never counts someone else's making", async () => {
-    await recordDocumentCreated(db.env, docs.team1!, 'user_priya', { markUsed: true });
+    await recordProjectCreated(db.env, docs.team1!, 'user_priya', { markUsed: true });
     expect((await home()).jumpBackIn).toEqual([]);
   });
 
@@ -268,8 +268,8 @@ describe('Jump back in', () => {
       .prepare(
         `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, dedupe_key, title,
            occurred_at, snapshot, created_at)
-         VALUES ('old', ?, 'document', 'own1', 'document_edited', 'k', 'Document Updated', ?,
-           '{"documentId":"own1","backfilled":true}', ?)`,
+         VALUES ('old', ?, 'project', 'own1', 'project_edited', 'k', 'Project Updated', ?,
+           '{"projectId":"own1","backfilled":true}', ?)`,
       )
       .run(ME, NOW - HOUR, NOW);
     expect((await home()).jumpBackIn).toEqual([]);
@@ -279,7 +279,7 @@ describe('Jump back in', () => {
 describe('What happened', () => {
   async function emitOthers() {
     at(NOW - 4 * HOUR);
-    await recordTeamDocumentAdded(db.env, docs.team1!, 'Platform', 'user_sam');
+    await recordTeamProjectAdded(db.env, docs.team1!, 'Platform', 'user_sam');
     at(NOW - 3 * HOUR);
     await recordCommentAdded(
       db.env,
@@ -288,7 +288,7 @@ describe('What happened', () => {
       'user_priya',
     );
     at(NOW - 2 * HOUR);
-    await recordDocumentEdited(db.env, docs.team1!, 'user_sam');
+    await recordProjectEdited(db.env, docs.team1!, 'user_sam');
     at(NOW - HOUR);
     await recordActionAssigned(
       db.env,
@@ -297,30 +297,30 @@ describe('What happened', () => {
       'user_priya',
     );
     at(NOW - HOUR - 60_000);
-    await recordDocumentEdited(db.env, docs.shared1!, 'user_lee');
+    await recordProjectEdited(db.env, docs.shared1!, 'user_lee');
     // Not for the reader: on a tab-scoped share, by themself, an open, too old.
-    await recordDocumentEdited(db.env, docs.scoped!, 'user_lee');
+    await recordProjectEdited(db.env, docs.scoped!, 'user_lee');
     await recordCommentAdded(
       db.env,
       docs.team1!,
       { id: 'c2', text: 'Mine', authorName: 'Me', reply: true },
       ME,
     );
-    await recordDocumentEdited(db.env, docs.own1!, 'guest-me');
-    await recordDocumentOpen(db.env, docs.team1!, 'user_sam', NOW - HOUR);
+    await recordProjectEdited(db.env, docs.own1!, 'guest-me');
+    await recordProjectOpen(db.env, docs.team1!, 'user_sam', NOW - HOUR);
     at(NOW - 15 * DAY);
-    await recordDocumentEdited(db.env, docs.own2!, 'user_priya');
+    await recordProjectEdited(db.env, docs.own2!, 'user_priya');
     at(NOW);
   }
 
-  it("groups other people's actions per document per day", async () => {
+  it("groups other people's actions per project per day", async () => {
     await emitOthers();
     const { whatHappened } = await home();
     expect(whatHappened.map((g) => g.id)).toEqual(['team1:2023-11-14', 'shared1:2023-11-14']);
 
     const [team, shared] = whatHappened;
     expect(team).toMatchObject({
-      documentId: 'team1',
+      projectId: 'team1',
       via: 'team',
       teamName: 'Platform',
       day: '2023-11-14',
@@ -356,7 +356,7 @@ describe('What happened', () => {
   });
 
   it("never shows anyone else the person's opens", async () => {
-    await recordDocumentOpen(db.env, docs.team1!, ME, NOW);
+    await recordProjectOpen(db.env, docs.team1!, ME, NOW);
     const priya = await home('/api/home', 'user_priya');
     expect(priya.whatHappened).toEqual([]);
     expect(priya.jumpBackIn).toEqual([]);
@@ -366,11 +366,11 @@ describe('What happened', () => {
     const event = db.sql.prepare(
       `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
          description, occurred_at, snapshot, created_at)
-       VALUES (?1, 'user_priya', 'document', ?1, 'comment_added', 'Comment Added', 'Hi', ?2, ?3, 1)`,
+       VALUES (?1, 'user_priya', 'project', ?1, 'comment_added', 'Comment Added', 'Hi', ?2, ?3, 1)`,
     );
     const scope = db.sql.prepare(
       `INSERT INTO timeline_event_scopes (event_id, scope_type, scope_id, added_at)
-       VALUES (?, 'document', 'team1', 1)`,
+       VALUES (?, 'project', 'team1', 1)`,
     );
     event.run('bad-json', NOW - 1000, '{not json');
     event.run('bad-shape', NOW - 2000, '[1, 2]');
@@ -387,11 +387,11 @@ describe('What happened', () => {
     const event = db.sql.prepare(
       `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, title,
          description, occurred_at, snapshot, created_at)
-       VALUES (?, 'user_priya', 'document', ?, 'comment_added', 'Comment Added', 'x', ?, '{}', 1)`,
+       VALUES (?, 'user_priya', 'project', ?, 'comment_added', 'Comment Added', 'x', ?, '{}', 1)`,
     );
     const scope = db.sql.prepare(
       `INSERT INTO timeline_event_scopes (event_id, scope_type, scope_id, added_at)
-       VALUES (?, 'document', 'team1', 1)`,
+       VALUES (?, 'project', 'team1', 1)`,
     );
     for (let i = 0; i < 201; i += 1) {
       event.run(`n${i}`, `n${i}`, NOW - i * 1000);
@@ -419,7 +419,7 @@ describe('the read', () => {
     await home();
     await Promise.all(pending);
     const created = db.sql
-      .prepare(`SELECT COUNT(*) AS n FROM timeline_events WHERE event_type = 'document_created'`)
+      .prepare(`SELECT COUNT(*) AS n FROM timeline_events WHERE event_type = 'project_created'`)
       .get() as { n: number };
     expect(created.n).toBe(0);
   });

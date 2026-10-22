@@ -1,8 +1,8 @@
-// items: a document's item store (docs/specs/026-plan/items.md, blueprint item-store.md
-// "Data and persistence"). Every write raises the document's `items_rev` in the same batch, so the
+// items: a project's item store (docs/specs/026-plan/items.md, blueprint item-store.md
+// "Data and persistence"). Every write raises the project's `items_rev` in the same batch, so the
 // room op carries one store revision per write; an update is guarded by the item's own `rev`.
 
-import { isSafeColourValue } from '@liveplanner/document';
+import { isSafeColourValue } from '@liveplanner/project';
 import type { Item, ItemPerson } from '@liveplanner/items';
 import type { Env } from '../types';
 
@@ -65,71 +65,71 @@ function itemFromRow(row: ItemRow): Item {
 
 type ItemStoreHead = { rev: number; nextKey: number; count: number };
 
-export async function getItemStoreHead(env: Env, documentId: string): Promise<ItemStoreHead> {
+export async function getItemStoreHead(env: Env, projectId: string): Promise<ItemStoreHead> {
   const row = await env.DB.prepare(
     `SELECT d.items_rev AS rev, d.items_next_key AS next_key,
-            (SELECT COUNT(*) FROM items i WHERE i.document_id = d.id) AS count
-       FROM documents d WHERE d.id = ?`,
+            (SELECT COUNT(*) FROM items i WHERE i.project_id = d.id) AS count
+       FROM projects d WHERE d.id = ?`,
   )
-    .bind(documentId)
+    .bind(projectId)
     .first<{ rev: number; next_key: number; count: number }>();
   return { rev: row?.rev ?? 0, nextKey: row?.next_key ?? 1, count: row?.count ?? 0 };
 }
 
 // The store's revision alone: what a read needs, without the head's count.
-export async function getItemsRev(env: Env, documentId: string): Promise<number> {
-  const row = await env.DB.prepare(`SELECT items_rev AS rev FROM documents WHERE id = ?`)
-    .bind(documentId)
+export async function getItemsRev(env: Env, projectId: string): Promise<number> {
+  const row = await env.DB.prepare(`SELECT items_rev AS rev FROM projects WHERE id = ?`)
+    .bind(projectId)
     .first<{ rev: number }>();
   return row?.rev ?? 0;
 }
 
-export async function listItems(env: Env, documentId: string): Promise<Item[]> {
-  const res = await env.DB.prepare(`SELECT ${COLUMNS} FROM items WHERE document_id = ?`)
-    .bind(documentId)
+export async function listItems(env: Env, projectId: string): Promise<Item[]> {
+  const res = await env.DB.prepare(`SELECT ${COLUMNS} FROM items WHERE project_id = ?`)
+    .bind(projectId)
     .all<ItemRow>();
   return (res.results ?? []).map(itemFromRow);
 }
 
-export async function readItem(env: Env, documentId: string, id: string): Promise<Item | null> {
-  const row = await env.DB.prepare(`SELECT ${COLUMNS} FROM items WHERE document_id = ? AND id = ?`)
-    .bind(documentId, id)
+export async function readItem(env: Env, projectId: string, id: string): Promise<Item | null> {
+  const row = await env.DB.prepare(`SELECT ${COLUMNS} FROM items WHERE project_id = ? AND id = ?`)
+    .bind(projectId, id)
     .first<ItemRow>();
   return row ? itemFromRow(row) : null;
 }
 
 // The items of `ids` that exist, in no set order: one query however many (the ids as one JSON parameter).
-export async function readItems(env: Env, documentId: string, ids: string[]): Promise<Item[]> {
+export async function readItems(env: Env, projectId: string, ids: string[]): Promise<Item[]> {
   const res = await env.DB.prepare(
-    `SELECT ${COLUMNS} FROM items WHERE document_id = ? AND id IN (SELECT value FROM json_each(?))`,
+    `SELECT ${COLUMNS} FROM items WHERE project_id = ? AND id IN (SELECT value FROM json_each(?))`,
   )
-    .bind(documentId, JSON.stringify(ids))
+    .bind(projectId, JSON.stringify(ids))
     .all<ItemRow>();
   return (res.results ?? []).map(itemFromRow);
 }
 
-// Every card write raises the store's rev and marks the document saved (`saved_at`), as a tab write does: a card is
-// part of the document, so the Explorer's "Updated" line, its snapshot (docs/specs/006-document/document-snapshots.md:
-// a board draws its cards) both follow it. Both in the documents statement the write runs anyway.
+// Every card write raises the store's rev and marks the project saved (`saved_at`), as a tab write does: a card is
+// part of the project, so the Explorer's "Updated" line, its snapshot (docs/specs/006-project/project-snapshots.md:
+// a board draws its cards) both follow it. Both in the projects statement the write runs anyway.
 const SAVED = 'saved_at = MAX(saved_at, ?)';
 
-function bumpRev(env: Env, documentId: string, nextKey?: number): D1PreparedStatement {
+function bumpRev(env: Env, projectId: string, nextKey?: number): D1PreparedStatement {
   const now = Date.now();
   return nextKey === undefined
     ? env.DB.prepare(
-        `UPDATE documents SET items_rev = items_rev + 1, ${SAVED} WHERE id = ? RETURNING items_rev`,
-      ).bind(now, documentId)
+        `UPDATE projects SET items_rev = items_rev + 1, ${SAVED} WHERE id = ? RETURNING items_rev`,
+      ).bind(now, projectId)
     : env.DB.prepare(
-        `UPDATE documents SET items_rev = items_rev + 1, items_next_key = MAX(items_next_key, ?), ${SAVED}
+        `UPDATE projects SET items_rev = items_rev + 1, items_next_key = MAX(items_next_key, ?), ${SAVED}
           WHERE id = ? RETURNING items_rev`,
-      ).bind(nextKey, now, documentId);
+      ).bind(nextKey, now, projectId);
 }
 
-function insertStatement(env: Env, documentId: string, item: Item): D1PreparedStatement {
+function insertStatement(env: Env, projectId: string, item: Item): D1PreparedStatement {
   return env.DB.prepare(
-    `INSERT INTO items (document_id, ${COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    `INSERT INTO items (project_id, ${COLUMNS}) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).bind(
-    documentId,
+    projectId,
     item.id,
     item.type,
     item.key,
@@ -150,11 +150,11 @@ function revOf(result: D1Result | undefined): number {
 
 // Inserts new items (their keys already chosen) and returns the store's new rev. Throws on a
 // primary-key or key collision; the caller maps it to 409.
-export async function insertItems(env: Env, documentId: string, items: Item[]): Promise<number> {
+export async function insertItems(env: Env, projectId: string, items: Item[]): Promise<number> {
   const maxKey = Math.max(...items.map((i) => i.key));
   const results = await env.DB.batch([
-    bumpRev(env, documentId, maxKey + 1),
-    ...items.map((i) => insertStatement(env, documentId, i)),
+    bumpRev(env, projectId, maxKey + 1),
+    ...items.map((i) => insertStatement(env, projectId, i)),
   ]);
   return revOf(results[0]);
 }
@@ -163,17 +163,17 @@ export async function insertItems(env: Env, documentId: string, items: Item[]): 
 // the row moved on (or went) since it was read.
 export async function updateItemAtRev(
   env: Env,
-  documentId: string,
+  projectId: string,
   next: Item,
   expectedRev: number,
 ): Promise<number | null> {
   const results = await env.DB.batch([
-    updateAtRevStatement(env, documentId, next, expectedRev),
+    updateAtRevStatement(env, projectId, next, expectedRev),
     // Raises the store rev only when the guarded update landed.
     env.DB.prepare(
-      `UPDATE documents SET items_rev = items_rev + 1, ${SAVED}
+      `UPDATE projects SET items_rev = items_rev + 1, ${SAVED}
         WHERE id = ? AND changes() > 0 RETURNING items_rev`,
-    ).bind(Date.now(), documentId),
+    ).bind(Date.now(), projectId),
   ]);
   if ((results[0]?.meta?.changes ?? 0) === 0) return null;
   return revOf(results[1]);
@@ -184,12 +184,12 @@ export async function updateItemAtRev(
 // raised even when none landed: the caller then retries, and a collaborator who saw the gap refetches.
 export async function updateItemsAtRev(
   env: Env,
-  documentId: string,
+  projectId: string,
   writes: { next: Item; expectedRev: number }[],
 ): Promise<{ rev: number; landed: Set<string> }> {
   const results = await env.DB.batch([
-    ...writes.map((w) => updateAtRevStatement(env, documentId, w.next, w.expectedRev)),
-    bumpRev(env, documentId),
+    ...writes.map((w) => updateAtRevStatement(env, projectId, w.next, w.expectedRev)),
+    bumpRev(env, projectId),
   ]);
   const landed = new Set(
     writes.filter((_, i) => (results[i]?.meta?.changes ?? 0) > 0).map((w) => w.next.id),
@@ -199,13 +199,13 @@ export async function updateItemsAtRev(
 
 function updateAtRevStatement(
   env: Env,
-  documentId: string,
+  projectId: string,
   next: Item,
   expectedRev: number,
 ): D1PreparedStatement {
   return env.DB.prepare(
     `UPDATE items SET type = ?, rank = ?, fields = ?, rev = ?, updated_at = ?, updated_by = ?
-      WHERE document_id = ? AND id = ? AND rev = ?`,
+      WHERE project_id = ? AND id = ? AND rev = ?`,
   ).bind(
     next.type,
     next.rank,
@@ -213,7 +213,7 @@ function updateAtRevStatement(
     next.rev,
     next.updatedAt,
     JSON.stringify(next.updatedBy),
-    documentId,
+    projectId,
     next.id,
     expectedRev,
   );
@@ -224,25 +224,25 @@ function updateAtRevStatement(
 // by the delete itself, so a comment written a moment before cannot slip between a read and it.
 export async function deleteItemRow(
   env: Env,
-  documentId: string,
+  projectId: string,
   id: string,
 ): Promise<{ rev: number; item: Item } | null> {
   const results = await env.DB.batch([
-    env.DB.prepare(`DELETE FROM items WHERE document_id = ? AND id = ? RETURNING ${COLUMNS}`).bind(
-      documentId,
+    env.DB.prepare(`DELETE FROM items WHERE project_id = ? AND id = ? RETURNING ${COLUMNS}`).bind(
+      projectId,
       id,
     ),
     env.DB.prepare(
-      `UPDATE documents SET items_rev = items_rev + 1, ${SAVED}
+      `UPDATE projects SET items_rev = items_rev + 1, ${SAVED}
         WHERE id = ? AND changes() > 0 RETURNING items_rev`,
-    ).bind(Date.now(), documentId),
+    ).bind(Date.now(), projectId),
   ]);
   const row = (results[0]?.results as ItemRow[] | undefined)?.[0];
   if (!row) return null;
   return { rev: revOf(results[1]), item: itemFromRow(row) };
 }
 
-// A document copy takes the items with it, ids and keys unchanged, so every card on the copied
+// A project copy takes the items with it, ids and keys unchanged, so every card on the copied
 // tabs still finds its item (docs/specs/026-plan/items.md "Copies and exports"). `onlyIds` limits
 // a tab-scoped visitor's copy to the items their tab shows.
 export function copyItemsStatements(
@@ -259,13 +259,13 @@ export function copyItemsStatements(
   ];
   return [
     env.DB.prepare(
-      `INSERT INTO items (document_id, ${COLUMNS})
-       SELECT ?, ${COLUMNS} FROM items WHERE document_id = ?${filter}`,
+      `INSERT INTO items (project_id, ${COLUMNS})
+       SELECT ?, ${COLUMNS} FROM items WHERE project_id = ?${filter}`,
     ).bind(...binds),
     env.DB.prepare(
-      `UPDATE documents SET
-         items_rev = (SELECT items_rev FROM documents WHERE id = ?2),
-         items_next_key = (SELECT items_next_key FROM documents WHERE id = ?2)
+      `UPDATE projects SET
+         items_rev = (SELECT items_rev FROM projects WHERE id = ?2),
+         items_next_key = (SELECT items_next_key FROM projects WHERE id = ?2)
        WHERE id = ?1`,
     ).bind(targetId, sourceId),
   ];

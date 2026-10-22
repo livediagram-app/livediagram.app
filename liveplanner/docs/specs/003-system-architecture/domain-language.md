@@ -9,45 +9,39 @@ agents read, and the code: the type (`Project`), its package, tables, API routes
 
 ## Mode, kind and template
 
-Three words describe how a document and its tabs differ. They answer different questions and are never
+Three words describe how a project and its tabs differ. They answer different questions and are never
 interchangeable. These are design decisions, taken before any feature that uses them.
 
-| Term         | Answers                        | Values                                                      | Where it lives                                |
-| ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------------------- |
-| **mode**     | How is a tab worked on?        | Diagram, Draw, Workshop, Pages, Plan (`EditorMode`)         | Per tab, the same for everyone; `Tab.opensIn` |
-| **kind**     | What is a tab?                 | the general diagram tab, or a Plan tab (`TabKind`)          | `Tab.kind`                                    |
-| **template** | What was a document made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation                    |
+| Term         | Answers                        | Values                                                      | Where it lives                    |
+| ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------- |
+| **mode**     | How is a tab worked on?        | Plan, the one mode (`EditorMode`)                           | Named, never stored on a tab      |
+| **kind**     | What is a tab?                 | the general tab, or a Board, Sheet, Dashboard or Form tab   | `Tab.kind`                        |
+| **template** | What was a project made from?  | a template (`TemplateKind`), grouped into template families | Captured once, at creation        |
 
 ### Mode
 
-- An **editor mode** is how a tab is worked on, by everyone on it: always **Plan**, the one mode (the Editor mode
-  spec in 007-editor). Diagram, Draw, Workshop and Pages were retired.
-- A mode is never a type of document or tab. A document's recorded creation intent still names the mode it was made
+- An **editor mode** is how a tab is worked on, by everyone on it: always **Plan**, the one mode
+  ([Editor mode](../007-editor/editor-modes.md)). Diagram, Draw, Workshop and Pages were livediagram's and are retired.
+- A mode is never a type of project or tab. A project's recorded creation intent still names the mode it was made
   in (**opens in**), which is Plan.
-- Whiteboarding is Draw mode. There is no whiteboard tab kind and no whiteboard document type.
-- Running a session (a retro, a town hall) is Workshop mode. A session is an activity, never a tab kind or a
-  stored thing; "Session" and "Collaborate" never name the mode, and neither does its old name, "Facilitate".
-- "Workshop" names the mode; a start's template group is never called Workshops (Workshop mode's is **Ideation**,
-  Draw's **Exercises**). The template catalogue's **Workshops** category
-  stays: it says what a template is for, as **Planning** does beside Plan mode, and most of its templates open in
-  Workshop mode.
+- The template catalogue's **Meetings** category (id `meetings`, once labelled Workshops) says what a template is
+  for, as **Planning** does; it never names a mode.
 
 ### Kind
 
-- A **tab kind** is what a tab is. It is reserved for boards that do not follow the homogeneous environment of the
-  general diagram tab, with their own notation, rules and data.
-- The general diagram tab is the default kind. Plan's tabs are kinds of their own ([Plan tabs](../026-plan/plan-tabs.md): Board, Sheet and Dashboard, and the Form
-  tab of [Forms](../030-forms/forms.md)), each always in Plan.
-- A new kind is added only when no mode can serve the use.
+- A **tab kind** is what a tab is: a **Board**, **Sheet**, **Dashboard** or **Form** tab
+  ([Plan tabs](../026-plan/plan-tabs.md), [Forms](../030-forms/forms.md)), each with its own content and rules.
+- A fresh tab is the general kind (stored as `'diagram'`, livediagram's name for it) until Start Planning makes it
+  one of the four.
 - "Board type" means a kind. It never names a template or a mode.
 
 ### Template
 
-- A **template** is what a document was made from. It shapes the starting content of a general diagram tab and
-  then has no further hold on it.
+- A **template** is what a project was made from. It shapes a tab's starting content (its boards, card types, sheets
+  or form) and then has no further hold on it.
 - Templates group into **template families** where a family is meaningful to people, for example Retrospectives
   (several retrospective formats) and Kanban boards.
-- A template or a template family is never a kind or a type: a retrospective is a general diagram tab made from a
+- A template or a template family is never a kind or a type: a retrospective is a Board tab made from a
   retrospective template.
 
 ### Using the three together
@@ -62,9 +56,9 @@ The words for the work a Plan board frames ([Items](../026-plan/items.md), [Plan
 
 | Term           | Means                                                                   | Never called                |
 | -------------- | ----------------------------------------------------------------------- | --------------------------- |
-| **item**       | One record in a document's item store: a type and an open bag of fields | ticket, task, issue, card   |
+| **item**       | One record in a project's item store: a type and an open bag of fields | ticket, task, issue, card   |
 | **item type**  | What an item is: Task, Story, Bug, Epic, Note, Idea, Action, Risk       | kind (that is a tab's)      |
-| **item store** | Every item of one document, stored apart from its tabs                  | backlog, database           |
+| **item store** | Every item of one project, stored apart from its tabs                  | backlog, database           |
 | **Plan board** | The element that draws items as columns of cards from a stored set-up   | Kanban element, board tab   |
 | **card**       | How an item is drawn, on a Plan board or alone as a Plan card           | item (the data is the item) |
 
@@ -94,7 +88,7 @@ The words for the diagram-building elements ([The card](../009-elements/card.md)
 
 ## Agents
 
-The words for a program working on documents for a person ([Agents](../024-agents/README.md)).
+The words for a program working on projects for a person ([Agents](../024-agents/README.md)).
 
 | Term               | Means                                                                                                   | Never called                            |
 | ------------------ | ------------------------------------------------------------------------------------------------------- | --------------------------------------- |
@@ -104,9 +98,8 @@ The words for a program working on documents for a person ([Agents](../024-agent
 | **view**           | A read-only text projection of a tab (outline, graph, layout, ...)                                      | mode, format                            |
 | **ref**            | The short name a view prints for an element: its id, or its shortest unique id prefix                   | handle (that is a mention), alias       |
 | **selector**       | An expression matching one or more elements (a ref, `type:sticky`, `in:f1`)                             | query, filter (that is the Explorer's)  |
-| **lint finding**   | One problem the diagram lint reports (`box-overlap`), with the refs involved                            | warning, issue                          |
 | **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
-| **ownership**      | The owner's powers over a document (sharing, delete, move), apart from any level                        | admin, edit level                       |
+| **ownership**      | The owner's powers over a project (sharing, delete, move), apart from any level                        | admin, edit level                       |
 
 - **Participant** is the access level; a person's name and colour (the `participants` table) are their
   **display identity**.
@@ -123,7 +116,7 @@ The words for choosing a colour ([Colour picker](../004-interface-design/colour-
 | **standard colours**     | The ten named colours every picker offers (Ink or White, Grey, Red ... Pink)                      | stock colours (outside Draw), presets |
 | **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills)   | shade, variant, a drawing finish      |
 | **theme colours**        | The active theme's own colours, offered on the canvas only                                        | presets                               |
-| **Custom colours**       | The colours picked with + in the document, kept with its tabs                                     | custom swatches, recent colours       |
+| **Custom colours**       | The colours picked with + in the project, kept with its tabs                                     | custom swatches, recent colours       |
 | **custom colour editor** | The square, hue, hex and eyedropper panel that **Add a custom colour** (four coloured dots) opens | colour wheel, native picker           |
 | **skin**                 | Where and how a picker opens: inline, field, swatch button                                        | variant, mode                         |
 
@@ -165,15 +158,15 @@ The words for the editor framed beside code ([Workbench embeds](../013-workspace
 
 ## This Browser
 
-**This Browser** is the one name for a document saved only in this browser ([Offline Mode](../006-document/offline-mode.md)):
-the place it lives (the Explorer's This Browser section, beside My Documents and the teams), the pill and badge that
-mark it, and where a new guest's documents start. A document is **in This Browser**; it is never "Local Only",
+**This Browser** is the one name for a project saved only in this browser ([Offline Mode](../006-project/offline-mode.md)):
+the place it lives (the Explorer's This Browser section, beside My Projects and the teams), the pill and badge that
+mark it, and where a new guest's projects start. A project is **in This Browser**; it is never "Local Only",
 "Local Browser" or "offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline`.
 
 ## Names in a sentence
 
 Copy that builds a phrase around a name (a field, a note, a template, a chart type, an element type in
 an agent's error) takes its article from the name: `withArticle` / `indefiniteArticle` in `@liveplanner/items`
-(re-exported by `@liveplanner/document` and `@liveplanner/ui`). A vowel sound takes "an" ("Add an infographic
+(re-exported by `@liveplanner/project` and `@liveplanner/ui`). A vowel sound takes "an" ("Add an infographic
 page", "Create an Org Chart", "is not an Estimate option"), and a vowel said "you" keeps "a" ("a User Persona", "a
 UML Class"). A fixed "a" before an interpolated name is how "Create a Org Chart" reached the marketing site.

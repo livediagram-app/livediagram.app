@@ -5,7 +5,7 @@ import {
   type AlignmentGuide,
   type ArrowElement,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { ARROW_SNAP_REVEAL_PX, ARROW_SNAP_THRESHOLD_PX } from '@/lib/canvas';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';

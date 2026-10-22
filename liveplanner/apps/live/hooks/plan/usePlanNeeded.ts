@@ -1,11 +1,11 @@
 'use client';
 
-// Whether a document needs its items (docs/specs/026-plan/plan-mode.md "Cost"): a document with no Plan
+// Whether a project needs its items (docs/specs/026-plan/plan-mode.md "Cost"): a project with no Plan
 // board, card, view or Sheet (whose card functions read them, docs/specs/029-sheets/formulas.md) on the open tab and no tab opening in Plan, never fetches them, so a plain diagram
 // pays nothing for Plan. Once needed it stays needed for the session (latched), so moving to a tab
 // without Plan content keeps the items it already holds.
 import { useState } from 'react';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 
 export function hasPlanContent(elements: readonly Element[]): boolean {
   return elements.some(
@@ -20,7 +20,7 @@ export function hasPlanContent(elements: readonly Element[]): boolean {
 
 export function usePlanNeeded(
   elements: readonly Element[],
-  // The open tab opens in Plan: its Cards and Trash panels list the document's cards even before it has
+  // The open tab opens in Plan: its Cards and Trash panels list the project's cards even before it has
   // a board (stray cards are what they are for).
   planTab = false,
 ): boolean {

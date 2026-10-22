@@ -1,10 +1,10 @@
 # Agent changesets
 
 **Status: built.** Closed liveplanner-app/liveplanner.app#343. Operations are the full
-[edit operations](edit-operations.md), in the line form or JSON, plus `replace`. Every answer carries the [lint](diagram-lint.md) of the tab it leaves; the
+[edit operations](edit-operations.md), in the line form or JSON, plus `replace`. The
 [agent presence](agent-presence.md) refresh is not built yet.
 
-Every agent write to a tab is a **changeset**: one atomic write, applied by the api, sequenced by the document's
+Every agent write to a tab is a **changeset**: one atomic write, applied by the api, sequenced by the project's
 room, shown live to everyone with the tab open, credited to the person whose token wrote it, and revertable as one
 unit. The whole-tab `PUT` stays the editor's own autosave path and nothing else's (see
 [Whole-tab saves and tab renames](#whole-tab-saves-and-tab-renames)).
@@ -16,30 +16,30 @@ persistence boundary"). That write never reached the room, so:
 
 - **A person never saw the agent's edit** until they reloaded, and their next autosave of the tab, built from a copy
   without it, erased it from D1.
-- **An agent erased a person's edits.** The MCP's `update_document` read the tab, waited while the model thought,
+- **An agent erased a person's edits.** The MCP's `update_project` read the tab, waited while the model thought,
   then wrote the whole tab back over anything saved in between.
-- **A personal document had no room**, on the premise that it has one writer. An agent is a second writer.
+- **A personal project had no room**, on the premise that it has one writer. An agent is a second writer.
 
 ## What a changeset is
 
 | Field        | Meaning                                                                                                                                                                                                    |
 | ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `id`         | `cs_` and 10 base32 characters, minted by the api                                                                                                                                                          |
-| `documentId` | The document                                                                                                                                                                                               |
+| `projectId` | The project                                                                                                                                                                                               |
 | `tabId`      | The one tab it writes; a changeset never spans tabs                                                                                                                                                        |
 | `agent`      | The token id and the owner id; absent when a signed-in session writes                                                                                                                                      |
 | `summary`    | Optional, up to 80 characters, written by the agent ("add payment service"); shown in the toast and the history                                                                                            |
 | `body`       | Either ordered [edit operations](edit-operations.md), or one `replace` (exactly one of a template, a dashboard, a new Form tab's `form`, or elements, which may make a new Board or Sheet tab with `kind`) |
 | `base`       | Optional: the tab revision the agent read, and a fingerprint of every element the operations target                                                                                                        |
-| `results`    | The result lines it printed, kept for `GET /api/documents/:id/changesets/:changesetId` and `changeset show`                                                                                                |
+| `results`    | The result lines it printed, kept for `GET /api/projects/:id/changesets/:changesetId` and `changeset show`                                                                                                |
 | `rev`        | The tab revision the changeset produced                                                                                                                                                                    |
 | `elementOps` | The `ElementOp`s it compiled to (`add`, `update`, `remove`, `reorder`), the unit the room and editors apply                                                                                                |
 | `inverse`    | The element ops that undo it, computed from the before-images                                                                                                                                              |
 
 - **Atomic.** Every operation lands or none does. A rejected changeset writes nothing and says why.
-- **One tab, one changeset.** A new tab is a changeset that creates it (`replace` on a tab id the document lacks).
+- **One tab, one changeset.** A new tab is a changeset that creates it (`replace` on a tab id the project lacks).
   A `replace`'s name names the tab it creates; on an existing tab it is ignored.
-- **A new document** is not a changeset: nothing else can hold it yet. `POST /api/documents` creates it, compiling
+- **A new project** is not a changeset: nothing else can hold it yet. `POST /api/projects` creates it, compiling
   template tabs with the same engine.
 - **A fingerprint** covers the element without its live multi-writer fields (`LIVE_ELEMENT_FIELDS`: comments,
   answers, ideas, ticks and the like), which people change through deltas that never conflict with an agent's
@@ -53,7 +53,7 @@ says what it has seen.
 
 ## The write path
 
-1. **Submit.** `POST /api/documents/:id/tabs/:tabId/changesets` with the body and optional base. Any identity with
+1. **Submit.** `POST /api/projects/:id/tabs/:tabId/changesets` with the body and optional base. Any identity with
    edit access to the tab may submit; only a token makes it an agent changeset. `?dryRun=1` runs steps 2 to 4 and
    returns the plan without writing.
 2. **Check the base** (see [Conflicts](#conflicts)).
@@ -62,8 +62,8 @@ says what it has seen.
    out what they touched ([Edit operations](edit-operations.md)), and validates the result with `isValidTab`.
 5. **Write** the tab with compare-and-swap on `rev`. A lost race repeats steps 2 to 5 once, then answers `409`.
 6. **Record** the changeset in `agent_changesets` (D1) with its element ops and inverse.
-7. **Relay** it to the submitting document's room as one sequenced `changeset` op. A relay failure is logged and
-   never fails the write: D1 already holds it, and step 8 keeps it there. A tab linked into other documents is not
+7. **Relay** it to the submitting project's room as one sequenced `changeset` op. A relay failure is logged and
+   never fails the write: D1 already holds it, and step 8 keeps it there. A tab linked into other projects is not
    relayed to their rooms; step 8 keeps it there too.
 8. **Merge on save.** An editor's tab `PUT` carries `X-Changeset-Seen: <rev>`, the highest changeset revision it has
    applied. The api re-applies every recorded changeset after that revision to the incoming tab before writing,
@@ -89,12 +89,12 @@ editor that was offline when it landed.
   whole multi-selection), whatever their role, and which of those sessions are the agent owner's own (recognised by
   the [person tag](agent-presence.md)).
 
-## Rooms for personal documents
+## Rooms for personal projects
 
-An editor connects to its document's room for every server-stored document it has open, personal ones included.
-A document in Offline Mode or This Browser has no room and no agent can reach it. On a personal document that is
+An editor connects to its project's room for every server-stored project it has open, personal ones included.
+A project in Offline Mode or This Browser has no room and no agent can reach it. On a personal project that is
 neither shared nor in a team the editor sends only its selection and its tab focus; cursors and
-drag previews stay for documents with an audience.
+drag previews stay for projects with an audience.
 
 ## Whole-tab saves and tab renames
 
@@ -103,11 +103,11 @@ drag previews stay for documents with an audience.
 - A [workbench session](../013-workspace/workbench-embeds.md) is a person's editor, not a token: its saves are
   whole-tab `PUT`s, it writes no agent changesets, its selection holds as a person's does, and its Undo on a toast
   is a person's revert.
-- A tab is renamed with `PUT /api/documents/:id/tabs/:tabId/name { name }`, which advances the tab's `rev` and is
-  relayed to the room as the `tab-meta` an editor's own rename sends. (A `document-meta` keeps every open editor's
+- A tab is renamed with `PUT /api/projects/:id/tabs/:tabId/name { name }`, which advances the tab's `rev` and is
+  relayed to the room as the `tab-meta` an editor's own rename sends. (A `project-meta` keeps every open editor's
   tab names, so a peer's stale tab list can never revert a rename.) The CLI's and the MCP's tab renames use it.
-- A document renamed with an API token (`PUT /api/documents/:id { name }`) is relayed to the room as the
-  `document-meta` an editor's own rename sends, with the tabs in order: open editors show the new name at once, and
+- A project renamed with an API token (`PUT /api/projects/:id { name }`) is relayed to the room as the
+  `project-meta` an editor's own rename sends, with the tabs in order: open editors show the new name at once, and
   their next tab reorder carries it rather than writing the old name back. An editor's rename is not relayed again;
   the editor sends it to the room itself.
 
@@ -148,7 +148,7 @@ left a new board or Sheet on a tab not in Plan was refused `422 invalid_value`.
 
 ## Revert
 
-- `POST /api/documents/:id/changesets/:changesetId/revert` applies the changeset's inverse as a new changeset by the
+- `POST /api/projects/:id/changesets/:changesetId/revert` applies the changeset's inverse as a new changeset by the
   reverter. An element changed since the changeset (its fingerprint differs from the after-image) is left as it is
   and listed as `kept`; the rest are reverted.
 - The editor's toast offers **Undo**, which is this revert. Personal Ctrl+Z never reverts an agent's changeset
@@ -157,14 +157,14 @@ left a new board or Sheet on a tab not in Plan was refused `422 invalid_value`.
 - Anyone with edit access to the tab may revert.
 - Reverting a changeset that created a tab empties the tab and keeps it. Reverting one twice keeps every element
   (each changed since) and writes nothing.
-- The history is `GET /api/documents/:id/changesets`, one changeset's `GET`, and the CLI's `changeset ls` and
+- The history is `GET /api/projects/:id/changesets`, one changeset's `GET`, and the CLI's `changeset ls` and
   `changeset show`; the editor has no history surface.
 
 ## In the editor
 
 - The element ops apply as a peer's would and fold into the save baseline, so the next autosave carries them. The
   revision a save sends as `X-Changeset-Seen` is the one its own snapshot holds, never one that arrived after it.
-- An editor joining its room reads the document's newest changesets and re-reads, in place, any open tab it is
+- An editor joining its room reads the project's newest changesets and re-reads, in place, any open tab it is
   behind on: a changeset relayed before it joined (a first join replays no log), or one whose relay never arrived,
   reaches the screen without a reload. What it brings is not outlined or toasted.
 - Each element the changeset touched shows an outline in the owner's colour for `CHANGESET_REVEAL_MS`; with reduced
@@ -180,22 +180,22 @@ left a new board or Sheet on a tab not in Plan was refused `422 invalid_value`.
 
 ## The MCP server
 
-`update_document` and `add_tab` submit changesets instead of tab `PUT`s ([MCP server](../015-api/mcp-server.md)).
-`update_document` in `ops` mode sends its ops as edit operations with a base, so the read-to-write gap no longer
+`update_project` and `add_tab` submit changesets instead of tab `PUT`s ([MCP server](../015-api/mcp-server.md)).
+`update_project` in `ops` mode sends its ops as edit operations with a base, so the read-to-write gap no longer
 erases anything:
 
-- It takes an optional `rev`, the revision `read_document` returned; the fingerprints come from the tool's own read
-  at call time. A person's change between `read_document` and the call is overwritten only on the fields the ops
+- It takes an optional `rev`, the revision `read_project` returned; the fingerprints come from the tool's own read
+  at call time. A person's change between `read_project` and the call is overwritten only on the fields the ops
   set.
-- `remove` is the edit operation `rm`: arrows pinned to the element go with it and are listed.
+- `remove` is the edit operation `rm`.
 - Coercing shapes is the engine's, for every front door.
-- `rename_document` with a tab renames through the tab name route.
+- `rename_project` with a tab renames through the tab name route.
 
 ## Limits
 
 | Constant                      | Value      | Why                                                                      |
 | ----------------------------- | ---------- | ------------------------------------------------------------------------ |
-| `CHANGESET_MAX_OPERATIONS`    | 500        | A full tab rebuild of a large diagram fits; a runaway loop does not      |
+| `CHANGESET_MAX_OPERATIONS`    | 500        | A full tab rebuild of a large tab fits; a runaway loop does not          |
 | `CHANGESET_RELAY_MAX_BYTES`   | 192 KiB    | Under the room's 256 KiB frame cap with room for metadata                |
 | `CHANGESET_MERGE_WINDOW`      | 10 minutes | Covers a pre-spec bundle until the new-version prompt reloads it         |
 | `CHANGESET_RETENTION_DAYS`    | 30         | Matches the Trash: an agent's work can be undone as long as a delete can |
@@ -210,7 +210,7 @@ Changesets count against the token's write rate limit ([Public API and API token
 ## Observability and telemetry
 
 - Logs: `[changeset] applied`, `[changeset] conflict`, `[changeset] held`, `[changeset] relay-failed`,
-  `[changeset] merged-on-save`, `[changeset] superseded-on-save`, `[changeset] reverted`, each with the document,
+  `[changeset] merged-on-save`, `[changeset] superseded-on-save`, `[changeset] reverted`, each with the project,
   tab, changeset id and counts, never content.
 - Telemetry: category `Agent`, actions `Applied`, `Conflicted`, `Held`, `Reverted`, type the front door (`Mcp`,
   `Cli`, `Api`, or `Editor` for the toast's Undo) ([Telemetry](../017-telemetry/telemetry.md)). The toast's Show

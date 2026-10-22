@@ -1,7 +1,7 @@
 'use client';
 
 // Renders the open item panel or the type editor (docs/specs/026-plan/plan-board.md) beside the canvas,
-// from the editor's Plan slice: the document's boards give the status picker its names.
+// from the editor's Plan slice: the project's boards give the status picker its names.
 import { useMemo } from 'react';
 import {
   duplicateItemType,
@@ -25,7 +25,7 @@ import { track } from '@/lib/telemetry';
 
 export function PlanSheetsHost({ plan }: { plan: PlanSlice }) {
   const ctx = plan.context;
-  // Every column of the document, the open tab's first (docs/specs/026-plan/plan-templates.md "Hand-offs").
+  // Every column of the project, the open tab's first (docs/specs/026-plan/plan-templates.md "Hand-offs").
   const statuses = useMemo(
     () => [...ctx.statusNames].map(([status, name]) => ({ status, name })),
     [ctx.statusNames],

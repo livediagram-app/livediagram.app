@@ -8,7 +8,7 @@ import {
   THIS_BROWSER_TONE,
 } from '@/components/primitives/ThisBrowserPill';
 
-// A document's visibility states (docs/specs/006-document/offline-mode.md): their
+// A project's visibility states (docs/specs/006-project/offline-mode.md): their
 // words and tones, shared by the pill beside the title (SharedBadge) and its legend (VisibilityLegend).
 
 export type ShareState = 'private' | 'shared' | 'team' | 'offline';
@@ -41,7 +41,7 @@ export const SHARE_STATE_META: Record<
       'bg-brand-50 px-2 text-[10px] font-semibold text-brand-700 ring-1 ring-brand-200 dark:bg-brand-500/10 dark:text-brand-300 dark:ring-brand-500/30',
     dot: 'text-brand-700 dark:text-brand-400',
   },
-  // Offline Mode (docs/specs/006-document/offline-mode.md): saved only in this browser, never on the
+  // Offline Mode (docs/specs/006-project/offline-mode.md): saved only in this browser, never on the
   // server. The This Browser pill's words, sentence and amber tone (text 4.5:1 on its fill, ring 3:1).
   offline: {
     label: THIS_BROWSER_LABEL,

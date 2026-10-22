@@ -1,5 +1,5 @@
 // The models behind the Due and Start Calendars, Workload by Person, Status Breakdown and Priority by Status
-// (docs/specs/026-plan/plan-views.md "Visualisations"), each over the document's live cards. Pure.
+// (docs/specs/026-plan/plan-views.md "Visualisations"), each over the project's live cards. Pure.
 import type { Item, ItemPerson } from './item';
 import { PRIORITIES, isPriority, type Priority } from './fields';
 import { laneGroups, namedStatus, statusLabel, type SwimlaneBy } from './board';
@@ -84,7 +84,7 @@ export function breakdownModel(
   grouping: { by: SwimlaneBy; field?: string | undefined },
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   statusNames?: ReadonlyMap<string, string>,
-  // Every card of the document, so a row per linked card (a Card field grouping) names a card of a type the chart
+  // Every card of the project, so a row per linked card (a Card field grouping) names a card of a type the chart
   // does not count (a Candidate's Role); the counted cards alone when absent.
   everyCard?: ReadonlyMap<string, Item>,
 ): { rows: BreakdownRow[]; max: number; total: number } {

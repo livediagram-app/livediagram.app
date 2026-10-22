@@ -312,45 +312,6 @@ export function Arrow({
   );
 }
 
-/** Eight square selection handles around a box, with a dashed marquee. */
-export function SelectionBox({ x, y, w, h }: { x: number; y: number; w: number; h: number }) {
-  const pts: [number, number][] = [
-    [x, y],
-    [x + w / 2, y],
-    [x + w, y],
-    [x + w, y + h / 2],
-    [x + w, y + h],
-    [x + w / 2, y + h],
-    [x, y + h],
-    [x, y + h / 2],
-  ];
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={w}
-        height={h}
-        rx={3}
-        className="fill-none stroke-brand-500"
-        strokeWidth={1.5}
-        strokeDasharray="4 3"
-      />
-      {pts.map(([px, py], i) => (
-        <rect
-          key={i}
-          x={px - 3.5}
-          y={py - 3.5}
-          width={7}
-          height={7}
-          className="fill-white stroke-brand-500"
-          strokeWidth={1.5}
-        />
-      ))}
-    </g>
-  );
-}
-
 /** A live-collaboration cursor with a coloured name tag. */
 export function Cursor({
   x,
@@ -682,43 +643,6 @@ export function Menu({
           </g>
         );
       })}
-    </g>
-  );
-}
-
-/** A small square tool/icon tile (palette tile, toolbar button). */
-export function Tile({
-  x,
-  y,
-  size = 26,
-  active = false,
-  children,
-  label,
-}: {
-  x: number;
-  y: number;
-  size?: number;
-  active?: boolean;
-  children?: ReactNode;
-  label?: string;
-}) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={size}
-        height={size}
-        rx={6}
-        className={active ? 'fill-brand-500 stroke-brand-600' : 'fill-slate-50 stroke-slate-200'}
-        strokeWidth={1.5}
-      />
-      {children && <g transform={`translate(${x + size / 2} ${y + size / 2})`}>{children}</g>}
-      {label && (
-        <Label x={x + size / 2} y={y + size + 8} anchor="middle" size={8} tone="muted">
-          {label}
-        </Label>
-      )}
     </g>
   );
 }

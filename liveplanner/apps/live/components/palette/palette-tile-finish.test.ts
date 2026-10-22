@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { paletteFinishClass, tileEnterAnimation } from './palette-tile-finish';
-import { PALETTE_TILES } from './palette-tile-defs';
 
 // Palette tiles in the tab's finish (docs/specs/008-canvas/finish.md "Where it shows").
 describe('paletteFinishClass', () => {
@@ -10,33 +9,6 @@ describe('paletteFinishClass', () => {
     expect(paletteFinishClass('marker')).toBe('palette-finish-marker');
     expect(paletteFinishClass('flexible')).toBe('');
     expect(paletteFinishClass(undefined)).toBe('');
-  });
-
-  it('draws every built-in tile in the finish', () => {
-    for (const tile of PALETTE_TILES) {
-      expect(paletteFinishClass('sketch', tile.action), tile.id).toBe('palette-finish-sketch');
-    }
-  });
-
-  it('wobbles full-colour art under Sketch but leaves its weight under Professional', () => {
-    for (const action of [
-      { type: 'sticker', stickerId: 'x' },
-      { type: 'tech-icon', iconId: 'x' },
-    ] as const) {
-      expect(paletteFinishClass('sketch', action as never)).toBe('palette-finish-sketch');
-      expect(paletteFinishClass('professional', action as never)).toBe('');
-    }
-    for (const action of [
-      { type: 'sticker', stickerId: 'x' },
-      { type: 'tech-icon', iconId: 'x' },
-    ] as const)
-      expect(paletteFinishClass('marker', action as never)).toBe('');
-    expect(paletteFinishClass('marker', { type: 'icon', iconId: 'x' } as never)).toBe(
-      'palette-finish-marker',
-    );
-    expect(paletteFinishClass('professional', { type: 'icon', iconId: 'x' } as never)).toBe(
-      'palette-finish-professional',
-    );
   });
 });
 

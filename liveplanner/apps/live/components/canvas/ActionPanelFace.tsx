@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import { elementActions, isClosedAction, type ShapeElement } from '@liveplanner/document';
+import { elementActions, isClosedAction, type ShapeElement } from '@liveplanner/project';
 
 import { CollabPanel } from '@/components/canvas/collab/collab-chrome';
 import { CollabDoneChip } from '@/components/canvas/collab/CollabDoneChip';
@@ -59,7 +59,7 @@ export function ActionPanelFace({
   onEdit?: (actionId: string) => void;
   onComplete?: (actionId: string) => void;
   onReopen?: (actionId: string) => void;
-  // The document's Actions board (docs/specs/026-plan/linked-boards.md "On the canvas"): the header's chip opens it.
+  // The project's Actions board (docs/specs/026-plan/linked-boards.md "On the canvas"): the header's chip opens it.
   onOpenBoard?: () => void;
 }) {
   const actions = elementActions(element);

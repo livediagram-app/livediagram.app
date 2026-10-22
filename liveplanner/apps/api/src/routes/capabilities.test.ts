@@ -13,21 +13,6 @@ async function capabilities(env: Partial<Env>) {
   return await res.json<Record<string, unknown>>();
 }
 
-describe('aiEnabled (docs/specs/007-editor/ai-assistance.md)', () => {
-  it('is off with no model key', async () => {
-    expect((await capabilities({})).aiEnabled).toBe(false);
-  });
-
-  it('is on with one key', async () => {
-    expect((await capabilities({ GOOGLE_AI_STUDIO_API_KEY: 'g' })).aiEnabled).toBe(true);
-  });
-
-  it('stays on with both named keys: they split the features, they do not cancel out', async () => {
-    const both = { GOOGLE_AI_STUDIO_API_KEY: 'g', OPENAI_API_KEY: 'o' };
-    expect((await capabilities(both)).aiEnabled).toBe(true);
-  });
-});
-
 describe('the route', () => {
   it('is only GET', () => {
     const res = handleCapabilities(
@@ -45,12 +30,12 @@ describe('the route', () => {
 });
 
 describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")', () => {
-  it('names the api base, sign-in, the document format, and no issuer or floor by default', async () => {
+  it('names the api base, sign-in, the project format, and no issuer or floor by default', async () => {
     const caps = await capabilities({});
     expect(caps).toMatchObject({
       apiBase: expect.stringMatching(/\/api$/),
       authEnabled: false,
-      documentFormat: 2,
+      projectFormat: 2,
     });
     expect(caps).not.toHaveProperty('oauthIssuer');
     expect(caps).not.toHaveProperty('cli');

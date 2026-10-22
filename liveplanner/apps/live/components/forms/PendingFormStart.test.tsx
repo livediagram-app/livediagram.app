@@ -7,7 +7,7 @@ import { PendingFormStart } from './PendingFormStart';
 // A form template's form starts once its tab is open and editable (docs/specs/030-forms/forms.md "Starting a form").
 
 const ctx = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
+vi.mock('@/app/project/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
 
 afterEach(() => {
   cleanup();

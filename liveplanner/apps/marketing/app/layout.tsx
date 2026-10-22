@@ -127,7 +127,7 @@ const JSON_LD = {
 };
 
 // The cross-page transition opt-in (page-motion.css, docs/specs/019-marketing/marketing-site.md), inline in the
-// <head>. The browser only runs a cross-document view transition if the NEW
+// <head>. The browser only runs a cross-project view transition if the NEW
 // page has opted in by its first paint; from the bundled stylesheet the rule
 // sometimes landed after that, the transition was skipped, and the old page
 // logged "Transition was skipped". Inline, it is parsed before anything draws.

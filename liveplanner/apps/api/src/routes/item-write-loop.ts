@@ -35,7 +35,7 @@ async function withLanded(
 export async function writeItemsWithRetry<T extends { id: string }>(
   ctx: RouteContext,
   caller: ItemCaller,
-  documentId: string,
+  projectId: string,
   wanted: T[],
   build: BuildItems<T>,
 ): Promise<{ done: Map<string, Item>; rev: number } | Response> {
@@ -44,23 +44,23 @@ export async function writeItemsWithRetry<T extends { id: string }>(
   let rev = -1;
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
     const ids = [...new Set(pending.map((p) => p.id))];
-    const stored = new Map((await readItems(ctx.env, documentId, ids)).map((i) => [i.id, i]));
+    const stored = new Map((await readItems(ctx.env, projectId, ids)).map((i) => [i.id, i]));
     pending = pending.filter((p) => stored.has(p.id));
     const nexts = await build(pending, stored, { attempt, missing: ids.length - stored.size });
     if (nexts instanceof Response) return withLanded(nexts, caller, done, rev);
     if (nexts.size === 0) break;
     const written = await updateItemsAtRev(
       ctx.env,
-      documentId,
+      projectId,
       [...nexts].map(([id, next]) => ({ next, expectedRev: stored.get(id)!.rev })),
     );
     rev = written.rev;
     const landed = [...nexts.values()].filter((i) => written.landed.has(i.id));
-    if (landed.length) relay(ctx, documentId, landed, [], rev);
+    if (landed.length) relay(ctx, projectId, landed, [], rev);
     for (const item of landed) done.set(item.id, item);
     pending = pending.filter((p) => !written.landed.has(p.id));
     if (pending.length === 0) break;
-    console.info('[items] items.write.retry', { documentId, attempt, left: pending.length });
+    console.info('[items] items.write.retry', { projectId, attempt, left: pending.length });
     if (attempt < ITEM_WRITE_RETRIES) await itemRetryPause(attempt);
   }
   if (pending.length) return withLanded(itemBusy(), caller, done, rev);

@@ -36,7 +36,7 @@ describe('LensAnnouncer', () => {
     act(() => {
       vi.advanceTimersByTime(1);
     });
-    expect(screen.getByRole('status').textContent).toBe('2 of 9 documents');
+    expect(screen.getByRole('status').textContent).toBe('2 of 9 projects');
   });
 
   it('says when nothing matches', () => {
@@ -45,7 +45,7 @@ describe('LensAnnouncer', () => {
     act(() => {
       vi.advanceTimersByTime(LENS_SETTLE_MS);
     });
-    expect(screen.getByRole('status').textContent).toBe('No documents match');
+    expect(screen.getByRole('status').textContent).toBe('No projects match');
   });
 });
 
@@ -62,7 +62,7 @@ describe('FilteredEmpty', () => {
 });
 
 describe('LoadFailed', () => {
-  it('says the documents could not load and offers another try', () => {
+  it('says the projects could not load and offers another try', () => {
     const onRetry = vi.fn();
     render(<LoadFailed onRetry={onRetry} />);
     expect(screen.getByText(LOAD_FAILED_TITLE)).toBeTruthy();

@@ -3,7 +3,7 @@
 // Home's hero (docs/specs/013-workspace/explorer-home.md "The hero"; blueprint
 // docs/specs/013-workspace/blueprints/explorer-home-view.md "Presentation and UX"): the full-width band under the
 // Explorer header on Home, its page header. Status pills, the greeting, the lead, the lens field drawn large with
-// New Document inside it, and the fanned previews of a Board, a Sheet, a Dashboard and a Form. Reads only what the
+// New Project inside it, and the fanned previews of a Board, a Sheet, a Dashboard and a Form. Reads only what the
 // shell already holds; the previews are static art, the same for everyone.
 
 import { lazy, Suspense } from 'react';
@@ -40,30 +40,30 @@ const HeroFeatureFan = lazy(() =>
 
 /** `active` while Home is the page; a hero folding away draws its field still, so the page holds one live field. */
 export function HomeHero({ active = true }: { active?: boolean }) {
-  const { documents, loading, failedReads, activity, go, setMobileNavOpen, lens, lensResult } =
+  const { projects, loading, failedReads, activity, go, setMobileNavOpen, lens, lensResult } =
     useExplorer();
   const pills = heroPills({
     // A list that failed to load has no count to tell.
-    documents: loading || failedReads.documents ? undefined : documents.length,
+    projects: loading || failedReads.projects ? undefined : projects.length,
     inbox: inboxBadge(activity),
   });
   const { heroFirstRun: firstRun, signedIn } = useFirstRun();
   const now = useNow(false);
   const greeting = heroGreeting(new Date(now).getHours());
 
-  const newDocument = (
+  const newProject = (
     <button
       type="button"
-      aria-label={HERO_COPY.newDocument}
+      aria-label={HERO_COPY.newProject}
       onClick={() => {
-        track('Home', 'Selected', 'Hero.NewDocument');
+        track('Home', 'Selected', 'Hero.NewProject');
         assignAppLocation('/new');
       }}
       className={`optical-edges flex h-11 shrink-0 items-center gap-2 rounded-xl bg-brand-700 px-[18px] text-[15px] font-semibold text-white transition hover:bg-brand-800 dark:bg-brand-600 dark:hover:bg-brand-700 ${FOCUS_RING}`}
     >
       <PlusIcon />
       {/* The label folds to the plus on a phone; the button keeps its name. */}
-      <span className="hidden sm:text-optical-line">{HERO_COPY.newDocument}</span>
+      <span className="hidden sm:text-optical-line">{HERO_COPY.newProject}</span>
     </button>
   );
 
@@ -71,11 +71,11 @@ export function HomeHero({ active = true }: { active?: boolean }) {
     <section
       aria-labelledby={HEADING_ID}
       data-home-hero=""
-      className="relative overflow-hidden border-b border-slate-200 bg-sky-50/70 bg-[radial-gradient(#cfe0f1_1px,transparent_1px)] bg-[length:22px_22px] dark:border-slate-800 dark:bg-slate-900 dark:bg-[radial-gradient(#1c2752_1px,transparent_1px)]"
+      className="relative overflow-hidden border-b border-slate-200 bg-brand-50/70 bg-[radial-gradient(#ddd6fe_1px,transparent_1px)] bg-[length:22px_22px] dark:border-slate-800 dark:bg-slate-900 dark:bg-[radial-gradient(#2e1f52_1px,transparent_1px)]"
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[-260px] hidden h-[520px] w-[900px] -translate-x-1/3 rounded-full bg-[radial-gradient(closest-side,rgba(37,99,235,0.30),transparent)] dark:block"
+        className="pointer-events-none absolute left-1/2 top-[-260px] hidden h-[520px] w-[900px] -translate-x-1/3 rounded-full bg-[radial-gradient(closest-side,rgba(124,58,237,0.30),transparent)] dark:block"
       />
       <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-10 px-4 pb-12 pt-6 sm:px-6 lg:pb-14">
         <div className="flex min-w-0 flex-[999_1_32rem] flex-col gap-5">
@@ -111,7 +111,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
             ) : null}
             {(firstRun ? [] : pills).map((pill) => {
               const view =
-                pill.id === 'documents' ? ({ kind: 'all' } as const) : ({ kind: 'inbox' } as const);
+                pill.id === 'projects' ? ({ kind: 'all' } as const) : ({ kind: 'inbox' } as const);
               return (
                 <InAppLink
                   key={pill.id}
@@ -121,7 +121,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
                     track(
                       'Home',
                       'Selected',
-                      pill.id === 'documents' ? 'Hero.Documents' : 'Hero.Inbox',
+                      pill.id === 'projects' ? 'Hero.Projects' : 'Hero.Inbox',
                     )
                   }
                   className={`${PILL} transition hover:border-slate-300 dark:hover:border-slate-600 ${FOCUS_RING}`}
@@ -153,7 +153,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
           </p>
           <div className="max-w-2xl">
             {!active ? (
-              <LensFieldStill size="hero" trailing={newDocument} />
+              <LensFieldStill size="hero" trailing={newProject} />
             ) : firstRun ? (
               <WelcomeSearch />
             ) : (
@@ -161,7 +161,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
                 lens={lens}
                 subjects={lensResult.subjects}
                 size="hero"
-                trailing={newDocument}
+                trailing={newProject}
               />
             )}
           </div>

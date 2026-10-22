@@ -7,8 +7,8 @@ vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 import { ShareOfflineGate } from './ShareOfflineGate';
 
-// docs/specs/006-document/offline-mode.md "Sharing a document in This Browser": Share says the document is
-// offline and offers Sync Document; nothing syncs until it is pressed, nor before the reader is known;
+// docs/specs/006-project/offline-mode.md "Sharing a project in This Browser": Share says the project is
+// offline and offers Sync Project; nothing syncs until it is pressed, nor before the reader is known;
 // a failure leaves the button to try again.
 afterEach(() => {
   cleanup();
@@ -16,19 +16,19 @@ afterEach(() => {
 });
 
 describe('ShareOfflineGate', () => {
-  it('says the document is offline and syncs nothing by itself', async () => {
+  it('says the project is offline and syncs nothing by itself', async () => {
     const sync = vi.fn(async () => {});
     render(<ShareOfflineGate onSyncToCloud={sync} onClose={vi.fn()} />);
     await act(async () => {});
-    expect(screen.getByText('This Document Is in This Browser')).toBeTruthy();
+    expect(screen.getByText('This Project Is in This Browser')).toBeTruthy();
     expect(sync).not.toHaveBeenCalled();
   });
 
-  it('syncs on Sync Document, showing progress, and confirms', async () => {
+  it('syncs on Sync Project, showing progress, and confirms', async () => {
     let finish!: () => void;
     const sync = vi.fn(() => new Promise<void>((r) => (finish = r)));
     render(<ShareOfflineGate onSyncToCloud={sync} onClose={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sync Document' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sync Project' }));
     expect(sync).toHaveBeenCalledOnce();
     expect(screen.getByRole('button', { name: /Syncing/ }).getAttribute('aria-busy')).toBe('true');
     // Cancel waits on the sync too.
@@ -42,7 +42,7 @@ describe('ShareOfflineGate', () => {
   it('keeps the button shut until the reader is known', () => {
     const sync = vi.fn();
     render(<ShareOfflineGate onSyncToCloud={sync} ready={false} onClose={vi.fn()} />);
-    const button = screen.getByRole('button', { name: 'Sync Document' }) as HTMLButtonElement;
+    const button = screen.getByRole('button', { name: 'Sync Project' }) as HTMLButtonElement;
     expect(button.disabled).toBe(true);
     fireEvent.click(button);
     expect(sync).not.toHaveBeenCalled();
@@ -53,10 +53,10 @@ describe('ShareOfflineGate', () => {
       throw new Error('offline');
     });
     render(<ShareOfflineGate onSyncToCloud={sync} onClose={vi.fn()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sync Document' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sync Project' }));
     await act(async () => {});
     expect(toast.error).toHaveBeenCalledOnce();
-    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Sync Document' }).disabled).toBe(
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'Sync Project' }).disabled).toBe(
       false,
     );
   });

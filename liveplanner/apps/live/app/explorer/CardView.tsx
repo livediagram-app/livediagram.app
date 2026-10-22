@@ -1,42 +1,42 @@
 'use client';
 
-// Card view for the Explorer page (docs/specs/006-document/document-snapshots.md): the same folders + documents
+// Card view for the Explorer page (docs/specs/006-project/project-snapshots.md): the same folders + projects
 // the ListView shows, as a responsive grid of cards with a large SVG
 // snapshot. Takes the SAME props as ListView so ExplorerPane can swap the
 // two on the view toggle without re-wiring callbacks. Badge + actions
-// menu come from document-row-shared, so list and card can't drift.
+// menu come from project-row-shared, so list and card can't drift.
 
 import Link from 'next/link';
 import {
-  documentEntryPropsFor,
+  projectEntryPropsFor,
   type CardViewProps,
-  type DocumentEntryProps,
+  type ProjectEntryProps,
 } from '@/app/explorer/explorer-view-props';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
+import { ProjectThumbnail } from '@/components/panels/ProjectThumbnail';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { MadeByAiPill, isMadeByAi } from '@/components/primitives/MadeByAiPill';
-import { isInThisBrowser } from '@/lib/document-space';
+import { isInThisBrowser } from '@/lib/project-space';
 import {
-  DocumentEntryMenu,
-  documentDragProps,
-  hrefForDocument,
+  ProjectEntryMenu,
+  projectDragProps,
+  hrefForProject,
   ownerLabelFor,
-} from './document-row-shared';
-import { FavouriteMarker, FolderChip, VisibilityBadge, useIconOnlyBadges } from './document-badges';
+} from './project-row-shared';
+import { FavouriteMarker, FolderChip, VisibilityBadge, useIconOnlyBadges } from './project-badges';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { FolderCard } from './explorer-folder-cards';
 import { CARD_GRID, CARD_PREVIEW as previewArea, CARD_SHELL as cardShell } from '@liveplanner/ui';
 import { FolderPreview } from './FolderPreview';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
-import { DocumentRowTags } from '@/components/tags/DocumentRowTags';
+import { ProjectRowTags } from '@/components/tags/ProjectRowTags';
 
 export function CardView(props: CardViewProps) {
   const {
     folders,
-    documents: liveDocs,
+    projects: liveDocs,
     ownerId,
     onOpenFolder,
     onCommitRenameFolder,
@@ -44,7 +44,7 @@ export function CardView(props: CardViewProps) {
     renamingFolderId,
     folderActions,
     childrenCount,
-    documentsCount,
+    projectsCount,
     folderContents,
     showVisibilityBadge = true,
   } = props;
@@ -55,7 +55,7 @@ export function CardView(props: CardViewProps) {
           key={f.id}
           folder={f}
           renaming={renamingFolderId === f.id}
-          childCount={childrenCount(f.id) + documentsCount(f.id)}
+          childCount={childrenCount(f.id) + projectsCount(f.id)}
           preview={
             folderContents ? (
               <FolderPreview contents={folderContents(f.id)} ownerId={ownerId} />
@@ -68,9 +68,9 @@ export function CardView(props: CardViewProps) {
         />
       ))}
       {liveDocs.map((d) => (
-        <DocumentCard
+        <ProjectCard
           key={d.id}
-          {...documentEntryPropsFor(props, d)}
+          {...projectEntryPropsFor(props, d)}
           showVisibilityBadge={showVisibilityBadge}
         />
       ))}
@@ -78,14 +78,14 @@ export function CardView(props: CardViewProps) {
   );
 }
 
-function DocumentCard(
-  props: DocumentEntryProps & {
+function ProjectCard(
+  props: ProjectEntryProps & {
     // Card-only: the list view shows visibility in its own column.
     showVisibilityBadge: boolean;
   },
 ) {
   const {
-    document: liveDoc,
+    project: liveDoc,
     ownerId,
     showOwner,
     showVisibilityBadge,
@@ -97,12 +97,12 @@ function DocumentCard(
   } = props;
   const menu = useRowMenu({ disabled: renaming });
   const iconOnlyBadges = useIconOnlyBadges();
-  const href = hrefForDocument(liveDoc);
+  const href = hrefForProject(liveDoc);
   const ownerLabel = showOwner ? ownerLabelFor(liveDoc) : null;
   const thumbnail = (
-    <DocumentThumbnail
+    <ProjectThumbnail
       ownerId={ownerId}
-      documentId={liveDoc.id}
+      projectId={liveDoc.id}
       version={liveDoc.savedAt}
       empty={liveDoc.empty}
       shareCode={liveDoc.shared?.shareCode}
@@ -115,9 +115,9 @@ function DocumentCard(
     <div
       className={cardShell}
       onContextMenu={menu.onContextMenu}
-      {...documentDragProps(liveDoc, renaming)}
+      {...projectDragProps(liveDoc, renaming)}
     >
-      {/* Larger snapshot. The whole preview links to the document unless
+      {/* Larger snapshot. The whole preview links to the project unless
           we're renaming (then it's inert so the input keeps focus). */}
       {renaming ? (
         <span className={previewArea}>{thumbnail}</span>
@@ -151,7 +151,7 @@ function DocumentCard(
         </div>
         {/* The reader's tags (docs/specs/013-workspace/tags.md "Where tags show"), a line of their own so the meta
             row below keeps its time. */}
-        <DocumentRowTags documentId={liveDoc.id} line />
+        <ProjectRowTags projectId={liveDoc.id} line />
         {/* Keep every column the list shows: owner, visibility, updated. */}
         {/* One line: the badges keep their size, the time gives way with an
             ellipsis. */}
@@ -159,7 +159,7 @@ function DocumentCard(
           {isInThisBrowser(liveDoc) ? <ThisBrowserPill /> : null}
           {isMadeByAi(liveDoc) ? <MadeByAiPill /> : null}
           {showVisibilityBadge ? (
-            <VisibilityBadge document={liveDoc} iconOnly={iconOnlyBadges} />
+            <VisibilityBadge project={liveDoc} iconOnly={iconOnlyBadges} />
           ) : null}
           {favourite ? <FavouriteMarker /> : null}
           {folderChip ? <FolderChip label={folderChip.label} onOpen={folderChip.onOpen} /> : null}
@@ -174,7 +174,7 @@ function DocumentCard(
         ) : null}
       </div>
       {menu.open ? (
-        <DocumentEntryMenu entry={props} anchor={menu.triggerRef.current} onClose={menu.close} />
+        <ProjectEntryMenu entry={props} anchor={menu.triggerRef.current} onClose={menu.close} />
       ) : null}
     </div>
   );

@@ -16,7 +16,7 @@ It records evidence and recommendations; the spec, once written, decides.
 - **Give several views of one tab, each sized for one question.** `outline` covers structure and wording,
   `layout` covers geometry, `comments` covers open threads, `check` covers problems, and `json` covers everything.
 - **Use short refs that stay stable.** Show the shortest unique id prefix, at least 4 characters, the way git
-  shortens SHAs. Also accept an exact label, and a document name or a pasted liveplanner URL.
+  shortens SHAs. Also accept an exact label, and a project name or a pasted liveplanner URL.
   A full UUID costs 23 tokens. A prefix costs 4.
 - **After every write, print the delta**: `+ e7a1 square "Token cache" @520,140 160x60`. In SWE-agent, showing
   the result after each edit, with guardrails, was the largest single interface win (+7.7 pp).
@@ -26,7 +26,7 @@ It records evidence and recommendations; the spec, once written, decides.
 - **Never prompt when not attached to a terminal.** Support `--dry-run` on every write. Make destructive verbs
   reversible rather than confirm-gated, and add a local undo journal, because the API has no tab history.
 - **Use one registry as the source.** Help, `guide`, `schema` and a shipped `SKILL.md` all come from the same
-  command registry and from `packages/document` vocabularies, as `packages/agent-verbs/src/mcp/schema.ts` already does.
+  command registry and from `packages/project` vocabularies, as `packages/agent-verbs/src/mcp/schema.ts` already does.
   CI tests enforce the token budgets.
 - **Keep the CLI and the MCP side by side.** A chat agent with no shell still needs the MCP. Put the editing
   core (refs, ops, views, deltas, normalisation) in a shared package so neither interface drifts from the other.
@@ -191,9 +191,9 @@ a huge API at 485 at the top. Past about 900 tokens, the help is a manual.
 
 | Tool                                                              | Tokens          |
 | ----------------------------------------------------------------- | --------------- |
-| `create_document`                                                 | 4,631           |
+| `create_project`                                                 | 4,631           |
 | `add_tab`                                                         | 2,439           |
-| `update_document`                                                 | 2,401           |
+| `update_project`                                                 | 2,401           |
 | the other eight                                                   | 257 to 384 each |
 | **11 current tools**                                              | **≈12.2k**      |
 | **all 19 advertised (with `*_diagram` aliases until 2027-04-30)** | **21.5k**       |
@@ -228,7 +228,7 @@ grouping, id prefixes and comment counts, is 279 tokens.
 | Reference form                 | Tokens |
 | ------------------------------ | ------ |
 | full element UUID              | 23     |
-| document URL with UUID         | 33     |
+| project URL with UUID         | 33     |
 | 4-hex prefix (`e7a1`)          | 4      |
 | quoted label (`"API gateway"`) | 4      |
 | positional handle (`s12`)      | 2      |
@@ -255,7 +255,7 @@ needs a **default field set**, not "everything".
 
 - `liveplanner <resource> <verb> [ref] [flags]`. Resources: `doc`, `tab`, `el`, `comment`, `template`, plus
   `schema`, `guide`, `auth`, `skill`. Seven or fewer verbs per resource.
-- Use the **domain language** exactly (`docs/specs/003-system-architecture/domain-language.md`): document,
+- Use the **domain language** exactly (`docs/specs/003-system-architecture/domain-language.md`): project,
   tab, element, comment thread, template, kind. No synonyms such as "board" or "diagram".
 - Keep verbs consistent across resources: `ls`, `view`, `add`/`create`, `set`, `rename`, `rm`, `restore`.
   Do not mix `list`/`ls`. Accept the gh-style long forms (`list`, `delete`) as hidden aliases, because models
@@ -286,7 +286,7 @@ Rules:
   teaches the ref syntax for free.
 - **Help states facts, not instructions to the model** (the MCP's §4.15 rule carries over). "The box is
   `square`" rather than "Never use rectangle".
-- **Enumerations are generated** from `packages/document` (`SHAPE_KINDS`, `ANCHORS`, `STICKY_PRESETS`,
+- **Enumerations are generated** from `packages/project` (`SHAPE_KINDS`, `ANCHORS`, `STICKY_PRESETS`,
   `CODE_LANGUAGES`), so help cannot drift from the validator.
 - **Budgets are tests.** A unit test renders every help screen and checks it against its budget with a
   tokenizer. Shift-left beats regret.
@@ -298,7 +298,7 @@ Rules:
   agent that runs under a pseudo-terminal must not see different content.
 - **`--json`** emits the same records as JSON with a **default field set** that mirrors the text view.
   `--json a,b` picks fields, `--json` with an unknown field lists the valid ones (gh's trick), and `--json all`
-  is explicit. Output is one compact JSON document. For streams, `--jsonl`.
+  is explicit. Output is one compact JSON project. For streams, `--jsonl`.
 - **`-q`** prints ids only (`kubectl -o name`, `aws --output off` family), for chaining.
 - **Use no `--jq` for now.** `--json fields` covers most needs, and coding agents have `jq`. Revisit if evals
   show chat-sandbox agents without `jq`.
@@ -323,14 +323,14 @@ Rules:
 
 - `el ls` has the same views plus filters (`--kind`, `--in <frame>`, `--grep <text>`, `--near <el>`), so an
   agent can zoom in on part of a 300-element board without reading all of it.
-- `doc view` gives a document summary: its tabs with element counts and open-thread counts, share state,
+- `doc view` gives a project summary: its tabs with element counts and open-thread counts, share state,
   library and URL. That is the "context" call that replaces several (§2.2).
 - Both `outline` and `layout` are **lossy on purpose** and say so in the header when content is omitted
   (`… 12 freehand strokes not shown; --kind freehand`).
 
 ### 4.5 Refs and ids
 
-- **Documents**: an exact name, a unique case-insensitive substring, an id prefix, or a pasted
+- **Projects**: an exact name, a unique case-insensitive substring, an id prefix, or a pasted
   `liveplanner.app` URL. The last matters most for chat agents, which get handed links.
 - **Tabs**: `doc/tab` by name or prefix. A bare `doc` means its first tab.
 - **Elements**: the shortest unique id prefix within the tab (at least 4 characters, git-style), or an
@@ -362,7 +362,7 @@ Every write:
 
 ### 4.7 Comments
 
-- `comment ls <doc[/tab]>` lists open threads across the document, newest first, with `--all` to include
+- `comment ls <doc[/tab]>` lists open threads across the project, newest first, with `--all` to include
   resolved ones.
 - `comment add <el> "text"` starts or extends a thread. `comment reply <el>` is an alias that makes the intent
   readable. `comment resolve|reopen <el>`.
@@ -409,7 +409,7 @@ This aligns with gh's 4 for auth. The codes stay few enough to state in the top 
 - **No interactive prompts unless stdin and stdout are both TTYs.** `LIVEPLANNER_NO_PROMPT=1` and `CI` also
   disable them. A command that would have asked fails with exit 2 and names the flag (`--yes`).
 - **Prefer reversibility to confirmation.** Confirmation teaches agents to append `--yes` reflexively.
-  - `doc rm` moves the document to the Trash (30 days) and prints the `doc restore` command. No prompt.
+  - `doc rm` moves the project to the Trash (30 days) and prints the `doc restore` command. No prompt.
   - `tab rm`, `tab replace` and `el rm` of more than N elements are irreversible on the server (no tab history).
     The CLI writes the pre-image to a **local undo journal** (`$XDG_STATE_HOME/liveplanner/undo/`) and prints
     `undo: liveplanner undo 7f2c`. They need `--yes` only when not on a TTY **and** more than N elements would
@@ -430,7 +430,7 @@ This aligns with gh's 4 for auth. The codes stay few enough to state in the top 
 ### 4.12 Idempotency and retries
 
 - Agents retry after timeouts, so creates need protection from duplicates. Give `doc create` and `tab add`
-  `--if-absent`: if a document or tab with that exact name already exists, print it with
+  `--if-absent`: if a project or tab with that exact name already exists, print it with
   `= exists` and exit 0. This is kubectl `apply` semantics without a manifest.
 - `el set`, `move` and `rename` are naturally idempotent. `el add` in a batch with `$names` is atomic, so a
   retried batch either wrote all of it or none of it.
@@ -446,14 +446,14 @@ This aligns with gh's 4 for auth. The codes stay few enough to state in the top 
 - No pager, no spinner, no update notice, no ANSI and no emoji on stderr when piped (unlike wrangler, §2.5).
 - Stdin is a first-class input (`-` for any file argument), so `mermaid | liveplanner tab add … --mermaid -`
   works.
-- Deterministic ordering in every list (by position for elements, newest-saved first for documents), so two
+- Deterministic ordering in every list (by position for elements, newest-saved first for projects), so two
   identical calls give identical text and a diff of views is meaningful.
 
 ### 4.14 One source of truth, and evaluation
 
 - One **command registry** (`name`, `summary`, `args`, `flags`, `examples`, `prints`) generates the help
   screens, `guide` cross-links, `SKILL.md`, the docs page and shell completions.
-- Vocabularies come from `packages/document`, like `packages/agent-verbs/src/mcp/schema.ts`. The editing core (ref resolution,
+- Vocabularies come from `packages/project`, like `packages/agent-verbs/src/mcp/schema.ts`. The editing core (ref resolution,
   ops, normalisation, views, deltas, lint) lives in a **shared package** consumed by the CLI and the MCP.
 - **Evals before polish** (Anthropic's loop):
   - Write about 20 realistic tasks: "add a Redis cache between the gateway and Orders DB", "summarise the open
@@ -472,7 +472,7 @@ This aligns with gh's 4 for auth. The codes stay few enough to state in the top 
 3. **Use git-style id prefixes, label refs and URL refs**, with loud ambiguity errors.
 4. **Echo the delta after every write**, with `--dry-run` everywhere and a one-line lint summary.
 5. **Use model-correctable errors**: what was wrong, valid values, one runnable fix, and the exit codes of §4.9.
-6. **Rely on reversibility over prompts**: the Trash for documents, and the local undo journal for tab writes.
+6. **Rely on reversibility over prompts**: the Trash for projects, and the local undo journal for tab writes.
 7. **Put the editing core in a shared package** so the CLI and the MCP converge (and the MCP's 12.2k-token
    definitions can shrink by reusing the compact views).
 8. **Unblock the API first** (section 7). Without it, "change it while I talk" silently loses edits.
@@ -484,13 +484,13 @@ Measured with `o200k_base`; mocks only, not a committed interface.
 ### 6.1 `liveplanner --help` (380 tokens)
 
 ```bash
-liveplanner - read, edit and comment on liveplanner documents.
+liveplanner - read, edit and comment on liveplanner projects.
 
 Usage: liveplanner <resource> <verb> [ref] [flags]
 
 Resources
-  doc        documents: ls, view, create, rename, share, rm, restore
-  tab        canvases in a document: ls, view, add, replace, rename, rm, render
+  doc        projects: ls, view, create, rename, share, rm, restore
+  tab        canvases in a project: ls, view, add, replace, rename, rm, render
   el         elements on a tab: ls, add, set, connect, move, rm, apply
   comment    element threads: ls, add, reply, resolve, reopen
   template   scaffolds to start from: ls, view
@@ -508,7 +508,7 @@ Output
   Writes print the change they made. --dry-run shows it without writing.
 
 Start
-  liveplanner doc ls "auth"                   find a document
+  liveplanner doc ls "auth"                   find a project
   liveplanner tab view "Auth flow"            outline of its first tab
   liveplanner tab add "Auth flow" --mermaid - build a tab from Mermaid on stdin
   liveplanner guide build                     building a diagram from scratch
@@ -632,7 +632,7 @@ hint: use an id prefix, e.g. el set 01f8 --label "Edge gateway"
 ```yaml
 ---
 name: liveplanner
-description: Read, build, edit and comment on liveplanner.app diagrams (flowcharts, architecture, ER, boards) with the liveplanner CLI. Use when a task mentions a liveplanner document or link, or asks to draw or change a diagram.
+description: Read, build, edit and comment on liveplanner.app diagrams (flowcharts, architecture, ER, boards) with the liveplanner CLI. Use when a task mentions a liveplanner project or link, or asks to draw or change a diagram.
 ---
 ```
 
@@ -644,7 +644,7 @@ must settle.
 - **Live edits from an agent.** A token's tab `PUT` carries no `X-Room-Cursor`, so no ledger merge happens,
   and the room does not broadcast it. Connected viewers see it only on reload, and their next autosave can
   overwrite it (last writer wins on the whole tab). The "chat agent changes the diagram while the person
-  watches" scenario needs a server **element-ops endpoint applied through the document's room** (Durable Object),
+  watches" scenario needs a server **element-ops endpoint applied through the project's room** (Durable Object),
   so ops broadcast live and merge at element level. The CLI's `el` verbs and the MCP's `ops` mode would both
   target it.
 - **Stale writes.** Nothing like `If-Match`/a tab revision exists, so a read-modify-write races. Exit 5 in
@@ -653,8 +653,8 @@ must settle.
   avoid touching anything else on the tab.
 - **Rendering.** `tab render` can rasterise locally (resvg in Node, the shared `svg-render.ts`), or use a server
   endpoint. Doing it locally keeps it working offline and on any host.
-- **Document lookup by name across team libraries**, without the client sweeping every team, would make
-  `doc ls` and name refs a single call (the MCP sweeps today, `find-documents.ts`).
+- **Project lookup by name across team libraries**, without the client sweeping every team, would make
+  `doc ls` and name refs a single call (the MCP sweeps today, `find-projects.ts`).
 - **Short ids.** If evals show prefixes still produce wrong refs, the alternative is server-issued short element
   ids for new elements. That is a data-model change, so it is deferred until evals ask for it.
 
@@ -678,8 +678,8 @@ must settle.
 - Local, read-only measurements: installed `gh`, `kubectl`, `wrangler`, `git`, `jq`; `@liveplanner/templates`
   `buildTemplate`; `apps/mcp` `registerTools` via `mcp-test-client.ts`; `js-tiktoken` `o200k_base`.
 - Repo context: `docs/specs/015-api/mcp-server.md`, `docs/specs/015-api/public-api-and-tokens.md`,
-  `docs/specs/015-api/api.md` (tab `PUT` row), `apps/api/src/room-client.ts`, `packages/document/src/comments.ts`,
-  `packages/document/src/validate.ts`.
+  `docs/specs/015-api/api.md` (tab `PUT` row), `apps/api/src/room-client.ts`, `packages/project/src/comments.ts`,
+  `packages/project/src/validate.ts`.
 
 Unreachable during research (DNS): Armin Ronacher's "Tools: code is all you need", Simon Willison's skills post,
 and clig.dev. Their arguments overlap with the sources above and are not relied on.

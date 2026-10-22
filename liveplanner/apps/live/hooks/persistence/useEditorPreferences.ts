@@ -1,12 +1,12 @@
 // Per-user editor preferences (docs/specs/007-editor/user-preferences.md), lifted out of useEditorState.
-// One localStorage key, applies to every document the user opens from
+// One localStorage key, applies to every project the user opens from
 // this device. Read from the device cache once hydrated (not gated on
-// documentId, since preferences aren't document-scoped) and mutated through
+// projectId, since preferences aren't project-scoped) and mutated through
 // the SettingsDialog. Also owns the two ref mirrors the drag hook reads on
 // every pointer move, and the side effects that apply preference flags
-// (reduce motion, AI panel auto-open).
+// (reduce motion).
 
-import { useCallback, useEffect, useEffectEvent, useState, useSyncExternalStore } from 'react';
+import { useCallback, useEffect, useState, useSyncExternalStore } from 'react';
 import { useReduceMotion } from '@/hooks/ui/useReduceMotion';
 import { usePanelOpacity } from '@/hooks/ui/usePanelOpacity';
 import {
@@ -56,12 +56,10 @@ type EditorPreferencesDeps = {
   // True while the visitor still faces the share-password gate. No
   // point fetching preferences for someone who hasn't got in yet.
   passwordGated: boolean;
-  // From usePanelLayout: flipping the AI preference on pops the panel.
-  setAiPanelVisible: (visible: boolean) => void;
 };
 
 export function useEditorPreferences(deps: EditorPreferencesDeps) {
-  const { ownerId, passwordGated, setAiPanelVisible } = deps;
+  const { ownerId, passwordGated } = deps;
   // Missing or unparseable entries collapse to `{}`; the per-flag default then
   // depends on the consumer's comparison: `telemetryEnabled` reads via
   // `!== false` so undefined = on, while `autoRebindArrows` (via
@@ -90,10 +88,6 @@ export function useEditorPreferences(deps: EditorPreferencesDeps) {
   // point after which a one-way latch such as `powerUserOfferShown` can be
   // trusted not to be stale (docs/specs/007-editor/power-user-mode.md).
   const [prefsSettled, setPrefsSettled] = useState(false);
-  const openAiPanel = useEffectEvent(() => setAiPanelVisible(true));
-  useEffect(() => {
-    if (userPreferences.aiAssistanceEnabled) openAiPanel();
-  }, [userPreferences.aiAssistanceEnabled]);
   // Apply the "Reduce motion" preference (docs/specs/007-editor/user-preferences.md) to <html>. The OS
   // prefers-reduced-motion media query is honoured by globals.css
   // regardless; this lets the user force it on independent of the OS.

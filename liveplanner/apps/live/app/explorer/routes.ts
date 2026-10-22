@@ -13,7 +13,7 @@
 //
 // Folder / team ids ride in the query string rather than a path
 // segment ON PURPOSE: `output: 'export'` can't enumerate user-minted
-// ids, and the /document/<id> workaround (placeholder file + worker
+// ids, and the /project/<id> workaround (placeholder file + worker
 // rewrite + the not-found rescue in app/not-found.tsx) is a hack we
 // don't want a second consumer of. A static /explorer/folder page
 // reading ?id= needs none of that.
@@ -55,7 +55,7 @@ export function explorerPathFor(node: SelectedNode): string {
   }
 }
 
-// A team's page opened at one of its folders (docs/specs/013-workspace/team-shared-documents.md),
+// A team's page opened at one of its folders (docs/specs/013-workspace/team-shared-projects.md),
 // or at its root when `folderId` is null. The team page reads `folder` at mount, so callers
 // navigate here with a full load rather than a client-side route change.
 export function teamFolderPath(teamId: string, folderId: string | null): string {

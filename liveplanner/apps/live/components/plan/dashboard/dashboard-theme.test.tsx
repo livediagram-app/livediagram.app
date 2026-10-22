@@ -4,8 +4,8 @@
 import { cleanup, render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DashboardSlot, Tab } from '@liveplanner/document';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import type { DashboardSlot, Tab } from '@liveplanner/project';
+import { EditorContext } from '@/app/project/[id]/EditorContext';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardSlotView } from './DashboardSlotView';
 import { DashboardTabPreview } from './DashboardTabPreview';

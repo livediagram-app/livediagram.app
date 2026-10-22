@@ -5,7 +5,9 @@ const PUBLISHER = { '@type': 'Organization', name: 'liveplanner', url: 'https://
 
 describe('helpUrl', () => {
   it('prefixes app-relative hrefs with the /help base', () => {
-    expect(helpUrl('/canvas/themes/')).toBe('https://liveplanner.app/help/canvas/themes/');
+    expect(helpUrl('/user-interface/themes/')).toBe(
+      'https://liveplanner.app/help/user-interface/themes/',
+    );
     expect(helpUrl('/')).toBe('https://liveplanner.app/help/');
   });
 });
@@ -14,11 +16,11 @@ describe('articleJsonLd', () => {
   const node = articleJsonLd({
     title: 'Themes',
     description: 'How themes work.',
-    appPath: '/canvas/themes/',
+    appPath: '/user-interface/themes/',
   });
 
   it('builds a TechArticle node with the resolved absolute URL', () => {
-    const url = 'https://liveplanner.app/help/canvas/themes/';
+    const url = 'https://liveplanner.app/help/user-interface/themes/';
     expect(node).toMatchObject({
       '@context': 'https://schema.org',
       '@type': 'TechArticle',
@@ -55,22 +57,26 @@ describe('collectionJsonLd', () => {
     expect(
       collectionJsonLd({
         title: 'Canvas',
-        description: 'All about the canvas.',
-        appPath: '/canvas/',
+        description: 'All about the editor.',
+        appPath: '/user-interface/',
         items: [
-          { name: 'Themes', appPath: '/canvas/themes/' },
-          { name: 'Layers', appPath: '/canvas/layers/' },
+          { name: 'Themes', appPath: '/user-interface/themes/' },
+          { name: 'Undo', appPath: '/user-interface/undo/' },
         ],
       }),
     ).toMatchObject({
       '@type': 'CollectionPage',
       name: 'Canvas',
-      url: 'https://liveplanner.app/help/canvas/',
+      url: 'https://liveplanner.app/help/user-interface/',
       mainEntity: {
         '@type': 'ItemList',
         itemListElement: [
-          { position: 1, name: 'Themes', url: 'https://liveplanner.app/help/canvas/themes/' },
-          { position: 2, name: 'Layers', url: 'https://liveplanner.app/help/canvas/layers/' },
+          {
+            position: 1,
+            name: 'Themes',
+            url: 'https://liveplanner.app/help/user-interface/themes/',
+          },
+          { position: 2, name: 'Undo', url: 'https://liveplanner.app/help/user-interface/undo/' },
         ],
       },
     });

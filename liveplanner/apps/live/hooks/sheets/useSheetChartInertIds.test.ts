@@ -2,7 +2,7 @@
 // docs/specs/029-sheets/sheet.md "Charts": the canvas never picks a chart that sits in a Sheet on the tab.
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@liveplanner/document';
+import { createShape, type Element } from '@liveplanner/project';
 import { useSheetChartInertIds } from './useSheetChartInertIds';
 
 const range = { r1: 'aaaa', c1: 'bbbb', r2: 'cccc', c2: 'dddd' };

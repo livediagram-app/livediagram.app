@@ -12,7 +12,7 @@
 // title-cased `Code-Block`), `TechIcon` for a brand mark, `Highlighter`
 // for the highlighter pen.
 
-import type { ComponentKind, Element } from '@liveplanner/document';
+import type { ComponentKind, Element } from '@liveplanner/project';
 import { isTechIconId } from '@/lib/tech-icons';
 import { titleCaseType, track } from '@/lib/telemetry';
 

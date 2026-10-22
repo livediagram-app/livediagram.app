@@ -21,7 +21,7 @@ import type { ReactNode } from 'react';
 // string omit it, the rest restate the answer sans markup. faq-content.test.tsx renders every JSX answer and fails
 // if its text drifts from `aText`, so the structured data stays a faithful image of the page.
 //
-// The copy says "project" for what the code calls a document: a person reads projects, each a stack of Board,
+// The copy says "project" for what the code calls a project: a person reads projects, each a stack of Board,
 // Sheet, Dashboard and Form tabs.
 
 export type FaqItem = { q: string; a: ReactNode; aText?: string };
@@ -123,7 +123,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             swimlanes by assignee, type, priority or any field, and give a column a WIP limit so its
             count turns amber the moment it goes over. Widgets in the board header, such as
             Completion, Due Soon and Stale Cards, narrow the board to just those cards. See{' '}
-            <a href="/help/canvas/plan-mode/boards/">boards</a>.
+            <a href="/help/plan/boards/">boards</a>.
           </>
         ),
         aText:
@@ -136,7 +136,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Everything about a piece of work: a rich-text description, a checklist that counts down
             to done, a status, an assignee, a priority, labels, start and due dates, and its own
             comment thread. A task card can belong to a Project card, so you can follow the trail
-            between the two. See <a href="/help/canvas/plan-mode/cards/">cards</a>.
+            between the two. See <a href="/help/plan/cards/">cards</a>.
           </>
         ),
         aText:
@@ -149,7 +149,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Yes. Five card types come built in (Project, Task, Note, Idea and Action), and you can
             make your own with the fields your team tracks: text, number, date, a choice, a link to
             another card and more. A board shows the card types it takes. See{' '}
-            <a href="/help/canvas/plan-mode/card-types/">card types</a>.
+            <a href="/help/plan/card-types/">card types</a>.
           </>
         ),
         aText:
@@ -161,7 +161,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. A card is one item, not a copy, so it can sit on the sprint board and the roadmap
             at once. Move it on one and it moves on both. See{' '}
-            <a href="/help/canvas/plan-mode/items/">items</a>.
+            <a href="/help/plan/items/">items</a>.
           </>
         ),
         aText:
@@ -174,7 +174,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Yes. Plan views draw charts straight from the cards: a Gantt chart, due and start
             calendars you can drag cards across, cards by any field and priority by status. Because
             they read the cards themselves, a chart is never out of date. See{' '}
-            <a href="/help/canvas/plan-mode/visualisations/">charts of your cards</a>.
+            <a href="/help/plan/visualisations/">charts of your cards</a>.
           </>
         ),
         aText:
@@ -208,7 +208,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             freeze, edited live by everyone on it. Formulas can read the cards on a board, or list
             the cards as rows that stay linked both ways. Select some cells to chart them as bars,
             lines or a pie, and turn cells into dropdowns or checkboxes. See{' '}
-            <a href="/help/canvas/plan-mode/sheets/">sheets</a>.
+            <a href="/help/plan/sheets/">sheets</a>.
           </>
         ),
         aText:
@@ -226,7 +226,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             live: a board you can work on, a sheet you can edit, a chart, a figure such as
             Completion or a column total, or a note, a checklist or a key date. Start from a layout
             such as Overview or Report, or one built around your own boards, then add, move and
-            resize slots as you go. See <a href="/help/canvas/plan-mode/dashboards/">dashboards</a>.
+            resize slots as you go. See <a href="/help/plan/dashboards/">dashboards</a>.
           </>
         ),
         aText:
@@ -239,7 +239,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Yes. Start a Form tab from a template such as Feedback, Bug Report or Event RSVP, or a
             blank one, and build it in place. Share its link and anyone can fill it in without an
             account; every response lands as a card on a board or a row in a sheet, so the answers
-            turn straight into work. See <a href="/help/canvas/plan-mode/forms/">forms</a>.
+            turn straight into work. See <a href="/help/plan/forms/">forms</a>.
           </>
         ),
         aText:

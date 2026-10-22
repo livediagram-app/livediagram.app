@@ -1,14 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { EDIT_KEYS, VIEW_TOOL_KEYS, type ShortcutAction } from './useEditorKeyboardShortcuts';
+import { VIEW_TOOL_KEYS, type ShortcutAction } from './useEditorKeyboardShortcuts';
 import { runModShortcut } from './editor-shortcut-keys';
 
 // The hook's keydown effect needs jsdom + window event dispatch, which
 // this workspace's node-env vitest doesn't run (see docs/specs/003-system-architecture/testing.md).
 // What we CAN test in node is the pure key -> action mapping: the lookup
-// tables that the effect dispatches through. These assertions pin the
-// standards-aligned remap (V = Select, H = Hand,
-// the shape letters, and the Excalidraw number-row aliases) so an
-// accidental swap or a dropped key is caught.
+// table that the effect dispatches through.
 
 // A spy `live` that records which deps method fired, so each action can
 // be invoked and asserted without a real editor.
@@ -36,58 +33,10 @@ function fired(table: Record<string, ShortcutAction>, key: string): string {
   return calls[0]!;
 }
 
-describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
-  it('binds Select to V, the legacy S alias, and number 1', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'v')).toBe('tool:select');
-    expect(fired(VIEW_TOOL_KEYS, 's')).toBe('tool:select');
-    expect(fired(VIEW_TOOL_KEYS, '1')).toBe('tool:select');
-  });
-
-  it('binds Hand to H (not P)', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'h')).toBe('tool:pan');
-    expect(VIEW_TOOL_KEYS.p).toBeUndefined();
-  });
-
-  it('keeps Isometric on I and Zen on Z', () => {
-    expect(fired(VIEW_TOOL_KEYS, 'i')).toBe('tool:isometric');
+describe('VIEW_TOOL_KEYS', () => {
+  it('binds Z to Zen and nothing else: the canvas tool and element-add keys went with the palette', () => {
     expect(fired(VIEW_TOOL_KEYS, 'z')).toBe('zen');
-  });
-});
-
-describe('EDIT_KEYS (mutating tools / element adds)', () => {
-  it('binds Frame to F, and nothing to P, 6, 7, E or 0', () => {
-    expect(fired(EDIT_KEYS, 'f')).toBe('shape:frame');
-    for (const key of ['p', '6', '7', 'e', '0']) expect(EDIT_KEYS[key]).toBeUndefined();
-  });
-
-  it('maps the flowchart shape letters and their Excalidraw number aliases', () => {
-    expect(fired(EDIT_KEYS, 'r')).toBe('shape:square');
-    expect(fired(EDIT_KEYS, '2')).toBe('shape:square');
-    expect(fired(EDIT_KEYS, 'o')).toBe('shape:circle');
-    expect(fired(EDIT_KEYS, '4')).toBe('shape:circle');
-    expect(fired(EDIT_KEYS, 'd')).toBe('shape:diamond');
-    expect(fired(EDIT_KEYS, '3')).toBe('shape:diamond');
-    expect(fired(EDIT_KEYS, 'c')).toBe('shape:cylinder');
-    expect(fired(EDIT_KEYS, 'g')).toBe('shape:parallelogram');
-  });
-
-  it('binds Text (T / 8), Note (N), and Arrow (A / 5)', () => {
-    expect(fired(EDIT_KEYS, 't')).toBe('text');
-    expect(fired(EDIT_KEYS, '8')).toBe('text');
-    expect(fired(EDIT_KEYS, 'n')).toBe('sticky');
-    expect(fired(EDIT_KEYS, 'a')).toBe('arrow');
-    expect(fired(EDIT_KEYS, '5')).toBe('arrow');
-  });
-
-  it('no longer binds Hexagon to H (H is the Hand tool now)', () => {
-    // Hexagon is click-only; H must not add a shape from either table.
-    expect(EDIT_KEYS.h).toBeUndefined();
-  });
-
-  it('does not duplicate any view-tool key in the edit table', () => {
-    for (const key of Object.keys(VIEW_TOOL_KEYS)) {
-      expect(EDIT_KEYS[key], `key "${key}" should live in only one table`).toBeUndefined();
-    }
+    expect(Object.keys(VIEW_TOOL_KEYS)).toEqual(['z']);
   });
 });
 

@@ -1,14 +1,14 @@
 'use client';
 
 // What every Plan board and Plan card on the canvas reads (docs/specs/026-plan/blueprints/plan-board.md
-// "Editor components"): the document's items, who is looking, whether input works the Plan way, and
+// "Editor components"): the project's items, who is looking, whether input works the Plan way, and
 // the actions a board takes. A context, like MindOutlineContext, because the consumers are element
 // bodies far below the editor state. Undefined outside the editor (share view, exports): a board
 // then draws read-only from nothing.
 import type { StatusBoard } from '@/hooks/plan/usePlanStatusNames';
 import { createContext, useContext } from 'react';
 import type { ItemCommentAction } from '@/lib/api/items';
-import type { PlanCardRef, PlanViewRef } from '@liveplanner/document';
+import type { PlanCardRef, PlanViewRef } from '@liveplanner/project';
 import type {
   BoardStatusTypes,
   Item,
@@ -33,7 +33,7 @@ export type ItemTypeEditing = 'new' | { id: string };
 
 export type PlanContextValue = {
   items: ReadonlyMap<string, Item>;
-  // The document's item types, in order (docs/specs/026-plan/item-types.md).
+  // The project's item types, in order (docs/specs/026-plan/item-types.md).
   types: readonly ItemTypeDef[];
   // Their changes (the Card Types panel and the type editor).
   itemTypes: ItemTypesSlice;
@@ -125,7 +125,7 @@ export type PlanContextValue = {
   // The phase the tab's boards give each status: what the plan views count as done
   // (docs/specs/026-plan/plan-views.md "What a plan view reads").
   statusPhases: ReadonlyMap<string, StatusPhase>;
-  // The card types the document's boards show under each status they name: what Not on a Board reads
+  // The card types the project's boards show under each status they name: what Not on a Board reads
   // (docs/specs/026-plan/items.md "Finding a card").
   statusTypes: BoardStatusTypes;
   // Each board's title and the statuses it names, in board order: the type editor's States groups by them.

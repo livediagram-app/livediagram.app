@@ -22,7 +22,7 @@ import {
   type BoxedElement,
   type CanvasSurface,
   type Finish,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 
@@ -81,7 +81,7 @@ export function describeVariant(
     case 'shape': {
       const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
       // SVG-rendered shapes (diamond, cylinder, parallelogram, hexagon,
-      // document) draw themselves via an inner SVG overlay; the wrapper div
+      // project) draw themselves via an inner SVG overlay; the wrapper div
       // carries no border/background, just the selection ring. The
       // border colour for those propagates through ShapeSvgOverlay's
       // `stroke` prop, not this style block.
@@ -97,7 +97,7 @@ export function describeVariant(
       // selection ring.
       // A portal (docs/specs/009-elements/portal-element.md) is in the same family: its ring IS the element, so
       // a wrapper box behind it would frame the energy in a rectangle.
-      // SELF_PAINTING_SHAPES (@liveplanner/document) is the single list of
+      // SELF_PAINTING_SHAPES (@liveplanner/project) is the single list of
       // kinds that draw their own body. The menu reads the same set to decide
       // whether to offer Border at all — they used to keep separate lists and
       // drifted, leaving dead Border controls on a code block, a checklist, a

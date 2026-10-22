@@ -8,7 +8,9 @@ The editor's one panel layout, on every device (see "One layout" for the retired
 palette** ([Plan mode](../026-plan/plan-mode.md#no-palette)), so the editor shows no strip: the menu button keeps the
 top-left corner, and Undo/Redo, the Plan strip and zoom sit in the bottom-right cluster. The Palette strip this spec
 describes from "Search" on (`ToolbarPalette`) is no longer mounted; its code stays until the palette itself is
-removed. The category bar the other editor modes showed was removed with them.
+removed. The category bar the other editor modes showed was removed with them. The sections from "Search" to "The
+strip's order and dividers" and "Motion" specify that unmounted code, the categories of the retired modes included,
+and go with it.
 
 - **Top left: the menu button**, in a card with the tab's name. No mode switch sits there: every tab is in Plan
   ([Editor mode](editor-modes.md)).
@@ -40,7 +42,7 @@ A strip shows one category at a time, so finding an element means knowing which 
   order. The image-upload tiles are left out where the editor has none, as everywhere else.
 - **Two sections:**
   - **Plan's elements** first, as the palette's tile grid, drawn from every tile Plan's layout offers (Plan's Cards
-    follow the document's item types, as on the strip).
+    follow the project's item types, as on the strip).
   - **More Elements**, below, as an accordion with a count: the matching tiles of every other category, and the
     markers. **Closed by default** each time the popover opens, so the rest is one deliberate click away, never
     hidden. Opened, it stays open while typing. It is absent when nothing outside Plan's palette matches.
@@ -159,7 +161,7 @@ so a new page load starts on the mode's landing (Plan's Cards, or Boards while t
 - While a board, Sheet or view filling the tab (or maximised) has its own name in the box, that name shows instead,
   so the box never shows two.
 - A click (a tap) on it renames the tab in place, for someone who may change the
-  document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
+  project's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
 - Every name in the box renames on a single click, whichever it is (the tab's, a board's, a Sheet's, a chart's, a
   Dashboard's): in the box a click has nothing else to do. In an element's own header a press moves the element, so
   there a double-click renames, as before.
@@ -202,8 +204,7 @@ better layout. Its parts went with it:
 
 - The `panelLayout` preference is gone ([User preferences](user-preferences.md)). A stored value
   (`'floating'`, `'toolbar'`, a legacy `'minimal'`) is ignored and left as it is.
-- Settings has no Panel Layout row, and the Diagram tour's welcome card no layout picker
-  ([Diagram tour ("Getting started with Diagrams?")](editor-tour.md)).
+- Settings has no Panel Layout row.
 - The Palette, the Explorer and Layers are no longer corner panels, so a stored panel placement
   that names them is ignored ([Panel docking](panel-docking.md)).
 - Telemetry's `PanelLayoutFloating` / `PanelLayoutToolbar` stay in the catalogue as retired
@@ -271,8 +272,8 @@ their bottom-row buttons. What changes to fit the width:
     drop or drag to draw Square" keeps the name it gives.
   - It fades in (`fade-in`; still under reduced motion) and goes when its message does.
   - It also carries an empty tab's **Show Templates**: once a start's × has closed it, "Tab 1 is empty" with **Show
-    Templates**, which opens the start again, until the first element lands
-    ([Template starts](start-diagramming.md) "Bringing it back").
+    Templates**, which opens the start again, until the first element lands. Start Planning has no ×
+    ([Start panel](start-panel.md)), so in liveplanner this message does not arise.
   - While a mode banner sits in the tray, the top-centre stack starts below the tray instead.
   - While one of the strip's popovers is open (a category's flyout, More, a catalogue group, Search) the tray steps aside, as it does
     for the Explorer: it would cover the popover's top.
@@ -281,9 +282,6 @@ their bottom-row buttons. What changes to fit the width:
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.
-- The Diagram tour ([Diagram tour ("Getting started with Diagrams?")](editor-tour.md)) follows the layout: its Palette step rings the
-  strip's card. (Its Explorer step, which opened the Explorer from the menu button, went when the
-  welcome tour became the Diagram tour.)
 
 ## Motion
 
@@ -327,7 +325,7 @@ their bottom-row buttons. What changes to fit the width:
 ## Decided in review
 
 - **The strip opens on the mode's landing every time** (Plan's)
-  ([Editor modes](editor-modes.md#the-palette-per-mode)). It does not remember the last category across documents.
+  ([Editor modes](editor-modes.md#the-palette-per-mode)). It does not remember the last category across projects.
 - **Twelve tiles is enough** on desktop (raised from ten, which cut Shapes and
   Popular short). Below that, the strip shows as many as fit, **measured**
   rather than estimated (`useStripTileLimit`): its own chrome (the pickers,
@@ -360,6 +358,5 @@ their bottom-row buttons. What changes to fit the width:
 
 ## Help
 
-The [Toolbar Layout](/help/palette/toolbar-layout/) article (Palette →
-Palette Settings) explains the strip, More, the menu button and how it
-fits a phone, with three figures.
+The Palette category of the help centre went with the palette; the Plan
+category (`/help/plan/`) explains the editor Plan shows.

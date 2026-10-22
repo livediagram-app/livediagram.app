@@ -9,7 +9,7 @@
 
 import { endPlanCardDrag, planCardDragOver } from '@/hooks/plan/plan-card-drop';
 import type { DragEvent as ReactDragEvent, RefObject } from 'react';
-import type { ShapeKind } from '@liveplanner/document';
+import type { ShapeKind } from '@liveplanner/project';
 import { pointerToCanvas } from '@/lib/canvas';
 import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { STICKER_DND_MIME } from '@/lib/stickers';
@@ -45,7 +45,7 @@ export function usePaletteDrop({
 }: PaletteDropDeps) {
   const onDragOver = (e: ReactDragEvent<HTMLElement>) => {
     // Something inside the canvas already took this drag (a folder in the Explorer panel taking a dragged
-    // document, docs/specs/013-workspace/folders.md "Drag-and-drop"): it is that target's, so the guard below must
+    // project, docs/specs/013-workspace/folders.md "Drag-and-drop"): it is that target's, so the guard below must
     // not turn its accepted drop into a no-drop and cancel it.
     if (e.defaultPrevented) return;
     // A drag back over a floating panel (the Palette itself) is a "changed my

@@ -3,13 +3,13 @@
 // made's `copyOf`. As a row goes or comes, the sheet_refs triggers settle its sheet: unreferenced from then
 // (`unreferenced_since`), deleted at once when the editor deleted it with its element, referenced again; an
 // unreferenced sheet otherwise waits to expire (sheet-sweep.ts).
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import type { Env } from '../types';
 
-// A sheet id is unique only in its document (a copied document keeps them), so a reference counts only through a
-// tab of the sheet's own document.
-const REFERENCED = `EXISTS (SELECT 1 FROM sheet_refs r JOIN document_tabs dt ON dt.tab_id = r.tab_id
-  WHERE r.sheet_id = sheets.id AND dt.document_id = sheets.document_id)`;
+// A sheet id is unique only in its project (a copied project keeps them), so a reference counts only through a
+// tab of the sheet's own project.
+const REFERENCED = `EXISTS (SELECT 1 FROM sheet_refs r JOIN project_tabs dt ON dt.tab_id = r.tab_id
+  WHERE r.sheet_id = sheets.id AND dt.project_id = sheets.project_id)`;
 
 // The sheet ids a tab's elements reference.
 export function sheetRefIds(elements: readonly Element[]): string[] {
@@ -42,30 +42,30 @@ export function sheetRefReplaceStatements(
   ];
 }
 
-// Settle every sheet of a document at once: delete what was deleted with its element and is now unreferenced, note
+// Settle every sheet of a project at once: delete what was deleted with its element and is now unreferenced, note
 // what is unreferenced, and clear what is referenced again. A tab write needs none of it (the sheet_refs triggers
-// settle each reference as it changes); a removed tab does, as its link to the document goes first.
+// settle each reference as it changes); a removed tab does, as its link to the project goes first.
 export function sheetSettleStatements(
   env: Env,
-  documentId: string,
+  projectId: string,
   now: number,
 ): D1PreparedStatement[] {
   return [
     env.DB.prepare(
-      `DELETE FROM sheets WHERE document_id = ?1 AND delete_when_unreferenced = 1 AND NOT ${REFERENCED}`,
-    ).bind(documentId),
+      `DELETE FROM sheets WHERE project_id = ?1 AND delete_when_unreferenced = 1 AND NOT ${REFERENCED}`,
+    ).bind(projectId),
     env.DB.prepare(
       `UPDATE sheets SET unreferenced_since = ?2
-        WHERE document_id = ?1 AND unreferenced_since IS NULL AND NOT ${REFERENCED}`,
-    ).bind(documentId, now),
+        WHERE project_id = ?1 AND unreferenced_since IS NULL AND NOT ${REFERENCED}`,
+    ).bind(projectId, now),
     env.DB.prepare(
       `UPDATE sheets SET unreferenced_since = NULL
-        WHERE document_id = ?1 AND unreferenced_since IS NOT NULL AND ${REFERENCED}`,
-    ).bind(documentId),
+        WHERE project_id = ?1 AND unreferenced_since IS NOT NULL AND ${REFERENCED}`,
+    ).bind(projectId),
   ];
 }
 
-// A copied tab references what its source did (a copied document's tabs, copied without a parse).
+// A copied tab references what its source did (a copied project's tabs, copied without a parse).
 export function sheetRefCopyStatement(
   env: Env,
   fromTabId: string,
@@ -79,38 +79,38 @@ export function sheetRefCopyStatement(
 // A sheet just made notes when nothing references it yet, so one whose element never reaches the api expires too.
 export function sheetNoteUnreferencedStatement(
   env: Env,
-  documentId: string,
+  projectId: string,
   sheetId: string,
   now: number,
 ): D1PreparedStatement {
   return env.DB.prepare(
-    `UPDATE sheets SET unreferenced_since = ?3 WHERE document_id = ?1 AND id = ?2 AND NOT ${REFERENCED}`,
-  ).bind(documentId, sheetId, now);
+    `UPDATE sheets SET unreferenced_since = ?3 WHERE project_id = ?1 AND id = ?2 AND NOT ${REFERENCED}`,
+  ).bind(projectId, sheetId, now);
 }
 
 // The editor's delete with its element: marked, then deleted at once if nothing references it (a row returned).
 export function sheetDeleteWhenUnreferencedStatements(
   env: Env,
-  documentId: string,
+  projectId: string,
   sheetId: string,
 ): D1PreparedStatement[] {
   return [
     env.DB.prepare(
-      'UPDATE sheets SET delete_when_unreferenced = 1 WHERE document_id = ?1 AND id = ?2',
-    ).bind(documentId, sheetId),
+      'UPDATE sheets SET delete_when_unreferenced = 1 WHERE project_id = ?1 AND id = ?2',
+    ).bind(projectId, sheetId),
     env.DB.prepare(
-      `DELETE FROM sheets WHERE document_id = ?1 AND id = ?2 AND NOT ${REFERENCED} RETURNING id`,
-    ).bind(documentId, sheetId),
+      `DELETE FROM sheets WHERE project_id = ?1 AND id = ?2 AND NOT ${REFERENCED} RETURNING id`,
+    ).bind(projectId, sheetId),
   ];
 }
 
 // A restore of a sheet still stored (the editor's undo) keeps it.
 export function sheetKeepStatement(
   env: Env,
-  documentId: string,
+  projectId: string,
   sheetId: string,
 ): D1PreparedStatement {
   return env.DB.prepare(
-    'UPDATE sheets SET delete_when_unreferenced = NULL WHERE document_id = ?1 AND id = ?2',
-  ).bind(documentId, sheetId);
+    'UPDATE sheets SET delete_when_unreferenced = NULL WHERE project_id = ?1 AND id = ?2',
+  ).bind(projectId, sheetId);
 }

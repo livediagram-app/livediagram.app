@@ -5,7 +5,7 @@
 
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape, type ShapeElement } from '@liveplanner/document';
+import { createShape, type ShapeElement } from '@liveplanner/project';
 import { BarChartView } from './BarChartView';
 import { LineChartView } from './LineChartView';
 import { PieChartView } from './PieChartView';

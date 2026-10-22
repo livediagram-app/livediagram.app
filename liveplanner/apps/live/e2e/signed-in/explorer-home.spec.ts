@@ -3,8 +3,8 @@ import { test, expect, expectNoPageErrors } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
 // Explorer Home signed in (docs/specs/013-workspace/explorer-home.md), against the signed-in
-// export: a team member's Home names what a teammate did on a team document, where it lives, and
-// opens it; the person's own Jump Back In holds the document they opened, on a desktop and on a
+// export: a team member's Home names what a teammate did on a team project, where it lives, and
+// opens it; the person's own Jump Back In holds the project they opened, on a desktop and on a
 // phone, and See More leads to Recent.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
@@ -36,7 +36,7 @@ async function api(
   return res;
 }
 
-test('a teammate’s work on a team document reaches Home, named and placed', async ({
+test('a teammate’s work on a team project reaches Home, named and placed', async ({
   page,
   pageErrors,
 }) => {
@@ -53,16 +53,16 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
   const doc = crypto.randomUUID();
   const tab = crypto.randomUUID();
   const shape = { id: 'a', type: 'shape', shape: 'square', x: 40, y: 40, width: 200, height: 100 };
-  await api(page, ann, 'POST', '/documents', {
+  await api(page, ann, 'POST', '/projects', {
     id: doc,
     name: 'Payments architecture',
     teamId: team,
     tabs: [{ id: tab, name: 'Tab 1', elements: [{ ...shape, label: 'Ledger' }] }],
   });
-  await api(page, ann, 'GET', `/documents/${doc}/tabs/${tab}`, undefined, {
-    'X-Document-Open': '1',
+  await api(page, ann, 'GET', `/projects/${doc}/tabs/${tab}`, undefined, {
+    'X-Project-Open': '1',
   });
-  await api(page, bob, 'PUT', `/documents/${doc}/tabs/${tab}`, {
+  await api(page, bob, 'PUT', `/projects/${doc}/tabs/${tab}`, {
     id: tab,
     name: 'Tab 1',
     elements: [
@@ -98,10 +98,10 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
     page
       .getByRole('region', { name: 'Jump Back In' })
       .getByRole('link', { name: 'Payments architecture' }),
-  ).toHaveAttribute('href', `/document/${doc}`);
+  ).toHaveAttribute('href', `/project/${doc}`);
   const happened = page.getByRole('region', { name: 'What Happened' });
 
-  // One teammate: each action its own entry, naming who, what, which document and where.
+  // One teammate: each action its own entry, naming who, what, which project and where.
   const comment = happened.getByRole('link', { name: /^Bob commented on Payments architecture/ });
   await expect(comment).toContainText('“Split this out?”');
   await expect(comment).toContainText('Platform team');
@@ -112,7 +112,7 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
   // Home has no Timeline of its own.
   await expect(page.getByRole('region', { name: 'Timeline' })).toHaveCount(0);
 
-  // A phone: the same document in the strip, which ends in See More.
+  // A phone: the same project in the strip, which ends in See More.
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(
     page
@@ -128,6 +128,6 @@ test('a teammate’s work on a team document reaches Home, named and placed', as
   await page.setViewportSize({ width: 1280, height: 800 });
 
   await comment.click();
-  await expect(page).toHaveURL(new RegExp(`/document/${doc}`));
+  await expect(page).toHaveURL(new RegExp(`/project/${doc}`));
   expectNoPageErrors(pageErrors);
 });

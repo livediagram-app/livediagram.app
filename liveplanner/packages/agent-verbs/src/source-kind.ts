@@ -2,7 +2,7 @@
 // edit operations send `{ operations }`; elements or a whole `replace` send `{ replace }`.
 
 import type { ChangesetRequest } from '@liveplanner/api-schema';
-import { isRecord } from '@liveplanner/document';
+import { isRecord } from '@liveplanner/project';
 
 type SourceKind = 'operations' | 'elements' | 'replace';
 

@@ -12,9 +12,9 @@ describe('paneHeaderActions', () => {
     }
   });
 
-  it('offers New Document everywhere a new document lands, Home included', () => {
+  it('offers New Project everywhere a new project lands, Home included', () => {
     for (const kind of ['home', 'recent', 'all', 'folder', 'favourites', 'search'] as const) {
-      expect(paneHeaderActions(kind).newDocument, kind).toBe(true);
+      expect(paneHeaderActions(kind).newProject, kind).toBe(true);
     }
     for (const kind of [
       'inbox',
@@ -25,7 +25,7 @@ describe('paneHeaderActions', () => {
       'invites',
       'offline',
     ] as const) {
-      expect(paneHeaderActions(kind), kind).toEqual({ newDocument: false, newFolder: false });
+      expect(paneHeaderActions(kind), kind).toEqual({ newProject: false, newFolder: false });
     }
   });
 });

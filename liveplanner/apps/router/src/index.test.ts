@@ -42,8 +42,8 @@ const dispatch = (path: string, env: Env) =>
 describe('production dispatch (service bindings)', () => {
   it('forwards /api/* to the api worker with the prefix KEPT', async () => {
     const { env, api } = makeEnv();
-    await dispatch('/api/documents/abc', env);
-    expect(api.urls).toEqual(['https://liveplanner.app/api/documents/abc']);
+    await dispatch('/api/projects/abc', env);
+    expect(api.urls).toEqual(['https://liveplanner.app/api/projects/abc']);
   });
 
   it('strips /live off the asset-prefix requests for the live worker', async () => {
@@ -54,8 +54,8 @@ describe('production dispatch (service bindings)', () => {
 
   it('strips the basePath for help, keeping the query', async () => {
     const { env, help } = makeEnv();
-    await dispatch('/help/canvas/themes/', env);
-    expect(help.urls).toEqual(['https://liveplanner.app/canvas/themes/']);
+    await dispatch('/help/user-interface/themes/', env);
+    expect(help.urls).toEqual(['https://liveplanner.app/user-interface/themes/']);
   });
 
   it("puts the prefix back on a stripped app's own redirect, keeping its query", async () => {
@@ -104,10 +104,10 @@ describe('production dispatch (service bindings)', () => {
 
   it('forwards the clean live page routes UNstripped', async () => {
     const { env, live } = makeEnv();
-    await dispatch('/document/abc123', env);
+    await dispatch('/project/abc123', env);
     await dispatch('/new?blank=1', env);
     expect(live.urls).toEqual([
-      'https://liveplanner.app/document/abc123',
+      'https://liveplanner.app/project/abc123',
       'https://liveplanner.app/new?blank=1',
     ]);
   });
@@ -248,7 +248,7 @@ describe('staging noindex header', () => {
   });
 
   it('marks the api and the editor too, not just the indexable pages', async () => {
-    for (const path of ['/api/documents/abc', '/document/xyz', '/help/canvas/shadows/']) {
+    for (const path of ['/api/projects/abc', '/project/xyz', '/help/canvas/shadows/']) {
       const { env } = makeEnv();
       const res = await dispatch(path, staging(env));
       expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
@@ -257,7 +257,7 @@ describe('staging noindex header', () => {
 
   it('marks the 308 redirect for a prefix-less help article', async () => {
     const { env } = makeEnv();
-    const res = await dispatch('/canvas/shadows/', staging(env));
+    const res = await dispatch('/plan/boards/', staging(env));
     expect(res.status).toBe(308);
     expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
   });
@@ -286,7 +286,7 @@ describe('staging noindex header', () => {
       API: { fetch: () => Promise.resolve(upgrade) } as unknown as Fetcher,
       DEPLOY_ENV: 'staging',
     };
-    const res = await dispatch('/api/documents/abc/ws', env);
+    const res = await dispatch('/api/projects/abc/ws', env);
     expect(res).toBe(upgrade);
     expect(res.webSocket).toBe(socket);
   });

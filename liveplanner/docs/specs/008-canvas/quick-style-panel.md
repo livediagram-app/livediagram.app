@@ -116,7 +116,7 @@ opens nothing.
   in the menu's 3×3 grid. It shows only where it moves something: not on self-drawing kinds (no
   label) and not on kinds with their own face (the collab panels such as the temperature check and
   decision record, the session tools, the comment and action panels, the portal), whose label is a fixed
-  title, and not on icons or stickers (a glyph, at most a short caption). One predicate, `supportsTextAlign` in `@liveplanner/document`, gates both this panel and the
+  title, and not on icons or stickers (a glyph, at most a short caption). One predicate, `supportsTextAlign` in `@liveplanner/project`, gates both this panel and the
   context menu's Text Alignment section, so the two can't disagree. The panel also waits for words:
   a shape whose label is empty (or only whitespace) shows no Text alignment row, since there is
   nothing to align yet, and the row appears as soon as the shape is given text.
@@ -184,7 +184,7 @@ The seven colours are **theme-relative**:
 - **Then More colours**, every colour row's last target: a swatch button opening the full colour
   picker ([Colour picker](../004-interface-design/colour-picker.md#quick-style)) with the row's own
   colours as its Theme Palette, the standard colours (strong on Stroke and Text colour, by name; soft
-  on Background), the document's Custom colours and **Add a custom colour** (four coloured dots). A pick there styles the selection like any
+  on Background), the project's Custom colours and **Add a custom colour** (four coloured dots). A pick there styles the selection like any
   hand-picked colour: it binds no slot.
 - Every swatch is named by a colour word ("Theme default", "Green", "Deep orange"), never a hex, for
   its tooltip and its accessible name.
@@ -229,11 +229,11 @@ identity otherwise, and into this browser's cache either way.
   a different colour in Forest than in Ocean. An override is recorded against the theme it was made
   in, and switching theme shows that theme's own slots with whatever overrides you set for it,
   and none from other themes.
-- **Per user, not per document.** A palette you build is a working habit that follows you between
-  documents and devices. Colours a document should share with everyone who
+- **Per user, not per project.** A palette you build is a working habit that follows you between
+  projects and devices. Colours a project should share with everyone who
   opens it are what [custom themes](../011-theme/custom-themes.md) are for: one mechanism for
-  shared colours, not two. Keeping overrides per document and per user would fragment them further,
-  so the same person would rebuild the same palette in every document.
+  shared colours, not two. Keeping overrides per project and per user would fragment them further,
+  so the same person would rebuild the same palette in every project.
 - **Multi-colour themes** work the same way: their six slots are the branch colours, and an
   override replaces one of them in the panel only. The theme's branch colouring of the diagram is
   untouched.
@@ -301,9 +301,9 @@ element of the same kind you draw.
   Shift-drag), a forked arrow branch (it takes its trunk's look), templates, import, the MCP server
   and AI never read memory: they carry styles of their own, and applying memory to them would
   silently restyle content the user did not draw.
-- **Per document, on this device.** Memory is kept in the browser (`localStorage`), keyed by document. It
-  is not synced, not in the document, and not part of [User preferences](../007-editor/user-preferences.md):
-  it is a working habit for one document's notation, like the panel placements are a habit for one screen.
+- **Per project, on this device.** Memory is kept in the browser (`localStorage`), keyed by project. It
+  is not synced, not in the project, and not part of [User preferences](../007-editor/user-preferences.md):
+  it is a working habit for one project's notation, like the panel placements are a habit for one screen.
 
 ## Clear Styles
 

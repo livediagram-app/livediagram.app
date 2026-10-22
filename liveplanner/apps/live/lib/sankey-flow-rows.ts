@@ -11,7 +11,7 @@ import {
   SANKEY_MAX_FLOWS,
   type SankeyFlow,
   type SankeySkipReason,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 /** A row as typed: the amount stays text while it is written ("3,2" on its way to "3,200"). */
 export type SankeyDraftRow = { key: number; from: string; to: string; value: string };

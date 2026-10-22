@@ -3,12 +3,12 @@
 // What a Dashboard's rows and slots read (docs/specs/026-plan/plan-tabs.md "Dashboard tab"), handed down once by
 // DashboardPage rather than through every row.
 import { createContext, useContext } from 'react';
-import type { DashboardLayout, Element, Tab } from '@liveplanner/document';
+import type { DashboardLayout, Element, Tab } from '@liveplanner/project';
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import type { FitGuard } from './useFitGuard';
 
 export type DashboardContextValue = {
-  // The document's tabs (a Board or Sheet slot draws one of them), and the dashboard tab's elements by id.
+  // The project's tabs (a Board or Sheet slot draws one of them), and the dashboard tab's elements by id.
   tabs: readonly Tab[];
   elements: ReadonlyMap<string, Element>;
   // An Editor reshapes the dashboard; anyone else only looks and opens.
@@ -18,7 +18,7 @@ export type DashboardContextValue = {
   // Where a shown tab's content is (arrived, failed, on its way), and a fetch again for one that failed.
   tabStatus: (tabId: string) => 'loaded' | 'failed' | 'loading';
   retryTab: (tabId: string) => void;
-  // Fetch every tab's content not yet here (a figure from a Sheet choosing among all the document's Sheets); the
+  // Fetch every tab's content not yet here (a figure from a Sheet choosing among all the project's Sheets); the
   // tabs that fail are marked failed (tabStatus), so calling it again is the Retry.
   loadAllTabs?: (() => void) | undefined;
   deleteTab?: (tabId: string) => void;
@@ -43,7 +43,7 @@ export function useDashboard(): DashboardContextValue {
   return v;
 }
 
-// Where the document's tabs are, together: all arrived, some still on their way, or settled with some failed.
+// Where the project's tabs are, together: all arrived, some still on their way, or settled with some failed.
 export type TabsState = 'loaded' | 'loading' | 'failed';
 
 export function tabsStateOf(

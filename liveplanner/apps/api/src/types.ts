@@ -7,8 +7,8 @@
 // the worker-only `Env` binding shape that has nowhere else to live.
 
 export type {
-  LiveDoc as DocumentDTO,
-  DocumentSummary,
+  Project as ProjectDTO,
+  ProjectSummary,
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
@@ -27,7 +27,7 @@ export type {
 // wire format (purely a server-side capability handle).
 export type Env = {
   DB: D1Database;
-  DOCUMENT_ROOM: DurableObjectNamespace;
+  PROJECT_ROOM: DurableObjectNamespace;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a deployment that
   // sets neither) leaves it off the server release signal.
@@ -71,7 +71,7 @@ export type Env = {
   // legacy exception.
   GUEST_SIGNING_LIVE_AT?: string;
   // R2 bucket caching each project's SVG snapshot (`thumb/<id>`) and share card
-  // (docs/specs/006-document/document-snapshots.md). Optional so a deploy without R2 still runs:
+  // (docs/specs/006-project/project-snapshots.md). Optional so a deploy without R2 still runs:
   // unbound, the snapshot doors answer 404 and the Explorer row keeps its icon.
   SNAPSHOTS?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
@@ -82,7 +82,7 @@ export type Env = {
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for the anonymous telemetry relay (docs/specs/017-telemetry/telemetry.md "The relay"),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
-  // real document writes. Keyed on CF-Connecting-IP. Optional: absent
+  // real project writes. Keyed on CF-Connecting-IP. Optional: absent
   // (self-host) falls through to "allow", same as the write limiter.
   EVENTS_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for share-code resolution (GET /api/share/<code>),
@@ -123,27 +123,6 @@ export type Env = {
   // Public origin used to build links in emails (optional). Defaults to
   // "https://liveplanner.app".
   APP_BASE_URL?: string;
-  // WHOSE model, and where (docs/specs/007-editor/ai-assistance.md). The PROVIDER is inferred from which of
-  // these keys is set, because a key is provider-specific and its name should
-  // say so — see ai-provider.ts. The assistant prefers OpenAI, then Google.
-  // None = the whole AI surface is hidden (capabilities reports aiEnabled:false and the AI routes
-  // answer 503), which is the unconfigured default.
-  //
-  // Set via `wrangler secret put <NAME>` in production; drop into
-  // `apps/api/.dev.vars` for local dev (gitignored, never commit).
-  GOOGLE_AI_STUDIO_API_KEY?: string;
-  OPENAI_API_KEY?: string;
-  // Any other OpenAI-compatible endpoint (Mistral, OpenRouter, a local
-  // llama.cpp or Ollama). Needs AI_BASE_URL and AI_MODEL with it.
-  AI_API_KEY?: string;
-  AI_BASE_URL?: string;
-  // The assistant's model, overriding its provider's default. Reaches the
-  // reader only when the reader runs on the same provider.
-  AI_MODEL?: string;
-  // Per-IP rate limiter for POST /api/ai. Caps AI requests at 20/60s
-  // per IP so a single client can't exhaust the operator's model budget.
-  // Optional: absent (a deployment without it) falls through to "allow".
-  AI_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Explorer Home's reads (docs/specs/013-workspace/explorer-home.md), per owner. Absent binding
   // (a deployment without it) allows every read.
   HOME_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
@@ -159,23 +138,4 @@ export type Env = {
   API_TOKEN_READ_RATE_LIMITER?: {
     limit: (input: { key: string }) => Promise<{ success: boolean }>;
   };
-  // Comma-separated Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md).
-  // When set, the worker rejects 403 unless the request's Origin
-  // header exactly matches one of the entries (trimmed for
-  // whitespace). Unset = no check, matching the historical
-  // behaviour so existing deployments don't break. Hosted
-  // liveplanner.app sets this in apps/api/wrangler.toml [vars] (NOT the
-  // dashboard, which a deploy wipes) to BOTH
-  // "https://www.liveplanner.app" and "https://liveplanner.app" — `www`
-  // first because the apex 301s to it, so `www` is what a browser sends.
-  // This comment previously named the apex alone, which as an actual
-  // value would 403 every request the editor makes.
-  AI_ALLOWED_ORIGINS?: string;
-  // When the literal string "true", POST /api/ai requires a verified
-  // account access token and rejects the X-Owner-Id guest path with 401
-  // (docs/specs/007-editor/ai-assistance.md). Anything else (unset, "false", any other value) keeps
-  // the guest path open. Hosted liveplanner.app sets this to "true";
-  // deployments that run sign-in-less stay on the open path by
-  // default.
-  AI_REQUIRE_SIGN_IN?: string;
 };

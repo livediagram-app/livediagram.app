@@ -1,6 +1,6 @@
-// A document's type catalogue (docs/specs/026-plan/item-types.md): its item types, in order. Absent
+// A project's type catalogue (docs/specs/026-plan/item-types.md): its item types, in order. Absent
 // (null) means the built-in catalogue, read from code; once changed, the whole catalogue is stored
-// with the document. Validation here is the api's and the editor's both, so a catalogue the editor
+// with the project. Validation here is the api's and the editor's both, so a catalogue the editor
 // saves is one the api keeps.
 import { readCardDisplay } from './card-display';
 import { isPlanGlyphId } from './glyphs';
@@ -112,7 +112,7 @@ const BUILT_IN_FIELDS = new Set<string>(BUILT_IN_FIELD_IDS);
 
 const NO_TYPES: readonly ItemTypeDef[] = [];
 
-// The types a document's stored catalogue holds; none while its card types are not chosen (docs/specs/026-plan/
+// The types a project's stored catalogue holds; none while its card types are not chosen (docs/specs/026-plan/
 // item-types.md "The type catalogue": the default types arrive only through Add Default Types).
 export function typesOf(stored: ItemTypeCatalogue | null | undefined): readonly ItemTypeDef[] {
   return stored?.types ?? NO_TYPES;
@@ -403,8 +403,8 @@ export function defaultStatusOf(
 }
 
 // A built-in or brought type's Default State, by name (docs/specs/026-plan/item-types.md "An item type"): a
-// document's state ids are its own, so the name is matched to the document's state of that name. By type id, so it
-// holds for such a type stored in a document's catalogue too. A brought type's is the first column of the board it
+// project's state ids are its own, so the name is matched to the project's state of that name. By type id, so it
+// holds for such a type stored in a project's catalogue too. A brought type's is the first column of the board it
 // is made for (docs/specs/026-plan/plan-templates.md "The brought types").
 export const READY_MADE_DEFAULT_STATE_NAMES: Readonly<Record<string, string>> = {
   project: 'Backlog',
@@ -424,7 +424,7 @@ export const READY_MADE_DEFAULT_STATE_NAMES: Readonly<Record<string, string>> = 
   'launch-check': 'Not Checked',
 };
 
-// The built-in default's state in this document (`statusNames`: status id to name), or undefined: not a built-in
+// The built-in default's state in this project (`statusNames`: status id to name), or undefined: not a built-in
 // type, no state of that name, or one the type turns off.
 export function readyMadeDefaultStatus(
   type: Pick<ItemTypeDef, 'id' | 'excludedStatuses'>,
@@ -489,7 +489,7 @@ export function validateItemTypeCatalogue(input: unknown): Result {
 }
 
 // A stored catalogue read back (D1, an offline record, a Drive file): kept when valid, else none
-// (not chosen), so a damaged value never stops a document opening.
+// (not chosen), so a damaged value never stops a project opening.
 export function readItemTypeCatalogue(input: unknown): ItemTypeCatalogue | null {
   if (input === null || input === undefined) return null;
   const parsed = typeof input === 'string' ? safeParse(input) : input;
@@ -505,16 +505,16 @@ function safeParse(text: string): unknown {
   }
 }
 
-// The default types as a stored catalogue: what a document made before card types started empty, with cards,
+// The default types as a stored catalogue: what a project made before card types started empty, with cards,
 // reads as (legacyCatalogue).
 export function defaultCatalogue(): ItemTypeCatalogue {
   return { version: ITEM_TYPE_CATALOGUE_VERSION, types: ITEM_TYPES };
 }
 
-// What a document made before card types started empty reads as (docs/specs/026-plan/item-types.md "The type
+// What a project made before card types started empty reads as (docs/specs/026-plan/item-types.md "The type
 // catalogue"): one never chosen (`stored` null) that has cards kept the five default types its cards were made
-// with, so it reads as them; anything else reads as it is stored. Used where a document is read whole and its cards
-// are known (an offline record, a Drive file); a D1 document is stored with its catalogue.
+// with, so it reads as them; anything else reads as it is stored. Used where a project is read whole and its cards
+// are known (an offline record, a Drive file); a D1 project is stored with its catalogue.
 export function legacyCatalogue(
   stored: ItemTypeCatalogue | null,
   hasCards: boolean,

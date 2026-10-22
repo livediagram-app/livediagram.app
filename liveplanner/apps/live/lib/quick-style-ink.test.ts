@@ -4,7 +4,7 @@ import {
   defaultScheme,
   type ShapeElement,
   type TextElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import { applyQuickStroke, applyQuickTextColour, quickStyleView, QUICK_INK } from './quick-style';
 

@@ -237,7 +237,7 @@ export const capabilities: Route = (_, url) =>
         aiEnabled: false,
         apiBase: 'https://liveplanner.app/api',
         authEnabled: true,
-        documentFormat: 2,
+        projectFormat: 2,
       })
     : undefined;
 

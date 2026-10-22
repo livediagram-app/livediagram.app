@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import {
   ITEM_TYPES,
   defaultCatalogue,
@@ -10,8 +10,8 @@ import {
 } from '@liveplanner/items';
 import { usePresetCardTypes } from './usePresetCardTypes';
 
-// docs/specs/026-plan/item-types.md "The type catalogue": a board adds the card types it names that the document
-// lacks (a Blank board none); only a board that appears while the document is open counts.
+// docs/specs/026-plan/item-types.md "The type catalogue": a board adds the card types it names that the project
+// lacks (a Blank board none); only a board that appears while the project is open counts.
 const board = (id: string, preset: 'bug-triage' | 'kanban' | 'sprint' | 'blank') => ({
   id,
   type: 'shape',
@@ -44,7 +44,7 @@ function setup(over: Partial<Props> = {}) {
 }
 
 describe('usePresetCardTypes', () => {
-  it('lets a fresh document’s first board choose its card types, never the boards it opened with', () => {
+  it('lets a fresh project’s first board choose its card types, never the boards it opened with', () => {
     const { rerender, base, saveCatalogue } = setup({ tabs: [tab([board('a', 'bug-triage')])] });
     expect(saveCatalogue).not.toHaveBeenCalled();
     rerender({ ...base, tabs: [tab([board('a', 'bug-triage'), board('b', 'kanban')])] });
@@ -60,7 +60,7 @@ describe('usePresetCardTypes', () => {
     expect(ids(saveCatalogue.mock.lastCall![0])).toEqual(['bug']);
   });
 
-  it('adds only what is missing to the card types a document has, and nothing for a Blank board', () => {
+  it('adds only what is missing to the card types a project has, and nothing for a Blank board', () => {
     const { rerender, base, saveCatalogue } = setup({ catalogue: defaultCatalogue() });
     rerender({ ...base, tabs: [tab([board('a', 'blank')])] });
     expect(saveCatalogue).not.toHaveBeenCalled();

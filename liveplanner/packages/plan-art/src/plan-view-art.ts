@@ -8,7 +8,7 @@ import {
   type PlanPalette,
   type PlanViewRef,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   PRIORITY_LABELS,
   STATUS_PHASES,
@@ -35,8 +35,8 @@ import {
 import { BOARD_WIDGET_INFO } from './board-widget-info';
 import { metricModel } from './metric-tile-model';
 import { PHASE_COLOURS } from './phase-colours';
-import { PRIORITY_COLOURS } from '@liveplanner/document';
-import { mixHex } from '@liveplanner/document';
+import { PRIORITY_COLOURS } from '@liveplanner/project';
+import { mixHex } from '@liveplanner/project';
 import {
   ART_PAD,
   box,
@@ -49,7 +49,7 @@ import {
 } from './plan-art-kit';
 import { calendarArt, ganttArt } from './plan-view-time-art';
 
-// What a picture reads: the document's cards and how its boards name and place their statuses.
+// What a picture reads: the project's cards and how its boards name and place their statuses.
 export type PlanArtData = {
   items: ReadonlyMap<string, Item>;
   types: readonly ItemTypeDef[];

@@ -3,7 +3,7 @@
 // greys, so the inks are laid over those greys by class (the headings and body text the ink, the quieter lines and
 // placeholders the soft ink) rather than threaded through every card: a card's own colours (a Status light, a link)
 // keep theirs.
-import { shadowBoxCss, type DashboardCardLook } from '@liveplanner/document';
+import { shadowBoxCss, type DashboardCardLook } from '@liveplanner/project';
 import type { CSSProperties } from 'react';
 
 // The inks, over the cards' slate text. Whole-class selectors, so `placeholder:text-slate-400` or

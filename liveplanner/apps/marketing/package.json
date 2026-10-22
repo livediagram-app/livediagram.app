@@ -25,7 +25,7 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
-    "@liveplanner/document": "workspace:*",
+    "@liveplanner/project": "workspace:*",
     "@liveplanner/help-registry": "workspace:*",
     "@liveplanner/licences": "workspace:*",
     "@liveplanner/next-config": "workspace:*",

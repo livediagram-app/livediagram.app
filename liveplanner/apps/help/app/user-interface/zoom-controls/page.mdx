@@ -5,18 +5,18 @@ import { ZoomControls } from '@/components/illustrations/user-interface';
 export const metadata = helpMetadata({
   title: 'Zoom Controls',
   description:
-    'The zoom controls let you zoom in and out, fit the whole canvas to the screen, and jump to a preset zoom level.',
+    'On a Sheet tab the zoom controls make the cells larger or smaller, step by step or to a preset level.',
   path: '/help/user-interface/zoom-controls/',
 });
 
 <ArticleLayout
   title="Zoom Controls"
-  description="Zoom in and out, fit the canvas to the screen, and jump to a preset level."
+  description="Make a Sheet's cells larger or smaller, step by step or to a preset level."
   categoryTitle="User Interface"
   categorySlug="user-interface"
 >
 
-The **zoom controls** sit at the end of the cluster in the bottom-right corner of the canvas, after Undo and Redo, the session tools, any mode or Collaborate buttons, and Layers with the **Theme & canvas** button, and govern how close you are to what is on it. The infinite canvas can hold far more than one screenful, so zoom is how you move between the detail and the big picture.
+The **zoom controls** appear in the bottom-right corner on a [Sheet](/help/plan/sheets/) tab, at the end of the cluster after Undo and Redo, the card buttons and **Style**. They make the sheet's cells larger or smaller. Boards, Dashboards and Forms fit their tab, so those tabs have no zoom controls.
 
 <Figure caption="The zoom cluster: step out, the current level, step in, with the preset popover open above.">
   <ZoomControls />
@@ -24,24 +24,17 @@ The **zoom controls** sit at the end of the cluster in the bottom-right corner o
 
 ## The controls
 
-- **Zoom out** / **Zoom in**: step 10% further or closer.
-- **The percentage button**: shows the current level. **Click it to fit the whole canvas** in view at once, the quickest way to get your bearings after panning around. **Hover it** for a popover of preset levels (25%, 50%, 75%, 100%, 125% and 150%, plus **Fit to screen**) and pick one to jump straight there (100% is true size).
+- **Zoom out** / **Zoom in**: step 10% smaller or larger.
+- **The percentage button**: shows the current level. **Click it to go back to 100%**. **Hover it** for a popover of preset levels (50%, 75%, 100%, 125% and 150%) and pick one to jump straight there.
 
-Zoom runs from 10% to 500%. When a [Sheet](/help/canvas/plan-mode/sheets/) fills the canvas, the controls zoom the sheet instead (50% to 200%, and Fit returns it to 100%); while a Plan board or view fills it, or on a Dashboard tab, zoom is off (the controls stay, greyed; on a phone they go away).
+A sheet zooms from 50% to 200%. The column letters, row numbers and cells grow and shrink together, while the toolbar and formula bar keep their size, and everything works as it does at 100%. Zoom is your own view: it is never saved or shared, and the sheet opens at 100% next time.
 
-## From the keyboard and trackpad
+## From the trackpad and mouse
 
-| Keys                     | Does                              |
-| ------------------------ | --------------------------------- |
-| `⌘+` / `⌘-`              | Zoom in / out                     |
-| `⌘0`                     | Reset the zoom to 100%            |
-| `⇧1`                     | Zoom to fit everything on the tab |
-| `⌘` + scroll, or a pinch | Zoom in or out                    |
-
-`⌘` is Ctrl on Windows and Linux. A plain two-finger scroll pans rather than zooms, and so do the [Hand tool](/help/selection-modes/hand/), `Space` + drag, and a middle-button drag. Zoom never changes the document, so it works on a view-only link too. See [Pan and Zoom](/help/canvas/the-canvas/pan-and-zoom/).
+Hold `⌘` (Ctrl on Windows and Linux) and scroll, or pinch on a trackpad, to zoom smoothly within the same range.
 
 ## On a phone and in zen mode
 
-On a phone the zoom buttons and the percentage are dropped to save space: pinch to zoom, and a dedicated **Fit** button stands in for fit-to-screen. In [Zen mode](/help/tools/zen-mode/) everything else hides but the zoom controls stay (along with any session tools in use), joined by an **Exit zen mode** button.
+On a phone the zoom buttons and the percentage are dropped to save space: pinch to zoom, and a **Fit** button puts the sheet back to 100%. In [Zen mode](/help/tools/zen-mode/) the zoom controls stay, joined by an **Exit zen mode** button.
 
 </ArticleLayout>

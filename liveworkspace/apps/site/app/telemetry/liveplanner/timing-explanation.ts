@@ -5,10 +5,10 @@ import { bucketLabel } from './timing-stats';
 // the product's own words, and the range it fell in. Read by eventExplanation for Search and the cards.
 
 const EDITOR_MOMENTS: Readonly<Record<string, string>> = {
-  DocumentLoad: 'A document opened',
+  ProjectLoad: 'A project opened',
   TabLoad: 'A tab someone switched to loaded',
   Save: 'An autosave finished',
-  RoomConnect: "A document's live room connected",
+  RoomConnect: "A project's live room connected",
   RoomReconnect: 'A live room came back after dropping',
 };
 

@@ -23,7 +23,7 @@
     "react-dom": "^19.3.0"
   },
   "dependencies": {
-    "@liveplanner/document": "workspace:*",
+    "@liveplanner/project": "workspace:*",
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/icons": "workspace:*",
     "@liveplanner/templates": "workspace:*",

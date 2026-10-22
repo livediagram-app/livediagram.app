@@ -1,46 +1,46 @@
-// A document as `pull` reads it (docs/specs/015-api/blueprints/cli.md "Pull and push"): its envelope fields, then
+// A project as `pull` reads it (docs/specs/015-api/blueprints/cli.md "Pull and push"): its envelope fields, then
 // every tab's plain read with its ETag revision, in `orderIndex` order, each kept as a read copy (CLI24) and hashed
 // as written.
 
 import { readPlainTab, type VerbContext } from '@liveplanner/agent-verbs';
-import type { DocumentResponse } from '@liveplanner/api-schema';
-import type { Tab } from '@liveplanner/document';
+import type { ProjectResponse } from '@liveplanner/api-schema';
+import type { Tab } from '@liveplanner/project';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
 import { tabHashes, type PulledTab } from '../sync/pull-file';
 
-type DocumentSnapshot = {
-  document: { id: string; name: string };
-  // Each with its per-document folder when it has one.
+type ProjectSnapshot = {
+  project: { id: string; name: string };
+  // Each with its per-project folder when it has one.
   tabs: Tab[];
   pulled: Record<string, PulledTab>;
 };
 
-export async function readDocumentSnapshot(
+export async function readProjectSnapshot(
   ctx: VerbContext,
-  documentId: string,
-): Promise<DocumentSnapshot> {
-  const { document } = await ctx.api.json<DocumentResponse>(
-    `/documents/${encodeURIComponent(documentId)}`,
+  projectId: string,
+): Promise<ProjectSnapshot> {
+  const { project } = await ctx.api.json<ProjectResponse>(
+    `/projects/${encodeURIComponent(projectId)}`,
   );
-  const ordered = [...document.tabs].sort((a, b) => a.orderIndex - b.orderIndex);
+  const ordered = [...project.tabs].sort((a, b) => a.orderIndex - b.orderIndex);
   const tabs: Tab[] = [];
   const pulled: Record<string, PulledTab> = {};
   for (const summary of ordered) {
-    const copy = await readPlainTab(ctx, document.id, summary.id);
+    const copy = await readPlainTab(ctx, project.id, summary.id);
     if (!copy)
       throw new CliError({
         exit: EXIT.failure,
         code: 'no_revision',
         message: `the host named no revision for tab ${JSON.stringify(summary.name)}`,
       });
-    await ctx.copies?.record(document.id, summary.id, copy);
+    await ctx.copies?.record(project.id, summary.id, copy);
     const tab = { ...copy.tab, ...(summary.folder ? { folder: summary.folder } : {}) };
     tabs.push(tab);
     pulled[summary.id] = { rev: copy.rev, ...(await tabHashes(tab)) };
   }
   return {
-    document: { id: document.id, name: document.name },
+    project: { id: project.id, name: project.name },
     tabs,
     pulled,
   };

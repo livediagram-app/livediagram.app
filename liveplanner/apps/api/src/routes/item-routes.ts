@@ -1,13 +1,13 @@
 // The item store's endpoints (docs/specs/026-plan/items.md, blueprint item-store.md "Interfaces and
 // contracts"): list, create, bulk create, patch (POST), many patches (item-patches-route.ts), a vote's tally (item-tally-route.ts), move and delete under
-// /api/documents/:id/items, and a card's comment writes (item-comment-routes.ts). People and agents use the
+// /api/projects/:id/items, and a card's comment writes (item-comment-routes.ts). People and agents use the
 // same doors. Every write applies the pure functions of @liveplanner/items, lands guarded by the item's rev
 // (retried on a lost race), and reaches the room as an ordered `items` op. Comment author ids reach only their
 // author: every answer is redacted for the caller, and the room hears none (docs/specs/026-plan/items.md
 // "Comments").
 
 import type { ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
-import { itemForViewer, readRestoredThread } from '@liveplanner/document';
+import { itemForViewer, readRestoredThread } from '@liveplanner/project';
 import {
   ITEMS_MAX,
   ITEM_BULK_MAX,
@@ -70,12 +70,12 @@ function readCreate(raw: unknown, owner: string): ItemCreate | ItemRejection {
 }
 
 // GET /items: the store, or the items a tab-scoped caller's tab shows.
-async function list(ctx: RouteContext, documentId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'read');
+async function list(ctx: RouteContext, projectId: string): Promise<Response> {
+  const caller = await itemCaller(ctx, projectId, 'read');
   if (caller instanceof Response) return caller;
   const [items, rev] = await Promise.all([
-    caller.items ?? listItems(ctx.env, documentId),
-    getItemsRev(ctx.env, documentId),
+    caller.items ?? listItems(ctx.env, projectId),
+    getItemsRev(ctx.env, projectId),
   ]);
   const shown = caller.scope ? items.filter((i) => caller.scope!.has(i.id)) : items;
   const body: ItemsResponse = { items: forCaller(caller, shown), rev };
@@ -90,20 +90,20 @@ async function list(ctx: RouteContext, documentId: string): Promise<Response> {
 // `by` names who made them when that is not the caller: a form's response (docs/specs/030-forms/forms.md).
 export async function createMany(
   ctx: RouteContext,
-  caller: Pick<ItemCaller, 'documentId' | 'owner'>,
+  caller: Pick<ItemCaller, 'projectId' | 'owner'>,
   creates: ItemCreate[],
   opts?: { by: ItemPerson },
 ): Promise<{ items: Item[]; rev: number } | Response> {
   const by = opts?.by ?? (await writer(ctx, caller.owner));
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
-    const head = await getItemStoreHead(ctx.env, caller.documentId);
+    const head = await getItemStoreHead(ctx.env, caller.projectId);
     if (head.count + creates.length > ITEMS_MAX) {
       return json(
-        { error: 'items_full', message: `a document holds ${ITEMS_MAX} items` },
+        { error: 'items_full', message: `a project holds ${ITEMS_MAX} items` },
         { status: 413 },
       );
     }
-    const existing = await listItems(ctx.env, caller.documentId);
+    const existing = await listItems(ctx.env, caller.projectId);
     const ids = new Set(existing.map((i) => i.id));
     const placer = itemPlacer(existing);
     const keys = new Set(existing.map((i) => i.key));
@@ -130,12 +130,12 @@ export async function createMany(
       made.push(item);
     }
     try {
-      const rev = await insertItems(ctx.env, caller.documentId, made);
+      const rev = await insertItems(ctx.env, caller.projectId, made);
       return { items: made, rev };
     } catch (err) {
       // A key or id taken by a write that raced this one: read again and retry.
       console.info('[items] items.write.retry', {
-        documentId: caller.documentId,
+        projectId: caller.projectId,
         attempt,
         error: String(err),
       });
@@ -145,8 +145,8 @@ export async function createMany(
   return itemBusy();
 }
 
-async function create(ctx: RouteContext, documentId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'participate');
+async function create(ctx: RouteContext, projectId: string): Promise<Response> {
+  const caller = await itemCaller(ctx, projectId, 'participate');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
@@ -157,20 +157,20 @@ async function create(ctx: RouteContext, documentId: string): Promise<Response> 
     read.votes !== undefined || read.comments !== undefined || read.key !== undefined;
   if (restores && !(await isItemEditor(ctx, caller))) return forbidden();
   // A create naming no status takes its type's Default State (docs/specs/026-plan/item-types.md "An item type");
-  // the document is already read for the caller, so this costs no query.
+  // the project is already read for the caller, so this costs no query.
   const input = withDefaultStatuses([read], typesOf(caller.doc?.itemTypes))[0]!;
   const made = await createMany(ctx, caller, [input]);
   if (made instanceof Response) return made;
-  relay(ctx, documentId, made.items, [], made.rev);
-  console.info('[items] created', { documentId, agent: ctx.token !== null });
+  relay(ctx, projectId, made.items, [], made.rev);
+  console.info('[items] created', { projectId, agent: ctx.token !== null });
   const answer: ItemResponse = { item: forCaller(caller, made.items)[0]!, rev: made.rev };
   return json(answer, { status: 201 });
 }
 
-async function bulk(ctx: RouteContext, documentId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'edit');
+async function bulk(ctx: RouteContext, projectId: string): Promise<Response> {
+  const caller = await itemCaller(ctx, projectId, 'edit');
   if (caller instanceof Response) return caller;
-  // Bulk writes (an offline document's items, on sync) are whole-document writes.
+  // Bulk writes (an offline project's items, on sync) are whole-project writes.
   if (caller.scope) return forbidden();
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
@@ -184,8 +184,8 @@ async function bulk(ctx: RouteContext, documentId: string): Promise<Response> {
   }
   const made = await createMany(ctx, caller, creates);
   if (made instanceof Response) return made;
-  relay(ctx, documentId, made.items, [], made.rev);
-  console.info('[items] bulk created', { documentId, count: made.items.length });
+  relay(ctx, projectId, made.items, [], made.rev);
+  console.info('[items] bulk created', { projectId, count: made.items.length });
   const answer: ItemsResponse = { items: forCaller(caller, made.items), rev: made.rev };
   return json(answer, { status: 201 });
 }
@@ -204,7 +204,7 @@ export async function writeItem(
   if (caller.scope && !caller.scope.has(itemId)) return itemNotFound();
   const by = await writer(ctx, caller.owner);
   for (let attempt = 1; attempt <= ITEM_WRITE_RETRIES; attempt += 1) {
-    const item = await readItem(ctx.env, caller.documentId, itemId);
+    const item = await readItem(ctx.env, caller.projectId, itemId);
     if (!item) return itemNotFound();
     const next = await change(item, by);
     if (next instanceof Response) return next;
@@ -213,20 +213,20 @@ export async function writeItem(
     if (retiresItem(item, next) && !(await isItemEditor(ctx, caller))) return forbidden();
     const bound = fieldsWithinBounds(next.fields);
     if (bound) return rejected(bound);
-    const rev = await updateItemAtRev(ctx.env, caller.documentId, next, item.rev);
+    const rev = await updateItemAtRev(ctx.env, caller.projectId, next, item.rev);
     if (rev !== null) {
-      relay(ctx, caller.documentId, [next], [], rev);
+      relay(ctx, caller.projectId, [next], [], rev);
       const answer: ItemResponse = { item: itemForViewer(next, caller.owner), rev };
       return json(answer);
     }
-    console.info('[items] items.write.retry', { documentId: caller.documentId, attempt });
+    console.info('[items] items.write.retry', { projectId: caller.projectId, attempt });
     if (attempt < ITEM_WRITE_RETRIES) await itemRetryPause(attempt);
   }
   return itemBusy();
 }
 
-async function patch(ctx: RouteContext, documentId: string, itemId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'participate');
+async function patch(ctx: RouteContext, projectId: string, itemId: string): Promise<Response> {
+  const caller = await itemCaller(ctx, projectId, 'participate');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
@@ -241,8 +241,8 @@ async function patch(ctx: RouteContext, documentId: string, itemId: string): Pro
   );
 }
 
-async function move(ctx: RouteContext, documentId: string, itemId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'participate');
+async function move(ctx: RouteContext, projectId: string, itemId: string): Promise<Response> {
+  const caller = await itemCaller(ctx, projectId, 'participate');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
@@ -254,21 +254,21 @@ async function move(ctx: RouteContext, documentId: string, itemId: string): Prom
     caller,
     itemId,
     async (item, by) =>
-      applyMove(item, input, await listItems(ctx.env, documentId), { now: Date.now(), by }),
+      applyMove(item, input, await listItems(ctx.env, projectId), { now: Date.now(), by }),
     { undo: body.undo === true },
   );
 }
 
-async function remove(ctx: RouteContext, documentId: string, itemId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'edit');
+async function remove(ctx: RouteContext, projectId: string, itemId: string): Promise<Response> {
+  const caller = await itemCaller(ctx, projectId, 'edit');
   if (caller instanceof Response) return caller;
   if (caller.scope && !caller.scope.has(itemId)) return itemNotFound();
-  const deleted = await deleteItemRow(ctx.env, documentId, itemId);
+  const deleted = await deleteItemRow(ctx.env, projectId, itemId);
   if (deleted === null) return itemNotFound();
-  relay(ctx, documentId, [], [itemId], deleted.rev);
+  relay(ctx, projectId, [], [itemId], deleted.rev);
   // Its comments' words leave the feed with it (docs/specs/013-workspace/timeline.md §4.3).
-  ctx.waitUntil?.(retractCardComments(ctx.env, documentId, deleted.item));
-  console.info('[items] deleted', { documentId, agent: ctx.token !== null });
+  ctx.waitUntil?.(retractCardComments(ctx.env, projectId, deleted.item));
+  console.info('[items] deleted', { projectId, agent: ctx.token !== null });
   return noContent();
 }
 
@@ -276,37 +276,37 @@ async function remove(ctx: RouteContext, documentId: string, itemId: string): Pr
 export async function handleItemRoutes(ctx: RouteContext): Promise<Response | null> {
   const { segments, request } = ctx;
   if (segments[3] !== 'items') return null;
-  const documentId = segments[2]!;
+  const projectId = segments[2]!;
   const method = request.method;
   if (segments.length === 4) {
-    if (method === 'GET') return list(ctx, documentId);
-    if (method === 'POST') return create(ctx, documentId);
+    if (method === 'GET') return list(ctx, projectId);
+    if (method === 'POST') return create(ctx, projectId);
     return methodNotAllowed();
   }
   if (segments.length === 5 && segments[4] === 'bulk')
-    return method === 'POST' ? bulk(ctx, documentId) : methodNotAllowed();
+    return method === 'POST' ? bulk(ctx, projectId) : methodNotAllowed();
   if (segments.length === 5 && segments[4] === 'patches')
-    return method === 'POST' ? patches(ctx, documentId) : methodNotAllowed();
+    return method === 'POST' ? patches(ctx, projectId) : methodNotAllowed();
   if (segments.length === 5 && segments[4] === 'tally')
-    return method === 'POST' ? tally(ctx, documentId) : methodNotAllowed();
+    return method === 'POST' ? tally(ctx, projectId) : methodNotAllowed();
   const itemId = segments[4]!;
   if (segments.length === 5) {
     // A field patch is a POST: the api's CORS (responses.ts) admits GET, POST, PUT and DELETE.
-    if (method === 'POST') return patch(ctx, documentId, itemId);
-    if (method === 'DELETE') return remove(ctx, documentId, itemId);
+    if (method === 'POST') return patch(ctx, projectId, itemId);
+    if (method === 'DELETE') return remove(ctx, projectId, itemId);
     return methodNotAllowed();
   }
-  if (segments[5] === 'comments') return handleItemCommentRoutes(ctx, documentId, itemId);
+  if (segments[5] === 'comments') return handleItemCommentRoutes(ctx, projectId, itemId);
   // A card is voted on through the tab's session vote, its tally added at the end (`/items/tally`); the old
   // per-card vote route is gone (docs/specs/012-collaboration/session-tools.md "Voting on Plan cards").
   if (segments.length === 6 && segments[5] === 'move') {
     if (method !== 'POST') return methodNotAllowed();
-    return move(ctx, documentId, itemId);
+    return move(ctx, projectId, itemId);
   }
   return null;
 }
 
-// A document create's seed items (an offline document's, on sync), validated
+// A project create's seed items (an offline project's, on sync), validated
 // before anything is written: the items, or the refusal.
 export function readSeedItems(raw: unknown, owner: string): ItemCreate[] | Response {
   if (raw === undefined) return [];
@@ -321,15 +321,15 @@ export function readSeedItems(raw: unknown, owner: string): ItemCreate[] | Respo
   return creates;
 }
 
-// Writes a new document's seed items, in batches of the bulk cap. No room is open yet, so
+// Writes a new project's seed items, in batches of the bulk cap. No room is open yet, so
 // nothing is relayed.
 export async function seedItems(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   owner: string,
   creates: ItemCreate[],
 ): Promise<Response | null> {
-  const caller: ItemCaller = { documentId, owner, scope: null };
+  const caller: ItemCaller = { projectId, owner, scope: null };
   for (let i = 0; i < creates.length; i += ITEM_BULK_MAX) {
     const made = await createMany(ctx, caller, creates.slice(i, i + ITEM_BULK_MAX));
     if (made instanceof Response) return made;

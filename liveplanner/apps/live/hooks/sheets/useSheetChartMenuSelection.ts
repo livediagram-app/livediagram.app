@@ -5,7 +5,7 @@
 // Animation, Collaborate and Tools act on the selection, so the menu selects it directly. When the menu closes the
 // chart is let go again, so no canvas key (Delete, an arrow nudge) acts on a chart the canvas does not show.
 import { useEffect, useRef } from 'react';
-import { sheetDrawnChartIds, type Element } from '@liveplanner/document';
+import { sheetDrawnChartIds, type Element } from '@liveplanner/project';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu.types';
 import type { Selection } from '@/lib/selection-store';
 

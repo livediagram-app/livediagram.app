@@ -10,7 +10,7 @@ export type FormFeedingBoard = { tabId: string; heading: string };
 export type FormBoardValue = {
   // The forms whose responses go to the open tab, in tab order.
   forms: readonly FormFeedingBoard[];
-  documentId: string | null;
+  projectId: string | null;
   ownerId: string;
   share: string | null;
   online: boolean;

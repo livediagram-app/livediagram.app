@@ -164,7 +164,7 @@ export function messageOf(err: unknown, fallback: string): string {
 export const POST_AUTH_DEFAULT = '/new';
 
 // Sign-in default: a returning user with no `?redirect_url` lands on
-// their Explorer ("here's all your stuff") rather than the new-document
+// their Explorer ("here's all your stuff") rather than the new-project
 // welcome flow that suits a fresh sign-up. See docs/specs/014-identity/auth-and-guest-access.md.
 export const POST_AUTH_SIGNIN_DEFAULT = '/explorer';
 
@@ -192,7 +192,7 @@ export function resolvePostAuthDestination(
 // Where the header's "Not now, keep going as a guest" link goes
 // (docs/specs/014-identity/auth-and-guest-access.md "The look: Night Band"):
 // back to the page the visitor came from when that is safe and works
-// without an account, else the new-document flow. The connect pages
+// without an account, else the new-project flow. The connect pages
 // (/oauth/*, /workbench/*) only work signed in, so returning a guest
 // there would just bounce them straight back here.
 const SIGNED_IN_ONLY = /^\/(oauth|workbench)(\/|\?|#|$)/i;
@@ -237,7 +237,7 @@ export function authHrefWithReturn(
 // The visitor's current same-origin location (path + query + hash), for
 // use as the auth return path. Recomputes on client navigation
 // (usePathname) and on hash changes, so a Sign in click always carries
-// the live location — including a document's `?query` and `#t=<tab>` hash
+// the live location — including a project's `?query` and `#t=<tab>` hash
 // so you land back on the exact tab. SSR / first paint has no `window`,
 // so it starts at the bare pathname and upgrades on mount, well before
 // any click.

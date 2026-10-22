@@ -28,8 +28,8 @@ import {
   sessionButtonPlan,
   type SessionButtonConfig,
   type TimerMode,
-} from '@liveplanner/document';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+} from '@liveplanner/project';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { TimerSetupBody } from '@/components/panels/session-studio/TimerSetupBody';
 import { VoteSetupBody } from '@/components/panels/session-studio/VotePane';
 

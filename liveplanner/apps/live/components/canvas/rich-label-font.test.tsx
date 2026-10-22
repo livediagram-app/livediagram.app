@@ -3,7 +3,7 @@
 // A rich label keeps its element's face on the wrapper its runs inherit from.
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { BoxedElement } from '@liveplanner/document';
+import type { BoxedElement } from '@liveplanner/project';
 import { RichLabel } from './element-label-views';
 
 afterEach(() => cleanup());

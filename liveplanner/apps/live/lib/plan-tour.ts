@@ -47,7 +47,7 @@ export function markPlanTracksSeen(
 // What the tour made, kept until it is taken away: the element it placed (the example board or sheet), the
 // example sheet's sheet, and the example cards.
 type PlanTourContent = {
-  documentId: string;
+  projectId: string;
   elementId: string;
   sheetId?: string;
   itemIds: string[];
@@ -62,7 +62,7 @@ function asContent(value: unknown): PlanTourContent | null {
   const elementId = v['elementId'] ?? v['boardId'];
   const sheetId = v['sheetId'];
   if (
-    typeof v['documentId'] !== 'string' ||
+    typeof v['projectId'] !== 'string' ||
     typeof elementId !== 'string' ||
     (sheetId !== undefined && typeof sheetId !== 'string') ||
     !Array.isArray(v['itemIds']) ||
@@ -70,7 +70,7 @@ function asContent(value: unknown): PlanTourContent | null {
   )
     return null;
   return {
-    documentId: v['documentId'],
+    projectId: v['projectId'],
     elementId,
     ...(sheetId ? { sheetId } : {}),
     itemIds: v['itemIds'],

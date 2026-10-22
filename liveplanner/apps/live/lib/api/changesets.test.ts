@@ -15,14 +15,13 @@ describe('apiRevertChangeset', () => {
             changeset: null,
             reverted: 0,
             kept: [{ id: 'a', reason: 'changed' }],
-            lint: null,
           }),
         );
       }),
     );
     const answer = await apiRevertChangeset('owner-1', 'd1', 'cs_0000000001', null);
     expect(answer.kept).toEqual([{ id: 'a', reason: 'changed' }]);
-    expect(calls[0]!.url).toMatch(/\/documents\/d1\/changesets\/cs_0000000001\/revert$/);
+    expect(calls[0]!.url).toMatch(/\/projects\/d1\/changesets\/cs_0000000001\/revert$/);
     expect(calls[0]!.init.method).toBe('POST');
     expect(new Headers(calls[0]!.init.headers).get('X-Liveplanner-Client')).toBe('editor');
   });
@@ -31,7 +30,7 @@ describe('apiRevertChangeset', () => {
 describe('apiListChangesets', () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  it("reads the document's newest changesets", async () => {
+  it("reads the project's newest changesets", async () => {
     const calls: string[] = [];
     vi.stubGlobal(
       'fetch',
@@ -43,6 +42,6 @@ describe('apiListChangesets', () => {
       }),
     );
     expect((await apiListChangesets('owner-1', 'd1', null)).map((c) => c.rev)).toEqual([4]);
-    expect(calls[0]).toMatch(/\/documents\/d1\/changesets$/);
+    expect(calls[0]).toMatch(/\/projects\/d1\/changesets$/);
   });
 });

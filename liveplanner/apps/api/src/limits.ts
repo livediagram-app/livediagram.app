@@ -2,7 +2,7 @@
 // worker against hostile or accidental oversized payloads (important ahead of
 // opening the API to external token callers). One place so the caps stay
 // consistent and tunable. Structural validity of tabs/elements lives in
-// @liveplanner/document (isValidTab); these are the SIZE bounds a structurally
+// @liveplanner/project (isValidTab); these are the SIZE bounds a structurally
 // valid payload must also respect.
 
 // Outer bound on any request body, gated on Content-Length before dispatch so
@@ -52,15 +52,15 @@ export class TabTooLargeError extends Error {
   }
 }
 
-// Human-facing names outside the document / tab name cap: folder / theme / API
-// token / OAuth client. Document and tab names are shortened to the far tighter
-// NAME_MAX_LENGTH instead (names.ts, docs/specs/006-document/name-length.md).
+// Human-facing names outside the project / tab name cap: folder / theme / API
+// token / OAuth client. Project and tab names are shortened to the far tighter
+// NAME_MAX_LENGTH instead (names.ts, docs/specs/006-project/name-length.md).
 export const MAX_NAME_LEN = 500;
 
 // A custom theme's JSON definition (palette + per-shape colours).
 export const MAX_THEME_DEF_BYTES = 256 * 1024;
 
-// The client-claimed document-write key relayed on presence (docs/specs/012-collaboration/participant-responses.md). Real
+// The client-claimed project-write key relayed on presence (docs/specs/012-collaboration/participant-responses.md). Real
 // ones are UUIDs; the clamp only stops a hostile hello pushing an oversize
 // string into the socket attachment, which has a small hard budget.
 export const MAX_PARTICIPANT_KEY_LEN = 64;

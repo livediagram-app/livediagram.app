@@ -4,11 +4,11 @@ Derived from [The sequence diagram](../sequence-diagram.md). Defaults in [DEFAUL
 
 | File                                                        | Role                                                      |
 | ----------------------------------------------------------- | --------------------------------------------------------- |
-| `packages/document/src/sequence-element.ts`                 | Fields, bounds, writes, the diagram it describes          |
-| `packages/document/src/svg-render-sequence.ts`              | The picture: `layoutSequence` drawn and fitted to the box |
+| `packages/project/src/sequence-element.ts`                 | Fields, bounds, writes, the diagram it describes          |
+| `packages/project/src/svg-render-sequence.ts`              | The picture: `layoutSequence` drawn and fitted to the box |
 | `apps/live/components/canvas/SequenceFace.tsx`              | Canvas face (the same picture), the Play wipe             |
 | `apps/live/components/palette/SequenceMenuSection.tsx`      | Summary, Edit Sequence, Numbered                          |
-| `packages/document/src/sequence-text.ts`                    | The Text tab: rows as lines and back                      |
+| `packages/project/src/sequence-text.ts`                    | The Text tab: rows as lines and back                      |
 | `apps/live/components/dialogs/SequenceDialog.tsx`           | The dialog: tabs, draft, preview, footer                  |
 | `apps/live/components/dialogs/SequenceParticipantStrip.tsx` | Participant chips and the open chip's editor              |
 | `apps/live/components/dialogs/SequenceMessageList.tsx`      | Numbered message rows, Add Message                        |
@@ -206,12 +206,12 @@ dialog, `useSequenceSetters`), `SequenceNumbered`, `SequenceAnim`.
 
 | Rule                        | Test file                                                                                             |
 | --------------------------- | ----------------------------------------------------------------------------------------------------- |
-| Writes, bounds (I1), next   | `packages/document/src/sequence-element.test.ts`                                                      |
+| Writes, bounds (I1), next   | `packages/project/src/sequence-element.test.ts`                                                      |
 | Picture and export (I2)     | same                                                                                                  |
-| Look: colours, face, finish | `packages/document/src/sequence-element.test.ts`, `apps/live/components/canvas/SequenceFace.test.tsx` |
+| Look: colours, face, finish | `packages/project/src/sequence-element.test.ts`, `apps/live/components/canvas/SequenceFace.test.tsx` |
 | Menu: summary, Edit         | `apps/live/components/palette/SequenceMenuSection.test.tsx`                                           |
 | Dialog: rows, text, close   | `apps/live/components/dialogs/SequenceDialog.test.tsx`                                                |
-| Text read and written       | `packages/document/src/sequence-text.test.ts`                                                         |
+| Text read and written       | `packages/project/src/sequence-text.test.ts`                                                         |
 | Dialog writes               | `apps/live/hooks/canvas/useSequenceSetters.test.ts`                                                   |
 | Who may edit                | `apps/live/lib/sequence-edit.test.ts`                                                                 |
 | Face label, Play class      | `apps/live/components/canvas/SequenceFace.test.tsx`                                                   |

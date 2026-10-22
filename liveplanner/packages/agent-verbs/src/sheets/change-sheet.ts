@@ -20,7 +20,7 @@ import { chartsCleared, chartsFollowing, type SheetChartEl } from './sheet-chart
 import { darkCanvas } from './sheet-design';
 import {
   applySheetWrite,
-  documentCellCount,
+  projectCellCount,
   NOBODY,
   splitWrite,
   writesCapsProblem,
@@ -53,13 +53,13 @@ type Applied = Omit<SheetChangesResult, 'sheetId' | 'title'> & {
 // One write through the api, and the sheet after it as stored.
 export async function sendSheetWrite(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   sheet: Sheet,
   write: SheetWrite,
   client: 'mcp' | 'cli',
 ): Promise<Sheet> {
   const body: SheetWriteRequest = { write, wid: crypto.randomUUID() };
-  const answer = await api.json<SheetWriteResponse>(sheetWritesPath(documentId, sheet.id), {
+  const answer = await api.json<SheetWriteResponse>(sheetWritesPath(projectId, sheet.id), {
     method: 'POST',
     headers: { [CLIENT_HEADER]: client },
     body: JSON.stringify(body),
@@ -72,9 +72,9 @@ export async function sendSheetWrite(
 export function capsRefusal(
   sheet: Sheet,
   writes: readonly SheetWrite[],
-  documentCells: number,
+  projectCells: number,
 ): { code: string; message: string } | null {
-  const code = writesCapsProblem(sheet, writes, documentCells);
+  const code = writesCapsProblem(sheet, writes, projectCells);
   if (!code) return null;
   console.info('[sheets] agent change over a cap', { code });
   return {
@@ -97,12 +97,12 @@ function partlyLine(line: string, parts: readonly SheetWrite[], sent: number): s
 // Builds and sends each change in turn against the workbook, which follows every landed write.
 async function applySheetChanges(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   wb: Workbook,
   sheetId: string,
   changes: readonly SheetChange[],
   client: 'mcp' | 'cli',
-  documentCells: number,
+  projectCells: number,
   rand: Rand = Math.random,
   context: SheetChangeContext = {},
 ): Promise<Applied> {
@@ -110,7 +110,7 @@ async function applySheetChanges(
   const charts: SheetChartOut[] = [];
   const clear: (GridRange | null)[] = [];
   let rev: number | null = null;
-  let cells = documentCells;
+  let cells = projectCells;
   for (const change of changes) {
     const sheet = wb.sheet(sheetId)!;
     const others = wb
@@ -127,7 +127,7 @@ async function applySheetChanges(
     let sent = 0;
     try {
       for (const part of parts) {
-        next = await sendSheetWrite(api, documentId, next, part, client);
+        next = await sendSheetWrite(api, projectId, next, part, client);
         sent++;
       }
     } catch (err) {
@@ -159,7 +159,7 @@ async function applySheetChanges(
 // nothing changed. New charts on a tab with no Sheet framing the sheet are not placed, and that is said.
 async function updateSheetCharts(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   tab: TabRecord,
   wb: Workbook,
   sheetId: string,
@@ -199,7 +199,7 @@ async function updateSheetCharts(
     base: { rev: tab.rev, elements: {} },
     summary: 'Charts of the sheet',
   };
-  await api.json<ChangesetResponse>(`${tabPath(documentId, tab.id)}/changesets`, {
+  await api.json<ChangesetResponse>(`${tabPath(projectId, tab.id)}/changesets`, {
     method: 'POST',
     headers: { [CLIENT_HEADER]: client },
     body: JSON.stringify(body),
@@ -228,31 +228,31 @@ const TOUCHES_CHARTS: ReadonlySet<SheetChange['op']> = new Set([
 
 export async function changeSheet(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   input: { sheet: string; changes: readonly SheetChange[] },
   client: 'mcp' | 'cli',
 ): Promise<SheetChangesResult> {
-  const sheets = await readSheets(api, documentId);
+  const sheets = await readSheets(api, projectId);
   const found = resolveSheet(sheets, input.sheet);
   if (!found.ok) {
     const { code, message } = found;
     return { sheetId: '', title: input.sheet, applied: [], rev: null, refusal: { code, message } };
   }
   const { id, tabId } = found.sheet;
-  const wb = await workbookFor(api, documentId, sheets, tabId);
+  const wb = await workbookFor(api, projectId, sheets, tabId);
   const before = wb.sheet(id)!.layout;
   // A design is tinted for its tab's canvas, and charts are on the tab: read it only when a change needs it.
   const needsTab = input.changes.some((c) => TOUCHES_CHARTS.has(c.op));
-  const tab = needsTab ? (await api.json<TabResponse>(tabPath(documentId, tabId))).tab : null;
+  const tab = needsTab ? (await api.json<TabResponse>(tabPath(projectId, tabId))).tab : null;
   const dark = darkCanvas(tab?.backgroundColor);
   const { charts, clear, ...result } = await applySheetChanges(
     api,
-    documentId,
+    projectId,
     wb,
     id,
     input.changes,
     client,
-    documentCellCount(sheets),
+    projectCellCount(sheets),
     Math.random,
     { dark },
   );
@@ -260,7 +260,7 @@ export async function changeSheet(
     try {
       const lines = await updateSheetCharts(
         api,
-        documentId,
+        projectId,
         tab,
         wb,
         id,

@@ -4,7 +4,7 @@
 // status every response is made in (New Board and New Card Type the last choice of each), and a sentence reading the
 // choice back; a pencil beside Card Type opens that type's editor. A choice that no longer holds (its board, column or
 // type gone) says so, and the form takes no responses until it is fixed.
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import {
   DESTINATION_PROBLEM_TEXT,
   destinationProblem,

@@ -4,7 +4,7 @@
 // chip, the number on its type's colour, the priority's signal bars, the footer's pills (due, start, estimate, checklist, comments, votes),
 // label chips, the flag and the vote control. PlanCardFace lays them out per card size.
 import { PRIORITY_LABELS, itemCommentCount, type Item, type Priority } from '@liveplanner/items';
-import { contrastRatio } from '@liveplanner/document';
+import { contrastRatio } from '@liveplanner/project';
 import { CommentIcon } from '@liveplanner/ui';
 import { PRIORITY_COLOURS, type PlanPalette } from './plan-palette';
 import { PlanTypeGlyph } from './plan-type-glyph';

@@ -18,7 +18,7 @@ import { explorerSurfaceFlags, useExplorerSurface } from '../explorer-surface';
 // Minimal chrome. Every navigation goes through `go`, which also closes the
 // drawer.
 export function ExplorerSidebar() {
-  const { teamsEnabled, invites, offlineDocuments, selected, prefs } = useExplorer();
+  const { teamsEnabled, invites, offlineProjects, selected, prefs } = useExplorer();
   const navRef = useRef<HTMLElement>(null);
   const keyboard = useTreeNavigation(navRef);
   const divider = sidebarDivider(isMinimalChrome(prefs));
@@ -27,7 +27,7 @@ export function ExplorerSidebar() {
     signedIn: teamsEnabled,
     signInAvailable: signInEnabled,
     pendingInvites: invites.length,
-    offlineDocuments: offlineDocuments.length,
+    offlineProjects: offlineProjects.length,
     selected: selected.kind,
     administration: surface.administration,
   });

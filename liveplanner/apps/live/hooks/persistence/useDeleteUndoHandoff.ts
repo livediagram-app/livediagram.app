@@ -2,12 +2,12 @@
 
 import { useEffect } from 'react';
 import { useToast } from '@/hooks/ui/useToast';
-import { offerDeleteUndo, takeDeleteUndo } from '@/lib/document-delete-undo';
+import { offerDeleteUndo, takeDeleteUndo } from '@/lib/project-delete-undo';
 import { useLatest } from '@/hooks/ui/useLatest';
 
-// The open document's delete lands here (docs/specs/013-workspace/trash.md "Deleting"): the editor left for the
-// Explorer straight after it, so its "Document deleted" toast, with its Undo, is offered on arrival. Once the owner
-// is known; `onRestored` re-reads the lists the document comes back into.
+// The open project's delete lands here (docs/specs/013-workspace/trash.md "Deleting"): the editor left for the
+// Explorer straight after it, so its "Project deleted" toast, with its Undo, is offered on arrival. Once the owner
+// is known; `onRestored` re-reads the lists the project comes back into.
 export function useDeleteUndoHandoff(ownerId: string | null, onRestored: () => void): void {
   const toast = useToast();
   const restored = useLatest(onRestored);

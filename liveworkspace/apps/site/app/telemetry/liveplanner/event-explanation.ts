@@ -40,22 +40,22 @@ function pattern(category: string, action: string, type: string): string | null 
     // The landing funnel (docs/specs/019-marketing/landing-funnel.md): which public-page button it was.
     case 'Cta|Opened':
       return isCtaSource(type)
-        ? `Someone followed the ${ctaSourceLabel(type)} button on the ${SURFACE_LABELS[ctaSurfaceOf(type)]} and reached the New Document page.`
+        ? `Someone followed the ${ctaSourceLabel(type)} button on the ${SURFACE_LABELS[ctaSurfaceOf(type)]} and reached the New Project page.`
         : null;
     case 'Cta|Created':
       return isCtaSource(type)
-        ? `Someone who arrived from the ${ctaSourceLabel(type)} button on the ${SURFACE_LABELS[ctaSurfaceOf(type)]} went on to create a document.`
+        ? `Someone who arrived from the ${ctaSourceLabel(type)} button on the ${SURFACE_LABELS[ctaSurfaceOf(type)]} went on to create a project.`
         : null;
     case 'Element|Added':
       return `Someone added ${withArticle(words(type))} to the canvas.`;
-    case 'Document|Exported':
+    case 'Project|Exported':
       return `Someone exported a tab as ${type}.`;
-    case 'Document|Joined':
-      return `Someone came into a document through ${withArticle(`${words(type)}-role`)} share link. Counted once per person per document, not on every revisit.`;
+    case 'Project|Joined':
+      return `Someone came into a project through ${withArticle(`${words(type)}-role`)} share link. Counted once per person per project, not on every revisit.`;
     case 'Tab|Imported':
       return `Someone imported a tab from ${withArticle(type)} file.`;
     case 'Theme|Changed':
-      return `A tab was given the ${typeLabel(type)} theme: switched to it, or picked when a document or template was created with it.`;
+      return `A tab was given the ${typeLabel(type)} theme: switched to it, or picked when a project or template was created with it.`;
     case 'Canvas|Changed': {
       const control = CANVAS_CONTROLS[type];
       return control
@@ -92,8 +92,8 @@ function pattern(category: string, action: string, type: string): string | null 
   }
 }
 
-// `Http403.SaveTab.Forbidden`, `Network.SendEmail`, `Internal.Put.Documents.Tabs`,
-// `Internal.FindDocuments`, `Auth.NoSessionToken`, `SaveFailed.TypeError`: the
+// `Http403.SaveTab.Forbidden`, `Network.SendEmail`, `Internal.Put.Projects.Tabs`,
+// `Internal.FindProjects`, `Auth.NoSessionToken`, `SaveFailed.TypeError`: the
 // error-telemetry shapes (packages/api-schema, apps/live/lib/api/error-report.ts).
 function apiError(type: string): string | null {
   const [kind = '', ...rest] = type.split('.');

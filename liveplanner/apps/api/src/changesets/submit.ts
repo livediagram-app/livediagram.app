@@ -1,11 +1,5 @@
-import type {
-  ChangesetResponse,
-  ChangesetWritten,
-  EditRejection,
-  LintReport,
-} from '@liveplanner/api-schema';
-import { lintFooterPart } from '@liveplanner/diagram-lint';
-import { migrateIncomingTab, type Tab } from '@liveplanner/document';
+import type { ChangesetResponse, ChangesetWritten, EditRejection } from '@liveplanner/api-schema';
+import { migrateIncomingTab, type Tab } from '@liveplanner/project';
 import {
   applyEditOperations,
   applyReplace,
@@ -18,14 +12,12 @@ import { lastChangesetRev, tabIdsHeldElsewhere } from '../db';
 import { capStoredName } from '../names';
 import { personTagFor } from '../person-tag';
 import { readRoomSelections, type RoomSelection } from '../room-client';
-import type { DocumentDTO, Env } from '../types';
+import type { ProjectDTO, Env } from '../types';
 import { makeTemplateSheets } from './template-sheets';
-import type { ChangesetBody } from './request';
 import { afterChangeset } from './after';
 import { checkBase, type BaseOutcome } from './base-check';
 import type { FrontDoor } from './front-door';
 import { heldTargets } from './held-check';
-import { lintResult } from './lint';
 import { changesetLog, engineLog } from './log';
 import { engineRefusal, type ParsedChangeset } from './request';
 import { readStoredTab, withRev, type StoredTab } from './stored-tab';
@@ -41,7 +33,7 @@ const TAB_ID_MAX = 128;
 
 type SubmitArgs = {
   env: Env;
-  document: DocumentDTO;
+  project: ProjectDTO;
   tabId: string;
   request: ParsedChangeset;
   dryRun: boolean;
@@ -53,24 +45,24 @@ type SubmitArgs = {
 
 export type SubmitResult = { status: number; body: unknown };
 
-type Where = { documentId: string; tabId: string };
+type Where = { projectId: string; tabId: string };
 
 export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
-  const { env, document, tabId, request } = args;
-  const where: Where = { documentId: document.id, tabId };
+  const { env, project, tabId, request } = args;
+  const where: Where = { projectId: project.id, tabId };
   if (tabId.length > TAB_ID_MAX) {
     return refusal(422, 'invalid_value', `a tab id holds at most ${TAB_ID_MAX} characters`);
   }
   for (let attempt = 1; attempt <= SUBMIT_ATTEMPTS; attempt += 1) {
     const [stored, prevRev, selections] = await Promise.all([
-      readStoredTab(env, document.id, tabId),
+      readStoredTab(env, project.id, tabId),
       lastChangesetRev(env, tabId),
-      args.tokenId ? readSelections(env, document.id, tabId, args.author.id) : null,
+      args.tokenId ? readSelections(env, project.id, tabId, args.author.id) : null,
     ]);
     if (!stored) {
       if (request.body.kind !== 'replace') return { status: 404, body: { error: 'not_found' } };
-      if ((await tabIdsHeldElsewhere(env, document.id, [tabId])).size > 0) {
-        return refusal(409, 'tab_id_taken', 'another document holds a tab with this id');
+      if ((await tabIdsHeldElsewhere(env, project.id, [tabId])).size > 0) {
+        return refusal(409, 'tab_id_taken', 'another project holds a tab with this id');
       }
     }
     const compiled = compile(args, stored, selections);
@@ -95,38 +87,31 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     const lines = formatResultLines(compiled.results);
     if (args.dryRun) {
       changesetLog('info', '[changeset] dry-run', { ...where, targets: compiled.targets.length });
-      const lint = lintResult(compiled.tab, where, priorOf(request.body, stored));
-      const footer = formatResultFooter({
-        dryRun: true,
-        rev: stored?.rev ?? 0,
-        lint: lintFooterPart(lint),
-      });
+      const footer = formatResultFooter({ dryRun: true, rev: stored?.rev ?? 0 });
       return answer({
         dryRun: true,
         changeset: null,
         results: compiled.results,
         text: [...lines, footer].join('\n'),
         warnings,
-        lint,
       });
     }
     const ruled = withServerRules(compiled.tab, stored, args.author);
     // A template's Sheets a replace lands (sheet-store.md "Template starts"), made before the tab is written.
     const next =
       request.body.kind === 'replace'
-        ? await makeTemplateSheets(env, document.id, ruled, {
+        ? await makeTemplateSheets(env, project.id, ruled, {
             id: args.author.id ?? '',
             name: args.author.name,
             color: args.author.color,
           })
         : ruled;
-    const lint = lintResult(next, where, priorOf(request.body, stored));
     const outcome = await writeChangeset(env, {
-      documentId: document.id,
+      projectId: project.id,
       tabId,
       stored,
       next,
-      orderIndex: stored?.orderIndex ?? document.tabs.length,
+      orderIndex: stored?.orderIndex ?? project.tabs.length,
       author: args.author,
       tokenId: args.tokenId,
       summary: request.summary,
@@ -134,7 +119,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       rebasedOver: base.rebasedOver,
       prevRev,
       results: compiled.results,
-      textFor: (written) => [...lines, writtenFooter(written, document.id, lint)].join('\n'),
+      textFor: (written) => [...lines, writtenFooter(written, project.id)].join('\n'),
       revertOf: null,
     });
     if (outcome.kind === 'stale') {
@@ -151,7 +136,6 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
         results: compiled.results,
         text: [...lines, 'nothing changed'].join('\n'),
         warnings,
-        lint: null,
       });
     }
     changesetLog('info', '[changeset] applied', {
@@ -164,7 +148,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     });
     args.waitUntil?.(
       afterChangeset.run(env, {
-        document,
+        project,
         author: args.author,
         next,
         stored: stored?.tab ?? null,
@@ -179,36 +163,30 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       results: compiled.results,
       text: outcome.text,
       warnings,
-      lint,
     });
   }
   return refusal(409, 'tab_busy', 'the tab kept changing; read it again and resubmit');
 }
 
-export function writtenFooter(
-  written: ChangesetWritten,
-  documentId: string,
-  lint: LintReport | null,
-): string {
+export function writtenFooter(written: ChangesetWritten, projectId: string): string {
   return formatResultFooter({
     dryRun: false,
     previousRev: written.previousRev,
     rev: written.rev,
     rebasedOver: written.rebasedOver,
     changesetId: written.id,
-    documentId,
-    lint: lintFooterPart(lint),
+    projectId,
   });
 }
 
 // The selections on the tab, the agent owner's own marked by their person tag.
 async function readSelections(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
   ownerId: string,
 ): Promise<RoomSelection[] | null> {
-  return readRoomSelections(env, documentId, tabId, await personTagFor(documentId, ownerId));
+  return readRoomSelections(env, projectId, tabId, await personTagFor(projectId, ownerId));
 }
 
 function compile(
@@ -219,7 +197,7 @@ function compile(
   const options = {
     // What the owner has selected: what `selected` reads; null when the room was not read.
     selected: selections ? selections.filter((s) => s.mine).flatMap((s) => s.elementIds) : null,
-    log: engineLog({ documentId: args.document.id, tabId: args.tabId }),
+    log: engineLog({ projectId: args.project.id, tabId: args.tabId }),
   };
   const body = args.request.body;
   if (body.kind === 'replace') {
@@ -297,13 +275,4 @@ function refusal(status: number, error: string, message: string): SubmitResult {
 
 function answer(body: ChangesetResponse): SubmitResult {
   return { status: 200, body };
-}
-
-// What a changeset's lint judges its colours against (lint.ts): a replace landing a template is the template's own.
-function priorOf(
-  body: ChangesetBody,
-  stored: StoredTab | null,
-): StoredTab['tab'] | 'template' | null {
-  if (body.kind === 'replace' && 'template' in body.replace) return 'template';
-  return stored?.tab ?? null;
 }

@@ -1,51 +1,51 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT, parseBuildId } from '@liveplanner/api-schema';
+import { PROJECT_FORMAT, parseBuildId } from '@liveplanner/api-schema';
 import {
   EDITOR_BUILD_ID,
   isStaleBuild,
   noteServerBuild,
   serverBuild,
   newVersionAvailable,
-  noteServerDocumentFormat,
+  noteServerProjectFormat,
   resetServerReleaseForTests,
-  serverDocumentFormat,
+  serverProjectFormat,
   subscribeServerRelease,
 } from './server-release';
 
 // docs/specs/016-platform/new-version-prompt.md "When the prompt shows".
 afterEach(() => resetServerReleaseForTests());
 
-describe('the server document format', () => {
+describe('the server project format', () => {
   it('starts unknown, with nothing newer', () => {
-    expect(serverDocumentFormat()).toBeNull();
+    expect(serverProjectFormat()).toBeNull();
     expect(newVersionAvailable()).toBe(false);
   });
 
   it('offers a new version only when the server is ahead of this editor', () => {
-    noteServerDocumentFormat(String(DOCUMENT_FORMAT));
+    noteServerProjectFormat(String(PROJECT_FORMAT));
     expect(newVersionAvailable()).toBe(false);
-    noteServerDocumentFormat(DOCUMENT_FORMAT - 1);
+    noteServerProjectFormat(PROJECT_FORMAT - 1);
     expect(newVersionAvailable()).toBe(false);
-    noteServerDocumentFormat(String(DOCUMENT_FORMAT + 1));
+    noteServerProjectFormat(String(PROJECT_FORMAT + 1));
     expect(newVersionAvailable()).toBe(true);
   });
 
   it('keeps the highest number heard and tells listeners only when it rises', () => {
     const listener = vi.fn();
     const unsubscribe = subscribeServerRelease(listener);
-    noteServerDocumentFormat(DOCUMENT_FORMAT + 1);
-    noteServerDocumentFormat(DOCUMENT_FORMAT);
-    noteServerDocumentFormat(DOCUMENT_FORMAT + 1);
-    expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT + 1);
+    noteServerProjectFormat(PROJECT_FORMAT + 1);
+    noteServerProjectFormat(PROJECT_FORMAT);
+    noteServerProjectFormat(PROJECT_FORMAT + 1);
+    expect(serverProjectFormat()).toBe(PROJECT_FORMAT + 1);
     expect(listener).toHaveBeenCalledTimes(1);
     unsubscribe();
-    noteServerDocumentFormat(DOCUMENT_FORMAT + 2);
+    noteServerProjectFormat(PROJECT_FORMAT + 2);
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
   it('ignores anything that is not a format number', () => {
-    for (const junk of [null, undefined, '', 'two', -3, 0, 2.5, {}]) noteServerDocumentFormat(junk);
-    expect(serverDocumentFormat()).toBeNull();
+    for (const junk of [null, undefined, '', 'two', -3, 0, 2.5, {}]) noteServerProjectFormat(junk);
+    expect(serverProjectFormat()).toBeNull();
   });
 });
 

@@ -31,7 +31,7 @@ import { sendEmail } from './client';
 import { actionAssignedEmail, commentNotificationEmail, formResponseEmail } from './templates';
 import {
   notifyActionAssigned,
-  notifyDocumentJoin,
+  notifyProjectJoin,
   notifyMentioned,
   notifyFirstShare,
   notifyMilestone,
@@ -44,7 +44,7 @@ import {
 const env = { RESEND_API_KEY: 're', APP_BASE_URL: 'https://app.test' } as unknown as Env;
 const liveDoc = { id: 'd1', ownerId: 'u1', name: 'Roadmap' };
 const allowAll = {
-  notifyDocumentJoin: true,
+  notifyProjectJoin: true,
   notifyInviteResponse: true,
   notifyComments: true,
   notifyTips: true,
@@ -57,30 +57,30 @@ const allowAll = {
 afterEach(() => vi.clearAllMocks());
 
 describe('commentNotificationEmail', () => {
-  it('names the commenter + document, links to the document, omits comment text', () => {
+  it('names the commenter + project, links to the project, omits comment text', () => {
     const e = commentNotificationEmail(env, 'Roadmap', 'd1', 'Anna');
     expect(e.subject).toMatch(/Anna/);
     expect(e.html).toContain('Roadmap');
-    expect(e.html).toContain('https://app.test/document/d1');
+    expect(e.html).toContain('https://app.test/project/d1');
     // Footer links to the profile so the owner can turn it off (per request).
     expect(e.html).toContain('https://app.test/explorer?settings=notifications');
     expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
   });
 
-  it('falls back to "Someone" / "your document" when unknown', () => {
+  it('falls back to "Someone" / "your project" when unknown', () => {
     const e = commentNotificationEmail(env, '', 'd1', null);
     expect(e.subject).toMatch(/Someone/);
-    expect(e.html).toContain('your document');
+    expect(e.html).toContain('your project');
   });
 });
 
-describe('notifyDocumentJoin (docs/specs/014-identity/profile-and-email-notifications.md)', () => {
-  it('emails the owner when the per-document claim is won', async () => {
+describe('notifyProjectJoin (docs/specs/014-identity/profile-and-email-notifications.md)', () => {
+  it('emails the owner when the per-project claim is won', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(claimJoinNotify).mockResolvedValue(true);
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
-    await notifyDocumentJoin(env, liveDoc, 'Anna');
+    await notifyProjectJoin(env, liveDoc, 'Anna');
     expect(claimJoinNotify).toHaveBeenCalledWith(env, 'd1', expect.any(Number), expect.any(Number));
     const [, now, cutoff] = vi.mocked(claimJoinNotify).mock.calls[0]!.slice(1);
     expect((now as number) - (cutoff as number)).toBe(15 * 60 * 1000);
@@ -91,14 +91,14 @@ describe('notifyDocumentJoin (docs/specs/014-identity/profile-and-email-notifica
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(claimJoinNotify).mockResolvedValue(false);
-    await notifyDocumentJoin(env, liveDoc, 'Anna');
+    await notifyProjectJoin(env, liveDoc, 'Anna');
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
   it('spends no claim when the owner opted out', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('owner@x.test');
-    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyDocumentJoin: false });
-    await notifyDocumentJoin(env, liveDoc, 'Anna');
+    vi.mocked(getNotificationPrefs).mockResolvedValue({ ...allowAll, notifyProjectJoin: false });
+    await notifyProjectJoin(env, liveDoc, 'Anna');
     expect(claimJoinNotify).not.toHaveBeenCalled();
     expect(sendEmail).not.toHaveBeenCalled();
   });
@@ -143,7 +143,7 @@ describe('notifyNewComment', () => {
 });
 
 describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)', () => {
-  it('names the assigner, document, and action, links to the document', () => {
+  it('names the assigner, project, and action, links to the project', () => {
     const e = actionAssignedEmail(
       env,
       'Sam',
@@ -155,7 +155,7 @@ describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)
     expect(e.html).toContain('Roadmap');
     expect(e.html).toContain('Review the copy');
     expect(e.html).toContain('Hero only');
-    expect(e.html).toContain('https://app.test/document/d1');
+    expect(e.html).toContain('https://app.test/project/d1');
     expect(e.unsubscribeUrl).toBe('https://app.test/explorer?settings=notifications');
   });
 
@@ -174,17 +174,17 @@ describe('actionAssignedEmail (docs/specs/012-collaboration/assigned-actions.md)
     expect(e.html).toContain(`${'y'.repeat(200)}…`);
   });
 
-  it('falls back when the assigner or document name is unknown', () => {
+  it('falls back when the assigner or project name is unknown', () => {
     const e = actionAssignedEmail(env, null, { id: 'd1', name: '' }, 'Do it', null);
     expect(e.subject).toMatch(/A teammate/);
-    expect(e.html).toContain('a shared document');
+    expect(e.html).toContain('a shared project');
   });
 
-  it('names no document, and links to none, for an assignee who cannot open it', () => {
+  it('names no project, and links to none, for an assignee who cannot open it', () => {
     const e = actionAssignedEmail(env, 'Sam', null, 'Review the copy', null);
     expect(e.html).toContain('Review the copy');
     expect(e.html).toContain('ask them to share it');
-    expect(e.html).not.toContain('/document/');
+    expect(e.html).not.toContain('/project/');
     expect(e.html).toContain('https://app.test/explorer');
   });
 });
@@ -195,7 +195,7 @@ describe('notifyActionAssigned (docs/specs/012-collaboration/assigned-actions.md
     assigneeFallbackEmail: 'invited@x.com',
     assignerUserId: 'u1',
     assignerName: 'Sam',
-    document: { id: 'd1', name: 'Roadmap' },
+    project: { id: 'd1', name: 'Roadmap' },
     assigneeCanOpen: true,
     actionName: 'Review the copy',
     description: null,
@@ -266,14 +266,14 @@ describe('notifyActionAssigned (docs/specs/012-collaboration/assigned-actions.md
     expect(sendEmail).not.toHaveBeenCalled();
   });
 
-  it('leaves the document out for an assignee who cannot open it', async () => {
+  it('leaves the project out for an assignee who cannot open it', async () => {
     vi.mocked(getOwnerEmail).mockResolvedValue('assignee@x.com');
     vi.mocked(getNotificationPrefs).mockResolvedValue(allowAll);
     vi.mocked(sendEmail).mockResolvedValue({ sent: true });
     await notifyActionAssigned(env, { ...input, assigneeCanOpen: false });
     const html = vi.mocked(sendEmail).mock.calls[0]![1].html;
     expect(html).not.toContain('Roadmap');
-    expect(html).not.toContain('/document/d1');
+    expect(html).not.toContain('/project/d1');
   });
 });
 
@@ -283,7 +283,7 @@ describe('notifyMentioned (docs/specs/012-collaboration/comment-mentions.md)', (
     recipientFallbackEmail: 'invited@x.com',
     authorUserId: 'u1',
     authorName: 'Sam',
-    document: { id: 'd1', name: 'Roadmap' },
+    project: { id: 'd1', name: 'Roadmap' },
     commentText: 'Can you check this, @priya?',
   };
   beforeEach(() => vi.mocked(claimNotifyEmail).mockResolvedValue(true));
@@ -410,10 +410,10 @@ describe('notifyFirstShare (docs/specs/014-identity/transactional-email.md #6)',
 describe('the form response email (docs/specs/030-forms/forms.md "Hearing about responses")', () => {
   const form = { code: 'c'.repeat(22), heading: 'Bug Report' };
 
-  it('names the form and the card, links the document, and counts what was held', () => {
+  it('names the form and the card, links the project, and counts what was held', () => {
     const e = formResponseEmail(
       env,
-      { heading: 'Bug <Report>', documentId: 'd1', documentName: 'Ops' },
+      { heading: 'Bug <Report>', projectId: 'd1', projectName: 'Ops' },
       'Crash',
       3,
     );
@@ -422,9 +422,9 @@ describe('the form response email (docs/specs/030-forms/forms.md "Hearing about 
     expect(e.html).toContain('Bug &lt;Report&gt;');
     expect(e.html).toContain('<strong>Crash</strong>');
     expect(e.html).toContain('And 3 more responses have arrived');
-    expect(e.html).toContain('https://app.test/document/d1');
+    expect(e.html).toContain('https://app.test/project/d1');
     expect(
-      formResponseEmail(env, { heading: '', documentId: 'd1', documentName: '' }, '', 1).html,
+      formResponseEmail(env, { heading: '', projectId: 'd1', projectName: '' }, '', 1).html,
     ).toContain('And 1 more response has arrived');
   });
 

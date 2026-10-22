@@ -32,47 +32,47 @@ export type FormLinkState = {
 const PUBLISH_ERRORS: Record<string, string> = {
   form_destination_missing: 'Choose where responses go before publishing.',
   form_suspensions:
-    'This document can’t publish more forms: its form links were suspended after reports.',
+    'This project can’t publish more forms: its form links were suspended after reports.',
   form_already_published: 'This form is already published.',
   form_not_ready: 'Finish the form before publishing: Share Form lists what it needs.',
 };
 
 export function useFormLink(input: {
-  documentId: string | null;
+  projectId: string | null;
   tabId: string;
   ownerId: string;
   share: string | null;
-  // Offline documents and guests with no server: nothing to publish.
+  // Offline projects and guests with no server: nothing to publish.
   enabled: boolean;
   // Opening the Form tab marks its responses seen; a board's Form strip only reads (false).
   markSeen?: boolean;
 }): FormLinkState {
-  const { documentId, tabId, ownerId, share, enabled, markSeen = true } = input;
+  const { projectId, tabId, ownerId, share, enabled, markSeen = true } = input;
   const [link, setLink] = useState<FormLinkResponse | null>(null);
   const [loadStatus, setStatus] = useState<'loading' | 'ready' | 'failed'>('loading');
-  // A document with no server has no link to read (the page is remounted per tab, so a tab's state starts fresh).
-  const status: FormLinkState['status'] = enabled && documentId ? loadStatus : 'offline';
+  // A project with no server has no link to read (the page is remounted per tab, so a tab's state starts fresh).
+  const status: FormLinkState['status'] = enabled && projectId ? loadStatus : 'offline';
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // A reread (the poll, a reload): the count as it is now.
   const read = useCallback(async () => {
-    if (!enabled || !documentId) return;
+    if (!enabled || !projectId) return;
     try {
-      const next = await apiFormLink(ownerId, documentId, tabId, share);
+      const next = await apiFormLink(ownerId, projectId, tabId, share);
       setLink(next);
       setStatus('ready');
     } catch {
       setStatus((s) => (s === 'ready' ? s : 'failed'));
     }
-  }, [enabled, documentId, tabId, ownerId, share]);
+  }, [enabled, projectId, tabId, ownerId, share]);
 
   useEffect(() => {
-    if (!enabled || !documentId) return;
+    if (!enabled || !projectId) return;
     // Opening the tab marks what is here seen; a reader elsewhere only reads.
     (markSeen
-      ? apiMarkFormSeen(ownerId, documentId, tabId, share)
-      : apiFormLink(ownerId, documentId, tabId, share)
+      ? apiMarkFormSeen(ownerId, projectId, tabId, share)
+      : apiFormLink(ownerId, projectId, tabId, share)
     ).then(
       (next) => {
         setLink(next);
@@ -84,7 +84,7 @@ export function useFormLink(input: {
       if (document.visibilityState === 'visible') void read();
     }, FORM_LINK_POLL_MS);
     return () => window.clearInterval(timer);
-  }, [enabled, documentId, tabId, ownerId, share, read, markSeen]);
+  }, [enabled, projectId, tabId, ownerId, share, read, markSeen]);
 
   const run = useCallback(
     async (call: () => Promise<FormLinkResponse>, errors: Record<string, string> = {}) => {
@@ -112,20 +112,20 @@ export function useFormLink(input: {
     busy,
     error,
     publish: async () => {
-      if (!documentId) return false;
-      const ok = await run(() => apiPublishForm(ownerId, documentId, tabId, share), PUBLISH_ERRORS);
+      if (!projectId) return false;
+      const ok = await run(() => apiPublishForm(ownerId, projectId, tabId, share), PUBLISH_ERRORS);
       if (ok) track('Form', 'Shared', 'Link');
       return ok;
     },
     setOpen: async (open) => {
-      if (!documentId) return;
+      if (!projectId) return;
       // Fired before the change lands, so a close is counted even when it fails.
       track('Form', 'Toggled', open ? 'Open' : 'Closed');
-      await run(() => apiSetFormOpen(ownerId, documentId, tabId, open, share));
+      await run(() => apiSetFormOpen(ownerId, projectId, tabId, open, share));
     },
     remove: async () => {
-      if (!documentId) return;
-      await run(() => apiDeleteFormLink(ownerId, documentId, tabId, share));
+      if (!projectId) return;
+      await run(() => apiDeleteFormLink(ownerId, projectId, tabId, share));
     },
     reload: () => void read(),
   };

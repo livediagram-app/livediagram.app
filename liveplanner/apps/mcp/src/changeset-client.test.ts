@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { elementFingerprint, type Element, type Tab } from '@liveplanner/document';
+import { elementFingerprint, type Element, type Tab } from '@liveplanner/project';
 vi.mock('./image-result', () => ({
   imageResult: (value: Record<string, unknown>) => ({
     content: [{ type: 'text', text: JSON.stringify(value) }],
@@ -42,127 +42,48 @@ describe('editsBase', () => {
 });
 
 describe('mcpOpsToEditOperations', () => {
-  const ends = (from: string, to: string) => ({
-    from: { kind: 'pinned', elementId: from, anchor: 's' },
-    to: { kind: 'pinned', elementId: to, anchor: 'n' },
-  });
-  const refTab: Tab = {
-    id: 't2',
-    name: 'T',
-    elements: [box('4aeb12f0-aaaa'), box('9c11aa00-bbbb')],
+  const view = {
+    id: 'n',
+    type: 'shape',
+    shape: 'plan-view',
+    x: 0,
+    y: 0,
+    width: 500,
+    height: 360,
+    planView: { view: 'gantt' },
   };
 
-  it('packs a stroke’s new points with its new box, and refuses points it cannot draw', () => {
-    const stroke = {
-      id: 'ring',
-      type: 'freehand',
-      x: 0,
-      y: 0,
-      width: 10,
-      height: 10,
-      closed: true,
-      packedPoints: 'AQA=',
-    } as unknown as Element;
-    const tab: Tab = { id: 't3', name: 'T', elements: [stroke] };
-    const points = [
-      [100, 50],
-      [140, 90],
-      [100, 130],
-    ];
-    const ops = mcpOpsToEditOperations(
-      [{ op: 'update', elementId: 'ring', element: { points, penColour: 'red' } }],
-      tab,
-    ) as { fields: Record<string, unknown> }[];
-    expect(ops[0]!.fields).toMatchObject({
-      x: 100,
-      y: 50,
-      width: 40,
-      height: 80,
-      penColour: 'red',
-    });
-    expect(ops[0]!.fields.points).toBeUndefined();
-    expect(ops[0]!.fields.packedPoints).not.toBe('AQA=');
+  it('refuses an added element no liveplanner tab holds', () => {
     expect(
-      mcpOpsToEditOperations([{ op: 'update', elementId: 'ring', element: { points: [] } }], tab),
-    ).toMatch(/^ops\[1\]: element 1: "points" takes 1 to/);
+      mcpOpsToEditOperations(
+        [{ op: 'add', element: { id: 'a1', type: 'arrow', from: {}, to: {} } }],
+        tab,
+      ),
+    ).toMatch(/^ops\[1\]: element "a1": type "arrow" is not an element a liveplanner tab holds/);
   });
 
-  it('pins an added arrow by the refs read_document prints, and to an element added in the same call', () => {
-    const ops = mcpOpsToEditOperations(
-      [
-        {
-          op: 'add',
-          element: { id: 'new', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
-        },
-        { op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb', 'new') } },
-      ],
-      refTab,
-    );
-    expect(ops).toEqual([
-      expect.anything(),
-      { op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb12f0-aaaa', 'new') } },
-    ]);
-  });
-
-  it('refuses an arrow end that names nothing rather than storing an arrow to nowhere', () => {
-    const ops = mcpOpsToEditOperations(
-      [{ op: 'add', element: { id: 'a1', type: 'arrow', ...ends('4aeb', 'gone') } }],
-      refTab,
-    );
-    expect(ops).toMatch(/^ops\[1\]: arrow "a1": "to" is pinned to "gone"/);
-  });
-
-  it('resolves refs in an update that re-pins an existing arrow', () => {
-    const withArrow: Tab = {
-      ...refTab,
-      elements: [
-        ...refTab.elements,
-        { id: 'ar', type: 'arrow', ...ends('4aeb12f0-aaaa', '9c11aa00-bbbb') } as Element,
-      ],
-    };
-    const ops = mcpOpsToEditOperations(
-      [
-        {
-          op: 'update',
-          elementId: 'ar',
-          element: { to: { kind: 'pinned', elementId: '4aeb', anchor: 'e' } },
-        },
-      ],
-      withArrow,
-    );
-    expect(ops).toEqual([
-      {
-        op: 'set',
-        target: 'id:"ar"',
-        fields: { to: { kind: 'pinned', elementId: '4aeb12f0-aaaa', anchor: 'e' } },
-      },
-    ]);
-  });
-
-  it('maps add, update and remove onto add, set and rm, dropping an unchanged id or type', () => {
+  it('maps add, update and remove onto add, set and rm, dropping an unchanged id, type or shape', () => {
     expect(
       mcpOpsToEditOperations(
         [
+          { op: 'add', element: view },
           {
-            op: 'add',
-            element: { id: 'n', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
+            op: 'update',
+            elementId: 'a',
+            element: { id: 'a', type: 'shape', shape: 'square', label: 'Sign in' },
           },
-          { op: 'update', elementId: 'a', element: { id: 'a', type: 'shape', label: 'Sign in' } },
           { op: 'remove', elementId: 'b' },
         ],
         tab,
       ),
     ).toEqual([
-      {
-        op: 'add',
-        element: { id: 'n', type: 'shape', shape: 'square', x: 0, y: 0, width: 1, height: 1 },
-      },
+      { op: 'add', element: view },
       { op: 'set', target: 'id:"a"', fields: { label: 'Sign in' } },
       { op: 'rm', target: 'id:"b"' },
     ]);
   });
 
-  it('takes a ref as read_document prints it, and passes a word naming nothing as given', () => {
+  it('takes a ref as read_project prints it, and passes a word naming nothing as given', () => {
     const uuid = '7f3a2c91-0000-4000-8000-000000000001';
     const withUuid: Tab = { ...tab, elements: [...tab.elements, box(uuid), box('frame')] };
     expect(
@@ -213,16 +134,13 @@ describe('baseFor', () => {
 });
 
 describe('replaceBodyFrom', () => {
-  it('takes one source with its layout, theme and name', () => {
+  it('takes one source with its theme and name', () => {
     expect(replaceBodyFrom({ template: 'kanban', theme: 'ocean', name: 'Board' })).toEqual({
       template: 'kanban',
       theme: 'ocean',
       name: 'Board',
     });
-    expect(replaceBodyFrom({ elements: [], layout: 'auto' })).toEqual({
-      elements: [],
-      layout: 'auto',
-    });
+    expect(replaceBodyFrom({ elements: [] })).toEqual({ elements: [] });
   });
 });
 
@@ -257,7 +175,7 @@ describe('changesetErrorText', () => {
           }),
         ),
       ),
-    ).toContain('read_document');
+    ).toContain('read_project');
   });
 });
 
@@ -273,12 +191,12 @@ describe('the tools on changesets', () => {
       if (custom) return custom;
       if (path.endsWith('/events')) return new Response(null, { status: 204 });
       if (/\/tabs\/[^/]+$/.test(path)) return Response.json({ tab });
-      return Response.json({ document: { id: 'd1', name: 'D', tabs: [{ id: 't1', name: 'T' }] } });
+      return Response.json({ project: { id: 'd1', name: 'D', tabs: [{ id: 't1', name: 'T' }] } });
     });
     return { client, sent };
   }
 
-  it('update_document ops submits one based changeset as the MCP client, and no whole-tab save', async () => {
+  it('update_project ops submits one based changeset as the MCP client, and no whole-tab save', async () => {
     const { client, sent } = await connect((path) =>
       path.endsWith('/changesets')
         ? Response.json({
@@ -287,28 +205,15 @@ describe('the tools on changesets', () => {
             results: [],
             text: 'done',
             warnings: [],
-            lint: {
-              measures: {
-                crossings: 1,
-                behind: 0,
-                overlaps: 0,
-                extent: { width: 300, height: 200 },
-                arrows: 2,
-                boxes: 3,
-              },
-              findings: [],
-              counts: { error: 0, warning: 1, info: 0 },
-              skipped: { crossings: false },
-            },
           })
         : undefined,
     );
     const result = await client.callTool({
-      name: 'update_document',
-      arguments: { documentId: 'd1', mode: 'ops', rev: 6, ops: [{ op: 'remove', elementId: 'b' }] },
+      name: 'update_project',
+      arguments: { projectId: 'd1', mode: 'ops', rev: 6, ops: [{ op: 'remove', elementId: 'b' }] },
     });
     expect(result.isError).not.toBe(true);
-    const submitted = sent.find((s) => s.path === '/documents/d1/tabs/t1/changesets')!;
+    const submitted = sent.find((s) => s.path === '/projects/d1/tabs/t1/changesets')!;
     expect(submitted).toMatchObject({
       method: 'POST',
       body: {
@@ -317,11 +222,9 @@ describe('the tools on changesets', () => {
       },
     });
     expect(sent.some((s) => s.method === 'PUT' && /\/tabs\/[^/]+$/.test(s.path))).toBe(false);
-    const line = '1 crossing · 0 behind · 0 overlaps · 300×200 → 1 warning';
     expect(result.structuredContent).toMatchObject({
       changesetId: 'cs_0000000001',
       text: 'done',
-      lint: line,
     });
   });
 
@@ -335,8 +238,8 @@ describe('the tools on changesets', () => {
         : undefined,
     );
     const result = await client.callTool({
-      name: 'update_document',
-      arguments: { documentId: 'd1', mode: 'ops', ops: [{ op: 'remove', elementId: 'b' }] },
+      name: 'update_project',
+      arguments: { projectId: 'd1', mode: 'ops', ops: [{ op: 'remove', elementId: 'b' }] },
     });
     expect(result.isError).toBe(true);
     expect(JSON.stringify(result.content)).toContain('held by Bea');
@@ -347,25 +250,21 @@ describe('the tools on changesets', () => {
 
 describe('mcpResultText', () => {
   it('says how printed positions map to canvas coordinates when the content does not start at 0,0', () => {
-    const text = '+ a  square "A" @10,20 140×60\nrev 1→2 · cs_1 · lint clean';
+    const text = '+ a  square "A" @10,20 140×60\nrev 1→2 · cs_1';
     expect(mcpResultText(text, { x: 120, y: 75.6 })).toBe(
       `${text}\n@x,y above are from the content's top-left: an element's x, y = @x + 120, @y + 76.`,
     );
     expect(mcpResultText(text, { x: 0, y: 0 })).toBe(text);
     expect(mcpResultText(text, { x: 0, y: -104 })).toMatch(/x, y = @x \+ 0, @y - 104\.$/);
-    expect(mcpResultText('rev 1→2 · cs_1 · lint clean', { x: 5, y: 5 })).toBe(
-      'rev 1→2 · cs_1 · lint clean',
-    );
+    expect(mcpResultText('rev 1→2 · cs_1', { x: 5, y: 5 })).toBe('rev 1→2 · cs_1');
   });
 
   it('leaves off the CLI revert line no MCP tool runs, keeping the rest', () => {
     expect(
-      mcpResultText(
-        '+ a\nrev 1→2 · cs_1 · lint clean · revert: liveplanner changeset revert doc_1 cs_1',
-      ),
-    ).toBe('+ a\nrev 1→2 · cs_1 · lint clean');
-    expect(mcpResultText('dry run · rev 4 · lint clean · nothing written')).toBe(
-      'dry run · rev 4 · lint clean · nothing written',
+      mcpResultText('+ a\nrev 1→2 · cs_1 · revert: liveplanner changeset revert doc_1 cs_1'),
+    ).toBe('+ a\nrev 1→2 · cs_1');
+    expect(mcpResultText('dry run · rev 4 · nothing written')).toBe(
+      'dry run · rev 4 · nothing written',
     );
   });
 });

@@ -1,13 +1,12 @@
 // Tabs-category illustrations (docs/specs/018-help/help-app.md): the tab bar and its tab pills,
 // tab folders and their upward fan, the tab menu (toolbar over full-width rows split into groups),
-// the Add to Folder / Add to Document / Import / Export dialogs, cross-tab links, a locked tab,
+// the Add to Folder / Add to Project / Import / Export dialogs, cross-tab links, a locked tab,
 // and a before/after cleanup. Labels are the editor's own (TabPortalMenu,
 // TabOrganiseDialogs, ImportTabDialog, ExportTabDialog).
 // Composed only from the shared primitives so the house style holds.
 
 import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, Label, Dialog, Cursor } from './primitives';
-import { Glyph } from './element-indicators';
+import { Scene, Shape, Arrow, Label, Dialog } from './primitives';
 
 // --- Tab-bar building blocks -------------------------------------------------
 
@@ -304,27 +303,6 @@ function FormatCard({
 
 // --- Scenes ------------------------------------------------------------------
 
-/** The tab bar: several tabs, the active one raised with its ⋯ button, then the + button. */
-export function TabBarOverview() {
-  const barY = 158;
-  return (
-    <Scene w={420} h={210}>
-      {/* The active tab's canvas above the bar */}
-      <Shape x={84} y={56} w={92} h={44} kind="rect" accent label="Overview" />
-      <Shape x={256} y={24} w={80} h={40} kind="rect" label="API" />
-      <Shape x={256} y={92} w={80} h={40} kind="rect" label="Web" />
-      <Arrow from={[176, 78]} to={[256, 44]} kind="elbow" tone="muted" />
-      <Arrow from={[176, 78]} to={[256, 112]} kind="elbow" tone="muted" />
-      <TabBar y={barY} w={420} />
-      <TabPill x={14} y={barY + 8} w={98} label="Overview" active />
-      <TabPill x={118} y={barY + 8} w={66} label="Systems" />
-      <TabPill x={190} y={barY + 8} w={56} label="Teams" />
-      <TabPill x={252} y={barY + 8} w={64} label="Scratch" />
-      <AddTabButton x={322} y={barY + 8} />
-    </Scene>
-  );
-}
-
 /** Renaming a tab inline: the tab's name editor open with a text caret. */
 export function RenamingTab() {
   const barY = 70;
@@ -422,14 +400,14 @@ function MenuRowList({
 }
 
 /** The tab menu: the quick-action toolbar (Rename, Duplicate, Paste, Lock Tab, Delete) over
- *  full-width rows in two groups (folders and documents, content), opened from the
+ *  full-width rows in two groups (folders and projects, content), opened from the
  *  active tab's ⋯ button. */
 export function TabMenu() {
   const barY = 178;
   const mx = 150;
   const my = 10;
   const mw = 200;
-  const rows = ['Add to Folder', 'Add to Document', null, 'Import', 'Export', 'Clear'];
+  const rows = ['Add to Folder', 'Add to Project', null, 'Import', 'Export', 'Clear'];
   return (
     <Scene w={420} h={230}>
       <TabBar y={barY} w={420} />
@@ -642,49 +620,8 @@ export function AddToFolderMenu() {
   );
 }
 
-/** A link on one tab jumping to another: the element's Follow link badge, its hover card naming
- *  the destination, and the target tab in the bar. */
-export function CrossTabLink() {
-  const barY = 158;
-  return (
-    <Scene w={420} h={210}>
-      {/* Source element with its link indicator along the top, under the pointer */}
-      <Shape x={30} y={58} w={104} h={52} kind="rect" label="Database" />
-      <Glyph kind="link" cx={120} cy={70} strength={1} />
-      <Cursor x={122} y={74} />
-      {/* The badge's hover card */}
-      <rect
-        x={70}
-        y={8}
-        width={170}
-        height={34}
-        rx={7}
-        className="fill-white stroke-slate-200"
-        strokeWidth={1.5}
-      />
-      <Label x={80} y={19} size={10} weight={700} tone="strong">
-        Follow link
-      </Label>
-      <Label x={80} y={33} size={10} tone="muted">
-        Goes to tab &quot;DB internals&quot;
-      </Label>
-
-      {/* The jump */}
-      <Arrow from={[140, 84]} to={[252, 84]} kind="curved" />
-
-      {/* The target tab's content */}
-      <Shape x={258} y={58} w={120} h={52} kind="rect" accent label="DB internals" />
-
-      <TabBar y={barY} w={420} />
-      <TabPill x={14} y={barY + 8} w={70} label="Overview" />
-      <TabPill x={90} y={barY + 8} w={120} label="DB internals" active />
-      <AddTabButton x={216} y={barY + 8} />
-    </Scene>
-  );
-}
-
-/** The Add to Document dialog: a filter box over a grid of your other documents. */
-export function AddToDocumentMenu() {
+/** The Add to Project dialog: a filter box over a grid of your other projects. */
+export function AddToProjectMenu() {
   const W = 420;
   const H = 210;
   const dx = 30;
@@ -692,7 +629,7 @@ export function AddToDocumentMenu() {
   const docs = ['Roadmap 2026', 'Onboarding', 'Architecture'];
   return (
     <Scene w={W} h={H}>
-      <Dialog x={dx} y={dy} w={360} h={182} title="Add to Document" sceneW={W} sceneH={H}>
+      <Dialog x={dx} y={dy} w={360} h={182} title="Add to Project" sceneW={W} sceneH={H}>
         <rect
           x={dx + 16}
           y={dy + 48}
@@ -703,7 +640,7 @@ export function AddToDocumentMenu() {
           strokeWidth={1.5}
         />
         <Label x={dx + 26} y={dy + 61} size={11} tone="muted">
-          Filter documents…
+          Filter projects…
         </Label>
         {docs.map((d, i) => {
           const tx = dx + 16 + i * 112;
@@ -790,7 +727,7 @@ export function ImportMenu() {
         x={mx}
         y={my + 6}
         w={192}
-        rows={['Add to Folder', 'Add to Document', null, 'Import', 'Export', 'Clear']}
+        rows={['Add to Folder', 'Add to Project', null, 'Import', 'Export', 'Clear']}
         highlight="Import"
       />
     </Scene>

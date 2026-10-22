@@ -9,7 +9,7 @@ import {
   resolveFontStack,
   tabKindOf,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { readForm } from '@liveplanner/forms';
 import { formArt } from '@liveplanner/plan-art';
 import { renderTabToSvg, type ImageExportOpts } from './export-tab';

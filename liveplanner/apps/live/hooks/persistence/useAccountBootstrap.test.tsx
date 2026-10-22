@@ -37,7 +37,7 @@ vi.mock('@/components/providers/deferred-auth', () => {
   };
 });
 
-const MIGRATED = { documents: 1, folders: 0, shared: 0, images: 0 };
+const MIGRATED = { projects: 1, folders: 0, shared: 0, images: 0 };
 const { apiMigrateGuestData } = vi.hoisted(() => ({ apiMigrateGuestData: vi.fn() }));
 vi.mock('@/lib/api-client', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@/lib/api-client')>()),
@@ -86,7 +86,7 @@ describe('useAccountBootstrap token provider', () => {
   });
 });
 
-// Issue #67: signing in with a guest document open showed "diagram does not
+// Issue #67: signing in with a guest project open showed "diagram does not
 // exist", because the editor loaded it as the account before
 // POST /api/migrate had moved it. Owner data waits for the migration.
 describe('useAccountBootstrap guest migration', () => {

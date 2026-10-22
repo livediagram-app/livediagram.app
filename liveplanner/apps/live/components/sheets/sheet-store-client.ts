@@ -90,11 +90,11 @@ export const SHEET_REFETCH_DEBOUNCE_MS = 400;
 
 const REFUSALS: Partial<Record<string, string>> = {
   sheet_full: 'This sheet holds the most cells it can',
-  sheets_full: 'This document holds the most sheets it can',
+  sheets_full: 'This project holds the most sheets it can',
   sheet_too_large: 'A sheet holds up to 10,000 rows and 200 columns',
   sheet_title_taken: 'Another sheet on this tab is called that',
   input_too_long: 'A cell holds up to 10,000 characters',
-  sheet_not_found: 'This sheet is no longer in this document',
+  sheet_not_found: 'This sheet is no longer in this project',
   rules_full: 'This sheet holds the most rules it can',
 };
 
@@ -149,11 +149,11 @@ export class SheetStore {
     this.deps = deps;
     this.api = deps.api ?? { fetchSheets, createSheet, writeSheet, deleteSheet };
     this.wait = deps.wait ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
-    // The document synced to the server in place (docs/specs/006-document/offline-mode.md "Syncing in
+    // The project synced to the server in place (docs/specs/006-project/offline-mode.md "Syncing in
     // place"): every loaded tab is read again from the server, so the confirmed revisions are its own.
     // The store lives for the session, as does this subscription.
     subscribeOfflineIds((id) => {
-      if (id === this.deps.scope.documentId) this.resync();
+      if (id === this.deps.scope.projectId) this.resync();
     });
   }
 
@@ -488,7 +488,7 @@ export class SheetStore {
   }
 
   // Delete sheets with their elements: gone from the store now, kept as they were for Undo, and deleted by the api
-  // once nothing in the document references them.
+  // once nothing in the project references them.
   release(sheetIds: readonly string[]): void {
     for (const id of sheetIds) {
       const entry = this.entries.get(id);
@@ -534,7 +534,7 @@ export class SheetStore {
     this.queues.set(sheetId, next);
   }
 
-  // Let pending sends finish (tests, and before a document copy reads the store).
+  // Let pending sends finish (tests, and before a project copy reads the store).
   async settle(): Promise<void> {
     await Promise.all([...this.queues.values()]);
   }
@@ -646,8 +646,8 @@ export class SheetStore {
 
 const STORES = new Map<string, SheetStore>();
 
-// The store of a document, made on first use and kept for the session.
-// The document's sheet store, as the sheets bridge describes it (a Sheet and a chart drawn from one share it).
+// The store of a project, made on first use and kept for the session.
+// The project's sheet store, as the sheets bridge describes it (a Sheet and a chart drawn from one share it).
 export function sheetStoreOf(bridge: SheetsBridge): SheetStore {
   return sheetStoreFor({
     scope: bridge.scope,
@@ -659,7 +659,7 @@ export function sheetStoreOf(bridge: SheetsBridge): SheetStore {
 }
 
 export function sheetStoreFor(deps: SheetStoreDeps): SheetStore {
-  const key = deps.scope.documentId;
+  const key = deps.scope.projectId;
   let store = STORES.get(key);
   if (!store) {
     store = new SheetStore(deps);

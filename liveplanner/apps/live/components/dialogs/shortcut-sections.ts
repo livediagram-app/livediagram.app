@@ -5,9 +5,11 @@
 // environment, and pulling in React components would drag React and DOM helpers along
 // for a list of strings.
 //
-// The list is the reference users are told to trust ("every binding the
-// editor knows"), and it is a hand-kept list beside the hand-kept key maps in
-// hooks/canvas/editor-shortcut-keys.ts. The test pins the two together.
+// The list is the reference users are told to trust: every key that does something on a Board, Sheet, Dashboard
+// or Form tab, and nothing that does not. It is hand-kept beside the handlers it describes:
+// hooks/canvas/editor-shortcut-keys.ts (the editor-wide keys, which on a Plan tab are only those `coveredKeyRole`
+// runs), components/plan/plan-board-keys.ts (a focused card) and components/sheets/sheet-keys.ts (a Sheet's grid).
+// shortcut-sections.test.ts pins it to them.
 
 export type ShortcutRow = {
   keys: string[];
@@ -21,76 +23,51 @@ export type ShortcutSection = {
 
 export const SHORTCUT_SECTIONS: ShortcutSection[] = [
   {
-    heading: 'Edit',
-    rows: [
-      { keys: ['⌘', 'Z'], label: 'Undo' },
-      { keys: ['⌘', '⇧', 'Z'], label: 'Redo  (or Ctrl Y)' },
-      { keys: ['⌘', 'X'], label: 'Cut Selection' },
-      { keys: ['⌘', 'C'], label: 'Copy Selection' },
-      { keys: ['⌘', 'V'], label: 'Paste (offset copy)' },
-      { keys: ['⌘', 'D'], label: 'Duplicate Selection' },
-      { keys: ['⌘', '⇧', 'L'], label: 'Lock  /  Unlock Selection' },
-      { keys: ['⌘', 'A'], label: 'Select All' },
-      { keys: ['Del', '/  ⌫'], label: 'Delete Selection' },
-      { keys: ['⌘', '⇧', ']'], label: 'Bring to Front' },
-      { keys: ['⌘', '⇧', '['], label: 'Send to Back' },
-    ],
-  },
-  {
-    heading: 'Tools',
-    rows: [
-      { keys: ['V'], label: 'Select Tool  (or 1)' },
-      { keys: ['S'], label: 'Search Elements  (Select where there is no strip)' },
-      { keys: ['H'], label: 'Hand Tool' },
-      { keys: ['I'], label: 'Isometric View' },
-      { keys: ['⇧', 'drag'], label: 'Rotate Isometric Camera' },
-      { keys: ['Z'], label: 'Zen Mode (focus)' },
-    ],
-  },
-  {
-    heading: 'Add elements',
-    rows: [
-      { keys: ['R'], label: 'Square' },
-      { keys: ['O'], label: 'Circle' },
-      { keys: ['D'], label: 'Diamond' },
-      { keys: ['C'], label: 'Cylinder' },
-      { keys: ['G'], label: 'Parallelogram' },
-      { keys: ['T'], label: 'Text' },
-      { keys: ['N'], label: 'Note (sticky)' },
-      { keys: ['A'], label: 'Arrow' },
-      { keys: ['F'], label: 'Frame' },
-      { keys: ['1', '–', '0'], label: 'Number row also picks tools / shapes' },
-    ],
-  },
-  {
-    heading: 'Navigate & select',
+    heading: 'Everywhere',
     rows: [
       { keys: ['⌘', 'K'], label: 'Search & Commands  (or ⌘ .)' },
-      { keys: ['⌘', '+'], label: 'Zoom In' },
-      { keys: ['⌘', '-'], label: 'Zoom Out' },
-      { keys: ['⌘', '0'], label: 'Reset Zoom to 100%' },
-      { keys: ['⇧', '1'], label: 'Zoom to Fit' },
-      // A selected mind node claims plain Tab for growth (docs/specs/009-elements/mind-node.md), so the
-      // caveat is on the row rather than in a footnote nobody reads.
-      { keys: ['Tab'], label: 'Select Next Element  (Shift: previous)' },
+      { keys: ['⌘', 'Z'], label: 'Undo' },
+      { keys: ['⌘', '⇧', 'Z'], label: 'Redo  (or Ctrl Y)' },
+      { keys: ['Z'], label: 'Zen Mode (focus)' },
+      { keys: ['Escape'], label: 'Close what is open, or leave Zen Mode' },
       {
         keys: ['F6'],
-        label: 'Next Region: Header, Palette, Canvas, Controls, Tabs  (Shift: previous)',
+        label: "Next Region: Header, the Tab's Content, Controls, Tabs  (Shift: previous)",
       },
-      { keys: ['Tab'], label: 'On a mind node: add a child' },
-      { keys: ['Enter'], label: 'On a mind node: add a sibling' },
-      { keys: ['⇧', 'Enter'], label: 'In a mind node’s label: new line' },
-      // A flowchart step grows the same way (docs/specs/009-elements/flowchart.md).
-      { keys: ['Tab'], label: 'On a flowchart step: add the next step' },
-      { keys: ['Enter'], label: 'On a flowchart step: add a parallel step' },
-      { keys: ['Arrow'], label: 'Nudge selection 1 px  (Shift: 10 px)' },
-      { keys: ['Shift', 'Click'], label: 'Toggle element in multi-selection' },
-      { keys: ['Shift', 'drag'], label: 'Drop a duplicate (original stays put)' },
-      { keys: ['Space', 'drag'], label: 'Pan canvas (overrides current tool)' },
-      { keys: ['Space'], label: 'Edit label of selected element' },
-      { keys: ['Type'], label: 'Replace label of selected element' },
-      { keys: ['Escape'], label: 'Cancel current mode, or clear selection' },
-      { keys: ['⌘', 'hold'], label: 'Show shortcut badges on palette' },
+    ],
+  },
+  {
+    // docs/specs/026-plan/plan-board.md "Keyboard": while a card has focus.
+    heading: 'On a Board',
+    rows: [
+      { keys: ['Arrow'], label: 'Move between cards' },
+      { keys: ['Enter'], label: 'Open the card  (or Space)' },
+      { keys: ['Shift', 'Arrow'], label: 'Move the card a column, or up and down its column' },
+      { keys: ['N'], label: "Add a card to the card's column" },
+      { keys: ['Del', '/  ⌫'], label: 'Move the card to the Trash' },
+    ],
+  },
+  {
+    // docs/specs/029-sheets/sheet.md "Keyboard" and "Zoom".
+    heading: 'In a Sheet',
+    rows: [
+      { keys: ['Arrow'], label: 'Move between cells  (⌘: to the edge of the data, Shift: extend)' },
+      { keys: ['Enter'], label: 'Move down  (Tab: right, Shift: back)' },
+      { keys: ['F2'], label: 'Edit the cell  (or just type)' },
+      { keys: ['Del', '/  ⌫'], label: 'Clear the selected cells' },
+      { keys: ['⌘', 'B'], label: 'Bold' },
+      { keys: ['⌘', 'I'], label: 'Italic' },
+      { keys: ['⌘', 'U'], label: 'Underline' },
+      { keys: ['⌘', 'F'], label: 'Find' },
+      { keys: ['⌘', '⇧', 'H'], label: 'Find and Replace' },
+      { keys: ['⌘', 'D'], label: 'Fill Down' },
+      { keys: ['⌘', 'R'], label: 'Fill Right' },
+      { keys: ['⌘', ';'], label: "Today's Date" },
+      { keys: ['⌘', '⇧', ';'], label: 'The Time Now' },
+      { keys: ['Alt', '↓'], label: "Open the cell's dropdown" },
+      { keys: ['⌘', '+'], label: 'Zoom the Sheet In' },
+      { keys: ['⌘', '-'], label: 'Zoom the Sheet Out' },
+      { keys: ['⌘', '0'], label: 'Zoom the Sheet to 100%' },
     ],
   },
 ];

@@ -27,25 +27,25 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   the team whose library holds it (null for your own). Stored in `localStorage` under
   `liveplanner:recent-diagrams:v1` as `{ v: 1, diagrams: [{ id, name, savedAt, mode, teamName }] }`. A
   note written before `teamName` reads as your own diagrams.
-- **Which:** your documents and your teams', merged by save: the personal library the editor lists for
-  you (`GET /api/documents` plus this browser's Offline Mode documents) and, from the same request
-  (`?include=team-recent`), the twelve newest documents in the libraries of the teams you have
-  **joined** (never one you are only invited to; [Team shared documents](../013-workspace/team-shared-documents.md)).
+- **Which:** your projects and your teams', merged by save: the personal library the editor lists for
+  you (`GET /api/projects` plus this browser's Offline Mode projects) and, from the same request
+  (`?include=team-recent`), the twelve newest projects in the libraries of the teams you have
+  **joined** (never one you are only invited to; [Team shared projects](../013-workspace/team-shared-projects.md)).
   Twelve is the note's six twice over, so a few hidden from Recent still leave six. Most recently saved
-  first, leaving out **empty** documents (nothing drawn, nothing to come back to) and any you have
+  first, leaving out **empty** projects (nothing drawn, nothing to come back to) and any you have
   **hidden from Recent** ([Hide from Recent](../013-workspace/hide-from-recent.md)). The /new page's Jump
-  back in card shows the same merge. Documents shared with you by link are not in it: they open through
+  back in card shows the same merge. Projects shared with you by link are not in it: they open through
   their link, which the note does not hold.
-- **When:** every time the editor lists your documents (the Explorer, the editor, the /new page), so it
+- **When:** every time the editor lists your projects (the Explorer, the editor, the /new page), so it
   is as fresh as your last visit to the app, and again at once when you hide a diagram from Recent or
   return one to it. With none left to show, the note is removed.
-- **Thumbnails:** each diagram's snapshot SVG ([Document snapshots](../006-document/document-snapshots.md))
+- **Thumbnails:** each diagram's snapshot SVG ([Project snapshots](../006-project/project-snapshots.md))
   is kept beside the note in the browser's Cache Storage (`liveplanner-recent-thumbs-v1`), keyed by id
   and save time, fetched by the editor through its authenticated client when a listed diagram's entry is
   missing, and pruned to the six in the note. A diagram the server has no snapshot for (one it could
   not draw) is remembered as having none, so it is not asked for again until it is saved, and shows its
-  tile's placeholder. An Offline Mode document is remembered as having none without asking: its rows
-  never send a request ([Offline Mode](../006-document/offline-mode.md#this-browser-badge--explorer)); a request that failed outright (no network) is simply asked again on
+  tile's placeholder. An Offline Mode project is remembered as having none without asking: its rows
+  never send a request ([Offline Mode](../006-project/offline-mode.md#this-browser-badge--explorer)); a request that failed outright (no network) is simply asked again on
   the next list. The landing page reads them from the cache, never the
   network, and shows them as `<img>` (an SVG image runs no script).
 - **Forgotten on sign-out:** signing out clears the note and the thumbnails before the session ends, so
@@ -55,7 +55,7 @@ on the same origin (the router serves `/` and `/explorer` from one host).
 ## Their projects on the fan
 
 - **Cards:** the fan's own cards (`components/HeroFanMine.tsx`), in its fan of poses (four cards for three
-  documents and Explorer Home, five for four): each document's name, its **preview** (`components/RecentPreview.tsx`:
+  projects and Explorer Home, five for four): each project's name, its **preview** (`components/RecentPreview.tsx`:
   its snapshot from this browser's cache, the one the editor leaves on each save, on the diagram's own background
   colour, as the Explorer's cards draw it; with no snapshot, its mode glyph on a quiet tint), and under the preview,
   right-aligned at the card's foot, how long since it was saved ("2 hours ago"). The foot runs off the band, so the
@@ -74,19 +74,19 @@ on the same origin (the router serves `/` and `/explorer` from one host).
 
 The static HTML is the same for everyone (the template fan's opening hand). The fan is hidden from first paint
 once script runs (`<html data-hero-deal>`, the hero fan's head script) until it deals, and it deals whichever hand
-fits after hydration: a returning visitor's documents, or a shuffled template hand. The cards are the same size
+fits after hydration: a returning visitor's projects, or a shuffled template hand. The cards are the same size
 either way, so nothing moves, and the headline, the page's largest paint, is untouched. Previews fade in as the
 cache answers.
 
 ## Performance
 
-No new request on the landing page: one `localStorage` read and at most four Cache Storage reads (one per document card), after
+No new request on the landing page: one `localStorage` read and at most four Cache Storage reads (one per project card), after
 hydration. The landing page loads no sign-in code, no api client. The editor's side costs one `localStorage`
-write per document list, and a thumbnail fetch only for a recent diagram whose save time changed. The
-team documents ride the editor's existing document list (no new request): one more query on the api,
-which reads each joined team document's first-tab count to skip the empty ones and draws the full
+write per project list, and a thumbnail fetch only for a recent diagram whose save time changed. The
+team projects ride the editor's existing project list (no new request): one more query on the api,
+which reads each joined team project's first-tab count to skip the empty ones and draws the full
 summary for the twelve it keeps, so it grows with the size of your teams' libraries (about 1 ms at
-1,000 team documents, 9 ms at 10,000, measured on SQLite).
+1,000 team projects, 9 ms at 10,000, measured on SQLite).
 
 ## Appearance
 

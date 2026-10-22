@@ -1,5 +1,5 @@
 // A Participant's writes in the room (docs/specs/013-workspace/share-roles.md "Integrity"; blueprint "Behaviour
-// and state"). Split out of document-room.ts, which owns the sockets and hands this module what it needs.
+// and state"). Split out of project-room.ts, which owns the sockets and hands this module what it needs.
 //
 // Content: a Participant's `el` op is never relayed as sent. It joins the room's tab write queue, is applied to
 // the stored tab by the participant content rule, and only what the rule produced reaches anyone:
@@ -14,7 +14,7 @@
 // writes the ledger's answers into the stored tab ANSWERS_FLUSH_MS later, one write per tab for a burst.
 
 import { isRoomOpRef, type ServerMessage } from '@liveplanner/api-schema';
-import type { ElementOp, TabLedger } from '@liveplanner/document';
+import type { ElementOp, TabLedger } from '@liveplanner/project';
 import {
   writeParticipantAnswers,
   writeParticipantOp,
@@ -43,7 +43,7 @@ type ParticipantRoomHooks = {
 type ParticipantSender = {
   ws: WebSocket;
   presenceId: string;
-  documentId: string | null;
+  projectId: string | null;
   adderKey: string | null;
 };
 
@@ -62,7 +62,7 @@ function sameOp(a: unknown, b: unknown): boolean {
 }
 
 export class RoomParticipantWrites {
-  private flushes = new Map<string, { documentId: string; timer: ReturnType<typeof setTimeout> }>();
+  private flushes = new Map<string, { projectId: string; timer: ReturnType<typeof setTimeout> }>();
 
   private readonly hooks: ParticipantRoomHooks;
 
@@ -78,33 +78,33 @@ export class RoomParticipantWrites {
     const env = this.hooks.env;
     if (!isElFrame(frame)) return;
     const { tabId, op } = frame;
-    const documentId = sender.documentId;
-    // Nothing to write against (an attachment from before the room knew its document): the sender re-hydrates.
-    if (!env || !documentId) return this.resync(sender);
+    const projectId = sender.projectId;
+    // Nothing to write against (an attachment from before the room knew its project): the sender re-hydrates.
+    if (!env || !projectId) return this.resync(sender);
     const queued = this.pending.get(sender.ws) ?? 0;
     if (queued >= PARTICIPANT_PENDING_MAX) {
-      console.warn('[participant-write] flood', { documentId, tabId, queued });
+      console.warn('[participant-write] flood', { projectId, tabId, queued });
       return this.resync(sender);
     }
     this.pending.set(sender.ws, queued + 1);
     let result: ParticipantWriteResult;
     try {
       result = await this.hooks.enqueue(() =>
-        writeParticipantOp(env, { documentId, tabId, op, adderKey: sender.adderKey }),
+        writeParticipantOp(env, { projectId, tabId, op, adderKey: sender.adderKey }),
       );
     } catch (error) {
-      console.error('[participant-write] failed', { documentId, tabId, error: String(error) });
+      console.error('[participant-write] failed', { projectId, tabId, error: String(error) });
       return this.resync(sender);
     } finally {
       this.pending.set(sender.ws, (this.pending.get(sender.ws) ?? 1) - 1);
     }
     if (!result.ok) {
-      console.error('[participant-write] failed', { documentId, tabId, status: result.status });
+      console.error('[participant-write] failed', { projectId, tabId, status: result.status });
       return this.resync(sender);
     }
     const outcome = result.outcome;
     if (outcome.result === 'refused') {
-      console.info('[participant-write] refused', { documentId, tabId, reason: outcome.reason });
+      console.info('[participant-write] refused', { projectId, tabId, reason: outcome.reason });
       // An element not saved yet (an Editor's, inside its autosave): nothing here to put back, so the sender
       // re-hydrates rather than keep a change nobody else has.
       if (outcome.reason === 'missing') return this.resync(sender);
@@ -146,31 +146,31 @@ export class RoomParticipantWrites {
   }
 
   // A Participant's dot or response has just entered the ledger: write the tab's answers soon.
-  scheduleAnswers(documentId: string | null, tabId: unknown): void {
-    if (!documentId || typeof tabId !== 'string' || this.flushes.has(tabId)) return;
+  scheduleAnswers(projectId: string | null, tabId: unknown): void {
+    if (!projectId || typeof tabId !== 'string' || this.flushes.has(tabId)) return;
     const timer = setTimeout(() => {
       this.flushes.delete(tabId);
-      void this.flushAnswers(documentId, tabId);
+      void this.flushAnswers(projectId, tabId);
     }, ANSWERS_FLUSH_MS);
-    this.flushes.set(tabId, { documentId, timer });
+    this.flushes.set(tabId, { projectId, timer });
   }
 
-  async flushAnswers(documentId: string, tabId: string): Promise<void> {
+  async flushAnswers(projectId: string, tabId: string): Promise<void> {
     const env = this.hooks.env;
     if (!env) return;
     try {
       const result = await this.hooks.enqueue(async () =>
         writeParticipantAnswers(env, {
-          documentId,
+          projectId,
           tabId,
           ledger: await this.hooks.readLedger(tabId),
         }),
       );
-      if (result.ok) console.debug('[participant-write] answers', { documentId, tabId, ok: true });
+      if (result.ok) console.debug('[participant-write] answers', { projectId, tabId, ok: true });
       else
-        console.error('[participant-write] failed', { documentId, tabId, status: result.status });
+        console.error('[participant-write] failed', { projectId, tabId, status: result.status });
     } catch (error) {
-      console.error('[participant-write] failed', { documentId, tabId, error: String(error) });
+      console.error('[participant-write] failed', { projectId, tabId, error: String(error) });
     }
   }
 }

@@ -69,14 +69,14 @@ function layoutFacts(layout: SheetLayout) {
 
 export async function readSheet(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   input: { sheet: string; range?: string },
 ): Promise<SheetRead | SheetRefusal> {
-  const sheets = await readSheets(api, documentId);
+  const sheets = await readSheets(api, projectId);
   const found = resolveSheet(sheets, input.sheet);
   if (!found.ok) return found;
   const { id, tabId, title } = found.sheet;
-  const wb = await workbookFor(api, documentId, sheets, tabId);
+  const wb = await workbookFor(api, projectId, sheets, tabId);
   const read = readRange(wb, id, input.range);
   if (!read.ok)
     return {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useDeferredValue, useEffect, useMemo, useState } from 'react';
-import { canvasSurface, tabWindowNames, type Tab } from '@liveplanner/document';
+import { canvasSurface, tabWindowNames, type Tab } from '@liveplanner/project';
 import { tabAsSeen } from '@/lib/export-as-seen';
 import type { renderTabToSvg } from '@/lib/export-tab';
 import { renderTabDrawingSvg } from '@/lib/tab-drawing';
@@ -10,7 +10,7 @@ import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { svgFrameOf } from '@/lib/svg-frame';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useAppearance } from '@/hooks/ui/useAppearance';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 
 export type TabSvg = {
   markup: string;
@@ -25,7 +25,7 @@ export type TabSvg = {
 };
 
 // A tab drawn as the editor would show it (docs/specs/007-editor/split-view.md "The right pane"):
-// the export renderer's SVG, in the viewer's appearance, with the document's Plan items. Re-rendered when the tab changes (an edit, a collaborator's op) at a deferred
+// the export renderer's SVG, in the viewer's appearance, with the project's Plan items. Re-rendered when the tab changes (an edit, a collaborator's op) at a deferred
 // priority, so a burst of remote edits never competes with the editor beside it.
 //
 // `motionFor` sets the drawing moving (a tab window, docs/specs/009-elements/tab-window.md "The drawing"): given the
@@ -44,7 +44,7 @@ export function useTabSvg(
 ): TabSvg | null {
   const { tabs } = useEditorContext();
   // A window inside this tab is named for the tab it shows, as the export names it. Keyed on the tabs' names, not the
-  // tabs, so an edit anywhere in the document does not redraw this one.
+  // tabs, so an edit anywhere in the project does not redraw this one.
   const nameKey = tabs.map((t) => `${t.id}\u0000${t.name}`).join('\u0001');
   // oxlint-disable-next-line react/exhaustive-deps
   const windowNames = useMemo(() => tabWindowNames(tabs), [nameKey]);

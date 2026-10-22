@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import {
   AddressError,
-  parseDocumentUrl,
-  resolveDocument,
+  parseProjectUrl,
+  resolveProject,
   resolveTab,
   type AddressFailure,
 } from './addressing';
@@ -20,45 +20,45 @@ async function failureOf(promise: Promise<unknown> | (() => unknown)): Promise<A
   throw new Error('expected an AddressError');
 }
 
-describe('parseDocumentUrl', () => {
-  it('reads a document link and a share link, on the host or its www twin', () => {
-    expect(parseDocumentUrl(`${HOST}/document/${DOC_A}`, HOST)).toEqual({ id: DOC_A });
-    expect(parseDocumentUrl(`https://www.liveplanner.app/document/${DOC_A}?tab=x`, HOST)).toEqual({
+describe('parseProjectUrl', () => {
+  it('reads a project link and a share link, on the host or its www twin', () => {
+    expect(parseProjectUrl(`${HOST}/project/${DOC_A}`, HOST)).toEqual({ id: DOC_A });
+    expect(parseProjectUrl(`https://www.liveplanner.app/project/${DOC_A}?tab=x`, HOST)).toEqual({
       id: DOC_A,
     });
-    expect(parseDocumentUrl(`${HOST}/document/shared?s=abc123`, HOST)).toEqual({
+    expect(parseProjectUrl(`${HOST}/project/shared?s=abc123`, HOST)).toEqual({
       shareCode: 'abc123',
     });
   });
 
   it('is null for what is not a web URL', () => {
-    expect(parseDocumentUrl('Auth flow', HOST)).toBeNull();
-    expect(parseDocumentUrl('mailto:a@b.c', HOST)).toBeNull();
+    expect(parseProjectUrl('Auth flow', HOST)).toBeNull();
+    expect(parseProjectUrl('mailto:a@b.c', HOST)).toBeNull();
   });
 
-  it('refuses another origin, a page that is not a document, and a share link without its code', async () => {
+  it('refuses another origin, a page that is not a project, and a share link without its code', async () => {
     expect(
-      await failureOf(() => parseDocumentUrl(`https://other.example/document/${DOC_A}`, HOST)),
+      await failureOf(() => parseProjectUrl(`https://other.example/project/${DOC_A}`, HOST)),
     ).toMatchObject({
       kind: 'usage',
       hint: '--host https://other.example',
     });
-    expect(await failureOf(() => parseDocumentUrl(`${HOST}/help`, HOST))).toMatchObject({
+    expect(await failureOf(() => parseProjectUrl(`${HOST}/help`, HOST))).toMatchObject({
       kind: 'usage',
-      message: `${HOST}/help is not a document link`,
+      message: `${HOST}/help is not a project link`,
     });
-    expect(await failureOf(() => parseDocumentUrl(`${HOST}/document/shared`, HOST))).toMatchObject({
+    expect(await failureOf(() => parseProjectUrl(`${HOST}/project/shared`, HOST))).toMatchObject({
       kind: 'usage',
-      message: `${HOST}/document/shared has no share code`,
+      message: `${HOST}/project/shared has no share code`,
     });
   });
 });
 
-describe('resolveDocument', () => {
+describe('resolveProject', () => {
   it('takes a name ignoring case, or an id prefix of four or more', async () => {
     const api = fakeApi(library);
-    expect(await resolveDocument(api, 'auth FLOW', HOST)).toEqual({ id: DOC_A, name: 'Auth flow' });
-    expect(await resolveDocument(api, 'aaaa2', HOST)).toEqual({ id: DOC_B, name: 'Auth flow v2' });
+    expect(await resolveProject(api, 'auth FLOW', HOST)).toEqual({ id: DOC_A, name: 'Auth flow' });
+    expect(await resolveProject(api, 'aaaa2', HOST)).toEqual({ id: DOC_B, name: 'Auth flow v2' });
   });
 
   it('finds a 36-character name by name, never reading it as an id', async () => {
@@ -66,35 +66,35 @@ describe('resolveDocument', () => {
     expect(name).toHaveLength(36);
     const api = fakeApi({
       ...library,
-      '/documents': {
-        documents: [{ id: DOC_C, name, savedAt: Date.UTC(2026, 9, 2), ownerId: 'u' }],
+      '/projects': {
+        projects: [{ id: DOC_C, name, savedAt: Date.UTC(2026, 9, 2), ownerId: 'u' }],
       },
     });
-    expect(await resolveDocument(api, name, HOST)).toEqual({ id: DOC_C, name });
+    expect(await resolveProject(api, name, HOST)).toEqual({ id: DOC_C, name });
   });
 
-  it('reads a full id and a document link directly, without the list', async () => {
+  it('reads a full id and a project link directly, without the list', async () => {
     const api = fakeApi({
-      [`/documents/${DOC_A}`]: { document: { id: DOC_A, name: 'Auth flow' } },
+      [`/projects/${DOC_A}`]: { project: { id: DOC_A, name: 'Auth flow' } },
     });
-    expect(await resolveDocument(api, DOC_A, HOST)).toEqual({ id: DOC_A, name: 'Auth flow' });
-    expect(await resolveDocument(api, `${HOST}/document/${DOC_A}`, HOST)).toEqual({
+    expect(await resolveProject(api, DOC_A, HOST)).toEqual({ id: DOC_A, name: 'Auth flow' });
+    expect(await resolveProject(api, `${HOST}/project/${DOC_A}`, HOST)).toEqual({
       id: DOC_A,
       name: 'Auth flow',
     });
-    expect(api.calls).toEqual([`/documents/${DOC_A}`, `/documents/${DOC_A}`]);
+    expect(api.calls).toEqual([`/projects/${DOC_A}`, `/projects/${DOC_A}`]);
   });
 
   it('lets the api answer an unknown full id', async () => {
-    await expect(resolveDocument(fakeApi({}), DOC_A, HOST)).rejects.toMatchObject({
+    await expect(resolveProject(fakeApi({}), DOC_A, HOST)).rejects.toMatchObject({
       status: 404,
       code: 'not_found',
     });
   });
 
-  it('resolves a share link to its document and keeps the code', async () => {
-    const api = fakeApi({ '/share/abc123': { document: { id: DOC_A, name: 'Auth flow' } } });
-    expect(await resolveDocument(api, `${HOST}/document/shared?s=abc123`, HOST)).toEqual({
+  it('resolves a share link to its project and keeps the code', async () => {
+    const api = fakeApi({ '/share/abc123': { project: { id: DOC_A, name: 'Auth flow' } } });
+    expect(await resolveProject(api, `${HOST}/project/shared?s=abc123`, HOST)).toEqual({
       id: DOC_A,
       name: 'Auth flow',
       shareCode: 'abc123',
@@ -103,23 +103,23 @@ describe('resolveDocument', () => {
 
   it('refuses no match with the nearest names, and several with the candidates', async () => {
     const api = fakeApi(library);
-    expect(await failureOf(resolveDocument(api, 'Auth', HOST))).toMatchObject({
+    expect(await failureOf(resolveProject(api, 'Auth', HOST))).toMatchObject({
       kind: 'not-found',
-      message: 'no document matches "Auth"',
+      message: 'no project matches "Auth"',
       candidates: [
         { ref: 'aaaa2', name: 'Auth flow v2', detail: 'personal' },
         { ref: 'aaaa1', name: 'Auth flow', detail: 'personal' },
       ],
     });
-    expect(await failureOf(resolveDocument(api, 'aaaa', HOST))).toMatchObject({
+    expect(await failureOf(resolveProject(api, 'aaaa', HOST))).toMatchObject({
       kind: 'ambiguous',
-      message: '"aaaa" matches 2 documents',
+      message: '"aaaa" matches 2 projects',
       hint: 'aaaa2',
     });
   });
 
   it('never treats a prefix shorter than four as an id', async () => {
-    expect(await failureOf(resolveDocument(fakeApi(library), 'aaa', HOST))).toMatchObject({
+    expect(await failureOf(resolveProject(fakeApi(library), 'aaa', HOST))).toMatchObject({
       kind: 'not-found',
       candidates: [],
     });
@@ -142,7 +142,7 @@ describe('resolveTab', () => {
     expect(resolveTab(tabs, 'tab-thr', 'Auth')).toMatchObject({ id: 'tab-thr-0000' });
   });
 
-  it('refuses none and several with the tab list, and a document without tabs', async () => {
+  it('refuses none and several with the tab list, and a project without tabs', async () => {
     expect(await failureOf(() => resolveTab(tabs, 'Nope', 'Auth'))).toMatchObject({
       kind: 'not-found',
       message: 'no tab matches "Nope"',
@@ -170,27 +170,27 @@ describe('the address log', () => {
     const log = (line: string) => void logs.push(line);
     const api = fakeApi({
       ...library,
-      [`/documents/${DOC_A}`]: { document: { id: DOC_A, name: 'Auth flow' } },
-      '/share/abc123': { document: { id: DOC_A, name: 'Auth flow' } },
+      [`/projects/${DOC_A}`]: { project: { id: DOC_A, name: 'Auth flow' } },
+      '/share/abc123': { project: { id: DOC_A, name: 'Auth flow' } },
     });
-    await resolveDocument(api, 'Auth flow', HOST, log);
-    await resolveDocument(api, 'aaaa2', HOST, log);
-    await failureOf(resolveDocument(api, 'Nope', HOST, log));
-    await resolveDocument(api, DOC_A, HOST, log);
-    await resolveDocument(api, `${HOST}/document/${DOC_A}`, HOST, log);
-    await resolveDocument(api, `${HOST}/document/shared?s=abc123`, HOST, log);
+    await resolveProject(api, 'Auth flow', HOST, log);
+    await resolveProject(api, 'aaaa2', HOST, log);
+    await failureOf(resolveProject(api, 'Nope', HOST, log));
+    await resolveProject(api, DOC_A, HOST, log);
+    await resolveProject(api, `${HOST}/project/${DOC_A}`, HOST, log);
+    await resolveProject(api, `${HOST}/project/shared?s=abc123`, HOST, log);
     const tabs = [{ id: 'tab-one-0000', name: 'Overview', orderIndex: 0 }];
     resolveTab(tabs, undefined, 'Auth', log);
     resolveTab(tabs, 'overview', 'Auth', log);
     resolveTab(tabs, 'tab-o', 'Auth', log);
     await failureOf(() => resolveTab([], undefined, 'Auth', log));
     expect(logs).toEqual([
-      'address document name 1 matches',
-      'address document prefix 1 matches',
-      'address document name 0 matches',
-      'address document exact 1 matches',
-      'address document url 1 matches',
-      'address document url 1 matches',
+      'address project name 1 matches',
+      'address project prefix 1 matches',
+      'address project name 0 matches',
+      'address project exact 1 matches',
+      'address project url 1 matches',
+      'address project url 1 matches',
       'address tab first 1 matches',
       'address tab name 1 matches',
       'address tab prefix 1 matches',

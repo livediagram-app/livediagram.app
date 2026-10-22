@@ -9,11 +9,11 @@
 // clipboard got a sentinel string, written purely to displace a lingering
 // image. That works within one editor instance and nowhere else — component
 // state cannot cross a browser tab, a second window, or a reload, which is
-// where "copy this and put it in that document" actually happens. The real
+// where "copy this and put it in that project" actually happens. The real
 // elements go on the clipboard now.
 //
 // The in-app buffer is KEPT as a fallback rather than deleted. Clipboard
-// writes are best-effort (writeText rejects when the document isn't focused,
+// writes are best-effort (writeText rejects when the project isn't focused,
 // and permission can be denied outright), and a copy that silently did
 // nothing would be much worse than one that still pastes in the tab you are
 // in. So copy writes both, and paste prefers what is actually on the
@@ -39,7 +39,7 @@ import {
   withAttached,
   type Element,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { anyModalOpen } from '@/lib/modal-guard';
 import { watchPrimarySelectionPaste } from '@/lib/primary-selection-paste';
 import {
@@ -72,7 +72,7 @@ function pasteHoldsCanvasContent(data: DataTransfer | null): boolean {
 type ClipboardDeps = {
   isReadOnly: boolean;
   // True while new elements can't land: edits are blocked, or the active layer
-  // is hidden or locked (docs/specs/006-document/layers.md). A paste adds
+  // is hidden or locked (docs/specs/006-project/layers.md). A paste adds
   // elements, so it obeys the same guard as every other creation path.
   createBlocked?: boolean;
   // Says why a paste was refused (the layers slice's blocked-creation notice).
@@ -174,7 +174,7 @@ export function useClipboard(deps: ClipboardDeps) {
     // prefers an image, and the in-app copy never used to touch the system
     // clipboard, so a stale screenshot re-dropped itself forever).
     //
-    // Best-effort by necessity: writeText rejects when the document isn't
+    // Best-effort by necessity: writeText rejects when the project isn't
     // focused or permission is denied, and there is nothing useful to say to
     // the user about it — the in-app buffer above still pastes in this
     // window, which is what they were about to do anyway.
@@ -291,7 +291,7 @@ export function useClipboard(deps: ClipboardDeps) {
       if (primaryPaste.current?.isPrimarySelectionPaste()) return;
       // A DOM target: `Element` in this file is the diagram element type.
       const target = e.target;
-      // An empty start search hands the editor a paste of canvas content (docs/specs/007-editor/start-diagramming.md
+      // An empty start search hands the editor a paste of canvas content (docs/specs/007-editor/start-panel.md
       // "Undo and redo reach the editor through an empty search"): elements copied from another tab land on this
       // new one rather than their JSON in the search. Text still searches.
       const intoEmptySearch =

@@ -1,14 +1,14 @@
 'use client';
 
-// One name, one state (docs/specs/026-plan/plan-board.md "One name, one state"): a document whose boards hold two
-// states of one name (a Plan template's tab added beside a board, a pasted or agent-written board, or a document
+// One name, one state (docs/specs/026-plan/plan-board.md "One name, one state"): a project whose boards hold two
+// states of one name (a Plan template's tab added beside a board, a pasted or agent-written board, or a project
 // from before the rule) merges them into the first, in tab, board and column order, so every client picks the
 // same one. Its boards take the kept state (a board holding both drops the later column) and its cards move to it,
 // as one write. Done by someone who may edit, once the cards have loaded, without an undo step: undoing it would
-// only split the cards again. It runs whenever the document's duplicates change, so an undo that brings one back,
+// only split the cards again. It runs whenever the project's duplicates change, so an undo that brings one back,
 // or a board that arrives with one, is merged too.
 import { useEffect, useMemo } from 'react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import {
   duplicateStatuses,
   mergeBoardStatuses,
@@ -19,7 +19,7 @@ import {
   type ItemWrite,
 } from '@liveplanner/items';
 import { debugLog } from '@/lib/debug-log';
-import { documentBoardSetups } from './usePlanStatusNames';
+import { projectBoardSetups } from './usePlanStatusNames';
 
 export function useMergeDuplicateStatuses(opts: {
   tabs: readonly Tab[];
@@ -33,7 +33,7 @@ export function useMergeDuplicateStatuses(opts: {
   const { tabs, enabled, itemsReady, items, tickTabs, writeQuiet } = opts;
   // In tab order (no tab first), so the kept state is the same for everyone.
   const merged = useMemo(
-    () => duplicateStatuses(statusColumnsOfSetups(documentBoardSetups(tabs, ''))),
+    () => duplicateStatuses(statusColumnsOfSetups(projectBoardSetups(tabs, ''))),
     [tabs],
   );
   const signature = [...merged].map(([from, to]) => `${from}>${to}`).join(',');

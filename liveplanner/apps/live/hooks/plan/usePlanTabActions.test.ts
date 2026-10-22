@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { dashboardOf, withSlotContent } from './usePlanTabActions';
 import { dashboardElement, dashboardViewElement } from './slot-elements';
 import { dashboardItemOf } from './dashboard-drop';
@@ -91,7 +91,7 @@ describe('the zone a moved slot goes to', () => {
 });
 
 describe('the Tabs category', () => {
-  it('lists the Board, Sheet and Diagram tabs (never a Dashboard), and a tile’s choice is a tab slot', async () => {
+  it('lists the Board and Sheet tabs alone (never a Dashboard, a Form or a tab on Start Planning), and a tile’s choice is a tab slot', async () => {
     const { planTabEntries } = await import('./plan-tab-list-store');
     const { dashboardItemOf, dashboardTabChoice } = await import('./dashboard-drop');
     const { dashboardTabTiles } = await import('@/components/palette/palette-dashboard-tiles');
@@ -100,20 +100,17 @@ describe('the Tabs category', () => {
       { id: 'b', name: 'Flow', kind: 'dashboard', elements: [] },
       { id: 'c', name: 'Budget', kind: 'sheet', elements: [] },
       { id: 'd', name: 'Notes', elements: [] },
+      { id: 'e', name: 'Survey', kind: 'form', elements: [] },
     ] as unknown as Parameters<typeof planTabEntries>[0];
     const entries = planTabEntries(tabs);
     expect(entries).toEqual([
       { id: 'a', name: 'Launch', of: 'board' },
       { id: 'c', name: 'Budget', of: 'sheet' },
-      { id: 'd', name: 'Notes', of: 'diagram' },
     ]);
     const tiles = dashboardTabTiles(entries);
-    expect(tiles.map((t) => t.caption)).toEqual(['Launch', 'Budget', 'Notes']);
-    expect(dashboardItemOf('plan-view', dashboardTabChoice('diagram', 'd'))).toEqual({
-      kind: 'tab',
-      tabId: 'd',
-      of: 'diagram',
-    });
+    expect(tiles.map((t) => t.caption)).toEqual(['Launch', 'Budget']);
+    // A choice naming any other kind of tab is no slot's.
+    expect(dashboardItemOf('plan-view', 'tab:diagram:d')).toBeNull();
     expect(dashboardItemOf('plan-view', dashboardTabChoice('sheet', 'c'))).toEqual({
       kind: 'tab',
       tabId: 'c',

@@ -4,7 +4,7 @@
 // PortalMenu, the colour ones with the shared colour row (theme swatches, your colours, a custom colour).
 import { BORDER_LINES, SheetBordersPicker, type BorderLine } from './SheetBordersPicker';
 import { useState } from 'react';
-import { CHART_TYPE_LABELS, CHART_TYPES, FONTS } from '@liveplanner/document';
+import { CHART_TYPE_LABELS, CHART_TYPES, FONTS } from '@liveplanner/project';
 import { ChartTypeIcon } from '@/components/primitives/ChartTypeIcon';
 import {
   FONT_SIZE_DEFAULT,

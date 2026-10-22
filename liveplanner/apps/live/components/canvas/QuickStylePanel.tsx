@@ -29,7 +29,7 @@ import {
   type QuickSwatchRole,
   type QuickSwatchSlot,
   type TextAlignX,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { ShownSwatch } from '@/lib/swatch-overrides';
 import { SwatchOverridePopover } from './SwatchOverridePopover';
 import { QuickMoreColours } from './QuickMoreColours';

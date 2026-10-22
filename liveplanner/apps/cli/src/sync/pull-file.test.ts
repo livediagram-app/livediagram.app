@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canonicalJson, type ShapeElement, type Tab } from '@liveplanner/document';
+import { canonicalJson, type ShapeElement, type Tab } from '@liveplanner/project';
 import {
   fileSlug,
   idSlug,
@@ -28,10 +28,10 @@ const tab = (over: Partial<Tab> = {}): Tab => ({
 });
 
 const file = (tabs: Tab[] = [tab()]): PullFile => ({
-  kind: 'liveplanner.document',
+  kind: 'liveplanner.project',
   schemaVersion: 1,
   exportedAt: 1,
-  document: { id: 'd1', name: 'Shop', tabs },
+  project: { id: 'd1', name: 'Shop', tabs },
   liveplannerSync: {
     host: 'https://liveplanner.app',
     pulledAt: 1,
@@ -76,7 +76,7 @@ describe('pullFileText and parsePullFile', () => {
   it('round-trips, keeping the envelope the editor imports', () => {
     const text = pullFileText(file());
     expect(JSON.parse(text)).toMatchObject({
-      kind: 'liveplanner.document',
+      kind: 'liveplanner.project',
       liveplannerSync: { host: 'https://liveplanner.app' },
     });
     expect(parsePullFile(text)).toEqual({ ok: true, file: file() });
@@ -86,15 +86,15 @@ describe('pullFileText and parsePullFile', () => {
     expect(parsePullFile('{')).toEqual({ ok: false, message: 'not JSON' });
     expect(parsePullFile('{"kind":"liveplanner.tab"}')).toEqual({
       ok: false,
-      message: 'not a liveplanner document',
+      message: 'not a liveplanner project',
     });
     expect(parsePullFile(JSON.stringify({ ...file(), schemaVersion: 9 }))).toEqual({
       ok: false,
       message: 'written by a newer liveplanner',
     });
-    expect(parsePullFile(JSON.stringify({ ...file(), document: { id: 'd1' } }))).toEqual({
+    expect(parsePullFile(JSON.stringify({ ...file(), project: { id: 'd1' } }))).toEqual({
       ok: false,
-      message: 'its document is malformed',
+      message: 'its project is malformed',
     });
     const { liveplannerSync: _s, ...exported } = file();
     expect(parsePullFile(JSON.stringify(exported))).toEqual({

@@ -1,7 +1,7 @@
 // Cell comment markers (docs/specs/029-sheets/sheet.md "Cell comments"): which cells show one, kept per change, what
 // the preview says, the shortcut, and the cost at the bounds (1,000 threads on a 10,000-row sheet).
 import { describe, expect, it } from 'vitest';
-import { CELL_THREADS_MAX, type CellCommentThreads, type Comment } from '@liveplanner/document';
+import { CELL_THREADS_MAX, type CellCommentThreads, type Comment } from '@liveplanner/project';
 import type { SheetLayout } from '@liveplanner/sheets';
 import {
   CELL_PREVIEW_CHARS,

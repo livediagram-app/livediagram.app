@@ -6,7 +6,7 @@
 // The logic is pure, in lib/swatch-overrides.
 
 import { useMemo } from 'react';
-import type { QuickSwatchRole, QuickSwatchSlot } from '@liveplanner/document';
+import type { QuickSwatchRole, QuickSwatchSlot } from '@liveplanner/project';
 import { readUserPreferences, type UserPreferences } from '@/lib/user-preferences';
 import {
   overridesForTheme,

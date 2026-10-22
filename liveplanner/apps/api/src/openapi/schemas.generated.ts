@@ -54,12 +54,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       description: {
         type: 'string',
       },
-      documentId: {
-        type: 'string',
-      },
-      documentName: {
-        type: 'string',
-      },
       elementId: {
         type: 'string',
       },
@@ -70,6 +64,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'string',
       },
       name: {
+        type: 'string',
+      },
+      projectId: {
+        type: 'string',
+      },
+      projectName: {
         type: 'string',
       },
       shareCode: {
@@ -99,12 +99,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'createdAt',
       'createdByMe',
       'description',
-      'documentId',
-      'documentName',
       'elementId',
       'elementLabel',
       'id',
       'name',
+      'projectId',
+      'projectName',
       'shareCode',
       'tabId',
       'tabName',
@@ -143,17 +143,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
         ],
       },
-      documentId: {
-        type: 'string',
-      },
-      documentName: {
-        type: 'string',
-      },
       id: {
         type: 'string',
       },
       key: {
         type: 'number',
+      },
+      projectId: {
+        type: 'string',
+      },
+      projectName: {
+        type: 'string',
       },
       shareCode: {
         type: ['string', 'null'],
@@ -179,8 +179,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
     },
     required: [
-      'documentId',
-      'documentName',
+      'projectId',
+      'projectName',
       'teamId',
       'via',
       'shareCode',
@@ -226,12 +226,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       commentCount: {
         type: 'number',
       },
-      documentId: {
-        type: 'string',
-      },
-      documentName: {
-        type: 'string',
-      },
       firstAt: {
         type: 'number',
       },
@@ -263,8 +257,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       mentionsYou: {
         type: 'boolean',
       },
-      onYourDocument: {
+      onYourProject: {
         type: 'boolean',
+      },
+      projectId: {
+        type: 'string',
+      },
+      projectName: {
+        type: 'string',
       },
       shareCode: {
         type: ['string', 'null'],
@@ -289,14 +289,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: [
       'board',
       'commentCount',
-      'documentId',
-      'documentName',
       'firstAt',
       'id',
       'key',
       'latest',
       'mentionsYou',
-      'onYourDocument',
+      'onYourProject',
+      'projectId',
+      'projectName',
       'shareCode',
       'teamId',
       'title',
@@ -312,17 +312,17 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       boardTabId: {
         type: ['string', 'null'],
       },
-      documentId: {
-        type: 'string',
-      },
-      documentName: {
-        type: 'string',
-      },
       heading: {
         type: 'string',
       },
       latestAt: {
         type: 'number',
+      },
+      projectId: {
+        type: 'string',
+      },
+      projectName: {
+        type: 'string',
       },
       tabId: {
         type: 'string',
@@ -339,8 +339,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
     },
     required: [
-      'documentId',
-      'documentName',
+      'projectId',
+      'projectName',
       'teamId',
       'via',
       'tabId',
@@ -356,12 +356,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     properties: {
       commentCount: {
         type: 'number',
-      },
-      documentId: {
-        type: 'string',
-      },
-      documentName: {
-        type: 'string',
       },
       elementId: {
         type: 'string',
@@ -394,8 +388,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       mentionsYou: {
         type: 'boolean',
       },
-      onYourDocument: {
+      onYourProject: {
         type: 'boolean',
+      },
+      projectId: {
+        type: 'string',
+      },
+      projectName: {
+        type: 'string',
       },
       shareCode: {
         type: ['string', 'null'],
@@ -419,14 +419,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     required: [
       'commentCount',
-      'documentId',
-      'documentName',
       'elementId',
       'elementLabel',
       'firstAt',
       'latest',
       'mentionsYou',
-      'onYourDocument',
+      'onYourProject',
+      'projectId',
+      'projectName',
       'shareCode',
       'tabId',
       'tabName',
@@ -456,56 +456,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
     },
     required: ['tabId', 'status', 'focus', 'expiresAt'],
-    type: 'object',
-  },
-  AiConversationTurn: {
-    additionalProperties: false,
-    properties: {
-      content: {
-        type: 'string',
-      },
-      role: {
-        enum: ['user', 'assistant'],
-        type: 'string',
-      },
-    },
-    required: ['role', 'content'],
-    type: 'object',
-  },
-  AiMode: {
-    enum: ['clean', 'ask'],
-    type: 'string',
-  },
-  AiRequest: {
-    additionalProperties: false,
-    properties: {
-      elements: {
-        items: {},
-        type: 'array',
-      },
-      focusIds: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      history: {
-        items: {
-          $ref: '#/components/schemas/AiConversationTurn',
-        },
-        type: 'array',
-      },
-      mode: {
-        $ref: '#/components/schemas/AiMode',
-      },
-      prompt: {
-        type: 'string',
-      },
-      tabName: {
-        type: 'string',
-      },
-    },
-    required: ['mode', 'prompt', 'elements', 'tabName'],
     type: 'object',
   },
   Anchor: {
@@ -1054,9 +1004,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   CapabilitiesResponse: {
     additionalProperties: false,
     properties: {
-      aiEnabled: {
-        type: 'boolean',
-      },
       apiBase: {
         type: 'string',
       },
@@ -1073,17 +1020,16 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         required: ['minVersion'],
         type: 'object',
       },
-      documentFormat: {
-        type: 'number',
-      },
       emailEnabled: {
         type: 'boolean',
       },
       oauthIssuer: {
         type: 'string',
       },
+      projectFormat: {
+        type: 'number',
+      },
     },
-    required: ['aiEnabled'],
     type: 'object',
   },
   CardField: {
@@ -1451,10 +1397,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         enum: ['board', 'sheet'],
         type: 'string',
       },
-      layout: {
-        enum: ['auto', 'preserve'],
-        type: 'string',
-      },
       name: {
         type: 'string',
       },
@@ -1512,16 +1454,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       dryRun: {
         type: 'boolean',
       },
-      lint: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/LintReport',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
       results: {
         items: {
           $ref: '#/components/schemas/ResultLine',
@@ -1538,7 +1470,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'array',
       },
     },
-    required: ['dryRun', 'changeset', 'results', 'text', 'warnings', 'lint'],
+    required: ['dryRun', 'changeset', 'results', 'text', 'warnings'],
     type: 'object',
   },
   ChangesetSummary: {
@@ -1864,8 +1796,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'string',
   },
   CreationTabKind: {
-    const: 'diagram',
-    type: 'string',
+    anyOf: [
+      {
+        $ref: '#/components/schemas/PlanTabKind',
+      },
+      {
+        const: 'empty',
+        type: 'string',
+      },
+    ],
   },
   CurrentTokenResponse: {
     additionalProperties: false,
@@ -3444,7 +3383,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'string',
   },
   DashboardTabOf: {
-    enum: ['board', 'sheet', 'diagram'],
+    enum: ['board', 'sheet'],
     type: 'string',
   },
   DateOp: {
@@ -3509,316 +3448,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['header', 'since', 'changes', 'elision'],
     type: 'object',
   },
-  Document: {
-    additionalProperties: false,
-    properties: {
-      createdAt: {
-        type: 'number',
-      },
-      folderId: {
-        type: ['string', 'null'],
-      },
-      id: {
-        type: 'string',
-      },
-      itemTypes: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/ItemTypeCatalogue',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-      itemTypesRev: {
-        type: 'number',
-      },
-      name: {
-        type: 'string',
-      },
-      opensIn: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/EditorMode',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-      ownerColor: {
-        type: ['string', 'null'],
-      },
-      ownerId: {
-        type: 'string',
-      },
-      ownerName: {
-        type: ['string', 'null'],
-      },
-      savedAt: {
-        type: 'number',
-      },
-      shareCode: {
-        type: ['string', 'null'],
-      },
-      shareable: {
-        type: 'boolean',
-      },
-      source: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/DocumentSource',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-      tabKind: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/CreationTabKind',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-      tabs: {
-        items: {
-          $ref: '#/components/schemas/TabSummary',
-        },
-        type: 'array',
-      },
-      teamId: {
-        type: ['string', 'null'],
-      },
-      templateFamily: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/TemplateFamily',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-    },
-    required: [
-      'createdAt',
-      'folderId',
-      'id',
-      'name',
-      'opensIn',
-      'ownerColor',
-      'ownerId',
-      'ownerName',
-      'savedAt',
-      'shareCode',
-      'shareable',
-      'source',
-      'tabKind',
-      'tabs',
-      'teamId',
-      'templateFamily',
-    ],
-    type: 'object',
-  },
-  DocumentCommentThread: {
-    additionalProperties: false,
-    properties: {
-      cell: {
-        type: 'string',
-      },
-      cellRef: {
-        type: 'string',
-      },
-      comments: {
-        items: {
-          additionalProperties: false,
-          properties: {
-            authorColor: {
-              type: 'string',
-            },
-            authorId: {
-              type: 'string',
-            },
-            authorName: {
-              type: 'string',
-            },
-            createdAt: {
-              type: 'number',
-            },
-            id: {
-              type: 'string',
-            },
-            mentions: {
-              items: {
-                $ref: '#/components/schemas/CommentMention',
-              },
-              type: 'array',
-            },
-            text: {
-              type: 'string',
-            },
-            tokenId: {
-              type: 'string',
-            },
-          },
-          required: ['id', 'text', 'createdAt', 'authorName', 'authorColor'],
-          type: 'object',
-        },
-        type: 'array',
-      },
-      elementId: {
-        type: 'string',
-      },
-      label: {
-        type: ['string', 'null'],
-      },
-      ref: {
-        type: 'string',
-      },
-      resolved: {
-        type: 'boolean',
-      },
-      tabId: {
-        type: 'string',
-      },
-      tabName: {
-        type: 'string',
-      },
-    },
-    required: ['tabId', 'tabName', 'elementId', 'ref', 'label', 'resolved', 'comments'],
-    type: 'object',
-  },
-  DocumentSource: {
-    enum: ['ai', 'mcp', 'cli'],
-    type: 'string',
-  },
-  DocumentStats: {
-    additionalProperties: false,
-    properties: {
-      bytes: {
-        type: 'number',
-      },
-      comments: {
-        type: 'number',
-      },
-      elements: {
-        type: 'number',
-      },
-      mode: {
-        $ref: '#/components/schemas/EditorMode',
-      },
-    },
-    required: ['mode', 'elements', 'comments', 'bytes'],
-    type: 'object',
-  },
-  DocumentSummary: {
-    additionalProperties: false,
-    properties: {
-      createdAt: {
-        type: 'number',
-      },
-      empty: {
-        type: 'boolean',
-      },
-      folderId: {
-        type: ['string', 'null'],
-      },
-      id: {
-        type: 'string',
-      },
-      name: {
-        type: 'string',
-      },
-      opensIn: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/EditorMode',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-      ownerId: {
-        type: 'string',
-      },
-      savedAt: {
-        type: 'number',
-      },
-      shareCode: {
-        type: ['string', 'null'],
-      },
-      shareable: {
-        type: 'boolean',
-      },
-      source: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/DocumentSource',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-      stats: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/DocumentStats',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-      tabKind: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/CreationTabKind',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-      teamId: {
-        type: ['string', 'null'],
-      },
-      templateFamily: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/TemplateFamily',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-    },
-    required: [
-      'createdAt',
-      'empty',
-      'folderId',
-      'id',
-      'name',
-      'opensIn',
-      'ownerId',
-      'savedAt',
-      'shareCode',
-      'shareable',
-      'source',
-      'stats',
-      'tabKind',
-      'teamId',
-      'templateFamily',
-    ],
-    type: 'object',
-  },
   DropdownOption: {
     additionalProperties: false,
     properties: {
@@ -3849,14 +3478,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'object',
   },
   EditWarningCode: {
-    enum: [
-      'no_base',
-      'shape_coerced',
-      'value_coerced',
-      'label_capped',
-      'colour_overrides_theme',
-      'arrows_freed',
-    ],
+    const: 'no_base',
     type: 'string',
   },
   EditorMode: {
@@ -3980,18 +3602,18 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         additionalProperties: false,
         properties: {
-          documentId: {
-            type: 'string',
-          },
           kind: {
-            const: 'document',
+            const: 'project',
             type: 'string',
           },
           name: {
             type: 'string',
           },
+          projectId: {
+            type: 'string',
+          },
         },
-        required: ['kind', 'documentId', 'name'],
+        required: ['kind', 'projectId', 'name'],
         type: 'object',
       },
       {
@@ -4811,7 +4433,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       packedPoints: {
         description:
-          "The stroke's points, normalised into its box, and a pen's pressure at each when it reported one, packed into one block: base64 of a version byte, a flags byte and a little-endian record per point (x u16, y u16, optional pressure u8). See docs/specs/006-document/stroke-points.md.",
+          "The stroke's points, normalised into its box, and a pen's pressure at each when it reported one, packed into one block: base64 of a version byte, a flags byte and a little-endian record per point (x u16, y u16, optional pressure u8). See docs/specs/006-project/stroke-points.md.",
         format: 'byte',
         type: 'string',
       },
@@ -4910,47 +4532,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: ['run', 'refs', 'closed'],
     type: 'object',
   },
-  GraphView: {
-    additionalProperties: false,
-    properties: {
-      arrows: {
-        items: {
-          $ref: '#/components/schemas/ViewEdgeJson',
-        },
-        type: 'array',
-      },
-      elision: {
-        $ref: '#/components/schemas/Elision',
-      },
-      header: {
-        $ref: '#/components/schemas/ViewHeader',
-      },
-      nodes: {
-        items: {
-          additionalProperties: false,
-          properties: {
-            id: {
-              type: 'string',
-            },
-            kind: {
-              type: 'string',
-            },
-            label: {
-              type: ['string', 'null'],
-            },
-            ref: {
-              type: 'string',
-            },
-          },
-          required: ['ref', 'id', 'kind', 'label'],
-          type: 'object',
-        },
-        type: 'array',
-      },
-    },
-    required: ['header', 'nodes', 'arrows', 'elision'],
-    type: 'object',
-  },
   HeroCaption: {
     additionalProperties: false,
     properties: {
@@ -4992,7 +4573,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   HomeGroup: {
     additionalProperties: false,
-    description: "One document's actions on one of the reader's days.",
+    description: "One project's actions on one of the reader's days.",
     properties: {
       actions: {
         description: 'Every action, newest first.',
@@ -5005,29 +4586,26 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         description: "YYYY-MM-DD in the reader's time zone.",
         type: 'string',
       },
-      documentId: {
-        type: 'string',
-      },
       empty: {
         description: 'Nothing drawn: ask for no thumbnail.',
         type: 'boolean',
       },
       folderId: {
-        description: "Null for `shared`, and for a document at its space's root.",
+        description: "Null for `shared`, and for a project at its space's root.",
         type: ['string', 'null'],
       },
       folderName: {
         type: ['string', 'null'],
       },
       id: {
-        description: '`<documentId>:<day>`.',
+        description: '`<projectId>:<day>`.',
         type: 'string',
       },
       latestAt: {
         type: 'number',
       },
       name: {
-        description: "The document's current name.",
+        description: "The project's current name.",
         type: 'string',
       },
       ownerName: {
@@ -5039,6 +4617,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           $ref: '#/components/schemas/HomePerson',
         },
         type: 'array',
+      },
+      projectId: {
+        type: 'string',
       },
       savedAt: {
         description: "The thumbnail's version.",
@@ -5083,7 +4664,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     required: [
       'actions',
       'day',
-      'documentId',
       'empty',
       'folderId',
       'folderName',
@@ -5092,6 +4672,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'name',
       'ownerName',
       'people',
+      'projectId',
       'savedAt',
       'shareCode',
       'summary',
@@ -5106,17 +4687,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   HomeJumpBackInItem: {
     additionalProperties: false,
-    description: 'One document of Jump back in, with the two measures Within reach places it by.',
+    description: 'One project of Jump back in, with the two measures Within reach places it by.',
     properties: {
-      documentId: {
-        type: 'string',
-      },
       empty: {
         description: 'Nothing drawn: ask for no thumbnail.',
         type: 'boolean',
       },
       folderId: {
-        description: "Null for `shared`, and for a document at its space's root.",
+        description: "Null for `shared`, and for a project at its space's root.",
         type: ['string', 'null'],
       },
       folderName: {
@@ -5127,11 +4705,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'number',
       },
       name: {
-        description: "The document's current name.",
+        description: "The project's current name.",
         type: 'string',
       },
       ownerName: {
         type: ['string', 'null'],
+      },
+      projectId: {
+        type: 'string',
       },
       savedAt: {
         description: "The thumbnail's version.",
@@ -5165,13 +4746,13 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
     },
     required: [
-      'documentId',
       'empty',
       'folderId',
       'folderName',
       'lastUsedAt',
       'name',
       'ownerName',
+      'projectId',
       'savedAt',
       'shareCode',
       'tabId',
@@ -6100,15 +5681,15 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   KnownTimelineEventType: {
     enum: [
-      'document_created',
-      'document_renamed',
-      'document_duplicated',
-      'document_moved',
-      'document_edited',
-      'document_offline',
-      'document_synced',
-      'document_opened_by_visitor',
-      'document_copied_by_visitor',
+      'project_created',
+      'project_renamed',
+      'project_duplicated',
+      'project_moved',
+      'project_edited',
+      'project_offline',
+      'project_synced',
+      'project_opened_by_visitor',
+      'project_copied_by_visitor',
       'folder_created',
       'folder_deleted',
       'comment_added',
@@ -6125,8 +5706,8 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'team_member_left',
       'team_member_removed',
       'team_role_changed',
-      'team_document_added',
-      'team_document_removed',
+      'team_project_added',
+      'team_project_removed',
       'team_renamed',
       'team_deleted',
       'team_invite_link_enabled',
@@ -6534,111 +6115,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
     ],
   },
-  LayoutView: {
-    additionalProperties: false,
-    properties: {
-      arrows: {
-        items: {
-          additionalProperties: false,
-          properties: {
-            from: {
-              type: 'string',
-            },
-            ref: {
-              type: 'string',
-            },
-            style: {
-              type: 'string',
-            },
-            to: {
-              type: 'string',
-            },
-          },
-          required: ['ref', 'from', 'to', 'style'],
-          type: 'object',
-        },
-        type: 'array',
-      },
-      boxes: {
-        items: {
-          additionalProperties: false,
-          properties: {
-            h: {
-              type: 'number',
-            },
-            r: {
-              type: 'number',
-            },
-            ref: {
-              type: 'string',
-            },
-            w: {
-              type: 'number',
-            },
-            x: {
-              type: 'number',
-            },
-            y: {
-              type: 'number',
-            },
-          },
-          required: ['ref', 'x', 'y', 'w', 'h', 'r'],
-          type: 'object',
-        },
-        type: 'array',
-      },
-      elision: {
-        $ref: '#/components/schemas/Elision',
-      },
-      header: {
-        $ref: '#/components/schemas/ViewHeader',
-      },
-      origin: {
-        additionalProperties: false,
-        properties: {
-          x: {
-            type: 'number',
-          },
-          y: {
-            type: 'number',
-          },
-        },
-        required: ['x', 'y'],
-        type: 'object',
-      },
-      rows: {
-        anyOf: [
-          {
-            items: {
-              additionalProperties: false,
-              properties: {
-                container: {
-                  type: ['string', 'null'],
-                },
-                rows: {
-                  items: {
-                    items: {
-                      type: 'string',
-                    },
-                    type: 'array',
-                  },
-                  type: 'array',
-                },
-              },
-              required: ['container', 'rows'],
-              type: 'object',
-            },
-            type: 'array',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-    },
-    required: ['header', 'origin', 'boxes', 'arrows', 'rows', 'elision'],
-    type: 'object',
-  },
   LegendItem: {
     additionalProperties: false,
     properties: {
@@ -6803,138 +6279,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   LinkedRecordKind: {
     const: 'actions',
-    type: 'string',
-  },
-  LintCode: {
-    enum: [
-      'box-overlap',
-      'arrow-dangling',
-      'arrow-behind-box',
-      'edge-crossings',
-      'label-collision',
-      'label-overflow',
-      'node-isolated',
-      'group-escape',
-      'group-split-edges',
-      'duplicate-label',
-      'flow-backwards',
-      'aspect-extreme',
-      'colour-on-themed',
-      'text-overflow',
-    ],
-    type: 'string',
-  },
-  LintFinding: {
-    additionalProperties: false,
-    properties: {
-      code: {
-        $ref: '#/components/schemas/LintCode',
-      },
-      fix: {
-        type: 'string',
-      },
-      message: {
-        type: 'string',
-      },
-      refs: {
-        items: {
-          type: 'string',
-        },
-        type: 'array',
-      },
-      severity: {
-        $ref: '#/components/schemas/LintSeverity',
-      },
-    },
-    required: ['code', 'severity', 'refs', 'message', 'fix'],
-    type: 'object',
-  },
-  LintMeasures: {
-    additionalProperties: false,
-    properties: {
-      arrows: {
-        type: 'number',
-      },
-      behind: {
-        type: 'number',
-      },
-      boxes: {
-        type: 'number',
-      },
-      crossings: {
-        type: ['number', 'null'],
-      },
-      extent: {
-        anyOf: [
-          {
-            additionalProperties: false,
-            properties: {
-              height: {
-                type: 'number',
-              },
-              width: {
-                type: 'number',
-              },
-            },
-            required: ['width', 'height'],
-            type: 'object',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
-      overlaps: {
-        type: 'number',
-      },
-    },
-    required: ['crossings', 'behind', 'overlaps', 'extent', 'arrows', 'boxes'],
-    type: 'object',
-  },
-  LintReport: {
-    additionalProperties: false,
-    properties: {
-      counts: {
-        additionalProperties: false,
-        properties: {
-          error: {
-            type: 'number',
-          },
-          info: {
-            type: 'number',
-          },
-          warning: {
-            type: 'number',
-          },
-        },
-        required: ['error', 'warning', 'info'],
-        type: 'object',
-      },
-      findings: {
-        items: {
-          $ref: '#/components/schemas/LintFinding',
-        },
-        type: 'array',
-      },
-      measures: {
-        $ref: '#/components/schemas/LintMeasures',
-      },
-      skipped: {
-        additionalProperties: false,
-        properties: {
-          crossings: {
-            type: 'boolean',
-          },
-        },
-        required: ['crossings'],
-        type: 'object',
-      },
-    },
-    required: ['measures', 'findings', 'counts', 'skipped'],
-    type: 'object',
-  },
-  LintSeverity: {
-    enum: ['error', 'warning', 'info'],
     type: 'string',
   },
   MindFlow: {
@@ -7179,7 +6523,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   OverviewView: {
     additionalProperties: false,
     properties: {
-      document: {
+      elision: {
+        $ref: '#/components/schemas/Elision',
+      },
+      project: {
         additionalProperties: false,
         properties: {
           id: {
@@ -7198,9 +6545,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         required: ['id', 'name', 'savedAt', 'tabs'],
         type: 'object',
       },
-      elision: {
-        $ref: '#/components/schemas/Elision',
-      },
       tabs: {
         items: {
           $ref: '#/components/schemas/OverviewTab',
@@ -7208,7 +6552,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'array',
       },
     },
-    required: ['document', 'tabs', 'elision'],
+    required: ['project', 'tabs', 'elision'],
     type: 'object',
   },
   Padding: {
@@ -7570,7 +6914,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       'idea',
       'bookmark',
       'book',
-      'document',
+      'page',
       'pencil',
       'lightbulb',
       'puzzle',
@@ -7676,6 +7020,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     },
     required: ['status', 'name'],
     type: 'object',
+  },
+  PlanTabKind: {
+    enum: ['board', 'sheet', 'dashboard', 'form'],
+    type: 'string',
   },
   PlanTabOutline: {
     additionalProperties: false,
@@ -7810,6 +7158,316 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   ProgressAnim: {
     enum: ['fill', 'pulse', 'stripes'],
     type: 'string',
+  },
+  Project: {
+    additionalProperties: false,
+    properties: {
+      createdAt: {
+        type: 'number',
+      },
+      folderId: {
+        type: ['string', 'null'],
+      },
+      id: {
+        type: 'string',
+      },
+      itemTypes: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/ItemTypeCatalogue',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+      itemTypesRev: {
+        type: 'number',
+      },
+      name: {
+        type: 'string',
+      },
+      opensIn: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/EditorMode',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+      ownerColor: {
+        type: ['string', 'null'],
+      },
+      ownerId: {
+        type: 'string',
+      },
+      ownerName: {
+        type: ['string', 'null'],
+      },
+      savedAt: {
+        type: 'number',
+      },
+      shareCode: {
+        type: ['string', 'null'],
+      },
+      shareable: {
+        type: 'boolean',
+      },
+      source: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/ProjectSource',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+      tabKind: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/CreationTabKind',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+      tabs: {
+        items: {
+          $ref: '#/components/schemas/TabSummary',
+        },
+        type: 'array',
+      },
+      teamId: {
+        type: ['string', 'null'],
+      },
+      templateFamily: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/TemplateFamily',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+    },
+    required: [
+      'createdAt',
+      'folderId',
+      'id',
+      'name',
+      'opensIn',
+      'ownerColor',
+      'ownerId',
+      'ownerName',
+      'savedAt',
+      'shareCode',
+      'shareable',
+      'source',
+      'tabKind',
+      'tabs',
+      'teamId',
+      'templateFamily',
+    ],
+    type: 'object',
+  },
+  ProjectCommentThread: {
+    additionalProperties: false,
+    properties: {
+      cell: {
+        type: 'string',
+      },
+      cellRef: {
+        type: 'string',
+      },
+      comments: {
+        items: {
+          additionalProperties: false,
+          properties: {
+            authorColor: {
+              type: 'string',
+            },
+            authorId: {
+              type: 'string',
+            },
+            authorName: {
+              type: 'string',
+            },
+            createdAt: {
+              type: 'number',
+            },
+            id: {
+              type: 'string',
+            },
+            mentions: {
+              items: {
+                $ref: '#/components/schemas/CommentMention',
+              },
+              type: 'array',
+            },
+            text: {
+              type: 'string',
+            },
+            tokenId: {
+              type: 'string',
+            },
+          },
+          required: ['id', 'text', 'createdAt', 'authorName', 'authorColor'],
+          type: 'object',
+        },
+        type: 'array',
+      },
+      elementId: {
+        type: 'string',
+      },
+      label: {
+        type: ['string', 'null'],
+      },
+      ref: {
+        type: 'string',
+      },
+      resolved: {
+        type: 'boolean',
+      },
+      tabId: {
+        type: 'string',
+      },
+      tabName: {
+        type: 'string',
+      },
+    },
+    required: ['tabId', 'tabName', 'elementId', 'ref', 'label', 'resolved', 'comments'],
+    type: 'object',
+  },
+  ProjectSource: {
+    enum: ['mcp', 'cli'],
+    type: 'string',
+  },
+  ProjectStats: {
+    additionalProperties: false,
+    properties: {
+      bytes: {
+        type: 'number',
+      },
+      comments: {
+        type: 'number',
+      },
+      elements: {
+        type: 'number',
+      },
+      mode: {
+        $ref: '#/components/schemas/EditorMode',
+      },
+    },
+    required: ['mode', 'elements', 'comments', 'bytes'],
+    type: 'object',
+  },
+  ProjectSummary: {
+    additionalProperties: false,
+    properties: {
+      createdAt: {
+        type: 'number',
+      },
+      empty: {
+        type: 'boolean',
+      },
+      folderId: {
+        type: ['string', 'null'],
+      },
+      id: {
+        type: 'string',
+      },
+      name: {
+        type: 'string',
+      },
+      opensIn: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/EditorMode',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+      ownerId: {
+        type: 'string',
+      },
+      savedAt: {
+        type: 'number',
+      },
+      shareCode: {
+        type: ['string', 'null'],
+      },
+      shareable: {
+        type: 'boolean',
+      },
+      source: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/ProjectSource',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+      stats: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/ProjectStats',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+      tabKind: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/CreationTabKind',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+      teamId: {
+        type: ['string', 'null'],
+      },
+      templateFamily: {
+        anyOf: [
+          {
+            $ref: '#/components/schemas/TemplateFamily',
+          },
+          {
+            type: 'null',
+          },
+        ],
+      },
+    },
+    required: [
+      'createdAt',
+      'empty',
+      'folderId',
+      'id',
+      'name',
+      'opensIn',
+      'ownerId',
+      'savedAt',
+      'shareCode',
+      'shareable',
+      'source',
+      'stats',
+      'tabKind',
+      'teamId',
+      'templateFamily',
+    ],
+    type: 'object',
   },
   PublicForm: {
     additionalProperties: false,
@@ -8069,14 +7727,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             minItems: 2,
             type: 'array',
           },
-          ends: {
-            items: {
-              type: 'string',
-            },
-            maxItems: 2,
-            minItems: 2,
-            type: 'array',
-          },
           kind: {
             type: 'string',
           },
@@ -8097,9 +7747,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             maxItems: 2,
             minItems: 2,
             type: 'array',
-          },
-          styleOf: {
-            type: 'string',
           },
         },
         required: ['mark', 'ref', 'kind'],
@@ -8128,14 +7775,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         additionalProperties: false,
         properties: {
-          ends: {
-            items: {
-              type: 'string',
-            },
-            maxItems: 2,
-            minItems: 2,
-            type: 'array',
-          },
           kind: {
             type: 'string',
           },
@@ -8146,88 +7785,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             const: '-',
             type: 'string',
           },
-          pinnedTo: {
-            type: 'string',
-          },
-          reason: {
-            enum: ['pinned', 'unwrapped'],
-            type: 'string',
-          },
           ref: {
             type: 'string',
           },
         },
         required: ['mark', 'ref', 'kind'],
-        type: 'object',
-      },
-      {
-        additionalProperties: false,
-        properties: {
-          delta: {
-            items: {
-              type: 'number',
-            },
-            maxItems: 2,
-            minItems: 2,
-            type: 'array',
-          },
-          layout: {
-            additionalProperties: false,
-            properties: {
-              direction: {
-                enum: ['down', 'right'],
-                type: 'string',
-              },
-              style: {
-                enum: ['flow', 'tree', 'mindmap'],
-                type: 'string',
-              },
-            },
-            required: ['style'],
-            type: 'object',
-          },
-          mark: {
-            const: '»',
-            type: 'string',
-          },
-          reason: {
-            enum: ['make room', 'carried', 'laid out'],
-            type: 'string',
-          },
-          refs: {
-            items: {
-              type: 'string',
-            },
-            type: 'array',
-          },
-        },
-        required: ['mark', 'refs', 'reason'],
-        type: 'object',
-      },
-      {
-        additionalProperties: false,
-        properties: {
-          joined: {
-            items: {
-              type: 'string',
-            },
-            type: 'array',
-          },
-          left: {
-            items: {
-              type: 'string',
-            },
-            type: 'array',
-          },
-          mark: {
-            const: 'container',
-            type: 'string',
-          },
-          ref: {
-            type: 'string',
-          },
-        },
-        required: ['mark', 'ref', 'joined', 'left'],
         type: 'object',
       },
       {
@@ -8279,21 +7841,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         },
         type: 'array',
       },
-      lint: {
-        anyOf: [
-          {
-            $ref: '#/components/schemas/LintReport',
-          },
-          {
-            type: 'null',
-          },
-        ],
-      },
       reverted: {
         type: 'number',
       },
     },
-    required: ['changeset', 'reverted', 'kept', 'lint'],
+    required: ['changeset', 'reverted', 'kept'],
     type: 'object',
   },
   RunHeading: {
@@ -9110,14 +8662,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       createdAt: {
         type: 'number',
       },
-      documentId: {
-        type: 'string',
-      },
       expiresAt: {
         type: ['number', 'null'],
       },
       expiry: {
         $ref: '#/components/schemas/ShareLinkExpiry',
+      },
+      projectId: {
+        type: 'string',
       },
       role: {
         $ref: '#/components/schemas/ShareRole',
@@ -9126,7 +8678,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: ['string', 'null'],
       },
     },
-    required: ['code', 'documentId', 'role', 'createdAt', 'expiry', 'expiresAt', 'tabId'],
+    required: ['code', 'projectId', 'role', 'createdAt', 'expiry', 'expiresAt', 'tabId'],
     type: 'object',
   },
   ShareLinkExpiry: {
@@ -9139,14 +8691,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   SharedTabsSummary: {
     additionalProperties: false,
     properties: {
-      documents: {
+      projects: {
         type: 'number',
       },
       tabs: {
         type: 'number',
       },
     },
-    required: ['tabs', 'documents'],
+    required: ['tabs', 'projects'],
     type: 'object',
   },
   SharedWithItem: {
@@ -10098,9 +9650,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       defaultTextSize: {
         $ref: '#/components/schemas/TextSize',
       },
-      documentId: {
-        type: 'string',
-      },
       elements: {
         items: {
           $ref: '#/components/schemas/Element',
@@ -10143,6 +9692,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       patternColor: {
         type: 'string',
       },
+      projectId: {
+        type: 'string',
+      },
       rev: {
         type: 'number',
       },
@@ -10168,15 +9720,12 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         $ref: '#/components/schemas/TabVote',
       },
     },
-    required: ['documentId', 'elements', 'id', 'name', 'orderIndex', 'rev', 'updatedAt'],
+    required: ['elements', 'id', 'name', 'orderIndex', 'projectId', 'rev', 'updatedAt'],
     type: 'object',
   },
   TabSummary: {
     additionalProperties: false,
     properties: {
-      documentId: {
-        type: 'string',
-      },
       folder: {
         type: 'string',
       },
@@ -10193,11 +9742,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         const: true,
         type: 'boolean',
       },
+      projectId: {
+        type: 'string',
+      },
       updatedAt: {
         type: 'number',
       },
     },
-    required: ['id', 'documentId', 'name', 'orderIndex', 'updatedAt'],
+    required: ['id', 'projectId', 'name', 'orderIndex', 'updatedAt'],
     type: 'object',
   },
   TabTimer: {
@@ -10944,7 +10496,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'string',
       },
       {
-        enum: ['document', 'team', 'account'],
+        enum: ['project', 'team', 'account'],
         type: 'string',
       },
     ],
@@ -10957,7 +10509,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     enum: ['deleted', 'empty'],
     type: 'string',
   },
-  TrashedDocument: {
+  TrashedProject: {
     additionalProperties: false,
     properties: {
       id: {
@@ -11347,7 +10899,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     type: 'object',
   },
   ViewName: {
-    enum: ['overview', 'outline', 'graph', 'layout', 'comments', 'show', 'find', 'diff', 'lint'],
+    enum: ['overview', 'outline', 'comments', 'show', 'find', 'diff'],
     type: 'string',
   },
   WorkbenchPairing: {
@@ -11506,7 +11058,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     $ref: '#/components/schemas/AccessLevel',
   },
   WorkbenchScope: {
-    enum: ['document', 'workspace'],
+    enum: ['project', 'workspace'],
     type: 'string',
   },
   WorkbenchSessionRequest: {
@@ -11524,9 +11076,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         additionalProperties: false,
         properties: {
-          documentId: {
-            type: 'string',
-          },
           expiresAt: {
             type: 'number',
           },
@@ -11539,11 +11088,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           person: {
             $ref: '#/components/schemas/WorkbenchPerson',
           },
+          projectId: {
+            type: 'string',
+          },
           role: {
             $ref: '#/components/schemas/WorkbenchRole',
           },
           scope: {
-            const: 'document',
+            const: 'project',
             type: 'string',
           },
           session: {
@@ -11554,11 +11106,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
         },
         required: [
-          'documentId',
           'expiresAt',
           'folderId',
           'origin',
           'person',
+          'projectId',
           'role',
           'scope',
           'session',
@@ -11569,9 +11121,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         additionalProperties: false,
         properties: {
-          documentId: {
-            type: 'null',
-          },
           expiresAt: {
             type: 'number',
           },
@@ -11583,6 +11132,9 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           person: {
             $ref: '#/components/schemas/WorkbenchPerson',
+          },
+          projectId: {
+            type: 'null',
           },
           role: {
             $ref: '#/components/schemas/WorkbenchRole',
@@ -11599,11 +11151,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
         },
         required: [
-          'documentId',
           'expiresAt',
           'folderId',
           'origin',
           'person',
+          'projectId',
           'role',
           'scope',
           'session',
@@ -11618,21 +11170,21 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       {
         additionalProperties: false,
         properties: {
-          documentId: {
-            type: 'string',
-          },
           origin: {
             type: 'string',
           },
+          projectId: {
+            type: 'string',
+          },
           scope: {
-            const: 'document',
+            const: 'project',
             type: 'string',
           },
           tabId: {
             type: 'string',
           },
         },
-        required: ['documentId', 'origin'],
+        required: ['projectId', 'origin'],
         type: 'object',
       },
       {
@@ -11657,11 +11209,11 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   WorkbenchTicketResponse: {
     additionalProperties: false,
     properties: {
-      documentId: {
-        type: 'string',
-      },
       expiresAt: {
         type: 'number',
+      },
+      projectId: {
+        type: 'string',
       },
       tabId: {
         type: ['string', 'null'],
@@ -11670,7 +11222,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         type: 'string',
       },
     },
-    required: ['url', 'documentId', 'tabId', 'expiresAt'],
+    required: ['url', 'projectId', 'tabId', 'expiresAt'],
     type: 'object',
   },
   WorkbenchWorkspaceTicketResponse: {

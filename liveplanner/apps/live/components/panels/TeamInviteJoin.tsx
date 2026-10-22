@@ -106,7 +106,7 @@ export function TeamInviteJoin() {
       <Card>
         <Heading>This invite link isn&apos;t valid</Heading>
         <Body>It may have been turned off or expired. Ask a team admin for a fresh link.</Body>
-        <PrimaryLink href="/explorer">Back to your documents</PrimaryLink>
+        <PrimaryLink href="/explorer">Back to your projects</PrimaryLink>
       </Card>
     );
   }

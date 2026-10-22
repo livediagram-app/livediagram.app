@@ -4,7 +4,7 @@
 // colour and style changed from Change Cover), then the heading (the tab's name too) and description, edited in
 // place. A later section's header is SectionHeader.
 import { useContext, useMemo, useState } from 'react';
-import type { ColourBackground } from '@liveplanner/document';
+import type { ColourBackground } from '@liveplanner/project';
 import {
   FORM_DESCRIPTION_MAX,
   FORM_HEADING_MAX,
@@ -16,7 +16,7 @@ import { TrashIcon, Tooltip } from '@liveplanner/ui';
 import { patchForm, deleteSection, updateSection } from '@liveplanner/forms';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { BackgroundSection } from '@/components/canvas/page-background-section';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { EditorContext } from '@/app/project/[id]/EditorContext';
 import { themeBackgroundPresets } from '@/lib/page-paint';
 import { getTheme } from '@/lib/themes';
 import { FormCoverBand } from '../FormCoverBand';

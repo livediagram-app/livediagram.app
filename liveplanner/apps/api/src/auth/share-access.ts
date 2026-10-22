@@ -1,19 +1,19 @@
-// The share-side access rules every document gate is built from: who counts
-// as the owner, which share codes belong to a document, and the share-password
-// check (docs/specs/013-workspace/share-password.md). The REST gates (document-access.ts), the share-code resolve
-// (routes/share.ts), and the realtime-room upgrade (routes/document-room-routes.ts)
+// The share-side access rules every project gate is built from: who counts
+// as the owner, which share codes belong to a project, and the share-password
+// check (docs/specs/013-workspace/share-password.md). The REST gates (project-access.ts), the share-code resolve
+// (routes/share.ts), and the realtime-room upgrade (routes/project-room-routes.ts)
 // all compose these, so a rule change lands in one place rather than drifting
-// between three copies. Kept apart from document-access.ts so the room route
+// between three copies. Kept apart from project-access.ts so the room route
 // can reuse the rules while its tests stub the whole-request gates.
 
 import { sha256Hex, type ShareLink } from '@liveplanner/api-schema';
-import { getDocumentSharePassword, getShareLink, upgradeDocumentSharePassword } from '../db';
+import { getProjectSharePassword, getShareLink, upgradeProjectSharePassword } from '../db';
 import type { Env } from '../types';
 import { hashSharePassword, verifySharePassword } from './share-password-hash';
 
-// The personal-document owner rule. The hybrid `owner` id (account id OR the
+// The personal-project owner rule. The hybrid `owner` id (account id OR the
 // unsigned X-Owner-Id guest header, or the room's `?o=`) is trusted ONLY on a
-// personal document, where a guest id is an unguessable UUID. A TEAM document's
+// personal project, where a guest id is an unguessable UUID. A TEAM project's
 // owner id is an account id deliberately visible to every teammate, so a removed
 // member could present it; team access goes through verified membership.
 export function isPersonalOwner(
@@ -25,17 +25,17 @@ export function isPersonalOwner(
 }
 
 // Resolves a share code to its link, but only when the link is for THIS
-// document: the document-id match stops a code for a different document leaking
+// project: the project-id match stops a code for a different project leaking
 // access through. Null for a missing code, an unknown / revoked one, or a
 // mismatch.
-export async function shareLinkForDocument(
+export async function shareLinkForProject(
   env: Env,
   shareCode: string | null,
-  documentId: string,
+  projectId: string,
 ): Promise<ShareLink | null> {
   if (!shareCode) return null;
   const link = await getShareLink(env, shareCode);
-  return link && link.documentId === documentId ? link : null;
+  return link && link.projectId === projectId ? link : null;
 }
 
 // The password a request carries (`X-Share-Password`, or the room's `p`), with
@@ -74,7 +74,7 @@ export function clearVerifiedSharePasswords(): void {
   verified.clear();
 }
 
-// Share-password check (docs/specs/013-workspace/share-password.md). `ok` when the document has no password or the
+// Share-password check (docs/specs/013-workspace/share-password.md). `ok` when the project has no password or the
 // provided one matches; otherwise `missing` (none sent) or `invalid` (sent,
 // wrong, or the caller's network is out of guesses: answered the same way, so
 // an over-limit caller never learns whether a guess was right). The share-code
@@ -84,10 +84,10 @@ type SharePasswordStatus = 'ok' | 'missing' | 'invalid';
 
 export async function sharePasswordStatus(
   env: Env,
-  documentId: string,
+  projectId: string,
   attempt: SharePasswordAttempt | null,
 ): Promise<SharePasswordStatus> {
-  const stored = await getDocumentSharePassword(env, documentId);
+  const stored = await getProjectSharePassword(env, projectId);
   if (!stored) return 'ok';
   if (attempt === null) return 'missing';
   const now = Date.now();
@@ -98,7 +98,7 @@ export async function sharePasswordStatus(
   if (env.SHARE_RATE_LIMITER) {
     const { success } = await env.SHARE_RATE_LIMITER.limit({ key: `share-pw:${attempt.rateKey}` });
     if (!success) {
-      console.warn('[share-password] guess budget spent', { documentId });
+      console.warn('[share-password] guess budget spent', { projectId });
       return 'invalid';
     }
   }
@@ -109,15 +109,15 @@ export async function sharePasswordStatus(
     // The first correct entry of a pre-hashing password stores its hash.
     // Best effort: a failed write just leaves the legacy value for next time.
     try {
-      await upgradeDocumentSharePassword(
+      await upgradeProjectSharePassword(
         env,
-        documentId,
+        projectId,
         stored,
         await hashSharePassword(attempt.value),
       );
-      console.info('[share-password] legacy value upgraded', { documentId });
+      console.info('[share-password] legacy value upgraded', { projectId });
     } catch (err) {
-      console.warn('[share-password] legacy upgrade failed', { documentId, err: String(err) });
+      console.warn('[share-password] legacy upgrade failed', { projectId, err: String(err) });
     }
   }
   return 'ok';
@@ -125,8 +125,8 @@ export async function sharePasswordStatus(
 
 export async function sharePasswordOk(
   env: Env,
-  documentId: string,
+  projectId: string,
   attempt: SharePasswordAttempt | null,
 ): Promise<boolean> {
-  return (await sharePasswordStatus(env, documentId, attempt)) === 'ok';
+  return (await sharePasswordStatus(env, projectId, attempt)) === 'ok';
 }

@@ -8,7 +8,7 @@ import {
   type Tab,
   type PlanCardRef,
   type PlanViewRef,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   normaliseBoardSetup,
   TRASHED_FROM_FIELD,
@@ -55,7 +55,7 @@ const EMPTY_TRASH_BATCH = 8;
 
 export function usePlanSlice(opts: {
   planItems: PlanItems;
-  // The document's item types (docs/specs/026-plan/item-types.md).
+  // The project's item types (docs/specs/026-plan/item-types.md).
   itemTypes: ItemTypesSlice;
   canEdit: boolean;
   // Cards, not structure (docs/specs/013-workspace/share-roles.md): an Editor's and a Participant's.
@@ -73,7 +73,7 @@ export function usePlanSlice(opts: {
   statusNames: ReadonlyMap<string, string>;
   // The phase the tab's boards give each status (the plan views).
   statusPhases?: ReadonlyMap<string, StatusPhase>;
-  // The card types the document's boards show under each status (the Cards panel's Not on a Board).
+  // The card types the project's boards show under each status (the Cards panel's Not on a Board).
   statusTypes?: BoardStatusTypes;
   // Each board's title and statuses (the type editor's States groups).
   statusBoards?: readonly StatusBoard[];
@@ -340,7 +340,7 @@ export function usePlanSlice(opts: {
   );
 
   // Delete Status (docs/specs/026-plan/plan-board.md "Column settings"): the state's columns come off every other
-  // board in the document too, so no board keeps an empty column for a state that is gone.
+  // board in the project too, so no board keeps an empty column for a state that is gone.
   const removeStatusColumns = useCallback(
     (status: string, exceptBoardId: string) => {
       const drop = (els: Element[]) => {

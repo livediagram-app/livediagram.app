@@ -257,7 +257,7 @@ export function LabelsEditor({
   id: string;
   value: ItemFieldValue | undefined;
   disabled: boolean;
-  // Labels other items of the document carry, offered as the field is typed in.
+  // Labels other items of the project carry, offered as the field is typed in.
   suggestions?: readonly string[];
   onSave: Save;
 }) {

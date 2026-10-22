@@ -6,7 +6,7 @@
 // closes it.
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideSettings } from '@liveplanner/icons/lucide';
-import type { ShapeElement } from '@liveplanner/document';
+import type { ShapeElement } from '@liveplanner/project';
 import { openElementMenu } from '@/hooks/canvas/element-menu-opener';
 import type { PlanPalette } from './plan-palette';
 import { track } from '@/lib/telemetry';

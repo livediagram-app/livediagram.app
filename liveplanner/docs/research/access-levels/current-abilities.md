@@ -8,16 +8,16 @@ test before anyone acts on them.
 
 Five mechanisms, layered. Every cell below comes from one of them.
 
-| Mechanism             | Where                                                                                                                               | What it decides                                                                                                                                                                                                                                 |
-| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Grant resolution      | `apps/api/src/auth/document-access.ts` `resolveDocumentGrant`, wrapped by `routes/context.ts` `gateRead` / `gateEdit` / `gateGrant` | Personal owner, then joined team member (both `FULL_EDIT`), then a share link for this document plus the share password. Returns `{ role: 'edit' \| 'view', tabScope, shareCode }`. A tab-scoped grant passes only when the door names its tab. |
-| Owner-only guards     | `routes/context.ts` `ownsDocument`, `requireOwnedDocument`, `mayDeleteDocument`                                                     | Ownership is separate from the edit grant already: share family and tab linking need the owner; delete, trash and moves need the owner or a joined member.                                                                                      |
-| Read-only token choke | `apps/api/src/index.ts` `routeApiRequest`, `if (tokenAuth?.readOnly && isWrite) return forbidden('read_only_token')`                | A read-only token may only `GET` / `HEAD`, on every route.                                                                                                                                                                                      |
-| Session-only routes   | `routes/tokens.ts`, `routes/oauth.ts`, `routes/account.ts`, `routes/migrate.ts`, `routes/teams.ts` (non-GET)                        | Need `ctx.accountUserId` (a Clerk session), so neither a guest nor any API token can reach them.                                                                                                                                                  |
-| Room op gate          | `apps/api/src/document-room.ts` `webSocketMessage`; op classes in `packages/api-schema/src/room-messages.ts`                        | `if (sender.role !== 'edit' && !isPresenceOp) return;` A view session may send only `PRESENCE_OP_KINDS`; `MUTATION_OP_KINDS` need edit; `SYSTEM_OP_KINDS` never come from a socket.                                                             |
+| Mechanism             | Where                                                                                                                             | What it decides                                                                                                                                                                                                                                |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Grant resolution      | `apps/api/src/auth/project-access.ts` `resolveProjectGrant`, wrapped by `routes/context.ts` `gateRead` / `gateEdit` / `gateGrant` | Personal owner, then joined team member (both `FULL_EDIT`), then a share link for this project plus the share password. Returns `{ role: 'edit' \| 'view', tabScope, shareCode }`. A tab-scoped grant passes only when the door names its tab. |
+| Owner-only guards     | `routes/context.ts` `ownsProject`, `requireOwnedProject`, `mayDeleteProject`                                                      | Ownership is separate from the edit grant already: share family and tab linking need the owner; delete, trash and moves need the owner or a joined member.                                                                                     |
+| Read-only token choke | `apps/api/src/index.ts` `routeApiRequest`, `if (tokenAuth?.readOnly && isWrite) return forbidden('read_only_token')`              | A read-only token may only `GET` / `HEAD`, on every route.                                                                                                                                                                                     |
+| Session-only routes   | `routes/tokens.ts`, `routes/oauth.ts`, `routes/account.ts`, `routes/migrate.ts`, `routes/teams.ts` (non-GET)                      | Need `ctx.accountUserId` (a Clerk session), so neither a guest nor any API token can reach them.                                                                                                                                               |
+| Room op gate          | `apps/api/src/project-room.ts` `webSocketMessage`; op classes in `packages/api-schema/src/room-messages.ts`                       | `if (sender.role !== 'edit' && !isPresenceOp) return;` A view session may send only `PRESENCE_OP_KINDS`; `MUTATION_OP_KINDS` need edit; `SYSTEM_OP_KINDS` never come from a socket.                                                            |
 
-The editor mirrors this with two flags: `sessionRole` (`apps/live/app/document/[id]/editor-page-helpers.ts`
-`resolveDocumentSession`, owner or link role) and `isReadOnly = !canEdit` (`useEditorState.ts`, from
+The editor mirrors this with two flags: `sessionRole` (`apps/live/app/project/[id]/editor-page-helpers.ts`
+`resolveProjectSession`, owner or link role) and `isReadOnly = !canEdit` (`useEditorState.ts`, from
 `useViewPreview`). Almost every control keys off `isReadOnly`; session verbs also key off `runBlocked` (the
 facilitator baton, `facilitator.sessionToolsBlocked`).
 
@@ -29,8 +29,8 @@ The room's presence class is wider than its name suggests. `PRESENCE_OP_KINDS` i
 
 The precise answer to the question. A view link (role `view`, all tabs, no account needed) can:
 
-- **Read everything**: the document, every tab, its images and thumbnail, comment threads (others' author ids
-  redacted, `redactCommentAuthorIds`), and the document's Timeline feed (`routes/timeline.ts` `canReadScope`).
+- **Read everything**: the project, every tab, its images and thumbnail, comment threads (others' author ids
+  redacted, `redactCommentAuthorIds`), and the project's Timeline feed (`routes/timeline.ts` `canReadScope`).
 - **Be present live**: join the room, show a cursor and current tab, appear in the roster with a Viewer badge,
   use the laser and Avatar mode (and shove another avatar), follow and be followed, press Bring focus, present
   slides on their own screen, enter zen, export PNG / SVG / Markdown.
@@ -44,7 +44,7 @@ The precise answer to the question. A view link (role `view`, all tabs, no accou
   (`POST .../tabs/:tabId/comments`, `gateRead`), and delete their own comment (`DELETE .../comments/:id`, author
   check). Not from a comment panel (`commentPanelActions` is undefined when `isReadOnly`).
 - **Roll the picker for themselves** (the result is not written, `docs/specs/012-collaboration/picker.md`).
-- **Make a copy** of the document into their own files (`routes/documents.ts` `/copy`, a read gate).
+- **Make a copy** of the project into their own files (`routes/projects.ts` `/copy`, a read gate).
 - **Be recorded**: their visit seeds "Shared with you" (`routes/share.ts`, `recordSharedAccess`), and the owner's
   Timeline reports their opens and copies.
 
@@ -59,20 +59,20 @@ polls and use the Q&A board, but cannot vote or answer any element-based session
 
 ## The identities (columns)
 
-| Column   | Who                                                                                                                                                                    |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Own**  | Owner of a personal document (Clerk session, or a guest by `X-Owner-Id`).                                                                                              |
-| **Mem**  | Joined member of the team whose library holds the document. The row owner of a team document is a member like any other, plus the owner-only doors while still joined. |
-| **E**    | Edit share link, all tabs.                                                                                                                                             |
-| **V**    | View share link, all tabs.                                                                                                                                             |
-| **E·t**  | Edit share link scoped to one tab.                                                                                                                                     |
-| **V·t**  | View share link scoped to one tab.                                                                                                                                     |
-| **EmbE** | `/embed?s=` of an edit link: the editor with `embed` flag, zen-style chrome, no identity screen.                                                                       |
-| **EmbV** | `/embed?s=` of a view link.                                                                                                                                            |
-| **G**    | Guest (no account) on their own personal document. A guest on someone else's document is simply the link column they arrived through.                                  |
-| **FT**   | Full API token, whose Clerk owner is the document's owner or a member. With `X-Share-Code` it takes that link's role instead.                                          |
-| **RO**   | Read-only API token, same owner.                                                                                                                                       |
-| **MCP**  | The MCP server (`apps/mcp/src/tools.ts`) acting with a full token: 11 tools, no share-code path, no room.                                                              |
+| Column   | Who                                                                                                                                                                  |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Own**  | Owner of a personal project (Clerk session, or a guest by `X-Owner-Id`).                                                                                             |
+| **Mem**  | Joined member of the team whose library holds the project. The row owner of a team project is a member like any other, plus the owner-only doors while still joined. |
+| **E**    | Edit share link, all tabs.                                                                                                                                           |
+| **V**    | View share link, all tabs.                                                                                                                                           |
+| **E·t**  | Edit share link scoped to one tab.                                                                                                                                   |
+| **V·t**  | View share link scoped to one tab.                                                                                                                                   |
+| **EmbE** | `/embed?s=` of an edit link: the editor with `embed` flag, zen-style chrome, no identity screen.                                                                     |
+| **EmbV** | `/embed?s=` of a view link.                                                                                                                                          |
+| **G**    | Guest (no account) on their own personal project. A guest on someone else's project is simply the link column they arrived through.                                  |
+| **FT**   | Full API token, whose Clerk owner is the project's owner or a member. With `X-Share-Code` it takes that link's role instead.                                         |
+| **RO**   | Read-only API token, same owner.                                                                                                                                     |
+| **MCP**  | The MCP server (`apps/mcp/src/tools.ts`) acting with a full token: 11 tools, no share-code path, no room.                                                            |
 
 Cell legend: **Y** allowed and offered; **N** refused; **T** on its own tab only; **S** the server allows it but
 no client offers it; **U** the editor offers it but the server refuses it; **n/a** not meaningful.
@@ -81,22 +81,22 @@ no client offers it; **U** the editor offers it but the server refuses it; **n/a
 
 ### Reading and presence
 
-| Ability                                    | Own | Mem | E   | V   | E·t | V·t | EmbE | EmbV | G   | FT  | RO  | MCP | Granted or refused by                                                                        |
-| ------------------------------------------ | --- | --- | --- | --- | --- | --- | ---- | ---- | --- | --- | --- | --- | -------------------------------------------------------------------------------------------- |
-| Read document and tab list                 | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | Y   | Y   | Y   | `documents.ts` GET `/:id` via `gateGrant`, then `redactDocumentForScope`                     |
-| Read tab content                           | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | Y   | Y   | Y   | `document-subresource-routes.ts` GET via `gateRead(..., tabId)`; others 404 by `deniedOnTab` |
-| Images, thumbnail                          | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | Y   | Y   | Y   | `images.ts` GET (`gateGrant` plus `documentReferencesImage`); `documents.ts` `/thumbnail`    |
-| Public live image of a link                | Y   | n/a | Y   | Y   | T   | T   | Y    | Y    | Y   | Y   | Y   | N   | `share.ts` `handleShareImage`: any live code, refused when a password is set                 |
-| Document Timeline feed                     | Y   | Y   | Y   | Y   | N   | N   | Y    | Y    | Y   | Y   | Y   | N   | `timeline.ts` `canReadScope`, `gateRead` with no tab                                         |
-| Join the room, receive live ops            | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `document-room-routes.ts`; RO cannot mint a ticket (`POST room-ticket` hits the choke point) |
-| Cursor, tab focus, roster badge            | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `document-room.ts` `webSocketMessage`, presence class; `helloPresence` stamps the role       |
-| Select (and so lock an element for others) | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `select` is presence-class; `usePresenceBroadcast.ts` sends it for every role                |
-| Laser, Avatar mode, shove                  | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | presence class; non-mutating tools in `lib/editor-commands.ts` `toolCommands`                |
-| Reactions                                  | Y   | Y   | Y   | S   | T   | S   | Y    | S    | Y   | S   | N   | N   | room allows; `EditorCanvasHost.tsx` `onFireReaction={isReadOnly ? undefined : ...}`          |
-| Follow, be followed                        | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `viewport` presence class                                                                    |
-| Bring focus                                | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `focus-here` presence class; UI gate is `runBlocked` only                                    |
-| Present locally, zen, export               | Y   | Y   | Y   | Y   | T   | T   | N    | N    | Y   | n/a | n/a | n/a | client-side; `viewSafe` commands in `buildEditorCommands`; embed hides the chrome            |
-| Listed in "Shared with you"                | n/a | n/a | Y   | Y   | Y   | Y   | Y    | Y    | n/a | n/a | n/a | N   | `share.ts` `recordSharedAccess`; `shared.ts`                                                 |
+| Ability                                    | Own | Mem | E   | V   | E·t | V·t | EmbE | EmbV | G   | FT  | RO  | MCP | Granted or refused by                                                                       |
+| ------------------------------------------ | --- | --- | --- | --- | --- | --- | ---- | ---- | --- | --- | --- | --- | ------------------------------------------------------------------------------------------- |
+| Read project and tab list                  | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | Y   | Y   | Y   | `projects.ts` GET `/:id` via `gateGrant`, then `redactProjectForScope`                      |
+| Read tab content                           | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | Y   | Y   | Y   | `project-subresource-routes.ts` GET via `gateRead(..., tabId)`; others 404 by `deniedOnTab` |
+| Images, thumbnail                          | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | Y   | Y   | Y   | `images.ts` GET (`gateGrant` plus `projectReferencesImage`); `projects.ts` `/thumbnail`     |
+| Public live image of a link                | Y   | n/a | Y   | Y   | T   | T   | Y    | Y    | Y   | Y   | Y   | N   | `share.ts` `handleShareImage`: any live code, refused when a password is set                |
+| Project Timeline feed                      | Y   | Y   | Y   | Y   | N   | N   | Y    | Y    | Y   | Y   | Y   | N   | `timeline.ts` `canReadScope`, `gateRead` with no tab                                        |
+| Join the room, receive live ops            | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `project-room-routes.ts`; RO cannot mint a ticket (`POST room-ticket` hits the choke point) |
+| Cursor, tab focus, roster badge            | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `project-room.ts` `webSocketMessage`, presence class; `helloPresence` stamps the role       |
+| Select (and so lock an element for others) | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `select` is presence-class; `usePresenceBroadcast.ts` sends it for every role               |
+| Laser, Avatar mode, shove                  | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | presence class; non-mutating tools in `lib/editor-commands.ts` `toolCommands`               |
+| Reactions                                  | Y   | Y   | Y   | S   | T   | S   | Y    | S    | Y   | S   | N   | N   | room allows; `EditorCanvasHost.tsx` `onFireReaction={isReadOnly ? undefined : ...}`         |
+| Follow, be followed                        | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `viewport` presence class                                                                   |
+| Bring focus                                | Y   | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `focus-here` presence class; UI gate is `runBlocked` only                                   |
+| Present locally, zen, export               | Y   | Y   | Y   | Y   | T   | T   | N    | N    | Y   | n/a | n/a | n/a | client-side; `viewSafe` commands in `buildEditorCommands`; embed hides the chrome           |
+| Listed in "Shared with you"                | n/a | n/a | Y   | Y   | Y   | Y   | Y    | Y    | n/a | n/a | n/a | N   | `share.ts` `recordSharedAccess`; `shared.ts`                                                |
 
 ### Comments
 
@@ -114,69 +114,69 @@ no client offers it; **U** the editor offers it but the server refuses it; **n/a
 "Run" means start, end, reveal, clear or configure. Every run verb is also gated client-side by the facilitator
 baton (`runBlocked`); the room enforces the baton only for `poll-start` / `poll-end` (`mayRunSession`).
 
-| Ability                                    | Own                                                                | Mem | E   | V   | E·t | V·t | EmbE | EmbV | G   | FT  | RO  | MCP | Granted or refused by                                                                               |
-| ------------------------------------------ | ------------------------------------------------------------------ | --- | --- | --- | --- | --- | ---- | ---- | --- | --- | --- | --- | --------------------------------------------------------------------------------------------------- |
-| Dot vote: run                              | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `useTabSession.ts` `startVote` etc. on `runBlocked`; `tab-meta` is mutation class                   |
-| Dot vote: cast, retract                    | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `castVote` returns on `editsBlocked`; `vote` is mutation class                                      |
-| Live poll: start, end                      | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | n/a | N   | N   | mutation class plus `mayRunSession` in the room                                                     |
-| Live poll: answer                          | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | n/a | N   | N   | `poll-answer` presence class; `PollPromptSheet` ungated                                             |
-| Q&A: add note, upvote, withdraw            | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `qa-board-routes.ts`, participant actions on `gateRead`                                             |
-| Q&A: discuss, close, reopen, remove, clear | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | same route, other actions on `gateEdit`                                                             |
-| Estimate, temperature, Done check: answer  | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `respond` undefined when `isReadOnly`; `el-delta` (`response`) is mutation class                    |
-| Estimate, Done check: reveal, reset, scale | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `isReadOnly \|\| runBlocked` in `EditorCanvasHost.tsx`                                              |
-| Idea box: add an idea                      | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `addIdea` undefined when `isReadOnly`; `idea` delta is mutation class                               |
-| Idea box: reveal, scatter, clear           | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `isReadOnly \|\| runBlocked`                                                                        |
-| Quiz: answer                               | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `answerQuiz` undefined when `isReadOnly`                                                            |
-| Quiz: start, lock, reveal, reset, edit     | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `isReadOnly \|\| runBlocked`                                                                        |
-| Picker: press                              | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | n/a | N   | N   | anyone presses; only an editor's result is written (`picker.md`)                                    |
-| Timer: start, pause, extend, reset         | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `useTabSession.ts` on `runBlocked`; view sees a read-only clock                                     |
-| Roll call, agenda press                    | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `takeRoll`, `pressAgendaItem` on `isReadOnly \|\| runBlocked`                                       |
-| Checklist tick                             | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `onToggleChecklistItem` on `isReadOnly`; `check` delta is mutation class                            |
-| Facilitator baton: claim, hold, grant      | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | n/a | N   | N   | `facilitator.ts` `canHold = role === 'edit'`                                                        |
-| Baton: take it back from a holder          | Y*                                                                 | N   | N   | N   | N   | N   | N    | N    | Y*  | n/a | N   | N   | `claimBaton` needs `isOwner`, set only by `X-Verified-Owner` from a personal-document `?o=` upgrade |
-| Free someone's selection lock              | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | n/a | N   | N   | `document-room.ts` `releaseSelectionLock`: edit plus `mayReleaseLock`                               |
-| Bring focus while someone holds the baton  | holder only, client-side; the room relays `focus-here` from anyone |     |     |     |     |     |      |      |     |     |     |     | `EditorCanvasHost.tsx` `onPressFocusButton={runBlocked ? undefined : ...}`                          |
+| Ability                                    | Own                                                                | Mem | E   | V   | E·t | V·t | EmbE | EmbV | G   | FT  | RO  | MCP | Granted or refused by                                                                              |
+| ------------------------------------------ | ------------------------------------------------------------------ | --- | --- | --- | --- | --- | ---- | ---- | --- | --- | --- | --- | -------------------------------------------------------------------------------------------------- |
+| Dot vote: run                              | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `useTabSession.ts` `startVote` etc. on `runBlocked`; `tab-meta` is mutation class                  |
+| Dot vote: cast, retract                    | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `castVote` returns on `editsBlocked`; `vote` is mutation class                                     |
+| Live poll: start, end                      | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | n/a | N   | N   | mutation class plus `mayRunSession` in the room                                                    |
+| Live poll: answer                          | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | n/a | N   | N   | `poll-answer` presence class; `PollPromptSheet` ungated                                            |
+| Q&A: add note, upvote, withdraw            | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | S   | N   | N   | `qa-board-routes.ts`, participant actions on `gateRead`                                            |
+| Q&A: discuss, close, reopen, remove, clear | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | same route, other actions on `gateEdit`                                                            |
+| Estimate, temperature, Done check: answer  | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `respond` undefined when `isReadOnly`; `el-delta` (`response`) is mutation class                   |
+| Estimate, Done check: reveal, reset, scale | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `isReadOnly \|\| runBlocked` in `EditorCanvasHost.tsx`                                             |
+| Idea box: add an idea                      | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `addIdea` undefined when `isReadOnly`; `idea` delta is mutation class                              |
+| Idea box: reveal, scatter, clear           | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `isReadOnly \|\| runBlocked`                                                                       |
+| Quiz: answer                               | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `answerQuiz` undefined when `isReadOnly`                                                           |
+| Quiz: start, lock, reveal, reset, edit     | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `isReadOnly \|\| runBlocked`                                                                       |
+| Picker: press                              | Y                                                                  | Y   | Y   | Y   | T   | T   | Y    | Y    | Y   | n/a | N   | N   | anyone presses; only an editor's result is written (`picker.md`)                                   |
+| Timer: start, pause, extend, reset         | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `useTabSession.ts` on `runBlocked`; view sees a read-only clock                                    |
+| Roll call, agenda press                    | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `takeRoll`, `pressAgendaItem` on `isReadOnly \|\| runBlocked`                                      |
+| Checklist tick                             | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | S   | N   | N   | `onToggleChecklistItem` on `isReadOnly`; `check` delta is mutation class                           |
+| Facilitator baton: claim, hold, grant      | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | n/a | N   | N   | `facilitator.ts` `canHold = role === 'edit'`                                                       |
+| Baton: take it back from a holder          | Y*                                                                 | N   | N   | N   | N   | N   | N    | N    | Y*  | n/a | N   | N   | `claimBaton` needs `isOwner`, set only by `X-Verified-Owner` from a personal-project `?o=` upgrade |
+| Free someone's selection lock              | Y                                                                  | Y   | Y   | N   | T   | N   | Y    | N    | Y   | n/a | N   | N   | `project-room.ts` `releaseSelectionLock`: edit plus `mayReleaseLock`                               |
+| Bring focus while someone holds the baton  | holder only, client-side; the room relays `focus-here` from anyone |     |     |     |     |     |      |      |     |     |     |     | `EditorCanvasHost.tsx` `onPressFocusButton={runBlocked ? undefined : ...}`                         |
 
-\* Personal documents only; on a team document nobody holds the owner override.
+\* Personal projects only; on a team project nobody holds the owner override.
 
 ### Content
 
-| Ability                                            | Own | Mem | E   | V   | E·t | V·t | EmbE | EmbV | G   | FT  | RO  | MCP | Granted or refused by                                                                                   |
-| -------------------------------------------------- | --- | --- | --- | --- | --- | --- | ---- | ---- | --- | --- | --- | --- | ------------------------------------------------------------------------------------------------------- |
-| Edit elements, layers, tab theme, canvas, tab name | Y   | Y   | Y   | N   | T   | N   | Y    | N    | Y   | Y   | N   | Y   | tab PUT `gateEdit(..., tabId)`; room `el`, `tab`, `tab-meta`; MCP `update_document`                     |
-| Add a tab                                          | Y   | Y   | Y   | N   | N   | N   | Y    | N    | Y   | Y   | N   | Y   | tab PUT names a tab outside the scope; `document-meta` refused by `scopedSenderMayRelay`; MCP `add_tab` |
-| Delete a tab                                       | Y   | Y   | Y   | N   | N   | N   | Y    | N    | Y   | Y   | N   | N   | tab DELETE: `grant?.tabScope !== null` refused                                                          |
-| Rename document, reorder tabs, slide deck          | Y   | Y   | Y   | N   | N   | N   | Y    | N    | Y   | Y   | N   | Y   | `documents.ts` PUT `/:id`, `gateEdit` without a tab; MCP `rename_document`                              |
-| AI assistant                                       | Y   | Y   | Y   | S   | T   | S   | Y    | S    | Y¹  | Y¹  | N   | n/a | `ai-gate.ts` is not document-gated; panel hidden when `isReadOnly`                                      |
-| Link an existing tab from another document         | Y   | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | `document-subresource-routes.ts` `/link`: `ownsDocument`                                                |
+| Ability                                            | Own | Mem | E   | V   | E·t | V·t | EmbE | EmbV | G   | FT  | RO  | MCP | Granted or refused by                                                                                  |
+| -------------------------------------------------- | --- | --- | --- | --- | --- | --- | ---- | ---- | --- | --- | --- | --- | ------------------------------------------------------------------------------------------------------ |
+| Edit elements, layers, tab theme, canvas, tab name | Y   | Y   | Y   | N   | T   | N   | Y    | N    | Y   | Y   | N   | Y   | tab PUT `gateEdit(..., tabId)`; room `el`, `tab`, `tab-meta`; MCP `update_project`                     |
+| Add a tab                                          | Y   | Y   | Y   | N   | N   | N   | Y    | N    | Y   | Y   | N   | Y   | tab PUT names a tab outside the scope; `project-meta` refused by `scopedSenderMayRelay`; MCP `add_tab` |
+| Delete a tab                                       | Y   | Y   | Y   | N   | N   | N   | Y    | N    | Y   | Y   | N   | N   | tab DELETE: `grant?.tabScope !== null` refused                                                         |
+| Rename project, reorder tabs, slide deck           | Y   | Y   | Y   | N   | N   | N   | Y    | N    | Y   | Y   | N   | Y   | `projects.ts` PUT `/:id`, `gateEdit` without a tab; MCP `rename_project`                               |
+| AI assistant                                       | Y   | Y   | Y   | S   | T   | S   | Y    | S    | Y¹  | Y¹  | N   | n/a | `ai-gate.ts` is not project-gated; panel hidden when `isReadOnly`                                      |
+| Link an existing tab from another project          | Y   | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | `project-subresource-routes.ts` `/link`: `ownsProject`                                                 |
 
 ¹ Unless `AI_REQUIRE_SIGN_IN=true`, which refuses guests and tokens. ² Except the row owner.
 
 ### Sharing
 
-| Ability                                 | Own                                           | Mem | E   | V   | E·t | V·t | EmbE | EmbV | G   | FT  | RO  | MCP | Granted or refused by                                           |
-| --------------------------------------- | --------------------------------------------- | --- | --- | --- | --- | --- | ---- | ---- | --- | --- | --- | --- | --------------------------------------------------------------- |
-| List links, read the password in clear  | Y                                             | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | Y   | N   | `document-share-routes.ts` GET `/share`, `requireOwnedDocument` |
-| Create a link (role, expiry, tab scope) | Y                                             | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | Y³  | POST `/share`; MCP `share_document`                             |
-| Revoke one or all, rescope, extend      | Y                                             | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | DELETE `/share`, DELETE / PUT `/share/:code`, POST `/extend`    |
-| Set or clear the share password         | Y                                             | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | PUT `/share-password`                                           |
-| Change an existing link's role          | nobody: there is no route; revoke and reissue |     |     |     |     |     |      |      |     |     |     |     | n/a                                                             |
+| Ability                                 | Own                                           | Mem | E   | V   | E·t | V·t | EmbE | EmbV | G   | FT  | RO  | MCP | Granted or refused by                                         |
+| --------------------------------------- | --------------------------------------------- | --- | --- | --- | --- | --- | ---- | ---- | --- | --- | --- | --- | ------------------------------------------------------------- |
+| List links, read the password in clear  | Y                                             | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | Y   | N   | `project-share-routes.ts` GET `/share`, `requireOwnedProject` |
+| Create a link (role, expiry, tab scope) | Y                                             | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | Y³  | POST `/share`; MCP `share_project`                            |
+| Revoke one or all, rescope, extend      | Y                                             | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | DELETE `/share`, DELETE / PUT `/share/:code`, POST `/extend`  |
+| Set or clear the share password         | Y                                             | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | PUT `/share-password`                                         |
+| Change an existing link's role          | nobody: there is no route; revoke and reissue |     |     |     |     |     |      |      |     |     |     |     | n/a                                                           |
 
-³ View or edit, with expiry; no tab scope, default `view` (`packages/agent-verbs/src/mcp/schema.ts` `shareDocumentShape`).
+³ View or edit, with expiry; no tab scope, default `view` (`packages/agent-verbs/src/mcp/schema.ts` `shareProjectShape`).
 The editor hides Share for anyone with `isOwner` false (`EditorView.tsx` `showShare={isOwner && ...}`), which
 matches the server for members who are not the row owner.
 
-### Document lifecycle
+### Project lifecycle
 
-| Ability                                   | Own | Mem | E   | V   | E·t | V·t | EmbE | EmbV | G   | FT  | RO       | MCP | Granted or refused by                                                                  |
-| ----------------------------------------- | --- | --- | --- | --- | --- | --- | ---- | ---- | --- | --- | -------- | --- | -------------------------------------------------------------------------------------- |
-| Make a copy into own files                | Y   | Y   | Y   | Y   | T   | T   | S    | S    | Y   | Y   | N        | N   | `documents.ts` `/copy`: `gateGrant` or a live `shared_with` row; embed shows no button |
-| Move, re-folder, file into or out of team | Y   | Y   | N   | N   | N   | N   | N    | N    | Y⁴  | Y   | N        | N   | `document-placement-route.ts`: owner or joined member rules                            |
-| Delete to Trash, delete permanently       | Y   | Y   | U   | N   | U   | N   | N    | N    | Y   | Y   | N        | Y   | `document-delete-route.ts` `mayDeleteDocument`; palette offers it to edit links        |
-| Restore, purge, list Trash                | Y   | Y   | N   | N   | N   | N   | N    | N    | Y   | Y   | RO lists | Y   | `trash.ts`, `mayDeleteDocument`                                                        |
-| Empty the whole Trash                     | Y   | Y⁵  | N   | N   | N   | N   | N    | N    | Y   | Y   | N        | N   | `trash.ts` DELETE: personal by owner, `?team=` by any joined member                    |
-| Take offline                              | Y   | N   | N   | N   | N   | N   | N    | N    | Y   | Y   | N        | N   | `document-delete-route.ts`, honoured for the owner only                                |
-| Favourite                                 | Y   | Y   | Y   | Y   | Y   | Y   | n/a  | n/a  | Y   | Y   | N        | N   | `favourites.ts`: per caller, not access-checked                                        |
+| Ability                                   | Own | Mem | E   | V   | E·t | V·t | EmbE | EmbV | G   | FT  | RO       | MCP | Granted or refused by                                                                 |
+| ----------------------------------------- | --- | --- | --- | --- | --- | --- | ---- | ---- | --- | --- | -------- | --- | ------------------------------------------------------------------------------------- |
+| Make a copy into own files                | Y   | Y   | Y   | Y   | T   | T   | S    | S    | Y   | Y   | N        | N   | `projects.ts` `/copy`: `gateGrant` or a live `shared_with` row; embed shows no button |
+| Move, re-folder, file into or out of team | Y   | Y   | N   | N   | N   | N   | N    | N    | Y⁴  | Y   | N        | N   | `project-placement-route.ts`: owner or joined member rules                            |
+| Delete to Trash, delete permanently       | Y   | Y   | U   | N   | U   | N   | N    | N    | Y   | Y   | N        | Y   | `project-delete-route.ts` `mayDeleteProject`; palette offers it to edit links         |
+| Restore, purge, list Trash                | Y   | Y   | N   | N   | N   | N   | N    | N    | Y   | Y   | RO lists | Y   | `trash.ts`, `mayDeleteProject`                                                        |
+| Empty the whole Trash                     | Y   | Y⁵  | N   | N   | N   | N   | N    | N    | Y   | Y   | N        | N   | `trash.ts` DELETE: personal by owner, `?team=` by any joined member                   |
+| Take offline                              | Y   | N   | N   | N   | N   | N   | N    | N    | Y   | Y   | N        | N   | `project-delete-route.ts`, honoured for the owner only                                |
+| Favourite                                 | Y   | Y   | Y   | Y   | Y   | Y   | n/a  | n/a  | Y   | Y   | N        | N   | `favourites.ts`: per caller, not access-checked                                       |
 
 ⁴ Personal moves only; a guest can never be a team member. ⁵ The team's Trash, by any joined member, not only admins.
 
@@ -184,17 +184,17 @@ matches the server for members who are not the row owner.
 
 | Ability                                         | Clerk session                  | Guest        | Full token | Read-only token | MCP | Granted or refused by                                      |
 | ----------------------------------------------- | ------------------------------ | ------------ | ---------- | --------------- | --- | ---------------------------------------------------------- |
-| Create a team                                   | Y                              | N            | N          | N               | N   | `teams.ts`: non-GET needs `accountUserId`                    |
+| Create a team                                   | Y                              | N            | N          | N               | N   | `teams.ts`: non-GET needs `accountUserId`                  |
 | Read team, members, library                     | members (library: joined only) | N            | Y          | Y               | Y   | `teams.ts` uses `verifiedUserId` for reads                 |
 | See the team invite-link token                  | admins                         | N            | admins     | admins          | N   | `teams.ts` GET `/:id`, `isAdmin ? getTeamInviteLink`       |
 | Rename, delete team; invite; roles; invite link | joined admin                   | N            | N          | N               | N   | `teams.ts` `isAdmin` plus session                          |
 | Leave or decline                                | self                           | N            | N          | N               | N   | `teams.ts` DELETE member, `isSelf`                         |
-| List, mint, revoke API tokens                   | Y (Settings mints full only)   | N            | N          | N               | N   | `tokens.ts` `if (!accountUserId) return forbidden()`         |
+| List, mint, revoke API tokens                   | Y (Settings mints full only)   | N            | N          | N               | N   | `tokens.ts` `if (!accountUserId) return forbidden()`       |
 | Mint through MCP consent (full or read-only)    | Y                              | N            | N          | N               | n/a | `oauth.ts` `handleOauthExchange`, `readOnly` from the body |
 | Delete account, migrate guest work, Drive       | Y                              | migrate only | N          | N               | N   | `account.ts`, `migrate.ts`, `drive.ts`                     |
 
-Team roles are `admin` and `member`. Neither changes what a member can do to a document: every joined member holds
-`FULL_EDIT` (`resolveDocumentGrant`).
+Team roles are `admin` and `member`. Neither changes what a member can do to a project: every joined member holds
+`FULL_EDIT` (`resolveProjectGrant`).
 
 ### Embeds in short
 
@@ -206,15 +206,15 @@ dialog or Make a copy button, and the
 
 ## Where the editor and the server disagree
 
-| Ability                                 | Editor                                                                           | Server                                 | Effect                                                                                                                                                                                                                            |
-| --------------------------------------- | -------------------------------------------------------------------------------- | -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Delete document, edit link              | Command palette offers "Delete document" (`buildEditorCommands`, not role-gated) | 403, `mayDeleteDocument`               | `useDocumentListActions.ts` `deleteDocument` tombstones locally, swallows the 403 (`.catch(() => {})`) and navigates to the Explorer: silent failure, and the visitor's own autosave is now stopped by the tombstone **(verify)** |
-| Reactions, view role                    | Hidden                                                                           | Relayed (`reaction` is presence-class) | A crafted client can fire them; harmless, but the two disagree                                                                                                                                                                    |
-| Q&A run verbs while someone holds baton | Hidden (`runBlocked`)                                                            | Allowed to any editor (`gateEdit`)     | Baton is advisory for Q&A, timer, vote, quiz, responses                                                                                                                                                                           |
-| Bring focus while someone holds baton   | Hidden                                                                           | Relayed from anyone, view included     | Same                                                                                                                                                                                                                              |
-| Copy from an embed                      | No button                                                                        | Allowed                                | Harmless                                                                                                                                                                                                                          |
-| Room join, full token                   | No client                                                                        | Ticket mint and edit session allowed   | An agent could join a room today with no presence design                                                                                                                                                                          |
-| Comment from a comment panel, view role | No composer                                                                      | The REST door would accept it          | Inconsistent between popover and panel                                                                                                                                                                                            |
+| Ability                                 | Editor                                                                          | Server                                 | Effect                                                                                                                                                                                                                          |
+| --------------------------------------- | ------------------------------------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Delete project, edit link               | Command palette offers "Delete project" (`buildEditorCommands`, not role-gated) | 403, `mayDeleteProject`                | `useProjectListActions.ts` `deleteProject` tombstones locally, swallows the 403 (`.catch(() => {})`) and navigates to the Explorer: silent failure, and the visitor's own autosave is now stopped by the tombstone **(verify)** |
+| Reactions, view role                    | Hidden                                                                          | Relayed (`reaction` is presence-class) | A crafted client can fire them; harmless, but the two disagree                                                                                                                                                                  |
+| Q&A run verbs while someone holds baton | Hidden (`runBlocked`)                                                           | Allowed to any editor (`gateEdit`)     | Baton is advisory for Q&A, timer, vote, quiz, responses                                                                                                                                                                         |
+| Bring focus while someone holds baton   | Hidden                                                                          | Relayed from anyone, view included     | Same                                                                                                                                                                                                                            |
+| Copy from an embed                      | No button                                                                       | Allowed                                | Harmless                                                                                                                                                                                                                        |
+| Room join, full token                   | No client                                                                       | Ticket mint and edit session allowed   | An agent could join a room today with no presence design                                                                                                                                                                        |
+| Comment from a comment panel, view role | No composer                                                                     | The REST door would accept it          | Inconsistent between popover and panel                                                                                                                                                                                          |
 
 ## Anomalies and gaps
 
@@ -229,24 +229,24 @@ dialog or Make a copy button, and the
    for every role, so a viewer who clicks an element (to read its thread) blocks editors from it until they click
    away. Only a baton holder or a free-baton editor can release it.
 4. **A read-only token can read every share code and the password.** `GET /share` is a `GET`, so the choke point
-   lets it through, and `requireOwnedDocument` accepts the token's owner. Anyone holding a read-only token can
+   lets it through, and `requireOwnedProject` accepts the token's owner. Anyone holding a read-only token can
    therefore lift an edit link and open it in a browser. A read-only token of a team admin likewise reads the
    team invite-link token, which lets any account join the team and edit its library.
 5. **A full token can mint credentials.** `context.ts` states "a leaked token must not be able to manage
    membership or mint further credentials", yet share links (edit role included) and the share password are
-   reachable with a full token, and MCP exposes `share_document`.
+   reachable with a full token, and MCP exposes `share_project`.
 6. **Possible owner impersonation on the room upgrade (verify).** The `?o=` leg (`isPersonalOwner(claimedOwnerId,
-...)`) trusts an unsigned query value for personal documents. For a signed-in owner that value is a Clerk id,
-   which teammates can read from the members list, and the document id reaches every link visitor. Unlike the
+...)`) trusts an unsigned query value for personal projects. For a signed-in owner that value is a Clerk id,
+   which teammates can read from the members list, and the project id reaches every link visitor. Unlike the
    `X-Owner-Id` header, which `index.ts` refuses when it is Clerk-shaped, the query param has no such check.
-   If confirmed, a teammate holding a view link to a colleague's personal document could join its room as an
+   If confirmed, a teammate holding a view link to a colleague's personal project could join its room as an
    editor with the owner bit. Worth a focused test.
 7. **Ownership is already separate from edit, but unevenly.** Owner-only: share family, tab linking, Take offline.
-   Owner or any member: delete, permanent delete, Trash, moves (including taking a team document into one's own
-   library, which transfers ownership). Team admin carries no document power at all, while any member can empty
+   Owner or any member: delete, permanent delete, Trash, moves (including taking a team project into one's own
+   library, which transfers ownership). Team admin carries no project power at all, while any member can empty
    the team Trash.
-8. **No owner override on team documents.** `X-Verified-Owner` is set only for a personal-document `?o=` upgrade,
-   so a stuck baton on a team document can be cleared only by the grace timer.
+8. **No owner override on team projects.** `X-Verified-Owner` is set only for a personal-project `?o=` upgrade,
+   so a stuck baton on a team project can be cleared only by the grace timer.
 9. **Read-only tokens cannot join the room or comment**, and Settings cannot mint them at all: only the MCP consent
    screen offers the toggle (`apps/live/app/oauth/consent/page.tsx`); `tokens.ts` ignores any `readOnly` field.
 10. **A link's role is immutable.** There is no route to change it; scope can change (`PUT /share/:code`), role
@@ -258,7 +258,7 @@ dialog or Make a copy button, and the
 13. **The baton is mostly advisory.** Only `poll-start` / `poll-end` are enforced in the room; every other run
     verb is a client rule, as `facilitator.md` says openly. Any edit holder can run any session tool over REST or
     a crafted socket.
-14. **MCP is owner-shaped.** It sends no share code, so it sees only owned and team documents; it has no tools for
+14. **MCP is owner-shaped.** It sends no share code, so it sees only owned and team projects; it has no tools for
     comments, session tools or presence.
 
 ## How today maps onto the four levels
@@ -289,14 +289,14 @@ offers "can view" and "can edit" with ownership and admin rights handled separat
    "presence" for a write.
 3. **Define ownership as a list of doors, not a role**: share family, password, delete, Trash, move, Take offline,
    baton override; decide per door whether a team member or admin also holds it, and route all of them through
-   `ownsDocument` / `mayDeleteDocument` only.
+   `ownsProject` / `mayDeleteProject` only.
 4. **Fix the token escape hatches before adding roles**: refuse share-link and password reads to read-only tokens,
    hide the team invite-link token from tokens, and decide whether full tokens may mint share links.
 5. **Test anomaly 6 first.** If the `?o=` leg admits a Clerk id, refuse Clerk-shaped values there as `index.ts`
    does for the header, and require a ticket for every signed-in owner.
 6. **Make viewers neutral in the room**: no selection lock from a session below edit, and exclude non-respondents
    from the Done check waiting list.
-7. **Close the UI and server gaps**: hide Delete document for non-owners and stop swallowing its 403; decide
+7. **Close the UI and server gaps**: hide Delete project for non-owners and stop swallowing its 403; decide
    reactions for viewers one way.
 
 ## Open questions for Webber
@@ -309,7 +309,7 @@ offers "can view" and "can edit" with ownership and admin rights handled separat
    - **Presence and following only**: cursor, laser, follow, reactions; no comments, no answers.
    - **Presence plus poll answers and Q&A**, as audiences on view links do today.
    - **Read only, invisible**: no cursor or roster entry either.
-3. **Who holds ownership doors on a team document?**
+3. **Who holds ownership doors on a team project?**
    - **Every joined member**, as delete and Trash already work.
    - **Team admins and the row owner** only.
    - **The row owner only**, as the share family works today.

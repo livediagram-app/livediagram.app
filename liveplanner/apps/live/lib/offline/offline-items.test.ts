@@ -5,7 +5,7 @@ import { fetchItems, writeItem, writeItemComment } from '../api/items';
 import { memBackend, testRecord } from './offline-test-utils';
 import { ApiError } from '../api/core';
 
-// An offline document's item store (docs/specs/026-plan/items.md "Offline documents"): kept in the
+// An offline project's item store (docs/specs/026-plan/items.md "Offline projects"): kept in the
 // record, written by the same transitions the api applies, refused by the same rules.
 
 const ME = { id: 'me', name: 'Me', color: '#2563eb' };
@@ -23,7 +23,7 @@ describe('offline items', () => {
   it('creates, moves and deletes in the record, through the dispatching client', async () => {
     __setOfflineBackend(memBackend());
     await offlinePutRecord(testRecord());
-    const scope = { ownerId: 'o', documentId: 'd1', shareCode: null, tabId: null };
+    const scope = { ownerId: 'o', projectId: 'd1', shareCode: null, tabId: null };
     const made = await writeItem(
       scope,
       {
@@ -117,11 +117,11 @@ describe('offline items', () => {
     expect(undone.upserts[0]!.fields['status']).toBe('done');
   });
 
-  // docs/specs/026-plan/items.md "Comments": an offline document comments locally, by the same rules.
+  // docs/specs/026-plan/items.md "Comments": an offline project comments locally, by the same rules.
   it('comments on a card in the record: add, resolve, delete, and refuses as the api does', async () => {
     __setOfflineBackend(memBackend());
     await offlinePutRecord(testRecord());
-    const scope = { ownerId: 'owner-me', documentId: 'd1', shareCode: null, tabId: null };
+    const scope = { ownerId: 'owner-me', projectId: 'd1', shareCode: null, tabId: null };
     await writeItem(
       scope,
       { kind: 'create', creates: [{ id: 'item-one', type: 'task', fields: { title: 'One' } }] },
@@ -159,7 +159,7 @@ describe('offline items', () => {
     ).rejects.toMatchObject({ status: 404, code: 'item_not_found' });
     await offlinePutRecord(testRecord({ id: 'd2', trashedAt: 5 }));
     await expect(
-      writeItemComment({ ...scope, documentId: 'd2' }, 'x', { kind: 'add', text: 'x' }, who),
+      writeItemComment({ ...scope, projectId: 'd2' }, 'x', { kind: 'add', text: 'x' }, who),
     ).rejects.toMatchObject({ status: 404 });
   });
 });

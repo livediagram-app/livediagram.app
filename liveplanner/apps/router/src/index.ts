@@ -4,7 +4,6 @@
 // See docs/specs/016-platform/router-app.md.
 
 import { applyCachePolicy } from './cache-policy';
-import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@liveplanner/api-schema';
 import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
 
@@ -48,7 +47,7 @@ const HELP_PATH = '/help';
 const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 
 // Help-centre category slugs, which are the first segment of every help
-// article path (`/canvas/shadows/`, `/palette/build/frames/`). The help app
+// article path (`/plan/boards/`, `/collaboration/sharing/embeds/`). The help app
 // serves them all under `/help`, so a bare one is an article URL that lost
 // its prefix — a hand-typed link, an old bookmark, a copy-paste that dropped
 // the first segment. Those 404'd into marketing; they redirect now.
@@ -59,16 +58,14 @@ const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 const HELP_CATEGORY_SEGMENTS = new Set([
   'about',
   'account-and-data',
-  'canvas',
   'collaboration',
   'contact',
   'developers',
   'getting-started',
-  'palette',
+  'plan',
   'policies',
   'privacy-and-security',
   'search-panel',
-  'selection-modes',
   'supported-devices',
   'tabs',
   'tips-and-tricks',
@@ -148,7 +145,7 @@ function forward(
 // api's JSON included.
 //
 // A 101 is returned UNTOUCHED. The realtime room answers
-// `/api/documents/<id>/ws` with a WebSocket upgrade, and a Response carrying a
+// `/api/projects/<id>/ws` with a WebSocket upgrade, and a Response carrying a
 // `webSocket` cannot be reconstructed — `new Response(body, res)` drops the
 // socket and takes realtime collab down on staging alone, on one path, which
 // is precisely the sort of breakage that survives a smoke test. Crawlers do
@@ -200,16 +197,12 @@ async function route(request: Request, env: Env): Promise<Response> {
     // for every app: an old link lands on it with liveplanner picked.
     return telemetryRedirect(env);
   }
-  const legacyHelp = legacyHelpRedirect(url);
-  if (legacyHelp) return legacyHelp;
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
     // prefix-strip as telemetry.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
-  const legacyEditor = legacyEditorRedirect(url);
-  if (legacyEditor) return legacyEditor;
-  // Clean live-app page routes (/document, /explorer, /new, ...) and
+  // Clean live-app page routes (/project, /explorer, /new, ...) and
   // its root-served icon: forwarded AS-IS (no strip — the worker's
   // files are already `/live`-free).
   if (isLivePageRoute(url.pathname)) {

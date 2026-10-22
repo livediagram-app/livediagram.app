@@ -1,6 +1,6 @@
 // Same-day stacking (docs/specs/013-workspace/timeline.md §2.1).
 //
-// A day where you renamed six documents should read as one line, not
+// A day where you renamed six projects should read as one line, not
 // six. Within a day, events sharing a bucket collapse into a single
 // card the reader can expand.
 //
@@ -30,8 +30,8 @@ const BUCKET_ALIASES: Record<string, string> = {
   team_member_removed: 'team_membership',
   share_link_created: 'sharing',
   share_link_expiring: 'sharing',
-  document_moved: 'filing',
-  team_document_added: 'filing',
+  project_moved: 'filing',
+  team_project_added: 'filing',
 };
 
 // Events that always stand alone.
@@ -87,18 +87,18 @@ export function buildStacks(events: readonly TimelineEvent[]): TimelineStack[] {
 //
 // It must be true of EVERY event in the run, which is why it can't
 // just reuse the first event's label: "Renamed Payments architecture"
-// on a stack that also contains two other documents reads as a lie. The
+// on a stack that also contains two other projects reads as a lie. The
 // per-bucket map below is the honest generic; anything unmapped falls
 // back to the shared title, which is already a generic category by the
 // copy rules (docs/specs/013-workspace/timeline.md §2).
 const STACK_LABELS: Record<string, string> = {
-  'document::document_edited': 'Documents Updated',
-  'document::document_created': 'Documents Created',
-  'document::document_renamed': 'Documents Renamed',
-  'document::document_duplicated': 'Documents Duplicated',
-  'document::comment_resolved': 'Comments Resolved',
-  'document::action_assigned': 'Actions Assigned',
-  'document::action_completed': 'Actions Completed',
+  'project::project_edited': 'Projects Updated',
+  'project::project_created': 'Projects Created',
+  'project::project_renamed': 'Projects Renamed',
+  'project::project_duplicated': 'Projects Duplicated',
+  'project::comment_resolved': 'Comments Resolved',
+  'project::action_assigned': 'Actions Assigned',
+  'project::action_completed': 'Actions Completed',
   'team::team_role_changed': 'Roles Changed',
   'team::team_invite_accepted': 'Invites Accepted',
   'team::team_invite_declined': 'Invites Declined',
@@ -111,7 +111,7 @@ const STACK_LABELS: Record<string, string> = {
   'account::token_revoked': 'API Tokens Revoked',
   team_membership: 'Members Changed',
   sharing: 'Sharing Changed',
-  filing: 'Documents Filed',
+  filing: 'Projects Filed',
 };
 
 export function stackLabel(stack: TimelineStack): string {

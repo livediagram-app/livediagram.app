@@ -1,76 +1,126 @@
 import { describe, expect, it } from 'vitest';
-import { EDIT_KEYS, VIEW_TOOL_KEYS } from '@/hooks/canvas/editor-shortcut-keys';
-import { SHORTCUT_SECTIONS } from './shortcut-sections';
+import { presetSetup, projectBoard, type Item } from '@liveplanner/items';
+import { coveredKeyRole } from '@/hooks/canvas/editor-shortcut-keys';
+import { planBoardKey } from '@/components/plan/plan-board-keys';
+import { sheetKey } from '@/components/sheets/sheet-keys';
+import { SHORTCUT_SECTIONS, type ShortcutRow } from './shortcut-sections';
 
-// The Keyboard settings list and the key maps are two hand-kept lists of one thing.
-// The list calls itself "a reference card of every binding the editor knows"
-// and the help centre tells users to trust it, so a row for a key nothing
-// handles is a documented lie, and a handled key with no row is a feature
-// nobody can find. Neither shows up in a render, a typecheck, or a lint.
-//
-// Both hold today. This is here so they keep holding: renaming a handler is a
-// one-line edit in a file that has no reason to mention the dialog.
+// The Keyboard settings list and the handlers are two hand-kept lists of one thing. The list is the reference the
+// help centre tells people to trust, so a row for a key that does nothing on a Board, Sheet, Dashboard or Form tab is
+// a documented lie, and a key that works with no row is a feature nobody can find. Neither shows up in a render, a
+// typecheck or a lint.
 
-const handledKeys = new Set([...Object.keys(VIEW_TOOL_KEYS), ...Object.keys(EDIT_KEYS)]);
+const section = (heading: string) => SHORTCUT_SECTIONS.find((s) => s.heading === heading)!.rows;
 
-// Rows whose `keys` are a single printable character: the ones that name one
-// binding. Chords (⌘ Z) and the "1 – 0" number-row summary are not claims
-// about a single key, so they are not checked here.
-const singleKeyRows = SHORTCUT_SECTIONS.flatMap((section) =>
-  section.rows
-    .filter((row) => row.keys.length === 1 && /^[A-Za-z0-9]$/.test(row.keys[0]!))
-    .map((row) => ({
-      key: row.keys[0]!.toLowerCase(),
-      label: row.label,
-      section: section.heading,
-    })),
-);
+// A row's keys as the KeyboardEvent the handlers see: ⌘ as metaKey, ⇧ / Shift as shiftKey, the rest the key.
+const NAMED: Record<string, string> = {
+  Del: 'Delete',
+  Arrow: 'ArrowDown',
+  '↓': 'ArrowDown',
+};
+function eventOf(row: ShortcutRow) {
+  const mods = new Set(['⌘', '⇧', 'Shift', 'Alt']);
+  const main = row.keys.filter((k) => !mods.has(k))[0]!;
+  const key = NAMED[main] ?? main;
+  return {
+    key: /^[A-Z]$/.test(key) ? key.toLowerCase() : key,
+    code: '',
+    metaKey: row.keys.includes('⌘'),
+    ctrlKey: false,
+    shiftKey: row.keys.includes('⇧') || row.keys.includes('Shift'),
+    altKey: row.keys.includes('Alt'),
+  };
+}
 
-describe('the Keyboard settings list matches the keys the editor binds', () => {
+const ZOOM_ROWS = new Set(['+', '-', '0']);
+
+describe('the Keyboard settings list matches the keys a Plan tab answers', () => {
   it('reads real rows (guard against this test going blind)', () => {
-    expect(SHORTCUT_SECTIONS.length).toBeGreaterThan(3);
-    expect(singleKeyRows.length).toBeGreaterThan(10);
-    expect(handledKeys.size).toBeGreaterThan(15);
+    expect(SHORTCUT_SECTIONS.map((s) => s.heading)).toEqual([
+      'Everywhere',
+      'On a Board',
+      'In a Sheet',
+    ]);
+    expect(SHORTCUT_SECTIONS.flatMap((s) => s.rows).length).toBeGreaterThan(20);
   });
 
-  it('lists no key the editor does not bind', () => {
-    const phantom = singleKeyRows
-      .filter((row) => !handledKeys.has(row.key))
-      .map((row) => `${row.key.toUpperCase()} (${row.section}: ${row.label})`);
-    expect(phantom).toEqual([]);
+  it('lists only editor-wide keys that run on a Plan tab', () => {
+    // On a Plan tab the canvas is covered, so the editor runs just what coveredKeyRole lets through. F6 is the
+    // region cycle's own listener (hooks/ui/useRegionCycle.ts), not the editor's.
+    const dead = section('Everywhere')
+      .filter((row) => row.keys[0] !== 'F6')
+      .filter((row) => coveredKeyRole(eventOf(row), false) !== 'run')
+      .map((row) => row.label);
+    expect(dead).toEqual([]);
   });
 
-  it('leaves no bound key undocumented', () => {
-    // The number row is documented as a range ("1 – 0") rather than ten rows,
-    // so a digit counts as covered when that summary row is present.
-    const numberRowSummarised = SHORTCUT_SECTIONS.some((section) =>
-      section.rows.some((row) => row.keys.includes('–') && row.keys.includes('0')),
+  it('leaves no editor-wide plain key that runs on a Plan tab undocumented', () => {
+    const documented = new Set(
+      section('Everywhere')
+        .filter((row) => row.keys.length === 1)
+        .map((row) => row.keys[0]!.toLowerCase()),
     );
-    const documented = new Set(singleKeyRows.map((row) => row.key));
-    // Some keys are documented only inside a label, e.g. "Select tool (or S)".
-    for (const section of SHORTCUT_SECTIONS) {
-      for (const row of section.rows) {
-        for (const m of row.label.matchAll(/\bor\s+(?:Ctrl\s+)?([A-Za-z0-9])\b/g)) {
-          documented.add(m[1]!.toLowerCase());
-        }
-      }
-    }
-    const undocumented = [...handledKeys].filter(
-      (key) => !documented.has(key) && !(numberRowSummarised && /^[0-9]$/.test(key)),
+    const plain = 'abcdefghijklmnopqrstuvwxyz0123456789'.split('');
+    const running = plain.filter(
+      (key) =>
+        coveredKeyRole(
+          { key, code: '', metaKey: false, ctrlKey: false, shiftKey: false, altKey: false },
+          false,
+        ) === 'run',
     );
-    expect(undocumented.sort()).toEqual([]);
+    expect(running.length).toBeGreaterThan(0);
+    expect(running.filter((key) => !documented.has(key))).toEqual([]);
   });
-});
 
-// docs/specs/009-elements/mind-node.md "New lines": Enter grows a mind map, so the key for a new
-// line in a node's label has a row of its own, beside Tab and Enter.
-describe('the mind node keys', () => {
-  it('lists Tab, Enter and Shift+Enter together', () => {
-    const rows = SHORTCUT_SECTIONS.flatMap((section) => section.rows);
-    const at = (label: string) => rows.findIndex((row) => row.label === label);
-    const newLine = at('In a mind node’s label: new line');
-    expect(rows[newLine]?.keys).toEqual(['⇧', 'Enter']);
-    expect(at('On a mind node: add a sibling')).toBe(newLine - 1);
-    expect(at('On a mind node: add a child')).toBe(newLine - 2);
+  it("lists only keys a focused card answers on a Board (docs/specs/026-plan/plan-board.md 'Keyboard')", () => {
+    let n = 0;
+    const item = (status: string, rank: string): Item => {
+      n += 1;
+      const by = { id: 'p', name: 'P', color: '#000000' };
+      return {
+        ...{ id: `i${n}`, type: 'task', key: n, rank, rev: 1, createdAt: 0, updatedAt: 0 },
+        fields: { title: `Card ${n}`, status },
+        createdBy: by,
+        updatedBy: by,
+      };
+    };
+    const setup = {
+      ...presetSetup('blank'),
+      columns: [
+        { id: 'todo', status: 'todo', name: 'To do' },
+        { id: 'done', status: 'done', name: 'Done' },
+      ],
+      doneColumnId: 'done',
+    };
+    const a = item('todo', 'a');
+    const b = item('todo', 'b');
+    const board = projectBoard(setup, new Map([a, b].map((i) => [i.id, i])));
+    const dead = section('On a Board')
+      .filter((row) => {
+        const e = eventOf(row);
+        const key = row.keys.includes('Shift') && e.key === 'ArrowDown' ? 'ArrowRight' : e.key;
+        return planBoardKey(board, a.id, key, e.shiftKey, true) === null;
+      })
+      .map((row) => row.label);
+    expect(dead).toEqual([]);
+  });
+
+  it("lists only keys a Sheet's grid answers, and its zoom chords (docs/specs/029-sheets/sheet.md)", () => {
+    const dead = section('In a Sheet')
+      .filter((row) => {
+        const e = eventOf(row);
+        if (row.keys.includes('⌘') && ZOOM_ROWS.has(e.key))
+          return coveredKeyRole(e, true) !== 'run';
+        return sheetKey(e) === null;
+      })
+      .map((row) => row.label);
+    expect(dead).toEqual([]);
+  });
+
+  it('names nothing from the diagram editor', () => {
+    const labels = SHORTCUT_SECTIONS.flatMap((s) => s.rows.map((r) => r.label)).join('\n');
+    expect(labels).not.toMatch(
+      /shape|element|tool|frame|isometric|mind node|flowchart|palette|nudge|canvas/i,
+    );
   });
 });

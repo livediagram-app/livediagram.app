@@ -10,7 +10,7 @@ import {
   writtenItemsRefusal,
 } from './write-checks';
 
-// The api's write checks, shared with an offline document (blueprint item-store.md "Interfaces and contracts").
+// The api's write checks, shared with an offline project (blueprint item-store.md "Interfaces and contracts").
 
 const types = [{ ...ITEM_TYPES[0], id: 'task', excludedStatuses: ['done'] }];
 

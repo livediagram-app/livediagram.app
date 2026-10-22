@@ -3,7 +3,6 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';
 import { CardColumns } from './CardColumns';
 import {
-  AI_ASSISTANCE,
   ASSIGNED_ACTIONS,
   DATA_MODELS,
   EDITOR_CHROME,
@@ -28,7 +27,7 @@ import { rankTrend, windowLabel } from './windows';
 //
 // Every metric here was already being emitted, validated, and stored, and none
 // of it was rendered anywhere: `AI·Used` had no card on any tab, and the whole
-// `Layer` category (docs/specs/006-document/layers.md), plus Note, Folder and Action, appeared only in
+// `Layer` category (docs/specs/006-project/layers.md), plus Note, Folder and Action, appeared only in
 // the vocabulary labeller the old Raw table used. Data arriving and nobody reading
 // it is the same blind spot as data never sent, one step further along — the
 // Palette catalogue drifting out of the dashboard is exactly how four element
@@ -58,7 +57,6 @@ export const GROUPS: MetricGroup[] = [
       EDITOR_SEARCH,
       EDITOR_CHROME,
       TRASH,
-      AI_ASSISTANCE,
     ],
   },
 ];
@@ -98,9 +96,9 @@ export function EditingView({
           <RankCard
             title="Export Formats"
             subtitle="Which formats diagrams leave in: PNG, SVG, PDF, JSON, Markdown"
-            category="Document"
+            category="Project"
             action="Exported"
-            items={of('Document', 'Exported')}
+            items={of('Project', 'Exported')}
             daily={summary.daily}
             trend={trend}
             emptyLabel="Nothing was exported in this window yet."

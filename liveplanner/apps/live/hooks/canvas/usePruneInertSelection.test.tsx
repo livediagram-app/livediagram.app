@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { createSelectionStore } from '@/lib/selection-store';
 import { usePruneInertSelection } from './usePruneInertSelection';
 
-// docs/specs/006-document/layers.md: a layer turning hidden or locked drops its elements from the live
+// docs/specs/006-project/layers.md: a layer turning hidden or locked drops its elements from the live
 // selection, as delete does, before the next paint.
 
 describe('usePruneInertSelection', () => {

@@ -496,7 +496,7 @@ describe('the sheet toolbar', () => {
     const win = vi.spyOn(window, 'open').mockImplementation(() => null);
     fireEvent.click(btn('All Functions'));
     expect(win).toHaveBeenCalledWith(
-      '/help/canvas/plan-mode/sheet-functions/',
+      '/help/plan/sheet-functions/',
       '_blank',
       'noopener',
     );

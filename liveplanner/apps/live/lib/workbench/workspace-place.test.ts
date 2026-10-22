@@ -3,7 +3,7 @@ import {
   appHrefOfPlace,
   explorerRouteOfFrame,
   framePathOfAppHref,
-  isNewDocumentHref,
+  isNewProjectHref,
   placeView,
   workspaceFramePath,
   workspacePlaceOf,
@@ -32,12 +32,12 @@ describe('workspaceFramePath', () => {
       '/embed/workbench/explorer/tags?id=g1',
     ],
     [
-      { kind: 'document', documentId: 'doc-1', tabId: null, shareCode: null },
-      '/embed/workbench/document/doc-1',
+      { kind: 'project', projectId: 'doc-1', tabId: null, shareCode: null },
+      '/embed/workbench/project/doc-1',
     ],
     [
-      { kind: 'document', documentId: 'doc-1', tabId: 't1', shareCode: 'CODE2345' },
-      '/embed/workbench/document/doc-1?s=CODE2345&tab=t1',
+      { kind: 'project', projectId: 'doc-1', tabId: 't1', shareCode: 'CODE2345' },
+      '/embed/workbench/project/doc-1?s=CODE2345&tab=t1',
     ],
   ])('places %o at %s', (at, path) => {
     expect(workspaceFramePath(at)).toBe(path);
@@ -52,12 +52,12 @@ describe('workspacePlaceOf', () => {
       { kind: 'explorer', node: { kind: 'recent' } },
       { kind: 'explorer', node: { kind: 'trash' } },
       { kind: 'explorer', node: { kind: 'team', id: 't1' } },
-      { kind: 'document', documentId: 'doc-1', tabId: 't1', shareCode: 'CODE2345' },
+      { kind: 'project', projectId: 'doc-1', tabId: 't1', shareCode: 'CODE2345' },
     ];
     for (const at of places) expect(place(workspaceFramePath(at))).toEqual(at);
   });
 
-  it('reads a trailing slash, an unknown view and a document path with no id as Home', () => {
+  it('reads a trailing slash, an unknown view and a project path with no id as Home', () => {
     expect(place('/embed/workbench/explorer/')).toEqual({
       kind: 'explorer',
       node: { kind: 'home' },
@@ -66,7 +66,7 @@ describe('workspacePlaceOf', () => {
       kind: 'explorer',
       node: { kind: 'home' },
     });
-    expect(place('/embed/workbench/document/')).toEqual({
+    expect(place('/embed/workbench/project/')).toEqual({
       kind: 'explorer',
       node: { kind: 'home' },
     });
@@ -97,9 +97,9 @@ describe('framePathOfAppHref', () => {
     ['/explorer/folder?id=f1', '/embed/workbench/explorer/folder/f1'],
     ['/explorer/folder?id=f1&q=x', '/embed/workbench/explorer/folder/f1?q=x'],
     ['/explorer/team?id=t1&folder=f2', '/embed/workbench/explorer/team?id=t1&folder=f2'],
-    ['/document/doc-1', '/embed/workbench/document/doc-1'],
-    ['/document/doc-1?s=CODE2345', '/embed/workbench/document/doc-1?s=CODE2345'],
-    ['https://live.test/document/doc-1?tab=t1', '/embed/workbench/document/doc-1?tab=t1'],
+    ['/project/doc-1', '/embed/workbench/project/doc-1'],
+    ['/project/doc-1?s=CODE2345', '/embed/workbench/project/doc-1?s=CODE2345'],
+    ['https://live.test/project/doc-1?tab=t1', '/embed/workbench/project/doc-1?tab=t1'],
     ['/embed/workbench/explorer/trash', '/embed/workbench/explorer/trash'],
   ])('moves %s inside the frame as %s', (href, path) => {
     expect(framePathOfAppHref(href, 'https://live.test')).toBe(path);
@@ -110,20 +110,20 @@ describe('framePathOfAppHref', () => {
     '/help/workbenches',
     '/sign-in/',
     'https://elsewhere.example/explorer/home',
-    '/document/placeholder',
-    '/document/',
+    '/project/placeholder',
+    '/project/',
   ])('leaves %s to the frame’s other paths', (href) => {
     expect(framePathOfAppHref(href, 'https://live.test')).toBeNull();
   });
 });
 
-describe('isNewDocumentHref', () => {
-  it('knows the new-document wizard by its path, query or not', () => {
-    expect(isNewDocumentHref('/new', 'https://live.test')).toBe(true);
-    expect(isNewDocumentHref('/new?folder=f1', 'https://live.test')).toBe(true);
-    expect(isNewDocumentHref('/new/', 'https://live.test')).toBe(true);
-    expect(isNewDocumentHref('/newsletter', 'https://live.test')).toBe(false);
-    expect(isNewDocumentHref('https://elsewhere.example/new', 'https://live.test')).toBe(false);
+describe('isNewProjectHref', () => {
+  it('knows the new-project wizard by its path, query or not', () => {
+    expect(isNewProjectHref('/new', 'https://live.test')).toBe(true);
+    expect(isNewProjectHref('/new?folder=f1', 'https://live.test')).toBe(true);
+    expect(isNewProjectHref('/new/', 'https://live.test')).toBe(true);
+    expect(isNewProjectHref('/newsletter', 'https://live.test')).toBe(false);
+    expect(isNewProjectHref('https://elsewhere.example/new', 'https://live.test')).toBe(false);
   });
 });
 
@@ -133,11 +133,11 @@ describe('appHrefOfPlace and placeView', () => {
       '/explorer/folder?id=f1',
     );
     expect(
-      appHrefOfPlace({ kind: 'document', documentId: 'd1', tabId: 't1', shareCode: 'CODE2345' }),
-    ).toBe('/document/d1?s=CODE2345');
+      appHrefOfPlace({ kind: 'project', projectId: 'd1', tabId: 't1', shareCode: 'CODE2345' }),
+    ).toBe('/project/d1?s=CODE2345');
     expect(placeView({ kind: 'explorer', node: { kind: 'recent' } })).toBe('recent');
-    expect(placeView({ kind: 'document', documentId: 'd1', tabId: null, shareCode: null })).toBe(
-      'document',
+    expect(placeView({ kind: 'project', projectId: 'd1', tabId: null, shareCode: null })).toBe(
+      'project',
     );
   });
 });

@@ -23,7 +23,7 @@ export type HeroSceneData = {
   // The hero headline's word while this window is centred (lib/hero-word-pin.ts).
   word: string;
   // Where its Build yours button goes: the template step narrowed to this kind
-  // (docs/specs/007-editor/new-document-route.md "?mode= and ?q=").
+  // (docs/specs/007-editor/new-project-route.md "?mode= and ?q=").
   build: string;
   mode: HeroMode;
   // A Plan scene's tab, whose own bar the window draws where the Palette would be.

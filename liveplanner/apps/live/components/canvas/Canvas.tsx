@@ -5,8 +5,8 @@ import { LongPressRing } from '@/components/primitives/LongPressRing';
 import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { isAnimatedPattern } from '@liveplanner/document';
+import { useEffect, useMemo, useRef } from 'react';
+import { isAnimatedPattern } from '@liveplanner/project';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
@@ -41,7 +41,6 @@ import { IsometricDepthLayer } from '@/components/canvas/IsometricDepthLayer';
 import { useIsometricView } from '@/hooks/canvas/useIsometricView';
 import { useCanvasPointer } from './useCanvasPointer';
 import { useCanvasDrawTools } from './useCanvasDrawTools';
-import { usePortalTravel } from './portal-travel';
 import { useOffscreenContent } from '@/hooks/canvas/useOffscreenContent';
 import { TabLoadOverlay } from '@/components/canvas/TabLoadOverlay';
 import { PaletteDragGhost } from '@/components/canvas/PaletteDragGhost';
@@ -93,9 +92,7 @@ function CanvasView(props: CanvasProps) {
     onRetryTabLoad,
   } = props;
   const { zoom: viewportZoom, offset: viewportOffset } = useViewportOf(wholeView);
-  // The zoom when a handler runs, for what is handed down and must keep its identity across zooms.
   const viewportStore = useViewportStore();
-  const readZoom = useCallback(() => viewportStore.get().zoom, [viewportStore]);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
 
@@ -200,18 +197,6 @@ function CanvasView(props: CanvasProps) {
     onCanvasPointerMove,
     wrapperRef,
     viewportZoom,
-  });
-
-  // Portals (docs/specs/009-elements/portal-element.md): the camera centres on the paired portal — see
-  // usePortalTravel.
-  const { resolvePortal } = usePortalTravel({
-    elements,
-    tabs: props.portalTabs,
-    activeTabId: props.activeTabId,
-    onFollowLink: props.onFollowLink,
-    mainRef,
-    readZoom,
-    setViewportOffset,
   });
 
   // Isometric view (docs/specs/008-canvas/isometric-view.md): the orbit-able camera + the innermost
@@ -466,9 +451,6 @@ function CanvasView(props: CanvasProps) {
                     >
                       <CanvasElementsLayer
                         {...props}
-                        // Portal travel is resolved HERE (Canvas owns the viewport), so the prop
-                        // from the host is overridden with the local resolver.
-                        onEnterPortal={resolvePortal}
                         hasArrows={hasArrows}
                         arrowLabels={arrowLabels}
                         selectionInput={selectionInput}
@@ -520,7 +502,7 @@ function CanvasView(props: CanvasProps) {
             onIsoOrbit={isoCamera.startOrbit}
             onIsoReset={isoCamera.reset}
           />
-          {/* Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
+          {/* Lazy per-tab load (docs/specs/006-project/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
             canvas AND the floating palette, blocking any edit that would
             otherwise overwrite an unfetched tab's real content. */}
           {tabLoadState && tabLoadState !== 'ready' ? (

@@ -1,11 +1,11 @@
-// The offline id cache (docs/specs/006-document/offline-mode.md "Persistence architecture"): a
-// cheap "is this document offline?" for the dispatch in lib/api/*. The set of offline ids IS the
+// The offline id cache (docs/specs/006-project/offline-mode.md "Persistence architecture"): a
+// cheap "is this project offline?" for the dispatch in lib/api/*. The set of offline ids IS the
 // set of record keys, mirrored in memory per browser tab.
 //
 // Every tab of the same browser shares the one IndexedDB store, so a tab's cache goes stale the
-// moment another tab registers or removes an id (Take Offline, Sync Document, a purge). Each change
+// moment another tab registers or removes an id (Take Offline, Sync Project, a purge). Each change
 // is therefore told to the other tabs on a BroadcastChannel and applied there; without it a tab
-// kept routing a document's writes to the store it had left.
+// kept routing a project's writes to the store it had left.
 
 import { reportApiWarning } from '../api/error-report';
 import { debugLog } from '../debug-log';
@@ -21,8 +21,8 @@ let idCache: Set<string> | null = null;
 let idCacheLoad: Promise<Set<string>> | null = null;
 // Ids registered before the cache finished loading (a create racing the
 // first lookup). Merged into the cache when it lands and consulted by both
-// checks, so a just-created offline document can never read as "not offline"
-// (a miss would leak its writes to the server; see docs/specs/006-document/offline-mode.md and the ghost-row
+// checks, so a just-created offline project can never read as "not offline"
+// (a miss would leak its writes to the server; see docs/specs/006-project/offline-mode.md and the ghost-row
 // bug the meta PUT's create-on-first-write used to turn that into).
 const pendingIds = new Set<string>();
 // Ids another tab removed before this tab's cache finished loading: the load's snapshot of the
@@ -30,7 +30,7 @@ const pendingIds = new Set<string>();
 const removedIds = new Set<string>();
 
 // Set once the store failed to open in time: the rest of the page load answers from the pending set
-// instead of waiting out the limit again on every check (two per document load).
+// instead of waiting out the limit again on every check (two per project load).
 let storeUnavailable = false;
 
 async function loadIds(): Promise<Set<string>> {
@@ -69,7 +69,7 @@ export async function isOfflineId(id: string): Promise<boolean> {
   return (await loadIds()).has(id);
 }
 
-// How many documents this browser holds (the local Trash included), off the same cached index: a
+// How many projects this browser holds (the local Trash included), off the same cached index: a
 // cheap upper bound that lets a caller skip reading every record (the move prompt after signing in,
 // docs/specs/014-identity/auth-and-guest-access.md) when there is nothing, or nothing new, to offer.
 export async function offlineIdCount(): Promise<number> {
@@ -78,16 +78,16 @@ export async function offlineIdCount(): Promise<number> {
 
 // Synchronous check off the already-loaded cache, for the `beforeunload`
 // beacon flush, which can't await. Returns false until the cache has loaded
-// (by which point any document being edited has already been through the async
+// (by which point any project being edited has already been through the async
 // path, so its id is cached).
 export function isOfflineIdSync(id: string): boolean {
   idsChannel();
   return pendingIds.has(id) || (idCache?.has(id) ?? false);
 }
 
-// Told whenever a document joins or leaves this browser's store (a create, Sync Document, Take Offline),
-// in this tab or another: what shows or reads a document's offline-ness follows a conversion without a
-// reload (docs/specs/006-document/offline-mode.md "Syncing in place").
+// Told whenever a project joins or leaves this browser's store (a create, Sync Project, Take Offline),
+// in this tab or another: what shows or reads a project's offline-ness follows a conversion without a
+// reload (docs/specs/006-project/offline-mode.md "Syncing in place").
 const idListeners = new Set<(id: string) => void>();
 export function subscribeOfflineIds(listener: (id: string) => void): () => void {
   idListeners.add(listener);

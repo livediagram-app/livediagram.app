@@ -3,7 +3,7 @@ import { test, expect, expectNoPageErrors } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
 // The Explorer's filters for a signed-in member (docs/specs/013-workspace/explorer-filters.md),
-// against the signed-in export: a team's root lists its documents directly, the team's lens
+// against the signed-in export: a team's root lists its projects directly, the team's lens
 // reaches its subfolders, and the Space chip names teams by name, never by id.
 
 test.use({ colorScheme: 'dark', viewport: { width: 1280, height: 800 } });
@@ -34,7 +34,7 @@ async function seedTeam(page: Page, userId: string) {
   await asMember(page, userId, '/teams', { id: team, name: 'Design guild' });
   await asMember(page, userId, '/folders', { id: folder, name: 'Roadmaps', teamId: team });
   const doc = (name: string, extra: Record<string, unknown>) =>
-    asMember(page, userId, '/documents', {
+    asMember(page, userId, '/projects', {
       id: crypto.randomUUID(),
       name,
       tabs: tabs(),
@@ -47,12 +47,12 @@ async function seedTeam(page: Page, userId: string) {
   return { team };
 }
 
-const field = (page: Page) => page.getByRole('combobox', { name: 'Filter documents' });
+const field = (page: Page) => page.getByRole('combobox', { name: 'Filter projects' });
 const filters = (page: Page) => page.getByRole('group', { name: 'Filters' });
 const docLink = (page: Page, name: string) =>
   page.locator('main section').getByRole('link', { name, exact: true });
 
-test('a team root lists its documents, and its lens reaches its folders', async ({
+test('a team root lists its projects, and its lens reaches its folders', async ({
   page,
   pageErrors,
 }) => {
@@ -61,7 +61,7 @@ test('a team root lists its documents, and its lens reaches its folders', async 
   await installSession(page, member(userId));
   await page.goto(`/explorer/team?id=${team}`);
   await expect(docLink(page, 'Team charter')).toBeVisible({ timeout: 30_000 });
-  // No Unsorted bucket at the team's root; the folder sits beside the document.
+  // No Unsorted bucket at the team's root; the folder sits beside the project.
   await expect(page.getByText('Unsorted', { exact: true })).toHaveCount(0);
   await expect(page.locator('main section').getByText('Roadmaps').first()).toBeVisible();
   await expect(docLink(page, 'Team AI plan')).toHaveCount(0);

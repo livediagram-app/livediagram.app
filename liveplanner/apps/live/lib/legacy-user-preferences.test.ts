@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// Preferences cached in a browser before the document rename carry `notifyDiagramJoin`
+// Preferences cached in a browser before the project rename carry `notifyDiagramJoin`
 // (docs/specs/007-editor/user-preferences.md); an opt-out must survive the rename.
 vi.mock('./api-client', () => ({ apiGetPreferences: vi.fn(), apiPutPreferences: vi.fn() }));
 
@@ -30,17 +30,17 @@ function browserWith(value: string) {
 
 afterEach(() => vi.unstubAllGlobals());
 
-describe('user preferences written before the document rename', () => {
+describe('user preferences written before the project rename', () => {
   it('reads an opt-out cached under the old key', () => {
     browserWith(JSON.stringify({ notifyDiagramJoin: false }));
-    expect(readUserPreferences().notifyDocumentJoin).toBe(false);
+    expect(readUserPreferences().notifyProjectJoin).toBe(false);
   });
 
   it('upgrades the old key in a server copy before merging', async () => {
     browserWith(JSON.stringify({}));
     vi.mocked(apiGetPreferences).mockResolvedValue({ notifyDiagramJoin: false });
     const merged = await fetchUserPreferences('owner');
-    expect(merged?.notifyDocumentJoin).toBe(false);
+    expect(merged?.notifyProjectJoin).toBe(false);
     expect(merged && 'notifyDiagramJoin' in merged).toBe(false);
   });
 });

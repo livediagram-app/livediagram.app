@@ -6,8 +6,8 @@ import { commentAdd, commentLs, commentReply, commentResolve } from './comment';
 // The comment verbs on a Sheet cell's thread (docs/specs/029-sheets/sheet.md "Cell comments"): the ref names the
 // Sheet, `cell` its cell by A1, read against the sheet's stored layout.
 
-const TAB = `/documents/${DOC_A}/tabs/tab-one-0000`;
-const SHEETS = `/documents/${DOC_A}/sheets?tabId=tab-one-0000`;
+const TAB = `/projects/${DOC_A}/tabs/tab-one-0000`;
+const SHEETS = `/projects/${DOC_A}/sheets?tabId=tab-one-0000`;
 const B4 = 'row004:colb01';
 const sheetEl = {
   id: 'budget-sheet',
@@ -84,7 +84,7 @@ describe('comment verbs on a Sheet cell', () => {
   it('adds to a cell thread by A1, naming the cell key', async () => {
     const { seen, ctx } = setUp();
     const out = await commentAdd.run!(ctx, {
-      doc: DOC_A,
+      project: DOC_A,
       ref: 'budget',
       text: 'Check',
       cell: 'B4',
@@ -95,8 +95,8 @@ describe('comment verbs on a Sheet cell', () => {
 
   it('replies to and resolves the cell thread through its last comment', async () => {
     const { seen, ctx } = setUp();
-    await commentReply.run!(ctx, { doc: DOC_A, ref: 'budget', text: 'Fixed', cell: 'B4' });
-    await commentResolve.run!(ctx, { doc: DOC_A, ref: 'budget', cell: 'B4' });
+    await commentReply.run!(ctx, { project: DOC_A, ref: 'budget', text: 'Fixed', cell: 'B4' });
+    await commentResolve.run!(ctx, { project: DOC_A, ref: 'budget', cell: 'B4' });
     expect(seen.map((s) => s.path.split('/').slice(-2).join('/'))).toEqual([
       'k1/reply',
       'k1/resolve',
@@ -106,32 +106,38 @@ describe('comment verbs on a Sheet cell', () => {
   it('refuses a cell off the sheet, an element that is not a Sheet, and a cell with no thread', async () => {
     const { ctx } = setUp();
     expect(
-      await refusal(commentAdd.run!(ctx, { doc: DOC_A, ref: 'budget', text: 'x', cell: 'Z99' })),
-    ).toEqual([400, 'cell_not_found']);
-    expect(
-      await refusal(commentAdd.run!(ctx, { doc: DOC_A, ref: 'web', text: 'x', cell: 'B4' })),
-    ).toEqual([400, 'not_a_sheet']);
-    expect(
-      await refusal(commentReply.run!(ctx, { doc: DOC_A, ref: 'budget', text: 'x', cell: 'A1' })),
-    ).toEqual([404, 'no_thread']);
-    // A cell that is not A1, a Sheet whose sheet is gone, and an element that is not a shape.
-    expect(
-      await refusal(commentAdd.run!(ctx, { doc: DOC_A, ref: 'budget', text: 'x', cell: 'nope' })),
-    ).toEqual([400, 'cell_not_found']);
-    expect(
       await refusal(
-        commentAdd.run!(ctx, { doc: DOC_A, ref: 'ghost-sheet', text: 'x', cell: 'B4' }),
+        commentAdd.run!(ctx, { project: DOC_A, ref: 'budget', text: 'x', cell: 'Z99' }),
       ),
     ).toEqual([400, 'cell_not_found']);
     expect(
-      await refusal(commentAdd.run!(ctx, { doc: DOC_A, ref: 'words', text: 'x', cell: 'B4' })),
+      await refusal(commentAdd.run!(ctx, { project: DOC_A, ref: 'web', text: 'x', cell: 'B4' })),
+    ).toEqual([400, 'not_a_sheet']);
+    expect(
+      await refusal(
+        commentReply.run!(ctx, { project: DOC_A, ref: 'budget', text: 'x', cell: 'A1' }),
+      ),
+    ).toEqual([404, 'no_thread']);
+    // A cell that is not A1, a Sheet whose sheet is gone, and an element that is not a shape.
+    expect(
+      await refusal(
+        commentAdd.run!(ctx, { project: DOC_A, ref: 'budget', text: 'x', cell: 'nope' }),
+      ),
+    ).toEqual([400, 'cell_not_found']);
+    expect(
+      await refusal(
+        commentAdd.run!(ctx, { project: DOC_A, ref: 'ghost-sheet', text: 'x', cell: 'B4' }),
+      ),
+    ).toEqual([400, 'cell_not_found']);
+    expect(
+      await refusal(commentAdd.run!(ctx, { project: DOC_A, ref: 'words', text: 'x', cell: 'B4' })),
     ).toEqual([400, 'not_a_sheet']);
   });
 
   it('lists a cell thread with its A1', async () => {
     const api = fakeApi({
       ...tabsOfA,
-      [`/documents/${DOC_A}/comments?status=open`]: {
+      [`/projects/${DOC_A}/comments?status=open`]: {
         threads: [
           {
             tabId: 'tab-one-0000',
@@ -149,7 +155,7 @@ describe('comment verbs on a Sheet cell', () => {
         ],
       },
     });
-    const out = await commentLs.run!(contextOf(api), { doc: DOC_A, status: 'open' });
+    const out = await commentLs.run!(contextOf(api), { project: DOC_A, status: 'open' });
     expect(out.threads[0]).toMatchObject({ cell: B4, cellRef: 'B4' });
     expect(commentLs.text!(out)[0]).toBe('budget "Budget" · cell B4 · open · 1 · tab "Overview"');
   });

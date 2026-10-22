@@ -45,14 +45,14 @@ describe('planTabItemsImport', () => {
     expect(plan.skipped).toBe(0);
   });
 
-  it('leaves alone an item the document already holds', () => {
+  it('leaves alone an item the project already holds', () => {
     const existing = new Map([['a', incoming[0]!]]);
     const plan = planTabItemsImport(incoming, null, existing, ITEM_TYPES);
     expect(plan.creates.map((c) => c.id)).toEqual(['c', 'b']);
     expect(plan.skipped).toBe(1);
   });
 
-  it("adds only the file's types a new item uses and the document lacks", () => {
+  it("adds only the file's types a new item uses and the project lacks", () => {
     expect(planTabItemsImport(incoming, catalogue, new Map(), ITEM_TYPES).types).toEqual([bug]);
     expect(planTabItemsImport(incoming, catalogue, new Map(), [...ITEM_TYPES, bug]).types).toEqual(
       [],

@@ -44,10 +44,10 @@ async function selfHeaders(id: string): Promise<HeadersInit> {
 
 const loadSelfOnce = dedupeInFlight(_apiLoadSelf, (id) => id);
 
-// The participant this page last loaded or saved, briefly. /new hands the new document to the
-// editor IN PLACE (docs/specs/007-editor/new-document-route.md), so the editor's identity bootstrap
+// The participant this page last loaded or saved, briefly. /new hands the new project to the
+// editor IN PLACE (docs/specs/007-editor/new-project-route.md), so the editor's identity bootstrap
 // asked again for the participant /new had just read and written: one wasted round trip on every
-// new document. A reload is a new page and starts empty, and presence carries any live change.
+// new project. A reload is a new page and starts empty, and presence carries any live change.
 const RECENT_SELF_MS = 30_000;
 let recentSelf: { participant: Participant; at: number } | null = null;
 function rememberSelf(participant: Participant) {
@@ -63,14 +63,14 @@ export async function apiLoadSelf(id: string): Promise<Participant | null> {
   return loaded;
 }
 
-// Account self-deletion (signed-in only). Wipes the caller's documents,
+// Account self-deletion (signed-in only). Wipes the caller's projects,
 // folders, and participant row server-side, and closes the liveworkspace
 // account; the caller then ends the session.
 // Deletes the person's liveplanner data, then closes their liveworkspace account. Resolves to what
 // was deleted, `'account_not_closed'` when the data went but closing the account failed (asking
 // again finishes it), or null when nothing was deleted.
 export async function apiDeleteAccount(): Promise<
-  { documents: number; folders: number } | 'account_not_closed' | null
+  { projects: number; folders: number } | 'account_not_closed' | null
 > {
   // ownerId arg is unused server-side for this endpoint (the
   // resolved account id wins), but apiHeaders' signature wants
@@ -85,7 +85,7 @@ export async function apiDeleteAccount(): Promise<
     if (failed?.error === 'account_not_closed') return 'account_not_closed';
   }
   if (!res.ok) return null;
-  const body = (await res.json()) as { deleted: { documents: number; folders: number } };
+  const body = (await res.json()) as { deleted: { projects: number; folders: number } };
   return body.deleted;
 }
 
@@ -100,15 +100,15 @@ export async function apiDeleteAccount(): Promise<
 // requires a verified Bearer token: there is no `X-Owner-Id`
 // fallback, because the whole point is to bind orphan guest data
 // to an account. Returns
-// `{ migrated: { documents, folders, shared } }`.
+// `{ migrated: { projects, folders, shared } }`.
 export async function apiMigrateGuestData(
   guestOwnerId: string,
   guestSignature: string | null,
-): Promise<{ documents: number; folders: number; shared: number } | null> {
+): Promise<{ projects: number; folders: number; shared: number } | null> {
   const res = await apiFetch(`${API_BASE}/migrate`, {
     method: 'POST',
     // `apiHeaders` reads the registered token provider; the
-    // Bearer will be on every call from the editor / new-document
+    // Bearer will be on every call from the editor / new-project
     // pages after they've set the provider. ownerId is unused
     // server-side for this endpoint but the helper still expects
     // it; pass the guest id to keep signatures uniform.
@@ -121,7 +121,7 @@ export async function apiMigrateGuestData(
   });
   if (!res.ok) return null;
   const body = (await res.json()) as {
-    migrated: { documents: number; folders: number; shared: number };
+    migrated: { projects: number; folders: number; shared: number };
   };
   return body.migrated;
 }

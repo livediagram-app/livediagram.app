@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Tab } from '@liveplanner/document';
+import { createShape, type Tab } from '@liveplanner/project';
 
 // A Sheet tab's preview shows every filled cell, as the tab does (docs/specs/015-api/mcp-server.md §5): its sheet is
 // read once, sizes the image and is handed on for the drawing.
@@ -26,7 +26,7 @@ const tab: Tab = {
   kind: 'sheet',
   elements: [{ ...createShape('plan-sheet', 0, 0), id: 'el', planSheet: { sheetId: 'sh1' } }],
 };
-const auth = { env: {} as never, token: 'x', documentId: 'd' };
+const auth = { env: {} as never, token: 'x', projectId: 'd' };
 
 describe('a Sheet tab’s preview', () => {
   it('grows its Sheet to its filled cells and hands the sheet on', async () => {

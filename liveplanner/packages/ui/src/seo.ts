@@ -27,7 +27,7 @@ const OG_IMAGE = {
 const TWITTER_IMAGE = `${SITE_URL}/twitter-image`;
 
 // The brand card alone, for a page whose og:url cannot be known at build time
-// (the editor's document shell serves every document), so it still previews with an
+// (the editor's project shell serves every project), so it still previews with an
 // image rather than none.
 export const BRAND_OG_IMAGE = OG_IMAGE;
 export const BRAND_TWITTER_IMAGE = TWITTER_IMAGE;
@@ -37,7 +37,7 @@ export type PageMetadataInput = {
   description: string;
   // Canonical path, resolved against the app's metadataBase (SITE_URL), so
   // `/faq` becomes `https://liveplanner.app/faq`. A basePath app includes its
-  // prefix (help passes `/help/canvas/themes/`).
+  // prefix (help passes `/help/user-interface/themes/`).
   path: `/${string}`;
   // The OG siteName. Defaults to SITE_NAME; the help centre names itself.
   siteName?: string;

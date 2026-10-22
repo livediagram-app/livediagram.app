@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuBudgetMs, cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
-import { createPinnedArrow, createShape, type Element } from '@liveplanner/document';
+import { createPinnedArrow, createShape, type Element } from '@liveplanner/project';
 import { cleanupElements, type CleanupKind } from './tab-cleanup';
 
 // docs/specs/008-canvas/blueprints/tidy-up.md "Performance and limits": a Tidy Up hover runs one cleanup over

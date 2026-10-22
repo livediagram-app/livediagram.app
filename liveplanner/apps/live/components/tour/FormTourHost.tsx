@@ -12,8 +12,8 @@ import {
   questionsOf,
   readForm,
 } from '@liveplanner/forms';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useSelectTab } from '@/app/document/[id]/useSelectTab';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
+import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { FORM_TOUR_RELAUNCH_EVENT } from '@/lib/form-tour';
@@ -31,7 +31,7 @@ const OFFER_DELAY_MS = 800;
 
 const FORM_TOUR_COPY = {
   welcomeEyebrow: 'Forms tour',
-  helpHref: '/help/canvas/plan-mode/forms/',
+  helpHref: '/help/plan/forms/',
 };
 
 // The welcome card's picture: a form in the art's light colours.
@@ -45,7 +45,7 @@ const ART_PALETTE = {
   muted: '#64748b',
   warning: '#b45309',
   warningBg: '#fef3c7',
-  focus: '#0284c7',
+  focus: '#7c3aed',
 };
 
 // The example question's wording.

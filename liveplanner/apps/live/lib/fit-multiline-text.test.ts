@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { labelMeasure, wrapLabel } from '@liveplanner/document';
+import { labelMeasure, wrapLabel } from '@liveplanner/project';
 import { fitMultilineFontPx, FIT_MAX_PX, FIT_MIN_PX } from './fit-multiline-text';
 
 // Genuine auto-fit for multi-line labels (stickies): `scale` should

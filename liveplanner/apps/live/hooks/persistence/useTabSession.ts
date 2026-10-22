@@ -16,7 +16,7 @@ import {
   type TabVote,
   type TimerMode,
   type VoteSetup,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 
 type TabSessionDeps = {

@@ -3,7 +3,6 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-schema';
 import { HelpView } from './HelpView';
 import {
-  ELEMENT_TOURS,
   FORM_TOUR,
   NEW_VERSION_PROMPT,
   PLAN_TOUR,
@@ -23,7 +22,7 @@ import { windowLabel } from './windows';
 export const TOURS_GROUPS: MetricGroup[] = [
   {
     title: 'Tours',
-    metrics: [WELCOME_DIALOG_CLOSED, PLAN_TOUR, FORM_TOUR, ELEMENT_TOURS, SHOW_ME_TOURS],
+    metrics: [WELCOME_DIALOG_CLOSED, PLAN_TOUR, FORM_TOUR, SHOW_ME_TOURS],
   },
   { title: 'Prompts', metrics: [POWER_USER_OFFER, NEW_VERSION_PROMPT] },
 ];

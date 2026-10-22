@@ -18,7 +18,7 @@ export const SIDEBAR_LABELS = {
   home: 'Home',
   inbox: 'Inbox',
   shared: 'Shared With Me',
-  myDocuments: 'My Documents',
+  myProjects: 'My Projects',
   invites: 'Invites',
   newTeam: 'New Team',
   thisBrowser: 'This Browser',
@@ -33,7 +33,7 @@ export type SidebarRowKind =
   | 'home'
   | 'inbox'
   | 'shared'
-  | 'myDocuments'
+  | 'myProjects'
   | 'teams'
   | 'invites'
   | 'newTeam'
@@ -48,7 +48,7 @@ export type SidebarLayoutInput = {
   // The deployment offers sign-in at all (a no-auth deployment does not).
   signInAvailable: boolean;
   pendingInvites: number;
-  offlineDocuments: number;
+  offlineProjects: number;
   // The current view, on the page; the panel has none (null).
   selected: SelectedNode['kind'] | null;
   // The full-page sidebar (default) or the editor's floating Explorer panel, which leaves
@@ -61,10 +61,10 @@ export type SidebarLayoutInput = {
 type SidebarGroupLayout = { id: SidebarGroupId; rows: SidebarRowKind[] };
 
 export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
-  const { signedIn, signInAvailable, pendingInvites, offlineDocuments, selected } = input;
+  const { signedIn, signInAvailable, pendingInvites, offlineProjects, selected } = input;
   const panel = input.surface === 'panel';
   const administration = !panel && (input.administration ?? true);
-  const spaces: SidebarRowKind[] = ['myDocuments'];
+  const spaces: SidebarRowKind[] = ['myProjects'];
   if (signedIn) {
     spaces.push('teams');
     if (administration && (pendingInvites > 0 || selected === 'invites')) spaces.push('invites');
@@ -74,7 +74,7 @@ export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
   }
   // A row whose view is current stays, so the highlight never vanishes under the reader.
   const more: SidebarRowKind[] = [];
-  if (offlineDocuments > 0 || selected === 'offline') more.push('thisBrowser');
+  if (offlineProjects > 0 || selected === 'offline') more.push('thisBrowser');
   // Tags always shows, so it can be found before the first tag (docs/specs/013-workspace/tags.md "The sidebar").
   // Tags lives inside Library (docs/specs/013-workspace/tags.md "The sidebar"), always shown there.
   more.push('library', 'trash');
@@ -99,13 +99,13 @@ export function isLibraryView(kind: SelectedNode['kind']): boolean {
 }
 
 // Entries of the shared `expanded` set; the colon keeps them apart from folder and team ids.
-export const MY_DOCUMENTS_EXPAND_KEY = 'space:my-documents';
+export const MY_PROJECTS_EXPAND_KEY = 'space:my-projects';
 export const LIBRARY_EXPAND_KEY = 'more:library';
 export const TAGS_EXPAND_KEY = 'more:tags';
 
 // Computed before first paint, so nothing expands after load.
 export function initialExpanded(selected: SelectedNode): Set<string> {
-  const keys = new Set([MY_DOCUMENTS_EXPAND_KEY]);
+  const keys = new Set([MY_PROJECTS_EXPAND_KEY]);
   if (isLibraryView(selected.kind)) keys.add(LIBRARY_EXPAND_KEY);
   // A Tags page opens Library, where Tags lives, and Tags itself.
   if (selected.kind === 'tags') {

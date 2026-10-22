@@ -16,24 +16,22 @@ import {
   type Element,
   type Finish,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { ApiError, apiJson } from './api';
-import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue } from './element-values';
-import { packFreehandPoints } from './freehand-points';
 import type { Env } from './env';
 
 export async function submitChangeset(
   env: Env,
   token: string,
-  documentId: string,
+  projectId: string,
   tabId: string,
   body: ChangesetRequest,
 ): Promise<ChangesetResponse> {
   return apiJson<ChangesetResponse>(
     env,
     token,
-    `/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/changesets`,
+    `/projects/${encodeURIComponent(projectId)}/tabs/${encodeURIComponent(tabId)}/changesets`,
     {
       method: 'POST',
       headers: { [CLIENT_HEADER]: 'mcp' },
@@ -45,7 +43,7 @@ export async function submitChangeset(
 // The api's result text as the model reads it: its footer's revert line names the CLI command, which no
 // MCP tool runs, so it is left off rather than sending the model to a command it cannot reach. Its `@x,y`
 // positions are from the content's top-left as it was read, while an element's x and y are canvas coordinates:
-// when the two differ, a closing line says how to get from one to the other, as the layout view does.
+// when the two differ, a closing line says how to get from one to the other.
 export function mcpResultText(
   text: string,
   origin: { x: number; y: number } = { x: 0, y: 0 },
@@ -57,14 +55,14 @@ export function mcpResultText(
   return `${plain}\n@x,y above are from the content's top-left: an element's x, y = @x ${plus(ox)}, @y ${plus(oy)}.`;
 }
 
-// One op of `update_document`'s ops mode, as the model sends it.
+// One op of `update_project`'s ops mode, as the model sends it.
 type McpOp = {
   op: 'add' | 'update' | 'remove';
   element?: Record<string, unknown>;
   elementId?: string;
 };
 
-// The element an op's `elementId` names: its id, or a ref as read_document prints it (a unique prefix,
+// The element an op's `elementId` names: its id, or a ref as read_project prints it (a unique prefix,
 // `id:"…"`), resolved as the api resolves it.
 function namedIn(current: Tab): (elementId: string) => Element | undefined {
   const byId = new Map<string, Element>(current.elements.map((e) => [e.id, e]));
@@ -82,51 +80,26 @@ function targetOf(elementId: string, named: Element | undefined): string {
 }
 
 // The JSON form of the edit operations an ops list means: `add` takes the whole element, `update` is
-// `set` on the element it names with the fields it gives, `remove` is `rm` (pinned arrows go too and
-// are listed). An `id` or `type` the model repeats unchanged in an update is dropped, since neither
-// can change.
+// `set` on the element it names with the fields it gives, `remove` is `rm`. An `id`, `type` or `shape` the model
+// repeats unchanged in an update is dropped, since none can change.
 export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unknown[] | string {
   const named = namedIn(current);
-  // The ids an arrow end may name: the tab's, and every element this call adds.
-  const known = [
-    ...current.elements.map((e) => e.id),
-    ...idsOf(ops.flatMap((op) => (op.op === 'add' && op.element ? [op.element] : []))),
-  ];
-  const withEnds = (element: Record<string, unknown>): Record<string, unknown> | string => {
-    const resolved = resolveArrowEnds([element], known);
-    return 'error' in resolved ? resolved.error : (resolved.elements[0] as Record<string, unknown>);
-  };
   const out: unknown[] = [];
   for (const [i, op] of ops.entries()) {
     const n = i + 1;
     if (op.op === 'add') {
       if (!op.element) return `ops[${n}]: add needs "element"`;
-      const drawn = packFreehandPoints([op.element]);
-      if ('error' in drawn) return `ops[${n}]: ${drawn.error}`;
-      const given = drawn.elements[0] as Record<string, unknown>;
-      const valueIssue = elementsIssue([given]);
+      const valueIssue = elementsIssue([op.element]);
       if (valueIssue) return `ops[${n}]: ${valueIssue}`;
-      const element = withEnds(given);
-      if (typeof element === 'string') return `ops[${n}]: ${element}`;
-      out.push({ op: 'add', element });
+      out.push({ op: 'add', element: op.element });
     } else if (op.op === 'update') {
       if (!op.elementId || !op.element) return `ops[${n}]: update needs "elementId" and "element"`;
       const stored = named(op.elementId);
-      // New points for a stroke are packed as an added one's are: its box and its block, together.
-      let given = op.element;
-      if (stored?.type === 'freehand' && given.points !== undefined) {
-        const drawn = packFreehandPoints([{ ...given, type: 'freehand' }]);
-        if ('error' in drawn) return `ops[${n}]: ${drawn.error}`;
-        const { x, y, width, height, packedPoints } = drawn.elements[0] as Record<string, unknown>;
-        const { points: _points, ...rest } = given;
-        given = { ...rest, x, y, width, height, packedPoints };
+      const fields = { ...op.element };
+      if (stored) {
+        for (const key of ['id', 'type', 'shape'] as const)
+          if (fields[key] === (stored as Record<string, unknown>)[key]) delete fields[key];
       }
-      const ended = withEnds(stored?.type === 'arrow' ? { type: 'arrow', ...given } : given);
-      if (typeof ended === 'string') return `ops[${n}]: ${ended}`;
-      const fields = { ...ended };
-      if (stored?.type === 'arrow' && given.type === undefined) delete fields.type;
-      if (stored && fields.id === stored.id) delete fields.id;
-      if (stored && fields.type === stored.type) delete fields.type;
       out.push({ op: 'set', target: targetOf(op.elementId, stored), fields });
     } else {
       if (!op.elementId) return `ops[${n}]: remove needs "elementId"`;
@@ -136,7 +109,7 @@ export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unk
   return out;
 }
 
-// The base of an ops changeset: the revision the model read (`read_document`'s `rev`, else the
+// The base of an ops changeset: the revision the model read (`read_project`'s `rev`, else the
 // tab as loaded now) and the fingerprint of every existing element its ops name, by id or ref, taken
 // from the tab as loaded now, so a person's change since is overwritten only on the fields the ops set.
 export function baseFor(ops: readonly McpOp[], current: Tab & { rev: number }, rev?: number) {
@@ -162,7 +135,6 @@ export function replaceBodyFrom(args: {
   template?: string;
   dashboard?: Record<string, unknown>;
   elements?: unknown[];
-  layout?: 'auto' | 'preserve';
   theme?: string;
   finish?: Finish;
   name?: string;
@@ -174,7 +146,6 @@ export function replaceBodyFrom(args: {
       : { elements: args.elements ?? [] };
   return {
     ...source,
-    ...(args.layout ? { layout: args.layout } : {}),
     ...(args.theme ? { theme: args.theme } : {}),
     ...(args.finish ? { finish: args.finish } : {}),
     ...(args.name ? { name: args.name } : {}),
@@ -199,7 +170,7 @@ export function changesetErrorText(err: ApiError): string {
     }
     if (body.conflicts?.length) {
       const what = body.conflicts.map((c) => `${c.id} ${c.reason}`).join(', ');
-      return `changeset_conflict: changed since you read it: ${what}. Read the tab again (read_document) and redo the edit.`;
+      return `changeset_conflict: changed since you read it: ${what}. Read the tab again (read_project) and redo the edit.`;
     }
     return [body.error, body.message].filter(Boolean).join(': ') || `api ${err.status}`;
   } catch {

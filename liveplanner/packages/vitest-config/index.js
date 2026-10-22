@@ -32,7 +32,7 @@ export const baseConfig = defineConfig({
       reportsDirectory: './coverage',
       // Count first-party source only — never tests or type decls. NB we
       // deliberately do NOT exclude index.ts: in this repo a package's
-      // index.ts is its implementation (e.g. @liveplanner/document), not a
+      // index.ts is its implementation (e.g. @liveplanner/project), not a
       // barrel of re-exports, so excluding it would hide all of its source.
       // Code files only: these folders also hold fixtures (goldens, model weights) that are not
       // source, and parsing them as code fails. Workspace includes are added to this list, not replacing it.

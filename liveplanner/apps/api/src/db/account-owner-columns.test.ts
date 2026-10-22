@@ -26,7 +26,7 @@ type OwnerColumn = {
 };
 
 const OWNER_COLUMNS: OwnerColumn[] = [
-  { table: 'documents', column: 'owner_id', migrate: { kind: 'moves' } },
+  { table: 'projects', column: 'owner_id', migrate: { kind: 'moves' } },
   {
     table: 'folders',
     column: 'owner_id',
@@ -35,7 +35,7 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   },
   { table: 'shared_with', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'favourites', column: 'owner_id', migrate: { kind: 'moves' } },
-  // Tags (docs/specs/013-workspace/tags.md): guests tag documents too.
+  // Tags (docs/specs/013-workspace/tags.md): guests tag projects too.
   { table: 'tags', column: 'owner_id', migrate: { kind: 'moves' } },
   // What a reader has seen of a form's responses (docs/specs/030-forms/forms.md): guests edit forms too.
   { table: 'form_reads', column: 'owner_id', migrate: { kind: 'moves' } },
@@ -43,8 +43,8 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'placement_defaults', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'user_preferences', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'custom_themes', column: 'owner_id', migrate: { kind: 'moves' } },
-  // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open documents too.
-  { table: 'document_opens', column: 'owner_id', migrate: { kind: 'moves' } },
+  // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open projects too.
+  { table: 'project_opens', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'participants', column: 'id', migrate: { kind: 'moves' } },
   { table: 'timeline_events', column: 'actor_id', migrate: { kind: 'moves' } },
   {
@@ -109,7 +109,7 @@ function insert(sql: DatabaseSync, table: string, row: Record<string, string | n
 }
 
 function liveDoc(sql: DatabaseSync, id: string, ownerId: string, teamId: string | null = null) {
-  insert(sql, 'documents', {
+  insert(sql, 'projects', {
     id,
     owner_id: ownerId,
     name: id,
@@ -121,8 +121,8 @@ function liveDoc(sql: DatabaseSync, id: string, ownerId: string, teamId: string 
 }
 
 // One row in every guest-holdable owner-keyed column, keyed on `id`, starring
-// and visiting a document `peer` owns as well as its own.
-function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) {
+// and visiting a project `peer` owns as well as its own.
+function seedGuestHoldable(sql: DatabaseSync, id: string, peerProject: string) {
   insert(sql, 'participants', { id, name: 'Otter', color: '#ff8800', created_at: T0 });
   liveDoc(sql, `d-${id}`, id);
   insert(sql, 'folders', {
@@ -132,25 +132,25 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     created_at: T0,
     updated_at: T0,
   });
-  insert(sql, 'favourites', { owner_id: id, document_id: `d-${id}`, created_at: T0 });
+  insert(sql, 'favourites', { owner_id: id, project_id: `d-${id}`, created_at: T0 });
   insert(sql, 'form_links', {
     code: `form-${id}`,
-    document_id: peerDocument,
+    project_id: peerProject,
     tab_id: `t-${id}`,
     created_at: T0,
   });
   insert(sql, 'form_reads', { code: `form-${id}`, owner_id: id, seen_number: 3 });
-  insert(sql, 'favourites', { owner_id: id, document_id: peerDocument, created_at: T0 });
+  insert(sql, 'favourites', { owner_id: id, project_id: peerProject, created_at: T0 });
   insert(sql, 'shared_with', {
     owner_id: id,
-    document_id: peerDocument,
+    project_id: peerProject,
     role: 'view',
     last_seen: T0,
   });
-  for (const documentId of [`d-${id}`, peerDocument]) {
-    insert(sql, 'document_opens', {
+  for (const projectId of [`d-${id}`, peerProject]) {
+    insert(sql, 'project_opens', {
       owner_id: id,
-      document_id: documentId,
+      project_id: projectId,
       last_opened_at: T0,
       last_open_day: '2023-11-14',
     });
@@ -178,11 +178,11 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     created_at: T0,
     updated_at: T0,
   });
-  insert(sql, 'document_tags', { tag_id: `tag-${id}`, document_id: peerDocument, created_at: T0 });
+  insert(sql, 'project_tags', { tag_id: `tag-${id}`, project_id: peerProject, created_at: T0 });
   insert(sql, 'timeline_events', {
     id: `e-${id}`,
     actor_id: id,
-    source_type: 'document',
+    source_type: 'project',
     source_id: `d-${id}`,
     event_type: 'created',
     title: 'Created',
@@ -199,11 +199,11 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
   insert(sql, 'timeline_scope_state', { scope_type: 'user', scope_id: id, last_seen_at: T0 });
   insert(sql, 'collab_index_state', { owner_id: id, backfilled_at: T0 });
   insert(sql, 'owner_aliases', { owner_id: id, alias_id: `legacy-${id}`, created_at: T0 });
-  // A changeset they wrote on the peer's document, which outlives their own documents.
+  // A changeset they wrote on the peer's project, which outlives their own projects.
   insert(sql, 'tabs', { id: `tab-${id}`, name: 'Board', data: '{"elements":[]}', updated_at: T0 });
   insert(sql, 'agent_changesets', {
     id: `cs-${id}`,
-    document_id: peerDocument,
+    project_id: peerProject,
     tab_id: `tab-${id}`,
     rev: 1,
     author_id: id,
@@ -259,7 +259,7 @@ function seedAccountOnly(sql: DatabaseSync, id: string, peer: string) {
   const opened = {
     ...workbenchRow,
     pairing_id: `wp-${id}`,
-    document_id: `d-team-${id}`,
+    project_id: `d-team-${id}`,
     role: 'edit',
     created_at: T0,
     expires_at: T0 * 2,
@@ -319,7 +319,7 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
     liveDoc(db.sql, 'd-other', OTHER);
     seedGuestHoldable(db.sql, ACCOUNT, 'd-other');
     seedAccountOnly(db.sql, ACCOUNT, OTHER);
-    insert(db.sql, 'favourites', { owner_id: OTHER, document_id: 'd-other', created_at: T0 });
+    insert(db.sql, 'favourites', { owner_id: OTHER, project_id: 'd-other', created_at: T0 });
     // The sweep matches the owner on either side of an alias pair.
     insert(db.sql, 'owner_aliases', { owner_id: OTHER, alias_id: ACCOUNT, created_at: T0 });
     return db;
@@ -337,13 +337,13 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
     }
   });
 
-  it("erases the stars the owner placed on other people's documents", async () => {
+  it("erases the stars the owner placed on other people's projects", async () => {
     const { env, sql } = arrange();
 
     await deleteAccount(env, ACCOUNT);
 
-    const stars = sql.prepare('SELECT owner_id, document_id FROM favourites').all();
-    expect(stars.map((s) => ({ ...s }))).toEqual([{ owner_id: OTHER, document_id: 'd-other' }]);
+    const stars = sql.prepare('SELECT owner_id, project_id FROM favourites').all();
+    expect(stars.map((s) => ({ ...s }))).toEqual([{ owner_id: OTHER, project_id: 'd-other' }]);
   });
 
   it("keeps what belongs to someone else, a left team's folder included", async () => {
@@ -351,7 +351,7 @@ describe('deleteAccount erases every owner-keyed row (docs/specs/015-api/api.md)
 
     await deleteAccount(env, ACCOUNT);
 
-    const liveDocs = sql.prepare('SELECT id, owner_id FROM documents ORDER BY id').all();
+    const liveDocs = sql.prepare('SELECT id, owner_id FROM projects ORDER BY id').all();
     expect(liveDocs.map((d) => ({ ...d }))).toEqual([
       { id: 'd-other', owner_id: OTHER },
       { id: `d-team-${ACCOUNT}`, owner_id: OTHER },
@@ -385,19 +385,19 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
     }
   });
 
-  it('keeps the account star when both identities starred the same document', async () => {
+  it('keeps the account star when both identities starred the same project', async () => {
     const { env, sql } = arrange();
     // The account starred d-other first, from another device.
-    insert(sql, 'favourites', { owner_id: ACCOUNT, document_id: 'd-other', created_at: T0 - 5 });
+    insert(sql, 'favourites', { owner_id: ACCOUNT, project_id: 'd-other', created_at: T0 - 5 });
 
     await migrateOwnerId(env, GUEST, ACCOUNT);
 
     const stars = sql
-      .prepare('SELECT owner_id, document_id, created_at FROM favourites ORDER BY document_id')
+      .prepare('SELECT owner_id, project_id, created_at FROM favourites ORDER BY project_id')
       .all();
     expect(stars.map((s) => ({ ...s }))).toEqual([
-      { owner_id: ACCOUNT, document_id: `d-${GUEST}`, created_at: T0 },
-      { owner_id: ACCOUNT, document_id: 'd-other', created_at: T0 - 5 },
+      { owner_id: ACCOUNT, project_id: `d-${GUEST}`, created_at: T0 },
+      { owner_id: ACCOUNT, project_id: 'd-other', created_at: T0 - 5 },
     ]);
   });
 
@@ -412,28 +412,28 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
     for (const r of rows) expect(r.tab_id).toBe('t-2');
   });
 
-  // A visit is to someone else's document, so a visit the guest paid to the account's document, or
-  // the account to the guest's, would list the account's own document under its "Shared with you".
-  it('drops visits to documents the account now owns', async () => {
+  // A visit is to someone else's project, so a visit the guest paid to the account's project, or
+  // the account to the guest's, would list the account's own project under its "Shared with you".
+  it('drops visits to projects the account now owns', async () => {
     const { env, sql } = arrange();
     liveDoc(sql, 'd-account', ACCOUNT);
     insert(sql, 'shared_with', {
       owner_id: GUEST,
-      document_id: 'd-account',
+      project_id: 'd-account',
       role: 'view',
       last_seen: T0,
     });
     insert(sql, 'shared_with', {
       owner_id: ACCOUNT,
-      document_id: `d-${GUEST}`,
+      project_id: `d-${GUEST}`,
       role: 'edit',
       last_seen: T0,
     });
 
     await migrateOwnerId(env, GUEST, ACCOUNT);
 
-    const visits = sql.prepare('SELECT owner_id, document_id FROM shared_with').all();
-    expect(visits.map((v) => ({ ...v }))).toEqual([{ owner_id: ACCOUNT, document_id: 'd-other' }]);
+    const visits = sql.prepare('SELECT owner_id, project_id FROM shared_with').all();
+    expect(visits.map((v) => ({ ...v }))).toEqual([{ owner_id: ACCOUNT, project_id: 'd-other' }]);
   });
 
   it("keeps the account's participant row over the guest's", async () => {
@@ -464,13 +464,13 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
   it('is a no-op on a second run', async () => {
     const { env, sql } = arrange();
     await migrateOwnerId(env, GUEST, ACCOUNT);
-    const before = sql.prepare('SELECT * FROM favourites ORDER BY document_id').all();
+    const before = sql.prepare('SELECT * FROM favourites ORDER BY project_id').all();
 
     await expect(migrateOwnerId(env, GUEST, ACCOUNT)).resolves.toEqual({
-      documents: 0,
+      projects: 0,
       folders: 0,
       shared: 0,
     });
-    expect(sql.prepare('SELECT * FROM favourites ORDER BY document_id').all()).toEqual(before);
+    expect(sql.prepare('SELECT * FROM favourites ORDER BY project_id').all()).toEqual(before);
   });
 });

@@ -1,13 +1,13 @@
 # New version prompt
 
 An editor left open across a deploy keeps running the code it loaded. When the server starts
-serving documents in a shape that code cannot read (for example [Stroke points](../006-document/stroke-points.md)),
+serving projects in a shape that code cannot read (for example [Stroke points](../006-project/stroke-points.md)),
 the open editor asks, calmly, to be reloaded.
 
-## The document format number
+## The project format number
 
-- **`DOCUMENT_FORMAT`** (`@liveplanner/api-schema`) is one integer, the version of the stored
-  document shapes. The editor is built with it and the api worker serves it, from the same
+- **`PROJECT_FORMAT`** (`@liveplanner/api-schema`) is one integer, the version of the stored
+  project shapes. The editor is built with it and the api worker serves it, from the same
   definition, so a deploy that changes it changes both.
 - It is bumped only when an older editor can no longer read what the server now serves: a new
   stored shape that replaces an old one. A new optional field that old editors ignore does not
@@ -35,7 +35,7 @@ facts.
   moment before its api) shows nothing.
 - Once seen, it stays shown for the page's life; "Not now" hides it until the page is next
   reloaded or a newer number arrives.
-- Only the document editor (`/document/…`, the shared and embedded views included) shows it: it is
+- Only the project editor (`/project/…`, the shared and embedded views included) shows it: it is
   the page that holds unsaved work and renders stored shapes.
 
 ## The prompt

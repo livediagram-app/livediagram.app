@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import { COMMAND_ALIASES, defineVerb, RESOURCES, TOP_LEVEL, VERBS } from '@liveplanner/agent-verbs';
-import { estimateTokens } from '@liveplanner/document-views';
+import { estimateTokens } from '@liveplanner/project-views';
 import {
   HELP_RESOURCE_MAX_TOKENS,
   HELP_TOP_MAX_TOKENS,
@@ -22,7 +22,7 @@ describe('help', () => {
       ...Object.keys(COMMAND_ALIASES),
     ])
       expect(named(word), word).toBe(true);
-    expect(text).toContain('document (doc)');
+    expect(text).toContain('element (el)');
     expect(text).toMatch(
       /\n {2}presence +set, clear\n {2}wait, watch +block until, or stream, comments and changes\n/,
     );
@@ -37,10 +37,10 @@ describe('help', () => {
 
   it("shows a verb's usage, flags, examples and what it prints", () => {
     const view = verbHelp(VERBS.find((v) => v.id === 'tab.view')!);
-    expect(view).toContain('Usage: liveplanner tab view <doc> [flags]');
+    expect(view).toContain('Usage: liveplanner tab view <project> [flags]');
     expect(view).toContain('  --budget <n>  Fit the view to about this many tokens');
-    expect(view).toContain('  --coarse  layout: rows instead of geometry');
-    expect(view).toContain('  --view <outline|graph|layout|comments|show|find>');
+    expect(view).toContain('  --style  outline: add style attributes');
+    expect(view).toContain('  --view <outline|comments|show|find>');
     expect(view).toContain('Prints: the view as the api serves it');
     expect(verbHelp(VERBS.find((v) => v.id === 'guide')!)).toContain(
       'Usage: liveplanner guide [topic]',
@@ -70,7 +70,7 @@ describe('verb help without a CLI projection', () => {
 describe('help for writes', () => {
   it('shows a rest positional, a short flag, and the edit alias', () => {
     expect(verbHelp(VERBS.find((v) => v.id === 'element.set')!)).toContain(
-      'Usage: liveplanner element set <doc> <words…> [flags]',
+      'Usage: liveplanner element set <project> <words…> [flags]',
     );
     expect(verbHelp(VERBS.find((v) => v.id === 'changeset.apply')!)).toContain(
       '  -f, --file <text>  The file to send, or - for stdin',

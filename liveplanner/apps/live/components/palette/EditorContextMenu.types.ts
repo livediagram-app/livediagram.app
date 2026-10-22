@@ -41,7 +41,7 @@ import type {
   TablePreset,
   TextSize,
   TextSizePreset,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { ArrowPreset } from '@/components/palette/StylePresets';
 import type { ColourPalette } from '@/components/palette/context-menu-input-rows';
 import type { ShapeColorPreset } from '@/lib/themes';
@@ -76,8 +76,8 @@ export type EditorContextMenuProps = {
   // fresh shape's menu hides exactly the options the user is typing for.
   editingId: string | null;
   // Open the link picker for the element, optionally pre-selecting a mode
-  // (webpage / tab / document) so the modal lands on the right tab.
-  onLinkElement: (elementId: string, mode?: 'url' | 'tab' | 'document') => void;
+  // (webpage / tab / project) so the modal lands on the right tab.
+  onLinkElement: (elementId: string, mode?: 'url' | 'tab' | 'project') => void;
   // Remove an inline icon from the element. Only surfaced when the
   // clicked element actually carries one (a non-'icon' shape with iconId).
   onRemoveIcon: (elementId: string) => void;
@@ -85,7 +85,7 @@ export type EditorContextMenuProps = {
   onRemoveLink: () => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
-  // Layers (docs/specs/006-document/layers.md): the tab's normalised stack (bottom -> top) for the
+  // Layers (docs/specs/006-project/layers.md): the tab's normalised stack (bottom -> top) for the
   // Layer section's move-to dropdown, the selection's resolved layer
   // (null when members span layers), and the selection-wide move. The move
   // is absent while the Layers panel is off in Settings, and its tiles with it.
@@ -220,7 +220,7 @@ export type EditorContextMenuProps = {
   // Web components (docs/specs/009-elements/web-components-and-no-groups.md): the rows of the selected stat row / process /
   // header (each field only lands on its own kind), and an image's hero
   // caption card on or off.
-  onSetWebRows: (rows: import('@liveplanner/document').WebRows) => void;
+  onSetWebRows: (rows: import('@liveplanner/project').WebRows) => void;
   onSetHeroCaption: (on: boolean) => void;
   // Portal (docs/specs/009-elements/portal-element.md): which portal this one leads to; null unpairs it.
   onSetPortalTarget: (targetId: string | null) => void;
@@ -231,8 +231,8 @@ export type EditorContextMenuProps = {
   // Session button (docs/specs/012-collaboration/session-button.md) / Picker (docs/specs/012-collaboration/picker.md):
   // their settings, applied to the element the menu is acting on. The session button's is absent for a session
   // that may not edit, so its section does not show.
-  onSetSession?: (config: import('@liveplanner/document').SessionButtonConfig) => void;
-  onSetPickerSource: (source: import('@liveplanner/document').PickerSource) => void;
+  onSetSession?: (config: import('@liveplanner/project').SessionButtonConfig) => void;
+  onSetPickerSource: (source: import('@liveplanner/project').PickerSource) => void;
   onSetPickerOptions: (options: string[]) => void;
   // The decision record (docs/specs/012-collaboration/decision-record.md). The temperature check carries no
   // settings — everything it does happens on its own face — so it needs no setter here.
@@ -241,7 +241,7 @@ export type EditorContextMenuProps = {
   onSetDecisionDrivers: (drivers: string[]) => void;
   // Every tab, because a portal link can cross tabs, plus which one is active
   // so the picker can mark the off-tab candidates.
-  tabs: import('@liveplanner/document').Tab[];
+  tabs: import('@liveplanner/project').Tab[];
   activeTabId: string;
   // Style presets (docs/specs/010-palette/style-presets.md): one-click colour + border looks for the selected
   // shape, plus a reset back to the theme default. `shapeColorPresets` are
@@ -338,7 +338,7 @@ export type EditorContextMenuProps = {
   colourPalette: ColourPalette;
   // Tag colours (docs/specs/009-elements/tag-colours.md): the active tab's map, and setting or clearing one tag's
   // colour across the tab. Absent where the menu cannot edit the tab.
-  tagColours?: readonly import('@liveplanner/document').TagColour[];
+  tagColours?: readonly import('@liveplanner/project').TagColour[];
   onSetTagColour?: (tag: string, colour: string | null) => void;
   // Table structure toggles (header row / column, zebra) for the Table
   // category.

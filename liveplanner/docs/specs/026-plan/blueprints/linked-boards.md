@@ -14,29 +14,29 @@ Derived from [Linked boards](../linked-boards.md).
 | trashed by link | `fields.linkedGone = true` on a card in the Trash (`LINKED_GONE_FIELD`), from before an action's   |
 |                 | going left its card; still restored by the heal, never written now                                 |
 | Won't Do        | `ElementAction.status = 'wont-do'` (`ElementActionStatus`); `isClosedAction`                       |
-| record          | `LinkedRecord` (structural: the items package never imports the document model)                    |
+| record          | `LinkedRecord` (structural: the items package never imports the project model)                    |
 | heal            | `healLinkedCards` (pure), run by `useLinkedActionCards`                                            |
 
 ## Files
 
 ```
-packages/document/src/element-action.ts       ElementActionStatus ('open' | 'done' | 'wont-do'), isClosedAction,
+packages/project/src/element-action.ts       ElementActionStatus ('open' | 'done' | 'wont-do'), isClosedAction,
                                               ACTION_STATUS_LABELS
-packages/document/src/plan-board-patch.ts      'collects' among SETUP_KEYS
-packages/document/src/svg-render-panel-faces.ts the export's Won't Do row (slashed ring, muted, "Won’t Do · name")
+packages/project/src/plan-board-patch.ts      'collects' among SETUP_KEYS
+packages/project/src/svg-render-panel-faces.ts the export's Won't Do row (slashed ring, muted, "Won’t Do · name")
 packages/items/src/board.ts                   PlanBoardSetup.collects, LINKED_RECORD_KINDS; normaliseBoardSetup keeps it
 packages/items/src/presets.ts                 freshSetup (freshBoardSetup's column naming, for any set-up)
 packages/items/src/linked-cards.ts            ids, links, status mapping, linkedCardCreate, healLinkedCards,
                                               linkedCardLeftPatch, linkedCardsTrashedBy, unlinkedFields (pure)
 packages/templates/src/linked-board-start.ts  actionsBoardSetup, actionsBoardTab, ACTIONS_BOARD_TITLE
-packages/document/src/collab-index-rows.ts    a Won't Do action indexes as 'done' (closed)
+packages/project/src/collab-index-rows.ts    a Won't Do action indexes as 'done' (closed)
 apps/api/src/db/plan-board-index.ts           CARDS_CTES: `json_extract(i.fields, '$.linked') IS NULL`
 apps/live/hooks/plan/linked-actions.ts        placedActions, actionsBoardIn, unloadedTabIds, applyActionChanges,
                                               removeAction, restoreAction, goneActionIds (pure)
 apps/live/hooks/plan/useLinkedActionCards.ts  the editor wiring (below)
 apps/live/hooks/plan/usePlanItems.ts          writeQuiet(write, { silent }); onOwnWrite(write, before)
 apps/live/hooks/collab/useEditorActions.ts    wontDoAction; onCreated
-apps/live/app/document/[id]/useCollabDeepLink.ts  returns arrive(link): an Inbox-style landing asked in the editor
+apps/live/app/project/[id]/useCollabDeepLink.ts  returns arrive(link): an Inbox-style landing asked in the editor
 apps/live/components/plan/LinkedActionBanner.tsx  the item panel's banner
 apps/live/components/plan/ItemPanel.tsx       linkedActions prop: banner, read-only Assignee ("Set on the action")
 apps/live/components/plan/duplicate-item.ts   unlinkedFields on Duplicate
@@ -69,7 +69,7 @@ apps/live/components/dialogs/AssignActionDialog.tsx  the Status row when editing
 - **useLinkedActionCards** (canHeal = hydrated Editor, not workbench; canMakeBoard = canHeal and may reshape):
   - `placed = placedActions(tabs, loadedTabIds)`; assignees hashed with `itemPersonId(userId ?? 'member:'+memberId)`,
     named as at assign time, coloured `colorForKey`; a heal waits for every hash.
-  - A document with actions and no board found reads its unloaded tabs once (`unloadedTabIds`), when it has at most
+  - A project with actions and no board found reads its unloaded tabs once (`unloadedTabIds`), when it has at most
     `PLAN_SWEEP_MAX_TABS` tabs.
   - Heal effect: when canHeal, a board and items `ready`, `LINKED_HEAL_DEBOUNCE_MS` after the last change of tabs,
     items, placed or people: creates in batches of `ITEM_BULK_MAX`, patches likewise, both `writeQuiet(…, { silent })`;
@@ -87,7 +87,7 @@ apps/live/components/dialogs/AssignActionDialog.tsx  the Status row when editing
     (`restoreAction`) once its card is out of the Trash, and forgets one whose card is gone.
   - `openOnBoard(actionId?)`, `showOnCanvas(item)` call `arrive`; `placeOf(item)` names the action's tab, memoised on
     a key of action-to-tab and tab names so a canvas edit leaves the Plan context as it was.
-- `usePlanNeeded` takes `actionsBoard !== null` as Plan in play, so a document with a board reads its items on any tab.
+- `usePlanNeeded` takes `actionsBoard !== null` as Plan in play, so a project with a board reads its items on any tab.
 - `useCollabDeepLink.arrive(link)` keeps its own asked link (never writes the captured one), clears `consumed`, and
   bumps a counter in the landing effect's deps; the caller switches tab first.
 
@@ -101,7 +101,7 @@ apps/live/components/dialogs/AssignActionDialog.tsx  the Status row when editing
 ## Data and persistence
 
 - Card fields: `linked`, `linkedAt`, `linkedRev`, `linkedGone` are stored with the item, travel with it (copies keep
-  ids, so a copied document's links still hold) and are left out by Duplicate. No migration: a card without them is
+  ids, so a copied project's links still hold) and are left out by Duplicate. No migration: a card without them is
   an ordinary card.
 - `collects` is stored in the board's set-up in its tab; no migration (absent is none).
 - `'wont-do'` is a new stored action status: older editors read it as not done and not open (they compare `=== 'open'`
@@ -119,7 +119,7 @@ apps/live/components/dialogs/AssignActionDialog.tsx  the Status row when editing
 | A board with no done column                                      | Status never synced (null); titles and descriptions still are               |
 | The Action type deleted from the catalogue                       | Cards draw as the fallback type; the board shows every type (boardAddTypes) |
 | A restored card whose action was taken off in an earlier session | A card of its own; the heal has no record for it                            |
-| A copy of a board tab with its cards in another document         | Links name tabs that are not there: no banner, never healed                 |
+| A copy of a board tab with its cards in another project         | Links name tabs that are not there: no banner, never healed                 |
 
 ## Security and trust
 
@@ -165,7 +165,7 @@ narrows a read; it widens nothing.
 | Only an Editor heals or makes the board         | useLinkedActionCards.test.ts "never makes…", "heals nothing…"                                    |
 | Canvas writes                                   | apps/live/hooks/plan/linked-actions.test.ts                                                      |
 | Won't Do on the panel, the Board chip           | apps/live/components/canvas/ActionPanelFace.test.tsx                                             |
-| Won't Do indexed closed                         | packages/document/src/collab-index-rows.test.ts                                                  |
+| Won't Do indexed closed                         | packages/project/src/collab-index-rows.test.ts                                                  |
 | Linked cards off the Inbox                      | apps/api/src/db/activity-cards.test.ts                                                           |
 
 ## Defaults ledger

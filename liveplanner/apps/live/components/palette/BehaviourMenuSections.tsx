@@ -15,7 +15,7 @@ import {
   type PickerSource,
   type SessionButtonConfig,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';

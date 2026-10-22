@@ -1,6 +1,6 @@
 // The item store's client (docs/specs/026-plan/items.md, blueprint item-store.md "Editor slice").
-// Each call dispatches an offline document to its local store (../offline/offline-items) and a
-// cloud document to the api. A session on a tab-scoped link names its tab on every call.
+// Each call dispatches an offline project to its local store (../offline/offline-items) and a
+// cloud project to the api. A session on a tab-scoped link names its tab on every call.
 
 import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
 import {
@@ -10,7 +10,7 @@ import {
   type ItemStoreState,
   type ItemWrite,
 } from '@liveplanner/items';
-import { createComment, type CommentMention } from '@liveplanner/document';
+import { createComment, type CommentMention } from '@liveplanner/project';
 import { isOfflineId } from '../offline/offline-store';
 import {
   offlineFetchItems,
@@ -22,9 +22,9 @@ import { debugLog } from '../debug-log';
 
 export type ItemsScope = {
   ownerId: string;
-  documentId: string;
+  projectId: string;
   shareCode: string | null;
-  // The tab a tab-scoped link confines this session to; null for the whole document.
+  // The tab a tab-scoped link confines this session to; null for the whole project.
   tabId: string | null;
 };
 
@@ -47,16 +47,16 @@ export class ItemWritePartlyLanded extends Error {
 
 function itemsUrl(scope: ItemsScope, rest = ''): string {
   const q = scope.tabId ? `?tabId=${encodeURIComponent(scope.tabId)}` : '';
-  return `${API_BASE}/documents/${encodeURIComponent(scope.documentId)}/items${rest}${q}`;
+  return `${API_BASE}/projects/${encodeURIComponent(scope.projectId)}/items${rest}${q}`;
 }
 
 export async function fetchItems(scope: ItemsScope): Promise<ItemStoreState> {
-  if (await isOfflineId(scope.documentId)) return offlineFetchItems(scope.documentId);
+  if (await isOfflineId(scope.projectId)) return offlineFetchItems(scope.projectId);
   return fetchCloudItems(scope);
 }
 
-// The server's item store, even while the id is still registered offline: Sync Document checks
-// the cloud copy holds every card before it removes the local one (docs/specs/006-document/offline-mode.md).
+// The server's item store, even while the id is still registered offline: Sync Project checks
+// the cloud copy holds every card before it removes the local one (docs/specs/006-project/offline-mode.md).
 export async function fetchCloudItems(scope: ItemsScope): Promise<ItemStoreState> {
   const res = await apiFetch(itemsUrl(scope), {
     headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
@@ -161,7 +161,7 @@ export async function writeItem(
   write: ItemWrite,
   by: ItemPerson,
 ): Promise<ItemWriteAnswer> {
-  if (await isOfflineId(scope.documentId)) return offlineWriteItem(scope.documentId, write, by);
+  if (await isOfflineId(scope.projectId)) return offlineWriteItem(scope.projectId, write, by);
   const id = 'id' in write ? `/${encodeURIComponent(write.id)}` : '';
   switch (write.kind) {
     case 'create': {
@@ -216,7 +216,7 @@ export type ItemCommentAction =
 // Who is commenting: their owner id (the author id the api stamps) and how items name them.
 type ItemCommenter = { ownerId: string; by: ItemPerson };
 
-// Sends one comment change: the item as stored, or null when it changed nothing. An offline document applies it
+// Sends one comment change: the item as stored, or null when it changed nothing. An offline project applies it
 // to its record; a cloud one sends it to the api, which stamps the author itself.
 export async function writeItemComment(
   scope: ItemsScope,
@@ -224,7 +224,7 @@ export async function writeItemComment(
   action: ItemCommentAction,
   who: ItemCommenter,
 ): Promise<(ItemWriteAnswer & { commentId?: string }) | null> {
-  if (await isOfflineId(scope.documentId)) {
+  if (await isOfflineId(scope.projectId)) {
     const change =
       action.kind === 'add'
         ? {
@@ -238,7 +238,7 @@ export async function writeItemComment(
         : action.kind === 'delete'
           ? { kind: 'remove' as const, commentId: action.commentId }
           : action;
-    return offlineWriteItemComment(scope.documentId, itemId, change, who.by);
+    return offlineWriteItemComment(scope.projectId, itemId, change, who.by);
   }
   const base = `/${encodeURIComponent(itemId)}/comments`;
   if (action.kind === 'add') {

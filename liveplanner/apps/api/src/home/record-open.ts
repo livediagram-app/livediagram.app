@@ -2,26 +2,26 @@
 // open"). Called from the tab read when the editor declares the read an open, inside waitUntil:
 // it never slows or fails the read, and a failure is logged, not thrown.
 //
-// The day once per person per document per UTC day: the document_opens row is written first and
-// gates the day's `document_opened` event, so the row and the events always agree on which days
+// The day once per person per project per UTC day: the project_opens row is written first and
+// gates the day's `project_opened` event, so the row and the events always agree on which days
 // were counted. Every open, the first of the day or not, moves the last open Recent reads.
 
-import { getDocumentOpen, recordOpenDay, touchLastOpen } from '../db/document-opens';
-import { recordDocumentOpened } from '../timeline/document-events';
-import type { DocumentDTO, Env } from '../types';
+import { getProjectOpen, recordOpenDay, touchLastOpen } from '../db/project-opens';
+import { recordProjectOpened } from '../timeline/project-events';
+import type { ProjectDTO, Env } from '../types';
 import { utcDay } from '@liveplanner/api-schema';
 
-type DocumentRef = Pick<DocumentDTO, 'id' | 'name' | 'ownerId' | 'teamId'>;
+type ProjectRef = Pick<ProjectDTO, 'id' | 'name' | 'ownerId' | 'teamId'>;
 
-export async function recordDocumentOpen(
+export async function recordProjectOpen(
   env: Env,
-  liveDoc: DocumentRef,
+  liveDoc: ProjectRef,
   personId: string,
   at: number,
 ): Promise<void> {
   try {
     const day = utcDay(at);
-    const previous = await getDocumentOpen(env, personId, liveDoc.id);
+    const previous = await getProjectOpen(env, personId, liveDoc.id);
     if (previous?.lastOpenDay === day) {
       await touchLastOpen(env, personId, liveDoc.id, at);
       console.info(`home: open-touched doc=${liveDoc.id}`);
@@ -33,7 +33,7 @@ export async function recordDocumentOpen(
       console.info(`home: open-skipped reason=race doc=${liveDoc.id}`);
       return;
     }
-    await recordDocumentOpened(env, liveDoc, personId, at);
+    await recordProjectOpened(env, liveDoc, personId, at);
     console.info(`home: open-recorded doc=${liveDoc.id}`);
   } catch (err) {
     console.error(`home: open-failed doc=${liveDoc.id}`, err);

@@ -8,7 +8,7 @@ import {
   type ChangesetResponse,
   type TabResponse,
 } from '@liveplanner/api-schema';
-import { elementFingerprint } from '@liveplanner/document';
+import { elementFingerprint } from '@liveplanner/project';
 import {
   CARD_FIELD_LABELS,
   SWIMLANE_BY,
@@ -99,18 +99,18 @@ export function resolveBoard(
     code: 'board_unknown',
     message: boards.length
       ? `No board "${input}". Boards: ${boards.map(describe).join('; ')}.`
-      : 'The document has no Plan board yet: add one with add_board.',
+      : 'The project has no Plan board yet: add one with add_board.',
   };
 }
 
 export async function changeBoard(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   input: ChangeBoardInput,
   client: 'mcp' | 'cli',
 ): Promise<ChangeBoardResult> {
   try {
-    const state = await readPlanState(api, documentId);
+    const state = await readPlanState(api, projectId);
     const found = resolveBoard(input.board, state.plan.boards);
     if (!found.ok) return found;
     const { tabId, elementId } = found.board;
@@ -130,7 +130,7 @@ export async function changeBoard(
       if (!lanes.ok) return lanes;
       swimlanes = lanes.value;
     }
-    const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
+    const { tab } = await api.json<TabResponse>(tabPath(projectId, tabId));
     const element = tab.elements.find((e) => e.id === elementId);
     const setup =
       element?.type === 'shape' && 'planBoard' in element
@@ -169,7 +169,7 @@ export async function changeBoard(
       base: { rev: tab.rev, elements: { [elementId]: elementFingerprint(element) } },
       summary: `Change the ${reshaped.setup.title} board`,
     };
-    const answer = await api.json<ChangesetResponse>(`${tabPath(documentId, tabId)}/changesets`, {
+    const answer = await api.json<ChangesetResponse>(`${tabPath(projectId, tabId)}/changesets`, {
       method: 'POST',
       headers: { [CLIENT_HEADER]: client },
       body: JSON.stringify(body),

@@ -3,8 +3,8 @@
 // a tab uses beyond Inter are read from the Google Fonts stylesheet the editor itself loads (fonts.ts' `google`
 // specs), whose answer to a client that is not a browser names TrueType files, which resvg reads. Best effort: a face
 // that cannot be fetched in time draws in Inter, as before. Each face is fetched once per isolate and kept in the
-// Cache API, so a document's previews fetch nothing after the first.
-import { FONTS } from '@liveplanner/document';
+// Cache API, so a project's previews fetch nothing after the first.
+import { FONTS } from '@liveplanner/project';
 
 // The most faces one preview fetches, and how long it waits for them all.
 export const PREVIEW_FONTS_MAX = 4;

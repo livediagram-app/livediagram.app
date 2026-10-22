@@ -11,7 +11,7 @@ export interface TabItemElement {
   planCard?: { itemId?: unknown };
 }
 
-// `elements` takes any element list: a weak TabItemElement[] would refuse a typed document element union.
+// `elements` takes any element list: a weak TabItemElement[] would refuse a typed project element union.
 export function itemIdsShownOnTab(elements: readonly object[], items: Iterable<Item>): Set<string> {
   const ids = new Set<string>();
   let board = false;

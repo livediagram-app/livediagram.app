@@ -6,7 +6,7 @@ import {
   resolveStockColours,
   type CanvasSurface,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 export type InkRole = 'line' | 'text';
 

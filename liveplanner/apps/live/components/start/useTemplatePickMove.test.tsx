@@ -17,18 +17,18 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-const base = { ownerId: 'o', documentId: 'd', tabId: 't', signedIn: false, tabHasContent: false };
+const base = { ownerId: 'o', projectId: 'd', tabId: 't', signedIn: false, tabHasContent: false };
 
 describe('useTemplatePickMove', () => {
-  it('moves at the first pick on the document /new made, and says where', async () => {
-    handTemplatePick({ documentId: 'd', tabId: 't', placementChosen: false });
+  it('moves at the first pick on the project /new made, and says where', async () => {
+    handTemplatePick({ projectId: 'd', tabId: 't', placementChosen: false });
     const { result } = renderHook(() => useTemplatePickMove(base));
     result.current('kanban');
     expect(readTemplatePick()).toBeNull();
     await vi.waitFor(() =>
       expect(info).toHaveBeenCalledWith(expect.stringMatching(/^Moved to Boards/)),
     );
-    expect(move).toHaveBeenCalledWith(expect.objectContaining({ documentId: 'd', kind: 'kanban' }));
+    expect(move).toHaveBeenCalledWith(expect.objectContaining({ projectId: 'd', kind: 'kanban' }));
     result.current('kanban');
     expect(move).toHaveBeenCalledTimes(1);
   });
@@ -36,13 +36,13 @@ describe('useTemplatePickMove', () => {
   it('does nothing without a handoff, or for a folder the person chose', () => {
     const { result } = renderHook(() => useTemplatePickMove(base));
     result.current('kanban');
-    handTemplatePick({ documentId: 'd', tabId: 't', placementChosen: true });
+    handTemplatePick({ projectId: 'd', tabId: 't', placementChosen: true });
     result.current('kanban');
     expect(move).not.toHaveBeenCalled();
   });
 
   it('drops the handoff once the tab has content drawn some other way', () => {
-    handTemplatePick({ documentId: 'd', tabId: 't', placementChosen: false });
+    handTemplatePick({ projectId: 'd', tabId: 't', placementChosen: false });
     renderHook(() => useTemplatePickMove({ ...base, tabHasContent: true }));
     expect(readTemplatePick()).toBeNull();
   });

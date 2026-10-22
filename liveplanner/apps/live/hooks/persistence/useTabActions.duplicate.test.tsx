@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 import { useTabActions } from './useTabActions';
 
 // docs/specs/026-plan/plan-tabs.md "Names": a Duplicate of a Board or Visualisation tab titles the copy's board or

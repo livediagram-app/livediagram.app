@@ -11,7 +11,7 @@ REST API to external, programmatic callers.
 
 Let **signed-in** people call the liveplanner API from their own scripts /
 integrations with a long-lived **API token**, not just from the first-party web
-app. Read their documents, create/update them, manage folders — the same surface
+app. Read their projects, create/update them, manage folders — the same surface
 the app uses, under an explicit, revocable credential.
 
 **Signed-in only (gated like teams, [Teams](../013-workspace/teams.md)).** API tokens are an
@@ -45,22 +45,22 @@ The worker resolved the caller two ways ([Auth + guest access](../014-identity/a
 
 The guest header was the blocker, and the owner id it carried was **not a
 secret in practice.** The obvious REST surfaces were already redacted for
-non-owners (the shared document DTO, `redactOwner`; comment author ids on tab
+non-owners (the shared project DTO, `redactOwner`; comment author ids on tab
 read, `redactCommentAuthorIds`), but two surfaces still exposed a
 collaborator to the owner's id:
 
-- **Realtime presence**: `broadcastPresence` (`document-room.ts`, roster in `room-roster.ts`) sent every
+- **Realtime presence**: `broadcastPresence` (`project-room.ts`, roster in `room-roster.ts`) sent every
   connected participant's `id`, unredacted, to all room peers, and that id was
   the owner id. Any co-present collaborator, including a **view-only** share
   visitor, could read it off a presence frame.
-- **Change-log / Activity** (endpoint since removed with the Activity panel, 2026-10-03): `GET /documents/<id>/log` returned each entry's
+- **Change-log / Activity** (endpoint since removed with the Activity panel, 2026-10-03): `GET /projects/<id>/log` returned each entry's
   `participantId` unredacted to any **edit-access** collaborator (edit-share
   holders, joined team members). A static, reliable harvest.
 
 Because REST trusted `X-Owner-Id` with no signature, a collaborator who
 harvested an owner's id could call the API **as** that owner across ALL their
-content: `GET /api/documents` listed every document the id owned, each then
-readable / editable / deletable. **Sharing one document (or being in a team)
+content: `GET /api/projects` listed every project the id owned, each then
+readable / editable / deletable. **Sharing one project (or being in a team)
 could escalate to impersonating the owner account-wide.** It applied to
 signed-in owners too: their id is the account `sub`, and the `X-Owner-Id`
 fallback accepted it whenever a request carried no Bearer token.
@@ -72,16 +72,16 @@ closed the escalation. The fix is [§4](#4-x-owner-id-trust-change).
 ### Where it stands now
 
 - **The WS upgrade no longer takes `?g=`.** It admits a caller by a one-time
-  room ticket minted over authenticated REST (`t`, `routes/document-room-routes.ts`;
+  room ticket minted over authenticated REST (`t`, `routes/project-room-routes.ts`;
   [API app](api.md) "Realtime model"), which every editor session now uses, so no
   owner id, guest signature, share code or share password rides the upgrade URL.
-  The legacy legs, a personal document's owner id or a share code with the share
+  The legacy legs, a personal project's owner id or a share code with the share
   password where one is set (`o` / `os` / `s` / `p`), still admit an editor from
   before 2026-10-17 and log `[room-upgrade] legacy leg admitted` until they are
   retired.
 - **Presence carries no owner id.** The room mints a random presence id per
   socket and builds each presence entry itself (`helloPresence`,
-  `document-room-rules.ts`); a client never supplies or learns one.
+  `project-room-rules.ts`); a client never supplies or learns one.
 - **An account id is never a guest credential.** An account-shaped (`user_…`) `X-Owner-Id`
   is refused on every owner-scoped route with `401
 account_id_not_a_guest_credential`, unconditionally ([§4.1](#41-an-account-id-in-x-owner-id-is-refused-unconditionally)).
@@ -177,10 +177,10 @@ exists): a `read_only` column that, when set, restricts the
 token to `GET`/`HEAD`; the api worker rejects every write it presents at a
 single dispatch choke point with `403 read_only_token`
 ([MCP server §4.11](mcp-server.md)). The same choke point refuses it the one read that is a
-credential rather than content: `GET /api/documents/:id/share`, whose links and password would let it
+credential rather than content: `GET /api/projects/:id/share`, whose links and password would let it
 open an edit link. Read-only tokens are minted through the MCP
 consent screen (a "read-only access" checkbox), giving a cautious user a way to
-let an AI tool VIEW their documents without granting edit. There is still no
+let an AI tool VIEW their projects without granting edit. There is still no
 finer-grained scope vocabulary (per-resource, per-verb); that remains deferred
 ([§7](#7-out-of-scope-for-now)) — `read_only` is a single boolean, not a general
 scopes system.
@@ -189,12 +189,12 @@ scopes system.
 signed-in account ([§3.3](#33-resolution)), and both credentials — session JWT and
 token — are server-verified, so the token identity feeds the same
 team-membership checks the session does (`RouteContext.verifiedUserId`, used by
-`gateRead`/`gateEdit` and the team-scoped document/folder verbs). Concretely: a
-token can read and edit the documents in the shared libraries of the teams its
-owner has joined ([Team shared documents](../013-workspace/team-shared-documents.md)), and can `GET` the
+`gateRead`/`gateEdit` and the team-scoped project/folder verbs). Concretely: a
+token can read and edit the projects in the shared libraries of the teams its
+owner has joined ([Team shared projects](../013-workspace/team-shared-projects.md)), and can `GET` the
 teams surface (list its teams, team detail, a team's library). Without this, a
-document filed into a team was invisible to every external integration — the
-personal `GET /documents` excludes team documents by design.
+project filed into a team was invisible to every external integration — the
+personal `GET /projects` excludes team projects by design.
 
 **Administration stays interactive-session-only.** Every teams MUTATION
 (create, invite, role change, join/accept/leave, invite links, team deletion)
@@ -205,8 +205,8 @@ deal, revocable + 6-month-capped), but it must not be able to escalate — mint
 further credentials, grant other people membership, or destroy the account.
 
 **Deleting goes to the Trash, with an explicit way past it.** A token's
-`DELETE /api/documents/<id>` moves the document to the [Trash](../013-workspace/trash.md)
-like every other delete; `DELETE /api/documents/<id>?permanent=true` deletes it
+`DELETE /api/projects/<id>` moves the project to the [Trash](../013-workspace/trash.md)
+like every other delete; `DELETE /api/projects/<id>?permanent=true` deletes it
 for good at once (and purges one already in the Trash). The Trash routes
 (`GET /api/trash`, `POST /api/trash/<id>/restore`, `DELETE /api/trash[/<id>]`)
 are token-usable with the same delete authority; a read-only token may list the
@@ -309,7 +309,7 @@ token_limit_reached`.
 
 **Account deletion removes them.** Deleting an account erases ALL of that
 user's data, tokens included: `DELETE /api/account` ([`routes/account.ts`](../../../apps/api/src/routes/account.ts))
-must delete the owner's `api_tokens` rows in the same cascade as their documents
+must delete the owner's `api_tokens` rows in the same cascade as their projects
 / folders / themes, so no credential outlives the account.
 
 ### 3.6a A token's view of itself
@@ -375,10 +375,10 @@ escalation. Two options were weighed:
 the credential _type_ to the owner id, so a caller with no Bearer and
 `X-Owner-Id: <an account sub>` was accepted AS that account (verified at the time:
 the sub leaked via presence / the change-log, and nothing rejected it). After (b), an
-account's documents are reachable **only via a verified Bearer token**: an
+account's projects are reachable **only via a verified Bearer token**: an
 `X-Owner-Id` carrying an account `sub` has no guest signature (one is never minted
 for an account id), so it is rejected. The post-fix invariant is therefore "once
-signed up, your documents require your Bearer token; the header can't reach
+signed up, your projects require your Bearer token; the header can't reach
 them" — which is the property to assert in tests.
 
 (b) is the heavier change — every guest write now signs — but it's the one that
@@ -397,7 +397,7 @@ adding signatures). So don't try; bound the window instead and lean on the
 self-heal that already exists:
 
 1. The app already, on load, mints a _signed_ id and migrates a legacy unsigned
-   id's documents onto it (`apps/live/lib/guest-identity.ts` → `apiUpgradeGuestId`).
+   id's projects onto it (`apps/live/lib/guest-identity.ts` → `apiUpgradeGuestId`).
    Active guests largely hold a signed id already (they migrated when signing
    first shipped, [Auth + guest access](../014-identity/auth-and-guest-access.md)).
 2. Ship the `X-Owner-Sig` requirement **behind a grace flag / cutoff date.**
@@ -405,7 +405,7 @@ self-heal that already exists:
    behaviour) so every returning guest self-heals to a signed id; at the
    cutoff, unsigned ids are rejected for writes.
 3. **Never delete the orphaned data.** A long-dormant guest who only returns
-   after the cutoff finds their old unsigned id rejected, but the documents
+   after the cutoff finds their old unsigned id rejected, but the projects
    still exist server-side under that id — recoverable via the migrate tooling
    / a "sign in to recover" path, so it's a re-auth, never data loss.
 
@@ -443,20 +443,20 @@ segment, before the signature gate and independent of
 because nothing legitimate ever had this shape, so there is no window to bound
 and nothing for an operator to arm.
 
-The realtime room's upgrade refuses the same shape on its owner leg (`?o=`, `routes/document-room-routes.ts`):
-a signed-in owner of a personal document joins through the one-time room ticket, as a team owner does, and an
+The realtime room's upgrade refuses the same shape on its owner leg (`?o=`, `routes/project-room-routes.ts`):
+a signed-in owner of a personal project joins through the one-time room ticket, as a team owner does, and an
 account id presented as `?o=` admits nobody. Once the guest signature gate is armed, a guest owner id on `?o=`
 needs its signature on `?os=` (the same value REST carries as `X-Owner-Sig`); without it the leg admits nobody.
 
 `GET /api/share/<code>` also refuses an account id as `X-Owner-Id`, because its resolver compares that header with
-the document's owner. It never returns the document's primary `shareCode`, to anyone: the visitor already holds the
+the project's owner. It never returns the project's primary `shareCode`, to anyone: the visitor already holds the
 code they arrived with. An empty `X-Owner-Id` is no identity at all, never a shared owner.
 
-This matters most for **personal** documents, whose ownership legitimately
+This matters most for **personal** projects, whose ownership legitimately
 resolves through the hybrid header path — that path is safe precisely because a
 personal owner id is an unguessable UUID, which an account id is not. The
-**team**-document half of the same escalation is closed structurally instead, by
-`ownsDocument` ([Team shared documents §Access](../013-workspace/team-shared-documents.md)), so it holds
+**team**-project half of the same escalation is closed structurally instead, by
+`ownsProject` ([Team shared projects §Access](../013-workspace/team-shared-projects.md)), so it holds
 whatever a deployment has configured.
 
 The signature gate keeps its grace flag and its job: proving possession of a
@@ -468,15 +468,15 @@ Opening the API magnifies the cost of weak input handling, so the validation
 hardening landed first:
 
 - **Structural schema validation** — `isValidElement` / `isValidTab`
-  (`packages/document/src/validate.ts`) vet the element/tab discriminant,
-  required fields, endpoints, array bounds + unique ids. The document routes run
+  (`packages/project/src/validate.ts`) vet the element/tab discriminant,
+  required fields, endpoints, array bounds + unique ids. The project routes run
   incoming tabs (create-seed + tab PUT) through `isValidTab` and reject
   malformed trees with `400`.
 - **Size caps** — a global Content-Length body cap, per-tab byte cap, and
   name / theme-definition / participant / share-password caps
-  (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Document
+  (`apps/api/src/limits.ts`); a per-frame cap in the realtime room. Project
   and tab names are shortened to the 60-character name cap rather than
-  rejected (`apps/api/src/names.ts`, [Tab and document name length](../006-document/name-length.md)).
+  rejected (`apps/api/src/names.ts`, [Tab and project name length](../006-project/name-length.md)).
 - **Already solid** (pre-existing): D1 is fully parameterized; session JWT
   verification; share-link expiry + constant-time password compare + per-IP
   brute-force limiter; WS-upgrade auth; realtime role re-stamping + op-rate cap.
@@ -491,7 +491,7 @@ hardening landed first:
    dashboard-only value is wiped by every deploy), blank. It was armed in
    production on 2026-10-06 and un-armed the same day: `/new` mints a local
    unsigned id, so a first-time visitor arriving there from the landing page was
-   refused (`401 signature_required`) and could not create a document, against
+   refused (`401 signature_required`) and could not create a project, against
    the rule that the canvas always works without signing in. Every entry path
    now resolves a signed id before its first owner-scoped call
    ([Auth and guest access](../014-identity/auth-and-guest-access.md) "Signed
@@ -501,7 +501,7 @@ hardening landed first:
    `GUEST_SIG_ENFORCE_AFTER` in `apps/api/wrangler.toml` again. What follows
    holds from then. Production only
    started signing on 2026-09-25 (`GUEST_SIGNING_LIVE_AT`), so most guest ids
-   were still unsigned when it was armed: about 219, holding 274 documents. An
+   were still unsigned when it was armed: about 219, holding 274 projects. An
    id whose participant row predates `GUEST_SIGNING_LIVE_AT` keeps the legacy
    upgrade (migrate flow 2) without a signature, so those guests self-heal
    whenever they return. Every id minted signed must prove possession, which
@@ -518,7 +518,7 @@ hardening landed first:
    even though §4 already neutralises a leaked id, because people WILL probe
    for it):
    - Redact `participantId` in the change-log read for non-owners (the static
-     harvest; moot since the change log was removed on 2026-10-03), the same way comment authors and the document `ownerId` already
+     harvest; moot since the change log was removed on 2026-10-03), the same way comment authors and the project `ownerId` already
      are.
    - Give each realtime session a **room-scoped ephemeral presence id**
      (random per connection) for the broadcast presence / cursor frames,
@@ -528,7 +528,7 @@ hardening landed first:
      This removes the last surface that exposed it.
 
      One thing the ephemeral id cannot do, learned the hard way: **join a peer
-     to something saved in the document.** It changes on every socket, so any
+     to something saved in the project.** It changes on every socket, so any
      feature that records an answer per person and then matches it back to the
      roster needs a second, stable id. That is `ParticipantPresence.key`, the
      collab key — see [Per-participant responses](../012-collaboration/participant-responses.md), which also
@@ -565,7 +565,7 @@ hardening landed first:
 
 ## 7. Out of scope (for now)
 
-Finer-grained scopes — per-document / per-folder grants, per-verb permissions —
+Finer-grained scopes — per-project / per-folder grants, per-verb permissions —
 plus webhooks and any billing or quota tiers (the product has no paid tier —
 [Business model + licence](../002-project-scope/business-model-and-licence.md)). (The one scope that DID land is
 the **read-only** flag, [§3.4](#34-access--full-read--write-with-an-optional-read-only-flag);

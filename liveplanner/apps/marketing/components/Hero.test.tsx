@@ -3,7 +3,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RECENT_DIAGRAMS_KEY, RECENT_FAN_MIN } from '@liveplanner/api-schema';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { seededRandom } from '@liveplanner/document';
+import { seededRandom } from '@liveplanner/project';
 import {
   HERO_FAN_FULL_MIN_PX,
   HERO_FAN_OPENING,

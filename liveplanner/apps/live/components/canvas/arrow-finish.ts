@@ -6,12 +6,12 @@ import {
   handDrawnArrow,
   type ArrowElement,
   type HandDrawnArrow,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useElementFinish } from './CanvasFinishContext';
 
 // An arrow in its finish on the canvas (docs/specs/008-canvas/finish.md): Professional thins an arrow that
 // sets no width, Marker draws it at a marker's nib, and Sketch and Marker draw its line and its triangle / line heads
-// by hand. The same rules as the export's svgArrow (packages/document/src/svg-render-arrows.ts), so the canvas and a
+// by hand. The same rules as the export's svgArrow (packages/project/src/svg-render-arrows.ts), so the canvas and a
 // download agree.
 
 type ArrowFinishPaint = {

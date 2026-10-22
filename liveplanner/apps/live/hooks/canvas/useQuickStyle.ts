@@ -12,9 +12,9 @@ import type {
   Tab,
   TextAlignX,
   ThemeDefinition,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
-import { canvasSurface, PEN_INK } from '@liveplanner/document';
+import { canvasSurface, PEN_INK } from '@liveplanner/project';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { resolveTabBackdrop } from '@/lib/themes';
 import {

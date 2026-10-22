@@ -4,7 +4,7 @@
 // CLI on a machine without a browser shows a code; the person opens this page anywhere, signs in, enters the code
 // and approves. On approve the page mints an API token (signed-in, as the consent page does) and hands it to the
 // MCP worker for the waiting CLI to collect; on cancel it refuses the code, so the CLI stops waiting. No help link:
-// the CLI's own README documents it.
+// the CLI's own README projects it.
 import { Suspense, use, useState } from 'react';
 import { browser } from 'react-dom';
 import { useSearchParams } from 'next/navigation';
@@ -176,7 +176,7 @@ function Device() {
           <h1 className={HEADING}>Connect {clientName}</h1>
           <p className={BODY}>
             <span className="font-medium text-slate-700 dark:text-slate-200">{clientName}</span>{' '}
-            wants to access your liveplanner documents on your behalf. Approving creates an API
+            wants to access your liveplanner projects on your behalf. Approving creates an API
             token, which you can revoke any time from Settings, under Account › API Tokens.
           </p>
           <ReadOnlyAccessToggle readOnly={readOnly} onChange={setReadOnly} />

@@ -1,7 +1,7 @@
 // /api/participants/<id> — read / update a participant's display row.
 
 import { MAX_COLOR_LEN, MAX_PARTICIPANT_NAME_LEN } from '@liveplanner/api-schema';
-import { isSafeColourValue } from '@liveplanner/document';
+import { isSafeColourValue } from '@liveplanner/project';
 import { getParticipant, upsertParticipant } from '../db';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { ParticipantDTO } from '../types';
@@ -16,7 +16,7 @@ import { requireOwner, type RouteContext, readBody } from './context';
 // PUT is owner-only on the participant. Without this guard any
 // caller who knew (or guessed) another participant's id could
 // rewrite their display name + colour, and that vandalism would
-// propagate across every document they'd collaborated on. The guard requires the caller's resolved
+// propagate across every project they'd collaborated on. The guard requires the caller's resolved
 // owner (account Bearer OR X-Owner-Id, docs/specs/014-identity/auth-and-guest-access.md) to match the
 // participant id being mutated.
 export async function handleParticipants(ctx: RouteContext): Promise<Response> {
@@ -53,7 +53,7 @@ export async function handleParticipants(ctx: RouteContext): Promise<Response> {
     )
       return badRequest('missing name/color');
     // A colour is painted into every peer's CSS (a card's stripe, a cursor): one that could load
-    // something from outside is no colour (@liveplanner/document unsafe-colours.ts).
+    // something from outside is no colour (@liveplanner/project unsafe-colours.ts).
     if (!isSafeColourValue(body.color)) return badRequest('invalid color');
     // Cap the presence identity: it's broadcast to every peer in the room.
     if (body.name.length > MAX_PARTICIPANT_NAME_LEN || body.color.length > MAX_COLOR_LEN) {

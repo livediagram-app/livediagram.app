@@ -9,14 +9,13 @@ import { box, plainTab, tabAnswer } from '../testing/tabs';
 import { changesetApply, elementVerbs, tabDiff } from './edit';
 import { tabView } from './tab';
 
-const TAB = `/documents/${DOC_A}/tabs/tab-one-0000`;
+const TAB = `/projects/${DOC_A}/tabs/tab-one-0000`;
 const written = {
   dryRun: false,
   changeset: { id: 'cs_1', tabId: 'tab-one-0000', rev: 6, previousRev: 5, rebasedOver: 1 },
   results: [],
-  text: '- n1  square "A"\nrev 5→6 · cs_1 · lint clean · revert: liveplanner changeset revert d cs_1',
+  text: '- n1  square "A"\nrev 5→6 · cs_1 · revert: liveplanner changeset revert d cs_1',
   warnings: [],
-  lint: null,
 };
 
 function recording() {
@@ -42,11 +41,11 @@ describe('changeset apply', () => {
     const ctx = contextOf(api, [], [], { readInput: async (p) => files[p]! });
     const out = await changesetApply.run!(
       ctx,
-      changesetApply.input.parse({ doc: 'Auth flow', file: 'ops.txt' }),
+      changesetApply.input.parse({ project: 'Auth flow', file: 'ops.txt' }),
     );
     await changesetApply.run!(
       ctx,
-      changesetApply.input.parse({ doc: 'Auth flow', file: 'tab.json', summary: 'Arch' }),
+      changesetApply.input.parse({ project: 'Auth flow', file: 'tab.json', summary: 'Arch' }),
     );
     expect(requests).toEqual([
       { operations: 'rm n1\n' },
@@ -65,7 +64,7 @@ describe('changeset apply', () => {
     ] as const) {
       const err = await changesetApply.run!(
         ctx,
-        changesetApply.input.parse({ doc: 'd', file }),
+        changesetApply.input.parse({ project: 'd', file }),
       ).catch((e: unknown) => e);
       expect(err).toBeInstanceOf(VerbRefusal);
       expect(err).toMatchObject({ status: 400, message: `can't tell what ${named} holds` });
@@ -76,28 +75,20 @@ describe('changeset apply', () => {
 describe('the element verbs', () => {
   it('send their words as one operation line', async () => {
     const { requests, api } = recording();
-    const connect = elementVerbs.find((v) => v.id === 'element.connect')!;
-    await connect.run!(
+    const set = elementVerbs.find((v) => v.id === 'element.set')!;
+    await set.run!(
       contextOf(api),
-      connect.input.parse({
-        doc: 'Auth flow',
-        words: ['n1', 'n2', 'label=calls it'],
+      set.input.parse({
+        project: 'Auth flow',
+        words: ['n1', 'label=Team load'],
         dryRun: false,
       }),
     );
-    expect(requests).toEqual([{ operations: 'connect n1 -> n2 label="calls it"' }]);
+    expect(requests).toEqual([{ operations: 'set n1 label="Team load"' }]);
   });
 
-  it('are seven, rm destructive, and every example parses', () => {
-    expect(elementVerbs.map((v) => v.id)).toEqual([
-      'element.add',
-      'element.set',
-      'element.rm',
-      'element.move',
-      'element.connect',
-      'element.insert',
-      'element.wrap',
-    ]);
+  it('are set and rm, rm destructive, and every example parses', () => {
+    expect(elementVerbs.map((v) => v.id)).toEqual(['element.set', 'element.rm']);
     expect(elementVerbs.filter((v) => v.behaviour === 'destructive').map((v) => v.id)).toEqual([
       'element.rm',
     ]);
@@ -127,7 +118,7 @@ describe('tab diff', () => {
     const api = fakeApi({ ...library, ...tabsOfA, [TAB]: tabAnswer(now, 6) });
     const out = await tabDiff.run!(
       contextOf(api, [], [], { copies }),
-      tabDiff.input.parse({ doc: 'Auth flow', since: '4', budget: '500' }),
+      tabDiff.input.parse({ project: 'Auth flow', since: '4', budget: '500' }),
     );
     expect(out.text).toContain('n2');
     expect(out.text).toContain('"A"');
@@ -135,7 +126,7 @@ describe('tab diff', () => {
     expect(tabDiff.json!(out)).toBe(out.json);
     expect(await copies.revisions(DOC_A, 'tab-one-0000')).toEqual([4, 6]);
     const whole = await tabDiff.run!(contextOf(api, [], [], { copies }), {
-      doc: 'Auth flow',
+      project: 'Auth flow',
       since: 4,
     });
     expect(whole.text).toBe(out.text);
@@ -146,7 +137,7 @@ describe('tab diff', () => {
     await copies.record(DOC_A, 'tab-one-0000', { rev: 2, tab: plainTab([]) });
     const api = fakeApi({ ...library, ...tabsOfA });
     const err = await tabDiff.run!(contextOf(api, [], [], { copies }), {
-      doc: 'Auth flow',
+      project: 'Auth flow',
       since: 4,
     }).catch((e: unknown) => e);
     expect(err).toMatchObject({
@@ -155,7 +146,7 @@ describe('tab diff', () => {
       lines: ['read copies: rev 2'],
       hint: 'liveplanner tab view "Auth flow" --tab "Overview"',
     });
-    const none = await tabDiff.run!(contextOf(api), { doc: 'Auth flow', since: 4 }).catch(
+    const none = await tabDiff.run!(contextOf(api), { project: 'Auth flow', since: 4 }).catch(
       (e: unknown) => e,
     );
     expect(none).toMatchObject({ lines: ['no read copies of this tab'] });
@@ -166,7 +157,7 @@ describe('tab diff', () => {
     await copies.record(DOC_A, 'tab-one-0000', { rev: 4, tab: plainTab([]) });
     const api = fakeApi({ ...library, ...tabsOfA, [TAB]: { tab: plainTab([]) } });
     await expect(
-      tabDiff.run!(contextOf(api, [], [], { copies }), { doc: 'Auth flow', since: 4 }),
+      tabDiff.run!(contextOf(api, [], [], { copies }), { project: 'Auth flow', since: 4 }),
     ).rejects.toThrow('the tab read carried no revision');
   });
 });
@@ -187,7 +178,7 @@ describe('tab view and read copies', () => {
     const logs: string[] = [];
     await tabView.run!(
       contextOf(api, [], logs, { copies }),
-      tabView.input.parse({ doc: 'Auth flow' }),
+      tabView.input.parse({ project: 'Auth flow' }),
     );
     expect(await copies.latest(DOC_A, 'tab-one-0000')).toEqual({ rev: 5, tab });
     expect(logs.at(-1)).toBe(`copy recorded ${DOC_A}/tab-one-0000 rev 5`);
@@ -207,7 +198,7 @@ describe('tab view and read copies', () => {
     });
     await tabView.run!(
       contextOf(api, [], [], { copies }),
-      tabView.input.parse({ doc: 'Auth flow' }),
+      tabView.input.parse({ project: 'Auth flow' }),
     );
     expect(await copies.revisions(DOC_A, 'tab-one-0000')).toEqual([5]);
     const logs: string[] = [];
@@ -219,7 +210,7 @@ describe('tab view and read copies', () => {
     });
     await tabView.run!(
       contextOf(stale, [], logs, { copies }),
-      tabView.input.parse({ doc: 'Auth flow' }),
+      tabView.input.parse({ project: 'Auth flow' }),
     );
     expect(logs.at(-1)).toBe(`copy skipped ${DOC_A}/tab-one-0000 view rev 7`);
     const unversioned = fakeApi({
@@ -230,7 +221,7 @@ describe('tab view and read copies', () => {
     });
     await tabView.run!(
       contextOf(unversioned, [], [], { copies }),
-      tabView.input.parse({ doc: 'Auth flow' }),
+      tabView.input.parse({ project: 'Auth flow' }),
     );
     expect(await copies.revisions(DOC_A, 'tab-one-0000')).toEqual([5]);
   });
@@ -241,16 +232,16 @@ describe('tab view and read copies', () => {
     const copies = memoryCopies();
     const out = await tabView.run!(
       contextOf(api, [], [], { copies }),
-      tabView.input.parse({ doc: 'Auth flow', raw: true }),
+      tabView.input.parse({ project: 'Auth flow', raw: true }),
     );
     expect(tabView.text!(out)).toEqual([JSON.stringify(tab)]);
     expect(await copies.revisions(DOC_A, 'tab-one-0000')).toEqual([5]);
     expect(
-      await tabView.run!(contextOf(api), tabView.input.parse({ doc: 'Auth flow', raw: true })),
+      await tabView.run!(contextOf(api), tabView.input.parse({ project: 'Auth flow', raw: true })),
     ).toEqual({ json: tab });
     const bare = fakeApi({ ...library, ...tabsOfA, [TAB]: { tab } });
     expect(
-      await tabView.run!(contextOf(bare), tabView.input.parse({ doc: 'Auth flow', raw: true })),
+      await tabView.run!(contextOf(bare), tabView.input.parse({ project: 'Auth flow', raw: true })),
     ).toEqual({ json: null });
   });
 });

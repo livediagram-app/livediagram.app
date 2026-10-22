@@ -2,7 +2,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { TagsList } from '@liveplanner/api-schema';
-import { DocumentTagsProvider, useDocumentTags } from './DocumentTagsProvider';
+import { ProjectTagsProvider, useProjectTags } from './ProjectTagsProvider';
 import { TagPicker } from './TagPicker';
 
 // docs/specs/013-workspace/tags.md "The tag picker".
@@ -12,7 +12,7 @@ const api = vi.hoisted(() => ({
   apiCreateTag: vi.fn(async () => undefined),
   apiUpdateTag: vi.fn(async () => undefined),
   apiDeleteTag: vi.fn(async () => undefined),
-  apiSetDocumentTag: vi.fn(async () => undefined),
+  apiSetProjectTag: vi.fn(async () => undefined),
 }));
 vi.mock('@/lib/api/tags', () => ({ ...api, tagErrorCopy: () => 'Could not save.' }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -25,7 +25,7 @@ beforeEach(() => {
       { id: 't1', name: 'Design', colour: 'blue', createdAt: 1 },
       { id: 't2', name: 'Research', colour: 'green', createdAt: 2 },
     ],
-    links: [{ tagId: 't1', documentId: 'd1' }],
+    links: [{ tagId: 't1', projectId: 'd1' }],
   });
 });
 afterEach(() => {
@@ -33,9 +33,9 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-// What the document carries, as the provider sees it.
+// What the project carries, as the provider sees it.
 function Carried() {
-  const { tagsFor } = useDocumentTags();
+  const { tagsFor } = useProjectTags();
   return (
     <output data-testid="carried">
       {tagsFor('d1')
@@ -50,10 +50,10 @@ async function open() {
   document.body.appendChild(anchor);
   const onClose = vi.fn();
   render(
-    <DocumentTagsProvider ownerId="u1">
+    <ProjectTagsProvider ownerId="u1">
       <Carried />
-      <TagPicker target={{ documentId: 'd1', documentName: 'Roadmap', anchor }} onClose={onClose} />
-    </DocumentTagsProvider>,
+      <TagPicker target={{ projectId: 'd1', projectName: 'Roadmap', anchor }} onClose={onClose} />
+    </ProjectTagsProvider>,
   );
   await screen.findByRole('checkbox', { name: /Design/ });
   return { onClose };
@@ -62,7 +62,7 @@ async function open() {
 const carried = () => screen.getByTestId('carried').textContent;
 
 describe('TagPicker', () => {
-  it('is named for the document and ticks the tags it carries', async () => {
+  it('is named for the project and ticks the tags it carries', async () => {
     await open();
     expect(screen.getByRole('dialog', { name: 'Tags for Roadmap' })).toBeTruthy();
     expect(screen.getByRole('checkbox', { name: /Design/ }).getAttribute('aria-checked')).toBe(
@@ -79,7 +79,7 @@ describe('TagPicker', () => {
     expect(carried()).toBe('Design,Research');
     fireEvent.click(screen.getByRole('checkbox', { name: /Design/ }));
     expect(carried()).toBe('Research');
-    await waitFor(() => expect(api.apiSetDocumentTag).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(api.apiSetProjectTag).toHaveBeenCalledTimes(2));
   });
 
   it('narrows by typing and offers Create for a new name', async () => {
@@ -152,11 +152,11 @@ describe('TagPicker with no tags', () => {
     const anchor = document.createElement('button');
     document.body.appendChild(anchor);
     render(
-      <DocumentTagsProvider ownerId="u1">
-        <TagPicker target={{ documentId: 'd1', documentName: '', anchor }} onClose={() => {}} />
-      </DocumentTagsProvider>,
+      <ProjectTagsProvider ownerId="u1">
+        <TagPicker target={{ projectId: 'd1', projectName: '', anchor }} onClose={() => {}} />
+      </ProjectTagsProvider>,
     );
     expect(await screen.findByText('No tags yet')).toBeTruthy();
-    expect(screen.getByRole('dialog', { name: 'Tags for Untitled document' })).toBeTruthy();
+    expect(screen.getByRole('dialog', { name: 'Tags for Untitled project' })).toBeTruthy();
   });
 });

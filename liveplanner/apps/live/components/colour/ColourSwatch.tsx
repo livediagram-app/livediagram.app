@@ -5,7 +5,7 @@
 // square with a slash. Every colour picker draws its colours with it.
 import { forwardRef, type ButtonHTMLAttributes } from 'react';
 import { Tooltip } from '@liveplanner/ui';
-import { isLightColor } from '@liveplanner/document';
+import { isLightColor } from '@liveplanner/project';
 
 type Props = {
   label: string;

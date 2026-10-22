@@ -1,4 +1,4 @@
-import { elementFingerprint, type Element, type Tab } from '@liveplanner/document';
+import { elementFingerprint, type Element, type Tab } from '@liveplanner/project';
 import type { ChangesetBase, ChangesetConflict } from '@liveplanner/api-schema';
 
 // The base check (docs/specs/024-agents/agent-changesets.md "Conflicts"): what the agent read

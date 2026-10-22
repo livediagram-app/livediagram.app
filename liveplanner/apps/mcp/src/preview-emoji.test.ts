@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import {
   emojiGlyphsOf,
   previewEmoji,

@@ -5,9 +5,9 @@ import { mergeEvents, purgeEventsForSource, reconcileEvents } from './merge-even
 function event(id: string, occurredAt: number, over: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
     id,
-    sourceType: 'document',
+    sourceType: 'project',
     sourceId: `d-${id}`,
-    eventType: 'document_updated',
+    eventType: 'project_updated',
     title: id,
     description: null,
     occurredAt,
@@ -51,7 +51,7 @@ describe('mergeEvents', () => {
 // authoritative for the stretch it covers, hands off below it.
 describe('reconcileEvents', () => {
   it('drops a loaded event the page no longer holds inside its window', () => {
-    // The reader deleted document b; the worker's cascade took its card.
+    // The reader deleted project b; the worker's cascade took its card.
     const loaded = [event('a', 30), event('b', 20), event('c', 10)];
     const next = reconcileEvents(loaded, { events: [event('a', 30), event('c', 10)] });
     expect(next.map((e) => e.id)).toEqual(['a', 'c']);
@@ -111,20 +111,20 @@ describe('purgeEventsForSource', () => {
   it('drops events keyed on the id and events whose snapshot references it', () => {
     const loaded = [
       event('created', 30, { sourceId: 'd-9' }),
-      // A comment: its own id as the source, the document in the snapshot.
-      event('comment', 20, { sourceId: 'c-1', snapshot: { documentId: 'd-9' } }),
-      event('other', 10, { sourceId: 'd-2', snapshot: { documentId: 'd-2' } }),
+      // A comment: its own id as the source, the project in the snapshot.
+      event('comment', 20, { sourceId: 'c-1', snapshot: { projectId: 'd-9' } }),
+      event('other', 10, { sourceId: 'd-2', snapshot: { projectId: 'd-2' } }),
     ];
-    expect(purgeEventsForSource(loaded, 'document', 'd-9').map((e) => e.id)).toEqual(['other']);
+    expect(purgeEventsForSource(loaded, 'project', 'd-9').map((e) => e.id)).toEqual(['other']);
   });
 
   it('scopes the purge to one source type', () => {
     const loaded = [event('team', 30, { sourceType: 'team', sourceId: 'd-9' })];
-    expect(purgeEventsForSource(loaded, 'document', 'd-9')).toBe(loaded);
+    expect(purgeEventsForSource(loaded, 'project', 'd-9')).toBe(loaded);
   });
 
   it('returns the same array when nothing matched', () => {
     const loaded = [event('a', 30)];
-    expect(purgeEventsForSource(loaded, 'document', 'nope')).toBe(loaded);
+    expect(purgeEventsForSource(loaded, 'project', 'nope')).toBe(loaded);
   });
 });

@@ -31,7 +31,7 @@ const ListChecksIcon = lucideGlyph(lucideListChecks, 16);
 // Each kind's icon: what its value looks like.
 export const CUSTOM_KIND_ICONS: Record<CustomFieldKind, React.ReactNode> = {
   text: <TypeIcon />,
-  longtext: <PlanTypeGlyph glyph="document" size={16} />,
+  longtext: <PlanTypeGlyph glyph="project" size={16} />,
   number: <HashIcon />,
   currency: <PlanTypeGlyph glyph="coin" size={16} />,
   date: <PlanTypeGlyph glyph="calendar" size={16} />,

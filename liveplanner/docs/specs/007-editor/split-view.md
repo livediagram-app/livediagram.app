@@ -6,8 +6,8 @@ editor's toolbars and panels follow the person to whichever side they work in.
 
 ## Why
 
-Tabs hold related work: the context diagram and the container diagram, the retro board and the
-action plan, the draft and the reference. Comparing two tabs today means flicking between them and
+Tabs hold related work: the backlog board and the sprint board, the retro board and the action
+plan, the budget sheet and the dashboard that charts it. Comparing two tabs today means flicking between them and
 holding one in your head. Side by side puts both on screen, with the gesture people already know
 from browsers and code editors: drag the tab to where you want it.
 
@@ -20,10 +20,10 @@ from browsers and code editors: drag the tab to where you want it.
   qualify; 1,280 px and 1,366 px laptops, tablets and phones, where two editors read as cramped,
   keep one tab at a time. A window resized below the floor hides the split; widening it again
   brings it back.
-- **Two panes, one editor.** Each pane shows one tab of the same document and keeps its side. The
+- **Two panes, one editor.** Each pane shows one tab of the same project and keeps its side. The
   editor (canvas, palette, Explorer, panels, zoom) sits in the pane of the active tab. The other
   pane draws its tab live. Moving between the panes moves the editor, never the tabs.
-- **One header, one footer.** The site header (document title, share, account) runs across the top
+- **One header, one footer.** The site header (project title, share, account) runs across the top
   of both panes, and the tab bar (tabs, Search, Settings, System) across the bottom, as they do
   with one tab.
 - **No quick style panel.** The [quick style panel](../008-canvas/quick-style-panel.md) stands down
@@ -31,8 +31,8 @@ from browsers and code editors: drag the tab to where you want it.
   the element's menu.
 - **Steps aside, is kept.** Zen mode and embeds hide the split; leaving them brings it
   back. A window that becomes too narrow hides it the same way.
-- **Per browser.** The split is remembered on this device, per document. It is not shared with
-  collaborators and not part of the document.
+- **Per browser.** The split is remembered on this device, per project. It is not shared with
+  collaborators and not part of the project.
 
 ## Opening
 
@@ -57,7 +57,7 @@ Which tab goes where:
 - With a split already open, the drop zone is the right pane (**Show _name_ Here**), and a drop
   puts the dragged tab there. If the editor was in the right pane it now edits that tab. Dropping
   the left pane's tab trades the two sides. Dropping the right pane's own tab does nothing.
-- A document with one tab offers nothing to drop on.
+- A project with one tab offers nothing to drop on.
 
 **From the menu.** The tab's ⋯ menu (and the canvas right-click menu) has **Side by Side** in its
 quick-action row: it does what dragging the active tab does. With a split open the same button
@@ -79,7 +79,7 @@ reads **Close Side by Side**.
 
 ## The other pane
 
-- **Body:** the tab drawn with the export renderer, in the viewer's appearance, with the document's
+- **Body:** the tab drawn with the export renderer, in the viewer's appearance, with the project's
   Plan items and the tab's photos, on the tab's own paper and pattern (in the mode it opens in
   here), laid out in canvas space exactly as the editor lays it out. A Form tab is
   its form as respondents see it, as a [tab window](../009-elements/tab-window.md) draws them. On
@@ -127,7 +127,7 @@ on them is never taken as a resize.
 
 The seam between the panes is a separator: drag it, or focus it and use the arrow keys (24 px;
 96 px with Shift; Home and End for the extremes). Double-click restores halves. The width is a
-fraction of the window, remembered once for every document. The editor keeps whatever it was
+fraction of the window, remembered once for every project. The editor keeps whatever it was
 centred on when its pane opens, closes or is resized.
 
 ## How the editor fits in its pane
@@ -163,7 +163,7 @@ motion.
 
 ## Performance
 
-- The other pane, the SVG renderer and the icon catalogues load with the first split; a document
+- The other pane, the SVG renderer and the icon catalogues load with the first split; a project
   never split pays nothing for them.
 - Rendering a tab's SVG takes ~0.5 ms for 50 elements, ~4 ms for 500 and ~9 ms for 2,000 (measured
   in jsdom). It reruns only when that tab, the appearance or the Plan items change.

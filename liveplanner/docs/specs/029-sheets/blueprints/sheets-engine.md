@@ -66,8 +66,8 @@ src/store.ts               SheetWrite, applySheetWrite, inverseSheetWrite, merge
 src/chart-data.ts          sheetChartTable (a range as categories and series), regionAround, CHART_*_MAX
 src/store-layout.ts        applyLayoutChange (insert, delete, move, order, size, hide, freeze, merge(s), filter, options)
 src/validate.ts            validateWrite(sheet, write) -> ok | rejection; validateSheetCreate
-src/write-caps.ts          writesCapsProblem(sheet, writes, documentCells) -> sheet_full | sheet_too_large |
-                           sheets_full | null (a whole split change against the caps); documentCellCount
+src/write-caps.ts          writesCapsProblem(sheet, writes, projectCells) -> sheet_full | sheet_too_large |
+                           sheets_full | null (a whole split change against the caps); projectCellCount
 src/commands.ts            typeInto, typeIntoRanges, clearRanges, formatRanges, borderRange, merge/unmerge,
                            fillRange, fillFromEdge, splitWrite, stepDecimals, boundedRange
 src/commands-axis.ts       insert, append, delete, hide, resize, move, freeze, sort, filter (layout writes)
@@ -414,9 +414,9 @@ type SheetWrite =
 size, decimals), `axis_id_invalid` (pattern, or an insert reusing a live id), `title_invalid` (empty or >
 `SHEET_TITLE_MAX`), `merge_invalid` (overlap, or > `SHEET_MERGES_MAX`: judged on what the write did to the merges, whether or not it grew anything, whenever the merges or the rows and columns under them changed; a merge problem the sheet already had refuses only a write that adds a merge, so a sheet an older sort broke still takes typed values), `filter_invalid`, `write_too_large`
 (> `SHEET_WRITE_CELLS_MAX` cells or > `SHEET_WRITE_BYTES_MAX`). `validateSheetCreate` checks a whole sheet the
-same way. `writesCapsProblem(sheet, writes, documentCells)` (`write-caps.ts`) applies a change's writes in order
+same way. `writesCapsProblem(sheet, writes, projectCells)` (`write-caps.ts`) applies a change's writes in order
 and answers the cap the result passes: `sheet_full` or `sheet_too_large` by `sheetProblem`, `sheets_full` when
-the cells it adds take `documentCells` past `DOCUMENT_CELLS_MAX`; a change that grows nothing (cells, bytes, rows,
+the cells it adds take `projectCells` past `PROJECT_CELLS_MAX`; a change that grows nothing (cells, bytes, rows,
 columns) is never refused.
 
 ## Clipboard, CSV, fill, sort, filter, find
@@ -537,8 +537,8 @@ Every path is under `packages/sheets/src/`.
 | `SHEET_COLS_MAX`        | 200                                | Spec; A to GR                                             |
 | `SHEET_CELLS_MAX`       | 50000                              | Spec; bounds the GET and the recalc                       |
 | `SHEET_BYTES_MAX`       | 4194304                            | Spec; 4 MB of stored cells                                |
-| `DOCUMENT_SHEETS_MAX`   | 200                                | Spec                                                      |
-| `DOCUMENT_CELLS_MAX`    | 200000                             | Spec                                                      |
+| `PROJECT_SHEETS_MAX`   | 200                                | Spec                                                      |
+| `PROJECT_CELLS_MAX`    | 200000                             | Spec                                                      |
 | `INPUT_MAX`             | 10000                              | Spec; characters                                          |
 | `FORMULA_MAX`           | 8000                               | Spec; characters                                          |
 | `FORMULA_DEPTH_MAX`     | 64                                 | Spec; nesting                                             |

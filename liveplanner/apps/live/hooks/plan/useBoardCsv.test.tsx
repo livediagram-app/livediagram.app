@@ -107,7 +107,7 @@ describe('Import CSV…', () => {
     expect(await importBoardCsv(plan, setup, 'Title\tStatus\nOne\tDone\n')).toBe('Added 1 card');
   });
 
-  it('adds only what the document has room for', async () => {
+  it('adds only what the project has room for', async () => {
     const items = new Map(
       Array.from({ length: ITEMS_MAX - 1 }, (_, i) => [`x${i}`, { ...card, id: `x${i}` }] as const),
     );

@@ -36,7 +36,7 @@ import { endWorkbenchAccess } from '../workbench-end';
 import { readBody, type RouteContext } from './context';
 import { pairingUrlOf, workbenchRateLimited } from './workbench-ticket-route';
 
-// POST /api/workbench/pairing-requests: `workbench pair` asks, by token, for one scope (absent: `document`).
+// POST /api/workbench/pairing-requests: `workbench pair` asks, by token, for one scope (absent: `project`).
 export async function openPairing(ctx: RouteContext): Promise<Response> {
   const token = ctx.token;
   const ownerId = ctx.resolveOwner();
@@ -47,7 +47,7 @@ export async function openPairing(ctx: RouteContext): Promise<Response> {
   const parsed = parseWorkbenchOrigin(typeof body.origin === 'string' ? body.origin : '');
   if (!parsed.ok) return json({ error: 'invalid_origin' }, { status: 400 });
   const origin = parsed.origin;
-  const scope = body.scope ?? 'document';
+  const scope = body.scope ?? 'project';
   if (!isWorkbenchScope(scope))
     return json({ error: 'invalid_value', message: 'invalid scope' }, { status: 400 });
 

@@ -1,4 +1,4 @@
-import { seededRandom } from '@liveplanner/document';
+import { seededRandom } from '@liveplanner/project';
 import {
   BLANK_TEMPLATES,
   TEMPLATES,
@@ -15,7 +15,7 @@ import {
 
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
 // the editor ships in Plan, each a link that creates that project straight away (/new?template=<kind>,
-// docs/specs/007-editor/new-document-route.md), laid out as the editor's template step lays them
+// docs/specs/007-editor/new-project-route.md), laid out as the editor's template step lays them
 // out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (the Plan blanks and nothing
 // else: Blank Plan, Blank Spreadsheet and Blank Form), then one shelf per category. The data half lives here
 // so the lists and the filters can be tested without rendering the section.

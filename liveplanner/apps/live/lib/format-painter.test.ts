@@ -1,4 +1,4 @@
-import type { ArrowElement, BoxedElement, TextRun } from '@liveplanner/document';
+import type { ArrowElement, BoxedElement, TextRun } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import { applyPaint, paintableArrowFields, paintableBoxedFields } from './format-painter';
 

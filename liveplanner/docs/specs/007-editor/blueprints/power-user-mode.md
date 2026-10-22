@@ -21,11 +21,11 @@ Scope, by file:
 | `apps/live/app/explorer/ExplorerShell.tsx`                                                                 | Passes `powerUser` to its bottom bar                                             |
 | `apps/live/components/chrome/ChromeControls.tsx`                                                           | `TabBar` and the Explorer pass `powerUser` through to the toggle                 |
 | `apps/live/components/chrome/RoleIndicator.tsx`                                                            | `RolePill` (title bar) and `RoleStatusIcon` (status bar)                         |
-| `apps/live/app/document/[id]/useViewPreview.ts`                                                            | `viewPreview`, `canToggleRole`, `toggleViewPreview`                              |
-| `apps/live/app/document/[id]/useRoleIndicator.ts`                                                          | Role in force, owner name and toggle, for the pill and the icon                  |
-| `apps/live/app/document/[id]/useEditorState.ts`                                                            | `isReadOnly` includes the preview; wires the offer and the shortcut count        |
+| `apps/live/app/project/[id]/useViewPreview.ts`                                                             | `viewPreview`, `canToggleRole`, `toggleViewPreview`                              |
+| `apps/live/app/project/[id]/useRoleIndicator.ts`                                                           | Role in force, owner name and toggle, for the pill and the icon                  |
+| `apps/live/app/project/[id]/useEditorState.ts`                                                             | `isReadOnly` includes the preview; wires the offer and the shortcut count        |
 | `apps/live/hooks/persistence/useEditorPreferences.ts`                                                      | `prefsSettled`: the server copy merged, or failed to arrive                      |
-| `apps/live/app/document/[id]/EditorView.tsx`                                                               | Provides the flag; places the pill / icon; gates the notices                     |
+| `apps/live/app/project/[id]/EditorView.tsx`                                                                | Provides the flag; places the pill / icon; gates the notices                     |
 | `apps/live/components/chrome/EditorHeader.tsx`                                                             | `rolePill` slot after the visibility badge                                       |
 | `apps/live/components/chrome/TopCenterChrome.tsx`                                                          | The visitor owner / role badge is removed                                        |
 | `apps/live/components/chrome/TabBar.tsx`                                                                   | `roleIcon` slot first; "Tabs" label and control labels under the flag            |
@@ -67,7 +67,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | The one flag     | `useMinimalChrome()`, `MinimalChromeProvider`            | How a surface reads it                                         |
 | Offer            | `PowerUserOffer` (telemetry type), `powerUserOfferShown` | The once-ever toast                                            |
 | Offer counters   | `OfferCounters` `{ days, lastDay, shortcuts }`           | Device-local usage counts                                      |
-| Editing session  | `recordEditingSession(counters, day)`                    | An editable document opened; counts once per `day`             |
+| Editing session  | `recordEditingSession(counters, day)`                    | An editable project opened; counts once per `day`              |
 | Day              | `localDayKey(date)`                                      | `YYYY-MM-DD` in local time (D3)                                |
 | Shortcut used    | `recordShortcut(counters)`, `onShortcutUsed`             | A key the editor shortcut handler claimed (D4)                 |
 | Role pill        | `RolePill`                                               | Title-bar pill: Editing / Viewing, owner in its Tooltip        |
@@ -92,7 +92,6 @@ const POWER_USER_PRESET = {
   formTourSeen: { formTourSeen: true },
   pagesTourSeen: { pagesTourSeen: true },
   elementToursSeen: { elementToursSeen: true },
-  aiSuggestedPrompts: { aiSuggestedPrompts: false },
   minimalChrome: { minimalChrome: true },
 } as const satisfies Record<string, Partial<UserPreferences>>;
 ```
@@ -129,13 +128,13 @@ provider, so the Explorer page and `/new` are unaffected.
 
 `OfferCounters` in `localStorage` under `liveplanner:power-user-offer:v1`.
 
-| #   | Event                                  | Guard                                                                 | Effect                                                                     |
-| --- | -------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------- |
-| O1  | preferences settled, document editable | once per page load                                                    | `recordEditingSession(c, localDayKey(now))`; persist; evaluate             |
-| O2  | `onShortcutUsed`                       |                                                                       | `recordShortcut(c)`; persist; evaluate                                     |
-| O3  | evaluate                               | `offerDue(c)` and `offerEligible(prefs, ctx)` and not shown this page | show the toast; write `powerUserOfferShown: true` (synced); `Opened`       |
-| O4  | "Try It"                               |                                                                       | `setPowerUserMode(prefs, true)`; write; `Used` + `Toggled PowerUserModeOn` |
-| O5  | "No Thanks" or close                   |                                                                       | `Declined`; nothing else                                                   |
+| #   | Event                                 | Guard                                                                 | Effect                                                                     |
+| --- | ------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| O1  | preferences settled, project editable | once per page load                                                    | `recordEditingSession(c, localDayKey(now))`; persist; evaluate             |
+| O2  | `onShortcutUsed`                      |                                                                       | `recordShortcut(c)`; persist; evaluate                                     |
+| O3  | evaluate                              | `offerDue(c)` and `offerEligible(prefs, ctx)` and not shown this page | show the toast; write `powerUserOfferShown: true` (synced); `Opened`       |
+| O4  | "Try It"                              |                                                                       | `setPowerUserMode(prefs, true)`; write; `Used` + `Toggled PowerUserModeOn` |
+| O5  | "No Thanks" or close                  |                                                                       | `Declined`; nothing else                                                   |
 
 - `recordEditingSession`: if `day === lastDay`, unchanged; else `days + 1`, `lastDay = day`.
 - `offerDue(c) = c.days >= POWER_USER_OFFER_DAYS || c.shortcuts >= POWER_USER_OFFER_SHORTCUTS`.
@@ -378,7 +377,7 @@ export function AppearanceToggle(props: { labelled?: boolean; quick?: boolean })
 | Settings: Minimal chrome row absent while off             | `settings-catalogue.test.ts`                                   |
 | Settings: mode row writes the preset                      | same                                                           |
 | Delete and Backspace delete the selection; count shortcut | `hooks/canvas/useEditorKeyboardShortcuts.dom.test.tsx` (jsdom) |
-| Toggle for owner and edit link, none for view link        | `app/document/[id]/useViewPreview.test.tsx` (jsdom)            |
+| Toggle for owner and edit link, none for view link        | `app/project/[id]/useViewPreview.test.tsx` (jsdom)             |
 | Role pill: toggle vs static, names, Tooltip label         | `components/chrome/RoleIndicator.test.tsx` (jsdom)             |
 | Toolbars: More touch-only, bin rule, caption, name        | `components/canvas/SelectionPopover.test.tsx` (jsdom)          |
 | Toast offer: actions, no timeout                          | `hooks/ui/useToast.test.tsx` (jsdom)                           |

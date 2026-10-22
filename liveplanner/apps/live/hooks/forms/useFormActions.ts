@@ -1,7 +1,7 @@
 'use client';
 
 // The Form tab's editor actions (docs/specs/030-forms/forms.md "Starting a form", "Building a form"): a starter made
-// into a Form tab (and a Board tab for its responses when the document has none that fits), each builder edit as one
+// into a Form tab (and a Board tab for its responses when the project has none that fits), each builder edit as one
 // tab change and one undo step, and the card type changes a mapping needs. A locked tab refuses every change, as
 // every edit there is.
 import { useCallback, useMemo } from 'react';
@@ -15,7 +15,7 @@ import {
   type FormQuestion,
   type StarterId,
 } from '@liveplanner/forms';
-import { isDefaultTabName, newPlanSheetId, type Tab } from '@liveplanner/document';
+import { isDefaultTabName, newPlanSheetId, type Tab } from '@liveplanner/project';
 import { placeNewSheet } from '@/lib/sheet-seeds';
 import { newCustomFieldId, newItemTypeId, type ItemTypeDef } from '@liveplanner/items';
 import type { ItemTypesSlice } from '@/hooks/plan/useItemTypes';
@@ -57,7 +57,7 @@ export type FormActions = {
   // name (withAutoBoardName), one step.
   setDestinationType: (typeId: string) => void;
   // Responses Go To's Board or Sheet (docs/specs/030-forms/forms.md "Responses to a Sheet"): to a Sheet, the given one
-  // (or the document's first); to a Board, the sheet let go (the board destination was kept).
+  // (or the project's first); to a Board, the sheet let go (the board destination was kept).
   setResponsesTo: (
     to: { kind: 'board' } | { kind: 'sheet'; tabId: string; sheetId: string },
   ) => void;
@@ -314,7 +314,7 @@ export function useFormActions({
     const { sheet: _gone, ...form } = readForm(formTab.form) ?? blankForm(formTab.name);
     const tab = responsesBoardTab(form.heading, formTab, [...names]);
     const setup = boardsOf(tab)[0]!.setup;
-    // The form's type when it has one; else the document's first; else a new Response type.
+    // The form's type when it has one; else the project's first; else a new Response type.
     const typeId =
       form.destination?.typeId ?? slice.types[0]?.id ?? newItemTypeId('Response', slice.types);
     if (!slice.types.some((t) => t.id === typeId))

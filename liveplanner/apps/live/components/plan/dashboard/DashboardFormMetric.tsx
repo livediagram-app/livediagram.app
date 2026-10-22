@@ -2,12 +2,12 @@
 
 // A figure from a form in a Dashboard slot (docs/specs/026-plan/plan-tabs.md "Form Metrics"): its responses, the new
 // ones, whether it takes responses, its responses against its limit, when it closes, or its link with Copy, read live
-// from the form's link as the board's Form strip reads it (never marking anything seen). The form is the document's
-// first as it is placed; an Editor changes it from the card's form name when the document has more than one, and a
+// from the form's link as the board's Form strip reads it (never marking anything seen). The form is the project's
+// first as it is placed; an Editor changes it from the card's form name when the project has more than one, and a
 // slot whose form was deleted offers Clear Slot. Anyone may read it.
 import { useEffect, useState } from 'react';
 import { readForm } from '@liveplanner/forms';
-import type { FormMetricContent } from '@liveplanner/document';
+import type { FormMetricContent } from '@liveplanner/project';
 import { Select, lucideGlyph } from '@liveplanner/ui';
 import { lucideClipboardList } from '@liveplanner/icons/lucide';
 import { useFormBoard } from '@/components/forms/form-board-context';
@@ -107,7 +107,7 @@ function FormMetricBody({
   const { canEdit, actions } = useDashboard();
   const api = useFormBoard();
   const link = useFormLink({
-    documentId: api?.documentId ?? null,
+    projectId: api?.projectId ?? null,
     tabId,
     ownerId: api?.ownerId ?? '',
     share: api?.share ?? null,
@@ -200,7 +200,7 @@ function FormMetricBody({
       ) : null}
       <div className="mt-auto flex min-w-0 items-center gap-2">
         <span className={`min-w-0 flex-1 truncate text-[11px] ${MUTED}`}>{shown.line}</span>
-        {/* The form it reads: an Editor changes it while the document has more than one. */}
+        {/* The form it reads: an Editor changes it while the project has more than one. */}
         {canEdit && forms.length > 1 ? (
           <FormChoice
             forms={forms}

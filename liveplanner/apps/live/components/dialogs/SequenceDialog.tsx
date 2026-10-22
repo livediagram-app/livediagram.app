@@ -20,7 +20,7 @@ import {
   type SequenceElementMessage,
   type SequenceElementParticipant,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogTabs } from '@/components/dialogs/DialogTabs';
 import { useLatest } from '@/hooks/ui/useLatest';

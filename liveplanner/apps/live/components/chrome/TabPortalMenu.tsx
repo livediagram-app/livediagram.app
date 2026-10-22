@@ -17,7 +17,7 @@ import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/Porta
 import { MenuToolbar, MenuToolButton } from '@/components/primitives/MenuTiles';
 import { PasteMenuIcon } from '@/components/palette/context-menu-icons';
 import {
-  AddTabToDocumentDialog,
+  AddTabToProjectDialog,
   AddTabToFolderDialog,
 } from '@/components/dialogs/TabOrganiseDialogs';
 import type { CanvasMenuActions, CanvasMenuTarget } from './TabBar';
@@ -30,7 +30,7 @@ import {
 } from '@liveplanner/ui';
 import { useSplitViewContext } from '@/components/split/SplitViewContext';
 
-// The unified tab / canvas portal menu (actions, copy-to-document, and
+// The unified tab / canvas portal menu (actions, copy-to-project, and
 // folder sub-views). Extracted from TabBar.tsx, where it had grown into a
 // ~520-line component buried in the file. Pure prop-based component.
 export function PortalMenu({
@@ -49,7 +49,7 @@ export function PortalMenu({
   planTab = false,
   dataRows,
   selfId,
-  otherDocuments,
+  otherProjects,
   folderNames,
   currentFolder,
   onMoveToFolder,
@@ -73,16 +73,16 @@ export function PortalMenu({
   onClearContent: () => void;
   onImport: () => void;
   onExport: () => void;
-  onCopyTo: (targetDocumentId: string) => void;
+  onCopyTo: (targetProjectId: string) => void;
   onToggleLock: () => void;
   locked: boolean;
-  // A Plan tab: Add to Document is off, its cards belong to this document's items.
+  // A Plan tab: Add to Project is off, its cards belong to this project's items.
   planTab?: boolean;
-  // A Board or Sheet tab's own Import, in place of the document's, and its Download CSV after Export (tab-data-rows.ts).
+  // A Board or Sheet tab's own Import, in place of the project's, and its Download CSV after Export (tab-data-rows.ts).
   dataRows?: TabDataRows;
-  // Viewer identity for the Add to Document dialog's thumbnail fetches.
+  // Viewer identity for the Add to Project dialog's thumbnail fetches.
   selfId: string;
-  otherDocuments: { id: string; name: string; savedAt?: number }[];
+  otherProjects: { id: string; name: string; savedAt?: number }[];
   folderNames: string[];
   currentFolder: string | null;
   onMoveToFolder: (folderName: string) => void;
@@ -94,8 +94,8 @@ export function PortalMenu({
   canClearContent: boolean;
 }) {
   // The menu itself lists the verbs (Rename, Duplicate, Clear…); the two
-  // organise pickers — "copyTo" (docs/specs/006-document/tab-document-many-to-many.md, link the tab into another
-  // document) and "folder" (docs/specs/006-document/tab-folders.md, file the tab into a tab-bar folder) —
+  // organise pickers — "copyTo" (docs/specs/006-project/tab-project-many-to-many.md, link the tab into another
+  // project) and "folder" (docs/specs/006-project/tab-folders.md, file the tab into a tab-bar folder) —
   // open as proper centred MODALS in place of the anchored box, so they
   // get room instead of squeezing into the menu. While a modal is up the
   // anchored box unmounts (`ref` goes null), which conveniently disarms
@@ -142,7 +142,7 @@ export function PortalMenu({
   // After the menu mounts, nudge it back on-screen if it overflows any
   // edge (e.g. Tab 1 is near the left and the menu opens left of its
   // anchor). Also re-runs when `view` flips: the "Add to another
-  // document" submenu is wider (w-56 vs w-44) and taller (destination
+  // project" submenu is wider (w-56 vs w-44) and taller (destination
   // list + Back row), so without a fresh measurement the box could
   // overflow the bottom or left edges of the viewport with stale
   // adjust state carried over from the actions view.
@@ -229,7 +229,7 @@ export function PortalMenu({
     return () => document.removeEventListener('pointerdown', handler);
   }, [onClose, anchor]);
   // Escape closes it too — via the shared hook, which registers the same
-  // document-level bubble listener this effect used to open-code.
+  // project-level bubble listener this effect used to open-code.
 
   // Open this (the active) tab side by side, or close the split when one is showing; absent where a
   // split can't open (a phone, a lone tab, no editor around the menu).
@@ -246,9 +246,9 @@ export function PortalMenu({
   // above); dismissing them dismisses the menu.
   if (view === 'copyTo') {
     return (
-      <AddTabToDocumentDialog
+      <AddTabToProjectDialog
         ownerId={selfId}
-        otherDocuments={otherDocuments}
+        otherProjects={otherProjects}
         onPick={onCopyTo}
         onClose={onClose}
       />
@@ -284,7 +284,7 @@ export function PortalMenu({
             <MenuToolButton
               icon={<DuplicateIcon />}
               label="Duplicate"
-              description="Create a copy of this tab in this document."
+              description="Create a copy of this tab in this project."
               onClick={onDuplicate}
             />
             {/* Paste in the tab ⋯ menu: one tab verb among several, so an
@@ -387,9 +387,9 @@ export function PortalMenu({
           <MenuActionRow
             plain
             icon={<MoveIcon />}
-            label="Add to Document"
+            label="Add to Project"
             onClick={() => setView('copyTo')}
-            disabled={otherDocuments.length === 0 || planTab}
+            disabled={otherProjects.length === 0 || planTab}
           />
           <MenuGroupSeparator />
           <MenuActionRow

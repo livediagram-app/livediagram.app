@@ -1,5 +1,5 @@
 import { useEffectEvent, useLayoutEffect, type KeyboardEvent, type RefObject } from 'react';
-import { isFlowchartStep, isMindNode, type Element } from '@liveplanner/document';
+import { isFlowchartStep, isMindNode, type Element } from '@liveplanner/project';
 import { useMindGrow } from '@/components/canvas/MindGrowContext';
 import { insertTextAtCaret } from '@/components/rich-text/rich-text-dom';
 import { claimMindHandoff } from '@/lib/mind-handoff';

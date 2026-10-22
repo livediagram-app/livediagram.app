@@ -13,7 +13,7 @@ const ACME: WorkbenchPairing = {
   tokenId: 'tok1',
   origin: 'https://127.0.0.1:5175',
   name: 'Acme Editor',
-  scope: 'document',
+  scope: 'project',
   pairedAt: NOW - 2 * DAY,
 };
 const UNNAMED: WorkbenchPairing = {
@@ -21,7 +21,7 @@ const UNNAMED: WorkbenchPairing = {
   tokenId: 'tok1',
   origin: 'http://localhost:4000',
   name: null,
-  scope: 'document',
+  scope: 'project',
   pairedAt: NOW - 30_000,
 };
 
@@ -70,7 +70,7 @@ describe('SettingsTokenPairings', () => {
     );
     const { first, second } = rows(screen.getByRole('list', { name: 'Paired workbenches' }));
 
-    expect(within(first).getByText('One document at a time')).toBeTruthy();
+    expect(within(first).getByText('One project at a time')).toBeTruthy();
     expect(within(second).getByText('Whole workspace')).toBeTruthy();
   });
 

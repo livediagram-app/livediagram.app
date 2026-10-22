@@ -11,8 +11,8 @@ import type { TimelineEvent } from '@liveplanner/ui';
 import { TIMELINE_RENDERERS } from './renderers';
 import { OPEN_SETTINGS_EVENT } from '@/lib/open-settings';
 
-vi.mock('@/components/panels/DocumentThumbnail', () => ({
-  DocumentThumbnail: () => null,
+vi.mock('@/components/panels/ProjectThumbnail', () => ({
+  ProjectThumbnail: () => null,
 }));
 
 const ME = 'me';
@@ -21,14 +21,14 @@ const ctx = { viewerId: ME };
 function event(over: Partial<TimelineEvent>): TimelineEvent {
   return {
     id: 'e',
-    sourceType: 'document',
+    sourceType: 'project',
     sourceId: 'd1',
-    eventType: 'document_created',
-    title: 'Document Created',
+    eventType: 'project_created',
+    title: 'Project Created',
     description: 'stored description',
     occurredAt: 1_700_000_000_000,
     actorId: ME,
-    snapshot: { documentId: 'd1', documentName: 'Payments' },
+    snapshot: { projectId: 'd1', projectName: 'Payments' },
     ...over,
   };
 }
@@ -37,8 +37,8 @@ function render(e: TimelineEvent) {
   return TIMELINE_RENDERERS[e.sourceType]!(e, ctx);
 }
 
-describe('document cards', () => {
-  it('titles the card with the document and leaves the reason to the stored title', () => {
+describe('project cards', () => {
+  it('titles the card with the project and leaves the reason to the stored title', () => {
     const r = render(event({}));
     expect(r.subject).toBe('Payments');
     expect(r.label).toBeUndefined();
@@ -48,15 +48,15 @@ describe('document cards', () => {
     expect(r.preview).toBeTruthy();
   });
 
-  it('opens the document on click, except when the row carries no id to open', () => {
+  it('opens the project on click, except when the row carries no id to open', () => {
     expect(render(event({})).onClick).toBeTypeOf('function');
     // A row from an older worker, or one whose snapshot lost its id: the
     // card must not link at nothing.
     const gone = render(
       event({
-        eventType: 'document_created',
-        title: 'Document Created',
-        snapshot: { documentName: 'Old' },
+        eventType: 'project_created',
+        title: 'Project Created',
+        snapshot: { projectName: 'Old' },
       }),
     );
     expect(gone.onClick).toBeUndefined();
@@ -70,7 +70,7 @@ describe('document cards', () => {
         title: 'Comment Added',
         description: 'Per-shard or global?',
         actorId: 'priya',
-        snapshot: { documentId: 'd1', documentName: 'Payments', authorName: 'Priya' },
+        snapshot: { projectId: 'd1', projectName: 'Payments', authorName: 'Priya' },
       }),
     );
     expect(added.description).toBeUndefined();
@@ -92,8 +92,8 @@ describe('document cards', () => {
         eventType: 'action_assigned',
         title: 'Action Assigned',
         snapshot: {
-          documentId: 'd1',
-          documentName: 'Payments',
+          projectId: 'd1',
+          projectName: 'Payments',
           actionName: 'Add the fallback path',
           assigneeName: 'Sam',
         },
@@ -106,7 +106,7 @@ describe('document cards', () => {
         eventType: 'action_completed',
         title: 'Action Completed',
         actorId: 'sam',
-        snapshot: { documentId: 'd1', documentName: 'Payments', actionName: 'Wire up webhooks' },
+        snapshot: { projectId: 'd1', projectName: 'Payments', actionName: 'Wire up webhooks' },
       }),
     );
     expect(completed.description).toBe('Wire up webhooks');
@@ -114,14 +114,14 @@ describe('document cards', () => {
   });
 
   it('says "by you" for the reader’s own edits and names anyone else', () => {
-    const mine = render(event({ eventType: 'document_edited', title: 'Document Updated' }));
+    const mine = render(event({ eventType: 'project_edited', title: 'Project Updated' }));
     expect(mine.meta).toBe('by you');
     const theirs = render(
       event({
-        eventType: 'document_edited',
-        title: 'Document Updated',
+        eventType: 'project_edited',
+        title: 'Project Updated',
         actorId: 'priya',
-        snapshot: { documentId: 'd1', documentName: 'Payments', authorName: 'Priya' },
+        snapshot: { projectId: 'd1', projectName: 'Payments', authorName: 'Priya' },
       }),
     );
     expect(theirs.meta).toBe('by Priya');

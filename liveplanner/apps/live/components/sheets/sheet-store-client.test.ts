@@ -115,7 +115,7 @@ function store(
   }> = {},
 ) {
   return new SheetStore({
-    scope: { documentId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
     self: () => by,
     locale: 'en-GB',
     pushUndo: extra.pushUndo ?? (() => {}),
@@ -432,10 +432,10 @@ describe('the sheet store client', () => {
     await flush();
     expect(srv.api.fetchSheets).toHaveBeenCalledTimes(2);
   });
-  it('keeps one store per document and names refusals', () => {
+  it('keeps one store per project and names refusals', () => {
     forgetSheetStores();
     const deps = {
-      scope: { documentId: 'dX', ownerId: 'o', shareCode: null, tabId: null },
+      scope: { projectId: 'dX', ownerId: 'o', shareCode: null, tabId: null },
       self: () => by,
       locale: 'en',
       pushUndo: () => {},
@@ -460,7 +460,7 @@ describe('a write past one write size', () => {
     const steps: { undo: () => void; redo: () => void }[] = [];
     const toast = vi.fn();
     const s = new SheetStore({
-      scope: { documentId: 'dBig', ownerId: 'o', shareCode: null, tabId: null },
+      scope: { projectId: 'dBig', ownerId: 'o', shareCode: null, tabId: null },
       self: () => by,
       locale: 'en-GB',
       pushUndo: (st) => steps.push(st),
@@ -630,7 +630,7 @@ describe('the sheet store client, edges', () => {
     s.write('sheet0001', cellAt(0, 0, 4));
     await s.settle();
     await flush();
-    expect(toast).toHaveBeenCalledWith('This sheet is no longer in this document');
+    expect(toast).toHaveBeenCalledWith('This sheet is no longer in this project');
     expect(s.sheet('sheet0001')).toBeUndefined();
   });
 
@@ -638,7 +638,7 @@ describe('the sheet store client, edges', () => {
     srv.api.createSheet.mockRejectedValueOnce(new ApiError('sheet create', 404, 'sheet_not_found'));
     s.create({ id: 'sheet0005', tabId: 't1', title: 'Copy', copyOf: 'gone00001' });
     await s.settle();
-    expect(toast).toHaveBeenCalledWith('This sheet is no longer in this document');
+    expect(toast).toHaveBeenCalledWith('This sheet is no longer in this project');
     expect(s.sheet('sheet0005')).toBeUndefined();
   });
 

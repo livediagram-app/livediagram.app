@@ -1,10 +1,10 @@
 'use client';
 
-// A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): reads the range from the document's
+// A chart drawn from a sheet range (docs/specs/029-sheets/sheet.md "Charts"): reads the range from the project's
 // sheet store and hands the chart view the element with that data, again whenever the store moves on. Without the
 // sheets bridge (a read-only render), or while the sheet is not there, the element's own data (the last read) draws.
 import { useEffect, useMemo, useSyncExternalStore, type ReactNode } from 'react';
-import { chartFieldsFromTable, type ShapeElement } from '@liveplanner/document';
+import { chartFieldsFromTable, type ShapeElement } from '@liveplanner/project';
 import { AGENT_LOCALE, sheetChartTable } from '@liveplanner/sheets';
 import { useSheetsBridgeContext, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { sheetStoreOf } from './sheet-store-client';

@@ -75,7 +75,7 @@ export function apiJson<T>(
   return clientFor(env, token).json<T>(path, init);
 }
 
-// A text answer (a document view, docs/specs/024-agents/document-views.md) with its ETag, failing exactly
+// A text answer (a project view, docs/specs/024-agents/project-views.md) with its ETag, failing exactly
 // as apiJson does.
 export async function apiText(
   env: Env,
@@ -87,7 +87,7 @@ export async function apiText(
 }
 
 // One MCP-side api failure to the Error category, labelled with the tool that was running
-// (`Http503.UpdateDocument`, `Internal.FindDocuments`; docs/specs/017-telemetry/telemetry.md).
+// (`Http503.UpdateProject`, `Internal.FindProjects`; docs/specs/017-telemetry/telemetry.md).
 export function reportApiFailure(env: Env, kind: string): void {
   postTelemetry(env, 'Error', 'Api', errorTypeToken(kind, currentTool()));
 }

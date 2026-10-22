@@ -1,16 +1,16 @@
 'use client';
 
 // Persistence-model prompt shown inside the Explorer. Present for guest
-// sessions so the user understands their documents are browser-local
+// sessions so the user understands their projects are browser-local
 // until they sign in; rendered shape depends on what the deployment
 // supports:
 //
 //   - sign-in disabled, any session
-//        → "No sign-in on this deployment": the documents are saved, but
+//        → "No sign-in on this deployment": the projects are saved, but
 //          only this browser's guest id can open them.
 //
 //   - sign-in enabled, signed out
-//        → "Sign in to keep your documents across devices." + CTA to
+//        → "Sign in to keep your projects across devices." + CTA to
 //          /live/sign-in/.
 //
 //   - sign-in enabled, signed in
@@ -65,7 +65,7 @@ function PromptShell({
   body: string;
   action?: React.ReactNode;
   onDismiss: () => void;
-  // One quiet line (the editor's Explorer, under its Current Document card): the title as a lead-in, the action, the
+  // One quiet line (the editor's Explorer, under its Current Project card): the title as a lead-in, the action, the
   // dismiss.
   bar?: boolean;
 }) {
@@ -116,7 +116,7 @@ function PromptShell({
 // for dismissed guests. While the session / the dismissal read are still
 // loading we render nothing, so the fallback doesn't flash in before the
 // prompt has a chance to claim the slot.
-// `bar`: the one-line form (the editor's Explorer, under its Current Document card).
+// `bar`: the one-line form (the editor's Explorer, under its Current Project card).
 type SignInPromptProps = { fallback?: React.ReactNode; bar?: boolean };
 
 function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {
@@ -132,7 +132,7 @@ function SignInPromptEnabled({ fallback, bar = false }: SignInPromptProps) {
       body={
         bar
           ? 'A free account saves it across devices.'
-          : 'A free account keeps your documents and content across sessions and devices.'
+          : 'A free account keeps your projects and content across sessions and devices.'
       }
       onDismiss={dismiss}
       action={
@@ -157,14 +157,14 @@ function SignInPromptDisabled({ fallback, bar = false }: SignInPromptProps) {
   return (
     <PromptShell
       bar={bar}
-      // The documents are saved on the server ("Private" on the card), but without sign-in they belong to this
+      // The projects are saved on the server ("Private" on the card), but without sign-in they belong to this
       // browser's guest id: what clearing site data loses is the way back to them. Never "Browser only", which is
-      // what a This Browser document is.
+      // what a This Browser project is.
       title={bar ? 'No sign-in here' : 'No sign-in on this deployment'}
       body={
         bar
-          ? 'Only this browser can open your documents.'
-          : 'Your documents are saved, but only this browser can open them. Clear its site data and you lose them.'
+          ? 'Only this browser can open your projects.'
+          : 'Your projects are saved, but only this browser can open them. Clear its site data and you lose them.'
       }
       onDismiss={dismiss}
     />

@@ -12,7 +12,7 @@ import {
   FLOWCHART_STEP_TYPES,
   type FlowchartDirection,
   type FlowchartStepType,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { Glyph, lucideGlyph } from '@liveplanner/ui';
 import { lucideRoute, lucideShapes, lucideWorkflow } from '@liveplanner/icons/lucide';
 import { OptionRows } from '@/components/plan/OptionRows';

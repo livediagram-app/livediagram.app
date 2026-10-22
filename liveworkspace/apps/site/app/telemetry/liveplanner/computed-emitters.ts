@@ -105,66 +105,6 @@ const PLAN_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
-// it runs inside the dialog (each `flows-` prefixed), then its closing card.
-const pascal = (id: string) =>
-  id
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-const SANKEY_TOUR_STEP_SOURCE: string[] = [
-  ...[
-    ...read('live/components/tour/sankey-element-tour-steps.ts').matchAll(
-      /canvasStep\(\s*'([a-z-]+)'/g,
-    ),
-  ].map((m) => m[1]!),
-  ...[
-    ...read('live/components/tour/sankey-flows-tour-steps.ts').matchAll(/step\(\s*'([a-z-]+)'/g),
-  ].map((m) => `flows-${m[1]!}`),
-  'outro',
-].map((id) => `SankeyTourStep${pascal(id)}`);
-
-// A concept graphic's tour (docs/specs/007-editor/element-tours.md): its steps file's builders and any step of its own
-// (`id: '…'`), then its closing card.
-const conceptTourSteps = (token: string, file: string): string[] =>
-  [
-    ...[
-      ...read(`live/components/tour/${file}`).matchAll(
-        /(?:(?:onGraphic|addRowStep|inTheMenu|onCanvas|inDialog)\(\s*|menuStep\(\s*\w+,\s*|\bid: )'([a-z-]+)'/g,
-      ),
-    ].map((m) => m[1]!),
-    'outro',
-  ].map((id) => `${token}Step${pascal(id)}`);
-
-// Every element tour (ElementTourHost runs them all): its token, from the registry, and its steps.
-export const ELEMENT_TOUR_TOKENS: string[] = [
-  ...read('live/components/tour/element-tour-defs.ts').matchAll(/token: '(\w+)'/g),
-].map((m) => m[1]!);
-
-export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
-  ...SANKEY_TOUR_STEP_SOURCE,
-  ...conceptTourSteps('LayerStackTour', 'layer-stack-tour-steps.ts'),
-  ...conceptTourSteps('PyramidTour', 'pyramid-tour-steps.ts'),
-  ...conceptTourSteps('FunnelTour', 'funnel-tour-steps.ts'),
-  ...conceptTourSteps('CycleTour', 'cycle-tour-steps.ts'),
-  ...conceptTourSteps('HubTour', 'hub-tour-steps.ts'),
-  ...conceptTourSteps('OnionTour', 'onion-tour-steps.ts'),
-  ...conceptTourSteps('TimelineTour', 'timeline-tour-steps.ts'),
-  ...conceptTourSteps('ChevronsTour', 'chevrons-tour-steps.ts'),
-  ...conceptTourSteps('MindMapTour', 'mind-node-tour-steps.ts'),
-  ...conceptTourSteps('FlowchartTour', 'flowchart-tour-steps.ts'),
-  ...conceptTourSteps('OrgChartTour', 'org-chart-tour-steps.ts'),
-  ...conceptTourSteps('SequenceTour', 'sequence-tour-steps.ts'),
-  ...conceptTourSteps('ChartTour', 'chart-tour-steps.ts'),
-  ...conceptTourSteps('StackTour', 'stack-tour-steps.ts'),
-  ...conceptTourSteps('EntityTour', 'entity-tour-steps.ts'),
-  ...conceptTourSteps('TabWindowTour', 'tab-window-tour-steps.ts'),
-  ...conceptTourSteps('LaneTour', 'lane-tour-steps.ts'),
-  ...conceptTourSteps('BoundaryTour', 'boundary-tour-steps.ts'),
-  ...conceptTourSteps('DiagramKeyTour', 'diagram-key-tour-steps.ts'),
-  ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
-];
-
 // The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
 // docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
 // The welcome card sends no step view.
@@ -218,7 +158,7 @@ const ELEMENT_WHY = 'an element kind, as the palette catalogue spells it';
 const API_ERRORS = [
   'Http403.LoadTab.Forbidden',
   'Http500.SaveTab',
-  'Network.Put.Documents.Tabs',
+  'Network.Put.Projects.Tabs',
   'Auth.NoSessionToken',
   'SaveFailed.TypeError',
 ];
@@ -233,7 +173,7 @@ const AGENT_FRONT_DOORS = tokensAfter(
 
 export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // A share link's access level (docs/specs/013-workspace/share-roles.md), from LEVEL_TELEMETRY_TYPE.
-  'apps/api/src/routes/share.ts Document·Joined': { values: Object.values(LEVEL_TELEMETRY_TYPE) },
+  'apps/api/src/routes/share.ts Project·Joined': { values: Object.values(LEVEL_TELEMETRY_TYPE) },
   // The api worker.
   'apps/api/src/email/client.ts Email·Sent': { values: EMAIL_KINDS },
   'apps/api/src/email/client.ts Error·Api': {
@@ -251,21 +191,21 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   // Agent presence (docs/specs/024-agents/agent-presence.md), typed by the same front door.
   'apps/api/src/routes/agent-presence-routes.ts Agent·Present': { values: AGENT_FRONT_DOORS },
   'apps/api/src/index.ts Error·Api': {
-    values: ['Internal.Put.Documents.Tabs', 'Internal.Get.Documents'],
+    values: ['Internal.Put.Projects.Tabs', 'Internal.Get.Projects'],
     open: 'Internal.<Method>.<Route>, the route the worker was serving',
   },
 
   // The CLI (apps/cli).
   'apps/cli/src/telemetry.ts Cli·Used': { values: CLI_VERBS },
   'apps/cli/src/telemetry.ts Error·Api': {
-    values: ['Http503.TabView', 'Internal.DocumentLs'],
+    values: ['Http503.TabView', 'Internal.ProjectLs'],
     open: 'a status or Internal, plus the command that failed',
   },
 
   // The MCP worker.
   'apps/mcp/src/tool-annotations.ts Mcp·Used': { values: MCP_TOOLS },
   'apps/mcp/src/api.ts Error·Api': {
-    values: ['Http503.CreateDocument', 'Internal.ReadDocument'],
+    values: ['Http503.CreateProject', 'Internal.ReadProject'],
     open: 'a status or Internal, plus the tool that failed',
   },
 
@@ -276,20 +216,20 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
 
   // Shared packages.
   'packages/telemetry-client/src/index.ts Error·Client': {
-    values: ['Uncaught.Document.TypeError', 'UnhandledRejection.Explorer.Error'],
+    values: ['Uncaught.Project.TypeError', 'UnhandledRejection.Explorer.Error'],
     open: 'a kind, the page it happened on, and the error name',
   },
   'packages/ui/src/PageViewTracker.tsx Page·View': {
-    values: ['/', '/document', '/explorer/home', '/help/canvas/links', '/telemetry'],
+    values: ['/', '/project', '/explorer/home', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
   },
 
   // The editor.
-  'apps/live/app/document/[id]/useElementCreation.ts Element·Added': {
+  'apps/live/app/project/[id]/useElementCreation.ts Element·Added': {
     values: ELEMENT_KINDS,
     open: ELEMENT_WHY,
   },
-  'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
+  'apps/live/app/project/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
   },
@@ -313,9 +253,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
   'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
-  'apps/live/app/document/[id]/useDocumentTrashed.ts Trash·Restored': { values: TRASH_TYPES },
-  // A delete toast's Undo (lib/document-delete-undo.ts DeletedTrash, the same three).
-  'apps/live/lib/document-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/live/app/project/[id]/useProjectTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  // A delete toast's Undo (lib/project-delete-undo.ts DeletedTrash, the same three).
+  'apps/live/lib/project-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
   'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
   // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): an item type, or a set-up part.
   'apps/live/hooks/plan/usePlanSlice.ts Plan·Added': {
@@ -425,15 +365,9 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Bold', 'Italic', 'List', 'Heading'],
     open: 'the rich-text command a note applied',
   },
-  'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
-    values: ['IconSearch', 'TechSearch', 'StickerSearch'],
-  },
-  'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Opened': {
-    values: ['IconGroup', 'TechGroup', 'StickerGroup'],
-  },
   'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
-    values: ['Document', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
+    values: ['Project', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
   },
   'apps/live/components/panels/useTeamPaneActions.ts Team·Removed': {
     values: ['Invite', 'Member', 'Self'],
@@ -448,20 +382,20 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   // Load recovery (docs/specs/007-editor/load-recovery.md): the watchdog's warnings, and a throw in
   // the load named by its error.
-  'apps/live/app/document/[id]/useIdentityBootstrap.ts Error·Warning': {
+  'apps/live/app/project/[id]/useIdentityBootstrap.ts Error·Warning': {
     values: [
-      'DocumentLoad.TimedOut.Identity',
-      'DocumentLoad.TimedOut.Participant',
-      'DocumentLoad.TimedOut.Document',
-      'DocumentLoad.TimedOut.Share',
-      'DocumentLoad.TimedOut.FirstTab',
-      'DocumentLoad.AutoReload',
-      'DocumentLoad.Late',
+      'ProjectLoad.TimedOut.Identity',
+      'ProjectLoad.TimedOut.Participant',
+      'ProjectLoad.TimedOut.Project',
+      'ProjectLoad.TimedOut.Share',
+      'ProjectLoad.TimedOut.FirstTab',
+      'ProjectLoad.AutoReload',
+      'ProjectLoad.Late',
     ],
   },
-  'apps/live/app/document/[id]/useIdentityBootstrap.ts Error·Client': {
-    values: ['DocumentLoad.TypeError', 'DocumentLoad.Error'],
-    open: 'DocumentLoad.<ErrorName>',
+  'apps/live/app/project/[id]/useIdentityBootstrap.ts Error·Client': {
+    values: ['ProjectLoad.TypeError', 'ProjectLoad.Error'],
+    open: 'ProjectLoad.<ErrorName>',
   },
   'apps/live/components/providers/ErrorTelemetryBoot.tsx Error·Warning': {
     values: ['OfflineStore.Unavailable', 'SessionToken.TimedOut'],
@@ -472,17 +406,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
   'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Ended': {
-    values: ELEMENT_TOUR_TOKENS.flatMap((t) => [`${t}Completed`, `${t}Skipped`]),
-  },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Opened': {
-    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
-  },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Closed': {
-    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
-  },
   'apps/live/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },
@@ -515,7 +438,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
   // A new link's level (LEVEL_TELEMETRY_TYPE) and its expiry, the file's two computed sites.
-  'apps/live/hooks/persistence/useShareLinks.ts Document·Shared': {
+  'apps/live/hooks/persistence/useShareLinks.ts Project·Shared': {
     values: [
       ...Object.values(LEVEL_TELEMETRY_TYPE),
       'ExpiryWeek',

@@ -46,8 +46,8 @@ describe('timingHistogram', () => {
 describe('timingPercentile', () => {
   const h = (counts: Record<string, number>) =>
     timingHistogram(
-      Object.entries(counts).map(([t, n]) => row(`DocumentLoad.${t}`, n)),
-      'DocumentLoad',
+      Object.entries(counts).map(([t, n]) => row(`ProjectLoad.${t}`, n)),
+      'ProjectLoad',
     );
 
   it('interpolates inside the bucket holding the percentile', () => {
@@ -130,8 +130,8 @@ describe('formatting', () => {
 
 describe('timing sentences', () => {
   it('names the moment and its range', () => {
-    expect(eventExplanation('Timing', 'Measured', 'DocumentLoad.Under1000ms')).toBe(
-      'A document opened in under 1 s.',
+    expect(eventExplanation('Timing', 'Measured', 'ProjectLoad.Under1000ms')).toBe(
+      'A project opened in under 1 s.',
     );
     expect(eventExplanation('Timing', 'Measured', 'Lcp.Marketing.Under2500ms')).toBe(
       'A page on the Marketing site had its main content showing in under 2.5 s.',

@@ -6,8 +6,8 @@ import { ThisBrowserIcon } from '@/components/primitives/explorer-icons';
 import { helpArticleHref } from '@/lib/help-articles';
 import { trackHelpArticle } from '@/components/primitives/HelpArticleLink';
 
-// The This Browser pill (docs/specs/006-document/offline-mode.md#this-browser-pill): every row and
-// card of a document saved only in this browser carries it. An icon and words, never colour
+// The This Browser pill (docs/specs/006-project/offline-mode.md#this-browser-pill): every row and
+// card of a project saved only in this browser carries it. An icon and words, never colour
 // alone; what it means on hover, on focus and to a screen reader; and a link to the Offline
 // Mode guide. Inside a single control (a search result) it is a plain label carrying the same
 // sentence, since a link cannot sit inside a button.
@@ -57,7 +57,7 @@ export function ThisBrowserPill({
         tabIndex={tabbable ? undefined : -1}
         aria-describedby={descriptionId}
         onClick={(e) => {
-          // The row beneath opens its document; this opens the guide instead.
+          // The row beneath opens its project; this opens the guide instead.
           e.stopPropagation();
           trackHelpArticle('offlineMode');
         }}

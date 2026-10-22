@@ -1,7 +1,7 @@
 'use client';
 
 // A form link's page (docs/specs/030-forms/forms.md "Filling in a form"): the form, on its tab theme's backdrop and
-// canvas style, with nothing of the editor around it: no sign-in, no document, no Explorer. Loading, not found, closed
+// canvas style, with nothing of the editor around it: no sign-in, no project, no Explorer. Loading, not found, closed
 // and the form itself are the page's four states; the form's own flow is FormFill.
 import { useEffect, useState, type CSSProperties } from 'react';
 import dynamic from 'next/dynamic';

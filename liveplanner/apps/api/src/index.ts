@@ -14,7 +14,7 @@ import {
   deleteOldTimelineEvents,
   purgeExpiredTrash,
   resolveApiToken,
-  trashEmptyDocuments,
+  trashEmptyProjects,
 } from './db';
 import {
   apiRouteLabel,
@@ -34,13 +34,12 @@ import { verifyOwnerId } from './auth/owner-signature';
 import { guestSignatureEnforced, OWNER_SCOPED_SEGMENTS } from './auth/guest-rest';
 import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
-import { DocumentRoom } from './document-room';
+import { ProjectRoom } from './project-room';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
-import { deleteOldDocumentOpens } from './db/document-opens';
+import { deleteOldProjectOpens } from './db/project-opens';
 import { clientIp, clientNetwork, clientRateKey } from './client-ip';
 import { MAX_BODY_BYTES } from './limits';
 import { handleAccount } from './routes/account';
-import { handleAi } from './routes/ai';
 import { handleEvents } from './routes/events';
 import { handleCatalogues } from './routes/catalogues';
 import { handleCapabilities } from './routes/capabilities';
@@ -48,7 +47,7 @@ import { handleOpenapi } from './routes/openapi';
 import { handleCustomThemes } from './routes/custom-themes';
 import { handleUnfurl } from './routes/unfurl';
 import type { RouteContext, WorkbenchContext } from './routes/context';
-import { handleDocuments } from './routes/documents';
+import { handleProjects } from './routes/projects';
 import { handleFolders } from './routes/folders';
 import { handleForms } from './routes/forms';
 import { handleMigrate } from './routes/migrate';
@@ -74,7 +73,7 @@ import { withServerRelease } from './server-release-header';
 import type { Env } from './types';
 import { runSheetExpiry } from './sheet-sweep';
 
-export { DocumentRoom };
+export { ProjectRoom };
 
 // Per-owner write rate limit (security audit item). Returns true
 // when the caller is over the configured cap (wrangler.toml's
@@ -91,7 +90,7 @@ async function isWriteRateLimited(env: Env, ownerId: string): Promise<boolean> {
 // the welcomeOnSighting call below.
 const sightedThisIsolate = new Set<string>();
 
-// Every request the worker answers; `fetch` below stamps the document format number on it.
+// Every request the worker answers; `fetch` below stamps the project format number on it.
 async function routeApiRequest(
   request: Request,
   env: Env,
@@ -113,7 +112,7 @@ async function routeApiRequest(
   // Hybrid identity (docs/specs/014-identity/auth-and-guest-access.md). Verify the accounts
   // access token once at the top of the handler: null when sign-in isn't configured, no Bearer
   // was sent, or the token failed verification. Every dispatch site below uses `resolveOwner()`
-  // instead of the legacy `ownerOf(request)`, so a signed-in user's documents come back under
+  // instead of the legacy `ownerOf(request)`, so a signed-in user's projects come back under
   // their account id and guests keep working via the legacy `X-Owner-Id` header.
   const accountIdentity = await getAccountIdentity(env, request);
   const accountUserId = accountIdentity?.userId ?? null;
@@ -163,9 +162,9 @@ async function routeApiRequest(
     }
   }
   // Workbench session (docs/specs/013-workspace/workbench-embeds.md): a `Bearer lvw_…` is a person's editor
-  // on one document, minted from their token's ticket. Consulted only when neither an account access token nor a token
+  // on one project, minted from their token's ticket. Consulted only when neither an account access token nor a token
   // resolved. A session-shaped bearer that does not resolve is refused, never read as a guest. A resolved one
-  // is confined at once (auth/workbench-confinement.ts): another document reads as absent, any route outside
+  // is confined at once (auth/workbench-confinement.ts): another project reads as absent, any route outside
   // the allow-list is refused, and a view session writes nothing.
   let workbench: WorkbenchContext | null = null;
   if (!accountUserId && !tokenAuth) {
@@ -210,7 +209,7 @@ async function routeApiRequest(
   // gate below, because that gate is off until an operator arms it — and
   // this shape needs no grace window, having never been legitimate.
   // `share` is included even though it is not owner-scoped: its resolver
-  // compares the header with the document's owner to decide redaction.
+  // compares the header with the project's owner to decide redaction.
   if (
     !accountUserId &&
     !tokenAuth &&
@@ -253,13 +252,13 @@ async function routeApiRequest(
   // Per-owner write rate limit. Gates POST / PUT / DELETE at a
   // generous ceiling (wrangler.toml WRITE_RATE_LIMITER) so a bot
   // pacing under Cloudflare's DDoS threshold still can't spam
-  // document creation through to D1 quota
+  // project creation through to D1 quota
   // exhaustion. Reads pass through untouched. When neither a
   // account token nor X-Owner-Id resolves the caller, fall back to
   // a literal 'anonymous' key so one unauthenticated client still
   // can't burn the global quota. The telemetry relay (/api/events)
   // is deliberately exempt: it's anonymous, high-frequency, and
-  // must never compete with a user's real document writes for the
+  // must never compete with a user's real project writes for the
   // per-owner write budget (docs/specs/017-telemetry/telemetry.md). Client-side batching keeps
   // its volume low instead.
   const isWrite =
@@ -286,7 +285,7 @@ async function routeApiRequest(
   // code (edit links included), so a read-only token that could list it could
   // promote itself to edit by opening a link.
   const isShareLinkList =
-    segments[1] === 'documents' && segments.length === 4 && segments[3] === 'share';
+    segments[1] === 'projects' && segments.length === 4 && segments[3] === 'share';
   if (tokenAuth?.readOnly && isShareLinkList) {
     console.warn('[read-only-token] share-link list refused', { tokenId: tokenAuth.tokenId });
     return forbidden('read_only_token');
@@ -307,7 +306,7 @@ async function routeApiRequest(
   // whole session's realtime (the connector has no reconnect loop).
   // Mint volume is one row per room join and the route does no
   // unbounded work, so it isn't a quota-exhaustion vector.
-  const isRoomTicketMint = segments[1] === 'documents' && segments[3] === 'room-ticket';
+  const isRoomTicketMint = segments[1] === 'projects' && segments[3] === 'room-ticket';
   // ...but not unthrottled: each mint is a D1 write. Its own bucket per
   // caller network (the owner id is caller-chosen for a guest), so a flood is
   // bounded without touching anyone's autosave budget.
@@ -316,7 +315,7 @@ async function routeApiRequest(
       return rateLimited();
   }
   // A form link's doors (docs/specs/030-forms/forms.md "Abuse and limits"): respondents are anonymous, so reads and
-  // responses are limited per network, each on its own key, apart from everyone's document writes.
+  // responses are limited per network, each on its own key, apart from everyone's project writes.
   const isFormRequest = segments[1] === 'forms';
   if (isFormRequest && env.FORM_RATE_LIMITER) {
     const ok = await env.FORM_RATE_LIMITER.limit({
@@ -325,7 +324,7 @@ async function routeApiRequest(
     if (!ok.success) return rateLimited();
   }
   // An invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the email"): open, so
-  // limited per network, reads and declines on one key, apart from everyone's document writes.
+  // limited per network, reads and declines on one key, apart from everyone's project writes.
   const isInviteDecline = segments[1] === 'teams' && segments[2] === 'invite-decline';
   if (isInviteDecline && env.TEAM_INVITE_RATE_LIMITER) {
     const ok = await env.TEAM_INVITE_RATE_LIMITER.limit({
@@ -402,18 +401,14 @@ async function routeApiRequest(
         return handleOpenapi(ctx);
       case 'unfurl':
         return await handleUnfurl(ctx);
-      case 'ai':
-        // The assistant (docs/specs/007-editor/ai-assistance.md) at /api/ai.
-        if (segments[2] === undefined) return await handleAi(ctx);
-        return notFound();
       case 'events':
         return await handleEvents(ctx);
       case 'share':
         return await handleShare(ctx);
       case 'shared':
         return await handleShared(ctx);
-      case 'documents':
-        return await handleDocuments(ctx);
+      case 'projects':
+        return await handleProjects(ctx);
       case 'folders':
         return await handleFolders(ctx);
       // A form link's public doors (docs/specs/030-forms/forms.md "Filling in a form").
@@ -431,7 +426,7 @@ async function routeApiRequest(
         return await handleAccount(ctx);
       case 'favourites':
         return await handleFavourites(ctx);
-      // Per-person document tags (docs/specs/013-workspace/tags.md).
+      // Per-person project tags (docs/specs/013-workspace/tags.md).
       case 'tags':
         return await handleTags(ctx);
       case 'placement-defaults':
@@ -464,7 +459,7 @@ async function routeApiRequest(
     // server-side exception counts even when no client survives to report it.
     // Off the response's critical path (waitUntil), and its own failure is
     // swallowed — the 500 must still go out. The type names the endpoint by its
-    // route words only (`Internal.Put.Documents.Tabs`), never an id.
+    // route words only (`Internal.Put.Projects.Tabs`), never an id.
     if (telemetryEnabled(env)) {
       const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
       executionCtx?.waitUntil?.(reportServerEvent(env, 'Error', 'Api', type));
@@ -486,8 +481,8 @@ const worker = {
   // `event.cron` for each pattern. Today's daily 03:00 UTC trigger
   // fires independent retention sweeps (telemetry's 60 days are kept centrally, liveworkspace/docs/telemetry.md):
   //   - trash,      30 days after deletion (docs/specs/013-workspace/trash.md).
-  //   - empty,      documents empty and unsaved for 30 days move to the Trash
-  //                 (docs/specs/013-workspace/empty-document-cleanup.md).
+  //   - empty,      projects empty and unsaved for 30 days move to the Trash
+  //                 (docs/specs/013-workspace/empty-project-cleanup.md).
   // All are no-ops when nothing is over the floor; all use
   // `ctx.waitUntil` so they run concurrently and the worker can
   // exit as soon as the schedule callback returns.
@@ -511,10 +506,10 @@ const worker = {
         'home_opens',
         'rows',
         now - TIMELINE_RETENTION_MS,
-        deleteOldDocumentOpens,
+        deleteOldProjectOpens,
       );
       // docs/specs/024-agents/agent-changesets.md "Revert": a changeset can be reverted while its
-      // record exists, as long as the Trash keeps a document (CS28).
+      // record exists, as long as the Trash keeps a project (CS28).
       scheduleSweep(
         ctx,
         env,
@@ -562,15 +557,15 @@ const worker = {
       // 30 days, oldest first, capped per run (TRASH_PURGE_MAX_BATCHES).
       ctx.waitUntil(
         purgeExpiredTrash(env, now)
-          .then((count) => console.log(`trash sweep: purged ${count} documents`))
+          .then((count) => console.log(`trash sweep: purged ${count} projects`))
           .catch((err) => console.error('trash sweep failed', err)),
       );
-      // docs/specs/013-workspace/empty-document-cleanup.md: move documents empty and
+      // docs/specs/013-workspace/empty-project-cleanup.md: move projects empty and
       // unsaved for 30 days to the Trash, stamped `now`, so the purge above
       // never takes one this run: it waits its full 30 days there.
       ctx.waitUntil(
-        trashEmptyDocuments(env, now)
-          .then((count) => console.log(`empty sweep: moved ${count} documents to the Trash`))
+        trashEmptyProjects(env, now)
+          .then((count) => console.log(`empty sweep: moved ${count} projects to the Trash`))
           .catch((err) => console.error('empty sweep failed', err)),
       );
       // docs/specs/013-workspace/explorer-details-view.md "Counting the existing tabs": count the

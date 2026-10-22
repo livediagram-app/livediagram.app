@@ -1,0 +1,224 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Edit Operations Reference',
+  description:
+    'The liveplanner changeset vocabulary: the edit operations, selectors, whole-tab replaces, results and refusals the API, the CLI and the MCP server share.',
+  path: '/help/developers/working-with-projects/edit-operations/',
+});
+
+<ArticleLayout title="Edit Operations Reference" description="The changeset vocabulary: operations, selectors, replaces, results and refusals." categoryTitle="Developers" categorySlug="developers/working-with-projects" parentArticle={{ title: "Working with Projects", slug: "working-with-projects" }} subArticles={getSubArticles("working-with-projects").filter((a) => a.slug !== "edit-operations")}>
+
+A **changeset** changes one tab with a short list of edit operations, applied together or not at all. This page lists the vocabulary: the operations, how to pick what they act on, how to rebuild a whole tab, and what the answer tells you. [Working with Projects](/help/developers/working-with-projects/#update-a-tab) shows how to send one.
+
+## What a Changeset Changes
+
+A tab holds a few **elements**, and they are what fill it: a Board tab holds a `plan-board`, a Sheet tab a `plan-sheet`, and a Dashboard tab one `plan-view` per metric, chart or note. A changeset changes those elements, such as a board's settings or which widgets a dashboard shows.
+
+The things inside them have endpoints of their own, which are usually what you want:
+
+- **Cards** live in the project's item store, not on a tab. Add, change and move them with the [item endpoints](/help/developers/working-with-projects/plan-sheets-images/#plan-items).
+- **Sheet cells** are changed with [sheet writes](/help/developers/working-with-projects/plan-sheets-images/#sheets).
+- **A form's questions** are changed with the form endpoints, or the CLI's `form change` and the MCP server's `change_form`.
+- **Comments** have their own [endpoints](/help/developers/agent-comments-presence/). Edit operations never change them.
+
+The same vocabulary reaches a tab three ways:
+
+- **The API**: `POST /projects/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
+- **The CLI**: `liveplanner edit "Sprint 14" --tab Flow -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `liveplanner element set` or `liveplanner element rm` sends one operation. `liveplanner guide edit` explains the line form.
+- **The MCP server**: `update_project` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, or takes `edits`, edit operations as text.
+
+## Read the Tab First
+
+Every element has a short **ref**, printed by the tab's outline view:
+
+```bash
+curl "https://liveplanner.app/api/projects/$DOC/tabs/$TAB?view=outline" \
+  -H "Authorization: Bearer $TOKEN"
+```
+
+```text
+tab e1b2 "Flow" · 7 elements: 7 boxes · kind=dashboard · rev 1
+plan-view 76eb view=metric:count
+plan-view 8e10 view=metric:progress
+plan-view 82d4 view=metric:stale
+plan-view 768f view=metric:unassigned
+plan-view 653e view=workload
+plan-view 0f0e view=priority-matrix
+plan-view 0a78 view=calendar
+```
+
+`view=show&ref=0a78` prints one element with every stored field, which is where the field names come from:
+
+```text
+plan-view 0a78
+  at 0,0 720x400
+  planView: {"view":"calendar"}
+  textSize: "md"
+```
+
+## Two Forms
+
+The **line form** is one operation a line, which is what an agent writes most easily. Values with spaces are quoted (`label="Sprint board"`), a value starting with `[` or `{` is read as JSON, and blank lines and lines starting with `#` are skipped:
+
+```text
+# Swap the calendar for a workload chart, and drop the stale-cards metric
+test 0a78 planView={"view":"calendar"}
+set 0a78 planView={"view":"workload"}
+rm 82d4
+```
+
+The **JSON form** is one object an operation, which is what a script produces. Any line of the text form that starts with `{` is read as JSON, so the two mix:
+
+```json
+[
+  { "op": "test", "target": "0a78", "fields": { "planView": { "view": "calendar" } } },
+  { "op": "set", "target": "0a78", "fields": { "planView": { "view": "workload" } } },
+  { "op": "rm", "target": "82d4" }
+]
+```
+
+One parser turns the line form into the JSON form, so both are checked the same way. A changeset holds at most **500** operations, and a line at most 16,384 characters.
+
+## Operations
+
+| Operation | Line form                           | What it does                                                                                 |
+| --------- | ----------------------------------- | -------------------------------------------------------------------------------------------- |
+| `set`     | `set <selector> key=value… [all]`   | Changes only the fields named; `key=` with nothing after it unsets one                       |
+| `rm`      | `rm <selector> [all]`               | Removes elements                                                                             |
+| `test`    | `test <selector> key=value…`        | Refuses the whole changeset unless the element still holds these values                     |
+| `add`     | `{ "op": "add", "element": { … } }` | Puts a whole element on the tab, as the JSON form gives it; the answer says where it landed |
+
+A few rules hold for every operation:
+
+- **Fields.** A field is any stored field of the element, by the name `view=show` prints (`planBoard`, `planView`, `planSheet`). A number, `true` or `false` is read as JSON, and so is a value starting with `[` or `{`. A field the element does not have is refused with `unknown_field`, listing the ones it has.
+- **Whole values.** `set` replaces a field's value whole, so send the whole object back with your change in it: read it with `view=show`, change what you need, and set it.
+- **Ids.** An `add`'s element may carry its own `id`, so later operations in the same changeset can name it; without one, it gets a fresh id.
+- **Locks.** A changeset on a [locked tab](/help/tabs/locking-tabs/), or one that would change a locked element, is refused with `element_locked`.
+
+## Element Kinds
+
+A tab holds only these elements, each `{ "type": "shape", "shape": <kind>, "x", "y", "width", "height" }` with an optional `label` and `locked`. An `add` or a replace with any other element is refused with `invalid_value`, naming the kinds there are:
+
+| Kind                                    | Is                                                         | Its own fields                                                                                          |
+| --------------------------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `plan-board`                            | A Board tab's board; its cards are items                   | `planBoard`                                                                                             |
+| `plan-sheet`                            | A Sheet tab's spreadsheet; its cells change by sheet writes | `planSheet`                                                                                             |
+| `plan-view`                             | A Dashboard's metric or chart of the cards                 | `planView`, `textSize`                                                                                  |
+| `bar-chart`, `line-chart`, `pie-chart`  | A chart of a Sheet's cells, in the Sheet or on a Dashboard | `chartSource` (required), `sheetAnchor`, `chartVariant`, `chartLegend`, `chartValues`, `chartPalette`, and `chartAxis` on a bar or line chart |
+
+A chart's `chartSource` is `{ "sheetId", "range": { "r1", "c1", "r2", "c2" } }`: the sheet and the row and column ids of its first and last cells. `GET /api/schema/<kind>` (or `liveplanner schema <kind>`) prints a kind's fields, a closed field with its values:
+
+```json
+{ "op": "add", "element": { "type": "shape", "shape": "plan-view", "x": 0, "y": 840, "width": 500, "height": 360, "planView": { "view": "gantt" } } }
+```
+
+`test` is how you make sure you change what you read: put one before a `set` and the changeset is refused, with nothing applied, if someone changed that element since. Sending the revision you read as `base` (below) does the same for every element at once.
+
+## Selectors
+
+A selector picks the elements an operation acts on. It is a ref, a quoted label, or `key:value` terms joined by spaces, every one of which must match:
+
+| Selector               | Matches                                                              |
+| ---------------------- | -------------------------------------------------------------------- |
+| `0a78`, `0a78f3c1…`    | The element with that ref, id or unique start of an id               |
+| `"Sprint board"`       | The element whose label is exactly that, ignoring case               |
+| `label~sprint`         | Elements whose label contains `sprint`                               |
+| `type:plan-view`       | Elements of that kind, as the outline prints it                      |
+| `selected`             | What the token's owner has selected in an editor open on that tab    |
+
+- A selector must match **exactly one** element unless the operation takes `all`. Nothing matching is refused as `target_not_found`; several is refused as `target_ambiguous`, listing them with their refs.
+- `selected` with nothing selected is refused. The owner is whoever the API token belongs to, so an agent can act on "what I have selected" while you point at it.
+- The words `selected` and `all` are always keywords. Reach an element named one of them by its quoted label or a longer ref.
+
+## Replace a Whole Tab
+
+To rebuild a tab rather than change it, send `"replace"` instead of `"operations"`, with exactly one of:
+
+| Source      | Builds                                                                                          |
+| ----------- | ----------------------------------------------------------------------------------------------- |
+| `template`  | The tab a template makes, by its kind from `GET /templates` (such as `kanban`)                  |
+| `dashboard` | A Dashboard tab over the project's Board and Sheet tabs: its `tabs`, `metrics`, `charts`, `notes` |
+| `form`      | A Form tab's form                                                                               |
+| `elements`  | The tab's elements, as the tab JSON gives them, kept at the `x` and `y` given                  |
+
+A replace may also carry a `name` for the tab. Nothing is laid out for you, so a replace carrying `layout` is refused. A replace on a tab id the project does not have yet creates that tab, which is how a new tab is added in one write:
+
+```bash
+curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$(uuidgen)/changesets \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{
+    "replace": {
+      "name": "Overview",
+      "dashboard": {
+        "tabs": [{ "tabId": "'"$BOARD_TAB"'", "of": "board" }],
+        "metrics": ["count", "progress"],
+        "charts": [{ "view": "workload" }]
+      }
+    }
+  }'
+```
+
+The OpenAPI reference at `/api/openapi.json` lists the metric kinds and chart views a dashboard takes.
+
+## The Answer
+
+A changeset answers with one line per element, the same for a dry run (`?dryRun=1`, or `--dry-run` on the CLI) and a write:
+
+```text
+~ 0a78  planView (changed)
+- 82d4  plan-view
+rev 1→2 · cs_tbrfqcvm1w · revert: liveplanner changeset revert 4cd7082b-… cs_tbrfqcvm1w
+```
+
+| Mark | Means                                      |
+| ---- | ------------------------------------------ |
+| `+`  | Added                                      |
+| `~`  | Changed, each field before→after           |
+| `-`  | Removed                                    |
+| `!`  | A warning                                  |
+
+The last line carries the tab's new revision, the changeset's id and the command that reverts it; a dry run ends `dry run · rev 1 · nothing written` instead. A changeset that changes nothing answers `nothing changed`. The JSON answer carries the same lines as `results`, beside `text`.
+
+**Warnings** do not stop a changeset. The one you will see most is `no_base`: the changeset was sent without the revision you read.
+
+## Base Revisions
+
+Every tab read returns the tab's `rev`. Send it back as `"base": { "rev": 7 }` and the changeset is refused with `409 changeset_conflict` if an element it touches changed since you read it, so nothing you didn't see gets overwritten. Add `"strict": true` to refuse it if anything on the tab changed at all (`412 stale_tab`).
+
+An element somebody has selected in the editor is left alone too: the changeset is refused with `409 elements_held`, naming who holds it. The CLI's `--wait-held <seconds>` retries until they let go.
+
+## Refusals
+
+A refused changeset applies nothing. It names the operation, the code and the way out. Lines that do not parse are all reported together (up to ten), so a batch of typos is fixed in one round:
+
+```text
+error target_ambiguous · op 1
+  "type:plan-view" matches 7 elements:
+    76eb  plan-view
+    8e10  plan-view
+    82d4  plan-view
+    …
+  hint: use a ref, narrow with type:plan-view, or add all
+nothing was applied
+```
+
+| Code                 | When                                                          |
+| -------------------- | ------------------------------------------------------------- |
+| `parse_error`        | A line does not parse; names the column and what was expected |
+| `unknown_operation`  | The first word is not an operation                            |
+| `target_not_found`   | A selector matches nothing                                    |
+| `target_ambiguous`   | A selector matches several without `all`                      |
+| `unknown_field`      | A field the element does not have; lists its fields           |
+| `invalid_value`      | A value outside what the field takes; lists what it takes     |
+| `id_taken`           | An added element's id is already in use                       |
+| `element_locked`     | The tab or a target is locked                                 |
+| `test_failed`        | A `test` does not hold; shows expected and actual             |
+| `changeset_conflict` | A target changed since the `base` revision you sent           |
+| `elements_held`      | Someone has a target selected in the editor                   |
+| `invalid_result`     | The result would not be a valid tab                           |
+| `too_large`          | Over 500 operations, or the tab's size cap                    |
+
+</ArticleLayout>

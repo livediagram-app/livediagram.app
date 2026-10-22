@@ -6,7 +6,7 @@ grouped, keyboard-navigable results list with an **Actions** group backed by
 the command registry (`lib/editor-commands.ts`). This spec promotes that
 Actions group into a full command palette by (a) binding the conventional
 **Cmd/Ctrl+K** shortcut alongside the existing Cmd/Ctrl+., and (b) widening
-the registry from selection/document verbs to the whole app surface.
+the registry from selection/project verbs to the whole app surface.
 
 ## Shortcut
 
@@ -24,27 +24,22 @@ editor handler (the non-negotiable rule of that registry — no behaviour
 forks, no drifted telemetry):
 
 - **History:** Undo, Redo — offered only when `canUndo` / `canRedo`.
-- **View:** Toggle zen mode, Fit to screen.
-- **Cleanup:** Auto Layout (one per style), Auto-align: their only home since the tab menu's
-  Cleanup category was removed ([Layout cleanup](../008-canvas/layout-cleanup.md)); Renumber Steps, while the tab
-  holds a step number ([The step number](../009-elements/step-number.md)).
+- **Project and tab:** Create New Tab, Rename Tab, Rename Project, Delete Project, Share Project, Open Theme.
+- **View:** Toggle zen mode, Collaborators.
 - **Dialogs:** Export…, Import…, Settings, Keyboard shortcuts (opens
-  Settings on its Keyboard category, [User preferences](user-preferences.md)), Browse templates.
+  Settings on its Keyboard category, [User preferences](user-preferences.md)).
+
+Every command does something on a Board, Sheet, Dashboard or Form tab. The diagram editor's canvas verbs (the
+selection's Delete, Duplicate, Lock and the rest, the canvas tools, Fit to Screen, Open Canvas Options, Auto Layout,
+Auto-align and Renumber Steps) are not offered: a Plan tab's content covers the canvas, so they would do nothing.
+For the same reason the Search panel has no **Add to canvas** group in the editor.
 
 ## Read-only visitors
 
 The registry previously returned nothing for read-only views. Now it returns
-the **view-safe subset** (zen mode, fit to screen, export, Collaborators, and
-the canvas tool switches that do not write to the document); mutating
-commands and the Format painter tool stay editor-only. `CommandContext` carries `isReadOnly` so the gating lives
+the **view-safe subset** (zen mode, export and Collaborators); mutating
+commands stay editor-only. `CommandContext` carries `isReadOnly` so the gating lives
 in the pure builder where it's unit-tested.
-
-## Locked tabs and Plan mode
-
-The palette offers only what would do something. On a **locked tab** (`tabLocked`) the element
-verbs, layout cleanup, the photo reader and the Format tool are withheld, since the
-tab refuses every element edit; the document, tab and view commands stay. Format is always left out, as Plan's
-tool dropdown leaves it out ([Plan mode](../026-plan/plan-mode.md#tools)).
 
 ## Unchanged on purpose
 

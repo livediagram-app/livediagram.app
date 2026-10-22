@@ -1,11 +1,11 @@
-// The event record's reads (docs/specs/013-workspace/timeline.md): a scoped feed, a document's History
+// The event record's reads (docs/specs/013-workspace/timeline.md): a scoped feed, a project's History
 // or a team's Team Activity (§3.4), and the Home row's unread count (§2.5).
 //
 // Nothing user-AUTHORED lives on these feeds, so there is no create, update or delete to wrap. A feed
 // loads on mount and re-reads this same GET when the reader returns to the tab (§2.4a) or after one of
 // their own writes lands (§2.4b).
 //
-// Offline Mode (docs/specs/006-document/offline-mode.md) needs no dispatch here: a browser-only document
+// Offline Mode (docs/specs/006-project/offline-mode.md) needs no dispatch here: a browser-only project
 // never reaches the worker, so it has no server history to show, and the History dialog is never offered
 // for one.
 

@@ -28,9 +28,9 @@ vi.mock('./tour-dom', () => ({
   waitForTour: async () => null,
 }));
 const ctx = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
+vi.mock('@/app/project/[id]/EditorContext', () => ({ useEditorContext: () => ctx.current }));
 const selectTab = vi.hoisted(() => vi.fn());
-vi.mock('@/app/document/[id]/useSelectTab', () => ({ useSelectTab: () => selectTab }));
+vi.mock('@/app/project/[id]/useSelectTab', () => ({ useSelectTab: () => selectTab }));
 
 const setUserPreferences = vi.fn();
 const writeUserPreferences = vi.fn();

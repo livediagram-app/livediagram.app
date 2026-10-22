@@ -5,7 +5,7 @@
 // picture of what it measures (a ring for completion, a bar split by type, a bar per column against its
 // WIP limit, pips for votes). Filter, Only Mine and Not on Board are controls. The pictures are CSS, so
 // they stay crisp at any zoom.
-import { plural } from '@liveplanner/document';
+import { plural } from '@liveplanner/project';
 import {
   PRIORITY_LABELS,
   UNASSIGNED,

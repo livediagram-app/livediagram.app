@@ -13,7 +13,7 @@ import {
   isChipShape,
   isConceptShape,
   isSelfDrawingShape,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 // Which side of a boxed element a screen point sits nearest, normalised by
 // half-extent so a wide-but-short box still reads top / bottom correctly.

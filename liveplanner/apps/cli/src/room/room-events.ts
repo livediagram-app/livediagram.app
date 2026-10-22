@@ -3,7 +3,7 @@
 // are looked up by the caller.
 
 import type { ChangesetCounts } from '@liveplanner/api-schema';
-import { isRecord } from '@liveplanner/document';
+import { isRecord } from '@liveplanner/project';
 import { oneLine } from '../output/one-line';
 
 export type RoomEvent =
@@ -18,7 +18,7 @@ export type RoomEvent =
     }
   | { kind: 'element'; tabId: string; elementId: string; change: 'added' | 'changed' | 'removed' }
   | { kind: 'tab'; tabId: string }
-  | { kind: 'document'; name: string; tabs: { id: string; name: string }[] };
+  | { kind: 'project'; name: string; tabs: { id: string; name: string }[] };
 
 const str = (record: Record<string, unknown>, key: string): string | null => {
   const value = record[key];
@@ -86,7 +86,7 @@ function deltaEvent(op: Record<string, unknown>, tabId: string): RoomEvent[] {
   return [{ kind: 'element', tabId, elementId, change: 'changed' }];
 }
 
-function documentEvent(op: Record<string, unknown>): RoomEvent[] {
+function projectEvent(op: Record<string, unknown>): RoomEvent[] {
   const name = str(op, 'name');
   if (name === null || !Array.isArray(op.tabs)) return [];
   const tabs = op.tabs.flatMap((t: unknown) => {
@@ -95,13 +95,13 @@ function documentEvent(op: Record<string, unknown>): RoomEvent[] {
     const tabName = str(t, 'name');
     return id === null || tabName === null ? [] : [{ id, name: tabName }];
   });
-  return [{ kind: 'document', name, tabs }];
+  return [{ kind: 'project', name, tabs }];
 }
 
 export function classifyRoomOp(op: unknown): RoomEvent[] {
   if (!isRecord(op)) return [];
   const kind = str(op, 'kind');
-  if (kind === 'document-meta') return documentEvent(op);
+  if (kind === 'project-meta') return projectEvent(op);
   const tabId = str(op, 'tabId');
   if (tabId === null) return [];
   switch (kind) {
@@ -123,27 +123,27 @@ export function classifyRoomOp(op: unknown): RoomEvent[] {
   }
 }
 
-// Whether an event is on the tab a command was narrowed to; a document event concerns every tab.
+// Whether an event is on the tab a command was narrowed to; a project event concerns every tab.
 export function onTab(event: RoomEvent, tabId: string | null): boolean {
-  return tabId === null || event.kind === 'document' || event.tabId === tabId;
+  return tabId === null || event.kind === 'project' || event.tabId === tabId;
 }
 
-// What `watch` needs to name things: a tab's name, an element's ref on its tab, and the document's tabs as last
+// What `watch` needs to name things: a tab's name, an element's ref on its tab, and the project's tabs as last
 // seen (to tell a tab added, renamed or removed).
 export type Names = {
   tabName(tabId: string): string;
   refOf(tabId: string, elementId: string): string;
   tabs: readonly { id: string; name: string }[];
-  documentName: string;
+  projectName: string;
 };
 
 const quoted = (text: string) => JSON.stringify(text);
 
-function documentLines(event: Extract<RoomEvent, { kind: 'document' }>, names: Names): string[] {
+function projectLines(event: Extract<RoomEvent, { kind: 'project' }>, names: Names): string[] {
   const before = new Map(names.tabs.map((t) => [t.id, t.name] as const));
   const after = new Map(event.tabs.map((t) => [t.id, t.name] as const));
   const lines: string[] = [];
-  if (event.name !== names.documentName) lines.push(`document renamed ${quoted(event.name)}`);
+  if (event.name !== names.projectName) lines.push(`project renamed ${quoted(event.name)}`);
   for (const [id, name] of after) {
     const was = before.get(id);
     if (was === undefined) lines.push(`tab ${quoted(name)} added`);
@@ -171,7 +171,7 @@ export function watchLines(event: RoomEvent, names: Names): string[] {
       return [`element ${names.refOf(event.tabId, event.elementId)} ${event.change}`];
     case 'tab':
       return [`tab ${quoted(names.tabName(event.tabId))} changed`];
-    case 'document':
-      return documentLines(event, names);
+    case 'project':
+      return projectLines(event, names);
   }
 }

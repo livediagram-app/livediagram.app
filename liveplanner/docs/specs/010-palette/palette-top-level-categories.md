@@ -70,8 +70,7 @@ mistake in a smaller way.
 ## Why Popular has no band
 
 Popular is not a _kind_ of thing: it draws from every category at once (it
-replaced Favourites, which had the same shape;
-[Palette Favourites](palette-favourites.md)). Filing it under "Common" would
+replaced the palette's Favourites, removed on 2026-10-03, which had the same shape). Filing it under "Common" would
 claim a peer relationship with Shapes and Write that it does not have.
 
 So it sits **full width above the first heading**, with no band of its own. The
@@ -122,7 +121,7 @@ and still animates its height on switch.
 Flattening put every element one click away but spread them over ten
 categories, so "where does Checklist live now" needed an answer that isn't
 "open each one". That answer used to be a search box at the top of Favourites;
-it went with Favourites ([Palette Favourites](palette-favourites.md)). The
+it went with Favourites. The
 editor's **Search** panel answers it now: it searches every tile by caption,
 label, blurb and description, and picking a result arms the same placement the
 palette uses ([Canvas and palette](../008-canvas/canvas-and-palette.md)). The

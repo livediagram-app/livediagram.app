@@ -122,7 +122,7 @@ export const DateInput = forwardRef<HTMLInputElement, DateInputProps>(function D
       const el = e.currentTarget;
       if (e.key === 'Escape' && (el.value !== saved || el.validity.badInput)) {
         // Escape undoes the typing; a second one goes on to close whatever holds the field. Stopped
-        // immediately: React listens on the root (`document` under Next), the node a Dialog's own
+        // immediately: React listens on the root (`project` under Next), the node a Dialog's own
         // Escape listener sits on too, and stopPropagation never stops a listener on the same node.
         e.stopPropagation();
         e.nativeEvent.stopImmediatePropagation();

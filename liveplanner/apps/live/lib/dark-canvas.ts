@@ -1,4 +1,4 @@
-import { canvasSurface } from '@liveplanner/document';
+import { canvasSurface } from '@liveplanner/project';
 
 // Is the tab's canvas a DARK wall? The sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md) is a fixed
 // slate ink tuned against light paper; on a dark backdrop that ink all but

@@ -1,6 +1,6 @@
 'use client';
 
-// The type editor's States (docs/specs/026-plan/item-types.md "Editing a type"): every status the document's boards
+// The type editor's States (docs/specs/026-plan/item-types.md "Editing a type"): every status the project's boards
 // name, grouped under each board's title (No Board last for one only cards are in), as option lists of checkbox rows, ticked while the type uses it, with a count and Select All and Deselect All. A
 // status unticked is one a card of this type can never move into (a new card is still made in any column). Stored as
 // what the type leaves out, so a status added later is open to every type. All may be unticked: such a card stays in
@@ -94,7 +94,7 @@ export function ItemTypeStatuses({
       />
     );
   const onCount = statuses.filter((s) => !excluded.includes(s.status)).length;
-  // A ready-made type's Default State by name, as this document has it (none chosen falls back to it).
+  // A ready-made type's Default State by name, as this project has it (none chosen falls back to it).
   const readyMadeId = typeId
     ? readyMadeDefaultStatus(
         { id: typeId, excludedStatuses: excluded },

@@ -173,14 +173,14 @@ function SearchOverlay({
 
 // --- Reusable result icons ---------------------------------------------------
 // One glyph per result kind, after the editor's own (search-panel-icons.tsx):
-// a document, a folder, people for a team, a panel for a tab, a circle for an
+// a project, a folder, people for a team, a panel for a tab, a circle for an
 // element, a plus-in-a-box for Add to canvas, a bolt for an action, sliders for
 // a setting, and a question mark for help.
 
 const GLYPH = 'fill-none stroke-slate-500';
 
-/** A document glyph: a small framed canvas with two nodes. */
-function DocumentIcon() {
+/** A project glyph: a small framed canvas with two nodes. */
+function ProjectIcon() {
   return (
     <g>
       <rect
@@ -243,21 +243,6 @@ function TabIcon() {
   );
 }
 
-/** An element glyph: the plain circle the panel gives every element. */
-function ElementIcon() {
-  return <circle r={5.5} className={GLYPH} strokeWidth={1.5} />;
-}
-
-/** Add to canvas: a plus in a box. */
-function AddIcon() {
-  return (
-    <g className="fill-none stroke-brand-500" strokeWidth={1.5}>
-      <rect x={-6.5} y={-6.5} width={13} height={13} rx={2.5} />
-      <path d="M-3 0 H3 M0 -3 V3" />
-    </g>
-  );
-}
-
 /** An action: a bolt. */
 function CommandIcon() {
   return (
@@ -294,52 +279,22 @@ function HelpIcon() {
 
 // --- Scenes ------------------------------------------------------------------
 
-/** Mixed results across documents, tabs, elements, actions and help: search at a glance. */
-export function SearchOverview() {
-  return (
-    <SearchOverlay
-      query="check"
-      groups={[
-        {
-          title: 'Documents',
-          rows: [{ icon: <DocumentIcon />, label: 'Checkout flow', active: true }],
-        },
-        {
-          title: 'Tabs',
-          rows: [{ icon: <TabIcon />, label: 'Checkout', meta: 'current' }],
-        },
-        {
-          title: 'Elements',
-          rows: [
-            { icon: <ElementIcon />, label: 'Check stock', meta: 'on Checkout' },
-            { icon: <ElementIcon />, label: 'Payment check', meta: 'on Payments' },
-          ],
-        },
-        {
-          title: 'Help',
-          rows: [{ icon: <HelpIcon />, label: 'Checklists' }],
-        },
-      ]}
-    />
-  );
-}
-
-/** Results limited to documents, folders, and shared documents. */
-export function SearchDocuments() {
+/** Results limited to projects, folders, and shared projects. */
+export function SearchProjects() {
   return (
     <SearchOverlay
       query="onboarding"
       groups={[
         {
-          title: 'Documents',
-          rows: [{ icon: <DocumentIcon />, label: 'Onboarding flow', active: true }],
+          title: 'Projects',
+          rows: [{ icon: <ProjectIcon />, label: 'Onboarding flow', active: true }],
         },
         {
           title: 'Shared with You',
           rows: [{ icon: <SharedIcon />, label: 'Onboarding v2' }],
         },
         {
-          title: 'My Documents',
+          title: 'My Projects',
           rows: [{ icon: <FolderIcon />, label: 'Onboarding' }],
         },
       ]}
@@ -347,7 +302,7 @@ export function SearchDocuments() {
   );
 }
 
-/** Results showing teams plus their shared folders and documents. */
+/** Results showing teams plus their shared folders and projects. */
 export function SearchTeams() {
   return (
     <SearchOverlay
@@ -358,49 +313,8 @@ export function SearchTeams() {
           rows: [
             { icon: <TeamIcon />, label: 'Platform team', active: true },
             { icon: <FolderIcon />, label: 'Architecture / Services', meta: 'in Platform team' },
-            { icon: <DocumentIcon />, label: 'Platform overview', meta: 'in Platform team' },
+            { icon: <ProjectIcon />, label: 'Platform overview', meta: 'in Platform team' },
           ],
-        },
-      ]}
-    />
-  );
-}
-
-/** Results showing tabs and elements, including table-cell text. */
-export function SearchTabsAndElements() {
-  return (
-    <SearchOverlay
-      query="revenue"
-      groups={[
-        {
-          title: 'Tabs',
-          rows: [{ icon: <TabIcon />, label: 'Revenue model', active: true }],
-        },
-        {
-          title: 'Elements',
-          rows: [
-            { icon: <ElementIcon />, label: 'Revenue growth', meta: 'on Revenue model' },
-            { icon: <ElementIcon />, label: 'Revenue 2026: 1.2m', meta: 'on Forecast' },
-          ],
-        },
-      ]}
-    />
-  );
-}
-
-/** Palette results under Add to canvas, below an ordinary document match. */
-export function SearchAddToCanvas() {
-  return (
-    <SearchOverlay
-      query="cylinder"
-      groups={[
-        {
-          title: 'Documents',
-          rows: [{ icon: <DocumentIcon />, label: 'Storage cylinder demo', active: true }],
-        },
-        {
-          title: 'Add to canvas',
-          rows: [{ icon: <AddIcon />, label: 'Cylinder' }],
         },
       ]}
     />
@@ -420,31 +334,6 @@ export function SearchCreateTab() {
         {
           title: 'Actions',
           rows: [{ icon: <CommandIcon />, label: 'Create New Tab' }],
-        },
-      ]}
-    />
-  );
-}
-
-/** The command palette: actions for a typed verb, with a matching setting below. */
-export function SearchCommandPalette() {
-  return (
-    <SearchOverlay
-      query="layout"
-      groups={[
-        {
-          title: 'Actions',
-          rows: [
-            { icon: <CommandIcon />, label: 'Auto Layout (tidy up)', active: true },
-            { icon: <CommandIcon />, label: 'Auto Layout: Flowchart (down)' },
-            { icon: <CommandIcon />, label: 'Auto Layout: Flowchart (right)' },
-            { icon: <CommandIcon />, label: 'Auto Layout: Tree' },
-            { icon: <CommandIcon />, label: 'Auto Layout: Mindmap' },
-          ],
-        },
-        {
-          title: 'Help',
-          rows: [{ icon: <HelpIcon />, label: 'Layout Cleanup' }],
         },
       ]}
     />

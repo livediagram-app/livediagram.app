@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { FORM_TAB_DELETE_WARNING, deleteTabWarning, formsFeeding } from './forms-feeding';
 
 // Deleting a board or sheet a form sends to says first that it pauses the form
@@ -55,7 +55,7 @@ describe('formsFeeding', () => {
   });
 
   // The tab bar asks for every tab on every render: 200 tabs, 50 of them forms, stay well inside a frame.
-  it('stays cheap for a large document', () => {
+  it('stays cheap for a large project', () => {
     const many = Array.from({ length: 200 }, (_, i) =>
       i % 4 === 0 ? formTab(`f${i}`, `F${i}`, { board: 'b0' }) : tab(`b${i}`, { kind: 'board' }),
     );

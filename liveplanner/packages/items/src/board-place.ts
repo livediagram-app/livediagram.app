@@ -1,5 +1,5 @@
 // A Plan board an agent adds (docs/specs/026-plan/plan-agents.md "Adding a board"): a preset, or columns by name,
-// as the palette places one (freshBoardSetup): a column named as a status the document already has takes that
+// as the palette places one (freshBoardSetup): a column named as a status the project already has takes that
 // status, so its cards show here too; any other column starts empty under a status of its own. Placed to the right
 // of what the tab already holds, so it never covers anything.
 import {
@@ -153,7 +153,7 @@ export function placeBoard(
 export interface BoardChange {
   title?: string;
   // Every column, by name, left to right: a name the board has keeps its column (status, WIP limit, colour); a name
-  // the document's other boards use shares their status; any other is a new, empty column.
+  // the project's other boards use shares their status; any other is a new, empty column.
   columns?: readonly string[];
   // Columns renamed in place, old name to new: each keeps its status, WIP limit, colour and cards. Applied before
   // `columns`, which may name them by their new names.

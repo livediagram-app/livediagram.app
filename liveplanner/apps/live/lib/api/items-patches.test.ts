@@ -8,7 +8,7 @@ import { ItemWritePartlyLanded, writeItem } from './items';
 // Blueprint item-store.md "Editor slice": a write of many patches goes to /items/patches in batches of
 // ITEM_BULK_MAX, its answers folded into one.
 
-const scope = { ownerId: 'owner-me', documentId: 'doc-cloud', shareCode: null, tabId: null };
+const scope = { ownerId: 'owner-me', projectId: 'doc-cloud', shareCode: null, tabId: null };
 const by = { id: 'p-me', name: 'Me', color: '#2563eb' };
 
 beforeEach(() => __setOfflineBackend(memBackend()));
@@ -33,7 +33,7 @@ describe('writeItem patches', () => {
     const answer = await writeItem(scope, { kind: 'patches', patches, undo: true }, by);
     expect(fetch).toHaveBeenCalledTimes(2);
     const [url, init] = fetch.mock.calls[1] as unknown as [string, RequestInit];
-    expect(url).toContain('/documents/doc-cloud/items/patches');
+    expect(url).toContain('/projects/doc-cloud/items/patches');
     expect(sentJson(init)).toEqual({
       items: patches.slice(ITEM_BULK_MAX).map((p) => ({ id: p.id, set: { status: 'trash' } })),
       undo: true,
@@ -53,7 +53,7 @@ describe('writeItem tally', () => {
       by,
     );
     const [url, init] = fetch.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toContain('/documents/doc-cloud/items/tally');
+    expect(url).toContain('/projects/doc-cloud/items/tally');
     expect(sentJson(init)).toEqual({ items: [{ id: 'i1', votes: { p: 2 } }] });
     expect(answer.rev).toBe(3);
   });

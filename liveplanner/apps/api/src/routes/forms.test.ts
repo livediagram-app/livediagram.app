@@ -6,7 +6,7 @@ import { ITEMS_MAX, presetSetup, type Item } from '@liveplanner/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { generateFormCode, listItems } from '../db';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 import { handleForms } from './forms';
 import { FORM_RESPONSES_PER_HOUR } from '../forms/respond';
 
@@ -53,14 +53,14 @@ async function owner<T = FormLinkResponse>(
   opts: { owner?: string; code?: string; body?: unknown } = {},
 ) {
   const pending: Promise<unknown>[] = [];
-  const ctx = makeTestRouteContext(method, `/api/documents/d1/tabs/ftab/${path}`, {
+  const ctx = makeTestRouteContext(method, `/api/projects/d1/tabs/ftab/${path}`, {
     env: sql.env,
     owner: opts.owner ?? 'owner',
     ...(opts.code ? { headers: { 'X-Share-Code': opts.code } } : {}),
     ...(opts.body === undefined ? {} : { body: opts.body }),
     waitUntil: (p) => void pending.push(p),
   });
-  const res = await handleDocuments(ctx);
+  const res = await handleProjects(ctx);
   await Promise.all(pending);
   const text = await res.text();
   return { status: res.status, body: (text ? JSON.parse(text) : null) as T };
@@ -92,7 +92,7 @@ const items = () => listItems(sql.env, 'd1');
 beforeEach(() => {
   sql = sqliteD1();
   relayed = [];
-  (sql.env as unknown as { DOCUMENT_ROOM: unknown }).DOCUMENT_ROOM = {
+  (sql.env as unknown as { PROJECT_ROOM: unknown }).PROJECT_ROOM = {
     idFromName: (n: string) => n,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
@@ -117,7 +117,7 @@ beforeEach(() => {
   };
   sql.sql
     .prepare(
-      `INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at, item_types) VALUES ('d1', 'owner', 'Ops', 1, 1, 1, ?)`,
+      `INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at, item_types) VALUES ('d1', 'owner', 'Ops', 1, 1, 1, ?)`,
     )
     .run(JSON.stringify(catalogue));
   const board = {
@@ -135,11 +135,11 @@ beforeEach(() => {
     .run(JSON.stringify({ kind: 'board', elements: [board] }));
   sql.sql.exec(`
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('ftab', 'Bug Report', '{}', 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 'board', 0, 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 'ftab', 1, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
+    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 'board', 0, 1);
+    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 'ftab', 1, 1);
+    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('EDIT', 'd1', 'edit', NULL, 1);
   `);
   writeForm(form());
 });
@@ -215,8 +215,8 @@ describe('publishing (docs/specs/030-forms/forms.md "Publishing and the form lin
   it('takes the link away with its tab', async () => {
     const code = await publish();
     const pending: Promise<unknown>[] = [];
-    const res = await handleDocuments(
-      makeTestRouteContext('DELETE', '/api/documents/d1/tabs/ftab', {
+    const res = await handleProjects(
+      makeTestRouteContext('DELETE', '/api/projects/d1/tabs/ftab', {
         env: sql.env,
         owner: 'owner',
         waitUntil: (p) => void pending.push(p),
@@ -233,8 +233,8 @@ describe('publishing (docs/specs/030-forms/forms.md "Publishing and the form lin
     const code = await publish();
     const del = async (tab: string) => {
       const pending: Promise<unknown>[] = [];
-      const res = await handleDocuments(
-        makeTestRouteContext('DELETE', `/api/documents/d1/tabs/${tab}`, {
+      const res = await handleProjects(
+        makeTestRouteContext('DELETE', `/api/projects/d1/tabs/${tab}`, {
           env: sql.env,
           owner: 'owner',
           waitUntil: (p) => void pending.push(p),
@@ -285,7 +285,7 @@ describe('the public form (docs/specs/030-forms/forms.md "Filling in a form")', 
     expect((await pub('GET', 'short')).status).toBe(404);
     expect((await pub('GET', generateFormCode())).status).toBe(404);
     const code = await publish();
-    sql.sql.prepare('UPDATE documents SET trashed_at = 1').run();
+    sql.sql.prepare('UPDATE projects SET trashed_at = 1').run();
     expect((await pub('GET', code)).status).toBe(404);
   });
 
@@ -401,10 +401,10 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
     );
   });
 
-  it('says the form is full when the document holds as many cards as it can', async () => {
+  it('says the form is full when the project holds as many cards as it can', async () => {
     const code = await publish();
     const insert = sql.sql.prepare(
-      `INSERT INTO items (document_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
+      `INSERT INTO items (project_id, id, type, item_key, rank, fields, rev, created_at, updated_at, created_by, updated_by)
        VALUES ('d1', ?, 'bug', ?, 'a', '{}', 1, 1, 1, '{}', '{}')`,
     );
     for (let i = 1; i <= ITEMS_MAX; i += 1) insert.run(`i${i}`, i);
@@ -427,7 +427,7 @@ describe('responses (docs/specs/030-forms/forms.md "What a response makes")', ()
 
 describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sheet")', () => {
   const SHEET = 'shtAAAAAA001';
-  // The sheet on its Sheet tab, that tab in the document.
+  // The sheet on its Sheet tab, that tab in the project.
   const seedSheet = () => {
     sql.sql
       .prepare(
@@ -436,12 +436,12 @@ describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sh
       .run();
     sql.sql
       .prepare(
-        `INSERT OR IGNORE INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 'stab', 1, 1)`,
+        `INSERT OR IGNORE INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 'stab', 1, 1)`,
       )
       .run();
     sql.sql
       .prepare(
-        `INSERT INTO sheets (document_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
+        `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by)
          VALUES ('d1', ?, 'stab', 'Responses', '{"rows":["ra01","ra02","ra03"],"cols":["ca01","ca02"]}', 0, 1, 1, '{}')`,
       )
       .run(SHEET);
@@ -504,11 +504,11 @@ describe('responses to a Sheet (docs/specs/030-forms/forms.md "Responses to a Sh
   });
 
   // A deleted Sheet tab can leave its sheet behind: a row there would never be seen.
-  it("takes no row, Preview or response, once the sheet's tab has left the document", async () => {
+  it("takes no row, Preview or response, once the sheet's tab has left the project", async () => {
     seedSheet();
     writeForm(form({ sheet: { tabId: 'stab', sheetId: SHEET } }));
     const code = await publish();
-    sql.sql.prepare(`DELETE FROM document_tabs WHERE tab_id = 'stab'`).run();
+    sql.sql.prepare(`DELETE FROM project_tabs WHERE tab_id = 'stab'`).run();
     expect(
       (await owner('POST', 'form-preview', { body: { answers: { 'q-sum': 'Try' } } })).status,
     ).toBe(409);
@@ -599,7 +599,7 @@ describe('reports (docs/specs/030-forms/forms.md "Report This Form")', () => {
     expect(await ip(generateFormCode(), 'browser-aaaa', '198.51.100.1')).toBe(404);
   });
 
-  it('stops a document publishing after two suspensions', async () => {
+  it('stops a project publishing after two suspensions', async () => {
     for (let i = 0; i < 2; i += 1) {
       const code = await publish();
       for (const [n, a] of [
@@ -686,12 +686,12 @@ describe('an agent’s form write (docs/specs/030-forms/forms.md "Agents")', () 
   });
 
   it('refuses a tab that holds no form, and a body that is no form', async () => {
-    const other = makeTestRouteContext('POST', '/api/documents/d1/tabs/board/form', {
+    const other = makeTestRouteContext('POST', '/api/projects/d1/tabs/board/form', {
       env: sql.env,
       owner: 'owner',
       body: { form: form() },
     });
-    const res = await handleDocuments(other);
+    const res = await handleProjects(other);
     expect(res.status).toBe(400);
     expect((await res.json<{ error: string }>()).error).toBe('not_a_form_tab');
     expect((await write('nope')).body.error).toBe('invalid_body');

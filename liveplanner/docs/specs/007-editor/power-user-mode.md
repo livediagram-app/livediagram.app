@@ -17,19 +17,13 @@ Switching the mode **on** writes these values, once:
 
 | Setting              | Preference key       | Value |
 | -------------------- | -------------------- | ----- |
-| Alignment guides     | `alignmentGuides`    | on    |
-| Auto-attach arrows   | `autoRebindArrows`   | on    |
-| Diagram tour         | `tourSeen`           | seen  |
 | Plan tour            | `planTourSeen`       | seen  |
 | Forms tour           | `formTourSeen`       | seen  |
-| Pages tour           | `pagesTourSeen`      | seen  |
-| Element tours        | `elementToursSeen`   | seen  |
-| AI suggested prompts | `aiSuggestedPrompts` | off   |
 | Minimal chrome       | `minimalChrome`      | on    |
 
-The Plan and Pages tours offer each of their tracks once (`planTourTracks`, `pagesTourKinds`), and the
-[element tours](element-tours.md) each toured kind (`elementTourKinds`); their seen
-flag counts every track only while the mode is on, so switching it off gives back every track not yet answered.
+The Plan tour offers each of its tracks once (`planTourTracks`); its seen flag counts every track only while the
+mode is on, so switching it off gives back every track not yet answered. The Diagram, Pages and element tours'
+rows went with what they toured ([Editor tours](editor-tour.md), [Element tours](element-tours.md)).
 
 Panel opacity is not part of the preset. Motion is not part of the mode: every transition is snappy for everyone
 ([Motion](../004-interface-design/motion.md)).
@@ -60,13 +54,12 @@ The mode's row sits in Editor, under a **Power User** heading. While the mode is
 directly, indented beneath it as one group named "Power User Mode settings":
 
 1. The power-user-only settings: **Minimal Chrome**.
-2. **Set By Power User Mode**: a readout of the preset, one line per preset setting other than Minimal chrome (Alignment
-   Guides, Auto-Attach Arrows, the Diagram and Plan tours, Suggested Prompts), each with its current value
+2. **Set By Power User Mode**: a readout of the preset, one line per preset setting other than Minimal chrome (the Plan
+   and Forms tours), each with its current value
    and the category it lives in. Each is still changed in its own row, and a **Change** button on the line goes to
    that row, ringed. A line whose value the user has changed since switching on says so ("Changed: kept when you
    switch off"); the others read "Restored when you switch off". With no baseline to restore from (the mode was switched on by a client that recorded none), the lines make no promise
-   about switching off. A setting whose row is not offered here (Suggested
-   Prompts without AI) shows its value without the button.
+   about switching off. A setting whose row is not offered here shows its value without the button.
 
 With the mode off the group is absent. Keyboard order follows the visual order: the mode's switch, then the group.
 While searching, a child that matches shows on its own, like any other row.
@@ -81,7 +74,7 @@ the interface, and leaves the controls:
 - **Palette tile captions.** Palette tiles show their icon only.
 - **Status bar text.** The bottom bar's Search, Settings and appearance controls show their icons only.
 - **The "Tabs" label** before the tab pills is hidden.
-- **Panel titles and help buttons.** Panels (Explorer, Map, Layers, ...) hide their
+- **Panel titles and help buttons.** Panels (Explorer, Collaborate, ...) hide their
   header title and their `?` help button. A panel with a `⋯` menu gains a **Help** row there, opening the same
   article. The Explorer is the one panel with a `⋯` menu today. A panel without one simply drops its `?`: no menu is
   added to hold it, and the help centre stays one click away in the header's **Editor** menu.
@@ -119,7 +112,7 @@ Minimal chrome meets WCAG 2.2 AA:
   hover card where it already has one (the hover card's title is the name), otherwise a Tooltip (500 ms hover, instant on
   keyboard focus, long press on touch), per [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md).
   Palette tiles use a Tooltip.
-- **Non-interactive labels stay in the document.** A panel title keeps its text as visually hidden text; the selection
+- **Non-interactive labels stay in the project.** A panel title keeps its text as visually hidden text; the selection
   toolbar names itself with the kind (`role="toolbar"`, `aria-label` "Selected Square"); the "Tabs" label was never
   announced (the tab strip carries its own names).
 - **No layout shift.** Hiding happens at render, from the preference, never after paint: nothing moves on its own.
@@ -162,8 +155,8 @@ switches between Light and Dark instead of cycling through System, so the everyd
 The mode is offered **once**, ever, to people whose use suggests they would want it.
 
 - **When.** After **20 editing sessions on separate days**, or after **50 keyboard shortcuts** used, whichever comes
-  first. An editing session is opening a document you can edit; a day is a local calendar day, and a day counts once
-  however many documents are opened on it. A keyboard shortcut is a key press the editor's shortcut handler acts on
+  first. An editing session is opening a project you can edit; a day is a local calendar day, and a day counts once
+  however many projects are opened on it. A keyboard shortcut is a key press the editor's shortcut handler acts on
   (Delete, V, Cmd-Z, ...).
 - **Where the counting lives.** The counts are device-local and never synced: they describe how this device is used,
   and syncing a keystroke counter would cost a write per shortcut. Whether the offer has been made is synced, so it is

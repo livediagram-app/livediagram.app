@@ -7,7 +7,7 @@ import {
   ACTION_STATUS_LABELS,
   type ElementAction,
   type ElementActionStatus,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -36,7 +36,7 @@ import { DialogFooter } from '@/components/dialogs/DialogFooter';
 // The email offer is the shared iOS-style ToggleSwitch, default on, and
 // is hidden entirely for a self-assignment — you don't email yourself
 // about your own action. Picking a teammate also fires a REAL access
-// check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this document" hint only shows
+// check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this project" hint only shows
 // when the server says so.
 
 // What the per-open seed last filled the fields from; a new object per seed.
@@ -60,15 +60,15 @@ type AssignActionDialogProps = {
   // identity (docs/specs/014-identity/auth-and-guest-access.md). Drives the Myself row.
   selfUserId: string | null;
   selfName: string | null;
-  // The document's id + team-library team (null team for a personal
-  // document). Drive the access check: picking a teammate asks the server
-  // whether they can actually open this document (docs/specs/012-collaboration/assigned-actions.md §4).
-  documentId: string | null;
-  documentTeamId: string | null;
+  // The project's id + team-library team (null team for a personal
+  // project). Drive the access check: picking a teammate asks the server
+  // whether they can actually open this project (docs/specs/012-collaboration/assigned-actions.md §4).
+  projectId: string | null;
+  projectTeamId: string | null;
   // capabilities.emailEnabled — hides the email offer on a deployment without email
   // without Resend (never advertise a send we can't perform).
   emailEnabled: boolean;
-  // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document into the
+  // Inline personal-project fix (docs/specs/012-collaboration/assigned-actions.md §2): file the project into the
   // picked team's library root so teammates become assignable without an
   // Explorer round-trip. Resolves false on failure (the picker shows a
   // retry-able error line).
@@ -89,8 +89,8 @@ export function AssignActionDialog({
   ownerId,
   selfUserId,
   selfName,
-  documentId,
-  documentTeamId,
+  projectId,
+  projectTeamId,
   emailEnabled,
   onSubmit,
   onDelete,
@@ -103,7 +103,7 @@ export function AssignActionDialog({
   const [assignee, setAssignee] = useState<PickableMember | null>(null);
   const [notifyEmail, setNotifyEmail] = useState(true);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-  // The team id mid inline move (docs/specs/012-collaboration/assigned-actions.md §2 personal-document fix), and
+  // The team id mid inline move (docs/specs/012-collaboration/assigned-actions.md §2 personal-project fix), and
   // whether the last attempt failed.
   const [movingToTeamId, setMovingToTeamId] = useState<string | null>(null);
   const [moveFailed, setMoveFailed] = useState(false);
@@ -114,15 +114,15 @@ export function AssignActionDialog({
   // The assignee dataset (Myself row, team members incl. invited, the
   // preselect-on-edit, the per-pick access check, and the by-team
   // grouping) lives in useAssigneeOptions.
-  const { selfRow, members, grouped, memberOfDocumentTeam, assigneeAccess } = useAssigneeOptions({
+  const { selfRow, members, grouped, memberOfProjectTeam, assigneeAccess } = useAssigneeOptions({
     open,
     existing,
     teams,
     ownerId,
     selfUserId,
     selfName,
-    documentId,
-    documentTeamId,
+    projectId,
+    projectTeamId,
     assignee,
     setAssignee,
   });
@@ -188,7 +188,7 @@ export function AssignActionDialog({
     !(assignee.userId !== null && assignee.userId === selfUserId) &&
     (assigneeAccess === 'no' ||
       assigneeAccess === 'invited' ||
-      (assigneeAccess === 'error' && assignee.teamId !== documentTeamId));
+      (assigneeAccess === 'error' && assignee.teamId !== projectTeamId));
 
   const canSubmit = name.trim().length > 0 && assignee !== null;
   const submit = () => {
@@ -291,8 +291,8 @@ export function AssignActionDialog({
             selfRow={selfRow}
             grouped={grouped}
             members={members}
-            memberOfDocumentTeam={memberOfDocumentTeam}
-            documentTeamId={documentTeamId}
+            memberOfProjectTeam={memberOfProjectTeam}
+            projectTeamId={projectTeamId}
             assignee={assignee}
             onPick={setAssignee}
             signInHref={signInHref}
@@ -307,7 +307,7 @@ export function AssignActionDialog({
                     void onMoveToTeam(teamId).then((ok) => {
                       setMovingToTeamId(null);
                       if (!ok) setMoveFailed(true);
-                      else track('Action', 'Moved', 'DocumentToTeam');
+                      else track('Action', 'Moved', 'ProjectToTeam');
                     });
                   }
                 : undefined
@@ -321,14 +321,14 @@ export function AssignActionDialog({
                 // invite acceptance, no owner action needed.
                 <>
                   {assignee?.name} hasn&apos;t accepted the team invite yet; they&apos;ll get access
-                  to this document when they join.
+                  to this project when they join.
                 </>
               ) : (
                 <>
                   {assignee?.name}{' '}
                   {assigneeAccess === 'no'
-                    ? "can't open this document yet"
-                    : 'may not be able to open this document'}
+                    ? "can't open this project yet"
+                    : 'may not be able to open this project'}
                   : share it or move it to the team library.
                 </>
               )}

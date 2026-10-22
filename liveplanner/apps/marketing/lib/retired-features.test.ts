@@ -24,7 +24,7 @@ const RETIRED = [
   'whiteboard',
   'infographics',
   'slides',
-  'documents',
+  'projects',
   // Boards and dashboards, one page until they split into two.
   'plan',
 ];

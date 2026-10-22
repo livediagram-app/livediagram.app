@@ -138,9 +138,9 @@ CREATE INDEX folders_owner_idx ON folders (owner_id);
 CREATE INDEX folders_parent_idx ON folders (parent_id);
 CREATE INDEX folders_team_idx ON folders (team_id);
 
--- A project (docs/specs/006-document/document.md): its name, owner, place, Trash state and Plan counters. Its tabs
--- are rows of `tabs`, joined through `document_tabs`.
-CREATE TABLE documents (
+-- A project (docs/specs/006-project/project.md): its name, owner, place, Trash state and Plan counters. Its tabs
+-- are rows of `tabs`, joined through `project_tabs`.
+CREATE TABLE projects (
   id                  TEXT    PRIMARY KEY,
   owner_id            TEXT    NOT NULL,
   name                TEXT    NOT NULL,
@@ -167,13 +167,13 @@ CREATE TABLE documents (
   item_types_rev      INTEGER NOT NULL DEFAULT 0,
   join_notified_at    INTEGER
 );
-CREATE INDEX idx_documents_owner_recent ON documents (owner_id, saved_at DESC);
-CREATE INDEX documents_folder_idx ON documents (folder_id);
-CREATE INDEX documents_team_idx ON documents (team_id);
-CREATE INDEX documents_source_idx ON documents (source);
-CREATE INDEX documents_trashed_idx ON documents (trashed_at) WHERE trashed_at IS NOT NULL;
+CREATE INDEX idx_projects_owner_recent ON projects (owner_id, saved_at DESC);
+CREATE INDEX projects_folder_idx ON projects (folder_id);
+CREATE INDEX projects_team_idx ON projects (team_id);
+CREATE INDEX projects_source_idx ON projects (source);
+CREATE INDEX projects_trashed_idx ON projects (trashed_at) WHERE trashed_at IS NOT NULL;
 
--- One tab's body (docs/specs/006-document/per-tab-storage.md): the live app's Tab minus { id, name }, elements and
+-- One tab's body (docs/specs/006-project/per-tab-storage.md): the live app's Tab minus { id, name }, elements and
 -- per-tab settings, as JSON. `rev` advances by exactly one on every body write (the trigger below).
 CREATE TABLE tabs (
   id            TEXT    PRIMARY KEY,
@@ -188,18 +188,18 @@ CREATE TRIGGER tabs_rev_advances BEFORE UPDATE OF data ON tabs
   BEGIN SELECT RAISE(ABORT, 'tab_rev_stale'); END;
 
 -- Which tabs a project holds, in order, with each tab's folder in the tab bar.
-CREATE TABLE document_tabs (
-  document_id TEXT    NOT NULL,
+CREATE TABLE project_tabs (
+  project_id TEXT    NOT NULL,
   tab_id      TEXT    NOT NULL,
   order_index INTEGER NOT NULL,
   added_at    INTEGER NOT NULL,
   folder      TEXT,
-  PRIMARY KEY (document_id, tab_id),
-  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE,
+  PRIMARY KEY (project_id, tab_id),
+  FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE,
   FOREIGN KEY (tab_id) REFERENCES tabs (id) ON DELETE CASCADE
 );
-CREATE INDEX document_tabs_by_document ON document_tabs (document_id, order_index);
-CREATE INDEX document_tabs_by_tab ON document_tabs (tab_id);
+CREATE INDEX project_tabs_by_project ON project_tabs (project_id, order_index);
+CREATE INDEX project_tabs_by_tab ON project_tabs (tab_id);
 
 -- Counts written with each tab body, so listings never read a body.
 CREATE TABLE tab_stats (
@@ -212,24 +212,24 @@ CREATE TABLE tab_stats (
 );
 
 -- When each person last opened each project (Home's recents, the Explorer's Opened column).
-CREATE TABLE document_opens (
+CREATE TABLE project_opens (
   owner_id       TEXT    NOT NULL,
-  document_id    TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
+  project_id    TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   last_opened_at INTEGER NOT NULL,
   last_open_day  TEXT    NOT NULL,
-  PRIMARY KEY (owner_id, document_id)
+  PRIMARY KEY (owner_id, project_id)
 );
-CREATE INDEX document_opens_document_idx ON document_opens (document_id);
-CREATE INDEX document_opens_last_idx ON document_opens (last_opened_at);
+CREATE INDEX project_opens_project_idx ON project_opens (project_id);
+CREATE INDEX project_opens_last_idx ON project_opens (last_opened_at);
 
 CREATE TABLE favourites (
   owner_id    TEXT    NOT NULL,
-  document_id TEXT    NOT NULL,
+  project_id TEXT    NOT NULL,
   created_at  INTEGER NOT NULL,
-  PRIMARY KEY (owner_id, document_id),
-  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
+  PRIMARY KEY (owner_id, project_id),
+  FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
 );
-CREATE INDEX favourites_document_idx ON favourites (document_id);
+CREATE INDEX favourites_project_idx ON favourites (project_id);
 
 CREATE TABLE tags (
   id         TEXT    PRIMARY KEY,
@@ -241,15 +241,15 @@ CREATE TABLE tags (
 );
 CREATE UNIQUE INDEX tags_owner_name ON tags (owner_id, name COLLATE NOCASE);
 
-CREATE TABLE document_tags (
+CREATE TABLE project_tags (
   tag_id      TEXT    NOT NULL,
-  document_id TEXT    NOT NULL,
+  project_id TEXT    NOT NULL,
   created_at  INTEGER NOT NULL,
-  PRIMARY KEY (tag_id, document_id),
+  PRIMARY KEY (tag_id, project_id),
   FOREIGN KEY (tag_id) REFERENCES tags (id) ON DELETE CASCADE,
-  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
+  FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
 );
-CREATE INDEX document_tags_document_idx ON document_tags (document_id);
+CREATE INDEX project_tags_project_idx ON project_tags (project_id);
 
 -- The folder a person files each kind of new project into (docs/specs/013-workspace/default-folders.md).
 CREATE TABLE placement_defaults (
@@ -279,37 +279,37 @@ CREATE INDEX custom_themes_owner_created_idx ON custom_themes (owner_id, created
 -- bit older readers use; `tab_id` scopes it to one tab.
 CREATE TABLE share_links (
   code        TEXT    PRIMARY KEY,
-  document_id TEXT    NOT NULL,
+  project_id TEXT    NOT NULL,
   role        TEXT    NOT NULL CHECK (role IN ('edit', 'view')),
   created_at  INTEGER NOT NULL,
   expiry      TEXT    NULL,
   expires_at  INTEGER NULL,
   tab_id      TEXT    NULL,
   level       TEXT    NULL CHECK (level IS NULL OR level IN ('view', 'participate', 'edit')),
-  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
+  FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
 );
-CREATE INDEX idx_share_links_document_created ON share_links (document_id, created_at);
-CREATE INDEX idx_share_links_document_role_created ON share_links (document_id, role, created_at);
+CREATE INDEX idx_share_links_project_created ON share_links (project_id, created_at);
+CREATE INDEX idx_share_links_project_role_created ON share_links (project_id, role, created_at);
 
 -- The projects shared with a person through a link they opened (the Explorer's Shared with me).
 CREATE TABLE shared_with (
   owner_id    TEXT    NOT NULL,
-  document_id TEXT    NOT NULL,
+  project_id TEXT    NOT NULL,
   role        TEXT    NOT NULL CHECK (role IN ('edit', 'view')),
   last_seen   INTEGER NOT NULL,
   tab_id      TEXT    NULL,
   level       TEXT    NULL CHECK (level IS NULL OR level IN ('view', 'participate', 'edit')),
   share_code  TEXT    NULL,
-  PRIMARY KEY (owner_id, document_id),
-  FOREIGN KEY (document_id) REFERENCES documents (id) ON DELETE CASCADE
+  PRIMARY KEY (owner_id, project_id),
+  FOREIGN KEY (project_id) REFERENCES projects (id) ON DELETE CASCADE
 );
 CREATE INDEX shared_with_by_owner ON shared_with (owner_id, last_seen DESC);
-CREATE INDEX shared_with_document_code_idx ON shared_with (document_id, share_code);
+CREATE INDEX shared_with_project_code_idx ON shared_with (project_id, share_code);
 
 -- Single-use tickets a browser trades for its room WebSocket (docs/specs/015-api/api.md).
 CREATE TABLE ws_tickets (
   ticket            TEXT    PRIMARY KEY,
-  document_id       TEXT    NOT NULL,
+  project_id       TEXT    NOT NULL,
   role              TEXT    NOT NULL,
   expires_at        INTEGER NOT NULL,
   tab_scope         TEXT    NULL,
@@ -426,7 +426,7 @@ CREATE TABLE timeline_scope_state (
 
 CREATE TABLE agent_changesets (
   id           TEXT    PRIMARY KEY,
-  document_id  TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
+  project_id  TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   tab_id       TEXT    NOT NULL REFERENCES tabs (id) ON DELETE CASCADE,
   rev          INTEGER NOT NULL,
   base_rev     INTEGER,
@@ -444,7 +444,7 @@ CREATE TABLE agent_changesets (
   created_at   INTEGER NOT NULL
 );
 CREATE UNIQUE INDEX agent_changesets_tab_rev ON agent_changesets (tab_id, rev);
-CREATE INDEX agent_changesets_document_created ON agent_changesets (document_id, created_at);
+CREATE INDEX agent_changesets_project_created ON agent_changesets (project_id, created_at);
 CREATE INDEX agent_changesets_created ON agent_changesets (created_at);
 CREATE INDEX agent_changesets_author_idx ON agent_changesets (author_id);
 
@@ -461,7 +461,7 @@ CREATE TABLE agent_changeset_parts (
 -- ---------------------------------------------------------------------------------------------------------------
 
 CREATE TABLE items (
-  document_id TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
+  project_id TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   id          TEXT    NOT NULL,
   type        TEXT    NOT NULL,
   -- The card's number in its project (#12), never reused.
@@ -473,11 +473,11 @@ CREATE TABLE items (
   updated_at  INTEGER NOT NULL,
   created_by  TEXT    NOT NULL,
   updated_by  TEXT    NOT NULL,
-  PRIMARY KEY (document_id, id)
+  PRIMARY KEY (project_id, id)
 );
-CREATE UNIQUE INDEX items_document_key ON items (document_id, item_key);
+CREATE UNIQUE INDEX items_project_key ON items (project_id, item_key);
 CREATE INDEX items_assignee ON items (json_extract(fields, '$.assignee.id'));
-CREATE INDEX items_open_threads ON items (document_id) WHERE json_extract(fields, '$.comments.resolved') = 0;
+CREATE INDEX items_open_threads ON items (project_id) WHERE json_extract(fields, '$.comments.resolved') = 0;
 
 -- Each board's columns, kept from the tab bodies for the cross-project reads (Home's plans, a card's Done check).
 CREATE TABLE plan_board_statuses (
@@ -498,7 +498,7 @@ CREATE TABLE plan_board_statuses (
 -- ---------------------------------------------------------------------------------------------------------------
 
 CREATE TABLE sheets (
-  document_id              TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
+  project_id              TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   id                       TEXT    NOT NULL,
   -- The tab the sheet was made on, for life: tab-scoped links and references between sheets are by tab.
   tab_id                   TEXT    NOT NULL,
@@ -519,20 +519,20 @@ CREATE TABLE sheets (
   updated_by               TEXT    NOT NULL,
   -- A sheet made with its frame goes when its last frame does, rather than waiting for the sweep.
   delete_when_unreferenced INTEGER,
-  PRIMARY KEY (document_id, id)
+  PRIMARY KEY (project_id, id)
 );
-CREATE INDEX sheets_tab ON sheets (document_id, tab_id);
+CREATE INDEX sheets_tab ON sheets (project_id, tab_id);
 CREATE INDEX sheets_unreferenced ON sheets (unreferenced_since) WHERE unreferenced_since IS NOT NULL;
 
 CREATE TABLE sheet_cells (
-  document_id TEXT NOT NULL,
+  project_id TEXT NOT NULL,
   sheet_id    TEXT NOT NULL,
   row_id      TEXT NOT NULL,
   col_id      TEXT NOT NULL,
   input       TEXT,
   format      TEXT,
-  PRIMARY KEY (document_id, sheet_id, row_id, col_id),
-  FOREIGN KEY (document_id, sheet_id) REFERENCES sheets (document_id, id) ON DELETE CASCADE
+  PRIMARY KEY (project_id, sheet_id, row_id, col_id),
+  FOREIGN KEY (project_id, sheet_id) REFERENCES sheets (project_id, id) ON DELETE CASCADE
 );
 
 -- Which tabs frame which sheets; the triggers keep each sheet's unreferenced state in step.
@@ -547,7 +547,7 @@ CREATE TRIGGER sheet_refs_added AFTER INSERT ON sheet_refs
 BEGIN
   UPDATE sheets SET unreferenced_since = NULL
    WHERE id = NEW.sheet_id
-     AND document_id IN (SELECT document_id FROM document_tabs WHERE tab_id = NEW.tab_id)
+     AND project_id IN (SELECT project_id FROM project_tabs WHERE tab_id = NEW.tab_id)
      AND unreferenced_since IS NOT NULL;
 END;
 
@@ -555,16 +555,16 @@ CREATE TRIGGER sheet_refs_removed AFTER DELETE ON sheet_refs
 BEGIN
   DELETE FROM sheets
    WHERE id = OLD.sheet_id
-     AND document_id IN (SELECT document_id FROM document_tabs WHERE tab_id = OLD.tab_id)
+     AND project_id IN (SELECT project_id FROM project_tabs WHERE tab_id = OLD.tab_id)
      AND delete_when_unreferenced = 1
-     AND NOT EXISTS (SELECT 1 FROM sheet_refs r JOIN document_tabs dt ON dt.tab_id = r.tab_id
-                      WHERE r.sheet_id = sheets.id AND dt.document_id = sheets.document_id);
+     AND NOT EXISTS (SELECT 1 FROM sheet_refs r JOIN project_tabs dt ON dt.tab_id = r.tab_id
+                      WHERE r.sheet_id = sheets.id AND dt.project_id = sheets.project_id);
   UPDATE sheets SET unreferenced_since = CAST((julianday('now') - 2440587.5) * 86400000 AS INTEGER)
    WHERE id = OLD.sheet_id
-     AND document_id IN (SELECT document_id FROM document_tabs WHERE tab_id = OLD.tab_id)
+     AND project_id IN (SELECT project_id FROM project_tabs WHERE tab_id = OLD.tab_id)
      AND unreferenced_since IS NULL
-     AND NOT EXISTS (SELECT 1 FROM sheet_refs r JOIN document_tabs dt ON dt.tab_id = r.tab_id
-                      WHERE r.sheet_id = sheets.id AND dt.document_id = sheets.document_id);
+     AND NOT EXISTS (SELECT 1 FROM sheet_refs r JOIN project_tabs dt ON dt.tab_id = r.tab_id
+                      WHERE r.sheet_id = sheets.id AND dt.project_id = sheets.project_id);
 END;
 
 -- ---------------------------------------------------------------------------------------------------------------
@@ -574,7 +574,7 @@ END;
 -- A Form tab's published link.
 CREATE TABLE form_links (
   code             TEXT    PRIMARY KEY,
-  document_id      TEXT    NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
+  project_id      TEXT    NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
   tab_id           TEXT    NOT NULL,
   open             INTEGER NOT NULL DEFAULT 1,
   created_at       INTEGER NOT NULL,
@@ -591,8 +591,8 @@ CREATE TABLE form_links (
   held_emails      INTEGER NOT NULL DEFAULT 0,
   deleted_at       INTEGER
 );
-CREATE INDEX form_links_document ON form_links (document_id);
-CREATE UNIQUE INDEX form_links_live_tab ON form_links (document_id, tab_id)
+CREATE INDEX form_links_project ON form_links (project_id);
+CREATE UNIQUE INDEX form_links_live_tab ON form_links (project_id, tab_id)
   WHERE suspended_at IS NULL AND deleted_at IS NULL;
 
 -- The response number each person has seen up to, for the Inbox's unread count.
@@ -626,7 +626,7 @@ CREATE TABLE workbench_pairings (
   origin     TEXT    NOT NULL,
   name       TEXT    NULL,
   created_at INTEGER NOT NULL,
-  scope      TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
+  scope      TEXT    NOT NULL DEFAULT 'project' CHECK (scope IN ('project', 'workspace')),
   UNIQUE (token_id, origin)
 );
 CREATE INDEX workbench_pairings_owner ON workbench_pairings (owner_id);
@@ -642,7 +642,7 @@ CREATE TABLE workbench_pairing_requests (
   created_at  INTEGER NOT NULL,
   expires_at  INTEGER NOT NULL,
   answered_at INTEGER NULL,
-  scope       TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace'))
+  scope       TEXT    NOT NULL DEFAULT 'project' CHECK (scope IN ('project', 'workspace'))
 );
 CREATE INDEX workbench_pairing_requests_expiry ON workbench_pairing_requests (expires_at);
 CREATE UNIQUE INDEX workbench_pairing_requests_live
@@ -653,8 +653,8 @@ CREATE TABLE workbench_tickets (
   owner_id    TEXT    NOT NULL,
   token_id    TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
   pairing_id  TEXT    NOT NULL REFERENCES workbench_pairings (id) ON DELETE CASCADE,
-  scope       TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
-  document_id TEXT    NULL REFERENCES documents (id) ON DELETE CASCADE,
+  scope       TEXT    NOT NULL DEFAULT 'project' CHECK (scope IN ('project', 'workspace')),
+  project_id TEXT    NULL REFERENCES projects (id) ON DELETE CASCADE,
   folder_id   TEXT    NULL,
   tab_id      TEXT    NULL,
   origin      TEXT    NOT NULL,
@@ -662,10 +662,10 @@ CREATE TABLE workbench_tickets (
   created_at  INTEGER NOT NULL,
   expires_at  INTEGER NOT NULL,
   used_at     INTEGER NULL,
-  CHECK ((scope = 'document') = (document_id IS NOT NULL)),
+  CHECK ((scope = 'project') = (project_id IS NOT NULL)),
   CHECK (scope = 'workspace' OR folder_id IS NULL)
 );
-CREATE INDEX workbench_tickets_document_idx ON workbench_tickets (document_id);
+CREATE INDEX workbench_tickets_project_idx ON workbench_tickets (project_id);
 CREATE INDEX workbench_tickets_expiry ON workbench_tickets (expires_at);
 
 CREATE TABLE workbench_sessions (
@@ -674,25 +674,25 @@ CREATE TABLE workbench_sessions (
   owner_id    TEXT    NOT NULL,
   token_id    TEXT    NOT NULL REFERENCES api_tokens (id) ON DELETE CASCADE,
   pairing_id  TEXT    NOT NULL REFERENCES workbench_pairings (id) ON DELETE CASCADE,
-  scope       TEXT    NOT NULL DEFAULT 'document' CHECK (scope IN ('document', 'workspace')),
-  document_id TEXT    NULL REFERENCES documents (id) ON DELETE CASCADE,
+  scope       TEXT    NOT NULL DEFAULT 'project' CHECK (scope IN ('project', 'workspace')),
+  project_id TEXT    NULL REFERENCES projects (id) ON DELETE CASCADE,
   folder_id   TEXT    NULL,
   tab_id      TEXT    NULL,
   origin      TEXT    NOT NULL,
   role        TEXT    NOT NULL CHECK (role IN ('view', 'participate', 'edit')),
   created_at  INTEGER NOT NULL,
   expires_at  INTEGER NOT NULL,
-  CHECK ((scope = 'document') = (document_id IS NOT NULL)),
+  CHECK ((scope = 'project') = (project_id IS NOT NULL)),
   CHECK (scope = 'workspace' OR folder_id IS NULL)
 );
-CREATE INDEX workbench_sessions_document_idx ON workbench_sessions (document_id);
+CREATE INDEX workbench_sessions_project_idx ON workbench_sessions (project_id);
 CREATE INDEX workbench_sessions_expiry ON workbench_sessions (expires_at);
 CREATE INDEX workbench_sessions_pairing ON workbench_sessions (pairing_id);
 
 -- The projects a workspace-scoped session has opened rooms on, so revoking the session closes them.
 CREATE TABLE workbench_session_rooms (
   session_id  TEXT NOT NULL REFERENCES workbench_sessions (id) ON DELETE CASCADE,
-  document_id TEXT NOT NULL REFERENCES documents (id) ON DELETE CASCADE,
-  PRIMARY KEY (session_id, document_id)
+  project_id TEXT NOT NULL REFERENCES projects (id) ON DELETE CASCADE,
+  PRIMARY KEY (session_id, project_id)
 );
-CREATE INDEX workbench_session_rooms_document_idx ON workbench_session_rooms (document_id);
+CREATE INDEX workbench_session_rooms_project_idx ON workbench_session_rooms (project_id);

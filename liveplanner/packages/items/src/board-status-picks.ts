@@ -1,5 +1,5 @@
 // The statuses a board can still take as columns (docs/specs/026-plan/plan-board.md "The column picker"): every
-// status the document knows that this board has no column for, one per name, with what picking it brings onto
+// status the project knows that this board has no column for, one per name, with what picking it brings onto
 // the board (how many of its cards this board would show, the boards that already use it, their colour).
 import { boardShowsType, isArchived, isTrashed, statusLabel, type PlanBoardSetup } from './board';
 import { itemStatus, type Item } from './item';
@@ -11,7 +11,7 @@ export type StatusPick = { status: string; name: string };
 export interface MissingStatus extends StatusPick {
   // The cards in it (out of the Trash and the Archive) of the types this board shows: what its column would hold.
   cards: number;
-  // The titles of the boards that use it, in document order; empty when only cards (or a card type) know it.
+  // The titles of the boards that use it, in project order; empty when only cards (or a card type) know it.
   boards: string[];
   // The colour the first board using it gives its column, when any does.
   colour?: string;
@@ -25,7 +25,7 @@ export interface StatusBoardSource {
   colours?: ReadonlyMap<string, string>;
 }
 
-// The statuses a column can be made for: those the document's boards name (status id to name, in document
+// The statuses a column can be made for: those the project's boards name (status id to name, in project
 // order, the open tab's first), then any a card is in (out of the Trash) that no board names, by name, then any
 // a card type makes its cards in (its Default State) that nothing else names, in catalogue order. A status no
 // board names reads as its id in Title Case. The same map back when there is nothing to add.

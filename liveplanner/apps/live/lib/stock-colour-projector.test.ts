@@ -5,7 +5,7 @@ import {
   createFreehand,
   penColourHex,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { createStockColourProjector } from './stock-colour-projector';
 
 const stroke = (over: Partial<Element> = {}): Element =>

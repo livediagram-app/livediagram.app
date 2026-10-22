@@ -1,13 +1,13 @@
 'use client';
 
 // The Links card's address field (docs/specs/026-plan/plan-tabs.md "Cards", Links): type a web address, or pick one of
-// this document's tabs from the list under it, each with its tab's icon and name. A combobox: the list opens as the
+// this project's tabs from the list under it, each with its tab's icon and name. A combobox: the list opens as the
 // field takes focus or is typed in, ArrowDown and ArrowUp move through it, Enter picks the highlighted tab (or, with
 // none highlighted, submits the form), Escape closes the list (or, closed, cancels the form). The list is drawn in a
 // portal under the field, so a short slot never clips it.
 import { useId, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { Portal, TextInput } from '@liveplanner/ui';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { placeAnchored, type AnchoredPlace } from '@/components/primitives/AnchoredPopover';
 import { matchingTabs } from './link-address';
@@ -126,7 +126,7 @@ export function LinkAddressField({
           <ul
             id={listId}
             role="listbox"
-            aria-label="Tabs in this document"
+            aria-label="Tabs in this project"
             className="fixed z-[calc(var(--z-popover)+1)] overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-white p-1 shadow-lg dark:border-slate-700 dark:bg-slate-900"
             style={{
               left: place.left,

@@ -5,7 +5,7 @@
 // the store, so a selection change re-renders this and not the element layer around it.
 
 import type { ComponentProps } from 'react';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
 import { QuickConnectPluses } from '@/components/canvas/QuickConnectPluses';
 import {

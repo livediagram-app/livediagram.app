@@ -167,7 +167,7 @@ export async function mountGrid(o: MountOptions = {}): Promise<MountedGrid> {
   const sheetId = `sheet${String(++seq).padStart(4, '0')}`;
   const json = sheetToJson(initialSheet(sheetId, o));
   const store = new SheetStore({
-    scope: { documentId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
     self: () => by,
     locale: 'en-GB',
     pushUndo: () => {},

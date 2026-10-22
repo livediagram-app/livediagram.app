@@ -1,5 +1,5 @@
 // The diagnostics report a person copies from the load-error screen (docs/specs/007-editor/load-recovery.md
-// "Diagnostics"). Identifiers and states only, never document content. Two credentials are kept out on
+// "Diagnostics"). Identifiers and states only, never project content. Two credentials are kept out on
 // purpose: a share code (the path's `?s=` is reported as "share link: yes") and a full guest id (an
 // `X-Owner-Id` credential; @liveplanner/ui's identity lines carry only its first 8 characters).
 

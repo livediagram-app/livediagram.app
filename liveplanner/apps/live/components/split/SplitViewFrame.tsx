@@ -9,9 +9,9 @@ import {
   type ReactNode,
   type RefObject,
 } from 'react';
-import { tabHasDrawing } from '@liveplanner/document';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useSelectTab } from '@/app/document/[id]/useSelectTab';
+import { tabHasDrawing } from '@liveplanner/project';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
+import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useSplitView } from '@/hooks/ui/useSplitView';
 import { useViewportWidth } from '@/hooks/ui/useViewportWidth';
@@ -34,7 +34,7 @@ const SplitStaticPane = dynamic(() => import('./SplitStaticPane').then((m) => m.
   ssr: false,
 });
 
-// Side by side tabs (docs/specs/007-editor/split-view.md): two tabs of the document on screen, each
+// Side by side tabs (docs/specs/007-editor/split-view.md): two tabs of the project on screen, each
 // keeping its side, with one site header across the top and one tab bar across the bottom. The
 // editor (canvas, toolbars, panels) sits in the pane of the active tab; the other pane draws its tab
 // live. Clicking into the other pane, or resting the pointer there, moves the editor across, and
@@ -64,7 +64,7 @@ export function SplitViewFrame({
   const {
     tabs,
     activeId,
-    documentId,
+    projectId,
     hydrated,
     loadedTabIds,
     loadAllTabs,
@@ -84,7 +84,7 @@ export function SplitViewFrame({
     tabs,
     activeId,
     selectTab,
-    documentId,
+    projectId,
     hydrated,
     loadedTabIds,
     loadTabs: loadAllTabs,

@@ -7,8 +7,8 @@
 import { useMemo, useRef, useState, type CSSProperties } from 'react';
 import { CompactEmptyState, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideGripVertical, lucideLayoutGrid } from '@liveplanner/icons/lucide';
-import { dashboardNeighbour, moveDashboardSlot } from '@liveplanner/document';
-import { DASHBOARD_SPANS, type DashboardLayout, type DashboardSlot } from '@liveplanner/document';
+import { dashboardNeighbour, moveDashboardSlot } from '@liveplanner/project';
+import { DASHBOARD_SPANS, type DashboardLayout, type DashboardSlot } from '@liveplanner/project';
 import { DASHBOARD_GAP_PX } from '@/hooks/plan/slot-fit';
 import { useDashboard } from './dashboard-context';
 import { SLOT_SECTION, SlotSettings, type SlotSettingsValue } from './slot-menu';
@@ -21,7 +21,7 @@ import { SheetChartSource } from './SheetChartSource';
 import { DashedAddButton } from '@/components/primitives/DashedAddButton';
 import { useSlotEnter } from './useSlotEnter';
 import { isCondensed } from './condense';
-import { isDashboardStyledType } from '@liveplanner/document';
+import { isDashboardStyledType } from '@liveplanner/project';
 import { useCardStyle } from './useCardStyle';
 import { CardStyleSections } from './CardStyleSections';
 import { cardFrameStyle, cardInkClass, cardInkStyle } from './card-look';
@@ -63,7 +63,7 @@ export function DashboardSlotView({
   const cellRef = useRef<HTMLDivElement>(null);
   useSlotEnter(cellRef, at.slot);
   const tabId = slot.content?.type === 'tab' ? slot.content.tabId : null;
-  // What the slot shows has a header of its own (a board, a Sheet, a visualisation, a Diagram tab): the slot's settings
+  // What the slot shows has a header of its own (a board, a Sheet, a visualisation, a Board or Sheet tab): the slot's settings
   // join its cog there (slot-menu.ts). A metric, a note or an empty slot has none: the slot's cog floats at the top
   // right on hover.
   const content = slot.content;

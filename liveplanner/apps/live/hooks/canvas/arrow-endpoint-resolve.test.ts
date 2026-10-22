@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element } from '@liveplanner/document';
+import type { ArrowElement, Element } from '@liveplanner/project';
 import { resolveArrowEndpointDrag } from './arrow-endpoint-resolve';
 
 const box = (id: string, at: { x: number; y: number }) =>

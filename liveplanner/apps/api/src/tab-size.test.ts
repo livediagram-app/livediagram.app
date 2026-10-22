@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { MAX_TAB_BYTES, tabDataBytes } from '@liveplanner/api-schema';
 import { sqliteD1, type SqliteD1 } from './test-sqlite-d1';
 import { seedTabs, swapTabData, upsertTab } from './db/tabs';
 import { TabTooLargeError } from './limits';
 import { makeTestRouteContext } from './routes/test-route-context';
-import { handleDocuments } from './routes/documents';
+import { handleProjects } from './routes/projects';
 import { tabStatsOfData } from './db/tab-stats';
 
 // docs/specs/015-api/api.md "Tab size": a tab's data fits one D1 row (2,000,000 bytes), which the
@@ -30,7 +30,7 @@ function tabOf(bytes: number, id = 't1'): Tab {
 function liveDoc(db: SqliteD1, id: string, owner = 'owner') {
   db.sql
     .prepare(
-      'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+      'INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
     )
     .run(id, owner, id, T0, T0);
 }
@@ -97,8 +97,8 @@ describe('the routes answer the named 413', () => {
   it('refuses a create with a tab over the cap before writing anything', async () => {
     const warn = quiet();
     const db = sqliteD1();
-    const res = await handleDocuments(
-      makeTestRouteContext('POST', '/api/documents', {
+    const res = await handleProjects(
+      makeTestRouteContext('POST', '/api/projects', {
         env: db.env,
         owner: 'owner',
         body: { id: 'd1', name: 'Doc', tabs: [tabOf(MAX_TAB_BYTES + 1)] },
@@ -106,7 +106,7 @@ describe('the routes answer the named 413', () => {
     );
     expect(res?.status).toBe(413);
     expect((await res.json<{ error: string }>()).error).toBe('payload_too_large');
-    expect(db.sql.prepare('SELECT id FROM documents WHERE id = ?').get('d1')).toBeUndefined();
+    expect(db.sql.prepare('SELECT id FROM projects WHERE id = ?').get('d1')).toBeUndefined();
     expect(warn).toHaveBeenCalledWith(
       '[tab-size] refused',
       expect.objectContaining({ write: 'create', bytes: MAX_TAB_BYTES + 1 }),
@@ -114,10 +114,10 @@ describe('the routes answer the named 413', () => {
     warn.mockRestore();
   });
 
-  it('creates a document whose tab is at the cap', async () => {
+  it('creates a project whose tab is at the cap', async () => {
     const db = sqliteD1();
-    const res = await handleDocuments(
-      makeTestRouteContext('POST', '/api/documents', {
+    const res = await handleProjects(
+      makeTestRouteContext('POST', '/api/projects', {
         env: db.env,
         owner: 'owner',
         body: { id: 'd1', name: 'Doc', tabs: [tabOf(MAX_TAB_BYTES)] },
@@ -132,8 +132,8 @@ describe('the routes answer the named 413', () => {
     const db = sqliteD1();
     liveDoc(db, 'd1');
     await upsertTab(db.env, 'd1', tabOf(MAX_TAB_BYTES - 10), 0);
-    const res = await handleDocuments(
-      makeTestRouteContext('POST', '/api/documents/d1/tabs/t1/comments', {
+    const res = await handleProjects(
+      makeTestRouteContext('POST', '/api/projects/d1/tabs/t1/comments', {
         env: db.env,
         owner: 'owner',
         body: { elementId: 'x', text: 'One more thought' },
@@ -149,8 +149,8 @@ describe('the routes answer the named 413', () => {
     const db = sqliteD1();
     liveDoc(db, 'd1');
     await upsertTab(db.env, 'd1', tabOf(100), 0);
-    const res = await handleDocuments(
-      makeTestRouteContext('PUT', '/api/documents/d1/tabs/t1', {
+    const res = await handleProjects(
+      makeTestRouteContext('PUT', '/api/projects/d1/tabs/t1', {
         env: db.env,
         owner: 'owner',
         body: tabOf(MAX_TAB_BYTES + 1),

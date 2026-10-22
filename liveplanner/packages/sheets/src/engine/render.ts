@@ -217,7 +217,7 @@ export function sheetContentSize(sheet: Sheet): { width: number; height: number 
   };
 }
 
-// The chrome around the grid a static render draws (packages/document svg-render-plan-sheet.ts).
+// The chrome around the grid a static render draws (packages/project svg-render-plan-sheet.ts).
 const STATIC_HEADER_H = 40 + 22;
 const STATIC_ROW_HEAD_W = 46;
 

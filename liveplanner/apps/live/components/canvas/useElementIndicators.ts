@@ -10,7 +10,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { describeLink } from '@/lib/link-label';
 import { colorForKey, initialsOf } from '@/lib/identity';
 import { useCommentBadges } from '@/components/canvas/CommentBadgesContext';
@@ -35,7 +35,7 @@ export function elementIndicatorItems(
   showComments = true,
 ): IndicatorItem[] {
   // A Plan item carries no link, note, action or comments (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan
-  // items"): any left on one from before are kept in the document but not shown.
+  // items"): any left on one from before are kept in the project but not shown.
   if (!takesAttachments(element)) return [];
   const { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries } = handlers;
   const shape = element.type === 'shape' ? element.shape : undefined;
@@ -44,7 +44,7 @@ export function elementIndicatorItems(
   const link =
     element.type !== 'link-card' &&
     element.link &&
-    (element.link.kind === 'tab' || element.link.kind === 'document' || element.link.kind === 'url')
+    (element.link.kind === 'tab' || element.link.kind === 'project' || element.link.kind === 'url')
       ? element.link
       : undefined;
   const assignee =

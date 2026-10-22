@@ -68,7 +68,7 @@ const cookieValue = (res: Response, name: string) =>
     ?.split(';')[0]!
     .slice(name.length + 1);
 
-async function signInCookie(returnTo = '/document/abc') {
+async function signInCookie(returnTo = '/project/abc') {
   const res = await call(`/api/auth/sign-in?return_to=${encodeURIComponent(returnTo)}`);
   const location = new URL(res.headers.get('Location')!);
   return { res, location, pkce: cookieValue(res, 'lp_pkce')! };
@@ -129,7 +129,7 @@ describe('GET /api/auth/callback', () => {
     const res = await callback();
 
     expect(res.status).toBe(302);
-    expect(res.headers.get('Location')).toBe('/document/abc');
+    expect(res.headers.get('Location')).toBe('/project/abc');
     const [url, init] = fetchMock.mock.calls[0]!;
     expect(sentUrl(url)).toBe('https://accounts.example/api/auth/oauth2/token');
     expect(new Headers(init?.headers).get('authorization')).toBe(`Basic ${btoa('client-lp:shh')}`);
@@ -266,7 +266,7 @@ describe('the /api/auth surface', () => {
 
 describe('safeReturnPath', () => {
   it('keeps a path on this site and replaces anything that would leave it', () => {
-    expect(safeReturnPath('/document/abc?tab=1')).toBe('/document/abc?tab=1');
+    expect(safeReturnPath('/project/abc?tab=1')).toBe('/project/abc?tab=1');
     for (const unsafe of [null, '', 'https://evil.example', '//evil.example', '/\\evil.example']) {
       expect(safeReturnPath(unsafe)).toBe('/explorer/home');
     }

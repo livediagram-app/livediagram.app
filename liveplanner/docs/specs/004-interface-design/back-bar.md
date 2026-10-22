@@ -24,4 +24,4 @@ to the top of the scroll area, so the way back never leaves the screen.
 ## Share roles
 
 The bar is navigation only. Editor, Participant and Viewer see and use it alike wherever the surface it sits in is
-open to them; it never changes the document.
+open to them; it never changes the project.

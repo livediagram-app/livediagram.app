@@ -49,7 +49,7 @@ const json = (id: string, title: string): SheetJson => ({
 async function harness(opts: { canEdit?: boolean } = {}) {
   const sheets = [json(ID, 'Sheet 1'), json(OTHER, 'Other')];
   const store = new SheetStore({
-    scope: { documentId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
     self: () => by,
     locale: 'en-GB',
     pushUndo: () => {},

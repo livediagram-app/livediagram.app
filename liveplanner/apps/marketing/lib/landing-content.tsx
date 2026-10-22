@@ -94,70 +94,70 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <PlanBoardArt />,
-        href: '/help/canvas/plan-mode/boards/',
+        href: '/help/plan/boards/',
         title: 'Boards with WIP limits',
         description:
           'Drag cards through columns, split into swimlanes by assignee, type, priority or any field. Give a column a WIP limit and its count turns amber the moment it goes over.',
       },
       {
         art: <SharedItemsArt />,
-        href: '/help/canvas/plan-mode/items/',
+        href: '/help/plan/items/',
         title: 'One card, every board',
         description:
           'A card is one item, not a copy, so the same card can sit on the sprint board and the roadmap. Move it on one and it moves on both.',
       },
       {
         art: <CardDetailArt />,
-        href: '/help/canvas/plan-mode/cards/',
+        href: '/help/plan/cards/',
         title: 'Cards that hold the detail',
         description:
           'Open a card for everything about it: a rich-text description, a checklist that counts down to done, status, assignee, priority, labels and dates, and the parent card it belongs to. Flag one for attention, and follow the trail between a piece of work and its tasks without losing your place.',
       },
       {
         art: <CardCommentsArt />,
-        href: '/help/canvas/plan-mode/cards/',
+        href: '/help/plan/cards/',
         title: 'Talk it through on the card',
         description:
           'Every card has its own thread. @mention a teammate and they get an email that opens the card, resolve the thread when it is settled, and see the comment count on the card from the board.',
       },
       {
         art: <CardTypesArt />,
-        href: '/help/canvas/plan-mode/card-types/',
+        href: '/help/plan/card-types/',
         title: 'Card types and fields of your own',
         description:
           'Five built-in types (Project, Task, Note, Idea and Action), or make your own with the fields your team tracks: text, number, date, choice, a link to another card and more.',
       },
       {
         art: <BoardWidgetsArt />,
-        href: '/help/canvas/plan-mode/boards/',
+        href: '/help/plan/boards/',
         title: 'Widgets that narrow the board',
         description:
           'Pin widgets to a board header (Completion, Due Soon, WIP Alerts, Top Voted, Stale Cards and more) and press one to narrow the board to just those cards.',
       },
       {
         art: <FindCardArt />,
-        href: '/help/canvas/plan-mode/cards/',
+        href: '/help/plan/cards/',
         title: 'Find any card',
         description:
           'The Cards list searches every card in the project by number, title or description, newest change first. Add up to eight filters, such as Type: Bug or Assignee: No assignee, or show only the cards no board is showing.',
       },
       {
         art: <BoardCsvArt />,
-        href: '/help/canvas/plan-mode/boards/',
+        href: '/help/plan/boards/',
         title: 'Boards in and out as CSV',
         description:
           'Import a CSV or TSV and each row becomes a card, landing in the column its Status names and with the person its Assignee names; only a title is required, and one undo takes it all back. Export any board as CSV, an image, a PDF or a Markdown outline.',
       },
       {
         art: <HiddenVotesArt />,
-        href: '/help/canvas/plan-mode/boards/',
+        href: '/help/plan/boards/',
         title: 'Retros that keep a secret',
         description:
           'Cards stay face down while the team writes, so nobody anchors on the first idea. Press Reveal, then vote for what matters most.',
       },
       {
         art: <TemplatesArt />,
-        href: '/help/canvas/plan-mode/',
+        href: '/help/plan/planning-basics/',
         title: 'Ten plans, twelve spreadsheets',
         description:
           'Project Planner, Kanban Board, Bug Tracker, Team Retro, Weekly Planner, Content Calendar, Hiring Pipeline, OKRs, Product Launch and Feedback Board, each set up with its boards; twelve spreadsheets, from a Budget Planner and an Invoice to a Sales Pipeline, a Grade Book and a Loan Calculator, many with charts already in; or a blank plan. New Project lays them out by kind, with search.',
@@ -190,42 +190,42 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <DashboardArt />,
-        href: '/help/canvas/plan-mode/dashboards/',
+        href: '/help/plan/dashboards/',
         title: 'Dashboards on one page',
         description:
           'Lay a Dashboard tab out as rows of slots and put one thing in each, live: a board you can work on, a Sheet you can edit, a chart, a figure like Completion or a column total, or a note, a checklist or a key date. Start from a layout such as Overview or Report, then add, move and resize slots as you go.',
       },
       {
         art: <PlanViewsArt />,
-        href: '/help/canvas/plan-mode/visualisations/',
+        href: '/help/plan/visualisations/',
         title: 'Live charts of every card',
         description:
           'A Gantt chart, due and start calendars you can drag cards across, cards by any field and priority by status, all drawn from the cards themselves, so a chart is never out of date. Give one a tab of its own and it fills the page, with a Chart Settings cog for which cards it shows and how it groups them.',
       },
       {
         art: <SuggestedDashboardsArt />,
-        href: '/help/canvas/plan-mode/dashboards/',
+        href: '/help/plan/dashboards/',
         title: 'Dashboards made from your work',
         description:
           'Once a project has boards, Start Planning offers dashboards built around them, badged For You: a Timeline for a board with dates, Sprint Health for one with estimates, Triage, a Team Overview of several boards, or a board beside a Sheet. Pick one and every slot arrives filled.',
       },
       {
         art: <SheetFigureArt />,
-        href: '/help/canvas/plan-mode/dashboards/',
+        href: '/help/plan/dashboards/',
         title: 'Figures and charts from a Sheet',
         description:
           'Show one cell against a target, a column’s total or average, a trend, or a chart of any range as columns, bars, lines, a pie or a doughnut, read live from a Sheet in the project. A form lends its figures too: its responses, the new ones, and when it closes.',
       },
       {
         art: <DashboardUtilitiesArt />,
-        href: '/help/canvas/plan-mode/dashboards/',
+        href: '/help/plan/dashboards/',
         title: 'Notes, status and key dates',
         description:
           'Write on the dashboard itself: a note, a title to name a section, a status of On Track, At Risk or Off Track, a checklist to tick off, a key date counted down to, or a set of links. Style each card to suit the page.',
       },
       {
         art: <DashboardArrangeArt />,
-        href: '/help/canvas/plan-mode/dashboards/',
+        href: '/help/plan/dashboards/',
         title: 'Arrange it your way',
         description:
           'Drag a slot by its grip to swap or move it, drag the bar between slots to share a row differently, or use the arrow keys; every change is one undo. On a phone the slots stack one under another, and a dashboard exports as a PNG, SVG or PDF.',
@@ -251,63 +251,63 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <SheetsArt />,
-        href: '/help/canvas/plan-mode/sheets/',
+        href: '/help/plan/sheets/',
         title: 'Sheets with real formulas',
         description:
           'Cells, over 150 functions, number formats, sort, filter and freeze, live for everyone on the project. Formulas fill down, and a cell can read a card on the board.',
       },
       {
         art: <SharedItemsArt />,
-        href: '/help/canvas/plan-mode/sheets/',
+        href: '/help/plan/sheets/',
         title: 'Cards as rows, linked both ways',
         description:
           'List the board’s cards as rows: change a cell and the card changes, move the card and its row follows. The sheet and the board are one set of work.',
       },
       {
         art: <PlanViewsArt />,
-        href: '/help/canvas/plan-mode/sheets/',
+        href: '/help/plan/sheets/',
         title: 'Charts from your cells',
         description:
           'Select some cells and chart them as bars, lines or a pie that sits in the Sheet over its cells, redrawn the moment a number changes.',
       },
       {
         art: <SheetValidationArt />,
-        href: '/help/canvas/plan-mode/sheets/',
+        href: '/help/plan/sheets/',
         title: 'Dropdowns and checkboxes',
         description:
           'Turn cells into coloured dropdown chips, a list from other cells, or tick boxes a formula can count. Number, date and text rules refuse a value that does not fit, or only warn, and say why in the cell.',
       },
       {
         art: <ConditionalFormatArt />,
-        href: '/help/canvas/plan-mode/sheets/',
+        href: '/help/plan/sheets/',
         title: 'Colour cells by their values',
         description:
           'Conditional formatting paints a cell when it meets a rule (text contains, greater than, a date before, or a formula of your own) or shades a whole column on a colour scale. You see each rule on the cells while you set it.',
       },
       {
         art: <CellCommentsArt />,
-        href: '/help/canvas/plan-mode/sheets/',
+        href: '/help/plan/sheets/',
         title: 'Named ranges and cell comments',
         description:
           'Name a cell TaxRate and write =B2*TaxRate in any row. Leave a comment on a single cell: it carries an amber corner, opens as a thread, and is listed with every other open thread in the project.',
       },
       {
         art: <SheetTogetherArt />,
-        href: '/help/canvas/plan-mode/sheets/',
+        href: '/help/plan/sheets/',
         title: 'Edit together, cell by cell',
         description:
           'Everyone sees each change as it is made, with each person’s selection outlined in their colour and name. Two people typing in different cells never overwrite each other, and a participant link can fill in cells without changing the rules.',
       },
       {
         art: <TemplatesArt />,
-        href: '/help/canvas/plan-mode/sheet-functions/',
+        href: '/help/plan/sheet-functions/',
         title: 'Twelve ready-made spreadsheets',
         description:
           'A Budget Planner, an Invoice, a Sales Pipeline, a Grade Book, a Loan Calculator and more, many with charts already in, or a blank spreadsheet to type into.',
       },
       {
         art: <BoardImportArt />,
-        href: '/help/canvas/plan-mode/sheets/',
+        href: '/help/plan/sheets/',
         title: 'Paste from Sheets and Excel, CSV in and out',
         description:
           'Copy and paste works with Google Sheets and Excel, CSV files come in and go out, and cells come Compact, Default or Roomy and zoom from 50% to 200%.',
@@ -333,42 +333,42 @@ export const LANDING_SECTIONS: LandingSection[] = [
     items: [
       {
         art: <FormBuilderArt />,
-        href: '/help/canvas/plan-mode/forms/',
+        href: '/help/plan/forms/',
         title: 'Build it where it sits',
         description:
           'Click a question to word it, pick its type (short answer, paragraph, number, email, link, date, choices, rating or a checkbox) and mark it required, right in the form. Sections can show only on an earlier answer.',
       },
       {
         art: <FormSectionsArt />,
-        href: '/help/canvas/plan-mode/forms/',
+        href: '/help/plan/forms/',
         title: 'Pages, a cover and your look',
         description:
           'Split a form into sections people answer a page at a time, with Next, Back and a progress bar, and show a section only to those who answered a certain way. Add a cover band, and the form wears its tab’s theme and font on its link too.',
       },
       {
         art: <FormShareArt />,
-        href: '/help/canvas/plan-mode/forms/',
+        href: '/help/plan/forms/',
         title: 'One link to share',
         description:
           'Publish the form to get a link anyone can fill in, with no sign-in. They see the form and nothing else of yours, and you can close it, set a closing date or a response limit at any time.',
       },
       {
         art: <FormResponsesArt />,
-        href: '/help/canvas/plan-mode/forms/',
+        href: '/help/plan/forms/',
         title: 'Every answer lands',
         description:
           'Each response becomes a row in a sheet, a column per question, or a card on a board with its answers in the card’s fields, ready to move along. The count on the form says how many are new.',
       },
       {
         art: <FormAlertsArt />,
-        href: '/help/canvas/plan-mode/forms/',
+        href: '/help/plan/forms/',
         title: 'New answers find you',
         description:
           'Each response shows New until you open it, the form counts what is new to you, and your Inbox lists every form with fresh answers. The owner also gets an email, at most one every 15 minutes per form, and can switch it off in Settings.',
       },
       {
         art: <TemplatesArt />,
-        href: '/help/canvas/plan-mode/forms/',
+        href: '/help/plan/forms/',
         title: 'Seven forms to start from',
         description:
           'A Bug Report, Feedback, a Feature Request, an Event RSVP, a Job Application, a Contact form, or a blank one, each sending its answers to the board or sheet that suits it.',

@@ -3,7 +3,7 @@
 The per-element **note** (`note?` on every boxed element, opened from the
 element menu's Resources band, the on-element note badge, or an annotation
 marker — see [Annotations](annotations.md), [Assigned actions](../012-collaboration/assigned-actions.md))
-is a **small rich-text document**: a note is often the place a reviewer writes
+is a **small rich-text project**: a note is often the place a reviewer writes
 several points, a checklist of caveats, or a link to the source material, and
 a plain-text paragraph in a small popover is too cramped for that.
 
@@ -14,7 +14,7 @@ bold / italic / underline / headings / bullet + numbered lists / links.
 
 Element labels already carry per-range formatting as **runs**
 ([Canvas and palette](../008-canvas/canvas-and-palette.md), `rich-text.ts` in
-`@liveplanner/document`): an array of `{ text, …deltas }` slices plus a
+`@liveplanner/project`): an array of `{ text, …deltas }` slices plus a
 plain-text mirror on the element. Notes use exactly that model, so there is
 one formatting algebra, one contentEditable ↔ runs bridge, and **no HTML is
 ever stored or rendered** — the runs are painted as React spans, which closes

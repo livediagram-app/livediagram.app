@@ -2,7 +2,7 @@
 
 import type { Folder } from '@/lib/api-client';
 import { DefaultFolderMarker } from '@/components/placement/DefaultFolderMarker';
-import { DROP_TARGET_ROW } from '@/components/panels/useDocumentDropTarget';
+import { DROP_TARGET_ROW } from '@/components/panels/useProjectDropTarget';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
@@ -21,7 +21,7 @@ import {
 import { formatItems } from './details-format';
 
 // One folder in the Details view (docs/specs/013-workspace/explorer-details-view.md): name, "Folder",
-// its item count, its dates; it takes a dropped document and carries the folder menu.
+// its item count, its dates; it takes a dropped project and carries the folder menu.
 export function DetailsFolderRow({
   folder,
   itemCount,

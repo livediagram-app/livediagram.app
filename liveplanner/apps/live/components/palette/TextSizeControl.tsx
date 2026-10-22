@@ -16,7 +16,7 @@ import {
   TEXT_PX_MIN,
   type TextSize,
   type TextSizePreset,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { Tooltip } from '@liveplanner/ui';
 import { PreviewSliderRow } from '@/components/primitives/PreviewSliderRow';

@@ -29,11 +29,11 @@ function api(
     return answer(body);
   };
   const client = fakeApi({
-    '/documents/doc/plan': formPlan(),
-    '/documents/doc/tabs/form': { tab: formTabBody(form) },
-    '/documents/doc/tabs/form/form-link': link,
-    '/documents/doc/tabs/form/form-preview': write(preview),
-    '/documents/doc/items': write((body) =>
+    '/projects/doc/plan': formPlan(),
+    '/projects/doc/tabs/form': { tab: formTabBody(form) },
+    '/projects/doc/tabs/form/form-link': link,
+    '/projects/doc/tabs/form/form-preview': write(preview),
+    '/projects/doc/items': write((body) =>
       Response.json({
         item: { id: 'item-1', fields: (body as { fields: Record<string, unknown> }).fields },
         rev: 2,
@@ -52,7 +52,7 @@ describe('tryForm', () => {
     });
     expect(r).toEqual({
       ok: true,
-      documentId: 'doc',
+      projectId: 'doc',
       tabId: 'form',
       made: 'card',
       number: null,
@@ -63,7 +63,7 @@ describe('tryForm', () => {
     });
     expect(writes).toEqual([
       {
-        path: '/documents/doc/items',
+        path: '/projects/doc/items',
         body: {
           type: 'bug',
           fields: expect.objectContaining({
@@ -91,7 +91,7 @@ describe('tryForm', () => {
     });
     expect(writes).toEqual([
       {
-        path: '/documents/doc/tabs/form/form-preview',
+        path: '/projects/doc/tabs/form/form-preview',
         body: { answers: { 'q-sum': 'Crash', 'q-ok': true }, other: {} },
       },
     ]);
@@ -175,7 +175,7 @@ describe('tryForm', () => {
       where: 'the sheet "Budget"',
       title: null,
     });
-    expect(writes.map((w) => w.path)).toEqual(['/documents/doc/tabs/form/form-preview']);
+    expect(writes.map((w) => w.path)).toEqual(['/projects/doc/tabs/form/form-preview']);
   });
 
   it('refuses a form whose responses go nowhere, and an unpublished one whose board is gone', async () => {

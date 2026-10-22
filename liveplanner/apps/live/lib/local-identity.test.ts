@@ -42,7 +42,7 @@ describe('local-identity SSR-safety (no window)', () => {
     // output, not a stub or empty string.
     expect(id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
     // The previous mint did not survive (no storage), so a second
-    // call mints a fresh one. Documents the degraded-mode behaviour.
+    // call mints a fresh one. Projects the degraded-mode behaviour.
     const id2 = ensureGuestSelfId();
     expect(id2).not.toBe(id);
   });

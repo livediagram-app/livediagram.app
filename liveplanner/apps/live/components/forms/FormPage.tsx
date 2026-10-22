@@ -8,7 +8,7 @@
 import { useNow } from '@/hooks/ui/useNow';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { formLook, type Tab } from '@liveplanner/document';
+import { formLook, type Tab } from '@liveplanner/project';
 import { ITEMS_MAX } from '@liveplanner/items';
 import {
   closedBySettings,
@@ -56,7 +56,7 @@ export function FormPage({
   actions,
   openTab,
   loadTabs,
-  documentId,
+  projectId,
   ownerId,
   share,
   online,
@@ -69,12 +69,12 @@ export function FormPage({
   actions: FormActions;
   openTab: (tabId: string) => void;
   loadTabs?: (only?: readonly string[]) => Promise<string[]>;
-  documentId: string | null;
+  projectId: string | null;
   ownerId: string;
   share: string | null;
-  // A document kept on the server (an offline one has no link to publish).
+  // A project kept on the server (an offline one has no link to publish).
   online: boolean;
-  // Moves an offline document onto the server in place, from Share Form, once the reader is known.
+  // Moves an offline project onto the server in place, from Share Form, once the reader is known.
   onSyncToCloud?: () => Promise<void>;
   syncReady?: boolean;
 }) {
@@ -118,11 +118,11 @@ export function FormPage({
   }, [boardTabIds, loadTabs]);
 
   const link = useFormLink({
-    documentId,
+    projectId,
     tabId: tab.id,
     ownerId,
     share,
-    enabled: online && !!documentId,
+    enabled: online && !!projectId,
   });
   // Switched on, but past its Close On or at its Response Limit: closed to respondents, so it reads Closed and is
   // not locked (docs/specs/030-forms/forms.md "Hearing about responses").
@@ -254,7 +254,7 @@ export function FormPage({
                         link={link}
                         problem={problem}
                         closedBy={closedBy}
-                        // Only cards fill a document: a sheet's rows never do.
+                        // Only cards fill a project: a sheet's rows never do.
                         full={!form.sheet && (plan?.items.size ?? 0) >= ITEMS_MAX}
                         canEdit={canEdit}
                         onFix={() => openSettings('destination')}
@@ -331,11 +331,11 @@ export function FormPage({
                                       // A published form counts it as a response; a Sheet's row is
                                       // always written by the api.
                                       sendToLink:
-                                        (published || !!form.sheet) && documentId
+                                        (published || !!form.sheet) && projectId
                                           ? (s) =>
                                               apiSendFormPreview(
                                                 ownerId,
-                                                documentId,
+                                                projectId,
                                                 tab.id,
                                                 s,
                                                 share,

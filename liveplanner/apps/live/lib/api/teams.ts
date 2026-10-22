@@ -68,7 +68,7 @@ export async function apiAcceptTeamInvite(
   return member;
 }
 
-// The team's shared library (docs/specs/013-workspace/team-shared-documents.md): folder tree + documents in one
+// The team's shared library (docs/specs/013-workspace/team-shared-projects.md): folder tree + projects in one
 // call, joined members only.
 //
 // Callers asking for the same library at the same time share one request (the Explorer's sweep, the team
@@ -179,19 +179,19 @@ export async function apiRemoveTeamMember(
   return { ok: true };
 }
 
-// Whether a joined teammate can open a document (docs/specs/012-collaboration/assigned-actions.md): drives the
+// Whether a joined teammate can open a project (docs/specs/012-collaboration/assigned-actions.md): drives the
 // Assign Action dialog's access hint. Null on any failure so the caller
 // can fall back to its heuristic instead of showing a confident wrong
 // answer.
 export async function apiCheckAssigneeAccess(
   ownerId: string,
   teamId: string,
-  input: { assigneeUserId: string; documentId: string },
+  input: { assigneeUserId: string; projectId: string },
 ): Promise<boolean | null> {
   try {
     const params = new URLSearchParams({
       assigneeUserId: input.assigneeUserId,
-      documentId: input.documentId,
+      projectId: input.projectId,
     });
     const res = await apiFetch(`${API_BASE}/teams/${teamId}/access-check?${params}`, {
       headers: await apiHeaders(ownerId),
@@ -207,7 +207,7 @@ export async function apiCheckAssigneeAccess(
 // Email a teammate about an action just assigned to them (docs/specs/012-collaboration/assigned-actions.md).
 // Best-effort by contract: the assignment has already persisted via the
 // tab write, so callers fire-and-forget this and swallow failures. The
-// server re-verifies team membership + document access and resolves every
+// server re-verifies team membership + project access and resolves every
 // name/address itself; the body only says who and what.
 export async function apiNotifyActionAssigned(
   ownerId: string,
@@ -217,7 +217,7 @@ export async function apiNotifyActionAssigned(
     // membership row id) for invited members with no account yet.
     assigneeUserId: string | null;
     assigneeMemberId?: string;
-    documentId: string;
+    projectId: string;
     actionName: string;
     description?: string;
   },
@@ -232,13 +232,13 @@ export async function apiNotifyActionAssigned(
 
 // Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md "The email").
 // Best-effort like notify-action: the comment has already persisted, so
-// callers fire-and-forget. The server re-verifies the team, the document and
+// callers fire-and-forget. The server re-verifies the team, the project and
 // every recipient, and resolves every name and address itself.
 export async function apiNotifyMention(
   ownerId: string,
   teamId: string,
   input: {
-    documentId: string;
+    projectId: string;
     commentText: string;
     mentions: { userId: string | null; memberId?: string }[];
     // A Plan card's comment: the card the email opens, and the stored comment the api quotes.

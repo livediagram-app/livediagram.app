@@ -2,7 +2,7 @@
 // the card types as they will be saved, the boards and sheets it may send responses to, and the tabs to make or boards
 // to change beside it, built up change by change and written only once every change has been checked. Where responses
 // go and where each answer goes are decided here, as Responses Go To and Answer Goes To decide them.
-import { newPlanSheetId, type Element, type Tab } from '@liveplanner/document';
+import { newPlanSheetId, type Element, type Tab } from '@liveplanner/project';
 import {
   MAPPABLE_KINDS,
   QUESTION_TYPE_NAMES,
@@ -54,7 +54,7 @@ export interface FormDraft {
   form: FormDefinition;
   types: ItemTypeDef[];
   typesChanged: boolean;
-  // The boards and sheets responses may go to: the document's and the ones this draft makes.
+  // The boards and sheets responses may go to: the project's and the ones this draft makes.
   boards: BoardRef[];
   sheets: SheetRef[];
   // Responses tabs to make after the Form tab, in order.
@@ -107,8 +107,8 @@ function newFormType(d: FormDraft, label = uniqueTypeLabel(d.form.heading, d.typ
   return type;
 }
 
-// A card type by name: the document's, else a ready-made one of that name brought in (Candidate, Bug...), else a new
-// one of that name, so a document of its own can name the type its responses become.
+// A card type by name: the project's, else a ready-made one of that name brought in (Candidate, Bug...), else a new
+// one of that name, so a project of its own can name the type its responses become.
 function typeNamed(d: FormDraft, name: string): ItemTypeDef {
   const own = resolveType(name, d.types);
   if (own.ok) return own.type;

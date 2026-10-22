@@ -25,7 +25,7 @@ import { trackLensChange } from './lens-telemetry';
 type Sync = { seen: string; pending: string[] };
 
 export type ExplorerLens = {
-  /** The current view's lens, or null on a view that lists no documents. */
+  /** The current view's lens, or null on a view that lists no projects. */
   view: LensView | null;
   context: LensContext;
   input: string;

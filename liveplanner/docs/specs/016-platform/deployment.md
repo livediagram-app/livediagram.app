@@ -15,7 +15,7 @@ There is a second environment, **staging**, which does deploy on its own: every 
 | `apps/mcp`       | `liveplanner-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
 | `apps/router`    | `liveplanner-router`    | Worker (service bindings to the other five).                                  |
 
-The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/document/<id>` request to the single statically-built `/document/placeholder/` page — see [New document route](../007-editor/new-document-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.liveplanner.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
+The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/project/<id>` request to the single statically-built `/project/placeholder/` page — see [New project route](../007-editor/new-project-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.liveplanner.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
 
 `wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, `[[d1_databases]]`, and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
@@ -93,9 +93,8 @@ versions briefly serve side by side. The deploy keeps that window short and reco
   so the window is the deploy itself.
 - **deploy-live** waits for **deploy-api**, so a new editor never calls an api that lacks its routes;
   **deploy-router** still waits for the six it binds.
-- The editor serves its old address during the overlap ([Router app](router-app.md#legacy-editor-route)),
-  and a save that fails in the window is retried on its own
-  ([Per-tab storage](../006-document/per-tab-storage.md#retrying-a-failed-save)).
+- A save that fails in the window is retried on its own
+  ([Per-tab storage](../006-project/per-tab-storage.md#retrying-a-failed-save)).
 - Deploy a renaming migration to **staging first**, and to production at a quiet hour: for a minute or
   so, api calls from open editors can fail and are retried.
 
@@ -109,8 +108,6 @@ Some configuration is what **liveplanner.app** runs with, not what the software 
 - **Who gets it.** The reusable workflow resolves `HOSTED` from the repository ID of `liveplanner-app/liveplanner.app`, so production and staging both apply it, a rename or transfer keeps it, and no other repository matches. A deploy from anywhere else applies nothing, so it is **telemetry-off**.
 - **How it is applied.** On every hosted deploy, not once: the build step appends the frontend mirror to `$GITHUB_ENV`, and the api deploy passes each var as `wrangler deploy --var NAME:VALUE` (`node scripts/hosted-vars.mjs flags`). Every command takes the environment as `--env staging` (none is production), so a deploy only ever applies its own environment's entries.
 - **How it is checked.** After the api deploy, `node scripts/hosted-vars.mjs verify` reads the plain vars off every version serving traffic (`wrangler deployments status` + `wrangler versions view`) and fails the run on any hosted var that is missing or different, or that its environment leaves unset but the worker still holds. In CI, `apps/api/src/hosted-vars.test.ts` fails when the profile stops turning telemetry on, names a var the worker does not read, or when `wrangler.toml` commits a hosted-only var as a default.
-
-`AI_ALLOWED_ORIGINS` is deliberately **not** in the profile. It names liveplanner.app's origins but fails closed, so a deployment that forgets to change it gets an AI endpoint that refuses its own origin rather than one open to every page.
 
 ## Required GitHub Action secrets
 
@@ -177,4 +174,4 @@ The workers themselves remain reachable at their default `*.workers.dev` URLs fo
 
 - Preview deploys for PRs (one environment tracking `main` is all there is — see [Staging environment](staging-environment.md) "What staging is not").
 - Rollback procedure (currently: `wrangler rollback` via dashboard or CLI).
-- Per-worker secrets that are **not** in the optional sync table above (e.g. the model key (`GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY`), `RESEND_API_KEY`) — those are set by hand with `wrangler secret put` and persist across deploys.
+- Per-worker secrets that are **not** in the optional sync table above (e.g. `RESEND_API_KEY`) — those are set by hand with `wrangler secret put` and persist across deploys.

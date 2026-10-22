@@ -52,7 +52,7 @@ describe('ExampleCardsNotice', () => {
     expect(isExampleItem(own)).toBe(false);
   });
 
-  it('finds every example card of the document, leaving out the Trash', () => {
+  it('finds every example card of the project, leaving out the Trash', () => {
     expect(exampleCardIds(all.values())).toEqual(['example1', 'example2']);
   });
 
@@ -77,7 +77,7 @@ describe('ExampleCardsNotice', () => {
     expect(container.innerHTML).toBe('');
   });
 
-  it('Clear Example Cards trashes every example card of the document, in one write', () => {
+  it('Clear Example Cards trashes every example card of the project, in one write', () => {
     const plan = planOf(true);
     render(<ExampleCardsNotice shown={[example]} plan={plan} palette={palette} />);
     fireEvent.click(screen.getByRole('button', { name: 'Clear Example Cards' }));

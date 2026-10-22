@@ -110,8 +110,8 @@ bodies: your board, your sheet, or which), then that track's steps and outro, th
 are **Boards** and **Spreadsheets**; each sends `Selected` · `PlanTourBoards` | `PlanTourSheets`, sets `tourTrack`,
 then `engine.next()` (which sends `Started` · `PlanTour`); the switch lands with the index move to 1, in one
 render. On a single-track offer there are no `welcomeChoices`, so the card's default accept (**Yes**)
-calls `engine.next()`. The outro's help link follows the track (`/help/canvas/plan-mode/` or
-`/help/canvas/plan-mode/sheets/`).
+calls `engine.next()`. The outro's help link follows the track (`/help/plan/planning-basics/` or
+`/help/plan/sheets/`).
 
 Boards steps, each scoped to the board's drawn body `[data-plan-board="<board>"]` (`boardRoot`; never its
 `data-element-id` canvas node, hidden under a maximised or tab-filling body): `board` (no anchor, a centred card; prepare
@@ -137,13 +137,13 @@ open; `closeCard` calls `plan.closeItem()` when one is open. Nothing else in the
 
 ### Leftovers (`usePlanTourLeftovers`)
 
-`usePlanTourLeftovers`, composed in `useEditorState`, sweeps what the old tour left: once the document has hydrated,
-a leftover record for this document has its element (and sheet, through `releaseSheets`) removed with no history.
+`usePlanTourLeftovers`, composed in `useEditorState`, sweeps what the old tour left: once the project has hydrated,
+a leftover record for this project has its element (and sheet, through `releaseSheets`) removed with no history.
 When `releaseSheets` returns false (no Sheet has drawn to take it), the element and the record stay, `[plan-tour]
 content.failed` is logged once, and the sweep tries again after `LEFTOVER_SHEET_RETRY_MS` (2000, a cheap check; the
 sheet goes soon after the first Sheet draws). Once the items are ready, its items go too (`writeQuiet` deletes,
 `[plan-tour] content.swept`); the record is cleared only once both the element and the items are swept. A record for
-another document is kept. Nothing writes a record any more.
+another project is kept. Nothing writes a record any more.
 
 ## Interfaces and contracts
 
@@ -170,24 +170,24 @@ another document is kept. Nothing writes a record any more.
 ## Data and persistence
 
 - `planTourTracks` and `planTourSeen`: synced preferences, per person.
-- The tour writes no document data: no element, item, cell or history entry. The subject is held in component
+- The tour writes no project data: no element, item, cell or history entry. The subject is held in component
   state for the run only.
 - The leftover record in `localStorage` is only read and cleared (the old tour's).
 
 ## Errors and edge cases
 
-| Case                                              | Handling                                            |
-| ------------------------------------------------- | --------------------------------------------------- |
-| No board or Sheet on the tab (empty, Dashboard)   | No offer; armed until one appears while in Plan     |
-| Settings rerun with no board or Sheet             | Armed; offered once one appears; nothing is placed  |
-| A board with no cards                             | `move-card` and `card-panel` are left out up front  |
-| The board or Sheet has not drawn when a step runs | The step's target is awaited 3500 ms, then skipped  |
-| The subject is deleted mid-tour                   | The tour ends as skipped                            |
-| The person switches tab or leaves Plan mid-tour   | The tour ends as skipped; the card panel is closed  |
-| A Sheet's toolbar or cog not shown to this person | Its step finds no target and is skipped             |
-| Diagram tour on screen                            | The Plan tour waits for `activeTour()` to clear     |
-| Locked tab                                        | No offer                                            |
-| A leftover record from the old tour               | Swept on the next visit to that document, as before |
+| Case                                              | Handling                                           |
+| ------------------------------------------------- | -------------------------------------------------- |
+| No board or Sheet on the tab (empty, Dashboard)   | No offer; armed until one appears while in Plan    |
+| Settings rerun with no board or Sheet             | Armed; offered once one appears; nothing is placed |
+| A board with no cards                             | `move-card` and `card-panel` are left out up front |
+| The board or Sheet has not drawn when a step runs | The step's target is awaited 3500 ms, then skipped |
+| The subject is deleted mid-tour                   | The tour ends as skipped                           |
+| The person switches tab or leaves Plan mid-tour   | The tour ends as skipped; the card panel is closed |
+| A Sheet's toolbar or cog not shown to this person | Its step finds no target and is skipped            |
+| Diagram tour on screen                            | The Plan tour waits for `activeTour()` to clear    |
+| Locked tab                                        | No offer                                           |
+| A leftover record from the old tour               | Swept on the next visit to that project, as before |
 
 ## Security and trust
 
@@ -212,7 +212,7 @@ Sheets tour** (`ariaPrefix` the same, the chosen track's after a pick), with `Bo
 one column to the next), `SheetsTourArt` (A1 typed into, the selection stepping across and down) or
 `PlanChoiceTourArt` (a two-column board beside a small sheet), all in `TourArtFrame`'s recipe: inline SVG, Tailwind
 classes for light and dark, looping with `infinite`, still under reduced motion. The outro reuses `TourHelpArt`, with
-**Help** linking `/help/canvas/plan-mode` and **Start** (`TOUR_FINISH`).
+**Help** linking `/help/plan/planning-basics` and **Start** (`TOUR_FINISH`).
 
 ## Accessibility
 
@@ -231,26 +231,26 @@ surface is fixed-position over the canvas.
 
 ## Testing
 
-| Rule                                                                    | Test                                                                            |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Offered in Plan once a board or Sheet is on the tab, after the delay    | `PlanTourHost.test.tsx`                                                         |
-| Waits on an empty tab or a Dashboard; a rerun waits and places nothing  | `PlanTourHost.test.tsx`                                                         |
-| Not offered when seen, read-only, locked, unhydrated, embedded          | `PlanTourHost.test.tsx`                                                         |
-| Waits for another tour on screen; not for the Diagram tour being owed   | `PlanTourHost.test.tsx`                                                         |
-| Relaunch offers in Plan only                                            | `PlanTourHost.test.tsx`                                                         |
-| One kind skips the choice; both ask; the track runs on the subject      | `PlanTourHost.test.tsx`, `TourStage.test.tsx`                                   |
-| A board with no cards leaves out the card steps                         | `PlanTourHost.test.tsx`, `plan-tour-steps.test.ts`                              |
-| Runs to the end without changing the document or sending content events | `PlanTourHost.test.tsx`                                                         |
-| Ends as skipped on another tab or the subject deleted                   | `PlanTourHost.test.tsx`                                                         |
-| Steps, selectors on the subject, nothing prepared but the card panel    | `plan-tour-steps.test.ts`                                                       |
-| Welcome bodies per offer, Title Case step titles                        | `plan-tour-steps.test.ts`                                                       |
-| Leftover record round trip, malformed value dropped                     | `plan-tour.test.ts`                                                             |
-| Sweep of a leftover record                                              | `usePlanTourLeftovers.test.ts`                                                  |
-| Engine: prepare, skip a missing target, heal, finish outcomes           | `useTourEngine.test.tsx`                                                        |
-| Stage: default and Plan card words, ring, labels                        | `TourStage.test.tsx`                                                            |
-| Active-tour store                                                       | `tour-active.test.ts`                                                           |
-| Settings row inverted, events                                           | `settings-catalogue.test.ts`                                                    |
-| Telemetry tokens charted and explained                                  | `liveworkspace/apps/site/app/telemetry` `metric-emitters.test.ts`, explanations |
+| Rule                                                                   | Test                                                                            |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Offered in Plan once a board or Sheet is on the tab, after the delay   | `PlanTourHost.test.tsx`                                                         |
+| Waits on an empty tab or a Dashboard; a rerun waits and places nothing | `PlanTourHost.test.tsx`                                                         |
+| Not offered when seen, read-only, locked, unhydrated, embedded         | `PlanTourHost.test.tsx`                                                         |
+| Waits for another tour on screen; not for the Diagram tour being owed  | `PlanTourHost.test.tsx`                                                         |
+| Relaunch offers in Plan only                                           | `PlanTourHost.test.tsx`                                                         |
+| One kind skips the choice; both ask; the track runs on the subject     | `PlanTourHost.test.tsx`, `TourStage.test.tsx`                                   |
+| A board with no cards leaves out the card steps                        | `PlanTourHost.test.tsx`, `plan-tour-steps.test.ts`                              |
+| Runs to the end without changing the project or sending content events | `PlanTourHost.test.tsx`                                                         |
+| Ends as skipped on another tab or the subject deleted                  | `PlanTourHost.test.tsx`                                                         |
+| Steps, selectors on the subject, nothing prepared but the card panel   | `plan-tour-steps.test.ts`                                                       |
+| Welcome bodies per offer, Title Case step titles                       | `plan-tour-steps.test.ts`                                                       |
+| Leftover record round trip, malformed value dropped                    | `plan-tour.test.ts`                                                             |
+| Sweep of a leftover record                                             | `usePlanTourLeftovers.test.ts`                                                  |
+| Engine: prepare, skip a missing target, heal, finish outcomes          | `useTourEngine.test.tsx`                                                        |
+| Stage: default and Plan card words, ring, labels                       | `TourStage.test.tsx`                                                            |
+| Active-tour store                                                      | `tour-active.test.ts`                                                           |
+| Settings row inverted, events                                          | `settings-catalogue.test.ts`                                                    |
+| Telemetry tokens charted and explained                                 | `liveworkspace/apps/site/app/telemetry` `metric-emitters.test.ts`, explanations |
 
 ## Constants and configuration
 

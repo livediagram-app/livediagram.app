@@ -2,7 +2,7 @@
 // The PNG export's boxed element painter (docs/specs/020-import-export): a rich-text label keeps the element's opacity.
 
 import { describe, expect, it } from 'vitest';
-import { createShape, type BoxedElement } from '@liveplanner/document';
+import { createShape, type BoxedElement } from '@liveplanner/project';
 import { drawBoxed } from './export-tab-canvas-draw';
 
 function recordingContext() {

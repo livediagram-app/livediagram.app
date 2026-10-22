@@ -27,7 +27,7 @@ export function JumpBackInStrip({
   recentHref: string;
   onSeeMore: () => void;
   labelledBy: string;
-  /** Each document's Explorer menu (explorer-home.md "Jump Back In"); omitted, no tile has one. */
+  /** Each project's Explorer menu (explorer-home.md "Jump Back In"); omitted, no tile has one. */
   menuFor?: JumpBackInMenuFor;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -67,13 +67,13 @@ export function JumpBackInStrip({
         ) : (
           <ul aria-labelledby={labelledBy} className="flex shrink-0 gap-3">
             {tiles.map(({ item, group }) => (
-              <li key={item.documentId} className={`${STRIP_TILE} snap-start`}>
+              <li key={item.projectId} className={`${STRIP_TILE} snap-start`}>
                 <JumpBackInTile
                   ownerId={ownerId}
                   item={item}
                   group={group}
                   thumbClassName={STRIP_THUMB}
-                  entry={menuFor?.(item.documentId) ?? null}
+                  entry={menuFor?.(item.projectId) ?? null}
                 />
               </li>
             ))}

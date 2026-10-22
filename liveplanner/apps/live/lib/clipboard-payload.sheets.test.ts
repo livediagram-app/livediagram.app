@@ -1,8 +1,8 @@
 // Sheets in the clipboard envelope (docs/specs/029-sheets/sheet.md "Copying a Sheet element"): a copied Sheet
-// element carries its sheet's cells, so a paste into another document can still make the copy; a paste stashes
+// element carries its sheet's cells, so a paste into another project can still make the copy; a paste stashes
 // what arrived for the pasted Sheet to take.
 import { afterEach, describe, expect, it } from 'vitest';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import type { SheetJson } from '@liveplanner/sheets';
 import {
   CLIPBOARD_KIND,

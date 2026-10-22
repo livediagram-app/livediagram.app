@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import type { Folder } from '@/lib/api-client';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { rowLocation } from './row-location';
-import type { PaneDocument, SelectedNode } from './views';
+import type { PaneProject, SelectedNode } from './views';
 
 // docs/specs/013-workspace/recent-folder-chip.md and explorer-structure.md "Places": a row on a view that lists more
 // than one place says where it lives.
-const doc = (over: Partial<PaneDocument> = {}): PaneDocument =>
-  ({ id: 'd1', name: 'Doc', folderId: null, savedAt: 0, ownerId: 'me', ...over }) as PaneDocument;
+const doc = (over: Partial<PaneProject> = {}): PaneProject =>
+  ({ id: 'd1', name: 'Doc', folderId: null, savedAt: 0, ownerId: 'me', ...over }) as PaneProject;
 const folders = new Map<string, Folder>([['f1', { id: 'f1', name: 'Plans' } as Folder]]);
 const on = (selected: SelectedNode, lensActive = false) => ({
   selected,
@@ -17,15 +17,15 @@ const on = (selected: SelectedNode, lensActive = false) => ({
 const tags: SelectedNode = { kind: 'tags' };
 
 describe('rowLocation', () => {
-  it('names a document kept in this browser by that place, and opens it', () => {
+  it('names a project kept in this browser by that place, and opens it', () => {
     expect(rowLocation(doc({ ownerId: OFFLINE_OWNER_ID }), on(tags))).toEqual({
       label: 'This Browser',
       opens: { kind: 'offline' },
     });
   });
 
-  it('names My Documents for a cloud document at the root, its folder or its team otherwise', () => {
-    expect(rowLocation(doc(), on(tags))).toEqual({ label: 'My Documents', opens: { kind: 'all' } });
+  it('names My Projects for a cloud project at the root, its folder or its team otherwise', () => {
+    expect(rowLocation(doc(), on(tags))).toEqual({ label: 'My Projects', opens: { kind: 'all' } });
     expect(rowLocation(doc({ folderId: 'f1' }), on(tags))).toEqual({
       label: 'Plans',
       opens: { kind: 'folder', id: 'f1' },

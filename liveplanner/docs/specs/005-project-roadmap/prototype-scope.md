@@ -59,15 +59,13 @@ The planner is real:
   signing in; a signed-in person's projects travel under their account, adding cross-device sync. Guest projects
   migrate on first sign-in. Sign-in goes through the liveworkspace accounts
   Worker; without its settings the api and the live app degrade to pure guest mode.
-- **Offline Mode** ([Offline Mode](../006-document/offline-mode.md)): a project saved only in this browser
+- **Offline Mode** ([Offline Mode](../006-project/offline-mode.md)): a project saved only in this browser
   (IndexedDB), convertible either way.
 - **Export**: a tab as PNG, SVG, PDF, Markdown, CSV (a Board or Sheet tab) or a portable JSON file, and a JSON export
   imported back into a tab ([Export fidelity](../020-import-export/export-fidelity.md)).
 - **Machine access**: API tokens and the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)),
   the MCP server, agent changesets that reach anyone with the tab open and revert as one unit
   ([Agent changesets](../024-agents/agent-changesets.md)), agent presence, and the CLI.
-- **AI assistance** (optional; [AI Assistance](../007-editor/ai-assistance.md)): an in-editor panel, hidden unless the
-  api has a model key.
 - **Anonymous first-party telemetry** and the public `/telemetry` dashboard, off unless a deployment turns it on, with a
   per-person opt-out ([Telemetry](../017-telemetry/telemetry.md)).
 - **Transactional and lifecycle email** (optional; [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)):
@@ -88,13 +86,19 @@ only small per-browser state, under `liveplanner:*` keys:
 
 ## Next
 
-- **Finish the fork**: trim the element kinds, palette, templates and tours to what Plan uses and drop the modules
-  nothing reaches (including the diagram lint); rename "document" to **project** in code, tables, routes, MCP tools and
-  CLI verbs ([Domain language](../003-system-architecture/domain-language.md)); finish the help centre around Plan.
+- **Finish the fork.** Done: Plan is the one mode; the importers, Drive mirror, community gallery, facilitation
+  tools, diagram lint and diagram tools for agents are gone; the container is a **project** everywhere
+  ([Domain language](../003-system-architecture/domain-language.md)). Still to do:
+  - **The diagram element code.** The element routers carry only Plan's kinds, but the diagram kinds' modules
+    (flowcharts, mind maps, arrows' routing, Sankey, the concept graphics, Mermaid, the unmounted palette strip) are
+    still in `packages/project` and `apps/live`, reached from shared code. Their specs in
+    [Canvas](../008-canvas/README.md), [Elements](../009-elements/README.md), [Palette](../010-palette/README.md) and
+    [Import and export](../020-import-export/README.md) stay until that code goes, and go with it.
+  - **The help centre** around the Plan category, and the brand's remaining sky hexes.
 - **Run and verify**: walk every Plan flow on the local stack, and measure the project page's first-load JS against
   livediagram's.
 - **Launch**: create the Cloudflare resources on the liveplanner account and fill in their ids, register the accounts client, set up
-  Resend and the model key, deploy staging, then production at liveplanner.app, then publish the CLI and the MCP registry entry.
+  Resend, deploy staging, then production at liveplanner.app, then publish the CLI and the MCP registry entry.
 
 ## Later
 
@@ -105,7 +109,7 @@ These are the meaningful gaps between launch and "full product":
 - **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): token levels, ownership as
   separate powers, server-derived collaboration keys and a look-only Viewer.
 - **Finer-grained team permissions**: every member of a team can edit every project in its shared library
-  ([Team shared documents](../013-workspace/team-shared-documents.md)).
+  ([Team shared projects](../013-workspace/team-shared-projects.md)).
 - **Per-person grants beyond teams and share links**: a project is private, shared via a link with a role, or part of a
   team's library; there are no per-project per-person grants outside those.
 - **Same-field concurrent edits are last-writer-wins.** Different cards, cells and elements merge

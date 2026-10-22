@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { act, fireEvent, render } from '@testing-library/react';
 import { setSankeyTourFocus } from '@/lib/sankey-tour-focus';
-import { createShape, type ShapeElement } from '@liveplanner/document';
+import { createShape, type ShapeElement } from '@liveplanner/project';
 import { SankeyView } from './SankeyView';
 
 // The Sankey on the canvas (docs/specs/009-elements/sankey.md): the shared frame drawn, plus hover.

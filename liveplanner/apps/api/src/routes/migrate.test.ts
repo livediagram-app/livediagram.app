@@ -39,7 +39,7 @@ beforeEach(() => {
   getParticipant.mockReset();
   getParticipant.mockResolvedValue(null);
   migrateOwnerId.mockReset();
-  migrateOwnerId.mockResolvedValue({ documents: 1, folders: 0, shared: 0, images: 0 });
+  migrateOwnerId.mockResolvedValue({ projects: 1, folders: 0, shared: 0, images: 0 });
 });
 
 describe('POST /api/migrate flow 2 (legacy guest upgrade)', () => {

@@ -10,7 +10,7 @@ import {
   type PlanVisualisation,
   type PlanBoardPresetId,
 } from '@liveplanner/items';
-import { DASHBOARD_PRESETS, type DashboardPresetId } from '@liveplanner/document';
+import { DASHBOARD_PRESETS, type DashboardPresetId } from '@liveplanner/project';
 import {
   PLAN_TEMPLATE_KINDS,
   TEMPLATES,
@@ -46,7 +46,7 @@ export type StartItem = {
   // A form, from one of its starters (docs/specs/030-forms/forms.md "Starting a form").
   | { kind: 'form'; starter: StarterId }
   | { kind: 'dashboard'; layout: DashboardPresetId; suggestion?: undefined }
-  // A Dashboard built around the document's own boards and sheets (suggested-dashboards.ts).
+  // A Dashboard built around the project's own boards and sheets (suggested-dashboards.ts).
   | { kind: 'dashboard'; suggestion: SuggestedDashboard; layout?: undefined }
   // One chart filling the tab (Visualisations).
   | { kind: 'visualisation'; view: PlanVisualisation }
@@ -359,7 +359,7 @@ export const KIND_NAMES: Record<StartKind, string> = {
 // What a category shows.
 export function itemsIn(items: readonly StartItem[], category: StartCategory): StartItem[] {
   if (category === 'recommended') {
-    // A Dashboard built from the document's work, when there is one, in the Overview layout's place.
+    // A Dashboard built from the project's work, when there is one, in the Overview layout's place.
     const suggested = items.find((i) => i.id.startsWith('suggested:'));
     return RECOMMENDED_IDS.flatMap((id) =>
       id === 'dashboard:overview' && suggested ? [suggested] : items.filter((i) => i.id === id),

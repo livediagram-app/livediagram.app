@@ -5,7 +5,7 @@
 // Kept cheap and calm: every part moves by transform and opacity alone, soft edges are radial
 // gradients rather than blur filters, each motion has at most about a hundred parts, and loops run
 // 4 to 90 seconds. Positions come from fixed seeds, so a cover looks the same wherever it is opened.
-import type { PageMotion } from '@liveplanner/document';
+import type { PageMotion } from '@liveplanner/project';
 import { motionSeed, type MotionPaint } from './page-motion';
 import { Confetti, Equaliser, Orbits, Radar, Threads, Warp } from './page-motion-parts-page-four';
 

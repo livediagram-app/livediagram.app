@@ -73,7 +73,7 @@ export function ActiveSharePass({
   // Non-null while the share is password-gated — the Live image offer
   // hides then (an <img> can't supply a password).
   sharePasswordSet: boolean;
-  // The document's tabs, in bar order, for the Live image tab picker.
+  // The project's tabs, in bar order, for the Live image tab picker.
   tabs: { id: string; name: string }[];
   liveImageTabId: string | null;
   firstTabId: string | undefined;
@@ -83,7 +83,7 @@ export function ActiveSharePass({
   onCopy: (code: string) => void;
   onRevoke: (code: string) => Promise<void> | void;
   // Change which tabs this link opens (docs/specs/013-workspace/tab-scoped-share-links.md). Null on a
-  // single-tab document, where there is nothing to choose between.
+  // single-tab project, where there is nothing to choose between.
   onRescope: ((code: string, tabId: string | null) => void) | null;
 }) {
   // A scoped link's live image is always its own tab: the server picks it,
@@ -135,7 +135,7 @@ export function ActiveSharePass({
         {/* Line 2: what the pass is printed with. */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 dark:text-slate-300">
           {/* Opens only when there is a choice to make: on a single-tab
-            document every pass opens every tab, so saying so is noise. */}
+            project every pass opens every tab, so saying so is noise. */}
           {onRescope ? (
             <span className="inline-flex items-center gap-1.5">
               <span className={metaLabel}>Opens</span>
@@ -193,7 +193,7 @@ export function ActiveSharePass({
           <ShareCopyMenu
             label="Embed"
             hoverCardTitle="Embed"
-            hoverCardDescription={`Copy an embed of this document as a URL or an <iframe> snippet for wikis, Notion, and docs. ${
+            hoverCardDescription={`Copy an embed of this project as a URL or an <iframe> snippet for wikis, Notion, and docs. ${
               link.role === 'edit'
                 ? 'This edit pass embeds an editable canvas.'
                 : 'This pass embeds a look-only canvas.'
@@ -214,7 +214,7 @@ export function ActiveSharePass({
               },
             ]}
           />
-          {/* Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md):
+          {/* Live image (docs/specs/013-workspace/live-image-share.md + docs/specs/006-project/project-snapshots.md):
             an <img>-able SVG URL. Hidden while a password is set: an <img>
             can't supply one, so the server refuses an image for gated shares
             and offering it here would mislead. */}
@@ -222,7 +222,7 @@ export function ActiveSharePass({
             <ShareCopyMenu
               label="Live image"
               hoverCardTitle="Live image"
-              hoverCardDescription="An <img>-able SVG URL that re-renders this document, so an embed in a README, wiki, or doc stays up to date."
+              hoverCardDescription="An <img>-able SVG URL that re-renders this project, so an embed in a README, wiki, or doc stays up to date."
               trackType="LiveImage"
               header={
                 // Per-tab picker (docs/specs/013-workspace/live-image-share.md): only worth showing

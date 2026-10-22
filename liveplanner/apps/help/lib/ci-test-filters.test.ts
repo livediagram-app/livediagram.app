@@ -25,7 +25,7 @@ describe('workspaceManifests', () => {
   it('reads every app and package in the repo', () => {
     const names = workspaceManifests().map((m) => m.name);
     expect(names).toContain('@liveplanner/live');
-    expect(names).toContain('@liveplanner/document');
+    expect(names).toContain('@liveplanner/project');
     // Guard against the glob going blind and the filter list collapsing to empty.
     expect(names.length).toBeGreaterThan(15);
   });

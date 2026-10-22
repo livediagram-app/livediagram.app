@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import type { CommentMention, ShapeElement } from '@liveplanner/document';
+import type { CommentMention, ShapeElement } from '@liveplanner/project';
 
 import { useRelativeNow } from '@/lib/relative-time';
 import { CollabPanel, tint } from '@/components/canvas/collab/collab-chrome';
@@ -35,13 +35,13 @@ import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 // The point of a panel over the anchored popover is that it STAYS. A popover
 // is one reader's transient view; a panel connected to what it is about sits
 // on the canvas, in the export, and in everyone's session, which is what makes
-// a remark part of the document rather than a note somebody left.
+// a remark part of the project rather than a note somebody left.
 //
 // Built from the modern collab parts ("The look"): the accent scope, the
 // CollabPanel frame (reflowing: resizing makes room for
 // more of the thread, not bigger type), and the shared composer.
 
-// Same cap the api enforces on a comment (packages/document element-deltas).
+// Same cap the api enforces on a comment (packages/project element-deltas).
 const COMMENT_MAX_TEXT = 5000;
 
 export function CommentPanelFace({

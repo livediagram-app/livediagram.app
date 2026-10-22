@@ -28,7 +28,7 @@ import {
   type MaximisedKind,
 } from '@/hooks/plan/maximised-plan';
 import { MOTION_MS } from '@liveplanner/tailwind-config/motion';
-import { isAnimatedPattern } from '@liveplanner/document';
+import { isAnimatedPattern } from '@liveplanner/project';
 import { useFaceFinish } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { SketchFace } from '@/components/canvas/SketchFace';
@@ -278,7 +278,7 @@ export function originOf(id: string): DOMRect | null {
 }
 
 // Escape restores, unless a dialog over the element (the item panel, a confirm) or an open menu has it first
-// (menus hear Escape on the document, after this capture listener), or the key is pressed inside something that
+// (menus hear Escape on the project, after this capture listener), or the key is pressed inside something that
 // uses Escape itself (`data-keeps-escape`: a Sheet's cell being edited, its Find bar, its copied range's marquee).
 export function escapeRestores(
   e: Pick<KeyboardEvent, 'key' | 'defaultPrevented'> & { target?: EventTarget | null },

@@ -7,11 +7,11 @@
 import { useState } from 'react';
 import { ActivityPane } from '@/components/panels/ActivityPane';
 import { ThemesPane } from '@/components/panels/ThemesPane';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
+import { ProjectThumbnail } from '@/components/panels/ProjectThumbnail';
 import { AvatarStack } from '@/components/panels/home/HomeAvatar';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
-import { ClockIcon, DocumentIcon, TrashIcon } from '@/components/primitives/explorer-icons';
+import { ClockIcon, ProjectIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useActivityFeed } from '@/app/explorer/useActivityFeed';
 import { useHome } from '@/app/explorer/home/useHome';
 import {
@@ -40,7 +40,7 @@ import {
   PaneSkeleton,
   PaneTile,
 } from './pane-parts';
-import { usePaneDocumentMenu } from '../explorer-tree/usePaneDocumentMenu';
+import { usePaneProjectMenu } from '../explorer-tree/usePaneProjectMenu';
 import { usePanelTree } from '../explorer-tree/PanelTreeContext';
 import type { JumpBackInItem } from '@/app/explorer/home/home-model';
 import type { HomeGroup } from '@liveplanner/api-schema';
@@ -50,7 +50,7 @@ import { lucideRotateCcw, lucideTrash2 } from '@liveplanner/icons/lucide';
 const RestoreGlyph = lucideGlyph(lucideRotateCcw, 16);
 const DeleteGlyph = lucideGlyph(lucideTrash2, 16);
 
-// One of Jump Back In's documents as a preview card, with the document menu when the reader can reach it.
+// One of Jump Back In's projects as a preview card, with the project menu when the reader can reach it.
 function JumpBackInCard({
   item,
   ownerId,
@@ -62,14 +62,14 @@ function JumpBackInCard({
   onOpen: () => void;
   now: number;
 }) {
-  const doc = usePanelTree().documentById?.(item.documentId);
-  const menu = usePaneDocumentMenu(doc);
+  const doc = usePanelTree().projectById?.(item.projectId);
+  const menu = usePaneProjectMenu(doc);
   return (
     <PaneCard
       preview={
-        <DocumentThumbnail
+        <ProjectThumbnail
           ownerId={ownerId}
-          documentId={item.documentId}
+          projectId={item.projectId}
           version={item.savedAt}
           empty={item.empty}
           shareCode={item.shareCode}
@@ -77,7 +77,7 @@ function JumpBackInCard({
           className={PANE_PREVIEW_BOX}
         />
       }
-      title={item.name || 'Untitled document'}
+      title={item.name || 'Untitled project'}
       meta={
         <span className="flex items-center gap-1.5">
           {/* Inside the row's button: a label, not a link (a link in a button is a control nested in a control). */}
@@ -92,12 +92,12 @@ function JumpBackInCard({
   );
 }
 
-// One of What Happened's groups: the people, what they did and where, with the document's menu.
+// One of What Happened's groups: the people, what they did and where, with the project's menu.
 function WhatHappenedRow({ group, onOpen }: { group: HomeGroup; onOpen: () => void }) {
-  const doc = usePanelTree().documentById?.(group.documentId);
-  const menu = usePaneDocumentMenu(doc);
+  const doc = usePanelTree().projectById?.(group.projectId);
+  const menu = usePaneProjectMenu(doc);
   const s = summarySentence(group);
-  const sentence = `${s.people} ${s.verbs}${s.preposition ? ` ${s.preposition}` : ''} ${s.document}`;
+  const sentence = `${s.people} ${s.verbs}${s.preposition ? ` ${s.preposition}` : ''} ${s.project}`;
   return (
     <PaneRow
       leading={
@@ -110,7 +110,7 @@ function WhatHappenedRow({ group, onOpen }: { group: HomeGroup; onOpen: () => vo
           <span className="font-semibold text-slate-800 dark:text-slate-100">{s.people}</span>{' '}
           {s.verbs}
           {s.preposition ? ` ${s.preposition}` : ''}{' '}
-          <span className="font-semibold text-slate-800 dark:text-slate-100">{s.document}</span>
+          <span className="font-semibold text-slate-800 dark:text-slate-100">{s.project}</span>
         </span>
       }
       label={sentence}
@@ -124,30 +124,30 @@ function WhatHappenedRow({ group, onOpen }: { group: HomeGroup; onOpen: () => vo
 
 type Open = (id: string, shareCode?: string) => void;
 
-// How many documents Home's Jump Back In lists in the pane.
+// How many projects Home's Jump Back In lists in the pane.
 const JUMP_BACK_IN_ROWS = 6;
 
 export function HomeSection({
   ownerId,
-  currentDocumentId,
-  onOpenDocument,
+  currentProjectId,
+  onOpenProject,
 }: {
   ownerId: string;
-  currentDocumentId: string | null;
-  onOpenDocument: Open;
+  currentProjectId: string | null;
+  onOpenProject: Open;
 }) {
   const home = useHome(ownerId, () => {});
   const now = useRelativeNow();
   if (home.status === 'error')
     return <PaneFailed message={HOME_COPY.readFailed} onRetry={home.retry} />;
   if (home.status === 'loading') return <PaneSkeleton rows={6} />;
-  const recent = paneJumpBackIn(home.jumpBackIn, currentDocumentId, JUMP_BACK_IN_ROWS);
-  // Empty only because the open document is left out: the person has a document, so "No documents yet" would be
+  const recent = paneJumpBackIn(home.jumpBackIn, currentProjectId, JUMP_BACK_IN_ROWS);
+  // Empty only because the open project is left out: the person has a project, so "No projects yet" would be
   // wrong (explorer-structure.md "Home").
   const onlyOpen =
     recent.length === 0 &&
     [...home.jumpBackIn.mostUsed, ...home.jumpBackIn.recent].some(
-      (d) => d.documentId === currentDocumentId,
+      (d) => d.projectId === currentProjectId,
     );
   return (
     <div className="flex flex-col gap-6">
@@ -163,11 +163,11 @@ export function HomeSection({
           <PaneGrid label={HOME_COPY.jumpBackIn}>
             {recent.map((d) => (
               <JumpBackInCard
-                key={d.documentId}
+                key={d.projectId}
                 item={d}
                 ownerId={ownerId}
                 now={now}
-                onOpen={() => onOpenDocument(d.documentId, d.shareCode ?? undefined)}
+                onOpen={() => onOpenProject(d.projectId, d.shareCode ?? undefined)}
               />
             ))}
           </PaneGrid>
@@ -193,7 +193,7 @@ export function HomeSection({
                     <WhatHappenedRow
                       key={g.id}
                       group={g}
-                      onOpen={() => onOpenDocument(g.documentId, g.shareCode ?? undefined)}
+                      onOpen={() => onOpenProject(g.projectId, g.shareCode ?? undefined)}
                     />
                   ))}
                 </PaneList>
@@ -216,7 +216,7 @@ export function TrashSection({
   onChanged,
 }: {
   ownerId: string;
-  // A restore or a permanent delete: the panel's lists refresh so a restored document shows in its place.
+  // A restore or a permanent delete: the panel's lists refresh so a restored project shows in its place.
   onChanged: () => void;
 }) {
   const toast = useToast();
@@ -235,13 +235,13 @@ export function TrashSection({
       <PaneEmpty
         icon={<TrashIcon />}
         title="Nothing in the Trash right now"
-        description="Delete a document and it is kept here for 30 days, so you can restore it."
+        description="Delete a project and it is kept here for 30 days, so you can restore it."
       />
     );
   return (
     <div className="flex flex-col gap-5">
       <p className="px-2 text-[11px] leading-4 text-slate-500 dark:text-slate-400">
-        Deleted documents wait here for 30 days. Restoring one puts it back where it was.
+        Deleted projects wait here for 30 days. Restoring one puts it back where it was.
       </p>
       {groups.map((group) =>
         group.rows.length ? (
@@ -252,10 +252,10 @@ export function TrashSection({
                   key={row.id}
                   leading={
                     <PaneTile tone="rose">
-                      <DocumentIcon />
+                      <ProjectIcon />
                     </PaneTile>
                   }
-                  title={row.name || 'Untitled document'}
+                  title={row.name || 'Untitled project'}
                   meta={`${trashedOnLabel(row)} · ${daysLeftLabel(row.trashedAt, now)}`}
                   trailing={
                     <>

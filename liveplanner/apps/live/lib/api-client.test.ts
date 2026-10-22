@@ -1,17 +1,17 @@
-import type { Tab } from '@liveplanner/document';
-import { DOCUMENT_OPEN_HEADER } from '@liveplanner/api-schema';
+import type { Tab } from '@liveplanner/project';
+import { PROJECT_OPEN_HEADER } from '@liveplanner/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  apiCreateDocument,
+  apiCreateProject,
   apiCreateShareLink,
   apiRescopeShareLink,
   apiDeleteShareLink,
   apiDeleteTab,
   apiDismissSharedWith,
-  apiLoadDocument,
+  apiLoadProject,
   apiLoadShared,
   apiLoadTab,
-  apiSaveDocumentMeta,
+  apiSaveProjectMeta,
   apiSaveTab,
   apiSharedTabs,
   setSessionSharePassword,
@@ -99,7 +99,7 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
   it('bearer + share: signed-in visitor on a share URL still carries the share code', async () => {
     // A signed-in user clicking a share link sends Bearer (their
     // account identity) AND X-Share-Code (the link's role gates write
-    // access on the document they don't own). docs/specs/014-identity/auth-and-guest-access.md: "Share-code
+    // access on the project they don't own). docs/specs/014-identity/auth-and-guest-access.md: "Share-code
     // visitors who happen to also be signed in send Bearer +
     // X-Share-Code; the per-link role still gates write access."
     setTokenProvider(async () => 'jwt-token-xyz');
@@ -154,14 +154,14 @@ describe('apiLoadShared password gate (docs/specs/013-workspace/share-password.m
     expect(await apiLoadShared('CODE2345', 'guest-3')).toBeNull();
   });
 
-  it('resolves the document + role on 200', async () => {
-    stubFetch(200, { document: { id: 'd1' }, role: 'view' });
+  it('resolves the project + role on 200', async () => {
+    stubFetch(200, { project: { id: 'd1' }, role: 'view' });
     const res = await apiLoadShared('CODE2345', 'guest-4');
-    expect(res).toMatchObject({ role: 'view', document: { id: 'd1' }, tabId: null });
+    expect(res).toMatchObject({ role: 'view', project: { id: 'd1' }, tabId: null });
   });
 
   it("carries a tab-scoped link's tab (docs/specs/013-workspace/tab-scoped-share-links.md)", async () => {
-    stubFetch(200, { document: { id: 'd1' }, role: 'edit', tabId: 'tab-2' });
+    stubFetch(200, { project: { id: 'd1' }, role: 'edit', tabId: 'tab-2' });
     const res = await apiLoadShared('CODE2345', 'guest-5');
     expect(res).toMatchObject({ role: 'edit', tabId: 'tab-2' });
   });
@@ -175,7 +175,7 @@ describe('share-link scope calls', () => {
     stubFetch(201, { link: { code: 'C', tabId: 't2' } });
     await apiCreateShareLink('owner-1', 'd1', 'view', 'never', 't2');
     const [url, init] = vi.mocked(fetch).mock.calls[0]!;
-    expect(url).toBe('/api/documents/d1/share');
+    expect(url).toBe('/api/projects/d1/share');
     expect(JSON.parse(init!.body as string)).toEqual({
       role: 'view',
       expiry: 'never',
@@ -194,7 +194,7 @@ describe('share-link scope calls', () => {
     stubFetch(200, { link: { code: 'C', tabId: null } });
     const link = await apiRescopeShareLink('owner-1', 'd1', 'C', null);
     const [url, init] = vi.mocked(fetch).mock.calls[0]!;
-    expect(url).toBe('/api/documents/d1/share/C');
+    expect(url).toBe('/api/projects/d1/share/C');
     expect(init!.method).toBe('PUT');
     expect(JSON.parse(init!.body as string)).toEqual({ tabId: null });
     expect(link.tabId).toBeNull();
@@ -236,7 +236,7 @@ describe('response helpers (observed through api callers)', () => {
         code: 'ABCD2345',
         role: 'edit' as const,
         createdAt: 0,
-        documentId: 'diag-1',
+        projectId: 'diag-1',
       };
       stubFetch(200, { link });
       const got = await apiCreateShareLink('owner-1', 'diag-1', 'edit');
@@ -256,9 +256,9 @@ describe('response helpers (observed through api callers)', () => {
     });
   });
 
-  describe('expectOkOrNull (via apiLoadDocument)', () => {
-    it('returns the parsed document on 200', async () => {
-      // apiLoadDocument is wrapped in dedupeInFlight keyed by
+  describe('expectOkOrNull (via apiLoadProject)', () => {
+    it('returns the parsed project on 200', async () => {
+      // apiLoadProject is wrapped in dedupeInFlight keyed by
       // `${ownerId}|${id}`, so each test below uses a unique key
       // pair to avoid collecting a cached promise from a prior
       // case. Without unique keys, the second test in this block
@@ -273,44 +273,44 @@ describe('response helpers (observed through api callers)', () => {
         ownerId: 'o-200',
         tabs: [],
       };
-      stubFetch(200, { document: liveDoc });
-      const got = await apiLoadDocument('o-200', 'd-200');
+      stubFetch(200, { project: liveDoc });
+      const got = await apiLoadProject('o-200', 'd-200');
       expect(got).toEqual(liveDoc);
     });
 
     it('returns null on 404 (the load-doesnt-exist path)', async () => {
-      // The 404 contract is what lets `/document/<unknown-id>`
+      // The 404 contract is what lets `/project/<unknown-id>`
       // surface the NotFound page instead of throwing into the
       // editor's load effect. A regression that re-threw 404
       // would tip every welcome flow + share-resolution into a
       // crash boundary.
       stubFetch(404, {});
-      const got = await apiLoadDocument('o-404', 'd-404');
+      const got = await apiLoadProject('o-404', 'd-404');
       expect(got).toBeNull();
     });
 
     it('throws "load failed: <status>" on 500', async () => {
       stubFetch(500);
-      await expect(apiLoadDocument('o-500', 'd-500')).rejects.toThrow('load failed: 500');
+      await expect(apiLoadProject('o-500', 'd-500')).rejects.toThrow('load failed: 500');
     });
   });
 
-  describe('expectOkVoid (via apiSaveDocumentMeta)', () => {
+  describe('expectOkVoid (via apiSaveProjectMeta)', () => {
     it('resolves quietly on 200 (no body to parse)', async () => {
-      // apiSaveDocumentMeta is a write with no response body. The
+      // apiSaveProjectMeta is a write with no response body. The
       // helper must NOT call res.json() or it would throw on an
       // empty body. Asserting the promise resolves without value
       // pins both the no-throw + no-body contract.
       stubFetch(200);
       await expect(
-        apiSaveDocumentMeta('owner', { id: 'd-1', name: 'New' }),
+        apiSaveProjectMeta('owner', { id: 'd-1', name: 'New' }),
       ).resolves.toBeUndefined();
     });
 
-    it('throws "save document meta failed: <status>" on 500', async () => {
+    it('throws "save project meta failed: <status>" on 500', async () => {
       stubFetch(500);
-      await expect(apiSaveDocumentMeta('owner', { id: 'd-1', name: 'New' })).rejects.toThrow(
-        'save document meta failed: 500',
+      await expect(apiSaveProjectMeta('owner', { id: 'd-1', name: 'New' })).rejects.toThrow(
+        'save project meta failed: 500',
       );
     });
   });
@@ -440,19 +440,19 @@ describe('apiDelete (internal, via public DELETE callers)', () => {
   });
 });
 
-describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.md)', () => {
+describe('apiCreateProject persisted body (docs/specs/006-project/tab-folders.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('strips UI-only tab fields (templateChosen, folder) before POSTing', async () => {
     const fetchSpy = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ document: { id: 'd1' } }), {
+      new Response(JSON.stringify({ project: { id: 'd1' } }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       }),
     );
     vi.stubGlobal('fetch', fetchSpy);
     // A tab carrying the editor-only fields that must NOT reach tabs.data:
-    // templateChosen (UI state) + folder (per-document link, docs/specs/006-document/tab-folders.md).
+    // templateChosen (UI state) + folder (per-project link, docs/specs/006-project/tab-folders.md).
     const tab = {
       id: 't1',
       name: 'Tab',
@@ -461,10 +461,10 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
       folder: 'f1',
     } as unknown as Tab;
 
-    const out = await apiCreateDocument('owner', { id: 'd1', name: 'N', tabs: [tab] });
+    const out = await apiCreateProject('owner', { id: 'd1', name: 'N', tabs: [tab] });
 
     const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toMatch(/\/documents$/);
+    expect(String(url)).toMatch(/\/projects$/);
     expect(init.method).toBe('POST');
     const body = JSON.parse(init.body as string) as { tabs: Record<string, unknown>[] };
     expect(body.tabs[0]).not.toHaveProperty('templateChosen');
@@ -478,15 +478,15 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
   it('sends the type catalogue when one is given', async () => {
     const fetchSpy = vi.fn().mockImplementation(
       async () =>
-        new Response(JSON.stringify({ document: { id: 'd1' } }), {
+        new Response(JSON.stringify({ project: { id: 'd1' } }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         }),
     );
     vi.stubGlobal('fetch', fetchSpy);
     const itemTypes = { version: 1, types: [] };
-    await apiCreateDocument('owner', { id: 'd1', name: 'N', tabs: [], itemTypes });
-    await apiCreateDocument('owner', { id: 'd2', name: 'N', tabs: [], itemTypes: null });
+    await apiCreateProject('owner', { id: 'd1', name: 'N', tabs: [], itemTypes });
+    await apiCreateProject('owner', { id: 'd2', name: 'N', tabs: [], itemTypes: null });
     const bodies = fetchSpy.mock.calls.map(
       ([, init]) => JSON.parse((init as RequestInit).body as string) as Record<string, unknown>,
     );
@@ -494,21 +494,21 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
     expect(bodies[1]).not.toHaveProperty('itemTypes');
   });
 
-  // docs/specs/029-sheets/sheet-store.md "Offline documents", "Copies": a sync, a duplicate and a Drive import all
-  // hand over the document's sheets. The field was typed but never sent, so a synced document with a Sheet came up
+  // docs/specs/029-sheets/sheet-store.md "Offline projects", "Copies": a sync, a duplicate and a Drive import all
+  // hand over the project's sheets. The field was typed but never sent, so a synced project with a Sheet came up
   // short and kept its local copy, and a copy landed without its sheets.
   it('sends the sheet store when one is given', async () => {
     const fetchSpy = vi.fn().mockImplementation(
       async () =>
-        new Response(JSON.stringify({ document: { id: 'd1' } }), {
+        new Response(JSON.stringify({ project: { id: 'd1' } }), {
           status: 200,
           headers: { 'Content-Type': 'application/json' },
         }),
     );
     vi.stubGlobal('fetch', fetchSpy);
     const sheets = [{ id: 's1', tabId: 't1', title: 'Responses', cells: [] }];
-    await apiCreateDocument('owner', { id: 'd1', name: 'N', tabs: [], sheets });
-    await apiCreateDocument('owner', { id: 'd2', name: 'N', tabs: [], sheets: [] });
+    await apiCreateProject('owner', { id: 'd1', name: 'N', tabs: [], sheets });
+    await apiCreateProject('owner', { id: 'd2', name: 'N', tabs: [], sheets: [] });
     const bodies = fetchSpy.mock.calls.map(
       ([, init]) => JSON.parse((init as RequestInit).body as string) as Record<string, unknown>,
     );
@@ -517,15 +517,15 @@ describe('apiCreateDocument persisted body (docs/specs/006-document/tab-folders.
   });
 });
 
-describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {
+describe('apiCreateProject placement (docs/specs/013-workspace/folders.md "Placement on create")', () => {
   afterEach(() => vi.unstubAllGlobals());
 
-  const sentBody = async (d: Parameters<typeof apiCreateDocument>[1]) => {
+  const sentBody = async (d: Parameters<typeof apiCreateProject>[1]) => {
     const fetchSpy = vi
       .fn()
-      .mockResolvedValue(new Response(JSON.stringify({ document: { id: 'd1' } }), { status: 201 }));
+      .mockResolvedValue(new Response(JSON.stringify({ project: { id: 'd1' } }), { status: 201 }));
     vi.stubGlobal('fetch', fetchSpy);
-    await apiCreateDocument('owner', d);
+    await apiCreateProject('owner', d);
     const [, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
     return JSON.parse(init.body as string) as Record<string, unknown>;
   };
@@ -548,7 +548,7 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
   });
 
   it('carries the creation intent (docs/specs/013-workspace/default-folders.md)', async () => {
-    const intent = { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' } as const;
+    const intent = { mode: 'plan', tabKind: 'board', templateFamily: 'kanban' } as const;
     const body = await sentBody({ id: 'd1', name: 'N', intent });
     expect(body.intent).toEqual(intent);
   });
@@ -572,19 +572,19 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
         ),
     );
     await expect(
-      apiCreateDocument('owner', { id: 'd1', name: 'N', teamId: 't1' }),
+      apiCreateProject('owner', { id: 'd1', name: 'N', teamId: 't1' }),
     ).rejects.toMatchObject({ status: 403, code: 'team_forbidden' });
   });
 });
 
-describe('apiSharedTabs (docs/specs/006-document/tab-document-many-to-many.md)', () => {
+describe('apiSharedTabs (docs/specs/006-project/tab-project-many-to-many.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('reads the counts for the delete confirmation', async () => {
     const fetchSpy = vi
       .fn()
       .mockResolvedValue(
-        new Response(JSON.stringify({ sharedTabs: { tabs: 2, documents: 3 } }), { status: 200 }),
+        new Response(JSON.stringify({ sharedTabs: { tabs: 2, projects: 3 } }), { status: 200 }),
       );
     vi.stubGlobal('fetch', fetchSpy);
     const signal = new AbortController().signal;
@@ -592,9 +592,9 @@ describe('apiSharedTabs (docs/specs/006-document/tab-document-many-to-many.md)',
     const out = await apiSharedTabs('owner', 'd1', signal);
 
     const [url, init] = fetchSpy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toMatch(/\/documents\/d1\/shared-tabs$/);
+    expect(String(url)).toMatch(/\/projects\/d1\/shared-tabs$/);
     expect(init.signal).toBe(signal);
-    expect(out).toEqual({ tabs: 2, documents: 3 });
+    expect(out).toEqual({ tabs: 2, projects: 3 });
   });
 
   it('throws on a refused read, so the caller can open without the notice', async () => {
@@ -604,7 +604,7 @@ describe('apiSharedTabs (docs/specs/006-document/tab-document-many-to-many.md)',
   });
 });
 
-describe('apiSaveTab persisted body + allow-empty (docs/specs/006-document/tab-folders.md)', () => {
+describe('apiSaveTab persisted body + allow-empty (docs/specs/006-project/tab-folders.md)', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   const stubOk = () => {
@@ -628,7 +628,7 @@ describe('apiSaveTab persisted body + allow-empty (docs/specs/006-document/tab-f
     const spy = stubOk();
     await apiSaveTab('owner', 'd1', tabWithUi);
     const [url, init] = spy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toMatch(/\/documents\/d1\/tabs\/t1$/);
+    expect(String(url)).toMatch(/\/projects\/d1\/tabs\/t1$/);
     expect(init.method).toBe('PUT');
     const body = JSON.parse(init.body as string) as Record<string, unknown>;
     expect(body).not.toHaveProperty('templateChosen');
@@ -657,13 +657,13 @@ describe('apiLoadTab load boundary', () => {
     expect(await apiLoadTab('owner', 'd1', 't-404', null)).toBeNull();
   });
 
-  it('strips server-only fields (documentId / orderIndex / updatedAt) from the tab', async () => {
+  it('strips server-only fields (projectId / orderIndex / updatedAt) from the tab', async () => {
     stubFetch(200, {
-      tab: { id: 't1', name: 'T', elements: [], documentId: 'd1', orderIndex: 3, updatedAt: 123 },
+      tab: { id: 't1', name: 'T', elements: [], projectId: 'd1', orderIndex: 3, updatedAt: 123 },
     });
     const tab = await apiLoadTab('owner', 'd1', 't-strip', null);
     expect(tab).not.toBeNull();
-    expect(tab).not.toHaveProperty('documentId');
+    expect(tab).not.toHaveProperty('projectId');
     expect(tab).not.toHaveProperty('orderIndex');
     expect(tab).not.toHaveProperty('updatedAt');
     expect(tab).toMatchObject({ id: 't1', name: 'T' });
@@ -697,13 +697,13 @@ describe('apiLoadTab load boundary', () => {
   it('declares an open only when asked to', async () => {
     stubFetch(200, { tab: { id: 't1', name: 'T', elements: [] } });
     await apiLoadTab('owner', 'd1', 't-open', null, { open: true });
-    expect(sentHeaders().get(DOCUMENT_OPEN_HEADER)).toBe('1');
+    expect(sentHeaders().get(PROJECT_OPEN_HEADER)).toBe('1');
   });
 
   it('sends no open marker on an ordinary load', async () => {
     stubFetch(200, { tab: { id: 't1', name: 'T', elements: [] } });
     await apiLoadTab('owner', 'd1', 't-plain', null);
-    expect(sentHeaders().has(DOCUMENT_OPEN_HEADER)).toBe(false);
+    expect(sentHeaders().has(PROJECT_OPEN_HEADER)).toBe(false);
   });
 
   it('keeps a marked load apart from an unmarked one in flight', async () => {

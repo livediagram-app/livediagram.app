@@ -28,7 +28,7 @@ import {
 import { CustomFieldEditor } from './CustomFieldEditor';
 import { LinkedCardField } from './LinkedCardField';
 import { usePlan } from './PlanContext';
-import { isHexColour } from '@liveplanner/document';
+import { isHexColour } from '@liveplanner/project';
 import { ColourSelect } from './ColourSwatches';
 import { PHASE_COLOURS } from './views/view-frame';
 import { track } from '@/lib/telemetry';
@@ -71,7 +71,7 @@ export type ItemFieldContext = {
   statuses: readonly { status: string; name: string }[];
   people: readonly ItemPerson[];
   canEdit: boolean;
-  // Every label the document's items carry, offered while a label is typed.
+  // Every label the project's items carry, offered while a label is typed.
   labels: readonly string[];
   // Whether the save landed (false: refused), so a text field can go back to what is saved.
   onSave: (field: string, value: ItemFieldValue | undefined) => void | Promise<boolean>;

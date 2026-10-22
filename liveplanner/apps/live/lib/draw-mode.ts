@@ -5,8 +5,8 @@ import type {
   EmbedProvider,
   SessionTool,
   ShapeKind,
-} from '@liveplanner/document';
-import { EMBED_PROVIDER_LABEL } from '@liveplanner/document';
+} from '@liveplanner/project';
+import { EMBED_PROVIDER_LABEL } from '@liveplanner/project';
 
 // Draw-to-size intent. Picking any element from the palette except the
 // annotation (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas
@@ -35,7 +35,7 @@ export type PendingDraw =
       session?: SessionTool;
       // A Plan board's preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md).
       plan?: string;
-      // A creation-time variant of the kind (packages/document shape-variants.ts): the Callout card, a Funnel.
+      // A creation-time variant of the kind (packages/project shape-variants.ts): the Callout card, a Funnel.
       variant?: string;
       // What the tile that armed it calls it ("Funnel", "Org Chart"), for the banner: a variant or a
       // compound kind reads wrong named by its kind alone (a Funnel is a pyramid underneath).

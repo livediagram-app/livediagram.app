@@ -19,10 +19,10 @@ import {
   isFlowchartLane,
   isFlowchartStep,
   tagColoursOf,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { FlowchartMenuHandlers } from '@/components/flowchart/FlowchartMenuSections';
 import { track } from '@/lib/telemetry';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useColourPalette } from '@/hooks/ui/useColourPalette';
 import { getTheme, shapeColorPresets, tableColorPresets, themeChartPalette } from '@/lib/themes';
 import { canEditSankey } from '@/lib/sankey-edit';
@@ -278,7 +278,7 @@ export function EditorContextMenuHost() {
   const menuMindRoot = menuMindNode ? mindRootOf(activeTab.elements, menuMindNode) : null;
 
   // The selection's layer for the Layer section's move-to dropdown
-  // (docs/specs/006-document/layers.md): the single resolved layer every member shares, or null
+  // (docs/specs/006-project/layers.md): the single resolved layer every member shares, or null
   // when the selection spans layers.
   const ctxLayerIds = new Set(
     ctxMemberIds

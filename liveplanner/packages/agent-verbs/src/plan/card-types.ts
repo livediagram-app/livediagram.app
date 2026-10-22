@@ -36,11 +36,11 @@ interface CardTypeChangesResult {
 
 export async function changeCardTypes(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   changes: readonly CardTypeChange[],
 ): Promise<CardTypeChangesResult> {
   for (let attempt = 1; ; attempt += 1) {
-    const state = await readPlanState(api, documentId);
+    const state = await readPlanState(api, projectId);
     const stored = { version: ITEM_TYPE_CATALOGUE_VERSION, types: state.plan.types };
     const result = applyCardTypeChanges(stored, changes, state.plan.statuses);
     if (!result.ok)
@@ -58,7 +58,7 @@ export async function changeCardTypes(
       expectedRev: state.plan.itemTypesRev,
     };
     try {
-      await api.json(itemTypesPath(documentId), { method: 'PUT', body: JSON.stringify(body) });
+      await api.json(itemTypesPath(projectId), { method: 'PUT', body: JSON.stringify(body) });
     } catch (err) {
       if (isCardTypesStale(err) && attempt < CARD_TYPES_SAVE_ATTEMPTS) continue;
       const refusal = apiRefusalOf(err);
@@ -70,14 +70,14 @@ export async function changeCardTypes(
         refusal,
       };
     }
-    return trashDeletedTypes(api, documentId, state, result);
+    return trashDeletedTypes(api, projectId, state, result);
   }
 }
 
 // After the save: the cards of any deleted type to the Trash.
 async function trashDeletedTypes(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   state: PlanState,
   result: Extract<ReturnType<typeof applyCardTypeChanges>, { ok: true }>,
 ): Promise<CardTypeChangesResult> {
@@ -88,7 +88,7 @@ async function trashDeletedTypes(
     for (const item of state.items) {
       if (!gone.has(item.type) || isTrashed(item)) continue;
       const from = itemStatus(item);
-      await api.json<ItemResponse>(`${itemsPath(documentId)}/${encodeURIComponent(item.id)}`, {
+      await api.json<ItemResponse>(`${itemsPath(projectId)}/${encodeURIComponent(item.id)}`, {
         method: 'POST',
         body: JSON.stringify({
           set: { status: TRASH_STATUS, ...(from ? { [TRASHED_FROM_FIELD]: from } : {}) },

@@ -4,7 +4,7 @@
 // card), a figure a short tile, and a board, Sheet, chart or tab tall enough to work in, scrolling inside itself. Only
 // the drawing changes: the stored rows, spans and heights stay, and the same dashboard on a wide screen is as it was.
 import type { CSSProperties } from 'react';
-import type { DashboardContent } from '@liveplanner/document';
+import type { DashboardContent } from '@liveplanner/project';
 
 // Below this page width the dashboard stacks.
 export const DASHBOARD_CONDENSE_PX = 640;

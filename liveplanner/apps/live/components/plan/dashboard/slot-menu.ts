@@ -2,7 +2,7 @@
 
 // A Dashboard slot's settings, handed to what the slot shows (docs/specs/026-plan/plan-tabs.md "Dashboard tab"): an
 // item has one menu, its cog. A board, a Sheet or a chart with a cog of its own folds the slot's **Slot** section into
-// that cog's popover (`sections`); a header with no cog (a Diagram tab, a chart for someone who may not change it)
+// that cog's popover (`sections`); a header with no cog (a chart for someone who may not change it)
 // shows the slot's own cog (`cog`) last among its controls. Null everywhere else (a board on its own tab, on the
 // canvas), and in a slot with nothing to offer (a Viewer's slot that shows no tab).
 import { createContext, useContext, type ReactNode } from 'react';

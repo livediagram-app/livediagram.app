@@ -1,13 +1,13 @@
-// Thin D1 wrapper, split by resource. Documents + tabs each have their
-// own table; see docs/specs/006-document/per-tab-storage.md.
+// Thin D1 wrapper, split by resource. Projects + tabs each have their
+// own table; see docs/specs/006-project/per-tab-storage.md.
 //
 // This barrel re-exports every resource module so callers keep
 // importing from '../db'. Add a new query to its resource module (or
 // a new module here) rather than growing one file.
 
-export * from './documents';
+export * from './projects';
 export * from './team-recent';
-export * from './tab-save-document';
+export * from './tab-save-project';
 export * from './tabs';
 export * from './participants';
 export * from './share';
@@ -31,7 +31,7 @@ export * from './items';
 export * from './sheets';
 export * from './ws-tickets';
 export * from './trash';
-export * from './empty-document-sweep';
+export * from './empty-project-sweep';
 export * from './changesets';
 export * from './forms';
 export * from './tab-outlines';

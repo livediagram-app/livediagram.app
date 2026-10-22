@@ -2,7 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { presetSetup, statusColumn } from '@liveplanner/items';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { EditorContext } from '@/app/project/[id]/EditorContext';
 import { PlanColumnPopover } from './PlanColumnPopover';
 
 // docs/specs/026-plan/plan-board.md "Column settings": the WIP limit's line names its count ("1 card", not "1 cards").

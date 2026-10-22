@@ -33,7 +33,7 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
     height: 110,
     label,
   });
-  const seeded = await page.request.post(`${apiBase}/documents`, {
+  const seeded = await page.request.post(`${apiBase}/projects`, {
     headers: ownerHeaders(owner, { Origin: new URL(baseURL!).origin }),
     data: {
       id: liveDoc,
@@ -56,9 +56,9 @@ test('a tab-scoped link opens its tab and nothing else', async ({ page, browser,
     },
     { id: owner, sig: guestSigFor(owner) },
   );
-  await page.goto(`/document/${liveDoc}`);
+  await page.goto(`/project/${liveDoc}`);
   await page.getByRole('button', { name: /^Share$/ }).click();
-  const dialog = page.getByRole('dialog', { name: 'Share This Document' });
+  const dialog = page.getByRole('dialog', { name: 'Share This Project' });
   await dialog
     .getByRole('combobox', { name: 'Tabs this link opens' })
     .selectOption({ label: 'Roadmap' });

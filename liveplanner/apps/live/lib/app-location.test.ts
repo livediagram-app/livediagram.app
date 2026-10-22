@@ -27,9 +27,9 @@ describe('assignAppLocation', () => {
   it('goes where it is asked when no frame intercepts', () => {
     stubLocation();
 
-    assignAppLocation('/document/d1');
+    assignAppLocation('/project/d1');
 
-    expect(assign).toHaveBeenCalledWith('/document/d1');
+    expect(assign).toHaveBeenCalledWith('/project/d1');
   });
 
   it('hands the move to the interceptor, which takes it or passes it on', () => {

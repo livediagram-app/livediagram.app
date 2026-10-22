@@ -295,7 +295,7 @@ export async function handleAuth(
   const config = configured(env);
   // A guest-only deployment: nothing to sign in to.
   if (!config) return json({ error: 'sign_in_not_configured' }, { status: 404 });
-  // Each step is one network's worth of requests, apart from everyone's document writes.
+  // Each step is one network's worth of requests, apart from everyone's project writes.
   if (env.WRITE_RATE_LIMITER) {
     const ok = await env.WRITE_RATE_LIMITER.limit({ key: `auth:${clientRateKey(request)}` });
     if (!ok.success) return rateLimited();

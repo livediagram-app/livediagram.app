@@ -7,7 +7,7 @@ import {
   viewElementInTheme,
   type Appearance,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { withThemeApplied } from './tab-theme-apply';
 import { themeViewMap } from './themes';
 

@@ -1,7 +1,7 @@
 // /api/teams/<id>/notify-mention: email the teammates a comment just
 // @-mentioned (docs/specs/012-collaboration/comment-mentions.md "The email"). The sibling of notify-action
 // (team-action-routes.ts), with a tighter team rule: a mention is only ever
-// of the document's OWN team, so the team in the path must be the document's.
+// of the project's OWN team, so the team in the path must be the project's.
 //
 // A POST, so the shared mutation gate in teams.ts has already required the
 // interactive signed-in session. Best-effort in the background: the comment has
@@ -14,9 +14,9 @@
 
 import { isOpenTeamMember } from '@liveplanner/api-schema';
 import type { TeamMember } from '@liveplanner/api-schema';
-import { MENTIONS_MAX, itemThread, type Comment } from '@liveplanner/document';
+import { MENTIONS_MAX, itemThread, type Comment } from '@liveplanner/project';
 import { ITEM_ID_PATTERN } from '@liveplanner/items';
-import { getDocumentMeta, getParticipant, listTeamMembers, readItem } from '../db';
+import { getProjectMeta, getParticipant, listTeamMembers, readItem } from '../db';
 import { NOTIFY_EMAIL_DEDUPE_MS, notifyMentioned } from '../email/notifications';
 import { badRequest, forbidden, json, notFound } from '../responses';
 import type { RouteContext } from './context';
@@ -40,13 +40,13 @@ export async function handleTeamMentionRoutes(
   if (me.status !== 'joined') return forbidden();
 
   const body = (await request.json().catch(() => null)) as {
-    documentId?: unknown;
+    projectId?: unknown;
     commentText?: unknown;
     mentions?: unknown;
     itemId?: unknown;
     commentId?: unknown;
   } | null;
-  const documentId = typeof body?.documentId === 'string' ? body.documentId : '';
+  const projectId = typeof body?.projectId === 'string' ? body.projectId : '';
   // A Plan card's comment names its card, so the email opens it (docs/specs/012-collaboration/comment-mentions.md).
   const itemId = body?.itemId === undefined ? null : body.itemId;
   if (itemId !== null && (typeof itemId !== 'string' || !ITEM_ID_PATTERN.test(itemId))) {
@@ -61,21 +61,21 @@ export async function handleTeamMentionRoutes(
   }
   let commentText = typeof body?.commentText === 'string' ? body.commentText.trim() : '';
   let targets = Array.isArray(body?.mentions) ? (body.mentions as MentionTarget[]) : null;
-  if (!documentId || (!itemId && (!commentText || !targets))) {
-    return badRequest('missing documentId/commentText/mentions');
+  if (!projectId || (!itemId && (!commentText || !targets))) {
+    return badRequest('missing projectId/commentText/mentions');
   }
   if (!itemId && commentText.length > MENTION_COMMENT_MAX)
     return badRequest('commentText too long');
   if (!itemId && targets!.length > MENTIONS_MAX) return badRequest('too many mentions');
 
-  // The document must live in THIS team's library: a mention is of the
-  // document's own team, and its members are exactly who can open it. The
+  // The project must live in THIS team's library: a mention is of the
+  // project's own team, and its members are exactly who can open it. The
   // caller is a joined member (checked above), so they can open it too. 404,
-  // never 403, so the route can't probe which documents exist.
-  const liveDoc = await getDocumentMeta(env, documentId);
+  // never 403, so the route can't probe which projects exist.
+  const liveDoc = await getProjectMeta(env, projectId);
   if (!liveDoc || liveDoc.teamId !== teamId) return notFound();
   if (itemId) {
-    // The card must be one of this document's, and the comment the caller's own on it, posted inside the
+    // The card must be one of this project's, and the comment the caller's own on it, posted inside the
     // dedupe window (an older one could be emailed again once its claim lapsed). 404 for each, so the route
     // cannot probe cards or comments.
     const item = await readItem(env, liveDoc.id, itemId);
@@ -118,7 +118,7 @@ export async function handleTeamMentionRoutes(
         recipientFallbackEmail: m.email,
         authorUserId: userId,
         authorName,
-        document: { id: liveDoc.id, name: liveDoc.name },
+        project: { id: liveDoc.id, name: liveDoc.name },
         commentText,
         ...(itemId ? { itemId, commentId: commentId as string } : {}),
       }).catch(() => {}),

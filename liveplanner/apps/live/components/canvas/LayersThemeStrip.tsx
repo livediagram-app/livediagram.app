@@ -15,7 +15,7 @@ import { useDockNames } from '@/hooks/ui/useDockNames';
 // In Diagram mode an Editor's strip starts with Tidy Up (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
 // button"), left of Layers: how the tab is arranged sits with how it looks.
 //
-// Layers opens its panel as a popover above it (docs/specs/006-document/layers.md); the palette
+// Layers opens its panel as a popover above it (docs/specs/006-project/layers.md); the palette
 // opens the CanvasThemeDialog (docs/specs/011-theme/canvas-and-theme-dialog.md).
 export function LayersThemeStrip({
   tidyUp,

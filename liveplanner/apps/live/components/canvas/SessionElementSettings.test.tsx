@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
-import type { SessionButtonConfig } from '@liveplanner/document';
+import type { SessionButtonConfig } from '@liveplanner/project';
 import { SessionElementSettings } from './SessionElementSettings';
 
 // A session button's settings read its stored config as the press reads it (docs/specs/012-collaboration/
 // session-button.md): a value that arrived malformed (an API write, an import) shows as its default, never
 // failing the menu.
 
-vi.mock('@/app/document/[id]/EditorContext', () => ({
+vi.mock('@/app/project/[id]/EditorContext', () => ({
   useEditorContext: () => ({
     startTimer: vi.fn(),
     startVote: vi.fn(),

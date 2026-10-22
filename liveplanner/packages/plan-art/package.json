@@ -19,7 +19,7 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@liveplanner/document": "workspace:*",
+    "@liveplanner/project": "workspace:*",
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/icons": "workspace:*",
     "@liveplanner/items": "workspace:*",

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sentText } from '@liveplanner/vitest-config/sent-request';
-import type { Tab } from '@liveplanner/document';
-import { apiLoadTabRevisioned, apiSaveTab, flushDocumentSavesBeacon } from './tabs';
+import type { Tab } from '@liveplanner/project';
+import { apiLoadTabRevisioned, apiSaveTab, flushProjectSavesBeacon } from './tabs';
 import * as offlineStore from '../offline/offline-store';
 import { SAVE_TIMEOUT_BASE_MS, saveTimeoutMs } from './core';
 
@@ -10,10 +10,10 @@ vi.mock('../offline/offline-store', async (importOriginal) => ({
   isOfflineIdSync: vi.fn(() => false),
   offlineSaveTab: vi.fn(async () => {}),
   offlineDeleteTab: vi.fn(async () => {}),
-  offlineSaveDocumentMeta: vi.fn(async () => {}),
+  offlineSaveProjectMeta: vi.fn(async () => {}),
 }));
 
-// flushDocumentSavesBeacon is the beforeunload flush (docs/specs/006-document/per-tab-storage.md), now a pure
+// flushProjectSavesBeacon is the beforeunload flush (docs/specs/006-project/per-tab-storage.md), now a pure
 // function at the persistence boundary instead of inline raw fetch in
 // useAutosave. These lock the wire behaviour the extraction had to
 // preserve: keepalive on every write, X-Allow-Empty gated by loaded
@@ -25,7 +25,7 @@ function makeTab(id: string, extra: Partial<Tab> = {}): Tab {
 
 type FetchCall = { url: string; init: RequestInit };
 
-describe('flushDocumentSavesBeacon', () => {
+describe('flushProjectSavesBeacon', () => {
   let calls: FetchCall[];
 
   beforeEach(() => {
@@ -44,7 +44,7 @@ describe('flushDocumentSavesBeacon', () => {
 
   const base = {
     ownerId: 'owner-1',
-    documentId: 'diag-1',
+    projectId: 'diag-1',
     shareCode: null,
     loadedTabIds: new Set<string>(),
     orderChanged: false,
@@ -54,14 +54,14 @@ describe('flushDocumentSavesBeacon', () => {
 
   it('flushes an offline rename / reorder to IndexedDB, not just its tabs', () => {
     vi.mocked(offlineStore.isOfflineIdSync).mockReturnValueOnce(true);
-    flushDocumentSavesBeacon({
+    flushProjectSavesBeacon({
       ...base,
       nameChanged: true,
       changedTabs: [],
       deletedIds: [],
       tabs: [makeTab('t1', { folder: 'f' }), makeTab('t2')],
     });
-    expect(offlineStore.offlineSaveDocumentMeta).toHaveBeenCalledWith(
+    expect(offlineStore.offlineSaveProjectMeta).toHaveBeenCalledWith(
       'diag-1',
       {
         name: 'My diagram',
@@ -76,14 +76,14 @@ describe('flushDocumentSavesBeacon', () => {
   });
 
   it('PUTs each changed tab with keepalive and the owner header', () => {
-    flushDocumentSavesBeacon({
+    flushProjectSavesBeacon({
       ...base,
       changedTabs: [makeTab('t1')],
       deletedIds: [],
       tabs: [makeTab('t1')],
     });
     expect(calls).toHaveLength(1);
-    expect(calls[0]!.url).toBe('/api/documents/diag-1/tabs/t1');
+    expect(calls[0]!.url).toBe('/api/projects/diag-1/tabs/t1');
     expect(calls[0]!.init.method).toBe('PUT');
     expect(calls[0]!.init.keepalive).toBe(true);
     expect((calls[0]!.init.headers as Record<string, string>)['X-Owner-Id']).toBe('owner-1');
@@ -96,7 +96,7 @@ describe('flushDocumentSavesBeacon', () => {
           { id: 'n', type: 'text', x: 0, y: 0, width: 1, height: 1, label: 'x'.repeat(40_000) },
         ] as Tab['elements'],
       });
-    flushDocumentSavesBeacon({
+    flushProjectSavesBeacon({
       ...base,
       changedTabs: [big('t1'), big('t2'), makeTab('t3')],
       deletedIds: [],
@@ -108,7 +108,7 @@ describe('flushDocumentSavesBeacon', () => {
 
   it('skips the flush for a signed-in owner with no cached token, since every write would 401', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    flushDocumentSavesBeacon({
+    flushProjectSavesBeacon({
       ...base,
       ownerId: 'user_abc',
       changedTabs: [makeTab('t1')],
@@ -121,7 +121,7 @@ describe('flushDocumentSavesBeacon', () => {
   });
 
   it('sends X-Allow-Empty only for tabs whose content was authoritatively loaded', () => {
-    flushDocumentSavesBeacon({
+    flushProjectSavesBeacon({
       ...base,
       loadedTabIds: new Set(['loaded']),
       changedTabs: [makeTab('loaded'), makeTab('placeholder')],
@@ -134,8 +134,8 @@ describe('flushDocumentSavesBeacon', () => {
     expect(headersFor('placeholder')['X-Allow-Empty']).toBeUndefined();
   });
 
-  it('DELETEs removed tabs and only PUTs document meta when order/name changed', () => {
-    flushDocumentSavesBeacon({
+  it('DELETEs removed tabs and only PUTs project meta when order/name changed', () => {
+    flushProjectSavesBeacon({
       ...base,
       orderChanged: true,
       changedTabs: [],
@@ -143,15 +143,15 @@ describe('flushDocumentSavesBeacon', () => {
       tabs: [makeTab('t1')],
     });
     const del = calls.find((c) => c.init.method === 'DELETE')!;
-    expect(del.url).toBe('/api/documents/diag-1/tabs/gone');
+    expect(del.url).toBe('/api/projects/diag-1/tabs/gone');
     expect(del.init.keepalive).toBe(true);
-    const meta = calls.find((c) => c.url === '/api/documents/diag-1')!;
+    const meta = calls.find((c) => c.url === '/api/projects/diag-1')!;
     expect(meta.init.method).toBe('PUT');
     expect(meta.init.keepalive).toBe(true);
   });
 
   it('carries the share code header when present', () => {
-    flushDocumentSavesBeacon({
+    flushProjectSavesBeacon({
       ...base,
       shareCode: 'abc',
       changedTabs: [makeTab('t1')],
@@ -180,7 +180,7 @@ describe('the changeset seen revision', () => {
                 name: 'T',
                 elements: [],
                 rev: 7,
-                documentId: 'd',
+                projectId: 'd',
                 orderIndex: 0,
                 updatedAt: 1,
               },
@@ -194,9 +194,9 @@ describe('the changeset seen revision', () => {
   afterEach(() => vi.unstubAllGlobals());
 
   it('the beacon sends it per tab, and nothing for a tab without one', () => {
-    flushDocumentSavesBeacon({
+    flushProjectSavesBeacon({
       ownerId: 'owner-1',
-      documentId: 'diag-1',
+      projectId: 'diag-1',
       shareCode: null,
       loadedTabIds: new Set(),
       orderChanged: false,
@@ -226,7 +226,7 @@ describe('the changeset seen revision', () => {
     expect(await apiSaveTab('owner-1', 'diag-1', makeTab('a'))).toBeNull();
   });
 
-  // docs/specs/006-document/per-tab-storage.md "Retrying a failed save": a save left hanging no longer holds the
+  // docs/specs/006-project/per-tab-storage.md "Retrying a failed save": a save left hanging no longer holds the
   // tab's later saves behind it; it is abandoned after a bound sized to its body.
   it('a save carries a timeout sized to its body', async () => {
     const timeout = vi.spyOn(AbortSignal, 'timeout');

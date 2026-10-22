@@ -71,12 +71,12 @@ test('two people renaming different columns of one board both keep their rename'
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
   const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
-  const seeded = await page.request.post(`${apiBase}/documents`, {
+  const seeded = await page.request.post(`${apiBase}/projects`, {
     headers,
     data: {
       id,
       name: 'Board room',
-      // A document starts with no card types (docs/specs/026-plan/item-types.md): give it the defaults.
+      // A project starts with no card types (docs/specs/026-plan/item-types.md): give it the defaults.
       itemTypes: defaultCatalogue(),
       tabs: [
         {
@@ -101,15 +101,15 @@ test('two people renaming different columns of one board both keep their rename'
     },
   });
   expect(seeded.ok()).toBe(true);
-  const share = await page.request.post(`${apiBase}/documents/${id}/share`, {
+  const share = await page.request.post(`${apiBase}/projects/${id}/share`, {
     headers,
     data: { role: 'edit' },
   });
   const code = ((await share.json()) as { link: { code: string } }).link.code;
 
-  const a = await openAs(browser, baseURL!, `/document/${id}`, owner);
+  const a = await openAs(browser, baseURL!, `/project/${id}`, owner);
   await a.locator(CANVAS).waitFor();
-  const b = await openAs(browser, baseURL!, `/document/shared?s=${code}`, null);
+  const b = await openAs(browser, baseURL!, `/project/shared?s=${code}`, null);
   await b.getByRole('button', { name: /^join$/i }).click();
   await b.locator(CANVAS).waitFor();
   await dismissQuickTour(a);
@@ -153,12 +153,12 @@ test('someone who joins after a card was opened sees it held', async ({
   const owner = await mintSignedGuest(page.request);
   const id = crypto.randomUUID();
   const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
-  const seeded = await page.request.post(`${apiBase}/documents`, {
+  const seeded = await page.request.post(`${apiBase}/projects`, {
     headers,
     data: {
       id,
       name: 'Held card',
-      // A document starts with no card types (docs/specs/026-plan/item-types.md): give it the defaults.
+      // A project starts with no card types (docs/specs/026-plan/item-types.md): give it the defaults.
       itemTypes: defaultCatalogue(),
       tabs: [
         {
@@ -183,14 +183,14 @@ test('someone who joins after a card was opened sees it held', async ({
     },
   });
   expect(seeded.ok()).toBe(true);
-  const share = await page.request.post(`${apiBase}/documents/${id}/share`, {
+  const share = await page.request.post(`${apiBase}/projects/${id}/share`, {
     headers,
     data: { role: 'edit' },
   });
   const code = ((await share.json()) as { link: { code: string } }).link.code;
 
   // A adds a card and opens it: the card is held before B arrives.
-  const a = await openAs(browser, baseURL!, `/document/${id}`, owner);
+  const a = await openAs(browser, baseURL!, `/project/${id}`, owner);
   await a.locator(CANVAS).waitFor();
   await dismissQuickTour(a);
   const boardA = a.locator('[data-plan-board]').first();
@@ -204,7 +204,7 @@ test('someone who joins after a card was opened sees it held', async ({
   await expect(a.getByRole('dialog')).toBeVisible();
 
   // B joins late, and sees A's tag on that card without A doing anything more.
-  const b = await openAs(browser, baseURL!, `/document/shared?s=${code}`, null);
+  const b = await openAs(browser, baseURL!, `/project/shared?s=${code}`, null);
   await b.getByRole('button', { name: /^join$/i }).click();
   await b.locator(CANVAS).waitFor();
   await dismissQuickTour(b);

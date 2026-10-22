@@ -1,5 +1,5 @@
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { ArrowElement } from '@liveplanner/document';
+import type { ArrowElement } from '@liveplanner/project';
 import type { ArrowEnd } from '@/lib/canvas';
 import { CurveHandle, EndpointHandle } from './arrow-handles';
 

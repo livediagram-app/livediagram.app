@@ -14,15 +14,15 @@ function address(href: string) {
 }
 
 describe('takeTicketFromAddress', () => {
-  it('reads the ticket and the document, and clears the fragment', () => {
+  it('reads the ticket and the project, and clears the fragment', () => {
     const { location, history } = address(
       `https://liveplanner.app/embed/workbench?d=doc-1#ticket=${TICKET}`,
     );
 
     expect(takeTicketFromAddress(location, history)).toEqual({
       ticket: TICKET,
-      scope: 'document',
-      documentId: 'doc-1',
+      scope: 'project',
+      projectId: 'doc-1',
     });
     expect(history.replaceState).toHaveBeenCalledWith(null, '', '/embed/workbench?d=doc-1');
   });
@@ -32,8 +32,8 @@ describe('takeTicketFromAddress', () => {
 
     expect(takeTicketFromAddress(location, history)).toEqual({
       ticket: null,
-      scope: 'document',
-      documentId: 'doc-1',
+      scope: 'project',
+      projectId: 'doc-1',
     });
     expect(history.replaceState).toHaveBeenCalledTimes(1);
   });
@@ -51,21 +51,21 @@ describe('takeTicketFromAddress', () => {
 
     expect(takeTicketFromAddress(location, history)).toEqual({
       ticket: null,
-      scope: 'document',
-      documentId: 'doc-1',
+      scope: 'project',
+      projectId: 'doc-1',
     });
     expect(history.replaceState).not.toHaveBeenCalled();
   });
 
-  it('reads no document when the address has none', () => {
+  it('reads no project when the address has none', () => {
     const { location, history } = address(
       `https://liveplanner.app/embed/workbench#ticket=${TICKET}`,
     );
 
     expect(takeTicketFromAddress(location, history)).toEqual({
       ticket: TICKET,
-      scope: 'document',
-      documentId: null,
+      scope: 'project',
+      projectId: null,
     });
   });
 });
@@ -74,23 +74,23 @@ describe('takeTicketFromAddress, workspace scope', () => {
   it.each([
     'https://liveplanner.app/embed/workbench/explorer',
     'https://liveplanner.app/embed/workbench/explorer/folder/f1',
-    'https://liveplanner.app/embed/workbench/document/doc-1',
-  ])('reads %s as the workspace scope, with no document', (href) => {
+    'https://liveplanner.app/embed/workbench/project/doc-1',
+  ])('reads %s as the workspace scope, with no project', (href) => {
     const { location, history } = address(`${href}#ticket=${TICKET}`);
 
     expect(takeTicketFromAddress(location, history)).toEqual({
       ticket: TICKET,
       scope: 'workspace',
-      documentId: null,
+      projectId: null,
     });
     expect(history.replaceState).toHaveBeenCalledWith(null, '', new URL(href).pathname);
   });
 
-  it('reads the document page with a trailing slash as the document scope', () => {
+  it('reads the project page with a trailing slash as the project scope', () => {
     const { location, history } = address(
       `https://liveplanner.app/embed/workbench/?d=doc-1#ticket=${TICKET}`,
     );
 
-    expect(takeTicketFromAddress(location, history).scope).toBe('document');
+    expect(takeTicketFromAddress(location, history).scope).toBe('project');
   });
 });

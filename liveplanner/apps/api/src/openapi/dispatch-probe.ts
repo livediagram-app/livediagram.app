@@ -82,7 +82,7 @@ export function routeSourceFiles(): string[] {
 
 /** The `case '<segment>':` blocks of index.ts's dispatch switch, with the source
  *  of every route module each block reaches (transitively through sibling
- *  `./<module>` imports, since the document routes are split across files). */
+ *  `./<module>` imports, since the project routes are split across files). */
 function dispatchSources(): Map<string, string[]> {
   const index = readSource('index.ts')!;
   const handlerFile = new Map<string, string>();
@@ -130,7 +130,7 @@ export function routeVocabulary(): RouteVocabulary {
   return out;
 }
 
-/** `/documents/{id}/copy` → `['documents', '{id}', 'copy']`. */
+/** `/projects/{id}/copy` → `['projects', '{id}', 'copy']`. */
 export function templateSegments(template: string): string[] {
   return template.replace(/^\//, '').split('/');
 }
@@ -172,13 +172,12 @@ export async function probeDispatch(
       },
     );
   // Feature gates open, so a handler reaches its own routing instead of
-  // answering "not configured" for every path: telemetry on, a model key set.
+  // answering "not configured" for every path: telemetry on.
   const env = {
     DB: trap('DB'),
     SNAPSHOTS: trap('SNAPSHOTS'),
-    DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
+    PROJECT_ROOM: trap('PROJECT_ROOM'),
     TELEMETRY_ENABLED: 'true',
-    OPENAI_API_KEY: 'probe-key',
   } as unknown as Env;
   const pending: Promise<unknown>[] = [];
   const executionCtx = {

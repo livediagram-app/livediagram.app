@@ -3,8 +3,8 @@
 // A `.csv` (or `.tsv`) file dropped on the canvas in Plan mode places a Sheet filled from it, titled by the file's
 // name (docs/specs/029-sheets/sheet.md "Placing a sheet"); any other file, or any file in another mode, goes on to
 // the canvas's own file drop. The file is read here; the Sheet makes the sheet when it first draws.
-import { createShape } from '@liveplanner/document';
-import type { BoxedElement } from '@liveplanner/document';
+import { createShape } from '@liveplanner/project';
+import type { BoxedElement } from '@liveplanner/project';
 import { placeNewSheet } from '@/lib/sheet-seeds';
 import { track } from '@/lib/telemetry';
 

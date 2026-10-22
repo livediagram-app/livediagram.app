@@ -23,8 +23,8 @@ const SESSION_CONTEXT: WorkbenchContext = {
   ownerId: 'user_1',
   tokenId: 'tok1',
   pairingId: 'pair1',
-  scope: 'document',
-  documentId: 'doc1',
+  scope: 'project',
+  projectId: 'doc1',
   folderId: null,
   tabId: null,
   origin: ORIGIN,
@@ -35,7 +35,7 @@ const SESSION_CONTEXT: WorkbenchContext = {
 async function mintTicket(
   db: SqliteD1,
   token: { id: string; readOnly?: boolean } = { id: 'tok1' },
-  body: Record<string, unknown> = { documentId: 'doc1', tabId: 't1', origin: ORIGIN },
+  body: Record<string, unknown> = { projectId: 'doc1', tabId: 't1', origin: ORIGIN },
 ) {
   const res = await handleWorkbench(
     makeTestRouteContext('POST', '/api/workbench/tickets', {
@@ -78,8 +78,8 @@ describe('POST /api/workbench/sessions', () => {
     expect(res.status).toBe(201);
     expect(body).toEqual({
       session: expect.any(String),
-      scope: 'document',
-      documentId: 'doc1',
+      scope: 'project',
+      projectId: 'doc1',
       folderId: null,
       tabId: 't1',
       origin: ORIGIN,
@@ -92,8 +92,8 @@ describe('POST /api/workbench/sessions', () => {
       { secret_hash: await hashWorkbenchSecret(body.session), pairing_id: 'pair1' },
     ]);
     expect(console.log).toHaveBeenCalledWith('[workbench] session-opened', {
-      scope: 'document',
-      documentId: 'doc1',
+      scope: 'project',
+      projectId: 'doc1',
       tokenId: 'tok1',
       sessionPrefix: expect.stringMatching(/^[0-9a-f-]{8}$/),
       role: 'edit',
@@ -175,7 +175,7 @@ describe('POST /api/workbench/sessions', () => {
     const db = await workbenchDb();
     pairToken(db);
     const ticket = await mintTicket(db);
-    db.sql.exec(`UPDATE documents SET owner_id = 'user_2' WHERE id = 'doc1'`);
+    db.sql.exec(`UPDATE projects SET owner_id = 'user_2' WHERE id = 'doc1'`);
 
     const res = await redeem(db, { ticket });
 
@@ -226,7 +226,7 @@ describe('DELETE /api/workbench/sessions/current', () => {
     const db = await workbenchDb();
     pairToken(db);
     db.sql.exec(`INSERT INTO workbench_sessions
-                   (id, secret_hash, owner_id, token_id, pairing_id, document_id, tab_id, origin, role, created_at, expires_at)
+                   (id, secret_hash, owner_id, token_id, pairing_id, project_id, tab_id, origin, role, created_at, expires_at)
                  VALUES ('sess1', 'h', 'user_1', 'tok1', 'pair1', 'doc1', NULL, '${ORIGIN}', 'edit', 1, ${NOW})`);
     const log = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -241,8 +241,8 @@ describe('DELETE /api/workbench/sessions/current', () => {
     expect(rows(db, 'SELECT * FROM workbench_sessions')).toEqual([]);
     expect(log).toHaveBeenCalledWith('[workbench] session-ended', {
       reason: 'ended',
-      scope: 'document',
-      documentId: 'doc1',
+      scope: 'project',
+      projectId: 'doc1',
       tokenId: 'tok1',
       sessionPrefix: 'sess1',
     });
@@ -275,7 +275,7 @@ describe('POST /api/workbench/sessions, workspace scope', () => {
     vi.restoreAllMocks();
   });
 
-  it('opens a workspace session with no document, its folder and the ticket level', async () => {
+  it('opens a workspace session with no project, its folder and the ticket level', async () => {
     const db = await workbenchDb();
     pairToken(db, 'tok1', 'user_1', 'pair1', 'workspace');
     arrangeFolders(db);
@@ -295,7 +295,7 @@ describe('POST /api/workbench/sessions, workspace scope', () => {
     expect(await res.json()).toEqual({
       session: expect.any(String),
       scope: 'workspace',
-      documentId: null,
+      projectId: null,
       folderId: 'f-own',
       tabId: null,
       origin: ORIGIN,
@@ -303,12 +303,12 @@ describe('POST /api/workbench/sessions, workspace scope', () => {
       expiresAt: NOW + WORKBENCH_SESSION_TTL_MS,
       person: { id: 'user_1', name: null, color: null },
     });
-    expect(rows(db, 'SELECT scope, document_id, folder_id FROM workbench_sessions')).toEqual([
-      { scope: 'workspace', document_id: null, folder_id: 'f-own' },
+    expect(rows(db, 'SELECT scope, project_id, folder_id FROM workbench_sessions')).toEqual([
+      { scope: 'workspace', project_id: null, folder_id: 'f-own' },
     ]);
     expect(console.log).toHaveBeenCalledWith('[workbench] session-opened', {
       scope: 'workspace',
-      documentId: null,
+      projectId: null,
       tokenId: 'tok1',
       sessionPrefix: expect.any(String),
       role: 'edit',

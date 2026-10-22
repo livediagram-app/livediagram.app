@@ -14,7 +14,7 @@ import {
   type ItemTypeDef,
   type SwimlaneBy,
 } from '@liveplanner/items';
-import type { PlanViewRef } from '@liveplanner/document';
+import type { PlanViewRef } from '@liveplanner/project';
 import type { PlanContextValue } from '../PlanContext';
 import { track } from '@/lib/telemetry';
 

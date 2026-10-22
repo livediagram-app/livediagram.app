@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { Workbook, sheetFromJson, type Sheet } from '@liveplanner/sheets';
-import type { DashboardLayout, Tab } from '@liveplanner/document';
+import type { DashboardLayout, Tab } from '@liveplanner/project';
 import {
   sheetContentsFor,
   sheetMetricsFor,

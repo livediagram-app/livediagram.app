@@ -1,0 +1,74 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LookAndFeelTheme } from '@/components/illustrations/canvas-basics';
+
+export const metadata = helpMetadata({
+  title: 'Changing the Theme',
+  description: 'Open the Tab Style dialog and pick a look or a theme to recolour the whole tab.',
+  path: '/help/user-interface/themes/changing-theme/',
+});
+
+<ArticleLayout
+  title="Changing the Theme"
+  description="Use the Tab Style dialog to pick a look or a theme for the active tab."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+  parentArticle={{ title: "Themes", slug: "themes" }}
+  subArticles={getSubArticles("themes").filter((a) => a.slug !== "changing-theme")}
+>
+
+Changing a tab's look is a matter of picking a new theme and watching the tab update. liveplanner keeps the theme picker in a dialog of its own, so there is plenty of room to compare looks.
+
+<Figure caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first.">
+  <LookAndFeelTheme />
+</Figure>
+
+## Opening the Dialog
+
+Click **Style** (the palette icon) in the bottom-right corner of the editor; it is there on every kind of tab and every screen size, phones included. It opens the **Tab Style** dialog on its home, which has two parts: **Looks** at the top, and **Fine-tune** below. You can also run **Open Theme** from the [command palette](/help/search-panel/the-search-panel/command-palette/) to open the dialog straight on its **Colours** panel, or **Open Canvas Options** to land on its **Canvas** panel.
+
+The button only appears for people who can edit the tab, so it is missing for a Participant or a Viewer on a shared link, in an embed and in [zen mode](/help/tools/zen-mode/).
+
+The dialog is an editor, not a wizard: there is no Apply or Cancel. Every change applies to the active tab as you click, and closing it (with the X, the Escape key, or a click outside it) simply dismisses it without rolling anything back. Undo takes a theme change back like any other edit.
+
+## Picking a Look
+
+A look restyles the whole tab in one click. Each one sets four things together: the theme, the finish, the tab font and the background pattern. After the **Mashup** card (see below) come twenty-nine, six to a page of the carousel: **Everyday**, **Textbook**, **Whiteboard**, **Spectrum**, **Boardroom**, **Notebook**, **Seaside**, **Doodle**, **Editorial**, **Midnight**, **Poster**, **Workshop**, **Graph Paper**, **Daydream**, **Engineer**, **Lagoon**, **Studio**, **Garden**, **Billboard**, **Patchwork**, **Northern Lights**, **Coffeehouse**, **Schematic**, **Flipchart**, **Sketchbook**, **Greenboard**, **Picnic**, **Mural** and **Field Notes**. Each card shows a small sample drawn in that look, with a line on what it is made of.
+
+To see only the looks of one finish, use the finish dropdown on the **Looks** heading row, beside the carousel's arrows: **All finishes** (the default) shows every look, and **Flexible**, **Professional**, **Sketch** or **Marker** narrows the carousel to that finish. The filter is just for browsing: it changes nothing on the tab, and it is back on All finishes the next time you open the dialog.
+
+Picking a look counts as one change, so a single undo takes it back. A look's card stays selected while the tab still matches it. Change any of the four settings yourself and the tab has its own mix, so no look is selected.
+
+## Seasonal Looks
+
+For the holidays, press **Seasonal** beside the finish dropdown. The carousel swaps to six seasonal looks: **Countdown** for New Year, **Egg Hunt** for Easter, **Haunted** for Halloween, and **Christmas Morning**, **Winter Wonderland** and **Fireside** for Christmas. Each card names its season above the look's name. The season on now, or the next one coming, comes first, but every season is there all year. They bring festive colours and background patterns (sparkles, eggs, cobwebs, candy stripes and snowflakes) that you will only find here. Press **Seasonal** again to go back to the everyday looks; the finish dropdown narrows either set.
+
+## Rolling a Mashup
+
+The first card in the carousel is **Mashup**, marked with a pair of dice. Press it and the tab takes a random look: a theme, a finish, a font and a pattern mixed together from the ones the looks use, so every mashup is a combination you may never have tried, yet always reads well, in light mode and in dark mode alike. Press it again for another one, as many times as you like; the card shows the mashup the tab is wearing. If you have picked a finish in the dropdown, the mashups keep to that finish. Like any look, a mashup is one change, so a single undo takes it back, and once you find one you like you can fine-tune any part of it below.
+
+## Fine-tuning
+
+Below the looks, **Fine-tune** lists four rows, each showing its current setting: **Colours** (the theme), **Finish**, **Text** (the tab's font and text size) and **Canvas** (the background pattern and colours). Press a row to open that panel in place; the bar across its top (**Tab Style**, with the panel's name beside it) takes you back to the home. The rest of this article covers the **Colours** panel, where you pick a theme on its own.
+
+## Picking a Theme
+
+The Colours panel lists every theme in one carousel, nine to a page: **Default** first, then the rest of the twenty-four built-in themes, then your own [custom themes](/help/user-interface/themes/custom-themes/) and a **New Theme** card. It opens on the page holding the tab's current theme; the arrows or the page dots move between pages.
+
+Click a theme to apply it; the tab eases into the new colours. Double-click a theme to apply it and close the dialog in one move.
+
+Every theme works in light and dark mode: each person sees the tab in their own [appearance's](/help/tools/dark-mode/) version of the theme, so you can pick any theme without thinking about who works in which mode.
+
+To build on a built-in theme, hover its card and press **Copy**: the theme builder opens with its colours filled in, ready to save as a [custom theme](/help/user-interface/themes/custom-themes/).
+
+## Colours You Set Yourself
+
+Applying a theme recolours the tab, but keeps colours you have set by hand, so deliberate choices survive the switch. That goes for the background too: a background colour, pattern or pattern opacity you chose yourself stays put.
+
+<Tip>
+  Double-click a theme to apply it and close the dialog in one move; Undo takes it back if it is not
+  the one.
+</Tip>
+
+</ArticleLayout>

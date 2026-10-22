@@ -12,7 +12,7 @@ vi.mock('./image-result', () => ({
 }));
 
 import { registerTools } from './tools';
-import { deleteDocumentShape } from '@liveplanner/agent-verbs/mcp';
+import { deleteProjectShape } from '@liveplanner/agent-verbs/mcp';
 import { TOOL_ANNOTATIONS, type ToolBehaviour } from './tool-annotations';
 import type { ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
 
@@ -134,12 +134,12 @@ function okResponse(request: Request): Response {
   }
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
-  if (path === '/documents' && request.method === 'GET') return json({ documents: [] });
+  if (path === '/projects' && request.method === 'GET') return json({ projects: [] });
   if (path.endsWith('/sheets'))
     return request.method === 'POST' ? json({ sheet: SHEET }) : json({ sheets: [SHEET] });
   if (path === '/teams') return json({ teams: [] });
   if (path === '/trash') return json({ trash: [] });
-  if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
+  if (path.endsWith('/restore')) return json({ project: LIVE_DOC });
   if (path.endsWith('/share')) {
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   }
@@ -151,7 +151,6 @@ function okResponse(request: Request): Response {
       results: [],
       text: '',
       warnings: [],
-      lint: null,
     });
   }
   if (path.endsWith('/name')) return json({ tab: { id: 't_1', name: 'A diagram', orderIndex: 0 } });
@@ -159,7 +158,7 @@ function okResponse(request: Request): Response {
   if (path.endsWith('/tabs/f_1/form')) return json({ tabId: 'f_1', rev: 2, name: 'RSVP' });
   if (path.endsWith('/tabs/f_1')) return json({ tab: FORM_TAB });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
-  if (/^\/documents\/[^/]+$/.test(path)) return json({ document: LIVE_DOC });
+  if (/^\/projects\/[^/]+$/.test(path)) return json({ project: LIVE_DOC });
   if (path.endsWith('/items') && request.method === 'GET') return json({ items: [], rev: 0 });
   if (path.endsWith('/plan')) return json(PLAN);
   return json({});
@@ -193,7 +192,7 @@ function harness(api: 'ok' | 'down' = 'down') {
   return { registered, emitted };
 }
 
-// find_documents -> FindDocuments. The tool name is snake_case on the wire (MCP
+// find_projects -> FindProjects. The tool name is snake_case on the wire (MCP
 // convention) and the telemetry token is PascalCase (docs/specs/017-telemetry/telemetry.md bounds `type` to a
 // short token), so the two spellings have to be derived from each other rather
 // than typed twice.
@@ -209,7 +208,7 @@ function expectedToken(toolName: string): string {
 // enough for each tool to run to its success result against the 'ok' api.
 const ARGS = {
   query: 'anything',
-  documentId: 'd_1',
+  projectId: 'd_1',
   tabId: 't_1',
   name: 'A diagram',
   elements: [],
@@ -248,22 +247,22 @@ describe('registerTools', () => {
       'change_form',
       'change_items',
       'change_sheet',
-      'create_document',
-      'delete_document',
-      'find_documents',
+      'create_project',
+      'delete_project',
+      'find_projects',
       'list_items',
       'list_sheets',
       'list_templates',
       'list_trash',
-      'read_document',
       'read_form',
+      'read_project',
       'read_sheet',
-      'rename_document',
-      'restore_document',
-      'share_document',
+      'rename_project',
+      'restore_project',
       'share_form',
+      'share_project',
       'try_form',
-      'update_document',
+      'update_project',
     ]);
     // The description is what the calling model reads to pick a tool, so an
     // undescribed tool is effectively unreachable.
@@ -314,13 +313,13 @@ describe('registerTools', () => {
     expect(emitted).toContainEqual({
       category: 'Error',
       action: 'Api',
-      type: 'Internal.ReadDocument',
+      type: 'Internal.ReadProject',
     });
   });
 
   it('counts no use for an isError result (input the model has to correct)', async () => {
     const { registered, emitted } = harness('ok');
-    const create = registered.find((r) => r.name === 'create_document')!;
+    const create = registered.find((r) => r.name === 'create_project')!;
     const result = (await create.handler({ name: 'x', tabs: [] }, AUTHED)) as {
       isError?: boolean;
     };
@@ -347,7 +346,7 @@ describe('registerTools', () => {
 // Same shape of promise as the telemetry suite above, and the same absence of a
 // runtime signal: a tool with no annotations still works, it just asks the user
 // for permission it shouldn't need (or, worse, doesn't ask before overwriting
-// their document), and connector directories reject the whole server over it.
+// their project), and connector directories reject the whole server over it.
 // That is invisible from inside the worker, which is exactly how all nine then
 // shipped unannotated until a listing review caught it.
 //
@@ -357,17 +356,17 @@ describe('registerTools', () => {
 // an annotations block, which types can't catch.
 describe('tool annotations', () => {
   const BEHAVIOURS: Record<string, ToolBehaviour> = {
-    find_documents: 'read',
-    read_document: 'read',
+    find_projects: 'read',
+    read_project: 'read',
     list_templates: 'read',
-    create_document: 'write',
+    create_project: 'write',
     add_tab: 'write',
-    share_document: 'write',
-    rename_document: 'write',
+    share_project: 'write',
+    rename_project: 'write',
     list_trash: 'read',
-    restore_document: 'write',
-    update_document: 'destructive',
-    delete_document: 'destructive',
+    restore_project: 'write',
+    update_project: 'destructive',
+    delete_project: 'destructive',
     // Items (docs/specs/026-plan/plan-mode.md "Agents"): change_items may delete.
     list_items: 'read',
     change_items: 'destructive',
@@ -424,13 +423,13 @@ describe('tool annotations', () => {
       .map((r) => r.name)
       .sort();
     expect(readOnly).toEqual([
-      'find_documents',
+      'find_projects',
       'list_items',
       'list_sheets',
       'list_templates',
       'list_trash',
-      'read_document',
       'read_form',
+      'read_project',
       'read_sheet',
     ]);
 
@@ -453,13 +452,13 @@ describe('tool annotations', () => {
       'change_form',
       'change_items',
       'change_sheet',
-      'delete_document',
-      'update_document',
+      'delete_project',
+      'update_project',
     ]);
   });
 });
 
-// delete_document only ever moves a document to the Trash; restore_document and
+// delete_project only ever moves a project to the Trash; restore_project and
 // list_trash are the way back (docs/specs/015-api/mcp-server.md §4.9,
 // docs/specs/013-workspace/trash.md). A permanent delete is the REST API's.
 describe('the Trash tools', () => {
@@ -494,42 +493,42 @@ describe('the Trash tools', () => {
   const text = (result: unknown) =>
     JSON.parse((result as { content: { text: string }[] }).content[0]!.text) as unknown;
 
-  it('delete_document moves the document to the Trash', async () => {
+  it('delete_project moves the project to the Trash', async () => {
     const { calls, tool } = trashHarness();
-    const result = await tool('delete_document').handler({ documentId: 'd_1' }, AUTHED);
-    expect(calls).toEqual(['DELETE /api/documents/d_1']);
+    const result = await tool('delete_project').handler({ projectId: 'd_1' }, AUTHED);
+    expect(calls).toEqual(['DELETE /api/projects/d_1']);
     expect(text(result)).toEqual({
-      deleted: 'document',
-      documentId: 'd_1',
+      deleted: 'project',
+      projectId: 'd_1',
       trashed: true,
       restorableForDays: 30,
     });
   });
 
-  // A document id can be steered by injected content the model has read, so
+  // A project id can be steered by injected content the model has read, so
   // it must stay one path segment: no query string, no `..` to another route.
-  it('delete_document keeps a hostile id inside its own path segment', async () => {
+  it('delete_project keeps a hostile id inside its own path segment', async () => {
     const { calls, tool } = trashHarness();
-    await tool('delete_document').handler({ documentId: 'd_1?permanent=true' }, AUTHED);
-    await tool('delete_document').handler({ documentId: '../folders/f_1' }, AUTHED);
+    await tool('delete_project').handler({ projectId: 'd_1?permanent=true' }, AUTHED);
+    await tool('delete_project').handler({ projectId: '../folders/f_1' }, AUTHED);
     expect(calls).toEqual([
-      'DELETE /api/documents/d_1%3Fpermanent%3Dtrue',
-      'DELETE /api/documents/..%2Ffolders%2Ff_1',
+      'DELETE /api/projects/d_1%3Fpermanent%3Dtrue',
+      'DELETE /api/projects/..%2Ffolders%2Ff_1',
     ]);
   });
 
-  it('delete_document has no permanent option, and ignores one sent anyway', async () => {
+  it('delete_project has no permanent option, and ignores one sent anyway', async () => {
     const { calls, tool } = trashHarness();
-    expect(Object.keys(deleteDocumentShape)).toEqual(['documentId', 'tabId']);
-    await tool('delete_document').handler({ documentId: 'd_1', permanent: true }, AUTHED);
-    expect(calls).toEqual(['DELETE /api/documents/d_1']);
-    expect(tool('delete_document').config.description).toContain('restore_document');
+    expect(Object.keys(deleteProjectShape)).toEqual(['projectId', 'tabId']);
+    await tool('delete_project').handler({ projectId: 'd_1', permanent: true }, AUTHED);
+    expect(calls).toEqual(['DELETE /api/projects/d_1']);
+    expect(tool('delete_project').config.description).toContain('restore_project');
   });
 
-  it('delete_document still deletes one tab outright', async () => {
+  it('delete_project still deletes one tab outright', async () => {
     const { calls, tool } = trashHarness();
-    await tool('delete_document').handler({ documentId: 'd_1', tabId: 't_1' }, AUTHED);
-    expect(calls).toEqual(['DELETE /api/documents/d_1/tabs/t_1']);
+    await tool('delete_project').handler({ projectId: 'd_1', tabId: 't_1' }, AUTHED);
+    expect(calls).toEqual(['DELETE /api/projects/d_1/tabs/t_1']);
   });
 
   it('list_trash lists what the user may restore', async () => {
@@ -582,23 +581,23 @@ describe('the Trash tools', () => {
     });
   });
 
-  it('restore_document restores through the api and links to it', async () => {
+  it('restore_project restores through the api and links to it', async () => {
     const { calls, tool } = trashHarness(() =>
-      Response.json({ document: { id: 'd_1', name: 'Plan' } }),
+      Response.json({ project: { id: 'd_1', name: 'Plan' } }),
     );
-    const result = await tool('restore_document').handler({ documentId: 'd_1' }, AUTHED);
+    const result = await tool('restore_project').handler({ projectId: 'd_1' }, AUTHED);
     expect(calls).toEqual(['POST /api/trash/d_1/restore']);
     expect(text(result)).toEqual({
-      restored: 'document',
+      restored: 'project',
       id: 'd_1',
       name: 'Plan',
-      url: 'https://liveplanner.app/document/d_1',
+      url: 'https://liveplanner.app/project/d_1',
     });
   });
 
-  it('restore_document explains a document that is not in the Trash', async () => {
+  it('restore_project explains a project that is not in the Trash', async () => {
     const { tool } = trashHarness(() => Response.json({ error: 'not_found' }, { status: 404 }));
-    const result = (await tool('restore_document').handler({ documentId: 'x' }, AUTHED)) as {
+    const result = (await tool('restore_project').handler({ projectId: 'x' }, AUTHED)) as {
       isError: boolean;
       content: { text: string }[];
     };
@@ -607,7 +606,7 @@ describe('the Trash tools', () => {
   });
 });
 
-describe('delete_document on a document already in the Trash', () => {
+describe('delete_project on a project already in the Trash', () => {
   it('says so, and how to delete it for good', async () => {
     const registered: Registered[] = [];
     const server = {
@@ -624,12 +623,12 @@ describe('delete_document on a document already in the Trash', () => {
         fetch: async (request: Request) =>
           new URL(request.url).pathname.endsWith('/events')
             ? new Response(null, { status: 204 })
-            : Response.json({ error: 'document_trashed' }, { status: 410 }),
+            : Response.json({ error: 'project_trashed' }, { status: 410 }),
       },
     } as unknown as Env;
     registerTools(server, env);
-    const tool = registered.find((r) => r.name === 'delete_document')!;
-    const result = (await tool.handler({ documentId: 'd_1' }, AUTHED)) as {
+    const tool = registered.find((r) => r.name === 'delete_project')!;
+    const result = (await tool.handler({ projectId: 'd_1' }, AUTHED)) as {
       isError: boolean;
       content: { text: string }[];
     };

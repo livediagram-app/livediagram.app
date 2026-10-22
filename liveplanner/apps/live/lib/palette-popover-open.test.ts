@@ -7,7 +7,7 @@ import {
   usePalettePopoverOpen,
 } from './palette-popover-open';
 
-// docs/specs/007-editor/start-diagramming.md "When it shows": the start steps aside while a palette popover is open.
+// docs/specs/007-editor/start-panel.md "When it shows": the start steps aside while a palette popover is open.
 describe('palette popover open', () => {
   afterEach(() => setPalettePopoverOpen(false));
 

@@ -12,11 +12,11 @@ import {
   takeCloudOffline,
 } from '@/lib/offline/offline-convert';
 
-// Shared Offline Mode conversion handlers (docs/specs/006-document/offline-mode.md) for the Explorer's row and
+// Shared Offline Mode conversion handlers (docs/specs/006-project/offline-mode.md) for the Explorer's row and
 // card menus, which otherwise duplicated this logic. `syncToCloud` uploads an
-// offline document to the account; `takeOffline` pulls a cloud document down and
+// offline project to the account; `takeOffline` pulls a cloud project down and
 // deletes the server copy (gated by a confirm). Both reload afterwards so the
-// list reflects the move. A second conversion of the same document while one
+// list reflects the move. A second conversion of the same project while one
 // runs does nothing: the guard is the conversion's own (offline-convert), not
 // this hook's state, which went with the menu the moment it closed.
 // `close` runs first to dismiss the caller's menu.
@@ -34,7 +34,7 @@ export function useOfflineConversion(
       await saveOfflineToCloud(liveDoc.id, ownerId);
       // Before the reload on purpose: the telemetry engine's pagehide
       // beacon carries the buffered event through the navigation.
-      track('Document', 'Moved', 'SavedToCloud');
+      track('Project', 'Moved', 'SavedToCloud');
       window.location.reload();
     } catch (e) {
       // Stays offline. A conversion already running reports for itself.
@@ -45,7 +45,7 @@ export function useOfflineConversion(
   const takeOffline = async () => {
     if (!ownerId || conversionInProgress(liveDoc.id)) return;
     close();
-    // A shared tab stays in its other documents and forks here (docs/specs/006-document/offline-mode.md).
+    // A shared tab stays in its other projects and forks here (docs/specs/006-project/offline-mode.md).
     const notice = await fetchSharedTabsNotice(ownerId, liveDoc.id, 'offline');
     const ok = await confirm({
       title: `Take “${liveDoc.name}” Offline?`,
@@ -60,7 +60,7 @@ export function useOfflineConversion(
     if (!ok) return;
     try {
       await takeCloudOffline(liveDoc.id, ownerId, liveDoc.shareCode ?? null);
-      track('Document', 'Moved', 'TakenOffline');
+      track('Project', 'Moved', 'TakenOffline');
       window.location.reload();
     } catch (e) {
       // Stays on the server (aborts roll the local copy back). A conversion already running

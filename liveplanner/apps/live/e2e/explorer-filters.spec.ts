@@ -3,7 +3,7 @@ import { apiBase, darkVisitor } from './audit-screens';
 import { expect, expectNoPageErrors, mintSignedGuest, ownerHeaders, test } from './fixtures';
 
 // The Explorer's filters for a guest (docs/specs/013-workspace/explorer-filters.md), in dark mode:
-// the My Documents root lists its documents directly, the chips and the field write one lens into
+// the My Projects root lists its projects directly, the chips and the field write one lens into
 // `q`, a scoped lens reaches subfolders, typing on Home opens Search results, the lens rides
 // between aggregate views, and the retired Unsorted and Generated addresses still answer. The
 // signed-in team library is e2e/signed-in/explorer-filters.spec.ts.
@@ -24,7 +24,7 @@ async function seed(page: Page, owner: string, origin: string): Promise<Seeded> 
   await post('/folders', { id: acme, name: 'Acme', parentId: projects });
   const tabs = () => [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }];
   const doc = (name: string, extra: Record<string, unknown>) =>
-    post('/documents', { id: crypto.randomUUID(), name, tabs: tabs(), ...extra });
+    post('/projects', { id: crypto.randomUUID(), name, tabs: tabs(), ...extra });
   await doc('Roadmap', { folderId: null, intent: { mode: 'diagram' } });
   await doc('Sprint retro', {
     folderId: null,
@@ -39,7 +39,7 @@ async function seed(page: Page, owner: string, origin: string): Promise<Seeded> 
   return { projects };
 }
 
-const field = (page: Page) => page.getByRole('combobox', { name: 'Filter documents' });
+const field = (page: Page) => page.getByRole('combobox', { name: 'Filter projects' });
 const pane = (page: Page) => page.locator('main section');
 const docLink = (page: Page, name: string) => pane(page).getByRole('link', { name, exact: true });
 const filters = (page: Page) => page.getByRole('group', { name: 'Filters' });
@@ -54,7 +54,7 @@ test.describe('explorer filters', () => {
     await page.setViewportSize({ width: 1280, height: 800 });
   });
 
-  test('My Documents lists root folders and root documents, AI-made ones badged', async ({
+  test('My Projects lists root folders and root projects, AI-made ones badged', async ({
     page,
     pageErrors,
     baseURL,
@@ -72,7 +72,7 @@ test.describe('explorer filters', () => {
     // What lives in a folder stays there until a lens reaches for it.
     await expect(docLink(page, 'AI payment flow')).toHaveCount(0);
     await expect(pane(page).locator('[data-made-by-ai]')).toHaveCount(1);
-    await page.screenshot({ path: test.info().outputPath('my-documents-root.png') });
+    await page.screenshot({ path: test.info().outputPath('my-projects-root.png') });
     // The chip row: no Space chip on a scoped view.
     await expect(filters(page).getByRole('button', { name: 'Opens in, any' })).toBeVisible();
     await expect(filters(page).getByRole('button', { name: /^Space/ })).toHaveCount(0);
@@ -102,8 +102,8 @@ test.describe('explorer filters', () => {
     await expect(docLink(page, 'Roadmap')).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Remove filter Made by AI' })).toBeVisible();
     // The live region counts what is left once the lens settles.
-    await expect(page.getByRole('status').filter({ hasText: 'documents' })).toHaveText(
-      '2 of 5 documents',
+    await expect(page.getByRole('status').filter({ hasText: 'projects' })).toHaveText(
+      '2 of 5 projects',
     );
 
     // A multi-select chip: Template, Kanban, from the listbox.
@@ -115,7 +115,7 @@ test.describe('explorer filters', () => {
     await page.keyboard.press('Escape');
     // A chip adds its token after the ones already written.
     await expect(page).toHaveURL(/q=made-by%3Aai\+template%3Akanban$/);
-    await expect(pane(page).getByText('No documents match these filters')).toBeVisible();
+    await expect(pane(page).getByText('No projects match these filters')).toBeVisible();
     await page.screenshot({ path: test.info().outputPath('filtered-empty.png') });
 
     await filters(page).getByRole('button', { name: 'Clear', exact: true }).click();
@@ -207,11 +207,11 @@ test.describe('explorer filters', () => {
 
   // Each retired address is its own test: two full page loads and a seeded library share one
   // test's time budget badly on a busy runner.
-  test('the retired Unsorted address opens the My Documents root', async ({ page, pageErrors }) => {
+  test('the retired Unsorted address opens the My Projects root', async ({ page, pageErrors }) => {
     await darkVisitor(page, await mintSignedGuest(page.request));
     await page.goto('/explorer/unsorted');
     await expect(page).toHaveURL(/\/explorer\/all$/);
-    await expect(page.getByRole('heading', { name: 'My Documents', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'My Projects', level: 1 })).toBeVisible();
     expectNoPageErrors(pageErrors);
   });
 
@@ -237,7 +237,7 @@ test.describe('explorer filters', () => {
     await seed(page, owner, new URL(baseURL!).origin);
     await page.setViewportSize({ width: 390, height: 844 });
     await arrive(page, '/explorer/all');
-    await expect(page.getByRole('heading', { name: 'My Documents', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'My Projects', level: 1 })).toBeVisible();
     const box = await field(page).boundingBox();
     expect(box!.width).toBeGreaterThan(250);
     await filters(page).getByRole('button', { name: 'Made by AI' }).click();

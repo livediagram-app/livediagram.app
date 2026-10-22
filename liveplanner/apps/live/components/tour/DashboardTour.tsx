@@ -5,7 +5,7 @@
 // steps behind a welcome card, offered once the first time an Editor has a dashboard open
 // (docs/specs/026-plan/plan-tour.md "The Dashboards tour").
 import { useEffect, useRef, useState } from 'react';
-import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
+import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
 import { useStartPanelOpen } from '@/components/start/start-panel-open';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useAnyModalOpen } from '@/lib/modal-guard';

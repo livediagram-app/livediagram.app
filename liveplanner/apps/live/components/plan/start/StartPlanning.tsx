@@ -5,7 +5,7 @@
 // picture of what it makes over its name, line and (a board's) card types; a search across all of them, which finds
 // only Plan's own. Choosing a card acts at once. In the tab's own light or dark look (planPalette).
 import { useEffect, useMemo, type ReactNode } from 'react';
-import { DASHBOARD_PRESETS } from '@liveplanner/document';
+import { DASHBOARD_PRESETS } from '@liveplanner/project';
 import { lucideGlyph } from '@liveplanner/ui';
 import {
   lucideChartPie,
@@ -18,7 +18,7 @@ import {
 } from '@liveplanner/icons/lucide';
 import { StartPanel, type StartPanelCard } from '@/components/start/StartPanel';
 import type { PlanTemplateKind } from '@liveplanner/templates';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { TemplatePicture } from '@/components/start/template-card';
 import { suggestedDashboards, type SuggestedDashboard } from '@/lib/suggested-dashboards';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
@@ -152,7 +152,7 @@ export function StartPlanning({
   onDashboard?: ((presetId: string) => void) | undefined;
   // Applies a Plan template to this tab (Inspiration); absent, Inspiration is left out.
   onTemplate?: ((kind: PlanTemplateKind) => void) | undefined;
-  // The document's tabs, read for Dashboards built from its own work (suggested-dashboards.ts), and the fetch of
+  // The project's tabs, read for Dashboards built from its own work (suggested-dashboards.ts), and the fetch of
   // their content, asked for as the panel opens so every board is read.
   tabs?: readonly Tab[] | undefined;
   loadTabs?: (() => Promise<unknown>) | undefined;

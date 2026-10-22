@@ -7,7 +7,7 @@
 // so it stays here next to the connect helper.
 import {
   ACCESS_CHANGED_CLOSE,
-  DOCUMENT_TRASHED_CLOSE,
+  PROJECT_TRASHED_CLOSE,
   isMutationOpKind,
   ROOM_PING,
   ROOM_PONG,
@@ -18,9 +18,9 @@ import {
   type RoomOp,
   type RoomOutgoing,
 } from '@liveplanner/api-schema';
-import { opForTheWire } from '@liveplanner/document';
+import { opForTheWire } from '@liveplanner/project';
 import { splitPresenceFrame } from '../agent-presence-rows';
-import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
+import { noteServerBuild, noteServerProjectFormat } from '../server-release';
 import { startEditorTiming } from '../timing';
 import { wsUrl } from './core';
 import { debugLog } from '../debug-log';
@@ -30,12 +30,12 @@ export type RoomHandlers = {
   onPresence: (participants: ParticipantPresence[], agents: AgentPresence[]) => void;
   onOp: (from: string, op: RoomOp) => void;
   onClose?: () => void;
-  // The document went to the Trash (docs/specs/013-workspace/trash.md): the room
-  // closed this socket with DOCUMENT_TRASHED_CLOSE and will refuse every
+  // The project went to the Trash (docs/specs/013-workspace/trash.md): the room
+  // closed this socket with PROJECT_TRASHED_CLOSE and will refuse every
   // reconnect, so the connector stops and says so, once.
-  onDocumentTrashed?: () => void;
+  onProjectTrashed?: () => void;
   // An access change ended this session (docs/specs/015-api/api.md "Access changes end the sessions
-  // they affect"): a share password was set, or the member left the document's team. The room
+  // they affect"): a share password was set, or the member left the project's team. The room
   // closed it with ACCESS_CHANGED_CLOSE; the connector stops, and the caller reloads into the
   // ordinary access path (a password prompt, a refusal page, or the editor again).
   onAccessChanged?: () => void;
@@ -44,7 +44,7 @@ export type RoomHandlers = {
   onWorkbenchEnded?: () => void;
   // The room refused to open this connection (it closed before ever opening): the join was turned away
   // at the upgrade, which the browser reports only as an abnormal close. The caller finds out why over
-  // REST, which names a trashed document (docs/specs/013-workspace/trash.md). Retrying carries on as usual.
+  // REST, which names a trashed project (docs/specs/013-workspace/trash.md). Retrying carries on as usual.
   onRefused?: () => void;
   // The room could not bridge our reconnect gap from its op log (docs/specs/012-collaboration/realtime-conflict-resolution.md,
   // Level 1): we're too far behind, or it restarted. The caller re-hydrates
@@ -66,7 +66,7 @@ type RoomConnectOptions = {
 
 // The room WebSocket's query string. Browsers can't set headers on a WebSocket upgrade, so whatever
 // admits the socket rides the URL, and a URL is logged (edge logs, Logpush, tail). Only the ticket rides
-// it: single-use, document-scoped and a minute long, so a logged one is already spent. The share code,
+// it: single-use, project-scoped and a minute long, so a logged one is already spent. The share code,
 // the owner id, its signature and the share password used to ride here as `s`, `o`, `os` and `p`; they
 // now go to the ticket mint as headers (docs/specs/015-api/api.md "Realtime model").
 export function roomQueryString(ticket: string | null): string {
@@ -86,7 +86,7 @@ const MAX_RECONNECT_ATTEMPTS = 6;
 // Ops held while the socket is down (docs/specs/012-collaboration/collab-race-hardening.md). A change made in that window
 // used to be dropped on the floor: the save still carried it to D1, but no
 // peer saw it until they reloaded, and a dot or an answer never reached the
-// room's ledger at all. Only what changes the document or a poll is held: a
+// room's ledger at all. Only what changes the project or a poll is held: a
 // cursor or a selection from a minute ago means nothing. Bounded, so a long
 // outage can't grow it without end; past the bound, newer ops are dropped
 // and the next save still carries the state to D1.
@@ -117,9 +117,9 @@ const RECONNECT_MAX_MS = 15_000;
 type RoomSelf = { id: string; key?: string; name: string; color: string };
 
 export function connectRoom(
-  documentId: string,
-  // `key` is the document-write id (docs/specs/012-collaboration/participant-responses.md), relayed to peers verbatim so
-  // an answer saved on the document can be joined back to the person in the
+  projectId: string,
+  // `key` is the project-write id (docs/specs/012-collaboration/participant-responses.md), relayed to peers verbatim so
+  // an answer saved on the project can be joined back to the person in the
   // roster. The room OVERRIDES `id` with its own per-socket presence id
   // (docs/specs/015-api/public-api-and-tokens.md §6), which is why the two are separate fields.
   participant: RoomSelf,
@@ -136,7 +136,7 @@ export function connectRoom(
   let ticket = options.ticket ?? null;
   const urlNow = () => {
     const qs = roomQueryString(ticket);
-    return wsUrl(`/documents/${documentId}/ws${qs ? `?${qs}` : ''}`);
+    return wsUrl(`/projects/${projectId}/ws${qs ? `?${qs}` : ''}`);
   };
 
   // Null until the first ticket is minted and the first socket made.
@@ -270,7 +270,7 @@ export function connectRoom(
         }
         // The server release signal (docs/specs/016-platform/new-version-prompt.md, stale-builds.md).
         else if (msg.kind === 'format') {
-          noteServerDocumentFormat(msg.format);
+          noteServerProjectFormat(msg.format);
           noteServerBuild(msg.build);
         } else if (msg.kind === 'op') applyOp(msg.from, msg.op, msg.seq, msg.epoch);
         else if (msg.kind === 'cursor') {
@@ -309,10 +309,10 @@ export function connectRoom(
         settleTimings(false);
         return;
       }
-      if (event?.code === DOCUMENT_TRASHED_CLOSE) {
+      if (event?.code === PROJECT_TRASHED_CLOSE) {
         closed = true;
         settleTimings(false);
-        handlers.onDocumentTrashed?.();
+        handlers.onProjectTrashed?.();
         return;
       }
       if (event?.code === ACCESS_CHANGED_CLOSE) {

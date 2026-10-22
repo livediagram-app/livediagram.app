@@ -1,17 +1,17 @@
 # Live image share link
 
-> **Status: implemented, as part of [Document SVG snapshots](../006-document/document-snapshots.md).** The
+> **Status: implemented, as part of [Project SVG snapshots](../006-project/project-snapshots.md).** The
 > endpoint and Share-dialog option below shipped, but two design points here are
-> now superseded by [Document SVG snapshots](../006-document/document-snapshots.md) — read it for the authoritative behaviour:
+> now superseded by [Project SVG snapshots](../006-project/project-snapshots.md) — read it for the authoritative behaviour:
 >
 > - **Not re-rendered per request.** The image serves a **cached SVG snapshot**
->   from R2, refreshed render-on-read when the document has been saved since
+>   from R2, refreshed render-on-read when the project has been saved since
 >   (`thumb_rendered_at`). Cheaper, and "live" within the cache window + last
->   save. The cache is shared with the Explorer thumbnail ([Document SVG snapshots](../006-document/document-snapshots.md)) — one
+>   save. The cache is shared with the Explorer thumbnail ([Project SVG snapshots](../006-project/project-snapshots.md)) — one
 >   artifact, two delivery paths.
 > - **Renderer already shared.** The "main work" below (extracting the renderer
 >   into a new package) is moot: `renderElementsToSvg` already lives DOM-free in
->   `@liveplanner/document` (`packages/document/src/svg-render.ts`) and powers the
+>   `@liveplanner/project` (`packages/project/src/svg-render.ts`) and powers the
 >   MCP worker ([MCP server](../015-api/mcp-server.md)), so the worker imports it directly. No `@liveplanner/render`
 >   package was created.
 >
@@ -20,15 +20,15 @@
 > The same drawing, fitted onto a 1200 x 630 PNG, is what a pasted share link previews with in a chat app:
 > [Share-link previews](share-link-previews.md).
 
-A share option that serves the document as a **live image**: an `<img>`-able URL
-that serves the current document as SVG, so it can be embedded in a README / wiki
+A share option that serves the project as a **live image**: an `<img>`-able URL
+that serves the current project as SVG, so it can be embedded in a README / wiki
 / site and stay up to date — no editor chrome, just the content (like the SVG
 export).
 
 ## Confirmed decisions
 
-- **Scope: tied to a share link.** The image URL embeds a document's share code,
-  so only documents the owner has explicitly shared expose an image. The URL is
+- **Scope: tied to a share link.** The image URL embeds a project's share code,
+  so only projects the owner has explicitly shared expose an image. The URL is
   effectively public to anyone who has it (an `<img>` can't send a password or
   auth header), which matches a share link's existing semantics.
   - **Password-protected shares** ([Share password](share-password.md)) get **no** image URL — an `<img>`
@@ -45,13 +45,46 @@ export).
 
 1. Resolve `<code>` through `getShareLink` (the single authority — expiry +
    role). 404 if missing / revoked / expired.
-2. If the document has a share password, 404 (no image for gated shares).
+2. If the project has a share password, 404 (no image for gated shares).
 3. Load the rendered tab (default: the first tab; `?tab=<id>` selects another). A tab-scoped link ([Tab-scoped share links](tab-scoped-share-links.md)) always renders its own tab, and a `?tab=` naming any other is a 404.
 4. Render it to SVG and return `Content-Type: image/svg+xml` with a short
    `Cache-Control` (e.g. `max-age=30, stale-while-revalidate=300`) so embeds
    update without hammering D1.
 
 The router already forwards `/api/*` to the api worker, so no router change.
+
+## What each tab draws
+
+The image draws a tab as the editor's export draws it ([Plan tabs](../026-plan/plan-tabs.md) "Export"), from what the
+project holds now:
+
+- **A Board** draws its columns with their cards, read from the project's items.
+- **A Sheet** draws its window of cells, worked out ([Sheet](../029-sheets/sheet.md) "Exports and images").
+- **A Form** draws its form as respondents see it, on the form's look.
+- **A Dashboard** draws its page laid out, at the export's 1440 px width (`apps/api/src/thumbnail-dashboard.ts`, over
+  `@liveplanner/plan-art`'s `planImageOf` and `planArtResolver`, the same ones the editor's export and the MCP's
+  previews use): each metric and chart drawn from the project's cards (a figure with its bar, Cards by Field's bars,
+  a Gantt's bars over its weeks, a Calendar's month and so on), never a box labelled with its kind; each note, title
+  and Utility on its card; each Board or Sheet tab slot drawing that tab's board or Sheet. A figure from a Sheet and a
+  Form Metric are written by name, without their figure (working a Sheet's figure out needs the sheets engine on its
+  workbook, which the api does not run for an image).
+
+### A Dashboard's cost
+
+A Dashboard's image reads, besides its own tab, one bounded query of the tabs it draws from (`dashboardSourceTabs`):
+the tabs its slots show and the tabs holding a board (whose columns name the statuses its charts count by), in tab
+order, at most `DASHBOARD_IMAGE_TABS_MAX` (60). It reads the project's cards and card types once, as a board's image
+does. Rendering is pure and bounded by the layout's own limits (12 rows of 4 slots) and the project's card limit:
+
+| Page                                                               | Cards | Render (M-series laptop) |
+| ------------------------------------------------------------------ | ----- | ------------------------ |
+| Project Planner's Overview (9 slots: metrics, charts, 4 tab slots) | 50    | about 3 ms               |
+| Project Planner's Overview                                         | 2,000 | about 5 ms               |
+| 12 rows of 4 charts and metrics                                    | 2,000 | about 37 ms              |
+
+`thumbnail-dashboard.perf.test.ts` holds the budget. The first-tab image is cached in R2 until the next save, so a
+Dashboard's render is paid once per save, not per view; an image of another tab renders on each read, behind the
+endpoint's short `Cache-Control`. The labelled boxes drawn before cost about 0.2 ms.
 
 ## Renderer sharing (the build's main work)
 
@@ -62,7 +95,7 @@ the live editor's export and the api worker. What moves: `renderTabToSvg`,
 `describeBoxedExport`, `contentBounds`, the `svg*` helpers, the label-wrap,
 `arrowHeadRefs`, the iso matrix, `backgroundPatternTile`, and `framesFirst`. The
 label-measure helper already degrades to a character-width estimate when there's
-no `document`, so it runs in the Worker.
+no `project`, so it runs in the Worker.
 
 **Label fidelity rules** (the renderer mirrors the editor's DOM layout):
 labels inset by the element's **padding preset** and wrap to the remaining
@@ -93,8 +126,8 @@ A **Live image** menu on each pass in the Share dialog (owner, non-password, sha
 a menu off the `.../image.svg` URL to copy the raw URL, a Markdown
 `![](...)` snippet, or an HTML `<img>` snippet (the same `ShareCopyMenu`
 the Embed control uses). The menu also carries a **per-tab picker** (a
-`<select>`, shown when the document has more than one tab) that threads
+`<select>`, shown when the project has more than one tab) that threads
 `?tab=<id>` into the copied URL / snippets; see
-[Document SVG snapshots](../006-document/document-snapshots.md#share-dialog) for the caching detail
+[Project SVG snapshots](../006-project/project-snapshots.md#share-dialog) for the caching detail
 (a non-default tab renders on read, uncached). Out of scope for v1: a
 PNG variant (Worker rasterization) and themed cache invalidation.

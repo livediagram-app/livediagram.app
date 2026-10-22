@@ -1,11 +1,11 @@
 // The folder verbs (docs/specs/015-api/cli.md "Commands": `folder ls`, `folder create`; blueprint CLI86, CLI87): the
-// person's folders as paths with their ids, and a new folder, at the top of My Documents or inside another. A
+// person's folders as paths with their ids, and a new folder, at the top of My Projects or inside another. A
 // workbench names a project's folder by these ids (`workbench open --workspace --folder <f>`).
 
 import { z } from 'zod';
 import type { Folder } from '@liveplanner/api-schema';
 import { defineVerb } from '../define';
-import { readLibraries } from '../find-documents';
+import { readLibraries } from '../find-projects';
 import { folderChoices, resolveFolderRef } from '../folders';
 import { columns } from './shared';
 
@@ -18,7 +18,7 @@ export const folderLs = defineVerb({
   id: 'folder.ls',
   summary: 'The folders, as paths with their ids',
   description:
-    'Lists your folders as paths: My Documents first, then each team you joined, depth first. Each line is the folder’s id, its path and its library; workbench open --workspace --folder and folder create --in take the id.',
+    'Lists your folders as paths: My Projects first, then each team you joined, depth first. Each line is the folder’s id, its path and its library; workbench open --workspace --folder and folder create --in take the id.',
   behaviour: 'read',
   input: z.object({}),
   output: z.object({ folders: z.array(folderRow) }),
@@ -43,7 +43,7 @@ export const folderCreate = defineVerb({
   id: 'folder.create',
   summary: 'A new folder',
   description:
-    'Makes a folder named <name> at the top of My Documents, or inside the folder --in names (its id, id prefix or name); inside a team’s folder it is the team’s. Prints its id and path.',
+    'Makes a folder named <name> at the top of My Projects, or inside the folder --in names (its id, id prefix or name); inside a team’s folder it is the team’s. Prints its id and path.',
   behaviour: 'write',
   input: z.object({
     name: z.string().trim().min(1).max(FOLDER_NAME_MAX_LENGTH).describe('The new folder’s name'),

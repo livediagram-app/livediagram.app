@@ -60,10 +60,10 @@ describe('lensChips', () => {
 
   it('names a team by its name, never its id', () => {
     const space = lensChips(parseLens('space:team:T1,mine', aggregate), aggregate)[5];
-    expect(space).toMatchObject({ values: ['mine', 'team:T1'], name: 'Space: My Documents, Acme' });
+    expect(space).toMatchObject({ values: ['mine', 'team:T1'], name: 'Space: My Projects, Acme' });
     expect(space?.options.map((o) => o.label)).toEqual([
       'Any',
-      'My Documents',
+      'My Projects',
       'Shared With Me',
       'Acme',
     ]);
@@ -106,8 +106,8 @@ describe('lensPills', () => {
     const [pill] = lensPills(parseLens('space:mine', scoped), scoped);
     expect(pill).toMatchObject({
       state: 'inert',
-      label: 'Space: My Documents',
-      name: 'Filter Space: My Documents, not applied: The breadcrumb sets the space here, so Space filters don’t apply.',
+      label: 'Space: My Projects',
+      name: 'Filter Space: My Projects, not applied: The breadcrumb sets the space here, so Space filters don’t apply.',
       note: 'The breadcrumb sets the space here, so Space filters don’t apply.',
     });
   });
@@ -142,12 +142,12 @@ describe('issueMessage', () => {
 
 describe('announceResults', () => {
   it.each([
-    [40, 40, '40 documents'],
-    [1, 1, '1 document'],
-    [12, 40, '12 of 40 documents'],
-    [1, 40, '1 of 40 documents'],
-    [0, 40, 'No documents match'],
-    [0, 0, 'No documents match'],
+    [40, 40, '40 projects'],
+    [1, 1, '1 project'],
+    [12, 40, '12 of 40 projects'],
+    [1, 40, '1 of 40 projects'],
+    [0, 40, 'No projects match'],
+    [0, 0, 'No projects match'],
   ])('announces %i shown of %i', (shown, total, message) => {
     expect(announceResults(shown, total)).toBe(message);
   });
@@ -165,7 +165,7 @@ describe('labels', () => {
       { id: 'a', name: 'Alpha' },
     ];
     expect(valueOptions('space', teams).map((o) => o.label)).toEqual([
-      'My Documents',
+      'My Projects',
       'Shared With Me',
       'Alpha',
       'beta',

@@ -7,7 +7,7 @@ import {
   voteHidesCursors,
   voteHidesTallies,
   type TabVote,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 // --- Timer dial --------------------------------------------------------------
 //

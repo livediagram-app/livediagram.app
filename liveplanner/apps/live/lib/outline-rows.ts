@@ -3,7 +3,7 @@
 // text as marks (bold / italic / underline runs). Structure is the rows' levels, never typed
 // spaces, so it cannot be misaligned. Every edit is pure: rows in, rows and where the caret goes
 // out, with each level kept at most one below the row above. Text crosses to and from the
-// Markdown view and the save through the document package's outline reader and writer.
+// Markdown view and the save through the project package's outline reader and writer.
 import {
   mindOutlineEntryText,
   normalizeRuns,
@@ -11,7 +11,7 @@ import {
   runsPlainText,
   type MindOutlineNode,
   type TextRun,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 export type OutlineRow = { id: string; level: number; marks: TextRun[] };
 // Where the caret goes after an edit: a row and a character offset in its text.

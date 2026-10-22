@@ -9,7 +9,7 @@ import { FILL_BOX } from './story-parts';
 
 const BoardGlyph = lucideGlyph(lucideSquareKanban, 15);
 const SheetGlyph = lucideGlyph(lucideTable, 15);
-import type { PlanPalette } from '@liveplanner/document';
+import type { PlanPalette } from '@liveplanner/project';
 
 const W = 160;
 const H = 100;

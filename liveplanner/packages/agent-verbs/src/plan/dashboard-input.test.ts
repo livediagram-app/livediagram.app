@@ -68,7 +68,7 @@ describe('resolveDashboardInput', () => {
     expect(r.ok && r.spec.tabs?.map((t) => t.tabId)).toEqual(['t1', 't2']);
   });
 
-  it('refuses a tab, card type or grouping the document lacks', () => {
+  it('refuses a tab, card type or grouping the project lacks', () => {
     expect(resolveDashboardInput({ tabs: ['Notes'] }, TABS, types)).toMatchObject({ ok: false });
     expect(resolveDashboardInput({ tabs: ['x'] }, [], types)).toMatchObject({
       ok: false,

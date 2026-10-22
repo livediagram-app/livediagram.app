@@ -8,7 +8,7 @@ import type { ShareDialogProps } from '@/components/dialogs/ShareDialog.types';
 import { shareTourSteps } from './share-tour-steps';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-// jsdom lays nothing out, so "on screen" is just "in the document" here, and there is nothing to scroll.
+// jsdom lays nothing out, so "on screen" is just "in the project" here, and there is nothing to scroll.
 vi.mock('./tour-dom', async (actual) => ({
   ...(await actual<typeof import('./tour-dom')>()),
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),
@@ -28,7 +28,7 @@ function renderDialog(over: Partial<ShareDialogProps> = {}) {
     participant: { id: 'me', name: 'Ada', color: '#0ea5e9', status: 'online' },
     links: [],
     sharePasswordSet: false,
-    shareUrlFor: (code) => `https://x.test/document/shared?s=${code}`,
+    shareUrlFor: (code) => `https://x.test/project/shared?s=${code}`,
     tabs: TABS,
     lockedName: 'Ada',
     onSaveName: vi.fn(),
@@ -70,7 +70,7 @@ describe('Share dialog Show Me', () => {
     expect(shareTourSteps(true).at(-1)?.card).toBe('outro');
   });
 
-  it('leaves out Opens on a one-tab document, where there is nothing to choose', () => {
+  it('leaves out Opens on a one-tab project, where there is nothing to choose', () => {
     expect(shareTourSteps(false).map((s) => s.id)).not.toContain('scope');
   });
 
@@ -83,7 +83,7 @@ describe('Share dialog Show Me', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'ShareTour');
   });
 
-  it('counts five steps on a one-tab document', async () => {
+  it('counts five steps on a one-tab project', async () => {
     renderDialog({ tabs: [TABS[0]!] });
     await startShowMe();
     expect(screen.getByRole('dialog', { name: /^Show Me step 1 of 5:/ })).toBeTruthy();
@@ -104,7 +104,7 @@ describe('Share dialog Show Me', () => {
     ).toBeTruthy();
   });
 
-  it('counts the document as it is when pressed', async () => {
+  it('counts the project as it is when pressed', async () => {
     const { rerender } = renderDialog({ tabs: [TABS[0]!] });
     rerender({ tabs: TABS });
     await startShowMe();

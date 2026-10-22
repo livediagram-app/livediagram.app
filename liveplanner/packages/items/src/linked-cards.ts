@@ -1,6 +1,6 @@
 // Linked cards (docs/specs/026-plan/linked-boards.md): the card a linked board holds for one canvas record (an
 // assigned action), how the two map onto each other, and the heal that puts them back together. Pure, and structural
-// about the record, so this package never imports the document model: the editor hands records in this shape.
+// about the record, so this package never imports the project model: the editor hands records in this shape.
 
 import {
   TRASHED_FROM_FIELD,
@@ -91,7 +91,7 @@ export function cardLink(item: Pick<Item, 'fields'>): LinkedPlace | null {
   return parseLink(item.fields[LINKED_FIELD]);
 }
 
-// The first board in `boards` (document order) that collects `kind`.
+// The first board in `boards` (project order) that collects `kind`.
 export function collectingBoard<T extends { setup: PlanBoardSetup }>(
   boards: Iterable<T>,
   kind: LinkedRecordKind,

@@ -41,7 +41,7 @@ describe('resolveStatus', () => {
     expect(r).toMatchObject({ ok: false, code: 'status_unknown' });
     expect(!r.ok && r.message).toContain('Columns: Backlog, In Progress, Done');
   });
-  it('says when the document has no board', () => {
+  it('says when the project has no board', () => {
     const r = resolveStatus('Done', []);
     expect(!r.ok && r.message).toContain('no Plan board yet');
   });
@@ -172,7 +172,7 @@ describe('resolveFields', () => {
     expect(resolveItem('#12 Anything else', items)).toMatchObject({ ok: true });
   });
 
-  it('gives a new person a colour no one on the document has, while colours remain', () => {
+  it('gives a new person a colour no one on the project has, while colours remain', () => {
     const first = personNamed('Sam', []);
     const people = [first];
     for (const name of ['Alex', 'Priya', 'Jo', 'Kim', 'Lee'])

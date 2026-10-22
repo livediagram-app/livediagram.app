@@ -161,7 +161,7 @@ describe('Start Planning Forms', () => {
 });
 
 describe('Start Planning after a mode change', () => {
-  // docs/specs/007-editor/start-diagramming.md "Changing mode": the panel turns in place, its content arriving whole.
+  // docs/specs/007-editor/start-panel.md "Changing mode": the panel turns in place, its content arriving whole.
   it('arrives without the cascade, which returns once the category changes', () => {
     justLeft = true;
     try {

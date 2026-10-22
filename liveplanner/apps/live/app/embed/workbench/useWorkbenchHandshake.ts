@@ -1,7 +1,7 @@
 'use client';
 
 // The workbench page's handshake (docs/specs/013-workspace/blueprints/workbench-embeds.md "The workbench
-// page", steps 1 to 3): read the ticket and clear the fragment, redeem it, check the document, then
+// page", steps 1 to 3): read the ticket and clear the fragment, redeem it, check the project, then
 // bind to the workbench: `hello` to the session's origin and nothing else until a valid `hello-ack`
 // from the parent at that origin within WORKBENCH_HANDSHAKE_MS (I8). Every failure after a session
 // exists revokes it. Runs once per page load, whatever React does with effects.

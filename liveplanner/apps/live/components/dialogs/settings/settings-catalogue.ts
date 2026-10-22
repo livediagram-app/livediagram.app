@@ -1,27 +1,9 @@
 import type { HelpArticleKey } from '@/lib/help-articles';
 import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import { titleCase, type TelemetryCategory } from '@liveplanner/api-schema';
-import {
-  autoRebindArrowsEnabled,
-  panelEnabled,
-  type MapSize,
-  type PanelSwitch,
-  type UserPreferences,
-} from '@/lib/user-preferences';
+import { panelEnabled, type PanelSwitch, type UserPreferences } from '@/lib/user-preferences';
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import { PLAN_TOUR_TRACKS, planTrackSeen, type PlanTourTrack } from '@/lib/plan-tour';
-import {
-  ELEMENT_TOUR_KINDS,
-  elementTourSeen,
-  markElementTourSeen,
-  offerElementTourAgain,
-  type ElementTourKind,
-} from '@/lib/element-tours';
-import {
-  readElementIndicatorStyle,
-  withElementIndicatorStyle,
-  type ElementIndicatorStyle,
-} from '@/lib/element-indicator-style';
 import {
   UI_SCALE_MAX,
   UI_SCALE_MIN,
@@ -42,10 +24,9 @@ import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entrie
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
 // where the deployment sends email AND the reader is signed in, since a guest has no address.
 type EmailKey =
-  | 'notifyDocumentJoin'
+  | 'notifyProjectJoin'
   | 'notifyInviteResponse'
   | 'notifyComments'
-  | 'notifyActionAssigned'
   | 'notifyMentions'
   | 'notifyFormResponses'
   | 'notifyTips'
@@ -78,11 +59,8 @@ function emailSwitch(
 // preference plumbing (docs/specs/007-editor/user-preferences.md's readUserPreferences / writeUserPreferences
 // round-trip) in exactly one place per setting.
 //
-// EVERY preference has a row here, and for most this is now the ONLY control:
-// the Palette / Layers / AI / Map gear popovers that used to carry
-// them are gone (docs/specs/007-editor/user-preferences.md). One setting, one place. The panels kept their
-// reset-position button, which was the only non-preference thing those
-// popovers held.
+// Every preference a Plan tab acts on has a row here, and for most this is the
+// ONLY control (docs/specs/007-editor/user-preferences.md). One setting, one place.
 //
 // This is a flat catalogue, so it stays one file however long it gets.
 
@@ -163,8 +141,7 @@ export type SettingsChoiceRowSpec = RowBase & {
   options: { id: string; label: string }[];
   read: (prefs: UserPreferences) => string;
   write: (prefs: UserPreferences, next: string) => UserPreferences;
-  // Choices fire one 'Changed' event naming the setting, not the value ,
-  // matching what the Map popover already emits.
+  // Choices fire one 'Changed' event naming the setting (see choiceTelemetryType).
   event: { category: TelemetryCategory; changed: string };
 };
 
@@ -238,7 +215,7 @@ export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
 
 // One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
-// documents of that key go, with Change and Clear. Not a preference: it reads and writes
+// projects of that key go, with Change and Clear. Not a preference: it reads and writes
 // `/api/placement-defaults` through the page's store, so it carries no read/write pair.
 export type SettingsPlacementDefaultRowSpec = RowBase & {
   kind: 'placementDefault';
@@ -265,24 +242,16 @@ export type SettingsCategorySpec = {
   id: SettingsCategoryId;
   label: string;
   // The top-level category this is a sub-category of (Panels holds one per
-  // panel, Editor one per mode with settings of its own, Account its
-  // Notifications and API Tokens). The list nests it, untiled and indented, beneath its
+  // panel, Account its Notifications and API Tokens). The list nests it, untiled and indented, beneath its
   // parent; it is still its own pane. A parent's sub-categories follow it
   // directly, like a section's rows.
   parent?: SettingsIconId;
-  // Only rendered when the api worker advertises AI capability (docs/specs/007-editor/ai-assistance.md).
-  requiresAi?: boolean;
-  // A line under a section's heading, for what every row in it shares (Documents' Default Folders,
+  // A line under a section's heading, for what every row in it shares (Projects' Default Folders,
   // the Tours' "offer again"), said once rather than under each row.
   sectionNotes?: Record<string, { note: string; helpArticle?: HelpArticleKey }>;
-  // Sections drawn as a closed accordion, for rows people rarely look for (the Tours' Element Tours): the heading
-  // opens them, and Settings opened on one of their rows opens them itself.
-  collapsedSections?: readonly string[];
   rows: SettingsRowSpec[];
 };
 
-// A phone never draws the minimap (docs/specs/008-canvas/minimap.md), so all
-// three of its rows are inert there and share this note.
 // What every UI scale slider shares (docs/specs/007-editor/ui-scale.md).
 const UI_SCALE_SLIDER = {
   kind: 'slider',
@@ -314,14 +283,6 @@ function uiScalePartRow(
     event: { category: 'UI', changed: copy.changed },
   };
 }
-
-const MINIMAP_DESKTOP_ONLY =
-  'The Map is desktop only, so this has no effect on a phone. Your choice still applies on a larger screen.';
-
-// The Mouse section's rows answer a hover and a middle button, which a phone has neither of, so they are inert there
-// and share this note.
-const MOUSE_DESKTOP_ONLY =
-  'A mouse setting, so it has no effect on a phone. Your choice still applies on a larger screen.';
 
 // The panel switches (docs/specs/007-editor/user-preferences.md), each on
 // unless stored `false`. One row per Panels sub-category, first in its pane,
@@ -361,26 +322,6 @@ function tourSwitch(
 
 // A tour of several tracks (lib/tour-tracks.ts): on while any track is still owed. Off answers every track; on
 // forgets those answered, so each offers itself again. Its telemetry tokens are its seen flag's, as above.
-// One element tour's switch (docs/specs/007-editor/element-tours.md "Settings"), nested under Element Tours: on while
-// its kind is still offered; on forgets its answer, off answers it.
-function elementTourSwitch(
-  kind: ElementTourKind,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
-): SettingsToggleRowSpec {
-  return {
-    kind: 'toggle',
-    key: `elementTour-${kind}`,
-    section: ELEMENT_TOURS_SECTION,
-    parent: 'elementToursSeen',
-    ...row,
-    read: (p) => !elementTourSeen(p, kind),
-    write: (p, v) => (v ? offerElementTourAgain(p, kind) : markElementTourSeen(p, kind)),
-  };
-}
-
-// Element tours are called Show Me wherever a person sees them (docs/specs/007-editor/element-tours.md "Naming").
-const ELEMENT_TOURS_SECTION = 'Show Me';
-
 // One track of a tour of several (lib/tour-tracks.ts), as its own row nested under the tour's switch over every track
 // (Plan Tours): the Plan tour's Boards and Sheets
 // (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it, on forgets its
@@ -413,9 +354,9 @@ function tourTrackSwitch(
 }
 
 function tourTracksSwitch(
-  key: 'planTourSeen' | 'elementToursSeen',
-  tracksKey: 'planTourTracks' | 'elementTourKinds',
-  tracks: readonly string[],
+  key: 'planTourSeen',
+  tracksKey: 'planTourTracks',
+  tracks: readonly PlanTourTrack[],
   owed: (p: UserPreferences) => boolean,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
   section?: string,
@@ -431,89 +372,13 @@ function tourTracksSwitch(
   };
 }
 
-type TourSeenKey = 'planTourSeen' | 'formTourSeen' | 'elementToursSeen';
+type TourSeenKey = 'planTourSeen' | 'formTourSeen';
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
     id: 'editor',
     label: 'Editor',
     rows: [
-      {
-        kind: 'toggle',
-        key: 'alignmentGuides',
-        keywords: 'snap lines smart guides align',
-        section: 'Canvas',
-        illustration: 'alignmentGuides',
-        label: 'Alignment Guides',
-        description:
-          'Snap lines while you move or resize, so elements line up with their neighbours.',
-        helpArticle: 'alignmentGuides',
-        read: (p) => p.alignmentGuides !== false,
-        write: (p, v) => ({ ...p, alignmentGuides: v }),
-        event: { category: 'UI', on: 'AlignmentGuidesOn', off: 'AlignmentGuidesOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'autoRebindArrows',
-        keywords: 'connector reattach sticky arrows connections',
-        section: 'Canvas',
-        label: 'Auto-Attach Arrows',
-        description:
-          'After a move, an arrow that cuts through its shape reattaches to the side facing its other end.',
-        helpArticle: 'autoAttachArrows',
-        // On by default (docs/specs/007-editor/user-preferences.md); the editor gates the rebind on this
-        // same helper, so the switch and the behaviour cannot disagree.
-        read: autoRebindArrowsEnabled,
-        write: (p, v) => ({ ...p, autoRebindArrows: v }),
-        event: { category: 'UI', on: 'AutoRebindOn', off: 'AutoRebindOff' },
-      },
-      {
-        // docs/specs/008-canvas/element-indicators.md: how an element shows its link, note,
-        // action and comments.
-        kind: 'choice',
-        key: 'elementIndicatorStyle',
-        keywords:
-          'badges icons note action comment link markers indicators top corner footer metadata chip hide off',
-        section: 'Canvas',
-        label: 'Element Indicators',
-        description:
-          'How an element shows it has a link, note, action or comments: quiet icons at its top, a labelled footer, or nothing.',
-        options: [
-          { id: 'top', label: 'Top' },
-          { id: 'footer', label: 'Footer' },
-          { id: 'off', label: 'Off' },
-        ],
-        read: readElementIndicatorStyle,
-        write: (p, v) => withElementIndicatorStyle(p, v as ElementIndicatorStyle),
-        event: { category: 'UI', changed: 'ElementIndicators' },
-      },
-      {
-        kind: 'toggle',
-        key: 'quickAddOnHover',
-        keywords: 'plus menu hover add shortcut',
-        section: 'Mouse',
-        desktopOnly: MOUSE_DESKTOP_ONLY,
-        label: 'Quick-Add on Hover',
-        description:
-          "Opens the selected element's “+” menu as soon as you hover it, instead of on click.",
-        helpArticle: 'quickAddOnHover',
-        read: (p) => p.quickAddOnHover === true,
-        write: (p, v) => ({ ...p, quickAddOnHover: v }),
-        event: { category: 'UI', on: 'QuickAddHoverOn', off: 'QuickAddHoverOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'middleMousePan',
-        keywords: 'scroll wheel drag pan navigate mouse',
-        section: 'Mouse',
-        desktopOnly: MOUSE_DESKTOP_ONLY,
-        label: 'Middle-Mouse Pan',
-        description:
-          'Hold the middle button and drag to pan, whatever tool is active. Off leaves the button to your browser.',
-        read: (p) => p.middleMousePan !== false,
-        write: (p, v) => ({ ...p, middleMousePan: v }),
-        event: { category: 'UI', on: 'MiddleMousePanOn', off: 'MiddleMousePanOff' },
-      },
       {
         // A preset, not a flag (docs/specs/007-editor/power-user-mode.md): switching on writes the
         // recommended values once; switching off restores the untouched ones.
@@ -674,107 +539,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    id: 'layers',
-    label: 'Layers',
-    parent: 'panels',
-    rows: [
-      panelSwitch('layersPanelEnabled', {
-        label: 'Enable Layers Panel',
-        keywords: 'layers panel enable hide show turn off remove move to layer',
-        description:
-          'The panel, its corner button and “Move to layer”. Off, layers still keep their order, visibility and lock.',
-        event: { category: 'UI', on: 'LayersPanelOn', off: 'LayersPanelOff' },
-      }),
-      {
-        kind: 'toggle',
-        key: 'layersShowPreview',
-        parent: 'layersPanelEnabled',
-        keywords: 'thumbnail preview layer picture',
-        illustration: 'layerThumbnails',
-        label: 'Layer Thumbnails',
-        description: 'A small preview of what each layer holds.',
-        read: (p) => p.layersShowPreview !== false,
-        write: (p, v) => ({ ...p, layersShowPreview: v }),
-        event: { category: 'UI', on: 'LayerPreviewOn', off: 'LayerPreviewOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'layersShowCount',
-        parent: 'layersPanelEnabled',
-        keywords: 'number badge count layer element counts',
-        label: 'Layer Element Counts',
-        description: 'How many elements each layer holds, beside its name.',
-        read: (p) => p.layersShowCount !== false,
-        write: (p, v) => ({ ...p, layersShowCount: v }),
-        event: { category: 'UI', on: 'LayerCountOn', off: 'LayerCountOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'layerHoverPreview',
-        parent: 'layersPanelEnabled',
-        keywords: 'highlight hover layer preview solo',
-        label: 'Preview Layer on Hover',
-        description: 'Shows only that layer on the canvas while you rest on its row.',
-        read: (p) => p.layerHoverPreview !== false,
-        write: (p, v) => ({ ...p, layerHoverPreview: v }),
-        event: { category: 'UI', on: 'LayerHoverPreviewOn', off: 'LayerHoverPreviewOff' },
-      },
-    ],
-  },
-  {
-    id: 'map',
-    label: 'Map',
-    parent: 'panels',
-    rows: [
-      {
-        // The Map's switch, written out rather than a panelSwitch: it keeps its
-        // older key and telemetry tokens so stored choices and the dashboard
-        // carry over the rename from "Show Map".
-        kind: 'toggle',
-        key: 'showMinimap',
-        keywords: 'minimap overview thumbnail navigator birds eye hide show turn off enable',
-        illustration: 'showMinimap',
-        label: 'Enable Map',
-        desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description:
-          'An overview of the whole canvas in the bottom-left corner, once a tab has a few elements. Drag it to move around.',
-        read: (p) => p.showMinimap !== false,
-        write: (p, v) => ({ ...p, showMinimap: v }),
-        event: { category: 'UI', on: 'MinimapOn', off: 'MinimapOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'mapDimOutside',
-        parent: 'showMinimap',
-        keywords: 'shade minimap viewport dim',
-        illustration: 'mapDimOutside',
-        label: 'Dim Outside the View',
-        desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description: 'Shades what is off screen, so the part you are looking at stands out.',
-        read: (p) => p.mapDimOutside !== false,
-        write: (p, v) => ({ ...p, mapDimOutside: v }),
-        event: { category: 'UI', on: 'MapDimOn', off: 'MapDimOff' },
-      },
-      {
-        kind: 'choice',
-        key: 'mapSize',
-        parent: 'showMinimap',
-        keywords: 'minimap height short medium tall',
-        label: 'Map Size',
-        desktopOnly: MINIMAP_DESKTOP_ONLY,
-        description: 'How much of the corner the Map takes up.',
-        options: [
-          { id: 'short', label: 'Short' },
-          { id: 'medium', label: 'Medium' },
-          { id: 'tall', label: 'Tall' },
-        ],
-        read: (p) => p.mapSize ?? 'medium',
-        write: (p, v) => ({ ...p, mapSize: v as MapSize }),
-        event: { category: 'UI', changed: 'MapSize' },
-      },
-    ],
-  },
-  {
     id: 'collaborate',
     label: 'Collaborate',
     parent: 'panels',
@@ -785,21 +549,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description:
           "Lists the tab's comments and actions, behind a corner button that shows once there are some. Off, they still work on the elements.",
         event: { category: 'UI', on: 'CollaboratePanelOn', off: 'CollaboratePanelOff' },
-      }),
-    ],
-  },
-  {
-    id: 'quickStyle',
-    label: 'Quick Style',
-    parent: 'panels',
-    rows: [
-      panelSwitch('quickStylePanelEnabled', {
-        label: 'Enable Quick Style Panel',
-        keywords:
-          'quick style colour color stroke fill width panel selection enable hide show turn off',
-        description:
-          "The most-used colours, widths and alignments beside a selected shape or arrow. Off, they are all in the element's menu.",
-        event: { category: 'UI', on: 'QuickStylePanelOn', off: 'QuickStylePanelOff' },
       }),
     ],
   },
@@ -835,11 +584,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     // turns itself off once taken or dismissed.
     id: 'tours',
     label: 'Tours',
-    collapsedSections: [ELEMENT_TOURS_SECTION],
     sectionNotes: {
-      [ELEMENT_TOURS_SECTION]: {
-        note: 'The first time you select a complex element, a small Show Me toolbar beside it offers to show how it works. Switch one back on to be offered it again.',
-      },
       'Offer Again': {
         note: 'Each tour offers itself once. Switch one back on and close Settings to take it again: it starts straight away if you are in its mode, or the next time you are.',
       },
@@ -896,228 +641,14 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         description: 'The first time you open a Form tab.',
         helpArticle: 'planForms',
       }),
-      // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
-      // them all over one per toured kind.
-      tourTracksSwitch(
-        'elementToursSeen',
-        'elementTourKinds',
-        ELEMENT_TOUR_KINDS,
-        (p) => ELEMENT_TOUR_KINDS.some((k) => !elementTourSeen(p, k)),
-        {
-          label: 'Show Me on Every Element',
-          event: { category: 'UI', on: 'ElementToursSeenOff', off: 'ElementToursSeenOn' },
-          keywords: 'tour walkthrough tutorial element sankey how to use learn replay',
-          description: 'Every element’s Show Me at once.',
-        },
-        ELEMENT_TOURS_SECTION,
-      ),
-      elementTourSwitch('sankey', {
-        label: 'Sankey Diagram',
-        event: { category: 'UI', on: 'SankeyTourSeenOff', off: 'SankeyTourSeenOn' },
-        keywords: 'tour walkthrough tutorial sankey flows bands nodes leftover replay',
-        description: 'The first time you select a Sankey diagram.',
-        helpArticle: 'sankeyDiagram',
-      }),
-      elementTourSwitch('layer-stack', {
-        label: 'Layer Stack',
-        event: { category: 'UI', on: 'LayerStackTourSeenOff', off: 'LayerStackTourSeenOn' },
-        keywords: 'tour walkthrough tutorial layer stack layers bands concept rows replay',
-        description: 'The first time you select a layer stack.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('pyramid', {
-        label: 'Pyramid',
-        event: { category: 'UI', on: 'PyramidTourSeenOff', off: 'PyramidTourSeenOn' },
-        keywords: 'tour walkthrough tutorial pyramid tiers triangle inverted concept rows replay',
-        description: 'The first time you select a pyramid.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('funnel', {
-        label: 'Funnel',
-        event: { category: 'UI', on: 'FunnelTourSeenOff', off: 'FunnelTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial funnel conversion stages bands values concept rows replay',
-        description: 'The first time you select a funnel.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('cycle', {
-        label: 'Cycle',
-        event: { category: 'UI', on: 'CycleTourSeenOff', off: 'CycleTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial cycle loop ring flywheel pdca steps clockwise flow concept replay',
-        description: 'The first time you select a cycle.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('hub', {
-        label: 'Hub and Spoke',
-        event: { category: 'UI', on: 'HubTourSeenOff', off: 'HubTourSeenOn' },
-        keywords: 'tour walkthrough tutorial hub spoke satellites ecosystem centre concept replay',
-        description: 'The first time you select a hub and spoke.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('onion', {
-        label: 'Onion',
-        event: { category: 'UI', on: 'OnionTourSeenOff', off: 'OnionTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial onion rings concentric core layers architecture concept replay',
-        description: 'The first time you select an onion.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('chevrons', {
-        label: 'Chevrons',
-        event: { category: 'UI', on: 'ChevronsTourSeenOff', off: 'ChevronsTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial chevrons chevron process stages pipeline value chain stage bar concept replay',
-        description: 'The first time you select a chevron process.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('timeline', {
-        label: 'Timeline',
-        event: { category: 'UI', on: 'TimelineTourSeenOff', off: 'TimelineTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial timeline milestones roadmap dates history concept replay',
-        description: 'The first time you select a timeline.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('mind-node', {
-        label: 'Mind Map',
-        event: { category: 'UI', on: 'MindMapTourSeenOff', off: 'MindMapTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial mind map node tab enter child sibling branch tidy outline replay',
-        description: 'The first time you select a mind map node.',
-        helpArticle: 'mindMaps',
-      }),
-      elementTourSwitch('flowchart', {
-        label: 'Flowchart',
-        event: { category: 'UI', on: 'FlowchartTourSeenOff', off: 'FlowchartTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial flowchart step tab enter branch decision step type lane swimlane direction replay',
-        description: 'The first time you select a flowchart step.',
-        helpArticle: 'flowcharts',
-      }),
-      elementTourSwitch('org-chart', {
-        label: 'Org Chart',
-        event: { category: 'UI', on: 'OrgChartTourSeenOff', off: 'OrgChartTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial org chart organisation organization person role initials report peer team replay',
-        description: 'The first time you select a person in an org chart.',
-        helpArticle: 'orgCharts',
-      }),
-      elementTourSwitch('sequence', {
-        label: 'Sequence',
-        event: { category: 'UI', on: 'SequenceTourSeenOff', off: 'SequenceTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial sequence diagram participants messages call reply async lifeline numbered uml replay',
-        description: 'The first time you select a sequence diagram.',
-        helpArticle: 'sequenceDiagram',
-      }),
-      elementTourSwitch('chart', {
-        label: 'Chart',
-        event: { category: 'UI', on: 'ChartTourSeenOff', off: 'ChartTourSeenOn' },
-        keywords: 'chart pie bar column line area scatter doughnut data graph tour',
-        description: 'The first time you select a chart.',
-        helpArticle: 'dataElements',
-      }),
-      elementTourSwitch('stack', {
-        label: 'Stack',
-        event: { category: 'UI', on: 'StackTourSeenOff', off: 'StackTourSeenOn' },
-        keywords: 'stack row column grid layout container reflow tour',
-        description: 'The first time you select a stack.',
-        helpArticle: 'stacks',
-      }),
-      elementTourSwitch('entity', {
-        label: 'Entity',
-        event: { category: 'UI', on: 'EntityTourSeenOff', off: 'EntityTourSeenOn' },
-        keywords: 'entity uml class er table fields record tour',
-        description: 'The first time you select an entity.',
-        helpArticle: 'entities',
-      }),
-      elementTourSwitch('tab-window', {
-        label: 'Tab Window',
-        event: { category: 'UI', on: 'TabWindowTourSeenOff', off: 'TabWindowTourSeenOn' },
-        keywords: 'tab window live slide embed another tab tour',
-        description: 'The first time you select a tab window.',
-        helpArticle: 'tabWindows',
-      }),
-      elementTourSwitch('lane', {
-        label: 'Lane',
-        event: { category: 'UI', on: 'LaneTourSeenOff', off: 'LaneTourSeenOn' },
-        keywords: 'lane swimlane band gutter seam column tour',
-        description: 'The first time you select a lane.',
-        helpArticle: 'lanes',
-      }),
-      elementTourSwitch('boundary', {
-        label: 'Boundary',
-        event: { category: 'UI', on: 'BoundaryTourSeenOff', off: 'BoundaryTourSeenOn' },
-        keywords: 'boundary zone region vpc cluster c4 container tour',
-        description: 'The first time you select a boundary.',
-        helpArticle: 'boundaries',
-      }),
-      elementTourSwitch('diagram-key', {
-        label: 'Diagram Key',
-        event: { category: 'UI', on: 'DiagramKeyTourSeenOff', off: 'DiagramKeyTourSeenOn' },
-        keywords: 'diagram key legend line styles tag colours meanings tour',
-        description: 'The first time you select a diagram key.',
-        helpArticle: 'diagramKeys',
-      }),
-      elementTourSwitch('portal', {
-        label: 'Portal',
-        event: { category: 'UI', on: 'PortalTourSeenOff', off: 'PortalTourSeenOn' },
-        keywords: 'portal link travel teleport avatar shortcut tour',
-        description: 'The first time you select a portal.',
-        helpArticle: 'portals',
-      }),
     ],
   },
   {
-    id: 'ai',
-    label: 'AI Tools',
-    requiresAi: true,
-    rows: [
-      {
-        kind: 'toggle',
-        key: 'aiAssistanceEnabled',
-        keywords: 'assistant chat ask clean llm',
-        section: 'Assistant',
-        label: 'AI Assistant',
-        description:
-          'An AI panel to Ask about the active tab, or Clean up its labels, sizes and styles. Off by default.',
-        helpArticle: 'aiTools',
-        read: (p) => p.aiAssistanceEnabled === true,
-        write: (p, v) => ({ ...p, aiAssistanceEnabled: v }),
-        event: { category: 'AI', on: 'AiOn', off: 'AiOff' },
-      },
-      {
-        kind: 'toggle',
-        key: 'aiSuggestedPrompts',
-        keywords: 'starter questions prompts suggestions ai',
-        section: 'Assistant',
-        parent: 'aiAssistanceEnabled',
-        label: 'Suggested Prompts',
-        description: 'One-click starter prompts under the panel’s mode buttons.',
-        read: (p) => p.aiSuggestedPrompts !== false,
-        write: (p, v) => ({ ...p, aiSuggestedPrompts: v }),
-        event: { category: 'AI', on: 'AiSuggestedPromptsOn', off: 'AiSuggestedPromptsOff' },
-      },
-      {
-        kind: 'link',
-        key: 'apiTokensLink',
-        keywords: 'api token key mcp integration script developer access',
-        section: 'API Access',
-        label: 'API Tokens',
-        cta: 'Manage API Tokens',
-        target: 'tokens',
-        description: 'Let your scripts, and AI tools connected over MCP, use liveplanner as you.',
-        available: (ctx) => ctx.authEnabled === true,
-      },
-    ],
-  },
-  {
-    id: 'documents',
-    label: 'Documents',
+    id: 'projects',
+    label: 'Projects',
     sectionNotes: {
       'Default Folders': {
-        note: 'Where each kind of new document is saved when you create it without choosing a place.',
+        note: 'Where each kind of new project is saved when you create it without choosing a place.',
         helpArticle: 'defaultFolders',
       },
     },
@@ -1131,7 +662,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         // Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
         label: titleCase(entry.label),
         keywords:
-          'default folder where new documents go save location place file automatically always save placement',
+          'default folder where new projects go save location place file automatically always save placement',
         description: `Where new ${entry.noun} go when you create one without choosing a place.`,
       })),
       {
@@ -1161,7 +692,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Guest',
         keywords: 'account profile identity name email signed in sign in avatar joined',
         description:
-          'Your name and email come from your account. Signed out, your documents belong to this browser.',
+          'Your name and email come from your account. Signed out, your projects belong to this browser.',
         helpArticle: 'guestVsAccount',
       },
       {
@@ -1170,8 +701,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Your Data',
         label: 'Trash',
         keywords:
-          'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
-        description: 'Deleted documents wait here for 30 days, ready to restore.',
+          'trash bin recycle deleted undo undelete restore recover get back project diagram permanently empty',
+        description: 'Deleted projects wait here for 30 days, ready to restore.',
         helpArticle: 'trash',
       },
       {
@@ -1181,7 +712,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your liveplanner documents, folders and settings, then signs you out. There is no undo.',
+          'Removes your liveplanner projects, folders and settings, then signs you out. There is no undo.',
       },
     ],
   },
@@ -1197,12 +728,12 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'In the Editor',
         label: 'In-Editor Notifications',
         description:
-          'A brief note when something happens off screen, like moving a document to a folder. Errors and warnings always show.',
+          'A brief note when something happens off screen, like moving a project to a folder. Errors and warnings always show.',
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
       },
-      // A guest gets the stand-in row instead of six switches that could
+      // A guest gets the stand-in row instead of email switches that could
       // never apply: the same shape the API tokens row uses, so "you need
       // an account for this" looks the same wherever it appears.
       {
@@ -1214,20 +745,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         note: 'Sign in to choose which emails you get.',
         signIn: true,
         description:
-          'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
+          'We can email you when someone joins one of your projects, comments on it, fills in one of your forms, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
-      emailSwitch('notifyDocumentJoin', {
-        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
+      emailSwitch('notifyProjectJoin', {
+        event: { category: 'UI', on: 'NotifyProjectJoinOn', off: 'NotifyProjectJoinOff' },
         keywords: 'email join collaborator opened',
-        label: 'Someone Joins My Document',
-        description: 'A new person opens one of your shared documents.',
+        label: 'Someone Joins My Project',
+        description: 'A new person opens one of your shared projects.',
       }),
       emailSwitch('notifyComments', {
         event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
         keywords: 'email comment reply feedback',
-        label: 'Someone Comments on My Document',
-        description: 'Someone leaves a comment on a document you own.',
+        label: 'Someone Comments on My Project',
+        description: 'Someone leaves a comment on a project you own.',
       }),
       emailSwitch('notifyMentions', {
         event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
@@ -1240,13 +771,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'email form response survey submission answer',
         label: 'Someone Fills In My Form',
         description:
-          'Someone responds to a form in a document you own (at most one email every 15 minutes per form).',
-      }),
-      emailSwitch('notifyActionAssigned', {
-        event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
-        keywords: 'email action assigned task todo',
-        label: 'Someone Assigns Me an Action',
-        description: 'A teammate assigns you an action on an element.',
+          'Someone responds to a form in a project you own (at most one email every 15 minutes per form).',
       }),
       emailSwitch('notifyInviteResponse', {
         event: { category: 'UI', on: 'NotifyInviteResponseOn', off: 'NotifyInviteResponseOff' },
@@ -1264,7 +789,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'NotifyMilestonesOn', off: 'NotifyMilestonesOff' },
         keywords: 'email milestone achievement celebrate',
         label: 'Milestones',
-        description: 'A note when you hit one, like sharing your first document.',
+        description: 'A note when you hit one, like sharing your first project.',
       }),
     ],
   },
@@ -1312,16 +837,10 @@ export function settingsSectionId(section: string): string {
 }
 
 // The categories actually offered right now, with each one's rows filtered to
-// those that apply. AI only appears when the api worker advertises the
-// capability, so a deployment without it never shows an empty group ,
-// and a category left with no applicable rows drops out entirely rather than
-// becoming a row that pushes a blank pane.
-export function visibleCategories(
-  aiCapable: boolean,
-  ctx: SettingsRowContext,
-): SettingsCategorySpec[] {
-  return SETTINGS_CATEGORIES.filter((c) => !c.requiresAi || aiCapable)
-    .filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
+// those that apply. A category left with no applicable rows drops out entirely
+// rather than becoming a row that pushes a blank pane.
+export function visibleCategories(ctx: SettingsRowContext): SettingsCategorySpec[] {
+  return SETTINGS_CATEGORIES.filter((c) => !ctx.workbench || !hiddenInWorkbench(c))
     .map((c) => ({
       ...c,
       rows: c.rows.filter(
@@ -1336,9 +855,9 @@ export function visibleCategories(
 }
 
 // What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
-// Surface table): the account and everything beyond the one document. A category nested under one
+// Surface table): the account and everything beyond the one project. A category nested under one
 // goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['ai', 'documents', 'account', 'tokens']);
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['projects', 'account', 'tokens']);
 
 function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
   return (
@@ -1360,7 +879,7 @@ function parentSwitchOn(
   return parent?.kind !== 'toggle' || parent.read(preferences);
 }
 
-// A category's name as a path from the top level: "Panels › Layers" for a
+// A category's name as a path from the top level: "Panels › Collaborate" for a
 // sub-category, just the label otherwise. Where the name is shown away from
 // the list that nests it (the canvas search's "in …").
 export function settingsCategoryPath(category: SettingsCategorySpec): string {
@@ -1369,8 +888,8 @@ export function settingsCategoryPath(category: SettingsCategorySpec): string {
 }
 
 // A choice row's telemetry type carries the option picked, as a toggle's
-// carries its new state (docs/specs/017-telemetry/telemetry.md): 'ElementIndicators' + 'top' →
-// 'ElementIndicatorsTop', so the dashboard shows which way people moved, not
+// carries its new state (docs/specs/017-telemetry/telemetry.md): 'Size' + 'tall' →
+// 'SizeTall', so the dashboard shows which way people moved, not
 // just that they touched the setting. Option ids are catalogue constants,
 // never user content.
 export function choiceTelemetryType(changed: string, optionId: string): string {

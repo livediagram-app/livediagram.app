@@ -6,7 +6,7 @@
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { defaultCatalogue } from '@liveplanner/items';
-import { TAB_SCHEMA_VERSION, type Tab } from '@liveplanner/document';
+import { TAB_SCHEMA_VERSION, type Tab } from '@liveplanner/project';
 import { planCardsFailure, useTabImport } from './useTabImport';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

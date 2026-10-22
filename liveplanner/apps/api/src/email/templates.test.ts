@@ -4,7 +4,7 @@ import {
   accountDeletedEmail,
   activationEmail,
   winBackEmail,
-  documentJoinedEmail,
+  projectJoinedEmail,
   inviteResponseEmail,
   teamInviteEmail,
   teamInviteReminderEmail,
@@ -119,29 +119,29 @@ describe('email templates', () => {
     expect(e.subject).not.toContain('\n');
   });
 
-  // docs/specs/014-identity/profile-and-email-notifications.md — someone joined my document
-  it('document-joined names the document + joiner and CTAs to the explorer', () => {
-    const e = documentJoinedEmail(env, 'Roadmap', 'Anna');
+  // docs/specs/014-identity/profile-and-email-notifications.md — someone joined my project
+  it('project-joined names the project + joiner and CTAs to the explorer', () => {
+    const e = projectJoinedEmail(env, 'Roadmap', 'Anna');
     expect(e.subject).toMatch(/Anna/);
     expect(e.html).toContain('Roadmap');
     expect(e.html).toContain('Anna');
     expect(e.html).toContain('https://app.test/explorer');
   });
 
-  it('document-joined says join notifications are on by default, not that the owner turned them on', () => {
-    const e = documentJoinedEmail(env, 'Roadmap', 'Anna');
+  it('project-joined says join notifications are on by default, not that the owner turned them on', () => {
+    const e = projectJoinedEmail(env, 'Roadmap', 'Anna');
     expect(e.html).not.toContain('you turned on');
     expect(e.html).toContain('on by default');
   });
 
-  it('document-joined falls back to "Someone" / "your document" when unknown', () => {
-    const e = documentJoinedEmail(env, '', null);
+  it('project-joined falls back to "Someone" / "your project" when unknown', () => {
+    const e = projectJoinedEmail(env, '', null);
     expect(e.subject).toMatch(/Someone/);
-    expect(e.html).toContain('your document');
+    expect(e.html).toContain('your project');
   });
 
-  it('document-joined escapes a malicious document name', () => {
-    const e = documentJoinedEmail(env, '<img src=x onerror=1>', null);
+  it('project-joined escapes a malicious project name', () => {
+    const e = projectJoinedEmail(env, '<img src=x onerror=1>', null);
     expect(e.html).not.toContain('<img src=x');
     expect(e.html).toContain('&lt;img');
   });
@@ -175,13 +175,13 @@ describe('mentionedEmail (docs/specs/012-collaboration/comment-mentions.md)', ()
     expect(quoted.endsWith('word…')).toBe(true);
   });
 
-  it("opens the card for a card's comment, the document otherwise", () => {
+  it("opens the card for a card's comment, the project otherwise", () => {
     const card = mentionedEmail(env, 'Sam', 'Roadmap', 'd1', 'hi', 'it 1');
-    expect(card.html).toContain('/document/d1#item=it%201');
+    expect(card.html).toContain('/project/d1#item=it%201');
     expect(card.html).toContain('Open the card');
     const doc = mentionedEmail(env, 'Sam', 'Roadmap', 'd1', 'hi');
     expect(doc.html).not.toContain('#item=');
-    expect(doc.html).toContain('Open the document');
+    expect(doc.html).toContain('Open the project');
   });
 
   it('falls back to "A teammate" without an author name', () => {

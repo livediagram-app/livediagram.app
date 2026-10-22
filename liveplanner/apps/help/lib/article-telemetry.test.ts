@@ -42,8 +42,6 @@ describe('article telemetry ids', () => {
   });
 
   it('keeps the plain slug for the feature articles and splits off the Tips copies', () => {
-    expect(helpPathTelemetryId('/selection-modes/format-painter/')).toBe('format-painter');
-    expect(helpPathTelemetryId('/tips-and-tricks/format-painter/')).toBe('tips-format-painter');
     expect(helpPathTelemetryId('search-panel/the-search-panel/command-palette')).toBe(
       'command-palette',
     );

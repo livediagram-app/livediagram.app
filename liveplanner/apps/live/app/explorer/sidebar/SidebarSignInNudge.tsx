@@ -23,7 +23,7 @@ export function SidebarSignInNudge() {
         Sign in to access Teams
       </span>
       <span className="relative text-[12.5px] leading-normal text-[#a9b8d0]">
-        Free, and your guest documents come with you.
+        Free, and your guest projects come with you.
       </span>
     </Link>
   );

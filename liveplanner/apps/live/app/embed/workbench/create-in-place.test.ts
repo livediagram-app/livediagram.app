@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-type CreateDocument = typeof import('@/lib/api-client').apiCreateDocument;
-const api = vi.hoisted(() => ({ apiCreateDocument: vi.fn<CreateDocument>() }));
+type CreateProject = typeof import('@/lib/api-client').apiCreateProject;
+const api = vi.hoisted(() => ({ apiCreateProject: vi.fn<CreateProject>() }));
 vi.mock('@/lib/api-client', () => api);
 
-import { createDocumentInPlace, createInPlaceOf } from './create-in-place';
+import { createProjectInPlace, createInPlaceOf } from './create-in-place';
 
 const ORIGIN = 'https://live.test';
 const HOME = { kind: 'explorer', node: { kind: 'home' } } as const;
@@ -41,47 +41,47 @@ describe('createInPlaceOf', () => {
   });
 });
 
-describe('createDocumentInPlace', () => {
+describe('createProjectInPlace', () => {
   beforeEach(() => {
-    api.apiCreateDocument.mockReset();
-    api.apiCreateDocument.mockResolvedValue({} as never);
+    api.apiCreateProject.mockReset();
+    api.apiCreateProject.mockResolvedValue({} as never);
   });
 
   it('makes a blank that opens on the editor’s start, in the asked folder', async () => {
-    const id = await createDocumentInPlace('user_1', {
+    const id = await createProjectInPlace('user_1', {
       folderId: 'f1',
       teamId: null,
       templateKind: null,
     });
 
-    const [owner, made] = api.apiCreateDocument.mock.calls[0]!;
+    const [owner, made] = api.apiCreateProject.mock.calls[0]!;
     expect(owner).toBe('user_1');
-    expect(made).toMatchObject({ id, name: 'Untitled document', folderId: 'f1', teamId: null });
+    expect(made).toMatchObject({ id, name: 'Untitled project', folderId: 'f1', teamId: null });
     expect(made.tabs).toHaveLength(1);
     expect(made.tabs?.[0]?.templateChosen).toBeUndefined();
     expect(made.tabs?.[0]?.elements).toEqual([]);
   });
 
   it('makes the asked template as /new makes it', async () => {
-    await createDocumentInPlace('user_1', {
+    await createProjectInPlace('user_1', {
       folderId: undefined,
       teamId: null,
       templateKind: 'kanban',
     });
 
-    const [, made] = api.apiCreateDocument.mock.calls[0]!;
-    expect(made.name).not.toBe('Untitled document');
+    const [, made] = api.apiCreateProject.mock.calls[0]!;
+    expect(made.name).not.toBe('Untitled project');
     expect(made.tabs?.[0]?.templateChosen).toBe(true);
     expect(made.intent).toBeDefined();
   });
 
   it('lets a refused create through to the caller', async () => {
     const refused = new Error('403');
-    api.apiCreateDocument.mockImplementation(async () => {
+    api.apiCreateProject.mockImplementation(async () => {
       throw refused;
     });
 
-    const made = createDocumentInPlace('user_1', {
+    const made = createProjectInPlace('user_1', {
       folderId: undefined,
       teamId: null,
       templateKind: null,

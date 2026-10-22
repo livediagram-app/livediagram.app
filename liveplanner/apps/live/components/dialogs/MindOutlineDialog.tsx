@@ -6,7 +6,7 @@
 // Remove. ⌘/Ctrl+Enter saves; Escape cancels (the Dialog's own). On a phone it rises as a sheet.
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import { Button, DialogCloseButton, DialogHeader } from '@liveplanner/ui';
-import type { MindOutlineSummary } from '@liveplanner/document';
+import type { MindOutlineSummary } from '@liveplanner/project';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { rowsFromText, rowText, textFromRows, type OutlineRow } from '@/lib/outline-rows';

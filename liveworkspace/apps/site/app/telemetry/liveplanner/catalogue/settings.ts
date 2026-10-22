@@ -70,11 +70,6 @@ export const EDITOR_SETTINGS = settingsStack(
       'Auto-Attach Arrows',
       'Arrows re-attaching to the nearest shape.',
     ),
-    changed(
-      'WhiteboardDockPosition',
-      'Whiteboard Dock Position',
-      'A whiteboard dock moved to the top or the bottom.',
-    ),
     toggle(
       'UI',
       'PowerUserModeOn',
@@ -206,10 +201,10 @@ export const NOTIFICATION_SETTINGS = settingsStack(
     ),
     toggle(
       'UI',
-      'NotifyDocumentJoinOn',
-      'NotifyDocumentJoinOff',
-      'Someone Joins My Document',
-      'The document-joined email.',
+      'NotifyProjectJoinOn',
+      'NotifyProjectJoinOff',
+      'Someone Joins My Project',
+      'The project-joined email.',
     ),
     toggle(
       'UI',
@@ -222,7 +217,7 @@ export const NOTIFICATION_SETTINGS = settingsStack(
       'UI',
       'NotifyCommentsOn',
       'NotifyCommentsOff',
-      'Someone Comments on My Document',
+      'Someone Comments on My Project',
       'The new-comment email.',
     ),
     toggle(
@@ -304,27 +299,6 @@ export const TOURS_SETTINGS = settingsStack(
   ],
 );
 
-export const AI_SETTINGS = settingsStack(
-  'AI Tools Settings',
-  'The AI assistant opt-in and its suggestions.',
-  [
-    toggle(
-      'AI',
-      'AiOn',
-      'AiOff',
-      'AI Assistant',
-      'The AI assistant opt-in, switched on or off. AI is off until someone turns it on, so every AI request comes from people who did.',
-    ),
-    toggle(
-      'AI',
-      'AiSuggestedPromptsOn',
-      'AiSuggestedPromptsOff',
-      'Suggested Prompts',
-      'Prompt suggestions in the AI panel.',
-    ),
-  ],
-);
-
 export const PRIVACY_SETTINGS = settingsStack(
   'Privacy Settings',
   'Anonymous usage events, the thing this dashboard counts.',
@@ -348,7 +322,6 @@ export const SETTINGS_STACKS: readonly MetricStack[] = [
   NOTIFICATION_SETTINGS,
   ACCESSIBILITY_SETTINGS,
   TOURS_SETTINGS,
-  AI_SETTINGS,
   PRIVACY_SETTINGS,
 ];
 

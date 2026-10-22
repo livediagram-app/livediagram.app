@@ -11,7 +11,7 @@ import { rankTrend, windowLabel } from './windows';
 
 // Pages section of the Pages & Help tab (docs/specs/017-telemetry/page-view-telemetry.md): which pages across the site get viewed, broken down
 // by the app that serves them, opening with the landing funnel (docs/specs/019-marketing/landing-funnel.md):
-// how the public pages turn views into documents. Every frontend emits
+// how the public pages turn views into projects. Every frontend emits
 // `Page·View·<path>` on
 // each path change (full load or in-app navigation), with ids and query
 // strings stripped in the browser: the ten most-viewed pages overall and
@@ -56,8 +56,8 @@ export function PagesView({
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
         Which pages people view, for <span className="font-medium">{windowLabel(active)}</span>, by
-        the app that serves them. Ids and query strings never leave the browser, so every document
-        counts as one page, <code>/document</code>. Views per app are the Page Views by App stack on
+        the app that serves them. Ids and query strings never leave the browser, so every project
+        counts as one page, <code>/project</code>. Views per app are the Page Views by App stack on
         Dashboard.
       </p>
 

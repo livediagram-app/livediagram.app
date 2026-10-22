@@ -1,72 +1,60 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
-import { LiveCursors, PresenceSelection } from '@/components/illustrations/collaboration';
 
 export const metadata = helpMetadata({
   title: 'Live Presence',
   description:
-    "See who is in a document with you in real time: live cursors with names, each person's selection, who is on which tab and agents at work.",
+    "See who is in a project with you in real time: who is on which tab, the card each person has open, their cell on a Sheet, and agents at work.",
   path: '/help/collaboration/live-presence/',
 });
 
 <ArticleLayout
   title="Live Presence"
-  description="When more than one person opens the same document, you see each other live: cursors, names, selections, and who is where."
+  description="When more than one person opens the same project, you see each other live: who is here, which tab they are on, and what they are working on."
   categoryTitle="Collaboration"
   categorySlug="collaboration"
   subArticles={getSubArticles("live-presence")}
 >
 
-Open a document with other people and it comes alive. Everyone sees each other move, select, and edit in real time, so it feels like working at the same whiteboard. Nothing needs setting up: as soon as two or more people are in a shared document, presence just appears.
-
-## Live cursors
-
-You see everyone else's pointer move around the canvas, each labelled with their name in their own colour. Cursors are tied to a tab, so you only see the cursors of the people looking at the same tab as you. When someone moves to a different tab, their cursor follows them there.
-
-<Figure caption="Live cursors carry each person's name and colour, and each tab shows the initials of who is on it.">
-  <LiveCursors />
-</Figure>
-
-## Moving things together
-
-When someone drags, resizes or reshapes something, you see it move as they do, with any arrows attached to it following along, and it settles where they let go. If they press Escape halfway, it simply goes back. Editors can move anything, Participants only what they added themselves, and Viewers nothing.
+Open a project with other people and it comes alive. Everyone sees each other's changes as they happen, and can tell at a glance who is around and what they are working on. Nothing needs setting up: as soon as two or more people are in a shared project, presence just appears.
 
 ## Who is here, and where
 
 Each person is given a colour and a name. Signed-in people show their account name; everyone else gets a friendly auto-generated name like "Curious Otter". You can see who is around in two places:
 
-- **On each tab**, small initials show who is currently looking at that tab, so you can tell at a glance where everyone is working.
+- **On each tab** in the tab bar, small initials show who is currently looking at that tab, so you can tell at a glance where everyone is working.
 - A coloured ring around someone shows whether they are **active**, **away** (after five quiet minutes), or have gone **offline**. Hover an avatar for their name and status.
 
 ## Collaborators
 
-Click any avatar on a tab, or the **+N** badge when a tab is busy, to open **Collaborators**. It lists everyone in the document grouped by the tab they are on, so you can see where the whole room is at once rather than hovering tab by tab. The person you clicked is highlighted.
+Click any avatar on a tab, or the **+N** badge when a tab is busy, to open **Collaborators**. It lists everyone in the project grouped by the tab they are on, so you can see where the whole room is at once rather than hovering tab by tab. The person you clicked is highlighted.
 
 - Your own tab is marked **You're Here**. Every other tab has a **Go to Tab** button that takes you straight there.
 - Each person shows their name, their role when it is known, whether they are online, away or offline, and how long ago they were last active.
 
-## Seeing what others have selected
+## What others are working on
 
-When someone selects an element, a small disc with their initials appears on its top-left corner, so you always know what a teammate is working on. While an Editor or Participant has it selected, that element is gently locked for everyone else, so two people can't fight over the same shape at once. A Viewer's selection only shows the disc. It frees up again the moment they click away, switch tab or leave. When you zoom far out, the discs hide until you zoom back in.
+What you see depends on the tab:
 
-<Figure caption="A teammate's selection is badged with their initials and gently locked to them while they edit.">
-  <PresenceSelection />
-</Figure>
+- **On a Board**, a card someone has open or is dragging carries a ring in their colour and their first name, so you know a teammate is in it. Cards they move and fields they change update on your screen as they go.
+- **On a Sheet**, each other person's selected cells are outlined in their colour, with their name on a small tag. A cell someone is typing in has a thicker outline. Two people typing in different cells never overwrite each other.
+- **On a Dashboard**, you see everyone else's pointer move, labelled with their name in their colour. Board and Sheet tabs show no one's pointer: the card rings and cell outlines do that job there.
+
+Someone who joins late sees what is already held: the cards others have open and the cells they have selected.
 
 ## Agents at work
 
-An AI agent or a script working on a document with an [API token](/help/account-and-data/api-tokens/) can show itself while it works. It appears under its owner's name and colour, never as a new person:
+An AI agent or a script working on a project with an [API token](/help/account-and-data/api-tokens/) can show itself while it works. It appears under its owner's name and colour, never as a new person:
 
 - **What it is doing** shows beside its owner: in the hover card on their avatar, on their row in Collaborators, and in what a screen reader announces. When the owner is not on that tab, the agent gets an avatar of its own there.
-- **What it is looking at** is outlined with a thin ring in its owner's colour. The ring never locks anything: you can keep working on those elements.
 - **It leaves on its own** a little while after it stops working, so a finished or stopped agent never lingers.
 
 Agents are listed in Collaborators, but they are not counted as people.
 
 ## Who can see presence
 
-Live presence works for everyone in a shared document, including guests and people opening a [share link](/help/collaboration/sharing/) to view, not just signed-in editors. A private document you have not shared has no presence, since it is just you, except for your own agent while it works on it.
+Live presence works for everyone in a shared project, including guests and people opening a [share link](/help/collaboration/sharing/) to view, not just signed-in editors. A private project you have not shared has no presence, since it is just you, except for your own agent while it works on it.
 
 <Tip>
   Names and colours are chosen automatically, and a colour is nudged if two people happen to get the

@@ -8,7 +8,7 @@ import {
   withReadableLabelInks,
   type Appearance,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { getResolvedAppearance } from '@liveplanner/ui';
 import { resolveTabBackdrop, themeViewMap } from './themes';
 import { elementAsSeen } from './stock-colour-projector';

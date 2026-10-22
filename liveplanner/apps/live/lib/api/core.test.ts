@@ -1,7 +1,7 @@
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { BUILD_ID_HEADER, DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@liveplanner/api-schema';
-import { resetServerReleaseForTests, serverBuild, serverDocumentFormat } from '../server-release';
+import { BUILD_ID_HEADER, PROJECT_FORMAT, PROJECT_FORMAT_HEADER } from '@liveplanner/api-schema';
+import { resetServerReleaseForTests, serverBuild, serverProjectFormat } from '../server-release';
 
 // getGuestSelfSig is the only ../local-identity symbol core.ts uses; mock
 // it so the guest-signature header is deterministic per case.
@@ -114,7 +114,7 @@ describe('apiHeaders (hybrid identity gate, docs/specs/014-identity/auth-and-gue
 });
 
 // docs/specs/007-editor/load-recovery.md "The load always ends": a session that never hands out a
-// token must not hold the request (and the document load behind it) open forever.
+// token must not hold the request (and the project load behind it) open forever.
 describe('session token limit', () => {
   afterEach(() => {
     vi.useRealTimers();
@@ -234,30 +234,30 @@ describe('apiFetch / apiDelete write signal', () => {
 
   it('announces a successful non-GET', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
-    await apiFetch(`${API_BASE}/documents/d1`, { method: 'PUT' });
+    await apiFetch(`${API_BASE}/projects/d1`, { method: 'PUT' });
     expect(heard).toHaveBeenCalledWith({});
     vi.unstubAllGlobals();
   });
 
   it('stays silent for a GET, a failed write, and the feeds own endpoints', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
-    await apiFetch(`${API_BASE}/documents`);
+    await apiFetch(`${API_BASE}/projects`);
     await apiFetch(`${API_BASE}/timeline/events/e1`, { method: 'DELETE' });
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 500 })));
-    await apiFetch(`${API_BASE}/documents/d1`, { method: 'PUT' });
+    await apiFetch(`${API_BASE}/projects/d1`, { method: 'PUT' });
     expect(heard).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
   });
 
   it('names the entity a DELETE ended, after the plain signal', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 204 })));
-    await apiDelete(`${API_BASE}/documents/d1`, 'g', {
-      action: 'delete document',
-      purge: { sourceType: 'document', sourceId: 'd1' },
+    await apiDelete(`${API_BASE}/projects/d1`, 'g', {
+      action: 'delete project',
+      purge: { sourceType: 'project', sourceId: 'd1' },
     });
     expect(heard.mock.calls.map(([s]): unknown => s)).toEqual([
       {},
-      { purge: { sourceType: 'document', sourceId: 'd1' } },
+      { purge: { sourceType: 'project', sourceId: 'd1' } },
     ]);
     vi.unstubAllGlobals();
   });
@@ -266,9 +266,9 @@ describe('apiFetch / apiDelete write signal', () => {
     // A tolerated 404: nothing was removed, so nothing should vanish
     // from the feed on the strength of it.
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(null, { status: 404 })));
-    await apiDelete(`${API_BASE}/documents/d1`, 'g', {
-      action: 'delete document',
-      purge: { sourceType: 'document', sourceId: 'd1' },
+    await apiDelete(`${API_BASE}/projects/d1`, 'g', {
+      action: 'delete project',
+      purge: { sourceType: 'project', sourceId: 'd1' },
     });
     expect(heard).not.toHaveBeenCalled();
     vi.unstubAllGlobals();
@@ -316,24 +316,24 @@ describe('tabForWire — tab kind', () => {
 
 // docs/specs/016-platform/new-version-prompt.md: every response's format header is noted, so an open
 // editor learns of a newer server from traffic it already has.
-describe('apiFetch and the document format header', () => {
+describe('apiFetch and the project format header', () => {
   afterEach(() => {
     resetServerReleaseForTests();
     vi.unstubAllGlobals();
   });
 
   it('notes the number every response carries, failed ones included', async () => {
-    const newer = String(DOCUMENT_FORMAT + 1);
+    const newer = String(PROJECT_FORMAT + 1);
     vi.stubGlobal(
       'fetch',
       vi
         .fn()
         .mockResolvedValue(
-          new Response('{}', { status: 404, headers: { [DOCUMENT_FORMAT_HEADER]: newer } }),
+          new Response('{}', { status: 404, headers: { [PROJECT_FORMAT_HEADER]: newer } }),
         ),
     );
-    await apiFetch(`${API_BASE}/documents/d1`);
-    expect(serverDocumentFormat()).toBe(DOCUMENT_FORMAT + 1);
+    await apiFetch(`${API_BASE}/projects/d1`);
+    expect(serverProjectFormat()).toBe(PROJECT_FORMAT + 1);
   });
 
   it('notes the live build id beside it (docs/specs/016-platform/stale-builds.md)', async () => {
@@ -345,14 +345,14 @@ describe('apiFetch and the document format header', () => {
           new Response('{}', { status: 200, headers: { [BUILD_ID_HEADER]: 'b2' } }),
         ),
     );
-    await apiFetch(`${API_BASE}/documents`);
+    await apiFetch(`${API_BASE}/projects`);
     expect(serverBuild()).toBe('b2');
   });
 
   it('notes nothing from a response without the header', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 200 })));
-    await apiFetch(`${API_BASE}/documents`);
-    expect(serverDocumentFormat()).toBeNull();
+    await apiFetch(`${API_BASE}/projects`);
+    expect(serverProjectFormat()).toBeNull();
   });
 });
 
@@ -368,7 +368,7 @@ describe('apiFetch under a workbench session', () => {
     const fetchMock = vi.fn();
     vi.stubGlobal('fetch', fetchMock);
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    setWorkbenchConfinement({ scope: 'document', documentId: 'doc-1', ownerId: 'user_1' });
+    setWorkbenchConfinement({ scope: 'project', projectId: 'doc-1', ownerId: 'user_1' });
 
     await expect(
       apiFetch(`${API_BASE}/folders`, {

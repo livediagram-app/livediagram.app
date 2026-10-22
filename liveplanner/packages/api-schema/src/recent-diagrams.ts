@@ -3,8 +3,8 @@
 // the static marketing site loading the session or calling the api. One contract, written by apps/live and read
 // by apps/marketing on the same origin.
 
-import { parseEditorMode, type EditorMode } from '@liveplanner/document';
-import type { DocumentSummary } from './index';
+import { parseEditorMode, type EditorMode } from '@liveplanner/project';
+import type { ProjectSummary } from './index';
 
 // The localStorage key the note lives under. Versioned: a change to the shape takes a new key.
 export const RECENT_DIAGRAMS_KEY = 'liveplanner:recent-diagrams:v1';
@@ -12,20 +12,20 @@ export const RECENT_DIAGRAMS_KEY = 'liveplanner:recent-diagrams:v1';
 // How many diagrams the note holds: the hero's Welcome back window draws three over two.
 export const RECENT_DIAGRAMS_LIMIT = 6;
 
-// The document list's opt-in (`GET /api/documents?include=team-recent`): the newest documents of the
+// The project list's opt-in (`GET /api/projects?include=team-recent`): the newest projects of the
 // teams the caller has joined, beside their personal library, so the note can hold both.
 export const TEAM_RECENT_INCLUDE = 'team-recent';
 
-// How many team documents that brings: the note's six twice over, so a few hidden from Recent (a
+// How many team projects that brings: the note's six twice over, so a few hidden from Recent (a
 // preference the server does not see) still leave six to show.
 export const TEAM_RECENT_LIMIT = RECENT_DIAGRAMS_LIMIT * 2;
 
-// A team library document as the list's `teamRecent` carries it: its summary and its team's name.
-export type TeamRecentDocument = DocumentSummary & { teamName: string };
+// A team library project as the list's `teamRecent` carries it: its summary and its team's name.
+export type TeamRecentProject = ProjectSummary & { teamName: string };
 
 // The Cache Storage cache holding each noted diagram's snapshot SVG.
 export const RECENT_THUMBS_CACHE = 'liveplanner-recent-thumbs-v2';
-// The cache before v2, when a document in This Browser was cached as having no preview: dropped by the editor's
+// The cache before v2, when a project in This Browser was cached as having no preview: dropped by the editor's
 // sync, so every browser draws those previews once (docs/specs/019-marketing/returning-visitor.md).
 export const RECENT_THUMBS_CACHE_LEGACY = 'liveplanner-recent-thumbs-v1';
 
@@ -41,16 +41,16 @@ export type RecentDiagram = {
 
 type RecentDiagramsNote = { v: 1; diagrams: RecentDiagram[] };
 
-// The documents worth coming back to, newest save first: nothing empty, nothing hidden from Recent
+// The projects worth coming back to, newest save first: nothing empty, nothing hidden from Recent
 // (docs/specs/013-workspace/hide-from-recent.md), at most RECENT_DIAGRAMS_LIMIT.
 export function pickRecentDiagrams(
-  documents: readonly (Pick<DocumentSummary, 'id' | 'name' | 'savedAt' | 'empty' | 'opensIn'> & {
+  projects: readonly (Pick<ProjectSummary, 'id' | 'name' | 'savedAt' | 'empty' | 'opensIn'> & {
     teamName?: string;
   })[],
   hidden: readonly string[] = [],
 ): RecentDiagram[] {
   const skip = new Set(hidden);
-  return documents
+  return projects
     .filter((d) => !d.empty && !skip.has(d.id))
     .sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
     .slice(0, RECENT_DIAGRAMS_LIMIT)
@@ -106,7 +106,7 @@ export function recentThumbPath(id: string, savedAt: number): string {
 }
 
 // A snapshot SVG's solid background colour: the first <rect>'s fill, since a snapshot draws a
-// full-viewBox background rect before any element (docs/specs/006-document/document-snapshots.md). Lets
+// full-viewBox background rect before any element (docs/specs/006-project/project-snapshots.md). Lets
 // a tile paint its letterbox to match the diagram. Null when absent. The tag is cut out by index
 // first, so the pattern only ever reads that one tag: linear, however the markup is shaped.
 export function svgBackgroundColor(svg: string): string | null {

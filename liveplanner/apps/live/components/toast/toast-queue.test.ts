@@ -31,11 +31,11 @@ describe('pushToast', () => {
   });
 
   it(`keeps at most ${TOAST_LIMIT} up, retiring the oldest without answers before any with them`, () => {
-    let list = upsertActionToast([], { key: 'd', message: 'Document deleted', actions: [undo] }, 1);
+    let list = upsertActionToast([], { key: 'd', message: 'Project deleted', actions: [undo] }, 1);
     for (let i = 2; i <= TOAST_LIMIT + 1; i++) {
       list = pushToast(list, { message: `Note ${i}`, tone: 'info' }, i);
     }
-    expect(live(list)).toEqual(['Document deleted', 'Note 3', 'Note 4']);
+    expect(live(list)).toEqual(['Project deleted', 'Note 3', 'Note 4']);
   });
 
   it('retires the oldest of all when every toast has answers', () => {

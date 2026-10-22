@@ -1,6 +1,6 @@
 'use client';
 
-import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@liveplanner/document';
+import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@liveplanner/project';
 import { HoverCard, SOLID_BRAND_DARK } from '@liveplanner/ui';
 import { TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import { timerFillStyle } from '@/components/chrome/timer-pill';

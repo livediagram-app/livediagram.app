@@ -1,4 +1,4 @@
-// The canvas half of the Actions board (docs/specs/026-plan/linked-boards.md): where the document's actions and its
+// The canvas half of the Actions board (docs/specs/026-plan/linked-boards.md): where the project's actions and its
 // Actions board are, and the tab changes the heal asks for. Pure, so useLinkedActionCards stays wiring.
 import {
   elementActions,
@@ -6,7 +6,7 @@ import {
   type Element,
   type ElementAction,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { collectingBoard, type LinkedRecordChange, type PlanBoardSetup } from '@liveplanner/items';
 
 export type PlacedAction = { tabId: string; elementId: string; action: ElementAction };
@@ -40,7 +40,7 @@ export function placedActions(tabs: readonly Tab[], loaded: ReadonlySet<string>)
   return tabs.flatMap((tab) => (loaded.has(tab.id) ? scanOf(tab).actions : []));
 }
 
-// The document's Actions board: the first board, in tab order, that collects actions.
+// The project's Actions board: the first board, in tab order, that collects actions.
 export function actionsBoardIn(tabs: readonly Tab[]): CollectingBoard | null {
   return (
     collectingBoard(
@@ -51,7 +51,7 @@ export function actionsBoardIn(tabs: readonly Tab[]): CollectingBoard | null {
 }
 
 // Tabs whose content is not here yet, and so could hold the Actions board: what is fetched before deciding there is
-// none, so a second one is never made beside one on a tab nobody has opened. Every unloaded tab, since a document's
+// none, so a second one is never made beside one on a tab nobody has opened. Every unloaded tab, since a project's
 // summary does not say which tabs are Board tabs.
 export function unloadedTabIds(tabs: readonly Tab[], loaded: ReadonlySet<string>): string[] {
   return tabs.filter((t) => !loaded.has(t.id)).map((t) => t.id);

@@ -1,5 +1,5 @@
 // Starting a form (docs/specs/030-forms/forms.md "Starting a form"): what a starter makes, worked out before anything
-// is committed. A starter whose responses are cards goes to the document's first Board tab whose board takes its card
+// is committed. A starter whose responses are cards goes to the project's first Board tab whose board takes its card
 // type, else a new Board tab after the Form tab (the card type the starter's ready-made one or a new one named after
 // the form, with the fields its questions map to); one whose responses are rows goes to a new Sheet tab after it; a
 // Blank form goes nowhere until one is chosen (its connect box). Pure: useFormActions commits it.
@@ -9,7 +9,7 @@ import {
   isDefaultTabName,
   type Element,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   FORM_VERSION,
   buildStarter,
@@ -38,7 +38,7 @@ type FormStartPlan = {
   // written (new, or fields added).
   type: ItemTypeDef;
   saveType: boolean;
-  // A Board tab made for the responses, when no board of the document took the type.
+  // A Board tab made for the responses, when no board of the project took the type.
   newBoardTab: Tab | null;
   // A Sheet tab made for the responses (a row each), and its sheet, to be made as the tab is.
   newSheet: { tab: Tab; sheetId: string; title: string } | null;
@@ -95,7 +95,7 @@ export function responsesBoardSetup(
   };
 }
 
-// A status for `name`: the document's own when it has one of that name, else a new id.
+// A status for `name`: the project's own when it has one of that name, else a new id.
 function newStatusOf(
   existing: Iterable<readonly [string, string]>,
   name: string,
@@ -252,7 +252,7 @@ export function withAutoBoardName(
   };
 }
 
-// The document's sheets a form can send its responses to (docs/specs/030-forms/forms.md "Responses to a Sheet"): each
+// The project's sheets a form can send its responses to (docs/specs/030-forms/forms.md "Responses to a Sheet"): each
 // Sheet tab's sheets, named after the tab ("Budget", or "Budget 2" for a second sheet on it).
 export function sheetsOf(tabs: readonly Tab[]): { tabId: string; sheetId: string; name: string }[] {
   return tabs.flatMap((t) => {

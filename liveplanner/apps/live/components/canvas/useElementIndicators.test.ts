@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement, type ElementAction } from '@liveplanner/document';
+import { createShape, type BoxedElement, type ElementAction } from '@liveplanner/project';
 import { elementIndicatorItems, useElementIndicators } from './useElementIndicators';
 
 // docs/specs/008-canvas/element-indicators.md: which indicators an element carries, and which
@@ -41,7 +41,7 @@ const kinds = (el: BoxedElement, mind?: { editOutline: () => void; tidy: () => v
   elementIndicatorItems(el, handlers(), mind).map((i) => i.kind);
 
 describe('elementIndicatorItems', () => {
-  // docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items": kept in the document, never shown.
+  // docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items": kept in the project, never shown.
   it('shows nothing a Plan item carries from before', () => {
     const el = {
       ...createShape('plan-board', 0, 0),

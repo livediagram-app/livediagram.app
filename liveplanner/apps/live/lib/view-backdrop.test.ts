@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { resetAppearanceForTests } from '@liveplanner/ui';
 import { resolveTabBackdrop } from './themes';
 import { resolveViewBackdrop } from './view-backdrop';

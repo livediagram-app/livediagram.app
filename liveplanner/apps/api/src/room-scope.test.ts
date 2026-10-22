@@ -37,9 +37,9 @@ describe('opForScope (what a scoped session receives)', () => {
     expect(opForScope({ kind: 'log-remove', entryId: 'e1' }, SCOPE)).toBeNull();
   });
 
-  it('redacts document-meta the way the REST document is redacted', () => {
+  it('redacts project-meta the way the REST project is redacted', () => {
     const op = {
-      kind: 'document-meta',
+      kind: 'project-meta',
       name: 'Plan',
       tabs: [
         { id: 't1', name: 'Pricing', orderIndex: 0, folder: 'Money' },
@@ -47,7 +47,7 @@ describe('opForScope (what a scoped session receives)', () => {
       ],
     };
     expect(opForScope(op, SCOPE)).toEqual({
-      kind: 'document-meta',
+      kind: 'project-meta',
       name: 'Plan',
       tabs: [
         { id: 't1', name: '', orderIndex: 0, outOfScope: true },
@@ -80,7 +80,7 @@ describe('opForScope (what a scoped session receives)', () => {
   });
 
   it('delivers the tab-less worker notices', () => {
-    for (const kind of ['share-revoked', 'share-rescoped', 'document-trashed']) {
+    for (const kind of ['share-revoked', 'share-rescoped', 'project-trashed']) {
       const op = { kind };
       expect(opForScope(op, SCOPE), kind).toBe(op);
     }
@@ -90,13 +90,13 @@ describe('opForScope (what a scoped session receives)', () => {
     expect(opForScope({ kind: 'something-new' }, SCOPE)).toBeNull();
     expect(opForScope(null, SCOPE)).toBeNull();
     expect(opForScope('el', SCOPE)).toBeNull();
-    expect(opForScope({ kind: 'document-meta', tabs: 'nope' }, SCOPE)).toBeNull();
+    expect(opForScope({ kind: 'project-meta', tabs: 'nope' }, SCOPE)).toBeNull();
   });
 });
 
 describe('scopedSenderMayRelay (what a scoped session may send)', () => {
   it('lets an unscoped session send anything the role allows', () => {
-    expect(scopedSenderMayRelay({ kind: 'document-meta' }, null)).toBe(true);
+    expect(scopedSenderMayRelay({ kind: 'project-meta' }, null)).toBe(true);
   });
 
   it('lets it act on its own tab', () => {
@@ -109,8 +109,8 @@ describe('scopedSenderMayRelay (what a scoped session may send)', () => {
     expect(scopedSenderMayRelay({ kind: 'select', elementId: 'e1' }, SCOPE)).toBe(false);
   });
 
-  it('refuses document-meta outright: the structure is not theirs', () => {
-    expect(scopedSenderMayRelay({ kind: 'document-meta', name: 'x', tabs: [] }, SCOPE)).toBe(false);
+  it('refuses project-meta outright: the structure is not theirs', () => {
+    expect(scopedSenderMayRelay({ kind: 'project-meta', name: 'x', tabs: [] }, SCOPE)).toBe(false);
   });
 
   it('fails closed on anything else', () => {

@@ -3,7 +3,7 @@ import { agentSubmits, arrange, CANVAS, open, storedIds, WEBBER } from './agent-
 import { freshUserId, installSession } from './session';
 
 // Agent changesets end to end (docs/specs/024-agents/agent-changesets.md; liveplanner #343): a
-// person has their own, unshared document open; their agent changes it with an API token. Before
+// person has their own, unshared project open; their agent changes it with an API token. Before
 // changesets the change never reached the editor and the person's next autosave erased it. Now it
 // arrives live, outlined in their colour, with a toast; it survives their save; Ctrl+Z leaves it;
 // the toast's Undo reverts it; and an element they have selected is refused to the agent.
@@ -91,8 +91,8 @@ test('an element the person has selected is held from the agent', async ({
   await installSession(page, { ...WEBBER, id: userId });
   const s = await arrange(page, baseURL!, userId);
   // A second session of someone else would hold it; the owner's own selection never does, so the
-  // person here opens the document as an edit-link visitor.
-  const share = await page.request.post(`/api/documents/${s.id}/share`, {
+  // person here opens the project as an edit-link visitor.
+  const share = await page.request.post(`/api/projects/${s.id}/share`, {
     headers: s.session,
     data: { role: 'edit' },
   });
@@ -100,7 +100,7 @@ test('an element the person has selected is held from the agent', async ({
   const visitor = await page.context().browser()!.newContext({ baseURL, colorScheme: 'dark' });
   const bea = await visitor.newPage();
   await bea.addInitScript(() => localStorage.setItem('liveplanner:v2:name-confirmed', '1'));
-  await bea.goto(`/document/shared?s=${link.code}`);
+  await bea.goto(`/project/shared?s=${link.code}`);
   const join = bea.getByRole('button', { name: /^join$/i });
   if (await join.isVisible({ timeout: 5_000 }).catch(() => false)) await join.click();
   await bea.locator(CANVAS).waitFor();

@@ -6,7 +6,7 @@ import { DotVoting } from '@/components/illustrations/collaboration';
 export const metadata = helpMetadata({
   title: 'Casting Dots',
   description:
-    'How to spend and take back your dots during a vote, and which elements can take one.',
+    'How to spend and take back your dots on cards during a vote, and which cards can take one.',
   path: '/help/collaboration/session-tools/voting/casting-dots/',
 });
 
@@ -19,28 +19,26 @@ export const metadata = helpMetadata({
   subArticles={getSubArticles('voting').filter((a) => a.slug !== 'casting-dots')}
 >
 
-While a [vote](/help/collaboration/session-tools/voting/) is open, every votable element carries a small **− 0 +** counter in its bottom-right corner.
+While a [vote](/help/collaboration/session-tools/voting/) is open, every card the tab's board shows carries a small **− 0 +** counter in its corner.
 
 ## Spending and taking back
 
-Press **+** to add one of your dots and **−** to take one back. Clicking the element itself also adds a dot, which is quicker when you are working through a wall of stickies. Stacking several dots on one element is allowed, each counting separately, unless the vote was started with **One each** under **Dots per item**: then each of your dots must go on a different element. For an Editor, the **Vote** button in the bottom bar keeps count: its badge shows how many dots you have left, and the Vote panel above it says so in words, like "2 of 3 dots left".
+Press **+** to add one of your dots and **−** to take one back. Stacking several dots on one card is allowed, each counting separately, unless the vote was started with **One each** under **Dots per item**: then each of your dots must go on a different card. For an Editor, the **Vote** button in the bottom-right cluster keeps count: its badge shows how many dots you have left, and the Vote panel above it says so in words, like "2 of 3 dots left".
 
-<Figure caption="Each votable element carries a tally pill, and the Vote button counts the dots you have left.">
+<Figure caption="Each card carries a tally counter, and the Vote button counts the dots you have left.">
   <DotVoting />
 </Figure>
 
-The counter starts at zero, so you can always see which elements are in play and how many dots each has. **−** greys out when none of the dots on it are yours, and **+** once your budget is spent (or, under **One each**, once you have a dot on that element), rather than disappearing, so the buttons stay where your pointer expects them.
+The counter starts at zero, so you can always see which cards are in play and how many dots each has. **−** greys out when none of the dots on it are yours, and **+** once your budget is spent (or, under **One each**, once you have a dot on that card), rather than disappearing, so the buttons stay where your pointer expects them.
 
-Once the vote ends the buttons go and the counter becomes a plain tally, since at that point it is a result to read rather than something to change.
+The rest of the card keeps working during a vote: click it to open its panel, or drag it to another column. Once the vote ends the buttons go and the counter becomes a plain tally, since at that point it is a result to read rather than something to change.
 
 ## What can take a dot
 
-**Votable** elements are shapes, sticky notes, and images. Section backdrops (frames), text, freehand drawings, tables, arrows, and annotations are not votable, so you vote on the ideas, not the scaffolding around them. Nor are elements that do something when pressed (portals, session buttons and pickers), or comment and action panels. Readouts (stat rows, charts, progress bars and rings, legends and keys) and checklists are left out too: they show what the board says or what to do next, not an idea to rank. If the vote is [limited to one layer](/help/collaboration/session-tools/voting/vote-layers/), only that layer's elements count.
+The **cards** take the dots. The board itself takes none, so you can still work the board during the vote. A card shown on two boards is one card, with one count. A card face down on a board that hides writing takes no dots until it is revealed.
 
-On a tab with Plan boards, the **cards** take the dots: each card the boards show carries the counter in its corner (a card shown on two boards is one card, with one count), while the boards themselves, and Plan views, take none, so you can still work the board during the vote. A card face down on a board that hides writing takes no dots until it is revealed. When the host ends the vote, each card keeps the dots it gathered, for **Top Voted** and the card's ▲ count.
+When the host ends the vote, each card keeps the dots it gathered as its **Votes**, which the card's ▲ count and a board's **Top Voted** widget read afterwards.
 
 Casting needs an Editor or Participant role: someone on a Viewer share link sees the tallies but can't add a dot.
-
-Non-votable elements show no counter and still select and move normally. Pressing a votable element casts a dot rather than selecting it.
 
 </ArticleLayout>

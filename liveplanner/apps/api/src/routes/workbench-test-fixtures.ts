@@ -1,4 +1,4 @@
-// Shared arrangement for the workbench route suites: a real SQLite D1 with one document owned by `user_1`, a
+// Shared arrangement for the workbench route suites: a real SQLite D1 with one project owned by `user_1`, a
 // live edit token `tok1` of theirs, a read-only token `tok_ro`, and another account's token `tok2`. Not a
 // `.test.ts` file, so vitest never collects it as a suite.
 
@@ -11,7 +11,7 @@ export const ORIGIN = 'https://127.0.0.1:5175';
 
 export async function workbenchDb(base: Partial<Env> = {}): Promise<SqliteD1> {
   const db = sqliteD1({ APP_BASE_URL: 'https://app.test', ...base });
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+  db.sql.exec(`INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('doc1', 'user_1', 'Home screen', 0, 1, 1),
                       ('doc2', 'user_2', 'Not yours', 0, 1, 1)`);
   await upsertTab(db.env, 'doc1', { id: 't1', name: 'Wireframe', elements: [] }, 0);
@@ -28,7 +28,7 @@ export function pairToken(
   tokenId = 'tok1',
   ownerId = 'user_1',
   id = 'pair1',
-  scope: 'document' | 'workspace' = 'document',
+  scope: 'project' | 'workspace' = 'project',
 ): void {
   db.sql
     .exec(`INSERT INTO workbench_pairings (id, owner_id, token_id, origin, name, scope, created_at)

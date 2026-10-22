@@ -12,8 +12,8 @@ browser. The budget it is held to is in [Canvas performance](../specs/008-canvas
    `NEXT_PUBLIC_API_BASE=https://staging.liveplanner.app/api npx next build` in `apps/live`, under
    PM2.
 4. Revert `next.config.ts` as soon as the build is done; the flag is never committed.
-5. Serve `apps/live/out` over HTTPS on a free loopback port, mapping every `/document/<id>` path to
-   `document/placeholder.html`, under PM2.
+5. Serve `apps/live/out` over HTTPS on a free loopback port, mapping every `/project/<id>` path to
+   `project/placeholder.html`, under PM2.
 
 ## Open the board
 

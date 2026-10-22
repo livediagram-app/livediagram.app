@@ -10,7 +10,7 @@ vi.mock('@/components/sheets/sheet-store-client', () => ({ sheetStoreOf: () => (
 describe('makeFormSheet', () => {
   it('sends the create only once the new tab is saved', async () => {
     const bridge = {
-      scope: { documentId: 'docF', ownerId: 'o', shareCode: null, tabId: null },
+      scope: { projectId: 'docF', ownerId: 'o', shareCode: null, tabId: null },
     } as unknown as SheetsBridge;
     const made = makeFormSheet(bridge, { id: 's1', tabId: 'responses', title: 'Responses' });
     await new Promise((r) => setTimeout(r, 20));

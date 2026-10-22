@@ -2,7 +2,7 @@
 // Sheet Figure, with an optional target cell), a column's total, average, lowest, highest or count (a Column
 // Summary), and a column's last value against the one before (a Trend). Cells and columns are named by their stable
 // row and column ids, so a figure follows rows and columns inserted, deleted or moved around it. Pure: the editor
-// reads it live from the document's workbook, the same values the Sheet shows.
+// reads it live from the project's workbook, the same values the Sheet shows.
 import { formatA1, parseA1 } from './address';
 import { layoutIndex } from './layout';
 import { cellKey, type CellFormat, type Sheet } from './sheet';

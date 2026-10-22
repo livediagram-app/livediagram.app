@@ -1,6 +1,6 @@
 import type { Selection } from '@/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { Anchor } from '@liveplanner/document';
+import type { Anchor } from '@liveplanner/project';
 import type { QuickConnectDirection } from '@/lib/canvas';
 import type { EditorDragApi } from './useEditorDrag.types';
 

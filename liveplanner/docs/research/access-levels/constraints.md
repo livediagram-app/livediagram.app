@@ -13,7 +13,7 @@ those constraints. Read-only research; it decides nothing. Sources are the specs
   so every model either widens former view links or narrows them; "zero loss, no escalation" is only
   exactly achievable if one level is defined as today's view set.
 - **Ownership is already a separate dimension in code**, not an edit level: the share family, the
-  password, delete and moving out sit behind `ownsDocument`, and the realtime room receives an owner
+  password, delete and moving out sit behind `ownsProject`, and the realtime room receives an owner
   bit (`X-Verified-Owner`) beside the role. Team members get edit plus delete and move, but not
   sharing. Full API tokens inherit their owner's ownership powers.
 - **The hardest constraints are not in the UI.** They are: (1) participation by a non-editor must
@@ -43,15 +43,15 @@ Only enough to anchor terms; the product survey is another angle's job.
 
 | Who                               | How the server knows                                                                                                                | Content level | Ownership powers                                                      |
 | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- | ------------- | --------------------------------------------------------------------- |
-| Personal owner (guest or account) | `isPersonalOwner` on the hybrid id ([document-access.ts](../../../apps/api/src/auth/document-access.ts))                            | edit          | all: share family, password, delete, move, tab link                   |
-| Team document owner               | verified account id and still a joined member (`ownsDocument`, [context.ts](../../../apps/api/src/routes/context.ts))               | edit          | all, as above                                                         |
-| Joined team member                | verified account id, `team_members.status = 'joined'`                                                                               | edit          | delete and move only (`mayDeleteDocument`); **not** sharing           |
+| Personal owner (guest or account) | `isPersonalOwner` on the hybrid id ([project-access.ts](../../../apps/api/src/auth/project-access.ts))                            | edit          | all: share family, password, delete, move, tab link                   |
+| Team project owner               | verified account id and still a joined member (`ownsProject`, [context.ts](../../../apps/api/src/routes/context.ts))               | edit          | all, as above                                                         |
+| Joined team member                | verified account id, `team_members.status = 'joined'`                                                                               | edit          | delete and move only (`mayDeleteProject`); **not** sharing           |
 | Share-link holder                 | bearer code, optional password, optional expiry, optional tab scope                                                                 | link's role   | none                                                                  |
 | Embed visitor                     | same as share link, inside an iframe, no identity screen                                                                            | link's role   | none                                                                  |
-| API token, full                   | `lvd_` hash resolves to its account; flows through every gate as that account                                                       | owner's       | owner's (it passes `ownsDocument`), minus session-only administration |
+| API token, full                   | `lvd_` hash resolves to its account; flows through every gate as that account                                                       | owner's       | owner's (it passes `ownsProject`), minus session-only administration |
 | API token, read-only              | as above, refused on every `POST`/`PUT`/`DELETE` at one choke point ([index.ts](../../../apps/api/src/index.ts), `read_only_token`) | read          | none in practice (every ownership action is a write)                  |
 
-Sources: [Team shared documents](../../specs/013-workspace/team-shared-documents.md),
+Sources: [Team shared projects](../../specs/013-workspace/team-shared-projects.md),
 [Public API and API tokens §3.4](../../specs/015-api/public-api-and-tokens.md),
 [Auth and guest access](../../specs/014-identity/auth-and-guest-access.md).
 
@@ -66,11 +66,11 @@ Sources: [Team shared documents](../../specs/013-workspace/team-shared-documents
 | Add to and upvote a Q&A board                                        | REST `POST .../qa`, `gateRead`; the room writes D1 | yes  | yes  |
 | Resolve, reopen, delete others' comments                             | room `el-delta` or tab `PUT`                       | no   | yes  |
 | Dots, estimates, temperature checks, Done check, quiz answers, ideas | room `vote` / `el-delta` (mutation)                | no   | yes  |
-| Change elements, tabs, document                                      | room mutations, tab `PUT`                          | no   | yes  |
+| Change elements, tabs, project                                      | room mutations, tab `PUT`                          | no   | yes  |
 | Run session tools, hold the facilitator baton                        | `canHold` is edit-only (facilitator.ts)            | no   | yes  |
 
 Sources: [room-messages.ts](../../../packages/api-schema/src/room-messages.ts) (op classes),
-[document-room.ts](../../../apps/api/src/document-room.ts) (`sender.role !== 'edit' && !isPresenceOp`),
+[project-room.ts](../../../apps/api/src/project-room.ts) (`sender.role !== 'edit' && !isPresenceOp`),
 [API app](../../specs/015-api/api.md) (comment and Q&A rows),
 [Per-participant responses](../../specs/012-collaboration/participant-responses.md) ("Edit-role only"),
 [Session tools](../../specs/012-collaboration/session-tools.md) ("the facilitator and participants share an edit link"),
@@ -95,11 +95,11 @@ or opens a hole; "should" is a strong preference.
   do (`closeSessionsOfChangedLink`, `share-revoked`, `share-rescoped`), because a room session's role
   is fixed at the upgrade.
 - **C3. Teams grant edit to every joined member** and own nothing extra
-  ([Team shared documents](../../specs/013-workspace/team-shared-documents.md)). A model must say
+  ([Team shared projects](../../specs/013-workspace/team-shared-projects.md)). A model must say
   whether team membership stays edit (it is the team's whole payoff) and must not let a team member
-  gain sharing by accident: today only the document's owner (still a joined member) may share a team
-  document.
-- **C4. Ownership is already separate in code.** `ownsDocument` fronts the share family, the password,
+  gain sharing by accident: today only the project's owner (still a joined member) may share a team
+  project.
+- **C4. Ownership is already separate in code.** `ownsProject` fronts the share family, the password,
   delete, moving out and tab linking; the room's `X-Verified-Owner` bit (owner may always take the
   baton) is a separate header from `X-Verified-Role`. A model that folds ownership into the level
   ladder would have to undo that separation.
@@ -107,7 +107,7 @@ or opens a hole; "should" is a strong preference.
   view or edit" ([Tab-scoped share links](../../specs/013-workspace/tab-scoped-share-links.md)). Every
   new level must compose with scope: participation ops must carry a `tabId` so `scopedSenderMayRelay`
   can confine them, and `deniedComment`-style refusals must answer 404 on another tab.
-- **C6. Password and expiry are orthogonal.** They sit on the document and the link
+- **C6. Password and expiry are orthogonal.** They sit on the project and the link
   ([Share password](../../specs/013-workspace/share-password.md),
   [Share link expiry](../../specs/013-workspace/share-link-expiry.md)) and must not vary by level.
 - **C7. `shared_with` is joined by role.** `GET /api/shared` returns a live code "matching the
@@ -135,7 +135,7 @@ or opens a hole; "should" is a strong preference.
   **collab key**, which the client claims in `hello` and the room relays to every peer on the roster
   ([Per-participant responses](../../specs/012-collaboration/participant-responses.md)); the `vote` op
   carries a client-supplied `voter`. The spec's own justification is that "any edit-role peer can
-  already write any id into the document". Once a **non-editor** may answer, that argument fails: a
+  already write any id into the project". Once a **non-editor** may answer, that argument fails: a
   participant could claim a peer's key and overwrite or withdraw their answer, or exceed the dot
   budget (enforced client-side). A participation level must be paired with a server-bound key (for
   example minted into the room ticket from the caller's owner id, never shown raw) and with
@@ -143,13 +143,13 @@ or opens a hole; "should" is a strong preference.
   stamped), Q&A (voter derived server-side) and polls (keyed by server-minted presence id) already
   satisfy this.
 - **C12. The baton is edit-only and the owner bit is narrow.** `canHold` requires edit because
-  "everything it governs writes to the document"; timers and vote rounds ride ordinary `tab` /
+  "everything it governs writes to the project"; timers and vote rounds ride ordinary `tab` /
   `tab-meta` ops, which the room deliberately does not inspect
   (Facilitator). Granting facilitation to a non-editor
   needs payload-level classification of those ops. Separately, the upgrade sets `X-Verified-Owner: 1`
-  only on the bare-`o` path, which `isPersonalOwner` restricts to personal documents
-  ([document-room-routes.ts](../../../apps/api/src/routes/document-room-routes.ts)); on a team
-  document no session appears to carry the owner bit, so "the owner can always take it back" seems
+  only on the bare-`o` path, which `isPersonalOwner` restricts to personal projects
+  ([project-room-routes.ts](../../../apps/api/src/routes/project-room-routes.ts)); on a team
+  project no session appears to carry the owner bit, so "the owner can always take it back" seems
   not to hold there. Worth confirming before ownership is made explicit.
 - **C13. Roles survive hibernation in the socket attachment** (`verifiedRole?: 'edit' | 'view'`).
   New code must read attachments written by old code, and an unknown or missing role must act as the
@@ -175,13 +175,13 @@ or opens a hole; "should" is a strong preference.
   A middle token level needs a method-and-path classifier (the worktree's `requiredTokenRole`), and
   the grant itself should take the token's level as a ceiling so a future route cannot exceed it.
   Agents act as their owner ([worktree] `docs/specs/024-agents/agent-presence.md`): presence and
-  comments need the middle level, changesets need edit; an edit token used on a document where its
+  comments need the middle level, changesets need edit; an edit token used on a project where its
   owner holds only a lower link must get the lower of the two.
-- **C17. Tokens carry ownership today.** A full token passes `ownsDocument`, so the MCP
-  `share_document` tool mints links and tokens can delete to the Trash. Mapping "full" to "Editor"
+- **C17. Tokens carry ownership today.** A full token passes `ownsProject`, so the MCP
+  `share_project` tool mints links and tokens can delete to the Trash. Mapping "full" to "Editor"
   without also preserving ownership powers is a loss of ability; keeping them makes ownership a token
   dimension too. Administration (teams, tokens, account) stays session-only whatever the level.
-- **C18. MCP vocabulary leaks to agents.** `share_document.role` is `z.enum(['view', 'edit'])`,
+- **C18. MCP vocabulary leaks to agents.** `share_project.role` is `z.enum(['view', 'edit'])`,
   default `view`, described as "recipients can open and read but not change it"
   ([schema.ts](../../../packages/agent-verbs/src/mcp/schema.ts)). If "view" becomes look-only, agents' default links
   silently lose commenting; the default must be chosen deliberately, and MCP clients cache tool
@@ -189,12 +189,12 @@ or opens a hole; "should" is a strong preference.
 
 ### Offline, deployments without Clerk, telemetry
 
-- **C19. Offline documents have no server, no links, no room** ([Offline Mode](../../specs/006-document/offline-mode.md));
+- **C19. Offline projects have no server, no links, no room** ([Offline Mode](../../specs/006-project/offline-mode.md));
   their holder is always the owner. Level-derived editor flags must default to owner there.
 - **C20. A deployment without Clerk is guests only**: no teams, no tokens (a token's owner is always an
   account). Every level must work through share links alone, and nothing may require an account.
-- **C21. Telemetry types are closed enum values.** `Document·Shared` (client, before the request) and
-  `Document·Joined` (server, `link.role === 'edit' ? 'Edit' : 'View'` in
+- **C21. Telemetry types are closed enum values.** `Project·Shared` (client, before the request) and
+  `Project·Joined` (server, `link.role === 'edit' ? 'Edit' : 'View'` in
   [share.ts](../../../apps/api/src/routes/share.ts)) are typed by role
   ([Telemetry](../../specs/017-telemetry/telemetry.md)). Migrating stored `view` links changes what
   historic `View` meant; the dashboard needs the cut-over recorded, and old bundles keep emitting the
@@ -229,7 +229,7 @@ or opens a hole; "should" is a strong preference.
   (for example `role` holding `view` for every non-edit level, beside a new `level` column; and
   `read_only = 1` for every token below edit). Old **editor** bundles are not prompted to reload,
   because the [new version prompt](../../specs/016-platform/new-version-prompt.md) fires only on a
-  `DOCUMENT_FORMAT` bump; a role change is not one.
+  `PROJECT_FORMAT` bump; a role change is not one.
 
 ### Share dialog and role pill (WCAG 2.2 AA)
 
@@ -292,15 +292,15 @@ ideas.
 
 - **Migration.** Same mapping as (1) under different names: view to participant (gains session marks;
   needs consent), edit to editor, read-only token to viewer, full token to editor **plus** "acts as
-  owner" so `share_document` and token deletes keep working (C17). Ownership needs no data migration:
-  it is already derived (`ownsDocument`, team membership).
+  owner" so `share_project` and token deletes keep working (C17). Ownership needs no data migration:
+  it is already derived (`ownsProject`, team membership).
 - **UI.** Three cards; "Participant: comments, votes and answers. Can't change the drawing." states the
   purpose plainly. Ownership is not a card: it appears as the owner's name on the pill (already done:
   "Editing. Owned by Ada") and in who may open the Share dialog's management controls. Settings and
   the MCP consent screen offer three token levels and say separately whether the token acts as owner.
 - **Server gates.** As (1), plus naming the owner capability set once (share family, password, delete,
   move, tab link, baton take-back) so gates ask "level at least X" and "holds ownership" as two
-  questions. This is also the natural moment to fix C12's team-document owner bit.
+  questions. This is also the natural moment to fix C12's team-project owner bit.
 - **Risks.** The same deploy-window and integrity work as (1). "Participant" collides with the
   existing `participants` table and `Participant·Created` telemetry (a participant record is any
   visitor's display identity); the domain language needs one canonical term to avoid a synonym clash
@@ -355,12 +355,12 @@ ideas.
 6. **Deploy expand-then-contract (C24)**: first ship readers that map unknown levels to Viewer in the
    api, room, ticket and editor; keep a legacy `role` column (`edit` or `view`) and `read_only` beside
    the new level so old code always reads a safe value; migrate and switch writers in a later deploy;
-   drop legacy columns last. Bump nothing in `DOCUMENT_FORMAT`; instead use the stale-build signal or
+   drop legacy columns last. Bump nothing in `PROJECT_FORMAT`; instead use the stale-build signal or
    accept that old editors show wrong labels until reload.
 7. **Fix the stub contrast now (C25)**, independent of levels: `brand-500` and `violet-500` stubs fail
    AA today. Give each level a glyph and word as well as a hue.
 8. **Keep facilitation a baton among editors**, and record model (4) as a possible later layer.
-9. **Keep MCP `share_document`'s default at the level that preserves today's behaviour** (Participant),
+9. **Keep MCP `share_project`'s default at the level that preserves today's behaviour** (Participant),
    not Viewer, unless Webber decides agents should share look-only links by default (C18).
 10. **Record the telemetry cut-over (C21)**: new types for each level, and a dated note that `View`
     before the migration meant what is now Participant.
@@ -372,23 +372,23 @@ Should former view links gain session marks (dots, estimates, Done check, quiz, 
 - **Widen** them to Participant; owners accept the change (R)
 - **Exact** mapping: add a Commenter level equal to today's view link
 - **Narrow** to Viewer and tell owners to re-share
-- **Ask owners** with a one-time banner per document
+- **Ask owners** with a one-time banner per project
 ```
 
 ```question
 What may a full API token do as "acting as owner"?
 - **Everything** an owner does except administration, as today (R)
-- **Content only**: no sharing, no delete; MCP share_document retired
+- **Content only**: no sharing, no delete; MCP share_project retired
 - **Separate flag** on each token for owner powers
 - **Editor level** plus sharing, but no delete
 ```
 
 ```question
-Who holds ownership powers on a team document?
+Who holds ownership powers on a team project?
 - **Creator only**, as today, until they leave (R)
 - **Every member** may share and manage links
 - **Team admins** plus the creator
-- **A named document owner**, transferable among members
+- **A named project owner**, transferable among members
 ```
 
 ```question
@@ -404,7 +404,7 @@ Where do participants' answers persist when no editor is saving?
 - **Room writes D1** itself, as the Q&A board does (R)
 - **REST endpoints** per action, as comments do
 - **Ledger flush** by the room on an alarm or when it empties
-- **Accept loss** and document it
+- **Accept loss** and project it
 ```
 
 ```question
@@ -416,7 +416,7 @@ How should the deploy window be closed?
 ```
 
 ```question
-What should MCP share_document create when an agent names no level?
+What should MCP share_project create when an agent names no level?
 - **Participant**, preserving today's behaviour (R)
 - **Viewer**, the safest look-only default
 - **Editor**, matching the REST default

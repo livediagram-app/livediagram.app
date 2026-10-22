@@ -2,7 +2,12 @@ import { markupBounds } from '@liveplanner/icons/centring';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { articles, categories } from './articles';
-import { FEATURE_CATEGORY_ICONS, FEATURE_ICONS, featureIcon } from './featureIcons';
+import {
+  FEATURE_CATEGORY_ICONS,
+  FEATURE_FALLBACK_ICON,
+  FEATURE_ICONS,
+  featureIcon,
+} from './featureIcons';
 import {
   FEATURE_CATEGORY_HEX,
   FEATURE_ENTITY_HEX,
@@ -46,27 +51,27 @@ describe('feature category fallbacks', () => {
 
 describe('featureIcon / featureColour', () => {
   it("prefers the feature's own glyph and hue over its category's", () => {
-    // `the-canvas` has both a bespoke entry and a category (canvas) fallback.
-    expect(featureIcon('the-canvas', 'canvas')).toBe(FEATURE_ICONS['the-canvas']);
-    expect(featureColour('the-canvas', 'canvas')).toBe(FEATURE_ENTITY_HEX['the-canvas']);
+    // `boards` has both a bespoke entry and a category (plan) fallback.
+    expect(featureIcon('boards', 'plan')).toBe(FEATURE_ICONS['boards']);
+    expect(featureColour('boards', 'plan')).toBe(FEATURE_ENTITY_HEX['boards']);
   });
 
   it('falls back to the top-level category for an unregistered slug', () => {
-    expect(featureIcon('no-such-feature', 'palette')).toBe(FEATURE_CATEGORY_ICONS['palette']);
-    expect(featureColour('no-such-feature', 'palette')).toBe(FEATURE_CATEGORY_HEX['palette']);
+    expect(featureIcon('no-such-feature', 'plan')).toBe(FEATURE_CATEGORY_ICONS['plan']);
+    expect(featureColour('no-such-feature', 'plan')).toBe(FEATURE_CATEGORY_HEX['plan']);
   });
 
   it('reads a NESTED category slug down to its first segment', () => {
-    expect(featureIcon('no-such-feature', 'palette/tools/data-elements')).toBe(
-      FEATURE_CATEGORY_ICONS['palette'],
+    expect(featureIcon('no-such-feature', 'collaboration/sharing')).toBe(
+      FEATURE_CATEGORY_ICONS['collaboration'],
     );
-    expect(featureColour('no-such-feature', 'palette/tools/data-elements')).toBe(
-      FEATURE_CATEGORY_HEX['palette'],
+    expect(featureColour('no-such-feature', 'collaboration/sharing')).toBe(
+      FEATURE_CATEGORY_HEX['collaboration'],
     );
   });
 
   it('falls back to the neutral defaults when there is no category either', () => {
-    expect(featureIcon('no-such-feature')).toBe(FEATURE_ICONS['the-canvas']);
+    expect(featureIcon('no-such-feature')).toBe(FEATURE_FALLBACK_ICON);
     expect(featureColour('no-such-feature')).toBe(FEATURE_FALLBACK_HEX);
   });
 });
@@ -76,11 +81,9 @@ describe('the catalogue as rendered', () => {
     featureCategories.some((c) => a.categorySlug.split('/')[0] === c.slug),
   );
 
-  it('no longer draws the canvas frame for a card that is not about the canvas', () => {
+  it('never draws the plain fallback square for a feature card', () => {
     const wrong = inFeatureCategories.filter(
-      (a) =>
-        a.categorySlug.split('/')[0] !== 'canvas' &&
-        featureIcon(a.slug, a.categorySlug) === FEATURE_ICONS['the-canvas'],
+      (a) => featureIcon(a.slug, a.categorySlug) === FEATURE_FALLBACK_ICON,
     );
     expect(wrong.map((a) => a.slug)).toEqual([]);
   });

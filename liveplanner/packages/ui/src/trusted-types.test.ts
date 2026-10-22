@@ -81,7 +81,7 @@ describe('isAllowedScriptUrl', () => {
   });
 
   it('refuses anything else', () => {
-    expect(isAllowedScriptUrl('/api/documents', page, '', [])).toBe(false);
+    expect(isAllowedScriptUrl('/api/projects', page, '', [])).toBe(false);
     expect(isAllowedScriptUrl('/next/static/a.js', page, '', [])).toBe(false);
     expect(isAllowedScriptUrl('https://evil.example/_next/a.js', page, '', [])).toBe(false);
     expect(isAllowedScriptUrl('javascript:alert(1)', page, '', [])).toBe(false);

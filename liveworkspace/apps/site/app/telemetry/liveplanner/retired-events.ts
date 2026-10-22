@@ -25,7 +25,7 @@ const ACTIVITY_PANEL_UI_TYPES = new Set([
   'ActivityRevertPreviewOff',
 ]);
 
-// The palette's Favourites (removed 2026-10-03, docs/specs/010-palette/palette-favourites.md): its
+// The palette's Favourites (removed 2026-10-03): its
 // curation (add, remove, reorder or reset, the Edit / Reorder modes), its cross-category search,
 // and its help article (now Popular's, at a new address).
 const PALETTE_FAVOURITES_UI = new Set([
@@ -48,8 +48,8 @@ const EXPERIMENTAL_SETTINGS_UI = new Set([
   'Toggled|PlanModeOff',
 ]);
 
-// The New Document wizard's Location step and the editor's Quick Start (removed 2026-10-16,
-// docs/specs/007-editor/new-document-route.md "One-step wizard"): "Always save new documents in <place> and skip this
+// The New Project wizard's Location step and the editor's Quick Start (removed 2026-10-16,
+// docs/specs/007-editor/new-project-route.md "One-step wizard"): "Always save new projects in <place> and skip this
 // step" and Settings' Turn Off, the Quick Start shelf's expand toggle and its mode filter. Templates are picked on each
 // mode's start now, whose search reaches the other modes (UI·Used·StartOtherMode).
 const LOCATION_STEP_AND_QUICK_START_UI = new Set([
@@ -153,10 +153,10 @@ function isRetiredWorkshopEvent(category: string, action: string, type: string |
   return WORKSHOP_UI.has(`${action}|${t}`) || WORKSHOP_UI_PREFIXES.some((p) => t.startsWith(p));
 }
 
-// The New Document wizard itself (removed 2026-10-21, docs/specs/007-editor/new-document-route.md "Creating on
+// The New Project wizard itself (removed 2026-10-21, docs/specs/007-editor/new-project-route.md "Creating on
 // arrival"): its Escape / X back-out and the Start Blank link that skipped it. /new asks nothing now; a template link
 // carries on (UI·Used·TemplateLink).
-const NEW_DOCUMENT_WIZARD_UI = new Set(['Closed|NewDocument', 'Used|JustDraw']);
+const NEW_PROJECT_WIZARD_UI = new Set(['Closed|NewProject', 'Used|JustDraw']);
 // Pages mode (removed 2026-10-22, docs/specs/017-telemetry/telemetry.md "Retired features"): its pages, slide pages,
 // articles, logos, wireframes and infographics, their exports, tours and settings, and the agent tools that wrote
 // them. A form cover's moving background and Tab Windows carry on.
@@ -166,7 +166,7 @@ const PAGES_MODE_EVENTS = new Set([
   'Cli|Used|PageSet',
   'Cli|Used|ArticleGet',
   'Cli|Used|ArticleSet',
-  'Document|Exported|LogoKit',
+  'Project|Exported|LogoKit',
   'Editor|Changed|LeavePagesConfirmed',
   'Element|Changed|MirrorCopy',
   'Element|Changed|ShapesExcluded',
@@ -230,7 +230,7 @@ const PAGES_MODE_EVENTS = new Set([
 // exports (`PagesPNG`, `PagesPDFPages`, ...), the page kinds and wireframe frames, the article's inserts, formatting
 // and looks, the logo guides and mirror, and where Contents docked.
 const PAGES_MODE_FAMILIES =
-  /^(UI\|(Started|Ended)\|(Pages|Slide|Infographic|Article|Logo)Tour\w*|UI\|View\|PagesTourStep\w+|UI\|Toggled\|(Pages|Slides|Infographic|Article|Logo)TourSeen(On|Off)|Document\|Exported\|Pages(PNG|SVG|PDF|GIF)\w*|Tab\|Changed\|(PageKind|WireframeDevice|WireframeFrame|ArticleLook)\w+|Element\|(Added|Changed)\|Article[A-Z]\w*|UI\|(Toggled|Changed)\|Logo(Guide|Mirror)\w*|UI\|Changed\|Contents(Placement|Side)\w+)$/;
+  /^(UI\|(Started|Ended)\|(Pages|Slide|Infographic|Article|Logo)Tour\w*|UI\|View\|PagesTourStep\w+|UI\|Toggled\|(Pages|Slides|Infographic|Article|Logo)TourSeen(On|Off)|Project\|Exported\|Pages(PNG|SVG|PDF|GIF)\w*|Tab\|Changed\|(PageKind|WireframeDevice|WireframeFrame|ArticleLook)\w+|Element\|(Added|Changed)\|Article[A-Z]\w*|UI\|(Toggled|Changed)\|Logo(Guide|Mirror)\w*|UI\|Changed\|Contents(Placement|Side)\w+)$/;
 const isPagesModeEvent = (key: string) =>
   PAGES_MODE_EVENTS.has(key) || PAGES_MODE_FAMILIES.test(key);
 
@@ -308,7 +308,7 @@ function isRetiredEditorModeEvent(category: string, action: string, type: string
 
 // The Explorer's Timeline section (removed 2026-10-22, docs/specs/013-workspace/timeline.md): its
 // page arrivals, its card and stack menus and their Remove from Timeline, its sidebar rows and its
-// page view. A document's History and a team's Activity draw the same feed and keep the rest of the
+// page view. A project's History and a team's Activity draw the same feed and keep the rest of the
 // Timeline category (Changed, Selected, Loaded, Opened·Stack).
 const EXPLORER_TIMELINE = new Set([
   'Timeline|Opened|Landing',
@@ -322,13 +322,82 @@ const EXPLORER_TIMELINE = new Set([
 ]);
 
 // The agents' icon search (removed 2026-10-22, docs/specs/015-api/mcp-server.md): the MCP's search_icons and the CLI's
-// `icon search`, which found ids for diagram boxes. The palette's own icon search carries on (UI·Searched·IconSearch).
+// `icon search`, which found ids for diagram boxes.
 const AGENT_ICON_SEARCH = new Set(['Mcp|Used|SearchIcons', 'Cli|Used|IconSearch']);
 
+// liveplanner's diagram elements used in place (removed 2026-10-22, plans/0001-liveplanner-fork.md Phase 4): playing a
+// video, a reaction pad, Bring into Focus. No Plan element sends `Element·Used`.
+const isElementUsedInPlace = (category: string, action: string) =>
+  category === 'Element' && action === 'Used';
+
+// The dashboard's Draw Mode stack and the chrome it counted (removed 2026-10-22, plans/0001-liveplanner-fork.md
+// Phase 4): a tab's Opens in mode, a board put onto a page that fits it, a tab opened from a Tab Window, the Toolbar
+// layout's category switch and the whiteboard dock's position. A form cover's moving background carries on.
+const DRAW_MODE_EVENTS = new Set([
+  'Tab|Changed|PageFitToContent',
+  'UI|Used|TabWindowOpen',
+  'UI|Changed|ToolbarCategory',
+]);
+const isRetiredDrawModeEvent = (category: string, action: string, type: string | null) =>
+  DRAW_MODE_EVENTS.has(`${category}|${action}|${type ?? ''}`) ||
+  (category === 'Tab' && action === 'Changed' && (type ?? '').startsWith('OpensIn')) ||
+  (category === 'UI' && action === 'Changed' && (type ?? '').startsWith('WhiteboardDockPosition'));
+
+// The diagram lint (removed 2026-10-22, plans/0001-liveplanner-fork.md Phase 4): the agents' `view=lint` and the CLI's
+// `tab lint`.
+const DIAGRAM_LINT_EVENTS = new Set(['Agent|Viewed|Lint', 'Cli|Used|TabLint']);
+
+// liveplanner's diagram tours and palette (removed 2026-10-22, plans/0001-liveplanner-fork.md Phase 4): the element
+// tours offered beside a selected diagram element, the Tab Style dialog's Show Me, their Settings switches, and the
+// strip palette's Icons, Stickers and Technology searches and groups. Each tour's events carry its token as the type
+// or its prefix (`SankeyTourOffer`, `PyramidTourStepAddRow`, `ElementToursSeenOn`).
+const RETIRED_TOUR_TOKENS = [
+  'SankeyTour',
+  'LayerStackTour',
+  'PyramidTour',
+  'FunnelTour',
+  'CycleTour',
+  'HubTour',
+  'OnionTour',
+  'ChevronsTour',
+  'TimelineTour',
+  'MindMapTour',
+  'FlowchartTour',
+  'OrgChartTour',
+  'SequenceTour',
+  'ChartTour',
+  'StackTour',
+  'EntityTour',
+  'TabWindowTour',
+  'LaneTour',
+  'BoundaryTour',
+  'DiagramKeyTour',
+  'PortalTour',
+  'TabStyleTour',
+  'ElementTours',
+];
+const DIAGRAM_PALETTE_UI = new Set([
+  'Searched|IconSearch',
+  'Searched|TechSearch',
+  'Searched|StickerSearch',
+  'Opened|IconGroup',
+  'Opened|TechGroup',
+  'Opened|StickerGroup',
+]);
+function isRetiredDiagramTourEvent(category: string, action: string, type: string | null): boolean {
+  if (category !== 'UI' || !type) return false;
+  if (DIAGRAM_PALETTE_UI.has(`${action}|${type}`)) return true;
+  return RETIRED_TOUR_TOKENS.some((token) => type.startsWith(token));
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (isRetiredDiagramTourEvent(category, action, type)) return true;
   if (AGENT_ICON_SEARCH.has(`${category}|${action}|${type ?? ''}`)) return true;
+  if (isElementUsedInPlace(category, action)) return true;
+  if (isRetiredDrawModeEvent(category, action, type)) return true;
+  if (DIAGRAM_LINT_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
-  if (category === 'Document' && action === 'Reverted') return true;
+  if (category === 'Project' && action === 'Reverted') return true;
   if (EXPLORER_TIMELINE.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isPagesModeEvent(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredEditorModeEvent(category, action, type)) return true;
@@ -336,7 +405,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))
     return true;
-  if (category === 'UI' && NEW_DOCUMENT_WIZARD_UI.has(`${action}|${type ?? ''}`)) return true;
+  if (category === 'UI' && NEW_PROJECT_WIZARD_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'Help') {
     return (
       ACTIVITY_PANEL_HELP_IDS.has(type ?? '') ||

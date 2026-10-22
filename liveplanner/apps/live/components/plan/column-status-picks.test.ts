@@ -38,7 +38,7 @@ describe('the column picker', () => {
     });
   });
 
-  it('offers the statuses the board lacks, one per name, in the document’s order', () => {
+  it('offers the statuses the board lacks, one per name, in the project’s order', () => {
     const picks = missingStatuses(board([{ status: 'doing', name: 'Doing' }]), doc);
     expect(picks).toEqual([
       { status: 'todo', name: 'To do' },

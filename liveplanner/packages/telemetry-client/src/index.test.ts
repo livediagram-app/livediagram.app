@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // rather than paying the cold transform inside the first test.
 import './index';
 
-// The engine only touches window / document / navigator / fetch inside
+// The engine only touches window / project / navigator / fetch inside
 // its functions (all typeof-guarded), so plain node + stubbed globals
 // cover it without a DOM environment. Event targets are hand-rolled so
 // the tests can fire visibilitychange / pagehide / error deliberately.
@@ -26,7 +26,7 @@ function makeTarget() {
 type Emitter = typeof import('./index');
 
 let windowTarget: ReturnType<typeof makeTarget>;
-let documentTarget: ReturnType<typeof makeTarget> & { visibilityState: string };
+let projectTarget: ReturnType<typeof makeTarget> & { visibilityState: string };
 let fetchMock: ReturnType<typeof vi.fn>;
 let sendBeacon: ReturnType<typeof vi.fn>;
 let mod: Emitter;
@@ -34,11 +34,11 @@ let mod: Emitter;
 beforeEach(async () => {
   vi.useFakeTimers();
   windowTarget = makeTarget();
-  documentTarget = Object.assign(makeTarget(), { visibilityState: 'visible' });
+  projectTarget = Object.assign(makeTarget(), { visibilityState: 'visible' });
   fetchMock = vi.fn(() => Promise.resolve());
   sendBeacon = vi.fn(() => true);
   vi.stubGlobal('window', windowTarget);
-  vi.stubGlobal('document', documentTarget);
+  vi.stubGlobal('document', projectTarget);
   vi.stubGlobal('navigator', { sendBeacon });
   vi.stubGlobal('fetch', fetchMock);
   // Fresh module per test: installClientErrorTracking is one-shot via a
@@ -118,8 +118,8 @@ describe('createTelemetryEmitter', () => {
   it('flushes pending events through sendBeacon when the page hides', () => {
     const emitter = makeEmitter();
     emitter.track('UI', 'Opened');
-    documentTarget.visibilityState = 'hidden';
-    documentTarget.fire('visibilitychange');
+    projectTarget.visibilityState = 'hidden';
+    projectTarget.fire('visibilitychange');
     expect(sendBeacon).toHaveBeenCalledTimes(1);
     expect(sendBeacon.mock.calls[0]![0]).toBe('https://t.test/api/telemetry/events');
     expect((sendBeacon.mock.calls[0]![1] as Blob).type).toBe('text/plain');
@@ -131,8 +131,8 @@ describe('createTelemetryEmitter', () => {
   it('sends events tracked while the page is hidden by beacon, a burst as one', async () => {
     const emitter = makeEmitter();
     emitter.track('UI', 'Opened');
-    documentTarget.visibilityState = 'hidden';
-    documentTarget.fire('visibilitychange');
+    projectTarget.visibilityState = 'hidden';
+    projectTarget.fire('visibilitychange');
     expect(sendBeacon).toHaveBeenCalledTimes(1);
     // The Web Vitals that finalise on hide land after the page-hide flush ran.
     emitter.track('Timing', 'Measured', 'Cls.Live.Under0p1');
@@ -145,7 +145,7 @@ describe('createTelemetryEmitter', () => {
 
   it('flushes on pagehide too (the beacon iteration-9 conversions rely on)', () => {
     const emitter = makeEmitter();
-    emitter.track('Document', 'Moved', 'SavedToCloud');
+    emitter.track('Project', 'Moved', 'SavedToCloud');
     windowTarget.fire('pagehide');
     expect(sendBeacon).toHaveBeenCalledTimes(1);
   });
@@ -306,13 +306,13 @@ describe('installClientErrorTracking', () => {
 
   it('names the kind, the page, and the error constructor', () => {
     const track = vi.fn();
-    at('/document/0b7c5f9e-1111-4222-8333-944445555666');
+    at('/project/0b7c5f9e-1111-4222-8333-944445555666');
     mod.installClientErrorTracking(track);
     windowTarget.fire('error', { error: new TypeError('x is undefined') });
     windowTarget.fire('unhandledrejection', { reason: new RangeError('bad') });
     expect(track.mock.calls).toEqual([
-      ['Error', 'Client', 'Uncaught.Document.TypeError'],
-      ['Error', 'Client', 'UnhandledRejection.Document.RangeError'],
+      ['Error', 'Client', 'Uncaught.Project.TypeError'],
+      ['Error', 'Client', 'UnhandledRejection.Project.RangeError'],
     ]);
   });
 
@@ -320,7 +320,7 @@ describe('installClientErrorTracking', () => {
     const track = vi.fn();
     at('/explorer/team/abc123def456ghi789');
     mod.installClientErrorTracking(track);
-    const odd = new Error('secret document name');
+    const odd = new Error('secret project name');
     odd.name = 'MyCustomError';
     windowTarget.fire('error', { error: odd });
     windowTarget.fire('unhandledrejection', { reason: 'a string' });
@@ -339,7 +339,7 @@ describe('installClientErrorTracking', () => {
     // The snippet's throw: an inline script (filename is the page) and a cross-realm error.
     windowTarget.fire('error', {
       message:
-        "Uncaught TypeError: Failed to set the 'innerHTML' property on 'Element': This document requires 'TrustedHTML' assignment.",
+        "Uncaught TypeError: Failed to set the 'innerHTML' property on 'Element': This project requires 'TrustedHTML' assignment.",
       filename: 'https://liveplanner.app/help/canvas/',
       error: { name: 'TypeError' },
     });
@@ -387,7 +387,7 @@ describe('installClientErrorTracking', () => {
 
   it('caps each distinct type per page load so an error storm cannot flood', () => {
     const track = vi.fn();
-    at('/document');
+    at('/project');
     mod.installClientErrorTracking(track);
     for (let i = 0; i < 25; i++) windowTarget.fire('error', { error: new TypeError('x') });
     expect(track).toHaveBeenCalledTimes(10);

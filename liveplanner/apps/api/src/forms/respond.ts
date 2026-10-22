@@ -12,7 +12,7 @@ import {
   type FormDefinition,
 } from '@liveplanner/forms';
 import { itemTitle, readItemCreate, typesOf, type ItemPerson } from '@liveplanner/items';
-import { claimResponseNumber, getDocument, getFormLink, type FormLinkRow } from '../db';
+import { claimResponseNumber, getProject, getFormLink, type FormLinkRow } from '../db';
 import { notifyFormResponse } from '../email/notifications';
 import { json } from '../responses';
 import { createMany } from '../routes/item-routes';
@@ -40,14 +40,14 @@ function formPerson(code: string, form: Pick<FormDefinition, 'heading'>): ItemPe
   };
 }
 
-// The live link a public request names, with its document and form; null for anything that is not there now (an
-// unknown, suspended or deleted code, a trashed document, a tab gone or no longer a Form tab), all answered alike.
+// The live link a public request names, with its project and form; null for anything that is not there now (an
+// unknown, suspended or deleted code, a trashed project, a tab gone or no longer a Form tab), all answered alike.
 export async function openFormLink(ctx: RouteContext, code: string) {
   const link = await getFormLink(ctx.env, code);
   if (!link || link.suspended_at !== null || link.deleted_at !== null) return null;
-  const doc = await getDocument(ctx.env, link.document_id);
+  const doc = await getProject(ctx.env, link.project_id);
   if (!doc) return null;
-  const formTab = await readFormTab(ctx.env, link.document_id, link.tab_id);
+  const formTab = await readFormTab(ctx.env, link.project_id, link.tab_id);
   if (!formTab) return null;
   return { link, doc, ...formTab };
 }
@@ -93,7 +93,7 @@ export async function previewToSheet(
   });
   if (!checked.ok) return refuse({ error: 'invalid_answers', errors: checked.errors }, 400);
   const wrote = await writeResponseRow(ctx, {
-    documentId: doc.id,
+    projectId: doc.id,
     sheet: form.sheet!,
     form,
     answers: checked.answers,
@@ -126,7 +126,7 @@ export async function respond(
   const { link, doc, form, tab } = opened;
   // The hidden field: a person never fills it, so a bot learns nothing from the answer it gets.
   if (!preview && typeof body.website === 'string' && body.website.trim() !== '') {
-    console.info('[forms] form.response.dropped', { documentId: doc.id });
+    console.info('[forms] form.response.dropped', { projectId: doc.id });
     ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', 'Dropped'));
     const accepted: FormResponseAccepted = { number: 0 };
     return json(accepted, { status: 201 });
@@ -151,7 +151,7 @@ export async function respond(
   if (form.sheet) {
     if (!(await sheetThere(ctx, doc.id, form.sheet))) {
       console.warn('[forms] form.destination.broken', {
-        documentId: doc.id,
+        projectId: doc.id,
         problem: 'sheet_missing',
       });
       return refuse({ error: 'form_closed' }, 409);
@@ -159,7 +159,7 @@ export async function respond(
     const number = await claimNumber(ctx, code, form, now, preview);
     if (number instanceof Response) return number;
     const wrote = await writeResponseRow(ctx, {
-      documentId: doc.id,
+      projectId: doc.id,
       sheet: form.sheet,
       form,
       answers: checked.answers,
@@ -182,7 +182,7 @@ export async function respond(
   const problem = destinationProblem(form.destination, boards, types);
   const type = destinationType(form.destination, types);
   if (problem || !type) {
-    console.warn('[forms] form.destination.broken', { documentId: doc.id, problem });
+    console.warn('[forms] form.destination.broken', { projectId: doc.id, problem });
     return refuse({ error: 'form_closed' }, 409);
   }
 
@@ -198,7 +198,7 @@ export async function respond(
   };
   const first = cardFor(1);
   if (typeof first === 'string') {
-    console.error('[forms] form.response.unmade', { documentId: doc.id, rejection: first });
+    console.error('[forms] form.response.unmade', { projectId: doc.id, rejection: first });
     return refuse({ error: 'invalid_answers', errors: {} }, 400);
   }
 
@@ -208,7 +208,7 @@ export async function respond(
   // Only the title's number differs from the first, so the check holds.
   const made = await createMany(
     ctx,
-    { documentId: doc.id, owner: formPerson(code, form).id },
+    { projectId: doc.id, owner: formPerson(code, form).id },
     [typeof create === 'string' ? first : create],
     { by: formPerson(code, form) },
   );
@@ -264,7 +264,7 @@ function accepted(
 ): Response {
   const { doc, form, code, number, preview } = r;
   const { env } = ctx;
-  console.info('[forms] form.response.accepted', { documentId: doc.id, number, preview });
+  console.info('[forms] form.response.accepted', { projectId: doc.id, number, preview });
   ctx.waitUntil?.(reportServerEvent(env, 'Form', 'Sent', preview ? 'Preview' : 'Response'));
   if (!preview)
     ctx.waitUntil?.(

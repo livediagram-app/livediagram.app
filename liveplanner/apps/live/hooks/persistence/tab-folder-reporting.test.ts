@@ -1,4 +1,4 @@
-// Tab-folder membership reporting (docs/specs/006-document/tab-folders.md + docs/specs/017-telemetry/telemetry.md).
+// Tab-folder membership reporting (docs/specs/006-project/tab-folders.md + docs/specs/017-telemetry/telemetry.md).
 //
 // These assertions are about the exact (category, action, type) triple, which
 // is not a stylistic detail: a dashboard metric card selects rows by an exact
@@ -50,7 +50,7 @@ describe('trackTabFolderTransition', () => {
 // useTabFolders holds no React state of its own (it returns closures over the
 // deps object), so the folder-lifecycle events can be driven directly without a
 // renderer. Only the telemetry triples are asserted here — the membership
-// mutation itself belongs to normalizeFolderOrder, tested in the document package.
+// mutation itself belongs to normalizeFolderOrder, tested in the project package.
 describe('useTabFolders folder lifecycle', () => {
   const tabs = [
     { id: 't1', name: 'One', elements: [] },

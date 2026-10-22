@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { DOCUMENT_CONVERSION_HEADER, DOCUMENT_OPEN_HEADER } from '@liveplanner/api-schema';
+import { PROJECT_CONVERSION_HEADER, PROJECT_OPEN_HEADER } from '@liveplanner/api-schema';
 import {
-  aiError,
   badRequest,
   CORS_HEADERS,
   forbidden,
@@ -38,7 +37,7 @@ describe('json', () => {
 
   it('is never reused by a browser without asking, unless the route chooses a policy', () => {
     expect(json({}).headers.get('Cache-Control')).toBe('no-cache');
-    expect(json({ error: 'document_trashed' }, { status: 410 }).headers.get('Cache-Control')).toBe(
+    expect(json({ error: 'project_trashed' }, { status: 410 }).headers.get('Cache-Control')).toBe(
       'no-cache',
     );
     const chosen = json({}, { headers: { 'Cache-Control': 'public, max-age=300' } });
@@ -134,14 +133,6 @@ describe('payloadTooLarge', () => {
   });
 });
 
-describe('aiError', () => {
-  it('returns a 502 with the canonical { error: "ai_error" } envelope', async () => {
-    const res = aiError();
-    expect(res.status).toBe(502);
-    expect(await readJson(res)).toEqual({ error: 'ai_error' });
-  });
-});
-
 describe('signInRequired', () => {
   it('returns a 401 with the canonical { error: "sign_in_required" } envelope', async () => {
     const res = signInRequired();
@@ -182,15 +173,15 @@ describe('CORS_HEADERS', () => {
     expect(allowHeaders).toContain('Content-Type');
   });
 
-  it('allows the conversion header Take Offline and Sync Document send', () => {
+  it('allows the conversion header Take Offline and Sync Project send', () => {
     // Missing, a cross-origin editor (dev on its own port, or a deployment
     // with the api elsewhere) had both conversions fail at the preflight.
-    expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DOCUMENT_CONVERSION_HEADER);
+    expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(PROJECT_CONVERSION_HEADER);
   });
 
   it('allows the open marker the editor sends on its first tab read', () => {
-    // Missing, a cross-origin editor would fail the preflight of every document it opens.
-    expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(DOCUMENT_OPEN_HEADER);
+    // Missing, a cross-origin editor would fail the preflight of every project it opens.
+    expect(CORS_HEADERS['Access-Control-Allow-Headers']).toContain(PROJECT_OPEN_HEADER);
   });
 
   it('allows the five HTTP methods the live editor uses', () => {
@@ -203,7 +194,7 @@ describe('CORS_HEADERS', () => {
   });
 });
 
-// A same-origin SVG opened directly is a document; it must not run script.
+// A same-origin SVG opened directly is a project; it must not run script.
 describe('svgImage', () => {
   it('sandboxes the SVG and forbids sniffing', () => {
     const res = svgImage('<svg/>', 'no-store');

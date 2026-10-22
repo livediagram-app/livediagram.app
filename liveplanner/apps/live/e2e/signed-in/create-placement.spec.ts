@@ -3,11 +3,11 @@ import { expect, test } from '../fixtures';
 import { freshUserId, installSession, type StubUser } from './session';
 
 // Placement rides the create (docs/specs/013-workspace/folders.md "Placement on create",
-// docs/specs/007-editor/new-document-route.md): a signed-in member's /new into a team folder files
-// the document there in the one create, with no follow-up placement request, and a refused
-// placement shows its own card instead of a document filed somewhere else.
+// docs/specs/007-editor/new-project-route.md): a signed-in member's /new into a team folder files
+// the project there in the one create, with no follow-up placement request, and a refused
+// placement shows its own card instead of a project filed somewhere else.
 
-const NEW_EDITOR = /\/document\/[0-9a-f-]{36}$/;
+const NEW_EDITOR = /\/project\/[0-9a-f-]{36}$/;
 
 function stubUser(id: string): StubUser {
   return {
@@ -28,11 +28,11 @@ async function signedIn(page: Page, baseURL: string, userId: string) {
   return { Authorization: `Bearer ${token}`, Origin: new URL(baseURL).origin };
 }
 
-// Every request the page makes to a document's placement route.
+// Every request the page makes to a project's placement route.
 function placementRequests(page: Page): string[] {
   const seen: string[] = [];
   page.on('request', (req) => {
-    if (/\/api\/documents\/[^/]+\/folder$/.test(new URL(req.url()).pathname)) seen.push(req.url());
+    if (/\/api\/projects\/[^/]+\/folder$/.test(new URL(req.url()).pathname)) seen.push(req.url());
   });
   return seen;
 }
@@ -57,16 +57,16 @@ test('a create into a team folder lands there in one write', async ({ page, base
 
   await page.goto(`/new?blank=1&team=${teamId}&folder=${folderId}`);
   await expect(page).toHaveURL(NEW_EDITOR, { timeout: 20_000 });
-  const documentId = page.url().split('/').pop()!;
+  const projectId = page.url().split('/').pop()!;
 
   const library = (await (
     await page.request.get(`/api/teams/${teamId}/library`, { headers })
-  ).json()) as { documents: { id: string; folderId: string | null; teamId: string | null }[] };
-  expect(library.documents.find((d) => d.id === documentId)).toMatchObject({ teamId, folderId });
-  const personal = (await (await page.request.get('/api/documents', { headers })).json()) as {
-    documents: { id: string }[];
+  ).json()) as { projects: { id: string; folderId: string | null; teamId: string | null }[] };
+  expect(library.projects.find((d) => d.id === projectId)).toMatchObject({ teamId, folderId });
+  const personal = (await (await page.request.get('/api/projects', { headers })).json()) as {
+    projects: { id: string }[];
   };
-  expect(personal.documents.map((d) => d.id)).not.toContain(documentId);
+  expect(personal.projects.map((d) => d.id)).not.toContain(projectId);
   expect(moves).toEqual([]);
 });
 
@@ -75,7 +75,7 @@ test('a refused placement says why and offers another place', async ({ page, bas
 
   await page.goto(`/new?blank=1&folder=${crypto.randomUUID()}`);
 
-  await expect(page.getByRole('heading', { name: 'Couldn’t file the document there' })).toBeVisible(
+  await expect(page.getByRole('heading', { name: 'Couldn’t file the project there' })).toBeVisible(
     {
       timeout: 20_000,
     },

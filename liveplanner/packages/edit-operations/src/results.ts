@@ -1,25 +1,14 @@
 // What a changeset did, one line per element (docs/specs/024-agents/blueprints/edit-operations.md
-// "Result lines", EO42): `+ ~ -` in the order operations first touched each element, then `»` lines for
-// what moved without being named, then each container whose members changed, then warnings. Elements
+// "Result lines", EO42): `+ ~ -` in the order operations first touched each element, then warnings. Elements
 // print by ref (a removed one by its ref in the input tab); coordinates are rounded and relative to the
 // content origin. An element touched that ends as it began prints nothing (E1), and so does one
 // created and removed again (E2).
 
 import type { EditWarning, FieldChange, JsonValue, ResultLine } from '@liveplanner/api-schema';
-import {
-  computeRefs,
-  deriveContainers,
-  type ArrowElement,
-  type Element,
-  type ElementId,
-  type ThemeDefinition,
-} from '@liveplanner/document';
-import type { Fit } from './labels';
-import { endRef, kindOf, labelOf } from './element-text';
+import { computeRefs, type Element, type ElementId } from '@liveplanner/project';
+import { kindOf, labelOf } from './element-text';
 import { sameValue as same } from './equality';
-import { ALIAS_FIELDS } from './fields';
-import { fillValue } from './colours';
-import type { LaidOut, MoveReason, Removal, Touch } from './state';
+import type { Touch } from './state';
 
 // How a result names elements and places points: by ref, relative to the content origin.
 type LineNaming = { refOf: (id: ElementId) => string; origin: { x: number; y: number } };
@@ -30,119 +19,40 @@ const pointIn = (naming: LineNaming, x: number, y: number): [number, number] => 
 ];
 const size = (w: number, h: number): [number, number] => [Math.round(w), Math.round(h)];
 
+// A box's place and size; an element without one (none a Plan tab holds) has neither.
+function boxOf(el: Element): { x: number; y: number; width: number; height: number } | null {
+  return el.type === 'arrow' ? null : el;
+}
+
 // The `+` line of a new element.
 export function addedLine(el: Element, naming: LineNaming): Extract<ResultLine, { mark: '+' }> {
   const label = labelOf(el);
-  const ref = naming.refOf(el.id);
-  const common = { mark: '+' as const, ref, kind: kindOf(el), ...(label ? { label } : {}) };
-  return el.type === 'arrow'
-    ? { ...common, ends: [endText(el, 'from', naming), endText(el, 'to', naming)] }
-    : { ...common, at: pointIn(naming, el.x, el.y), size: size(el.width, el.height) };
-}
-
-// The `-` line of a removed element, noting the element it was pinned to when it went with one.
-export function removedLine(el: Element, naming: LineNaming, removal: Removal = {}): ResultLine {
-  const label = labelOf(el);
+  const box = boxOf(el);
   return {
-    mark: '-',
+    mark: '+',
     ref: naming.refOf(el.id),
     kind: kindOf(el),
     ...(label ? { label } : {}),
-    ...(el.type === 'arrow'
-      ? { ends: [endText(el, 'from', naming), endText(el, 'to', naming)] as [string, string] }
-      : {}),
-    ...(removal.pinnedTo
-      ? { reason: 'pinned' as const, pinnedTo: naming.refOf(removal.pinnedTo) }
-      : removal.unwrapped
-        ? { reason: 'unwrapped' as const }
-        : {}),
+    ...(box ? { at: pointIn(naming, box.x, box.y), size: size(box.width, box.height) } : {}),
   };
 }
 
-// An arrow end on a + or - line: the element it is attached to, or `@x,y` when free.
-function endText(arrow: ArrowElement, end: 'from' | 'to', naming: LineNaming): string {
-  const ep = arrow[end];
-  if (ep.kind !== 'free') return endRef(ep, naming.refOf);
-  const [x, y] = pointIn(naming, ep.x, ep.y);
-  return `@${x},${y}`;
+// The `-` line of a removed element.
+export function removedLine(el: Element, naming: LineNaming): ResultLine {
+  const label = labelOf(el);
+  return { mark: '-', ref: naming.refOf(el.id), kind: kindOf(el), ...(label ? { label } : {}) };
 }
 
-// An arrow end as a change prints it: the element it is attached to, or the point of a free end.
-const endValue = (arrow: ArrowElement, end: 'from' | 'to', naming: LineNaming): JsonValue => {
-  const ep = arrow[end];
-  return ep.kind === 'free' ? pointIn(naming, ep.x, ep.y) : endRef(ep, naming.refOf);
-};
-
 // Keys a change line prints its own way, or not at all.
-const PLACED_KEYS: ReadonlySet<string> = new Set(['id', 'type', 'x', 'y', 'from', 'to']);
-
-const aliasesWriting = (key: string) =>
-  Object.entries(ALIAS_FIELDS)
-    .filter(([, stored]) => stored.includes(key))
-    .map(([alias]) => alias);
+const PLACED_KEYS: ReadonlySet<string> = new Set(['id', 'type', 'x', 'y']);
 
 // The place of a change in its line: fields in the order operations wrote them (a position where
 // its x or y was written), then the rest in the element's own key order.
 function rankOf(change: FieldChange, written: readonly string[]): number {
-  const keys = change.key === 'at' ? ['x', 'y'] : [change.key, ...aliasesWriting(change.key)];
+  const keys = change.key === 'at' ? ['x', 'y'] : [change.key];
   const ranks = keys.map((key) => written.indexOf(key)).filter((rank) => rank >= 0);
   return ranks.length ? Math.min(...ranks) : written.length;
 }
-
-// Changes under the aliases written, and fit to label as `widened` / `taller`.
-function aliasChanges(
-  changes: FieldChange[],
-  prev: Element,
-  cur: Element,
-  touched: { written: readonly string[]; fit?: Fit },
-  theme: ThemeDefinition,
-): FieldChange[] {
-  let out = changes;
-  for (const [alias, stored] of Object.entries(ALIAS_FIELDS)) {
-    if (!touched.written.includes(alias)) continue;
-    const index = out.findIndex((c) => stored.includes(c.key));
-    if (index < 0) continue;
-    const renamed: FieldChange =
-      alias === 'fill'
-        ? {
-            key: 'fill',
-            ...defined('from', fillValue(prev, theme)),
-            ...defined('to', fillValue(cur, theme)),
-          }
-        : { ...out[index]!, key: alias };
-    out = [
-      ...out.slice(0, index),
-      renamed,
-      ...out.slice(index + 1).filter((c) => !stored.includes(c.key)),
-    ];
-  }
-  const { fit } = touched;
-  if (!fit) return out;
-  const named = touched.written.some((key) => key === 'x' || key === 'y');
-  out = out.filter(
-    (c) =>
-      !(c.key === 'width' && fit.widened) &&
-      !(c.key === 'height' && fit.taller) &&
-      !(c.key === 'at' && !named),
-  );
-  // A container given back room reads as such: narrower or shorter, never "widened" to a smaller size.
-  if (fit.widened)
-    out.push({
-      key: fit.widened[1] < fit.widened[0] ? 'narrower' : 'widened',
-      from: fit.widened[0],
-      to: fit.widened[1],
-    });
-  if (fit.taller)
-    out.push({
-      key: fit.taller[1] < fit.taller[0] ? 'shorter' : 'taller',
-      from: fit.taller[0],
-      to: fit.taller[1],
-    });
-  return out;
-}
-
-const defined = (key: 'from' | 'to', value: JsonValue | undefined) =>
-  value === undefined ? {} : { [key]: value };
 
 function fieldChanges(
   prev: Element,
@@ -151,25 +61,21 @@ function fieldChanges(
   naming: LineNaming,
 ): FieldChange[] {
   const changes: FieldChange[] = [];
-  if (prev.type !== 'arrow' && cur.type !== 'arrow' && (prev.x !== cur.x || prev.y !== cur.y))
+  const [was, now] = [boxOf(prev), boxOf(cur)];
+  if (was && now && (was.x !== now.x || was.y !== now.y))
     changes.push({
       key: 'at',
-      from: pointIn(naming, prev.x, prev.y),
-      to: pointIn(naming, cur.x, cur.y),
+      from: pointIn(naming, was.x, was.y),
+      to: pointIn(naming, now.x, now.y),
     });
-  if (prev.type === 'arrow' && cur.type === 'arrow')
-    for (const end of ['from', 'to'] as const) {
-      const [from, to] = [endValue(prev, end, naming), endValue(cur, end, naming)];
-      if (!same(from, to)) changes.push({ key: end, from, to });
-    }
-  const was = prev as unknown as Record<string, JsonValue | undefined>;
-  const now = cur as unknown as Record<string, JsonValue | undefined>;
-  for (const key of new Set([...Object.keys(was), ...Object.keys(now)])) {
-    if (PLACED_KEYS.has(key) || same(was[key], now[key])) continue;
+  const before = prev as unknown as Record<string, JsonValue | undefined>;
+  const after = cur as unknown as Record<string, JsonValue | undefined>;
+  for (const key of new Set([...Object.keys(before), ...Object.keys(after)])) {
+    if (PLACED_KEYS.has(key) || same(before[key], after[key])) continue;
     changes.push({
       key,
-      ...(was[key] !== undefined ? { from: was[key] } : {}),
-      ...(now[key] !== undefined ? { to: now[key] } : {}),
+      ...(before[key] !== undefined ? { from: before[key] } : {}),
+      ...(after[key] !== undefined ? { to: after[key] } : {}),
     });
   }
   return changes
@@ -184,9 +90,7 @@ type ResultSource = {
   beforeElements: readonly Element[];
   // Ids in the order operations first touched them, with the fields they wrote.
   touched: ReadonlyMap<ElementId, Omit<Touch, 'operation'>>;
-  removed: ReadonlyMap<ElementId, Removal>;
   warnings: readonly EditWarning[];
-  theme: ThemeDefinition;
   origin: { x: number; y: number };
 };
 
@@ -202,101 +106,18 @@ export function lineNaming(
   return { refOf: (id) => (present.has(id) ? after.refOf(id) : before.refOf(id)), origin };
 }
 
-// One `»` line per distinct shift and reason, refs in element order.
-function movedLines(
-  source: ResultSource,
-  after: ReadonlyMap<ElementId, Element>,
-  next: readonly Element[],
-  naming: LineNaming,
-): ResultLine[] {
-  const groups = new Map<
-    string,
-    { delta?: [number, number]; reason: MoveReason; layout?: LaidOut; ids: Set<ElementId> }
-  >();
-  for (const [id, touched] of source.touched) {
-    const now = after.get(id);
-    if (!touched.moved || !now) continue;
-    const delta: [number, number] | undefined = touched.shift
-      ? [Math.round(touched.shift[0]), Math.round(touched.shift[1])]
-      : undefined;
-    // Moved and moved back, or laid out where it was.
-    if (delta ? delta[0] === 0 && delta[1] === 0 : same(source.before.get(id), now)) continue;
-    const { moved: reason, layout } = touched;
-    const key = JSON.stringify([delta, reason, layout]);
-    const group = groups.get(key) ?? {
-      ...(delta ? { delta } : {}),
-      reason,
-      ...(layout ? { layout } : {}),
-      ids: new Set<ElementId>(),
-    };
-    group.ids.add(id);
-    groups.set(key, group);
-  }
-  return [...groups.values()].map(({ ids, ...line }) => ({
-    mark: '»' as const,
-    refs: next.filter((el) => ids.has(el.id)).map((el) => naming.refOf(el.id)),
-    ...line,
-  }));
-}
-
-// Each container present after whose members changed: who joined and who left, removed elements
-// aside (their - line says it).
-function containerLines(
-  source: ResultSource,
-  next: readonly Element[],
-  naming: LineNaming,
-): ResultLine[] {
-  const was = deriveContainers(source.beforeElements);
-  const now = deriveContainers(next);
-  const joined = new Map<ElementId, ElementId[]>();
-  const left = new Map<ElementId, ElementId[]>();
-  const add = (map: Map<ElementId, ElementId[]>, container: ElementId, id: ElementId) =>
-    map.set(container, [...(map.get(container) ?? []), id]);
-  for (const el of next) {
-    if (el.type === 'arrow') continue;
-    const [before, after] = [was.get(el.id) ?? null, now.get(el.id) ?? null];
-    if (before === after) continue;
-    if (after) add(joined, after, el.id);
-    if (before && source.before.has(el.id)) add(left, before, el.id);
-  }
-  return next
-    .filter((el) => joined.has(el.id) || left.has(el.id))
-    .map((el) => ({
-      mark: 'container' as const,
-      ref: naming.refOf(el.id),
-      joined: (joined.get(el.id) ?? []).map(naming.refOf),
-      left: (left.get(el.id) ?? []).map(naming.refOf),
-    }));
-}
-
 export function buildResultLines(source: ResultSource, next: readonly Element[]): ResultLine[] {
   const after = new Map(next.map((el) => [el.id, el]));
   const naming = lineNaming(source.beforeElements, next, source.origin);
   const lines: ResultLine[] = [];
-  for (const [id, touched] of source.touched) {
-    const { written } = touched;
+  for (const [id, { written }] of source.touched) {
     const [prev, cur] = [source.before.get(id), after.get(id)];
-    if (cur && !prev) {
-      const line = addedLine(cur, naming);
-      lines.push(touched.styleOf ? { ...line, styleOf: naming.refOf(touched.styleOf) } : line);
-    } else if (prev && !cur) lines.push(removedLine(prev, naming, source.removed.get(id)));
-    else if (prev && cur && !touched.moved) {
-      const changes = aliasChanges(
-        fieldChanges(prev, cur, written, naming),
-        prev,
-        cur,
-        touched,
-        source.theme,
-      );
-      const ordered = touched.ordered ? [{ key: 'order', to: touched.ordered }] : [];
-      if (changes.length + ordered.length)
-        lines.push({ mark: '~', ref: naming.refOf(id), changes: [...changes, ...ordered] });
+    if (cur && !prev) lines.push(addedLine(cur, naming));
+    else if (prev && !cur) lines.push(removedLine(prev, naming));
+    else if (prev && cur) {
+      const changes = fieldChanges(prev, cur, written, naming);
+      if (changes.length) lines.push({ mark: '~', ref: naming.refOf(id), changes });
     }
   }
-  return [
-    ...lines,
-    ...movedLines(source, after, next, naming),
-    ...containerLines(source, next, naming),
-    ...source.warnings.map((warning) => ({ mark: '!' as const, warning })),
-  ];
+  return [...lines, ...source.warnings.map((warning) => ({ mark: '!' as const, warning }))];
 }

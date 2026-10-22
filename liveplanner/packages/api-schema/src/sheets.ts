@@ -27,7 +27,7 @@ export type SheetsResponse = { sheets: SheetDto[] };
 export type SheetResponse = { sheet: SheetDto };
 
 // A new sheet: a blank one (layout made by the client), one filled (a CSV, a paste, a restore), or a copy of
-// another of the document's sheets (`copyOf`, its cells copied on the server).
+// another of the project's sheets (`copyOf`, its cells copied on the server).
 export type SheetCreateRequest = {
   id?: string;
   tabId: string;

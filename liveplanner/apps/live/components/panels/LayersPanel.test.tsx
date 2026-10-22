@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
-import type { Layer } from '@liveplanner/document';
+import type { Layer } from '@liveplanner/project';
 
 import { stubResizeObserver } from '@/components/sheets/sheet-ui-test-utils';
 import { LayersPanel, SINGLE_LAYER_HINT } from './LayersPanel';
 
 beforeAll(stubResizeObserver);
 
-// docs/specs/006-document/layers.md "The Layers panel": header bar, single-layer hint, footer.
+// docs/specs/006-project/layers.md "The Layers panel": header bar, single-layer hint, footer.
 
 function renderPanel(
   layers: Layer[],

@@ -1,4 +1,4 @@
-// The column picker's rules (docs/specs/026-plan/plan-board.md "The column picker"): which of the document's
+// The column picker's rules (docs/specs/026-plan/plan-board.md "The column picker"): which of the project's
 // statuses a board can still take as columns, whether a typed name is one of them, and the columns they make. A
 // column made for an existing status keeps that status, so the cards already in it show on this board too.
 import {
@@ -72,7 +72,7 @@ export function addStatusColumns(
 
 // What renaming a column to `name` does (docs/specs/026-plan/plan-board.md "The board set-up": one name, one
 // status). A name no other status has renames it. A name another status already has (`statusNames`, the
-// document's): when this board already has a column for that status, a clash (the name stays); when the column's
+// project's): when this board already has a column for that status, a clash (the name stays); when the column's
 // own status holds no cards (`hasCards` false), the column switches to that status, its cards showing here; when it
 // holds cards, a clash too, as switching would leave them on no column.
 type ColumnRename =

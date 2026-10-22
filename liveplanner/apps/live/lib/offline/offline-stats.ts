@@ -1,20 +1,20 @@
-import type { DocumentStats } from '@liveplanner/api-schema';
-import { tabStatsOf, type Tab } from '@liveplanner/document';
+import type { ProjectStats } from '@liveplanner/api-schema';
+import { tabStatsOf, type Tab } from '@liveplanner/project';
 
-// What the Explorer's Details view shows for a document saved only in this browser
+// What the Explorer's Details view shows for a project saved only in this browser
 // (docs/specs/013-workspace/explorer-details-view.md): its tabs counted with the api's own rule,
 // bytes as the JSON the api would store. This Browser keeps no per-tab write time, so the mode is
-// the first tab's. Null for a document with no tab.
+// the first tab's. Null for a project with no tab.
 
 // Counting serialises every tab, so a record is counted once per save: keyed by id and savedAt.
 const CACHE_MAX = 500;
-const cache = new Map<string, DocumentStats | null>();
+const cache = new Map<string, ProjectStats | null>();
 
-export function offlineDocumentStats(rec: {
+export function offlineProjectStats(rec: {
   id: string;
   savedAt: number;
   tabs: Tab[];
-}): DocumentStats | null {
+}): ProjectStats | null {
   const key = `${rec.id}:${rec.savedAt}`;
   if (cache.has(key)) return cache.get(key)!;
   const stats = count(rec.tabs);
@@ -23,7 +23,7 @@ export function offlineDocumentStats(rec: {
   return stats;
 }
 
-function count(tabs: Tab[]): DocumentStats | null {
+function count(tabs: Tab[]): ProjectStats | null {
   if (tabs.length === 0) return null;
   let elements = 0;
   let comments = 0;

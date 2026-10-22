@@ -27,7 +27,7 @@ function host(script: Script = {}) {
       return Response.json({
         apiBase: `${HOST}/api`,
         authEnabled: true,
-        documentFormat: 2,
+        projectFormat: 2,
         ...(script.noIssuer ? {} : { oauthIssuer: ISSUER }),
       });
     if (url.href === `${ISSUER}/.well-known/oauth-authorization-server`)

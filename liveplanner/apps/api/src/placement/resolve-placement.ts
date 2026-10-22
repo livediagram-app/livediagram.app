@@ -1,5 +1,5 @@
 // Placement on create (docs/specs/013-workspace/folders.md "Placement on create", blueprint
-// docs/specs/013-workspace/blueprints/document-placement.md): decides where a new document is
+// docs/specs/013-workspace/blueprints/project-placement.md): decides where a new project is
 // filed before anything is written. The judgements are pure; the reads they need arrive through
 // `PlacementLookups`, so the whole decision is testable without a database.
 
@@ -80,7 +80,7 @@ const explicitFolder: FolderStep = async ({ requested, caller, lookups }) => {
 /** Folder steps in order, first answer wins; the space's root answers when none does. */
 const FOLDER_STEPS: readonly FolderStep[] = [explicitFolder, defaultFolder];
 
-/** Nothing was chosen and no default answered: the root of My Documents. */
+/** Nothing was chosen and no default answered: the root of My Projects. */
 function personalRoot(skipped: DefaultSkip[]): PlacementOutcome {
   return { ok: true, placement: { teamId: null, folderId: null }, via: 'root', skipped };
 }

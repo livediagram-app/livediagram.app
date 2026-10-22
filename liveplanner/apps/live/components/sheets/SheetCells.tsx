@@ -5,7 +5,7 @@
 // over empty neighbours to its right; numbers too wide for their column show fewer decimals, then scientific,
 // then ####. Memoised on what it draws, so moving the selection redraws none of it.
 import { memo, type CSSProperties } from 'react';
-import { cellColours, isLightColor, resolveFontStack } from '@liveplanner/document';
+import { cellColours, isLightColor, resolveFontStack } from '@liveplanner/project';
 import {
   cellKey,
   displayValue,

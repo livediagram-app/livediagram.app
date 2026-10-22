@@ -1,5 +1,5 @@
 import type { AgentPresence } from './agent-presence';
-import type { ElementDelta, RoomElementOp, Tab } from '@liveplanner/document';
+import type { ElementDelta, RoomElementOp, Tab } from '@liveplanner/project';
 import type { ParticipantPresence } from './index';
 import type { DragPreviewPatch } from './drag-preview';
 import type { ChangesetRoomOp } from './changesets';
@@ -10,7 +10,7 @@ import type { SheetsRoomOp } from './sheets';
 // Realtime room messages
 // ---------------------------------------------------------------------
 
-// Room op kinds that are ephemeral signals: they mutate no document state,
+// Room op kinds that are ephemeral signals: they mutate no project state,
 // so they relay unordered (no seq) and from any role.
 //
 // This classification used to live inside the room worker while the editor kept
@@ -39,7 +39,7 @@ export const PRESENCE_OP_KINDS = [
   'sheet-presence',
 ] as const;
 
-// Room op kinds that DO change the document: they get a monotonic `seq` within
+// Room op kinds that DO change the project: they get a monotonic `seq` within
 // the room's epoch, land in the bounded catch-up log so a reconnecting peer can
 // replay them (docs/specs/012-collaboration/realtime-conflict-resolution.md), and are refused from a view-role sender.
 export const MUTATION_OP_KINDS = [
@@ -53,7 +53,7 @@ export const MUTATION_OP_KINDS = [
   // One answer, idea, checklist tick or comment change on one element
   // (docs/specs/012-collaboration/collab-race-hardening.md). A mutation for the same reasons as a dot.
   'el-delta',
-  'document-meta',
+  'project-meta',
 ] as const;
 
 // Op kinds only the WORKER may originate, stamped `from: 'system'` and pushed
@@ -65,7 +65,7 @@ export const MUTATION_OP_KINDS = [
 // `share-rescoped` (docs/specs/013-workspace/tab-scoped-share-links.md) for the same reason as
 // `share-revoked`: a forged one would reload every holder of a code.
 //
-// `document-trashed` (docs/specs/013-workspace/trash.md): the document went to the
+// `project-trashed` (docs/specs/013-workspace/trash.md): the project went to the
 // Trash, so every session ends with the deleted state. A forged one would end
 // everyone's session.
 //
@@ -78,7 +78,7 @@ export const MUTATION_OP_KINDS = [
 export const SYSTEM_OP_KINDS = [
   'share-revoked',
   'share-rescoped',
-  'document-trashed',
+  'project-trashed',
   'changeset',
   'items',
   'item-types',
@@ -131,7 +131,7 @@ export function isSystemOpKind(kind: unknown): kind is (typeof SYSTEM_OP_KINDS)[
 
 // Outgoing WebSocket frames the room sends to clients.
 // `presence` is the full participant list refreshed on join / leave;
-// `op` is an arbitrary document change rebroadcast from another client.
+// `op` is an arbitrary project change rebroadcast from another client.
 // `op` is intentionally `unknown` so the room itself stays agnostic
 // of the client's op union — clients narrow it via their own
 // `RoomOp` type and ignore frames they don't recognise.
@@ -174,7 +174,7 @@ export function isRoomOpRef(ref: unknown): ref is number {
   return typeof ref === 'number' && Number.isSafeInteger(ref) && ref > 0;
 }
 
-// The server's document format number (docs/specs/016-platform/new-version-prompt.md), sent to
+// The server's project format number (docs/specs/016-platform/new-version-prompt.md), sent to
 // each socket on `hello`: a deploy restarts the room, so every open editor hears it on reconnect.
 // `build`: the live build id when the deploy set one (docs/specs/016-platform/stale-builds.md).
 export type FormatMessage = { kind: 'format'; format: number; build?: string };
@@ -220,7 +220,7 @@ export type RoomOp =
   // A single element on a tab changed (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0): add / update /
   // remove / reorder, applied by id so a peer editing a DIFFERENT element
   // on the same tab merges instead of overwriting the whole tab. `op`
-  // carries the element payload (see @liveplanner/document ElementOp).
+  // carries the element payload (see @liveplanner/project ElementOp).
   | { kind: 'el'; tabId: string; op: RoomElementOp }
   // A tab's non-element metadata changed (name, background, font, …) —
   // the element array is untouched, so this rides alongside `el` ops
@@ -269,21 +269,21 @@ export type RoomOp =
       delta: 1 | -1;
       round?: string;
     }
-  // Document-level metadata changed: rename, tab reorder, tab add /
+  // Project-level metadata changed: rename, tab reorder, tab add /
   // delete. Carries the new ordered list of tab summaries (id + name
   // + order) so receivers can update the TabBar without fetching the
   // full tab payloads.
   | {
-      kind: 'document-meta';
+      kind: 'project-meta';
       name: string;
-      // `folder` (docs/specs/006-document/tab-folders.md) is the per-document folder name, optional so
+      // `folder` (docs/specs/006-project/tab-folders.md) is the per-project folder name, optional so
       // an older peer that omits it is treated as loose — no parse break.
       // `outOfScope` marks a tab outside a tab-scoped session's scope
       // (docs/specs/013-workspace/tab-scoped-share-links.md): its name is blanked by the room.
       tabs: { id: string; name: string; orderIndex: number; folder?: string; outOfScope?: true }[];
     }
   // `tabId` scopes the selection to the tab it lives on: element ids
-  // are only unique per tab in older documents (tab duplication used to
+  // are only unique per tab in older projects (tab duplication used to
   // copy ids verbatim), so an unscoped selection rendered — and, via
   // the docs/specs/007-editor/live-app.md concurrent-selection lock, LOCKED — the same-id element
   // on every other tab too. Optional for wire compatibility: a frame
@@ -315,7 +315,7 @@ export type RoomOp =
       ranges: { r1: string; c1: string; r2: string; c2: string }[] | null;
       editing: boolean;
     }
-  // A share link was revoked by the document owner. Every connected
+  // A share link was revoked by the project owner. Every connected
   // peer using that share code (the `X-Share-Code` they handed in to
   // hydrate) should hard-redirect to a "share revoked" surface so
   // they don't continue to read or hold open a stale connection.
@@ -332,15 +332,15 @@ export type RoomOp =
   // Item writes the api made (docs/specs/026-plan/items.md "Live for everyone"). Worker-originated
   // through an ordered /broadcast; a session scoped to one tab hears it without its items.
   | ItemsRoomOp
-  // A document's type catalogue the api stored (docs/specs/026-plan/item-types.md "Storage and sync").
+  // A project's type catalogue the api stored (docs/specs/026-plan/item-types.md "Storage and sync").
   | ItemTypesRoomOp
   // Sheet writes the api made (docs/specs/029-sheets/sheet-store.md "Live for everyone"). Worker-originated
   // through an ordered /broadcast; a session scoped to one tab hears only its tab's.
   | SheetsRoomOp
-  // The document went to the Trash (docs/specs/013-workspace/trash.md). Every
+  // The project went to the Trash (docs/specs/013-workspace/trash.md). Every
   // session shows the deleted state; the room then closes every socket (4004).
   // Worker-originated, like share-revoked.
-  | { kind: 'document-trashed' };
+  | { kind: 'project-trashed' };
 
 // Client-side narrowings of `ClientMessage` / `ServerMessage` that
 // pin `op` to `RoomOp` for type-safe send/receive in the editor.
@@ -368,7 +368,7 @@ export type RoomIncoming =
 // change narrows who may be in it without revoking a link (docs/specs/015-api/api.md
 // "Access changes end the sessions they affect"): a share password set, or a
 // member leaving their team. Beside 4003 (a share link changed) and 4004 (the
-// document was trashed). The editor reloads into the ordinary access path.
+// project was trashed). The editor reloads into the ordinary access path.
 export const ACCESS_CHANGED_CLOSE = 4005;
 
 // The close code for a workbench session whose pairing or token ended (docs/specs/013-workspace/workbench-embeds.md):

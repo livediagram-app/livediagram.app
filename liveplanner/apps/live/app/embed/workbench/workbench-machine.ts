@@ -10,7 +10,7 @@ export type WorkbenchPageEndReason = 'expired' | 'revoked' | 'trashed';
 
 export type WorkbenchPhase =
   | { phase: 'reading' }
-  | { phase: 'redeeming'; ticket: string; scope: WorkbenchScope; documentId: string | null }
+  | { phase: 'redeeming'; ticket: string; scope: WorkbenchScope; projectId: string | null }
   | { phase: 'binding'; session: WorkbenchSessionResponse }
   | { phase: 'mounted'; session: WorkbenchSessionResponse; name: string }
   | {
@@ -24,7 +24,7 @@ export type WorkbenchPhase =
   | { phase: 'failed' };
 
 export type WorkbenchEvent =
-  | { type: 'read'; ticket: string | null; scope: WorkbenchScope; documentId: string | null }
+  | { type: 'read'; ticket: string | null; scope: WorkbenchScope; projectId: string | null }
   | { type: 'redeemed'; session: WorkbenchSessionResponse }
   | { type: 'redeem-refused' }
   | { type: 'redeem-failed' }
@@ -35,17 +35,17 @@ export type WorkbenchEvent =
 
 export const INITIAL_WORKBENCH_PHASE: WorkbenchPhase = { phase: 'reading' };
 
-// Whether a redeemed session is the one the address asked for: the address's page's scope and, in the document
-// scope, its document. Anything else is refused and the session revoked.
+// Whether a redeemed session is the one the address asked for: the address's page's scope and, in the project
+// scope, its project. Anything else is refused and the session revoked.
 export function sessionFitsAddress(
   session: WorkbenchSessionResponse,
-  address: { scope: WorkbenchScope; documentId: string | null },
+  address: { scope: WorkbenchScope; projectId: string | null },
 ): boolean {
   if (session.scope !== address.scope) return false;
-  return session.scope === 'workspace' || session.documentId === address.documentId;
+  return session.scope === 'workspace' || session.projectId === address.projectId;
 }
 
-// Whether a renewal's session may take over: the same scope and origin, and the same document in the document scope.
+// Whether a renewal's session may take over: the same scope and origin, and the same project in the project scope.
 export function renewalFits(
   next: WorkbenchSessionResponse,
   bound: WorkbenchSessionResponse,
@@ -53,7 +53,7 @@ export function renewalFits(
   return (
     next.scope === bound.scope &&
     next.origin === bound.origin &&
-    next.documentId === bound.documentId
+    next.projectId === bound.projectId
   );
 }
 
@@ -67,7 +67,7 @@ export function workbenchTransition(state: WorkbenchPhase, event: WorkbenchEvent
             phase: 'redeeming',
             ticket: event.ticket,
             scope: event.scope,
-            documentId: event.documentId,
+            projectId: event.projectId,
           };
     case 'redeeming':
       if (event.type === 'redeem-refused') return { phase: 'refused', cause: 'ticket' };
@@ -93,7 +93,7 @@ export function workbenchTransition(state: WorkbenchPhase, event: WorkbenchEvent
 }
 
 // A request refused `401 invalid_session` (blueprint step 6): before the session's expiry it was
-// revoked (token revoked, unpaired, document purged); after it, it expired.
+// revoked (token revoked, unpaired, project purged); after it, it expired.
 export function endReasonOfInvalidSession(
   expiresAt: number,
   now: number,

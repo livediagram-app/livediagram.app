@@ -7,9 +7,9 @@
 // session; a change not seen yet has not been written, so its broadcast reaches the socket.
 
 import type { Env } from './types';
-import { shareLinkForDocument } from './auth/share-access';
+import { shareLinkForProject } from './auth/share-access';
 
-type AdmittedLink = { shareCode: string; tabScope: string | null; documentId: string };
+type AdmittedLink = { shareCode: string; tabScope: string | null; projectId: string };
 type ShareLinkChange = 'share-revoked' | 'share-rescoped';
 
 // What changed about the link since the ticket admitted the session: gone (revoked, expired, or its
@@ -27,7 +27,7 @@ export async function recheckAdmittedLink(
   env: Env,
   admitted: AdmittedLink,
 ): Promise<{ kind: ShareLinkChange; code: string } | null> {
-  const link = await shareLinkForDocument(env, admitted.shareCode, admitted.documentId);
+  const link = await shareLinkForProject(env, admitted.shareCode, admitted.projectId);
   const kind = shareLinkChange(admitted, link);
   return kind ? { kind, code: admitted.shareCode } : null;
 }

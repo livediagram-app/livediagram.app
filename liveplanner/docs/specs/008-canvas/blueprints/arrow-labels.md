@@ -8,11 +8,11 @@ Scope, by file:
 
 | File                                                                        | Role                                                                                     |
 | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
-| `packages/document/src/arrow-label-layout.ts`                               | The layout engine: route, open run, width rule, wrap, slide, beside, knockout            |
-| `packages/document/src/arrow-label-wrap.ts`                                 | Word metrics, greedy wrap on cached widths, balanced wrap                                |
-| `packages/document/src/arrow-label.ts`                                      | `arrowLabelFontSize`: the caption size presets                                           |
-| `packages/document/src/svg-render.ts`                                       | `contentBounds` counts routes and label plates; one pass per render                      |
-| `packages/document/src/svg-render-arrows.ts`                                | Export: multi-line caption, plate, knockout mask from the same layout                    |
+| `packages/project/src/arrow-label-layout.ts`                               | The layout engine: route, open run, width rule, wrap, slide, beside, knockout            |
+| `packages/project/src/arrow-label-wrap.ts`                                 | Word metrics, greedy wrap on cached widths, balanced wrap                                |
+| `packages/project/src/arrow-label.ts`                                      | `arrowLabelFontSize`: the caption size presets                                           |
+| `packages/project/src/svg-render.ts`                                       | `contentBounds` counts routes and label plates; one pass per render                      |
+| `packages/project/src/svg-render-arrows.ts`                                | Export: multi-line caption, plate, knockout mask from the same layout                    |
 | `apps/live/hooks/canvas/useArrowLabelLayouts.ts`                            | One `arrowLabelPass` per element change; `draftLayout`; `labelRectOf`; `sameLabelRender` |
 | `apps/live/components/canvas/Canvas.tsx`                                    | Calls the hook; feeds `labelRectOf` to the selection derivation                          |
 | `apps/live/components/canvas/CanvasElementsLayer.tsx`                       | Hands each `ArrowView` its render from the `arrowLabels` it is given                     |
@@ -42,7 +42,7 @@ label anchor (the anchor may slide).
 
 ## Behaviour
 
-`layoutArrowLabels(elements, options?) => Map<ElementId, ArrowLabelLayout>` walks arrows in document
+`layoutArrowLabels(elements, options?) => Map<ElementId, ArrowLabelLayout>` walks arrows in project
 order (D17); each arrow's layout sees the knockouts of the arrows before it as obstacles.
 `layoutArrowLabel(arrow, text, ctx)` lays out one arrow (used for the live editor with draft text).
 An arrow with empty text has no entry.

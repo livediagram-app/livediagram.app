@@ -1,4 +1,4 @@
-// A ref that names no element, or several (docs/specs/024-agents/document-views.md "Refs"): the same
+// A ref that names no element, or several (docs/specs/024-agents/project-views.md "Refs"): the same
 // codes edit operations refuse a target with, so a front door handles both alike.
 import type { EditRejectionCode } from './changesets';
 

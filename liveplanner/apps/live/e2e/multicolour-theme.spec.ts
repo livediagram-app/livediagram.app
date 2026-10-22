@@ -1,4 +1,4 @@
-import { expect, test, expectNoPageErrors, seedTab, startBlankDocument } from './fixtures';
+import { expect, test, expectNoPageErrors, seedTab, startBlankProject } from './fixtures';
 
 // Multi-colour themes (docs/specs/011-theme/multicolour-themes.md) end to end:
 // Rainbow, picked for an uncoloured hierarchy, paints each limb its own palette colour, and
@@ -8,7 +8,7 @@ import { expect, test, expectNoPageErrors, seedTab, startBlankDocument } from '.
 const CANVAS = '[data-canvas-a11y-root]';
 const SWITCH_LOG = /^\[theme-graph\] switch theme=rainbow elements=\d+ branches=\d+$/;
 
-// Rainbow's palette fills (packages/document/src/themes-data.ts), as computed CSS.
+// Rainbow's palette fills (packages/project/src/themes-data.ts), as computed CSS.
 const RAINBOW_FILLS = ['#fee2e2', '#ffedd5', '#fef9c3', '#dcfce7', '#dbeafe', '#f3e8ff'].map(
   (hex) => {
     const n = parseInt(hex.slice(1), 16);
@@ -34,7 +34,7 @@ test.describe('Multi-colour themes', () => {
     // A root and three limbs with no colours of their own (a template's authored hues would rightly be kept
     // as customisations, docs/specs/011-theme/multicolour-themes.md), so any Rainbow hue found came from the
     // palette.
-    await startBlankDocument(page);
+    await startBlankProject(page);
     const box = (id: string, x: number, y: number) => ({
       id,
       type: 'shape',

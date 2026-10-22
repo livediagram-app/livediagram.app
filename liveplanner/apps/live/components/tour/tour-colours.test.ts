@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, hexToRgb, hueName, planPalette, rgbToHex } from '@liveplanner/document';
+import { contrastRatio, hexToRgb, hueName, planPalette, rgbToHex } from '@liveplanner/project';
 import {
   BANNER_FROM_CONTRAST,
   BANNER_INK,
@@ -76,7 +76,7 @@ describe('tour colours', () => {
   });
 
   it('falls back on the sign-in banner’s own gradient for an accent it cannot read', () => {
-    expect(bannerColours('rgb(10, 10, 10)')).toEqual({ from: '#0369a1', to: '#075985' });
+    expect(bannerColours('rgb(10, 10, 10)')).toEqual({ from: '#6d28d9', to: '#5b21b6' });
   });
 
   it('falls back on brightness for a colour it cannot read as hex', () => {

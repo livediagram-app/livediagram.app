@@ -7,8 +7,8 @@ import {
   ALL_VISITORS,
   CANVAS_MODES,
   CLI_COMMANDS_STACK,
-  DOCUMENT_ACTIONS,
-  DOCUMENTS_CREATED,
+  PROJECT_ACTIONS,
+  PROJECTS_CREATED,
   ELEMENT_EDITING,
   ELEMENTS_ADDED,
   EMAILS_SENT,
@@ -35,7 +35,6 @@ import {
   TAB_ACTIONS,
   TIMELINE_AND_ACTIVITY,
   VOTING,
-  WHITEBOARDS,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import type { SectionKey } from './view-keys';
@@ -64,7 +63,7 @@ export const GROUPS: MetricGroup[] = [
       NEW_VISITORS,
       RETURNING_VISITORS,
       SIGN_UPS,
-      DOCUMENTS_CREATED,
+      PROJECTS_CREATED,
       MULTIPLAYER_SESSIONS,
       FAILED_REQUESTS,
     ],
@@ -76,7 +75,7 @@ export const GROUPS: MetricGroup[] = [
   {
     title: 'Content',
     metrics: [
-      DOCUMENT_ACTIONS,
+      PROJECT_ACTIONS,
       TAB_ACTIONS,
       ELEMENTS_ADDED,
       ELEMENT_EDITING,
@@ -87,7 +86,7 @@ export const GROUPS: MetricGroup[] = [
   },
   {
     title: 'Features',
-    metrics: [WHITEBOARDS, PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
+    metrics: [PALETTE_USE, CANVAS_MODES, LOOK_AND_FEEL, PANELS_OPENED, OFFLINE_MODE],
   },
   // Live Together is the only stack that counts two people on one canvas at
   // the same moment; the rest of Collaboration counts invitations to be there,

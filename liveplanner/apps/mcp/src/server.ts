@@ -24,8 +24,8 @@ export function buildServer(env: Env): McpServer {
     {
       title: 'liveplanner element schema',
       description:
-        'Element types, shape vocabulary, pinned-arrow anchors, and the rules a tab\'s elements ' +
-        'follow. Read before create_document / update_document with raw elements.',
+        "The elements a tab holds (a board, a sheet, a Dashboard's views and charts) and the fields " +
+        'each takes. Read before create_project / update_project with raw elements.',
       mimeType: 'text/markdown',
     },
     async (uri) => ({

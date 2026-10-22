@@ -59,7 +59,7 @@ body above them.
 
 ## Layout
 
-One pure function in `@liveplanner/document`, `cardLayout`, computes every rect from the element's size and which
+One pure function in `@liveplanner/project`, `cardLayout`, computes every rect from the element's size and which
 slots are on, and both the canvas and the headless SVG renderer call it, so an export matches the editor. Text
 re-wraps as the card resizes; nothing scales with the box except the room the text has. A slot that is off takes no
 room. A card too small to hold a slot drops it in this order: tags, then the meta line, then media.

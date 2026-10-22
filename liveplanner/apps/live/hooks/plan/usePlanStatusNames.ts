@@ -1,13 +1,13 @@
 'use client';
 
-// The names and phases the document's boards give their statuses (docs/specs/026-plan/plan-templates.md
+// The names and phases the project's boards give their statuses (docs/specs/026-plan/plan-templates.md
 // "Hand-offs"): the open tab's boards first, then every other tab's in tab order, in board and column
 // order. They feed an All Cards board's status rows, the item panel's status picker, the Cards panel's
 // Not on a Board (with the card types the boards show under each status), and what the plan views count
 // as Not Started, In Progress and Done. Keyed by a signature of the columns, so the maps (and the Plan
 // context) change only when a column does.
 import { useMemo } from 'react';
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 import {
   normaliseBoardSetup,
   statusColumnsOfSetups,
@@ -31,8 +31,8 @@ function boardSetupsIn(elements: readonly Element[]): readonly unknown[] {
   return setups;
 }
 
-// Every board set-up of the document, the open tab's first.
-export function documentBoardSetups(tabs: readonly Tab[], activeId: string): unknown[] {
+// Every board set-up of the project, the open tab's first.
+export function projectBoardSetups(tabs: readonly Tab[], activeId: string): unknown[] {
   const active = tabs.find((t) => t.id === activeId);
   const rest = tabs.filter((t) => t !== active);
   return [active, ...rest].flatMap((t) => (t ? boardSetupsIn(t.elements) : []));
@@ -107,7 +107,7 @@ type Signatures = { names: string; phases: string; types: string; boards: string
 const signatures = new Map<string, Signatures>();
 
 // `typeIds` is the catalogue's type ids, for the deleted-types rule; it is part of the cache key.
-export function documentStatusSignatures(
+export function projectStatusSignatures(
   tabs: readonly Tab[],
   activeId: string,
   typeIds?: readonly string[],
@@ -134,7 +134,7 @@ export function documentStatusSignatures(
   return next;
 }
 
-// The document's status names and phases; each map keeps its identity while its signature does.
+// The project's status names and phases; each map keeps its identity while its signature does.
 export function usePlanStatuses(
   tabs: readonly Tab[],
   activeId: string,
@@ -145,7 +145,7 @@ export function usePlanStatuses(
   types: BoardStatusTypes;
   boards: readonly StatusBoard[];
 } {
-  const sig = documentStatusSignatures(tabs, activeId, typeIds);
+  const sig = projectStatusSignatures(tabs, activeId, typeIds);
   const names = useMemo(() => new Map(JSON.parse(sig.names) as [string, string][]), [sig.names]);
   const phases = useMemo(
     () => new Map(JSON.parse(sig.phases) as [string, StatusPhase][]),

@@ -8,7 +8,7 @@
 import { ColourField } from '@/components/colour/ColourField';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { colourName, noColour, standardGroup } from '@/components/colour/colour-options';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useProjectColours } from '@/hooks/ui/useProjectColours';
 
 // Colours Plan offered before the standard colours, so a card still holding one is named by its word.
 const EARLIER_PLAN_COLOURS: Readonly<Record<string, string>> = {
@@ -50,7 +50,7 @@ export function TypeColourButton({
   onChange: (next: string) => void;
   label?: string;
 }) {
-  const yours = useDocumentColours();
+  const yours = useProjectColours();
   return (
     <ColourSwatchButton
       label={label}
@@ -81,7 +81,7 @@ export function ColourSelect({
   disabled?: boolean;
   id?: string;
 }) {
-  const yours = useDocumentColours();
+  const yours = useProjectColours();
   return (
     <ColourField
       id={id}

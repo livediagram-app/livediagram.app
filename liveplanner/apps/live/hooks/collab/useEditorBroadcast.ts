@@ -5,7 +5,7 @@
 // many setters scattered across the page (next slice on deck).
 //
 // Throttle: the broadcaster caps at ~30 Hz (33 ms between sends).
-// That matches the cursor packet rate the document-room
+// That matches the cursor packet rate the project-room
 // Durable Object expects per docs/specs/015-api/api.md; faster sends would just be
 // dropped on the wire.
 
@@ -28,12 +28,12 @@ type EditorBroadcastDeps = {
   // realtime effect won't have opened the socket otherwise and we'd
   // be sending into the void.
   hydrated: boolean;
-  documentId: string | null;
-  documentShareable: boolean;
-  // The document's team (docs/specs/013-workspace/team-shared-documents.md), null for a personal document. A team
-  // document is a live room for its members even without a share link,
+  projectId: string | null;
+  projectShareable: boolean;
+  // The project's team (docs/specs/013-workspace/team-shared-projects.md), null for a personal project. A team
+  // project is a live room for its members even without a share link,
   // so cursor ops broadcast for it too.
-  documentTeamId: string | null;
+  projectTeamId: string | null;
   // Which tab is currently active. Stamped on every cursor op so peers
   // can filter cursors by tab.
   activeId: string;
@@ -88,7 +88,7 @@ export function useEditorBroadcast(deps: EditorBroadcastDeps): EditorBroadcastAp
 
   const broadcastCursor = (pos: { x: number; y: number } | null) => {
     if (deps.cursorsHidden) return;
-    if (!deps.hydrated || !deps.documentId || (!deps.documentShareable && !deps.documentTeamId))
+    if (!deps.hydrated || !deps.projectId || (!deps.projectShareable && !deps.projectTeamId))
       return;
     const send = (at: { x: number; y: number } | null) => {
       lastCursorSentRef.current = performance.now();

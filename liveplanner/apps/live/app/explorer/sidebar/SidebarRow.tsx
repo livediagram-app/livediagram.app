@@ -3,7 +3,7 @@
 import { useId, type HTMLAttributes, type ReactNode } from 'react';
 import { CountBadge } from '@liveplanner/ui';
 import { TreeChevronIcon } from '@/components/primitives/explorer-icons';
-import { DROP_TARGET_RING } from '@/components/panels/useDocumentDropTarget';
+import { DROP_TARGET_RING } from '@/components/panels/useProjectDropTarget';
 import {
   SIDEBAR_CURRENT,
   SIDEBAR_RESTING,

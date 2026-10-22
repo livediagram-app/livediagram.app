@@ -10,11 +10,11 @@ export const SHEET_COLS_NEW = 26;
 export const SHEET_ROWS_MAX = 10_000;
 export const SHEET_COLS_MAX = 200;
 
-// Cells with an input or a format, and their stored bytes, per sheet and per document.
+// Cells with an input or a format, and their stored bytes, per sheet and per project.
 export const SHEET_CELLS_MAX = 50_000;
 export const SHEET_BYTES_MAX = 4 * 1024 * 1024;
-export const DOCUMENT_SHEETS_MAX = 200;
-export const DOCUMENT_CELLS_MAX = 200_000;
+export const PROJECT_SHEETS_MAX = 200;
+export const PROJECT_CELLS_MAX = 200_000;
 
 // One cell's input, and a formula's length and nesting.
 export const INPUT_MAX = 10_000;

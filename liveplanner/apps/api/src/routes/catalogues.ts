@@ -3,7 +3,7 @@
 // only, cached five minutes; each answer logs `[catalogues] <segment> <status>`.
 
 import type { TemplateCatalogueResponse } from '@liveplanner/api-schema';
-import { renderView } from '@liveplanner/document-views';
+import { renderView } from '@liveplanner/project-views';
 import { addableKinds, elementFormatText, elementKindsText } from '@liveplanner/edit-operations';
 import { buildTemplateTab, templateCatalogue, templateKindOf } from '@liveplanner/templates';
 import { json, methodNotAllowed, notFound, textPlain } from '../responses';
@@ -43,8 +43,7 @@ function schema(ctx: RouteContext): Response {
   if (kind === undefined) return textPlain(elementKindsText(), { headers: cached });
   if (ctx.segments.length > 3) return notFound();
   const text = elementFormatText(decodeURIComponent(kind));
-  if (text === null)
-    return json({ error: 'unknown_kind', kinds: [...addableKinds(), 'arrow'] }, { status: 404 });
+  if (text === null) return json({ error: 'unknown_kind', kinds: addableKinds() }, { status: 404 });
   return textPlain(text, { headers: cached });
 }
 

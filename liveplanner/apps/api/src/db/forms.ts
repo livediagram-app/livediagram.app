@@ -5,7 +5,7 @@ import type { Env } from '../types';
 
 export type FormLinkRow = {
   code: string;
-  document_id: string;
+  project_id: string;
   tab_id: string;
   open: number;
   created_at: number;
@@ -20,7 +20,7 @@ export type FormLinkRow = {
 };
 
 const COLS =
-  'code, document_id, tab_id, open, created_at, responses, hour_start, hour_count, suspended_at, deleted_at, last_email_at, held_emails';
+  'code, project_id, tab_id, open, created_at, responses, hour_start, hour_count, suspended_at, deleted_at, last_email_at, held_emails';
 
 const BASE62 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
 
@@ -45,25 +45,25 @@ function randomBytes(n: number): Uint8Array {
 // The tab's live link (not suspended, not deleted), or null.
 export async function getLiveFormLink(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
 ): Promise<FormLinkRow | null> {
   return env.DB.prepare(
-    `SELECT ${COLS} FROM form_links WHERE document_id = ? AND tab_id = ? AND suspended_at IS NULL AND deleted_at IS NULL`,
+    `SELECT ${COLS} FROM form_links WHERE project_id = ? AND tab_id = ? AND suspended_at IS NULL AND deleted_at IS NULL`,
   )
-    .bind(documentId, tabId)
+    .bind(projectId, tabId)
     .first<FormLinkRow>();
 }
 
-// The document's live links (not suspended, not deleted), each with its Form tab: few, one a Form tab at most.
+// The project's live links (not suspended, not deleted), each with its Form tab: few, one a Form tab at most.
 export async function liveFormLinksOf(
   env: Env,
-  documentId: string,
+  projectId: string,
 ): Promise<{ code: string; tab_id: string }[]> {
   const res = await env.DB.prepare(
-    'SELECT code, tab_id FROM form_links WHERE document_id = ? AND suspended_at IS NULL AND deleted_at IS NULL',
+    'SELECT code, tab_id FROM form_links WHERE project_id = ? AND suspended_at IS NULL AND deleted_at IS NULL',
   )
-    .bind(documentId)
+    .bind(projectId)
     .all<{ code: string; tab_id: string }>();
   return res.results ?? [];
 }
@@ -78,22 +78,22 @@ export async function getFormLink(env: Env, code: string): Promise<FormLinkRow |
 // The tab's most recent suspended link, for its notice; null when none was.
 export async function getSuspendedFormLink(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
 ): Promise<FormLinkRow | null> {
   return env.DB.prepare(
-    `SELECT ${COLS} FROM form_links WHERE document_id = ? AND tab_id = ? AND suspended_at IS NOT NULL
+    `SELECT ${COLS} FROM form_links WHERE project_id = ? AND tab_id = ? AND suspended_at IS NOT NULL
       ORDER BY suspended_at DESC LIMIT 1`,
   )
-    .bind(documentId, tabId)
+    .bind(projectId, tabId)
     .first<FormLinkRow>();
 }
 
-export async function countSuspendedFormLinks(env: Env, documentId: string): Promise<number> {
+export async function countSuspendedFormLinks(env: Env, projectId: string): Promise<number> {
   const row = await env.DB.prepare(
-    'SELECT COUNT(*) AS n FROM form_links WHERE document_id = ? AND suspended_at IS NOT NULL',
+    'SELECT COUNT(*) AS n FROM form_links WHERE project_id = ? AND suspended_at IS NOT NULL',
   )
-    .bind(documentId)
+    .bind(projectId)
     .first<{ n: number }>();
   return Number(row?.n ?? 0);
 }
@@ -102,21 +102,21 @@ export async function countSuspendedFormLinks(env: Env, documentId: string): Pro
 // so numbers never repeat on one form. Null when the tab already has a live link (the unique index refuses a second).
 export async function createFormLink(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
   now: number,
 ): Promise<FormLinkRow | null> {
   const code = generateFormCode();
   const prior = await env.DB.prepare(
-    'SELECT MAX(responses) AS n FROM form_links WHERE document_id = ? AND tab_id = ?',
+    'SELECT MAX(responses) AS n FROM form_links WHERE project_id = ? AND tab_id = ?',
   )
-    .bind(documentId, tabId)
+    .bind(projectId, tabId)
     .first<{ n: number | null }>();
   try {
     await env.DB.prepare(
-      'INSERT INTO form_links (code, document_id, tab_id, open, created_at, responses) VALUES (?, ?, ?, 1, ?, ?)',
+      'INSERT INTO form_links (code, project_id, tab_id, open, created_at, responses) VALUES (?, ?, ?, 1, ?, ?)',
     )
-      .bind(code, documentId, tabId, now, prior?.n ?? 0)
+      .bind(code, projectId, tabId, now, prior?.n ?? 0)
       .run();
   } catch {
     return null;
@@ -140,14 +140,14 @@ export async function deleteFormLink(env: Env, code: string, now: number): Promi
     .run();
 }
 
-// Every link of a tab, when the tab is deleted from its document (suspended ones included: the tab is gone).
+// Every link of a tab, when the tab is deleted from its project (suspended ones included: the tab is gone).
 export async function deleteFormLinksForTab(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
 ): Promise<number> {
-  const res = await env.DB.prepare('DELETE FROM form_links WHERE document_id = ? AND tab_id = ?')
-    .bind(documentId, tabId)
+  const res = await env.DB.prepare('DELETE FROM form_links WHERE project_id = ? AND tab_id = ?')
+    .bind(projectId, tabId)
     .run();
   return res.meta?.changes ?? 0;
 }

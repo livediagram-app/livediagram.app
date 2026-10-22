@@ -8,7 +8,7 @@ import {
   useStartPanelOpen,
 } from './start-panel-open';
 
-// docs/specs/007-editor/start-diagramming.md "The tours wait"
+// docs/specs/007-editor/start-panel.md "The tours wait"
 describe('start panel open', () => {
   afterEach(() => setStartPanelOpen(false));
 

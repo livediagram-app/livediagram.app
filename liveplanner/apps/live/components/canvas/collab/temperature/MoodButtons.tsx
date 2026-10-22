@@ -6,7 +6,7 @@
 // viewer who can't answer sees them unpressable.
 
 import { useState } from 'react';
-import { TEMPERATURE_COLORS, TEMPERATURE_MOODS, TEMPERATURE_VALUES } from '@liveplanner/document';
+import { TEMPERATURE_COLORS, TEMPERATURE_MOODS, TEMPERATURE_VALUES } from '@liveplanner/project';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { stopPointer } from '../collab-parts';

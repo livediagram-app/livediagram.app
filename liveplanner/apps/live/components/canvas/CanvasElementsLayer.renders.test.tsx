@@ -2,7 +2,7 @@
 import { act, render } from '@testing-library/react';
 import { memo } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createPinnedArrow, createShape, type Element } from '@liveplanner/document';
+import { createPinnedArrow, createShape, type Element } from '@liveplanner/project';
 
 // docs/specs/008-canvas/canvas-performance.md: an element view renders only for its own changes. A
 // Canvas render that changes no element, no selection and no zoom renders no element view; a zoom
@@ -324,7 +324,7 @@ describe('drawing a drag preview', () => {
     expect(counts()).toEqual({ boxed: 0, arrows: 0 });
   });
 
-  it('draws the document again once the preview ends', () => {
+  it('draws the project again once the preview ends', () => {
     mount();
     act(() =>
       setLocalPreview(

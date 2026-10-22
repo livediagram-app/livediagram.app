@@ -5,7 +5,7 @@ import {
   dashboardFromPreset,
   setDashboardContent,
   type DashboardLayout,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { track } from '@/lib/telemetry';
 import { DashboardSettings } from './DashboardSettings';

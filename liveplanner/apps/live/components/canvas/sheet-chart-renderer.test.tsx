@@ -4,7 +4,7 @@
 // it sits square at its frame's origin; shown from another tab it loses only its indicators.
 import { cleanup, render, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CHART_PALETTES, type ShapeElement } from '@liveplanner/document';
+import { CHART_PALETTES, type ShapeElement } from '@liveplanner/project';
 import { useSheetChartRenderer, sheetChartElement, type BoxedShared } from './sheet-chart-renderer';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -33,7 +33,6 @@ const shared = (): BoxedShared => ({
   onBeginDrag: vi.fn(),
   onBeginEdit: vi.fn(),
   onCommitLabel: vi.fn(),
-  onCommitTable: vi.fn(),
   onCancelEdit: vi.fn(),
   onFollowLink: vi.fn(),
   onOpenComments: vi.fn(),

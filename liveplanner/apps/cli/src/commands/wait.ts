@@ -1,10 +1,10 @@
-// `wait <doc> --for comment|change` (docs/specs/015-api/blueprints/cli.md "The room stream", CLI33, CLI80): listens
+// `wait <project> --for comment|change` (docs/specs/015-api/blueprints/cli.md "The room stream", CLI33, CLI80): listens
 // until a comment is added, or until a change settles for WAIT_SETTLE_MS, then prints it. `--timeout` ends with a
-// line saying nothing came; Ctrl-C ends with exit 1; the document moved to the Trash with exit 3.
+// line saying nothing came; Ctrl-C ends with exit 1; the project moved to the Trash with exit 3.
 
-import { documentOf, resolveTab, tabPath, type VerbContext } from '@liveplanner/agent-verbs';
-import { revOfEtag, type DocumentCommentsResponse } from '@liveplanner/api-schema';
-import { threadListingLines } from '@liveplanner/document-views';
+import { projectOf, resolveTab, tabPath, type VerbContext } from '@liveplanner/agent-verbs';
+import { revOfEtag, type ProjectCommentsResponse } from '@liveplanner/api-schema';
+import { threadListingLines } from '@liveplanner/project-views';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { EXIT } from '../output/exit-codes';
@@ -14,15 +14,15 @@ import { oneLine } from '../output/one-line';
 
 export const WAIT_SETTLE_MS = 2_000;
 
-export type WaitInput = { doc: string; for: 'comment' | 'change'; tab?: string; timeout?: number };
+export type WaitInput = { project: string; for: 'comment' | 'change'; tab?: string; timeout?: number };
 export type StreamResult = { lines: string[]; exit: number };
 
 export const trashedError = () =>
   new CliError({
     exit: EXIT.notFound,
     code: 'trashed',
-    message: 'the document was moved to the Trash',
-    hint: 'liveplanner document restore <doc>',
+    message: 'the project was moved to the Trash',
+    hint: 'liveplanner project restore <project>',
   });
 
 const quoted = (text: string) => JSON.stringify(text);
@@ -30,11 +30,11 @@ const quoted = (text: string) => JSON.stringify(text);
 // The thread a new comment landed in, as `comment ls` prints it; the comment alone when the thread is gone.
 async function commentLines(
   ctx: VerbContext,
-  documentId: string,
+  projectId: string,
   event: Extract<RoomEvent, { kind: 'comment' }>,
 ): Promise<string[]> {
-  const { threads } = await ctx.api.json<DocumentCommentsResponse>(
-    `/documents/${encodeURIComponent(documentId)}/comments?status=all`,
+  const { threads } = await ctx.api.json<ProjectCommentsResponse>(
+    `/projects/${encodeURIComponent(projectId)}/comments?status=all`,
   );
   const thread = threads.find((t) => t.tabId === event.tabId && t.elementId === event.elementId);
   return thread
@@ -49,19 +49,19 @@ async function commentLines(
 async function changeLines(
   ctx: VerbContext,
   input: WaitInput,
-  document: { id: string; tabs: { id: string; name: string }[] },
+  project: { id: string; tabs: { id: string; name: string }[] },
   event: RoomEvent,
 ): Promise<string[]> {
-  if (event.kind === 'document') return [`document ${quoted(event.name)} changed`];
-  const name = document.tabs.find((t) => t.id === event.tabId)?.name ?? event.tabId;
-  const { etag } = await ctx.api.text(tabPath(document.id, event.tabId));
+  if (event.kind === 'project') return [`project ${quoted(event.name)} changed`];
+  const name = project.tabs.find((t) => t.id === event.tabId)?.name ?? event.tabId;
+  const { etag } = await ctx.api.text(tabPath(project.id, event.tabId));
   const now = revOfEtag(etag);
-  const read = (await ctx.copies?.latest(document.id, event.tabId))?.rev;
+  const read = (await ctx.copies?.latest(project.id, event.tabId))?.rev;
   if (now === null) return [`tab ${quoted(name)} changed`];
   const head = `tab ${quoted(name)} changed · rev `;
   if (read === undefined || read === now) return [`${head}${now}`];
   return [
-    `${head}${read}→${now} · diff: liveplanner tab diff ${quoted(input.doc)} --tab ${quoted(name)} --since ${read}`,
+    `${head}${read}→${now} · diff: liveplanner tab diff ${quoted(input.project)} --tab ${quoted(name)} --since ${read}`,
   ];
 }
 
@@ -71,9 +71,9 @@ export async function waitFor(
   apiBase: string,
   input: WaitInput,
 ): Promise<StreamResult> {
-  const document = await documentOf(ctx, input.doc);
+  const project = await projectOf(ctx, input.project);
   const tabId =
-    input.tab === undefined ? null : resolveTab(document.tabs, input.tab, input.doc, ctx.log).id;
+    input.tab === undefined ? null : resolveTab(project.tabs, input.tab, input.project, ctx.log).id;
   return new Promise<StreamResult>((resolve, reject) => {
     let first: RoomEvent | null = null;
     let cancelSettle: (() => void) | null = null;
@@ -91,7 +91,7 @@ export async function waitFor(
       io,
       api: ctx.api,
       apiBase,
-      documentId: document.id,
+      projectId: project.id,
       log: ctx.log,
       notice: ctx.notice,
       onOp: (op) => {
@@ -100,7 +100,7 @@ export async function waitFor(
           ctx.log(`room event ${event.kind}`);
           if (input.for === 'comment' && event.kind === 'comment')
             return finish(
-              commentLines(ctx, document.id, event).then((lines) => ({ lines, exit: EXIT.done })),
+              commentLines(ctx, project.id, event).then((lines) => ({ lines, exit: EXIT.done })),
             );
           if (input.for === 'change' && event.kind !== 'comment') {
             first ??= event;
@@ -108,7 +108,7 @@ export async function waitFor(
             const settled = first;
             cancelSettle = io.timer(WAIT_SETTLE_MS, () =>
               finish(
-                changeLines(ctx, input, document, settled).then((lines) => ({
+                changeLines(ctx, input, project, settled).then((lines) => ({
                   lines,
                   exit: EXIT.done,
                 })),
@@ -119,7 +119,7 @@ export async function waitFor(
       },
       onReconnected: () =>
         ctx.notice(
-          `reconnected; what changed meanwhile: liveplanner tab diff ${quoted(input.doc)}`,
+          `reconnected; what changed meanwhile: liveplanner tab diff ${quoted(input.project)}`,
         ),
     });
     stream.ended.then(

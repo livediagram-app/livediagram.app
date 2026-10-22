@@ -4,7 +4,7 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // What Happened (docs/specs/013-workspace/explorer-home.md): one person's actions are links that
-// open the document; several people collapse into a summary that expands; no link of its own
+// open the project; several people collapse into a summary that expands; no link of its own
 // and no filter controls.
 
 const { track } = vi.hoisted(() => ({ track: vi.fn() }));
@@ -21,7 +21,7 @@ const todayKey = () => '2026-08-30';
 const solo = fixtureGroup({
   id: 'd2:day',
   day: todayKey(),
-  documentId: 'd2',
+  projectId: 'd2',
   name: 'Onboarding',
   via: 'own',
   teamName: null,
@@ -55,12 +55,12 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers());
 
 describe('WhatHappened', () => {
-  it('shows one person’s actions as links naming who, what, which document and where', () => {
+  it('shows one person’s actions as links naming who, what, which project and where', () => {
     renderIt();
     const comment = screen.getByRole('link', { name: /Sam commented on Onboarding/ });
-    expect(comment.getAttribute('href')).toBe('/document/d2');
+    expect(comment.getAttribute('href')).toBe('/project/d2');
     expect(within(comment).getByText('“Looks good”')).toBeTruthy();
-    expect(comment.textContent).toContain('My Documents › Guides · ');
+    expect(comment.textContent).toContain('My Projects › Guides · ');
     expect(screen.getByRole('link', { name: /Sam edited Onboarding/ })).toBeTruthy();
     fireEvent.click(comment);
     expect(track).toHaveBeenCalledWith('Home', 'Selected', 'WhatHappened');

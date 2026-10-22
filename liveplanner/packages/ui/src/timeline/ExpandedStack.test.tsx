@@ -10,25 +10,25 @@ import type { TimelineEvent } from './types';
 function event(id: string): TimelineEvent {
   return {
     id,
-    sourceType: 'document',
+    sourceType: 'project',
     sourceId: id,
-    eventType: 'document_renamed',
-    title: 'Document Renamed',
+    eventType: 'project_renamed',
+    title: 'Project Renamed',
     description: null,
     occurredAt: 1_700_000_000_000,
     actorId: 'me',
-    snapshot: { documentId: id, documentName: id },
+    snapshot: { projectId: id, projectName: id },
   };
 }
 
 const stack: TimelineStack = {
   key: 'e0',
-  bucket: 'document::document_renamed',
+  bucket: 'project::project_renamed',
   events: Array.from({ length: 15 }, (_, i) => event(`e${i}`)),
 };
 
 const registry = {
-  document: (e: TimelineEvent) => ({ icon: <svg />, subject: String(e.snapshot['documentName']) }),
+  project: (e: TimelineEvent) => ({ icon: <svg />, subject: String(e.snapshot['projectName']) }),
 };
 
 // An expansion is a cascade (docs/specs/004-interface-design/motion.md): it restarts

@@ -1,6 +1,6 @@
 'use client';
 
-import { withSequenceNumbered, type ShapeElement } from '@liveplanner/document';
+import { withSequenceNumbered, type ShapeElement } from '@liveplanner/project';
 import { Button } from '@liveplanner/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';

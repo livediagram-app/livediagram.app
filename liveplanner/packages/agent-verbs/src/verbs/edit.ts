@@ -3,7 +3,7 @@
 
 import { z } from 'zod';
 import type { ChangesetResponse } from '@liveplanner/api-schema';
-import { diffView } from '@liveplanner/document-views';
+import { diffView } from '@liveplanner/project-views';
 import { argvToOperationLine } from '../argv-line';
 import { readPlainTab } from '../copies';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
@@ -11,7 +11,7 @@ import { classifySource } from '../source-kind';
 import { submitChangeset, writeFlags } from '../write';
 import { tabOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or liveplanner URL');
+const projectArg = z.string().describe('A name, id prefix or liveplanner URL');
 const tabFlag = z
   .string()
   .optional()
@@ -30,19 +30,24 @@ const outputOf = (response: ChangesetResponse) => ({
   changeset: response.changeset && { id: response.changeset.id, rev: response.changeset.rev },
 });
 
-async function targetOf(ctx: VerbContext, doc: string, tab: string | undefined) {
-  const found = await tabOf(ctx, doc, tab);
-  return { documentId: found.document.id, tabId: found.tab.id, tabName: found.tab.name, doc };
+async function targetOf(ctx: VerbContext, projectRef: string, tab: string | undefined) {
+  const found = await tabOf(ctx, projectRef, tab);
+  return {
+    projectId: found.project.id,
+    tabId: found.tab.id,
+    tabName: found.tab.name,
+    project: projectRef,
+  };
 }
 
 export const changesetApply = defineVerb({
   id: 'changeset.apply',
   summary: 'Apply edit operations from a file',
   description:
-    'Sends a file (or stdin, with -f -) as one changeset: edit operations in the line form or JSON, or elements that replace the tab. All or nothing; prints one result line per element, then the revision, the lint verdict and the revert command.',
+    'Sends a file (or stdin, with -f -) as one changeset: edit operations (add, set, rm, test) in the line form or JSON, or elements that replace the tab. All or nothing; prints one result line per element, then the revision and the revert command.',
   behaviour: 'write',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     tab: tabFlag,
     file: z.string().describe('The file to send, or - for stdin'),
     ...writeFlags,
@@ -59,54 +64,31 @@ export const changesetApply = defineVerb({
         message: `can't tell what ${input.file === '-' ? 'stdin' : input.file} holds`,
         hint: 'expected edit operations or elements: liveplanner guide edit',
       });
-    const target = await targetOf(ctx, input.doc, input.tab);
+    const target = await targetOf(ctx, input.project, input.tab);
     return outputOf(await submitChangeset(ctx, target, source.body, input));
   },
   text: ({ text }) => [text],
   quiet: ({ changeset }) => (changeset ? [changeset.id] : []),
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     flags: { file: { short: 'f' } },
     examples: [
-      'liveplanner edit "Auth flow" -f ops.txt',
+      'liveplanner edit "Sprint 14" --tab Dashboard -f ops.txt',
       'liveplanner changeset apply 3f9c -f - --dry-run < ops.txt',
     ],
-    prints: 'one result line per element, then the revision, lint verdict and revert command',
+    prints: 'one result line per element, then the revision and revert command',
   },
 });
 
+// The operations a word-at-a-time command sends. An `add` takes a whole element as JSON, so it goes through
+// `changeset apply`, not here.
 const ELEMENT_OPERATIONS = {
-  add: {
-    summary: 'Add an element',
-    words: '<kind> [id=<id>] key=value… [<placement>]',
-    example: 'square id=verify label="Verify email" below:n3',
-  },
   set: {
     summary: 'Change fields of elements',
     words: '<selector> key=value…',
-    example: 'n3 label="Sign in" shape=stadium',
+    example: 'w1 label="Workload" textSize=lg',
   },
-  rm: { summary: 'Remove elements', words: '<selector>', example: 'n7' },
-  move: {
-    summary: 'Move elements beside another, or by an offset',
-    words: '<selector> <placement> | by=dx,dy',
-    example: 'n3 below:n2',
-  },
-  connect: {
-    summary: 'Draw an arrow from one element to another',
-    words: '<from> <to> [key=value…]',
-    example: 'n3 n7 label=retry',
-  },
-  insert: {
-    summary: 'Put an element on an arrow, between its ends',
-    words: '<kind> key=value… between <a> <b>',
-    example: 'square label=Verify between n3 n4',
-  },
-  wrap: {
-    summary: 'Put elements in a new frame or lane',
-    words: '<selector…> in frame|lane key=value…',
-    example: 'n3 n4 in frame label=Auth',
-  },
+  rm: { summary: 'Remove elements', words: '<selector>', example: 'w1' },
 } as const;
 
 type ElementOperation = keyof typeof ELEMENT_OPERATIONS;
@@ -116,10 +98,10 @@ function elementVerb(op: ElementOperation): Verb {
   return defineVerb({
     id: `element.${op}`,
     summary,
-    description: `Sends one \`${op} ${words}\` edit operation as a changeset; the words are the operation's, without quoting the arrow. Prints one result line per element, then the revision, the lint verdict and the revert command.`,
+    description: `Sends one \`${op} ${words}\` edit operation as a changeset; the words are the operation's. Prints one result line per element, then the revision and the revert command.`,
     behaviour: op === 'rm' ? 'destructive' : 'write',
     input: z.object({
-      doc: docArg,
+      project: projectArg,
       tab: tabFlag,
       words: z.array(z.string()).min(1).describe(`The operation's words: ${words}`),
       ...writeFlags,
@@ -128,18 +110,18 @@ function elementVerb(op: ElementOperation): Verb {
     run: async (ctx, input) => {
       const line = argvToOperationLine(op, input.words);
       ctx.log(`operation ${line}`);
-      const target = await targetOf(ctx, input.doc, input.tab);
+      const target = await targetOf(ctx, input.project, input.tab);
       return outputOf(await submitChangeset(ctx, target, { operations: line }, input));
     },
     text: ({ text }) => [text],
     quiet: ({ changeset }) => (changeset ? [changeset.id] : []),
     cli: {
-      positionals: ['doc', '...words'],
+      positionals: ['project', '...words'],
       examples: [
-        `liveplanner element ${op} "Auth flow" ${example}`,
+        `liveplanner element ${op} "Sprint 14" --tab Dashboard ${example}`,
         `liveplanner element ${op} 3f9c ${example} --dry-run`,
       ],
-      prints: 'one result line per element, then the revision, lint verdict and revert command',
+      prints: 'one result line per element, then the revision and revert command',
     },
   });
 }
@@ -156,7 +138,7 @@ export const tabDiff = defineVerb({
     'Compares the tab now with the read copy at --since: added, removed and changed elements, one line each. The copy is the tab as this CLI last read it at that revision.',
   behaviour: 'read',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     tab: tabFlag,
     since: z.coerce.number().int().min(0).describe('A revision this CLI has read'),
     budget: z.coerce
@@ -168,24 +150,24 @@ export const tabDiff = defineVerb({
   }),
   output: z.object({ text: z.string(), json: z.unknown() }),
   run: async (ctx, input) => {
-    const found = await tabOf(ctx, input.doc, input.tab);
-    const documentId = found.document.id;
+    const found = await tabOf(ctx, input.project, input.tab);
+    const projectId = found.project.id;
     const tabId = found.tab.id;
-    const before = await ctx.copies?.at(documentId, tabId, input.since);
+    const before = await ctx.copies?.at(projectId, tabId, input.since);
     if (!before) {
-      const held = (await ctx.copies?.revisions(documentId, tabId)) ?? [];
+      const held = (await ctx.copies?.revisions(projectId, tabId)) ?? [];
       throw new VerbRefusal({
         status: 404,
         code: 'no_copy',
         message: `no copy of rev ${input.since}; tab diff compares against a revision this CLI has read`,
         lines: [held.length ? `read copies: rev ${held.join(', ')}` : 'no read copies of this tab'],
-        hint: `liveplanner tab view ${JSON.stringify(input.doc)} --tab ${JSON.stringify(found.tab.name)}`,
+        hint: `liveplanner tab view ${JSON.stringify(input.project)} --tab ${JSON.stringify(found.tab.name)}`,
       });
     }
-    const after = await readPlainTab(ctx, documentId, tabId);
+    const after = await readPlainTab(ctx, projectId, tabId);
     if (!after) throw new Error('the tab read carried no revision');
-    await ctx.copies!.record(documentId, tabId, after);
-    const tabIds = found.document.tabs.map((t) => t.id);
+    await ctx.copies!.record(projectId, tabId, after);
+    const tabIds = found.project.tabs.map((t) => t.id);
     const view = diffView(
       before.tab,
       after.tab,
@@ -200,7 +182,7 @@ export const tabDiff = defineVerb({
   text: ({ text }) => [text],
   json: ({ json }) => json,
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     examples: [
       'liveplanner tab diff "Auth flow" --since 41',
       'liveplanner tab diff 3f9c --tab Overview --since 41 --json',

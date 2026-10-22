@@ -1,33 +1,34 @@
-// `add` with a whole raw element, as the MCP's `ops` mode sends it
-// (docs/specs/024-agents/blueprints/edit-operations.md "Operations"): taken as given, its geometry
-// kept, its id kept when free. Finalise normalises and validates it.
+// `add` with a whole element (docs/specs/024-agents/blueprints/edit-operations.md "Operations"): taken as given, its
+// geometry kept, its id kept when free. Only an element a Plan tab holds is taken (../plan-elements); finalise
+// normalises and validates it.
 
 import type { EditRejection } from '@liveplanner/api-schema';
-import { ELEMENT_FIELD_NAMES, type Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { layerLockOf } from '../locks';
+import { PLAN_KINDS_HINT, planElementIssue, planFieldsOf } from '../plan-elements';
 import { idTaken, unknownField } from '../rejections';
 import { type EditState, isTaken, putElement, refuseLocked } from '../state';
-import type { AddElementOperation } from '../types';
+import type { AddOperation } from '../types';
 import { PROTOTYPE_KEYS } from '../vocabulary';
-
-const fieldNamesOf = (type: unknown): readonly string[] =>
-  typeof type === 'string' && Object.hasOwn(ELEMENT_FIELD_NAMES, type)
-    ? ELEMENT_FIELD_NAMES[type as Element['type']]
-    : [];
 
 export function applyAdd(
   state: EditState,
-  { element: raw }: AddElementOperation,
+  { element: raw }: AddOperation,
   operation: number,
 ): EditRejection | null {
   const prototypeKey = Object.keys(raw).find((key) => PROTOTYPE_KEYS.has(key));
   if (prototypeKey !== undefined)
     return unknownField(
       operation,
-      typeof raw.type === 'string' ? raw.type : 'element',
+      typeof raw.shape === 'string' ? raw.shape : 'element',
       prototypeKey,
-      fieldNamesOf(raw.type),
+      planFieldsOf(raw as unknown as Element),
     );
+  const issue = planElementIssue(raw);
+  if (issue) {
+    state.log('[edit-ops] not-plan', { operation });
+    return { code: 'invalid_value', operation, details: [issue], hint: PLAN_KINDS_HINT };
+  }
   const id = typeof raw.id === 'string' && raw.id !== '' ? raw.id : state.makeId();
   if (isTaken(state, id)) {
     const holder = state.byId.get(id) ?? state.before.get(id)!;

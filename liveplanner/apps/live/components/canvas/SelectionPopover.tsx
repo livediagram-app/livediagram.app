@@ -1,4 +1,4 @@
-import { useRef, type ReactNode } from 'react';
+import { useRef } from 'react';
 import { useEdgeAwarePlacement } from '@/hooks/canvas/useEdgeAwarePlacement';
 import { FloatingTitle } from '@/components/chrome/FloatingTitle';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
@@ -18,7 +18,7 @@ import {
 import dynamic from 'next/dynamic';
 import type { CardinalityToolbar } from '@/components/canvas/entity/CardinalityButton';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
-import type { Rect } from '@liveplanner/document';
+import type { Rect } from '@liveplanner/project';
 
 // A relationship's Cardinality group shows only on a selected arrow between two entities: loaded then.
 const CardinalityButton = dynamic(
@@ -60,7 +60,7 @@ type SelectionPopoverProps = {
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
   onDuplicate?: () => void;
-  // Intra-LAYER z-order (docs/specs/006-document/layers.md gained no z-nudge until now): stack this
+  // Intra-LAYER z-order (docs/specs/006-project/layers.md gained no z-nudge until now): stack this
   // element in front of / behind its band-mates WITHOUT moving it between
   // layers, which is what the element menu's Bring to Front does.
   onBringToFront?: () => void;
@@ -84,9 +84,6 @@ type SelectionPopoverProps = {
   // read-only, or a kind that shows none (a Plan board or card, an
   // annotation), so the toolbar sits closer without overlapping anything.
   compact?: boolean;
-  // A separate small toolbar to the left of this one (the element tour offer, away from Delete at the right end,
-  // docs/specs/007-editor/element-tours.md), placed and nudged with it as one group.
-  aside?: ReactNode;
 };
 
 // Default gap: leave room for the plus duplicate button between
@@ -119,7 +116,6 @@ export function SelectionPopover({
   compact = false,
   suspended = false,
   title,
-  aside,
 }: SelectionPopoverProps) {
   const ellipsisRef = useRef<HTMLButtonElement>(null);
   // More opens the element menu: on every device, since right-click is not something a desktop
@@ -141,11 +137,8 @@ export function SelectionPopover({
     suspended,
   );
 
-  // The toolbar, and any aside before it, ride one positioned group: placed, flipped and nudged inside the canvas
-  // together. The aside leads, at the left, so it never sits beside Delete and the More at the toolbar's right end.
-  // The group is as wide as its content up to the screen less its margins; past that the aside wraps onto its own
-  // line on the far side from the element (above the toolbar when it sits above), never over it: being first, it
-  // takes the first line, which wrap-reverse puts at the bottom when the group sits below the element.
+  // The toolbar rides a positioned group: placed, flipped and nudged inside the canvas, as wide as its content up to
+  // the screen less its margins.
   return (
     <div
       ref={ref}
@@ -159,7 +152,6 @@ export function SelectionPopover({
       className={`pointer-events-none absolute z-[var(--z-toolbar)] flex w-max max-w-[calc(100vw-1rem)] items-center justify-center gap-x-2 gap-y-7 ${placeAbove ? 'flex-wrap' : 'flex-wrap-reverse'}`}
       style={style}
     >
-      {aside}
       <div
         data-testid="selection-popover"
         role="toolbar"

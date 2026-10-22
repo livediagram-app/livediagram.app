@@ -1,11 +1,11 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { readDashboard } from '@liveplanner/document';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useSelectTab } from '@/app/document/[id]/useSelectTab';
+import { readDashboard } from '@liveplanner/project';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
+import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 import { useTemplatePickMove } from '@/components/start/useTemplatePickMove';
-import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import { BLANK_SHEET_CHOICE } from '@/lib/sheet-seeds';
 
 // Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost").
@@ -41,12 +41,12 @@ export function EditorStartPanels() {
     renameTab,
   } = ctx;
   const selectTab = useSelectTab();
-  const isOffline = useIsOfflineDocument(ctx.documentId);
-  // A template picked from Start Planning on a document /new just made goes to its default folder
+  const isOffline = useIsOfflineProject(ctx.projectId);
+  // A template picked from Start Planning on a project /new just made goes to its default folder
   // (docs/specs/013-workspace/default-folders.md "A template picked after creation").
   const moveOnTemplatePick = useTemplatePickMove({
     ownerId: ctx.selfParticipant.id,
-    documentId: ctx.documentId,
+    projectId: ctx.projectId,
     tabId: activeTab.id,
     signedIn: !!accountUserId,
     tabHasContent: activeTab.elements.length > 0,
@@ -98,11 +98,11 @@ export function EditorStartPanels() {
           actions={ctx.forms}
           openTab={selectTab}
           loadTabs={loadAllTabs}
-          documentId={ctx.documentId}
+          projectId={ctx.projectId}
           ownerId={ctx.selfParticipant.id}
           share={ctx.sessionShareCode}
           online={!isOffline}
-          // Share Form on a document in This Browser syncs it first (docs/specs/030-forms/forms.md), never as the
+          // Share Form on a project in This Browser syncs it first (docs/specs/030-forms/forms.md), never as the
           // 'self' placeholder an early open runs under.
           onSyncToCloud={ctx.syncToCloud}
           syncReady={ctx.selfParticipant.id !== 'self'}

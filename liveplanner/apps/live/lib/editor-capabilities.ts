@@ -12,7 +12,7 @@ import {
   isParticipantPlaceable,
   participantWritesOn,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { AccessLevel } from '@liveplanner/api-schema';
 
 export type EditorCapabilities = {

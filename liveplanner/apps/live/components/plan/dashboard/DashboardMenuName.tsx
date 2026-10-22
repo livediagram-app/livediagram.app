@@ -7,7 +7,7 @@
 // drawn while the box has no slot (a phone).
 import { createPortal } from 'react-dom';
 import { useEffect, useRef, useState } from 'react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { IN_BOX_TITLE_CLASS, useMenuNameSlot } from '@/components/plan/menu-name-slot';
 
 const NAME_MAX = 80;

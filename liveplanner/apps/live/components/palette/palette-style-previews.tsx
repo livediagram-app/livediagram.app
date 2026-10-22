@@ -4,7 +4,7 @@
 // (docs/specs/004-interface-design/iconography.md, "Art").
 
 import { ErGlyphMarks } from '@/components/canvas/arrow-defs';
-import { BORDER_STROKE_PX } from '@liveplanner/document';
+import { BORDER_STROKE_PX } from '@liveplanner/project';
 import type {
   ArrowEnds,
   ArrowheadShape,
@@ -12,7 +12,7 @@ import type {
   BorderRadius,
   BorderStroke,
   BorderStyle,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { Glyph } from '@liveplanner/ui';
 
 export function BorderStrokeIcon({ value }: { value: BorderStroke }) {

@@ -85,15 +85,15 @@ describe('classifyRoomOp', () => {
       expect(classifyRoomOp({ kind, tabId: 't1' })).toEqual([{ kind: 'tab', tabId: 't1' }]);
   });
 
-  it('reads document metadata as the document, and leaves everything else alone', () => {
+  it('reads project metadata as the project, and leaves everything else alone', () => {
     expect(
       classifyRoomOp({
-        kind: 'document-meta',
+        kind: 'project-meta',
         name: 'Shop',
         tabs: [{ id: 't1', name: 'Main' }, 'x', { id: 't2' }],
       }),
-    ).toEqual([{ kind: 'document', name: 'Shop', tabs: [{ id: 't1', name: 'Main' }] }]);
-    expect(classifyRoomOp({ kind: 'document-meta', name: 'Shop' })).toEqual([]);
+    ).toEqual([{ kind: 'project', name: 'Shop', tabs: [{ id: 't1', name: 'Main' }] }]);
+    expect(classifyRoomOp({ kind: 'project-meta', name: 'Shop' })).toEqual([]);
     expect(classifyRoomOp({ kind: 'cursor', tabId: 't1' })).toEqual([]);
     expect(classifyRoomOp({ kind: 'select' })).toEqual([]);
     expect(classifyRoomOp(null)).toEqual([]);
@@ -101,10 +101,10 @@ describe('classifyRoomOp', () => {
 });
 
 describe('onTab', () => {
-  it('keeps every event without a tab narrowing, a document event always, and only the tab’s otherwise', () => {
+  it('keeps every event without a tab narrowing, a project event always, and only the tab’s otherwise', () => {
     const tab: RoomEvent = { kind: 'tab', tabId: 't1' };
-    const document: RoomEvent = { kind: 'document', name: 'Shop', tabs: [] };
-    expect([onTab(tab, null), onTab(tab, 't1'), onTab(tab, 't2'), onTab(document, 't2')]).toEqual([
+    const project: RoomEvent = { kind: 'project', name: 'Shop', tabs: [] };
+    expect([onTab(tab, null), onTab(tab, 't1'), onTab(tab, 't2'), onTab(project, 't2')]).toEqual([
       true,
       true,
       false,
@@ -122,7 +122,7 @@ describe('watchLines', () => {
       { id: 't2', name: 'Old' },
       { id: 't3', name: 'Gone' },
     ],
-    documentName: 'Shop',
+    projectName: 'Shop',
   };
 
   it('prints each event as one line', () => {
@@ -172,9 +172,9 @@ describe('watchLines', () => {
     expect(lines[0]).toBe('comment on paym by Eve changeset cs_9 by Ada:: "hi"');
   });
 
-  it('tells a document renamed, and tabs added, renamed and removed', () => {
+  it('tells a project renamed, and tabs added, renamed and removed', () => {
     const event: RoomEvent = {
-      kind: 'document',
+      kind: 'project',
       name: 'Shop v2',
       tabs: [
         { id: 't1', name: 'Main' },
@@ -183,7 +183,7 @@ describe('watchLines', () => {
       ],
     };
     expect(watchLines(event, names)).toEqual([
-      'document renamed "Shop v2"',
+      'project renamed "Shop v2"',
       'tab "New name" renamed',
       'tab "Fresh" added',
       'tab "Gone" removed',

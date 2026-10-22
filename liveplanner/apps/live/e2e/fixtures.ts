@@ -5,7 +5,7 @@ import {
   type Locator,
   type Page,
 } from '@playwright/test';
-import type { StoredDocument, StoredTab } from './stored';
+import type { StoredProject, StoredTab } from './stored';
 import { DEBUG_STORAGE_KEY } from '../lib/debug-log';
 
 // Shared fixture (docs/specs/003-system-architecture/e2e-smoke.md): every smoke test fails on an uncaught
@@ -55,7 +55,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Plan, Forms and element tours (-tour.md,
+// The Plan and Forms tours (docs/specs/026-plan/plan-tour.md,
 // docs/specs/030-forms/forms.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
@@ -63,11 +63,7 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
     const key = 'liveplanner:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (
-        prefs.formTourSeen !== true ||
-        prefs.planTourSeen !== true ||
-        !Array.isArray(prefs.elementTourKinds)
-      )
+      if (prefs.formTourSeen !== true || prefs.planTourSeen !== true)
         localStorage.setItem(
           key,
           JSON.stringify({
@@ -76,29 +72,6 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
             // The Plan tour is mounted on every tab now that Plan is the one mode.
             planTourSeen: true,
             planTourTracks: ['boards', 'sheets'],
-            // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
-            elementTourKinds: [
-              'sankey',
-              'layer-stack',
-              'pyramid',
-              'funnel',
-              'cycle',
-              'hub',
-              'onion',
-              'chevrons',
-              'mind-node',
-              'flowchart',
-              'org-chart',
-              'sequence',
-              'chart',
-              'stack',
-              'entity',
-              'tab-window',
-              'lane',
-              'boundary',
-              'diagram-key',
-              'portal',
-            ],
           }),
         );
     } catch {
@@ -137,7 +110,7 @@ export function expectNoPageErrors(pageErrors: string[]): void {
 }
 
 // The wizard is a static export: its buttons are in the HTML before React attaches their handlers. A mode
-// card clicked in that gap is kept and acted on at hydration (new-document-route.md "A choice before
+// card clicked in that gap is kept and acted on at hydration (new-project-route.md "A choice before
 // hydration"), but every other control's click in that gap does nothing, more often the busier the
 // machine. React tags every element it has hydrated with a `__reactProps$` key; wait for it on the
 // element about to be used.
@@ -149,13 +122,13 @@ export async function untilHydrated(locator: Locator): Promise<void> {
     .toBe(true);
 }
 
-// The wizard asks only for a mode (docs/specs/007-editor/new-document-route.md "One-step wizard"): choosing one
-// creates the document there and then, and lands on the editor with the mode's start screen over the canvas
-// (docs/specs/007-editor/start-diagramming.md).
-// Resolves to the new document's id; `url` carries a `/new?folder=` / `?team=` context.
+// The wizard asks only for a mode (docs/specs/007-editor/new-project-route.md "One-step wizard"): choosing one
+// creates the project there and then, and lands on the editor with the mode's start screen over the canvas
+// (docs/specs/007-editor/start-panel.md).
+// Resolves to the new project's id; `url` carries a `/new?folder=` / `?team=` context.
 export async function createInMode(page: Page, mode: string, url = '/new'): Promise<string> {
   await page.goto(url);
-  await page.getByText('New Document', { exact: false }).waitFor();
+  await page.getByText('New Project', { exact: false }).waitFor();
   const card = page.locator(`[data-new-mode="${mode}"]`);
   await untilHydrated(card);
   await card.click();
@@ -167,10 +140,10 @@ export async function createInMode(page: Page, mode: string, url = '/new'): Prom
 const startScreen = (page: Page, title: RegExp = /^Start /) =>
   page.getByRole('region', { name: title });
 
-// Start a document from a named TEMPLATE in a named group of Start Diagramming: a Diagram document from the
+// Start a project from a named TEMPLATE in a named group of Start Diagramming: a Diagram project from the
 // wizard, then the template picked on its start screen, so template creation (builders, layers, per-template
 // canvas overrides, the tab kind) is its own path, as a person takes it.
-export async function startTemplateDocument(
+export async function startTemplateProject(
   page: Page,
   group: string,
   template: RegExp,
@@ -189,7 +162,7 @@ export async function startTemplateDocument(
 export async function dismissQuickTour(_page: Page): Promise<void> {}
 
 // A blank canvas straight away: /new?blank=1, the wizard bypass Start Blank
-// links to (docs/specs/007-editor/new-document-route.md).
+// links to (docs/specs/007-editor/new-project-route.md).
 export async function openStartBlank(page: Page): Promise<void> {
   await page.goto('/new?blank=1');
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });
@@ -204,9 +177,9 @@ export async function openTeamRetro(page: Page): Promise<void> {
   await dismissQuickTour(page);
 }
 
-// A blank Diagram document through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
-// canvas, docs/specs/007-editor/start-diagramming.md "Bringing it back").
-export async function startBlankDocument(page: Page): Promise<void> {
+// A blank Diagram project through the wizard: Diagram on the Mode step, Create, then the start screen's × (a blank
+// canvas, docs/specs/007-editor/start-panel.md "Bringing it back").
+export async function startBlankProject(page: Page): Promise<void> {
   await createInMode(page, 'diagram');
   const start = startScreen(page, /^Start Diagramming$/);
   await start.getByRole('button', { name: 'Close' }).click();
@@ -215,7 +188,7 @@ export async function startBlankDocument(page: Page): Promise<void> {
 
 export type Seed = Record<string, unknown>[];
 
-// Write the seed into the new document's first tab through the api, reload.
+// Write the seed into the new project's first tab through the api, reload.
 export async function seedTab(page: Page, elements: Seed): Promise<void> {
   const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
   const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
@@ -226,19 +199,19 @@ export async function seedTab(page: Page, elements: Seed): Promise<void> {
       let tabId = '';
       for (let i = 0; i < 50 && !tab; i += 1) {
         const liveDoc = (await (
-          await fetch(`${base}/documents/${id}`, { headers })
-        ).json()) as StoredDocument;
-        tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
+          await fetch(`${base}/projects/${id}`, { headers })
+        ).json()) as StoredProject;
+        tabId = liveDoc.project?.tabs?.[0]?.id ?? '';
         if (tabId) {
           const got = (await (
-            await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
+            await fetch(`${base}/projects/${id}/tabs/${tabId}`, { headers })
           ).json()) as StoredTab;
           tab = got.tab ?? null;
         }
         if (!tab) await new Promise((r) => setTimeout(r, 100));
       }
-      if (!tab) throw new Error('the new document never saved its first tab');
-      const res = await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
+      if (!tab) throw new Error('the new project never saved its first tab');
+      const res = await fetch(`${base}/projects/${id}/tabs/${tabId}`, {
         method: 'PUT',
         headers,
         body: JSON.stringify({ ...tab, elements }),

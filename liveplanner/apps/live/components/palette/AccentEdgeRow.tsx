@@ -8,7 +8,7 @@ import {
   withAccentEdgeColor,
   type AccentEdge,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { Glyph } from '@liveplanner/ui';
 import { SizeButton } from '@/components/palette/palette-controls';
 import { BorderGrid } from '@/components/palette/context-menu-rows';

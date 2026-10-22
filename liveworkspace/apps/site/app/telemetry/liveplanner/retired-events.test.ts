@@ -6,8 +6,28 @@ import { dropRetiredEvents, isRetiredEvent } from './retired-events';
 // reach a chart.
 
 describe('isRetiredEvent', () => {
+  it('retires using a diagram element in place', () => {
+    expect(isRetiredEvent('Element', 'Used', 'Video')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'Video')).toBe(false);
+  });
+
+  it('retires the Draw Mode stack, keeping animated backgrounds', () => {
+    expect(isRetiredEvent('Tab', 'Changed', 'OpensInDraw')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageFitToContent')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'TabWindowOpen')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'ToolbarCategory')).toBe(true);
+    expect(isRetiredEvent('UI', 'Changed', 'WhiteboardDockPositionTop')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(false);
+  });
+
+  it('retires the diagram lint view, keeping the other agent views', () => {
+    expect(isRetiredEvent('Agent', 'Viewed', 'Lint')).toBe(true);
+    expect(isRetiredEvent('Cli', 'Used', 'TabLint')).toBe(true);
+    expect(isRetiredEvent('Agent', 'Viewed', 'Outline')).toBe(false);
+  });
+
   it('retires the Activity panel events', () => {
-    expect(isRetiredEvent('Document', 'Reverted', null)).toBe(true);
+    expect(isRetiredEvent('Project', 'Reverted', null)).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'Activity')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'SettingsActivity')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'ActivityPanelOff')).toBe(true);
@@ -25,8 +45,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Searched', 'PaletteSearch')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'favourites')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'favourites')).toBe(true);
-    // The palette's other searches, and the Explorer's document favourites, carry on.
-    expect(isRetiredEvent('UI', 'Searched', 'IconSearch')).toBe(false);
+    // The Explorer's project favourites carry on.
     expect(isRetiredEvent('Mcp', 'Used', 'SearchIcons')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'IconSearch')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'popular')).toBe(false);
@@ -49,8 +68,8 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Template', 'Used', 'Kanban')).toBe(false);
   });
 
-  it('retires the New Document wizard, not the template link', () => {
-    expect(isRetiredEvent('UI', 'Closed', 'NewDocument')).toBe(true);
+  it('retires the New Project wizard, not the template link', () => {
+    expect(isRetiredEvent('UI', 'Closed', 'NewProject')).toBe(true);
     expect(isRetiredEvent('UI', 'Used', 'JustDraw')).toBe(true);
     expect(isRetiredEvent('UI', 'Used', 'TemplateLink')).toBe(false);
   });
@@ -72,7 +91,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Timeline')).toBe(true);
     expect(isRetiredEvent('UI', 'Selected', 'ExplorerPanel.Timeline')).toBe(true);
     expect(isRetiredEvent('Page', 'View', '/explorer/timeline')).toBe(true);
-    // A document's History and a team's Activity carry on.
+    // A project's History and a team's Activity carry on.
     expect(isRetiredEvent('Timeline', 'Opened', 'Stack')).toBe(false);
     expect(isRetiredEvent('Timeline', 'Changed', 'Calendar')).toBe(false);
     expect(isRetiredEvent('Timeline', 'Loaded', 'More')).toBe(false);
@@ -80,14 +99,14 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Page', 'View', '/explorer/home')).toBe(false);
   });
 
-  it('retires Pages mode, not the backgrounds and windows that outlive it', () => {
+  it('retires Pages mode, not the backgrounds that outlive it', () => {
     expect(isRetiredEvent('Tab', 'Changed', 'PageAdded')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'PageKindLogo')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'WireframeDeviceIphone')).toBe(true);
     expect(isRetiredEvent('Element', 'Added', 'ArticleTable')).toBe(true);
     expect(isRetiredEvent('Element', 'Changed', 'ShapesUnited')).toBe(true);
-    expect(isRetiredEvent('Document', 'Exported', 'PagesPDFPages')).toBe(true);
-    expect(isRetiredEvent('Document', 'Exported', 'LogoKit')).toBe(true);
+    expect(isRetiredEvent('Project', 'Exported', 'PagesPDFPages')).toBe(true);
+    expect(isRetiredEvent('Project', 'Exported', 'LogoKit')).toBe(true);
     expect(isRetiredEvent('UI', 'View', 'PagesTourStepSlideWelcome')).toBe(true);
     expect(isRetiredEvent('UI', 'Started', 'LogoTour')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'LogoGuideGridOn')).toBe(true);
@@ -97,9 +116,8 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Mcp', 'Used', 'WriteArticle')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'PageSet')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'PageBackgroundAnimated')).toBe(false);
-    expect(isRetiredEvent('UI', 'Used', 'TabWindowOpen')).toBe(false);
     expect(isRetiredEvent('UI', 'Started', 'PlanTour')).toBe(false);
-    expect(isRetiredEvent('Document', 'Exported', 'PNG')).toBe(false);
+    expect(isRetiredEvent('Project', 'Exported', 'PNG')).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'pages')).toBe(false);
   });
 
@@ -126,8 +144,6 @@ describe('isRetiredEvent', () => {
     }
     expect(isRetiredEvent('Folder', 'Changed', 'DefaultModePlan')).toBe(false);
     expect(isRetiredEvent('Folder', 'Changed', 'DefaultKindEventStorming')).toBe(false);
-    expect(isRetiredEvent('Tab', 'Changed', 'PageFitToContent')).toBe(false);
-    expect(isRetiredEvent('UI', 'Changed', 'ToolbarCategory')).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'ToolbarSearch')).toBe(false);
   });
 
@@ -155,8 +171,23 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'PlanTourOffer')).toBe(false);
     expect(isRetiredEvent('UI', 'Started', 'PlanTour')).toBe(false);
     expect(isRetiredEvent('UI', 'View', 'PlanTourStepBoard')).toBe(false);
-    expect(isRetiredEvent('UI', 'View', 'SankeyTourStepOutro')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanTourSeenOff')).toBe(false);
+  });
+
+  // liveplanner's element tours, the Tab Style Show Me and the strip palette's catalogue searches (removed
+  // 2026-10-22, plans/0001-liveplanner-fork.md Phase 4).
+  it('retires the diagram tours and catalogue searches, not the tours Plan keeps', () => {
+    expect(isRetiredEvent('UI', 'Opened', 'SankeyTourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'SankeyTourStepOutro')).toBe(true);
+    expect(isRetiredEvent('UI', 'Ended', 'PyramidTourCompleted')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'ElementToursSeenOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'TabStyleTour')).toBe(true);
+    expect(isRetiredEvent('UI', 'Searched', 'IconSearch')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'StickerGroup')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'PlanTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'ShareTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'DashboardTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'FormTourStepQuestions')).toBe(false);
   });
 
   it("retires Workshop mode's facilitation features, not the session tools Plan keeps", () => {
@@ -178,7 +209,7 @@ describe('isRetiredEvent', () => {
   });
 
   it('keeps everything that still exists', () => {
-    expect(isRetiredEvent('Document', 'Undone', null)).toBe(false);
+    expect(isRetiredEvent('Project', 'Undone', null)).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'undo')).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'undo')).toBe(false);
     expect(isRetiredEvent('Activity', 'Opened', null)).toBe(false);
@@ -187,8 +218,8 @@ describe('isRetiredEvent', () => {
 });
 
 describe('dropRetiredEvents', () => {
-  const reverted = metricKey('Document', 'Reverted', null);
-  const undone = metricKey('Document', 'Undone', null);
+  const reverted = metricKey('Project', 'Reverted', null);
+  const undone = metricKey('Project', 'Undone', null);
   const summary = {
     enabled: true,
     generatedAt: 0,
@@ -196,20 +227,20 @@ describe('dropRetiredEvents', () => {
       today: {
         total: 5,
         rows: [
-          { category: 'Document', action: 'Reverted', type: null, count: 2 },
-          { category: 'Document', action: 'Undone', type: null, count: 3 },
+          { category: 'Project', action: 'Reverted', type: null, count: 2 },
+          { category: 'Project', action: 'Undone', type: null, count: 3 },
         ],
       },
-      last7: { total: 3, rows: [{ category: 'Document', action: 'Undone', type: null, count: 3 }] },
+      last7: { total: 3, rows: [{ category: 'Project', action: 'Undone', type: null, count: 3 }] },
       last30: {
         total: 3,
-        rows: [{ category: 'Document', action: 'Undone', type: null, count: 3 }],
+        rows: [{ category: 'Project', action: 'Undone', type: null, count: 3 }],
       },
     },
     daily: {
       days: [1, 2],
       totals: [4, 6],
-      byCategory: { Document: [4, 6] },
+      byCategory: { Project: [4, 6] },
       byMetric: { [reverted]: [1, 2], [undone]: [3, 4] },
     },
   } as unknown as TelemetrySummary;
@@ -224,7 +255,7 @@ describe('dropRetiredEvents', () => {
   it('takes retired series out of the daily lines', () => {
     const daily = dropRetiredEvents(summary).daily!;
     expect(Object.keys(daily.byMetric)).toEqual([undone]);
-    expect(daily.byCategory.Document).toEqual([3, 4]);
+    expect(daily.byCategory.Project).toEqual([3, 4]);
     expect(daily.totals).toEqual([3, 4]);
   });
 });

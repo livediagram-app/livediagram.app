@@ -58,19 +58,19 @@ the **Delete account** trigger lives on the profile page's Danger zone and is
 no drift). The dialog component itself is unchanged and simply reused — the
 confirmation flow (type your email, then wipe liveplanner's data and close the
 liveworkspace account, then end the session) is exactly as [Transactional & lifecycle email (Resend)](transactional-email.md) describes.
-Account deletion is immediate and total within liveplanner: it removes the account's documents
+Account deletion is immediate and total within liveplanner: it removes the account's projects
 **including every one in its [Trash](../013-workspace/trash.md)**, which the
 dialog and the Danger Zone row both say.
 
 **Teams on deletion** (`detachUserFromTeams`, runs before the row wipe): the
 account's memberships are removed so no ghost member (or dead sole admin)
 lingers. If the user was the **last joined member**, the team is deleted
-outright. Otherwise their **team-library documents transfer to an heir** — the
+outright. Otherwise their **team-library projects transfer to an heir** — the
 longest-standing remaining joined member, admins first — so shared team work
-survives the account (mirrors [Team shared documents](../013-workspace/team-shared-documents.md)'s "deleting a team must never destroy
+survives the account (mirrors [Team shared projects](../013-workspace/team-shared-projects.md)'s "deleting a team must never destroy
 members' work"), and the heir is **promoted to admin** when the deleted user
 was the only one. The user's own `shared_with` references (rows for OTHER
-people's documents they visited) are wiped too.
+people's projects they visited) are wiped too.
 
 ## 2. Capabilities gains `emailEnabled`
 
@@ -92,7 +92,7 @@ happen to share [User preferences](../007-editor/user-preferences.md)'s storage:
 
 ```ts
 // added to UserPreferences (docs/specs/007-editor/user-preferences.md)
-notifyDocumentJoin?: boolean;     // someone first opens one of my shared documents
+notifyProjectJoin?: boolean;     // someone first opens one of my shared projects
 notifyInviteResponse?: boolean;  // someone accepts/declines a team invite I (an admin) sent
 notifyMentions?: boolean;        // a teammate @-mentions me in a comment (docs/specs/012-collaboration/comment-mentions.md)
 notifyFormResponses?: boolean;   // someone fills in one of my forms (docs/specs/030-forms/forms.md)
@@ -103,7 +103,7 @@ toggle is an opt-**out**, mirroring [User preferences](../007-editor/user-prefer
 profile page reads/writes them through the existing
 `readUserPreferences` / `writeUserPreferences(prefs, ownerId)` round-trip, so
 a flip persists to D1 immediately and syncs across devices. Each flip emits
-`UI` / `Toggled` / `NotifyDocumentJoin{On,Off}` /
+`UI` / `Toggled` / `NotifyProjectJoin{On,Off}` /
 `NotifyInviteResponse{On,Off}` telemetry ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)) before persisting.
 
 ### Server-side read
@@ -124,32 +124,32 @@ addresses come only from trusted server state (the verified
 `email_lifecycle.email` written at first sighting, or the inviter-typed
 `team_members.email`), never from a client header.
 
-### a. Someone joins my document — `notifyDocumentJoin`
+### a. Someone joins my project — `notifyProjectJoin`
 
-The signal is **a new person opening one of my shared documents for the first
+The signal is **a new person opening one of my shared projects for the first
 time**: the share-resolve path (`GET /api/share/<code>`) already records a
 visitor in `shared_with` via `recordSharedAccess`, but only when the visitor
 identifies and isn't the owner. `recordSharedAccess` now reports whether the
 row was **new** (first visit) vs a repeat. On a new visit by a **verified**
 visitor (a signed-in session or API token, `ctx.verifiedUserId`) the worker fires
-`notifyDocumentJoin(env, liveDoc, joinerName)`. A guest's `X-Owner-Id` is
+`notifyProjectJoin(env, liveDoc, joinerName)`. A guest's `X-Owner-Id` is
 unproven and free to mint, so every fresh one would be another first visit;
 a guest visit is still recorded in `shared_with` and counted as
-`Document·Joined`, but never emails. `notifyDocumentJoin`:
+`Project·Joined`, but never emails. `notifyProjectJoin`:
 
 - no-ops unless `emailEnabled(env)`;
 - resolves the owner's email from `email_lifecycle` (so it only fires for a
   signed-in owner who has a stored verified address — a guest-owned
-  document has no address and is silently skipped);
-- no-ops when the owner's `notifyDocumentJoin` pref is `false`;
-- no-ops unless it wins the per-document throttle: at most one join email per
-  document per 15 minutes (`claimJoinNotify`, an atomic conditional `UPDATE` of
-  `documents.join_notified_at`; the new-comment email's rule
+  project has no address and is silently skipped);
+- no-ops when the owner's `notifyProjectJoin` pref is `false`;
+- no-ops unless it wins the per-project throttle: at most one join email per
+  project per 15 minutes (`claimJoinNotify`, an atomic conditional `UPDATE` of
+  `projects.join_notified_at`; the new-comment email's rule
   on its own column);
-- otherwise sends the **document-joined** email: "Someone just opened
-  _{document name}_", with a CTA back to the document.
+- otherwise sends the **project-joined** email: "Someone just opened
+  _{project name}_", with a CTA back to the project.
 
-The document **name** is the recipient owner's _own_ content going back to
+The project **name** is the recipient owner's _own_ content going back to
 them, so including it does not widen the [Transactional & lifecycle email (Resend)](transactional-email.md) §7 content rule (which is
 about not leaking _other_ users' content). The joiner's display name is
 included when known (the owner already sees it in live presence and the
@@ -187,7 +187,7 @@ transitions do.
 - Signed-in only; every recipient address comes from verified server state,
   never a client header (consistent with [Teams](../013-workspace/teams.md)'s removal of
   `X-Owner-Email` and [Transactional & lifecycle email (Resend)](transactional-email.md) §7).
-- The only user-influenced strings in a notification body (a document name, a
+- The only user-influenced strings in a notification body (a project name, a
   joiner name, a responder email, a team name) are HTML-escaped, and each is
   either the recipient's own content or already known to the recipient.
 - Off by default at the deployment level (no `RESEND_API_KEY` → no sends, no

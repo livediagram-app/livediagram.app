@@ -3,11 +3,11 @@ import { TAG_LIMIT } from '@liveplanner/api-schema';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { migrateOwnerId } from './account';
 import {
-  addDocumentTag,
+  addProjectTag,
   createTag,
   deleteTag,
   listTags,
-  removeDocumentTag,
+  removeProjectTag,
   updateTag,
 } from './tags';
 
@@ -23,7 +23,7 @@ function arrange() {
   ] as const) {
     db.sql
       .prepare(
-        'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 1, 1)',
+        'INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, 1, 1)',
       )
       .run(id, owner, id);
   }
@@ -106,59 +106,59 @@ describe('updateTag', () => {
   });
 });
 
-describe('document tags', () => {
-  it('puts a tag on a document idempotently and takes it off', async () => {
+describe('project tags', () => {
+  it('puts a tag on a project idempotently and takes it off', async () => {
     const { env } = arrange();
     await make(env, 'o', 't1', 'Design');
-    expect(await addDocumentTag(env, 'o', 't1', 'd1')).toBe(true);
-    expect(await addDocumentTag(env, 'o', 't1', 'd1')).toBe(true);
-    expect((await listTags(env, 'o')).links).toEqual([{ tagId: 't1', documentId: 'd1' }]);
-    expect(await removeDocumentTag(env, 'o', 't1', 'd1')).toBe(true);
-    expect(await removeDocumentTag(env, 'o', 't1', 'd1')).toBe(true);
+    expect(await addProjectTag(env, 'o', 't1', 'd1')).toBe(true);
+    expect(await addProjectTag(env, 'o', 't1', 'd1')).toBe(true);
+    expect((await listTags(env, 'o')).links).toEqual([{ tagId: 't1', projectId: 'd1' }]);
+    expect(await removeProjectTag(env, 'o', 't1', 'd1')).toBe(true);
+    expect(await removeProjectTag(env, 'o', 't1', 'd1')).toBe(true);
     expect((await listTags(env, 'o')).links).toEqual([]);
   });
 
   it("refuses a tag that is not the caller's, changing nothing", async () => {
     const { env } = arrange();
     await make(env, 'o', 't1', 'Design');
-    await addDocumentTag(env, 'o', 't1', 'd1');
-    expect(await addDocumentTag(env, 'p', 't1', 'peer')).toBe(false);
-    expect(await removeDocumentTag(env, 'p', 't1', 'd1')).toBe(false);
-    expect((await listTags(env, 'o')).links).toEqual([{ tagId: 't1', documentId: 'd1' }]);
+    await addProjectTag(env, 'o', 't1', 'd1');
+    expect(await addProjectTag(env, 'p', 't1', 'peer')).toBe(false);
+    expect(await removeProjectTag(env, 'p', 't1', 'd1')).toBe(false);
+    expect((await listTags(env, 'o')).links).toEqual([{ tagId: 't1', projectId: 'd1' }]);
   });
 
-  it('answers false for a document that does not exist', async () => {
+  it('answers false for a project that does not exist', async () => {
     const { env } = arrange();
     await make(env, 'o', 't1', 'Design');
-    expect(await addDocumentTag(env, 'o', 't1', 'gone')).toBe(false);
+    expect(await addProjectTag(env, 'o', 't1', 'gone')).toBe(false);
   });
 
-  it("tags anyone's document: the link is the tagger's own row", async () => {
+  it("tags anyone's project: the link is the tagger's own row", async () => {
     const { env } = arrange();
     await make(env, 'o', 't1', 'Design');
-    expect(await addDocumentTag(env, 'o', 't1', 'peer')).toBe(true);
+    expect(await addProjectTag(env, 'o', 't1', 'peer')).toBe(true);
   });
 
-  it('leaves a document in the Trash out of the list, keeping the link for a restore', async () => {
+  it('leaves a project in the Trash out of the list, keeping the link for a restore', async () => {
     const { env, sql } = arrange();
     await make(env, 'o', 't1', 'Design');
-    await addDocumentTag(env, 'o', 't1', 'd1');
-    sql.prepare("UPDATE documents SET trashed_at = 5 WHERE id = 'd1'").run();
+    await addProjectTag(env, 'o', 't1', 'd1');
+    sql.prepare("UPDATE projects SET trashed_at = 5 WHERE id = 'd1'").run();
     expect((await listTags(env, 'o')).links).toEqual([]);
-    sql.prepare("UPDATE documents SET trashed_at = NULL WHERE id = 'd1'").run();
-    expect((await listTags(env, 'o')).links).toEqual([{ tagId: 't1', documentId: 'd1' }]);
+    sql.prepare("UPDATE projects SET trashed_at = NULL WHERE id = 'd1'").run();
+    expect((await listTags(env, 'o')).links).toEqual([{ tagId: 't1', projectId: 'd1' }]);
   });
 
-  it('cascades: deleting the tag or the document drops the link', async () => {
+  it('cascades: deleting the tag or the project drops the link', async () => {
     const { env, sql } = arrange();
     await make(env, 'o', 't1', 'Design');
     await make(env, 'o', 't2', 'Research');
-    await addDocumentTag(env, 'o', 't1', 'd1');
-    await addDocumentTag(env, 'o', 't2', 'd2');
+    await addProjectTag(env, 'o', 't1', 'd1');
+    await addProjectTag(env, 'o', 't2', 'd2');
     expect(await deleteTag(env, 'p', 't1')).toBe(false);
     expect(await deleteTag(env, 'o', 't1')).toBe(true);
-    sql.prepare("DELETE FROM documents WHERE id = 'd2'").run();
-    const left = sql.prepare('SELECT COUNT(*) AS n FROM document_tags').get() as { n: number };
+    sql.prepare("DELETE FROM projects WHERE id = 'd2'").run();
+    const left = sql.prepare('SELECT COUNT(*) AS n FROM project_tags').get() as { n: number };
     expect(left.n).toBe(0);
   });
 });
@@ -169,9 +169,9 @@ describe('signing up carries tags across', () => {
     await make(env, 'guest', 'g-design', 'design');
     await make(env, 'guest', 'g-only', 'Guest only');
     await make(env, 'o', 'a-design', 'Design');
-    await addDocumentTag(env, 'guest', 'g-design', 'd1');
-    await addDocumentTag(env, 'guest', 'g-only', 'd2');
-    await addDocumentTag(env, 'o', 'a-design', 'd2');
+    await addProjectTag(env, 'guest', 'g-design', 'd1');
+    await addProjectTag(env, 'guest', 'g-only', 'd2');
+    await addProjectTag(env, 'o', 'a-design', 'd2');
 
     await migrateOwnerId(env, 'guest', 'o');
 
@@ -179,9 +179,9 @@ describe('signing up carries tags across', () => {
     expect(after.tags.map((t) => t.id)).toEqual(['a-design', 'g-only']);
     expect(after.links).toEqual(
       expect.arrayContaining([
-        { tagId: 'a-design', documentId: 'd1' },
-        { tagId: 'a-design', documentId: 'd2' },
-        { tagId: 'g-only', documentId: 'd2' },
+        { tagId: 'a-design', projectId: 'd1' },
+        { tagId: 'a-design', projectId: 'd2' },
+        { tagId: 'g-only', projectId: 'd2' },
       ]),
     );
     expect(after.links).toHaveLength(3);
@@ -189,16 +189,16 @@ describe('signing up carries tags across', () => {
   });
 });
 
-// "Performance and limits": every tag statement seeks an index, so a person's list, a document delete's cascade and an
+// "Performance and limits": every tag statement seeks an index, so a person's list, a project delete's cascade and an
 // account's tags never read the whole table.
 describe('tag statements seek an index', () => {
   const { sql } = sqliteD1();
   it.each([
     'SELECT id, name, colour, created_at FROM tags WHERE owner_id = ?1 ORDER BY name COLLATE NOCASE',
-    `SELECT dt.tag_id, dt.document_id FROM tags t JOIN document_tags dt ON dt.tag_id = t.id WHERE t.owner_id = ?1
-       AND NOT EXISTS (SELECT 1 FROM documents d WHERE d.id = dt.document_id AND d.trashed_at IS NOT NULL)`,
-    'DELETE FROM document_tags WHERE document_id = ?',
-    'DELETE FROM document_tags WHERE tag_id = ?',
+    `SELECT dt.tag_id, dt.project_id FROM tags t JOIN project_tags dt ON dt.tag_id = t.id WHERE t.owner_id = ?1
+       AND NOT EXISTS (SELECT 1 FROM projects d WHERE d.id = dt.project_id AND d.trashed_at IS NOT NULL)`,
+    'DELETE FROM project_tags WHERE project_id = ?',
+    'DELETE FROM project_tags WHERE tag_id = ?',
     'DELETE FROM tags WHERE owner_id = ?',
   ])('%s', (statement) => {
     const binds = (statement.match(/\?/g) ?? []).map(() => 'x');

@@ -22,8 +22,8 @@ Derived from [Element indicators](../element-indicators.md). Defaults in [DEFAUL
 
 | File                                                                                                                                                       | Holds                                                                                                                                                 |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/indicator-placement.ts`                                                                                                             | `indicatorRings`, `centredIndicators`, `topAnchor`, `footerAnchor`, `contentBox`, `placeIndicators`, `pipInset`, `contentShift`, the constants (pure) |
-| `packages/document/src/shape-hit.ts`                                                                                                                       | exports `roundedRectRing` (was the private `roundedRect`)                                                                                             |
+| `packages/project/src/indicator-placement.ts`                                                                                                              | `indicatorRings`, `centredIndicators`, `topAnchor`, `footerAnchor`, `contentBox`, `placeIndicators`, `pipInset`, `contentShift`, the constants (pure) |
+| `packages/project/src/shape-hit.ts`                                                                                                                        | exports `roundedRectRing` (was the private `roundedRect`)                                                                                             |
 | `apps/live/lib/element-indicator-style.ts`                                                                                                                 | `ELEMENT_INDICATOR_STYLES`, `readElementIndicatorStyle`, `withElementIndicatorStyle`                                                                  |
 | `apps/live/components/canvas/ElementIndicatorStyleContext.tsx`                                                                                             | the style as a context, provided by `Canvas.tsx` from `settings`                                                                                      |
 | `apps/live/components/canvas/indicator-items.ts`                                                                                                           | `IndicatorItem`, `buildIndicatorItems`, `clusterSize(items, form)`, `indicatorBacking`                                                                |
@@ -42,7 +42,7 @@ Derived from [Element indicators](../element-indicators.md). Defaults in [DEFAUL
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/indicator-placement.ts
+// packages/project/src/indicator-placement.ts
 export type IndicatorAnchor = 'top-right' | 'top-centre' | 'bottom-left' | 'bottom-centre';
 export type IndicatorBox = { x: number; y: number; width: number; height: number };
 export type ContentIcon = {
@@ -204,7 +204,7 @@ Placement is pure and deterministic; no logs. A style change is the telemetry ev
 
 | Rule                                                           | Test                                                               |
 | -------------------------------------------------------------- | ------------------------------------------------------------------ |
-| Rounded rect: Top fits tight, clear of the outline             | `packages/document/src/indicator-placement.test.ts`                |
+| Rounded rect: Top fits tight, clear of the outline             | `packages/project/src/indicator-placement.test.ts`                 |
 | Circle: slides along the diagonal, stays inside                | same                                                               |
 | Diamond / small pill / thin bar: no fit → `null`               | same                                                               |
 | Never crosses the middle band                                  | same                                                               |

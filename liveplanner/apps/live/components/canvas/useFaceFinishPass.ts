@@ -14,7 +14,7 @@ import {
   type FacePartPaint,
   type FacePartShape,
   type Finish,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { trustedHtml } from '@liveplanner/ui';
 import { watchUntilSettled } from '@/components/canvas/settle-watch';
 

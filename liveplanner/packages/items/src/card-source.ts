@@ -1,4 +1,4 @@
-// The document's cards as a sheet's card functions read them (docs/specs/029-sheets/formulas.md "Plan cards"): every
+// The project's cards as a sheet's card functions read them (docs/specs/029-sheets/formulas.md "Plan cards"): every
 // live card (not archived, not in the Trash), and each field by the name the card panel gives it. Structural, so
 // neither package imports the other: the sheets engine takes any object of this shape.
 import { isArchived, isTrashed, statusLabel } from './board';

@@ -22,16 +22,16 @@ Measured 2026-10-11 (gzip level 9), before and after the changes that set these 
 | Editor: `/explorer/home` (and most sections) | 1,780 KiB | 570 KiB   |
 | Editor: `/new`                               | 1,877 KiB | 669 KiB   |
 | Editor: `/join`, `/oauth/*`                  | ~1,500    | 316–354   |
-| Editor: `/document/<id>`                     | 1,493 KiB | 1,489 KiB |
+| Editor: `/project/<id>`                     | 1,493 KiB | 1,489 KiB |
 | Help: an article                             | 238 KiB   | 207 KiB   |
 | Telemetry: the dashboard                     | 287 KiB   | 280 KiB   |
 | Marketing: `/` (HTML, gzipped)               | 114 KiB   | 93 KiB    |
 
-Then the document page's own first load (measured 2026-10-11 the same way, on top of the above):
+Then the project page's own first load (measured 2026-10-11 the same way, on top of the above):
 
 | Page                          | Before    | After     |
 | ----------------------------- | --------- | --------- |
-| Editor: `/document/<id>`      | 1,489 KiB | 1,240 KiB |
+| Editor: `/project/<id>`      | 1,489 KiB | 1,240 KiB |
 | Marketing: a `/features` page | 221 KiB   | 207 KiB   |
 
 ## Rules
@@ -41,10 +41,10 @@ Then the document page's own first load (measured 2026-10-11 the same way, on to
 The editor app's root layout, its providers and its root `not-found.tsx` ship with **every route**.
 Next renders the root not-found slot inside the layout, so its code is part of every page.
 
-- `app/not-found.tsx` renders the editor (that is how a real `/document/<id>` URL reaches it in the
-  static export; [New document route](../007-editor/new-document-route.md)), and loads it with
-  `next/dynamic`, never a static import. A document URL already has the editor from
-  `/document/placeholder`'s own import, so it pays nothing extra; the opening screen covers the one
+- `app/not-found.tsx` renders the editor (that is how a real `/project/<id>` URL reaches it in the
+  static export; [New project route](../007-editor/new-project-route.md)), and loads it with
+  `next/dynamic`, never a static import. A project URL already has the editor from
+  `/project/placeholder`'s own import, so it pays nothing extra; the opening screen covers the one
   tick the import takes.
 - `apps/live/app/first-load-lazy.test.ts` fails if any of these become static imports again.
 
@@ -56,24 +56,24 @@ The Explorer's Settings and move picker, and every telemetry dashboard view but 
 this way. Where switching to one must stay instant, its code is fetched once the page is idle
 (the telemetry dashboard).
 
-### The document page loads what a board may not need on demand
+### The project page loads what a board may not need on demand
 
 `apps/live/lib/editor-deferred-code.ts` names every module the editor loads on demand, so a surface's
 `next/dynamic` and the prefetch below share one import:
 
 - **Content a board may draw on open**: the Draw dock, tables
-  and facilitation panels. Fetched as the editor mounts (`prefetchWhenIdle`), alongside the document
+  and facilitation panels. Fetched as the editor mounts (`prefetchWhenIdle`), alongside the project
   request, so a board that has one finds its code already in, while the first load does not carry it.
 - **Surfaces someone opens**: the Explorer and Layers popovers (mounted from their first opening on,
   then kept, so their state survives), search, the quick style panel, the tool panels, presenting and
-  session settings. Fetched once the opened document has rendered and the page is idle.
+  session settings. Fetched once the opened project has rendered and the page is idle.
 - **At the press**: a template's canvas overrides load with its builders when one is applied.
 - **What waits for on-demand code.** Starting a deck waits for the presentation overlay's code (with
   the deck's unvisited tabs), and the overlay draws in the first slide's commit, so the deck's keys
   listen from its first frame.
 - A panel whose code cannot load (offline behind the load-error card) draws nothing rather than
   throwing into the screen around it.
-- `apps/live/app/document/[id]/document-lazy-load.test.ts` fails if any of these become static
+- `apps/live/app/project/[id]/project-lazy-load.test.ts` fails if any of these become static
   imports again.
 
 ### A page loads only the scene it shows
@@ -117,7 +117,7 @@ sections while rendering, never by rewriting the DOM after hydration, and the re
 holds its height before the time is counted.
 
 A slow device paints a page while it is still parsing it, so a layout never depends on markup
-further down the document: the help article's sidebar column is a grid track, there before the
+further down the project: the help article's sidebar column is a grid track, there before the
 sidebar is, where a flex row let the article take the full width until the sidebar was parsed
 (a 0.24 layout shift at 6× CPU throttling).
 
@@ -135,7 +135,7 @@ and shared; a failed answer is not kept, so the next caller asks again.
 
 A timer that re-renders a large tree (the editor's presence clock) skips its tick while the page
 is hidden, catching up when it returns, and while it has nothing to update (nobody else has been
-seen on the document).
+seen on the project).
 
 ### Per keystroke, the least work
 
@@ -149,15 +149,15 @@ seen on the document).
 
 ## The api
 
-- A query that serves one person starts from that person's rows (their visible documents, their
+- A query that serves one person starts from that person's rows (their visible projects, their
   candidates) and seeks everything else by index. A query led by a table-wide index (all open
-  threads, every document in id order, every document-scoped event) slows as the database grows,
+  threads, every project in id order, every project-scoped event) slows as the database grows,
   not as the person's work does. `apps/api/src/db/home-plans.test.ts` pins the plans of the Home and
   Inbox reads against the real migrations.
 - Cells named by key are matched as `(row_id, col_id)` pairs, so the primary key seeks each one
   (`apps/api/src/db/sheets-plans.test.ts`).
-- A check that needs only a document's owner and team reads that row, not the full document.
+- A check that needs only a project's owner and team reads that row, not the full project.
 - A realtime room reads a socket's fixed session facts once, not on every frame.
-- The tab save reads its document in one query and fetches the room's ledger alongside its other
+- The tab save reads its project in one query and fetches the room's ledger alongside its other
   reads ([API](../015-api/api.md) "Tab save"); the timeline's event and its scopes are one batch; the
   guest-to-account migration moves its rows in one batch.

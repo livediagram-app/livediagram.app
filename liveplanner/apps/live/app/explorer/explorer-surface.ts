@@ -15,7 +15,7 @@ export type ExplorerSurfaceFlags = {
   settings: boolean;
   // The Appearance control: a workbench sets the scheme.
   appearance: boolean;
-  // The sign-in nudge and the move of this browser's documents after signing in.
+  // The sign-in nudge and the move of this browser's projects after signing in.
   guestPrompts: boolean;
   // API tokens (the timeline's token cards' Revoke) and Teams administration (New team, Invites, team settings).
   administration: boolean;

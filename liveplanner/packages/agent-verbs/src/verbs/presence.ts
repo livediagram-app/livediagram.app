@@ -14,7 +14,7 @@ import {
 import { defineVerb, VerbRefusal } from '../define';
 import { tabOf, tabPath } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or liveplanner URL');
+const projectArg = z.string().describe('A name, id prefix or liveplanner URL');
 const tabFlag = z
   .string()
   .optional()
@@ -40,7 +40,7 @@ export const presenceSet = defineVerb({
     'Shows a status line and focus on a tab, under the token owner\u2019s name, for the ttl (30 s by default); every changeset the token writes there keeps it up. Setting it again replaces both.',
   behaviour: 'write',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     tab: tabFlag,
     status: z.string().optional().describe('What the agent is doing, up to 80 characters'),
     focus: z.string().optional().describe('Comma-separated refs of the elements it is looking at'),
@@ -77,9 +77,9 @@ export const presenceSet = defineVerb({
         message: REFUSALS[parsed.code],
         hint: 'liveplanner presence set --help',
       });
-    const { document, tab } = await tabOf(ctx, input.doc, input.tab);
+    const { project, tab } = await tabOf(ctx, input.project, input.tab);
     const { presence } = await ctx.api.json<{ presence: AgentPresenceResult }>(
-      `${tabPath(document.id, tab.id)}/presence`,
+      `${tabPath(project.id, tab.id)}/presence`,
       { method: 'PUT', body: JSON.stringify(body) },
     );
     return { tabName: tab.name, presence };
@@ -88,7 +88,7 @@ export const presenceSet = defineVerb({
     `presence on ${JSON.stringify(tabName)} until ${second(presence.expiresAt)}`,
   ],
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     examples: [
       'liveplanner presence set "Shop" --status "Adding the payment flow" --focus api,db',
       'liveplanner presence set 3f9c --tab Flow --status "Reviewing" --ttl 120',
@@ -102,11 +102,11 @@ export const presenceClear = defineVerb({
   summary: 'Stop showing the agent on a tab',
   description: 'Takes the token\u2019s presence off a tab at once; nothing there changes nothing.',
   behaviour: 'write',
-  input: z.object({ doc: docArg, tab: tabFlag }),
+  input: z.object({ project: projectArg, tab: tabFlag }),
   output: z.object({ text: z.string() }),
   run: async (ctx, input) => {
-    const { document, tab } = await tabOf(ctx, input.doc, input.tab);
-    const res = await ctx.api.fetch(`${tabPath(document.id, tab.id)}/presence`, {
+    const { project, tab } = await tabOf(ctx, input.project, input.tab);
+    const res = await ctx.api.fetch(`${tabPath(project.id, tab.id)}/presence`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new ApiError(res.status, await res.text());
@@ -114,7 +114,7 @@ export const presenceClear = defineVerb({
   },
   text: ({ text }) => [text],
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     examples: ['liveplanner presence clear "Shop"', 'liveplanner presence clear 3f9c --tab Flow'],
     prints: 'the tab it left',
   },

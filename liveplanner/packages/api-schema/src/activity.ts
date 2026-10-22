@@ -1,4 +1,4 @@
-// Inbox wire format (docs/specs/013-workspace/inbox.md): the cross-document list of what
+// Inbox wire format (docs/specs/013-workspace/inbox.md): the cross-project list of what
 // is outstanding for one reader — open actions assigned to them, open
 // actions they assigned to others, and unresolved comment threads they
 // are in.
@@ -11,12 +11,12 @@
 // is still open.
 
 // Where a row lives, and how the reader reaches it. `via` is how the
-// document is visible to them (their own, a joined team's library, or
+// project is visible to them (their own, a joined team's library, or
 // shared with them); `shareCode` is set only for 'shared', so the client
 // can build the visitor URL (docs/specs/013-workspace/embeds.md) the way Shared with You does.
 export type ActivityPlace = {
-  documentId: string;
-  documentName: string;
+  projectId: string;
+  projectName: string;
   teamId: string | null;
   via: 'own' | 'team' | 'shared';
   shareCode: string | null;
@@ -24,7 +24,7 @@ export type ActivityPlace = {
   tabName: string;
   elementId: string;
   // The element's list name (its label, a table's first cell, or
-  // "Untitled"), per `elementDisplayLabel` in @liveplanner/document.
+  // "Untitled"), per `elementDisplayLabel` in @liveplanner/project.
   elementLabel: string;
 };
 
@@ -45,24 +45,24 @@ export type ActivityAction = ActivityPlace & {
 };
 
 // An unresolved comment thread the reader is in: they wrote a comment
-// in it, or it is on a document they own (owners already hear about every
+// in it, or it is on a project they own (owners already hear about every
 // new comment by email, docs/specs/014-identity/transactional-email.md).
 export type ActivityThread = ActivityPlace & {
   commentCount: number;
   latest: { text: string; authorName: string; authorColor: string; at: number };
   firstAt: number;
   youCommented: boolean;
-  onYourDocument: boolean;
+  onYourProject: boolean;
   // The reader is @-mentioned in the thread (docs/specs/012-collaboration/comment-mentions.md).
   mentionsYou: boolean;
 };
 
 // An open Plan card (docs/specs/026-plan/items.md) whose Assignee is the reader (docs/specs/013-workspace/
 // inbox.md §2.4). Not an ActivityPlace: a card is an item, not an element, and `board` (where the row
-// opens it) is null when no board in its document shows it.
+// opens it) is null when no board in its project shows it.
 export type ActivityCard = {
-  documentId: string;
-  documentName: string;
+  projectId: string;
+  projectName: string;
   teamId: string | null;
   via: 'own' | 'team' | 'shared';
   shareCode: string | null;
@@ -82,15 +82,15 @@ export type ActivityCardThread = Omit<ActivityCard, 'status' | 'updatedAt'> & {
   latest: { text: string; authorName: string; authorColor: string; at: number };
   firstAt: number;
   youCommented: boolean;
-  onYourDocument: boolean;
+  onYourProject: boolean;
   mentionsYou: boolean;
 };
 
 // A form with responses the reader has not seen (docs/specs/030-forms/forms.md "Hearing about responses"): in a
-// document they own or reach through a team. The row opens the form's board (`boardTabId`), else its Form tab.
+// project they own or reach through a team. The row opens the form's board (`boardTabId`), else its Form tab.
 export type ActivityFormResponses = {
-  documentId: string;
-  documentName: string;
+  projectId: string;
+  projectName: string;
   teamId: string | null;
   via: 'own' | 'team';
   tabId: string;

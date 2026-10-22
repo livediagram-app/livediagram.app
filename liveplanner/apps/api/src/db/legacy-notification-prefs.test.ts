@@ -16,9 +16,9 @@ function envWithPrefsRow(prefs: string): Env {
   } as unknown as Env;
 }
 
-describe('getNotificationPrefs, preferences stored before the document rename', () => {
+describe('getNotificationPrefs, preferences stored before the project rename', () => {
   it('honours an opt-out stored under notifyDiagramJoin', async () => {
     const prefs = await getNotificationPrefs(envWithPrefsRow('{"notifyDiagramJoin":false}'), 'u');
-    expect(prefs.notifyDocumentJoin).toBe(false);
+    expect(prefs.notifyProjectJoin).toBe(false);
   });
 });

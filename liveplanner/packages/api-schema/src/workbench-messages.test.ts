@@ -34,8 +34,8 @@ describe('parseWorkbenchMessage', () => {
       {
         type: 'liveplanner:ready',
         v: 1,
-        documentId: 'doc-1',
-        documentName: 'Home screen',
+        projectId: 'doc-1',
+        projectName: 'Home screen',
         tabId: 't1',
         tabName: 'Wireframe',
         role: 'edit',
@@ -47,8 +47,8 @@ describe('parseWorkbenchMessage', () => {
       {
         type: 'liveplanner:selection',
         v: 1,
-        documentId: 'doc-1',
-        documentName: 'Home screen',
+        projectId: 'doc-1',
+        projectName: 'Home screen',
         tabId: 't1',
         rev: 41,
         count: 0,
@@ -124,8 +124,8 @@ describe('parseWorkbenchMessage', () => {
       {
         type: 'liveplanner:ready',
         v: 1,
-        documentId: 'd',
-        documentName: 'n',
+        projectId: 'd',
+        projectName: 'n',
         tabId: 't',
         tabName: 'n',
         role: 'admin',
@@ -133,7 +133,7 @@ describe('parseWorkbenchMessage', () => {
     ],
     [
       'a ready missing its tab',
-      { type: 'liveplanner:ready', v: 1, documentId: 'd', documentName: 'n', role: 'view' },
+      { type: 'liveplanner:ready', v: 1, projectId: 'd', projectName: 'n', role: 'view' },
     ],
     ['a tab missing its name', { type: 'liveplanner:tab', v: 1, tabId: 't' }],
     [
@@ -141,8 +141,8 @@ describe('parseWorkbenchMessage', () => {
       {
         type: 'liveplanner:selection',
         v: 1,
-        documentId: 'd',
-        documentName: 'n',
+        projectId: 'd',
+        projectName: 'n',
         tabId: 't',
         rev: 1.5,
         count: 0,
@@ -154,8 +154,8 @@ describe('parseWorkbenchMessage', () => {
       {
         type: 'liveplanner:selection',
         v: 1,
-        documentId: 'd',
-        documentName: 'n',
+        projectId: 'd',
+        projectName: 'n',
         tabId: 't',
         rev: 1,
         count: -1,
@@ -167,8 +167,8 @@ describe('parseWorkbenchMessage', () => {
       {
         type: 'liveplanner:selection',
         v: 1,
-        documentId: 'd',
-        documentName: 'n',
+        projectId: 'd',
+        projectName: 'n',
         tabId: 't',
         rev: 1,
         count: 0,
@@ -187,9 +187,9 @@ describe('parseWorkbenchMessage, workspace scope', () => {
     view: 'folder',
     folderId: 'f1',
     folderName: 'Minigames',
-    documentCount: 0,
-    documentId: null,
-    documentName: null,
+    projectCount: 0,
+    projectId: null,
+    projectName: null,
     tabId: null,
     tabName: null,
     role: 'edit',
@@ -202,18 +202,18 @@ describe('parseWorkbenchMessage, workspace scope', () => {
       'to-workbench',
       {
         ...place,
-        view: 'document',
-        documentCount: null,
-        documentId: 'doc-1',
-        documentName: 'Home screen',
+        view: 'project',
+        projectCount: null,
+        projectId: 'doc-1',
+        projectName: 'Home screen',
         tabId: 't1',
         tabName: 'Wireframe',
       },
     ],
     ['to-page', { type: 'liveplanner:open', v: 1, to: { view: 'home' } }],
     ['to-page', { type: 'liveplanner:open', v: 1, to: { folderId: 'f1' } }],
-    ['to-page', { type: 'liveplanner:open', v: 1, to: { documentId: 'doc-1' } }],
-    ['to-page', { type: 'liveplanner:open', v: 1, to: { documentId: 'doc-1', tabId: 't1' } }],
+    ['to-page', { type: 'liveplanner:open', v: 1, to: { projectId: 'doc-1' } }],
+    ['to-page', { type: 'liveplanner:open', v: 1, to: { projectId: 'doc-1', tabId: 't1' } }],
   ] as const)('accepts a valid message travelling %s: %o', (direction, data) => {
     expect(parseWorkbenchMessage(data, direction)).toEqual(data);
   });
@@ -228,7 +228,7 @@ describe('parseWorkbenchMessage, workspace scope', () => {
       { type: 'liveplanner:ready', v: 1, scope: 'galaxy', role: 'edit' },
     ],
     ['a place with no view', { ...place, view: '' }],
-    ['a place with a fractional count', { ...place, documentCount: 1.5 }],
+    ['a place with a fractional count', { ...place, projectCount: 1.5 }],
     ['a place with a numeric folder', { ...place, folderId: 7 }],
     ['a place missing its role', { ...place, role: undefined }],
   ])('names %s invalid at the workbench', (_label, data) => {
@@ -240,12 +240,12 @@ describe('parseWorkbenchMessage, workspace scope', () => {
     ['an open to another view', { type: 'liveplanner:open', v: 1, to: { view: 'recent' } }],
     ['an open to an empty folder id', { type: 'liveplanner:open', v: 1, to: { folderId: '' } }],
     [
-      'an open to an overlong document id',
-      { type: 'liveplanner:open', v: 1, to: { documentId: 'x'.repeat(65) } },
+      'an open to an overlong project id',
+      { type: 'liveplanner:open', v: 1, to: { projectId: 'x'.repeat(65) } },
     ],
     [
       'an open to a tab that is not a string',
-      { type: 'liveplanner:open', v: 1, to: { documentId: 'd', tabId: 4 } },
+      { type: 'liveplanner:open', v: 1, to: { projectId: 'd', tabId: 4 } },
     ],
   ])('names %s invalid at the page', (_label, data) => {
     expect(parseWorkbenchMessage(data, 'to-page')).toEqual({ invalid: data.type });

@@ -6,7 +6,7 @@ import { writeItem } from './items';
 
 // docs/specs/026-plan/item-types.md "An item type": an undo or redo reaches the api as `undo: true` in the body.
 
-const scope = { ownerId: 'owner-me', documentId: 'doc-cloud', shareCode: null, tabId: null };
+const scope = { ownerId: 'owner-me', projectId: 'doc-cloud', shareCode: null, tabId: null };
 const by = { id: 'p-me', name: 'Me', color: '#2563eb' };
 
 beforeEach(() => __setOfflineBackend(memBackend()));

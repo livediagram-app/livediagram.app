@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState } from 'react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { SideBySideIcon } from '@liveplanner/ui';
 import {
   SPLIT_TAB_BAR_CLEARANCE_PX,
@@ -44,7 +44,7 @@ export function SplitDropZone({
   }, [offered, draggedId, prefetch]);
 
   // Track the pointer through the browser's drag: dragover is the only event that carries it, and
-  // it fires on whatever is under the pointer, so listen on the document. One state write a frame.
+  // it fires on whatever is under the pointer, so listen on the project. One state write a frame.
   useEffect(() => {
     if (!offered) return;
     const onDragOver = (e: DragEvent) => {

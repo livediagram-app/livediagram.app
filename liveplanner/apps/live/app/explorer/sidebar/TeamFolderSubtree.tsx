@@ -7,7 +7,7 @@ import { trackSidebar } from './sidebar-telemetry';
 import { useDefaultFolderDescription } from '@/components/placement/DefaultFolderMarker';
 import { FolderLabel } from './SidebarFolderSubtree';
 
-// A team folder row and its subfolders (docs/specs/013-workspace/team-shared-documents.md).
+// A team folder row and its subfolders (docs/specs/013-workspace/team-shared-projects.md).
 // Navigation only: a click opens the team page at that folder (rename / move
 // / delete live there), so there's no menu and no highlight. Folder ids are
 // globally unique, so it shares the one `expanded` set with the personal tree.
@@ -33,7 +33,7 @@ export function TeamFolderSubtree({
   const kids = childrenByParent.get(folder.id) ?? [];
   const isOpen = expanded.has(folder.id);
   const markerWords = useDefaultFolderDescription(folder.id);
-  // A dropped document moves into this team folder; resting on the row opens or closes it.
+  // A dropped project moves into this team folder; resting on the row opens or closes it.
   const drop = useExplorerDropTarget(
     { teamId, folderId: folder.id },
     { onLongHover: kids.length > 0 ? () => onToggleExpand(folder.id) : undefined },

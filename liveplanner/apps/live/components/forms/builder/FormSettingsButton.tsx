@@ -4,7 +4,7 @@
 // board's settings sit at the end of its header: one panel switching between Responses Go To (first) and Settings, or
 // opened on the one asked for (a paused form's Fix opens Responses Go To). An Editor's alone.
 import { useState } from 'react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideSettings } from '@liveplanner/icons/lucide';
 import type { FormLinkState } from '@/hooks/forms/useFormLink';

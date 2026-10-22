@@ -1,6 +1,6 @@
 // What every form verb reads first (docs/specs/030-forms/forms.md "Agents", blueprint §15 "Engine flow"): the
-// document's plan, whose tabs name each tab's kind and a Sheet tab's sheets and whose boards name their columns and
-// card types, so no tab body is read but the Form tab's own. One plan read a call, whatever the document's size.
+// project's plan, whose tabs name each tab's kind and a Sheet tab's sheets and whose boards name their columns and
+// card types, so no tab body is read but the Form tab's own. One plan read a call, whatever the project's size.
 import type { ApiClient } from '@liveplanner/api-client';
 import type {
   FormLinkResponse,
@@ -9,7 +9,7 @@ import type {
   PlanTabOutline,
   TabResponse,
 } from '@liveplanner/api-schema';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import type { ItemTypeDef } from '@liveplanner/items';
 import { planPath } from '../plan/plan-state';
 import { tabPath } from '../verbs/shared';
@@ -35,7 +35,7 @@ export interface SheetRef {
 }
 
 export interface FormWorld {
-  documentId: string;
+  projectId: string;
   tabs: TabRef[];
   boards: BoardRef[];
   sheets: SheetRef[];
@@ -46,8 +46,8 @@ export interface FormWorld {
 
 export type FormTabBody = Tab & { rev: number };
 
-export const formLinkPath = (documentId: string, tabId: string) =>
-  `${tabPath(documentId, tabId)}/form-link`;
+export const formLinkPath = (projectId: string, tabId: string) =>
+  `${tabPath(projectId, tabId)}/form-link`;
 
 // Each Sheet tab's sheets by the names Responses Go To gives them.
 export function sheetRefsOf(tabs: readonly TabRef[]): SheetRef[] {
@@ -62,11 +62,11 @@ export function sheetRefsOf(tabs: readonly TabRef[]): SheetRef[] {
   );
 }
 
-export function worldOf(documentId: string, plan: PlanResponse): FormWorld {
+export function worldOf(projectId: string, plan: PlanResponse): FormWorld {
   const tabs = plan.tabs ?? [];
   const boardTabs = new Set(tabs.filter((t) => t.kind === 'board').map((t) => t.id));
   return {
-    documentId,
+    projectId,
     tabs,
     boards: plan.boards
       .filter((b) => b.kind === 'board' && boardTabs.has(b.tabId) && b.columns.length > 0)
@@ -85,26 +85,26 @@ export function worldOf(documentId: string, plan: PlanResponse): FormWorld {
   };
 }
 
-export async function readFormWorld(api: ApiClient, documentId: string): Promise<FormWorld> {
-  return worldOf(documentId, await api.json<PlanResponse>(planPath(documentId)));
+export async function readFormWorld(api: ApiClient, projectId: string): Promise<FormWorld> {
+  return worldOf(projectId, await api.json<PlanResponse>(planPath(projectId)));
 }
 
 export async function readFormTabBody(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   tabId: string,
 ): Promise<FormTabBody> {
-  return (await api.json<TabResponse>(tabPath(documentId, tabId))).tab;
+  return (await api.json<TabResponse>(tabPath(projectId, tabId))).tab;
 }
 
 // The link of a Form tab as its reader may see it (the code only for an Editor); null when the api will not say.
 export async function readFormLink(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   tabId: string,
 ): Promise<FormLinkResponse | null> {
   try {
-    return await api.json<FormLinkResponse>(formLinkPath(documentId, tabId));
+    return await api.json<FormLinkResponse>(formLinkPath(projectId, tabId));
   } catch {
     return null;
   }

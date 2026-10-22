@@ -4,7 +4,7 @@
 // A few events can only be counted honestly by the api worker, because the
 // browser either never sees them (an email sent from a cron) or cannot tell
 // whether they are the first of their kind (a new account, a first visit to a
-// shared document), and a crash counts even when no client survives to report it.
+// shared project), and a crash counts even when no client survives to report it.
 //
 // A Worker sends no Origin, so each post carries liveplanner's Worker key
 // (TELEMETRY_KEY); without the key, or with TELEMETRY_ENABLED off, nothing is
