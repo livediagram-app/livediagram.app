@@ -34,7 +34,6 @@ describe('a metric over midnight', () => {
       items: new Map([['i1', dueOn('2026-10-11')]]),
       types: ITEM_TYPES,
       status: 'ready',
-      planInput: true,
       canEdit: true,
       openItem: vi.fn(),
       statusNames: new Map([['todo', 'To do']]),

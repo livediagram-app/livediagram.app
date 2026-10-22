@@ -37,7 +37,6 @@ function planWith(over: Partial<PlanContextValue> = {}, items: Item[] = []): Pla
     items: new Map(items.map((i) => [i.id, i])),
     types: ITEM_TYPES,
     status: 'ready',
-    planInput: true,
     canEdit: true,
     openItem: vi.fn(),
     updateView: vi.fn(),

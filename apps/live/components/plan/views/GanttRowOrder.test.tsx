@@ -33,7 +33,6 @@ function chart(settings: Omit<PlanViewRef, 'view'> = {}, over: Partial<PlanConte
     items: new Map([A, B, C].map((i) => [i.id, i])),
     types: ITEM_TYPES,
     status: 'ready',
-    planInput: true,
     canEdit: true,
     openItem: vi.fn(),
     updateView: vi.fn(),
