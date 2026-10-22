@@ -178,16 +178,16 @@ export function welcomeEmail(env: Env): RenderedEmail {
     kind: 'Welcome',
     subject: 'Welcome to liveplanner',
     html: shell(env, {
-      heading: 'Welcome, let’s draw something',
+      heading: 'Welcome, let’s plan something',
       intro:
-        'liveplanner is a fast, no-friction canvas for diagrams. Here’s how to get your first one going:',
+        'liveplanner is a free, real-time planner for teams. Here’s how to get your first project going:',
       points: [
-        '<strong>Drop a shape</strong> from the palette, double-click it to type, and drag the corners to resize.',
-        '<strong>Connect things</strong> by hovering an element’s edge and dragging an arrow to another, and the arrow stays pinned as you move them.',
-        '<strong>Start from a template</strong> (flowchart, mind map, kanban, SWOT and more) or pick one of the built-in themes for an instant look.',
+        '<strong>Start a board</strong> of cards, add columns for each stage, and drag cards along as the work moves.',
+        '<strong>Add a sheet, a dashboard or a form</strong> as another tab, so the numbers, the charts and the requests live in the same project.',
+        '<strong>Start from a template</strong> (kanban, project planner, bug triage and more) to have the columns and card types ready to fill.',
       ],
-      outro: 'Everything autosaves as you go, so you can just start and come back later.',
-      ctaText: 'Start drawing',
+      outro: 'Everything saves as you go, so you can just start and come back later.',
+      ctaText: 'Start planning',
       ctaHref: `${base}/new`,
     }),
   };
@@ -218,17 +218,17 @@ export function week2Email(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Week2',
-    subject: 'Bring your team onto the canvas',
+    subject: 'Bring your team into your projects',
     html: shell(env, {
-      heading: 'Diagrams are better together',
+      heading: 'Plans are better together',
       intro:
-        'If you’re working with other people, a team gives everyone a shared home for documents:',
+        'If you’re working with other people, a team gives everyone a shared home for projects:',
       points: [
         '<strong>Create a team</strong> from the Explorer and invite people by email.',
         '<strong>A shared folder</strong> every member can open and edit (no more passing links around).',
         '<strong>Admin and Member roles</strong>: admins manage who’s in the team, everyone else just gets to work.',
       ],
-      outro: 'The canvas itself still needs no account. Teams just add a shared home on top.',
+      outro: 'A project still needs no account. Teams just add a shared home on top.',
       ctaText: 'Create a team',
       ctaHref: `${base}/explorer/team`,
       footer: tipsFooter(env),
@@ -339,8 +339,8 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
       intro:
         'This confirms that your liveplanner account and the documents stored under it have been permanently removed, as you requested. There’s nothing left for you to do.',
       outro:
-        'If this wasn’t you, or you change your mind, you’re always welcome back. The canvas is free and needs no account to start.',
-      ctaText: 'Start a new diagram',
+        'If this wasn’t you, or you change your mind, you’re always welcome back. liveplanner is free and needs no account to start.',
+      ctaText: 'Start a new project',
       ctaHref: `${base}/new`,
       footer:
         'This is a one-time confirmation of your account deletion. We won’t send any further email to this address.',
@@ -581,18 +581,18 @@ export function activationEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Activation',
-    subject: 'Your canvas is waiting',
+    subject: 'Your first project is waiting',
     html: shell(env, {
       heading: 'Ready when you are',
       intro:
-        'You signed up for liveplanner but haven’t made a diagram yet. It takes about thirty seconds to get going:',
+        'You signed up for liveplanner but haven’t made a project yet. It takes about thirty seconds to get going:',
       points: [
-        'Open a blank canvas and drop a shape, or start from a template (flowchart, mind map, kanban and more).',
-        'Double-click to type, drag from an edge to connect, and it all autosaves as you go.',
-        'Pick a theme for an instant look you can change any time.',
+        'Start a blank board and add a few cards, or start from a template (kanban, project planner, bug triage and more).',
+        'Add a sheet, a dashboard or a form beside it, and it all saves as you go.',
+        'Share it with one link and plan it together in real time.',
       ],
-      outro: 'No pressure: the canvas is free and always here.',
-      ctaText: 'Make your first diagram',
+      outro: 'No pressure: liveplanner is free and always here.',
+      ctaText: 'Make your first project',
       ctaHref: `${base}/new`,
       footer: tipsFooter(env),
     }),
@@ -707,7 +707,7 @@ export function winBackEmail(env: Env): RenderedEmail {
         'You haven’t opened liveplanner in a few weeks, and your documents are right where you left them. A few things you can pick back up:',
       points: [
         'Start something new in seconds from a template or theme.',
-        'Share a document with a live link, or bring a team onto the canvas.',
+        'Share a project with a live link, or bring a team into it.',
         'Export to PDF / PNG / SVG / Markdown whenever you need a copy.',
       ],
       outro: 'No rush: it’s all still here whenever you want it.',
@@ -759,7 +759,7 @@ export function firstShareEmail(env: Env): RenderedEmail {
         'Revoke a link any time from the Share dialog, and it stops working instantly.',
       ],
       outro:
-        'Collaboration needs no account, so whoever you share with can jump straight onto the canvas.',
+        'Collaboration needs no account, so whoever you share with can jump straight in.',
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
       footer: manageNotificationsFooter(

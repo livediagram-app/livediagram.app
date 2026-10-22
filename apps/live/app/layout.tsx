@@ -10,7 +10,7 @@ import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
 import { googleFontsHref } from '@liveplanner/document';
 import { BRAND_OG_IMAGE, BRAND_TWITTER_IMAGE } from '@liveplanner/ui/seo';
-import { SITE_NAME } from '@liveplanner/ui/site';
+import { SITE_NAME, sentencePitch } from '@liveplanner/ui/site';
 import {
   APPEARANCE_BOOT_SCRIPT,
   BRAND_ICONS,
@@ -46,7 +46,7 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
 );
 
 const TITLE = 'liveplanner';
-const DESCRIPTION = 'Diagrams, whiteboards, illustrations and documents. Multiplayer canvas.';
+const DESCRIPTION = sentencePitch();
 
 export const metadata: Metadata = {
   title: TITLE,

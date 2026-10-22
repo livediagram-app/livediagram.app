@@ -4,7 +4,7 @@
 into the api worker so the product can send a small set of account emails. Like
 Clerk ([Auth + guest access](auth-and-guest-access.md)) and AI ([AI Assistance](../007-editor/ai-assistance.md)), it is **entirely gated on a secret**: when
 `RESEND_API_KEY` is absent the whole feature is inert — no sends, no new request
-work — and everything else behaves exactly as before. Guests and the canvas stay
+work — and everything else behaves exactly as before. Guests and the editor stay
 account-free and never receive email.
 
 ## 1. What we send
@@ -14,7 +14,7 @@ Five messages, two kinds:
 **Lifecycle (onboarding) — signed-in users only:**
 
 1. **Welcome** — sent the first time we see an authenticated user. Tips on
-   building a first diagram (shapes, arrows, templates).
+   starting a first project (a board of cards, the other tabs, templates).
 2. **Week 1** — ~7 days after the welcome. Tips on the Explorer (folders,
    search, recents, sharing from the grid).
 3. **Week 2** — ~14 days after the welcome. Introduces Teams (shared documents,
@@ -173,7 +173,7 @@ sighting with a changed address (§4), resets the count to zero.
   **Branding.** Every builder renders through one shell, so every email looks
   the same: a brand-gradient band across the top of the card (sky-400 to
   blue-700, flat `#0ea5e9` where a client drops gradients), the logo mark beside
-  the "live"/"diagram" wordmark in the header, a brand-50 page behind the card,
+  the "live"/"planner" wordmark in the header, a brand-50 page behind the card,
   and a footer under the card with the lockup again, the tagline ("Plan
   the work together, live. Free, no trackers.") and a link to the
   site. Both lockups link to `APP_BASE_URL`. The mark is a transparent 64px PNG

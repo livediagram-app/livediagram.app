@@ -1,4 +1,4 @@
-import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@liveplanner/icons/lucide';
+import { lucideBookOpen, lucideSparkles, lucideSquareKanban } from '@liveplanner/icons/lucide';
 
 import { Brand } from './Brand';
 import { lucideGlyph } from './icons/lucide-glyph';
@@ -22,7 +22,7 @@ const COLUMNS: { title: string; links: FooterLink[] }[] = [
   {
     title: 'Product',
     links: [
-      { href: '/new', label: 'New Document', icon: lucideGlyph(lucidePenTool, ICON_SIZE) },
+      { href: '/new', label: 'New Project', icon: lucideGlyph(lucideSquareKanban, ICON_SIZE) },
       {
         href: '/ai',
         label: 'AI & MCP',
@@ -66,7 +66,7 @@ export function SiteFooter() {
         <div>
           <Brand href="/" size="lg" className="relative touch-target-y" />
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            Free diagrams, whiteboards and pages for teams who think together.
+            Free planning for teams who work together, live.
           </p>
         </div>
         <nav

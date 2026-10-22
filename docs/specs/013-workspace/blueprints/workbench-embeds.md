@@ -381,7 +381,7 @@ the socket, WB11).
 
 | Phase       | Entered when                                               | Shows                                                                 | Leaves to                                                       |
 | ----------- | ---------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `reading`   | first render                                               | "Opening your diagram…"                                               | `redeeming` (ticket read), `refused('no-ticket')`               |
+| `reading`   | first render                                               | "Opening your project…"                                               | `redeeming` (ticket read), `refused('no-ticket')`               |
 | `redeeming` | `takeTicketFromAddress` returned a ticket                  | as `reading`                                                          | `binding`, `refused('ticket')`, `refused('mismatch')`, `failed` |
 | `binding`   | redeem answered with the address's `d`                     | as `reading`                                                          | `mounted`, `unbound`                                            |
 | `mounted`   | a valid `hello-ack` within `WORKBENCH_HANDSHAKE_MS`        | the editor                                                            | `ended(expired \| revoked \| trashed)`                          |
@@ -1195,8 +1195,8 @@ CREATE INDEX workbench_session_rooms_document_idx ON workbench_session_rooms (do
 
 | Where                             | Copy                                                                                                                                           |
 | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `reading`, `redeeming`, `binding` | "Opening your diagram…" (WB33)                                                                                                                 |
-| `refused` (any)                   | Heading "Open this diagram from your workbench", body "This link works once, for a minute. Open the diagram again from your workbench." (WB33) |
+| `reading`, `redeeming`, `binding` | "Opening your project…" (WB33)                                                                                                                 |
+| `refused` (any)                   | Heading "Open this project from your workbench", body "This link works once, for a minute. Open the project again from your workbench." (WB33) |
 | `unbound`                         | "This view opens only inside <origin>." (spec), the origin in monospace                                                                        |
 | `ended` (expired, revoked)        | A line at the top centre: "Reconnect in <name> to keep editing." (spec); `<name>` from `hello-ack`                                             |
 | `ended` (trashed)                 | `DocumentTrashedCard` with `restorable={false}`                                                                                                |
@@ -1254,7 +1254,7 @@ Every other state is the document request's.
 Each `SettingsTokenCard` with pairings shows, under its lifetime bar, a "Paired workbenches" list (none: nothing,
 WB35). A row: the name (or "Unnamed workbench"), the origin in monospace, its scope ("One document at a time" or
 "Whole workspace", WB67), "Paired <relative time>", and an
-**Unpair** text button. Unpair opens the same confirm popover as Revoke: "Unpair <name>? Its open diagrams stop
+**Unpair** text button. Unpair opens the same confirm popover as Revoke: "Unpair <name>? Its open projects stop
 editing until you allow it again." with **Unpair** and **Cancel** (WB36). After Unpair the row leaves the list.
 
 ## Accessibility
