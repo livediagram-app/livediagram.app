@@ -22,7 +22,7 @@ gave nobody a reason to tell them apart or click.
 | An unknown, revoked or expired code; a trashed document               | liveplanner         | The editor's pitch | The brand card         |
 | Any other editor address (`/document/<id>`, the Explorer, ...)        | liveplanner         | The editor's pitch | The brand card         |
 
-- **The share pitch** is `Open it in liveplanner: diagrams, whiteboards and documents, made together.`
+- **The share pitch** is `Open it in liveplanner: boards, sheets, dashboards and forms, planned together in real time.` (the site's `SITE_PITCH`)
 - **The editor's pitch** is the editor's own description, unchanged.
 - **The brand card** is the origin's shared Open Graph image (`/opengraph-image`, `/twitter-image`), the one the
   marketing site and the help centre use.

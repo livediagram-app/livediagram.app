@@ -11,6 +11,7 @@ import {
   sharePreviewCardPath,
   type SharePreviewResponse,
 } from '@liveplanner/api-schema';
+import { SITE_PITCH } from '@liveplanner/ui/site';
 
 // The few runtime types used here, written out so the app's one DOM-lib typecheck covers this file too.
 export type Fetcher = { fetch: (input: Request | string, init?: RequestInit) => Promise<Response> };
@@ -28,9 +29,8 @@ declare const HTMLRewriter: new () => Rewriter;
 // milliseconds), so this only bites when the api is in trouble.
 export const SHARE_CARD_TIMEOUT_MS = 1500;
 
-// What a named preview says under the document's name.
-export const SHARE_PITCH =
-  'Open it in liveplanner: diagrams, whiteboards and documents, made together.';
+// What a named preview says under the project's name: the site's own pitch (packages/ui/src/site.ts).
+export const SHARE_PITCH = `Open it in liveplanner: ${SITE_PITCH}.`;
 
 // A preview line is one line: a name with newlines or runs of spaces would wrap oddly in every chat app.
 const NAME_MAX = 200;

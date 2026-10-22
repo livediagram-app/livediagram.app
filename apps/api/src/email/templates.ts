@@ -758,8 +758,7 @@ export function firstShareEmail(env: Env): RenderedEmail {
         'Set a link to <strong>expire</strong> after a week, a month, or six months.',
         'Revoke a link any time from the Share dialog, and it stops working instantly.',
       ],
-      outro:
-        'Collaboration needs no account, so whoever you share with can jump straight in.',
+      outro: 'Collaboration needs no account, so whoever you share with can jump straight in.',
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
       footer: manageNotificationsFooter(

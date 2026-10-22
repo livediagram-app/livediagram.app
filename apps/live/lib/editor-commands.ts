@@ -247,14 +247,14 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   out.push({
     id: 'rename-document',
     name: 'Rename Document',
-    keywords: 'rename document diagram title name relabel',
+    keywords: 'rename document project title name relabel',
     run: h.renameDocument,
   });
   if (!ctx.workbench) {
     out.push({
       id: 'delete-document',
       name: 'Delete Document',
-      keywords: 'delete document diagram remove trash destroy',
+      keywords: 'delete document project remove trash destroy',
       run: h.deleteDocument,
     });
   }
@@ -274,7 +274,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     out.push({
       id: 'share',
       name: 'Share Document',
-      keywords: 'share document diagram link invite collaborate publish embed export',
+      keywords: 'share document project link invite collaborate publish embed export',
       run: h.openShare,
     });
   }

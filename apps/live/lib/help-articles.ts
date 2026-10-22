@@ -326,7 +326,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   defaultFolders: {
     title: 'Learn about default folders',
-    description: 'Where new diagrams, whiteboards and boards land when you pick no place.',
+    description: 'Where new projects land when you pick no place.',
   },
   explorerFilters: {
     title: 'Learn about search and filters',

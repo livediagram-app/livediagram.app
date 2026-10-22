@@ -60,7 +60,7 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
     tone: 'emerald',
     icon: DEVICES,
     lead: 'Every device',
-    title: 'Your documents sync',
+    title: 'Your projects sync',
     line: 'Start on a laptop, pick up on a phone.',
   },
   {
@@ -75,7 +75,7 @@ export const ACCOUNT_PITCH_ROWS: readonly PitchRow[] = [
     icon: SPARKLE,
     lead: 'AI tools',
     title: 'Connect your assistant',
-    line: 'Let it find, read and draw on your boards.',
+    line: 'Let it find, read and update your boards.',
   },
   {
     tone: 'amber',

@@ -2163,7 +2163,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/ai',
     segment: 'ai',
     tag: 'AI',
-    summary: 'Generate or review a diagram with the optional AI assistant (streamed).',
+    summary: 'Ask about or clean up a tab with the optional AI assistant (streamed).',
     auth: 'guest-or-clerk',
     requestSchema: 'AiRequest',
     statuses: [200, 401, 403, 500, 502, 503],
