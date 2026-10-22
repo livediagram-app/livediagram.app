@@ -1,4 +1,4 @@
-// `export --all --to <dir> [--format json,svg,png,md]` (docs/specs/015-api/blueprints/cli.md "Pull and push",
+// `export --all --to <dir> [--format json,svg,png]` (docs/specs/015-api/blueprints/cli.md "Pull and push",
 // CLI29): every document the token can read, written read-only for backups and docs. `json` is the editor's
 // `livedesign.document` envelope; the other formats are one file per tab under `<slug>/`. Two documents at a time;
 // a rate-limited read waits a minute and tries again, up to three times. A document that fails is reported and the
@@ -12,12 +12,7 @@ import {
 } from '@livedesign/agent-verbs';
 import { ApiError } from '@livedesign/api-client';
 import type { DocumentResponse } from '@livedesign/api-schema';
-import {
-  documentToEnvelopeText,
-  tabToMarkdownText,
-  type EnvelopeTab,
-  type Tab,
-} from '@livedesign/document';
+import { documentToEnvelopeText, type EnvelopeTab, type Tab } from '@livedesign/document';
 import type { CliIo } from '../io';
 import { CliError, formatError } from '../output/cli-error';
 import { EXIT, type ExitCode } from '../output/exit-codes';
@@ -90,7 +85,6 @@ const joinPath = (dir: string, name: string) => `${dir.replace(/\/+$/, '')}/${na
 const TAB_FILES: Record<Exclude<ExportFormat, 'json'>, string> = {
   svg: 'svg',
   png: 'png',
-  md: 'md',
 };
 
 async function exportDocument(
@@ -130,16 +124,14 @@ async function exportDocument(
     const base = joinPath(tabDir, tabSlugs.get(tab.id)!);
     for (const format of perTab) {
       const path = `${base}.${TAB_FILES[format]}`;
-      if (format === 'svg' || format === 'png') {
-        const { body } = await patiently(ctx, () =>
-          ctx.api.text(`${tabPath(document.id, tab.id)}/render.svg`),
-        );
-        if (format === 'svg') await write(path, body);
-        else {
-          const { writePicture } = await import('../render/png');
-          written.push((await writePicture(io, path, body, 'png')).path);
-        }
-      } else await write(path, tabToMarkdownText(tab));
+      const { body } = await patiently(ctx, () =>
+        ctx.api.text(`${tabPath(document.id, tab.id)}/render.svg`),
+      );
+      if (format === 'svg') await write(path, body);
+      else {
+        const { writePicture } = await import('../render/png');
+        written.push((await writePicture(io, path, body, 'png')).path);
+      }
     }
   }
   return written;

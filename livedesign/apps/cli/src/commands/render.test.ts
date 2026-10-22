@@ -83,11 +83,11 @@ describe('tab render', () => {
 
 describe('export --format png', () => {
   it('writes each tab as a PNG beside the other formats', async () => {
-    const { code, out, io } = await cli(['export', '--all', '--to', 'b', '--format', 'png,md']);
+    const { code, out, io } = await cli(['export', '--all', '--to', 'b', '--format', 'png,svg']);
     expect(code).toBe(0);
     expect(out.trim().split('\n')).toEqual([
       'b/shop/main.png',
-      'b/shop/main.md',
+      'b/shop/main.svg',
       '1 document · 2 files',
     ]);
     expect([...io.byteMap.get('b/shop/main.png')!.slice(0, 4)]).toEqual(PNG);

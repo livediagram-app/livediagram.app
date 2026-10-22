@@ -232,7 +232,7 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
     {
       id: 'export',
       name: 'Export…',
-      keywords: 'export download png svg image markdown save file',
+      keywords: 'export download png svg pdf image save file',
       run: h.openExport,
     },
     {

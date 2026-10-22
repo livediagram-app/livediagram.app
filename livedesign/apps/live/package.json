@@ -36,7 +36,6 @@
     "@livedesign/template-previews": "workspace:*",
     "@livedesign/templates": "workspace:*",
     "@livedesign/ui": "workspace:*",
-    "gifenc": "1.0.3",
     "next": "^16.4.1",
     "polygon-clipping": "0.15.7",
     "react": "^19.3.1",

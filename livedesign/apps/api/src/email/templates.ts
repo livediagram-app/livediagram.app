@@ -204,7 +204,7 @@ export function week1Email(env: Env): RenderedEmail {
       points: [
         '<strong>Folders</strong> group related documents; drag to sort, and collapse folders you’re not using.',
         '<strong>Search and Recents</strong> jump you straight back to what you were working on.',
-        '<strong>Share</strong> right from the grid with a view-only or editor link, and open a document to export a PDF / PNG / SVG / Markdown copy.',
+        '<strong>Share</strong> right from the grid with a view-only or editor link, and open a document to export a PDF / PNG / SVG copy.',
       ],
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,
@@ -646,7 +646,7 @@ export function winBackEmail(env: Env): RenderedEmail {
       points: [
         'Start something new in seconds from a template or theme.',
         'Share a document with a live link, or bring a team onto the canvas.',
-        'Export to PDF / PNG / SVG / Markdown whenever you need a copy.',
+        'Export to PDF / PNG / SVG whenever you need a copy.',
       ],
       outro: 'No rush: it’s all still here whenever you want it.',
       ctaText: 'Open your documents',

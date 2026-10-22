@@ -10,7 +10,6 @@ import { useRef, useState } from 'react';
 import { rememberWireframeDevice } from '@/lib/wireframe-device-memory';
 import { ChooseDeviceStep } from './wireframe/ChooseDeviceStep';
 import { moveBetweenKindCards, PAGE_KINDS, PageKindCard } from './page-kind-cards';
-import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 
 export function FirstPageChoice({
   zoom,
@@ -23,7 +22,7 @@ export function FirstPageChoice({
   // Wireframe turns the choice to Choose a Device (docs/specs/007-editor/wireframe-pages.md).
   const [choosingDevice, setChoosingDevice] = useState(false);
   return (
-    <div {...{ [GIF_OMIT_ATTR]: '' }} className="absolute inset-0 flex items-center justify-center">
+    <div className="absolute inset-0 flex items-center justify-center">
       <div
         role="group"
         aria-labelledby="first-page-choice-title"

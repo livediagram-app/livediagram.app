@@ -60,7 +60,6 @@ import { useCanvasSelectHandlers } from '@/hooks/canvas/useCanvasSelectHandlers'
 import { useArrowLabelLayouts } from '@/hooks/canvas/useArrowLabelLayouts';
 import { useFontEpoch } from '@/components/canvas/useFontEpoch';
 import { loadCanvasPages } from '@/lib/editor-deferred-code';
-import { GifOmit } from './GifOmit';
 import { SLIDE_VIEW_TRANSITION_UPDATE } from './slide-transition';
 import { useStickyPeelVars } from '@/lib/sticky-peel-image';
 
@@ -541,9 +540,8 @@ function CanvasView(props: CanvasProps) {
                   </ElementIndicatorStyleProvider>
                 </CanvasZoomProvider>
               </CanvasArrivalProvider>
-              {/* Drafts and the logo page's guides: editor-only, left out of an animated GIF
-            (GifOmit). */}
-              <GifOmit>
+              {/* Drafts and the logo page's guides. */}
+              <>
                 {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/drawing-tools.md "Markers"):
             in this transformed layer, after the elements, laid out as the stroke it lands as, so
             the same layer rasterises both and release changes no pixel. */}
@@ -571,7 +569,7 @@ function CanvasView(props: CanvasProps) {
                   />
                 ) : null}
                 {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
-              </GifOmit>
+              </>
             </div>
 
             {/* Spotlight presenter shroud (docs/specs/008-canvas/canvas-and-palette.md). Screen-space sibling of the

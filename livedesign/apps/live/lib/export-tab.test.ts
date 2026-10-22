@@ -1,17 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import {
   type ArrowElement,
-  type FreehandElement,
   type ShapeElement,
   type Tab,
   TAB_SCHEMA_VERSION,
   tabToJsonText,
-  tabToMarkdownText,
   type ExportedTabEnvelope,
 } from '@livedesign/document';
 import { exportScale, exportTabAsSvg, MAX_EXPORT_CANVAS_SIDE, renderTabToSvg } from './export-tab';
 import { parseImportedTab } from './import-tab';
-import { encodeStrokePoints } from '@livedesign/document';
 
 const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
   id,
@@ -21,21 +18,6 @@ const shape = (id: string, overrides: Partial<ShapeElement> = {}): ShapeElement 
   y: 0,
   width: 100,
   height: 80,
-  ...overrides,
-});
-
-const freehand = (id: string, overrides: Partial<FreehandElement> = {}): FreehandElement => ({
-  id,
-  type: 'freehand',
-  x: 0,
-  y: 0,
-  width: 60,
-  height: 60,
-  packedPoints: encodeStrokePoints([
-    { nx: 0, ny: 0 },
-    { nx: 1, ny: 1 },
-  ]),
-  closed: false,
   ...overrides,
 });
 
@@ -63,12 +45,10 @@ const tab = (overrides: Partial<Tab> = {}): Tab => ({
 
 const text = async (blob: Blob | Promise<Blob>) => (await blob).text();
 
-// The tab -> JSON / Markdown serialisers are strings (tabToJsonText /
-// tabToMarkdownText); these tests exercise them through a Blob (mime type +
-// async .text()), so they wrap the strings locally rather than the product
-// shipping unused Blob-returning helpers just for the test.
+// The tab -> JSON serialiser is a string (tabToJsonText); these tests exercise it through a Blob (mime type +
+// async .text()), so they wrap the string locally rather than the product shipping an unused Blob-returning helper
+// just for the test.
 const exportTabAsJson = (t: Tab) => new Blob([tabToJsonText(t)], { type: 'application/json' });
-const exportTabAsMarkdown = (t: Tab) => new Blob([tabToMarkdownText(t)], { type: 'text/markdown' });
 
 describe('exportTabAsJson', () => {
   it('wraps the tab in a versioned envelope', async () => {
@@ -86,136 +66,6 @@ describe('exportTabAsJson', () => {
     const result = parseImportedTab(await text(exportTabAsJson(original)));
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.tab).toEqual(original);
-  });
-});
-
-describe('exportTabAsMarkdown', () => {
-  it('uses the tab name as the H1 heading', async () => {
-    const md = await text(exportTabAsMarkdown(tab({ name: 'Architecture' })));
-    expect(md.startsWith('# Architecture\n')).toBe(true);
-    expect(await blobType(exportTabAsMarkdown(tab()))).toBe('text/markdown');
-  });
-
-  it('falls back to "Untitled tab" when the name is empty', async () => {
-    const md = await text(exportTabAsMarkdown(tab({ name: '' })));
-    expect(md.startsWith('# Untitled tab')).toBe(true);
-  });
-
-  it('emits "_No labelled content._" for an empty tab', async () => {
-    const md = await text(exportTabAsMarkdown(tab()));
-    expect(md).toContain('_No labelled content._');
-    expect(md).not.toContain('## Elements');
-    expect(md).not.toContain('## Connections');
-  });
-
-  it('lists each labelled boxed element as a bold bullet with a type tag', async () => {
-    const md = await text(
-      exportTabAsMarkdown(
-        tab({
-          elements: [
-            shape('a', { label: 'Alpha' }),
-            shape('b', {}), // no label → skipped
-            shape('c', { label: 'Gamma', y: 200 }),
-          ],
-        }),
-      ),
-    );
-    expect(md).toContain('## Elements');
-    expect(md).toContain('- **Alpha** (square)');
-    expect(md).toContain('- **Gamma** (square)');
-    // The unlabelled element contributes no bullet.
-    expect(md.match(/^- \*\*/gm)?.length).toBe(2);
-  });
-
-  it('orders elements top-to-bottom then left-to-right (y, then x)', async () => {
-    const md = await text(
-      exportTabAsMarkdown(
-        tab({
-          elements: [
-            shape('right', { label: 'Right', x: 300, y: 0 }),
-            shape('left', { label: 'Left', x: 0, y: 0 }),
-            shape('below', { label: 'Below', x: 0, y: 300 }),
-          ],
-        }),
-      ),
-    );
-    const idxLeft = md.indexOf('Left');
-    const idxRight = md.indexOf('Right');
-    const idxBelow = md.indexOf('Below');
-    expect(idxLeft).toBeLessThan(idxRight); // same y-band, left first
-    expect(idxRight).toBeLessThan(idxBelow); // higher band before lower
-  });
-
-  it('renders labelled arrows in a Connections section using endpoint labels', async () => {
-    const md = await text(
-      exportTabAsMarkdown(
-        tab({
-          elements: [
-            shape('a', { label: 'A' }),
-            shape('b', { label: 'B', x: 300 }),
-            pinnedArrow('e1', 'a', 'b', 'calls'),
-          ],
-        }),
-      ),
-    );
-    expect(md).toContain('## Connections');
-    expect(md).toContain('- *calls*: A → B');
-  });
-
-  it('falls back to "?" for an arrow endpoint whose target is unlabelled', async () => {
-    const md = await text(
-      exportTabAsMarkdown(
-        tab({
-          elements: [
-            shape('a', { label: 'A' }),
-            shape('b', {}), // unlabelled target
-            pinnedArrow('e1', 'a', 'b', 'calls'),
-          ],
-        }),
-      ),
-    );
-    expect(md).toContain('- *calls*: A → ?');
-  });
-
-  it('includes labelled freehand strokes in the Elements section with a (freehand) tag', async () => {
-    // Regression guard: before isBoxed-driven filtering, the Markdown
-    // export hard-coded shape / text / sticky as the only boxed
-    // kinds, which silently dropped FreehandElement after it shipped
-    // as a first-class boxed type. The downstream tag computation
-    // already falls back to `(<type>)` for non-shape kinds, so once
-    // the filter lets freehand through the bullet renders correctly.
-    const md = await text(
-      exportTabAsMarkdown(
-        tab({
-          elements: [
-            shape('s', { label: 'Box', y: 0 }),
-            freehand('f', { label: 'Sketch', y: 100 }),
-            freehand('u', { y: 200 }), // unlabelled freehand stays dropped
-          ],
-        }),
-      ),
-    );
-    expect(md).toContain('## Elements');
-    expect(md).toContain('- **Box** (square)');
-    expect(md).toContain('- **Sketch** (freehand)');
-    // The unlabelled freehand contributes no bullet.
-    expect(md.match(/^- \*\*/gm)?.length).toBe(2);
-  });
-
-  it('lists an unlabelled arrow between two elements as the plain edge (issue #985)', async () => {
-    const md = await text(
-      exportTabAsMarkdown(
-        tab({
-          elements: [
-            shape('a', { label: 'A' }),
-            shape('b', { label: 'B', x: 300 }),
-            pinnedArrow('e1', 'a', 'b'), // no label
-          ],
-        }),
-      ),
-    );
-    expect(md).toContain('## Connections');
-    expect(md).toContain('- A → B');
   });
 });
 

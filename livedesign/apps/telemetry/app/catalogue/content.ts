@@ -250,7 +250,7 @@ export const EXPORTS: Metric = {
   allTypes: true,
   title: 'Exports',
   blurb:
-    'A tab or selection exported, across every format (PNG, SVG, PDF, JSON, Markdown). For the text formats, copying to the clipboard counts as an export too.',
+    'A tab or selection exported, across every format (PNG, SVG, PDF, JSON, Logo Kit). For JSON, copying to the clipboard counts as an export too.',
 };
 
 // The document + tab lifecycle as stacks (Dashboard). Loaded is the opens

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DialogCloseButton, DialogHeader } from '@livedesign/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { FormatCard } from './FormatCard';
@@ -12,7 +12,6 @@ import {
   type LaidOutPage,
   type Tab,
   tabToJsonText,
-  tabToMarkdownText,
 } from '@livedesign/document';
 import {
   downloadBlob,
@@ -35,19 +34,13 @@ import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { useTabWindowExport } from './useTabWindowExport';
 
-// The animated GIF's panel and its capture, loaded only when the GIF card opens
-// (docs/specs/020-import-export/blueprints/animated-gif-export.md "Performance and limits").
-const GifExportPanel = lazy(() => import('./gif/GifExportPanel'));
-
 // Telemetry (docs/specs/017-telemetry/telemetry.md): map the internal format key to the public label
 // the dashboard shows. 'file' is the portable .json export.
 const EXPORT_LABEL: Record<Format, string> = {
   file: 'JSON',
-  markdown: 'Markdown',
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
-  gif: 'GIF',
   'logo-kit': 'LogoKit',
 };
 
@@ -71,7 +64,7 @@ const PAGES_EXPORT_LABEL: Record<ImageFormat, string> = {
 
 // The formats Pages mode exports to (docs/specs/007-editor/pages-mode.md "Export"):
 // its pages, and the tab itself as JSON. Diagram-tool formats are not offered.
-const PAGES_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'gif', 'file'];
+const PAGES_FORMATS: readonly Format[] = ['pdf', 'png', 'svg', 'file'];
 // The page formats' card copy in Pages mode, which speaks of pages rather than the tab.
 const PAGES_CARD_COPY: Partial<Record<Format, string>> = {
   pdf: 'Every page in one PDF, or a single page, ready to print or share.',
@@ -105,21 +98,19 @@ type ExportTabDialogProps = {
   documentTabs?: readonly Tab[];
   // Fetch tabs' content (a tab window's tab, which arrives only when opened or fetched); resolves to the failures.
   loadTabs?: (only: readonly string[]) => Promise<string[]>;
-  // Empty the canvas selection: the GIF draws the canvas as it stands, rings and all.
-  onClearSelection?: () => void;
 };
 
 const NO_DOCUMENT_TABS: readonly Tab[] = [];
 
 // The format keys ('file' is the livedesign .json): 'logo-kit' is a logo page's kit
 // (docs/specs/007-editor/logo-pages.md "Export"), while the tab has one.
-export type Format = 'markdown' | 'pdf' | 'png' | 'svg' | 'gif' | 'file' | 'logo-kit';
+export type Format = 'pdf' | 'png' | 'svg' | 'file' | 'logo-kit';
 
 // The two text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
-type TextFormat = 'file' | 'markdown';
+type TextFormat = 'file';
 type ImageFormat = 'png' | 'svg' | 'pdf';
-const isTextFormat = (f: Format): f is TextFormat => f === 'file' || f === 'markdown';
+const isTextFormat = (f: Format): f is TextFormat => f === 'file';
 
 // Grid card copy, in display order: text formats first, then image formats.
 const CARDS: { kind: Format; title: string; description: string }[] = [
@@ -127,11 +118,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'file',
     title: 'JSON',
     description: 'A livedesign file. Copy it or save a .json to import back with full fidelity.',
-  },
-  {
-    kind: 'markdown',
-    title: 'Markdown',
-    description: "A text outline of this tab's elements and connections. Copy it or save a .md.",
   },
   {
     kind: 'png',
@@ -147,12 +133,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'pdf',
     title: 'PDF',
     description: 'A single-page PDF of this tab, ready to print or share.',
-  },
-  {
-    // Pages mode only (docs/specs/020-import-export/animated-gif-export.md "Where it is offered").
-    kind: 'gif',
-    title: 'GIF',
-    description: 'An animated image of the pages, moving as they move on the canvas.',
   },
   {
     kind: 'logo-kit',
@@ -181,14 +161,6 @@ const TEXT_PANELS: Record<
     mime: 'application/json',
     getText: (tab) => tabToJsonText(tab),
   },
-  markdown: {
-    blurb:
-      "This tab as a Markdown outline. Edit it here to copy a variant; your edits don't change the tab.",
-    downloadLabel: 'Download .md',
-    ext: 'md',
-    mime: 'text/markdown',
-    getText: (tab) => tabToMarkdownText(tab),
-  },
 };
 
 // Welcome-style overlay: export options as a card grid. Text formats (JSON /
@@ -206,7 +178,6 @@ export function ExportTabDialog({
   pages,
   documentTabs,
   loadTabs,
-  onClearSelection,
 }: ExportTabDialogProps) {
   // null = the format grid; otherwise the picked format's sub-panel.
   const [active, setActive] = useState<Format | null>(null);
@@ -229,16 +200,12 @@ export function ExportTabDialog({
   // The Logo Kit card shows while the tab has a logo page (docs/specs/007-editor/logo-pages.md).
   const hasLogoPage = !!pages?.some((p) => p.kind === 'logo');
   const cards = pages
-    ? [
-        // A GIF animates the pages, so a Pages tab with none yet (First Page Choice) offers no GIF.
-        ...PAGES_FORMATS.filter((kind) => kind !== 'gif' || pages.length > 0),
-        ...(hasLogoPage ? (['logo-kit'] as const) : []),
-      ].map((kind) => {
+    ? [...PAGES_FORMATS, ...(hasLogoPage ? (['logo-kit'] as const) : [])].map((kind) => {
         const card = CARDS.find((c) => c.kind === kind)!;
         return { ...card, description: PAGES_CARD_COPY[kind] ?? card.description };
       })
-    : // A selection has no pages, so no logo page and no GIF: never the Logo Kit or GIF.
-      CARDS.filter((c) => c.kind !== 'logo-kit' && c.kind !== 'gif');
+    : // A selection has no pages, so no logo page: never the Logo Kit.
+      CARDS.filter((c) => c.kind !== 'logo-kit');
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
@@ -261,7 +228,7 @@ export function ExportTabDialog({
   // When an image format is picked, load the icon catalogues + image bitmaps
   // so the preview (and export) renders the real glyphs, not placeholders.
   useEffect(() => {
-    if (!active || isTextFormat(active) || active === 'gif') return;
+    if (!active || isTextFormat(active)) return;
     let cancelled = false;
     void (async () => {
       await ensureIconCatalogs();
@@ -379,11 +346,9 @@ export function ExportTabDialog({
   const subtitle = activeCard
     ? active === 'logo-kit'
       ? 'Download a logo page as an SVG, PNGs and a favicon.'
-      : active === 'gif'
-        ? 'Set how the pages play, then download the GIF.'
-        : isTextFormat(active!)
-          ? `Copy this tab as ${activeCard.title}, or download a file.`
-          : `Set the image options for ${activeCard.title}, then download.`
+      : isTextFormat(active!)
+        ? `Copy this tab as ${activeCard.title}, or download a file.`
+        : `Set the image options for ${activeCard.title}, then download.`
     : isSelection
       ? 'Pick a format to export the selected elements.'
       : pages
@@ -428,25 +393,6 @@ export function ExportTabDialog({
             onDone={onClose}
             onBack={() => setActive(null)}
           />
-        ) : active === 'gif' && pages && page ? (
-          <Suspense
-            fallback={
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Preparing the GIF options…
-              </p>
-            }
-          >
-            <GifExportPanel
-              tab={tab}
-              pages={pages}
-              page={page}
-              baseName={baseName}
-              onPick={setPageIndex}
-              onDone={onClose}
-              onBack={() => setActive(null)}
-              onClearSelection={onClearSelection}
-            />
-          </Suspense>
         ) : active ? (
           <ImageExportPanel
             pagePicker={

@@ -1405,9 +1405,7 @@ is while the rest of the tab is worked on.
 
 The Export dialog exports **pages**, not the tab's content bounds.
 
-- **Formats**: **PDF**, **PNG**, **SVG** and **GIF** (an animated GIF of the pages, moving as they
-  move on the canvas: [Animated GIF export](../020-import-export/animated-gif-export.md)), plus **JSON** (the tab
-  itself, a backup that imports back). Markdown is not offered: a page is not an outline.
+- **Formats**: **PDF**, **PNG** and **SVG**, plus **JSON** (the tab itself, a backup that imports back).
 - **Pages**: every format asks **All pages** or **One page** (a segmented control), and with One
   page, which page (each by its label). PDF starts on All pages; PNG and SVG start on One page,
   the first.

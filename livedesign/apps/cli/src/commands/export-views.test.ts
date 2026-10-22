@@ -122,20 +122,17 @@ describe('export --all', () => {
     expect(envelope).not.toHaveProperty('livedesignSync');
   });
 
-  it('writes each tab as SVG and Markdown, telling apart tabs of one name', async () => {
+  it('writes each tab as SVG, telling apart tabs of one name', async () => {
     const one = { 'aaaa0001-doc': docs['aaaa0001-doc']! };
-    const { out, io } = await cli(
-      ['export', '--all', '--to', 'out', '--format', 'svg, md,svg'],
+    const { out } = await cli(
+      ['export', '--all', '--to', 'out', '--format', 'svg, svg'],
       host(one),
     );
     expect(out.trim().split('\n')).toEqual([
       'out/shop/flow-flow-0001.svg',
-      'out/shop/flow-flow-0001.md',
       'out/shop/flow-flow-0002.svg',
-      'out/shop/flow-flow-0002.md',
-      '1 document · 4 files',
+      '1 document · 2 files',
     ]);
-    expect(io.fileMap.get('out/shop/flow-flow-0001.md')!.data).toContain('Web app');
   });
 
   it('waits out the rate limit, and gives up after three tries', async () => {
@@ -165,8 +162,8 @@ describe('export --all', () => {
   it('needs --all and a known format', async () => {
     const without = await cli(['export', '--to', 'b'], host(docs));
     expect([without.code, without.err]).toEqual([2, expect.stringContaining('add --all')]);
-    const unknown = await cli(['export', '--all', '--to', 'b', '--format', 'json,gif'], host(docs));
-    expect([unknown.code, unknown.err]).toEqual([2, expect.stringContaining('unknown format gif')]);
+    const unknown = await cli(['export', '--all', '--to', 'b', '--format', 'json,md'], host(docs));
+    expect([unknown.code, unknown.err]).toEqual([2, expect.stringContaining('unknown format md')]);
     expect((await cli(['export', '--all', '--to', 'b', '--format', ','], host(docs))).code).toBe(2);
   });
 });

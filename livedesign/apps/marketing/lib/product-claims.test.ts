@@ -40,7 +40,7 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   {
     pattern:
       /any tab (?:out )?as[^.]*(?:markdown|excalidraw)|\.excalidraw (?:file|scene)? ?out|(?:as|to) an? \.?excalidraw (?:file|scene)/i,
-    why: 'the editor exports PNG, SVG, PDF, JSON, Markdown and CSV; Pages tabs PDF, PNG, SVG and JSON only',
+    why: 'the editor exports PDF, PNG, SVG and JSON only',
   },
   {
     pattern: /undo never reaches|only rewinds your own changes, never/i,

@@ -61,8 +61,6 @@ export function EditorTabDialogs() {
     setDocumentSharePassword,
     setShareDialogOpen,
     syncToCloud,
-    setSelectedId,
-    setMultiSelectedIds,
   } = useEditorContext();
   // The selection the export covers, read from the store while a selection export is open
   // (docs/specs/008-canvas/blueprints/selection-store.md).
@@ -105,10 +103,6 @@ export function EditorTabDialogs() {
           // A tab window draws the tab it shows (docs/specs/009-elements/tab-window.md "Exports").
           documentTabs={tabs}
           loadTabs={loadAllTabs}
-          onClearSelection={() => {
-            setSelectedId(null);
-            setMultiSelectedIds(new Set());
-          }}
           imageContext={imageContext}
           offerHiddenLayers={panelEnabled(userPreferences, 'layersPanelEnabled')}
           onClose={() => setExportOpen(false)}

@@ -291,7 +291,7 @@ export const push = defineVerb({
 });
 
 // Every document to files, read-only, for backups and docs (blueprint "Pull and push", CLI29).
-export const EXPORT_FORMATS = ['json', 'svg', 'png', 'md'] as const;
+export const EXPORT_FORMATS = ['json', 'svg', 'png'] as const;
 
 export const exportAll = defineVerb({
   id: 'export',

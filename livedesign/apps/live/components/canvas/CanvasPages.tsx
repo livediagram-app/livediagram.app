@@ -19,7 +19,6 @@ import { PageDeviceButton } from './wireframe/PageDeviceButton';
 import { PageNotesButton } from './PageNotesButton';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
 import { track } from '@/lib/telemetry';
-import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
 import {
   offersPageKindChoice,
   PAGE_GAP,
@@ -301,7 +300,6 @@ export function CanvasPages({
             edit.contentCount(page.id) === 0 &&
             showsLogoGuides(view, bare, page.id) ? (
               <div
-                {...{ [GIF_OMIT_ATTR]: '' }}
                 className="pointer-events-none absolute"
                 style={{ left: -page.rect.x, top: -page.rect.y }}
               >
@@ -441,8 +439,7 @@ export function CanvasPages({
         ? pages.filter(showsLayoutCard).map((page) => (
             <div
               key={page.id}
-              // The in-page layout card is the editor's (lib/gif-export/gif-omit.ts).
-              {...{ [GIF_OMIT_ATTR]: '' }}
+
               className="pointer-events-none absolute"
               style={{
                 left: page.rect.x,
@@ -471,8 +468,7 @@ export function CanvasPages({
         ? pages.filter(showsLayoutInvite).map((page) => (
             <div
               key={page.id}
-              // The page's invitation is the editor's (lib/gif-export/gif-omit.ts).
-              {...{ [GIF_OMIT_ATTR]: '' }}
+
               className="pointer-events-none absolute"
               style={{
                 left: page.rect.x,

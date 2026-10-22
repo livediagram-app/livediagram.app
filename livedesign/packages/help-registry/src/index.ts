@@ -512,9 +512,9 @@ export const articles: Article[] = [
     slug: 'exporting-documents',
     title: 'Exporting Documents',
     description:
-      'Take your pages with you as a PDF, images, a GIF or a portable file, or embed a live view.',
+      'Take your pages with you as a PDF, images or a portable file, or embed a live view.',
     keywords:
-      'export download png svg pdf gif animated logo kit image save picture screenshot json embed backup',
+      'export download png svg pdf logo kit image save picture screenshot json embed backup',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -1415,10 +1415,8 @@ export const articles: Article[] = [
   {
     slug: 'export-tabs',
     title: 'Exporting a Tab',
-    description:
-      "Export a tab's pages as PDF, PNG, SVG or GIF, or as JSON; a selection also exports as Markdown.",
-    keywords:
-      'export download save png svg pdf gif animated json markdown image picture pages logo kit',
+    description: "Export a tab's pages as PDF, PNG or SVG, or as JSON.",
+    keywords: 'export download save png svg pdf json image picture pages logo kit',
     category: 'Tabs',
     categorySlug: 'tabs',
   },

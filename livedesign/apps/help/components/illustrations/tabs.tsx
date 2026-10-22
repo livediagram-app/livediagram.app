@@ -805,7 +805,6 @@ export function ExportMenu() {
   const dy = 12;
   const cards: [string, string][] = [
     ['JSON', 'json'],
-    ['Markdown', 'md'],
     ['PNG', 'png'],
     ['SVG', 'svg'],
     ['PDF', 'pdf'],
@@ -835,10 +834,7 @@ export function ImportWarning() {
   const H = 210;
   const dx = 20;
   const dy = 10;
-  const cards: [string, string][] = [
-    ['JSON', 'json'],
-    ['Markdown', 'md'],
-  ];
+  const cards: [string, string][] = [['JSON', 'json']];
   return (
     <Scene w={W} h={H}>
       <Dialog x={dx} y={dy} w={380} h={190} title="Import to Tab" sceneW={W} sceneH={H}>
