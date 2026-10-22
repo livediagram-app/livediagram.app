@@ -40,7 +40,7 @@ describe('filterGallery', () => {
 
   it('matches the description and the category name', () => {
     expect(filterGallery(all, 'landing page').map((t) => t.kind)).toContain('wireframe-website');
-    expect(filterGallery(all, 'design').map((t) => t.kind)).toContain('wireframe-dashboard');
+    expect(filterGallery(all, 'wireframes').map((t) => t.kind)).toContain('wireframe-dashboard');
   });
 
   it('needs every word to hit somewhere', () => {
@@ -54,7 +54,7 @@ describe('filterGallery', () => {
 describe('groupGallery', () => {
   it('keeps catalogue category order and drops emptied categories', () => {
     const groups = groupGallery(filterGallery(galleryTemplates(), 'logo design'));
-    expect(groups.map((g) => g.label)).toEqual(['Presentations']);
+    expect(groups.map((g) => g.label)).toEqual(['Logos']);
     expect(groups[0]?.templates.map((t) => t.kind)).toEqual(['logo-design']);
   });
 
@@ -69,8 +69,8 @@ describe('groupGallery', () => {
     const browse = groupGallery(galleryTemplates());
     const holding = (kind: string) =>
       browse.filter((g) => g.templates.some((t) => t.kind === kind)).map((g) => g.id);
-    expect(holding('logo-design')).toEqual(['presentations']);
-    expect(holding('wireframe-website')).toEqual(['design']);
+    expect(holding('logo-design')).toEqual(['logos']);
+    expect(holding('wireframe-website')).toEqual(['wireframes']);
   });
 
   it('finds a template by its search words, as the editor does', () => {

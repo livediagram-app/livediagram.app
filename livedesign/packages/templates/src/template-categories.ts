@@ -5,7 +5,7 @@
 // three lookups; a Record over every non-blank kind, so a new template does not compile until it has a home.
 import type { TemplateKind } from './templates';
 
-export type TemplateCategory = 'design' | 'presentations';
+export type TemplateCategory = 'logos' | 'wireframes';
 
 // Declared in any order: TEMPLATE_CATEGORIES below sorts them by label, so a new category lands in place. Descriptions
 // are kept to a similar length (40 to 50 characters) so the folded category tiles read as an even set.
@@ -19,16 +19,16 @@ type CategoryInfo = {
 
 const CATEGORY_LIST: readonly CategoryInfo[] = [
   {
-    id: 'design',
-    label: 'Design',
-    searchWords: 'ux',
-    description: 'Wireframes for apps, websites and dashboards.',
+    id: 'logos',
+    label: 'Logos',
+    searchWords: 'brand mark wordmark identity',
+    description: 'Logo designs, wordmarks and brand marks.',
   },
   {
-    id: 'presentations',
-    label: 'Presentations',
-    searchWords: 'content',
-    description: 'Logo designs, wordmarks and brand marks.',
+    id: 'wireframes',
+    label: 'Wireframes',
+    searchWords: 'ux ui screens',
+    description: 'Wireframes for apps, websites and dashboards.',
   },
 ];
 
@@ -56,14 +56,14 @@ type BlankKind =
 
 // Every non-blank template's primary category.
 const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCategory> = {
-  // Presentations and Content: pages made to be read or shared.
-  'logo-design': 'presentations',
-  // Design: screens and the spaces people move through.
-  'wireframe-mobile-app': 'design',
-  'wireframe-website': 'design',
-  'wireframe-dashboard': 'design',
-  'wireframe-tablet-app': 'design',
-  'wireframe-watch-app': 'design',
+  // Logos: a brand's mark.
+  'logo-design': 'logos',
+  // Wireframes: screens and the spaces people move through.
+  'wireframe-mobile-app': 'wireframes',
+  'wireframe-website': 'wireframes',
+  'wireframe-dashboard': 'wireframes',
+  'wireframe-tablet-app': 'wireframes',
+  'wireframe-watch-app': 'wireframes',
 };
 
 // Cross-listing: the other categories a template is also shown in, where someone would genuinely look for it there.

@@ -1,11 +1,8 @@
 import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livedesign/templates';
-import { templatePreviewGroup2 } from './template-preview-2';
 import { templatePreviewGroup3 } from './template-preview-3';
-import { templatePreviewGroup5 } from './template-preview-5';
 import { templatePreviewGroup12 } from './template-preview-12';
 import { templatePreviewGroup20 } from './template-preview-20';
-import { templatePreviewGroup25 } from './template-preview-25';
 import { templatePreviewGroup26 } from './template-preview-26';
 
 // Static SVG preview tiles, one branch per TemplateKind, rendered by the
@@ -20,12 +17,9 @@ import { templatePreviewGroup26 } from './template-preview-26';
 // ~1000-line budget; we try each group in turn.
 export function TemplatePreview({ kind }: { kind: TemplateKind }): ReactElement | null {
   return (
-    templatePreviewGroup2(kind) ??
     templatePreviewGroup3(kind) ??
-    templatePreviewGroup5(kind) ??
     templatePreviewGroup12(kind) ??
     templatePreviewGroup20(kind) ??
-    templatePreviewGroup25(kind) ??
     templatePreviewGroup26(kind)
   );
 }

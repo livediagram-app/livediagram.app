@@ -5,7 +5,7 @@ import { liftBestMatch } from './best-match';
 const card = (id: string, name: string) => ({ id, name });
 const groups = [
   {
-    category: 'design',
+    category: 'wireframes',
     cards: [card('blueprint', 'Service Blueprint'), card('flow-x', 'Flowchart Swimlanes')],
   },
   { category: 'flows', cards: [card('flowchart', 'Flowchart'), card('data-flow', 'Data Flow')] },

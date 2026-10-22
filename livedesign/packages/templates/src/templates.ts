@@ -53,7 +53,7 @@ export const TEMPLATES: TemplateDescriptor[] = [
   {
     kind: 'blank-illustration',
     title: 'Blank Illustration',
-    description: 'An empty page for an infographic, a slide, a logo or a wireframe.',
+    description: 'An empty page that becomes a logo or a wireframe.',
     extra: true,
   },
   {

@@ -9,8 +9,8 @@
   --hero-dots: #fecdd3;
   --hero-ink: #4c0519;
   --hero-muted: #475569;
-  --hero-ring: rgb(251 191 36 / 0.45);
-  --hero-ring-focus: rgb(217 119 6 / 0.55);
+  --hero-ring: rgb(251 113 133 / 0.45);
+  --hero-ring-focus: rgb(225 29 72 / 0.55);
   /* The header's primary (Button's `primary`), so the two read as one action colour. */
   --hero-cta: var(--color-brand-700);
   --hero-cta-hover: var(--color-brand-800);
@@ -21,7 +21,7 @@
   --hero-icon: #e11d48;
   --hero-link: #be123c;
   --hero-thumb: #ffe4e6;
-  --hero-card-shadow: rgb(69 26 3 / 0.22);
+  --hero-card-shadow: rgb(76 5 25 / 0.22);
 }
 
 :where(.dark, .dark *):not(:where(.light, .light *)) .hero-band,
@@ -31,8 +31,8 @@
   --hero-dots: #1e293b;
   --hero-ink: #ffffff;
   --hero-muted: #cbd5e1;
-  --hero-ring: rgb(251 191 36 / 0.35);
-  --hero-ring-focus: rgb(251 191 36 / 0.6);
+  --hero-ring: rgb(251 113 133 / 0.35);
+  --hero-ring-focus: rgb(251 113 133 / 0.6);
   --hero-cta: #be123c;
   --hero-cta-hover: #9f1239;
   --hero-chip-bg: #0f172a;

@@ -3,7 +3,7 @@
 // place or name.
 import { z } from 'zod';
 import { PAGE_CHANGES_MAX, type PageChange } from '@livedesign/api-schema';
-import type { PageSizeId } from '@livedesign/document';
+import { PAGE_SIZE_IDS, type PageSizeId } from '@livedesign/document';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
 import { changePages, pagesTabOf, type PagesDone, type PagesRefused } from '../pages/pages-calls';
 import { resolveTab } from '../addressing';
@@ -88,7 +88,10 @@ export const pageLs = defineVerb({
   },
 });
 
-const sizeArg = z.string().optional().describe('A page size id: a4, letter, a3, square, logo, ...');
+const sizeArg = z
+  .string()
+  .optional()
+  .describe(`A page size id: ${PAGE_SIZE_IDS.join(', ')}`);
 
 export const pageSet = defineVerb({
   id: 'page.set',
