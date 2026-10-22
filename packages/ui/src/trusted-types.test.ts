@@ -2,18 +2,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { runInlineScript } from '@liveplanner/vitest-config/inline-script';
 import {
-  INERT_PARSE_POLICY,
   MARKUP_POLICY,
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,
-  parseInert,
   resetTrustedTypesForTests,
   trustedHtml,
   trustedScriptOrigins,
   trustedTypesBootScript,
 } from './trusted-types';
 
-// docs/specs/016-platform/trusted-types.md: the header, our three policies and the third parties they let through.
+// docs/specs/016-platform/trusted-types.md: the header, our policies and the third parties they let through.
 
 type Created = { name: string; rules: Record<string, (s: string) => unknown> };
 function stubTrustedTypes() {
@@ -40,7 +38,7 @@ afterEach(() => {
 describe('TRUSTED_TYPES_CSP', () => {
   it('enforces Trusted Types and names every policy the pages may create', () => {
     expect(TRUSTED_TYPES_CSP).toBe(
-      "require-trusted-types-for 'script'; trusted-types liveplanner-markup liveplanner-inert-parse nextjs ProseMirrorClipboard default",
+      "require-trusted-types-for 'script'; trusted-types liveplanner-markup nextjs ProseMirrorClipboard default",
     );
   });
 });
@@ -133,25 +131,6 @@ describe('trustedHtml', () => {
     expect(trustedHtml('<svg/>')).toEqual({ trusted: MARKUP_POLICY, html: '<svg/>' });
     trustedHtml('<g/>');
     expect(tt.createPolicy).toHaveBeenCalledOnce();
-  });
-});
-
-describe('parseInert', () => {
-  it('parses through liveplanner-inert-parse into an inert document', () => {
-    const { created } = stubTrustedTypes();
-    const parse = vi.spyOn(DOMParser.prototype, 'parseFromString');
-    const doc = parseInert('<mxfile><diagram/></mxfile>', 'application/xml');
-    expect(created.map((c) => c.name)).toEqual([INERT_PARSE_POLICY]);
-    expect(parse.mock.calls[0]![0]).toEqual({
-      trusted: INERT_PARSE_POLICY,
-      html: '<mxfile><diagram/></mxfile>',
-    });
-    expect(doc).toBeInstanceOf(Document);
-  });
-
-  it('parses the string itself where there are no Trusted Types', () => {
-    const doc = parseInert('<mxfile><diagram/></mxfile>', 'application/xml');
-    expect(doc.documentElement.nodeName).toBe('mxfile');
   });
 });
 

@@ -12,7 +12,6 @@ const subject = (overrides: Partial<LensSubject> = {}): LensSubject => ({
   people: 'me',
   madeByAi: false,
   opensIn: 'plan',
-  kind: null,
   template: null,
   ...overrides,
 });
@@ -54,7 +53,6 @@ describe('suggestTokens', () => {
       },
     ]);
     expect(ids('MADE')).toEqual(['dimension:made-by']);
-    expect(ids('kind')).toEqual(['dimension:kind']);
     expect(ids('t')).toEqual(['dimension:template']);
     expect(ids('e')).toEqual(['dimension:edited']);
     expect(ids('p')).toEqual(['dimension:people']);
@@ -96,7 +94,7 @@ describe('suggestTokens', () => {
   it('offers the values whose value or label starts with what is typed', () => {
     expect(ids('edited:LAST')).toEqual(['value:edited:7d', 'value:edited:30d', 'value:edited:12m']);
     expect(ids('edited:th')).toEqual(['value:edited:this-year']);
-    expect(ids('kind:event')).toEqual(['value:kind:event-storming']);
+    expect(ids('template:kan')).toEqual(['value:template:kanban']);
     expect(ids('template:x')).toEqual([]);
   });
 

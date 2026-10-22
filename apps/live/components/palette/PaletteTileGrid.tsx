@@ -1,6 +1,6 @@
 import { requestPaletteCategory } from '@/lib/palette-category-request';
 import type { ComponentKind, ShapeKind } from '@liveplanner/document';
-import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
+import type { EmbedProvider } from '@liveplanner/document';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
@@ -20,12 +20,8 @@ export type PaletteTileActions = {
   addText: () => void;
   beginPolygon: () => void;
   addArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
-  // Optional fill + kind: the Event Storming tiles pass their note kind's
-  // canonical colour and the kind itself (which routes the note onto its
-  // stage's layer, docs/specs/021-event-storming/event-storming.md); plain "Add Sticky Note" passes nothing.
-  addSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
+  addSticky: () => void;
   addTable: () => void;
-  addImage: () => void;
   addAnnotation: () => void;
   addLinkCard: () => void;
   addVideo: (provider?: EmbedProvider) => void;
@@ -37,10 +33,6 @@ export type PaletteTileActions = {
   addTechIcon: (iconId: string) => void;
   // Puts the armed tool down (its tile pressed again).
   cancelDraw?: () => void;
-  // Whether image uploads are available (the editor supplied onAddImage);
-  // gates the `needsImage` tiles exactly as the Tools / Components tabs
-  // always have.
-  hasImage: boolean;
 };
 
 // A tile pressed: places or arms its tool; pressed again while armed (`pendingDraw`), puts it down
@@ -73,13 +65,9 @@ export function tileHandler(
       // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
       return () => actions.addArrow(a.ends);
     case 'sticky':
-      // Wrapped so the button's MouseEvent can't land in the optional fill
-      // parameter; the tile's own fill + kind (if any) ride instead.
-      return () => actions.addSticky(a.fill, a.esKind);
+      return () => actions.addSticky();
     case 'table':
       return actions.addTable;
-    case 'image':
-      return actions.addImage;
     case 'annotation':
       return actions.addAnnotation;
     case 'link-card':
@@ -127,15 +115,8 @@ export function tileActive(
     // Vimeo alongside it (the same trap the shape branch above avoids).
     case 'video':
       return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
-    // The Event Storming tiles all arm the one sticky intent, split by the
-    // fill + kind payload — match on both or arming Command would light up
-    // all eight notes plus the plain sticky tile (the video / shape trap).
     case 'sticky':
-      return (
-        pendingDraw.type === 'sticky' &&
-        pendingDraw.fill === a.fill &&
-        pendingDraw.esKind === a.esKind
-      );
+      return pendingDraw.type === 'sticky';
     // Icon / sticker tiles DO arm (they ride the shape intent carrying their
     // glyph id), but their catalogues are open-ended and the picker tabs
     // render thousands of tiles, so pressed-state matching per glyph buys
@@ -148,10 +129,6 @@ export function tileActive(
     default:
       return pendingDraw.type === a.type;
   }
-}
-
-export function visibleTiles(defs: PaletteTileDef[], hasImage: boolean): PaletteTileDef[] {
-  return defs.filter((d) => !d.needsImage || hasImage);
 }
 
 // One catalogue tile, rendered exactly as its home tab renders it. `compact` is the
@@ -227,7 +204,7 @@ export function PaletteTileGrid({
   actions: PaletteTileActions;
   pendingDraw: PendingDraw | null | undefined;
 }) {
-  const defs = visibleTiles(tiles, actions.hasImage);
+  const defs = tiles;
   return (
     // 3-column grid of fixed tiles (matching the Icons catalogue) so tiles
     // pack into even rows; overflow-x-hidden absorbs the few-px slack when

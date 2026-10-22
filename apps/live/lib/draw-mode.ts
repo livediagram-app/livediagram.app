@@ -3,11 +3,10 @@ import type {
   ArrowEnds,
   ComponentKind,
   EmbedProvider,
-  EventStormingNoteKind,
   SessionTool,
   ShapeKind,
 } from '@liveplanner/document';
-import { EMBED_PROVIDER_LABEL, eventStormingNote, withArticle } from '@liveplanner/document';
+import { EMBED_PROVIDER_LABEL } from '@liveplanner/document';
 
 // Draw-to-size intent. Picking any element from the palette except the
 // annotation (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas
@@ -43,15 +42,7 @@ export type PendingDraw =
       name?: string;
     }
   | { type: 'text' }
-  // `fill` + `esKind` ride the sticky intent for the Event Storming tiles
-  // (docs/specs/021-event-storming/event-storming.md): the notation is one `sticky` type in eight semantic
-  // colours, and the palette offers a tile per note kind, so the choice
-  // has to survive the gesture the same way `session` / `provider` do
-  // above. The kind additionally routes the note onto its workshop
-  // stage's layer on event-storming boards. Absent = the iconic amber
-  // default, no routing.
-  | { type: 'sticky'; fill?: string; esKind?: EventStormingNoteKind }
-  | { type: 'image' }
+  | { type: 'sticky' }
   // Table (docs/specs/008-canvas/canvas-and-palette.md), link card (docs/specs/009-elements/link-cards.md), and the embeds (docs/specs/009-elements/youtube-video.md, docs/specs/009-elements/embed-providers.md)
   // are their own element types rather than ShapeKinds, so each needs its own
   // intent to ride the same gesture. They used to drop at the viewport centre
@@ -141,13 +132,7 @@ export function drawBannerMessage(
     case 'text':
       return 'Tap to drop or drag to place text';
     case 'sticky':
-      // A workshop note has one size for life (docs/specs/021-event-storming/event-storming.md), so it is placed, not
-      // drawn; the ghost under the pointer shows where.
-      return intent.esKind
-        ? `${isMobile ? 'Tap' : 'Click'} to place ${withArticle(eventStormingNote(intent.esKind).label.toLowerCase())} note`
-        : 'Tap to drop or drag to draw a sticky note';
-    case 'image':
-      return 'Tap to drop or drag to draw image bounds';
+      return 'Tap to drop or drag to draw a sticky note';
     case 'table':
       return 'Tap to drop or drag to draw a table';
     case 'link-card':
@@ -224,11 +209,6 @@ export function drawIntentCursor(intent: PendingDraw): string {
   if (intent.type === 'sticky') {
     return drawCursorFromGlyph(
       `<path d="M13 13 H21 L24 16 V23 H13 Z M21 13 V16 H24" stroke="black" stroke-width="1.4" stroke-linejoin="round" fill="none" />`,
-    );
-  }
-  if (intent.type === 'image') {
-    return drawCursorFromGlyph(
-      `<rect x="13" y="14" width="11" height="9" rx="1" fill="none" stroke="black" stroke-width="1.4" /><circle cx="15.5" cy="16.5" r="0.9" fill="black" /><path d="M13 21 L16 18.5 L18.5 20.5 L21 18 L24 20" stroke="black" stroke-width="1.2" stroke-linejoin="round" fill="none" />`,
     );
   }
   if (intent.type === 'table') {

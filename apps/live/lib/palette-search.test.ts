@@ -56,13 +56,6 @@ describe('buildPaletteSearchItems', () => {
       expect(ids).toContain(id);
   });
 
-  it('hides the image-upload tiles when the editor has no image support', () => {
-    const ids = new Set(buildPaletteSearchItems({ hasImage: false }).map((i) => i.id));
-    const imageTiles = PALETTE_TILES.filter((t) => t.needsImage && t.action.type !== 'shape');
-    expect(imageTiles.length).toBeGreaterThan(0);
-    for (const t of imageTiles) expect(ids).not.toContain(`tile:${t.id}`);
-  });
-
   it('covers the element types the palette added most recently', () => {
     // Named explicitly rather than left to the derivation above, so a
     // regression that dropped these from the PALETTE_TILES filter still fails

@@ -4,6 +4,7 @@ import {
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   isBlankTemplate,
+  isPlanTemplate,
   templateCategories,
   templateCategoryLabel,
   templateMatchesQuery,
@@ -13,11 +14,11 @@ import {
 } from '@liveplanner/templates';
 
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
-// the editor ships, each a link that creates that document straight away (/new?template=<kind>,
+// the editor ships in Plan, each a link that creates that project straight away (/new?template=<kind>,
 // docs/specs/007-editor/new-document-route.md), laid out as the editor's template step lays them
-// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (every blank and
-// nothing else), then one shelf per category. The data half lives here so the lists and the filters
-// can be tested without rendering the section.
+// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (the Plan blanks and nothing
+// else: Blank Plan, Blank Spreadsheet and Blank Form), then one shelf per category. The data half lives here
+// so the lists and the filters can be tested without rendering the section.
 
 export type GalleryTemplate = TemplateDescriptor & {
   // Its primary category (docs/specs/008-canvas/canvas-and-palette.md "Template categories"), then any it is
@@ -47,17 +48,22 @@ export function toGallery(t: TemplateDescriptor): GalleryTemplate {
   };
 }
 
-// Every listed template on a category shelf: hidden templates never appear in a listing, and the
+// The gallery lists only the templates Plan offers (docs/specs/019-marketing/marketing-site.md "Template gallery":
+// boards, sheets and forms; isPlanTemplate); the catalogue's other templates are never offered.
+
+// Every listed Plan template on a category shelf: hidden templates never appear in a listing, and the
 // blanks are only ever on Blank Slate, never on a category shelf
 // (docs/specs/007-editor/templates-by-mode.md "Five blanks").
 export function galleryTemplates(): GalleryTemplate[] {
-  return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
+  return TEMPLATES.filter(
+    (t) => !t.hidden && !isBlankTemplate(t.kind) && isPlanTemplate(t.kind),
+  ).map(toGallery);
 }
 
-// Blank Slate's blanks in the catalogue's blank order (BLANK_TEMPLATES).
-const BLANK_SLATE_KINDS = BLANK_TEMPLATES;
+// Blank Slate's blanks: Blank Plan, then the Plan blanks beside it (Blank Spreadsheet, Blank Form).
+const BLANK_SLATE_KINDS = BLANK_TEMPLATES.filter(isPlanTemplate);
 
-// Blank Slate: every blank and nothing else, in its fixed order.
+// Blank Slate: every Plan blank and nothing else, in its fixed order.
 export function popularTemplates(): GalleryTemplate[] {
   return BLANK_SLATE_KINDS.flatMap((kind) => {
     const t = BY_KIND.get(kind);

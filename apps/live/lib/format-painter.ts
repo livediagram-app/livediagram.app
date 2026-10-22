@@ -21,12 +21,8 @@
 // the field at all, so it has no opinion and the target keeps its own.
 
 import {
-  animationSectionOf,
-  bodyAnimationSetOf,
-  carriesWords,
   hasRichFormatting,
   normalizeRuns,
-  shapeAnimationsFor,
   supportsAccentEdge,
   type AnimationSpeed,
   type ArrowElement,
@@ -41,7 +37,6 @@ import {
   type IconSize,
   type IconWeight,
   type RunBoolKey,
-  type TextAnimation,
   type TextRun,
 } from '@liveplanner/document';
 
@@ -99,24 +94,7 @@ export function paintableBoxedFields(source: BoxedElement): Partial<BoxedElement
     height: source.height,
     aspectLocked: source.aspectLocked,
     opacity: source.opacity,
-    // Looping animation (docs/specs/008-canvas/canvas-and-palette.md) is a cosmetic field, so paint it like the rest.
-    animation: source.animation,
-    animationSpeed: source.animationSpeed,
-    animationRepeat: source.animationRepeat,
   };
-  // Text animation (docs/specs/028-animation/element-animations.md), on the words a kind carries.
-  if (carriesWords(source)) {
-    const words = source as {
-      textAnimation?: TextAnimation;
-      textAnimationSpeed?: AnimationSpeed;
-      textAnimationRepeat?: boolean;
-    };
-    Object.assign(base, {
-      textAnimation: words.textAnimation,
-      textAnimationSpeed: words.textAnimationSpeed,
-      textAnimationRepeat: words.textAnimationRepeat,
-    });
-  }
   // Drop shadow (docs/specs/008-canvas/element-shadows.md): cosmetic, painted alongside where the kind draws one.
   if (SHADOW_KINDS.has(kind)) {
     (base as { shadow?: ElementShadow }).shadow = (source as { shadow?: ElementShadow }).shadow;
@@ -274,45 +252,6 @@ const SWATCH_BINDINGS = [
 // the two derived fields are kept honest: the target's per-range runs
 // yield to painted text, and the colour-preset binding only survives
 // when it still describes the colours on the element (docs/specs/008-canvas/canvas-and-palette.md).
-// Animations travel only where they mean the same thing (docs/specs/028-animation/element-animations.md):
-// a body animation between members of one animation set, a Shape motion to any element that takes it, a Text
-// animation to any element that carries words. Everything else in the projection is left as it is.
-export function fitPaintToTarget(
-  source: BoxedElement,
-  target: BoxedElement,
-  patch: Partial<BoxedElement>,
-): Partial<BoxedElement> {
-  const out: Record<string, unknown> = { ...patch };
-  // Only between members of one set (or a text element's legacy value onto another text
-  // element): elements outside every body set (icons, charts) must not pick up an `animation` no
-  // menu of theirs could show or remove.
-  const set = bodyAnimationSetOf(source);
-  const sameSet = set !== undefined && set === bodyAnimationSetOf(target);
-  // A Shape motion travels to any element whose Shape category offers it (a square's Bounce onto a photo).
-  const motion = source.animation;
-  const sharedMotion =
-    motion !== undefined &&
-    animationSectionOf(source, motion) === 'shape' &&
-    (shapeAnimationsFor(target) as readonly string[]).includes(motion);
-  if (!sameSet && !sharedMotion && !(source.type === 'text' && target.type === 'text')) {
-    delete out.animation;
-    delete out.animationSpeed;
-    delete out.animationRepeat;
-  }
-  if (!carriesWords(target)) {
-    delete out.textAnimation;
-    delete out.textAnimationSpeed;
-    delete out.textAnimationRepeat;
-  } else if (target.type === 'text' && out.textAnimation !== undefined) {
-    // A Text animation painted onto a text element replaces its legacy body one, as a Text pick
-    // does: a text element never carries both.
-    out.animation = undefined;
-    out.animationSpeed = undefined;
-    out.animationRepeat = undefined;
-  }
-  return out;
-}
-
 export function applyPaint<T extends BoxedElement | ArrowElement>(
   target: T,
   patch: Partial<BoxedElement> | Partial<ArrowElement>,

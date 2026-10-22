@@ -117,7 +117,7 @@ export type PaletteAdd =
   // handler rather than the icon one.
   | { type: 'sticker'; stickerId: string }
   // Every other palette tile (text, arrow, table, image, embeds, web
-  // components, event-storming notes, ...): the editor runs the tile's own
+  // components, ...): the editor runs the tile's own
   // handler (tileHandler), so a search add behaves exactly like the tile.
   | { type: 'tile'; tileId: string };
 type PaletteItem = { kind: 'palette'; id: string; name: string; add: PaletteAdd };

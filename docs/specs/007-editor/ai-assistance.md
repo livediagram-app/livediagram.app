@@ -4,9 +4,9 @@
 
 An optional AI assistant panel in the diagram editor. Disabled by default; users opt in
 via Settings. Requires a model key (`GOOGLE_AI_STUDIO_API_KEY`, `OPENAI_API_KEY`, or a generic `AI_API_KEY` + `AI_BASE_URL`) in the api worker environment —
-if absent the feature is **hidden entirely** (no UI surface, no API routes respond). This
-keeps the OSS/self-host promise intact: contributors who don't want to provision an
-OpenAI key get zero AI surface with no extra code paths to reason about.
+if absent the feature is **hidden entirely** (no UI surface, no API routes respond). A
+deployment without a model key (local development, previews) gets zero AI surface with
+no extra code paths to reason about.
 
 ## Capability detection
 
@@ -41,10 +41,10 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
 ## Security
 
 - Auth required: Clerk JWT or `X-Owner-Id`. The hosted deployment additionally requires
-  Clerk (see `AI_REQUIRE_CLERK` below); self-hosters can accept anonymous owners by
+  Clerk (see `AI_REQUIRE_CLERK` below); a deployment can accept anonymous owners by
   leaving the flag unset.
 - Per-IP rate limiter (`AI_RATE_LIMITER` binding, 20 req/60 s). Optional — absent on
-  self-host deployments falls through to "allow", matching the pattern used by
+  a deployment it falls through to "allow", matching the pattern used by
   `WRITE_RATE_LIMITER` and `EVENTS_RATE_LIMITER`.
 - Optional `Origin` allow-list (`AI_ALLOWED_ORIGINS`). When set, every `/api/ai` request
   must carry an `Origin` header whose value matches one of the entries; otherwise the
@@ -59,14 +59,14 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   The value is **`https://www.liveplanner.app,https://liveplanner.app`**, and the `www`
   entry is the load-bearing one: the apex 301-redirects to `www`, so `www` is the origin a
   real browser sends. The apex-only value this spec used to recommend would have returned
-  403 for every genuine request from the editor. Self-hosters set their own hostname —
+  403 for every genuine request from the editor. Another deployment (staging) sets its own hostname —
   whichever one the browser actually lands on after redirects — plus dev origins like
   `http://localhost:3102`.
 - Optional Clerk-only gate (`AI_REQUIRE_CLERK`). When set to `"true"`, `/api/ai` rejects
   any request without a verified Clerk Bearer JWT with `401 { error: 'sign_in_required' }`;
   the legacy `X-Owner-Id` guest path still works for every OTHER endpoint, just not for
   AI. Unset = guests can still use AI (the default before this flag landed), preserving
-  the OSS self-host story where Clerk is optional. Combined with the origin allow-list,
+  the rule that Clerk is optional. Combined with the origin allow-list,
   this is the spend-DoS defence on a public deployment: a third-party site can no longer
   drain the operator's OpenAI budget by minting fresh `X-Owner-Id` UUIDs.
 - Prompt capped at 1 000 characters server-side; element payload capped at 200 elements
@@ -162,14 +162,14 @@ reference kind with them (arrow ends, mind-map parents, portal partners) through
 Error responses follow the standard worker envelope, `{ "error": "<token>" }`. The route emits
 exactly six:
 
-| Token                | Status | When                                                       |
-| -------------------- | ------ | ---------------------------------------------------------- |
-| `sign_in_required`   | 401    | The assistant is signed-in only.                           |
-| `origin_not_allowed` | 403    | The request came from an origin the worker does not serve. |
-| `method_not_allowed` | 405    | Anything but a `POST`.                                     |
-| `rate_limited`       | 429    | The caller's per-owner request budget is spent.            |
-| `ai_error`           | 502    | The upstream model call failed.                            |
-| `ai_not_configured`  | 503    | No model key on this deployment (the self-host default).   |
+| Token                | Status | When                                                         |
+| -------------------- | ------ | ------------------------------------------------------------ |
+| `sign_in_required`   | 401    | The assistant is signed-in only.                             |
+| `origin_not_allowed` | 403    | The request came from an origin the worker does not serve.   |
+| `method_not_allowed` | 405    | Anything but a `POST`.                                       |
+| `rate_limited`       | 429    | The caller's per-owner request budget is spent.              |
+| `ai_error`           | 502    | The upstream model call failed.                              |
+| `ai_not_configured`  | 503    | No model key on this deployment (the default without a key). |
 
 A request with no identity at all (neither a Clerk session nor an `X-Owner-Id`)
 gets the worker-wide `bad_request` 400 every owner-scoped route sends.
@@ -186,33 +186,21 @@ to be told twice. The PROVIDER is inferred from WHICH KEY IS SET, because a key
 is provider-specific — a Google AI Studio key is useless to OpenAI — so the
 variable that holds it should say whose it is, and the endpoint follows.
 
-| key var                      | provider | base URL                                                  | default model                                                         |
-| ---------------------------- | -------- | --------------------------------------------------------- | --------------------------------------------------------------------- |
-| `GOOGLE_AI_STUDIO_API_KEY`   | google   | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-3.6-flash` (assistant), `gemini-2.5-flash-lite` (crop reader) |
-| `OPENAI_API_KEY`             | openai   | `https://api.openai.com/v1`                               | `gpt-4o`                                                              |
-| `AI_API_KEY` + `AI_BASE_URL` | generic  | whatever `AI_BASE_URL` says                               | none — `AI_MODEL` is REQUIRED                                         |
+| key var                      | provider | base URL                                                  | default model                 |
+| ---------------------------- | -------- | --------------------------------------------------------- | ----------------------------- |
+| `GOOGLE_AI_STUDIO_API_KEY`   | google   | `https://generativelanguage.googleapis.com/v1beta/openai` | `gemini-3.6-flash`            |
+| `OPENAI_API_KEY`             | openai   | `https://api.openai.com/v1`                               | `gpt-4o`                      |
+| `AI_API_KEY` + `AI_BASE_URL` | generic  | whatever `AI_BASE_URL` says                               | none — `AI_MODEL` is REQUIRED |
 
 The generic row is Mistral, OpenRouter, a local llama.cpp or Ollama — anything
 that speaks the OpenAI chat-completions wire.
 
-### Each feature has its own provider
+### Which key wins
 
-The worker runs two AI features, and each one resolves its own provider from the
-keys that are set, taking the first present key in its own preference order:
+The assistant (Ask / Clean, `/api/ai`) takes the first present key in its preference order:
+openai → google → generic. A deployment sets one key and changes nothing.
 
-| feature                                 | route                | preference order          |
-| --------------------------------------- | -------------------- | ------------------------- |
-| **assistant** (Ask / Clean)             | `/api/ai`            | openai → google → generic |
-| **reader** (event-storming crop reader) | `/api/ai/read-notes` | google → openai → generic |
-
-- **One key serves both.** A deployment with a single key runs both features on
-  that provider; a self-hoster sets one key and changes nothing.
-- **Two named keys split the features.** With `OPENAI_API_KEY` and
-  `GOOGLE_AI_STUDIO_API_KEY` both set, the assistant runs on OpenAI and the
-  reader on Google. This is the hosted site's configuration: the assistant
-  stays on the OpenAI model it has always used, and the reader uses Gemini,
-  which reads handwriting better for less.
-- **The generic key is the last resort.** `AI_API_KEY` serves a feature only
+- **The generic key is the last resort.** `AI_API_KEY` serves only
   when neither named key is set. Set beside a named key it serves nothing, so
   it is logged as an error on every resolution (`[ai] AI_API_KEY is set but
 unused`) rather than left as a dead secret nobody notices.
@@ -222,26 +210,13 @@ unused`) rather than left as a dead secret nobody notices.
 
 ### Which model
 
-- **Assistant**: `AI_MODEL`, else its provider's default model.
-- **Reader**: `AI_VISION_MODEL`, else `AI_MODEL` **when the reader shares the
-  assistant's provider**, else its provider's reader default, else its
-  provider's default model.
-
-`AI_MODEL` names a model of the provider serving the assistant, so it reaches
-the reader only when both run on that provider: a `gpt-4o` id sent to Gemini is
-a guaranteed failure. The READER has its own Google default,
-`gemini-2.5-flash-lite`, because reading handwriting is literal work: measured
-on a real wall it read 99% of the words against 95% for `gemini-3.6-flash`,
-while costing about a quarter as much and finishing four times faster
-(docs/research/vision/handwriting-readers.md). An operator who names `AI_MODEL`
-for a single-provider deployment means it for the reader too, and
-`AI_VISION_MODEL` beats everything. The generic preset has no defaults, so it
-requires `AI_MODEL` for both features, keeping them available together.
+`AI_MODEL`, else the provider's default model. The generic preset has no defaults, so it requires
+`AI_MODEL`.
 
 `aiEnabled` is "a provider resolved".
 
 `OPENAI_API_KEY` is not a compatibility alias — it is the OpenAI preset's own
-key, so a self-hoster already on OpenAI changes nothing. `OPENAI_MODEL` is gone;
+key, so a deployment already on OpenAI changes nothing. `OPENAI_MODEL` is gone;
 it is `AI_MODEL` now.
 
 **How the Gemini default was chosen (2026-09-16).** Not guessed: the key's own
@@ -253,59 +228,17 @@ that would move under a deployment without anyone changing anything;
 they spend tokens on reasoning before the answer, so a `max_tokens` sized for
 the visible output alone comes back `finish_reason: length` with nothing in it.
 
-Requests use `response_format: { type: 'json_object' }` plus our own strict
-validation — the strict `json_schema` form is not universally supported, and we
-validate every field regardless. The crop reader is the exception below: it
-asks the two known providers for a strict schema.
-
-## POST /api/ai/read-notes — reading the text on sticky crops
-
-The model half of the event-storming photo import ([Event storming](../021-event-storming/event-storming.md) Phase 8). The
-stickies are FOUND in the browser by classical computer vision; this route is
-asked only to read the handwriting on the crops that came out of that.
-
-- Same admission sequence as `/api/ai` (shared `routes/ai-gate.ts`): the
-  reader's provider resolves → origin allow-list → Clerk-only flag → owner → method → rate limiter.
-- **Body**: `{ crops: { id, image }[] }` — at most `READ_MAX_CROPS_PER_REQUEST`
-  (6) crops per call, each a data URL of at most `CROP_MAX_BYTES` in one of
-  `image/jpeg`, `image/png`, `image/webp`. The client batches a bigger run and
-  sends two batches at a time. Six, not sixteen: a 16-image request was
-  answered 503 "high demand" every time by a hosted flash model while a 5-image
-  request succeeded every time, and smaller batches also read the handwriting
-  markedly better.
-- **Never the whole photo.** A crop is one sticky; whoever is standing in front
-  of the wall stays in the browser.
-- **A strict schema where the provider has one.** The google and openai presets
-  send `response_format: { type: 'json_schema', strict: true }` with the answer
-  shape, so the model is constrained to valid JSON of that shape as it writes.
-  JSON mode alone was not enough: `gemini-2.5-flash-lite` failed two batches of
-  seven in one run (12 of 42 notes) with broken quoting (`{'id':20`, `{"id':21`), a dropped field,
-  or an answer that stopped after `{"texts":[`, and one bad answer fails all six
-  notes of its batch (`ai_error`, logged as `unparseable content`). The generic
-  preset keeps JSON mode, because what a self-hosted endpoint supports is
-  unknown; the validation below applies to every provider regardless.
-- **Answer**: `{ texts: { id, text, legible }[] }`. `legible: false` with empty
-  text is a real answer — the paper was there, the words were not readable — and
-  it still becomes a note, empty, for the author to fill in.
-- **Errors**: the six above, plus `crops_invalid` (400),
-  `crops_too_large` (413) and `ai_quota` (429). A key that has spent its quota
-  is told apart from a passing spike on purpose: one means try later, the other
-  means raise the limit, and reporting both as `ai_error` sends the author back
-  to retry something that cannot work yet.
-
-**Telemetry:** `AI / Used / PhotoNotes`, once per committed import (the editor
-fires it, because the route cannot know whether the author kept the result).
+Requests use `response_format: { type: 'json_object' }` plus our own strict validation — the strict `json_schema` form is not universally supported, and we validate every field regardless.
 
 ## Environment variables
 
-| Variable                                                     | Where                     | Purpose                                                                                                                                                                                                                   |
-| ------------------------------------------------------------ | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | Worker secret             | The model keys; any one enables AI, and each feature takes its provider from them (see "Each feature has its own provider"). None = every AI surface hidden.                                                              |
-| `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                      |
-| `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                            |
-| `AI_VISION_MODEL`                                            | Worker var (optional)     | Model id for reading note crops (`/api/ai/read-notes`, [Event storming](../021-event-storming/event-storming.md) Phase 8). Defaults as in "Which model": `AI_MODEL` only when the reader shares the assistant's provider. |
-| `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://liveplanner.app,http://localhost:3102`. Entries are matched case-sensitive against the request's `Origin` header verbatim.   |
-| `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                    |
+| Variable                                                     | Where                     | Purpose                                                                                                                                                                                                                 |
+| ------------------------------------------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GOOGLE_AI_STUDIO_API_KEY` / `OPENAI_API_KEY` / `AI_API_KEY` | Worker secret             | The model keys; any one enables AI (see "Which key wins"). None = every AI surface hidden.                                                                                                                              |
+| `AI_BASE_URL`                                                | Worker var (generic only) | The OpenAI-COMPATIBLE chat-completions base for `AI_API_KEY`: a laptop points it at llama.cpp or Ollama. The google and openai keys bring their own.                                                                    |
+| `AI_MODEL`                                                   | Worker var (optional)     | Model id for the assistant. Defaults per provider (table above); required for the generic key.                                                                                                                          |
+| `AI_ALLOWED_ORIGINS`                                         | Worker var (optional)     | Comma-separated `Origin` values that may call `/api/ai`. Unset = no check. Example: `https://liveplanner.app,http://localhost:3102`. Entries are matched case-sensitive against the request's `Origin` header verbatim. |
+| `AI_REQUIRE_CLERK`                                           | Worker var (optional)     | Set to `"true"` to require a verified Clerk JWT on `/api/ai` (rejects the `X-Owner-Id` guest path with 401). Unset / any other value = guests allowed.                                                                  |
 
 Set via `wrangler secret put <the key var>` for production; drop into `apps/api/.dev.vars`
 for local dev (gitignored). The two `AI_*` flags are plain `[vars]` (no secret value), so
@@ -368,7 +301,5 @@ don't inflate the count.
 ## Out of scope (this spec)
 
 - Multi-tab context
-- Image or freehand element generation (READING the text on an image is in
-  scope — see the read-notes route above; generating one is not)
 - Per-user cost attribution or quota
 - Model switching in the UI

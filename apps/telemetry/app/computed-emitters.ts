@@ -1,8 +1,8 @@
 // Test support for metric-emitters.test.ts: the values each COMPUTED emitter
 // can send. The emitter scan (emitter-scan.ts) knows a computed emit site
 // exists but not what its type will be, and "some chart counts this
-// category·action" is not enough: the photo import's `AI·Used·Photo*` inflated
-// a card about the AI panel, unseen because a chart existed on the pair.
+// category·action" is not enough: a computed type can sit on no chart at all, unseen because a chart
+// existed on the pair.
 //
 // So every computed site is declared here by `<path> <Category>·<Action>`,
 // with the values it can send. Where the set is closed and written down
@@ -86,29 +86,6 @@ const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType
 
 // One closed value per default folder key (placementDefaultTelemetryType).
 const DEFAULT_FOLDER_TYPES = PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType);
-
-// The photo import's detector tokens (apps/live photo-model/telemetry.ts):
-// PhotoDetectHybrid<Backend> or PhotoDetectClassical<Reason>.
-const PHOTO_DETECTORS = (() => {
-  const source = read('live/lib/photo-model/telemetry.ts');
-  // The records map an id to its token; keep the tokens (capitalised).
-  const tokens = (marker: string) =>
-    tokensAfter(source, marker, '};').filter((t) => /^[A-Z]/.test(t));
-  return [
-    ...tokens('const BACKEND').map((b) => `PhotoDetectHybrid${b}`),
-    ...tokens('const FAILURE').map((r) => `PhotoDetectClassical${r}`),
-  ];
-})();
-
-// The image picker's search failures (apps/live image-search/telemetry.ts):
-// every `ImageSearch.<Reason>` token in its fixed tables.
-const IMAGE_SEARCH_WARNINGS = [
-  ...new Set(
-    [...read('live/lib/image-search/telemetry.ts').matchAll(/'(ImageSearch\.[A-Za-z.]+)'/g)].map(
-      (m) => m[1]!,
-    ),
-  ),
-];
 
 // The Plan tour's steps, as planTourStepTelemetryType makes them (apps/live plan-tour-steps.ts,
 // docs/specs/026-plan/plan-tour.md), both tracks; the two outros share one id. The welcome card sends no step view.
@@ -234,7 +211,7 @@ const SLUGS = ['your-first-diagram', 'tips-format-painter', 'connect-ai-mcp'];
 const SLUG_WHY = "a help article's telemetry id, one per registered article";
 const THEMES = ['Default', 'Plum', 'Custom'];
 const THEME_WHY = "themeTelemetryLabel(themeId): a built-in theme's label, or Custom";
-const TEMPLATES = ['Flowchart', 'Mindmap', 'Event-storming'];
+const TEMPLATES = ['Flowchart', 'Mindmap', 'Kanban'];
 const TEMPLATE_WHY = "titleCaseType(kind): a template's kind";
 const ELEMENT_KINDS = ['Square', 'Circle', 'Sticky', 'Icon', 'TechIcon', 'Banner', 'Video'];
 const ELEMENT_WHY = 'an element kind, as the palette catalogue spells it';
@@ -303,7 +280,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'a kind, the page it happened on, and the error name',
   },
   'packages/ui/src/PageViewTracker.tsx Page·View': {
-    values: ['/', '/document', '/explorer/timeline', '/help/canvas/links', '/telemetry'],
+    values: ['/', '/document', '/explorer/home', '/help/canvas/links', '/telemetry'],
     open: 'the page path, ids and query strings stripped',
   },
 
@@ -461,9 +438,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/components/panels/useTeamPaneActions.ts Team·Removed': {
     values: ['Invite', 'Member', 'Self'],
   },
-  'apps/live/hooks/ui/useImageSearch.ts Error·Warning': {
-    values: IMAGE_SEARCH_WARNINGS,
-  },
   'apps/live/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],
     open: 'Render.<Area>.<ErrorName>',
@@ -512,7 +486,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   'apps/live/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },
-  'apps/live/hooks/canvas/usePhotoDraft.ts AI·Used': { values: PHOTO_DETECTORS },
   'apps/live/hooks/canvas/useShapeDrawing.ts Element·Added': {
     values: ['Banner', 'Callout', 'Image', 'Video', 'LinkCard'],
     open: 'a drawn component or media kind',
@@ -525,36 +498,13 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'titleCaseType(pattern): a background pattern',
   },
   'apps/live/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
-  'apps/live/hooks/canvas/useStylePreview.ts Element·Changed': {
-    // The types the element menu's generic style ops pass through it
-    // (apps/live/lib/element-style-ops.ts): the accent edge, card slots and chip looks.
-    values: [
-      'AccentEdge',
-      'CardSlots',
-      'ChipLook',
-      'ChipDetach',
-      'BoundaryStyle',
-      'BoundaryMeta',
-      'PyramidVariant',
-      'HubSpokes',
-      'PointerDetach',
-      'StackDirection',
-      'StackColumns',
-      'StackGap',
-      'StackPadding',
-      'StackAlign',
-      'SequenceNumbered',
-      'SequenceAnim',
-      'ConceptAnim',
-    ],
-  },
   // The Sequence dialog's writes (apps/live/hooks/canvas/useSequenceSetters.ts): which part of it changed.
   'apps/live/hooks/canvas/useSequenceSetters.ts Element·Changed': {
     values: ['SequenceParticipants', 'SequenceMessages', 'SequenceText'],
   },
   // The element menu's whole-tab writes (apps/live/lib/element-style-ops.ts `commitTab`).
   'apps/live/components/palette/EditorContextMenuHost.tsx Element·Changed': {
-    values: ['RenumberSteps', 'StepSequence'],
+    values: ['RenumberSteps'],
   },
   'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],

@@ -21,19 +21,9 @@ A strip shows one category at a time, so finding an element means knowing which 
 - **Where:** the last control on the strip, after More (and after Plan's Edit Cards and
   Plan's Edit Cards), behind a divider, with a hover card ("Search Elements"). On a phone it
   stays put beside More while the tiles swipe.
-- **Not on an event-storming board:** the notation is the palette there, as the board hides the
-  pickers. Draw mode has no strip, so no Search.
 - **Opening it clears the way**: a tile armed to place is let go (its "Tap to drop" banner goes), and the
   session timer's pill stands aside while the panel is open, since both sit where the panel hangs.
-- **The popover** hangs from the button's right edge like More's, 26rem wide (spanning the
-  screen between the gutters on a phone), and is capped to the window, scrolling when long. It is a
-  strip menu: opening it closes any other (More, the pickers), and a press outside or Escape closes
-  it; Escape hands the focus back to the button that opened it (a press leaves focus where it landed), where it
-  had fallen to the page. **S** opens it too, wherever the strip is shown (an editor, not an
-  event-storming board, the chrome not hidden); everywhere else S keeps its old meaning, the legacy
-  alias of Select. The field's clear button (×, once there is text) clears the query and returns to
-  the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over
-  it).
+- **The popover** hangs from the button's right edge like More's, 26rem wide (spanning the screen between the gutters on a phone), and is capped to the window, scrolling when long. It is a strip menu: opening it closes any other (More, the pickers), and a press outside or Escape closes it; Escape hands the focus back to the button that opened it (a press leaves focus where it landed), where it had fallen to the page. **S** opens it too, wherever the strip is shown; everywhere else S keeps its old meaning, the legacy alias of Select. The field's clear button (×, once there is text) clears the query and returns to the tab's own types. Opening it focuses its search field (not on a phone, where focusing raises the keyboard over it).
 - **What it searches:** the element **tiles** (`PALETTE_TILES`) of every mode's palette layout,
   each once however many categories hold it. **Icons, Stickers and Technology** are searched too,
   entry by entry, as their categories' own tiles (`palette-dynamic-tiles`, `palette-catalogue-search`):
@@ -43,8 +33,7 @@ A strip shows one category at a time, so finding an element means knowing which 
   and another mode's otherwise. Before anything is typed, the entries already on the tab list with
   the element types (an icon or a technology mark is an icon shape carrying its id, a sticker a shape
   carrying its sticker id). The catalogues load as a chunk of their own; the popover asks for it on
-  opening and fills in when it lands. My shapes stays in its own category: it is the person's
-  libraries, not a catalogue of the product. A
+  opening and fills in when it lands. A
   tile matches on its name, label, blurb, description and the same synonym line the global Search
   panel uses ("database" finds the cylinder, [Canvas and palette](../008-canvas/canvas-and-palette.md#search-panel)),
   ranked exact name, then name prefix, then name substring, then keyword only; ties keep palette
@@ -105,9 +94,8 @@ its catalogue a moment later focuses the field as soon as it appears); on a phon
 because focusing would raise the keyboard over the popover.
 
 More appears when the category has more than twelve tiles, and always for
-Icons, Stickers, Technology, Behaviour and My shapes, whose bodies carry
-more than tiles (search, group browsing, the person's libraries; My shapes has no strip tiles
-of its own, so More is its only way in). It sits outside the
+Icons, Stickers, Technology and Behaviour, whose bodies carry
+more than tiles (search, group browsing). It sits outside the
 animated tile rail, so it rides the rail's width change.
 
 **Icons, Stickers and Technology show their groups** where a strip shows their tiles (no mode's strip does since
@@ -122,8 +110,8 @@ closes it, as More's does. The groups and their entries are the browse's
 ([Palette category browse](../010-palette/palette-category-browse.md)), so the strip and the More body never
 disagree.
 
-**On a phone More shows only for My shapes**, whose library picker has no strip tiles of its own: every other
-category's strip already holds all of it (the whole category swipes, and the three catalogues hold their groups).
+**On a phone More never shows**: every category's strip already holds all of it (the whole category swipes, and
+the three catalogues hold their groups).
 
 ## The strip's order and dividers
 
@@ -146,7 +134,6 @@ which moved things under the pointer after every add; it is gone, its stored lis
 - **Devices**: desktop (Browser, Monitor, Laptop) | mobile (Phone, Tablet, Foldable, Watch).
 - **Media**: Image | the embeds | Avatar.
 - **Data**: the charts (Pie, Bar, Line, Legend) | the meters (Progress, Donut, Rating).
-- **Event Storming**: the notation | Hotspot.
 
 Popular divides where its tiles' own groups do (after the Diamond), and the Icons / Stickers /
 Technology catalogues have none. A category
@@ -244,8 +231,8 @@ their bottom-row buttons. What changes to fit the width:
   right gutter; only its tiles scroll sideways, under a finger, while the selection mode, the
   category picker and More stay put. The scrollbar is hidden ([Scrollbars](../004-interface-design/scrollbars.md)):
   a tile cut at the edge shows there is more. A new category starts scrolled to its first tile.
-  More shows only for My shapes ([More](#more-the-rest-of-the-category)): the swiping strip reaches every
-  other category's tiles, and Icons, Stickers and Technology their groups.
+  More never shows ([More](#more-the-rest-of-the-category)): the swiping strip reaches every
+  category's tiles, and Icons, Stickers and Technology their groups.
 - **More spans the screen** between the gutters instead of hanging from its
   button.
 - **Zoom drops − and +** (`pinchOnly`), as on every phone ([Live app](live-app.md)). Fit
@@ -291,9 +278,6 @@ their bottom-row buttons. What changes to fit the width:
     for the Explorer: it would cover the popover's top.
   - Without a strip (zen, read-only, the welcome flow) the messages stay the
     top-centre pills they are elsewhere.
-- Event-storming boards ([Event storming](../021-event-storming/event-storming.md)) hide the strip's pickers, and the strip shows the notation's tiles, led by
-  the board's **Add from Photo** (an icon button with a hover card) where the deployment offers
-  photo import.
 - Read-only sessions have no palette, so no strip. The menu button still
   shows.
 - Zen hides the strip and the menu button along with the rest of the chrome.

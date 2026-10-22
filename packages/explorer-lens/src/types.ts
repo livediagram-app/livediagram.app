@@ -3,7 +3,6 @@
 
 import type {
   EditedValue,
-  KindValue,
   LensDimension,
   MadeByValue,
   OpensInValue,
@@ -17,7 +16,6 @@ export type SpaceValue = 'mine' | 'shared' | `team:${string}`;
 /** The value type of each dimension. */
 export type LensValueOf = {
   'opens-in': OpensInValue;
-  kind: KindValue;
   template: TemplateValue;
   'made-by': MadeByValue;
   edited: EditedValue;
@@ -102,7 +100,6 @@ export type LensSubject = {
   people: PeopleValue;
   madeByAi: boolean | null;
   opensIn: OpensInValue | null;
-  kind: KindValue | null;
   template: TemplateValue | null;
 };
 

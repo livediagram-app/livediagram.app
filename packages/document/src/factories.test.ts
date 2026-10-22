@@ -58,7 +58,7 @@ describe('boxed-element factories', () => {
   });
 
   it('createImage drops a 200x150 placeholder with null imageId and aspect-lock on', () => {
-    // docs/specs/009-elements/images.md contract: the canvas drops an image element with no
+    // The placeholder contract: the canvas drops an image element with no
     // bytes attached, the picker fills imageId in afterwards. The
     // empty-state thumbnail renders while imageId is null, then the
     // aspectLocked default kicks in so resizing once a real image
@@ -457,40 +457,20 @@ describe('createShape (Behaviour elements)', () => {
   });
 });
 
-// A copied workshop note (docs/specs/021-event-storming/event-storming.md) is a new piece of paper: fresh id AND a
-// fresh hand-placement. Every duplication path in the editor — Ctrl+D,
-// shift-drag duplicate, copy/paste — funnels through this one function, so
-// the rule lives here and can't be missed by one of them.
-describe('duplicateElements — event-storming notes', () => {
-  const esNote = {
+describe('duplicateElements — rotation', () => {
+  const note = {
     id: 'n1',
     type: 'sticky',
     x: 0,
     y: 0,
     width: 200,
     height: 200,
-    fixedSize: true,
-    rotation: 0.7,
   } as unknown as Element;
-
-  it('re-rolls the tilt for a workshop note rather than photocopying it', () => {
-    const angles = new Set<number>();
-    for (let i = 0; i < 30; i++) {
-      const { newElements } = duplicateElements([esNote], new Set(['n1']), 20, 20);
-      const copy = newElements[0] as { rotation?: number; id: string };
-      expect(copy.id).not.toBe('n1');
-      expect(Math.abs(copy.rotation!)).toBeLessThanOrEqual(1.1);
-      angles.add(copy.rotation!);
-    }
-    // Not a constant, and not simply the source's angle every time.
-    expect(angles.size).toBeGreaterThan(1);
-  });
 
   it('leaves a deliberately-rotated ordinary element exactly as it was', () => {
     const tilted = {
-      ...esNote,
+      ...note,
       id: 'p1',
-      fixedSize: undefined,
       rotation: 12,
     } as unknown as Element;
     const { newElements } = duplicateElements([tilted], new Set(['p1']), 5, 5);

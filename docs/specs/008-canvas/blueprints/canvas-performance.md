@@ -28,7 +28,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
 | `apps/live/components/canvas/CanvasSelectionToolbars.tsx` | `toolbarsStale` includes `selectionMoving`                                                                      |
 | `apps/live/hooks/canvas/useCanvasLongTaskLog.ts`          | The `[canvas-perf] long task` debug log                                                                         |
 | `apps/live/components/canvas/CanvasArrivalContext.tsx`    | `CanvasArrivalProvider`, `useArrivesWithBoard()`: what a tab opens with                                         |
-| `apps/live/components/canvas/useBoxedElementAnimation.ts` | Pops in only what is added after the board arrived; no timer when nothing pops                                  |
+| `apps/live/components/canvas/useElementPopIn.ts`          | Pops in only what is added after the board arrived; no timer when nothing pops                                  |
 | `apps/live/app/globals.css`                               | The editor fade-in rule (chrome markers only, never the canvas world); `[data-element-plane]`'s `cursor: auto`  |
 | `apps/live/lib/sticky-peel-image.ts`                      | The sticky peel as a picture: `stickyPeelImage`, `stickyPeelVars` (blob-URL border-images), `useStickyPeelVars` |
 | `apps/live/lib/png-encode.ts`                             | `encodePngRgba`: a synchronous stored PNG, for pictures the editor makes itself                                 |
@@ -227,7 +227,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 - `useArrivesWithBoard()` reads, once per element mount (a `useState` initialiser),
   `settledTab.current !== tabId`: true for the elements in the commit that shows the tab, false
   for any element mounted later. Outside a provider it reads false (an element alone pops in).
-- `useBoxedElementAnimation`: `entered` starts as `still || arrivesWithBoard`. Only an element
+- `useElementPopIn`: `entered` starts as `still || arrivesWithBoard`. Only an element
   that starts not entered arms the 400 ms timer that drops `animate-element-pop-in`; an element
   that starts entered arms nothing, so opening a board sets no timers and re-renders no view
   afterwards. An element mounted on a still canvas stays entered if the tab switches to Diagram

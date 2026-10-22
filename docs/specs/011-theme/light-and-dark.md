@@ -57,7 +57,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   `reachContrast`). A pick stores the walked ink, as it stores the rest of the theme; a view only draws it. A label no
   theme touched keeps its ink however low it reads, since that is someone's choice. `apps/live/lib/template-overlay-contrast.test.ts` holds every
   template's labels at 3:1 under every theme, picked in either half and seen in either
-  ([#819](https://github.com/liveplanner-app/liveplanner.app/issues/819)).
+  (issue #819).
 - **A Border-tier preset is a line drawing on the paper.** Hairline, Outline, Dotted, Dash-Dot and Frame sit on white
   in a light half and, in a dark half, on that half's element fill (the dark ink's for a theme that paints none, as
   Default), their lines and labels lightened to read there. A white card on a dark canvas glared, as the flowchart

@@ -8,9 +8,9 @@ import { getParticipant, migrateOwnerId } from '../db';
 import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
 import { readOptionalBody, type RouteContext } from './context';
 
-const ZERO = { documents: 0, folders: 0, shared: 0, images: 0 };
+const ZERO = { documents: 0, folders: 0, shared: 0 };
 
-// Moves every `owner_id` row (documents, folders, prefs, images, shared
+// Moves every `owner_id` row (documents, folders, prefs, shared
 // list) from a source owner to a target owner. Two flows:
 //
 //  1. Sign-up (guest → Clerk): the live app calls this once Clerk reports

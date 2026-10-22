@@ -80,8 +80,4 @@ describe('the editor’s first load', () => {
     // The untitled name is read on every load: it lives in its own leaf module.
     expect(staticImports(read('../../packages/templates/src/legacy-untitled.ts'))).toEqual([]);
   });
-
-  it('reads a detected sticky’s place without the photo detector', () => {
-    expect(staticImports(read('../../packages/sticky-vision/src/normalised.ts'))).toEqual([]);
-  });
 });

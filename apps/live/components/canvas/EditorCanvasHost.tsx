@@ -26,11 +26,8 @@ import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
-import { useStableObject } from '@/hooks/ui/useStableObject';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useSessionTools } from '@/components/chrome/useSessionTools';
-import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
-import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
 import { canEditSankey } from '@/lib/sankey-edit';
 import { canEditSequence } from '@/lib/sequence-edit';
@@ -93,7 +90,6 @@ export function EditorCanvasHost() {
     addHero,
     addIcon,
     addSticker,
-    addImage,
     addLinkCard,
     addVideo,
     addProcess,
@@ -101,18 +97,9 @@ export function EditorCanvasHost() {
     addShape,
     addStatRow,
     addSticky,
-    esBoard,
-    addNextNote,
-    photoImportAvailable,
-    photoImportBlocked,
-    openPhotoImport,
-    readPhotoFile,
     dropBoardFile,
-    photoDraft,
-    createBlocked,
     addTable,
     addTechIcon,
-    insertLibraryShape,
     addText,
     aiCapable,
     aiPanelPosition,
@@ -190,7 +177,6 @@ export function EditorCanvasHost() {
     handleCanvasDoubleClick,
     hydrated,
     identityOnlyScreenOpen,
-    imageContext,
     isOwner,
     canShareDocument,
     setSearchOpen,
@@ -306,19 +292,6 @@ export function EditorCanvasHost() {
   } = useEditorContext();
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
-  // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the
-  // owner's libraries, then placed at the drop point.
-  const { libraries } = useShapeLibraries();
-  const dropLibraryShape = (ref: LibraryShapeRef, at: { x: number; y: number }) => {
-    const item = libraries
-      .find((l) => l.id === ref.libraryId)
-      ?.items.find((i) => i.id === ref.itemId);
-    if (!item) {
-      console.warn('[shape-libraries] drop ignored', { reason: 'unknown shape' });
-      return;
-    }
-    insertLibraryShape(item, at);
-  };
   // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
   const reshapingArrowId =
     drag &&
@@ -455,15 +428,6 @@ export function EditorCanvasHost() {
   });
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.
-  const esBoardControls = useStableObject({
-    ...(photoImportAvailable
-      ? {
-          onImportPhoto: openPhotoImport,
-          photoDisabled: photoImportBlocked,
-          photoDisabledReason: photoDraft.draftOpen ? 'Finish the current draft first' : undefined,
-        }
-      : {}),
-  });
   const activeTheme = getTheme(activeTab.theme);
   // Tab windows (docs/specs/009-elements/tab-window.md): the tabs they show, fetched as they are shown.
   const selectTab = useSelectTab();
@@ -518,7 +482,6 @@ export function EditorCanvasHost() {
             setViewportOffset={setViewportOffset}
             elements={canvasElements}
             tabLayers={activeTab.layers}
-            tabKind={activeTab.kind}
             previewDrawnArrow={(intent, startX, startY, endX, endY) =>
               drawnArrowAsShown(intent, startX, startY, endX, endY, {
                 elements: activeTab.elements,
@@ -615,7 +578,6 @@ export function EditorCanvasHost() {
             onAddIcon={addIcon}
             onAddSticker={addSticker}
             onAddTechIcon={addTechIcon}
-            onInsertLibraryShape={(item) => void insertLibraryShape(item)}
             onDropIcon={isReadOnly ? undefined : dropIconOnElement}
             onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
             onAddTable={addTable}
@@ -632,14 +594,7 @@ export function EditorCanvasHost() {
             onAddAvatar={addAvatar}
             onAddText={addText}
             onAddSticky={addSticky}
-            esBoard={esBoard}
-            esBoardControls={esBoardControls}
-            onAddNextNote={createBlocked ? undefined : addNextNote}
-            onDropPhoto={readPhotoFile}
             onDropFile={isReadOnly ? undefined : dropBoardFile}
-            onDropLibraryShape={isReadOnly ? undefined : dropLibraryShape}
-            createBlocked={createBlocked}
-            onAddImage={addImage}
             onAddArrow={addArrow}
             reshapingArrowId={reshapingArrowId}
             onBeginPolygon={beginPolygon}
@@ -878,9 +833,6 @@ export function EditorCanvasHost() {
                       mode: 'canvas',
                       x: sx,
                       y: sy,
-                      // Where a Paste from this menu lands: the right-clicked
-                      // spot, not wherever the pointer is when the row is clicked.
-                      canvasPoint: canvasPointerRef.current,
                       // Open upward when the click is in the bottom fifth of the
                       // viewport so the canvas menu's categories don't run
                       // off-screen (matching the tab menu).
@@ -928,7 +880,6 @@ export function EditorCanvasHost() {
             onOpenNote={openNote}
             onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}
             onOpenEditDialog={isReadOnly ? undefined : openEditDialog}
-            imageContext={imageContext}
             // The visitor name prompt shows for EVERYONE, view-role visitors included: it only writes their own
             // participant row, so there's no 403, and they should set a name before others see them in presence.
             showIdentityPrompt={identityOnlyScreenOpen}

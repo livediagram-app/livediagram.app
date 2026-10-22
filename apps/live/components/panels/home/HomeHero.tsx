@@ -3,13 +3,12 @@
 // Home's hero (docs/specs/013-workspace/explorer-home.md "The hero"; blueprint
 // docs/specs/013-workspace/blueprints/explorer-home-view.md "Presentation and UX"): the full-width band under the
 // Explorer header on Home, its page header. Status pills, the greeting, the lead, the lens field drawn large with
-// New Document inside it, and the fanned sheets of the newest documents. Reads only what the shell already holds.
+// New Document inside it, and the fanned previews of a Board, a Sheet, a Dashboard and a Form. Reads only what the
+// shell already holds; the previews are static art, the same for everyone.
 
-import { lazy, Suspense, useMemo } from 'react';
+import { lazy, Suspense } from 'react';
 import { PlusIcon } from '@/components/primitives/explorer-icons';
 import { HeroCorner } from './HeroCorner';
-import { isInThisBrowser } from '@/lib/document-space';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { track } from '@/lib/telemetry';
 import { useNow } from '@/hooks/ui/useNow';
 import { useExplorer } from '@/app/explorer/ExplorerContext';
@@ -17,12 +16,12 @@ import { HamburgerIcon } from '@/app/explorer/PaneHeader';
 import { LensField, LensFieldStill } from '@/app/explorer/lens/LensField';
 import { inboxBadge } from '@/app/explorer/sidebar/inbox-badge';
 import { explorerPathFor } from '@/app/explorer/routes';
-import { HERO_COPY, heroGreeting, heroPills, heroSheets } from '@/app/explorer/home/hero-model';
+import { HERO_COPY, heroGreeting, heroPills } from '@/app/explorer/home/hero-model';
 import { WELCOME_COPY } from '@/app/explorer/home/first-run';
 import { useFirstRun } from '@/app/explorer/home/useFirstRun';
 import { WelcomeSearch } from './WelcomeSearch';
 import { InAppLink } from './HomeSection';
-import { FOCUS_RING, SHEET_FRAME, SHEET_PLACES } from './home-styles';
+import { FOCUS_RING } from './home-styles';
 import { assignAppLocation } from '@/lib/app-location';
 
 const HEADING_ID = 'home-hero-greeting';
@@ -32,27 +31,17 @@ const PILL_DOT = { emerald: 'bg-emerald-500', sky: 'bg-sky-500' } as const;
 const PILL =
   'inline-flex h-8 items-center gap-2 rounded-full border border-slate-200 bg-white px-3.5 text-[13px] font-medium text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200';
 
-// A first run's sheets are template previews, fetched only when a first run draws them (explorer-home.md "First
-// run"). React.lazy rather than next/dynamic: next/dynamic registers its module for preloading, which would fetch
-// the previews on every Explorer page.
-const HeroTemplateFan = lazy(() =>
-  import('./HeroTemplateFan').then((m) => ({ default: m.HeroTemplateFan })),
+// The fanned previews' art is its own chunk, fetched once Home draws its hero, so the Explorer's first paint never
+// waits on it (the box holds its size, so nothing moves when it lands). React.lazy rather than next/dynamic:
+// next/dynamic registers its module for preloading, which would fetch the art on every Explorer page.
+const HeroFeatureFan = lazy(() =>
+  import('./HeroFeatureFan').then((m) => ({ default: m.HeroFeatureFan })),
 );
 
 /** `active` while Home is the page; a hero folding away draws its field still, so the page holds one live field. */
 export function HomeHero({ active = true }: { active?: boolean }) {
-  const {
-    ownerId,
-    documents,
-    loading,
-    failedReads,
-    activity,
-    go,
-    setMobileNavOpen,
-    lens,
-    lensResult,
-  } = useExplorer();
-  const sheets = useMemo(() => heroSheets(documents), [documents]);
+  const { documents, loading, failedReads, activity, go, setMobileNavOpen, lens, lensResult } =
+    useExplorer();
   const pills = heroPills({
     // A list that failed to load has no count to tell.
     documents: loading || failedReads.documents ? undefined : documents.length,
@@ -143,7 +132,7 @@ export function HomeHero({ active = true }: { active?: boolean }) {
               );
             })}
             {/* Help and the banner's close end the pills' row from `sm` to `lg`; from `lg` they stand at the hero's
-                top right, over the sheets; on a phone they sit beside the menu button above. */}
+                top right, over the previews; on a phone they sit beside the menu button above. */}
             <span className="ml-auto hidden sm:inline-flex lg:hidden">
               <HeroCorner />
             </span>
@@ -180,25 +169,10 @@ export function HomeHero({ active = true }: { active?: boolean }) {
         <div className="absolute right-4 top-6 z-20 hidden sm:right-6 lg:block">
           <HeroCorner />
         </div>
-        <div aria-hidden className="relative hidden h-72 min-w-[18rem] flex-[1_1_22rem] lg:block">
-          {firstRun ? (
-            <Suspense fallback={null}>
-              <HeroTemplateFan />
-            </Suspense>
-          ) : null}
-          {(firstRun ? [] : sheets).map((doc, i) => (
-            <span key={doc.id} data-hero-sheet="" className={`${SHEET_FRAME} ${SHEET_PLACES[i]}`}>
-              <DocumentThumbnail
-                ownerId={ownerId}
-                documentId={doc.id}
-                version={doc.savedAt}
-                empty={doc.empty}
-                // A document in This Browser has no server snapshot: asking for one only 404s.
-                offline={isInThisBrowser(doc)}
-                className="block h-full w-full"
-              />
-            </span>
-          ))}
+        <div className="relative hidden h-72 min-w-[18rem] flex-[1_1_22rem] lg:block">
+          <Suspense fallback={null}>
+            <HeroFeatureFan />
+          </Suspense>
         </div>
       </div>
     </section>

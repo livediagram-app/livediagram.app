@@ -49,8 +49,8 @@ on:
         required: true
       CF_ACCOUNT_ID:
         required: true
-      # Each optional secret below is skipped when unset, so a fork that sets
-      # none still deploys. The caller decides WHICH value it passes — the
+      # Each optional secret below is skipped when unset, so a deploy that sets
+      # none still works. The caller decides WHICH value it passes — the
       # staging caller hands over its `_STAGING` twin — so this workflow never
       # has to know which environment it is running for.
       NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
@@ -64,10 +64,9 @@ on:
 
 # The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
 # liveplanner.app's own deploys add the vars in apps/api/hosted-vars.json
-# (telemetry on, per-owner image caps) and a fork's do not, so a fork deploying
-# this repo as documented is telemetry-off and uncapped. Keyed on the repository
-# ID of liveplanner-app/liveplanner.app rather than its name, so a rename or a
-# transfer keeps the profile and no fork can match it. In a reusable workflow
+# (telemetry on, per-owner image caps); any other repository's deploys do not, so
+# they are telemetry-off and uncapped. Keyed on the repository ID rather than its
+# name, so a rename or a transfer keeps the profile and no copy can match it. In a reusable workflow
 # the `github` context is the caller's, so both callers resolve it the same way.
 env:
   HOSTED: ${{ github.repository_id == '1253158818' }}
@@ -117,8 +116,8 @@ jobs:
       # The hosted profile's build-time half: NEXT_PUBLIC_TELEMETRY_ENABLED,
       # mirrored from hosted-vars.json so the frontends emit exactly when the api
       # ingests. On in staging too, against staging's own D1 — that is how you
-      # verify a new event lands before production sees it. Skipped on a fork,
-      # whose frontends then emit nothing unless its own build env opts in.
+      # verify a new event lands before production sees it. Skipped outside the
+      # hosted repository, whose frontends then emit nothing unless their build env opts in.
       - name: Apply hosted profile to the build
         if: env.HOSTED == 'true'
         working-directory: apps/api

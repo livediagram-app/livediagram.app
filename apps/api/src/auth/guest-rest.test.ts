@@ -3,7 +3,7 @@ import { guestSignatureEnforced, isLegacyGuestEra, OWNER_SCOPED_SEGMENTS } from 
 
 describe('guestSignatureEnforced', () => {
   const NOW = 1_000_000;
-  it('is off without a secret (self-host opt-out)', () => {
+  it('is off without a secret (opted out)', () => {
     expect(guestSignatureEnforced({ GUEST_SIG_ENFORCE_AFTER: '0' }, NOW)).toBe(false);
   });
   it('is off when no cutoff is configured (grace by default)', () => {
@@ -32,7 +32,6 @@ describe('OWNER_SCOPED_SEGMENTS', () => {
     for (const s of [
       'documents',
       'folders',
-      'images',
       'custom-themes',
       'participants',
       'preferences',

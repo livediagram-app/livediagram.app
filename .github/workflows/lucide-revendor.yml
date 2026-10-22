@@ -21,7 +21,7 @@ concurrency:
 jobs:
   revendor:
     name: Re-vendor Lucide
-    # Dependabot's own branches only; never a fork, never a person's branch.
+    # Dependabot's own branches only; never a person's branch.
     if: github.event.pull_request.user.login == 'dependabot[bot]' && github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -65,7 +65,7 @@ jobs:
           git push origin "HEAD:${BRANCH}"
           echo "lucide-revendor: pushed $(git rev-parse --short HEAD) to ${BRANCH}"
           sha="$(git rev-parse HEAD)"
-          # The held runs appear within seconds of the push; CI, E2E Smoke and CodeQL are required.
+          # The held runs appear within seconds of the push; CI and E2E Smoke are required.
           approved=''
           for attempt in $(seq 1 24); do
             for id in $(gh api "repos/${GITHUB_REPOSITORY}/actions/runs?head_sha=${sha}&status=action_required" -q '.workflow_runs[].id'); do
@@ -75,7 +75,7 @@ jobs:
               approved="${approved}|${name}|"
             done
             missing=''
-            for required in 'CI' 'E2E Smoke' 'CodeQL'; do
+            for required in 'CI' 'E2E Smoke'; do
               case "${approved}" in *"|${required}|"*) ;; *) missing="${missing} ${required};" ;; esac
             done
             [ -z "${missing}" ] && exit 0

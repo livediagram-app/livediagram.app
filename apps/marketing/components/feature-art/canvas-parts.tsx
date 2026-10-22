@@ -195,22 +195,22 @@ export function Pill({
   y: number;
   w: number;
   label: string;
-  tone?: 'slate' | 'sky' | 'pink' | 'green' | 'amber' | 'red' | 'solid';
+  tone?: 'slate' | 'brand' | 'pink' | 'green' | 'amber' | 'red' | 'solid';
   className?: string;
   style?: CSSProperties;
 }) {
   const face = {
     slate: 'fill-slate-100 dark:fill-slate-700',
-    sky: 'fill-sky-100 dark:fill-sky-500/25',
+    brand: 'fill-brand-100 dark:fill-brand-500/25',
     pink: 'fill-pink-100 dark:fill-pink-500/25',
     green: 'fill-emerald-100 dark:fill-emerald-500/25',
     amber: 'fill-amber-100 dark:fill-amber-500/25',
     red: 'fill-rose-100 dark:fill-rose-500/25',
-    solid: 'fill-sky-500',
+    solid: 'fill-brand-600',
   }[tone];
   const ink = {
     slate: 'fill-slate-600 dark:fill-slate-300',
-    sky: 'fill-sky-700 dark:fill-sky-200',
+    brand: 'fill-brand-700 dark:fill-brand-200',
     pink: 'fill-pink-700 dark:fill-pink-200',
     green: 'fill-emerald-700 dark:fill-emerald-200',
     amber: 'fill-amber-700 dark:fill-amber-200',
@@ -232,21 +232,6 @@ export function Pill({
       </text>
     </g>
   );
-}
-
-/** A line of text standing in for a sentence: a soft bar. */
-export function TextBar({
-  x,
-  y,
-  w,
-  className = LINE,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  className?: string;
-}) {
-  return <rect className={className} x={x} y={y} width={w} height="3" rx="1.5" />;
 }
 
 // Chrome glyphs on a 10-unit grid, drawn at (x, y) in currentColor-free strokes.
@@ -304,7 +289,6 @@ export const LOCK_PATHS = (
   </>
 );
 export const FOLDER_PATHS = <path d="M1 2.6 h3 l1 1.2 h4 v4.6 h-8 z" />;
-export const CHECK_PATHS = <path d="M2.2 5.2 l1.9 1.9 l3.7 -3.9" />;
 
 // A card's stage: the canvas Frame and the 300 by 96 drawing on it, the frame's own proportions
 // (about 304 by 96), so a scene fills the card edge to edge with a 10-unit inner margin.

@@ -6,7 +6,6 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { PALETTE_ADD_HANDLER_KEYS, type PaletteAddHandlers } from './palette-add-handlers';
 import { ToolbarPalette } from './ToolbarPalette';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
-import type { EsBoardControls } from './EventStormingBoardRows';
 import { tileById } from './palette-tile-defs';
 import { paletteCategoriesFor } from './palette-layouts';
 import { createShape, type Element } from '@liveplanner/document';
@@ -55,9 +54,7 @@ function handlers(): PaletteAddHandlers {
 
 function show(
   props: {
-    esBoard?: boolean;
     hidden?: boolean;
-    esBoardControls?: EsBoardControls;
     tabElements?: Element[];
   } = {},
 ) {
@@ -276,37 +273,6 @@ describe('ToolbarPalette', () => {
     expect(document.querySelector('[data-toolbar-more]')).toBeNull();
   });
 
-  it('hides the selection mode and the category picker on an event-storming board', () => {
-    show({ esBoard: true });
-    expect(screen.queryByRole('button', { name: 'Selection mode' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Palette category' })).toBeNull();
-  });
-
-  // docs/specs/021-event-storming/event-storming.md: the floating palette's board row, in the strip.
-  it('offers Add from Photo on an event-storming board, as its category does', () => {
-    const onImportPhoto = vi.fn();
-    show({ esBoard: true, esBoardControls: { onImportPhoto } });
-    fireEvent.click(within(strip()).getByRole('button', { name: 'Add from Photo' }));
-    expect(onImportPhoto).toHaveBeenCalledTimes(1);
-  });
-
-  it('keeps Add from Photo focusable but inert while it is unavailable', () => {
-    const onImportPhoto = vi.fn();
-    show({ esBoard: true, esBoardControls: { onImportPhoto, photoDisabled: true } });
-    const button = within(strip()).getByRole('button', { name: 'Add from Photo' });
-    expect(button.getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(button);
-    expect(onImportPhoto).not.toHaveBeenCalled();
-  });
-
-  it('offers no Add from Photo off a board, or where the deployment has no photo import', () => {
-    show({ esBoardControls: { onImportPhoto: vi.fn() } });
-    expect(screen.queryByRole('button', { name: 'Add from Photo' })).toBeNull();
-    cleanup();
-    show({ esBoard: true, esBoardControls: {} });
-    expect(screen.queryByRole('button', { name: 'Add from Photo' })).toBeNull();
-  });
-
   it('hides rather than unmounts, so the chosen category survives', () => {
     const view = show();
     pickCategory('plan-metrics');
@@ -346,13 +312,11 @@ describe('ToolbarPalette', () => {
         target: { value: q },
       });
 
-    it('ends the strip, and not on an event-storming board', () => {
+    it('ends the strip', () => {
       show();
       const buttons = within(strip()).getAllByRole('button');
       expect(buttons.at(-1)?.getAttribute('aria-label')).toBe('Search elements');
       cleanup();
-      show({ esBoard: true });
-      expect(screen.queryByRole('button', { name: 'Search elements' })).toBeNull();
     });
 
     it("opens focused, and finds a tile from any of Plan's categories", () => {
@@ -408,9 +372,6 @@ describe('ToolbarPalette', () => {
         expect(requestToolbarSearch()).toBe(true);
       });
       expect(document.querySelector('[data-toolbar-search]')).not.toBeNull();
-      cleanup();
-      show({ esBoard: true });
-      expect(requestToolbarSearch()).toBe(false);
       cleanup();
       show({ hidden: true });
       expect(requestToolbarSearch()).toBe(false);

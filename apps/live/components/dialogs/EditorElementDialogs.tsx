@@ -3,7 +3,6 @@
 import { withArticle } from '@liveplanner/ui';
 import dynamic from 'next/dynamic';
 import {
-  isBoxed,
   LINE_DEFAULT_CATEGORIES,
   LINE_DEFAULT_SERIES,
   EMBED_PROVIDER_HINT,
@@ -44,10 +43,6 @@ const SankeyFlowsDialog = dynamic(
   () => import('@/components/dialogs/SankeyFlowsDialog').then((m) => m.SankeyFlowsDialog),
   { ssr: false },
 );
-const ImagePicker = dynamic(
-  () => import('@/components/panels/ImagePicker').then((m) => m.ImagePicker),
-  { ssr: false },
-);
 
 // Dialogs that edit a single element's data: its link (element + table
 // cell), a line/bar chart's series, and its image. Each is gated on the
@@ -82,13 +77,6 @@ export function EditorElementDialogs() {
     sankey,
     sequence,
     mindOutline,
-    imagePickerOpenFor,
-    selfParticipant,
-    removeImageFromElement,
-    applyImageToElement,
-    closeImagePicker,
-    refreshRecentImages,
-    workbenchMode,
     can,
   } = useEditorContext();
 
@@ -125,13 +113,8 @@ export function EditorElementDialogs() {
         () => setSequenceOpenForId(null),
         (el) => el.type === 'shape' && el.shape === 'sequence' && canEditSequence(can, el),
       ],
-      [
-        imagePickerOpenFor?.forElementId ?? null,
-        closeImagePicker,
-        () => !isReadOnly || !!can.addContent,
-      ],
     ],
-    `${isReadOnly}|${can.level}|${!!can.addContent}`,
+    `${isReadOnly}|${can.level}`,
   );
 
   // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
@@ -315,37 +298,6 @@ export function EditorElementDialogs() {
             );
           })()
         : null}
-      {/* A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md). */}
-      {imagePickerOpenFor && documentId && (!isReadOnly || can.addContent) ? (
-        <ImagePicker
-          ownerId={selfParticipant.id}
-          documentId={documentId}
-          uploadOnly={workbenchMode}
-          forElementId={imagePickerOpenFor.forElementId}
-          currentImageId={(() => {
-            const targetId = imagePickerOpenFor.forElementId;
-            if (!targetId) return null;
-            const el = activeTab.elements.find((e) => e.id === targetId);
-            return el && isBoxed(el) && el.type === 'image' ? el.imageId : null;
-          })()}
-          onRemove={
-            imagePickerOpenFor.forElementId
-              ? () => removeImageFromElement(imagePickerOpenFor.forElementId!)
-              : undefined
-          }
-          onSelect={(image) => {
-            if (imagePickerOpenFor.forElementId) {
-              applyImageToElement(imagePickerOpenFor.forElementId, image);
-            } else {
-              closeImagePicker();
-            }
-            // Refresh the Current Tab → Images accordion so the
-            // just-uploaded image surfaces without a document reload.
-            refreshRecentImages(selfParticipant.id);
-          }}
-          onClose={closeImagePicker}
-        />
-      ) : null}
     </>
   );
 }

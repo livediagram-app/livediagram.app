@@ -94,7 +94,7 @@ describe('pageMetadata', () => {
         url: 'https://liveplanner.app/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'liveplanner: a real-time canvas for diagrams, whiteboards, illustrations and documents',
+        alt: 'liveplanner: boards, sheets, dashboards and forms, planned together in real time',
       },
     ]);
     const tw = md.twitter as Record<string, unknown> | undefined;

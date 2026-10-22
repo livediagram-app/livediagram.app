@@ -49,12 +49,9 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
 - **What is drawn** (`renderTabDrawingSvg(tab, opts)`): a Form tab whose `readForm(tab.form)` reads → `formArt(form,
 formLook(tab), resolveFontStack(look.font)).svg`. Anything else → `renderTabToSvg(tab, opts)`.
 - **Motion**: `TabWindowDrawing` passes `windowMotion` (`tab-window-motion.ts`) to `useTabSvg`, which hands
-  `renderTabToSvg` an `SvgMotion` for the shown tab's surface. A boxed element that plays (`windowBoxedMotion`:
-  `WINDOW_SHAPE_PLAYS` through `wrapperShapeAnimation`, else `WINDOW_BODY_PLAYS` through `setAnimationClass`) is wrapped
-  in `<g class="lvd-svg-motion <set class>" style="--lvd-anim-*">`; an arrow's flow (`windowArrowLine`, from
+  `renderTabToSvg` an `SvgMotion` for the shown tab's surface. An arrow's flow (`windowArrowLine`, from
   `FLOW_PATH_CLASS` / `FLOW_PATH_DASH`) reaches `svgArrow`'s `lineMotion` as the line's class, dash, path length and
-  `--lvd-flow-*`. `:where(.lvd-svg-motion)` sets `transform-box: fill-box` and a centre origin (zero specificity, so a
-  set's own origin wins). After each redraw `pinLoops` sets every infinite animation's `startTime` to 0.
+  `--lvd-flow-*`. After each redraw `pinLoops` sets every infinite animation's `startTime` to 0.
   `useHoldOffscreen` toggles `data-held` on the frame from an `IntersectionObserver`, and
   `[data-tab-window-drawing][data-held] *` pauses every animation. File exports never pass `motion`.
 - **Nesting**: the tab's drawing is rendered without a window resolver (canvas) or with a names-only resolver (export),

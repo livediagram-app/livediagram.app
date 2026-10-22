@@ -106,7 +106,6 @@ eating the end of what someone wrote.
   server leaves a name alone when a write sends it back unchanged. The cap is
   about not creating new ones.
 - **Element labels.** They are content, not identifiers, and are free to be as
-  long as the shape can hold. (Markdown import has its own separate label cap
-  for a different reason — see `markdown-import.ts`.)
+  long as the shape can hold.
 - **Folder and team names**, which come from deliberate typing rather than
   auto-naming and have not caused a problem.

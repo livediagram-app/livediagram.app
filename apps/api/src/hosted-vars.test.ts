@@ -3,12 +3,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { parsePositiveCap } from './routes/images';
 
 // The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
-// the vars liveplanner.app's deploys add, and a fork's do not. Two promises
-// hang on it: a fork deploying the repo as documented is telemetry-off and
-// uncapped, and the hosted deployment's image caps survive every deploy.
+// the vars liveplanner.app's deploys add, and a fork's do not. A fork deploying
+// the repo as documented is telemetry-off, and the hosted vars survive every deploy.
 
 type Profile = {
   shared: Record<string, string>;
@@ -60,13 +58,9 @@ function tomlTableKeys(toml: string, header: string): string[] {
 }
 
 describe('hosted profile', () => {
-  it('turns telemetry on and caps every owner gallery', async () => {
+  it('turns telemetry on', async () => {
     const vars = (await load()).readHostedProfile().shared;
     expect(vars.TELEMETRY_ENABLED).toBe('true');
-    // The worker's own parser: a value it reads as "no cap" would leave R2
-    // unguarded while this file looked right.
-    expect(parsePositiveCap(vars.IMAGE_MAX_PER_OWNER)).toBe(100);
-    expect(parsePositiveCap(vars.IMAGE_MAX_BYTES_PER_OWNER)).toBe(100 * 1024 * 1024);
   });
 
   it('names only vars the worker reads', async () => {
@@ -78,7 +72,7 @@ describe('hosted profile', () => {
     }
   });
 
-  it('is never a committed default, so a fork is telemetry-off and uncapped', async () => {
+  it('is never a committed default, so a fork is telemetry-off', async () => {
     const { shared, environments } = (await load()).readHostedProfile();
     const hosted = [
       ...Object.keys(shared),
@@ -104,10 +98,10 @@ describe('hosted-vars script', () => {
 
   it('mirrors telemetry into the frontend build, and nothing when it is off', async () => {
     const { buildEnv } = await load();
-    expect(buildEnv({ TELEMETRY_ENABLED: 'true', IMAGE_MAX_PER_OWNER: '1' })).toEqual([
+    expect(buildEnv({ TELEMETRY_ENABLED: 'true', APP_BASE_URL: 'x' })).toEqual([
       'NEXT_PUBLIC_TELEMETRY_ENABLED=true',
     ]);
-    expect(buildEnv({ IMAGE_MAX_PER_OWNER: '1' })).toEqual([]);
+    expect(buildEnv({ APP_BASE_URL: 'x' })).toEqual([]);
   });
 
   it('rejects a malformed profile rather than deploying half of it', async () => {
@@ -154,7 +148,7 @@ describe('hosted-vars script', () => {
     resources: {
       bindings: [
         { type: 'plain_text', name: 'TELEMETRY_ENABLED', text: 'true' },
-        { type: 'plain_text', name: 'IMAGE_MAX_PER_OWNER', text: '50' },
+        { type: 'plain_text', name: 'APP_BASE_URL', text: 'https://old.example' },
         { type: 'secret_text', name: 'CLERK_JWKS_URL' },
         { type: 'd1', name: 'DB' },
       ],
@@ -170,12 +164,12 @@ describe('hosted-vars script', () => {
   it('reports every hosted var a deployment lacks or holds with another value', async () => {
     const { hostedVarDrift, plainVars } = await load();
     const drift = hostedVarDrift(
-      { TELEMETRY_ENABLED: 'true', IMAGE_MAX_PER_OWNER: '100', IMAGE_MAX_BYTES_PER_OWNER: '9' },
+      { TELEMETRY_ENABLED: 'true', APP_BASE_URL: 'https://new.example', BUILD_ID: '9' },
       plainVars(view),
     );
     expect(drift).toEqual([
-      { name: 'IMAGE_MAX_PER_OWNER', expected: '100', actual: '50' },
-      { name: 'IMAGE_MAX_BYTES_PER_OWNER', expected: '9', actual: null },
+      { name: 'APP_BASE_URL', expected: 'https://new.example', actual: 'https://old.example' },
+      { name: 'BUILD_ID', expected: '9', actual: null },
     ]);
     expect(hostedVarDrift({ TELEMETRY_ENABLED: 'true' }, plainVars(view))).toEqual([]);
     expect(plainVars({}).size).toBe(0);

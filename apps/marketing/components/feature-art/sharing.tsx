@@ -35,7 +35,7 @@ export function ShareLinksArt() {
     label: string,
     url: string,
     role: string,
-    tone: 'sky' | 'amber' | 'slate',
+    tone: 'brand' | 'amber' | 'slate',
   ) => (
     <g>
       <rect
@@ -65,7 +65,7 @@ export function ShareLinksArt() {
   return (
     <Scene>
       <Panel x={40} y={6} w={220} h={84} />
-      <Glyph x={50} y={13} className="stroke-sky-600 dark:stroke-sky-300">
+      <Glyph x={50} y={13} className="stroke-brand-600 dark:stroke-brand-300">
         {LINK_PATHS}
       </Glyph>
       <text className={TEXT} x="63" y="20.5" fontSize="8" fontWeight="700">
@@ -77,7 +77,7 @@ export function ShareLinksArt() {
       <g className="fa-a-late" style={at(0.9)}>
         <Pill x={210} y={12} w={40} label="Copied" tone="green" />
       </g>
-      {row(28, 'Editors', 'liveplanner.app/d/9fk2', 'Can edit', 'sky')}
+      {row(28, 'Editors', 'liveplanner.app/d/9fk2', 'Can edit', 'brand')}
       {row(48, 'Participants', 'liveplanner.app/d/m3wd', 'Can add', 'amber')}
       {row(68, 'Viewers', 'liveplanner.app/d/qp7x', 'Can view', 'slate')}
       <Pointer x={232} y={19} color={YOU} className="fa-a-move" style={from(24, 46, 0)} />
@@ -93,7 +93,7 @@ export function TeamsArt() {
     initials: string,
     name: string,
     role: string,
-    tone: 'sky' | 'slate' | 'amber',
+    tone: 'brand' | 'slate' | 'amber',
   ) => (
     <g>
       <Avatar cx={32} cy={y} r={5.5} color={color} initials={initials} />
@@ -106,7 +106,7 @@ export function TeamsArt() {
   return (
     <Scene>
       <Panel x={20} y={6} w={154} h={84} />
-      <Glyph x={28} y={13} className="stroke-sky-600 dark:stroke-sky-300">
+      <Glyph x={28} y={13} className="stroke-brand-600 dark:stroke-brand-300">
         {PEOPLE_PATHS}
       </Glyph>
       <text className={TEXT} x="41" y="20.5" fontSize="8" fontWeight="700">
@@ -116,7 +116,7 @@ export function TeamsArt() {
         3 people
       </text>
       <path className={RULE} d="M20 28.5 H 174" strokeWidth="1" />
-      {member(40, YOU, 'TM', 'You', 'Admin', 'sky')}
+      {member(40, YOU, 'TM', 'You', 'Admin', 'brand')}
       {member(57, JORDAN, 'JR', 'Jordan', 'Member', 'slate')}
       <g className="fa-a-pop" style={at(0.9)}>
         {member(74, ALEX, 'A', 'Alex', 'Invited', 'amber')}
@@ -126,7 +126,7 @@ export function TeamsArt() {
       <Glyph
         x={196}
         y={26}
-        className="fill-sky-100 stroke-sky-600 dark:fill-sky-500/20 dark:stroke-sky-300"
+        className="fill-brand-100 stroke-brand-600 dark:fill-brand-500/20 dark:stroke-brand-300"
         scale={2.2}
       >
         {FOLDER_PATHS}
@@ -135,7 +135,7 @@ export function TeamsArt() {
         Design
       </text>
       <text className={MUTED} x="226" y="49" fontSize="6.5">
-        12 documents
+        12 projects
       </text>
       <Avatar cx={198} cy={64} r={4.5} color={YOU} initials="TM" />
       <Avatar cx={206} cy={64} r={4.5} color={JORDAN} initials="JR" />
@@ -151,7 +151,7 @@ export function ExpiryArt() {
   return (
     <Scene>
       <Panel x={40} y={6} w={220} h={84} />
-      <Glyph x={50} y={13} className="stroke-sky-600 dark:stroke-sky-300">
+      <Glyph x={50} y={13} className="stroke-brand-600 dark:stroke-brand-300">
         {CLOCK_PATHS}
       </Glyph>
       <text className={TEXT} x="63" y="20.5" fontSize="8" fontWeight="700">
@@ -171,7 +171,7 @@ export function ExpiryArt() {
       </text>
       {/* The days left, draining round a ring. */}
       <circle
-        className="stroke-sky-100 dark:stroke-sky-500/25"
+        className="stroke-brand-100 dark:stroke-brand-500/25"
         cx="196"
         cy="42"
         r="5"
@@ -179,7 +179,7 @@ export function ExpiryArt() {
         strokeWidth="2"
       />
       <circle
-        className="fa-a-drain stroke-sky-500"
+        className="fa-a-drain stroke-brand-500"
         cx="196"
         cy="42"
         r="5"
@@ -189,7 +189,7 @@ export function ExpiryArt() {
         transform="rotate(-90 196 42)"
       />
       <text
-        className="fill-sky-700 dark:fill-sky-200"
+        className="fill-brand-700 dark:fill-brand-200"
         x="205"
         y="44.4"
         fontSize="6.5"
@@ -230,12 +230,12 @@ export function ExpiryArt() {
   );
 }
 
-/** Stop sharing on demand: switch the link off and the document is yours again. */
+/** Stop sharing on demand: switch the link off and the project is yours again. */
 export function RevokeArt() {
   return (
     <Scene>
       <Panel x={50} y={10} w={200} h={76} />
-      <Glyph x={60} y={17} className="stroke-sky-600 dark:stroke-sky-300">
+      <Glyph x={60} y={17} className="stroke-brand-600 dark:stroke-brand-300">
         {LINK_PATHS}
       </Glyph>
       <text className={TEXT} x="73" y="24.5" fontSize="8" fontWeight="700">
@@ -243,7 +243,7 @@ export function RevokeArt() {
       </text>
       {/* The switch: on, then off. */}
       <g className="fa-a-out" style={at(0.6)}>
-        <rect className="fill-sky-500" x="220" y="16" width="20" height="11" rx="5.5" />
+        <rect className="fill-brand-500" x="220" y="16" width="20" height="11" rx="5.5" />
         <circle cx="234.5" cy="21.5" r="4" fill="#fff" />
       </g>
       <g className="fa-a-late" style={at(0.6)}>

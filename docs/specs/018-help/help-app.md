@@ -4,7 +4,7 @@ A standalone help centre at `/help`, modelled on the Manager Toolkit help centre
 
 ## Why
 
-The editor is friction-free and discoverable, but there's no place that explains features in depth, answers "how do I…", or covers account/privacy/self-hosting questions. A searchable help centre fills that gap and doubles as SEO surface (every article is an indexable static page).
+The editor is friction-free and discoverable, but there's no place that explains features in depth, answers "how do I…", or covers account and privacy questions. A searchable help centre fills that gap and doubles as SEO surface (every article is an indexable static page).
 
 ## Shape
 
@@ -18,7 +18,7 @@ It started as a copy of the Manager Toolkit help centre and has since been redes
 
 ### No paid tier
 
-liveplanner is free and MIT-licensed with no plan for a paid tier (see [Open source + distribution](../002-project-scope/open-source-and-business-model.md)). So the help centre has **no "Accounts and Billing" category and no "Pro" callouts**. Instead it carries a **Self-hosting** category, reflecting that anyone can run their own instance.
+liveplanner is free with no plan for a paid tier (see [Business model + licence](../002-project-scope/business-model-and-licence.md)). So the help centre has **no "Accounts and Billing" category and no "Pro" callouts**.
 
 ## Information architecture
 
@@ -32,7 +32,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 **Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The liveplanner API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Documents_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
 
-**Policies.** A support category, not a feature one. It is the home for the hosted service's legal pages: the **Terms of Service**, the **Privacy Policy** and **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The Terms and Privacy Policy govern only the hosted service at liveplanner.app (a self-hosted copy is the operator's responsibility). These were standalone marketing routes (`/terms`, `/privacy`); they now live as help articles under `/help/policies/`, and the old marketing routes stay alive as thin client redirects so historical links keep resolving. (The Privacy Policy previously sat in `privacy-and-security`; it moved here so the two policies sit together, and the old help URL redirects to the new one.)
+**Policies.** A support category, not a feature one. It is the home for the hosted service's legal pages: the **Terms of Service**, the **Privacy Policy** and **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The Terms and Privacy Policy govern the hosted service at liveplanner.app. These were standalone marketing routes (`/terms`, `/privacy`); they now live as help articles under `/help/policies/`, and the old marketing routes stay alive as thin client redirects so historical links keep resolving. (The Privacy Policy previously sat in `privacy-and-security`; it moved here so the two policies sit together, and the old help URL redirects to the new one.)
 
 | slug                   | title                | icon      | kind    |
 | ---------------------- | -------------------- | --------- | ------- |
@@ -41,7 +41,6 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 | `tips-and-tricks`      | Tips and Tricks      | lightbulb | support |
 | `account-and-data`     | Account and Data     | user      | support |
 | `privacy-and-security` | Privacy and Security | shield    | support |
-| `self-hosting`         | Self-Hosting         | server    | support |
 | `developers`           | Developers           | code      | support |
 | `troubleshooting`      | Troubleshooting      | wrench    | support |
 | `supported-devices`    | Supported Devices    | devices   | support |
@@ -57,12 +56,12 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area:
 
-- **Explorer** — the document library (explorer/15, teams/32+35): The Explorer overview, Home (the Timeline), Recent, Shared With Me, My Documents and folders, Team Spaces, Image Gallery, and Saved Themes, one guide per sidebar row.
+- **Explorer** — the document library (explorer/14, teams/32+35): The Explorer overview, Home, Recent, Shared With Me, My Documents and folders, Team Spaces, and Saved Themes, one guide per sidebar row.
 - **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Format Painter, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
 - **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
 - **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
-- **Tools** — AI assistance (25), zen mode (26), appearance / light-dark-system (07), Markdown import (27), layout cleanup (47).
+- **Tools** — AI assistance (25), zen mode (26), appearance / light-dark-system (07), layout cleanup (47).
 - **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
@@ -294,7 +293,7 @@ One rule for every public page, shared with the marketing site ([Marketing site]
 
 ## In-editor entry point
 
-The editor's `TabBar` gains a **Help** link on its right edge, beside the existing GitHub link — a plain `<a href="/help/" target="_blank">` (same convention as the GitHub link, no editor-page wiring). It fires `track('UI', 'Opened', 'Help')` (see [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md); reuses existing `UI`/`Opened` enum pair). A "Help" link also lives in the help app's own header/footer.
+The editor's `TabBar` gains a **Help** link on its right edge — a plain `<a href="/help/" target="_blank">` (no editor-page wiring). It fires `track('UI', 'Opened', 'Help')` (see [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md); reuses existing `UI`/`Opened` enum pair). A "Help" link also lives in the help app's own header/footer.
 
 ### Help in global search
 
@@ -316,7 +315,7 @@ but only for surfaces that link ONE article contextually — see [Contextual hel
 
 ## Analytics
 
-The help centre emits through the first-party pipeline ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `Help·View·<slug>` per article read, the settled search outcome, article votes, window-level errors, and page views ([Page view telemetry](../017-telemetry/page-view-telemetry.md)). It uses the public sites' shared `siteTrack` from `@liveplanner/telemetry-client` (the `NEXT_PUBLIC_TELEMETRY_ENABLED` build gate plus the [User preferences](../007-editor/user-preferences.md) opt-out), the same instance the shared `PageViewBoot` reports page views through, so it runs one buffer. No third-party scripts; off by default, which keeps it self-host-clean.
+The help centre emits through the first-party pipeline ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)): `Help·View·<slug>` per article read, the settled search outcome, article votes, window-level errors, and page views ([Page view telemetry](../017-telemetry/page-view-telemetry.md)). It uses the public sites' shared `siteTrack` from `@liveplanner/telemetry-client` (the `NEXT_PUBLIC_TELEMETRY_ENABLED` build gate plus the [User preferences](../007-editor/user-preferences.md) opt-out), the same instance the shared `PageViewBoot` reports page views through, so it runs one buffer. No third-party scripts; off by default, so a deployment without it sends nothing.
 
 ## Deployment
 

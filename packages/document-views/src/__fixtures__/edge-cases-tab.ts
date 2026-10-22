@@ -60,9 +60,8 @@ export function edgeCasesTab(): Tab {
     },
     {
       ...createSticky(...cell(11)),
-      id: 'es-actor',
+      id: 'fixed-note',
       label: 'Customer',
-      esKind: 'actor',
       fixedSize: true,
     },
     strokeAt('lone', ...cell(12)),

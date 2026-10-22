@@ -18,7 +18,6 @@ describe('DEFAULT_KEY_ENTRIES', () => {
   it('names each entry as the list shows it', () => {
     expect(DEFAULT_KEY_ENTRIES.map((e) => e.label)).toEqual([
       'Projects',
-      'Event Storming boards',
       'Retrospectives',
       'Kanban boards',
     ]);
@@ -26,7 +25,6 @@ describe('DEFAULT_KEY_ENTRIES', () => {
 
   it('gives each entry the plural a sentence uses', () => {
     expect(defaultKeyEntry('mode:plan').noun).toBe('Projects');
-    expect(defaultKeyEntry('kind:event-storming').noun).toBe('Event Storming boards');
     expect(defaultKeyEntry('template:retrospective').noun).toBe('retrospectives');
     expect(defaultKeyEntry('template:kanban').noun).toBe('Kanban boards');
   });

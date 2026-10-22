@@ -15,7 +15,7 @@ export const SIDEBAR_TONES: Record<SidebarTone, string> = {
 };
 
 /** The tile of the current row, whatever its tone. */
-export const SIDEBAR_TILE_CURRENT = 'bg-sky-600 text-white dark:bg-sky-500';
+export const SIDEBAR_TILE_CURRENT = 'bg-violet-600 text-white dark:bg-violet-500';
 
 /** The tile's box. */
 // Its icon drawn at 14 px, so the 24 px tile centres it on whole pixels (a 13 px icon would sit on a half pixel and
@@ -23,9 +23,9 @@ export const SIDEBAR_TILE_CURRENT = 'bg-sky-600 text-white dark:bg-sky-500';
 export const SIDEBAR_TILE =
   'grid size-6 shrink-0 place-items-center rounded-lg [&>svg]:block [&>svg]:size-3.5';
 
-/** The current row: a raised white pill; in dark a glass pill with a sky hairline inside its edge. */
+/** The current row: a raised white pill; in dark a glass pill with a violet hairline inside its edge. */
 export const SIDEBAR_CURRENT =
-  'border-sky-200 bg-white shadow-[0_6px_18px_-8px_rgba(2,132,199,0.35)] dark:border-transparent dark:bg-transparent dark:bg-gradient-to-r dark:from-sky-400/[0.18] dark:to-sky-400/[0.04] dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-sky-400/35';
+  'border-violet-200 bg-white shadow-[0_6px_18px_-8px_rgba(124,58,237,0.35)] dark:border-transparent dark:bg-transparent dark:bg-gradient-to-r dark:from-violet-400/[0.18] dark:to-violet-400/[0.04] dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-violet-400/35';
 
 /** Every other row: a transparent edge (so selecting moves nothing) and a soft hover wash. */
 export const SIDEBAR_RESTING = 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800';

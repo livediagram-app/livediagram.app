@@ -72,7 +72,7 @@ export function NoTrackersArt() {
   );
 }
 
-/* Your data is yours: a folder/document label arcs from a generic
+/* Your data is yours: a folder/project label arcs from a generic
    server icon back into the user's avatar — the "comes home" beat. */
 export function DataIsYoursArt() {
   return (
@@ -86,7 +86,7 @@ export function DataIsYoursArt() {
           <rect x="20" y="42" width="28" height="4" rx="1" fill={SLATE} />
           <rect x="20" y="50" width="28" height="4" rx="1" fill={SLATE} />
         </g>
-        {/* Diagram label travelling along the arc */}
+        {/* Project label travelling along the arc */}
         <path
           id="arc-path"
           d="M54 45 Q 110 -10 165 45"
@@ -97,7 +97,7 @@ export function DataIsYoursArt() {
         <g className="fa-fade" style={{ animationDuration: '4s' }}>
           <rect x="100" y="14" width="40" height="14" rx="3" fill={SKY} />
           <text x="120" y="24" textAnchor="middle" fontSize="9" fontWeight="600" fill={ON_SKY}>
-            diagram
+            project
           </text>
         </g>
         {/* User avatar on the right */}
@@ -232,13 +232,13 @@ export function EncryptedArt() {
   );
 }
 
-/* Private by default: a document tile gated by a small lock; an
+/* Private by default: a project tile gated by a small lock; an
    "Open" button to the side toggles on/off with the fa-pulse beat. */
 export function PrivateByDefaultArt() {
   return (
     <PrivacyFrame>
       <svg viewBox="0 0 220 90" className="absolute inset-0 h-full w-full">
-        {/* Private document */}
+        {/* Private project */}
         <rect
           x="20"
           y="20"
@@ -275,40 +275,24 @@ export function PrivateByDefaultArt() {
   );
 }
 
-/* Open source: a code-bracket pair with the source rolling through. */
-export function OpenSourceArt() {
+/* No ads: a page with an ad slot that fades out, struck through, and the
+   page's own content lines left in its place. */
+export function NoAdsArt() {
   return (
     <PrivacyFrame>
       <svg viewBox="0 0 220 90" className="absolute inset-0 h-full w-full">
-        {/* Left bracket */}
-        <text x="35" y="62" fontSize="56" fontWeight="700" fill={SKY}>
-          {'<'}
-        </text>
-        {/* Right bracket */}
-        <text x="170" y="62" fontSize="56" fontWeight="700" fill={SKY}>
-          {'>'}
-        </text>
-        {/* Code lines in the middle, fading in row by row */}
-        {[0, 1, 2, 3].map((i) => (
-          <g key={i} className="fa-fade" style={{ animationDelay: `${i * 0.4}s` }}>
-            <rect x={70} y={20 + i * 13} width={6 + i * 3} height="2.5" rx="1" fill={SLATE} />
-            <rect
-              x={82 + i * 3}
-              y={20 + i * 13}
-              width={28 - i * 2}
-              height="2.5"
-              rx="1"
-              fill={SKY}
-            />
-            <rect x={114 + i} y={20 + i * 13} width={18} height="2.5" rx="1" fill={SLATE} />
-          </g>
+        {/* The page */}
+        <rect x="60" y="10" width="100" height="70" rx="4" fill={SURFACE} stroke={SLATE} />
+        {[0, 1, 2].map((i) => (
+          <rect key={i} x={70} y={20 + i * 9} width={80 - i * 14} height="3" rx="1" fill={SKY} />
         ))}
-        {/* MIT badge */}
-        <g>
-          <rect x="90" y="72" width="40" height="12" rx="3" fill={SKY} />
-          <text x="110" y="81" textAnchor="middle" fontSize="9" fontWeight="700" fill={ON_SKY}>
-            MIT
+        {/* The ad slot that is not there */}
+        <g className="fa-fade">
+          <rect x="70" y="50" width="80" height="22" rx="3" fill={ROSE_FAINT} stroke={ROSE} />
+          <text x="110" y="65" textAnchor="middle" fontSize="10" fontWeight="700" fill={ROSE}>
+            AD
           </text>
+          <path d="M72 70 L148 52" stroke={ROSE} strokeWidth="2.5" strokeLinecap="round" />
         </g>
       </svg>
     </PrivacyFrame>

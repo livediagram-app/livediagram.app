@@ -67,8 +67,7 @@ picked for ratings (`applyStyleMemory`), which may replace the amber.
    each calling `setRatingSelected(n)` with `n` in `1..5`; a star is lit when `n <= value`.
 2. `RatingAnimTiles`: an "Animation" header, None + the four, then Speed and Repeat, which mount
    once one is set and so grow the Tools flyout on a selection [QE14].
-3. The boxed Animation category is also offered [QE2].
-4. There is no on-canvas interaction: the stars are not buttons (`D100`).
+3. There is no on-canvas interaction: the stars are not buttons (`D100`).
 
 ### Setters
 

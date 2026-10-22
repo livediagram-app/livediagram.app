@@ -8,8 +8,7 @@ import {
   type ThemeDefinition,
 } from '@liveplanner/document';
 
-// How an image element without a bitmap looks (docs/specs/009-elements/images.md "Placeholder
-// rendering"): the empty placeholder, the broken-image state and the loading skeleton.
+// How an image element looks: always its empty placeholder (pictures are never uploaded).
 //
 // Inked for the paper the element sits on (its page's where the page has a fill of its own, else
 // the canvas's: useElementSurface), never for the app's light or dark chrome. A Tailwind `dark:`
@@ -150,68 +149,7 @@ function inkOn(fill: string): string {
   );
 }
 
-/** The broken-image state ("Image unavailable"): rose, opaque, per paper. */
-export const IMAGE_BROKEN_TONE: Record<
-  CanvasSurface,
-  Pick<PlaceholderTone, 'body' | 'border' | 'ink'>
-> = {
-  light: { body: '#fff1f2', border: '#fecdd3', ink: '#be123c' }, // rose-50 / 200 / 700
-  dark: { body: '#3b1520', border: '#9f1239', ink: '#fda4af' }, // deep rose / rose-800 / rose-300
-};
-
-/** The loading skeleton's body, per paper. */
-export const IMAGE_SKELETON_BODY: Record<CanvasSurface, string> = {
-  light: '#f1f5f9', // slate-100
-  dark: '#1e293b', // slate-800
-};
-
-// The label's size as a share of the box's shorter side: the label grows with the box so a big
-// hero placeholder still reads at the zoom that fits its page, as its page's text does.
-const LABEL_SHARE_OF_SIDE = 0.1;
-// The label's bounds, in canvas px: never smaller than the old fixed 10px, never shouting.
-export const PLACEHOLDER_LABEL_MIN_PX = 10;
-export const PLACEHOLDER_LABEL_MAX_PX = 40;
-// "Image unavailable" is under 11 em wide: it takes one line when the box holds 12 em, else
-// it wraps to two.
-const LABEL_ONE_LINE_EMS = 12;
-// The icon is twice the label, within these bounds and at most this share of the shorter side.
-const ICON_TO_LABEL = 2;
-const ICON_MIN_PX = 16;
-const ICON_SHARE_OF_SIDE = 0.4;
-// Line height and the border plus padding the label shares the box with.
-const LINE_HEIGHT = 1.25;
-const FRAME_PX = 12;
-
-type PlaceholderMetrics = {
-  labelPx: number;
-  iconPx: number;
-  gapPx: number;
-  /** False when the box is too small to hold the label under the icon: the icon shows alone. */
-  showLabel: boolean;
-};
-
-/** The placeholder's icon and label sizes for a box of `width` x `height` canvas px. */
-export function imagePlaceholderMetrics(width: number, height: number): PlaceholderMetrics {
-  const w = Math.max(0, width);
-  const h = Math.max(0, height);
-  const side = Math.min(w, h);
-  const labelPx = Math.round(
-    Math.min(
-      PLACEHOLDER_LABEL_MAX_PX,
-      Math.max(PLACEHOLDER_LABEL_MIN_PX, side * LABEL_SHARE_OF_SIDE),
-    ),
-  );
-  const iconPx = Math.round(
-    Math.max(ICON_MIN_PX, Math.min(labelPx * ICON_TO_LABEL, side * ICON_SHARE_OF_SIDE)),
-  );
-  const gapPx = Math.round(labelPx * 0.4);
-  // Two lines when the label is wider than the box can hold on one.
-  const lines = w - FRAME_PX >= labelPx * LABEL_ONE_LINE_EMS ? 1 : 2;
-  const showLabel = h >= iconPx + gapPx + labelPx * LINE_HEIGHT * lines + FRAME_PX;
-  return { labelPx, iconPx, gapPx, showLabel };
-}
-
-// The empty placeholder's face (docs/specs/009-elements/images.md "Placeholder rendering"): the
+// The empty placeholder's face: the
 // app's empty state (a badge, "No image yet", a line, one button) drawn on the canvas, scaled to
 // the box and trimmed to what fits it. Sizes below are at scale 1, in canvas px, and mirror
 // CompactEmptyState's regular size.

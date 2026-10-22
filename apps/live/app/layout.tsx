@@ -5,7 +5,6 @@ import { ErrorTelemetryBoot } from '@/components/providers/ErrorTelemetryBoot';
 import { PageViewBoot } from '@/components/providers/PageViewBoot';
 import { TimingTelemetryBoot } from '@/components/providers/TimingTelemetryBoot';
 import { StaleBuildBoot } from '@/components/providers/StaleBuildBoot';
-import { TruthArmBoot } from '@/components/providers/TruthArmBoot';
 import { KeyboardAvoidanceBoot } from '@/components/providers/KeyboardAvoidanceBoot';
 import { ConfirmProvider } from '@/hooks/ui/useConfirm';
 import { ToastProvider } from '@/hooks/ui/useToast';
@@ -135,7 +134,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             @font-face; browsers only fetch the families actually applied,
             and `display=swap` keeps text visible in the fallback stack
             while a face loads — so the editor still works if these are
-            blocked (self-host / offline). preconnect trims the round-trip.
+            blocked (by a network policy, or offline). preconnect trims the round-trip.
             Linked as print media and switched to all once loaded, so a
             cross-origin stylesheet never holds up first paint on any route;
             suppressHydrationWarning because that switch happens before
@@ -164,7 +163,6 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <StaleBuildBoot />
         <PageViewBoot />
         <TimingTelemetryBoot />
-        <TruthArmBoot />
         <KeyboardAvoidanceBoot />
         <ClerkProvider>
           <ToastProvider>

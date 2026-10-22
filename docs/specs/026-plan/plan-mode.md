@@ -14,7 +14,6 @@ drop it in a column) instead of a drawing. It never decides what the tab is: a t
 | **Plan**      | In the interface, the mode's name; never a tab kind     |
 
 - "Board" alone keeps its old meanings elsewhere in the specs; in this folder it is always a **Plan board**.
-- Event-storming boards are a tab kind with their own rules and are untouched by Plan mode.
 
 ## Plan's mark
 

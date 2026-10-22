@@ -113,7 +113,7 @@ Colour inputs open the one [colour picker](../004-interface-design/colour-picker
 
 ## Managing themes — Explorer
 
-The Explorer ([Folders](../013-workspace/folders.md)) gains a **Themes** entry under its **Library** section (beside Image gallery):
+The Explorer ([Folders](../013-workspace/folders.md)) gains a **Themes** entry under its **Library** section:
 
 - Route `/explorer/themes`; sidebar row with a palette glyph; `SelectedNode` gains `{ kind: 'themes' }`.
 - The pane lists the owner's custom themes as cards (each a `ThemeSwatch` preview + name + element count), with **New Theme**, **Edit** (opens the same builder, presented as a standalone modal here), **Duplicate**, and **Delete** (confirm) actions.

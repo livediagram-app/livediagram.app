@@ -19,15 +19,15 @@ import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
 export type SessionSegment = 'session-timer' | 'session-vote';
 
 // Which tools the strip offers (docs/specs/012-collaboration/session-tools.md "The Session strip"): Timer and Vote,
-// on an event-storming board, and elsewhere, where cards take the dots, only while `planVoting` (usePlanVoting: a
-// board on the tab made for voting, or a session running).
+// where cards take the dots, only while `planVoting` (usePlanVoting: a board on the tab made for voting, or a session
+// running).
 export type SessionStripTools = {
   timer: boolean;
   vote: boolean;
 };
 
-export function sessionStripTools(esBoard = false, planVoting = true): SessionStripTools | null {
-  return esBoard || planVoting ? { timer: true, vote: true } : null;
+export function sessionStripTools(planVoting = true): SessionStripTools | null {
+  return planVoting ? { timer: true, vote: true } : null;
 }
 
 // Whether this strip offers its idle tools, to start one: an editor's. The one rule both the strip's buttons and its

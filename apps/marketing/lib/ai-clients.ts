@@ -1,6 +1,6 @@
 // The Build with AI page's clients and starter prompts, as data (docs/specs/019-marketing/build-with-ai.md
 // "The clients"). One address, MCP_URL, feeds every snippet, so the page can never show two. It is this
-// deployment's MCP worker: a self-hosted build set with NEXT_PUBLIC_MCP_ORIGIN shows its own, never the hosted one.
+// deployment's MCP worker: a deployment built with NEXT_PUBLIC_MCP_ORIGIN set shows its own, never the hosted one.
 
 import { mcpEndpoint, resolveMcpOrigin } from '@liveplanner/api-schema';
 
@@ -240,37 +240,37 @@ export const AI_CLIENTS: readonly AiClient[] = [
 
 type StarterPrompt = { title: string; prompt: string };
 
-// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): create_document with a graph,
-// a Plan template, write_article, change_pages, find + read_document, add_sheet.
+// Each maps to a shipped MCP tool (docs/specs/015-api/mcp-server.md §4): a Plan template with change_items,
+// add_sheet, add_form + share_form, change_card_types, find + list_items, add_tab for a dashboard.
 export const STARTER_PROMPTS: readonly StarterPrompt[] = [
-  {
-    title: 'Map a codebase',
-    prompt:
-      'Read this repository and draw its architecture as a liveplanner diagram: the main services, what each one owns, and how requests flow between them.',
-  },
-  {
-    title: 'Turn steps into a flowchart',
-    prompt:
-      'Make a liveplanner flowchart of how a new customer signs up, from landing page to first invoice, with a decision for each place they can drop off.',
-  },
   {
     title: 'Plan a launch',
     prompt:
       'Create a liveplanner kanban board for launching our new website, with cards for design, copy, build, testing and go-live, and share a link I can send the team.',
   },
   {
-    title: 'Build a deck',
+    title: 'Turn notes into cards',
     prompt:
-      'Build a five-slide liveplanner deck that explains our product to a new hire: the problem, who it is for, how it works, what is next, and how to get help.',
+      'Read the action points from this conversation and add each one as a card to my liveplanner board, with an owner and a due date where we agreed one.',
   },
   {
-    title: 'Write it up',
+    title: 'Build a budget sheet',
     prompt:
-      'Write up the decisions from this conversation as a liveplanner article, with a short summary first and a section per decision.',
+      'Add a liveplanner sheet for our Q3 budget, with a row per cost line, a column per month, and totals that add themselves up.',
   },
   {
-    title: 'Find and improve',
+    title: 'Collect feedback',
     prompt:
-      'Find my liveplanner document about onboarding, show it to me, and suggest three ways to make it clearer. Make the changes once I agree.',
+      'Make a liveplanner feedback form with a rating, what people liked and what to improve, send the answers to a board as cards, and give me the link to share.',
+  },
+  {
+    title: 'Shape the card types',
+    prompt:
+      'Add a Bug card type to my liveplanner project with fields for severity, area and steps to reproduce, and move the bug cards on the board to use it.',
+  },
+  {
+    title: 'Catch up on a plan',
+    prompt:
+      'Find my liveplanner project about onboarding, tell me which cards are overdue or stuck, and suggest what to move next. Make the changes once I agree.',
   },
 ];

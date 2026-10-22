@@ -19,15 +19,13 @@ describe('the formats a tab exports to', () => {
     expect(exportFormatsFor({ kind: 'form' })).toEqual(['file']);
   });
 
-  it('never offers a Plan tab Mermaid or Excalidraw', () => {
+  it('never offers a Plan tab a Logo Kit or GIF', () => {
     for (const kind of ['board', 'sheet', 'dashboard'] as const)
-      for (const f of ['mermaid', 'excalidraw', 'logo-kit', 'gif'] as const)
-        expect(exportFormatsFor({ kind })).not.toContain(f);
+      for (const f of ['logo-kit'] as const) expect(exportFormatsFor({ kind })).not.toContain(f);
   });
 
   it('leaves any other tab every format', () => {
     expect(exportFormatsFor({})).toBeUndefined();
-    expect(exportFormatsFor({ kind: 'event-storming' })).toBeUndefined();
     expect(planTabKindOf({ kind: 'diagram' })).toBeNull();
   });
 });

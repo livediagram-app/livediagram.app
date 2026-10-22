@@ -26,15 +26,7 @@ export const CATEGORY_ICONS: Record<string, Icon> = {
       <path d="M10.5 3.5a2.25 2.25 0 0 1 0 4.25M11.75 9.9c1.2.5 2 1.7 2.25 3.6" />
     </>,
   ),
-  // Diagrams: two boxes joined by a connector.
-  diagrams: glyph(
-    <>
-      <rect x="1.5" y="2.5" width="5.5" height="4" rx="1" />
-      <rect x="9" y="9.5" width="5.5" height="4" rx="1" />
-      <path d="M4.25 6.5v4.75H9" />
-    </>,
-  ),
-  // Plans and boards: three columns of cards.
+  // Boards and dashboards: three columns of cards.
   plan: glyph(
     <>
       <rect x="1.5" y="2" width="3.5" height="5" rx=".75" />

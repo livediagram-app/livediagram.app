@@ -6,15 +6,9 @@ import {
   type Element,
   type Tab,
 } from '@liveplanner/document';
-import { insertElementAt, type InsertionSlot } from '@/lib/insert-between';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';
-import {
-  applyPaint,
-  fitPaintToTarget,
-  paintableArrowFields,
-  paintableBoxedFields,
-} from '@/lib/format-painter';
+import { applyPaint, paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
 import { filterPaintedFields, formatPaintsAnything, type FormatConfig } from '@/lib/format-config';
 import { track } from '@/lib/telemetry';
 import { patchTab } from './editor-page-helpers';
@@ -75,13 +69,10 @@ export function useElementHelpers(opts: {
     canvasX: number,
     canvasY: number,
     make: (x: number, y: number) => T,
-    // `insertion` is the slot an event-storming drag was offering (docs/specs/021-event-storming/event-storming.md):
-    // the drop then ripples the board open and adds the note as ONE change.
     // `style` dresses the built element last, after the theme colours: style
     // memory (docs/specs/008-canvas/quick-style-panel.md) for a palette drop.
     opts?: {
       edit?: boolean;
-      insertion?: InsertionSlot | null;
       style?: <E extends BoxedElement>(el: E) => E;
       // false: added without selecting it on the canvas (a chart that sits in a Sheet, selected there instead).
       select?: boolean;
@@ -92,7 +83,6 @@ export function useElementHelpers(opts: {
       { x: canvasX, y: canvasY },
       /* inheritSize */ false,
       opts?.edit === true,
-      opts?.insertion ?? null,
       opts?.style,
       opts?.select !== false,
     );
@@ -103,7 +93,6 @@ export function useElementHelpers(opts: {
     centre: { x: number; y: number },
     inheritSize = true,
     edit = false,
-    insertion: InsertionSlot | null = null,
     style: <E extends BoxedElement>(el: E) => E = (el) => el,
     select = true,
   ) => {
@@ -147,20 +136,8 @@ export function useElementHelpers(opts: {
     // and immediately work with it matches every other editor; the
     // Layer accordion's "Send to back" covers the rarer reverse case.
     const before = activeTab.elements;
-    const after = insertion ? insertElementAt(before, insertion, el) : [...before, el];
-    // Insert between (docs/specs/021-event-storming/event-storming.md): the ripple runs against whatever the tab
-    // holds NOW, not the snapshot the drag started with, so a peer's mid-drag
-    // move isn't reverted by the drop that follows it. One commitTabs = one
-    // history entry, so a single Undo takes the ripple AND the note back.
-    commitTabs((ts) =>
-      insertion
-        ? ts.map((t) =>
-            t.id === activeId
-              ? { ...t, elements: insertElementAt(t.elements, insertion, el), templateChosen: true }
-              : t,
-          )
-        : patchTab(ts, activeId, { elements: after, templateChosen: true }),
-    );
+    const after = [...before, el];
+    commitTabs((ts) => patchTab(ts, activeId, { elements: after, templateChosen: true }));
     if (select) setSelectedId(el.id);
     // Only kinds that take typed text: a sticker or a session button renders
     // its own face from its setting, so a caret there edits nothing.
@@ -221,11 +198,7 @@ export function useElementHelpers(opts: {
     if (isBoxed(source) && isBoxed(target)) {
       // The Format Panel (docs/specs/008-canvas/format-panel.md) decides which parts travel; the projection
       // above still decides which parts CAN.
-      const projection = fitPaintToTarget(
-        source,
-        target,
-        filterPaintedFields(paintableBoxedFields(source), formatConfig),
-      );
+      const projection = filterPaintedFields(paintableBoxedFields(source), formatConfig);
       commit((els) =>
         els.map((el) => (el.id === targetId && isBoxed(el) ? applyPaint(el, projection) : el)),
       );

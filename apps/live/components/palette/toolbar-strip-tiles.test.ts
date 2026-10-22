@@ -12,7 +12,7 @@ import {
   stripTilesFor,
 } from './toolbar-strip-tiles';
 
-const NONE = { hasImage: true };
+const NONE = {};
 // A layout's own list that divides after its third tile, the diamond.
 const dividedPopular = [
   'shapes:square',
@@ -39,9 +39,9 @@ describe('stripTilesFor', () => {
   });
 
   it('always offers More for the categories whose body is more than tiles', () => {
-    // The three searchable catalogues and My shapes (no strip tiles of its own) can only be fully
+    // The three searchable catalogues can only be fully
     // reached through More.
-    for (const id of ['icons', 'stickers', 'technology', 'my-shapes']) {
+    for (const id of ['icons', 'stickers', 'technology']) {
       expect(stripTilesFor(id, NONE).hasMore, id).toBe(true);
     }
   });
@@ -56,7 +56,7 @@ describe('stripTilesFor', () => {
 
   it("shows the tiles a mode's layout hands it, in the layout's order", () => {
     const [a, b] = tilesForCategory('shapes');
-    const strip = stripTilesFor('popular', { hasImage: true, tiles: [b!, a!] });
+    const strip = stripTilesFor('popular', { tiles: [b!, a!] });
     expect(strip.tiles.map((t) => t.id)).toEqual([b!.id, a!.id]);
     expect(strip.hasMore).toBe(false);
   });
@@ -75,18 +75,20 @@ describe('stripTilesFor', () => {
     ['write', ['tools:text']],
     ['draw', ['tools:polygon']],
     ['devices', ['devices:laptop']],
-    ['media', ['media:tab-window', 'media:embed-website']],
+    ['media', ['media:tab-window']],
     ['data', ['data:legend']],
   ])('divides %s into its groups', (category, after) => {
     expect([...stripTilesFor(category, NONE).dividersAfter]).toEqual(after);
   });
 
   it('drops the dividers of a category that exactly fills the strip, keeping every tile', () => {
-    // Components holds the strip's full twelve tiles (with the Card, Badge and Step number), so its
-    // divider after the entity gives way rather than a tile.
-    const components = stripTilesFor('components', NONE);
-    expect(components.tiles).toHaveLength(STRIP_TILE_LIMIT);
+    // Components' eleven tiles on a strip with room for exactly eleven: the divider after the entity gives way
+    // rather than a tile. With the strip's usual twelve slots there is room for both.
+    const components = stripTilesFor('components', { ...NONE, limit: 11 });
+    expect(components.tiles).toHaveLength(11);
+    expect(components.hasMore).toBe(false);
     expect([...components.dividersAfter]).toEqual([]);
+    expect([...stripTilesFor('components', NONE).dividersAfter]).toEqual(['tools:entity']);
     // Build, short of it since the Timeline moved to Concepts, keeps every tile on the strip.
     expect(stripTilesFor('build', NONE).tiles).toHaveLength(11);
   });
@@ -121,16 +123,6 @@ describe('stripTilesFor', () => {
       expect(tilesForCategory(c.id).filter((t) => t.dividerAfter).length, c.id).toBeLessThanOrEqual(
         2,
       );
-    }
-  });
-
-  it('drops image tiles when uploads are unavailable', () => {
-    for (const c of PALETTE_CATEGORIES) {
-      const strip = stripTilesFor(c.id, { hasImage: false });
-      expect(
-        strip.tiles.some((t) => t.needsImage),
-        c.id,
-      ).toBe(false);
     }
   });
 });

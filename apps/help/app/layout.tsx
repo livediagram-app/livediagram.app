@@ -21,7 +21,7 @@ import {
 
 // The liveplanner help centre (docs/specs/018-help/help-app.md). Indexable static site served
 // under /help by the router. No third-party scripts, it stays
-// self-host-clean (docs/specs/002-project-scope/open-source-and-business-model.md).
+// tracker-free (docs/specs/002-project-scope/business-model-and-licence.md).
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
 // violation log, this app's own scripts under its asset prefix, and the Clerk origin read from this build's key
 // (Next inlines only the literal expression).

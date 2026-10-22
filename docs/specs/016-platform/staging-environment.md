@@ -18,7 +18,7 @@ runs against the one holding people's documents.
 | Workflow     | `deploy.yml` (**Deploy Production**) | `deploy-staging.yml` (**Deploy Staging**)  |
 | Worker names | `liveplanner-<app>`                  | `liveplanner-<app>-staging`                |
 | D1           | `liveplanner`                        | `liveplanner-staging`                      |
-| R2           | `liveplanner-images`                 | `liveplanner-images-staging`               |
+| R2           | `liveplanner-snapshots`              | `liveplanner-snapshots-staging`            |
 | Indexable    | Yes                                  | **No** — `X-Robots-Tag: noindex, nofollow` |
 
 ### "live" is an app, not an environment
@@ -210,11 +210,11 @@ Deploys fail loudly until these exist. Resource ids are committed to `wrangler.t
 
 **Done** — the three data stores exist, and their ids are committed:
 
-| Resource | Name                         | Where the id lives       |
-| -------- | ---------------------------- | ------------------------ |
-| D1       | `liveplanner-staging`        | `apps/api/wrangler.toml` |
-| R2       | `liveplanner-images-staging` | bound by name, no id     |
-| KV       | `mcp-oauth-kv-staging`       | `apps/mcp/wrangler.toml` |
+| Resource | Name                            | Where the id lives       |
+| -------- | ------------------------------- | ------------------------ |
+| D1       | `liveplanner-staging`           | `apps/api/wrangler.toml` |
+| R2       | `liveplanner-snapshots-staging` | bound by name, no id     |
+| KV       | `mcp-oauth-kv-staging`          | `apps/mcp/wrangler.toml` |
 
 Both were created in `ENAM`, Cloudflare's default for the account rather than a
 deliberate choice; production's region was not readable from the API to mirror. If
@@ -237,7 +237,7 @@ Still outstanding:
 # 1. Worker secrets not carried by the workflow
 cd apps/api && wrangler secret put RESEND_API_KEY --env staging
 cd apps/api && wrangler secret put OPENAI_API_KEY --env staging            # the assistant
-cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging  # the crop reader
+cd apps/api && wrangler secret put GOOGLE_AI_STUDIO_API_KEY --env staging
 
 # 2. GitHub secrets — Settings → Secrets and variables → Actions
 #    the four _STAGING entries in the table above
@@ -272,7 +272,7 @@ becomes a step if staging is ever moved to a Clerk production instance.
 `wrangler deploy` replaces a worker's plain `[vars]` with whatever the config file
 declares, so any var set **only** in the Cloudflare dashboard is wiped on the next
 deploy unless `keep_vars = true`. So nothing is set only in the dashboard: a var is
-either committed (`[vars]` / `[env.staging.vars]`, every fork's default too) or part of
+either committed (`[vars]` / `[env.staging.vars]`, every environment's default too) or part of
 the hosted profile, which the deploy sends with `--var` on every run and then reads back
 off the live worker ([Deployment](deployment.md) "Hosted profile"). Either way the
 environment is reproducible from the repo alone.
@@ -283,10 +283,8 @@ documented as production-set but was measurably unset when probed — `POST /api
 which fronts a live OpenAI key, accepted requests from any origin. Whether it was never set
 or set once and wiped by a deploy is now unknowable, which is the point: a dashboard var
 leaves no trace either way, and no amount of reading the repo would have revealed it.
-`AI_ALLOWED_ORIGINS` is therefore declared in production's `[vars]` too. The image gallery
-caps (`IMAGE_MAX_PER_OWNER`, `IMAGE_MAX_BYTES_PER_OWNER`) went the same way: documented as
-hosted-set, set by nothing, so the R2 quota guard was off. They are in the hosted profile now,
-and the deploy's verify step is the probe that fails when one is not live.
+`AI_ALLOWED_ORIGINS` is therefore declared in production's `[vars]` too. The deploy's
+verify step is now the probe that fails when a hosted var is not live.
 `AI_REQUIRE_CLERK` is deliberately unset in **both** environments (the editor offers AI to
 guests; see the comment above production's `AI_ALLOWED_ORIGINS`). Staging set it until
 September 2026, which made staging refuse AI to guests that production serves: exactly the

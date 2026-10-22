@@ -219,15 +219,13 @@ The route (`apps/live/app/new/page.tsx`) owns:
 - The "name confirmed" persistence (same `liveplanner:v2:name-confirmed` localStorage key).
 - The create: mint a UUID, POST `/api/documents` (or create in This Browser) with the template's tabs inline, or one
   blank tab, then hand off to the editor in place.
-- The person's prior document count (one list request once identity settles, `useDocumentCount`), read before the
-  create so the tour's welcome offer reaches a brand-new person.
 
 ## Creating on arrival
 
 `/new` asks **nothing**. It creates the project the URL names the moment it mounts, once only (a ref holds Strict
 Mode's second effect off):
 
-- **What:** `?template=<kind>` makes that template (a retired kind opens its replacement, `templateKindOf`); anything
+- **What:** `?template=<kind>` makes that template (`templateKindOf`); anything
   else, a `?template=` naming no known kind included, makes a blank project: one empty tab in the Default theme, in
   Plan, which opens on Start Planning. Read by `newDocumentKind` in `apps/live/lib/new-document-params.ts`, which the
   workspace frame's create in place reads too. A template link fires `UI / Used / TemplateLink`. The marketing site's
@@ -283,9 +281,8 @@ it cannot tell the difference from a direct visit.
   landed. `lib/dynamic-has-boundary.test.ts` guards it.
 - **`replaceState`, not `pushState`:** `/new` is a one-shot creator, so the editor URL takes its history entry. Back
   from the editor returns to the page before `/new`, never to a page that would make another project.
-- **Nothing crosses the handoff but the URL and `sessionStorage`.** The
-  tour's pending flag (`markTourPending`) is written before the swap and
-  read by the editor on mount, as it was across the hard navigation.
+- **Nothing crosses the handoff but the URL.** The editor reads the id from the rewritten path on mount, exactly as
+  a direct visit would.
 - A failed create never hands off: the retryable error card shows instead.
 
 ### The opening screen

@@ -3,7 +3,7 @@
 // diagram. Pure and deterministic: the same flows in the same box always lay out to the same numbers.
 //
 // The method is the one every Sankey tool since d3-sankey has used, written out here rather than imported
-// so the headless renderer and a self-hoster's script need nothing more than this package:
+// so the headless renderer and another program's script need nothing more than this package:
 //   1. columns by step (longest path from a start node), end nodes pushed right when justified;
 //   2. one scale for the whole diagram, the largest that fits the fullest column;
 //   3. nodes start stacked by size, then relax toward the weighted middle of what they connect to, a few

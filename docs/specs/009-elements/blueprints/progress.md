@@ -100,8 +100,7 @@ With `PROGRESS_LOOPING_ANIMS = ['pulse', 'stripes']`, fill plays once and holds
 3. `ProgressAnimTiles`: None / Fill / Pulse / Stripes tiles (`ProgressAnimPreview` miniatures in `AnimationPreviewTile`s), no header;
    once an animation is set, `SpeedTiles` (Slowest / Slow / Normal / Fast) and a Repeat toggle
    mount beneath, growing the Tools flyout on a selection [QE14].
-4. The boxed-element Animation category is offered as well, animating the wrapper [QE2].
-5. Progress shapes are excluded from the Shape morph grid (`isSelfDrawingShape`) and from Border
+4. Progress shapes are excluded from the Shape morph grid (`isSelfDrawingShape`) and from Border
    controls (`SELF_PAINTING_SHAPES`).
 
 ### Setters
@@ -247,7 +246,7 @@ No log fingerprints: rendering is pure and the setters report through telemetry 
 | ------------------------- | -------------------------------------- | ----------------------------------------------------- |
 | `PROGRESS_ANIMS`          | `['fill', 'pulse', 'stripes']`         | Spec; closed set                                      |
 | `PROGRESS_LOOPING_ANIMS`  | `['pulse', 'stripes']`                 | Spec: continuous by nature                            |
-| `ANIMATION_SPEED_FACTOR`  | slowest 4, slow 2, normal 1, fast 0.5  | Shared with every element animation                   |
+| `ANIMATION_SPEED_FACTOR`  | slowest 4, slow 2, normal 1, fast 0.5  | Shared with every element's own animation             |
 | `DEFAULT_ANIMATION_SPEED` | `'slow'`                               | Canvas and palette spec                               |
 | `SHAPE_DEFAULT_SIZE`      | bar 220 × 44, ring 130 × 130           | Spec                                                  |
 | Default percentage        | 50                                     | Spec; inline literal in view, export and setter       |

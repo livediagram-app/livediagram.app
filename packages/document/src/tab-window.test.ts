@@ -20,7 +20,6 @@ describe('which tabs a window may show', () => {
   const tabs = [
     { id: 'slides', opensIn: 'pages' },
     { id: 'diagram' },
-    { id: 'es', kind: 'event-storming' },
     { id: 'board', kind: 'board' },
     { id: 'sheet', kind: 'sheet' },
     { id: 'dash', kind: 'dashboard' },
@@ -31,7 +30,6 @@ describe('which tabs a window may show', () => {
   it('offers every tab but its own, Plan tabs included, in tab-bar order', () => {
     expect(tabWindowOffers(tabs, 'slides').map((t) => t.id)).toEqual([
       'diagram',
-      'es',
       'board',
       'sheet',
       'dash',

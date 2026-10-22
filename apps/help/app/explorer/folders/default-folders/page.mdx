@@ -6,7 +6,7 @@ import { UseAsDefaultScene } from '@/components/illustrations/explorer-structure
 export const metadata = helpMetadata({
   title: 'Default Folders',
   description:
-    'Send new diagrams, whiteboards, Pages documents, Plan, Event Storming, retro and Kanban boards to a folder you choose, set from menus or Settings.',
+    'Send new diagrams, whiteboards, Pages documents, Plan, retro and Kanban boards to a folder you choose, set from menus or Settings.',
   path: '/help/explorer/folders/default-folders/',
 });
 
@@ -21,15 +21,11 @@ export const metadata = helpMetadata({
 
 A **default folder** is where your new documents go when you create one without choosing a place. You can keep one for each of these, listed under **New documents that open as**:
 
-- **Diagrams**: documents that open in Diagram mode.
-- **Whiteboards**: documents that open in Draw mode.
-- **Sessions**: documents that open in Workshop mode.
-- **Plan boards**: documents that open in Plan mode.
-- **Event Storming boards**.
-- **Retrospectives**: documents made from any retrospective template.
-- **Kanban boards**: documents made from the Kanban template.
+- **Projects**: every new project.
+- **Retrospectives**: projects made from any retrospective template.
+- **Kanban boards**: projects made from the Kanban template.
 
-A document goes to the most specific default that fits it: an Event Storming board's default first, then a retrospective's or a Kanban board's, then the one for the mode it opens in. So a retrospective goes to your Retrospectives folder even if you also have one for Diagrams. With none set, it lands in My Documents. Your defaults are your own: teammates choose theirs. Default folders are stored with your account or guest identity, not in the browser.
+A document goes to the most specific default that fits it: a retrospective's or a Kanban board's first, then the one for every project. So a retrospective goes to your Retrospectives folder even if you also have one for Projects. With none set, it lands in My Documents. Your defaults are your own: teammates choose theirs. Default folders are stored with your account or guest identity, not in the browser.
 
 ## Setting a default from a folder
 

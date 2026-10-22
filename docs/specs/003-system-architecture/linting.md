@@ -28,7 +28,7 @@ is the whole of what the repo enforces.
   TypeScript). Unused variables and arguments are allowed only when named with a leading `_`.
 - **typescript-eslint's recommended type-checked rules**, as oxlint's type-aware `typescript/*`
   rules (see [Type-aware rules](#type-aware-rules)), each at zero findings
-  ([#711](https://github.com/liveplanner-app/liveplanner.app/issues/711)); every rule of the set but
+  (issue #711); every rule of the set but
   `require-await`:
   - `await-thenable`
   - `no-array-delete`
@@ -56,7 +56,7 @@ is the whole of what the repo enforces.
   written to a function parameter and overwritten before it is read. oxc reports it from
   [oxc-project/oxc#27735](https://github.com/oxc-project/oxc/pull/27735) on; the gap closes when the repo
   takes the first oxlint release that contains it, and fixes what it finds
-  ([#721](https://github.com/liveplanner-app/liveplanner.app/issues/721)).
+  (issue #721).
 - **By language**: the rules TypeScript's compiler already enforces (`no-undef`, `no-dupe-keys`,
   `constructor-super` and the rest) run on JavaScript files only; `no-var`, `prefer-const`,
   `prefer-rest-params` and `prefer-spread` run on TypeScript files only. JavaScript files know the
@@ -83,13 +83,7 @@ is the whole of what the repo enforces.
 - oxlint hands those rules to `oxlint-tsgolint` (`options.typeAware` in the shared config), which is
   built on typescript-go: the same TypeScript 7 the repo type-checks with, so no second compiler is
   involved.
-- A file is typed through the nearest `tsconfig.json` that includes it. Every source file, script
-  and test is in one, so what the lint reads is what `pnpm typecheck` checks: `apps/live`'s `.mts`
-  scripts and marketing's `.well-known` route are named in their app's tsconfig, and a folder of
-  Node scripts beside browser code has its own, which adds Node's types
-  (`packages/sticky-vision/scripts/tsconfig.json`). A file no tsconfig includes is typed on its own,
-  as an inferred project, without the workspace's options and paths; only the tool configs
-  (`oxlint.config.ts`, `vitest.config.ts`) are.
+- A file is typed through the nearest `tsconfig.json` that includes it. Every source file, script and test is in one, so what the lint reads is what `pnpm typecheck` checks: `apps/live`'s `.mts` scripts and marketing's `.well-known` route are named in their app's tsconfig, and a folder of Node scripts beside browser code has its own, which adds Node's types. A file no tsconfig includes is typed on its own, as an inferred project, without the workspace's options and paths; only the tool configs (`oxlint.config.ts`, `vitest.config.ts`) are.
 - `oxlint-tsgolint` is a root dev dependency, so every workspace's `oxlint` resolves it as its peer,
   and a dependency of `@liveplanner/oxlint-config`, whose tests run it.
 - A caught reason passed on unchanged keeps its type, `unknown`: `only-throw-error` allows throwing it

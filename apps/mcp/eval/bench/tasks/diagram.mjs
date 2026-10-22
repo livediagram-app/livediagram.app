@@ -12,7 +12,6 @@ import {
   linked,
   mentionsAll,
   shapes,
-  tabsOf,
 } from '../checks.mjs';
 
 export default [
@@ -497,49 +496,6 @@ export default [
           ),
       ],
       ['learn leads back to discover', ({ snap }) => flows(snap, /learn/i, /discover/i)],
-    ],
-  },
-  {
-    id: 'D12',
-    level: 'medium',
-    prompt:
-      'Run an event storming session board for an online food delivery business: domain events from order placed to delivered, with commands, actors, policies and a couple of hotspots.',
-    checks: [
-      [
-        'an Event Storming tab',
-        ({ snap }) =>
-          tabsOf(snap).some((t) => /event-storming/.test(t.outline?.split('\n')[0] ?? '')),
-      ],
-      [
-        'domain events from order placed to delivered',
-        ({ snap }) => ({
-          pass:
-            shapes(snap, 'sticky').filter((s) => s.esKind === 'domain-event').length >= 5 &&
-            find(snap, /placed/i).length > 0 &&
-            find(snap, /delivered/i).length > 0,
-          detail: `${shapes(snap, 'sticky').filter((s) => s.esKind === 'domain-event').length} events`,
-        }),
-      ],
-      [
-        'commands, actors and policies',
-        ({ snap }) => {
-          const kinds = new Set(shapes(snap, 'sticky').map((s) => s.esKind));
-          const missing = ['command', 'actor', 'policy'].filter((k) => !kinds.has(k));
-          return {
-            pass: missing.length === 0,
-            detail: missing.length ? `no ${missing.join(', ')}` : null,
-          };
-        },
-      ],
-      [
-        'a couple of hotspots',
-        ({ snap }) =>
-          atLeast(
-            2,
-            shapes(snap, 'sticky').filter((s) => s.esKind === 'hotspot').length,
-            'hotspots',
-          ),
-      ],
     ],
   },
   {

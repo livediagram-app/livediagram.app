@@ -1,4 +1,4 @@
--- Placement grants (docs/specs/009-elements/images.md, "Placement grants"). A
+-- Placement grants for gallery images (retired with image uploads; dropped in the squash). A
 -- document serves an image when the image's owner owns the document, or the
 -- document holds a grant for it. Grants are written when the image's owner is
 -- tied to the document as a body is saved, and when a copy carries an image its

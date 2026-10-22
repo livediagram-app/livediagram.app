@@ -1,18 +1,12 @@
 // The lens's catalogue (docs/specs/013-workspace/explorer-filters.md "Dimensions"): every
 // dimension, its closed values, their British English labels and the closed telemetry types.
 
-import {
-  SPECIFIC_TAB_KINDS,
-  TEMPLATE_FAMILIES,
-  type SpecificTabKind,
-  type TemplateFamily,
-} from '@liveplanner/api-schema';
+import { TEMPLATE_FAMILIES, type TemplateFamily } from '@liveplanner/api-schema';
 import { EDITOR_MODES, type EditorMode } from '@liveplanner/document';
 
 /** The dimensions in canonical order: the order tokens are written in and chips are shown in. */
 export const LENS_DIMENSIONS = [
   'opens-in',
-  'kind',
   'template',
   'made-by',
   'edited',
@@ -24,10 +18,6 @@ export type LensDimension = (typeof LENS_DIMENSIONS)[number];
 /** The editor modes a document can be created to open in: the one list of modes. */
 export const OPENS_IN_VALUES = EDITOR_MODES;
 export type OpensInValue = EditorMode;
-
-/** The specific tab kinds: every creatable tab kind but the general diagram tab. */
-export const KIND_VALUES = SPECIFIC_TAB_KINDS;
-export type KindValue = SpecificTabKind;
 
 /** The template families: ordinary diagram tabs made from a family of templates. */
 export const TEMPLATE_VALUES = TEMPLATE_FAMILIES;
@@ -49,7 +39,6 @@ export const SPACE_TEAM_PREFIX = 'team:';
 /** Every dimension whose values are a fixed list, with that list. */
 export const FIXED_VALUES = {
   'opens-in': OPENS_IN_VALUES,
-  kind: KIND_VALUES,
   template: TEMPLATE_VALUES,
   'made-by': MADE_BY_VALUES,
   edited: EDITED_VALUES,
@@ -59,7 +48,6 @@ export const FIXED_VALUES = {
 /** The chip label of each dimension; also how messages name it. */
 export const DIMENSION_LABELS: Record<LensDimension, string> = {
   'opens-in': 'Opens in',
-  kind: 'Kind',
   template: 'Template',
   'made-by': 'Made by AI',
   edited: 'Edited',
@@ -70,7 +58,6 @@ export const DIMENSION_LABELS: Record<LensDimension, string> = {
 /** The label of every fixed value. A team's label is its name. */
 export const VALUE_LABELS = {
   'opens-in': { plan: 'Plan' },
-  kind: { 'event-storming': 'Event Storming' },
   template: { retrospective: 'Retrospective', kanban: 'Kanban' },
   'made-by': { ai: 'Made by AI' },
   edited: {
@@ -91,7 +78,6 @@ export type LensFacet = 'text' | LensDimension;
 export const LENS_TELEMETRY_TYPES = {
   text: 'Text',
   'opens-in': 'OpensIn',
-  kind: 'Kind',
   template: 'Template',
   'made-by': 'MadeBy',
   edited: 'Edited',

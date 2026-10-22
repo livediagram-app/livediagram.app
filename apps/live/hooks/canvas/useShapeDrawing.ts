@@ -102,7 +102,7 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
 
   // Canvas-driven commit of a draw-to-size gesture. Canvas hands us
   // raw start + end canvas-coord points so each intent can interpret
-  // them itself (box vs line): shape / text / sticky / image take a
+  // them itself (box vs line): shape / text / sticky / table take a
   // bounding box with a 16px floor and a centre-shift on stray
   // clicks; arrow takes the points as from / to directly. After the
   // mint we clear pendingDraw so the cursor / banner / palette
@@ -209,16 +209,11 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
                   // hyphen); the click path always reported 'LinkCard', so
                   // moving the event here must not split the dashboard token.
                   'LinkCard'
-                : intent.type === 'video'
-                  ? // One token for all six providers, matching the old click
-                    // path: docs/specs/017-telemetry/telemetry.md's vocabulary is by element kind, and the
-                    // provider is a user choice, not a new kind.
-                    'Video'
-                  : 'Image';
+                : // One token for all six providers, matching the old click
+                  // path: docs/specs/017-telemetry/telemetry.md's vocabulary is by element kind, and the
+                  // provider is a user choice, not a new kind.
+                  'Video';
     track('Element', 'Added', label);
-    // An image lands as its empty placeholder, selected, with no picker popping up: the
-    // placeholder's Select Image button (or a double-click) opens it when the person is ready
-    // (docs/specs/009-elements/images.md "Placeholder rendering").
   };
 
   const cancelDrawShape = () => setPendingDraw(null);

@@ -5,8 +5,6 @@ import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-s
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { drawnDragBox } from '@/lib/draw-commit';
-import type { StampGhost } from '@/components/canvas/useStampGhost';
-import { NoteGhost } from '@/components/canvas/NoteGhost';
 import { useCanvasClientOrigin } from '@/hooks/canvas/useCanvasClientOrigin';
 
 type CanvasDrawPreviewProps = {
@@ -14,9 +12,6 @@ type CanvasDrawPreviewProps = {
   polygonVertices: { x: number; y: number }[];
   polygonCursor: { x: number; y: number } | null;
   pendingDraw: PendingDraw | null;
-  // The armed fixed-size note's ghost (docs/specs/021-event-storming/event-storming.md Phase 4), when the tile is a
-  // stamp rather than a draw-to-size. It replaces the size box entirely.
-  stamp: StampGhost | null;
   wrapperRef: RefObject<HTMLDivElement | null>;
   // The canvas size. With the view, read from the viewport store here, it is what the wrapper's
   // origin follows (useCanvasViewKey), so the chrome around this takes no view.
@@ -31,7 +26,6 @@ export function CanvasDrawPreview({
   polygonVertices,
   polygonCursor,
   pendingDraw,
-  stamp,
   wrapperRef,
   mainSize,
 }: CanvasDrawPreviewProps) {
@@ -39,20 +33,11 @@ export function CanvasDrawPreview({
   const showsPolygon = pendingDraw?.type === 'polygon' && polygonVertices.length > 0;
   // A line or an arrow previews as the element it lands, in the canvas layer
   // (DrawnArrowPreview), not here.
-  const showsBox = !!drawDrag && !!pendingDraw && !stamp && pendingDraw.type !== 'arrow';
+  const showsBox = !!drawDrag && !!pendingDraw && pendingDraw.type !== 'arrow';
   // Where canvas (0, 0) sits on screen, measured only while a preview shows.
   const origin = useCanvasClientOrigin(wrapperRef, showsPolygon || showsBox, viewKey);
   return (
     <>
-      {stamp && pendingDraw?.type === 'sticky' ? (
-        <NoteGhost
-          kind={pendingDraw.esKind ?? null}
-          box={stamp.screen}
-          px={1}
-          position="fixed"
-          testId="stamp-ghost"
-        />
-      ) : null}
       {/* Polygon-tool preview (docs/specs/008-canvas/polygon-tool.md): the placed segments, a rubber-band
             segment to the live cursor, a dot per vertex, and a snap ring on
             the START vertex once the cursor is within closing range. */}

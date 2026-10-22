@@ -13,8 +13,6 @@ import {
   createShape,
   createSticky,
   createTable,
-  EVENT_STORMING_NOTES,
-  eventStormingNoteFields,
   createText,
   kindWordOf,
   LABEL_FONT_PX,
@@ -40,7 +38,7 @@ import type { AddKindOperation, Fields } from '../types';
 // Kinds an edit operation cannot make, and what to use instead.
 export const NOT_ADDED: Readonly<Record<string, string>> = {
   arrow: 'use connect',
-  image: 'images are uploaded in the editor',
+  image: 'liveplanner keeps no uploaded pictures',
   video: 'videos are added in the editor',
   freehand: 'strokes are drawn in the editor',
   path: 'paths are drawn in the editor',
@@ -72,9 +70,6 @@ export function buildKind(kind: string): Built | { refusal: string } {
     coerced: kind === 'shape' || SHAPE_KINDS.has(kind) ? null : shape,
   };
 }
-
-// The edit words that write a workshop note's fields (`set` vocabulary): one named this way keeps its value.
-const ALIAS: Readonly<Record<string, string>> = { textSize: 'text', fillColor: 'fill' };
 
 // The look the tab's boxes of a shape share: their most common text size and their median size; null when the tab
 // has none of that shape (frames and lanes never count, they are containers).
@@ -137,20 +132,6 @@ export function createKind(
   if ('code' in written) return { rejection: written };
   const named = spec.fields ?? {};
   let el = paint(written.next, state.theme);
-  // A sticky given a workshop kind is that kind's note, as a storm board draws it (event-storming.md "Agents"): its
-  // paper, silhouette and centred, scaled text, past whatever the call wrote itself.
-  const esKind = el.type === 'sticky' ? el.esKind : undefined;
-  const workshop = esKind && EVENT_STORMING_NOTES.find((n) => n.kind === esKind);
-  if (workshop) {
-    const fields = eventStormingNoteFields(workshop.kind);
-    el = {
-      ...el,
-      // A field named in its own word (`text=`, `fill=`) counts as named too.
-      ...Object.fromEntries(
-        Object.entries(fields).filter(([k]) => !(k in named) && !(ALIAS[k] && ALIAS[k] in named)),
-      ),
-    };
-  }
   if (el.type === 'shape' && !('width' in named) && !('height' in named)) {
     // A new box matches its siblings (docs/specs/024-agents/edit-operations.md "Layout on edit"): the text size most
     // boxes of its shape on the tab wear, and at least their usual size, so a step added to a drawn flow is not a

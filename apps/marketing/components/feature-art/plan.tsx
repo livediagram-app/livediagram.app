@@ -260,12 +260,12 @@ export function CardTypesArt() {
         </g>
       ))}
       <text
-        className="fill-sky-600 dark:fill-sky-300"
+        className="fill-brand-600 dark:fill-brand-300"
         x={17}
         y={88}
         fontSize="5.8"
         fontWeight="600"
-        fill="#0284c7"
+        fill="#7c3aed"
       >
         + New type
       </text>

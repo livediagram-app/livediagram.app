@@ -8,23 +8,10 @@ import {
   planBoardWidthFor,
   planViewSize,
 } from '@liveplanner/items';
-import {
-  defaultSessionConfig,
-  eventStormingNote,
-  eventStormingNoteSize,
-  eventStormingTilt,
-  eventStormingBoardLayerId,
-  isEventStormingTab,
-  isFixedSizeShape,
-  isLayerLocked,
-  isLayerVisible,
-  type EventStormingNoteKind,
-  type StickyElement,
-} from '@liveplanner/document';
+import { defaultSessionConfig, isFixedSizeShape } from '@liveplanner/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
-  createImage,
   createLinkCard,
   applyShapeVariant,
   createShape,
@@ -46,7 +33,6 @@ import type { ThemeDefinition } from '@liveplanner/document';
 import { isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { stampSizeFor } from '@/lib/stamp-placement';
 import { placeNewSheet, sheetTitleForTab } from '@/lib/sheet-seeds';
 
 // The pure element construction behind commitDraw (docs/specs/008-canvas/canvas-and-palette.md draw-to-add),
@@ -54,39 +40,7 @@ import { placeNewSheet, sheetTitleForTab } from '@/lib/sheet-seeds';
 // raw start + end canvas points for its intent kind (box vs line vs
 // composite) and returns the minted element(s). The hook stays the
 // owner of everything stateful — the functional commit, selection,
-// telemetry, and the image-picker follow-up.
-
-// The board-wide sticky treatment on an event-storming board (docs/specs/021-event-storming/event-storming.md):
-// one size for life (the plain square silhouette — tap-inheritance and
-// drag-sizing both stand down), plus a random hand-placed tilt (±1.1°,
-// one decimal) so a wall of notes reads as a workshop rather than a grid.
-function eventStormingBoardStickyExtras(): Partial<StickyElement> {
-  return {
-    width: 200,
-    height: 200,
-    fixedSize: true,
-    // Auto-fit, centred both ways (docs/specs/021-event-storming/event-storming.md): a workshop note is one short
-    // phrase that should FILL its paper and sit in the middle of it, like a
-    // marker-written sticky — never a small line clinging to the top-left.
-    // The note can't be resized, so the text adapting is what makes a long
-    // phrase legible.
-    textSize: 'scale',
-    textAlignX: 'center',
-    textAlignY: 'middle',
-    rotation: eventStormingTilt(),
-  };
-}
-
-// The layer stamp for an event-storming note, or nothing when the board /
-// target layer can't take it (see the call site above). One board, one
-// layer, so the note's kind doesn't enter into it.
-function esBoardLayerStamp(activeTab: Tab): { layerId?: string } {
-  if (!isEventStormingTab(activeTab)) return {};
-  const layerId = eventStormingBoardLayerId();
-  const layer = activeTab.layers?.find((l) => l.id === layerId);
-  if (!layer || !isLayerVisible(layer) || isLayerLocked(layer)) return {};
-  return { layerId };
-}
+// and telemetry.
 
 // Stroke for a new arrow when the active theme has no explicit
 // `elementStroke` (the Brand theme). brand-500 — matches the shape
@@ -230,7 +184,7 @@ export function buildDrawnComponent(
   };
 }
 
-// Boxed branch (shape / text / sticky / image / table / link card / embed).
+// Boxed branch (shape / text / sticky / table / link card / embed).
 // A tap drops the element centred on the tap at its inherited size (the
 // armed-time selection's size, else the factory default; circle/diamond stay
 // square); a real drag sizes it to the dragged box (16px floor). Mirrors the
@@ -238,7 +192,7 @@ export function buildDrawnComponent(
 export function buildDrawnBoxed(
   intent: Extract<
     PendingDraw,
-    { type: 'shape' | 'text' | 'sticky' | 'image' | 'table' | 'link-card' | 'video' }
+    { type: 'shape' | 'text' | 'sticky' | 'table' | 'link-card' | 'video' }
   >,
   startX: number,
   startY: number,
@@ -248,10 +202,6 @@ export function buildDrawnBoxed(
   activeTab: Tab,
 ) {
   const isTap = isDrawTap(startX, startY, endX, endY);
-  // Event-storming stationery (docs/specs/021-event-storming/event-storming.md): on an ES board every sticky has a
-  // FIXED silhouette (the drag gesture sizes nothing) and a hand-placed
-  // tilt; a kinded note additionally carries its own footprint everywhere.
-  const esBoardSticky = intent.type === 'sticky' && isEventStormingTab(activeTab);
   const base =
     intent.type === 'shape'
       ? applyShapeVariant(createShape(intent.kind, startX, startY), intent.variant)
@@ -263,16 +213,14 @@ export function buildDrawnBoxed(
             ? createTable(startX, startY)
             : intent.type === 'link-card'
               ? createLinkCard(startX, startY)
-              : intent.type === 'video'
-                ? // The Media tab has a tile per service (docs/specs/009-elements/embed-providers.md), so the
-                  // choice arrives on the intent and lands on the element
-                  // here rather than leaving a bare embed to re-point.
-                  createVideo(startX, startY, intent.provider)
-                : createImage(startX, startY);
+              : // The Media tab has a tile per service (docs/specs/009-elements/embed-providers.md), so the
+                // choice arrives on the intent and lands on the element
+                // here rather than leaving a bare embed to re-point.
+                createVideo(startX, startY, intent.provider);
   const tapSize = inheritedSizeFor(base, inheritFrom);
   // A fixed-size kind (docs/specs/012-collaboration/session-button.md) ignores the drag entirely: dragging one out
   // still places it, at the one size it is meant to be.
-  const fixedSize = (base.type === 'shape' && isFixedSizeShape(base.shape)) || esBoardSticky;
+  const fixedSize = base.type === 'shape' && isFixedSizeShape(base.shape);
   // Shared with the live preview so the outline the user sizes against is the
   // box that lands — including the embed's 16:9 fit (docs/specs/009-elements/youtube-video.md).
   const dragBox = drawnDragBox(intent, startX, startY, endX, endY);
@@ -300,11 +248,8 @@ export function buildDrawnBoxed(
     isTap && intent.type === 'shape' && intent.kind === 'sticker' && intent.stickerId
       ? stickerDropSize(getSticker(intent.stickerId), { width: drawnWidth, height }).width
       : drawnWidth;
-  // A fixed-size workshop note is STAMPED (docs/specs/021-event-storming/event-storming.md Phase 4): centred on the
-  // release point at its own final size, whatever the gesture did.
-  const stamp = stampSizeFor(intent, activeTab);
-  const x = stamp ? endX - stamp.width / 2 : isTap ? startX - width / 2 : dragBox.x;
-  const y = stamp ? endY - stamp.height / 2 : isTap ? startY - height / 2 : dragBox.y;
+  const x = isTap ? startX - width / 2 : dragBox.x;
+  const y = isTap ? startY - height / 2 : dragBox.y;
   const colours = deriveNewBoxedColours(base, {
     backgroundColor: activeTab.backgroundColor,
     patternColor: activeTab.patternColor,
@@ -333,32 +278,6 @@ export function buildDrawnBoxed(
             : {}),
         }
       : {}),
-    // Event-storming sticky (docs/specs/021-event-storming/event-storming.md): the tile's semantic colour lands as
-    // the element fill. Stickies are exempt from theme recolouring, so the
-    // notation survives every theme without themeLockFill.
-    ...(intent.type === 'sticky' && intent.fill ? { fillColor: intent.fill } : {}),
-    // Board-wide treatment first (fixed square + tilt), then a kinded
-    // note's own silhouette on top: the kind IS the notation (wide policy,
-    // small actor), on any board — while the fixed-size + tilt applies
-    // only ON an ES board.
-    ...(esBoardSticky ? eventStormingBoardStickyExtras() : {}),
-    ...(intent.type === 'sticky' && intent.esKind
-      ? {
-          // The notation kind is DOMAIN DATA, not a colour coincidence
-          // (docs/specs/021-event-storming/event-storming.md): it names the selection and is what any later
-          // notation-aware feature reads.
-          esKind: intent.esKind,
-          ...eventStormingNoteSize(intent.esKind),
-        }
-      : {}),
-    // Stage routing (docs/specs/021-event-storming/event-storming.md): on an event-storming board the note files
-    // onto its workshop stage's layer — a Command dropped while browsing Big
-    // picture still lands under Process. Only when the target layer exists,
-    // is visible AND unlocked: stamping onto a hidden layer creates an
-    // element the user can't see, a locked one an element they can't touch —
-    // in both cases the note falls through to the ordinary active-layer
-    // stamping at the commit choke point instead.
-    ...(intent.type === 'sticky' && intent.esKind ? esBoardLayerStamp(activeTab) : {}),
     // Technology marks render at a fixed size (docs/specs/010-palette/technology-icons.md), so warping the
     // box can't warp the mark — the aspect lock createShape('icon') bakes
     // in would only fight resizing the caption room, so drop it.
@@ -412,31 +331,6 @@ export function buildDrawnBoxed(
       ? { stickerId: intent.stickerId }
       : {}),
   } as typeof base;
-}
-
-// The ONE way a workshop note is minted (docs/specs/021-event-storming/event-storming.md), for every entry point that
-// is not a draw gesture: the anchor-add affordance, and a photo import. It
-// goes through `buildDrawnBoxed` rather than beside it, so fill, silhouette,
-// tilt, fixed size, auto-fit, caps and layer routing can never drift between
-// how a note arrives — which is the rule the palette tap and the palette drag
-// already share, and the one this board has paid for before.
-//
-// Takes the note's CENTRE, because that is what the tap path takes.
-export function buildEventStormingNote(
-  kind: EventStormingNoteKind,
-  centreX: number,
-  centreY: number,
-  activeTab: Tab,
-): StickyElement {
-  return buildDrawnBoxed(
-    { type: 'sticky', fill: eventStormingNote(kind).fill, esKind: kind },
-    centreX,
-    centreY,
-    centreX,
-    centreY,
-    null,
-    activeTab,
-  ) as StickyElement;
 }
 
 // A board placed on a tab is named after it (docs/specs/026-plan/plan-board.md "The board set-up").

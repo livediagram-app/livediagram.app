@@ -41,7 +41,6 @@ Scope, by file:
 | `apps/live/hooks/canvas/useShapeDrawing.ts`              | `Element·Added·Video` on a drawn embed                                     |
 | `apps/live/lib/element-telemetry.ts`                     | `elementTelemetryType`: `video` → `Video` for copy paths                   |
 | `apps/live/lib/element-names.ts`                         | `kindLabel`: `video` reads "Embed"                                         |
-| `apps/live/lib/excalidraw-export.ts`                     | Rectangle labelled with the URL (D70) [QC2]                                |
 
 ## Domain and naming
 
@@ -285,7 +284,7 @@ renders the generic empty-state copy. JSON export round-trips through `validate.
 - **Following links.** The link badge follows through the shared follow path, which re-checks
   `isSafeFollowUrl`. The new-tab anchors carry `rel="noreferrer noopener"`.
 - **Privacy.** On open, only the YouTube poster is fetched (`i.ytimg.com`, cookieless). The player
-  uses `youtube-nocookie.com`. Self-hosters ship no third-party request beyond that until a press.
+  uses `youtube-nocookie.com`. No third-party request is made beyond that until a press.
 
 ## Performance and limits
 

@@ -93,7 +93,7 @@ describe('rowToTab', () => {
     expect(dto.elements[2]).toMatchObject({ from: { kind: 'free', x: 100, y: 50 } });
   });
 
-  it('drops a stored anchor-docking relation (docs/specs/021-event-storming/event-storming.md Phase 7)', () => {
+  it('drops a stored anchor-docking relation', () => {
     const elements = [
       {
         id: 'c',
@@ -141,15 +141,15 @@ describe('rowToTab', () => {
           theme: 'cobalt',
           background: { pattern: 'grid', color: '#ffffff', patternColor: '#cbd5e1' },
           locked: true,
-          // Tab kind (docs/specs/021-event-storming/event-storming.md): tab state with no column of its own, so
+          // Tab kind (docs/specs/026-plan/plan-tabs.md): tab state with no column of its own, so
           // the blob is the only thing carrying it.
-          kind: 'event-storming',
+          kind: 'board',
         }),
       }),
     );
     expect((dto as unknown as { theme: string }).theme).toBe('cobalt');
     expect((dto as unknown as { locked: boolean }).locked).toBe(true);
-    expect((dto as unknown as { kind: string }).kind).toBe('event-storming');
+    expect((dto as unknown as { kind: string }).kind).toBe('board');
   });
 
   it('preserves elements from the parsed body in array order', () => {

@@ -41,7 +41,7 @@ CREATE TABLE tabs (
 );
 ```
 
-A `tabs` row is the tab's body and nothing else. Which documents contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a document, so nothing cascades from `documents` into `tabs`: removing a tab from a document, deleting a document and deleting an account each drop a tab explicitly once no document links it. `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its index rows with it. `image_refs` has no foreign key ([Images, Reference index](../009-elements/images.md#reference-index)), so each delete path prunes a dropped tab's image references in the same batch.
+A `tabs` row is the tab's body and nothing else. Which documents contain it, and its order and folder in each, live on the `document_tabs` link ([Tab ↔ document many-to-many](tab-document-many-to-many.md)). Nothing on the row points at a document, so nothing cascades from `documents` into `tabs`: removing a tab from a document, deleting a document and deleting an account each drop a tab explicitly once no document links it. `collab_actions` and `collab_threads` cascade from `tabs(id)`, so a dropped tab takes its index rows with it.
 
 The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `document_id` + `order_index` columns and the `document_id` foreign key.
 
@@ -110,7 +110,7 @@ The overlay is **pointer-only** — it cannot block `window` keydown or
 `document` paste, so the spinner alone is not the edit lock. The actual
 guard is that the active tab's load state feeds the editor's single
 `editsBlocked` gate (alongside locked-tab and view-only), so EVERY
-commit-based mutator — shape shortcuts, paste, AI apply, Markdown import,
+commit-based mutator — shape shortcuts, paste, AI apply, import,
 clear-canvas, drag — is refused until the tab is `ready`. The overlay and
 the edit lock derive from the same `deriveTabLoadState`, so they can't
 disagree.
@@ -337,6 +337,6 @@ How this rolled out, recorded here so future schema changes can repeat the patte
 
 When an exported tab lands in a receiving tab (`mergeImportedTab`), the **tab kind** and the **layers** travel with the elements and styling.
 
-Without the kind, an exported event-storming board came back as an ordinary diagram: every note present, but the palette, the stationery and the note menu gone, with nothing on screen to explain why ([Event storming](../021-event-storming/event-storming.md)). Without the layers, every imported element’s `layerId` dangles and the bands the author organised the tab into are lost ([Layers](layers.md)).
+Without the kind, an exported Plan tab came back as an ordinary diagram. Without the layers, every imported element’s `layerId` dangles and the bands the author organised the tab into are lost ([Layers](layers.md)).
 
 The merge rule lives in its own module so it is testable as a rule: what the import brings, what the receiving tab keeps (its id and name), and what must travel or the round trip loses meaning.

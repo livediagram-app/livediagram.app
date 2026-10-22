@@ -1,5 +1,4 @@
 import type { ElementStyleOps } from '@/lib/element-style-ops';
-import type { EventStormingNoteKind } from '@liveplanner/document';
 import type {
   AnimationSpeed,
   ArrowEnds,
@@ -26,7 +25,6 @@ import type {
   LegendItem,
   MindFlow,
   MindSpacing,
-  AnimationSetId,
   IconAnimation,
   IconPosition,
   IconSize,
@@ -60,9 +58,6 @@ export type EditorContextMenuState =
       x: number;
       y: number;
       openUp?: boolean;
-      // The right-clicked spot in canvas coords (null off the canvas): where
-      // this menu's Paste lands on an event-storming board.
-      canvasPoint?: { x: number; y: number } | null;
     };
 
 export type EditorContextMenuProps = {
@@ -86,23 +81,10 @@ export type EditorContextMenuProps = {
   // Remove an inline icon from the element. Only surfaced when the
   // clicked element actually carries one (a non-'icon' shape with iconId).
   onRemoveIcon: (elementId: string) => void;
-  // Image element actions (docs/specs/009-elements/images.md): open the picker (select / change) and
-  // clear the picked image back to a placeholder.
-  onOpenImagePicker: (elementId: string) => void;
-  onRemoveImage: (elementId: string) => void;
   // Clear the link off the selected element (docs/specs/009-elements/link-cards.md link-card "Remove Link").
   onRemoveLink: () => void;
   onBringToFront: () => void;
   onSendToBack: () => void;
-  // Event-storming note menu (docs/specs/021-event-storming/event-storming.md): the notation's own short verb list
-  // replaces the styling sections — a workshop note's colour, text style and
-  // rotation ARE the notation, so there is nothing there to configure.
-  onCutElement: () => void;
-  onCopyElement: () => void;
-  onDuplicateElement: () => void;
-  onDeleteElement: () => void;
-  onStackFront: () => void;
-  onStackBack: () => void;
   // Layers (docs/specs/006-document/layers.md): the tab's normalised stack (bottom -> top) for the
   // Layer section's move-to dropdown, the selection's resolved layer
   // (null when members span layers), and the selection-wide move. The move
@@ -292,15 +274,10 @@ export type EditorContextMenuProps = {
   // optional flow animation) for the selected arrow, plus a reset.
   onApplyArrowPreset: (preset: ArrowPreset) => void;
   onResetArrowStyle: () => void;
-  // Animated elements: one category per animation set (docs/specs/028-animation/element-animations.md),
-  // a flow animation on arrows, and a glyph animation on icons. `null` clears it. The onSet* commit;
-  // the onPreview* play it live on hover (desktop) and onAnimationPreviewEnd reverts when the
-  // pointer leaves the tile (the shared useStylePreview flow). A set's handlers write only its
-  // members of the selection.
-  onSetSetAnimation: (set: AnimationSetId, value: string | null) => void;
-  onPreviewSetAnimation: (set: AnimationSetId, value: string | null) => void;
-  onSetSetAnimationSpeed: (set: AnimationSetId, value: AnimationSpeed) => void;
-  onSetSetAnimationRepeat: (set: AnimationSetId, value: boolean) => void;
+  // Animated elements (docs/specs/008-canvas/canvas-and-palette.md "Animated elements"): a flow animation on
+  // arrows, and a glyph animation on icons. `null` clears it. The onSet* commit; the onPreview* play it live on
+  // hover (desktop) and onAnimationPreviewEnd reverts when the pointer leaves the tile (the shared useStylePreview
+  // flow).
   onSetArrowFlow: (value: ArrowFlow | null) => void;
   onSetIconAnimation: (value: IconAnimation | null) => void;
   onSetIconAnimationSpeed: (value: AnimationSpeed) => void;
@@ -352,10 +329,6 @@ export type EditorContextMenuProps = {
   // Reset the shape back to its kind's default aspect ratio (keeps area,
   // snaps the width:height proportion back to the canonical look).
   onResetAspectRatio: () => void;
-  // Change a workshop note's KIND (docs/specs/021-event-storming/event-storming.md): a verb on this board, because
-  // the kind is the notation rather than a style. Absent when the session
-  // cannot edit.
-  onSetEsKind?: (kind: EventStormingNoteKind) => void;
   // Set the selection's exact size in canvas pixels (docs/specs/008-canvas/element-size.md). Either
   // dimension alone is allowed: the omitted one is left as-is, or carried by
   // the aspect lock when that is on.

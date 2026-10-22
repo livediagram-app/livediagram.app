@@ -15,7 +15,7 @@ const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserDocuments: 
 describe('the editor Explorer sections', () => {
   it("lists the sidebar's groups, This Browser only while it holds documents", () => {
     expect(groups.map((g) => g.sections.map(sectionKey))).toEqual([
-      ['home', 'inbox', 'timeline', 'shared'],
+      ['home', 'inbox', 'shared'],
       ['mine', 'team:t1'],
       ['browser', 'tags', 'library', 'trash'],
     ]);
@@ -40,7 +40,7 @@ describe('the editor Explorer sections', () => {
   it('opens each section on its Explorer page', () => {
     expect(sectionPage({ kind: 'mine' })).toEqual({ kind: 'all' });
     expect(sectionPage({ kind: 'browser' })).toEqual({ kind: 'offline' });
-    expect(sectionPage({ kind: 'library' })).toEqual({ kind: 'gallery' });
+    expect(sectionPage({ kind: 'library' })).toEqual({ kind: 'themes' });
     expect(sectionPage({ kind: 'tags' })).toEqual({ kind: 'tags' });
     expect(sectionLabel({ kind: 'tags' })).toBe('Tags');
     expect(sectionPage({ kind: 'team', id: 't1' })).toEqual({ kind: 'team', id: 't1' });

@@ -1,24 +1,14 @@
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { Dispatch, SetStateAction } from 'react';
-import type { ShapeLibraryItem } from '@liveplanner/api-schema';
-import type { LibraryShapeRef } from '@/lib/shape-library-dnd';
 // Prop contract for the Canvas component, split out of Canvas.tsx
 // (it was a 320-line inline type). Most field types are referenced
 // via inline import('...') so this file only needs the bare-named
 // types as top-level imports.
 import type { PointerEvent as ReactPointerEvent, Ref } from 'react';
-import type {
-  CommentMention,
-  EmbedProvider,
-  EsSide,
-  EventStormingNoteKind,
-  Finish,
-  FrameHandle,
-} from '@liveplanner/document';
+import type { CommentMention, EmbedProvider, Finish, FrameHandle } from '@liveplanner/document';
 import type {
   BackgroundPattern,
-  TabKind,
   Element,
   Layer,
   IconPosition,
@@ -34,7 +24,6 @@ import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client'
 import type { TeamFolderHandlers } from '@/components/panels/Explorer.types';
 import type { TeamDocumentRow, TeamFolderRow } from '@/hooks/persistence/useTeamLibrariesSweep';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 // A connection-point marker shown while dragging an arrow endpoint: the
 // world-space position of a nearby shape's anchor, with `active` set on the
@@ -85,12 +74,6 @@ export type CanvasProps = {
   // materialises one. Drives the band-aware paint order + hidden-layer
   // filtering in CanvasElementsLayer and the Minimap.
   tabLayers?: Layer[];
-  // The tab’s tab kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
-  // presents as an event-storming board.
-  tabKind?: TabKind;
-  // The tab's timeline lane stack (docs/specs/021-event-storming/event-storming.md Phase 6) when lanes are on, else
-  // undefined: a note dragged in from the palette snaps onto it, and the
-  // overlay lights the lane it is landing on.
   // Element ids on a hidden or locked layer (docs/specs/006-document/layers.md) — inert to every
   // selection surface, including the right-click context menu.
   layerInertIds: Set<string>;
@@ -208,9 +191,6 @@ export type CanvasProps = {
   onAddSticker: (stickerId: string) => void;
   // Add a Technology (brand) icon as a standalone element (docs/specs/010-palette/technology-icons.md).
   onAddTechIcon: (iconId: string) => void;
-  // Places a shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md) at the
-  // middle of the view.
-  onInsertLibraryShape: (item: ShapeLibraryItem) => void;
   onAddTable: () => void;
   onAddAnnotation: () => void;
   onAddLinkCard: () => void;
@@ -226,35 +206,10 @@ export type CanvasProps = {
   onAddFlowchart: () => void;
   onAddAvatar: () => void;
   onAddText: () => void;
-  // Optional fill + kind: an Event Storming note (docs/specs/021-event-storming/event-storming.md).
-  onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
-  // True when the active tab is an event-storming board (docs/specs/021-event-storming/event-storming.md) — the
-  // palette opens on the Event Storming category instead of Favourites, and
-  // a palette drag can offer to insert BETWEEN two notes.
-  esBoard?: boolean;
-  // Board-level switches for the palette's Event Storming category
-  // (docs/specs/021-event-storming/event-storming.md Phase 6: timeline lanes). Supplied only on such a board.
-  esBoardControls?: EsBoardControls;
-  // Add the next note beside a note (docs/specs/021-event-storming/event-storming.md Phase 7), from its next-note
-  // button. Absent when the session cannot create.
-  onAddNextNote?: (fromId: string, side: EsSide) => void;
-  // Read a photograph of the wall dropped on the canvas (docs/specs/021-event-storming/event-storming.md Phase 8).
-  // Present only on an event-storming board with the model configured.
-  onDropPhoto?: (file: File) => void;
-  // Any other file dropped on the canvas, at its canvas point (an Excalidraw file or export,
-  // docs/specs/020-import-export/excalidraw-import-export.md "Paste"). Absent where files are refused.
+  onAddSticky: () => void;
+  // Any other file dropped on the canvas, at its canvas point (refused with a notice: the canvas takes no files).
+  // Absent where files are refused silently.
   onDropFile?: (file: File, at: { x: number; y: number }) => void;
-  // A shape dragged from My shapes, at its canvas point (docs/specs/013-workspace/shape-libraries.md).
-  // Absent where nothing can be placed.
-  onDropLibraryShape?: (ref: LibraryShapeRef, at: { x: number; y: number }) => void;
-  // True when a new element cannot land at all: a locked tab, a view-only
-  // session, or a hidden / locked active layer (docs/specs/006-document/layers.md). The insert-between
-  // preview reads it so it never offers a slot the drop would refuse.
-  createBlocked?: boolean;
-  // Spawn an empty image placeholder + open the picker. Optional so
-  // view-role visitors / no-R2 deployments can simply omit it; the
-  // Palette's Image entry hides when missing (docs/specs/009-elements/images.md).
-  onAddImage?: () => void;
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
   onAddArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
   // The arrow whose shape a handle drag is changing (a bend, curve, elbow or endpoint): its
@@ -538,16 +493,6 @@ export type CanvasProps = {
   // Open an element's own edit dialog on double-click: a code block's code (docs/specs/009-elements/code-block.md),
   // a Sankey's flows (docs/specs/009-elements/sankey.md). Omitted for read-only viewers.
   onOpenEditDialog?: (id: string) => void;
-  // Per-render context for image elements: identity + auth bits the
-  // ImageElementView needs to fetch bitmap bytes. Optional so the
-  // welcome / new-document surface (where Canvas mounts before
-  // identity / share-code are settled) can omit it.
-  imageContext?: {
-    ownerId: string;
-    documentId: string;
-    shareCode: string | null;
-    onOpenPicker?: (elementId: string) => void;
-  };
   // Touch-friendly fallback for right-click: a SelectionPopover
   // ellipsis button opens the same context menu under the cursor.
   onOpenElementContextMenu?: (elementId: string, screenX: number, screenY: number) => void;
@@ -622,8 +567,6 @@ export type CanvasProps = {
     // contamination).
     tabId: string;
   };
-  // Recent-images list for the Current Tab "Images" accordion (docs/specs/009-elements/images.md).
-  // Forwarded through to TabSection unchanged.
   onToggleAspectLock: () => void;
   // Quick add + connect (docs/specs/008-canvas/canvas-and-palette.md). The radial ring on each element edge
   // spawns a connected element (Duplicate / Square / Circle), starts an

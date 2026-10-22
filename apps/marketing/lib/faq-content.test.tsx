@@ -3,19 +3,12 @@ import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
-import { THEMES } from '@liveplanner/document';
-import { TEMPLATE_CATEGORIES, TEMPLATES } from '@liveplanner/templates';
+import { TEMPLATES, isBlankTemplate, isPlanTemplate } from '@liveplanner/templates';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
 import { ALTERNATIVES } from './alternatives';
-import { LANDING_SECTIONS } from './landing-content';
-import {
-  FAQ_CATEGORIES,
-  faqAnswerText,
-  TEMPLATE_CATEGORY_COUNT,
-  TEMPLATE_COUNT,
-} from './faq-content';
+import { FAQ_CATEGORIES, faqAnswerText, TEMPLATE_COUNT } from './faq-content';
 import { filterFaq } from './faq-filter';
 
 const items = FAQ_CATEGORIES.flatMap((c) => c.items);
@@ -28,6 +21,11 @@ const visibleText = (node: ReactNode) => {
   unmount();
   return text;
 };
+
+// The templates marketing shows: the listed Plan ones (boards, sheets, dashboards and forms), blanks aside.
+const PLAN_TEMPLATES = TEMPLATES.filter(
+  (t) => !t.hidden && isPlanTemplate(t.kind) && !isBlankTemplate(t.kind),
+);
 
 describe('FAQ content', () => {
   it('gives every category a unique id and at least one question', () => {
@@ -51,38 +49,19 @@ describe('FAQ content', () => {
 
 // The template count is written out where it ships to the browser; every mention must match the catalogue.
 describe('template counts in marketing copy', () => {
-  it('matches the catalogue in the FAQ', () => {
-    expect(TEMPLATE_COUNT).toBe(TEMPLATES.length);
-    expect(TEMPLATE_CATEGORY_COUNT).toBe(TEMPLATE_CATEGORIES.length);
+  it('matches the Plan templates in the FAQ', () => {
+    expect(TEMPLATE_COUNT).toBe(PLAN_TEMPLATES.length);
   });
 
-  it('matches the catalogue on every comparison page and card', () => {
+  it('matches the Plan templates on any comparison page or card that counts them', () => {
     const copy = JSON.stringify([
       ALTERNATIVES,
       Object.values(COMPETITOR_LOOK).map((l) => l.highlights),
     ]);
-    const counts = [...copy.matchAll(/(\d+) (?:starter )?templates/g)].map((m) => Number(m[1]));
-    expect(counts.length).toBeGreaterThan(0);
-    for (const n of counts) expect(n).toBe(TEMPLATES.length);
-  });
-});
-
-// Theme counts are written out as digits or words; each must match the theme catalogue.
-describe('theme counts in marketing copy', () => {
-  const WORDS: Record<string, number> = { 'twenty-four': 24 };
-  it('matches the catalogue in the FAQ, the landing page and every comparison page', () => {
-    const copy = JSON.stringify([
-      FAQ_CATEGORIES.map((c) => c.items.map((i) => faqAnswerText(i))),
-      LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)),
-      ALTERNATIVES,
-    ]);
-    const counts = [
-      ...copy.matchAll(/\b(\d+|twenty-[a-z]+) (?:one-click )?(?:whole-canvas )?themes\b/gi),
-    ].map((m) => (/^\d+$/.test(m[1]!) ? Number(m[1]) : WORDS[m[1]!.toLowerCase()]));
-    expect(counts.length).toBeGreaterThan(0);
-    // The seasonal themes are the seasonal looks' own, never offered in a picker, so the copy counts the rest.
-    const offered = THEMES.filter((t) => !t.seasonal).length;
-    for (const n of counts) expect(n).toBe(offered);
+    const counts = [...copy.matchAll(/(\d+) (?:ready-made |starter )?templates/g)].map((m) =>
+      Number(m[1]),
+    );
+    for (const n of counts) expect(n).toBe(PLAN_TEMPLATES.length);
   });
 });
 
@@ -92,26 +71,30 @@ describe('filterFaq', () => {
   });
 
   it('needs every word, in any case, across question, answer and category', () => {
-    const hits = filterFaq(FAQ_CATEGORIES, 'MERMAID export').flatMap((c) =>
-      c.items.map((i) => i.q),
-    );
-    expect(hits).toContain('Does it work with Mermaid?');
+    const hits = filterFaq(FAQ_CATEGORIES, 'CSV export').flatMap((c) => c.items.map((i) => i.q));
+    expect(hits).toContain('Can I export my work?');
     expect(hits.every((q) => q !== 'Is it really free?')).toBe(true);
   });
 
   it('drops categories left empty, and everything for a query nothing matches', () => {
-    expect(filterFaq(FAQ_CATEGORIES, 'self-host').map((c) => c.id)).toContain('self-hosting');
+    expect(filterFaq(FAQ_CATEGORIES, 'paywall').map((c) => c.id)).toEqual(['free']);
     expect(filterFaq(FAQ_CATEGORIES, 'zzzqqq')).toEqual([]);
   });
 });
 
 describe('domain language', () => {
-  // A mode is the tab's, shared by everyone on it (docs/specs/003-system-architecture/domain-language.md).
-  it('never calls a mode personal', () => {
-    const copy = FAQ_CATEGORIES.flatMap((c) =>
-      c.items.map((i) => (typeof i.a === 'string' ? i.a : (i.aText ?? ''))),
-    ).join(' ');
-    expect(copy).not.toMatch(/modes? (?:are|is) personal/i);
-    expect(copy).toMatch(/mode belongs to the tab/);
+  const copy = items.map((i) => `${i.q} ${faqAnswerText(i)}`).join(' ');
+
+  // A person reads "project"; "document" is only the code's word for one.
+  it('calls a project a project, never a document', () => {
+    expect(copy).not.toMatch(/\bdocuments?\b/i);
+    expect(copy).toMatch(/\bprojects?\b/);
+  });
+
+  // liveplanner plans work; the diagramming modes are not part of it.
+  it('never offers diagrams, whiteboards, slides or articles', () => {
+    expect(copy).not.toMatch(
+      /\b(?:diagrams?|whiteboards?|slides?|infographics?|articles?|mermaid)\b/i,
+    );
   });
 });

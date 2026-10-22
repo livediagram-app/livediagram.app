@@ -1,5 +1,4 @@
 import { memo, useRef, useState } from 'react';
-import { PhotoDraftRing, PhotoMatchedBadge } from '@/components/canvas/photo-badges';
 import {
   BORDER_DASH_ARRAY,
   DEFAULT_BOX_RADIUS_PX,
@@ -62,9 +61,7 @@ import { indicatorBacking } from '@/components/canvas/indicator-items';
 import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
-import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
-import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
-import { AnimationLayer } from '@/components/canvas/AnimationLayer';
+import { useElementPopIn } from '@/components/canvas/useElementPopIn';
 import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
@@ -102,9 +99,6 @@ function BoxedElementViewImpl({
   onBeginDrag,
   onShiftSelect,
   layerOpacity,
-  photoDraft = false,
-  photoMatched = false,
-  photoReadAs,
   votableInVote,
   onBeginEdit,
   onCommitLabel,
@@ -120,8 +114,6 @@ function BoxedElementViewImpl({
   onSetPointerTip,
   onSetHeroCaptionLine,
   isoDepth,
-  insertShiftX,
-  insertShiftAnimates,
   stackGlide,
   chartPalette,
   onCancelEdit,
@@ -154,7 +146,6 @@ function BoxedElementViewImpl({
   onRetractVote,
   onDropIcon,
   onLinkCell,
-  imageContext,
   onContextSelect,
   remoteSelectors,
   tabLocked,
@@ -263,7 +254,6 @@ function BoxedElementViewImpl({
       onEditLink,
       onOpenEditDialog,
       onOpenNote,
-      imageContext,
       onContextSelect,
     });
 
@@ -322,11 +312,8 @@ function BoxedElementViewImpl({
   // so they skip it. Shares the icon+label flex layout below.
   const marker: ShapeMarker | undefined =
     element.type === 'shape' && !isSelfDrawingShape(element.shape) ? element.marker : undefined;
-  // Which surface each looping animation rides (wrapper box vs text
-  // glyphs vs SVG outline), the pop-in entry class, and the CSS custom
-  // properties the keyframes read (docs/specs/008-canvas/canvas-and-palette.md) — see useBoxedElementAnimation.
-  const { labelAnimClass, artAnimClass, svgAnim, wrapperAnimClass, animStyle, layer, layerAnim } =
-    useBoxedElementAnimation(element, textColor);
+  // The one-shot pop-in entry class (docs/specs/008-canvas/canvas-and-palette.md) — see useElementPopIn.
+  const popInClass = useElementPopIn();
 
   // An icon element's caption is confined to its own band — the complement
   // of the glyph band (docs/specs/010-palette/technology-icons.md, iconCaptionBand) — so the text can never
@@ -361,9 +348,6 @@ function BoxedElementViewImpl({
     cornerPx,
   );
 
-  // The Text animation on the label's words (docs/specs/028-animation/element-animations.md).
-  const textAnim = useLabelTextAnimation(element, label, textColor, isEditing);
-
   // The text label, computed once so the freehand branch, the plain
   // shape branch, and the inline-icon layout below all share it.
   const labelNode = renderLabel(
@@ -385,9 +369,7 @@ function BoxedElementViewImpl({
     // a full-box editor there contributes no flex width, so the marker
     // centred alone on top of the text while editing.
     !!inlineIcon || !!marker,
-    labelAnimClass,
     textHug.label,
-    textAnim,
     mindFit.onLiveText,
   );
 
@@ -397,19 +379,10 @@ function BoxedElementViewImpl({
   const { acceptsIconDrop, dropSide, handleIconDragOver, handleIconDragLeave, handleIconDrop } =
     useIconDropTarget(element, onDropIcon);
 
-  // Insert-between preview (docs/specs/021-event-storming/event-storming.md). A CSS translate rather than a moved
-  // `x`: it is GPU-composited, it cannot desync from the model because the
-  // model never changed, and it unwinds by dropping a style. It composes
-  // ahead of the tilt below so the note slides and stays hand-placed.
-  const insertShift = insertShiftX ? `translateX(${insertShiftX}px) ` : '';
-
   return (
     <div
       ref={wrapperRef}
       data-element-id={element.id}
-      // Carries the slot's easing (globals.css) for as long as a slot COULD
-      // be open, so the board eases shut as well as open.
-      data-insert-shift={insertShiftAnimates ? '' : undefined}
       data-stack-glide={stackGlide ? '' : undefined}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces. A face with controls of its own is a named group,
@@ -458,9 +431,7 @@ function BoxedElementViewImpl({
       // `group` so the vote stepper inside can fade up on element hover
       // (docs/specs/012-collaboration/session-tools.md) without threading a hover state through props.
       className={`group group/el absolute origin-center touch-none select-none ${
-        // A looping animation (docs/specs/008-canvas/canvas-and-palette.md) replaces the one-shot pop-in entry
-        // class (both drive the `animation` property, so they can't co-exist).
-        wrapperAnimClass
+        popInClass
       } ${variant.className} ${cursor}`}
       style={{
         // Isometric depth stagger (docs/specs/008-canvas/isometric-view.md) — see globals.css [data-iso].
@@ -482,7 +453,6 @@ function BoxedElementViewImpl({
         opacity:
           (element.opacity ?? 1) * (layerOpacity ?? 1) * (voteDimmed ? VOTE_DIMMED_OPACITY : 1),
         ...variant.style,
-        ...animStyle,
         // Spin about the centre (the wrapper already has origin-center).
         // The handles' frame in the grips layer turns by the same angle.
         //
@@ -493,12 +463,10 @@ function BoxedElementViewImpl({
         // sticker) popped in flat and then snapped to its angle at the end.
         ...(isRotated
           ? ({
-              transform: `${insertShift}rotate(${rotation}deg)`,
+              transform: `rotate(${rotation}deg)`,
               '--lvd-enter-rot': `${rotation}deg`,
             } as React.CSSProperties)
-          : insertShift
-            ? { transform: insertShift.trim() }
-            : {}),
+          : {}),
         // Deliberately do NOT raise z-index on plain selection. Keeping
         // the element at its natural paint order means selecting a
         // container doesn't jump it above the content layered on top of
@@ -534,7 +502,6 @@ function BoxedElementViewImpl({
           <ShapeContentRouter
             element={element}
             isEditing={isEditing}
-            artAnimClass={artAnimClass}
             accent={accent}
             textColor={textColor}
             remoteBorderColor={remoteBorderColor}
@@ -544,7 +511,6 @@ function BoxedElementViewImpl({
             onToggleChecklistItem={onToggleChecklistItem}
             chartPalette={chartPalette}
             fontFamily={fontFamily}
-            svgAnim={svgAnim}
           />
           {/* CSS-rendered shapes (square / circle / stadium / browser) paint
           their border via the wrapper's CSS `border`, which can't draw the
@@ -643,7 +609,6 @@ function BoxedElementViewImpl({
             actionSelfId={actionSelfId}
             actionActions={actionActions}
             commentSelfId={commentSelfId}
-            imageContext={imageContext}
             tabSummaries={tabSummaries}
             tabTimer={tabTimer}
             timerControls={timerControls}
@@ -678,20 +643,6 @@ function BoxedElementViewImpl({
         </SketchFace>
       </FaceFinishProvider>
       {element.type === 'image' ? sketchOverlay() : null}
-
-      {/* The Shape set's ring / halo / trace / gradient layer (AnimationLayer): over the face. */}
-      {layer && layerAnim ? (
-        <AnimationLayer
-          animation={layerAnim}
-          width={element.width}
-          height={element.height}
-          radius={
-            shapeKind === 'circle' || shapeKind === 'stadium'
-              ? Math.min(element.width, element.height) / 2
-              : cornerPx
-          }
-        />
-      ) : null}
 
       {/* Live drop preview while dragging a palette icon over this shape:
           a brand ring + a translucent band on the side the icon will
@@ -744,10 +695,6 @@ function BoxedElementViewImpl({
         onCastVote={onCastVote}
       />
 
-      {/* The photo import's marks (photo-badges.tsx). */}
-      {photoDraft ? <PhotoDraftRing /> : null}
-      {photoMatched ? <PhotoMatchedBadge readAs={photoReadAs} /> : null}
-
       {/* Selection chrome (resize / edge-grip handles), portalled into the
           grips layer above every element — see SelectionChromeLayer for the
           stacking rationale. */}
@@ -755,7 +702,6 @@ function BoxedElementViewImpl({
         elementId={element.id}
         box={element}
         rotation={rotation}
-        shiftX={insertShiftX}
         showHandles={showHandles}
         showAnchors={showAnchors}
         onBeginDrag={onBeginDrag}

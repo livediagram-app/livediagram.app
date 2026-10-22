@@ -20,7 +20,7 @@ export type ElementTileSearch = {
 // --- The element types on the tab --------------------------------------------------------------
 // A tile and an element meet on a signature: the element type, plus the creation-time choice that
 // tells two tiles of one type apart where the element records it (the shape kind and its session,
-// reaction, mode, scale or plan view; a sticky's workshop kind; a pen; an embed's provider; an
+// reaction, mode, scale or plan view; a pen; an embed's provider; an
 // arrow's or a line's ends). Where an element does not record the choice (which board preset, which
 // card type), the tiles share a signature and the first in layout order stands for them.
 
@@ -43,7 +43,7 @@ export function tileSignature(tile: PaletteTileDef): string | null {
       return kind ? shapeSig(kind) : null;
     }
     case 'sticky':
-      return `sticky:${a.esKind ?? ''}`;
+      return 'sticky:';
     // The polygon tool's outline is a freehand element.
     case 'polygon':
       return 'freehand:';
@@ -53,7 +53,6 @@ export function tileSignature(tile: PaletteTileDef): string | null {
       return `video:${a.provider ?? ''}`;
     case 'text':
     case 'table':
-    case 'image':
     case 'annotation':
     case 'link-card':
       return a.type;
@@ -68,7 +67,7 @@ export function elementSignature(el: Element): string {
     case 'shape':
       return shapeSig(el.shape, el.session?.tool ?? el.planView?.view);
     case 'sticky':
-      return `sticky:${el.esKind ?? ''}`;
+      return 'sticky:';
     case 'freehand':
       return `freehand:${el.pen ?? ''}`;
     case 'arrow':
@@ -165,21 +164,17 @@ export function mergeByName(
 }
 
 /** Every element tile, split: the ones Plan's palette offers (layout order) and the ones only
- *  another category holds. Image-upload tiles are left out without image support, as in every
- *  grid. */
+ *  another category holds. */
 export function elementTileSections({
-  hasImage,
   planCardTiles,
 }: {
-  hasImage: boolean;
   planCardTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
-  const visible = (t: PaletteTileDef) => hasImage || !t.needsImage;
-  const here = modeElementTiles(planCardTiles).filter(visible);
+  const here = modeElementTiles(planCardTiles);
   const hereIds = new Set(here.map((t) => t.id));
   const elsewhere: PaletteTileDef[] = [];
   for (const t of allElementTiles()) {
-    if (!visible(t) || hereIds.has(t.id)) continue;
+    if (hereIds.has(t.id)) continue;
     // A document's own card types replace the default ones: a default type it dropped is not
     // "elsewhere", it is gone.
     if (planCardTiles && t.section === 'plan-cards') continue;
@@ -198,7 +193,6 @@ export function searchElementTiles({
   query: string;
   // The tab's elements: an empty query lists the tiles of the element types on it.
   tabElements?: readonly Element[];
-  hasImage: boolean;
   planCardTiles?: readonly PaletteTileDef[];
 }): ElementTileSearch {
   const { here, elsewhere } = elementTileSections(sections);

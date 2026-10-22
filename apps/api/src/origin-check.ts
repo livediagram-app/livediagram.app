@@ -10,8 +10,8 @@
 // origin, so the widening is dev-only in practice.
 //
 // Lives in its own module so the rule has a test surface separate
-// from the route handler: matches the precedent set by image-strip,
-// image-sniff, tab-row, folder-row, share-link-row.
+// from the route handler: matches the precedent set by tab-row,
+// folder-row, share-link-row.
 
 import { isLoopbackHostname } from '@liveplanner/api-schema';
 

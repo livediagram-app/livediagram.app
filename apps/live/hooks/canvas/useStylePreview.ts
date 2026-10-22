@@ -25,8 +25,6 @@
 // the direct setters in useElementStyle use).
 
 import { useRef, type MutableRefObject } from 'react';
-import { ANIMATION_SET_TELEMETRY_TYPE, type AnimationSetId } from '@liveplanner/document';
-import { withSetAnimation } from '@/lib/animation-set-writes';
 import type {
   ArrowFlow,
   ArrowThickness,
@@ -318,15 +316,9 @@ export function useStylePreview(deps: {
       commitStyle((el) => applyInlineIconToEl(el, iconId, position), 'Icon', new Set([elementId])),
     // Animation tiles (docs/specs/008-canvas/canvas-and-palette.md): the same hover-preview / click-commit flow,
     // each setting a single field on the matching member of the selection
-    // (boxed `animation`, arrow `flow`, icon-shape `iconAnimation`). `null` is
-    // the "None" tile. Reuses the snapshot/revert/commit machinery above, so a
-    // hovered-then-clicked animation undoes to the true pre-hover value.
-    // Each animation set's category (docs/specs/028-animation/element-animations.md) writes only the
-    // members of its set; the telemetry type names the set.
-    previewSetAnimation: (set: AnimationSetId, v: string | null) =>
-      previewStyle((el) => withSetAnimation(el, set, v)),
-    commitSetAnimation: (set: AnimationSetId, v: string | null) =>
-      commitStyle((el) => withSetAnimation(el, set, v), ANIMATION_SET_TELEMETRY_TYPE[set]),
+    // (arrow `flow`, icon-shape `iconAnimation`). `null` is the "None" tile.
+    // Reuses the snapshot/revert/commit machinery above, so a hovered-then-clicked
+    // animation undoes to the true pre-hover value.
     previewArrowFlow: (v: ArrowFlow | null) =>
       previewStyle((el) => (el.type === 'arrow' ? { ...el, flow: v ?? undefined } : el)),
     commitArrowFlow: (v: ArrowFlow | null) =>

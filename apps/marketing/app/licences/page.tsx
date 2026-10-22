@@ -5,9 +5,9 @@ import { loadLicencesManifest } from '@/lib/licences-manifest';
 import { pageMetadata, SiteHeader } from '@liveplanner/ui';
 
 export const metadata = pageMetadata({
-  title: 'Open-source licences · liveplanner',
+  title: 'Third-party licences · liveplanner',
   description:
-    'The open-source projects liveplanner ships, with their licences and notices, generated from what each app actually bundles.',
+    'The third-party software liveplanner ships, with its licences and notices, generated from what each app actually bundles.',
   path: '/licences',
 });
 

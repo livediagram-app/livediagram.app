@@ -59,7 +59,6 @@ const INERT_HANDLERS: CommandHandlers = {
   openSettings: noop,
   openShortcuts: noop,
   setTool: noop,
-  openPhotoImport: noop,
 };
 
 // `open`: the search is showing. Only then does the catalogue follow the selection, so a closed search
@@ -88,7 +87,6 @@ export function useEditorCommands(open: boolean): {
     sendSelectedToBack,
     bringSelectedToFront,
     setRotationSelected,
-    clearAnimationsSelected,
     commitElements,
     setArrowFlowSelected,
     setMarkerSelected,
@@ -106,9 +104,6 @@ export function useEditorCommands(open: boolean): {
     canRedo,
     zenMode,
     toggleZenMode,
-    esBoard,
-    photoImportAvailable,
-    openPhotoImport,
     fitToScreen,
     autoLayoutTab,
     autoAlignTab,
@@ -137,12 +132,7 @@ export function useEditorCommands(open: boolean): {
   const singleIsShape = single?.type === 'shape';
   const singleRotates = single ? supportsRotation(single) : false;
   const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
-  const hasAnimation = single
-    ? single.type === 'arrow'
-      ? !!single.flow
-      : isBoxed(single) &&
-        (!!single.animation || !!(single as { textAnimation?: string }).textAnimation)
-    : false;
+  const hasAnimation = single?.type === 'arrow' && !!single.flow;
 
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
   // visitors keep the view-safe subset, editors get the full catalogue.
@@ -171,9 +161,7 @@ export function useEditorCommands(open: boolean): {
       // content-dependent tools, so search can never offer a tool the palette
       // has greyed out.
       canvasEmpty,
-      esBoard,
       tabLocked,
-      photoImportAvailable,
     }),
     [
       isReadOnly,
@@ -193,9 +181,7 @@ export function useEditorCommands(open: boolean): {
       workbenchMode,
       canvasTool,
       canvasEmpty,
-      esBoard,
       tabLocked,
-      photoImportAvailable,
     ],
   );
 
@@ -209,8 +195,7 @@ export function useEditorCommands(open: boolean): {
     bringToFront: bringSelectedToFront,
     sendToBack: sendSelectedToBack,
     rotate: setRotationSelected,
-    clearAnimation: () =>
-      single?.type === 'arrow' ? setArrowFlowSelected(null) : clearAnimationsSelected(),
+    clearAnimation: () => setArrowFlowSelected(null),
     setMarker: setMarkerSelected,
     // The step menu's own write (ChipMenuSection), one history step over the tab, with its telemetry.
     renumberSteps: () => {
@@ -256,7 +241,6 @@ export function useEditorCommands(open: boolean): {
     undo,
     redo,
     toggleZen: toggleZenMode,
-    openPhotoImport,
     fitToScreen,
     autoLayout: autoLayoutTab,
     autoAlign: autoAlignTab,

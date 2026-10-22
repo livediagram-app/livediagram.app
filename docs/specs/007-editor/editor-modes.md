@@ -96,7 +96,7 @@ Plan starts on **Hand**, since a board's cards take the pointer themselves; any 
 
 ## Existing whiteboards
 
-A stored tab with `kind: 'whiteboard'` reads as a general tab; its elements, background and layers are unchanged.
+A stored tab with `kind: 'whiteboard'` reads as a general tab; its elements, background and layers are unchanged
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 

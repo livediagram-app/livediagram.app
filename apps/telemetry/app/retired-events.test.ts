@@ -62,6 +62,22 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
   });
 
+  it("retires the Explorer's Timeline section, not the scoped feeds that draw the same events", () => {
+    for (const type of ['Landing', 'Nav', 'Menu'])
+      expect(isRetiredEvent('Timeline', 'Opened', type)).toBe(true);
+    expect(isRetiredEvent('Timeline', 'Removed', 'Entry')).toBe(true);
+    expect(isRetiredEvent('Timeline', 'Removed', 'Stack')).toBe(true);
+    expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Timeline')).toBe(true);
+    expect(isRetiredEvent('UI', 'Selected', 'ExplorerPanel.Timeline')).toBe(true);
+    expect(isRetiredEvent('Page', 'View', '/explorer/timeline')).toBe(true);
+    // A document's History and a team's Activity carry on.
+    expect(isRetiredEvent('Timeline', 'Opened', 'Stack')).toBe(false);
+    expect(isRetiredEvent('Timeline', 'Changed', 'Calendar')).toBe(false);
+    expect(isRetiredEvent('Timeline', 'Loaded', 'More')).toBe(false);
+    expect(isRetiredEvent('UI', 'Selected', 'Sidebar.Inbox')).toBe(false);
+    expect(isRetiredEvent('Page', 'View', '/explorer/home')).toBe(false);
+  });
+
   it('retires Pages mode, not the backgrounds and windows that outlive it', () => {
     expect(isRetiredEvent('Tab', 'Changed', 'PageAdded')).toBe(true);
     expect(isRetiredEvent('Tab', 'Changed', 'PageKindLogo')).toBe(true);

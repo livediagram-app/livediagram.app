@@ -80,8 +80,8 @@ deleted a moment ago shows 30 and one due within the day shows 1. A document
 past its 30 days but not yet swept reads "Removed at the next clean-up".
 
 The Trash is reached two ways, never from the account menu: the **Trash** row
-last in the Explorer sidebar's **More** group, after **Library** (Image gallery,
-Themes and Shape libraries, the other things that hold your stuff rather than
+last in the Explorer sidebar's **More** group, after **Library** (Tags
+and Themes, the other things that hold your stuff rather than
 being it; [Explorer structure](explorer-structure.md)), and
 **Settings › Account**'s **Trash** row, for everyone, guests and deployments
 without accounts included, because Settings is the one menu every deployment
@@ -117,10 +117,8 @@ A trashed document is gone from everywhere a live one shows up:
   **Timeline**, and the **Inbox**;
 - the tab picker that links a tab into another document.
 
-Nothing about it is lost: its stars, share links, history, Timeline events and
-images stay where they are and come back on restore. Images it references stay
-referenced until the purge, so the unused-image retention never reaps them from
-under a restorable document ([Images](../009-elements/images.md)).
+Nothing about it is lost: its stars, share links, history and Timeline events
+stay where they are and come back on restore.
 
 Everything that would read or change it answers with a clear **deleted** state
 rather than a generic error:
@@ -243,8 +241,5 @@ back for a deleted document is the question these answer; no names are sent.
   Offline bypasses the Trash. When a teammate takes a team document into their
   own browser it leaves the owner and the team for good, which from their side
   is a deletion, the same reading the Timeline already gives it.
-- **The image gallery still counts a trashed document as using its images.** It
-  does reference them until the purge, and deleting such an image would break
-  the document the moment it is restored.
 - **Milestones count trashed documents.** The document-count milestone email
   counts what an owner created, so binning and restoring never re-earns one.

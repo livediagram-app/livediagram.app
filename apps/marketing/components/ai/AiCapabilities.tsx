@@ -1,12 +1,12 @@
 import {
-  lucidePresentation,
+  lucideClipboardList,
+  lucideLayoutGrid,
   lucideSearch,
   lucideShare2,
   lucideSquareKanban,
   lucideTable,
+  lucideTag,
   lucideUndo2,
-  lucideWorkflow,
-  lucideFileText,
 } from '@liveplanner/icons/lucide';
 import { lucideGlyph } from '@liveplanner/ui';
 
@@ -14,14 +14,14 @@ import { lucideGlyph } from '@liveplanner/ui';
 // card maps to a shipped tool (docs/specs/015-api/mcp-server.md §4); a new tool earns a card here only once it ships.
 const CAPABILITIES = [
   {
-    icon: lucideGlyph(lucideWorkflow, 20),
-    title: 'Diagrams from a sentence',
-    body: 'Flowcharts, architecture, org charts, mind maps and state machines. Your AI names the boxes and links; liveplanner lays them out. Mermaid works too.',
+    icon: lucideGlyph(lucideSquareKanban, 20),
+    title: 'Boards and cards',
+    body: 'Puts a board on a tab, from a preset or columns you name, then adds, edits and moves cards the way the board shows them.',
   },
   {
-    icon: lucideGlyph(lucideSquareKanban, 20),
-    title: 'Boards and templates',
-    body: 'Kanban, sprints, retros, SWOT and more from the template library, with Plan cards your AI can add, edit and move.',
+    icon: lucideGlyph(lucideTag, 20),
+    title: 'Card types and fields',
+    body: 'Adds and edits card types and their fields, so a Bug can carry its severity and a candidate their stage.',
   },
   {
     icon: lucideGlyph(lucideTable, 20),
@@ -29,29 +29,29 @@ const CAPABILITIES = [
     body: 'Spreadsheets with formulas, formatting, dropdowns and sorting, built from rows or CSV and read back by cell.',
   },
   {
-    icon: lucideGlyph(lucidePresentation, 20),
-    title: 'Slides, posters and logos',
-    body: 'Decks from ready-made slide layouts, infographics and logo artboards, all on pages you can polish by hand.',
+    icon: lucideGlyph(lucideClipboardList, 20),
+    title: 'Forms',
+    body: 'Builds a form, tries it out and publishes its link, with every answer landing as a card or a row.',
   },
   {
-    icon: lucideGlyph(lucideFileText, 20),
-    title: 'Articles',
-    body: 'Written up in Markdown and flowed onto pages, then read back and revised whenever you ask.',
+    icon: lucideGlyph(lucideLayoutGrid, 20),
+    title: 'Templates and tabs',
+    body: 'Starts a project from a plan template, such as Kanban, OKRs or a Budget Planner, and adds the tabs it needs.',
   },
   {
     icon: lucideGlyph(lucideSearch, 20),
     title: 'Find and read',
-    body: 'Searches your documents and your teams’, and reads any tab back as an outline and a picture.',
+    body: 'Searches your projects and your teams’, and reads back the boards, cards, sheets and forms inside them.',
   },
   {
     icon: lucideGlyph(lucideShare2, 20),
     title: 'Share links',
-    body: 'Turns a document into a link for your team, as a Participant link unless you ask for another role.',
+    body: 'Turns a project or a form into a link for your team, as a Participant link unless you ask for another role.',
   },
   {
     icon: lucideGlyph(lucideUndo2, 20),
     title: 'Live, and undoable',
-    body: 'Changes land on an open canvas as they happen, outlined so you can see them, with Undo one click away.',
+    body: 'Changes land in an open project as they happen, for everyone on it, with Undo one click away.',
   },
 ];
 

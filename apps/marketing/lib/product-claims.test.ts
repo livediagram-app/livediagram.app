@@ -5,6 +5,8 @@ import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 import { ALTERNATIVES } from './alternatives';
 import { FAQ_CATEGORIES, faqAnswerText } from './faq-content';
 import { LANDING_SECTIONS } from './landing-content';
+import { PROMISES } from './promises';
+import { MARKETING_DESCRIPTION, MARKETING_PITCH, MARKETING_TITLE } from './site-copy';
 
 // Claims marketing once made that the product has since outgrown or never matched. Each phrasing
 // here was live copy, found false against the product; the test keeps it from coming back on any
@@ -15,8 +17,9 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'an editor link embeds an editable canvas (docs/specs/013-workspace/embeds.md)',
   },
   {
-    pattern: /markdown[^.]*on a new tab/i,
-    why: 'Markdown import replaces the current tab (docs/specs/020-import-export/markdown-import.md)',
+    pattern:
+      /imports? (?:a |an |your )?(?:markdown|mermaid|excalidraw|draw\.io|\.drawio|drawio|microsoft whiteboard)|(?:markdown|excalidraw|draw\.io|drawio|whiteboard) import|\.excalidraw in|paste an excalidraw/i,
+    why: 'the editor imports a liveplanner JSON export only (help: tabs/import-tabs)',
   },
   {
     pattern: /no Figma integration/i,
@@ -31,8 +34,9 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
     why: 'Pages tabs export PDF, PNG, SVG and JSON only',
   },
   {
-    pattern: /any tab (?:out )?as[^.]*(?:markdown|excalidraw)/i,
-    why: 'Pages tabs export PDF, PNG, SVG and JSON only',
+    pattern:
+      /any tab (?:out )?as[^.]*(?:markdown|excalidraw)|\.excalidraw (?:file|scene)? ?out|(?:as|to) an? \.?excalidraw (?:file|scene)/i,
+    why: 'the editor exports PNG, SVG, PDF, JSON, Markdown and CSV; Pages tabs PDF, PNG, SVG and JSON only',
   },
   {
     pattern: /undo never reaches|only rewinds your own changes, never/i,
@@ -40,7 +44,7 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   },
   {
     pattern: /builds onto the current tab/i,
-    why: 'Markdown import replaces the current tab, it does not add to it',
+    why: 'Import replaces the current tab, it does not add to it',
   },
   {
     pattern: /live state of every part of the service/i,
@@ -48,7 +52,7 @@ const FALSE_CLAIMS: { pattern: RegExp; why: string }[] = [
   },
   {
     pattern: /nothing is sent to a server/i,
-    why: 'imported images go through the image upload pipeline',
+    why: 'projects save to the server; only a This Browser project stays local',
   },
 ];
 
@@ -112,5 +116,56 @@ describe('mode lists in marketing copy', () => {
         .map(({ sentence }) => `${where}: ${sentence.slice(0, 80)}`),
     );
     expect(wrong).toEqual([]);
+  });
+});
+
+// liveplanner is Plan mode alone (docs/specs/019-marketing/marketing-site.md): the landing page and the
+// site's own metadata never offer what the product does not carry, and a person's work is a project,
+// never a document.
+describe('what the landing copy says liveplanner is', () => {
+  const own = [
+    ...LANDING_SECTIONS.flatMap((s) => [
+      {
+        where: `landing/${s.id}`,
+        text: [s.label, s.title, s.description, s.metaDescription, s.cta].join(' '),
+      },
+      ...s.items.map((i) => ({
+        where: `landing/${s.id}: ${i.title}`,
+        text: `${i.title} ${i.description}`,
+      })),
+    ]),
+    {
+      where: 'site-copy',
+      text: [MARKETING_TITLE, MARKETING_DESCRIPTION, MARKETING_PITCH].join(' '),
+    },
+  ];
+  const DROPPED =
+    /\b(?:diagrams?|diagramming|whiteboards?|infographics?|slides?|slide decks?|mind ?maps?|articles?|workshops?|canvas)\b/i;
+
+  it('never offers a mode liveplanner does not carry', () => {
+    expect(own.filter((c) => DROPPED.test(c.text)).map((c) => c.where)).toEqual([]);
+  });
+
+  it('calls the work a project, never a document', () => {
+    expect(own.filter((c) => /\bdocuments?\b/i.test(c.text)).map((c) => c.where)).toEqual([]);
+  });
+});
+
+// liveplanner's source is not public (docs/specs/002-project-scope/business-model-and-licence.md): no
+// marketing surface says anyone can read its source or run their own copy.
+describe('the licence the marketing copy claims', () => {
+  const NOT_OPEN =
+    /open[ -]?source|\bMIT\b|self-host|github\.com\/liveplanner|read the source|see the code/i;
+  const everything = [
+    ...copy,
+    ...PROMISES.map((p) => ({ where: `promise/${p.id}`, text: JSON.stringify(p) })),
+    {
+      where: 'site-copy',
+      text: [MARKETING_TITLE, MARKETING_DESCRIPTION, MARKETING_PITCH].join(' '),
+    },
+  ];
+
+  it('never claims the source is public', () => {
+    expect(everything.filter((c) => NOT_OPEN.test(c.text)).map((c) => c.where)).toEqual([]);
   });
 });

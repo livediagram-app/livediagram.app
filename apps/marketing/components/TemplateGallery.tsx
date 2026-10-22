@@ -16,7 +16,7 @@ import { EYEBROW } from '@/components/eyebrow';
 // Spreadsheet); every other category sits folded underneath as a card (CategoryTiles) that opens it
 // in the open one's place, the shelf it replaces folding back (Blank Slate leading the folds). It only
 // browses: the search is the hero's (components/HeroSearch.tsx), which finds across every shelf. Every
-// card is a link that creates that document straight away and opens it in the editor (TemplateCard).
+// card is a link that creates that project straight away and opens it in the editor (TemplateCard).
 
 // Every shelf, dealt once: the gallery has no filters, so they never change.
 const SHELVES = galleryShelves();
@@ -50,11 +50,11 @@ export function TemplateGallery() {
     <section id="templates" className={`${BAND_SECTION} scroll-mt-[72px]`}>
       <div className="mx-auto max-w-6xl px-6 py-20 sm:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className={EYEBROW}>One canvas, many jobs</p>
+          <p className={EYEBROW}>One project, many tabs</p>
           <h2 className={BAND_TITLE}>Browse every template</h2>
           <p className={BAND_LEAD}>
-            Pick a starting point and you are on the canvas with it already drawn. Every template
-            the editor ships is here.
+            Pick a starting point and your new project opens with its boards, sheets and forms
+            already set up. Every plan template is here.
           </p>
         </div>
 

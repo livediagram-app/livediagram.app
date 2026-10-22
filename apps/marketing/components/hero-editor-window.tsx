@@ -1,5 +1,5 @@
 // The editor-window mock every hero stage window is drawn in: the editor's chrome kept in step
-// with today's editor, around a caller-supplied SVG diagram (docs/specs/019-marketing/marketing-site.md).
+// with today's editor, around a caller-supplied SVG scene (docs/specs/019-marketing/marketing-site.md).
 
 import { type CSSProperties, type ReactNode } from 'react';
 import {
@@ -21,7 +21,7 @@ import {
   ToolbarStrip,
 } from './hero-editor-chrome';
 
-// Every window's diagram is drawn in this box on a wide screen.
+// Every window's scene is drawn in this box on a wide screen.
 const LANDSCAPE_VIEWBOX = '0 -60 600 400';
 
 export type TabDef = { name: string; color: string; active?: boolean };
@@ -40,8 +40,8 @@ const TAB_PILL =
 const TAB_ACTIVE =
   'bg-white ring-1 ring-[color-mix(in_srgb,var(--tab)_45%,white)] shadow-sm dark:bg-slate-900 dark:ring-[color-mix(in_srgb,var(--tab)_45%,transparent)]';
 
-// One editor-window mock: shared chrome plus a caller-supplied SVG diagram.
-// The diagram group is keyed on `playing` so its build animation restarts each
+// One editor-window mock: shared chrome plus a caller-supplied SVG scene.
+// The scene group is keyed on `playing` so its build animation restarts each
 // time the window reaches centre; off-centre it gets .hero-static (settled).
 export function EditorWindow({
   title,
@@ -59,7 +59,7 @@ export function EditorWindow({
   title: string;
   tabs: TabDef[];
   document: ReactNode;
-  // The diagram's viewBox: the wide landscape one, or a phone's portrait one for a portrait layout.
+  // The scene's viewBox: the wide landscape one, or a phone's portrait one for a portrait layout.
   viewBox?: string;
   playing: boolean;
   // The veil's animation, when the stage's own (lift in, close at the end; lift once on leaving)
@@ -67,12 +67,12 @@ export function EditorWindow({
   // has none (opacity-0).
   veil?: string;
   shared: boolean;
-  // The editor mode the window is in (docs/specs/007-editor/editor-modes.md): its palette and the
-  // glyph on its tab.
+  // The editor mode the window is in (docs/specs/007-editor/editor-modes.md), Plan: the glyph on
+  // its mode switch and tabs.
   mode: HeroMode;
   // A Plan scene's tab: its own bar stands where the Palette would.
   planTab?: PlanTab;
-  // Drawn over the canvas, above the diagram (the Build yours button).
+  // Drawn over the canvas, above the scene (the Build yours button).
   overlay?: ReactNode;
   // The canvas's size: the hero's fixed heights, or an aspect ratio where the window's width
   // varies with its column (a landing beat), so the scene keeps its proportions.
@@ -95,7 +95,7 @@ export function EditorWindow({
           }`}
         />
         {/* Editor header strip (static chrome), laid out as EditorHeader lays it out: the brand
-            and the Editor menu on the left, the document's name with its share state and your role
+            and the Editor menu on the left, the project's name with its share state and your role
             in the middle, and Share on the right behind a hairline. */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b border-slate-100 bg-white py-1.5 pl-3 dark:border-slate-800 dark:bg-slate-900">
           <div className="flex min-w-0 items-center gap-2">
@@ -153,9 +153,9 @@ export function EditorWindow({
           <ToolbarStrip mode={mode} planTab={planTab} />
 
           {/* The canvas cluster (static chrome), drawn from the editor's own glyphs. */}
-          <CanvasCluster mode={mode} className="absolute bottom-2 right-2 z-10 hidden sm:flex" />
+          <CanvasCluster className="absolute bottom-2 right-2 z-10 hidden sm:flex" />
 
-          {/* The diagram centres in the canvas below the strip, with clear space under it (more on a
+          {/* The scene centres in the canvas below the strip, with clear space under it (more on a
               phone, whose portrait layouts run nearer the top), so nothing crowds the toolbar. */}
           <div className="absolute inset-x-0 bottom-2 top-16 sm:bottom-0 sm:top-10">
             <svg className="h-full w-full" viewBox={viewBox} preserveAspectRatio="xMidYMid meet">
@@ -169,7 +169,7 @@ export function EditorWindow({
         </div>
 
         {/* Bottom tab bar (static chrome): colour-coded tabs relevant to this
-                diagram + the toolbelt the page advertises. */}
+                project + the toolbelt the page advertises. */}
         <div className="flex items-center gap-2 border-t border-slate-100 bg-white px-2 py-2 dark:border-slate-800 dark:bg-slate-900">
           {/* The tab folder chip, the bar's first control. */}
           <span className="flex items-center text-slate-400" aria-hidden>
@@ -190,10 +190,10 @@ export function EditorWindow({
                 {/* Presence lives IN the tab, as the editor's TabPresenceStack
                         draws it: a stack of small initials between the tab name
                         and its ellipsis, one per person on that tab (you, and on
-                        a shared document whoever else is there). */}
+                        a shared project whoever else is there). */}
                 {t.active ? (
                   <span className="ml-0.5 flex items-center">
-                    <TabAvatar initials="TM" color="#0ea5e9" last={!shared} />
+                    <TabAvatar initials="TM" color="#8b5cf6" last={!shared} />
                     {shared ? <TabAvatar initials="JR" color="#ec4899" last /> : null}
                   </span>
                 ) : null}

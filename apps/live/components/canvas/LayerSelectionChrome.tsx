@@ -1,13 +1,12 @@
 'use client';
 
 // The selection chrome inside the grips layer (docs/specs/008-canvas/blueprints/selection-store.md): the
-// next-note buttons, the quick-connect pluses and the union resize box. It reads the selection from
+// quick-connect pluses and the union resize box. It reads the selection from
 // the store, so a selection change re-renders this and not the element layer around it.
 
 import type { ComponentProps } from 'react';
 import type { Element } from '@liveplanner/document';
 import { UnionResizeHandles } from '@/components/canvas/element-parts';
-import { NextNoteButtons } from '@/components/canvas/NextNoteButtons';
 import { QuickConnectPluses } from '@/components/canvas/QuickConnectPluses';
 import {
   useCanvasSelectionView,
@@ -25,8 +24,6 @@ export function LayerSelectionChrome({
   selectionInput,
   tabId,
   elements,
-  editingId,
-  nextNote,
   pluses,
   onBeginDrag,
 }: {
@@ -34,9 +31,6 @@ export function LayerSelectionChrome({
   // The tab the selection is on, whose drag preview the selection follows.
   tabId: string;
   elements: Element[];
-  editingId: string | null;
-  // The event-storming next-note buttons, when the board offers them.
-  nextNote: { blocked: boolean; onAdd: ComponentProps<typeof NextNoteButtons>['onAdd'] } | null;
   pluses: Omit<PlusesProps, 'selectedElement' | 'bounds' | 'zoom'>;
   onBeginDrag: ComponentProps<typeof UnionResizeHandles>['onBeginDrag'];
 }) {
@@ -47,20 +41,6 @@ export function LayerSelectionChrome({
   const zoom = useCanvasZoom();
   return (
     <>
-      {/* The next-note buttons on the note you are pointing at or have selected
-          (docs/specs/021-event-storming/event-storming.md Phase 7). They stand down while any drag is in
-          hand: the board is the drag's for the duration. */}
-      {nextNote ? (
-        <NextNoteButtons
-          elements={elements}
-          selectedId={selectedId}
-          editingId={editingId}
-          blocked={nextNote.blocked}
-          zoom={zoom}
-          onAdd={nextNote.onAdd}
-        />
-      ) : null}
-
       {showPlus && selectionBounds ? (
         <QuickConnectPluses
           {...pluses}

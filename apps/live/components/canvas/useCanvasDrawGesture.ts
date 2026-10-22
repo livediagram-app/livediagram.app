@@ -2,17 +2,11 @@ import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
 import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@liveplanner/document';
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
-import type { StampPlacement } from '@/lib/stamp-placement';
 import { isPlanCardIntent } from '@/lib/draw-mode';
 import { usePlanCardPlacingGap } from '@/hooks/plan/usePlanCardPlacingGap';
 import { beginCanvasGesture } from '@/lib/canvas-gesture';
 
 const EMPTY_ID_SET: Set<string> = new Set();
-
-const stampCentre = (p: StampPlacement) => ({
-  x: p.bounds.x + p.bounds.width / 2,
-  y: p.bounds.y + p.bounds.height / 2,
-});
 
 // The inputs the draw gesture reads, reusing CanvasProps' exact types so the
 // hook can't drift from what Canvas passes.
@@ -23,10 +17,6 @@ type CanvasDrawGestureDeps = Pick<
   // The zoom now (CanvasView reads it from the viewport store).
   viewportZoom: number;
   wrapperRef: RefObject<HTMLDivElement | null>;
-  // Set while the armed tile is a fixed-size note (useStampGhost): the gesture
-  // then STAMPS the note at this placement instead of drawing a box to size.
-  stampAt: ((canvasX: number, canvasY: number) => StampPlacement) | null;
-  showStamp: (placement: StampPlacement | null) => void;
 };
 
 // Canvas draw-to-size gesture, lifted out of Canvas.tsx. Owns
@@ -42,8 +32,6 @@ export function useCanvasDrawGesture({
   viewportZoom,
   isPinchingRef,
   onCommitDraw,
-  stampAt,
-  showStamp,
 }: CanvasDrawGestureDeps) {
   // Draw-to-size gesture state. Set when the user starts a drag on
   // the canvas while pendingDraw is set; cleared on pointer-up
@@ -94,13 +82,6 @@ export function useCanvasDrawGesture({
       // A pressed Plan card lands in the column under the press, exactly there: no snap, no drag
       // (docs/specs/026-plan/plan-mode.md "The palette").
       onCommitDraw(pendingDraw, sx, sy, sx, sy);
-    } else if (stampAt) {
-      // A stamp presses where its ghost is: start and end are both the
-      // placed note's centre, so the commit reads it as a tap there.
-      const placed = stampAt(sx, sy);
-      const c = stampCentre(placed);
-      showStamp(placed);
-      setDrawDrag({ startX: c.x, startY: c.y, currentX: c.x, currentY: c.y });
     } else {
       const start = snapDrawStart(sx, sy);
       setDrawDrag({ startX: start.x, startY: start.y, currentX: start.x, currentY: start.y });
@@ -115,9 +96,8 @@ export function useCanvasDrawGesture({
   // set when a snap is actually in effect, so the preview (a dot + guides
   // in CanvasChrome) appears exactly when the start would latch.
   const [drawHover, setDrawHover] = useState<{ x: number; y: number } | null>(null);
-  // A stamp has its own ghost (useStampGhost); the corner-snap dot is for
-  // shapes drawn to size. Out of that state, the dot goes at once.
-  const hoverSnaps = !!pendingDraw && !drawDrag && !stampAt && !isPlanCardIntent(pendingDraw);
+  // The corner-snap dot is for shapes drawn to size. Out of that state, the dot goes at once.
+  const hoverSnaps = !!pendingDraw && !drawDrag && !!isPlanCardIntent(pendingDraw);
   // A pressed Plan card opens the gap where it would land as the pointer crosses a board.
   usePlanCardPlacingGap(isPlanCardIntent(pendingDraw) ? (pendingDraw.plan ?? 'task') : null);
   if (!hoverSnaps && drawHover) setDrawHover(null);
@@ -151,7 +131,7 @@ export function useCanvasDrawGesture({
   // + Escape go through the keyboard hook's onCancelDraw path.
   //
   // The listeners attach once per drag; what they do is an effect event,
-  // so every move reads the zoom, elements, stamp and commit handler as
+  // so every move reads the zoom, elements and commit handler as
   // they are now rather than as they were at the press.
   type DrawDrag = { startX: number; startY: number; currentX: number; currentY: number };
   // One pointer move of the drag: the snapped next state, or null to leave it as it is.
@@ -170,14 +150,6 @@ export function useCanvasDrawGesture({
     // still freely placing.
     const snapPx = 6 / viewportZoom;
     const { x: rawX, y: rawY } = pointerToCanvas(e.clientX, e.clientY, rect, viewportZoom);
-    if (stampAt) {
-      // A stamp is carried, not sized: the ghost follows the pointer and the
-      // drop is its centre.
-      const placed = stampAt(rawX, rawY);
-      const c = stampCentre(placed);
-      showStamp(placed);
-      return { startX: c.x, startY: c.y, currentX: c.x, currentY: c.y };
-    }
     let endX = rawX;
     let endY = rawY;
     // 1:1 aspect lock on shift. Mirrors Figma / Photoshop: hold

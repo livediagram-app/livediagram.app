@@ -6,7 +6,7 @@
 // index ⇄ factories cycle, which crashes plain-Node ESM consumers with
 // "Cannot access 'RATING_DEFAULT' before initialization" (the
 // product bundlers happen to evaluate the cycle in a survivable order;
-// a self-hoster's script doesn't). Everything here is re-exported from
+// another program's script doesn't). Everything here is re-exported from
 // './index', so the public package surface is unchanged.
 
 import type { ShapeKind } from './index';

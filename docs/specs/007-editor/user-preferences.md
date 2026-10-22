@@ -115,14 +115,13 @@ the same `guestOwnerId` moves zero rows.
 
 <!-- /legacy-names -->
 
-### Self-host degradation
+### Degradation without the api
 
-When the api worker is unset (pure-guest self-host without a D1
+When the api worker is unset (a pure-guest deployment without a D1
 binding configured) the client treats the fetch as a no-op
 failure: the localStorage cache acts as the only persistence,
 which is the same behaviour as the original v1 design and works
-exactly like it did before. No required SaaS calls, self-hosting
-stays viable.
+exactly like it did before. No required SaaS calls.
 
 ## Schema
 
@@ -467,7 +466,7 @@ and the dialog stays as the one complete, browsable index of them.
 
 - **Settings dialog**: `apps/live/components/dialogs/SettingsDialog.tsx`,
   lazy-loaded via `next/dynamic` (matches the other on-demand
-  modals: ShareDialog, ExportTabDialog, ImagePicker). Trigger: a
+  modals: ShareDialog, ExportTabDialog). Trigger: a
   gear-icon button in the TabBar footer, sitting between Search and the
   dark-mode toggle. The "Keyboard Shortcuts" command in search
   ([Command palette (⌘K)](command-palette.md)) opens it on the **Keyboard** category; that category replaced the standalone

@@ -59,7 +59,6 @@ describe('SettingsPlacementDefaultRow', () => {
     const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.rows;
     expect(rows.filter((r) => r.kind === 'placementDefault').map((r) => r.label)).toEqual([
       'Projects',
-      'Event Storming Boards',
       'Retrospectives',
       'Kanban Boards',
     ]);

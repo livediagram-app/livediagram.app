@@ -2,7 +2,6 @@
 // operations and the lint name elements alike. Element ids are opaque strings; nothing here reads
 // them as UUIDs.
 import { cutSlug, slugText, uniqueSlug } from '@liveplanner/items';
-import { eventStormingKindOf } from './event-storming';
 import type { Element } from './index';
 import { ELEMENT_TYPES, SHAPE_KINDS } from './validate';
 
@@ -139,13 +138,10 @@ export function isKnownElement(el: Element): boolean {
   return el.type !== 'shape' || SHAPE_KINDS.has(el.shape);
 }
 
-// The first word of an element's line: an event-storming note's notation (`es:actor` for the actor
-// notation, so it never reads as the actor shape), a shape's kind, else the element type. An unknown
+// The first word of an element's line: a shape's kind, else the element type. An unknown
 // type or shape kind prints `? <name>`.
 export function kindWordOf(el: Element): string {
   if (!ELEMENT_TYPES.has(el.type)) return unknownKindWord(el.type, 'element');
-  const notation = eventStormingKindOf(el);
-  if (notation) return notation === 'actor' ? 'es:actor' : notation;
   if (el.type !== 'shape') return el.type;
   return SHAPE_KINDS.has(el.shape) ? el.shape : unknownKindWord(el.shape, 'shape');
 }

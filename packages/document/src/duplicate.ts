@@ -6,7 +6,6 @@
 
 import { copiedSheetId, relinkCopiedCharts } from './chart-source';
 import {
-  eventStormingTilt,
   isBoxed,
   newPlanSheetId,
   type ArrowElement,
@@ -16,15 +15,8 @@ import {
   type ElementId,
 } from './index';
 
-// What a COPY regenerates rather than inherits. Today: an event-storming
-// note's hand-placement (docs/specs/021-event-storming/event-storming.md) — a duplicate is a new piece of paper, so
-// carrying the source's exact angle made it read as a photocopy, the one
-// thing a real wall never shows. Scoped to the fixed-size sticky (the ES
-// stamp) so a deliberately-rotated element anywhere else keeps its angle.
-//
-// EVERY copy path must spread this: the set duplication below, and the
-// editor's hand-rolled single / multi duplicate paths. It exists precisely
-// because "the one place copies happen" turned out to be three places.
+// What a COPY regenerates rather than inherits. EVERY copy path must spread this: the set duplication below, and
+// the editor's hand-rolled single / multi duplicate paths.
 //
 // A copy is also nobody's addition (docs/specs/013-workspace/share-roles.md): `addedBy` never rides along, so an
 // Editor's copy of a Participant's sticky is not that Participant's to delete. A Participant's own copy is stamped
@@ -58,7 +50,6 @@ export function freshCopyFields(el: Element): {
   } = {};
   if ('addedBy' in el) fresh.addedBy = undefined;
   for (const field of ORIGINAL_ONLY_FIELDS) if (field in el) fresh[field] = undefined;
-  if (el.type === 'sticky' && el.fixedSize) return { ...fresh, rotation: eventStormingTilt() };
   // A copied Sheet frames a new sheet, made from the original's when it is first drawn
   // (docs/specs/029-sheets/sheet.md "Copying a Sheet element"). A copy of a copy not yet made copies the original.
   // A template's Sheet not yet made (sheet-store.md "Template starts") has nothing to copy yet: the copy is made from

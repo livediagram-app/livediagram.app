@@ -126,7 +126,7 @@ export function HeroSearch() {
       <div
         id={listId}
         hidden={!open}
-        className="absolute inset-x-0 top-[4.75rem] z-30 rounded-2xl bg-white p-2 text-slate-900 border border-sky-100 shadow-[0_30px_60px_-20px_var(--hero-card-shadow)] dark:border-transparent"
+        className="absolute inset-x-0 top-[4.75rem] z-30 rounded-2xl bg-white p-2 text-slate-900 border border-brand-100 shadow-[0_30px_60px_-20px_var(--hero-card-shadow)] dark:border-transparent"
       >
         {matches.length > 0 ? (
           <ul aria-label="Matching templates" className="flex flex-col">
@@ -135,7 +135,7 @@ export function HeroSearch() {
                 <a
                   data-hero-result=""
                   href={createHref(t.kind)}
-                  className="flex items-center gap-4 rounded-xl px-3 py-2.5 outline-none hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:ring-2 focus-visible:ring-sky-500"
+                  className="flex items-center gap-4 rounded-xl px-3 py-2.5 outline-none hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:ring-2 focus-visible:ring-brand-500"
                 >
                   <span className="flex h-12 w-[4.5rem] shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 [&>svg]:h-9 [&>svg]:w-auto">
                     <TemplatePreview kind={t.kind} />
@@ -157,7 +157,7 @@ export function HeroSearch() {
         <a
           data-hero-result=""
           href="#templates"
-          className="mt-1 flex items-center justify-between rounded-xl border-t border-slate-100 px-3 py-3 text-sm font-medium text-blue-700 outline-none hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-sky-500"
+          className="mt-1 flex items-center justify-between rounded-xl border-t border-slate-100 px-3 py-3 text-sm font-medium text-brand-700 outline-none hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-brand-500"
         >
           Browse every template
           <span aria-hidden>↓</span>

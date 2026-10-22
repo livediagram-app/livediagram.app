@@ -28,7 +28,6 @@ import { PaletteTintProvider } from './palette-controls';
 import { PaletteGroupProvider } from './palette-group-state';
 import { PaletteDropdown, TOOLBAR_TRIGGER_TONE } from './PaletteDropdown';
 import { CATEGORY_BANDS } from './palette-category-bands';
-import { EsPhotoStripButton } from './EsPhotoStripButton';
 import { usePlan } from '@/components/plan/PlanContext';
 import { planCardTile } from './palette-plan-tiles';
 import { EditCardsStripButton } from './EditCardsStripButton';
@@ -75,14 +74,7 @@ import { useStripCrowded } from './useStripCrowded';
 
 type Props = Pick<
   PaletteProps,
-  | 'canvasTool'
-  | 'onSetCanvasTool'
-  | 'onToggleZen'
-  | 'canvasEmpty'
-  | 'pendingDraw'
-  | 'esBoard'
-  | 'esBoardControls'
-  | 'themeTint'
+  'canvasTool' | 'onSetCanvasTool' | 'onToggleZen' | 'canvasEmpty' | 'pendingDraw' | 'themeTint'
 > &
   PaletteAddHandlers & {
     // The chrome is hidden (zen, the welcome flow). Hidden rather than
@@ -147,7 +139,7 @@ function CardWidth({ swipe, children }: { swipe: boolean; children: ReactNode })
 }
 
 export function ToolbarPalette(props: Props) {
-  const { canvasTool, esBoard, themeTint, pendingDraw, leading } = props;
+  const { canvasTool, themeTint, pendingDraw, leading } = props;
   // The phone's row: the strip at the left gutter, beside the menu card when there is one.
   const phoneRow = leading !== undefined;
   // A Sheet covering the canvas, maximised or filling its tab, hides the palette (docs/specs/026-plan/plan-board.md
@@ -255,14 +247,12 @@ export function ToolbarPalette(props: Props) {
   const categoryTiles =
     category?.id === 'plan-cards' && planCardTiles ? planCardTiles : category?.tiles;
   const fitted = stripTilesFor(category?.id ?? defaultId, {
-    hasImage: tileActions.hasImage,
     limit: stripLimit,
     // The category's tiles in Plan's layout (palette-layouts).
     tiles: categoryTiles,
   });
   const { tiles, dividersAfter } = swipe
     ? stripTilesFor(category?.id ?? defaultId, {
-        hasImage: tileActions.hasImage,
         limit: tileLimit,
         tiles: categoryTiles,
       })
@@ -290,8 +280,8 @@ export function ToolbarPalette(props: Props) {
     : openers.opened && !openers.opened.group && openedTab?.tiles
       ? openedTab
       : null;
-  // On a phone only My shapes keeps More: the swipe reaches every other category's tiles or groups.
-  const showMore = swipe ? category?.id === 'my-shapes' : hasMore;
+  // On a phone no category keeps More: the swipe reaches every category's tiles or groups.
+  const showMore = !swipe && hasMore;
 
   // The category being switched AWAY from, while its tiles animate out
   // (ToolbarStripRail). Rebuilt from data rather than kept as stale nodes, and
@@ -319,7 +309,6 @@ export function ToolbarPalette(props: Props) {
   const leavingGroups = leavingId ? catalogueStripGroups(leavingId) : null;
   const leaving = leavingId
     ? stripTilesFor(leavingId, {
-        hasImage: tileActions.hasImage,
         limit: tileLimit,
         tiles: tabs.find((t) => t.id === leavingId)?.tiles,
       })
@@ -330,7 +319,7 @@ export function ToolbarPalette(props: Props) {
     if (pendingDraw) tileActions.cancelDraw?.();
   };
   // S asks for the Search (lib/toolbar-search-request): answered only while it is on show, so the
-  // key keeps its Select meaning on an event-storming board or with the chrome away.
+  // key keeps its Select meaning with the chrome away.
   const searchButtonRef = useRef<HTMLDivElement>(null);
   const openSearchFromKey = useEffectEvent(() => {
     const button = searchButtonRef.current?.querySelector<HTMLElement>(
@@ -343,9 +332,9 @@ export function ToolbarPalette(props: Props) {
     search.openFrom(button);
   });
   useEffect(() => {
-    if (esBoard || participant || hidden) return;
+    if (participant || hidden) return;
     return onToolbarSearchRequest(() => openSearchFromKey());
-  }, [esBoard, participant, hidden]);
+  }, [participant, hidden]);
   const toggleSearch = (button: HTMLElement) => {
     if (search.open) return search.setOpen(false);
     beforeSearch();
@@ -447,17 +436,7 @@ export function ToolbarPalette(props: Props) {
                         : CARD_CLASS
                     }
                   >
-                    {/* Event-storming boards hide the selection mode (docs/specs/021-event-storming/event-storming.md): the
-                notation is the palette there. */}
-                    {/* ...and lead with the board's own control instead, as the Event Storming
-                category's body does. */}
-                    {esBoard && !participant && props.esBoardControls?.onImportPhoto ? (
-                      <>
-                        <EsPhotoStripButton controls={props.esBoardControls} />
-                        <Divider />
-                      </>
-                    ) : null}
-                    {esBoard && !participant ? null : (
+                    {
                       <>
                         {dashboardTab ? null : (
                           <>
@@ -509,7 +488,7 @@ export function ToolbarPalette(props: Props) {
                         </SnapWidth>
                         <Divider />
                       </>
-                    )}
+                    }
                     <ToolbarStripRail
                       scrollable={swipe}
                       railKey={category?.id ?? defaultId}
@@ -534,7 +513,7 @@ export function ToolbarPalette(props: Props) {
                     />
                     {/* Outside the rail so it rides the rail's width change rather
                 than popping out and back in with the tiles. Only there when
-                the category has more than the strip shows. On a phone only for My shapes (showMore). */}
+                the category has more than the strip shows. Never on a phone (showMore). */}
                     {showMore ? (
                       <>
                         <Divider />
@@ -558,9 +537,8 @@ export function ToolbarPalette(props: Props) {
                       </>
                     ) : null}
                     {/* Search, last: any element type, Plan's and every other category's (docs/specs/007-editor/toolbar-layout.md
-                    "Search: every element type"). Not on an event-storming board, whose notation is
-                    its palette. */}
-                    {esBoard || participant ? null : (
+                    "Search: every element type"). */}
+                    {participant ? null : (
                       <>
                         <Divider />
                         <div ref={searchButtonRef} className="flex">
@@ -598,7 +576,7 @@ export function ToolbarPalette(props: Props) {
                 )}
               </StripPopover>
             ) : null}
-            {search.open && !esBoard && !participant ? (
+            {search.open && !participant ? (
               <StripPopover
                 right={search.right}
                 isMobile={isMobile}

@@ -38,8 +38,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone asked the AI Assistant a question about the active tab and got an answer.',
   'AI|Used|Clean':
     "Someone used the AI Assistant's Clean mode to tidy up a tab's labels, sizes, and styles.",
-  'AI|Used|PhotoNotes':
-    'Someone imported the sticky notes from a photo of a real wall onto an event-storming board, a workshop-style tab built as a timeline of business events.',
   'Action|Changed|Edited':
     "Someone edited the details of an action assigned to an element, without changing who it's assigned to.",
   'Action|Changed|Reassigned':
@@ -74,8 +72,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone clicked a form's row in the Explorer's Inbox (its new responses), jumping to the board they land on.",
   'Activity|Selected|Thread':
     "Someone clicked a comment-thread row in the Explorer's Inbox, jumping to the element it's on.",
-  'Canvas|Used|AddNextNote':
-    'Someone clicked a next-note button beside a note on an event-storming board and got the note type that notation places there next.',
   'Canvas|Used|WaterCooler':
     'Someone walked their Avatar-mode character up to a water cooler and took a cup of water.',
   'Canvas|Used|CoffeeMachine':
@@ -88,34 +84,18 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone went into Avatar mode on a board with an Avatar Pad, so their character beamed in on the pad.',
   'Canvas|Used|AvatarMode':
     'Someone switched to Avatar mode, steering a small walking character around the canvas instead of the usual pointer.',
-  'Canvas|Used|ChangeNoteKind':
-    'Someone changed what kind of note a sticky is on an event-storming board, say from a domain event to a hotspot.',
-  'Canvas|Used|Dock':
-    'Someone dragged a note onto a compatible face on an event-storming board and it docked there. No longer recorded.',
-  'Canvas|Used|DockAdd':
-    "Someone clicked a note's anchor on an event-storming board and got the matching note already docked to it. No longer recorded.",
   'Canvas|Used|FollowMe':
     "Someone pinned their canvas to a peer's viewport, following their pan, zoom, and tab until they take it back.",
   'Canvas|Used|FormatPainter':
     "Someone picked up the Format tool, ready to copy one element's style onto others by tapping them.",
   'Canvas|Used|Highlighter':
     'Someone picked up the Highlighter mode, a see-through marker pen for annotating the canvas. No longer recorded: the Highlighter is a Draw tile now, counted when a stroke is added.',
-  'Canvas|Used|InsertBetween':
-    'Someone held Alt and dragged a note into the gap between two notes on an event-storming board (a workshop technique that maps a process as a timeline of sticky notes), and the board made room for it.',
   'Canvas|Used|Isometric':
     'Someone switched the canvas into Isometric view, which renders the canvas at an angle for a 3D-style look.',
-  'Canvas|Used|LanesSettled':
-    'An older event-storming board was opened by someone who can edit it, and its notes that sat between lanes were lined up on the lanes in one undoable step. Once per board.',
   'Canvas|Used|Laser':
     "Someone switched on the Laser pointer, a trail visible to everyone that shows where they're pointing without leaving a mark.",
   'Canvas|Used|Spotlight':
     "Someone switched on Spotlight, which dims the rest of the canvas around wherever they're pointing.",
-  'Canvas|Used|TimelineLanesOff':
-    'Someone turned timeline lanes off for an event-storming board. No longer recorded: lanes are always on now.',
-  'Canvas|Used|TimelineLanesOn':
-    'Someone turned timeline lanes on for an event-storming board. No longer recorded: lanes are always on now.',
-  'Canvas|Used|Undock':
-    'Someone pulled a docked note away from its host on an event-storming board. No longer recorded.',
   'Canvas|Zoomed|DoubleTap':
     'Someone double-tapped the canvas with a finger to zoom in on that spot.',
   'Canvas|Zoomed|Fit': 'Someone tapped "Fit to screen".',
@@ -167,12 +147,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Agenda':
     'Someone pressed a segment on an Agenda element, starting its timer and marking it as the current item.',
   'Element|Changed|IconSwapped': 'Someone dropped an icon onto another icon, swapping its glyph.',
-  'Element|Changed|Animation':
-    'Someone gave a selected element a looping animation, or turned it off.',
-  'Element|Changed|AnimationRepeat':
-    "Someone turned a selected element's animation loop on or off, so it either repeats or plays once and holds.",
-  'Element|Changed|AnimationSpeed':
-    "Someone changed how fast a selected element's animation plays.",
   'Element|Changed|ArrowEnds': 'Someone changed which ends of a selected arrow carry an arrowhead.',
   'Element|Changed|ArrowFlow':
     'Someone gave a selected arrow a flowing animation, such as marching dashes or a travelling dot, or turned it off.',
@@ -247,8 +221,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone set or cleared a layer stack's, pyramid's or cycle's animation (Build, Pulse or Flow), or its speed or repeat.",
   'Element|Changed|RenumberSteps':
     'Someone renumbered every step number on a tab in reading order.',
-  'Element|Changed|StepSequence':
-    "Someone turned on or off playing the step numbers' animations one after another.",
   'Element|Changed|BorderRadius': "Someone changed a selected element's corner rounding.",
   'Element|Changed|BorderStroke': "Someone changed a selected element's border weight.",
   'Element|Changed|BorderStyle':
@@ -294,16 +266,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Changed|Icon': 'Someone placed or repositioned an inline icon on a selected element.',
   'Element|Changed|IconAnimation':
     'Someone gave a selected icon shape a looping animation, or turned it off.',
-  'Element|Changed|TextAnimation':
-    'Someone gave the words of a selected element a text animation, such as typewriter, or turned it off.',
-  'Element|Changed|StickyAnimation':
-    'Someone gave a selected sticky note an animation, such as flutter, or turned it off.',
-  'Element|Changed|DrawingAnimation':
-    'Someone gave a selected drawing or path an animation, such as draw, or turned it off.',
-  'Element|Changed|MediaAnimation':
-    'Someone gave a selected image or video an animation, such as Ken Burns, or turned it off.',
-  'Element|Changed|TableAnimation':
-    'Someone gave a selected table an animation, such as rows cascading in, or turned it off.',
   'Element|Changed|IconSize': "Someone changed a selected Technology icon's tile size.",
   'Element|Changed|Idea-box':
     'Someone added an idea to an Idea Box element, revealed its cards, or cleared it for the next round.',
@@ -529,11 +491,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone asked everyone else in the room to jump to this element's spot on the canvas.",
   'Element|Used|ReactionPad':
     'Someone pressed a Reaction Pad element and played its burst for everyone.',
-  'Element|Searched|Image':
-    "Someone searched for openly licensed pictures in the image picker's Search tab.",
   'Element|Used|ImagePlaceholder':
     "Someone pressed Select Image on an empty image's placeholder to open the image picker.",
-  'Element|Used|ImageSearch': 'Someone attached a picture found with image search to an image.',
   'Element|Used|Video': 'Someone pressed play on a video element.',
   'Element|Voted|': 'Someone cast a dot in a dot vote.',
   'Email|Sent|DocumentJoined':
@@ -572,8 +531,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "The browser's local database did not open in time, so the load carried on without checking for Offline Mode documents.",
   'Error|Warning|SessionToken.TimedOut':
     "A signed-in browser's session did not hand out a token within 10 seconds, so the request gave up instead of waiting forever.",
-  'Error|Warning|AiQuota.BrowserReader':
-    "Someone imported sticky notes from a photo of a wall, and liveplanner's free hosted quota for reading the handwriting had run out, so it fell back to the slower job of reading it in the visitor's own browser.",
   'Facilitator|Changed|Granted':
     'The facilitator of a live session handed the role to someone else.',
   'Facilitator|Changed|Unlocked':
@@ -683,7 +640,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone opened the Explorer's old Activity address, which now opens the Inbox. The Inbox was once called Activity; its visits count under /explorer/inbox.",
   'Page|View|/explorer/inbox': "Someone navigated to the Explorer's Inbox.",
   'Page|View|/explorer/shared': "Someone navigated to the Explorer's Shared with You section.",
-  'Page|View|/explorer/timeline': "Someone navigated to the Explorer's Timeline.",
+  'Page|View|/explorer/timeline':
+    "Someone navigated to the Explorer's Timeline. No longer recorded: the Explorer's Timeline was removed.",
   'Page|View|/features/foundations':
     "Someone visited the marketing site's Foundations features page.",
   'Page|View|/features/simple': "Someone visited the marketing site's Simple features page.",
@@ -955,17 +913,6 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Ended|Vote': 'Someone ended a dot vote on a tab.',
   'Tab|Ended|VoteReview':
     "Someone finished reviewing a dot vote's ranked results, closing out the vote for everyone.",
-  'Tab|Imported|Drawio':
-    'Someone imported a draw.io file: its first page into a tab, any further pages as new tabs.',
-  'Tab|Imported|Excalidraw': 'Someone imported a tab from an Excalidraw file.',
-  'Element|Imported|Excalidraw':
-    'Someone pasted or dropped a drawing copied from Excalidraw onto the canvas.',
-  'Tab|Imported|ExcalidrawPng':
-    'Someone imported a tab from a PNG exported by Excalidraw with its scene embedded.',
-  'Tab|Imported|ExcalidrawSvg':
-    'Someone imported a tab from an SVG exported by Excalidraw with its scene embedded.',
-  'Tab|Imported|MicrosoftWhiteboard':
-    'Someone imported a Microsoft Whiteboard board as a new whiteboard tab (once per board).',
   'Tab|Linked|': 'A tab was linked into another document.',
   'Tab|Loaded|':
     "A tab's content was fetched for viewing (the first tab when a document opens, then each tab switched to).",
@@ -1019,35 +966,34 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Theme|Created|Custom': 'Someone created a custom theme with their own colours.',
   'Theme|Deleted|Custom': 'Someone deleted a custom theme they had created.',
   'Timeline|Changed|Calendar':
-    "Someone switched the Explorer's Timeline from list view to calendar view.",
+    "Someone switched a document's History or a team's Activity from list view to calendar view.",
   'Timeline|Changed|List':
-    "Someone switched the Explorer's Timeline from calendar view to list view.",
+    "Someone switched a document's History or a team's Activity from calendar view to list view.",
   'Timeline|Loaded|More':
-    'Someone clicked "Show More" at the bottom of the Timeline, loading the next page of history.',
+    'Someone clicked "Show More" at the bottom of a document\'s History or a team\'s Activity, loading the next page.',
   'Timeline|Loaded|Retry':
-    'Someone clicked "Try again" after the Timeline failed to load, retrying the read.',
+    'Someone clicked "Try again" after a document\'s History or a team\'s Activity failed to load, retrying the read.',
   'Timeline|Opened|Landing':
-    'Someone arrived at the Explorer with the Timeline as the very section that loaded.',
+    "Someone arrived at the Explorer with the Timeline as the very section that loaded. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Opened|Menu':
-    'Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards.',
+    "Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Opened|Nav':
-    "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See Timeline link.",
+    "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See Timeline link. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Opened|Stack':
-    'Someone expanded a collapsed run of similar Timeline entries (like "12 documents renamed") into its individual cards.',
-  'Timeline|Removed|Entry': 'Someone removed a single entry from their Timeline feed.',
+    'Someone expanded a collapsed run of similar entries (like "12 documents renamed") in a document\'s History or a team\'s Activity into its individual cards.',
+  'Timeline|Removed|Entry':
+    "Someone removed a single entry from their Timeline feed. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Removed|Stack':
-    'Someone removed every entry in a collapsed run from their Timeline feed at once, from its ⋯ menu.',
+    "Someone removed every entry in a collapsed run from their Timeline feed at once, from its ⋯ menu. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Selected|Everyone':
-    "Someone switched the Timeline's filter to show everyone's activity, not just their own.",
+    "Someone switched a document's History or a team's Activity to show everyone's activity, not just their own.",
   'Timeline|Selected|Others':
-    "Someone switched the Timeline's filter to show only other people's activity, hiding their own.",
+    "Someone switched a document's History or a team's Activity to show only other people's activity, hiding their own.",
   'Trash|Opened|Settings': 'Someone opened the Trash from Settings, under Account.',
   'Explorer|Selected|Text':
     'Someone typed words into the Explorer search to narrow a list of documents.',
   'Explorer|Selected|OpensIn':
     'Someone filtered an Explorer list by the editor mode documents open in (Diagram or Draw).',
-  'Explorer|Selected|Kind':
-    'Someone filtered an Explorer list by tab kind (Event Storming boards).',
   'Explorer|Selected|Template':
     'Someone filtered an Explorer list by the template family documents were made from (Retrospective, Kanban).',
   'Explorer|Selected|MadeBy': 'Someone filtered an Explorer list to the documents an AI made.',
@@ -1304,10 +1250,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone reached the end of a Sankey Flows dialog's Show Me tour.",
   'UI|Ended|SankeyFlowsTourSkipped':
     "Someone left a Sankey Flows dialog's Show Me tour before its end.",
-  'UI|Ended|PhotoReviewTourCompleted':
-    "Someone reached the end of the photo import review's Show Me tour.",
-  'UI|Ended|PhotoReviewTourSkipped':
-    "Someone left the photo import review's Show Me tour before its end.",
   'UI|Ended|PagesTourCompleted':
     "Someone reached the end of the Pages tour, or a step's target never appeared and the tour finished early.",
   'UI|Ended|PagesTourSkipped': 'Someone closed the Pages tour before its end.',
@@ -1535,8 +1477,6 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Show Me in an article page's panel, starting its tour of writing and article style.",
   'UI|Started|LogoTour':
     "Someone pressed Show Me in a logo page's panel, starting its tour of the logo tools.",
-  'UI|Started|PhotoReviewTour':
-    'Someone pressed Show Me in the photo import review, starting its tour of checking the notes found on the wall.',
   'UI|Started|TabStyleTour':
     'Someone pressed Show Me in the Tab Style dialog, starting its tour of looks and fine-tuning.',
   'UI|Started|LayerStackTour':
@@ -2365,7 +2305,6 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Copied': 'Someone copied one or more selected elements to the clipboard.',
   'Element|Deleted': 'An element was removed from the canvas.',
   'Element|Duplicated': 'Someone duplicated one or more elements on the canvas.',
-  'Element|Imported': 'Someone pasted or dropped a drawing from another tool onto the canvas.',
   'Element|Grouped': 'A multi-selection was grouped (before groups were removed).',
   'Element|Linked':
     'Someone linked an element to something: another element, a web address, a document or a tab.',
@@ -2506,7 +2445,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Selected':
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
   'Folder|Changed':
-    'Someone chose a default folder: where new documents of one kind (diagrams, whiteboards, Event Storming boards, retrospectives or Kanban boards) land when they pick no place.',
+    'Someone chose a default folder: where new documents of one kind (diagrams, whiteboards, retrospectives or Kanban boards) land when they pick no place.',
   'Folder|Cleared':
     'Someone cleared a default folder, so new documents of that kind land in My Documents again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
@@ -2619,7 +2558,6 @@ export const API_OPERATIONS: Readonly<Record<string, string>> = {
   ListChangeLog: "listing a document's since-removed change history",
   ListCustomThemes: "listing an account's saved custom themes",
   ListFolders: "listing an account's folders",
-  ListImages: 'listing the images saved to an account',
   ListShareLinks: "listing a document's share links",
   ListShared: 'listing documents shared with a visitor',
   ListTeamInvites: "listing an account's pending team invites",

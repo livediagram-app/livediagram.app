@@ -146,7 +146,6 @@ format treats `type` as an open string.
 - **Visual export:** an ellipse in the element's fill and stroke; no glyph, no note (D88) [QD11].
 - **Markdown export:** listed under Elements with `(annotation)` only when `label` is set, which no
   editor path does [QD11].
-- **Excalidraw export:** an ellipse (`excalidraw-export.ts:147`), without the note.
 
 ## Errors and edge cases
 

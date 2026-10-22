@@ -68,8 +68,8 @@ export const categories: Category[] = [
     slug: 'about',
     title: 'About liveplanner',
     description:
-      'Get to know liveplanner: what it is, who it helps, and the ideas behind a free, open canvas.',
-    articleCount: 4,
+      'Get to know liveplanner: what it is, who it helps, and the ideas behind a free planning space with no trackers.',
+    articleCount: 3,
   },
   {
     slug: 'getting-started',
@@ -97,14 +97,7 @@ export const categories: Category[] = [
     title: 'Privacy and Security',
     description:
       'Know exactly how your documents are stored, what we collect, and how to keep shared links safe.',
-    articleCount: 5,
-  },
-  {
-    slug: 'self-hosting',
-    title: 'Self-Hosting',
-    description:
-      'Run liveplanner on your own infrastructure, with the full feature set, free and open source.',
-    articleCount: 3,
+    articleCount: 4,
   },
   {
     slug: 'developers',
@@ -157,7 +150,7 @@ export const categories: Category[] = [
     title: 'Explorer',
     description:
       'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
-    articleCount: 18,
+    articleCount: 14,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
   },
@@ -174,7 +167,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on the canvas: every element and palette setting explained.',
-    articleCount: 32,
+    articleCount: 31,
     kind: 'feature',
     groups: ['Everyday Elements', 'Diagram Kits', 'Workshop Kits', 'Palette Settings'],
   },
@@ -183,7 +176,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 27,
+    articleCount: 26,
     kind: 'feature',
     groups: [
       'Basics',
@@ -213,8 +206,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, Markdown import, and cleanup.',
-    articleCount: 5,
+      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, and cleanup.',
+    articleCount: 4,
     kind: 'feature',
   },
   {
@@ -290,8 +283,7 @@ export const articles: Article[] = [
     title: 'Quick Controls',
     description:
       'The always-available Search, Settings and appearance controls at the end of the bottom bar.',
-    keywords:
-      'corner buttons actions settings search github bottom bar cluster appearance light dark',
+    keywords: 'corner buttons actions settings search bottom bar cluster appearance light dark',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -346,17 +338,8 @@ export const articles: Article[] = [
   {
     slug: 'why-liveplanner',
     title: 'Why Use liveplanner?',
-    description: 'Free, open source, no sign-in wall, real-time collaboration. Here is why.',
+    description: 'Free, no trackers, no sign-in wall, real-time collaboration. Here is why.',
     keywords: 'benefits reasons comparison alternatives features advantages',
-    category: 'About liveplanner',
-    categorySlug: 'about',
-    parentSlug: 'about',
-  },
-  {
-    slug: 'what-is-open-source',
-    title: 'What is Open Source?',
-    description: 'What open source means, and what liveplanner being MIT-licensed gives you.',
-    keywords: 'mit license free code github oss public repository',
     category: 'About liveplanner',
     categorySlug: 'about',
     parentSlug: 'about',
@@ -501,7 +484,7 @@ export const articles: Article[] = [
     title: 'Exporting Diagrams',
     description: 'Get a tab out as an image, a PDF or a portable file, or embed a live view.',
     keywords:
-      'export download png svg pdf image save picture screenshot json mermaid markdown excalidraw embed backup',
+      'export download png svg pdf image save picture screenshot json markdown csv embed backup',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
   },
@@ -597,10 +580,10 @@ export const articles: Article[] = [
   },
   {
     slug: 'plan-sheets-images',
-    title: 'Plan Items, Sheets and Images',
-    description: 'API examples for Plan cards, Sheets, images, pages, copies and themes.',
+    title: 'Plan Items, Sheets and Pages',
+    description: 'API examples for Plan cards, Sheets, pages, copies and themes.',
     keywords:
-      'items cards plan board card types sheets cells spreadsheet images upload pages pages article render svg copy shape libraries custom themes api',
+      'items cards plan board card types sheets cells spreadsheet pages article render svg copy custom themes api',
     category: 'Developers',
     categorySlug: 'developers/working-with-documents',
     parentSlug: 'working-with-documents',
@@ -617,9 +600,9 @@ export const articles: Article[] = [
     slug: 'cli',
     title: 'The liveplanner CLI',
     description:
-      'Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and self-hosting.',
+      'Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and profiles.',
     keywords:
-      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push self-host',
+      'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push profile',
     category: 'Developers',
     categorySlug: 'developers',
   },
@@ -743,57 +726,6 @@ export const articles: Article[] = [
     categorySlug: 'privacy-and-security',
     parentSlug: 'privacy-and-security',
   },
-  {
-    slug: 'open-source-trust',
-    title: 'Open Source and Trust',
-    description: 'The code is public and MIT-licensed. What that means for you.',
-    keywords: 'github mit audit code public license transparent inspect',
-    category: 'Privacy and Security',
-    categorySlug: 'privacy-and-security',
-    parentSlug: 'privacy-and-security',
-  },
-
-  // ---- Self-Hosting ----
-  {
-    slug: 'self-hosting-overview',
-    title: 'Self-Hosting Overview',
-    description: 'What it takes to run your own liveplanner, and why you might.',
-    keywords: 'host yourself own server on premise deploy install run',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'deploying-liveplanner',
-    title: 'Deploying liveplanner',
-    description: 'The apps, the Cloudflare stack, and how a deploy runs.',
-    keywords:
-      'cloudflare workers deploy install setup infrastructure d1 github actions router mcp wrangler',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'configuration',
-    title: 'Configuration and Optional Auth',
-    description: 'Environment variables, optional Clerk auth, and guest-only mode.',
-    keywords:
-      'env vars environment clerk setup secrets settings configure resend email ai openai mcp telemetry r2',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting',
-    parentSlug: 'self-hosting',
-  },
-  {
-    slug: 'mcp-server',
-    title: 'The MCP Server on a Self-Hosted Instance',
-    description: 'Set up the MCP server for AI tools on your own deployment.',
-    keywords:
-      'mcp server worker kv namespace consent base url oauth issuer mcp origin self host ai claude connector',
-    category: 'Self-Hosting',
-    categorySlug: 'self-hosting/configuration',
-    parentSlug: 'configuration',
-  },
-
   // ---- Troubleshooting ----
   {
     slug: 'document-not-loading',
@@ -953,20 +885,10 @@ export const articles: Article[] = [
     description:
       'Page, Text, Sticky note, Annotation and Pointer note: the elements made of words.',
     keywords:
-      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader event storming domain event command actor policy read model aggregate hotspot brandolini ddd workshop notation',
+      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
-  },
-  {
-    slug: 'event-storming',
-    title: 'Event Storming Elements',
-    description: 'The workshop note grammar: eight sticky kinds, each colour a meaning.',
-    keywords:
-      'event storming eventstorming domain event command actor policy read model external system aggregate hotspot brandolini ddd workshop notation sticky colours colors orange blue purple big picture process design stage timeline lanes grid snap photo camera wall import add from photo',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Diagram Kits',
   },
   {
     slug: 'build',
@@ -1004,7 +926,7 @@ export const articles: Article[] = [
     title: 'Components',
     description: 'Cards, badges, step numbers and web components: banners, callouts and more.',
     keywords:
-      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections hero header masthead nav navigation website web page process steps pages mode',
+      'banner callout stat row stat rows kpi badge step number block prebuilt widgets cards sections header masthead nav navigation website web page process steps pages mode',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1439,17 +1361,6 @@ export const articles: Article[] = [
     parentSlug: 'plan-mode',
   },
   {
-    slug: 'event-storming-boards',
-    title: 'Event Storming Boards',
-    description: 'A board built for the workshop: the notation, paper-like notes, one wall.',
-    keywords:
-      'event storming eventstorming board workshop brandolini ddd domain driven design session facilitator wall sticky notes paper big picture process modelling modeling software design pass timeline domain event command aggregate hotspot insert between gap make room slot squeeze in add in the middle reorder shuffle push right alt option modifier hold key move a note rearrange resequence capitals caps uppercase upper case all caps shouting letter case marker font typeface handwriting permanent marker sharpie lane lanes timeline grid rows columns stagger staggered snap align rhythm gap gutter spacing space between line up lined up neighbour neighbor edges next note add beside quick add neighbouring note in front on top stacking order actor hotspot photo camera wall picture ocr scan import read transcribe handwriting capture snapshot draft review accept discard add notes already here duplicate matched change kind re-kind recolour recolor wrong colour misread fix words paste drop image detect stickies zoom zoom in magnify enlarge pan scroll close up untick missed draw box pinch mouse wheel middle click middle mouse button move resize delete remove select handle corner wrong box kind colour always on a lane between lanes free placement ctrl cmd arrow keys nudge up down paste at pointer paste here copy duplicate staggered tidy line up older board settle undo',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
-    parentSlug: 'templates',
-  },
-  {
     slug: 'using-tabs',
     title: 'Tabs',
     description: 'Multiple boards in one document: add, name, reorder, and switch between them.',
@@ -1505,9 +1416,9 @@ export const articles: Article[] = [
     slug: 'import-tabs',
     title: 'Importing a Tab',
     description:
-      'Import JSON, a Mermaid diagram (flowchart, state, or ER), a Markdown outline, an Excalidraw scene or PNG / SVG export, or a draw.io diagram (a tab per page) into the active tab, or paste a drawing copied in Excalidraw onto the canvas.',
+      'Import a liveplanner tab exported as JSON into the active tab, by pasting it or picking the file.',
     keywords:
-      'import json mermaid markdown excalidraw drawio draw.io diagrams.net mxfile pages file files paste upload load convert migrate png svg image images picture photo gallery placeholder embedded scene copy clipboard ctrl v cmd v drag drop whiteboard new document explorer import from',
+      'import json file files paste upload load restore backup copy clipboard replace tab export round trip',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1515,9 +1426,8 @@ export const articles: Article[] = [
     slug: 'export-tabs',
     title: 'Exporting a Tab',
     description:
-      'Export the active tab or a selection as JSON, a Mermaid flowchart, Markdown, an Excalidraw scene, PNG, SVG, or PDF: copy the text formats or set image options.',
-    keywords:
-      'export download save png svg pdf gif animated json mermaid markdown excalidraw image picture',
+      'Export the active tab or a selection as JSON, Markdown, CSV, PNG, SVG, or PDF: copy the text formats or set image options.',
+    keywords: 'export download save png svg pdf json markdown csv image picture',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1587,17 +1497,6 @@ export const articles: Article[] = [
     group: 'Your Library',
   },
   {
-    slug: 'shape-libraries',
-    title: 'Shape libraries',
-    description:
-      "Your own named sets of reusable shapes from draw.io, placed from the palette's My shapes and managed on the Explorer page.",
-    keywords:
-      'shape library libraries my shapes custom shapes reusable stencil stencils preset presets scratchpad drawio draw.io mxlibrary uml icons notation import palette rename delete',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
-  },
-  {
     slug: 'tags',
     title: 'Tags',
     description:
@@ -1609,34 +1508,12 @@ export const articles: Article[] = [
     group: 'Your Library',
   },
   {
-    slug: 'drawio-import',
-    title: 'Importing draw.io files',
-    description:
-      'Bring draw.io diagrams across from the Explorer, files or a whole folder, each as its own document with a tab per page.',
-    keywords:
-      'drawio draw.io diagrams.net diagrams net mxfile import migrate migration move google drive drive save no extension json export folder files pages tabs png svg library libraries preset scratchpad confluence vs code desktop',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
-  },
-  {
-    slug: 'microsoft-whiteboard-import',
-    title: 'Importing Microsoft Whiteboard boards',
-    description:
-      'Bring Microsoft Whiteboard boards across from the Explorer, each as its own dated document: ink with pressure, colours, notes, text, shapes and images.',
-    keywords:
-      'microsoft whiteboard ms whiteboard import migrate migration move retire retired retirement deleted export board boards folder zip ink pen strokes pressure sticky notes personal account keep save rescue',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
-  },
-  {
     slug: 'explorer-panel',
     title: 'Explorer Panel',
     description:
       'The compact in-editor Explorer: the same Overview, Spaces and More, opening documents in place.',
     keywords:
-      'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor menu button hamburger popover open more menu new share export github',
+      'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor menu button hamburger popover open more menu new share export',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1653,12 +1530,12 @@ export const articles: Article[] = [
     group: 'Your Library',
   },
   {
-    slug: 'timeline',
+    slug: 'home',
     title: 'Home',
     description:
-      'The Explorer\u2019s landing view and the Timeline: what you use most and last, and what happened.',
+      'The Explorer\u2019s landing view: what you use most and last, what happened, and every history.',
     keywords:
-      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand see timeline timeline all activity landing start feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
+      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand landing start banner greeting activity history document history team activity whats new latest events log notifications updates recent changes calendar month view stacked grouped collapse day colour color red amber green unread unseen new badge since last visit who did what other people filter local time board sheet dashboard form',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1708,7 +1585,7 @@ export const articles: Article[] = [
     title: 'Default Folders',
     description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
     keywords:
-      'default folder where new documents go automatic placement file whiteboards retrospectives kanban event storming diagrams use as default settings documents new document wizard pages plan',
+      'default folder where new documents go automatic placement file whiteboards retrospectives kanban diagrams use as default settings documents new document wizard pages plan',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
@@ -1719,7 +1596,7 @@ export const articles: Article[] = [
     description:
       'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
-      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw kind event storming template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan',
+      'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1743,15 +1620,6 @@ export const articles: Article[] = [
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
-  },
-  {
-    slug: 'image-gallery',
-    title: 'Image Gallery',
-    description: 'Every image you have uploaded, with where each is used and how to delete them.',
-    keywords: 'uploads pictures photos assets manage delete media guest upload used unused',
-    category: 'Explorer',
-    categorySlug: 'explorer',
-    group: 'Assets and Imports',
   },
   {
     slug: 'themes-library',
@@ -1814,14 +1682,6 @@ export const articles: Article[] = [
     description: 'Optional Ask and Clean helpers on the canvas.',
     keywords:
       'assistant ask clean generate artificial intelligence helper suggest question summarise summarize typo llm',
-    category: 'Tools',
-    categorySlug: 'tools',
-  },
-  {
-    slug: 'markdown-import',
-    title: 'Markdown Import',
-    description: 'Turn a Markdown outline into a themed tree diagram.',
-    keywords: 'outline text to diagram tree convert bullet list paste',
     category: 'Tools',
     categorySlug: 'tools',
   },
@@ -1933,9 +1793,9 @@ export const articles: Article[] = [
   {
     slug: 'animations',
     title: 'Animating Elements',
-    description: 'Animate shapes, text, notes, drawings, media, tables, arrows, and icons.',
+    description: 'Send flow along arrows and animate icons, charts, progress bars and ratings.',
     keywords:
-      'animate animation motion pulse loop effects moving flow wiggle typewriter typing reveal text words cascade highlight underline flutter sticky draw trace ken burns zoom pan photo table rows',
+      'animate animation motion pulse loop effects moving flow spin icon chart progress rating',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Styling Elements',
@@ -2119,16 +1979,6 @@ export const articles: Article[] = [
     title: 'Polygon',
     description: 'Place clean, point-by-point outlines and polylines with the Polygon tool.',
     keywords: 'polygon polyline vertex points outline zone region draw straight edges corners',
-    category: 'Palette',
-    categorySlug: 'palette/tools',
-    parentSlug: 'tools',
-  },
-  {
-    slug: 'images',
-    title: 'Images',
-    description: 'Add images to the canvas by uploading, from your gallery, or by searching.',
-    keywords:
-      'picture photo upload png jpg insert logo screenshot search find stock free openverse creative commons licence license credit attribution',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',

@@ -17,10 +17,8 @@ export function isFixedSizeShape(kind: string): boolean {
 }
 
 // The element-level answer to "can this be resized?" — true for the
-// fixed-size shape KINDS above, and for any element stamped `fixedSize` at
-// creation (event-storming notes, docs/specs/021-event-storming/event-storming.md: the workshop stationery has
-// fixed silhouettes). Structural param so leaf callers don't need the full
-// Element union.
+// fixed-size shape KINDS above, and for any element stamped `fixedSize`.
+// Structural param so leaf callers don't need the full Element union.
 export function isFixedSizeElement(el: {
   type: string;
   shape?: string;

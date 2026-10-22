@@ -43,11 +43,8 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'placement_defaults', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'user_preferences', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'custom_themes', column: 'owner_id', migrate: { kind: 'moves' } },
-  // Shape libraries (docs/specs/013-workspace/shape-libraries.md): guests have them too.
-  { table: 'shape_libraries', column: 'owner_id', migrate: { kind: 'moves' } },
   // Explorer Home's opens (docs/specs/013-workspace/explorer-home.md): guests open documents too.
   { table: 'document_opens', column: 'owner_id', migrate: { kind: 'moves' } },
-  { table: 'images', column: 'owner_id', migrate: { kind: 'moves' } },
   { table: 'participants', column: 'id', migrate: { kind: 'moves' } },
   { table: 'timeline_events', column: 'actor_id', migrate: { kind: 'moves' } },
   {
@@ -85,6 +82,10 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'workbench_tickets', column: 'owner_id', migrate: { kind: 'account-only' } },
   { table: 'workbench_sessions', column: 'owner_id', migrate: { kind: 'account-only' } },
 ];
+
+// Tables the migrations still create but no code reads or writes: the image gallery's, retired with
+// image uploads and dropped when the migrations are squashed. They hold no rows to delete or move.
+const RETIRED_TABLES = ['images'];
 
 // Column names that mark an owner-keyed column wherever they appear.
 const OWNER_COLUMN_NAMES = ['owner_id', 'user_id', 'sender_id'];
@@ -182,25 +183,6 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     updated_at: T0,
   });
   insert(sql, 'document_tags', { tag_id: `tag-${id}`, document_id: peerDocument, created_at: T0 });
-  insert(sql, 'shape_libraries', {
-    id: `l-${id}`,
-    owner_id: id,
-    name: 'Team icons',
-    source: 'drawio',
-    items: '[]',
-    created_at: T0,
-    updated_at: T0,
-  });
-  insert(sql, 'images', {
-    id: `i-${id}`,
-    owner_id: id,
-    content_type: 'image/png',
-    byte_size: 1,
-    width: 1,
-    height: 1,
-    sha256: `sha-${id}`,
-    created_at: T0,
-  });
   insert(sql, 'timeline_events', {
     id: `e-${id}`,
     actor_id: id,
@@ -304,7 +286,8 @@ function schemaOwnerColumns(sql: DatabaseSync): string[] {
   const tables = sql
     .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")
     .all()
-    .map((t) => String(t.name));
+    .map((t) => String(t.name))
+    .filter((t) => !RETIRED_TABLES.includes(t));
   return tables.flatMap((table) =>
     sql
       .prepare(`SELECT name FROM pragma_table_info(?)`)
@@ -483,29 +466,6 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
     expect(row.created_at).not.toBe(T0);
   });
 
-  it('renames a guest library whose name the account already uses', async () => {
-    const { env, sql } = arrange();
-    insert(sql, 'shape_libraries', {
-      id: 'l-account',
-      owner_id: ACCOUNT,
-      name: 'team ICONS',
-      source: 'drawio',
-      items: '[]',
-      created_at: T0 - 5,
-      updated_at: T0 - 5,
-    });
-
-    await migrateOwnerId(env, GUEST, ACCOUNT);
-
-    const libraries = sql
-      .prepare('SELECT id, owner_id, name FROM shape_libraries ORDER BY id')
-      .all();
-    expect(libraries.map((l) => ({ ...l }))).toEqual([
-      { id: `l-${GUEST}`, owner_id: ACCOUNT, name: 'Team icons (2)' },
-      { id: 'l-account', owner_id: ACCOUNT, name: 'team ICONS' },
-    ]);
-  });
-
   it('is a no-op on a second run', async () => {
     const { env, sql } = arrange();
     await migrateOwnerId(env, GUEST, ACCOUNT);
@@ -515,7 +475,6 @@ describe('migrateOwnerId moves every guest-holdable row (docs/specs/015-api/api.
       documents: 0,
       folders: 0,
       shared: 0,
-      images: 0,
     });
     expect(sql.prepare('SELECT * FROM favourites ORDER BY document_id').all()).toEqual(before);
   });

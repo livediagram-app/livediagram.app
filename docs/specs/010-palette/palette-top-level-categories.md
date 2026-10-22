@@ -42,14 +42,14 @@ tools plus Frame). The **User / actor** tile was deleted outright — see below.
 **The category dropdown gets bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):
 
-| Band            | Categories                                                                                                                                                                                |
-| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| _(no heading)_  | Popular, full width                                                                                                                                                                       |
-| **Common**      | Shapes, My shapes (only with a [shape library](../013-workspace/shape-libraries.md) to place), Write, Draw                                                                                |
-| **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices, Event Storming (on an event-storming board only) |
-| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                                                                        |
-| **Dynamic**     | Data (Workshop)                                                                                                                                                                           |
-| **Collaborate** | Ask, Tools, Record, Navigate                                                                                                                                                              |
+| Band            | Categories                                                                                                                              |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| _(no heading)_  | Popular, full width                                                                                                                     |
+| **Common**      | Shapes, Write, Draw                                                                                                                     |
+| **Structure**   | Diagrams (Diagram), Layout (Diagram, Workshop), Components, Concepts ([Concept graphics](../009-elements/concept-graphics.md)), Devices |
+| **Decorate**    | Icons, Stickers, Technology, Media                                                                                                      |
+| **Dynamic**     | Data (Workshop)                                                                                                                         |
+| **Collaborate** | Ask, Tools, Record, Navigate                                                                                                            |
 
 ## Why flatten
 

@@ -11,18 +11,6 @@ import { toGallery, type GalleryTemplate } from '@/lib/template-gallery';
 export const SECTION_TEMPLATES_MAX = 9;
 
 export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKind[]>> = {
-  collaboration: ['retrospective', 'brainstorm', 'workshop-board', 'affinity-map', 'crazy-eights'],
-  diagrams: [
-    'flowchart',
-    'system-architecture',
-    'mindmap',
-    'orgchart',
-    'sequence-diagram',
-    'er-diagram',
-    'swimlane',
-    'cloud-architecture',
-    'decision-tree',
-  ],
   plan: [
     'kanban',
     'project-planner',
@@ -32,7 +20,7 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'hiring-pipeline',
     'content-calendar',
     'weekly-planner',
-    'gantt',
+    'blank-plan',
   ],
   sheets: [
     'budget-planner',
@@ -53,6 +41,14 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'feature-request-form',
     'job-application-form',
     'blank-form',
+  ],
+  collaboration: [
+    'team-retro',
+    'feedback-board',
+    'product-launch',
+    'project-planner',
+    'weekly-planner',
+    'okrs',
   ],
 };
 

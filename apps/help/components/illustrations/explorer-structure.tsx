@@ -15,16 +15,7 @@ import { MenuCard } from './toolbar-layout';
 // --- Local parts -------------------------------------------------------------
 
 type GlyphKind =
-  | 'home'
-  | 'inbox'
-  | 'timeline'
-  | 'shared'
-  | 'folder'
-  | 'team'
-  | 'plus'
-  | 'library'
-  | 'trash'
-  | 'doc';
+  'home' | 'inbox' | 'shared' | 'folder' | 'team' | 'plus' | 'library' | 'trash' | 'doc';
 
 /** A 14x14 sidebar glyph centred on the origin. */
 function Glyph({ kind, active = false }: { kind: GlyphKind; active?: boolean }) {
@@ -45,16 +36,6 @@ function Glyph({ kind, active = false }: { kind: GlyphKind; active?: boolean }) 
           <path d="M-6 1 V4.5 a1.5 1.5 0 0 0 1.5 1.5 h9 a1.5 1.5 0 0 0 1.5 -1.5 V1" />
           <path d="M-6 1 h3 l1 1.8 h4 l1 -1.8 h3" />
           <path d="M-2.5 -3.5 L-0.8 -1.8 L2.8 -5.5" />
-        </g>
-      );
-    // The Timeline: a spine with what landed against it.
-    case 'timeline':
-      return (
-        <g {...common}>
-          <path d="M-4 -6 V6" />
-          <circle cx={-4} cy={-3} r={1.3} />
-          <circle cx={-4} cy={3} r={1.3} />
-          <path d="M-1 -3 H5 M-1 3 H3 M-1 0 H2" />
         </g>
       );
     case 'shared':
@@ -580,8 +561,7 @@ export function ExplorerPageLayout() {
       </GroupTitle>
       <TreeRow x={sx} y={40} w={sw} label="Home" glyph="home" />
       <TreeRow x={sx} y={58} w={sw} label="Inbox" glyph="inbox" />
-      <TreeRow x={sx} y={76} w={sw} label="Timeline" glyph="timeline" />
-      <TreeRow x={sx} y={94} w={sw} label="Shared With Me" glyph="shared" count={3} />
+      <TreeRow x={sx} y={76} w={sw} label="Shared With Me" glyph="shared" count={3} />
       <GroupTitle x={sx + 12} y={126}>
         SPACES
       </GroupTitle>
@@ -729,8 +709,7 @@ export function ExplorerPanelLayout() {
         </GroupTitle>
         <TreeRow x={px + 2} y={138} w={railW - 6} label="Home" glyph="home" />
         <TreeRow x={px + 2} y={156} w={railW - 6} label="Inbox" glyph="inbox" />
-        <TreeRow x={px + 2} y={174} w={railW - 6} label="Timeline" glyph="timeline" />
-        <TreeRow x={px + 2} y={192} w={railW - 6} label="Shared" glyph="shared" />
+        <TreeRow x={px + 2} y={174} w={railW - 6} label="Shared" glyph="shared" />
         <GroupTitle x={px + 14} y={224}>
           SPACES
         </GroupTitle>
@@ -978,15 +957,8 @@ export function UseAsDefaultScene() {
   const my = 16;
   const mw = 156;
   const items = ['Rename', 'New Subfolder', 'Change Folder', 'Use as Default for'];
-  const kinds = [
-    'Diagrams',
-    'Whiteboards',
-    'Plan boards',
-    'Event Storming boards',
-    'Retrospectives',
-    'Kanban boards',
-  ];
-  const ticked = new Set(['Whiteboards', 'Retrospectives']);
+  const kinds = ['Projects', 'Retrospectives', 'Kanban boards'];
+  const ticked = new Set(['Retrospectives']);
   const fx = 180;
   const fy = 72;
   const fw = 222;
@@ -1055,7 +1027,7 @@ export function UseAsDefaultScene() {
         x={fx}
         y={fy}
         width={fw}
-        height={170}
+        height={130}
         rx={8}
         className="fill-white stroke-slate-200"
         strokeWidth={1.5}

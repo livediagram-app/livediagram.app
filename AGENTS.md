@@ -173,9 +173,9 @@ The root [`README.md`](README.md) and the [`docs/`](docs/) folder (indexed in [`
 Treat them as part of the change, not an afterthought:
 
 - After any change, check whether it makes the README or a `docs/` file **incorrect** (commands, ports, file paths, env vars, app/package names, architecture, deploy steps) or **lacking key information** (a new app, package, env var, command, route, or workflow that a reader would now expect to find). If so, update the affected doc in the **same change** as the code.
-- Adding or removing an app, package, env var, command, route, or build/deploy step is a strong signal that `README.md`, `docs/development/architecture.md`, `docs/development/local-development.md`, and `docs/operations/self-hosting.md` may need a matching edit.
+- Adding or removing an app, package, env var, command, route, or build/deploy step is a strong signal that `README.md`, `docs/development/architecture.md`, and `docs/development/local-development.md` may need a matching edit.
 - Don't let docs drift: an out-of-date doc is worse than a missing one. If you can't fully update it now, note the gap explicitly rather than leaving a confidently wrong instruction.
-- Specs (`docs/specs/`) remain the source of truth for product decisions; `docs/` explains how to understand, run, and contribute to the code. Keep both honest.
+- Specs (`docs/specs/`) remain the source of truth for product decisions; `docs/` explains how to understand, run, and change the code. Keep both honest.
 
 ## Help centre articles must stay registered
 
@@ -186,7 +186,7 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
 - **Mode** is how a tab is worked on (Diagram, Draw); the tab's, shared by everyone on it, never a type of document or tab.
-- **Kind** is what a tab is; only Event Storming differs from the general diagram tab.
+- **Kind** is what a tab is: the general diagram tab, or one of Plan's Board, Sheet, Dashboard and Form tabs.
 - **Template** is what a document was made from; a template family (Retrospectives, Kanban) is never a kind.
 - **This Browser** names a document saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
 
@@ -222,8 +222,6 @@ packages/
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
   diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
   render-png/     # SVG to PNG with resvg (wasm) + Inter, for MCP previews, share cards and the CLI's renders
-  sticky-vision/  # finds sticky notes in a wall photo (classical CV, no DOM) for the event-storming photo import
-  sticky-model/   # the learned sticky-boundary model's browser-safe parts (cues, decode) + its training scripts
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles
   source-ast/   # parses the repo's own TypeScript with TypeScript 7, for the static guards that read code
@@ -244,18 +242,18 @@ Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestr
 - Built: see [Build phase](docs/specs/005-project-roadmap/prototype-scope.md#where-we-are-now).
 - Still ahead: see [Next and Later](docs/specs/005-project-roadmap/prototype-scope.md#next).
 
-## Open source
+## Licence and distribution
 
-See [Open source + distribution](docs/specs/002-project-scope/open-source-and-business-model.md).
+See [Business model + licence](docs/specs/002-project-scope/business-model-and-licence.md).
 
-- The codebase is **MIT-licensed** and **publicly viewable**. Anyone can self-host.
-- A free hosted version runs alongside at liveplanner.app. **No paid tier and no plan to introduce one.**
-- Don't add code that breaks self-hosting (no required SaaS calls, no license checks gating the core editor). Clerk auth is optional: when unset the api worker and live frontend degrade to pure-guest mode.
+- The codebase is **proprietary** (all rights reserved, every `package.json` is `UNLICENSED`) and its source is **not public**. Never add open-source, contributing, forking or self-hosting wording, or links to the repository, to anything users see.
+- liveplanner is free to use at liveplanner.app. **No paid tier and no plan to introduce one.** No trackers, no ads.
+- Optional integrations degrade, never break: Clerk auth is optional, and when unset the api worker and live frontend degrade to pure-guest mode.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
 ## Secrets policy
 
-See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **Repo is public — no secrets in source. Ever.**
+See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **No secrets in source. Ever.**
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
 - Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. Clerk publishable key).
@@ -326,7 +324,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 - Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app — it will break Cloudflare Pages deploys.
 - Put any logic shared by two or more apps in `packages/` rather than copying it.
 - **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/live/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.
-- This is a public repo, rely on CI rather than running full E2E locally before a PR
+- Rely on CI rather than running full E2E locally before a PR
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.
 - The router worker (`apps/router`) holds **no business logic** — only routing. If you're tempted to add logic to it, that logic belongs in the service it forwards to.

@@ -175,7 +175,7 @@ export async function probeDispatch(
   // answering "not configured" for every path: telemetry on, a model key set.
   const env = {
     DB: trap('DB'),
-    IMAGES: trap('IMAGES'),
+    SNAPSHOTS: trap('SNAPSHOTS'),
     DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
     TELEMETRY_ENABLED: 'true',
     OPENAI_API_KEY: 'probe-key',

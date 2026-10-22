@@ -1,5 +1,5 @@
 // The palette's row-style categories (docs/specs/010-palette/palette-top-level-categories.md):
-// Write, Draw, Build, Components, Media and Data render as a column of rows, each a
+// Write, Draw, Build, Components and Data render as a column of rows, each a
 // glyph chip, the tile's caption, a one-line blurb and, where it has one, its key.
 // The captions, blurbs and keys are copied from PALETTE_TILES
 // (apps/live/components/palette/palette-tile-defs.tsx), so the picture reads the
@@ -10,7 +10,7 @@ import { Scene, Panel, Label } from './primitives';
 type Row = { caption: string; blurb: string; key?: string };
 
 // One entry per row-style category, in the order the editor lists its tiles.
-// Components and Media end in a collapsed group row (Web Elements, Embed).
+// Components ends in a collapsed group row (Web Elements).
 const CATEGORY_ROWS: Record<string, Row[]> = {
   Write: [
     { caption: 'Page', blurb: 'A paper-shaped page for prose' },
@@ -43,10 +43,6 @@ const CATEGORY_ROWS: Record<string, Row[]> = {
     { caption: 'Progress', blurb: 'How far along something is' },
     { caption: 'Donut', blurb: 'The same, as a donut meter' },
     { caption: 'Rating', blurb: 'A score out of five stars' },
-  ],
-  Media: [
-    { caption: 'Image', blurb: 'Place an uploaded picture', key: '9' },
-    { caption: 'Avatar', blurb: 'A circular photo of a person' },
   ],
 };
 

@@ -127,7 +127,7 @@ curl -X POST https://liveplanner.app/api/documents/$DOC/items/$ITEM/comments/reo
   -H "Authorization: Bearer $TOKEN"
 ```
 
-Each answers with the card as stored and the item store's new revision (`{ "item": …, "rev": 42 }`); adding a comment also returns its `commentId`. Resolving a resolved thread, or reopening an open one, answers `204`. A card holds up to 200 comments; past that, adding answers `413 comments_full`. `DELETE …/items/$ITEM/comments/$COMMENT` deletes your own comment, and someone with edit access can delete any. See [Cards](/help/canvas/plan-mode/cards/) for the card's comment panel, and [Plan Items, Sheets and Images](/help/developers/working-with-documents/plan-sheets-images/) for the rest of the item API.
+Each answers with the card as stored and the item store's new revision (`{ "item": …, "rev": 42 }`); adding a comment also returns its `commentId`. Resolving a resolved thread, or reopening an open one, answers `204`. A card holds up to 200 comments; past that, adding answers `413 comments_full`. `DELETE …/items/$ITEM/comments/$COMMENT` deletes your own comment, and someone with edit access can delete any. See [Cards](/help/canvas/plan-mode/cards/) for the card's comment panel, and [Plan Items, Sheets and Pages](/help/developers/working-with-documents/plan-sheets-images/) for the rest of the item API.
 
 ## Show What Your Agent Is Doing
 

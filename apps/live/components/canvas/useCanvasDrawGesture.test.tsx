@@ -31,8 +31,6 @@ function setup(initial: Partial<Props> = {}, elements: Element[] = []) {
         viewportZoom: p.viewportZoom,
         isPinchingRef: { current: false },
         onCommitDraw: p.onCommitDraw,
-        stampAt: null,
-        showStamp: vi.fn(),
       }),
     {
       initialProps: {

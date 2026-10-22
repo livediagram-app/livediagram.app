@@ -9,13 +9,6 @@ import { checkMotionBudget, formatViolations } from '@liveplanner/tailwind-confi
 const CANVAS_STYLESHEETS = [
   'app/canvas-motion.css',
   'app/collab-cards.css',
-  // The animation sets (docs/specs/028-animation/element-animations.md).
-  'app/motion-shape.css',
-  'app/motion-text.css',
-  'app/motion-sticky.css',
-  'app/motion-drawing.css',
-  'app/motion-media.css',
-  'app/motion-table.css',
   // A form cover's animated backgrounds (docs/specs/030-forms/forms.md "The form card, top to bottom").
   'app/motion-page.css',
   // The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md).

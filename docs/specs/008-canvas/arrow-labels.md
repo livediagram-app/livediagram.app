@@ -64,9 +64,8 @@ A label is never wider than a cap, which is wider along a horizontal run than ac
 Explicit line breaks the author types are kept, and each explicit line still wraps to the width.
 
 An arrow may carry its own **label width** (`labelMaxWidth`, px), which replaces both caps: the
-label wraps at that width and no narrower, wherever it sits. Nothing in the editor sets it; imports
-do, so a caption the source drew on one long line keeps that line
-([draw.io import](../020-import-export/drawio-import.md) "Labels"). The open-run limit still applies
+label wraps at that width and no narrower, wherever it sits. Nothing in the editor sets it, so a caption
+written on one long line keeps that line. The open-run limit still applies
 to where the label may sit, not to its width.
 
 ## Knockout

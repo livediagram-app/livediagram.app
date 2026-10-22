@@ -39,7 +39,7 @@ export const WELCOME_COPY = {
   greeting: 'Welcome to liveplanner.',
   question: 'What are you making first?',
   lead: 'Pick a starting point, or search the templates. Whatever you make lands here, ready to pick up again.',
-  pillFree: 'Free and open source',
+  pillFree: 'Free, no trackers',
   pillGuest: 'No sign-up to start',
   pillSignedIn: 'Saved to your account',
   searchPlaceholder: 'Search templates',
@@ -52,7 +52,4 @@ export const WELCOME_COPY = {
   signInTitle: 'Nothing here yet? Sign in',
   signInLine: 'If you have used liveplanner before, sign in and your documents come back with you.',
   signIn: 'Sign In',
-  importTitle: 'Bring It With You',
-  importLine:
-    'Import boards from Miro, draw.io, Excalidraw or Microsoft Whiteboard; each becomes its own document.',
 } as const;

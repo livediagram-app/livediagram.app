@@ -27,7 +27,6 @@ function harness(editingId: string | null) {
   renderHook(() =>
     useClipboard({
       isReadOnly: false,
-      embedMode: false,
       readSelection: () => ({ selectedId: 'open', multiSelectedIds: new Set<string>() }),
       editingId,
       setEditingId,
@@ -37,8 +36,6 @@ function harness(editingId: string | null) {
       },
       setSelectedId: () => {},
       setMultiSelectedIds: () => {},
-      ownerId: 'me',
-      documentId: 'd',
       toast: { error: vi.fn() } as never,
     }),
   );

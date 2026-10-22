@@ -17,7 +17,6 @@ export type SidebarGroupId = keyof typeof SIDEBAR_GROUP_TITLES;
 export const SIDEBAR_LABELS = {
   home: 'Home',
   inbox: 'Inbox',
-  timeline: 'Timeline',
   shared: 'Shared With Me',
   myDocuments: 'My Documents',
   invites: 'Invites',
@@ -25,9 +24,7 @@ export const SIDEBAR_LABELS = {
   thisBrowser: 'This Browser',
   tags: 'Tags',
   library: 'Library',
-  gallery: 'Image Gallery',
   themes: 'Themes',
-  shapeLibraries: 'Shape Libraries',
   trash: 'Trash',
 } as const;
 
@@ -35,7 +32,6 @@ export const SIDEBAR_LABELS = {
 export type SidebarRowKind =
   | 'home'
   | 'inbox'
-  | 'timeline'
   | 'shared'
   | 'myDocuments'
   | 'teams'
@@ -49,7 +45,7 @@ export type SidebarRowKind =
 export type SidebarLayoutInput = {
   // A signed-in session (teams exist only for one).
   signedIn: boolean;
-  // The deployment offers sign-in at all (a no-auth self-host does not).
+  // The deployment offers sign-in at all (a no-auth deployment does not).
   signInAvailable: boolean;
   pendingInvites: number;
   offlineDocuments: number;
@@ -83,7 +79,7 @@ export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
   // Tags lives inside Library (docs/specs/013-workspace/tags.md "The sidebar"), always shown there.
   more.push('library', 'trash');
   return [
-    { id: 'overview', rows: ['home', 'inbox', 'timeline', 'shared'] },
+    { id: 'overview', rows: ['home', 'inbox', 'shared'] },
     { id: 'spaces', rows: spaces },
     { id: 'more', rows: more },
   ];
@@ -96,11 +92,7 @@ export function sidebarDivider(minimalChrome: boolean): SidebarDivider {
   return minimalChrome ? 'separators' : 'titles';
 }
 
-const LIBRARY_VIEWS: ReadonlySet<SelectedNode['kind']> = new Set([
-  'gallery',
-  'themes',
-  'shape-libraries',
-]);
+const LIBRARY_VIEWS: ReadonlySet<SelectedNode['kind']> = new Set(['themes']);
 
 export function isLibraryView(kind: SelectedNode['kind']): boolean {
   return LIBRARY_VIEWS.has(kind);

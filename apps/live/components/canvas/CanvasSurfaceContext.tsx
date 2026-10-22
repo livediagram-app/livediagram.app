@@ -35,8 +35,7 @@ export function useCanvasSurface(): CanvasSurface {
 }
 
 // The active tab's theme, for the few element faces that dress themselves in it with no colour
-// stored on the element: the empty image placeholder (docs/specs/009-elements/images.md
-// "Placeholder rendering"). Null outside the editor canvas (a preview tile, a test): those draw
+// stored on the element: the empty image placeholder. Null outside the editor canvas (a preview tile, a test): those draw
 // the neutral look.
 const CanvasThemeContext = createContext<ThemeDefinition | null>(null);
 

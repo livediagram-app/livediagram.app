@@ -25,7 +25,6 @@ import {
   lucideLibrary,
   lucideMail,
   lucidePalette,
-  lucideShapes,
   lucideShare2,
   lucideStar,
   lucideTag,
@@ -112,8 +111,7 @@ export function DocumentIcon({ size = 13 }: IconProps) {
   );
 }
 
-// The Inbox (docs/specs/013-workspace/inbox.md): a tray with a tick, what's waiting on you, as
-// opposed to the Timeline's spine of what happened.
+// The Inbox (docs/specs/013-workspace/inbox.md): a tray with a tick, what's waiting on you.
 export function InboxIcon({ size = 13 }: IconProps) {
   return (
     <G16 size={size}>
@@ -121,19 +119,6 @@ export function InboxIcon({ size = 13 }: IconProps) {
       <path d="M2 9V11.5a1.5 1.5 0 0 0 1.5 1.5h9A1.5 1.5 0 0 0 14 11.5V9" />
       <path d="M2 9h3.2l1 1.8h3.6l1-1.8H14" />
       <path d="M5.5 4.7 7.2 6.5l3.3-3.6" />
-    </G16>
-  );
-}
-
-// The Timeline (docs/specs/013-workspace/timeline.md): a spine with what landed against it, the
-// help centre's Timeline card glyph on this set's 16-unit grid.
-export function TimelineIcon({ size = 13 }: IconProps) {
-  return (
-    <G16 size={size}>
-      <path d="M4 2.5v11" />
-      <circle cx="4" cy="5" r="1.1" />
-      <circle cx="4" cy="11" r="1.1" />
-      <path d="M6.5 5h6M6.5 11h4M6.5 8h2.8" />
     </G16>
   );
 }
@@ -169,13 +154,11 @@ export const ShareIcon = lucideGlyph(lucideShare2, 13);
 export const ImageIcon = lucideGlyph(lucideImage, 13);
 // Painter's palette: the Themes section (docs/specs/011-theme/custom-themes.md).
 export const PaletteIcon = lucideGlyph(lucidePalette, 13);
-// Three shapes: the Shape libraries section (docs/specs/013-workspace/shape-libraries.md).
-export const ShapesIcon = lucideGlyph(lucideShapes, 13);
 export const KeyIcon = lucideGlyph(lucideKey, 13);
 // A team: one drawing, shared with the landing page (@liveplanner/ui).
 export { TeamIcon } from '@liveplanner/ui';
 export const InviteIcon = lucideGlyph(lucideMail, 13);
-// The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My
+// The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home, My
 // documents (a root folder), Library, and This Browser (a browser window).
 export const HomeIcon = lucideGlyph(lucideHouse, 13);
 export const MyDocumentsIcon = lucideGlyph(lucideFolderRoot, 13);

@@ -10,22 +10,14 @@ import { ImageExportPanel } from './ImageExportPanel';
 import {
   isLayerVisible,
   tabLayers,
-  mermaidFromTab,
   type Tab,
   tabToJsonText,
   tabToMarkdownText,
   type TabPlanData,
 } from '@liveplanner/document';
-import {
-  downloadBlob,
-  exportTabAsPng,
-  exportTabAsSvg,
-  loadTabImages,
-  renderTabToSvg,
-} from '@/lib/export-tab';
+import { downloadBlob, exportTabAsPng, exportTabAsSvg, renderTabToSvg } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
 import { sanitizeFilename } from '@/lib/sanitize-filename';
-import { tabToExcalidrawText } from '@/lib/excalidraw-export';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
@@ -37,10 +29,8 @@ import type { ExportFormatKey } from '@liveplanner/plan-art';
 // the dashboard shows. 'file' is the portable .json export.
 const EXPORT_LABEL: Record<Format, string> = {
   file: 'JSON',
-  mermaid: 'Mermaid',
   markdown: 'Markdown',
   csv: 'CSV',
-  excalidraw: 'Excalidraw',
   png: 'PNG',
   svg: 'SVG',
   pdf: 'PDF',
@@ -68,11 +58,6 @@ type ExportTabDialogProps = {
   // flag only drives the copy, filename suffix, and telemetry so the dialog
   // stays a dumb renderer over whatever Tab it's given.
   scope?: 'tab' | 'selection';
-  // Owner / document / share context for fetching image bytes so PNG / SVG /
-  // PDF embed image + avatar elements (the bitmaps live behind an
-  // authenticated endpoint). Absent (e.g. no document id) → images export as
-  // their placeholder, same as before.
-  imageContext?: { ownerId: string; documentId: string; shareCode: string | null };
   // False while the Layers panel is off in Settings (docs/specs/007-editor/user-preferences.md): the
   // image options then leave out "Hidden layers", and hidden layers stay out
   // of the export as they stay off the canvas.
@@ -89,12 +74,12 @@ const NO_DOCUMENT_TABS: readonly Tab[] = [];
 // The format keys (plan-export-formats.ts).
 export type Format = ExportFormatKey;
 
-// The four text formats each open a view/edit/copy panel; the three image
+// The three text formats each open a view/edit/copy panel; the three image
 // formats each open an options-and-download panel (docs/specs/010-palette/style-presets.md / 73).
-type TextFormat = 'file' | 'mermaid' | 'markdown' | 'csv' | 'excalidraw';
+type TextFormat = 'file' | 'markdown' | 'csv';
 type ImageFormat = 'png' | 'svg' | 'pdf';
 const isTextFormat = (f: Format): f is TextFormat =>
-  f === 'file' || f === 'mermaid' || f === 'markdown' || f === 'csv' || f === 'excalidraw';
+  f === 'file' || f === 'markdown' || f === 'csv';
 
 // Grid card copy, in display order: text formats first, then image formats.
 const CARDS: { kind: Format; title: string; description: string }[] = [
@@ -102,12 +87,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     kind: 'file',
     title: 'JSON',
     description: 'A liveplanner file. Copy it or save a .json to import back with full fidelity.',
-  },
-  {
-    kind: 'mermaid',
-    title: 'Mermaid',
-    description:
-      'This tab as Mermaid flowchart text. Keeps every connection. Copy it or save a .mmd.',
   },
   {
     kind: 'markdown',
@@ -119,12 +98,6 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
     title: 'CSV',
     description:
       'The cards or cells as comma-separated values, for a spreadsheet. Copy it or save a .csv.',
-  },
-  {
-    kind: 'excalidraw',
-    title: 'Excalidraw',
-    description:
-      'An .excalidraw scene to open at excalidraw.com. Rich shapes simplify to labelled boxes.',
   },
   {
     kind: 'png',
@@ -163,14 +136,6 @@ const TEXT_PANELS: Record<
     mime: 'application/json',
     getText: tabToJsonText,
   },
-  mermaid: {
-    blurb:
-      "This tab as a Mermaid flowchart. Edit it here to copy a variant; your edits don't change the tab.",
-    downloadLabel: 'Download .mmd',
-    ext: 'mmd',
-    mime: 'text/plain',
-    getText: (tab) => mermaidFromTab(tab),
-  },
   markdown: {
     blurb:
       "This tab as a Markdown outline. Edit it here to copy a variant; your edits don't change the tab.",
@@ -187,18 +152,10 @@ const TEXT_PANELS: Record<
     mime: 'text/csv',
     getText: (tab) => tabCsvText(tab),
   },
-  excalidraw: {
-    blurb:
-      'This tab as an Excalidraw scene: shapes Excalidraw lacks become labelled boxes. Edit it here to copy a variant.',
-    downloadLabel: 'Download .excalidraw',
-    ext: 'excalidraw',
-    mime: 'application/json',
-    getText: tabToExcalidrawText,
-  },
 };
 
 // Welcome-style overlay: export options as a card grid. Text formats (JSON /
-// Mermaid / Markdown) open an editable view/copy panel; image formats
+// Markdown / CSV) open an editable view/copy panel; image formats
 // (PNG / SVG / PDF) open an options-and-download panel with the isometric +
 // background-pattern toggles. The main grid stays clean — no format-specific
 // options bleed onto it.
@@ -207,7 +164,6 @@ export function ExportTabDialog({
   documentName,
   onClose,
   scope = 'tab',
-  imageContext,
   offerHiddenLayers = true,
   documentTabs,
   loadTabs,
@@ -238,13 +194,8 @@ export function ExportTabDialog({
   const [active, setActive] = useState<Format | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // Image / avatar bitmaps + icon catalogues loaded for the image-format
-  // preview (docs/specs/010-palette/style-presets.md). Loaded once when an image format is picked, then
-  // reused for both the live preview and the actual export so nothing is
-  // fetched twice. `ready` gates the preview on the (async) load.
-  const [previewImages, setPreviewImages] = useState<
-    Awaited<ReturnType<typeof loadTabImages>> | undefined
-  >(undefined);
+  // Icon catalogues loaded for the image-format preview (docs/specs/010-palette/style-presets.md), once an
+  // image format is picked. `ready` gates the preview on the (async) load.
   const [previewReady, setPreviewReady] = useState(false);
   // A Plan tab offers its own formats, CSV among them; any other tab has no cards or cells, so its CSV was an
   // empty file.
@@ -258,34 +209,28 @@ export function ExportTabDialog({
     `${documentName || 'document'} - ${tab.name || 'tab'}${suffix}`,
   );
 
-  // A new image load (format picked, tab or image context changed) is not ready until it lands;
+  // A new load (format picked, tab changed) is not ready until it lands;
   // adjusted during render so the panel never shows the previous load as ready.
-  const [loadInputs, setLoadInputs] = useState({ active, tab, imageContext });
-  if (
-    loadInputs.active !== active ||
-    loadInputs.tab !== tab ||
-    loadInputs.imageContext !== imageContext
-  ) {
-    setLoadInputs({ active, tab, imageContext });
+  const [loadInputs, setLoadInputs] = useState({ active, tab });
+  if (loadInputs.active !== active || loadInputs.tab !== tab) {
+    setLoadInputs({ active, tab });
     if (active && !isTextFormat(active)) setPreviewReady(false);
   }
 
-  // When an image format is picked, load the icon catalogues + image bitmaps
+  // When an image format is picked, load the icon catalogues
   // so the preview (and export) renders the real glyphs, not placeholders.
   useEffect(() => {
     if (!active || isTextFormat(active)) return;
     let cancelled = false;
     void (async () => {
       await ensureIconCatalogs();
-      const images = imageContext ? await loadTabImages(imageTab, imageContext) : undefined;
       if (cancelled) return;
-      setPreviewImages(images);
       setPreviewReady(true);
     })();
     return () => {
       cancelled = true;
     };
-  }, [active, imageTab, imageContext]);
+  }, [active, imageTab]);
 
   // The open text format's text, built once per format, tab and item change rather than on every render: a JSON
   // export with a full item store is up to 2,000 cards. The panel reads it only as its starting text.
@@ -305,7 +250,6 @@ export function ExportTabDialog({
     tab: imageTab,
     tabs: documentTabs ?? NO_DOCUMENT_TABS,
     loadTabs,
-    imageContext,
     active: !!active && !isTextFormat(active),
     items: planOpts,
   });
@@ -323,12 +267,11 @@ export function ExportTabDialog({
     (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
       renderTabToSvg(imageTab, {
         ...(plain ? PLAIN_IMAGE : opts),
-        images: previewImages,
         ...planOpts,
         ...planExtras,
         ...windowOpts,
       }),
-    [imageTab, plain, previewImages, planOpts, planExtras, windowOpts],
+    [imageTab, plain, planOpts, planExtras, windowOpts],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -340,17 +283,10 @@ export function ExportTabDialog({
     setBusy(true);
     setError(null);
     try {
-      // Reuse the images already loaded for the preview when they're ready;
-      // otherwise load them now (icon glyphs come from the async catalogues).
+      // Icon glyphs come from the async catalogues.
       await ensureIconCatalogs();
-      const images = previewReady
-        ? previewImages
-        : imageContext
-          ? await loadTabImages(imageTab, imageContext)
-          : undefined;
       const renderOpts = {
         ...(plain ? PLAIN_IMAGE : opts),
-        images,
         ...planOpts,
         ...planExtras,
         ...windowOpts,

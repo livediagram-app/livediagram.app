@@ -17,15 +17,6 @@ type PaletteDragPreview = {
   // The shape's default footprint (canvas units); the ghost scales it by zoom.
   width: number;
   height: number;
-  // This will land as a sticky NOTE, whatever the ghost draws. A note has no
-  // shape kind of its own, so a note drag publishes a square footprint at the
-  // note's real size; this says what it will actually become. Insert between
-  // (docs/specs/021-event-storming/event-storming.md) is a gesture about the note grammar, so it reads this rather
-  // than the drawing kind.
-  note?: boolean;
-  // The note is a WORKSHOP note (the tile has an event-storming kind), which
-  // always lands on a lane (docs/specs/021-event-storming/event-storming.md "Always on a lane").
-  workshop?: boolean;
   // A Plan card tile's item type (docs/specs/026-plan/plan-mode.md "The palette"): the boards that
   // show it open a gap where it would land.
   planType?: string;
@@ -74,7 +65,7 @@ export function suppressNativeDragImage(e: { dataTransfer: DataTransfer | null }
   }
 }
 
-// The live snap offset for the in-flight palette drag (docs/specs/021-event-storming/event-storming.md): canvas-unit
+// The live snap offset for the in-flight palette drag (docs/specs/010-palette/palette-drag-ghost.md): canvas-unit
 // dx/dy the dragged footprint has latched onto its neighbours. Published by
 // the one owner that computes it (usePaletteDragGuides, which also produces
 // the guide lines), read by the ghost (so it DRAWS snapped) and by the drop

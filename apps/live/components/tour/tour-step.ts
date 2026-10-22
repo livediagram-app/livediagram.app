@@ -39,11 +39,6 @@ export type TourStepOf<Api> = {
   // Skip this step entirely on mobile viewports (desktop-only chrome, like
   // the paintbrush dock button).
   mobileSkip?: boolean;
-  // Skip this step on an event-storming board (docs/specs/021-event-storming/event-storming.md): the board hides
-  // the palette's header band, so its two dropdowns aren't there to point
-  // at. Without this the step anchors to a display:none trigger, a ring
-  // measuring 0x0 in the top-left corner and a menu opened off-screen.
-  boardSkip?: boolean;
   // Runs on entering the step, anchored or not (an anchorless outro can tidy up here).
   prepare?: (api: Api) => void | Promise<void>;
   cleanup?: (api: Api) => void;

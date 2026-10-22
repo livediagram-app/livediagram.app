@@ -105,13 +105,6 @@ describe('offline store ops (in-memory backend)', () => {
     expect((await backend.get('d1'))?.opens).toEqual({ days: ['2026-10-03'], lastOpenedAt: now });
   });
 
-  it('starts no record for a making that is no use (a bulk import)', async () => {
-    const backend = memBackend();
-    __setOfflineBackend(backend);
-    await offlineCreateDocument({ id: 'd1', name: 'Doc' }, 100, { markUsed: false });
-    expect((await backend.get('d1'))?.opens).toBeUndefined();
-  });
-
   it('migrates a tab saved against a retired scheme on load (docs/specs/011-theme/retired-schemes.md)', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     __setOfflineBackend(memBackend());
@@ -183,12 +176,8 @@ describe('upsertTab — tab kind', () => {
     expect(upsertTab(rec(), tab(), 2).tabs[0]!.kind).toBe('diagram');
   });
 
-  it('keeps a workshop board a workshop board', () => {
-    expect(upsertTab(rec(), tab({ kind: 'event-storming' }), 2).tabs[0]!.kind).toBe(
-      'event-storming',
-    );
-    const legacy = tab({ layers: [{ id: 'layer:es:board', name: 'Event Storming' }] });
-    expect(upsertTab(rec(), legacy, 2).tabs[0]!.kind).toBe('event-storming');
+  it('keeps a Plan tab a Plan tab', () => {
+    expect(upsertTab(rec(), tab({ kind: 'sheet' }), 2).tabs[0]!.kind).toBe('sheet');
   });
 });
 

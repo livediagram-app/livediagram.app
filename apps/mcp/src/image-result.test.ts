@@ -9,16 +9,12 @@ vi.mock('./render', () => ({
   },
 }));
 
-// Each picture's bytes: a PNG header of a full-screen retina screenshot's size (2880x1800, 5.2 megapixels).
+// Any fetch the preview makes: none, since liveplanner keeps no uploaded pictures.
 const fetched: string[] = [];
 vi.mock('./api', () => ({
   apiFetch: async (_env: unknown, _token: string, path: string) => {
     fetched.push(path);
-    const b = new Uint8Array(24);
-    b.set([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 13, 0x49, 0x48, 0x44, 0x52]);
-    new DataView(b.buffer).setUint32(16, 2880);
-    new DataView(b.buffer).setUint32(20, 1800);
-    return new Response(b, { headers: { 'Content-Type': 'image/png' } });
+    return new Response(null, { status: 404 });
   },
   apiJson: async () => {
     throw new Error('not read');
@@ -59,43 +55,17 @@ describe('tabFontIds', () => {
 });
 
 describe('tabPreview', () => {
-  it('draws pictures within the budget and says how many it left as placeholders', async () => {
+  it('draws an image element as its placeholder and fetches no picture', async () => {
     drawn.length = 0;
     fetched.length = 0;
-    const picture = (id: string, x: number) => ({
-      id,
-      type: 'image',
-      imageId: `img-${id}`,
-      x,
-      y: 0,
-      width: 300,
-      height: 200,
-    });
-    const tab = {
-      id: 't',
-      name: 'Screens',
-      elements: [picture('a', 0), picture('b', 320), picture('c', 640)],
-    } as never;
-    const blocks = await tabPreview(tab, { env: {} as never, token: 't' });
-    // One screenshot fits 8 megapixels, the second and third would pass it.
-    expect(blocks).toEqual([
-      {
-        type: 'text',
-        text: '2 pictures are drawn as a placeholder in this preview, which draws only so many pixels; the document holds them as placed, and the editor shows them.',
-      },
-      { type: 'image', data: 'cG5n', mimeType: 'image/png' },
-    ]);
-    expect(drawn[0]!.match(/data:image\/png;base64/g)).toHaveLength(1);
-    expect(fetched).toEqual(['/images/img-a', '/images/img-b', '/images/img-c']);
-  });
-
-  it('adds no note when every picture is drawn', async () => {
     const tab = {
       id: 't',
       name: 'One',
       elements: [{ id: 'a', type: 'image', imageId: 'one', x: 0, y: 0, width: 30, height: 20 }],
     } as never;
     const blocks = await tabPreview(tab, { env: {} as never, token: 't' });
-    expect(blocks.map((b) => b.type)).toEqual(['image']);
+    expect(blocks).toEqual([{ type: 'image', data: 'cG5n', mimeType: 'image/png' }]);
+    expect(drawn[0]).not.toMatch(/data:image\/png;base64/);
+    expect(fetched).toEqual([]);
   });
 });

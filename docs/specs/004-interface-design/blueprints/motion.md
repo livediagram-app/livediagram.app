@@ -100,7 +100,7 @@ Each is set to the token of the exit animation it waits for.
 
 Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY_MS`,
 `RING_CLOSE_DELAY_MS`, `LONG_PRESS_MS`, `REVEAL_DELAY_MS`, debounces, `AUTO_DISMISS_MS`,
-`IDLE_MS` and the `useBoxedElementAnimation` 400ms canvas timeout.
+`IDLE_MS` and the `useElementPopIn` 400ms canvas timeout.
 
 ### Chrome keyframe tokens (`apps/live/app/globals.css`)
 
@@ -125,7 +125,7 @@ Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY
 moves to `canvas-motion.css` with the canvas gesture it belongs to.
 
 `element-pop-in` is new, in `canvas-motion.css`. It's `pop-in 360ms cubic-bezier(0.34, 1.56, 0.64, 1)`,
-and `useBoxedElementAnimation` uses it in place of `animate-pop-in`, on elements added after the
+and `useElementPopIn` uses it in place of `animate-pop-in`, on elements added after the
 board arrived only ([Canvas performance blueprint](../../008-canvas/blueprints/canvas-performance.md)
 "Opening animates nothing across the board"). The editor fade-in rule in `globals.css` covers the
 chrome markers and never the canvas world: the board appears at once (spec, "Editor
@@ -184,8 +184,7 @@ Canvas and content durations above the ceiling move into their stylesheets, unch
 This is a pure move out of `globals.css` into a new file, imported right after `qa-board.css`. It
 takes these blocks:
 
-- The animated elements: `lvd-anim-*`, `lvd-text-*`, `lvd-svg-*`, `lvd-trace-run`, `lvd-grad-*`,
-  `lvd-vote-*`, `lvd-arrow-*`, `lvd-icon-*`, `lvd-prog-*`, `lvd-rating-*` and `lvd-pie-*`, with
+- The animated elements: `lvd-vote-*`, `lvd-arrow-*`, `lvd-icon-*`, `lvd-prog-*`, `lvd-rating-*` and `lvd-pie-*`, with
   their reduced-motion block.
 - `[data-insert-shift]`.
 - `longpress-hold` and the new `element-pop-in`.

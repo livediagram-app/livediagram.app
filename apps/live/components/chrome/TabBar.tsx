@@ -44,7 +44,7 @@ export type CanvasMenuTarget = { x: number; y: number; openUp?: boolean };
 
 type TabBarProps = {
   // Optional callback that pops the user-preferences dialog
-  // (docs/specs/007-editor/user-preferences.md). The gear sits between GitHub and the dark-mode
+  // (docs/specs/007-editor/user-preferences.md). The gear sits beside the dark-mode
   // toggle. Available in every role: even view-role visitors can
   // adjust their own browser-local preferences.
   onOpenSettings?: () => void;
@@ -387,8 +387,7 @@ export function TabBar({
             </button>
           )}
         </div>
-        {/* Shared right-hand cluster (search / settings / dark-mode; GitHub
-            lives in the Explorer panel's ⋯ menu here),
+        {/* Shared right-hand cluster (search / settings / dark-mode),
             reused by the Explorer's bottom bar (docs/specs/007-editor/live-app.md). Labelled here on
             desktop; icon-only on a phone. */}
         <ChromeControls
@@ -399,7 +398,6 @@ export function TabBar({
           // Icons only under Minimal chrome or with Button Labels off; each keeps its hover card,
           // titled with its name.
           labelled={labelled}
-          github={false}
           powerUser={powerUser}
           appearance={!workbenchLink}
         />

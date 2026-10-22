@@ -27,8 +27,6 @@ const ctx: CommandContext = {
   // A tool nothing else uses, so every real tool is offered.
   canvasTool: 'none',
   canvasEmpty: false,
-  esBoard: false,
-  photoImportAvailable: false,
 };
 
 const noop = () => new Proxy({}, { get: () => vi.fn() }) as unknown as CommandHandlers;

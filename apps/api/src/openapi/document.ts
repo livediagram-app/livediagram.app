@@ -201,7 +201,6 @@ const TAGS = [
     name: 'Trash',
     description: 'Deleted documents, restorable for 30 days before they are purged.',
   },
-  { name: 'Images', description: 'Upload, list, and reference image assets.' },
   { name: 'Themes', description: 'Saved custom themes.' },
   { name: 'API tokens', description: 'Mint and revoke the credentials external callers use.' },
   {
@@ -236,8 +235,7 @@ export function buildOpenApiDocument(): OpenApiDocument {
         'programmatically. External callers authenticate with an API token ' +
         '(`Authorization: Bearer lvd_…`); see the "API tokens" help article to create one. ' +
         'Endpoints an external token can use are marked `x-token-usable`. The realtime ' +
-        'WebSocket protocol is documented in docs/specs/015-api/api.md, not here.',
-      license: { name: 'MIT' },
+        'WebSocket protocol is internal and not covered here.',
     },
     servers: [{ url: '/api', description: 'Same-origin API (e.g. https://liveplanner.app/api).' }],
     tags: TAGS,

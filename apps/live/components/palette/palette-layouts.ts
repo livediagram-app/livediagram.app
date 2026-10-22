@@ -4,7 +4,7 @@
 // so a Dashboard's palette can rename or re-fill a category without touching Plan's.
 //
 // An entry with no `tiles` holds its category's own tiles (tilesForCategory), so a layout spells out only where it
-// differs. The catalogue categories (My shapes, Icons, Stickers, Tech) are bodies with their own content and take no
+// differs. The catalogue categories (Icons, Stickers, Tech) are bodies with their own content and take no
 // tile list.
 import { PALETTE_CATEGORIES } from './palette-categories';
 import { tileById, tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
@@ -33,7 +33,6 @@ type PaletteLayout = {
 
 // The categories whose body is its own content rather than a list of tiles.
 export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
-  'my-shapes',
   'icons',
   'stickers',
   'technology',
@@ -51,7 +50,7 @@ export const PLAN_PALETTE: PaletteLayout = {
     { id: 'plan-metrics' },
     { id: 'plan-visualisations' },
     { id: 'plan-sheets' },
-    { id: 'plan-content', tiles: ['tools:sticky', 'tools:text', 'tools:image', 'tools:page'] },
+    { id: 'plan-content', tiles: ['tools:sticky', 'tools:text', 'tools:page'] },
     {
       id: 'plan-tools',
       tiles: [
@@ -188,9 +187,8 @@ export function paletteLandingCategory(hasPlanBoard = true): string {
 }
 
 // A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
-// Participate, holding only what it may add, as the full palette's own tiles: the Sticky and Text tiles, then the
-// Image tile.
-const PARTICIPANT_TILES = ['tools:sticky', 'tools:text', 'tools:image'] as const;
+// Participate, holding only what it may add, as the full palette's own tiles: the Sticky and Text tiles.
+const PARTICIPANT_TILES = ['tools:sticky', 'tools:text'] as const;
 
 export function participantTiles(): PaletteTileDef[] {
   return PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);

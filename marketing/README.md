@@ -25,14 +25,19 @@ marketing/
 
 ## House style
 
-- **Voice**: plain, concrete, a little understated. Describe what the product
-  does, not how amazing it is.
+- **Voice**: plain, concrete, calm and warm. Describe what the product does,
+  not how amazing it is.
+- **British English**, as the rest of the copy uses: organise, colour, licence
+  (the noun).
 - **No em dashes.** Use commas, colons, or parentheses.
-- **The hook is "no sign-in wall"**: open a link, draw, share. Lead with it.
-- **Don't overclaim.** Team workspaces, transactional email, and CRDT editing
-  are not shipped yet (see "What's still ahead" in the fact sheet). Never imply
-  they are.
-- **Free means free.** MIT-licensed, self-hostable, no paid tier, no plan for
-  one. Say so where the format allows.
-- **Brand color** is sky blue, `#0EA5E9` ("liveplanner blue"). See
+- **The hook is "plan it together, no sign-up to start"**: open a link, put the
+  work on a board, share it. Lead with it.
+- **Say "project", never "document".** A project is what a person makes and
+  shares; inside it are Board, Sheet, Dashboard and Form tabs.
+- **Don't overclaim.** Realtime editing is last-writer-wins, not CRDT (see
+  "Not yet shipped" in the fact sheet). Never imply otherwise.
+- **Free means free.** No paid tier, no plan for one, no ads and no
+  third-party trackers. Say so where the format allows. The source is not
+  public: never suggest anyone can read it or run their own copy.
+- **Brand colour** is violet, `#8B5CF6` ("liveplanner violet"). See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).

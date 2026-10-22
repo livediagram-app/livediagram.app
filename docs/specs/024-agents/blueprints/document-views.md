@@ -174,7 +174,6 @@ non-empty unique ids. The round-trip tests in [Testing](#testing) hold this.
 
 | Element                                   | Kind word                                                                     |
 | ----------------------------------------- | ----------------------------------------------------------------------------- |
-| An event-storming note                    | its notation, `eventStormingKindOf(el)` (`domain-event`, `command`, …)        |
 | The notation `actor`                      | `es:actor`, so it never reads as the `actor` shape                            |
 | `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `lane`, `entity`, `mind-node`, `actor`, …)      |
 | `type` in `ELEMENT_TYPES`, not a shape    | the type (`text`, `sticky`, `table`, `image`, `freehand`, `path`, `arrow`, …) |
@@ -183,8 +182,7 @@ non-empty unique ids. The round-trip tests in [Testing](#testing) hold this.
 
 An unknown name prints bare when it matches `^[A-Za-z0-9_.:-]+$`, else as a JSON string (I4).
 
-`SHAPE_KINDS` and `ELEMENT_TYPES` are `packages/document/src/validate.ts`'s sets, so the kind words know exactly what
-the document model knows. An event-storming note still in photo draft carries the flag `draft` (`VW13`).
+`SHAPE_KINDS` and `ELEMENT_TYPES` are `packages/document/src/validate.ts`'s sets, so the kind words know exactly what the document model knows.
 
 ### Containment (`@liveplanner/document`, `containment.ts`)
 
@@ -362,7 +360,6 @@ Every other kind has no state attribute; `show` has its content.
 
 | Attribute        | When                                                 | Form                                                                                        |
 | ---------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `draft`          | an event-storming note with `esDraft`                | flag                                                                                        |
 | `icon=`          | a non-`icon`-shape with `iconId`, or an `icon` shape | `icon=<iconId>`                                                                             |
 | `link=`          | `link` set (`VW28`)                                  | `link=<url>`, `link=tab:<tabRef>`, `link=tab:<tabRef>#<elementId>`, `link=doc:<documentId>` |
 | `alt=`           | an `image` with `alt`                                | `alt=` cut at `ALT_CUT_CHARS`                                                               |
@@ -777,7 +774,6 @@ the tab and its `rev`.
 | E25  | Trashed document                               | The GET's 410, unchanged                                                                         |
 | E26  | Table with ragged rows                         | Columns = the longest row's length; missing cells print empty                                    |
 | E27  | One bare stroke, or strokes split by a shape   | A lone stroke prints as itself; a run breaks wherever reading order puts another element         |
-| E28  | Event-storming note with the `actor` notation  | Kind word `es:actor`                                                                             |
 | E29  | CLI cache holds no tab at `--since`            | The CLI's own refusal (CLI blueprint); the api is never asked                                    |
 | E30  | `show selected`, nothing selected on the tab   | 404 `target_not_found`, "nothing is selected"                                                    |
 | E31  | `show selected` when the room cannot be read   | 404 `target_not_found`, "the selection could not be read"                                        |
@@ -880,7 +876,7 @@ Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `checkout-tab.ts`       | The research's 30-element "Checkout platform" tab (below), `rev: 41`                                                                                                                         | `checkout.outline.txt`, `.outline.json`, `.outline-mcp-budget-200.txt`, `.graph.txt`, `.layout.txt`, `.layout-coarse.txt`, `.comments.txt`, `.show-146b.txt`, `.find-pay.txt`, `.style.txt` |
 | `checkout-tab-after.ts` | The checkout tab with six changes: rename e4a8 "Payments", add cylinder "Redis cache" in c991 and an arrow 202b→it, remove arrow 0cee, resolve 0c84's thread, move cb02 by +200,0; `rev: 47` | `checkout.diff.txt`                                                                                                                                                                         |
-| `checkout-document.ts`  | Three tabs: the checkout tab, a 42-element lanes tab, a 24-sticky event-storming tab                                                                                                         | `checkout.overview.txt`, `checkout.overview-scoped.txt`                                                                                                                                     |
+| `checkout-document.ts`  | Three tabs: the checkout tab, a 42-element lanes tab, a 24-sticky tab                                                                                                                        | `checkout.overview.txt`, `checkout.overview-scoped.txt`                                                                                                                                     |
 | `agent-built-tab.ts`    | The Services frame built through `graphToElements` with slug node ids                                                                                                                        | `agent-built.outline.txt`                                                                                                                                                                   |
 | `large-tab.ts`          | Ten copies of the checkout tab offset in x (300 elements)                                                                                                                                    | `large.budget-2000.txt`, `large.budget-200.txt`                                                                                                                                             |
 | `edge-cases-tab.ts`     | E1 to E28 in one tab where they compose, separate tabs where they do not; every state-attribute kind                                                                                         | `edge-cases.outline.txt`                                                                                                                                                                    |
@@ -927,7 +923,7 @@ out of Prettier (`.prettierignore`).
 | `ELISION_CONTAINERS_NAMED`     | 3                             | A line that stays short (`VW60`)                                           | 1 to 10         |
 | `PROGRESS_DEFAULT`             | 50                            | Where the editor draws an unset progress                                   | fixed           |
 
-No environment variable or binding; self-hosting needs nothing new.
+No environment variable or binding; a deployment needs nothing new.
 
 ## Assets and external resources
 

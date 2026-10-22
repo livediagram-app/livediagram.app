@@ -3,9 +3,9 @@
 Research to de-risk three features that let a user bring 100+ boards from other
 tools into liveplanner and keep them mirrored in their own Google Drive. No
 product code. The decisions below turned the proposals into specs:
-[Board import](../specs/020-import-export/board-import.md),
-[Miro import](../specs/020-import-export/miro-import.md) and
-[Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md);
+Board import,
+Miro import and
+Microsoft Whiteboard import;
 the Drive decision amended [Save Locations](../specs/006-document/save-locations.md).
 
 - **Checked:** 2026-09-27, against the official pages listed in [Sources](#sources)
@@ -20,13 +20,13 @@ the Drive decision amended [Save Locations](../specs/006-document/save-locations
 
 Taken by the operator on 2026-09-27, after the first version of this report.
 
-| Question           | Decision                                                                                                                                                      | Recorded in                                                                    |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Miro route         | **REST API only**; what it cannot read is reported as lost. No clipboard decoding.                                                                            | [Miro import](../specs/020-import-export/miro-import.md)                       |
-| Whiteboard account | The boards are on a **personal** Microsoft account: the exported image is the import route.                                                                   | [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) |
-| Drive's role       | Drive is a **mirror** of cloud documents, never a save location.                                                                                              | [Save Locations](../specs/006-document/save-locations.md)                      |
-| Drive bin          | Maps to the liveplanner **Trash**, specified separately (soft delete for 30 days, team Trash, local Trash for Offline Mode, api and MCP deletes go to Trash). | [Trash](../specs/013-workspace/trash.md)                                       |
-| Safari images      | A **WASM WebP encoder**, loaded only when the browser cannot encode WebP.                                                                                     | [Board import](../specs/020-import-export/board-import.md)                     |
+| Question           | Decision                                                                                                                                                      | Recorded in                                               |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| Miro route         | **REST API only**; what it cannot read is reported as lost. No clipboard decoding.                                                                            | Miro import                                               |
+| Whiteboard account | The boards are on a **personal** Microsoft account: the exported image is the import route.                                                                   | Microsoft Whiteboard import                               |
+| Drive's role       | Drive is a **mirror** of cloud documents, never a save location.                                                                                              | [Save Locations](../specs/006-document/save-locations.md) |
+| Drive bin          | Maps to the liveplanner **Trash**, specified separately (soft delete for 30 days, team Trash, local Trash for Offline Mode, api and MCP deletes go to Trash). | [Trash](../specs/013-workspace/trash.md)                  |
+| Safari images      | A **WASM WebP encoder**, loaded only when the browser cannot encode WebP.                                                                                     | Board import                                              |
 
 ## Headlines
 
@@ -120,7 +120,7 @@ Double-click behaviour must be tested before the spec promises it.
 | A page setting `Cross-Origin-Opener-Policy: same-origin` can break the popup handshake. liveplanner sets no COOP header today (repo search).                                        | Verified (GIS note + repo grep)                                                      | [G22]        |
 
 **Implication:** the Worker broker is necessary for "sync while a tab is open"
-without a click every hour. Self-hosters without a client secret fall back to
+without a click every hour. A deployment without a client secret falls back to
 the token model and must accept a click-to-resume banner when the token lapses.
 Recommend the broker's one-time consent uses the **code model in redirect mode**
 (works on iOS, no popup blocker).
@@ -202,8 +202,8 @@ resumable upload (verify E-A4 first).
 - **Quota budget:** polling `changes.list` every 5 minutes plus a write per
   autosave does not fit 10M users under the free daily threshold. The
   [proposed sync cadence](#proposed-sync-cadence) does.
-- **Self-hosters:** files created by liveplanner.app's Google project are not
-  visible to a self-hoster's project (`drive.file` is per app). Unverified but
+- **Other deployments:** files created by liveplanner.app's Google project are not
+  visible to another deployment's project (`drive.file` is per app). Unverified but
   follows from the scope's per-app grant; E-A6.
 
 ### Cost model
@@ -375,8 +375,8 @@ decode [M9]. Unverified by us, but consistent with Miro's own "Unsupported" list
 
 ### B4. Importer
 
-Specified in [Miro import](../specs/020-import-export/miro-import.md), on the
-shared stages of [Board import](../specs/020-import-export/board-import.md).
+Specified in Miro import, on the
+shared stages of Board import.
 
 ## C. Microsoft Whiteboard import
 
@@ -419,7 +419,7 @@ Read from the shipped web app (`whiteboard.cloud.microsoft`, build
 
 ### C4. Import route
 
-Specified in [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md):
+Specified in Microsoft Whiteboard import:
 v1 imports the exported **PNG** as one image. The Full export Zip is the richer
 source (editable ink and notes) but its HTML is Whiteboard's internal markup,
 so its mapping is specified only once real exports exist. Because the boards
@@ -502,7 +502,7 @@ Transfer-Encoding, X-GUploader-UploadID, ...` (no `Location` on a 401).
 | E-A3 | Does `getStartPageToken` advance on changes to files the app cannot see? (cheap 5-unit poll gate)                                             | same                                  |
 | E-A4 | Resumable upload from the browser: is `Location` exposed on the `200` session response?                                                       | same                                  |
 | E-A5 | Custom MIME type and `.liveplanner` extension in Drive UI integration; single-click, double-click, "Open with" behaviour                      | same, public HTTPS Open URL (staging) |
-| E-A6 | A second Cloud project (self-host) cannot see files created by the first                                                                      | two projects                          |
+| E-A6 | A second Cloud project (another deployment) cannot see files created by the first                                                             | two projects                          |
 | E-B1 | Miro image URL (`redirect=false`, `format=original`): host and CORS headers of the 60-second URL                                              | Miro developer team app               |
 | E-B2 | Token scope across teams; REST shape of pen strokes and link previews on a real board                                                         | same                                  |
 | E-C1 | Full export Zip on a read-only personal board: offered, complete (off-screen items, images), and the HTML's structure for the mapping         | the operator's exports                |

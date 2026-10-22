@@ -5,17 +5,10 @@
 @import './collab-cards.css';
 @import './forms.css';
 @import './canvas-motion.css';
-@import './motion-shape.css';
-@import './motion-text.css';
-@import './motion-sticky.css';
-@import './motion-media.css';
 @import './motion-page.css';
 /* The account and connect pages' entrance and lines (docs/specs/014-identity/auth-and-guest-access.md). */
 @import './auth-motion.css';
-@import './motion-drawing.css';
-@import './motion-table.css';
 @import './thumbnail-loader.css';
-@import './image-search-loader.css';
 @import './article-pages.css';
 @import './split-view.css';
 @import './sketch-face.css';

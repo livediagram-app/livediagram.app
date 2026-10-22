@@ -5,7 +5,7 @@
 // in, then What Happened, each its own section opened by a display heading, generous space between
 // them. The hero above it is the shell's (HomeHero).
 
-import { lazy, Suspense, useEffect, type ReactNode } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { track } from '@/lib/telemetry';
 import { ARRIVED_ON_HOME } from '@/app/explorer/entry-path';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
@@ -25,22 +25,15 @@ const HomeWelcome = lazy(() => import('./HomeWelcome').then((m) => ({ default: m
 export function HomePane({
   ownerId,
   onSeen,
-  timelineHref,
-  onSeeTimeline,
   recentHref,
   onSeeMore,
-  importToolbar,
   documentMenus,
 }: {
   ownerId: string;
-  /** Home's read moved the Timeline feed's unread mark: clear the sidebar badge. */
+  /** Home's read moved the unread mark: clear the sidebar badge. */
   onSeen: () => void;
-  timelineHref: string;
-  onSeeTimeline: () => void;
   recentHref: string;
   onSeeMore: () => void;
-  /** The Explorer's Import From control, for the first run's Bring It With You. */
-  importToolbar?: ReactNode;
   /** Each Jump Back In document's Explorer ⋯ menu (explorer-home.md "Jump Back In"). */
   documentMenus?: DocumentEntryFor;
 }) {
@@ -71,7 +64,7 @@ export function HomePane({
   if (firstRun) {
     return (
       <Suspense fallback={<GridSkeleton />}>
-        <HomeWelcome offerSignIn={offerSignIn} importToolbar={importToolbar} />
+        <HomeWelcome offerSignIn={offerSignIn} />
       </Suspense>
     );
   }
@@ -87,13 +80,7 @@ export function HomePane({
         onSeeMore={onSeeMore}
         documentMenus={documentMenus}
       />
-      <WhatHappened
-        groups={home.whatHappened}
-        loading={loading}
-        lastSeenAt={home.lastSeenAt}
-        timelineHref={timelineHref}
-        onSeeTimeline={onSeeTimeline}
-      />
+      <WhatHappened groups={home.whatHappened} loading={loading} lastSeenAt={home.lastSeenAt} />
     </div>
   );
 }

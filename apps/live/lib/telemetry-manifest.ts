@@ -76,25 +76,20 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Created',
   'Element·Deleted',
   'Element·Duplicated',
-  'Element·Imported',
   'Element·Linked',
   'Element·Locked',
   'Element·Removed',
   'Element·Reordered',
-  // A search submitted in the image picker (docs/specs/009-elements/image-search.md).
-  'Element·Searched',
   'Element·Selected',
   'Element·Toggled',
   'Element·Unlinked',
   'Element·Unlocked',
-  // Playback started on a video element (docs/specs/009-elements/youtube-video.md),
-  // or a search result attached to an image (docs/specs/009-elements/image-search.md).
+  // Playback started on a video element (docs/specs/009-elements/youtube-video.md).
   'Element·Used',
   'Element·Voted',
   'Error·Api',
   'Error·Client',
-  // The hosted reader's budget was spent and the photo import failed over to
-  // the in-browser reader (docs/specs/021-event-storming/event-storming.md Phase 9).
+  // A degradation the load was carried through rather than stopped by (lib/api/error-report.ts).
   'Error·Warning',
   'Folder·Changed',
   'Folder·Cleared',
@@ -198,16 +193,12 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Theme·Changed',
   'Theme·Created',
   'Theme·Deleted',
-  // Timeline (docs/specs/013-workspace/timeline.md): 'Opened' with type 'Landing' | 'Nav' | 'Stack'
-  // — the first two measure the landing-page change, the third tells us
-  // whether the stacking thresholds are right. 'Changed' carries the
-  // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More'
-  // a Show-more click, 'Removed'/'Entry' a card taken off the feed
-  // (docs/specs/013-workspace/timeline.md §2.9).
+  // The scoped event feeds, History and Team Activity (docs/specs/013-workspace/timeline.md): 'Opened'
+  // with type 'Stack' tells us whether the stacking thresholds are right. 'Changed' carries the
+  // view mode, 'Selected' a filter chip's source type, 'Loaded'/'More' a Show-more click.
   'Timeline·Changed',
   'Timeline·Loaded',
   'Timeline·Opened',
-  'Timeline·Removed',
   'Timeline·Selected',
   'Token·Created',
   // A token's owner allowed a workbench on the pairing page (docs/specs/013-workspace/workbench-embeds.md).

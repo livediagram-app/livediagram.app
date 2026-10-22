@@ -10,7 +10,7 @@ import { FAQ_CATEGORIES, faqAnswerText } from '@/lib/faq-content';
 
 const FAQ_TITLE = 'FAQ · liveplanner';
 const FAQ_DESCRIPTION =
-  'Answers to common questions about liveplanner: getting started, collaboration, sharing, AI and MCP, import and export, privacy, and self-hosting.';
+  'Answers to common questions about liveplanner: boards and cards, sheets, dashboards and forms, collaboration, sharing, AI and MCP, and privacy.';
 
 export const metadata = pageMetadata({
   title: FAQ_TITLE,
@@ -45,7 +45,7 @@ export default function FaqPage() {
         <FaqBrowser
           eyebrow="FAQ"
           title="Questions, answered"
-          lede="Everything you might want to know about liveplanner, from your first diagram to running your own copy."
+          lede="Everything you might want to know about liveplanner, from your first board to running your own copy."
         />
 
         <section aria-labelledby="faq-more-title" className="mx-auto mt-20 max-w-6xl px-6">
@@ -67,7 +67,7 @@ export default function FaqPage() {
                 Browse the Help Centre
               </p>
               <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">
-                Step-by-step guides for every tool, mode and setting.
+                Step-by-step guides for boards, sheets, forms and every setting.
               </p>
             </a>
             <a

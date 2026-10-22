@@ -73,12 +73,12 @@ describe('PUT /api/placement-defaults/:key', () => {
     expect(logs).toContain('placement-defaults: set key=mode:plan scope=team');
   });
 
-  it('sets a kind default and a template default, listed in key order', async () => {
+  it('sets a mode default and a template default, listed in key order', async () => {
     await put(asUser('user_alice'), 'template:retrospective', { folderId: 'alice-folder' });
-    const res = await put(asUser('user_alice'), 'kind:event-storming', { folderId: 't1-folder' });
+    const res = await put(asUser('user_alice'), 'mode:plan', { folderId: 't1-folder' });
     expect(res.status).toBe(204);
     expect(await list(asUser('user_alice'))).toEqual([
-      { key: 'kind:event-storming', folderId: 't1-folder' },
+      { key: 'mode:plan', folderId: 't1-folder' },
       { key: 'template:retrospective', folderId: 'alice-folder' },
     ]);
   });

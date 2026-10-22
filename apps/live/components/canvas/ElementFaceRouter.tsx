@@ -84,7 +84,6 @@ type ElementFaceRouterProps = Pick<
   | 'commentSelfId'
   | 'actionActions'
   | 'actionSelfId'
-  | 'imageContext'
   | 'tabSummaries'
   | 'tabTimer'
   | 'timerControls'
@@ -134,7 +133,6 @@ export function ElementFaceRouter({
   commentSelfId,
   actionActions,
   actionSelfId,
-  imageContext,
   tabSummaries,
   tabTimer,
   timerControls,
@@ -339,16 +337,9 @@ export function ElementFaceRouter({
           tabs={tabSummaries}
           onFollow={element.link ? () => onFollowLink(element.link!) : undefined}
         />
-      ) : element.type === 'image' && imageContext ? (
+      ) : element.type === 'image' ? (
         <>
-          <ImageElementView
-            element={element}
-            ownerId={imageContext.ownerId}
-            documentId={imageContext.documentId}
-            shareCode={imageContext.shareCode}
-            onOpenPicker={imageContext.onOpenPicker}
-            fontFamily={fontFamily}
-          />
+          <ImageElementView element={element} fontFamily={fontFamily} />
           {/* A hero's caption card (docs/specs/009-elements/web-components-and-no-groups.md), over the image. */}
           {element.heroCaption ? (
             <HeroCaptionCard

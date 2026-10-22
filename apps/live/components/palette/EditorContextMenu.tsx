@@ -15,8 +15,6 @@
 
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
 import {
-  EVENT_STORMING_NOTES,
-  eventStormingKindOf,
   isFixedSizeElement,
   arrowheadShapeOf,
   arrowheadSizeOf,
@@ -42,16 +40,8 @@ import {
   RotationMenuIcon,
   SizeMenuIcon,
   SquareMenuIcon,
-  CopyIcon,
-  CutIcon,
-  DuplicateMenuIcon,
-  RemoveIcon,
 } from '@/components/palette/context-menu-icons';
-import {
-  MenuAccordionSection,
-  MenuActionRow,
-  MenuGroupSeparator,
-} from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { ShapeIcon } from '@/components/primitives/shape-icon';
 import { SizeSection } from '@/components/palette/SizeSection';
@@ -123,7 +113,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     if (!target) return null;
     const boxed = isBoxed(target);
     const isIcon = target.type === 'shape' && target.shape === 'icon';
-    const hasImage = target.type === 'image' && target.imageId != null;
     const hasLink = target.link != null;
     // Regular shapes (not the dedicated icon glyph, not a frame container, not
     // a self-drawing data shape which carries its own data) can morph to
@@ -151,18 +140,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     // Collaborate and Resources: never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan
     // items"), whoever opens the menu.
     const showCollaborateGroup = boxed && takesAttachments(target);
-    // An event-storming note (docs/specs/021-event-storming/event-storming.md) gets a VERB menu, not a styling one:
-    // its colour, silhouette, text treatment and tilt are the notation, so
-    // Colours / Shadow / Animation / Text / Rotation / Layer have nothing
-    // meaningful to offer — they would only invite someone to break the
-    // grammar. What a facilitator actually reaches for mid-workshop is
-    // cut / copy / duplicate / remove and the stacking pair.
-    const esNote = eventStormingKindOf(target) !== null;
-    // A verb runs, then the menu gets out of the way (see the rows below).
-    const runAndClose = (action: () => void) => () => {
-      action();
-      onClose();
-    };
     return (
       <ContextMenu
         position={position}
@@ -183,78 +160,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             categories, which render conditionally and so would otherwise
             shuffle Layer's position around). Groups front/back + opacity +
             (for boxed elements) the aspect-ratio lock. */}
-        {esNote ? (
-          <>
-            {/* Every verb closes the menu: an action ANSWERS the question the
-                right-click asked, so leaving the menu up means the user has to
-                dismiss a menu that has already done its job — and it covers
-                the very element they just acted on, hiding the result. */}
-            <MenuActionRow
-              icon={<CutIcon />}
-              label="Cut"
-              onClick={runAndClose(props.onCutElement)}
-            />
-            <MenuActionRow
-              icon={<CopyIcon />}
-              label="Copy"
-              onClick={runAndClose(props.onCopyElement)}
-            />
-            <MenuActionRow
-              icon={<DuplicateMenuIcon />}
-              label="Duplicate"
-              onClick={runAndClose(props.onDuplicateElement)}
-            />
-            <MenuGroupSeparator />
-            <MenuActionRow
-              icon={<LayerUpIcon />}
-              label="Bring to Front"
-              onClick={runAndClose(props.onStackFront)}
-            />
-            <MenuActionRow
-              icon={<LayerDownIcon />}
-              label="Send to Back"
-              onClick={runAndClose(props.onStackBack)}
-            />
-            {/* Change Kind (docs/specs/021-event-storming/event-storming.md): the ONE styling-shaped thing this menu
-                offers, because on this board the kind is not styling — it is
-                what the note MEANS. Re-paints, re-cuts the silhouette and
-                leaves the note centred where it was. */}
-            {props.onSetEsKind ? (
-              <>
-                <MenuGroupSeparator />
-                <MenuAccordionSection
-                  title="Change Kind"
-                  icon={<SquareMenuIcon />}
-                  {...sectionProps('es-kind')}
-                >
-                  <MenuTileGrid cols={2}>
-                    {EVENT_STORMING_NOTES.map((n) => (
-                      <MenuTile
-                        key={n.kind}
-                        icon={
-                          <span
-                            aria-hidden
-                            className="block h-3 w-3 rounded-[2px] border border-black/10"
-                            style={{ backgroundColor: n.fill }}
-                          />
-                        }
-                        label={n.label}
-                        onClick={runAndClose(() => props.onSetEsKind?.(n.kind))}
-                      />
-                    ))}
-                  </MenuTileGrid>
-                </MenuAccordionSection>
-              </>
-            ) : null}
-            <MenuGroupSeparator />
-            <MenuActionRow
-              icon={<RemoveIcon />}
-              label="Remove"
-              onClick={runAndClose(props.onDeleteElement)}
-            />
-          </>
-        ) : null}
-        {esNote || covering ? null : (
+        {covering ? null : (
           <MenuAccordionSection title="Layer" icon={<LayersGlyph />} {...sectionProps('layer')}>
             {/* Layer order tweaks keep the menu open so you can nudge
               front/back a few times in a row. */}
@@ -294,8 +200,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             all answer "how big is this": the width / height boxes, the aspect
             lock (which lived in Layer) and the reset (which lived in Shape,
             so it only appeared for morphable kinds). */}
-        {/* Fixed-size elements (docs/specs/012-collaboration/session-button.md buttons, docs/specs/021-event-storming/event-storming.md event-storming
-            notes) have no size to edit — offering the boxes would advertise
+        {/* Fixed-size elements (docs/specs/012-collaboration/session-button.md buttons) have no size to edit — offering the boxes would advertise
             a resize the drag paths deliberately ignore. */}
         {boxed && !isFixedSizeElement(target) && !covering ? (
           <MenuAccordionSection title="Size" icon={<SizeMenuIcon />} {...sectionProps('size')}>
@@ -337,7 +242,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             before clicking; 0° resets to upright. Not on an annotation marker
             (docs/specs/009-elements/blueprints/annotations.md [QD8]). */}
         {/* Nor on a chart its Sheet draws: it sits square on the cells (docs/specs/029-sheets/sheet.md "Charts"). */}
-        {supportsRotation(target) && !esNote && !covering && !isSheetAnchoredChart(target) ? (
+        {supportsRotation(target) && !covering && !isSheetAnchoredChart(target) ? (
           <MenuAccordionSection
             title="Rotation"
             icon={<RotationMenuIcon />}
@@ -361,11 +266,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             </div>
           </MenuAccordionSection>
         ) : null}
-        {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ──
-            Skipped entirely for an event-storming note: its colour, text
-            treatment and shadow are the notation (docs/specs/021-event-storming/event-storming.md), so every
-            control in here would only invite breaking the grammar. */}
-        {esNote ? null : (
+        {/* ── Appearance group: Presets / Progress / Animation / Colours / Border ── */}
+        {
           <ElementAppearanceSections
             props={props}
             target={target}
@@ -380,7 +282,7 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
             strokeColorHandlers={strokeColorHandlers}
             afterGroup={!covering}
           />
-        )}
+        }
         {showContentGroup ? <MenuGroupSeparator /> : null}
         {/* Line + Pointer — arrow stroke + arrowhead controls (shared
             ArrowLine/PointerControls). */}
@@ -425,7 +327,6 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
           props={props}
           target={target}
           onClose={onClose}
-          hasImage={hasImage}
           hasLink={hasLink}
           sectionProps={sectionProps}
           colorProps={colorProps}

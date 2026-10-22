@@ -644,8 +644,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/documents/{id}/tabs/{tabId}/render.svg',
     segment: 'documents',
     tag: 'Documents',
-    summary:
-      'One tab drawn by the shared renderer (images inlined when the host stores them). Read-gated like the tab; never cached.',
+    summary: 'One tab drawn by the shared renderer. Read-gated like the tab; never cached.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: { type: 'string' },
@@ -949,20 +948,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     responseSchema: 'ItemResponse',
     statuses: [200, 204, 401, 403, 404, 405, 409, 410],
   },
-  {
-    method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/comment-pictures',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      "The published profile pictures of a tab's comment authors, keyed by comment id. Empty unless the caller is signed in.",
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { pictures: { type: 'object', additionalProperties: { type: 'string' } } },
-    },
-    statuses: [200, 403, 404],
-  },
   // ---- Form links (docs/specs/030-forms/forms.md) ----
   {
     method: 'POST',
@@ -1191,7 +1176,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'documents',
     tag: 'Documents',
     summary:
-      'WebSocket upgrade to the realtime room. The op protocol is documented in docs/specs/015-api/api.md, not here.',
+      'WebSocket upgrade to the realtime room. The op protocol is internal and not covered here.',
     auth: 'guest-or-clerk',
     query: [
       { name: 's', required: false, description: 'Share code, for non-owner collaborators.' },
@@ -1259,68 +1244,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [204, 401, 403, 404],
   },
 
-  // ---- Images ----
-  {
-    method: 'GET',
-    path: '/images',
-    segment: 'images',
-    tag: 'Images',
-    summary: "List the caller's uploaded images.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: listOf('images', 'ImageSummary'),
-    statuses: [200, 401, 503],
-  },
-  {
-    method: 'POST',
-    path: '/images',
-    segment: 'images',
-    tag: 'Images',
-    summary: 'Upload an image (raw bytes; SHA-256 + dimensions in X-Image-* headers).',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: { type: 'string', format: 'binary' },
-    responseSchema: {
-      type: 'object',
-      properties: { image: ref('ImageSummary'), deduped: { type: 'boolean' } },
-      required: ['image', 'deduped'],
-    },
-    statuses: [200, 400, 401, 403, 409, 413, 415, 503],
-  },
-  {
-    method: 'GET',
-    path: '/images/usage',
-    segment: 'images',
-    tag: 'Images',
-    summary: 'Map each image to the documents that reference it.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: { type: 'object' },
-    statuses: [200, 401, 503],
-  },
-  {
-    method: 'GET',
-    path: '/images/{id}',
-    segment: 'images',
-    tag: 'Images',
-    summary: 'Download an image (owner, or a share-code reader).',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    query: [{ name: 'd', required: false, description: 'Document id, for share-code readers.' }],
-    responseSchema: { type: 'string', format: 'binary' },
-    statuses: [200, 404, 503],
-  },
-  {
-    method: 'DELETE',
-    path: '/images/{id}',
-    segment: 'images',
-    tag: 'Images',
-    summary: 'Delete an image from the gallery.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [200, 401, 403, 503],
-  },
-
   // ---- Custom themes ----
   {
     method: 'GET',
@@ -1374,68 +1297,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'custom-themes',
     tag: 'Themes',
     summary: 'Delete a custom theme.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    statuses: [204, 401, 403, 404],
-  },
-
-  // ---- Shape libraries ----
-  {
-    method: 'GET',
-    path: '/shape-libraries',
-    segment: 'shape-libraries',
-    tag: 'Shape libraries',
-    summary: "List the caller's shape libraries, newest first.",
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    responseSchema: listOf('libraries', 'ShapeLibrary'),
-    statuses: [200, 401],
-  },
-  {
-    method: 'POST',
-    path: '/shape-libraries',
-    segment: 'shape-libraries',
-    tag: 'Shape libraries',
-    summary: 'Create a shape library; a name already in use is suffixed.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
-        name: { type: 'string' },
-        source: { type: 'string', enum: ['drawio'] },
-        items: { type: 'array', items: ref('ShapeLibraryItem') },
-      },
-      required: ['id', 'name', 'source', 'items'],
-    },
-    responseSchema: wrap('library', 'ShapeLibrary'),
-    statuses: [201, 400, 401, 409, 413],
-  },
-  {
-    method: 'PUT',
-    path: '/shape-libraries/{id}',
-    segment: 'shape-libraries',
-    tag: 'Shape libraries',
-    summary: 'Rename a shape library, or replace its items.',
-    auth: 'guest-or-clerk',
-    tokenUsable: true,
-    requestSchema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string' },
-        items: { type: 'array', items: ref('ShapeLibraryItem') },
-      },
-    },
-    responseSchema: wrap('library', 'ShapeLibrary'),
-    statuses: [200, 400, 401, 403, 404, 409, 413],
-  },
-  {
-    method: 'DELETE',
-    path: '/shape-libraries/{id}',
-    segment: 'shape-libraries',
-    tag: 'Shape libraries',
-    summary: 'Delete a shape library. Placed shapes stay in their documents.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404],
@@ -1837,7 +1698,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'placement-defaults',
     tag: 'Folders',
     summary:
-      "The caller's default folders, one per key (mode:diagram, mode:draw, kind:event-storming, " +
+      "The caller's default folders, one per key (mode:diagram, mode:draw, " +
       'template:retrospective, template:kanban), dangling ones included.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -1943,14 +1804,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/timeline',
     segment: 'timeline',
     tag: 'Account',
-    summary: "The caller's activity feed, newest first. Keyset-paginated via nextCursor.",
+    summary:
+      "A document's history (scope=document:<id>) or a team's activity (scope=team:<id>), newest first. Keyset-paginated via nextCursor. The scope is required.",
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
       properties: {
         items: { type: 'array', items: { $ref: '#/components/schemas/TimelineEvent' } },
         nextCursor: { type: 'string' },
-        lastSeenAt: { type: 'number' },
       },
     },
     statuses: [200, 400, 401, 403],
@@ -1960,45 +1821,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/timeline/unread',
     segment: 'timeline',
     tag: 'Account',
-    summary: "Count of other people's events since the caller last read their feed (capped at 99).",
+    summary: "Count of other people's events since the caller last viewed Home (capped at 99).",
     auth: 'guest-or-clerk',
     responseSchema: { type: 'object', properties: { count: { type: 'number' } } },
-    statuses: [200, 400, 401],
-  },
-  {
-    method: 'POST',
-    path: '/timeline/refresh',
-    segment: 'timeline',
-    tag: 'Account',
-    summary: 'Seed the feed on first use and mark it seen. Throttled to once every 5s.',
-    auth: 'guest-or-clerk',
-    responseSchema: { type: 'object', properties: { lastSeenAt: { type: 'number' } } },
-    statuses: [200, 400, 401],
-  },
-  {
-    method: 'DELETE',
-    path: '/timeline/events/{id}',
-    segment: 'timeline',
-    tag: 'Account',
-    summary:
-      "Remove one event from the caller's own feed. Other readers of the same event keep it. 404 when the feed never held it.",
-    auth: 'guest-or-clerk',
-    statuses: [204, 401, 404],
-  },
-  {
-    method: 'POST',
-    path: '/timeline/events/dismiss',
-    segment: 'timeline',
-    tag: 'Account',
-    summary:
-      "Remove several events (a whole stack) from the caller's own feed in one call. Up to 200 ids; unknown ids are ignored.",
-    auth: 'guest-or-clerk',
-    requestSchema: {
-      type: 'object',
-      required: ['ids'],
-      properties: { ids: { type: 'array', items: { type: 'string' } } },
-    },
-    responseSchema: { type: 'object', properties: { dismissed: { type: 'number' } } },
     statuses: [200, 400, 401],
   },
 
@@ -2359,17 +2184,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'guest-or-clerk',
     requestSchema: 'AiRequest',
     statuses: [200, 401, 403, 500, 502, 503],
-  },
-  {
-    method: 'POST',
-    path: '/ai/read-notes',
-    segment: 'ai',
-    tag: 'AI',
-    summary: 'Read the handwriting on sticky-note crops cut from a wall photo.',
-    auth: 'guest-or-clerk',
-    requestSchema: 'ReadNotesRequest',
-    responseSchema: 'ReadNotesResponse',
-    statuses: [200, 400, 401, 403, 413, 429, 502, 503],
   },
 
   // ---- Link unfurl ----

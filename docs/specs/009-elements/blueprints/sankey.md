@@ -17,7 +17,6 @@ Scope, by file:
 | `packages/document/src/element-normalise.ts`                                    | `normaliseSankey`: agent input                                                                                  |
 | `packages/document/src/shape-factory.ts`                                        | Default size and starter flows                                                                                  |
 | `packages/document/src/data-shapes.ts`                                          | `isSelfDrawingShape` membership, `takesChartPalette`                                                            |
-| `packages/document/src/animation-membership.ts`                                 | Sankey owns its animation set                                                                                   |
 | `packages/document/src/colors.ts`                                               | `SELF_PAINTING_SHAPES` member                                                                                   |
 | `apps/live/components/canvas/SankeyView.tsx`                                    | Canvas view (lazy chunk), hover, animations                                                                     |
 | `apps/live/components/palette/SankeyMenuSection.tsx`                            | The Sankey flyout: Flows, Bands, Layout, Labels, Leftovers, Text sections                                       |

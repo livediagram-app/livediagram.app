@@ -182,8 +182,8 @@ export async function purgeDocuments(env: Env, ids: string[]): Promise<number> {
     await purgeRooms(env, doomed);
     // Best effort, like deleteDocument's: a snapshot left behind is an orphan
     // R2 object, never a reason to fail the purge that already landed.
-    if (env.IMAGES) {
-      await env.IMAGES.delete(doomed.flatMap(snapshotKeys)).catch((err: unknown) => {
+    if (env.SNAPSHOTS) {
+      await env.SNAPSHOTS.delete(doomed.flatMap(snapshotKeys)).catch((err: unknown) => {
         console.warn('[trash] snapshot delete failed', doomed.length, err);
       });
     }

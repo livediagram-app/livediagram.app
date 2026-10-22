@@ -174,8 +174,8 @@ sighting with a changed address (§4), resets the count to zero.
   the same: a brand-gradient band across the top of the card (sky-400 to
   blue-700, flat `#0ea5e9` where a client drops gradients), the logo mark beside
   the "live"/"diagram" wordmark in the header, a brand-50 page behind the card,
-  and a footer under the card with the lockup again, the tagline ("Diagram,
-  draw and plan together, live. Free and open source.") and a link to the
+  and a footer under the card with the lockup again, the tagline ("Plan
+  the work together, live. Free, no trackers.") and a link to the
   site. Both lockups link to `APP_BASE_URL`. The mark is a transparent 64px PNG
   (`/email/liveplanner-mark-64.png`, shown at 28px in the header and 22px in
   the footer) served by the marketing app and written by `pnpm icons:brand`,
@@ -216,8 +216,8 @@ name, or a recipient count.
   have no account: that is why they carry no account footer, and why their only
   credential is the single-purpose decline token, stored hashed
   ([Teams → Declining from the email](../013-workspace/teams.md#declining-from-the-email)).
-- Off by default; self-hosters opt in by providing their own Resend key + domain
-  (keeps [Open source + distribution](../002-project-scope/open-source-and-business-model.md) self-hosting intact — no required SaaS call).
+- Off by default; a deployment opts in by providing a Resend key + domain
+  (keeps [Business model + licence](../002-project-scope/business-model-and-licence.md)'s degrade-never-break rule — no required SaaS call).
 
 ## 8. Out of scope (for now)
 

@@ -1,9 +1,7 @@
-import type { ShapeLibraryItem } from '@liveplanner/api-schema';
-import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
+import type { EmbedProvider } from '@liveplanner/document';
 import type { ShapeKind } from '@liveplanner/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
-import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
 
 export type CanvasTool = 'pan' | 'select' | 'format' | 'isometric';
 
@@ -42,19 +40,8 @@ export type PaletteProps = {
   // element carrying the chosen tech-catalogue id. Picked from the
   // Technology tab's searchable grid; never dropped inside a shape.
   onAddTechIcon: (iconId: string) => void;
-  // Places a shape from the palette's My shapes (docs/specs/013-workspace/shape-libraries.md) at the
-  // middle of the view.
-  onInsertLibraryShape: (item: ShapeLibraryItem) => void;
   onAddText: () => void;
-  // Optional fill + kind: an Event Storming note (docs/specs/021-event-storming/event-storming.md).
-  onAddSticky: (fill?: string, esKind?: EventStormingNoteKind) => void;
-  // True when the active tab is an event-storming board (docs/specs/021-event-storming/event-storming.md): the
-  // palette then opens on the Event Storming category instead of
-  // Popular — the notation is what the board is for.
-  esBoard?: boolean;
-  // Board-level switches shown above the notation on one of those boards
-  // (docs/specs/021-event-storming/event-storming.md Phase 6: timeline lanes). Omitted everywhere else.
-  esBoardControls?: EsBoardControls;
+  onAddSticky: () => void;
   // Drop a 3x3 editable table at the viewport centre.
   onAddTable: () => void;
   // Drop a note marker (annotation) at the viewport centre. See docs/specs/009-elements/annotations.md.
@@ -63,9 +50,6 @@ export type PaletteProps = {
   onAddLinkCard: () => void;
   onAddVideo: (provider?: EmbedProvider) => void;
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md): each arms the tap-or-drag draw gesture.
-  // Banner / Callout / Stat row / Process need no image and always show; Hero
-  // / Header (and the Tools-tab Avatar) carry an image, so they're gated on
-  // image upload being available (onAddImage present).
   onAddBanner: () => void;
   onAddHero: () => void;
   onAddHeader: () => void;
@@ -74,11 +58,6 @@ export type PaletteProps = {
   onAddProcess: () => void;
   onAddFlowchart: () => void;
   onAddAvatar: () => void;
-  // Spawn an image placeholder + open the picker. Optional so
-  // deployments without R2 (or view-role visitors) can omit it; the
-  // Image palette entry hides when the handler is missing. See
-  // docs/specs/009-elements/images.md.
-  onAddImage?: () => void;
   // Drops a horizontal arrow at the viewport centre with no pointers
   // on either end by default (i.e. a plain line). Users can flip the
   // arrowEnds afterwards via the Pointer accordion.

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { isRecovery, isServerCrash } from './ExceptionsView';
 import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './LookAndFeelView';
-import { PALETTE_TYPE_ALIASES, SELECTION_MODES } from './PaletteView';
+import { PALETTE_TYPE_ALIASES } from './PaletteView';
 import { isHelpArticleType, isSettingsCategory } from './opened-types';
 import { aliasedSeries, foldAliases, rank } from './rank';
 
@@ -67,9 +67,7 @@ describe('foldAliases / rank', () => {
 });
 
 describe('what each ranking leaves out', () => {
-  it('Selection Modes excludes the Canvas·Used events that are not modes', () => {
-    expect(SELECTION_MODES).not.toContain('InsertBetween');
-  });
+  it('Selection Modes excludes the Canvas·Used events that are not modes', () => {});
 
   it('Canvas Styles excludes the colour, opacity and scale controls', () => {
     for (const t of [

@@ -31,7 +31,6 @@ export const PALETTE_KINDS: ReadonlySet<string> = new Set(
   Object.values(PALETTE_TELEMETRY_TYPES).flat(),
 );
 
-// The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). Other
-// Canvas·Used events are not modes a person selects: InsertBetween is a drag
-// gesture, so the ranking names the modes it counts.
+// The canvas selection modes (useCanvasTool's `Canvas·Used` tokens). The ranking
+// names the modes it counts, so a Canvas·Used event that is not a mode stays out.
 export const SELECTION_MODES: readonly string[] = ['FormatPainter', 'Isometric'];

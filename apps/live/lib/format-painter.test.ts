@@ -1,12 +1,6 @@
 import type { ArrowElement, BoxedElement, TextRun } from '@liveplanner/document';
-import { createShape, createSticky, createText } from '@liveplanner/document';
 import { describe, expect, it } from 'vitest';
-import {
-  applyPaint,
-  fitPaintToTarget,
-  paintableArrowFields,
-  paintableBoxedFields,
-} from './format-painter';
+import { applyPaint, paintableArrowFields, paintableBoxedFields } from './format-painter';
 
 // Fully-populated source shapes / arrows so the painter has something
 // for every field. The painter's whole job is to be specific about
@@ -167,7 +161,7 @@ describe('paintableBoxedFields', () => {
     expect(out).not.toHaveProperty('colorPreset');
   });
 
-  it('carries an image’s animation along with its size, opacity and shadow', () => {
+  it('carries an image’s size, opacity and shadow', () => {
     const image: BoxedElement = {
       id: 'img',
       type: 'image',
@@ -176,10 +170,10 @@ describe('paintableBoxedFields', () => {
       y: 0,
       width: 120,
       height: 80,
-      animation: 'pulse',
+      opacity: 0.5,
     };
     const out = paintableBoxedFields(image);
-    expect(out.animation).toBe('pulse');
+    expect(out.opacity).toBe(0.5);
     expect(out).toHaveProperty('shadow', undefined);
     // Images draw no text or colour, so they hold no opinion on either.
     expect(out).not.toHaveProperty('fillColor');
@@ -447,87 +441,5 @@ describe('quick-swatch bindings (docs/specs/008-canvas/quick-style-panel.md)', (
     };
     expect(painted).not.toHaveProperty('fillSwatch');
     expect(painted.strokeSwatch).toBe(1);
-  });
-});
-
-// Animations travel only where they mean the same thing (docs/specs/028-animation/element-animations.md).
-describe('fitPaintToTarget', () => {
-  const shape = {
-    ...createShape('square', 0, 0),
-    animation: 'bounce' as const,
-    textAnimation: 'typewriter' as const,
-  };
-
-  it('keeps a body animation between members of one set', () => {
-    const patch = paintableBoxedFields(shape);
-    const out = fitPaintToTarget(shape, createShape('diamond', 0, 0), patch);
-    expect(out.animation).toBe('bounce');
-    expect((out as { textAnimation?: string }).textAnimation).toBe('typewriter');
-  });
-
-  it('drops a body animation onto another set, but keeps the Text animation for its words', () => {
-    const pulse = { ...shape, animation: 'pulse' as const };
-    const out = fitPaintToTarget(pulse, createSticky(0, 0), paintableBoxedFields(pulse));
-    expect('animation' in out).toBe(false);
-    expect((out as { textAnimation?: string }).textAnimation).toBe('typewriter');
-  });
-
-  it('clears a text element’s legacy body animation when a Text animation is painted on', () => {
-    const target = {
-      ...createText(0, 0),
-      animation: 'bounce' as const,
-      animationSpeed: 'fast' as const,
-    };
-    const out = fitPaintToTarget(shape, target, paintableBoxedFields(shape));
-    expect((out as { textAnimation?: string }).textAnimation).toBe('typewriter');
-    expect('animation' in out && out.animation === undefined).toBe(true);
-    expect('animationSpeed' in out && out.animationSpeed === undefined).toBe(true);
-  });
-
-  it('drops a Text animation onto an element without words', () => {
-    const icon = createShape('icon', 0, 0);
-    const out = fitPaintToTarget(shape, icon, paintableBoxedFields(shape));
-    expect('textAnimation' in out).toBe(false);
-  });
-});
-
-// docs/specs/028-animation/element-animations.md "Shape motions".
-describe('fitPaintToTarget with Shape motions', () => {
-  const image = { ...createShape('square', 0, 0), type: 'image' } as unknown as BoxedElement;
-  const paint = (source: BoxedElement, target: BoxedElement) =>
-    fitPaintToTarget(source, target, paintableBoxedFields(source));
-
-  it('paints a motion onto any element that takes it', () => {
-    const bounce = { ...createShape('square', 0, 0), animation: 'bounce' as const };
-    expect(paint(bounce, image).animation).toBe('bounce');
-    expect(paint(bounce, createShape('pie-chart', 0, 0)).animation).toBe('bounce');
-    expect(paint({ ...image, animation: 'float' }, createSticky(0, 0)).animation).toBe('float');
-  });
-
-  it('keeps an outline effect and an own-set value to their own members', () => {
-    const pulse = { ...createShape('square', 0, 0), animation: 'pulse' as const };
-    expect('animation' in paint(pulse, image)).toBe(false);
-    const flutter = { ...createSticky(0, 0), animation: 'flutter' as const };
-    expect('animation' in paint(flutter, image)).toBe(false);
-  });
-
-  it('never paints a motion onto an icon or a text element', () => {
-    const bounce = { ...createShape('square', 0, 0), animation: 'bounce' as const };
-    expect('animation' in paint(bounce, createShape('icon', 0, 0))).toBe(false);
-    expect('animation' in paint(bounce, createText(0, 0))).toBe(false);
-  });
-});
-
-describe('fitPaintToTarget between elements with no body set', () => {
-  it('never paints an animation onto an icon or chart', () => {
-    const text = { ...createText(0, 0), animation: 'pulse' as const };
-    const out = fitPaintToTarget(text, createShape('pie-chart', 0, 0), paintableBoxedFields(text));
-    expect('animation' in out).toBe(false);
-  });
-
-  it('keeps a legacy text animation between text elements', () => {
-    const text = { ...createText(0, 0), animation: 'pulse' as const };
-    const out = fitPaintToTarget(text, createText(0, 0), paintableBoxedFields(text));
-    expect(out.animation).toBe('pulse');
   });
 });

@@ -67,12 +67,14 @@ describe('resolveDefaultFor', () => {
 
   it('skips a default it cannot see and says so', () => {
     const d = defaults([
-      ['kind:event-storming', 'gone'],
+      ['template:kanban', 'gone'],
       ['mode:plan', 'workshops'],
     ]);
-    expect(resolveDefaultFor({ mode: 'plan', tabKind: 'event-storming' }, d, index)).toMatchObject({
+    expect(
+      resolveDefaultFor({ mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }, d, index),
+    ).toMatchObject({
       resolved: { key: 'mode:plan' },
-      skipped: ['kind:event-storming'],
+      skipped: ['template:kanban'],
     });
   });
 
@@ -87,10 +89,6 @@ describe('resolveDefaultFor', () => {
 describe('representativeIntent', () => {
   it('reads every entry in Plan', () => {
     expect(representativeIntent('mode:plan')).toEqual({ mode: 'plan', tabKind: 'diagram' });
-    expect(representativeIntent('kind:event-storming')).toEqual({
-      mode: 'plan',
-      tabKind: 'event-storming',
-    });
     expect(representativeIntent('template:kanban')).toEqual({
       mode: 'plan',
       tabKind: 'diagram',

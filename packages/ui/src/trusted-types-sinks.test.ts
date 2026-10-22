@@ -103,14 +103,8 @@ describe('Trusted Types sinks', () => {
     expect(serverSinks).toEqual([]);
   });
 
-  it('parse files only through parseInert', () => {
-    const direct = files.filter(
-      (f) =>
-        /\bnew DOMParser\(\)/.test(read(f)) &&
-        !f.endsWith('packages/ui/src/trusted-types.ts') &&
-        !f.endsWith('apps/live/lib/drawio/test-support.ts'),
-    );
-    expect(direct).toEqual([]);
+  it('parse no files with DOMParser, which no policy lets through', () => {
+    expect(files.filter((f) => /\bnew DOMParser\(\)/.test(read(f)))).toEqual([]);
   });
 });
 

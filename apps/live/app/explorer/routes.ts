@@ -3,12 +3,11 @@
 // back button works, and new sections keep landing as new pages:
 //
 //   home     → /explorer/home            recent  → /explorer/recent
-//   inbox    → /explorer/inbox           timeline → /explorer/timeline
+//   inbox    → /explorer/inbox
 //   search   → /explorer/search          shared  → /explorer/shared
 //   favourites → /explorer/favourites
 //   tags     → /explorer/tags            one tag → /explorer/tags?id=<id>
-//   gallery  → /explorer/images          invites → /explorer/invites
-//   shape-libraries → /explorer/shape-libraries
+//   themes   → /explorer/themes          invites → /explorer/invites
 //   folder   → /explorer/folder?id=<id>  team    → /explorer/team?id=<id>
 //   trash    → /explorer/trash (Library sidebar row + Settings › Account)
 //
@@ -27,8 +26,6 @@ export function explorerPathFor(node: SelectedNode): string {
   switch (node.kind) {
     case 'home':
       return '/explorer/home';
-    case 'timeline':
-      return '/explorer/timeline';
     case 'inbox':
       return '/explorer/inbox';
     case 'recent':
@@ -45,12 +42,8 @@ export function explorerPathFor(node: SelectedNode): string {
       return '/explorer/search';
     case 'shared':
       return '/explorer/shared';
-    case 'gallery':
-      return '/explorer/images';
     case 'themes':
       return '/explorer/themes';
-    case 'shape-libraries':
-      return '/explorer/shape-libraries';
     case 'trash':
       return '/explorer/trash';
     case 'invites':
@@ -74,19 +67,17 @@ export function teamFolderPath(teamId: string, folderId: string | null): string 
 // /live basePath (usePathname strips it); trailing slashes from the
 // static export are tolerated. Unknown paths and id-less folder/team
 // URLs fall back to `home`, the section /explorer itself redirects to
-// (docs/specs/013-workspace/timeline.md §8.1), so a mangled link degrades to the default view,
+// (docs/specs/013-workspace/explorer-home.md "Route"), so a mangled link degrades to the default view,
 // never a crash.
 export function selectedFromRoute(pathname: string, search: URLSearchParams): SelectedNode {
   const path = pathname.replace(/\/+$/, '');
   switch (path) {
     case '/explorer/home':
       return { kind: 'home' };
-    case '/explorer/timeline':
-      return { kind: 'timeline' };
     case '/explorer/inbox':
       return { kind: 'inbox' };
     // Explicit, not left to the default: without its own case /explorer/recent would resolve
-    // to Home (docs/specs/013-workspace/timeline.md §8.1) and the sidebar would highlight the
+    // to Home (docs/specs/013-workspace/explorer-home.md "Route") and the sidebar would highlight the
     // wrong row.
     case '/explorer/recent':
       return { kind: 'recent' };
@@ -113,12 +104,8 @@ export function selectedFromRoute(pathname: string, search: URLSearchParams): Se
       return { kind: 'offline' };
     case '/explorer/shared':
       return { kind: 'shared' };
-    case '/explorer/images':
-      return { kind: 'gallery' };
     case '/explorer/themes':
       return { kind: 'themes' };
-    case '/explorer/shape-libraries':
-      return { kind: 'shape-libraries' };
     case '/explorer/trash':
       return { kind: 'trash' };
     case '/explorer/invites':

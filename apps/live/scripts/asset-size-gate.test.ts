@@ -5,8 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { MAX_ASSET_BYTES, oversizedAssets } from './asset-size-gate.mjs';
 
 // Cloudflare Workers Static Assets refuses any file over 25 MiB, and only at
-// deploy: transformers 4.3.0's 25.6 MiB onnxruntime wasm built and tested
-// green, then failed every staging deploy. The gate moves that to the build.
+// deploy, after a build that tested green. The gate moves that to the build.
 describe('oversizedAssets', () => {
   let dir: string | null = null;
   afterEach(() => {

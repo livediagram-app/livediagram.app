@@ -82,16 +82,13 @@ export const TELEMETRY_CATEGORIES = [
   // 'Uncaught', 'UnhandledRejection', 'AiQuota.BrowserReader') — never a
   // message, stack, or URL.
   'Error',
-  // Timeline (docs/specs/013-workspace/timeline.md): the Explorer's landing feed. 'Opened' with
-  // `type` 'Landing' | 'Nav' separates the new default landing view
-  // from a deliberate visit, so the landing-page change is measurable;
-  // 'Opened'/'Stack' counts stacked-run expansions, which is how we
-  // learn whether the stacking thresholds are right. 'Changed' carries
-  // the view mode, 'Selected' a filter chip's source type, and 'Loaded'
-  // 'More' | 'Retry' — the second being a read that failed hard enough
+  // Timeline (docs/specs/013-workspace/timeline.md): the scoped feeds, a document's History and a
+  // team's Activity. 'Opened'/'Stack' counts stacked-run expansions, which is how we learn whether
+  // the stacking thresholds are right. 'Changed' carries the view mode, 'Selected' a filter chip's
+  // source type, and 'Loaded' 'More' | 'Retry' — the second being a read that failed hard enough
   // that the reader pressed Try again (docs/specs/013-workspace/timeline.md §2.4), which is the
-  // only signal we get for a feed nobody could load. Never a document
-  // name, team name, or comment text.
+  // only signal we get for a feed nobody could load. Never a document name, team name, or comment
+  // text.
   'Timeline',
   // Explorer Home (docs/specs/013-workspace/explorer-home.md): the landing view. 'Opened' with
   // `type` 'Landing' | 'Nav' (the page the Explorer opened on, or a later visit) and 'Group' (a
@@ -130,7 +127,7 @@ export const TELEMETRY_CATEGORIES = [
   'Trash',
   // Draw mode (docs/specs/007-editor/editor-modes.md), named 'Whiteboard' until its stored
   // history was rewritten (migration 0061): a Whiteboard tab 'Created' (`type` how:
-  // 'Template' | 'NewTab' | 'Import'). Never content.
+  // 'Template' | 'NewTab'). Never content.
   'Draw',
   // Editor modes: a person switched a tab's editor mode, 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModePages'.
   // No longer sent since every tab is a Plan tab (docs/specs/017-telemetry/telemetry.md "Retired features"); kept

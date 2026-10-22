@@ -19,7 +19,6 @@ export function useEditorTileActions(): PaletteTileActions {
     beginPolygon,
     addSticky,
     addTable,
-    addImage,
     addAnnotation,
     addLinkCard,
     addVideo,
@@ -49,7 +48,6 @@ export function useEditorTileActions(): PaletteTileActions {
     addArrow,
     addSticky,
     addTable,
-    addImage: () => addImage?.(),
     addAnnotation,
     addLinkCard,
     addVideo,
@@ -57,6 +55,5 @@ export function useEditorTileActions(): PaletteTileActions {
     addComponent: (kind) => byComponent[kind](),
     addIcon,
     addTechIcon,
-    hasImage: !!addImage,
   };
 }

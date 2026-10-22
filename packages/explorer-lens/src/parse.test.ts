@@ -20,7 +20,7 @@ describe('parseLens', () => {
 
   it('reads every dimension from its token', () => {
     const { lens, issues } = parseLens(
-      'opens-in:plan kind:event-storming template:retrospective made-by:ai edited:7d people:me space:team:T1',
+      'opens-in:plan template:retrospective made-by:ai edited:7d people:me space:team:T1',
       aggregate,
     );
     expect(issues).toEqual([]);
@@ -28,7 +28,6 @@ describe('parseLens', () => {
       text: [],
       filters: {
         'opens-in': ['plan'],
-        kind: ['event-storming'],
         template: ['retrospective'],
         'made-by': ['ai'],
         edited: ['7d'],
@@ -114,14 +113,14 @@ describe('parseLens', () => {
     it.each([
       ['colour:red', 'unknown_dimension', null, null],
       ['http://example.com', 'unknown_dimension', null, null],
-      ['kind:', 'missing_value', 'kind', null],
+      ['template:', 'missing_value', 'template', null],
       ['edited:7d,', 'missing_value', 'edited', null],
       ['edited:,7d', 'missing_value', 'edited', null],
       ['people:me,,others', 'missing_value', 'people', null],
       ['space:team:', 'missing_value', 'space', null],
       ['template:mindmap', 'unknown_value', 'template', 'mindmap'],
       ['template:kanban,mindmap,x', 'unknown_value', 'template', 'mindmap'],
-      ['kind:diagram', 'unknown_value', 'kind', 'diagram'],
+      ['made-by:me', 'unknown_value', 'made-by', 'me'],
       ['board:kanban', 'unknown_dimension', null, null],
       ['edited:year', 'unknown_value', 'edited', 'year'],
       ['space:everyone', 'unknown_value', 'space', 'everyone'],
@@ -163,7 +162,7 @@ describe('parseLens', () => {
   });
 
   it('orders issues by where they start', () => {
-    const issues = parseLens('space:team:x colour:red kind:draw', aggregate).issues;
+    const issues = parseLens('space:team:x colour:red edited:x', aggregate).issues;
     expect(issues.map((i) => [i.reason, i.start])).toEqual([
       ['unknown_team', 0],
       ['unknown_dimension', 13],
@@ -188,9 +187,9 @@ describe('parseLens', () => {
     });
 
     it('holds even a complete token under the caret until the caret leaves it', () => {
-      expect(parseLens('kind:event-storming', aggregate, 3).terms[0]?.kind).toBe('pending');
-      expect(parseLens('kind:event-storming ', aggregate, 20).lens.filters.kind).toEqual([
-        'event-storming',
+      expect(parseLens('template:kanban', aggregate, 3).terms[0]?.kind).toBe('pending');
+      expect(parseLens('template:kanban ', aggregate, 16).lens.filters.template).toEqual([
+        'kanban',
       ]);
     });
 
@@ -210,14 +209,14 @@ describe('parseLens', () => {
   describe('over-long input', () => {
     it('cuts at the last whitespace within the limit and reports the rest', () => {
       const head = 'a'.repeat(LENS_MAX_INPUT_LENGTH - 2);
-      const input = `${head} kind:event-storming`;
+      const input = `${head} template:kanban`;
       const { lens, issues } = parseLens(input, aggregate);
       expect(lens.text).toEqual([head]);
-      expect(lens.filters.kind).toEqual([]);
+      expect(lens.filters.template).toEqual([]);
       expect(issues).toEqual([
         {
           reason: 'too_long',
-          raw: ' kind:event-storming',
+          raw: ' template:kanban',
           start: LENS_MAX_INPUT_LENGTH - 2,
           end: input.length,
           dimension: null,
@@ -275,6 +274,6 @@ describe('orderValues', () => {
 
 describe('normaliseInput', () => {
   it('collapses whitespace and trims', () => {
-    expect(normaliseInput('  plan \n\t kind:event-storming  ')).toBe('plan kind:event-storming');
+    expect(normaliseInput('  plan \n\t template:kanban  ')).toBe('plan template:kanban');
   });
 });

@@ -32,27 +32,27 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `apps/marketing/app/sitemap.ts`                                           | Lists `/licences`                                                     |
 | `packages/ui/src/SiteFooter.tsx`                                          | "Licences" footer link; legal strip at AA contrast                    |
 | `packages/ui/src/ShareRail.tsx`                                           | Its "Share" label at AA contrast (found by the page's axe run)        |
-| `apps/live/components/panels/ExplorerHeaderMenu.tsx`                      | "Licences" row beside GitHub                                          |
+| `apps/live/components/panels/ExplorerHeaderMenu.tsx`                      | "Licences" row                                                        |
 | `apps/live/components/chrome/tab-bar-icons.tsx`                           | `ScaleIcon` (vendored Lucide `scale`, at `MENU_ICON_PX`)              |
 | `packages/icons/lucide-manifest.json`                                     | Gains `scale`                                                         |
 | `turbo.json`, `apps/marketing/package.json`, `package.json`, `.gitignore` | Build wiring                                                          |
 
 ## Domain and naming
 
-| Term          | Identifier                                           | Meaning                                                                                                       |
-| ------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| App           | `LicenceApp`, `AppId`                                | One deployed app: `live`, `marketing`, `help`, `telemetry`, `api`, `mcp`, `router`                            |
-| Side          | `Side` = `'browser' \| 'server'`                     | Where an app's bundle runs                                                                                    |
-| Bundle        | `AppBundle`                                          | One app's shipped `sources` (repo-relative paths) and `assets` (emitted file basenames)                       |
-| Work          | `WorkRecord` (collect), `WorkEntry` (manifest)       | Third-party material with its own licence                                                                     |
-| Work kind     | `WorkKind` = `'package' \| 'vendored' \| 'embedded'` | npm package, vendored inside a package, inside a binary or our source                                         |
-| Carrier       | `carrier`                                            | What holds a vendored or embedded work (`next 16.3.6`, `@tensorflow/tfjs-backend-wasm`, `liveplanner source`) |
-| Licence text  | `LicenceText` `{ label, text }`                      | One licence or notice file's normalised content                                                               |
-| Text hash     | `hash`                                               | First 16 hex of the sha256 of a normalised text; its file name                                                |
-| Override      | `Override`                                           | Committed texts for one exact package version                                                                 |
-| Embedded work | `EmbeddedWork`                                       | A reviewed table entry for material the bundler cannot see                                                    |
-| Binary asset  | (a basename)                                         | Emitted file with an extension in `BINARY_ASSET_EXTENSIONS`                                                   |
-| Manifest      | `LicencesManifest`                                   | What the page renders                                                                                         |
+| Term          | Identifier                                           | Meaning                                                                                           |
+| ------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| App           | `LicenceApp`, `AppId`                                | One deployed app: `live`, `marketing`, `help`, `telemetry`, `api`, `mcp`, `router`                |
+| Side          | `Side` = `'browser' \| 'server'`                     | Where an app's bundle runs                                                                        |
+| Bundle        | `AppBundle`                                          | One app's shipped `sources` (repo-relative paths) and `assets` (emitted file basenames)           |
+| Work          | `WorkRecord` (collect), `WorkEntry` (manifest)       | Third-party material with its own licence                                                         |
+| Work kind     | `WorkKind` = `'package' \| 'vendored' \| 'embedded'` | npm package, vendored inside a package, inside a binary or our source                             |
+| Carrier       | `carrier`                                            | What holds a vendored or embedded work (`next 16.3.6`, `@resvg/resvg-wasm`, `liveplanner source`) |
+| Licence text  | `LicenceText` `{ label, text }`                      | One licence or notice file's normalised content                                                   |
+| Text hash     | `hash`                                               | First 16 hex of the sha256 of a normalised text; its file name                                    |
+| Override      | `Override`                                           | Committed texts for one exact package version                                                     |
+| Embedded work | `EmbeddedWork`                                       | A reviewed table entry for material the bundler cannot see                                        |
+| Binary asset  | (a basename)                                         | Emitted file with an extension in `BINARY_ASSET_EXTENSIONS`                                       |
+| Manifest      | `LicencesManifest`                                   | What the page renders                                                                             |
 
 Banned: "licence" and "license" as synonyms of each other in identifiers; the code spells the
 British `licence` everywhere except the npm `license` field and file names.
@@ -229,8 +229,8 @@ copy in the same box.
 - Measured in a full `pnpm build`: live 7.9 s, help 6.1 s, telemetry 3.0 s, marketing 2.5 s, each
   worker about 1 s; about 22 s on the marketing build only, which now starts once the editor's
   build finishes (the full build took 59 s).
-- HTML carries summaries only; texts load on open. The largest text, ONNX Runtime's third-party
-  notices, is 327 KB (about 80 KB compressed) and is fetched only when its entry opens.
+- HTML carries summaries only; texts load on open, so a long text is fetched only when its entry
+  opens.
 - Page weight measured: 173.8 KB raw, 20.3 KB gzipped for 54 works. A static export ships the
   server-rendered entries twice (HTML and RSC payload), so repeated chrome is short `lic-*`
   classes (per-element utilities made it 353 KB) and no per-entry SVG (D16).
@@ -241,8 +241,8 @@ copy in the same box.
 Route `/licences`, the shared `SiteHeader` without a funnel surface (D15) and marketing's `Footer`,
 content column `max-w-3xl`.
 
-- Title (h1): "Open-source licences".
-- Lead: "liveplanner is MIT licensed and built on the work of many open-source projects. These are
+- Title (h1): "Third-party licences".
+- Lead: "liveplanner is built on the work of many third-party projects. These are
   the ones our apps ship, generated from what each app actually bundles every time the site is
   built."
 - Section h2 "In your browser", intro: "Sent to your browser by the editor, this website, the help

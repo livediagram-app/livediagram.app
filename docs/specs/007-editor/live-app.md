@@ -185,7 +185,7 @@ opens the dialog, so only the owner sees Show Me. Telemetry: `UI` · `Started` �
 
 ## Destructive actions
 
-Every irreversible flow (delete a folder or an image gallery row) is gated by a branded confirmation. Deleting a document is not one: it goes to the Trash with an Undo ([Trash](../013-workspace/trash.md)). Nor is deleting a tab: one commit, so undo brings it back, and the tab menu asks first only when deleting does what an undo cannot take back (a Form tab's link, the forms sending their responses to a board or sheet; `deleteTabWarning`). Two forms:
+Every irreversible flow (delete a folder) is gated by a branded confirmation. Deleting a document is not one: it goes to the Trash with an Undo ([Trash](../013-workspace/trash.md)). Nor is deleting a tab: one commit, so undo brings it back, and the tab menu asks first only when deleting does what an undo cannot take back (a Form tab's link, the forms sending their responses to a board or sheet; `deleteTabWarning`). Two forms:
 
 - **Centre modal** — `apps/live/components/dialogs/ConfirmDialog.tsx`, wired in through the `useConfirm` hook (`apps/live/hooks/ui/useConfirm.tsx`). The provider mounts once at the live root layout so any descendant can `await confirm({ title, message, confirmLabel })` and receive a boolean. Used where the action has no tight on-screen anchor.
 - **Anchored popover** — `apps/live/components/primitives/ConfirmPopover.tsx`: a small popover beside the trigger with an arrow pointing back at it, so you confirm right where you clicked rather than being yanked to the screen centre. Portal-rendered (its `position: fixed` must escape transformed ancestors like the tab menu) and tagged `data-confirm-popover` so a host menu's outside-click handler can ignore it. Used by the tab menu's Delete row when it warns (`deleteTab` performs the delete directly). Esc cancels, Enter confirms.
@@ -203,7 +203,7 @@ Its confirm button is the brand primary button for every action, a delete includ
 ## Element dialogs and popovers
 
 A dialog or popover opened for one element (its link, a table cell's link, line data, code, Sankey Flows, a
-Sequence, a picture's image picker, comments, an action, a note) shows only while it can be shown for that element:
+Sequence, comments, an action, a note) shows only while it can be shown for that element:
 the element is on the active tab, of the kind the dialog edits, and the session may still use it. The moment that
 stops being true (a collaborator deletes the element, an undo takes it away, the tab changes, the element locks, the
 session turns read-only), the dialog **closes**, rather than hiding with its element still named, so it never
@@ -212,12 +212,12 @@ check). Edit Outline closes itself the same way (`useMindOutline`).
 
 ## Toasts
 
-Asynchronous failures that previously fell through to silent `catch` blocks (link-tab, gallery delete, image upload from a background flow) now surface through a bottom-right toast stack: `apps/live/hooks/ui/useToast.tsx` (`ToastProvider` + `useToast`). Three tones: `error` (rose), `success` (emerald), `info` (slate). Each toast auto-dismisses after 4 seconds, can be closed early, and dedupes against an identical message already on-screen so a tight retry loop can't drown the surface.
+Asynchronous failures that previously fell through to silent `catch` blocks (link-tab, a background save) now surface through a bottom-right toast stack: `apps/live/hooks/ui/useToast.tsx` (`ToastProvider` + `useToast`). Three tones: `error` (rose), `success` (emerald), `info` (slate). Each toast auto-dismisses after 4 seconds, can be closed early, and dedupes against an identical message already on-screen so a tight retry loop can't drown the surface.
 
 Toasts are NOT used for:
 
 - Autosave progress / failures: the EditorHeader already carries a dedicated save-status pill.
-- In-context errors that have a sensible place to live near the action (the image picker's inline "Unsupported file type" surface, the gallery's "Could not load your gallery" banner).
+- In-context errors that have a sensible place to live near the action (a dialog's own inline error line).
 
 They ARE used for actions that finish off-surface from the gesture: clicking "Add to another document", duplicating a document, or any future flow whose UI has already navigated away by the time the network call resolves.
 

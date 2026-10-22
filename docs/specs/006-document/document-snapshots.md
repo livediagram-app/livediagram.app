@@ -24,7 +24,7 @@ as a 36px list thumbnail and as a full-size embed — there is no separate
 
 ## Render-on-read, cached in R2
 
-The snapshot bytes live in R2 (the existing `IMAGES` bucket, key
+The snapshot bytes live in R2 (the `SNAPSHOTS` bucket, `liveplanner-snapshots`, key
 `thumb/<documentId>`); a `documents.thumb_rendered_at` column records when
 they were last rendered.
 
@@ -40,13 +40,9 @@ On a read of either delivery path:
   `thumb_rendered_at`, and return it. Icon elements render their real
   glyph (line art + Technology brand tiles) via the
   `@liveplanner/icons/resolve` resolver the worker passes in — see
-  [Technology icons](../010-palette/technology-icons.md) "Rendering". Image elements render their real picture: the
-  worker reads each upload from R2 and inlines it as a base64 data URL
-  through `embedTabImages` (`@liveplanner/api-schema`, shared with the
-  MCP preview, [MCP server](../015-api/mcp-server.md) §5), in document order under a 3 MB total budget
-  so a tab of large photos can't produce a multi-megabyte snapshot. An
-  image past the budget, missing from R2, or not a recognised raster
-  format keeps its placeholder box.
+  [Technology icons](../010-palette/technology-icons.md) "Rendering". liveplanner takes no image uploads, so an image
+  placeholder left by a diagram template draws as its empty placeholder box
+  and a snapshot reads nothing but the document's own rows.
 
 This is **render-on-read**, not render-on-save, on purpose:
 
@@ -75,8 +71,7 @@ document renders lazily.
 - Read-gated exactly like `GET /api/documents/:id`: the owner, a joined
   team member, or a valid share-code visitor.
 - A native `<img>` can't send auth headers, so the live app fetches this
-  through the authenticated client and wraps the bytes in a blob URL
-  (the same pattern image elements use, [Image element + per-owner gallery](../009-elements/images.md)). `?v=<savedAt>` busts
+  through the authenticated client and wraps the bytes in a blob URL. `?v=<savedAt>` busts
   the browser cache when the document changes; the worker ignores it.
   `Cache-Control: private, max-age=86400`.
 - One D1 read gates it: `getDocumentThumbMeta` returns the owner, team,
@@ -227,8 +222,7 @@ List and Details are not offered: they are for larger screens. The browse views 
 library always show cards, and the toggle is hidden so it takes no room in the header. The saved
 choice is left alone, so the same device shows it again once the window is wide enough.
 
-**The actions menu** (the ⋯ on a row or card, and on a Timeline document
-card, [Timeline](../013-workspace/timeline.md) §2.8) has one shape wherever it opens: a **header row**
+**The actions menu** (the ⋯ on a row or card) has one shape wherever it opens: a **header row**
 naming the document with its visibility badge, because a menu opens away
 from its trigger and on a grid of near-identical cards the menu itself
 has to say which one it belongs to; then **Open on its own, under a
@@ -285,8 +279,8 @@ document, so a per-card badge is noise — the team list omits it as well).
   library; the "Shared With Me" page keeps its fixed layout (it already
   shows the thumbnail).
 
-## Self-hosting
+## Without image storage
 
-The whole feature is gated on the optional `IMAGES` R2 binding, exactly
-like the image gallery ([Image element + per-owner gallery](../009-elements/images.md)): with no bucket, both endpoints 404 and
+The whole feature is gated on the optional `SNAPSHOTS` R2 binding (it caches
+nothing but snapshots and share cards): with no bucket, both endpoints 404 and
 the Explorer row shows its icon. No new binding, no required SaaS.

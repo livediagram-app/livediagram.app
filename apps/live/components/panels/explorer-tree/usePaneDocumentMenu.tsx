@@ -2,7 +2,7 @@
 
 // The one document menu for any document the editor's Explorer pane shows (docs/specs/013-workspace/
 // explorer-structure.md "The pane"): the Explorer page's own DocumentActionsMenu, opened from the row's ⋯, a
-// right-click or Shift+F10, with the verbs the host wired. Home's cards, What Happened, the Timeline and the places'
+// right-click or Shift+F10, with the verbs the host wired. Home's cards, What Happened and the places'
 // rows all take it from here, so a document offers the same verbs wherever it appears.
 import type { MouseEvent, ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';

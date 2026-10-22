@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react';
 // does not hold up first paint, so faces arrive AFTER first paint, and the stylesheet itself may
 // arrive after the canvas has mounted.
 //
-// This exists because auto-fit measures the face it paints (docs/specs/021-event-storming/event-storming.md):
-// a workshop note is written in marker, and marker is much wider than the fallback the browser
+// This exists because auto-fit measures the face it paints:
+// a webfont can be much wider than the fallback the browser
 // swaps in while the file is in flight. Measure during that window and the note keeps a size
 // fitted to the wrong face (text over the edge of the paper) with nothing to trigger a re-measure
 // on a canvas nobody has touched yet. `loadingdone` fires for every batch of faces that finishes,

@@ -1,4 +1,4 @@
--- Image reference index (docs/specs/009-elements/images.md, "Reference index").
+-- Image reference index (retired with image uploads; dropped in the migration squash).
 --
 -- Which gallery images a tab places lives in `tabs.data`, and that stays the
 -- source of truth. This is a projection of it that SQL can query without

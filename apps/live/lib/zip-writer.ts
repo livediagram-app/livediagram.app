@@ -1,6 +1,5 @@
 // A minimal Zip writer for downloads. Stored entries only: images are already compressed, so
-// deflating them again would cost time for nothing. Pure and browser-safe; the counterpart of
-// zip-reader.ts.
+// deflating them again would cost time for nothing. Pure and browser-safe.
 
 type ZipFile = { name: string; data: Uint8Array };
 

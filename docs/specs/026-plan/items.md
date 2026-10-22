@@ -371,8 +371,6 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
   not be added.
 - **The Markdown export** lists each Plan board under "Plan Boards": its title, then each column with its card
   count after a middle dot (`To Do · 3`, never in brackets), then its cards as `#key Title (Type)`. A Plan card on the canvas is listed under "Plan Cards".
-- **The Excalidraw export** draws a board as its frame, title, columns and card faces (each card a labelled
-  rectangle with `#key Title`), laid out as the image export lays them out.
 
 ## Limits
 

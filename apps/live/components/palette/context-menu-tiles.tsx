@@ -139,7 +139,7 @@ export function FlowTiles({
   onSet: (v: ArrowFlow | null) => void;
   onSetSpeed: (v: AnimationSpeed) => void;
   onSetRepeat: (v: boolean) => void;
-  // Desktop hover-to-preview (docs/specs/008-canvas/canvas-and-palette.md), as in AnimationSetTiles.
+  // Desktop hover-to-preview (docs/specs/008-canvas/canvas-and-palette.md).
   onPreview?: (v: ArrowFlow | null) => void;
   onPreviewEnd?: () => void;
 }) {
@@ -175,8 +175,7 @@ export function FlowTiles({
 }
 
 // Icon Animation control (docs/specs/008-canvas/canvas-and-palette.md): icons get their own glyph-motion set
-// (Spin / Beat / Pulse / Bounce / Wiggle / Flash / Tada) instead of the
-// boxed-element animation set. Like the boxed Animation + arrow Flow controls,
+// (Spin / Beat / Pulse / Bounce / Wiggle / Flash / Tada). Like the arrow Flow controls,
 // a Speed row appears once a motion is picked.
 export function IconAnimationTiles({
   animation,

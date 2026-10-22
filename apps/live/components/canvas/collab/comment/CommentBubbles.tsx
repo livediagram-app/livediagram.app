@@ -64,7 +64,6 @@ export function CommentBubbles({
           >
             <span className="mt-0.5 inline-flex shrink-0">
               <AuthorDisc
-                commentId={first.id}
                 authorId={first.authorId}
                 size={20}
                 aria-hidden

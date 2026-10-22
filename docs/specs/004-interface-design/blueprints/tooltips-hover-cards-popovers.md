@@ -34,7 +34,7 @@ One term, one identifier. The left column is the only spelling used in code, tes
 | Preview       | `useRowPreview`, `data-hint="preview"`                     | A picture of what the control opens, after 600 ms                  |
 | Popover       | (unchanged homes)                                          | Click-opened and interactive; never a hint                         |
 | Hint surface  | `HintSurface`                                              | The portalled box that paints either hint                          |
-| Open source   | `HintOpenSource` (`'pointer' \| 'focus' \| 'touch'`)       | What opened the hint                                               |
+| Open trigger  | `HintOpenTrigger` (`'pointer' \| 'focus' \| 'touch'`)      | What opened the hint                                               |
 | Warm-up       | `isHintWarm(kind, now)`                                    | A tooltip or a preview may skip its delay                          |
 | Grace         | `HINT_CLOSE_GRACE_MS`                                      | Time the pointer has to cross from trigger to surface              |
 | Dismissed     | `dismissed` (ref in `useHint`)                             | Escape or a press closed it; stays closed until leave or blur      |
@@ -50,7 +50,7 @@ Banned: "tooltip" for anything with a description, "hover tooltip", "info popove
 
 ## Behaviour and state
 
-`useHint(kind)` owns one hint. React state is `open: boolean` and `source: HintOpenSource | null`; everything else is a
+`useHint(kind)` owns one hint. React state is `open: boolean` and `source: HintOpenTrigger | null`; everything else is a
 ref, so pointer traffic re-renders nothing until the hint actually opens or closes.
 
 One `Machine` ref holds the rest: the wrapper element, `open`, `source`, `overTrigger`, `overSurface`, `focused`
@@ -120,7 +120,7 @@ export function HoverCard(props: HoverCardProps): JSX.Element;
 // The engine both components share; exported inside the package only.
 export function useHint(kind: HintKind): {
   open: boolean;
-  source: HintOpenSource | null;
+  source: HintOpenTrigger | null;
   attach: (el: HTMLSpanElement | null) => void; // callback ref for the wrapper
   anchor: () => Element | null;
   triggerProps: HintTriggerProps; // spread on the wrapper
@@ -166,7 +166,7 @@ None. Hints persist nothing; the registry and warm-up clock are per page and res
 | -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Rendered on the server (no `document`)             | Surface renders `null`; wrapper renders; nothing to hydrate differently                                                                                                                                                                                                                                                  |
 | `:focus-visible` unsupported (`matches` throws)    | Treated as visible, so keyboard users still get the hint                                                                                                                                                                                                                                                                 |
-| Trigger disabled                                   | Browser may send no pointer events; the hint simply does not open. Palette tiles skip it (as today); a disabled control whose reason matters says it in visible text instead (the photo-import row)                                                                                                                      |
+| Trigger disabled                                   | Browser may send no pointer events; the hint simply does not open. Palette tiles skip it (as today); a disabled control whose reason matters says it in visible text instead                                                                                                                                             |
 | Trigger stops its pointer events from bubbling     | Presses are heard in the capture phase, so T7 to T11 still run                                                                                                                                                                                                                                                           |
 | A press on the hint surface itself                 | The surface stops `pointerdown`, `mousedown`, `click`, `dblclick` and `contextmenu`, so a portal event never reaches the trigger's React ancestors                                                                                                                                                                       |
 | Trigger unmounts while open                        | T15: timers cleared, registry released, portal removed                                                                                                                                                                                                                                                                   |
@@ -246,7 +246,6 @@ surface.
 | Hoverable, grace                            | `useHint.test.tsx`                                                 |
 | Press closes and cancels                    | `useHint.test.tsx`, including a control that stops bubbling        |
 | Presses on the hint stay on the hint        | `useHint.test.tsx`                                                 |
-| A disabled reason is visible text           | `EventStormingBoardRows.test.tsx`                                  |
 | One at a time                               | `hint-registry.test.ts`, `Tooltip.test.tsx`                        |
 | Touch long press, slop, linger, click eaten | `useHint.test.tsx`                                                 |
 | Touch gate on visible text                  | `trigger-text.test.ts`, `useHint.test.tsx`                         |

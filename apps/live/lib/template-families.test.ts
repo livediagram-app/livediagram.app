@@ -16,12 +16,9 @@ describe('templateFamilyOf', () => {
     expect(templateFamilyOf('kanban')).toBe('kanban');
   });
 
-  it.each(['event-storming', 'incident-postmortem', 'brainstorm'] as const)(
-    'reads %s as no family',
-    (kind) => {
-      expect(templateFamilyOf(kind)).toBeNull();
-    },
-  );
+  it.each(['incident-postmortem', 'brainstorm'] as const)('reads %s as no family', (kind) => {
+    expect(templateFamilyOf(kind)).toBeNull();
+  });
 
   it('reads no template as no family', () => {
     expect(templateFamilyOf(null)).toBeNull();

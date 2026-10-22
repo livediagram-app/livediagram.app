@@ -20,18 +20,16 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./010-palette/README.md - when working on the palette: categories, layouts and Popular, icon and sticker catalogues, presets
 - ./011-theme/README.md - when working on tab themes: built-in, multi-colour and custom themes
 - ./012-collaboration/README.md - when working on realtime, sessions, facilitation, comments, actions or room tools
-- ./013-workspace/README.md - when working on the Explorer, its filters, folders, default folders, teams, favourites, tags, shape libraries, share links, the Trash or the empty document clean-up
+- ./013-workspace/README.md - when working on the Explorer, its filters, folders, default folders, teams, favourites, tags, share links, the Trash or the empty document clean-up
 - ./014-identity/README.md - when working on auth, guest access, profiles or account email
 - ./015-api/README.md - when working on the api worker, its OpenAPI document, tokens, the MCP server or the CLI
 - ./016-platform/README.md - when working on routing, deployment or the staging environment, the new version prompt and stale builds, or web performance (what a page loads up front)
 - ./017-telemetry/README.md - when adding or changing anonymous events or the telemetry dashboard
 - ./018-help/README.md - when working on the help centre or contextual help links
 - ./019-marketing/README.md - when working on the marketing site, comparison pages or outbound assets
-- ./020-import-export/README.md - when working on Markdown, Mermaid, Excalidraw or draw.io import/export, pasting from Excalidraw, imported images, board scenes and board imports from Miro or Microsoft Whiteboard, or export fidelity
-- ./021-event-storming/README.md - when working on the event-storming board, its lanes or its photo import
+- ./020-import-export/README.md - when working on Mermaid text from agents, or export fidelity
 - ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
 - ./026-plan/README.md - when working on Plan mode, Plan boards and cards, or items and the item store
-- ./028-animation/README.md - when working on element animations: the animation set each element takes (Shape, Text, Sticky, Drawing, Media, Table), the per-set menu categories, reveals, loops and the quality bar
 - ./029-sheets/README.md - when working on Sheets: the Sheet element (a spreadsheet tab placed from Plan mode), its formulas, or the sheet store
 - ./030-forms/README.md - when working on Form tabs: building forms, the public form link and its page, responses that become cards on a board
 

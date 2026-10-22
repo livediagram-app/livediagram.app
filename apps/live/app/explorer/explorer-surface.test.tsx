@@ -20,7 +20,6 @@ describe('explorerSurfaceFlags', () => {
       appHeader: false,
       settings: false,
       appearance: false,
-      appLinks: false,
       guestPrompts: false,
       administration: false,
       publishPicture: false,

@@ -2,7 +2,6 @@
 // re-exports this module, and a value-shaped import here is what made that
 // cycle observable at runtime.
 import type { Element, ElementId, Tab } from './index';
-import { eventStormingKindOf } from './event-storming';
 
 // Photoshop-style layers (docs/specs/006-document/layers.md). A tab optionally carries an ordered
 // `layers` array (BOTTOM -> TOP: index 0 paints lowest) and each element
@@ -66,8 +65,7 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 // The paint tier of an element within its band, back to front:
 // - frames are backdrops that paint below their band-mates
 //   (docs/specs/008-canvas/canvas-and-palette.md), the larger first;
-// - event-storming actors sit in front of every other note, and hotspots in
-//   front of actors (docs/specs/021-event-storming/event-storming.md Phase 4).
+// - attached badges and step numbers sit in front of everything else.
 // Array order decides within a tier.
 function paintTier(el: Element): number {
   // Frames and boundaries are backdrops (docs/specs/009-elements/boundary.md "A container"): they lie under their
@@ -84,15 +82,12 @@ function paintTier(el: Element): number {
     el.attachedTo &&
     (el.shape === 'badge' || el.shape === 'step' || el.shape === 'pointer-note')
   )
-    return 4;
-  const kind = eventStormingKindOf(el);
-  if (kind === 'actor') return 2;
-  if (kind === 'hotspot') return 3;
+    return 2;
   return 1;
 }
 
 // A stable sort by tier. Returns the SAME array when it is already in tier
-// order, which is every band without frames, actors or hotspots out of place.
+// order, which is every band without frames or badges out of place.
 function paintOrderIn(elements: Element[]): Element[] {
   const tiers = elements.map(paintTier);
   // Among the backdrops the larger paints first, so a boundary nested in another is never hidden behind it.

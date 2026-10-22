@@ -31,7 +31,6 @@ import { buildErDiagram } from './template-builders-er';
 import { buildSequenceDiagram } from './template-builders-sequence';
 import { buildUmlClass } from './template-builders-uml';
 import { buildStateMachine } from './template-builders-state-machine';
-import { buildEventStorming } from './template-builders-eventstorming';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
 import { buildBrainstorm, buildWorkshopBoard } from './template-builders-workshop-boards';
@@ -239,8 +238,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildUmlClass(cx, cy);
     case 'state-machine':
       return buildStateMachine(cx, cy);
-    case 'event-storming':
-      return buildEventStorming(cx, cy);
     // A whiteboard is a clean board (docs/specs/007-editor/editor-modes.md): what makes it one is its
     // kind, which templateCanvasOverrides sets, not any seeded element.
     case 'whiteboard':

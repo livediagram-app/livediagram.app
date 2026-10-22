@@ -16,7 +16,6 @@ export const COMMAND_OF_TOOL: Readonly<Record<string, string>> = {
   delete_document: 'document rm',
   list_trash: 'api GET /trash',
   restore_document: 'document restore',
-  list_images: 'image ls',
   list_items: 'item ls',
   change_items: 'item set',
   add_board: 'board add',

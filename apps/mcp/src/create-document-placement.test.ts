@@ -81,7 +81,6 @@ describe('create_document intent', () => {
     ['retrospective', { mode: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['four-ls', { mode: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
-    ['event-storming', { mode: 'plan', tabKind: 'event-storming' }],
     ['flowchart', { mode: 'plan', tabKind: 'diagram' }],
   ])('sends the intent of a %s template tab', async (template, intent) => {
     const { run, posted } = harness(undefined);

@@ -224,7 +224,7 @@ export function RichTextEditor({
           fontSize: `${basePx}px`,
           textAlign: TEXT_ALIGN[alignX],
           fontFamily,
-          // Same capitals the committed label wears (docs/specs/021-event-storming/event-storming.md): the typed
+          // Same capitals the committed label wears: the typed
           // text is stored as written, it just reads as the note will.
           textTransform: uppercase ? 'uppercase' : undefined,
         }}

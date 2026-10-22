@@ -333,7 +333,6 @@ const SHOW_ME_SURFACES = [
   { token: 'CardTypeTour', title: 'Card Type', where: 'the card type editor' },
   { token: 'ShareTour', title: 'Share', where: 'the Share dialog' },
   { token: 'DashboardTour', title: 'Dashboard', where: 'Dashboard Settings' },
-  { token: 'PhotoReviewTour', title: 'Photo Review', where: 'the photo import review' },
   { token: 'SankeyFlowsTour', title: 'Sankey Flows', where: 'a Sankey’s Flows dialog' },
   { token: 'TabStyleTour', title: 'Tab Style', where: 'the Tab Style dialog' },
 ] as const;

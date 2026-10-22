@@ -14,10 +14,6 @@ describe('newDocumentKind (docs/specs/007-editor/new-document-route.md)', () => 
     expect(newDocumentKind('?team=t1&template=budget-planner')).toBe('budget-planner');
   });
 
-  it('opens a retired kind as its replacement', () => {
-    expect(newDocumentKind('?template=browser-wireframe')).toBe('wireframe-website');
-  });
-
   it('is a blank document for anything else, a retired ?blank= or ?mode= included', () => {
     expect(newDocumentKind('?template=not-a-template')).toBeNull();
     expect(newDocumentKind('?template=')).toBeNull();

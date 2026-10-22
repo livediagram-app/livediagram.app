@@ -95,11 +95,6 @@ export type TemplateKind =
   // UML state machine: initial / final pseudostates, a composite state and
   // transitions labelled event [guard] / action.
   | 'state-machine'
-  // Event storming (docs/specs/021-event-storming/event-storming.md): the sticky-note workshop grammar for
-  // exploring a business domain — orange domain events first, the rest
-  // of the notation arrives incrementally. Colours ARE the semantics,
-  // so its stickies pin their fills with `themeLockFill`.
-  | 'event-storming'
   // Retro formats (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the Retrospective's siblings, run
   // with the same opening rail and closing actions so a team can rotate
   // formats without relearning the ritual. Columns (Start / Stop /
@@ -640,13 +635,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'State Machine',
     description:
       'A delivery order’s UML lifecycle: a composite state, guards, a timeout and three final states.',
-    extra: true,
-  },
-  {
-    kind: 'event-storming',
-    title: 'Event Storming',
-    description:
-      'Explore a business domain with the sticky-note workshop notation: orange domain events on a left-to-right timeline.',
     extra: true,
   },
   {

@@ -1,7 +1,7 @@
 # Explorer Home, data: blueprint
 
 Derived from [Explorer Home](../explorer-home.md) (Jump Back In, What Happened, Opens), with the allocation of
-[Within reach](../../004-interface-design/within-reach.md), the event store of [Timeline](../timeline.md), the access
+[Within reach](../../004-interface-design/within-reach.md), the event store of [Timeline events](../timeline.md), the access
 set of [Inbox](../inbox.md) §4, the identity rules of
 [Auth + guest access](../../014-identity/auth-and-guest-access.md) and the owner-keyed list of
 [API](../../015-api/api.md#owner-keyed-data). The spec decides; this file only adds engineering precision. This
@@ -15,15 +15,14 @@ Scope, by file:
 | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | `packages/api-schema/src/home.ts`                                              | Wire types, verbs, limits, the window, rejections, the open marker header                      |
 | `packages/api-schema/src/within-reach.ts`                                      | `withinReach`, `utcDay`; shared with the view and the Shapes flyout                            |
-| `packages/api-schema/src/creation-use.ts`                                      | `readMarkUsed`, `importMarksUse`, `MARK_USED_INVALID`, `MARKED_USED_IMPORT_MAX`                |
+| `packages/api-schema/src/creation-use.ts`                                      | `readMarkUsed`, `MARK_USED_INVALID`                                                            |
 | `packages/api-schema/src/error-telemetry.ts`                                   | `home` resource                                                                                |
 | `apps/api/migrations/0063_document_opens.sql`                                  | `document_opens`, its indexes, `timeline_events_actor_idx`                                     |
 | `apps/api/migrations/0065_within_reach.sql`                                    | Drops frecency: the rank index, `frecency_key`, `open_days`, `first_opened_at`, the seed stamp |
 | `apps/api/src/home/local-day.ts`                                               | `parseTimeZone`, `localDay`                                                                    |
 | `apps/api/src/home/what-happened.ts`                                           | `verbOf`, `groupWhatHappened` (pure)                                                           |
 | `apps/api/src/home/record-open.ts`                                             | `recordDocumentOpen`: the dedupe, the write, the last open, the fingerprints                   |
-| `apps/api/src/timeline/seen.ts`                                                | `SEEN_WINDOW_MS`, `isNewVisit`: the unread mark's visit rule, shared with the Timeline route   |
-| `apps/api/src/timeline/backfill.ts`                                            | The reconstructed edit says `backfilled: true`; it and the reconstructed creation keep a row   |
+| `apps/api/src/timeline/seen.ts`                                                | `SEEN_WINDOW_MS`, `isNewVisit`: the unread mark's visit rule                                   |
 | `apps/api/src/db/document-visibility.ts`                                       | `VISIBLE_DOCUMENTS_CTES`: the documents a person can open, shared with the Inbox               |
 | `apps/api/src/db/document-opens.ts`                                            | The `document_opens` statements: read, record, touch, migrate, delete, sweep                   |
 | `apps/api/src/db/home.ts`                                                      | `readJumpBackIn`, `REAL_EDIT`, `MARKED_MAKING`, `readWhatHappenedRows`, `readMe`               |
@@ -41,7 +40,6 @@ Scope, by file:
 | `apps/api/src/openapi/manifest.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The route; the `HomeResponse` schema; the create body's `markUsed`                             |
 | `packages/agent-verbs/src/mcp/schema.ts`, `apps/mcp/src/tools.ts`              | `create_document`'s optional `markUsed`, passed through to the create                          |
 | `apps/live/lib/api/documents.ts`                                               | `apiCreateDocument(..., { markUsed })` sends `markUsed: false` only                            |
-| `apps/live/lib/board-scene-import.ts`                                          | `importDocuments` marks by the number of documents it sets out to make                         |
 | `apps/live/lib/api/home.ts`                                                    | `apiReadHome`                                                                                  |
 | `apps/live/lib/api/tabs.ts`                                                    | `apiLoadTab(..., { open })` sends the marker                                                   |
 | `apps/live/app/document/[id]/seed-fetched-document.ts`                         | The editor's first-tab read is the marked one, unless embedded                                 |
@@ -60,7 +58,6 @@ Scope, by file:
 | Making            | `document_created`, `document_duplicated` events                | The person making a document: a create, a duplicate, a copy        |
 | Marked making     | snapshot `markUsed: true`, `MARKED_MAKING`                      | A making that counts as a use                                      |
 | Mark used         | body `markUsed`, `readMarkUsed`                                 | The create's say on whether its making counts (default true)       |
-| Bulk import       | `importMarksUse(count)`, `MARKED_USED_IMPORT_MAX`               | An import that sets out to make more than one document             |
 | Use window        | `WITHIN_REACH_USE_WINDOW_DAYS`, `windowStartOf(now)`            | The last 90 UTC days, today included, over which use days count    |
 | Last use          | `lastUsedAt`                                                    | The latest of the last open, last real edit and marked making      |
 | Jump Back In      | `jumpBackIn`, `HomeJumpBackInItem`, `HOME_WITHIN_REACH_PER_ROW` | A [Within reach](../../004-interface-design/within-reach.md) set   |
@@ -74,7 +71,7 @@ Scope, by file:
 | Me                | CTE `me`                                                        | The person's id plus every alias (`owner_aliases`)                 |
 
 Banned: "visit" or "view" for an open, "frecency" (the rule has no decay), "notification" for a What Happened
-action, "timeline" for anything on Home but the link that leaves for the Timeline (`GET /api/timeline`).
+action, "timeline" for anything on Home.
 
 ## Behaviour and state
 
@@ -100,7 +97,7 @@ open never moves backwards; an open never reaches a `document` or `team` scope.
 
 ### Recording a making
 
-Spec [Making a document](../explorer-home.md#making-a-document). A making is recorded on the creation's own Timeline
+Spec [Making a document](../explorer-home.md#making-a-document). A making is recorded on the creation's own timeline
 event, which every create already writes, so it costs no write of its own (`D136`):
 
 1. `POST /api/documents` reads `readMarkUsed(body.markUsed)` with the other body checks, before anything is
@@ -111,12 +108,12 @@ event, which every create already writes, so it costs no write of its own (`D136
    `document_synced`, never marked. Logged `home: making doc=<id> marked=<true|false>`.
 3. `POST /api/documents/:id/copy` emits `recordDocumentDuplicated(..., { markUsed: true })`: a copy always counts
    (`D138`).
-4. The Timeline backfill's reconstructed `document_created` is written with `keepExisting` and no mark, so it
+4. The retired backfill's reconstructed `document_created` (timeline.md §5, removed) was written with `keepExisting` and no mark, so it
    neither counts nor clears the mark of the real one when it lands on the same row (`D137`).
 
 `MARKED_MAKING` (`db/home.ts`) is the one predicate, on `e`: `e.event_type IN ('document_created',
 'document_duplicated') AND json_extract(e.snapshot, '$.markUsed') IS 1`. Only makings recorded with the mark count,
-so the makings before it (each a real `document_created` with no mark) never do, nor any bulk import made before.
+so the makings before it (each a real `document_created` with no mark) never do.
 
 Invariants: a making is at most one use day (its event's `occurred_at`, the server's now, whatever dates the body
 carries); a making and an open on one UTC day are one use day (`COUNT(DISTINCT day)`); an unmarked making never
@@ -188,7 +185,7 @@ DESC`, limit `HOME_WHAT_HAPPENED_ACTION_MAX` (`D68`).
 
 ### Real edits
 
-The Timeline backfill writes its `document_edited` with `snapshot.backfilled = true` and `keepExisting` (the
+The retired backfill (timeline.md §5) wrote its `document_edited` with `snapshot.backfilled = true` and `keepExisting` (the
 upsert does nothing when the day's row already exists), so it never marks a real edit. A real edit landing on a
 backfilled row replaces the snapshot and so clears the mark. `REAL_EDIT` (`db/home.ts`) is the one predicate:
 `json_extract(snapshot, '$.backfilled') IS NOT 1`. Within reach counts only real edits as use days. Migration 0063 marks the rows backfilled before the mark
@@ -197,10 +194,9 @@ existed: `document_edited` rows whose `created_at` is more than `LEGACY_BACKFILL
 
 ### Home read side effects
 
-`GET /api/home` moves the Timeline feed's unread mark by the Timeline's own rule (`isNewVisit`,
+`GET /api/home` moves the unread mark by its visit rule (`isNewVisit`,
 `apps/api/src/timeline/seen.ts`: no mark yet, or the mark older than `SEEN_WINDOW_MS`), off the response path. The
-response carries `lastSeenAt`, the mark as it stood before this read (`D75`). It seeds nothing: the Timeline
-user-scope backfill is the Timeline's own business.
+response carries `lastSeenAt`, the mark as it stood before this read (`D75`). It seeds nothing.
 
 ## Interfaces and contracts
 
@@ -218,10 +214,6 @@ user-scope backfill is the Timeline's own business.
 { ok: true; markUsed: boolean } | { ok: false }`. The OpenAPI request schema documents it. The live client sends
 `markUsed: false` and nothing otherwise; the MCP `create_document` input `markUsed` (optional boolean) is passed
 through only when given. The upcoming CLI's `document create --no-recent` maps to `markUsed: false`.
-
-`importMarksUse(documentCount)` → `documentCount <= MARKED_USED_IMPORT_MAX`: `importDocuments(sources, ...)` passes
-`markUsed: importMarksUse(sources.length)` to every document it creates, counting the documents it sets out to make,
-not the ones that land (`D135`); `debugLog('[board-scene] import', { ..., markUsed })` says which.
 
 ### `GET /api/home`
 
@@ -339,9 +331,9 @@ CREATE INDEX timeline_events_actor_idx ON timeline_events (actor_id, occurred_at
 | `last_open_day`  | Derived, the dedupe key                     |
 
 The open days themselves are the `document_opened` events (one per person per document per UTC day, in the
-person's `user` scope), kept for the Timeline's year, well past the 90-day window. A making's use is its creation
+person's `user` scope), kept for the record's year, well past the 90-day window. A making's use is its creation
 event's `snapshot.markUsed` (classed as a fact, written once, `D136`): no migration, and it goes wherever the
-event goes (account deletion, sign-up migration, document purge, the Timeline's retention).
+event goes (account deletion, sign-up migration, document purge, the record's retention).
 
 - **Account deletion**: `DELETE FROM document_opens WHERE owner_id = ?`. Other people's opens of the account's
   documents cascade with the documents. The `document_opened` events go with `deleteTimelineForOwner` (actor and
@@ -354,8 +346,8 @@ from` moves every row the account does not already hold; each leftover (opened u
 - **Document purge**: rows cascade; events go with `documentsTimelineSweepStatement`. **Trash**: rows stay, the
   reads skip the document; a restore brings it back.
 - **Retention**: the 03:00 UTC cron deletes rows with `last_opened_at < now - TIMELINE_RETENTION_MS` (365 days)
-  through `scheduleSweep('home_opens', ...)`; the events go with the Timeline's own sweep.
-- Timeline dismissals (`timeline_event_scopes.deleted_at`) are not read: Home reads by actor, not by scope (`D71`).
+  through `scheduleSweep('home_opens', ...)`; the events go with the record's own sweep.
+- Dismissals (`timeline_event_scopes.deleted_at`, no longer written) are not read: Home reads by actor, not by scope (`D71`).
 
 ## Errors and edge cases
 
@@ -371,7 +363,7 @@ from` moves every row the account does not already hold; each leftover (opened u
 | A reconstructed edit                                 | Not a use day (`REAL_EDIT`)                                                 |
 | Opened more than 90 days ago only                    | `use_days = 0`: never most used, still recent by its last open              |
 | Created, never opened or edited                      | In Jump Back In: the marked making is a use day and the last use            |
-| Created with `markUsed: false` (a bulk import)       | Not in `candidates` until its first open or edit; on the Recent page        |
+| Created with `markUsed: false` (an API client's)     | Not in `candidates` until its first open or edit; on the Recent page        |
 | Created before makings were marked                   | No mark: joins at its next open or edit                                     |
 | Created and opened on one UTC day                    | One use day                                                                 |
 | `markUsed` not a boolean                             | 400 `invalid markUsed`; nothing created                                     |
@@ -409,7 +401,7 @@ from` moves every row the account does not already hold; each leftover (opened u
   team and folder are not disclosed (`D69`).
 - Person ids on the wire are the same actor ids `GET /api/timeline` already carries to the same audience.
 - `HOME_RATE_LIMITER`: 60 reads per 60 s per resolved owner (`D73`); an API token caller is also under
-  `API_TOKEN_READ_RATE_LIMITER`. Absent binding → allow (self-host).
+  `API_TOKEN_READ_RATE_LIMITER`. Absent binding → allow.
 
 ## Performance and limits
 
@@ -464,12 +456,10 @@ stay on their own lazy route.
 | Record, same-day touch, next day, race, private scope, failure log                      | `apps/api/src/home/record-open.test.ts` (real SQLite)                                     |
 | The tab read records a marked open only, never an unmarked or refused one               | `apps/api/src/routes/document-open-marker.test.ts` (real SQLite)                          |
 | Jump Back In: use days in the window, edit days, dedupe, the split, access, ties        | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
-| A making counts once, an opted-out or bulk one does not, a sync or re-commit never      | `apps/api/src/routes/document-create-use.test.ts` (real SQLite)                           |
-| `readMarkUsed`, `importMarksUse`                                                        | `packages/api-schema/src/creation-use.test.ts`                                            |
-| The client sends `markUsed: false` only; a bulk import sends it, a single one does not  | `apps/live/lib/api-client.test.ts`, `apps/live/lib/board-scene-import.test.ts`            |
+| A making counts once, an opted-out one does not, a sync or re-commit never              | `apps/api/src/routes/document-create-use.test.ts` (real SQLite)                           |
+| `readMarkUsed`                                                                          | `packages/api-schema/src/creation-use.test.ts`                                            |
 | `create_document` passes `markUsed` through only when given                             | `apps/mcp/src/create-document-placement.test.ts`                                          |
-| An imported board is in Jump Back In unopened; a two-board import is not (guest, phone) | `apps/live/e2e/creation-use.spec.ts`                                                      |
-| Signed in: the same, and an API create with `markUsed: false` stays out                 | `apps/live/e2e/clerk-stub/creation-use.spec.ts`                                           |
+| Signed in: an API create is in Jump Back In unopened; one with `markUsed: false` is not | `apps/live/e2e/clerk-stub/creation-use.spec.ts`                                           |
 | Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
 | The backfill marks its edit, never marks a real one; migration 0063 marks legacy rows   | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                      |
 | The feed and the unread count leave opens out                                           | `apps/api/src/db/timeline-opens.test.ts` (real SQLite)                                    |
@@ -491,10 +481,9 @@ stay on their own lazy route.
 | `HOME_WHAT_HAPPENED_DAYS`       | 14        | same                                          | Spec                                         | 7 to 30        |
 | `HOME_WHAT_HAPPENED_ACTION_MAX` | 200       | same                                          | `D68`                                        | 100 to 500     |
 | `HOME_TZ_MAX_LENGTH`            | 64        | same                                          | Longest IANA name is 32; double for headroom | 32 to 128      |
-| `MARKED_USED_IMPORT_MAX`        | 1         | `packages/api-schema/src/creation-use.ts`     | Spec ("more than one document in one go")    | fixed          |
-| `TIMELINE_RETENTION_MS`         | 365 days  | `packages/api-schema/src/timeline.ts`         | Spec (the Timeline's retention), reused      | fixed          |
+| `TIMELINE_RETENTION_MS`         | 365 days  | `packages/api-schema/src/timeline.ts`         | Spec (the record's retention), reused        | fixed          |
 | `LEGACY_BACKFILL_SKEW_MS`       | 60 s      | `apps/api/migrations/0063_document_opens.sql` | `D79`                                        | 10 s to 10 min |
-| `SEEN_WINDOW_MS`                | 60 s      | `apps/api/src/timeline/seen.ts`               | [Timeline](../timeline.md) §2.5, reused      | fixed          |
+| `SEEN_WINDOW_MS`                | 60 s      | `apps/api/src/timeline/seen.ts`               | [Timeline events](../timeline.md) §2.5       | fixed          |
 | `HOME_RATE_LIMITER`             | 60 / 60 s | `apps/api/wrangler.toml`, namespace `1008`    | `D73`                                        | 30 to 120      |
 
 No environment variable. The rate limiter binding is optional; absent means allow.

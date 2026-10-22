@@ -67,7 +67,6 @@ const HELP_CATEGORY_SEGMENTS = new Set([
   'privacy-and-security',
   'search-panel',
   'selection-modes',
-  'self-hosting',
   'supported-devices',
   'tabs',
   'tips-and-tricks',

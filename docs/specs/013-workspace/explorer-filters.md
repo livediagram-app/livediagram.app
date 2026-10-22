@@ -53,7 +53,7 @@ An **aggregate view** lists documents from every place at once: **Recent**, **Fa
 
 Every document view shows one row of chips under its page header and breadcrumb:
 
-- One chip per dimension, in dimension order (Opens in, Kind, Template, Made by AI, Edited, People), then **Space**
+- One chip per dimension, in dimension order (Opens in, Template, Made by AI, Edited, People), then **Space**
   on aggregate views only. The folder or team the reader is in is the breadcrumb, never a chip.
 - **Clear** ends the row while the lens is set and empties `q`. It keeps its place when hidden, so nothing moves.
 - A chip opens a listbox of its values under it. Choosing a value toggles it and leaves the listbox open; Escape,
@@ -72,20 +72,13 @@ general diagram tab's environment.
 | --------- | ---------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
 | Text      | (none)     | (the field) | Free words                                                                                                      |
 | Opens in  | `opens-in` | Opens in    | `plan` Plan: the editor mode the document was created in (a retired mode's id, `opens-in:draw`, reads as Plan)  |
-| Kind      | `kind`     | Kind        | `event-storming` Event Storming: the first tab's kind when the document was created                             |
 | Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the document was made from                  |
 | Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is the AI assistant or an AI tool through the MCP server (not the CLI) |
 | Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                |
 | People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                                |
 | Space     | `space`    | Space       | `mine` My Documents, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                 |
 
-- **Opens in**, **Kind** and **Template** read the creation intent recorded on the document
-  (Default folders: `opensIn`, `tabKind`, `templateFamily` on the document
-  summary). Opens in offers one value per editor mode (`EDITOR_MODES`: Plan alone); Kind offers the specific tab kinds, every
-  creatable kind but the general diagram tab, so today only Event Storming; Template offers the template families
-  (`TEMPLATE_FAMILIES`). A document whose recorded value is unknown (made before the intent was recorded) matches no
-  value of that dimension; it shows whenever that dimension is not set. A general diagram tab matches no Kind value, and
-  a document made from no family matches no Template value.
+- **Opens in** and **Template** read the creation intent recorded on the document (Default folders: `opensIn`, `templateFamily` on the document summary). Opens in offers one value per editor mode (`EDITOR_MODES`: Plan alone); Kind offers the specific tab kinds, every creatable kind but the general diagram tab; Template offers the template families (`TEMPLATE_FAMILIES`). A document whose recorded value is unknown (made before the intent was recorded) matches no value of that dimension; it shows whenever that dimension is not set. A general diagram tab matches no Kind value, and a document made from no family matches no Template value.
 - **Made by AI is a filter, not a place.** AI-made documents are no bucket of their own: they live at the root of
   their space or in a folder like any other document, and `made-by:ai` finds them anywhere. Every row and card of an
   AI-made document carries a **Made by AI** badge (a sparkle and the words), so what the filter reads is visible. The
@@ -122,12 +115,12 @@ The string is words separated by whitespace.
 - A word shaped like a token that is not one stays **text**, whole, and is **reported by a named reason**, never
   dropped. A comma list is reported by its first bad value:
 
-| Reason              | When                                                                    | Message                                                      |
-| ------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------ |
-| `unknown_dimension` | The key is no dimension (`colour:red`)                                  | “colour:red” isn’t a filter, so it’s searched as text.       |
-| `missing_value`     | Nothing after the colon, or an empty list entry (`kind:`, `edited:7d,`) | “kind:” needs a value, so it’s searched as text.             |
-| `unknown_value`     | A value is not in the list (`template:mindmap`)                         | “mindmap” isn’t a Template option, so it’s searched as text. |
-| `unknown_team`      | `space:team:<id>` names no team of the reader                           | That team isn’t one of yours, so it’s searched as text.      |
+| Reason              | When                                                                        | Message                                                      |
+| ------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `unknown_dimension` | The key is no dimension (`colour:red`)                                      | “colour:red” isn’t a filter, so it’s searched as text.       |
+| `missing_value`     | Nothing after the colon, or an empty list entry (`template:`, `edited:7d,`) | “template:” needs a value, so it’s searched as text.         |
+| `unknown_value`     | A value is not in the list (`template:mindmap`)                             | “mindmap” isn’t a Template option, so it’s searched as text. |
+| `unknown_team`      | `space:team:<id>` names no team of the reader                               | That team isn’t one of yours, so it’s searched as text.      |
 
 - A valid token that cannot apply is kept in the string, not applied, and reported:
 
@@ -140,7 +133,7 @@ The string is words separated by whitespace.
   is **pending**: neither applied nor text, and not reported until the caret leaves it.
 
 The **canonical** string writes **one token per dimension, its values as a comma list**: the tokens in dimension order
-(Opens in, Kind, Template, Made by, Edited, People, Space), each list in its dimension's value order (teams after My
+(Opens in, Template, Made by, Edited, People, Space), each list in its dimension's value order (teams after My
 documents and Shared With Me, by id), then the text words, single spaces between. Parsing accepts both spellings;
 writing produces only this one. Writing a chip edits the string in place: the dimension's tokens merge into one,
 written where the first stood, or added after the last token; clearing a chip removes every token of its dimension.
@@ -233,7 +226,7 @@ Keyboard:
 ## Telemetry
 
 Each time a dimension gains a value it did not hold, from a chip, an accepted suggestion or a typed token, the Explorer emits
-`Explorer / Selected / <Dimension>` once, with `<Dimension>` from the closed set `Text`, `OpensIn`, `Kind`, `Template`,
+`Explorer / Selected / <Dimension>` once, with `<Dimension>` from the closed set `Text`, `OpensIn`, `Template`,
 `MadeBy`, `Edited`, `People`, `Space` ([Telemetry](../017-telemetry/telemetry.md)). Text counts when it goes from empty to
 non-empty. Never a value, a word or an id. A lens arriving with a link, or restored by Back, counts for nothing: only
 the reader's own change does.

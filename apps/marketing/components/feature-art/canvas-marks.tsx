@@ -20,9 +20,6 @@ export const HAIRLINE = 'stroke-slate-200 dark:stroke-slate-700';
 
 // An unpainted canvas element: the Default scheme's ink, light or dark with the appearance.
 export const INK = 'fill-(--art-ink-fill) stroke-(--art-ink-stroke)';
-export const INK_TEXT = 'fill-(--art-ink-text)';
-export const INK_SHADE = 'fill-(--art-ink-shade)';
-export const ARROW = 'stroke-(--art-arrow)';
 
 // The selection the editor draws round what you picked, and its corner handles.
 export const SELECT = 'stroke-brand-500 dark:stroke-brand-400';
@@ -37,44 +34,6 @@ export function Scene({ children }: { children: ReactNode }) {
     >
       {children}
     </svg>
-  );
-}
-
-// A selection box with the editor's four corner handles.
-export function Selection({
-  x,
-  y,
-  w,
-  h,
-  className = '',
-}: {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  className?: string;
-}) {
-  return (
-    <g className={className}>
-      <rect className={SELECT} x={x} y={y} width={w} height={h} fill="none" strokeWidth="1" />
-      {[
-        [x, y],
-        [x + w, y],
-        [x, y + h],
-        [x + w, y + h],
-      ].map(([cx, cy]) => (
-        <rect
-          key={`${cx}-${cy}`}
-          className={`fill-white dark:fill-slate-900 ${SELECT}`}
-          x={cx! - 2}
-          y={cy! - 2}
-          width="4"
-          height="4"
-          rx="0.8"
-          strokeWidth="1"
-        />
-      ))}
-    </g>
   );
 }
 

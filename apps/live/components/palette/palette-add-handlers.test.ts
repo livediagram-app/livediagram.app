@@ -17,12 +17,4 @@ describe('pickPaletteAddHandlers', () => {
     expect(Object.keys(picked).sort()).toEqual([...PALETTE_ADD_HANDLER_KEYS].sort());
     for (const k of PALETTE_ADD_HANDLER_KEYS) expect(picked[k]).toBe(bag[k]);
   });
-
-  it('keeps an optional handler that is absent as absent', () => {
-    const bag = Object.fromEntries(
-      PALETTE_ADD_HANDLER_KEYS.filter((k) => k !== 'onAddImage').map((k) => [k, () => k]),
-    ) as unknown as PaletteAddHandlers;
-    // No image uploads on this deployment: the image tiles must still hide.
-    expect(pickPaletteAddHandlers(bag).onAddImage).toBeUndefined();
-  });
 });

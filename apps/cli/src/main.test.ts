@@ -215,7 +215,7 @@ describe('run', () => {
   });
 });
 
-describe('a self-hosted profile', () => {
+describe('a profile on another host', () => {
   it('never contacts liveplanner.app across a session of commands', async () => {
     const SELF = 'https://diagrams.example';
     const config = '/home/agent/.config/liveplanner/config.toml';

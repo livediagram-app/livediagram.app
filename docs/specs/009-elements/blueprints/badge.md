@@ -8,7 +8,7 @@ Derived from [The badge](../badge.md) and [The step number](../step-number.md). 
 | `packages/document/src/chip.ts`                                                                                         | `ChipLook`, `chipColours`, `badgeSize`, step numbering, `renumberSteps`  |
 | `packages/document/src/attachment.ts`                                                                                   | `AttachPoint`, `canHost`, `attachPointXY`, `settleChips`, `withAttached` |
 | `packages/document/src/shape-kind.ts`, `validate.ts`                                                                    | `'badge'`, `'step'`                                                      |
-| `packages/document/src/element-types.ts`, `element-fields.ts`, `validate-shape.ts`                                      | `chipLook`, `attachedTo`, `attachAt`, `stepSequence`                     |
+| `packages/document/src/element-types.ts`, `element-fields.ts`, `validate-shape.ts`                                      | `chipLook`, `attachedTo`, `attachAt`                                     |
 | `packages/document/src/shape-factory.ts`                                                                                | Sizes and starting content                                               |
 | `packages/document/src/colors.ts`                                                                                       | Both in `SELF_PAINTING_SHAPES`                                           |
 | `packages/document/src/layers.ts`                                                                                       | `paintTier`: an attached chip paints in the top tier                     |
@@ -16,7 +16,7 @@ Derived from [The badge](../badge.md) and [The step number](../step-number.md). 
 | `packages/document/src/svg-render-chip.ts`                                                                              | `svgChip`: the headless body                                             |
 | `apps/live/app/document/[id]/useEditorState.ts`                                                                         | `settleChips(prev, next)` at the commit choke point, after flowcharts    |
 | `apps/live/components/canvas/ChipFace.tsx`                                                                              | The pill / disc face                                                     |
-| `apps/live/components/palette/ChipMenuSection.tsx`                                                                      | Look tiles, Detach, Renumber Steps, Play in Order                        |
+| `apps/live/components/palette/ChipMenuSection.tsx`                                                                      | Look tiles, Detach, Renumber Steps                                       |
 | `apps/live/hooks/canvas/useBoxedDragHandlers.ts`, `useNudgeSelection.ts`, `useClipboard.ts`, `useElementDuplication.ts` | `withAttached` beside `withSheetCharts`                                  |
 
 ## Domain and naming
@@ -77,9 +77,6 @@ with it. Deletion needs no path of its own (settling removes orphans of a delete
 
 - `renumberSteps(elements)`: steps sorted by reading order (rows: centres within half the step's height of the row's
   first; rows top to bottom, then left to right) take `"1"`, `"2"`, … One history step; telemetry `RenumberSteps`.
-- `stepSequence: true` on a step with a body animation and a whole-number label `n`: the wrapper's
-  `animation-delay` is `(n − 1) × STEP_SEQUENCE_BEAT_S / speedFactor` (D183). Turning it on or off writes every step
-  on the tab.
 
 ### Writes
 
@@ -126,19 +123,18 @@ export function withAttached(
 ): ReadonlySet<ElementId>;
 ```
 
-Validation: `chipLook` one of `CHIP_LOOKS`; `attachAt` one of `ATTACH_POINTS`; `attachedTo` a non-empty string;
-`stepSequence` boolean. A badge label is bounded at 24 and a step label at 3 by the editor's label editor and by
+Validation: `chipLook` one of `CHIP_LOOKS`; `attachAt` one of `ATTACH_POINTS`; `attachedTo` a non-empty string.
+A badge label is bounded at 24 and a step label at 3 by the editor's label editor and by
 `element-normalise` (agents), not by validation (a stored longer label still renders, clipped).
 
 ## Data and persistence
 
-| Field          | Class     | Notes                                           |
-| -------------- | --------- | ----------------------------------------------- |
-| `chipLook`     | persisted | Absent = the kind's default                     |
-| `attachedTo`   | persisted | Removed with `attachAt` on detach               |
-| `attachAt`     | persisted |                                                 |
-| `stepSequence` | persisted | Stored only when true                           |
-| x / y / size   | persisted | Kept true by settling, so readers need no logic |
+| Field        | Class     | Notes                                           |
+| ------------ | --------- | ----------------------------------------------- |
+| `chipLook`   | persisted | Absent = the kind's default                     |
+| `attachedTo` | persisted | Removed with `attachAt` on detach               |
+| `attachAt`   | persisted |                                                 |
+| x / y / size | persisted | Kept true by settling, so readers need no logic |
 
 ## Errors and edge cases
 
@@ -170,8 +166,7 @@ instrumented pass on a shared runner measured 58 ms with one warm-up (17 ms warm
 - Starting content: badge "New", step the next number.
 - Looks as the spec's table; the step's Ink is the theme's ink with the surface colour number.
 - Menu section **Badge** or **Step Number** (Tools flyout): look tiles (Solid, Ink, Outline, Tinted, Quiet); **Detach**
-  while attached; on a step, **Renumber Steps**. **Play in Order** is a toggle in the same section, shown
-  while the step has an animation. **Renumber Steps** is also a command-palette command (`renumber-steps`, offered while
+  while attached; on a step, **Renumber Steps**. **Renumber Steps** is also a command-palette command (`renumber-steps`, offered while
   the tab holds a step; `apps/live/lib/editor-commands.ts`).
 - No resize handles on a badge (it fits its text); no quick-connect ring or anchors on either.
 
@@ -181,8 +176,8 @@ Look tiles named "Solid Look" … ; the face's text is the label (screen reader 
 
 ## Observability
 
-Telemetry: `Element·Added·Badge` / `Step`; `Element·Changed·ChipLook`, `ChipDetach`, `RenumberSteps`,
-`StepSequence`. Settling logs nothing (it runs on every commit).
+Telemetry: `Element·Added·Badge` / `Step`; `Element·Changed·ChipLook`, `ChipDetach`, `RenumberSteps`.
+Settling logs nothing (it runs on every commit).
 
 ## Testing
 
@@ -200,11 +195,10 @@ Telemetry: `Element·Added·Badge` / `Step`; `Element·Changed·ChipLook`, `Chip
 
 ## Constants and configuration
 
-| Name                   | Value               | Provenance / safe range |
-| ---------------------- | ------------------- | ----------------------- |
-| `ATTACH_SNAP_PX`       | 16                  | Spec; 8 to 24           |
-| `BADGE_LABEL_MAX`      | 24                  | Spec                    |
-| `STEP_LABEL_MAX`       | 3                   | Spec                    |
-| `BADGE_HEIGHT_PX`      | sm 22, md 28, lg 36 | D181                    |
-| `STEP_SIZE_PX`         | 28                  | Spec (D182)             |
-| `STEP_SEQUENCE_BEAT_S` | 0.4                 | D183; 0.25 to 0.8       |
+| Name              | Value               | Provenance / safe range |
+| ----------------- | ------------------- | ----------------------- |
+| `ATTACH_SNAP_PX`  | 16                  | Spec; 8 to 24           |
+| `BADGE_LABEL_MAX` | 24                  | Spec                    |
+| `STEP_LABEL_MAX`  | 3                   | Spec                    |
+| `BADGE_HEIGHT_PX` | sm 22, md 28, lg 36 | D181                    |
+| `STEP_SIZE_PX`    | 28                  | Spec (D182)             |

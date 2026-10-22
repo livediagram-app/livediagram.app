@@ -60,23 +60,24 @@ import {
   ISO_TILT_DEG,
 } from './isometric';
 import { drawBoxed, drawBoxedExtrusion } from './export-tab-canvas-draw';
-import type { ExportImageMap } from './export-tab-images';
 import { exportChartInk } from './export-chart-ink';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts
 // the rendered scene into the editor's isometric projection (docs/specs/008-canvas/isometric-view.md / 48),
 // off by default. `pattern` paints the tab's backdrop pattern (grid / dots /
 // …); on by default, the user can switch it off in the Export dialog.
-// `images` carries pre-loaded bitmaps (keyed by imageId) so image / avatar
-// elements embed their photo instead of a placeholder; absent ids (or no map)
-// fall back to the placeholder. Build it with loadTabImages (export-tab-images).
+// Image elements export as their empty placeholder (pictures are never uploaded); only an inline picture (a
+// layout tile's sample art, a `data:` id) draws, through inlineImageHref.
 // `hiddenLayers` INCLUDES layers the user has hidden (docs/specs/006-document/layers.md); off by default
 // so the export matches what the canvas shows.
+// An image id that is itself the picture (a `data:` URL) draws as it is; any other id has no bytes to show.
+const inlineImageHref = (id: string): string | undefined =>
+  id.startsWith('data:') ? id : undefined;
+
 export type ImageExportOpts = {
   isometric?: boolean;
   pattern?: boolean;
   hiddenLayers?: boolean;
-  images?: ExportImageMap;
   // Embedded @font-face rules for the faces this tab uses (docs/specs/004-interface-design/fonts.md), from
   // embeddedFontFaceCss. Absent = the SVG falls back to declaring the
   // Google stylesheet by @import, which only a browser opening the file
@@ -97,22 +98,16 @@ export type ImageExportOpts = {
   // in, so their words export in their own faces; without it a window draws its frame named for its tab.
   resolveTabWindow?: ResolveTabWindow;
   tabWindowFontIds?: readonly string[];
-  // The drawing set moving rather than still (docs/specs/009-elements/tab-window.md "The drawing"): each element's
-  // animation class and custom properties, as the canvas mounts them, so the page's own motion stylesheets play it.
-  // Only a tab window passes it (an inline SVG on the page); every file export is a still.
+  // The drawing set moving rather than still (docs/specs/009-elements/tab-window.md "The drawing"): each arrow's
+  // flow, as the canvas draws it, so the page's own motion stylesheets play it. Only a tab window passes it (an
+  // inline SVG on the page); every file export is a still.
   motion?: SvgMotion;
 };
 
-// How an element moves in a live inline SVG: the wrapper class + inline style for a boxed element, and the moving
-// line for an arrow's flow. Undefined for one that holds still.
+// How an element moves in a live inline SVG: the moving line for an arrow's flow. Undefined for one that holds still.
 export type SvgMotion = {
-  boxed: (el: BoxedElement) => { className: string; style: string } | undefined;
   arrowLine: (el: ArrowElement) => ArrowLineMotion | undefined;
 };
-
-// Re-export so callers (the export dialog) get the loader from the same
-// `@/lib/export-tab` barrel they already import the exporters from.
-export { loadTabImages } from './export-tab-images';
 
 // Webfont embedding for downloads (docs/specs/004-interface-design/fonts.md) — the bytes travel with the file.
 import { embeddedFontFaceCss } from './export-fonts';
@@ -260,7 +255,6 @@ export async function renderTabToCanvas(
   }
   // `ordered` keeps frame sections behind their contents
   // (docs/specs/008-canvas/canvas-and-palette.md).
-  const resolveImage = opts.images ? (id: string) => opts.images!.get(id)?.image : undefined;
   // Elements the canvas drawers can't reproduce (tables, freehand, shape
   // silhouettes, rotation, icon glyphs — boxedNeedsSvgRaster) rasterise via
   // the SAME svg markup the SVG export emits, so the PNG/PDF output can't
@@ -305,11 +299,9 @@ export async function renderTabToCanvas(
       `<svg xmlns="http://www.w3.org/2000/svg" width="${r2(w * scale)}" height="${r2(h * scale)}"` +
       ` viewBox="${r2(el.x - pad)} ${r2(el.y - pad)} ${r2(w)} ${r2(h)}">` +
       `${fontDefs}${svgShadowDefs([el])}${svgBoxed(el, {
+        resolveImageHref: inlineImageHref,
         resolveIconArt: resolveIconArtLoaded,
         resolveStickerArt: resolveStickerArtLoaded,
-        // An image drawn this way (a shadow, a turn, an accent edge, a finish) embeds its bytes
-        // like the SVG export, not the empty-image placeholder.
-        resolveImageHref: (id) => opts.images?.get(id)?.href,
         tabFont,
         tabFinish: tab.finish,
         sketchBackdrop: backdrops.has(el.id),
@@ -385,7 +377,7 @@ export async function renderTabToCanvas(
       c.globalAlpha = 1;
       return;
     }
-    drawBoxed(c, el, resolveImage, alpha, tabFont, surface);
+    drawBoxed(c, el, undefined, alpha, tabFont, surface);
   }
 }
 
@@ -452,13 +444,6 @@ function svgBoxedExtrusion(el: BoxedElement, surface: CanvasSurface): string {
 // export (docs/specs/010-palette/style-presets.md): same SVG the .svg download produces, and PNG / PDF
 // rasterise the same content, so one SVG preview faithfully represents all
 // three image formats under the current isometric / pattern options.
-
-// A boxed element's markup in the group its animation class rides (tab-window-motion.ts), or as it is.
-function withMotion(el: BoxedElement, motion: SvgMotion | undefined, svg: string): string {
-  const m = motion?.boxed(el);
-  if (!m) return svg;
-  return `<g class="lvd-svg-motion ${xmlEscape(m.className)}" style="${xmlEscape(m.style)}">${svg}</g>`;
-}
 
 export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Same hidden-layer + band-order + band-opacity rules as the canvas
@@ -538,31 +523,26 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   // Within each band: boxed elements first, then arrows on top (same
   // z-order as the canvas); bands stack bottom -> top with frame
   // sections behind their band-mates (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
-  const resolveImageHref = opts.images ? (id: string) => opts.images!.get(id)?.href : undefined;
   for (const band of bands) {
     const inner: string[] = [];
     for (const el of band.elements) {
       if (el.type !== 'arrow')
         inner.push(
-          withMotion(
-            el,
-            opts.motion,
-            svgBoxed(el, {
-              resolveImageHref,
-              resolveIconArt: resolveIconArtLoaded,
-              resolveStickerArt: resolveStickerArtLoaded,
-              tabFont: tab.font,
-              tabFinish: tab.finish,
-              sketchBackdrop: backdrops.has(el.id),
-              surface,
-              ...chartInk,
-              items: opts.items,
-              itemTypes: opts.itemTypes,
-              sheets: opts.sheets,
-              resolvePlanArt: opts.resolvePlanArt,
-              resolveTabWindow: opts.resolveTabWindow,
-            }),
-          ),
+          svgBoxed(el, {
+            resolveImageHref: inlineImageHref,
+            resolveIconArt: resolveIconArtLoaded,
+            resolveStickerArt: resolveStickerArtLoaded,
+            tabFont: tab.font,
+            tabFinish: tab.finish,
+            sketchBackdrop: backdrops.has(el.id),
+            surface,
+            ...chartInk,
+            items: opts.items,
+            itemTypes: opts.itemTypes,
+            sheets: opts.sheets,
+            resolvePlanArt: opts.resolvePlanArt,
+            resolveTabWindow: opts.resolveTabWindow,
+          }),
         );
     }
     for (const el of band.elements) {

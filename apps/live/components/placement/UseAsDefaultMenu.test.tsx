@@ -45,7 +45,7 @@ describe('UseAsDefaultMenu', () => {
     expect(trigger.getAttribute('aria-controls')).toBe(sub.id);
     expect(document.activeElement?.textContent).toBe('Projects');
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
-    expect(document.activeElement?.textContent).toBe('Event Storming boards');
+    expect(document.activeElement?.textContent).toBe('Retrospectives');
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
     expect(screen.queryByRole('menu', { name: 'New documents that open as' })).toBeNull();
     expect(document.activeElement).toBe(trigger);
@@ -60,18 +60,12 @@ describe('UseAsDefaultMenu', () => {
     expect(screen.getByText('New documents that open as')).toBeTruthy();
     const items = screen.getAllByRole('menuitemcheckbox');
     expect(items.map((i) => i.textContent)).toEqual([
-      // Plan's mode, then the kinds and template families.
+      // Plan's mode, then the template families.
       'Projects',
-      'Event Storming boards',
       'Retrospectives',
       'Kanban boards',
     ]);
-    expect(items.map((i) => i.getAttribute('aria-checked'))).toEqual([
-      'false',
-      'false',
-      'false',
-      'true',
-    ]);
+    expect(items.map((i) => i.getAttribute('aria-checked'))).toEqual(['false', 'false', 'true']);
   });
 
   it('toggles an entry, and stays open', () => {
@@ -79,7 +73,7 @@ describe('UseAsDefaultMenu', () => {
     open({ isChecked: () => false, isDisabled: () => false, toggle });
     fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Retrospectives' }));
     expect(toggle).toHaveBeenCalledWith('template:retrospective');
-    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(4);
+    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(3);
   });
 
   it('keeps a disabled entry in place and inert', () => {

@@ -1,10 +1,8 @@
-// Illustrations for the Canvas articles on Notes, Links and Link Cards, and Event Storming Boards
-// (docs/specs/018-help/help-app.md). Each draws the real surface with its real labels: the note
-// popover (notes/NotePopover.tsx), the Link element dialog (dialogs/LinkPickerDialog.tsx), and an
-// event storming board making room for a note dragged into a gap with Alt held.
+// Illustrations for the Canvas articles on Notes, and Links and Link Cards (docs/specs/018-help/help-app.md).
+// Each draws the real surface with its real labels: the note popover (notes/NotePopover.tsx) and the Link
+// element dialog (dialogs/LinkPickerDialog.tsx).
 
-import type { ReactNode } from 'react';
-import { Scene, Label, Shape, Cursor, TextBar, Dialog, Tabs, Button } from './primitives';
+import { Scene, Label, Shape, TextBar, Dialog, Tabs, Button } from './primitives';
 import { Glyph } from './element-indicators';
 
 // --- Notes -------------------------------------------------------------------------------------
@@ -165,114 +163,6 @@ export function LinkElementDialogScene() {
         </Label>
         <Button x={112} y={182} w={74} h={22} label="Save link" variant="primary" />
       </Dialog>
-    </Scene>
-  );
-}
-
-// --- Event storming: making room ---------------------------------------------------------------
-
-/** A sticky of the notation, drawn as paper in both appearances. */
-function EsNote({
-  x,
-  y,
-  cls,
-  text,
-  tilt = 0,
-  ghost = false,
-}: {
-  x: number;
-  y: number;
-  cls: string;
-  text: string;
-  tilt?: number;
-  ghost?: boolean;
-}) {
-  return (
-    <g transform={`rotate(${tilt} ${x + 28} ${y + 28})`} opacity={ghost ? 0.9 : 1}>
-      <rect x={x + 1.5} y={y + 2.5} width={56} height={56} rx={2} className="fill-slate-900/10" />
-      <rect x={x} y={y} width={56} height={56} rx={2} className={cls} />
-      <Label
-        x={x + 28}
-        y={y + 29}
-        anchor="middle"
-        size={10}
-        weight={700}
-        className="fill-slate-800"
-      >
-        {text}
-      </Label>
-    </g>
-  );
-}
-
-/** A key cap. */
-function Key({ x, y, children }: { x: number; y: number; children: ReactNode }) {
-  return (
-    <g>
-      <rect
-        x={x}
-        y={y}
-        width={30}
-        height={20}
-        rx={4}
-        className="fill-white stroke-slate-300"
-        strokeWidth={1.3}
-      />
-      <rect x={x} y={y + 16} width={30} height={4} rx={2} className="fill-slate-200" />
-      <Label x={x + 15} y={y + 9.5} anchor="middle" size={10} weight={700} tone="body">
-        {children}
-      </Label>
-    </g>
-  );
-}
-
-/** An event storming row making room: Alt held over the gap between two events slides the rest
- *  of the wall right, command and all, and the dragged note sits in the slot that opens. */
-export function EsMakeRoomScene() {
-  const lane = 104;
-  return (
-    <Scene w={440} h={214}>
-      {/* The lane the note will land on, lit while dragging */}
-      <rect x={0} y={lane - 6} width={440} height={68} className="fill-brand-50" />
-      <g className="help-art-as-drawn">
-        <EsNote x={16} y={lane} cls="fill-orange-300" text="CART" tilt={-1.5} />
-        <EsNote x={86} y={lane} cls="fill-orange-300" text="PAID" tilt={1} />
-        {/* The command above the event moves with it */}
-        <EsNote x={300} y={lane - 70} cls="fill-brand-300" text="SHIP" tilt={-1} />
-        <EsNote x={300} y={lane} cls="fill-orange-300" text="SHIPPED" tilt={1.5} />
-        <EsNote x={370} y={lane} cls="fill-orange-300" text="DONE" tilt={-1} />
-      </g>
-      {/* The slot that opens, and the note being dragged into it */}
-      <rect
-        x={160}
-        y={lane}
-        width={56}
-        height={56}
-        rx={3}
-        fill="none"
-        className="stroke-brand-500"
-        strokeWidth={1.6}
-        strokeDasharray="5 4"
-      />
-      <g className="help-art-as-drawn">
-        <EsNote x={172} y={lane - 30} cls="fill-orange-300" text="PACKED" tilt={4} ghost />
-      </g>
-      <Cursor x={220} y={lane + 14} />
-      {/* Everything after the gap slides right */}
-      <path d="M232 186 h52" className="stroke-brand-400" strokeWidth={2.2} strokeLinecap="round" />
-      <path
-        d="M278 180 l6 6 l-6 6"
-        fill="none"
-        className="stroke-brand-400"
-        strokeWidth={2.2}
-        strokeLinecap="round"
-      />
-      <Key x={150} y={176}>
-        Alt
-      </Key>
-      <Label x={188} y={186.5} size={10.5} tone="body">
-        held
-      </Label>
     </Scene>
   );
 }

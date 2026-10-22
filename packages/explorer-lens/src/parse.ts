@@ -4,7 +4,6 @@
 import {
   EDITED_VALUES,
   FIXED_VALUES,
-  KIND_VALUES,
   LENS_MAX_INPUT_LENGTH,
   LENS_VALUE_SEPARATOR,
   MADE_BY_VALUES,
@@ -44,7 +43,6 @@ type ValueReading = { ok: true; value: string } | { ok: false; problem: WordProb
 
 const NO_FILTERS: LensFilters = {
   'opens-in': [],
-  kind: [],
   template: [],
   'made-by': [],
   edited: [],
@@ -145,7 +143,6 @@ function filtersOf(applied: ReadonlyMap<LensDimension, readonly string[]>): Lens
   const of = (dimension: LensDimension) => applied.get(dimension) ?? [];
   return {
     'opens-in': inOrder(OPENS_IN_VALUES, of('opens-in')),
-    kind: inOrder(KIND_VALUES, of('kind')),
     template: inOrder(TEMPLATE_VALUES, of('template')),
     'made-by': inOrder(MADE_BY_VALUES, of('made-by')),
     edited: inOrder(EDITED_VALUES, of('edited')),

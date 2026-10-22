@@ -12,7 +12,7 @@ import { Glyph } from './featureIcons';
 
 /**
  * Article slug → icon (full <svg>) for the **support** categories (About,
- * Getting Started, Tips, Account, Privacy, Self-Hosting, Troubleshooting),
+ * Getting Started, Tips, Account, Privacy, Troubleshooting),
  * whose cards render through {@link ../components/ArticleCard}. Feature
  * landings get their icons from {@link ./featureIcons} (FEATURE_ICONS); this
  * map covers the standalone support articles so every card carries a glyph.
@@ -160,15 +160,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M12 3a6 6 0 0 0-4 10.5c.6.55 1 1.4 1 2.5h6c0-1.1.4-1.95 1-2.5A6 6 0 0 0 12 3Z" />
     </Glyph>
   ),
-  'what-is-open-source': (
-    <Glyph>
-      <circle cx="6" cy="6" r="2.2" />
-      <circle cx="6" cy="18" r="2.2" />
-      <circle cx="18" cy="8" r="2.2" />
-      <path d="M6 8.2v7.6" />
-      <path d="M6 13c0-3 12-1.5 12-4.8" />
-    </Glyph>
-  ),
 
   // ---- Tips and Tricks ----
   'keyboard-shortcuts': (
@@ -271,37 +262,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M14 11a4.5 4.5 0 0 0-6.4 0l-2 2a4.5 4.5 0 0 0 6.4 6.4l1.1-1.1" />
     </Glyph>
   ),
-  'open-source-trust': (
-    <Glyph>
-      <path d="M12 3l8 3v5.5c0 4.7-3.4 7.8-8 9-4.6-1.2-8-4.3-8-9V6z" />
-      <path d="M9 12l2 2 4-4" />
-    </Glyph>
-  ),
-
-  // ---- Self-Hosting ----
-  'self-hosting-overview': (
-    <Glyph>
-      <rect x="3" y="4" width="18" height="7" rx="1.5" />
-      <rect x="3" y="13" width="18" height="7" rx="1.5" />
-      <path d="M7 7.5h.01M7 16.5h.01" />
-    </Glyph>
-  ),
-  'deploying-liveplanner': (
-    <Glyph>
-      <path d="M5 17a4 4 0 0 1 .8-7.9 6 6 0 0 1 11.3-1.6A3.6 3.6 0 0 1 18.5 17" />
-      <path d="M12 13v6M9.5 15.5L12 13l2.5 2.5" />
-    </Glyph>
-  ),
-  configuration: (
-    <Glyph>
-      <path d="M4 7h9M17 7h3" />
-      <path d="M4 12h3M11 12h9" />
-      <path d="M4 17h7M15 17h5" />
-      <circle cx="15" cy="7" r="2" />
-      <circle cx="9" cy="12" r="2" />
-      <circle cx="13" cy="17" r="2" />
-    </Glyph>
-  ),
 
   // ---- Troubleshooting ----
   'document-not-loading': (
@@ -393,16 +353,6 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M4 4v16h16" />
       <path d="M7.5 15l3.5-4 3 2.5 5-6" />
       <circle cx="19" cy="7.5" r="1.2" />
-    </Glyph>
-  ),
-  // A server with a plug beneath it: the MCP Worker a deployment runs.
-  'mcp-server': (
-    <Glyph>
-      <rect x="3" y="3" width="18" height="7" rx="1.5" />
-      <path d="M7 6.5h.01" />
-      <path d="M10 13v2.5M14 13v2.5" />
-      <path d="M8.5 15.5h7v1.5a3.5 3.5 0 0 1-7 0z" />
-      <path d="M12 20.5v1.5" />
     </Glyph>
   ),
 };

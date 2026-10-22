@@ -3,17 +3,11 @@
 import {
   lucideEyeOff,
   lucideGift,
-  lucideGitFork,
+  lucideDownload,
   lucideUsers,
   lucideUserX,
 } from '@liveplanner/icons/lucide';
-import {
-  BrandMark,
-  ChevronRightIcon,
-  lucideGlyph,
-  REPO_URL,
-  type IconProps,
-} from '@liveplanner/ui';
+import { BrandMark, ChevronRightIcon, lucideGlyph, type IconProps } from '@liveplanner/ui';
 import {
   useEffect,
   useLayoutEffect,
@@ -28,7 +22,7 @@ import { PROMISES, type Promise, type PromiseId } from '@/lib/promises';
 // gallery: "Built with your values in mind", told through the brand mark. The mark is a prism (drawn
 // large, without its inner diagram, and opening and turning on hover as the header's does), so a
 // beam of white light runs into it and leaves as five coloured beams, each landing on one promise
-// (Completely Free, No Account Needed, Open Source, Private by Design, Real-Time Collaboration). On a
+// (Completely Free, No Account Needed, Your Work Yours, Private by Design, Real-Time Collaboration). On a
 // deep indigo band in either appearance, so the light reads.
 //
 // When the stage scrolls into view the white beam draws in, the prism glows, the five beams fan out one
@@ -44,7 +38,7 @@ type Look = { Icon: ComponentType<IconProps>; hue: string };
 const LOOK: Record<PromiseId, Look> = {
   free: { Icon: lucideGlyph(lucideGift, 18), hue: '#34d399' },
   'no-account': { Icon: lucideGlyph(lucideUserX, 18), hue: '#fbbf24' },
-  'open-source': { Icon: lucideGlyph(lucideGitFork, 18), hue: '#38bdf8' },
+  export: { Icon: lucideGlyph(lucideDownload, 18), hue: '#38bdf8' },
   private: { Icon: lucideGlyph(lucideEyeOff, 18), hue: '#fb7185' },
   live: { Icon: lucideGlyph(lucideUsers, 18), hue: '#a78bfa' },
 };
@@ -138,7 +132,9 @@ export function PromisePrism() {
     >
       <div className="mx-auto grid max-w-6xl items-center gap-14 px-6 py-24 sm:py-28 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className="text-center lg:text-left">
-          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-sky-300">No catch</p>
+          <p className="text-sm font-semibold uppercase tracking-[0.14em] text-violet-300">
+            No catch
+          </p>
           <h2
             id="promises-heading"
             className="mt-4 text-balance text-4xl font-semibold tracking-tight sm:text-5xl"
@@ -146,22 +142,13 @@ export function PromisePrism() {
             Built with your values in mind
           </h2>
           <p className="mt-5 text-pretty text-lg leading-relaxed text-slate-300">
-            liveplanner is free, open and private for everyone, and it stays that way. One light,
-            five promises, kept in the open.
+            liveplanner is free and private for everyone, and your work is always yours to take with
+            you. One light, five promises.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">
             <a
-              href={REPO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-semibold text-[#0b1026] transition-colors hover:bg-sky-100"
-            >
-              <span className="text-optical-centre">Read the source</span>
-              <ChevronRightIcon size={14} aria-hidden />
-            </a>
-            <a
               href="/telemetry/"
-              className="inline-flex h-11 items-center gap-1.5 rounded-full border border-white/20 px-5 text-sm font-semibold text-white transition-colors hover:border-white/40 hover:bg-white/5"
+              className="inline-flex h-11 items-center gap-1.5 rounded-full bg-white px-5 text-sm font-semibold text-[#0b1026] transition-colors hover:bg-violet-100"
             >
               <span className="text-optical-centre">See what we measure</span>
               <ChevronRightIcon size={14} aria-hidden />
@@ -336,7 +323,7 @@ function PromiseCard({
         <a
           href={p.link.href}
           {...(p.link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
-          className={`${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-300`}
+          className={`${className} focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-300`}
           {...events}
         >
           {body}

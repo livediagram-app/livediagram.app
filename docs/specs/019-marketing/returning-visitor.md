@@ -7,7 +7,7 @@ Status: shipped
 The landing page's hero ends in a fan of template cards dealt along its foot ([Marketing site](marketing-site.md),
 "Hero"): that is for someone new, picking a way in. Somebody who already works here mostly wants to get back to
 their work. So a visitor whose recent-diagrams snapshot (below) holds **at least three diagrams**
-(`RECENT_FAN_MIN`) sees **their own documents** on that fan instead: their **four most recent** (fewer if they have
+(`RECENT_FAN_MIN`) sees **their own projects** on that fan instead: their **four most recent** (fewer if they have
 fewer), most recent first, then a card to **Explorer Home** ([Explorer Home](../013-workspace/explorer-home.md)) for
 everything else. With fewer than three they see the template fan, exactly as someone new does.
 
@@ -52,7 +52,7 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   the landing page it returns to (and the next person on a shared computer) never shows the account's
   diagrams. Deleting the account does the same.
 
-## Their documents on the fan
+## Their projects on the fan
 
 - **Cards:** the fan's own cards (`components/HeroFanMine.tsx`), in its fan of poses (four cards for three
   documents and Explorer Home, five for four): each document's name, its **preview** (`components/RecentPreview.tsx`:
@@ -61,11 +61,11 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   right-aligned at the card's foot, how long since it was saved ("2 hours ago"). The foot runs off the band, so the
   time is out of sight at rest; pointing at (or focusing) a card straightens it and lifts it 4.25rem, enough to bring
   the time into view (the fan clips only its foot, so the lifted card keeps its title). Pressing one opens the
-  document (`/document/<id>`).
+  project (`/project/<id>`).
 - **Explorer Home**, the last card: "Explorer Home" with "Open" at the top right, over a tinted panel ("All your
-  documents"), to `/explorer/home`.
-- **On a phone** the fan shows three cards, the three most recent documents, and leaves Explorer Home off: the
-  band has room for three, and a returning visitor came for their documents.
+  projects"), to `/explorer/home`.
+- **On a phone** the fan shows three cards, the three most recent projects, and leaves Explorer Home off: the
+  band has room for three, and a returning visitor came for their projects.
 - **They stay put.** The template fan deals a new card every few seconds; a returning visitor came for these, so
   nothing is swapped. Each card springs in a beat after the one before it when the fan deals.
 - **Keyboard and screen readers:** real links, in reading order.

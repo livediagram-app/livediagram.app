@@ -260,7 +260,6 @@ describe('resolvePlacement with default folders', () => {
   const plan = { mode: 'plan', tabKind: 'diagram' } as const;
   const kanban = { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' } as const;
   const retro = { mode: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' } as const;
-  const esRetro = { ...retro, tabKind: 'event-storming' } as const;
   const defaults = (entries: [PlacementDefaultKey, string][]) =>
     vi.fn(async (): Promise<ReadonlyMap<PlacementDefaultKey, string>> => new Map(entries));
 
@@ -362,22 +361,6 @@ describe('resolvePlacement with default folders', () => {
       via: 'default',
       key: 'mode:plan',
       skipped: [],
-    });
-  });
-
-  it('lets a kind default win over the template and mode defaults', async () => {
-    const l = lookups({
-      getPlacementDefaults: defaults([
-        ['mode:plan', 'f-diagrams'],
-        ['template:retrospective', 'f-retros'],
-        ['kind:event-storming', 'f-es'],
-      ]),
-      getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
-    });
-    expect(await resolvePlacement(root, alice, l, esRetro)).toMatchObject({
-      placement: { teamId: null, folderId: 'f-es' },
-      via: 'default',
-      key: 'kind:event-storming',
     });
   });
 

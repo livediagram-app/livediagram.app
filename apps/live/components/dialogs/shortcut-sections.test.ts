@@ -11,16 +11,7 @@ import { SHORTCUT_SECTIONS } from './shortcut-sections';
 // Both hold today. This is here so they keep holding: renaming a handler is a
 // one-line edit in a file that has no reason to mention the dialog.
 
-// `9` opens the image picker from useEditorKeyboardShortcuts rather than from
-// EDIT_KEYS, because its callback is nullable on guest deploys with no api
-// worker. That is a deliberate exception in the hook, not a missing binding.
-const HANDLED_OUTSIDE_THE_MAPS = ['9'];
-
-const handledKeys = new Set([
-  ...Object.keys(VIEW_TOOL_KEYS),
-  ...Object.keys(EDIT_KEYS),
-  ...HANDLED_OUTSIDE_THE_MAPS,
-]);
+const handledKeys = new Set([...Object.keys(VIEW_TOOL_KEYS), ...Object.keys(EDIT_KEYS)]);
 
 // Rows whose `keys` are a single printable character: the ones that name one
 // binding. Chords (⌘ Z) and the "1 – 0" number-row summary are not claims
@@ -38,8 +29,8 @@ const singleKeyRows = SHORTCUT_SECTIONS.flatMap((section) =>
 describe('the Keyboard settings list matches the keys the editor binds', () => {
   it('reads real rows (guard against this test going blind)', () => {
     expect(SHORTCUT_SECTIONS.length).toBeGreaterThan(3);
-    expect(singleKeyRows.length).toBeGreaterThan(15);
-    expect(handledKeys.size).toBeGreaterThan(20);
+    expect(singleKeyRows.length).toBeGreaterThan(10);
+    expect(handledKeys.size).toBeGreaterThan(15);
   });
 
   it('lists no key the editor does not bind', () => {

@@ -142,7 +142,7 @@ describe('SettingsCategoryPane tours', () => {
       'false',
     );
     expect(plan.getAttribute('aria-checked')).toBe('false');
-    expect(screen.getByRole('switch', { name: 'Draw Tour' }).getAttribute('aria-checked')).toBe(
+    expect(screen.getByRole('switch', { name: 'Forms Tour' }).getAttribute('aria-checked')).toBe(
       'true',
     );
     // The shared explanation sits once, under the section heading.

@@ -97,11 +97,7 @@ describe('SessionClusterStrip', () => {
 describe('sessionStripTools', () => {
   it('offers Timer and Vote where cards take the dots, none where voting is off', () => {
     expect(sessionStripTools()).toEqual({ timer: true, vote: true });
-    expect(sessionStripTools(false, false)).toBeNull();
-  });
-
-  it('keeps both on an event-storming board', () => {
-    expect(sessionStripTools(true, false)).toEqual({ timer: true, vote: true });
+    expect(sessionStripTools(false)).toBeNull();
   });
 });
 

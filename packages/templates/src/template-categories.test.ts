@@ -69,7 +69,7 @@ describe('template categories', () => {
       hierarchies: 7,
       design: 7,
       presentations: 1,
-      technical: 10,
+      technical: 9,
     });
   });
 

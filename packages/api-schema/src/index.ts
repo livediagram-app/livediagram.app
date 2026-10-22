@@ -484,39 +484,12 @@ export type ParticipantPresence = {
   picture?: string;
 };
 
-// ---------------------------------------------------------------------
-// Images (docs/specs/009-elements/images.md)
-// ---------------------------------------------------------------------
-
-// One row returned by `GET /api/images` (the gallery list) + the
-// inner shape of the `POST /api/images` response (`{ image, deduped }`).
-// The bytes themselves are fetched separately via
-// `GET /api/images/<id>?d=<documentId>` (owner or share-code gated).
-export type ImageSummary = {
-  id: string;
-  contentType: string;
-  byteSize: number;
-  width: number;
-  height: number;
-  originalName?: string;
-  createdAt: number;
-};
-
-// Canonical hash function for the X-Image-Sha256 wire-format header.
-// Lives here so the client and server can't drift on the dedup key
-// (see ./sha256.ts for the rationale).
+// Canonical SHA-256 hex digest and PKCE challenge, shared by the workers and the CLI (see ./sha256.ts).
 export { pkceChallenge, sha256Hex } from './sha256';
 
 // Worker-safe base64 / base64url encoders for raw bytes, shared by both
 // workers and the editor (see ./bytes.ts).
 export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from './bytes';
-
-// Image magic-number sniffing and the server-side image embedder both
-// workers render tabs with, and the header size it budgets pixels by (see ./image-sniff.ts, ./embed-images.ts,
-// ./image-size.ts).
-export { sniffImageType } from './image-sniff';
-export { imagePixelSize } from './image-size';
-export { embedTabImages, tabImageIds, type EmbedImageSource } from './embed-images';
 
 // Shared display-casing for preset values (template ids, theme names,
 // telemetry action / type enums). One definition so the live editor and
@@ -599,10 +572,8 @@ export type UnfurlResult = {
 };
 
 export * from './access-levels';
-export * from './image-limits';
 export * from './cta-sources';
 export * from './page-views';
-export * from './read-notes';
 export * from './room-messages';
 export * from './changesets';
 export * from './items';
@@ -623,7 +594,6 @@ export * from './document-dates';
 // A tab's size cap, D1's row cap less headroom (docs/specs/015-api/api.md "Tab size"): the worker
 // enforces it, the editor checks it before sending.
 export * from './tab-size';
-export * from './shape-libraries';
 export * from './tags';
 
 // Placement on create: the shape and its named refusals (docs/specs/013-workspace/folders.md).

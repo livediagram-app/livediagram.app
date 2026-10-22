@@ -1,9 +1,4 @@
-import {
-  resolveAiProvider,
-  trimTrailingSlashes,
-  type AiFeature,
-  type ResolvedAiProvider,
-} from './ai-provider';
+import { resolveAiProvider, trimTrailingSlashes, type ResolvedAiProvider } from './ai-provider';
 import type { Env } from './types';
 
 // The one place the worker talks to a model (docs/specs/007-editor/ai-assistance.md).
@@ -23,16 +18,16 @@ export function chatCompletionsUrl(baseUrl: string): string {
 // Not a general resilience layer: specifically, a hosted flash model answers
 // 503 "this model is currently experiencing high demand" often enough that a
 // single import run hits it, and a spike that lasts two seconds should not
-// cost the author their photo. A 4xx is never retried — that is our mistake,
+// cost the author their answer. A 4xx is never retried — that is our mistake,
 // and repeating it just spends the budget twice.
 const RETRY_AFTER_MS = 1200;
 
 // The longest one provider call may wait for its answer to START (the response headers) before it is
-// abandoned. A hosted model starts answering a text or a photo prompt in seconds; a provider that hangs
-// (an overloaded endpoint, a self-hosted server gone quiet) used to hold the request open until the
+// abandoned. A hosted model starts answering a prompt in seconds; a provider that hangs
+// (an overloaded endpoint, an operator-run server gone quiet) used to hold the request open until the
 // platform cut it, with the author watching a spinner. Only the wait for the headers is bounded: a
-// streamed answer that has started may run as long as it runs. Generous on purpose: a large vision
-// prompt on a slow self-hosted model is still a real answer. A timeout is not retried (a second wait
+// streamed answer that has started may run as long as it runs. Generous on purpose: a large
+// prompt on a slow operator-run model is still a real answer. A timeout is not retried (a second wait
 // as long helps nobody). Safe range: 30 s to 5 min.
 export const AI_PROVIDER_TIMEOUT_MS = 120_000;
 
@@ -73,7 +68,7 @@ export async function chatCompletions(
       throw err;
     }
     // A network drop is worth the same one retry as a 5xx: the reason is logged,
-    // and a spike that lasts two seconds should not cost the author their photo.
+    // and a spike that lasts two seconds should not cost the author their answer.
     console.error(
       '[ai] provider call failed; retrying once:',
       err instanceof Error ? err.message : String(err),
@@ -87,9 +82,8 @@ export async function chatCompletions(
   return send();
 }
 
-// Convenience for the routes: they have an Env and a feature, and they want that
-// feature's provider or nothing. The gate has already refused the "nothing" case by the time a route
+// Convenience for the routes: they have an Env, and they want its provider or nothing. The gate has already refused the "nothing" case by the time a route
 // asks, so this never returns null in practice — but it is typed honestly.
-export function providerOf(env: Env, feature: AiFeature): ResolvedAiProvider | null {
-  return resolveAiProvider(env, feature);
+export function providerOf(env: Env): ResolvedAiProvider | null {
+  return resolveAiProvider(env);
 }

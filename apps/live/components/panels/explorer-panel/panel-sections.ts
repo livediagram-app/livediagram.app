@@ -8,7 +8,6 @@ import type { SidebarTelemetryRow } from '@/app/explorer/sidebar/sidebar-telemet
 export type PanelSection =
   | { kind: 'home' }
   | { kind: 'inbox' }
-  | { kind: 'timeline' }
   | { kind: 'shared' }
   | { kind: 'mine' }
   | { kind: 'team'; id: string }
@@ -25,17 +24,7 @@ export const sectionKey = (s: PanelSection): string =>
 export function sectionFromKey(key: string | null | undefined): PanelSection | null {
   if (!key) return null;
   if (key.startsWith('team:')) return key.length > 5 ? { kind: 'team', id: key.slice(5) } : null;
-  const simple = [
-    'home',
-    'inbox',
-    'timeline',
-    'shared',
-    'mine',
-    'browser',
-    'tags',
-    'library',
-    'trash',
-  ];
+  const simple = ['home', 'inbox', 'shared', 'mine', 'browser', 'tags', 'library', 'trash'];
   return simple.includes(key) ? ({ kind: key } as PanelSection) : null;
 }
 
@@ -51,7 +40,7 @@ export function panelSectionGroups({
   return [
     {
       id: 'overview',
-      sections: [{ kind: 'home' }, { kind: 'inbox' }, { kind: 'timeline' }, { kind: 'shared' }],
+      sections: [{ kind: 'home' }, { kind: 'inbox' }, { kind: 'shared' }],
     },
     {
       id: 'spaces',
@@ -79,8 +68,6 @@ export function sectionLabel(
       return SIDEBAR_LABELS.home;
     case 'inbox':
       return SIDEBAR_LABELS.inbox;
-    case 'timeline':
-      return SIDEBAR_LABELS.timeline;
     case 'shared':
       return SIDEBAR_LABELS.shared;
     case 'mine':
@@ -108,7 +95,7 @@ export function sectionPage(s: PanelSection): SelectedNode {
     case 'browser':
       return { kind: 'offline' };
     case 'library':
-      return { kind: 'gallery' };
+      return { kind: 'themes' };
     default:
       return { kind: s.kind };
   }
@@ -119,7 +106,6 @@ export function sectionTelemetryRow(s: PanelSection): SidebarTelemetryRow {
   const rows: Record<PanelSection['kind'], SidebarTelemetryRow> = {
     home: 'Home',
     inbox: 'Inbox',
-    timeline: 'Timeline',
     shared: 'SharedWithMe',
     mine: 'MyDocuments',
     team: 'Team',

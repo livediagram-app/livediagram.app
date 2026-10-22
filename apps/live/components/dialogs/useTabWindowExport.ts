@@ -1,7 +1,7 @@
 'use client';
 
 // Tab windows in an export (docs/specs/009-elements/tab-window.md "Exports"): each window's tab fetched (its content
-// arrives only when opened or fetched) with its photos, then drawn once and fitted inside the window, as on screen.
+// arrives only when opened or fetched), then drawn once and fitted inside the window, as on screen.
 // A window inside a shown tab draws as its frame named for its tab, so nothing recurses.
 import { useEffect, useMemo, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -15,13 +15,10 @@ import {
 } from '@liveplanner/document';
 import { planImageOf } from '@liveplanner/plan-art';
 import { tabAsSeen } from '@/lib/export-as-seen';
-import { loadTabImages, renderTabToSvg } from '@/lib/export-tab';
+import { renderTabToSvg } from '@/lib/export-tab';
 import { getTheme } from '@/lib/themes';
 import { renderTabDrawingSvg, tabDrawingFontIdsOf } from '@/lib/tab-drawing';
-import { tabImageKey, type ExportImageMap } from '@/lib/export-tab-images';
 import { svgFrameOf } from '@/lib/svg-frame';
-
-type ImageContext = { ownerId: string; documentId: string; shareCode: string | null };
 
 /** The tabs this tab's windows show, by id, in the order they are met. */
 export function tabWindowTargets(tab: Pick<Tab, 'id' | 'elements'>): string[] {
@@ -40,7 +37,6 @@ export function tabWindowArts(
   ownTabId: string,
   targets: readonly string[],
   tabs: readonly Tab[],
-  images: ReadonlyMap<string, ExportImageMap>,
   items?: Pick<Parameters<typeof renderTabToSvg>[1] & object, 'items' | 'itemTypes'>,
 ): Map<string, TabWindowArt> {
   const names = tabWindowNames(tabs);
@@ -64,7 +60,6 @@ export function tabWindowArts(
     });
     const markup = renderTabDrawingSvg(plan?.tab ?? seen, {
       pattern: false,
-      images: images.get(id),
       resolveTabWindow: names,
       ...(plan ? { resolvePlanArt: (el) => plan.art.get(el.id) } : {}),
       ...(items ?? {}),
@@ -89,7 +84,6 @@ export function useTabWindowExport({
   tab,
   tabs,
   loadTabs,
-  imageContext,
   active,
   items,
 }: {
@@ -98,7 +92,6 @@ export function useTabWindowExport({
   // The editor's fetch of the named tabs; it resolves once each has loaded or failed, a fetch already under way
   // elsewhere included, so what is drawn is never a tab's empty placeholder.
   loadTabs?: (only: readonly string[]) => Promise<string[]>;
-  imageContext?: ImageContext;
   active: boolean;
   items?: Pick<Parameters<typeof renderTabToSvg>[1] & object, 'items' | 'itemTypes'>;
 }): { resolveTabWindow?: ResolveTabWindow; tabWindowFontIds?: string[]; ready: boolean } {
@@ -106,10 +99,6 @@ export function useTabWindowExport({
   const ownId = useLatest(tab.id);
   const key = targets.join(',');
   const [fetched, setFetched] = useState<string | null>(null);
-  // The shown tabs' photos, and which fetch they are for.
-  const [images, setImages] = useState<{ key: string; map: ReadonlyMap<string, ExportImageMap> }>(
-    () => ({ key: '', map: new Map() }),
-  );
   // Fetch the shown tabs' content once an image format is picked; done once each has arrived or failed. Only the
   // tabs a window may show are fetched (never its own tab), so an export never waits on,
   // nor downloads, content it will not draw.
@@ -128,38 +117,20 @@ export function useTabWindowExport({
       live = false;
     };
   }, [active, key, loadTabs, known, ownId]);
-  // Then their photos, each tab's once.
   const shown = useMemo(
     () => (fetched === key ? targets.flatMap((id) => tabs.filter((t) => t.id === id)) : []),
     [fetched, key, targets, tabs],
   );
-  // Keyed on the shown tabs' photo ids, not on the tabs: an edit to any tab (a collaborator's, say)
-  // makes new tab objects, and refetching every photo on each would keep the export from settling.
-  const photoKey = `${key}|${shown.map((t) => `${t.id}:${tabImageKey(t)}`).join(';')}`;
-  const shownNow = useLatest(shown);
-  useEffect(() => {
-    const now = shownNow.current;
-    if (!imageContext || now.length === 0) return;
-    let live = true;
-    void Promise.all(
-      now.map(async (t) => [t.id, await loadTabImages(t, imageContext)] as const),
-    ).then((pairs) => live && setImages({ key: photoKey, map: new Map(pairs) }));
-    return () => {
-      live = false;
-    };
-  }, [photoKey, imageContext, shownNow]);
-  // Drawn once everything has arrived: the content, and the photos where there is a way to fetch
-  // them. A window whose tab is gone (deleted) shows no tab, so it waits for no photos.
-  const settled =
-    fetched === key && (!imageContext || shown.length === 0 || images.key === photoKey);
+  // Drawn once the content has arrived.
+  const settled = fetched === key;
   return useMemo(() => {
     if (targets.length === 0) return { ready: true };
     if (!settled) return { ready: false };
-    const arts = tabWindowArts(tab.id, targets, tabs, images.map, items);
+    const arts = tabWindowArts(tab.id, targets, tabs, items);
     return {
       resolveTabWindow: (el) => (el.windowTabId ? arts.get(el.windowTabId) : undefined),
       tabWindowFontIds: shown.flatMap(tabDrawingFontIdsOf),
       ready: true,
     };
-  }, [settled, tab.id, targets, tabs, images, items, shown]);
+  }, [settled, tab.id, targets, tabs, items, shown]);
 }

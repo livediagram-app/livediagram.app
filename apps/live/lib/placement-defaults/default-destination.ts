@@ -88,7 +88,6 @@ export function resolveDefaultFor(
 export function representativeIntent(key: PlacementDefaultKey): CreationIntent {
   const [dimension, value] = key.split(':') as [string, string];
   if (dimension === 'mode') return { mode: 'plan', tabKind: 'diagram' };
-  if (dimension === 'kind') return { mode: 'plan', tabKind: value as 'event-storming' };
   return {
     mode: 'plan',
     tabKind: 'diagram',

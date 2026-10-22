@@ -18,7 +18,6 @@ import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
-import { isEventStormingTab } from '@liveplanner/document';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Reused as the excludeIds argument to snapResizeBounds during draw-
 // to-size: the new element doesn't exist yet, so there's nothing to
@@ -67,8 +66,6 @@ function CanvasView(props: CanvasProps) {
     readOnly,
     tabBackgroundPattern,
     tabBackgroundColor,
-    tabLayers,
-    tabKind,
     tabBackgroundOpacity,
     tabBackgroundPatternScale,
     tabBackgroundAnimationSpeed,
@@ -153,9 +150,7 @@ function CanvasView(props: CanvasProps) {
   // Palette drag-drop onto the canvas (onDragOver / onDrop), lifted into
   // usePaletteDrop so the canvas body keeps to layout + pointer routing.
   const paletteDrop = usePaletteDrop({
-    onDropPhoto: props.onDropPhoto,
     onDropFile: props.onDropFile,
-    onDropLibraryShape: props.onDropLibraryShape,
     onDropPalette: props.onDropPalette,
     viewportZoom,
     wrapperRef,
@@ -196,21 +191,10 @@ function CanvasView(props: CanvasProps) {
       isPaintMode,
       tabLocked,
       readOnly,
-      esBoard: isEventStormingTab({ kind: tabKind, layers: tabLayers }),
       elementMenuOpen: props.elementMenuOpen === true,
       labelRectOf: arrowLabels.labelRectOf,
     }),
-    [
-      elements,
-      editingId,
-      isPaintMode,
-      tabLocked,
-      readOnly,
-      tabLayers,
-      tabKind,
-      props.elementMenuOpen,
-      arrowLabels,
-    ],
+    [elements, editingId, isPaintMode, tabLocked, readOnly, props.elementMenuOpen, arrowLabels],
   );
   const { handlePointerMoveCanvas, handlePointerLeaveCanvas } = useCanvasPointer({
     onCanvasPointerMove,
@@ -260,7 +244,6 @@ function CanvasView(props: CanvasProps) {
     });
 
   const {
-    stamp,
     drawDrag,
     drawHover,
     polygonVertices,
@@ -268,7 +251,6 @@ function CanvasView(props: CanvasProps) {
     handlePolygonDoubleClick,
     beginPendingDrawOrPolygon,
   } = useCanvasDrawTools({
-    props,
     pendingDraw,
     elements,
     viewportZoom,
@@ -524,7 +506,6 @@ function CanvasView(props: CanvasProps) {
             marquee={marquee}
             drawDrag={drawDrag}
             drawHover={drawHover}
-            stamp={stamp}
             polygonVertices={polygonVertices}
             polygonCursor={polygonCursor}
             wrapperRef={wrapperRef}

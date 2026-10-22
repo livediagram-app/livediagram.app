@@ -119,36 +119,6 @@
     "collisions": 0,
     "extent": "1344×768"
   },
-  "graph-storm-23": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "2216×1714"
-  },
-  "graph-storm-24": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "2216×1954"
-  },
-  "graph-storm-25": {
-    "shared": 0,
-    "crossed": 0,
-    "strikes": 0,
-    "kinks": 0,
-    "crossings": 0,
-    "behind": 0,
-    "collisions": 0,
-    "extent": "2316×1954"
-  },
   "graph-tree-17": {
     "shared": 951,
     "crossed": 0,

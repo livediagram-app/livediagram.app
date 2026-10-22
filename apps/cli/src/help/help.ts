@@ -31,7 +31,6 @@ const NAMED_ONLY = [
   'type',
   'template',
   'icon',
-  'image',
   'schema',
   'guide',
   'skill',

@@ -21,7 +21,6 @@ import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useSearchShortcut } from '@/hooks/ui/useSearchShortcut';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
-import { ShapeLibraryProvider } from '@/components/primitives/ShapeLibraryProvider';
 import { DocumentTagsProvider } from '@/components/tags/DocumentTagsProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
@@ -85,15 +84,11 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
           builder share one source of truth, keyed by the same owner id
           the rest of the Explorer uses. */}
       <CustomThemeProvider ownerId={state.ownerId}>
-        {/* The owner's shape libraries (docs/specs/013-workspace/shape-libraries.md): the Shape
-            libraries page and the draw.io import share them. */}
-        <ShapeLibraryProvider ownerId={state.ownerId}>
-          {/* The reader's tags (docs/specs/013-workspace/tags.md): the sidebar's Tags rows, the Tags page, every
-              row's chips and every document menu's Tags read the one list. */}
-          <DocumentTagsProvider ownerId={state.ownerId}>
-            <ShellChrome>{children}</ShellChrome>
-          </DocumentTagsProvider>
-        </ShapeLibraryProvider>
+        {/* The reader's tags (docs/specs/013-workspace/tags.md): the sidebar's Tags rows, the Tags page, every
+            row's chips and every document menu's Tags read the one list. */}
+        <DocumentTagsProvider ownerId={state.ownerId}>
+          <ShellChrome>{children}</ShellChrome>
+        </DocumentTagsProvider>
       </CustomThemeProvider>
       {/* Moving this browser's documents in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md). */}
@@ -280,7 +275,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
       </main>
 
       {/* Bottom bar (docs/specs/007-editor/live-app.md): the same strip as the editor's tab bar, minus
-          the tabs — the shared right-hand control cluster (search / GitHub /
+          the tabs — the shared right-hand control cluster (search /
           settings / dark-mode). Sticky so it stays in view while the dashboard
           scrolls; the sign-in banner is nudged up to clear it. */}
       <div
@@ -292,7 +287,6 @@ function ShellChrome({ children }: { children: ReactNode }) {
           onOpenSearch={() => setSearchOpen(true)}
           onOpenSettings={surface.settings ? () => setSettingsOpen(true) : undefined}
           powerUser={isPowerUserMode(prefs)}
-          github={surface.appLinks}
           appearance={surface.appearance}
         />
         {/* A workspace frame's Open in liveplanner: this view in a full tab. */}

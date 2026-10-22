@@ -1,4 +1,4 @@
-import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
+import type { EmbedProvider } from '@liveplanner/document';
 import { useState } from 'react';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
 import { getLineArtIconCatalog } from '@/lib/icons';
@@ -9,7 +9,6 @@ import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
 import { restoresMaximised, withTileActionPreamble } from './palette-tile-actions';
 import { paletteCategoryTabs } from './palette-category-tabs';
-import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import type { PaletteAddHandlers } from './palette-add-handlers';
 import {
   coveredPaletteCategories,
@@ -35,14 +34,7 @@ import type { AddShapeOptions } from '@/lib/draw-mode';
 // from any category and any surface.
 type Deps = Pick<
   PaletteProps,
-  | 'canvasTool'
-  | 'onSetCanvasTool'
-  | 'onToggleZen'
-  | 'canvasEmpty'
-  | 'pendingDraw'
-  | 'esBoard'
-  | 'esBoardControls'
-  | 'onTileUsed'
+  'canvasTool' | 'onSetCanvasTool' | 'onToggleZen' | 'canvasEmpty' | 'pendingDraw' | 'onTileUsed'
 > &
   PaletteAddHandlers & {
     // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, and its selection
@@ -58,7 +50,6 @@ export function usePaletteCatalogue({
   onAddIcon,
   onAddSticker,
   onAddTechIcon,
-  onInsertLibraryShape,
   onAddText,
   onAddSticky,
   onAddTable,
@@ -73,17 +64,13 @@ export function usePaletteCatalogue({
   onAddProcess,
   onAddFlowchart,
   onAddAvatar,
-  onAddImage,
   onAddArrow,
   onCancelDraw,
   onBeginPolygon,
   pendingDraw,
-  esBoard,
-  esBoardControls,
   onTileUsed,
   participant = false,
 }: Deps) {
-  const { libraries } = useShapeLibraries();
   // Close a popover palette after adding a shape / tool so the user can draw
   // immediately without dismissing it manually.
   // `opts` is the creation-time choice for the kinds that have one: which
@@ -102,8 +89,7 @@ export function usePaletteCatalogue({
   const addSticker = (stickerId: string) => armed(() => onAddSticker(stickerId))();
   const addTechIcon = (iconId: string) => armed(() => onAddTechIcon(iconId))();
   const addText = armed(onAddText);
-  const addSticky = (fill?: string, esKind?: EventStormingNoteKind) =>
-    armed(() => onAddSticky(fill, esKind))();
+  const addSticky = armed(onAddSticky);
   const addTable = armed(onAddTable);
   // The annotation is the ONE tile that still places instantly (docs/specs/009-elements/annotations.md): a
   // fixed 44x44 marker has no box to draw.
@@ -115,7 +101,6 @@ export function usePaletteCatalogue({
   const addArrow = (ends?: import('@liveplanner/document').ArrowEnds) =>
     armed(() => onAddArrow(ends))();
   const beginPolygon = armed(onBeginPolygon);
-  const addImage = armed(() => onAddImage?.());
   // One handler per composite-component kind, so the tile catalogue can
   // address them by kind (see PaletteTileGrid).
   const addComponent = (kind: import('@liveplanner/document').ComponentKind) => {
@@ -143,7 +128,6 @@ export function usePaletteCatalogue({
       addArrow,
       addSticky,
       addTable,
-      addImage,
       addAnnotation,
       addLinkCard,
       addVideo,
@@ -152,7 +136,6 @@ export function usePaletteCatalogue({
       addIcon,
       addTechIcon,
       cancelDraw: onCancelDraw,
-      hasImage: !!onAddImage,
     },
     (action, args) => {
       // A maximised board, view or Sheet gives the canvas back for anything but a card (docs/specs/026-plan/
@@ -193,9 +176,7 @@ export function usePaletteCatalogue({
   // (the headings CATEGORY_BANDS names).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
-  // Plan's palette layout (palette-layouts): its categories, in order, with their tiles. My
-  // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md).
-  const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
+  // Plan's palette layout (palette-layouts): its categories, in order, with their tiles.
   // A board filling its tab: cards land only on a board (a maximised one keeps the palette).
   const boardFillingTab = useBoardFillingTab();
   // A Dashboard tab's palette is what fills a slot (docs/specs/026-plan/plan-tabs.md "Dashboard tab").
@@ -215,13 +196,11 @@ export function usePaletteCatalogue({
                 ? [{ ...c, tiles: dashboardTabTiles(planTabList) }]
                 : [],
           )
-        : paletteCategoriesFor().filter((c) => hasLibraryShapes || c.id !== 'my-shapes');
+        : paletteCategoriesFor();
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
     tileActions,
-    // Only on an ES board: a board switch anywhere else means nothing.
-    esBoardControls: esBoard ? esBoardControls : undefined,
     addIcon,
     iconQuery,
     setIconQuery,
@@ -235,7 +214,6 @@ export function usePaletteCatalogue({
     techQuery,
     setTechQuery,
     techResults,
-    insertLibraryShape: (item) => armed(() => onInsertLibraryShape(item))(),
   });
 
   // The canvas-tool picker's options, and its change handler: 'zen' is an

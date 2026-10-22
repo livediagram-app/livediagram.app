@@ -69,17 +69,9 @@ export type CommandContext = {
   // content, so they disable on an empty canvas exactly as the palette's
   // tool dropdown disables them.
   canvasEmpty: boolean;
-  // Event storming (docs/specs/021-event-storming/event-storming.md): the board-level verbs are offered only on one
-  // of those boards, where they mean something.
-  esBoard: boolean;
   // A locked tab (docs/specs/008-canvas/canvas-and-palette.md "Locking") refuses every element edit, so search
   // offers none of them: no selection verbs, no layout cleanup, no Format.
   tabLocked?: boolean;
-  // Are timeline lanes on right now (docs/specs/021-event-storming/event-storming.md Phase 6)? Names the verb
-  // honestly rather than offering a switch whose direction you have to guess.
-  // Can this deployment read a photographed wall (docs/specs/021-event-storming/event-storming.md Phase 8)? False
-  // without a model key, where the verb would be an offer nobody can accept.
-  photoImportAvailable: boolean;
 };
 
 // The handlers the commands call. Injected by useEditorCommands; each is the
@@ -118,10 +110,6 @@ export type CommandHandlers = {
   // Switches the canvas tool — the same setter the palette's tool dropdown
   // calls, so the pressed state and telemetry are identical either way.
   setTool: (tool: string) => void;
-  // Timeline lanes on an event-storming board (docs/specs/021-event-storming/event-storming.md Phase 6) — the same
-  // flip the palette's switch runs.
-  // Open the wall-photo reader (docs/specs/021-event-storming/event-storming.md Phase 8).
-  openPhotoImport: () => void;
 };
 
 // The canvas tools reachable from search, in the tool dropdown's own order.
@@ -244,19 +232,6 @@ export function buildEditorCommands(ctx: CommandContext, h: CommandHandlers): Ed
   // --- Document / tab commands. Always available in-document (independent of
   // the selection), so a power user can share / rename / theme without first
   // clearing what's selected.
-  // Event-storming board verbs (docs/specs/021-event-storming/event-storming.md). Only on such a board: a timeline
-  // lane on an ordinary diagram would be a grid for nothing.
-  if (ctx.esBoard && !ctx.tabLocked) {
-    if (ctx.photoImportAvailable) {
-      out.push({
-        id: 'photo-import',
-        name: 'Add Notes from a Photo',
-        keywords: 'photo camera picture wall sticky scan ocr read import capture snapshot',
-        run: h.openPhotoImport,
-      });
-    }
-  }
-
   out.push({
     id: 'create-tab',
     name: 'Create New Tab',

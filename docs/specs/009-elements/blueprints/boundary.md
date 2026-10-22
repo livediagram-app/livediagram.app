@@ -40,8 +40,6 @@ Banned: "zone" in code, "group".
   The meta line edits in place (`pageSubtitle`, `setPageHeading`, `MASTHEAD_SHAPES` gains `boundary`).
 - **Paint order.** Tier 0 holds frames and boundaries; within it the larger area paints first, so an inner boundary
   never hides behind its outer one whatever the array order.
-- **Animation.** The Shape set's tiles offered on a boundary are `CONTAINER_ANIMATIONS`: blink, glow, trace,
-  gradient, shimmer, highlight.
 - **Creation.** 480 × 300, label "Region", `strokeStyle: 'dashed'` (C4 picks `long-dash` when the style is set to
   C4 and the stroke is unset or dashed), `borderRadius: 'md'`, `textSize: 'sm'`, `textBold: true` (D184).
 

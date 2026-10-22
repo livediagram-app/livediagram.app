@@ -72,20 +72,7 @@ describe('HomeWelcome', () => {
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Welcome.SignIn');
   });
 
-  it('offers the imports beside it', () => {
-    render(
-      <HomeWelcome
-        offerSignIn={false}
-        importToolbar={<button type="button">Import from</button>}
-      />,
-    );
-    const have = section('Already Have Work?');
-    expect(within(have).getByText('Bring It With You')).toBeTruthy();
-    expect(within(have).getByRole('button', { name: 'Import from' })).toBeTruthy();
-    expect(within(have).queryByText('Nothing here yet? Sign in')).toBeNull();
-  });
-
-  it('leaves Already Have Work? out with neither', () => {
+  it('leaves Already Have Work? out for someone with nothing to come back to', () => {
     render(<HomeWelcome offerSignIn={false} />);
     expect(screen.queryByRole('region', { name: 'Already Have Work?' })).toBeNull();
   });

@@ -22,8 +22,8 @@ describe('LANDING_SECTION_IDS', () => {
 
 describe('LANDING_SECTIONS', () => {
   // One beat per core feature of the app (docs/specs/019-marketing/marketing-site.md "Story beats").
-  it('tells the story in five core features, in order', () => {
-    expect(LANDING_SECTION_IDS).toEqual(['collaboration', 'diagrams', 'plan', 'sheets', 'forms']);
+  it('tells the story in four core features, in order', () => {
+    expect(LANDING_SECTION_IDS).toEqual(['plan', 'sheets', 'forms', 'collaboration']);
   });
 
   it('plays a different hero scene beside each beat', () => {

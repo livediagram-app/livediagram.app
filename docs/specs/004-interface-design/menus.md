@@ -134,10 +134,7 @@ Anchor", "A List".
 The same rule covers the close cousins of a menu item, the controls that name an action on an
 element or add one:
 
-- **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky
-  Note", "Add Domain Event Note"), and the Toolbar strip's **Add Page** and **Add from Photo**. A catalogue entry (an icon, a sticker, a technology, an Event Storming
-  note kind) keeps its own sentence-case name and its tile Title Cases it on the way
-  (`headlineCase` in `@liveplanner/api-schema`).
+- **Palette tiles**: every add-tile's name and caption ("Add Sticky Note" captioned "Sticky Note"), and the Toolbar strip's **Add Page**, and . A catalogue entry keeps its own sentence-case name and its tile Title Cases it on the way (`headlineCase` in `@liveplanner/api-schema`).
 - **The quick-add ring's options**: "Add Row", "Add Column", "Add Child", "Add Sibling", "Add
   Point", "Add Stat".
 - **Buttons drawn on an element**: the selection toolbar ("Bring to Front", "Edit Points", "Add
@@ -168,7 +165,6 @@ Each menu, how it opens, what it holds, and what the keyboard could do before th
 | --------------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------- |
 | Document menu         | ⋯ on an Explorer row, card or tree row; right-click; Shift+F10 | Name header, verbs, Delete or Dismiss under a separator                  | Tab only; no Escape; buttons in a `menu`            |
 | Folder menu           | Same, on a folder; My Documents in the sidebar and panel       | Name header, verbs, **Use as Default for** ▸ (checkable entries), Delete | Tab only; submenu unreachable by arrows             |
-| Timeline card menu    | ⋯ on a Timeline card                                           | Verbs                                                                    | Tab only                                            |
 | Explorer More menu    | More in the Explorer panel header                              | Verbs in bands                                                           | Tab only                                            |
 | New menus             | + in the Explorer pane header and a team library header        | Document, Folder tiles                                                   | Tab only                                            |
 | Team menu             | ⋯ on a team in the Teams pane                                  | Tiles                                                                    | Tab only                                            |

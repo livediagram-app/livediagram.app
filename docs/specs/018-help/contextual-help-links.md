@@ -102,11 +102,7 @@ Grouped by priority; each links the keyed article.
   `button` variant with a custom `label` + plug `icon` (the variant now accepts both; absent
   a custom label it still reads "Help").
 - Export dialog header -> `exporting-diagrams` (isometric toggle -> `isometric-mode`)
-- Import dialog header -> `import-tabs`. The Markdown note (`markdown-import`)
-  rides on the **Markdown format's own paste step**, not the format picker:
-  under the grid it asked "Importing a Markdown outline?" of a reader who had
-  not picked a format yet. A format carries its own footnote (`note` on the
-  `FORMATS` entry), so any other format can grow one the same way.
+- Import dialog header -> `import-tabs`.
 - Team form / invite -> `team-roles-and-invites`
 
 **Medium priority**
@@ -114,7 +110,6 @@ Grouped by priority; each links the keyed article.
 - Canvas/Theme dialog -> `changing-the-background` / `changing-theme`
 - Link picker -> `links` (tab links -> `linking-tabs`)
 - Themes pane empty state -> `custom-themes`
-- Image gallery pane -> `image-gallery`
 - Line/chart data editor -> `data-elements`
 - Settings - telemetry -> `what-we-collect`
 

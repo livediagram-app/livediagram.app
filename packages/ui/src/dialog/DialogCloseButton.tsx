@@ -4,7 +4,7 @@ import { CloseIcon } from '../icons';
 // the default h-7 square that tucks into a title row's top-right corner
 // (Share / Import / Export / LinkPicker / MoveToFolder), and the
 // `compact` p-1 variant with the larger 16px glyph that Settings /
-// CanvasTheme / ThemesPane / ImagePicker's slimmer headers use. New
+// CanvasTheme / ThemesPane slimmer headers use. New
 // dialogs should mount one of these instead of re-typing the class
 // string — the ThemesPane copy had already dropped a dark-hover token.
 //

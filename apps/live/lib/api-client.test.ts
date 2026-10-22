@@ -5,25 +5,19 @@ import {
   apiCreateDocument,
   apiCreateShareLink,
   apiRescopeShareLink,
-  apiDeleteImage,
   apiDeleteShareLink,
   apiDeleteTab,
   apiDismissSharedWith,
-  apiFetchImageBlobUrl,
-  releaseImageBlobUrl,
-  apiListImages,
   apiLoadDocument,
   apiLoadShared,
   apiLoadTab,
   apiSaveDocumentMeta,
   apiSaveTab,
   apiSharedTabs,
-  apiUploadImage,
   setSessionSharePassword,
   setTokenProvider,
 } from './api-client';
-import { apiHeaders, setWorkbenchConfinement } from './api/core';
-import { resetDisplayCacheForTests } from './image-display';
+import { apiHeaders } from './api/core';
 
 // Reset the module-level token provider between tests so the order of
 // the cases below doesn't leak. The Bearer-path tests register a
@@ -350,8 +344,8 @@ describe('response helpers (observed through api callers)', () => {
 // backs. Two contracts that matter:
 //
 //   - allow404 default vs opt-out. Most DELETEs are idempotent
-//     ("remove if it exists") and tolerate 404 silently; two callers
-//     (apiDismissSharedWith, apiDeleteImage) opted in to a stricter
+//     ("remove if it exists") and tolerate 404 silently; one caller
+//     (apiDismissSharedWith) opted in to a stricter
 //     behaviour where 404 surfaces as a real error. The helper's
 //     `allow404: false` flag preserves that distinction.
 //   - share-code forwarding. A DELETE that takes a `shareCode`
@@ -380,16 +374,6 @@ describe('apiDelete (internal, via public DELETE callers)', () => {
       await expect(apiDismissSharedWith('owner', 'diag-404')).rejects.toThrow(
         'dismiss shared failed: 404',
       );
-    });
-
-    it('apiDeleteImage (allow404:false) throws on 404', async () => {
-      stubFetch(404, {});
-      await expect(apiDeleteImage('owner', 'img-404')).rejects.toThrow('delete image failed: 404');
-    });
-
-    it('apiDeleteImage resolves on 200 (smoke check the happy path still works)', async () => {
-      stubFetch(200);
-      await expect(apiDeleteImage('owner', 'img-200')).resolves.toBeUndefined();
     });
 
     it('apiDeleteShareLink (allow404:true) STILL tolerates 404 after the refactor', async () => {
@@ -574,13 +558,7 @@ describe('apiCreateDocument placement (docs/specs/013-workspace/folders.md "Plac
     expect(body).not.toHaveProperty('intent');
   });
 
-  it('sends markUsed: false for a making that is no use (docs/specs/015-api/api.md)', async () => {
-    const body = await sentBody({ id: 'd1', name: 'N', markUsed: false });
-    expect(body).toHaveProperty('markUsed', false);
-  });
-
-  it('leaves markUsed out for a making that counts, the server default', async () => {
-    expect(await sentBody({ id: 'd1', name: 'N', markUsed: true })).not.toHaveProperty('markUsed');
+  it('leaves markUsed out: every making in the editor counts, the server default', async () => {
     expect(await sentBody({ id: 'd1', name: 'N' })).not.toHaveProperty('markUsed');
   });
 
@@ -738,143 +716,5 @@ describe('apiLoadTab load boundary', () => {
       apiLoadTab('owner', 'd1', 't-both', null, { open: true }),
     ]);
     expect(vi.mocked(fetch)).toHaveBeenCalledTimes(2);
-  });
-});
-
-describe('apiListImages (R2 degradation, docs/specs/009-elements/images.md)', () => {
-  afterEach(() => vi.unstubAllGlobals());
-
-  it('returns null on 503 (R2 not provisioned) instead of throwing', async () => {
-    stubFetch(503, {});
-    expect(await apiListImages('o-503')).toBeNull();
-  });
-
-  it('returns the gallery on 200', async () => {
-    stubFetch(200, { images: [{ id: 'img1' }] });
-    expect(await apiListImages('o-ok')).toEqual([{ id: 'img1' }]);
-  });
-});
-
-describe('apiUploadImage request shape (docs/specs/009-elements/images.md)', () => {
-  afterEach(() => vi.unstubAllGlobals());
-
-  const stubOk = () => {
-    const spy = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ image: { id: 'img1' }, deduped: false }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      }),
-    );
-    vi.stubGlobal('fetch', spy);
-    return spy;
-  };
-  const file = (over: Record<string, unknown> = {}) => ({
-    bytes: new ArrayBuffer(4),
-    contentType: 'image/png',
-    sha256: 'abc123',
-    width: 10,
-    height: 20,
-    originalName: 'pic.png',
-    ...over,
-  });
-
-  it('POSTs the bytes with the client-computed metadata headers', async () => {
-    const spy = stubOk();
-    const out = await apiUploadImage('owner', file());
-    const [url, init] = spy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toMatch(/\/images$/);
-    expect(init.method).toBe('POST');
-    expect(init.body).toBeInstanceOf(ArrayBuffer);
-    const h = init.headers as Headers;
-    expect(h.get('Content-Type')).toBe('image/png');
-    expect(h.get('Content-Length')).toBe('4');
-    expect(h.get('X-Image-Sha256')).toBe('abc123');
-    expect(h.get('X-Image-Width')).toBe('10');
-    expect(h.get('X-Image-Height')).toBe('20');
-    expect(h.get('X-Image-Original-Name')).toBe('pic.png');
-    expect(out).toEqual({ image: { id: 'img1' }, deduped: false });
-  });
-
-  it('percent-encodes a name a header cannot hold (a macOS screenshot, a non-Latin name)', async () => {
-    const spy = stubOk();
-    const name = 'Screenshot at 9.41.02\u202fAM 図.png';
-    await expect(apiUploadImage('owner', file({ originalName: name }))).resolves.toBeDefined();
-    const h = (spy.mock.calls[0]![1] as RequestInit).headers as Headers;
-    expect(decodeURIComponent(h.get('X-Image-Original-Name')!)).toBe(name);
-  });
-
-  it('omits X-Image-Original-Name when no original name is given', async () => {
-    const spy = stubOk();
-    await apiUploadImage('owner', file({ originalName: undefined }));
-    const h = (spy.mock.calls[0]![1] as RequestInit).headers as Headers;
-    expect(h.get('X-Image-Original-Name')).toBeNull();
-  });
-});
-
-describe('apiFetchImageBlobUrl request shape (docs/specs/009-elements/images.md + docs/specs/013-workspace/share-password.md)', () => {
-  afterEach(() => vi.unstubAllGlobals());
-
-  // Inspect the request the function builds (and confirm the null-on-error
-  // contract) without reaching URL.createObjectURL: a non-ok response
-  // returns null but the fetch was still issued with the built URL/headers.
-  const stub404 = () => {
-    const spy = vi.fn().mockResolvedValue(new Response('', { status: 404 }));
-    vi.stubGlobal('fetch', spy);
-    return spy;
-  };
-
-  it('adds the document query param + share code, returns null on a non-ok read', async () => {
-    const spy = stub404();
-    const out = await apiFetchImageBlobUrl('owner', 'img 1', {
-      documentId: 'd1',
-      shareCode: 'CODE2345',
-    });
-    expect(out).toBeNull();
-    const [url, init] = spy.mock.calls[0] as [string, RequestInit];
-    expect(String(url)).toMatch(/\/images\/img%201\?d=d1$/); // imageId encoded
-    expect((init.headers as Headers).get('X-Share-Code')).toBe('CODE2345');
-  });
-
-  it('hands every view of the same picture one shared URL, fetched once', async () => {
-    resetDisplayCacheForTests();
-    const spy = vi.fn().mockImplementation(async () => new Response('png', { status: 200 }));
-    vi.stubGlobal('fetch', spy);
-    const made = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:shared');
-    const revoke = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => {});
-    try {
-      const a = await apiFetchImageBlobUrl('owner', 'img-shared', { documentId: 'd1' });
-      const b = await apiFetchImageBlobUrl('owner', 'img-shared', { documentId: 'd1' });
-      expect([a, b]).toEqual(['blob:shared', 'blob:shared']);
-      expect(spy).toHaveBeenCalledTimes(1);
-      expect(made).toHaveBeenCalledTimes(1);
-      releaseImageBlobUrl(a!);
-      expect(revoke).not.toHaveBeenCalled();
-      releaseImageBlobUrl(b!);
-      expect(revoke).toHaveBeenCalledWith('blob:shared');
-    } finally {
-      made.mockRestore();
-      revoke.mockRestore();
-    }
-  });
-
-  it('omits the query string when no document id is given', async () => {
-    const spy = stub404();
-    await apiFetchImageBlobUrl('owner', 'img1');
-    expect(String(spy.mock.calls[0]![0])).toMatch(/\/images\/img1$/);
-  });
-
-  // Under a workbench session the api reads an image only by its document path
-  // (docs/specs/013-workspace/blueprints/workbench-embeds.md "Route effects under a session").
-  it("always names the session's document under a workbench session", async () => {
-    const spy = stub404();
-    setWorkbenchConfinement({ scope: 'document', documentId: 'doc-wb', ownerId: 'owner' });
-    try {
-      await apiFetchImageBlobUrl('owner', 'img1');
-      await apiFetchImageBlobUrl('owner', 'img1', { documentId: 'other' });
-    } finally {
-      setWorkbenchConfinement(null);
-    }
-    expect(String(spy.mock.calls[0]![0])).toMatch(/\/images\/img1\?d=doc-wb$/);
-    expect(String(spy.mock.calls[1]![0])).toMatch(/\/images\/img1\?d=doc-wb$/);
   });
 });

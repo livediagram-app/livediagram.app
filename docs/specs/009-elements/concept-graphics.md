@@ -157,7 +157,7 @@ conceptAnimRepeat?: boolean;
   Onion it ripples outward, and on a Chevron process it runs along the stages.
 - **Flow** (a loop, Cycle only): dashes travel along the arcs in the loop's direction.
 
-They follow the shared rules ([Element animations](../028-animation/element-animations.md)): pure CSS keyframes with
+They follow the shared rules ([Animated elements](../008-canvas/canvas-and-palette.md#animated-elements)): pure CSS keyframes with
 per-row `animation-delay` (no script), deterministic, `transform` / `opacity` only except Flow's dash offset on the
 arcs, reduced motion and every export show the rest frame (every row shown), and an unknown stored value renders as
 no animation.

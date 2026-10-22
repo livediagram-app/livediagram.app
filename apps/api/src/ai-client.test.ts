@@ -96,11 +96,10 @@ describe('chatCompletions timeout', () => {
 });
 
 describe('providerOf', () => {
-  it('is the resolver, for a route that has an Env and a feature', () => {
+  it('is the resolver, for a route that has an Env', () => {
     const both = { GOOGLE_AI_STUDIO_API_KEY: 'g', OPENAI_API_KEY: 'o' } as Env;
-    expect(providerOf(both, 'assistant')?.provider).toBe('openai');
-    expect(providerOf(both, 'reader')?.provider).toBe('google');
-    expect(providerOf({} as Env, 'reader')).toBeNull();
+    expect(providerOf(both)?.provider).toBe('openai');
+    expect(providerOf({} as Env)).toBeNull();
   });
 });
 

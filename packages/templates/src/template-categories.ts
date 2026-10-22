@@ -228,7 +228,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'sequence-diagram': 'technical',
   'uml-class': 'technical',
   'state-machine': 'technical',
-  'event-storming': 'technical',
   'incident-postmortem': 'technical',
   'threat-model': 'technical',
   'value-stream-map': 'technical',
@@ -266,7 +265,6 @@ export const TEMPLATE_ALSO_IN: Readonly<
   // Workshop formats.
   'crazy-eights': ['meetings', 'design'],
   'doodle-warmup': ['meetings'],
-  'event-storming': ['meetings'],
   'incident-postmortem': ['meetings'],
   // Research synthesis and site structure are design work too.
   'affinity-map': ['design'],

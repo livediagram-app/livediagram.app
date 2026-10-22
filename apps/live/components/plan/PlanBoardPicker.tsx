@@ -30,8 +30,12 @@ const PREVIEW_COLUMNS = 5;
 // Cards per preview column, a gentle pattern so each column reads as work in flight.
 const CARD_PATTERN = [3, 2, 3, 1, 2];
 
-// The Spreadsheets pictures live in sheet-previews.tsx; Start Planning and Add to Slot read them from here too.
-export { SHEET_TILES, SheetPreview } from './sheet-previews';
+// The Spreadsheets pictures live in sheet-previews.tsx; Start Planning and Add to Slot read them from here too. Their
+// tiles are the empty sheet, the card table, then every template in the catalogue's order (Budget and Tracker third
+// and fourth, where Add to Slot reads them): Start Planning's own list. Kept out of sheet-previews.tsx, so a picture
+// alone (Explorer Home's hero) never loads Start Planning's catalogue.
+export { SheetPreview } from './sheet-previews';
+export { SHEET_STARTS as SHEET_TILES } from './start/start-planning-items';
 
 export function BoardPreview({
   preset,

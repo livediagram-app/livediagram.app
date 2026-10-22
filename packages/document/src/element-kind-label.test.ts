@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { elementKindLabel } from './element-kind-label';
-import { migrateStoredElements } from './stored-elements';
 import type { Element } from './index';
 
 // Minimal element stubs — elementKindLabel only reads `type` (+ `shape`).
@@ -39,34 +38,13 @@ describe('elementKindLabel', () => {
   });
 });
 
-// An event-storming note IS its kind (docs/specs/021-event-storming/event-storming.md): "Selected Domain Event"
-// tells a facilitator what they picked up; "Selected Sticky" tells them
-// nothing the board didn't already show. The kind is stored on the element
-// from creation; notes authored before that fall back to their canonical
-// colour, which is the notation anyway.
-describe('elementKindLabel — event-storming notes', () => {
+describe('elementKindLabel — stickies', () => {
   const note = (extra: Record<string, unknown>) =>
     ({ id: 'n', type: 'sticky', x: 0, y: 0, width: 200, height: 200, ...extra }) as Element;
 
-  it('names the note kind when the element carries it', () => {
-    expect(elementKindLabel(note({ esKind: 'domain-event' }))).toBe('Domain Event');
-    expect(elementKindLabel(note({ esKind: 'read-model' }))).toBe('Read Model');
-    expect(elementKindLabel(note({ esKind: 'hotspot' }))).toBe('Hotspot');
-  });
-
-  it('names a note authored before the stamp once its load stamps the kind', () => {
-    const [cmd, policy] = migrateStoredElements([
-      note({ fillColor: '#93c5fd', fixedSize: true }),
-      note({ fillColor: '#d8b4fe', fixedSize: true }),
-    ]);
-    expect(elementKindLabel(cmd!)).toBe('Command');
-    expect(elementKindLabel(policy!)).toBe('Policy');
-  });
-
-  it('stays "Sticky" for an ordinary note', () => {
+  it('names a sticky "Sticky", whatever its colour', () => {
     expect(elementKindLabel(note({}))).toBe('Sticky');
-    // A hand-picked colour on a normal sticky is not a notation claim.
-    expect(elementKindLabel(note({ fillColor: '#93c5fd' }))).toBe('Sticky');
+    expect(elementKindLabel(note({ fillColor: '#93c5fd', fixedSize: true }))).toBe('Sticky');
   });
 });
 

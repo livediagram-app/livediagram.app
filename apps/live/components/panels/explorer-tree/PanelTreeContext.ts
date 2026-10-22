@@ -17,7 +17,7 @@ export type PanelTree = {
   exitingDocumentIds: Set<string>;
   expanded: Record<string, boolean>;
   onToggle: (key: string) => void;
-  // Any document the reader can reach, by id: the pane's views (Home, the Timeline) give it its menu.
+  // Any document the reader can reach, by id: the pane's views (Home) give it its menu.
   documentById?: (id: string) => PaneDocument | undefined;
   // Opens a folder in the pane (its subfolders, then its documents, under a breadcrumb).
   onOpenFolder?: (folderId: string) => void;

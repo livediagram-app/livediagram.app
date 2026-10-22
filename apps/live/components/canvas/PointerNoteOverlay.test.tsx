@@ -79,9 +79,4 @@ describe('PointerNoteOverlay', () => {
     fireEvent.keyDown(handle, { key: 'ArrowDown', shiftKey: true });
     expect(onSetTip).toHaveBeenLastCalledWith('n', { x: 100 - 24, y: 50 + 130 });
   });
-
-  it('pulses the tip when the note has the Pulse animation', () => {
-    const { container } = show(note({ animation: 'pulse' }), false);
-    expect(container.querySelector('.lvd-pointer-tip-pulse')).not.toBeNull();
-  });
 });

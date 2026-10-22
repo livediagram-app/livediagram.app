@@ -1,22 +1,18 @@
 'use client';
 
 // The editor's Explorer sections that are views of their own (docs/specs/013-workspace/explorer-structure.md "The
-// pane"): Home, the Inbox, the Timeline, the Library and the Trash, each drawn for the pane from the Explorer page's
+// pane"): Home, the Inbox, the Library and the Trash, each drawn for the pane from the Explorer page's
 // own data hooks. Loaded only when a section is first shown (ExplorerPanelPane's dynamic imports), and each read
 // starts only while its section is mounted, so opening the editor costs nothing more.
 import { useState } from 'react';
-import { dateKey, pickRenderer, timeLabel } from '@liveplanner/ui';
 import { ActivityPane } from '@/components/panels/ActivityPane';
-import { GalleryPane } from '@/components/panels/GalleryPane';
 import { ThemesPane } from '@/components/panels/ThemesPane';
-import { ShapeLibrariesPane } from '@/components/panels/ShapeLibrariesPane';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { AvatarStack } from '@/components/panels/home/HomeAvatar';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { ClockIcon, DocumentIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useActivityFeed } from '@/app/explorer/useActivityFeed';
-import { useTimelineFeed } from '@/app/explorer/useTimelineFeed';
 import { useHome } from '@/app/explorer/home/useHome';
 import {
   HOME_COPY,
@@ -24,13 +20,10 @@ import {
   locationLabel,
   summarySentence,
 } from '@/app/explorer/home/home-copy';
-import { dayHeading, groupsByDay, paneJumpBackIn } from '@/app/explorer/home/home-model';
-import { TIMELINE_RENDERERS } from '@/app/explorer/timeline/renderers';
+import { groupsByDay, paneJumpBackIn } from '@/app/explorer/home/home-model';
 import { useTrash } from '@/hooks/persistence/useTrash';
 import { useToast } from '@/hooks/ui/useToast';
 import { explorerPathFor } from '@/app/explorer/routes';
-import { LIBRARY_PAGES } from '@/app/explorer/sidebar/library-pages';
-import { trackSidebar } from '@/app/explorer/sidebar/sidebar-telemetry';
 import { daysLeftLabel, trashGroups, trashedOnLabel, type TrashGroup } from '@/lib/trash-groups';
 import { relativeSince, useRelativeNow } from '@/lib/relative-time';
 import {
@@ -46,12 +39,11 @@ import {
   PaneSection,
   PaneSkeleton,
   PaneTile,
-  type PaneTone,
 } from './pane-parts';
 import { usePaneDocumentMenu } from '../explorer-tree/usePaneDocumentMenu';
 import { usePanelTree } from '../explorer-tree/PanelTreeContext';
 import type { JumpBackInItem } from '@/app/explorer/home/home-model';
-import type { HomeGroup, TimelineEvent } from '@liveplanner/api-schema';
+import type { HomeGroup } from '@liveplanner/api-schema';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideRotateCcw, lucideTrash2 } from '@liveplanner/icons/lucide';
 
@@ -130,37 +122,6 @@ function WhatHappenedRow({ group, onOpen }: { group: HomeGroup; onOpen: () => vo
   );
 }
 
-// An event's tile colour, by what happened: made, talked about, shared, moved, removed, or changed.
-function eventTone(e: TimelineEvent): PaneTone {
-  const t = e.eventType;
-  if (/created|joined|accepted/.test(t)) return 'emerald';
-  if (/comment|mention|reply/.test(t)) return 'sky';
-  if (/share|invite|link|role/.test(t)) return 'violet';
-  if (/moved|folder|renamed/.test(t)) return 'amber';
-  if (/deleted|removed|trash|left|declined/.test(t)) return 'rose';
-  return 'brand';
-}
-
-function TimelineRow({ event, ownerId }: { event: TimelineEvent; ownerId: string }) {
-  const r = pickRenderer(event, TIMELINE_RENDERERS)(event, { viewerId: ownerId });
-  const doc = usePanelTree().documentById?.(event.sourceType === 'document' ? event.sourceId : '');
-  const menu = usePaneDocumentMenu(event.sourceType === 'document' ? doc : undefined);
-  return (
-    <PaneRow
-      leading={<PaneTile tone={eventTone(event)}>{r.icon}</PaneTile>}
-      title={r.subject ?? event.title}
-      meta={
-        <>
-          {r.label ?? event.title} · {timeLabel(event.occurredAt)}
-        </>
-      }
-      onActivate={r.onClick}
-      rowProps={{ onContextMenu: menu.onContextMenu }}
-      trailing={menu.trailing}
-    />
-  );
-}
-
 type Open = (id: string, shareCode?: string) => void;
 
 // How many documents Home's Jump Back In lists in the pane.
@@ -170,13 +131,10 @@ export function HomeSection({
   ownerId,
   currentDocumentId,
   onOpenDocument,
-  onSeeTimeline,
 }: {
   ownerId: string;
   currentDocumentId: string | null;
   onOpenDocument: Open;
-  // Home's See Timeline shows the Timeline in the pane, as the rail would.
-  onSeeTimeline: () => void;
 }) {
   const home = useHome(ownerId, () => {});
   const now = useRelativeNow();
@@ -223,14 +181,7 @@ export function HomeSection({
       </PaneSection>
       {/* Only when someone else did something: an empty "What Happened" says nothing worth the room. */}
       {home.whatHappened.length ? (
-        <PaneSection
-          title={HOME_COPY.whatHappened}
-          action={
-            <button type="button" onClick={onSeeTimeline} className={PANE_LINK}>
-              See Timeline
-            </button>
-          }
-        >
+        <PaneSection title={HOME_COPY.whatHappened}>
           <div className="flex flex-col gap-3">
             {groupsByDay(home.whatHappened, now).map((day) => (
               <div key={day.day} className="flex flex-col gap-0.5">
@@ -257,53 +208,6 @@ export function HomeSection({
 
 export function InboxSection({ ownerId }: { ownerId: string }) {
   return <ActivityPane compact feed={useActivityFeed(ownerId)} />;
-}
-
-// The Timeline as a list for the pane: each event one row under its day, the newest first. Its card menus and the
-// calendar are the Explorer page's (Open Page).
-export function TimelineSection({ ownerId }: { ownerId: string }) {
-  const feed = useTimelineFeed(ownerId, true);
-  const now = useRelativeNow();
-  if (feed.error) return <PaneFailed message="The Timeline could not load." onRetry={feed.retry} />;
-  if (feed.loading) return <PaneSkeleton rows={6} />;
-  if (!feed.events.length)
-    return (
-      <PaneEmpty
-        icon={<ClockIcon />}
-        title="No activity yet"
-        description="Create a document, comment on one, or join a team, and it will show up here."
-      />
-    );
-  const days: { day: string; events: typeof feed.events }[] = [];
-  for (const e of feed.events) {
-    const day = dateKey(e.occurredAt);
-    const last = days.at(-1);
-    if (last?.day === day) last.events.push(e);
-    else days.push({ day, events: [e] });
-  }
-  return (
-    <div className="flex flex-col gap-5">
-      {days.map(({ day, events }) => (
-        <PaneSection key={day} title={dayHeading(day, now)}>
-          <PaneList label={dayHeading(day, now)}>
-            {events.map((e) => (
-              <TimelineRow key={e.id} event={e} ownerId={ownerId} />
-            ))}
-          </PaneList>
-        </PaneSection>
-      ))}
-      {feed.hasMore ? (
-        <button
-          type="button"
-          onClick={feed.loadMore}
-          disabled={feed.loadingMore}
-          className="mx-auto cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium text-slate-600 ring-1 ring-slate-200 transition hover:bg-slate-50 disabled:cursor-wait disabled:opacity-60 dark:text-slate-300 dark:ring-slate-700 dark:hover:bg-slate-800"
-        >
-          {feed.loadingMore ? 'Loading…' : 'Show Earlier'}
-        </button>
-      ) : null}
-    </div>
-  );
 }
 
 // The Trash as rows: what was deleted and how long it has left, each with Restore and Delete (asked first).
@@ -399,56 +303,7 @@ export function TrashSection({
   );
 }
 
-export type LibraryKind = (typeof LIBRARY_PAGES)[number]['kind'];
-
-// The Library's three pages as tabs over one view (Image gallery first), each drawn for the pane. The pane holds the
-// tab, so its Open Page goes to the page shown.
-export function LibrarySection({
-  ownerId,
-  tab,
-  setTab,
-}: {
-  ownerId: string;
-  tab: LibraryKind;
-  setTab: (tab: LibraryKind) => void;
-}) {
-  return (
-    <div className="flex flex-col gap-4">
-      <div
-        role="tablist"
-        aria-label="Library"
-        className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800"
-      >
-        {LIBRARY_PAGES.map(({ kind, label, Icon, row }) => (
-          <button
-            key={kind}
-            type="button"
-            role="tab"
-            aria-selected={tab === kind}
-            onClick={() => {
-              trackSidebar(row, 'panel');
-              setTab(kind);
-            }}
-            className={`flex h-8 flex-1 cursor-pointer items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-2 text-xs font-medium transition pointer-coarse:h-11 ${
-              tab === kind
-                ? 'bg-white text-slate-900 shadow-sm dark:bg-slate-700 dark:text-slate-50'
-                : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white'
-            }`}
-          >
-            <Icon />
-            {label}
-          </button>
-        ))}
-      </div>
-      <div role="tabpanel">
-        {tab === 'gallery' ? (
-          <GalleryPane compact ownerId={ownerId} />
-        ) : tab === 'themes' ? (
-          <ThemesPane compact />
-        ) : (
-          <ShapeLibrariesPane compact />
-        )}
-      </div>
-    </div>
-  );
+// The Library's page (its Themes), drawn for the pane.
+export function LibrarySection() {
+  return <ThemesPane compact />;
 }

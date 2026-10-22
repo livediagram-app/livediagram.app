@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import { cleanup, fireEvent, render } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   THEMES,
   contrastRatio,
@@ -12,25 +12,16 @@ import {
 import { CanvasSurfaceProvider, CanvasThemeProvider } from './CanvasSurfaceContext';
 import { ImageElementView } from './ImageElementView';
 import {
-  IMAGE_BROKEN_TONE,
   IMAGE_PLACEHOLDER_TONE,
   PLACEHOLDER_BORDER_CONTRAST,
   PLACEHOLDER_INK_CONTRAST,
-  PLACEHOLDER_LABEL_MAX_PX,
-  PLACEHOLDER_LABEL_MIN_PX,
   imageEmptyLayout,
-  imagePlaceholderMetrics,
   imagePlaceholderTone,
   placeholderThemeInk,
 } from './image-placeholder-look';
 
-// The image placeholder (docs/specs/009-elements/images.md "Placeholder rendering") is inked for
-// the paper it sits on, never the app's chrome, and its hint grows with the box.
-
-const blob = vi.hoisted(() => ({ state: { status: 'idle' } }));
-vi.mock('@/hooks/persistence/useImageBlobUrl', () => ({ useImageBlobUrl: () => blob.state }));
-const track = vi.hoisted(() => vi.fn());
-vi.mock('@/lib/telemetry', () => ({ track }));
+// The image placeholder is inked for the paper it sits on, never the app's chrome, and its face
+// grows with the box. Pictures are never uploaded, so it is the only face an image element has.
 
 const image = (over: Partial<ImageElement> = {}): ImageElement => ({
   id: 'img',
@@ -45,10 +36,8 @@ const image = (over: Partial<ImageElement> = {}): ImageElement => ({
 
 function draw(
   el: ImageElement,
-  { canvas = 'light', onOpenPicker = () => {}, canPick = true, theme = null, fontFamily } = {} as {
+  { canvas = 'light', theme = null, fontFamily } = {} as {
     canvas?: 'light' | 'dark';
-    onOpenPicker?: (id: string) => void;
-    canPick?: boolean;
     theme?: ThemeDefinition | null;
     fontFamily?: string;
   },
@@ -56,14 +45,7 @@ function draw(
   return render(
     <CanvasThemeProvider theme={theme}>
       <CanvasSurfaceProvider surface={canvas}>
-        <ImageElementView
-          element={el}
-          ownerId="o"
-          documentId="d"
-          shareCode={null}
-          onOpenPicker={canPick ? onOpenPicker : undefined}
-          fontFamily={fontFamily}
-        />
+        <ImageElementView element={el} fontFamily={fontFamily} />
       </CanvasSurfaceProvider>
     </CanvasThemeProvider>,
   );
@@ -71,9 +53,6 @@ function draw(
 
 const box = (c: HTMLElement) => c.firstElementChild as HTMLElement;
 
-beforeEach(() => {
-  blob.state = { status: 'idle' };
-});
 afterEach(() => {
   cleanup();
   document.documentElement.classList.remove('dark');
@@ -98,49 +77,11 @@ describe('image placeholder ink', () => {
     expect(box(container).style.getPropertyValue('--ph-ink')).toBe(IMAGE_PLACEHOLDER_TONE.dark.ink);
   });
 
-  it('shows the face with no button and no hover tint to someone who cannot pick one', () => {
-    const { container, getByText, queryByRole } = draw(image(), { canPick: false });
+  it('shows the face with no button and no hover tint', () => {
+    const { container, getByText, queryByRole } = draw(image());
     expect(getByText('No image yet')).toBeTruthy();
     expect(queryByRole('button')).toBeNull();
     expect(box(container).className).not.toContain('hover:');
-  });
-
-  it('inks the broken state for the paper too', () => {
-    blob.state = { status: 'broken' };
-    document.documentElement.classList.add('dark');
-    const { container, getByText } = draw(image({ imageId: 'gone' }), { canvas: 'light' });
-    expect(getByText('Image unavailable')).toBeTruthy();
-    expect(box(container).style.color).toBe('rgb(190, 18, 60)'); // IMAGE_BROKEN_TONE.light.ink
-  });
-
-  it('reads as an empty state, with a Select Image button that opens the picker', () => {
-    const open = vi.fn();
-    const { getByText, getByRole } = draw(image(), { onOpenPicker: open });
-    expect(getByText('No image yet')).toBeTruthy();
-    expect(getByText('Upload one, or pick from your gallery.')).toBeTruthy();
-    fireEvent.click(getByRole('button', { name: 'Select Image' }));
-    expect(open).toHaveBeenCalledWith('img');
-    expect(track).toHaveBeenCalledWith('Element', 'Used', 'ImagePlaceholder');
-  });
-
-  it('keeps a press on the button from reaching the canvas (no drag, no double-click)', () => {
-    const outer = { down: vi.fn(), dbl: vi.fn() };
-    const { getByRole } = render(
-      <div onPointerDown={outer.down} onDoubleClick={outer.dbl}>
-        <ImageElementView
-          element={image()}
-          ownerId="o"
-          documentId="d"
-          shareCode={null}
-          onOpenPicker={() => {}}
-        />
-      </div>,
-    );
-    const button = getByRole('button', { name: 'Select Image' });
-    fireEvent.pointerDown(button);
-    fireEvent.doubleClick(button);
-    expect(outer.down).not.toHaveBeenCalled();
-    expect(outer.dbl).not.toHaveBeenCalled();
   });
 
   it('scales the face up with a big box', () => {
@@ -148,20 +89,8 @@ describe('image placeholder ink', () => {
     expect(parseFloat(getByText('No image yet').style.fontSize)).toBeGreaterThan(20);
   });
 
-  it('makes the badge the button on a small avatar', () => {
-    const open = vi.fn();
-    const { container, getByRole, queryByText } = draw(
-      image({ width: 64, height: 64, borderRadius: 'full' }),
-      { onOpenPicker: open },
-    );
-    expect(box(container).dataset.imageEmpty).toBe('badge');
-    expect(queryByText('No image yet')).toBeNull();
-    fireEvent.click(getByRole('button', { name: 'Select Image' }));
-    expect(open).toHaveBeenCalledWith('img');
-  });
-
-  it('names a lone badge for assistive tech when there is no button', () => {
-    const { container } = draw(image({ width: 40, height: 40 }), { canPick: false });
+  it('names a lone badge for assistive tech on a small box', () => {
+    const { container } = draw(image({ width: 40, height: 40 }));
     expect(box(container).getAttribute('aria-label')).toBe('No image yet');
   });
 });
@@ -246,12 +175,6 @@ describe('image placeholder theme', () => {
     const { container } = draw(image(), { fontFamily: '"Caveat", cursive' });
     expect(box(container).style.fontFamily).toBe('"Caveat", cursive');
   });
-
-  it('leaves the broken state rose whatever the theme', () => {
-    blob.state = { status: 'broken' };
-    const { container } = draw(image({ imageId: 'gone' }), { theme: theme('forest') });
-    expect(box(container).style.color).toBe('rgb(190, 18, 60)');
-  });
 });
 
 describe('image placeholder contrast', () => {
@@ -316,44 +239,10 @@ describe('image placeholder contrast', () => {
       expect(contrastRatio(t.border, t.body)).toBeGreaterThanOrEqual(3);
       expect(contrastRatio(t.hoverBorder, t.body)).toBeGreaterThanOrEqual(3);
     });
-    it(`keeps the broken state legible on ${surface} paper`, () => {
-      const b = IMAGE_BROKEN_TONE[surface];
-      expect(contrastRatio(b.ink, b.body)).toBeGreaterThanOrEqual(MIN_TEXT_CONTRAST);
-    });
     it(`declares only opaque colours on ${surface} paper`, () => {
-      for (const c of [...Object.values(t), ...Object.values(IMAGE_BROKEN_TONE[surface])]) {
+      for (const c of Object.values(t)) {
         expect(c).toMatch(/^#[0-9a-f]{6}$/);
       }
     });
   }
-});
-
-describe('imagePlaceholderMetrics', () => {
-  it('grows the label with the shorter side, within its bounds', () => {
-    expect(imagePlaceholderMetrics(120, 120).labelPx).toBe(12);
-    expect(imagePlaceholderMetrics(960, 300).labelPx).toBe(30);
-    expect(imagePlaceholderMetrics(4000, 4000).labelPx).toBe(PLACEHOLDER_LABEL_MAX_PX);
-    expect(imagePlaceholderMetrics(60, 60).labelPx).toBe(PLACEHOLDER_LABEL_MIN_PX);
-  });
-
-  it('draws the icon at twice the label, never past 40% of the shorter side', () => {
-    expect(imagePlaceholderMetrics(960, 300).iconPx).toBe(60);
-    expect(imagePlaceholderMetrics(50, 50).iconPx).toBe(20);
-  });
-
-  it('drops the label only when the box cannot hold it under the icon', () => {
-    expect(imagePlaceholderMetrics(120, 120).showLabel).toBe(true);
-    expect(imagePlaceholderMetrics(40, 40).showLabel).toBe(false);
-    expect(imagePlaceholderMetrics(400, 40).showLabel).toBe(false);
-  });
-
-  it('treats a degenerate box as empty, never NaN', () => {
-    const m = imagePlaceholderMetrics(-5, 0);
-    expect(m).toEqual({
-      labelPx: PLACEHOLDER_LABEL_MIN_PX,
-      iconPx: 16,
-      gapPx: 4,
-      showLabel: false,
-    });
-  });
 });

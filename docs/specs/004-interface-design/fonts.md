@@ -27,7 +27,7 @@ hand-drawn, or bold. Defined once in `packages/document/src/fonts.ts` (id + labe
 Each CSS stack ends in a system fallback, and the stylesheet loads with
 `display=swap`, so text stays visible (in the fallback face) while a font
 loads — or permanently, if Google Fonts is blocked (offline / a
-self-host that opts out). The editor never depends on the fonts loading.
+network that blocks it). The editor never depends on the fonts loading.
 
 ## Two levels
 
@@ -96,14 +96,9 @@ A **marker's** size (`markerSize`) is not a text size: it stays the four presets
 Medium / Large dots), since a marker is a glyph and not a line of type
 ([Shape markers](../009-elements/shape-markers.md)).
 
-Resolution order for any text: `element.font → notation font → tab.font →
+Resolution order for any text: `element.font → tab.font →
 editor default` (the system sans stack). `resolveFontStack` maps a stored id
 to its CSS stack; an unknown / unset id falls through to the next level.
-
-The **notation font** is the one rung the author doesn't set: an
-event-storming note is written in marker (`ES_NOTE_FONT`, [Event storming](../021-event-storming/event-storming.md)), because
-there the face is grammar rather than styling. It outranks the tab default
-and yields to an explicit `element.font`, which is a deliberate choice.
 
 Auto-fitting labels (`textSize: 'scale'` on a sticky) **measure in the face
 they paint** — `labelMeasure(size, bold, italic, fontFamily)` — since faces
@@ -155,8 +150,7 @@ so the names would all look alike). Picking one letters the whole tab at once.
 
 An exported image is the canvas as far as its reader is concerned, so PNG /
 SVG / PDF paint the same typeface the canvas did (they used to hardcode the UI
-sans, which quietly rewrote every canvas — loudest on an event-storming wall,
-whose marker face IS its notation).
+sans, which quietly rewrote every canvas).
 
 - `describeBoxedExport` resolves the face per element (`exportFontFamily`) and
   hands it to the emitters on `ExportLabel.fontFamily`; the wrap measurement

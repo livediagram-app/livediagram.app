@@ -101,7 +101,7 @@ describe('the peel in CSS', () => {
     expect(peelInset(PEEL_DARK)).toBe('0 -10px -13px');
   });
 
-  // The caster runs 9px past a note's sides, more than the gap between notes on an event storming row: as
+  // The caster runs 9px past a note's sides, more than the gap between notes in a tight row: as
   // a hit target it swallowed a drop between two notes (e2e smoke "a note dropped between two notes").
   it('takes no pointer, so a click or a drop beside a note reaches the board', () => {
     const css = readFileSync(fileURLToPath(new URL('../app/globals.css', import.meta.url)), 'utf8');

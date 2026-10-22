@@ -33,10 +33,6 @@ const IGNORED_ERROR_PATTERNS: RegExp[] = [
   // failures surface as uncaught throws via `pageerror`, which we do
   // catch; this generic line is noise.
   /Failed to load resource/i,
-  // The photo-import e2e blocks model downloads (nothing may pull weights over
-  // the wire in a test), so a blocked fetch surfaces as a pageerror there. That
-  // is the setup working, not an app bug.
-  /huggingface|onnxruntime|transformers/i,
 ];
 
 function isIgnored(text: string): boolean {
@@ -186,62 +182,6 @@ export async function startTemplateDocument(
   await rail.click();
   await start.getByRole('button', { name: template }).first().click();
   await start.waitFor({ state: 'detached' });
-}
-
-// An event-storming board with a ROW of three domain events on it, one gutter
-// apart (docs/specs/021-event-storming/event-storming.md). The template seeds a single "Board Created" note; the lane,
-// rhythm and insertion tests need neighbours to place against, so this writes
-// a row around that note through the api and reloads. The three are copies of
-// the seeded note (so they carry exactly its stationery), one rhythm step apart.
-export async function startEventStormingRow(page: Page): Promise<void> {
-  await startTemplateDocument(page, 'Technical', /^Event storming/i);
-  const notes = page.locator('[data-canvas-a11y-root]').getByRole('img', { name: /^Sticky note/ });
-  await notes.first().waitFor();
-  const apiBase = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
-  const headers = await pageOwnerHeaders(page, { 'Content-Type': 'application/json' });
-  await page.evaluate(
-    async ({ base, headers }) => {
-      const id = location.pathname.split('/').filter(Boolean).pop()!;
-      // Wait for the new board's first save to land (its seeded note on the
-      // server), so the row is not written over by it.
-      type Seed = { width: number; x: number };
-      let tab: (Record<string, unknown> & { elements: Seed[] }) | null = null;
-      let tabId = '';
-      for (let i = 0; i < 50 && !tab; i += 1) {
-        const liveDoc = (await (
-          await fetch(`${base}/documents/${id}`, { headers })
-        ).json()) as StoredDocument;
-        tabId = liveDoc.document?.tabs?.[0]?.id ?? '';
-        if (tabId) {
-          const got = (await (
-            await fetch(`${base}/documents/${id}/tabs/${tabId}`, { headers })
-          ).json()) as StoredTab<Seed>;
-          if (got.tab?.elements?.length === 1) tab = { ...got.tab, elements: got.tab.elements };
-        }
-        if (!tab) await new Promise((r) => setTimeout(r, 100));
-      }
-      if (!tab) throw new Error('the new board never saved its seed note');
-      const seed = tab.elements[0]!;
-      const step = seed.width + 16;
-      const labels = ['Order placed', 'Payment received', 'Order shipped'];
-      const elements = labels.map((label, i) => ({
-        ...seed,
-        id: crypto.randomUUID(),
-        label,
-        x: seed.x + (i - 1) * step,
-        rotation: i % 2 === 0 ? -1.1 : 1.1,
-      }));
-      const res = await fetch(`${base}/documents/${id}/tabs/${tabId}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ ...tab, elements }),
-      });
-      if (!res.ok) throw new Error(`seeding the row failed: ${res.status}`);
-    },
-    { base: apiBase, headers },
-  );
-  await page.reload();
-  await notes.nth(2).waitFor();
 }
 
 // The Diagram tour and its /new handoff offer are gone (Plan is the only editor mode), so nothing is

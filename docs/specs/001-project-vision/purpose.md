@@ -57,10 +57,8 @@ never arrives.
   pickers ([Picker](../012-collaboration/picker.md)) and decision records
   ([Decision record](../012-collaboration/decision-record.md)). These are elements on the canvas, not a side
   panel: the canvas already knew how to hold them.
-- **Getting work in and out**: import/export as JSON, Mermaid
-  ([Mermaid import & export](../020-import-export/mermaid.md)), Markdown and Excalidraw
-  ([Excalidraw import & export](../020-import-export/excalidraw-import-export.md)); draw.io import
-  ([draw.io import](../020-import-export/drawio-import.md)); image export
+- **Getting work in and out**: import/export as JSON, Markdown and CSV export, Mermaid from agents
+  ([Mermaid input & export](../020-import-export/mermaid.md)); image export
   ([Export fidelity](../020-import-export/export-fidelity.md)); read-only embeds.
 - **Teams** ([Teams](../013-workspace/teams.md), [Team shared documents](../013-workspace/team-shared-documents.md)): a
   named group with Admin/Member roles and a shared library of documents and
@@ -68,7 +66,7 @@ never arrives.
   team's library. Personal is the default; a team is opt-in.
 - **Persistence and history**: every change is saved; undo and redo step
   back and forth through your own recent edits, and the
-  [Timeline](../013-workspace/timeline.md) records what happened to each document.
+  [timeline events](../013-workspace/timeline.md) record what happened to each document, shown as its History.
 - **Machine access**: a public REST API with signed-in tokens
   ([Public API and API tokens](../015-api/public-api-and-tokens.md)) and an MCP server so AI tools can
   read and write documents ([MCP server](../015-api/mcp-server.md)).
@@ -85,7 +83,7 @@ never arrives.
 - **Not a desktop app.** The web, with collaboration, is the product. Offline
   Mode is a per-document choice, not the default posture (see below).
 - **Not a paid product, ever.** No tier, no billing, no feature flags gating the
-  core editor ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)).
+  core editor ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
 
 ## Boundaries that have moved
 
@@ -117,10 +115,9 @@ a team building a diagram together need this in the room?".
 
 ## How it ships
 
-liveplanner is **open source** (MIT) and also runs as a **hosted product**, free
-for everyone, no paid tier. Anyone can self-host the entire codebase; the hosted
-version is the easy default. See
-[03-open-source-and-business-model.md](../002-project-scope/open-source-and-business-model.md).
+liveplanner is **proprietary** and runs as one **hosted product**, free for
+everyone, no paid tier, with no trackers and no ads. See
+[Business model + licence](../002-project-scope/business-model-and-licence.md).
 
 The canvas is **always available without signing in**: a visitor can build a
 real diagram before being asked to create an account. Auth (Clerk) unlocks sync,

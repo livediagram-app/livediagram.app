@@ -85,7 +85,7 @@ async function shareCardImage(ctx: RouteContext, code: string): Promise<Response
   // A tab-scoped link's card is drawn per request, as its tab's live image is: one object per document holds the
   // first tab only.
   const key = tabId !== null ? null : shareCardKey(doc.id);
-  const images = env.IMAGES;
+  const images = env.SNAPSHOTS;
   if (key && images) {
     const cached = await images.get(key);
     if (cached && Number(cached.customMetadata?.renderedAt ?? 0) >= doc.savedAt) {

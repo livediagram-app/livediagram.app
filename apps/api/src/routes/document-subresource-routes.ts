@@ -23,7 +23,6 @@ import { DOCUMENT_OPEN_HEADER, readDocumentOpen, tabEtag } from '@liveplanner/ap
 import { recordDocumentOpen } from '../home/record-open';
 import { handleDocumentShareRoutes } from './document-share-routes';
 import { handleFormLinkRoutes } from './form-link-routes';
-import { handleCommentPicturesRoute } from './comment-pictures-routes';
 import { handleTabPut, refuseTokenTabPut } from './tab-put-route';
 import { handleTabRename } from './tab-name-route';
 import { handleTabForm } from './tab-form-route';
@@ -59,9 +58,6 @@ export async function handleDocumentSubresources(ctx: RouteContext): Promise<Res
   // /api/documents/<id>/tabs/<tabId>/form-link and form-seen (docs/specs/030-forms/forms.md).
   const formLink = await handleFormLinkRoutes(ctx);
   if (formLink) return formLink;
-  // /api/documents/<id>/tabs/<tabId>/comment-pictures (docs/specs/014-identity/profile-picture.md §6).
-  const commentPictures = await handleCommentPicturesRoute(ctx);
-  if (commentPictures) return commentPictures;
   // /api/documents/<id>/tabs/<tabId>
   //   GET    — full tab payload. READ access: owner or ANY valid
   //            share code (view OR edit) for this document, so

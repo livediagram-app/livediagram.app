@@ -20,10 +20,8 @@ import {
   isPieShape,
   isChartShape,
   isProgressShape,
-  isRailShape,
   progressTrackColour,
   isRatingShape,
-  type ShapeKind,
 } from '@liveplanner/document';
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
@@ -110,36 +108,7 @@ type ShapeContentRouterProps = Pick<
   textColor: string;
   remoteBorderColor: string | null;
   isLocked: boolean;
-  svgAnim: 'trace' | 'gradient' | 'pulse' | 'glow' | undefined;
-  // Filter-based animation class for silhouette content (a sticker's art).
-  artAnimClass: string | undefined;
 };
-
-/**
- * Whether ShapeSvgOverlay draws this shape: an SVG-rendered kind that no face of its own claims
- * first (the router below). Its Pulse, Glow, Trace and Gradient ride the overlay only then; a
- * self-faced kind takes them on the element (docs/specs/028-animation/element-animations.md).
- */
-export function drawsShapeSvgOverlay(kind: ShapeKind): boolean {
-  return (
-    isSvgRenderedShape(kind) &&
-    kind !== 'sticker' &&
-    kind !== 'icon' &&
-    kind !== 'plan-board' &&
-    kind !== 'plan-card' &&
-    kind !== 'plan-view' &&
-    !isProgressShape(kind) &&
-    !isRailShape(kind) &&
-    !isRatingShape(kind) &&
-    !isPieShape(kind) &&
-    !isBarShape(kind) &&
-    !isCodeBlockShape(kind) &&
-    !isLegendShape(kind) &&
-    !isSankeyShape(kind) &&
-    !isChecklistShape(kind) &&
-    !isLineShape(kind)
-  );
-}
 
 // The per-shape-type inner content of a boxed element: stickers, tech /
 // curated icons,
@@ -156,8 +125,6 @@ export function ShapeContentRouter({
   onToggleChecklistItem,
   chartPalette,
   fontFamily,
-  svgAnim,
-  artAnimClass,
   isEditing,
 }: ShapeContentRouterProps) {
   // An icon's glyph moves aside for its caption from the moment the label is typed.
@@ -184,10 +151,7 @@ export function ShapeContentRouter({
     // Sticker (docs/specs/010-palette/stickers.md): its own die-cut art, drawn edge to edge. Takes no
     // element colours and gets no caption band — a sticker says what it says
     // in its own artwork.
-    // `animClass` carries the filter-based glow / pulse / trace (docs/specs/010-palette/stickers.md):
-    // a sticker's silhouette needs a drop-shadow, not the wrapper's
-    // box-shadow, which would ring its bounding rectangle.
-    art(<StickerView stickerId={element.stickerId} animClass={artAnimClass} />)
+    art(<StickerView stickerId={element.stickerId} />)
   ) : element.type === 'shape' && element.shape === 'icon' && isTechIconId(element.iconId) ? (
     // Technology (brand) icon: a fixed-colour tile + white glyph
     // (docs/specs/010-palette/technology-icons.md). Same shape kind as a curated icon, but the id
@@ -347,11 +311,6 @@ export function ShapeContentRouter({
       }
       strokeDasharray={BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE] ?? undefined}
       aspect={element.height > 0 ? element.width / element.height : 1}
-      // trace / gradient / pulse / glow render against the true SVG
-      // geometry here; blink / bounce / wobble (shape-agnostic) stay on the
-      // wrapper. svgHandlesAnim above suppresses the wrapper class so these
-      // don't double up.
-      animation={svgAnim}
       figure={element.shape === 'actor' ? actorFigureRect(element) : undefined}
     />
   ) : null;

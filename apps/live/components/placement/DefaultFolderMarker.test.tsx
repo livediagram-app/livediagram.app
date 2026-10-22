@@ -47,17 +47,14 @@ describe('DefaultFolderMarker', () => {
   it('shows two icons, then +N, and names every key', async () => {
     await withDefaults([
       { key: 'mode:plan', folderId: 'w' },
-      { key: 'kind:event-storming', folderId: 'w' },
       { key: 'template:retrospective', folderId: 'w' },
       { key: 'template:kanban', folderId: 'w' },
     ]);
     const { container } = render(<DefaultFolderMarker folderId="w" />);
     expect(icons(container)).toBe(2);
-    expect(container.textContent).toContain('+2');
+    expect(container.textContent).toContain('+1');
     expect(
-      screen.getByText(
-        'Default folder for new Projects, Event Storming boards, retrospectives and Kanban boards',
-      ),
+      screen.getByText('Default folder for new Projects, retrospectives and Kanban boards'),
     ).toBeTruthy();
   });
 

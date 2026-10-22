@@ -18,14 +18,13 @@ toolbar beside a selected element.
 
 ## Where it lives
 
-| Surface                                                                | Where the button sits                                     | Who sees it                                  |
-| ---------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------- |
-| [Card type editor](../026-plan/item-types.md#editing-a-type)           | The editor's title row                                    | Whoever can open the editor (an Editor)      |
-| [Share dialog](live-app.md#share-dialog)                               | The dialog's title row (not on the offline gate)          | The owner (only the owner can open it)       |
-| [Dashboard Settings](../026-plan/plan-tabs.md#dashboard-settings)      | The settings panel's title row                            | An Editor (only an Editor sees the settings) |
-| [Photo import review](../021-event-storming/event-storming.md#show-me) | The review's top-left corner, once the stickies are found | Whoever reaches the review (edit access)     |
-| [Sankey Flows dialog](../009-elements/sankey.md#show-me)               | The dialog's title row                                    | An Editor (only an Editor opens the dialog)  |
-| [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me)    | The dialog's title row                                    | An Editor (only an Editor opens the dialog)  |
+| Surface                                                             | Where the button sits                            | Who sees it                                  |
+| ------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------- |
+| [Card type editor](../026-plan/item-types.md#editing-a-type)        | The editor's title row                           | Whoever can open the editor (an Editor)      |
+| [Share dialog](live-app.md#share-dialog)                            | The dialog's title row (not on the offline gate) | The owner (only the owner can open it)       |
+| [Dashboard Settings](../026-plan/plan-tabs.md#dashboard-settings)   | The settings panel's title row                   | An Editor (only an Editor sees the settings) |
+| [Sankey Flows dialog](../009-elements/sankey.md#show-me)            | The dialog's title row                           | An Editor (only an Editor opens the dialog)  |
+| [Tab Style dialog](../011-theme/canvas-and-theme-dialog.md#show-me) | The dialog's title row                           | An Editor (only an Editor opens the dialog)  |
 
 A new Show Me surface is added to this table, and its own spec says its steps.
 
@@ -52,9 +51,9 @@ A new Show Me surface is added to this table, and its own spec says its steps.
 - **Only what is there.** Steps whose control the surface cannot show right now (a second tab's picker on a
   one-tab document, a box on a photo where nothing was found) are left out when the tour starts, so the count
   is right from the first step; a target that still never appears skips its step.
-- **Escape belongs to the tour** while it runs over a dialog or an overlay (the card type editor, the Share dialog,
-  the photo review): it never closes the surface under it. The surface stops closing on Escape for the duration;
-  the tour's own Skip ends it. A tour on the page itself (a dashboard, a page) leaves Escape to the page.
+- **Escape belongs to the tour** while it runs over a dialog or an overlay (the card type editor, the Share dialog):
+  it never closes the surface under it. The surface stops closing on Escape for the duration; the tour's own Skip
+  ends it. A tour on the page itself (a dashboard) leaves Escape to the page.
 - **Ending.** Done ends it as completed, Skip as skipped; closing the surface under it (Cancel, a finished save)
   ends the tour with it and sends no Ended event. So does losing it while it stays mounted: a dashboard covered by
   a maximised slot or no longer editable, a page deleted, locked or no longer editable; whatever a step was showing
@@ -80,6 +79,4 @@ Completed, Skipped) on the telemetry dashboard beside the card type tour's, and 
 each surface keeps its steps in `<surface>-tour-steps.ts` and its literal telemetry in `<Surface>Tour.tsx`, so
 the dashboard's emitter scan reads every event. The engine scrolls each step's control into view in its scrolling
 panel (`revealInScrollers`, `tour-reveal.ts`, [Mechanics](editor-tour.md#mechanics)); a step never scrolls itself. A surface whose steps depend on what is there (a second tab, an empty slot, a box found) fixes
-them when the button is pressed, so they never change mid-tour. A surface in the editor's first load (the photo
-review) imports its steps at the press (`onStart` returns the promise the tour waits for), so
-their copy stays out of that load; `show-me-lazy-load.test.ts` keeps it so.
+them when the button is pressed, so they never change mid-tour.

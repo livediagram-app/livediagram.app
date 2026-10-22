@@ -3,15 +3,15 @@ import { getSubArticles } from '@/lib/articles';
 import { helpMetadata } from '@/lib/seo';
 
 export const metadata = helpMetadata({
-  title: 'Plan Items, Sheets and Images',
+  title: 'Plan Items, Sheets and Pages',
   description:
-    'liveplanner API examples for Plan items and card types, Sheet cells, image uploads, pages and articles, SVG renders, copies and themes.',
+    'liveplanner API examples for Plan items and card types, Sheet cells, pages and articles, SVG renders, copies and themes.',
   path: '/help/developers/working-with-documents/plan-sheets-images/',
 });
 
-<ArticleLayout title="Plan Items, Sheets and Images" description="Worked examples for the rest of a document: Plan cards, Sheets, images, pages, pictures, copies and your libraries." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Documents", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "plan-sheets-images")}>
+<ArticleLayout title="Plan Items, Sheets and Pages" description="Worked examples for the rest of a document: Plan cards, Sheets, pages, pictures, copies and your libraries." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Documents", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "plan-sheets-images")}>
 
-A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a document holds more than elements: the cards on its Plan boards, the cells of its Sheets, the images it shows, its pages. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a document id in `$DOC`; paths are relative to `https://liveplanner.app/api`, and `/api/openapi.json` has every field.
+A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a document holds more than elements: the cards on its Plan boards, the cells of its Sheets, its pages. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a document id in `$DOC`; paths are relative to `https://liveplanner.app/api`, and `/api/openapi.json` has every field.
 
 Every write here reaches anyone with the document open straight away, credited to you.
 
@@ -169,44 +169,6 @@ It answers with the write as it landed, the sheet's new `rev` and the stored sta
 
 A Sheet shows on a tab through a Sheet element, as a board does; start one on a new tab with `add_tab` and the `blank-spreadsheet` or `kanban` template, or place one on any tab. `liveplanner sheet add` (or the MCP server's `add_sheet`) makes the sheet and places its element in one go. Over REST, `POST /documents/$DOC/sheets` with `{ "tabId": "…", "title": "Costs" }` makes the sheet (titles are unique on a tab), and a changeset adds its element: `{ "op": "add", "element": { "type": "shape", "shape": "plan-sheet", "x": 0, "y": 0, "width": 960, "height": 560, "planSheet": { "sheetId": "…" } } }`. See [Sheets](/help/canvas/plan-mode/sheets/) for what people see.
 
-## Images
-
-Upload the raw bytes of a PNG, JPEG, WebP or GIF, up to 10 MB, with its pixel size in two headers:
-
-```bash
-curl -X POST https://liveplanner.app/api/images \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: image/png" \
-  -H "X-Image-Width: 1200" -H "X-Image-Height: 800" \
-  -H "X-Image-Original-Name: architecture.png" \
-  --data-binary @architecture.png
-```
-
-```json
-{
-  "image": {
-    "id": "9f2c…",
-    "contentType": "image/png",
-    "byteSize": 48211,
-    "width": 1200,
-    "height": 800,
-    "originalName": "architecture.png",
-    "createdAt": 1760180000000
-  },
-  "deduped": false
-}
-```
-
-Uploading the same bytes again answers the image you already have, with `"deduped": true`. Then put it on a tab with a changeset that adds a whole image element:
-
-```bash
-curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/changesets \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "operations": [ { "op": "add", "element": { "type": "image", "imageId": "'"$IMAGE"'", "x": 0, "y": 0, "width": 600, "height": 400, "naturalWidth": 1200, "naturalHeight": 800, "alt": "Architecture overview" } } ] }'
-```
-
-`GET /images` lists your uploads, `GET /images/usage` maps each to the documents that use it, `GET /images/{id}` downloads one, and `DELETE /images/{id}` removes it from your gallery. Refusals are `415 unsupported_type`, `413 file_too_large`, and on a host that sets a gallery limit, `403 gallery_full`.
-
 ## A Tab as a Picture
 
 ```bash
@@ -214,7 +176,7 @@ curl https://liveplanner.app/api/documents/$DOC/tabs/$TAB/render.svg \
   -H "Authorization: Bearer $TOKEN" -o overview.svg
 ```
 
-The tab drawn by the same renderer the CLI's `tab render` and `pull --svg` use, as `image/svg+xml`, with images inlined when the host stores them. It is never cached, so it always shows the tab now. For an image to embed somewhere public, use a [live image](/help/collaboration/sharing/live-image/) instead.
+The tab drawn by the same renderer the CLI's `tab render` and `pull --svg` use, as `image/svg+xml`. It is never cached, so it always shows the tab now. For an image to embed somewhere public, use a [live image](/help/collaboration/sharing/live-image/) instead.
 
 ## Copy a Document
 
@@ -226,18 +188,11 @@ curl -X POST https://liveplanner.app/api/documents/$DOC/copy \
 
 Makes a copy in your own files and answers `201` with the new `document`. Leave out `name` for `Copy of <name>`. Anything you can read can be copied; share links are not copied with it.
 
-## Shape Libraries and Custom Themes
+## Custom Themes
 
-Your [shape libraries](/help/explorer/shape-libraries/) and [custom themes](/help/canvas/themes/custom-themes/) belong to you, not to a document.
+Your [custom themes](/help/canvas/themes/custom-themes/) belong to you, not to a document.
 
 ```bash
-# A shape library: each item is a reusable shape, its elements placed from its top-left corner
-curl -X POST https://liveplanner.app/api/shape-libraries \
-  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "id": "'"$(uuidgen)"'", "name": "Network kit", "source": "drawio",
-        "items": [ { "id": "'"$(uuidgen)"'", "title": "Router", "width": 120, "height": 60,
-          "elements": [ { "id": "r1", "type": "shape", "shape": "square", "x": 0, "y": 0, "width": 120, "height": 60, "label": "Router" } ] } ] }'
-
 # A custom theme
 curl -X POST https://liveplanner.app/api/custom-themes \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
@@ -246,6 +201,6 @@ curl -X POST https://liveplanner.app/api/custom-themes \
           "elementFill": "#1e293b", "elementStroke": "#38bdf8", "elementText": "#f8fafc" } }'
 ```
 
-A library holds up to 1,000 items and you can keep 100; a name you already use gets a number added. `PUT /shape-libraries/{id}` renames one or replaces its items, and `DELETE` removes it (shapes already placed stay in their documents). A custom theme's id starts `custom:`, and a tab uses it by that id. `PUT /custom-themes/{id}` changes its name or definition, `DELETE` removes it, and a `palette` you send must not be empty. `GET` on either path lists yours.
+A custom theme's id starts `custom:`, and a tab uses it by that id. `PUT /custom-themes/{id}` changes its name or definition, `DELETE` removes it, and a `palette` you send must not be empty. `GET /custom-themes` lists yours.
 
 </ArticleLayout>

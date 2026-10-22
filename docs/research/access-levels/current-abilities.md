@@ -147,7 +147,6 @@ baton (`runBlocked`); the room enforces the baton only for `poll-start` / `poll-
 | Add a tab                                          | Y   | Y   | Y   | N   | N   | N   | Y    | N    | Y   | Y   | N   | Y   | tab PUT names a tab outside the scope; `document-meta` refused by `scopedSenderMayRelay`; MCP `add_tab` |
 | Delete a tab                                       | Y   | Y   | Y   | N   | N   | N   | Y    | N    | Y   | Y   | N   | N   | tab DELETE: `grant?.tabScope !== null` refused                                                          |
 | Rename document, reorder tabs, slide deck          | Y   | Y   | Y   | N   | N   | N   | Y    | N    | Y   | Y   | N   | Y   | `documents.ts` PUT `/:id`, `gateEdit` without a tab; MCP `rename_document`                              |
-| Upload and place images                            | Y   | Y   | Y   | N   | T   | N   | N    | N    | Y   | Y   | N   | N   | `images.ts` POST is per-uploader, not document-gated; embed blocks it (`useEditorImages.ts`)            |
 | AI assistant                                       | Y   | Y   | Y   | S   | T   | S   | Y    | S    | Y¹  | Y¹  | N   | n/a | `ai-gate.ts` is not document-gated; panel hidden when `isReadOnly`                                      |
 | Link an existing tab from another document         | Y   | N²  | N   | N   | N   | N   | N    | N    | Y   | Y   | N   | N   | `document-subresource-routes.ts` `/link`: `ownsDocument`                                                |
 
@@ -202,7 +201,7 @@ Team roles are `admin` and `member`. Neither changes what a member can do to a d
 An embed carries its link's role exactly (`docs/specs/013-workspace/embeds.md`, `apps/live/lib/embed.ts`). It
 differs from the plain link only in what the chrome withholds: no identity screen (comments and Q&A notes carry
 the default guest identity, so `getParticipant` often yields "Anonymous"), no palette, panels, tab bar, theme
-dialog or Make a copy button, no image upload or paste (`useEditorImages.ts`, `useClipboard.ts`), and the
+dialog or Make a copy button, and the
 "Open in liveplanner" badge instead.
 
 ## Where the editor and the server disagree

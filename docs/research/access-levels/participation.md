@@ -79,7 +79,7 @@ write, and they disagree in effect though each is coherent on its own:
   `el-delta` (estimate, temperature, Done check, quiz pick, idea) are mutations, so a viewer cannot cast them
   ([Session tools](../../specs/012-collaboration/session-tools.md#roles),
   [Per-participant responses](../../specs/012-collaboration/participant-responses.md)).
-- **REST doors on `gateRead`** admit a viewer: adding and deleting your own comment, comment pictures, and the Q&A
+- **REST doors on `gateRead`** admit a viewer: adding and deleting your own comment, and the Q&A
   board's `add` and `vote` (`apps/api/src/routes/qa-board-routes.ts:63`).
 
 | Action                                                                     | Today's gate                                       | Door                                   |
@@ -167,8 +167,7 @@ holds today and what a Participant level would expose.
    upvotes are one per browser identity, not one per person, and the per-owner write limiter keys on that same id
    ([API app, Rate limiting](../../specs/015-api/api.md#rate-limiting)). That is the honest limit every per-browser
    product has (pattern 5 above); it is worth bounding, not pretending away.
-4. **A leaked link.** Today a leaked **view** link can already answer polls, post and upvote Q&A notes, comment and
-   upload comment pictures. A share link is revocable, can expire and can carry a password
+4. **A leaked link.** Today a leaked **view** link can already answer polls, post and upvote Q&A notes and comment. A share link is revocable, can expire and can carry a password
    ([Share link expiry](../../specs/013-workspace/share-link-expiry.md),
    [Share password](../../specs/013-workspace/share-password.md)), and revoking closes its sockets. What is missing,
    compared with Kahoot or Slido, is **removing one participant** without revoking everybody's link. A true Viewer

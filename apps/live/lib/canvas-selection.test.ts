@@ -253,11 +253,11 @@ describe('deriveCanvasSelection', () => {
   });
 });
 
-// A fixed-size element (docs/specs/012-collaboration/session-button.md buttons, docs/specs/021-event-storming/event-storming.md event-storming notes)
+// A fixed-size element (docs/specs/012-collaboration/session-button.md buttons, a sticky stamped `fixedSize`)
 // advertises NO resize affordance — and the edge "anchor" grips are resize
 // grips today (arrows are drawn from the quick-connect menu now), so they
 // have to disappear with the corner handles. Leaving them behind is exactly
-// the bug that let an event-storming sticky be dragged wider.
+// the bug that let a fixed-size sticky be dragged wider.
 describe('deriveCanvasSelection — fixed-size elements', () => {
   const fixedSticky = {
     id: 'f',
@@ -280,34 +280,6 @@ describe('deriveCanvasSelection — fixed-size elements', () => {
     const s = derive({ elements: [plain], selectedId: 'p' });
     expect(s.showHandlesFor('p')).toBe(true);
     expect(s.showAnchorsFor('p')).toBe(true);
-  });
-});
-
-// Event-storming boards are a low-threshold CAPTURE surface (docs/specs/021-event-storming/event-storming.md):
-// every control that doesn't serve "add a note, type, drag" is a
-// distraction. The quick-connect pluses ring every selected note with four
-// affordances nobody reaches for mid-workshop, so they stand down there —
-// and stay exactly as they are on every other tab.
-describe('deriveCanvasSelection — quick-connect on an event-storming board', () => {
-  const sticky = {
-    id: 's',
-    type: 'sticky',
-    x: 0,
-    y: 0,
-    width: 200,
-    height: 200,
-  } as unknown as Element;
-
-  it('hides the pluses when the board is event storming', () => {
-    const s = derive({ elements: [sticky], selectedId: 's', esBoard: true });
-    expect(s.showPlus).toBe(false);
-    // The rest of the single-selection chrome is untouched.
-    expect(s.showPopover).toBe(true);
-  });
-
-  it('keeps them everywhere else', () => {
-    const s = derive({ elements: [sticky], selectedId: 's' });
-    expect(s.showPlus).toBe(true);
   });
 });
 

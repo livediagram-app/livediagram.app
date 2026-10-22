@@ -1,15 +1,14 @@
-// Shared parts for the mode categories' card art (whiteboard.tsx, plan.tsx, documents.tsx):
+// Shared parts for Plan's card art (plan.tsx, plan-views.tsx, plan-more.tsx and their kin):
 // the editor's surfaces drawn small, on a 300 by 96 stage (one unit is one CSS pixel in the
 // card's 96px Frame). Every surface has a light and a dark half, through Tailwind's dark:
 // variants and the canvas palette (--art-*), with the light value restated as the SVG attribute
-// underneath. Motion comes from the fa-f-* loops (app/feature-art/modes.css, the whiteboard, Plan and documents block).
+// underneath. Motion comes from the fa-f-* loops (app/feature-art/modes.css, the Plan block).
 
 import type { ReactNode } from 'react';
 import { FONT } from '@/components/art-tokens';
 import { Cursor as TeammateCursor, Frame } from './shared';
 
 export { FONT, YOU, TEAMMATE, at } from '@/components/art-tokens';
-export { SERIF } from './page-kit';
 
 // A surface in the editor (a card, a panel, a page): white in light, slate in dark, with the
 // soft shadow the editor lifts it on.
@@ -21,7 +20,6 @@ export const WELL = 'fill-slate-50 stroke-slate-200 dark:fill-slate-900/70 dark:
 export const INK = 'fill-slate-800 dark:fill-slate-100';
 export const MUTED = 'fill-slate-500 dark:fill-slate-400';
 export const BAR = 'fill-slate-200 dark:fill-slate-600';
-export const BAR_SOFT = 'fill-slate-100 dark:fill-slate-700';
 
 /** The card's stage: the canvas Frame and a 300 by 96 drawing centred in it. */
 export function Stage({
@@ -97,7 +95,7 @@ export function Pill({
 }) {
   const tones = {
     neutral: ['fill-slate-100 dark:fill-slate-700', 'fill-slate-600 dark:fill-slate-200'],
-    brand: ['fill-sky-100 dark:fill-sky-500/25', 'fill-sky-700 dark:fill-sky-200'],
+    brand: ['fill-brand-100 dark:fill-brand-500/25', 'fill-brand-700 dark:fill-brand-200'],
     amber: ['fill-amber-100 dark:fill-amber-500/25', 'fill-amber-700 dark:fill-amber-200'],
     rose: ['fill-rose-100 dark:fill-rose-500/25', 'fill-rose-700 dark:fill-rose-200'],
     emerald: [
@@ -149,65 +147,6 @@ export function TextLines({
       {widths.map((f, i) => (
         <rect key={i} x={x} y={y + i * gap} width={w * f} height={h} rx={h / 2} />
       ))}
-    </g>
-  );
-}
-
-/** A floating tool strip across the top of the canvas, as the Toolbar layout draws it. */
-export function ToolStrip({
-  x,
-  y,
-  w,
-  children,
-}: {
-  x: number;
-  y: number;
-  w: number;
-  children: ReactNode;
-}) {
-  return (
-    <g>
-      <rect className={SURFACE} x={x} y={y} width={w} height="15" rx="4" strokeWidth="0.8" />
-      {children}
-    </g>
-  );
-}
-
-/** A keyboard key with its label. */
-export function Keycap({ x, y, label }: { x: number; y: number; label: string }) {
-  return (
-    <g>
-      <rect
-        className="fill-white stroke-slate-300 dark:fill-slate-700 dark:stroke-slate-500"
-        x={x}
-        y={y}
-        width="9"
-        height="9.5"
-        rx="2"
-        strokeWidth="0.8"
-        fill="#fff"
-        stroke="#cbd5e1"
-      />
-      <rect
-        className="fill-slate-200 dark:fill-slate-900"
-        x={x + 0.8}
-        y={y + 8}
-        width="7.4"
-        height="1"
-        rx="0.5"
-        fill="#e2e8f0"
-      />
-      <text
-        className={INK}
-        x={x + 4.5}
-        y={y + 6.6}
-        textAnchor="middle"
-        fontSize="5.6"
-        fontWeight="700"
-        fill="#1e293b"
-      >
-        {label}
-      </text>
     </g>
   );
 }

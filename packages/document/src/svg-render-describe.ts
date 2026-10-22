@@ -19,7 +19,6 @@ import {
   defaultTextColor,
   type CanvasSurface,
 } from './colors';
-import { eventStormingLabelText, eventStormingNoteFont } from './event-storming';
 import { fontIdsUsed, resolveFontStack } from './fonts';
 import { elementFontId, isFinish, resolveFinish, type Finish } from './finish';
 import { hasRichFormatting } from './rich-text';
@@ -142,8 +141,7 @@ export type BoxedExportOptions = {
 // The markup of a plan view drawn at its own box, or undefined to fall back to the labelled box.
 export type ResolvePlanArt = (el: BoxedElement & { type: 'shape' }) => string | undefined;
 
-// The face a label paints in: the author's own choice, else the notation's
-// (a workshop note writes in marker, docs/specs/021-event-storming/event-storming.md), else the tab default. The
+// The face a label paints in: the author's own choice, else the tab default. The
 // same ladder the canvas walks — an export that resolved it differently
 // would hand out a picture of a canvas nobody has.
 // Under the Sketch finish an element without a face of its own writes in the handwriting font, whatever
@@ -154,7 +152,7 @@ export function exportFontFamily(
   tabFinish?: Finish,
 ): string | undefined {
   return (
-    resolveFontStack(el.font ?? eventStormingNoteFont(el)) ??
+    resolveFontStack(el.font) ??
     resolveFontStack(elementFontId({ finish: finishOf(el) }, tabFont, tabFinish))
   );
 }
@@ -166,15 +164,13 @@ export function finishOf(el: object): Finish | undefined {
 }
 
 // Every font id an export of these elements will paint with — what they
-// chose, what the tab defaults to, and what the notation imposes on a
-// workshop note. The list a file's embedded (or declared) webfaces come
+// chose and what the tab defaults to. The list a file's embedded (or declared) webfaces come
 // from, so an export ships exactly the faces it uses.
 export function exportFontIds(
   elements: readonly {
     type: string;
     font?: string;
     finish?: unknown;
-    esKind?: unknown;
     fillColor?: string;
   }[],
   tabFont?: string,
@@ -188,11 +184,7 @@ export function exportFontIds(
   const finishFonts = elements.map((el) =>
     el.font ? undefined : elementFontId(el, undefined, tabFinish),
   );
-  return fontIdsUsed(boxed, tabFont, [
-    ...boxed.map(eventStormingNoteFont),
-    ...cellFonts,
-    ...finishFonts,
-  ]);
+  return fontIdsUsed(boxed, tabFont, [...cellFonts, ...finishFonts]);
 }
 
 export function describeBoxedExport(
@@ -332,7 +324,7 @@ export function describeBoxedExport(
   const richText = (el as { richText?: TextRun[] }).richText;
   const runs: ExportRun[] | undefined = hasRichFormatting(richText)
     ? richText!.map((run) => ({
-        text: eventStormingLabelText(el, run.text),
+        text: run.text,
         color: run.color ?? baseColor,
         size: run.size ? runFontPx(run.size, multiline) * textScale : baseSize,
         bold: run.bold ?? !!el.textBold,
@@ -356,9 +348,6 @@ export function describeBoxedExport(
   const bodyBottom = el.y + el.height - body.bottom;
   // ...and inside its border, lining up with the masthead.
   const bodyInset = isPage ? borderOf(el).width : 0;
-  // A workshop note exports in capitals, exactly as the board paints it
-  // (docs/specs/021-event-storming/event-storming.md) — a shared PNG that quietly restored sentence case would
-  // stop being the board people were looking at.
   const upright =
     el.type === 'shape' && el.shape === 'lane' && isUprightTitle(el)
       ? uprightTitleStrip(el, el.width, el.height)
@@ -397,7 +386,7 @@ export function describeBoxedExport(
   }
   const label: ExportLabel | null = el.label
     ? {
-        text: eventStormingLabelText(el, el.label),
+        text: el.label,
         x:
           alignX === 'right'
             ? el.x + el.width - pad

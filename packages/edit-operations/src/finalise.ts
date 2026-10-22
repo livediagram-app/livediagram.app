@@ -11,7 +11,6 @@ import {
   isContainer,
   elementValidationIssue,
   isValidTab,
-  landWorkshopArrivals,
   lanesToFront,
   normaliseElement,
   rebindArrowAnchorsAfterMove,
@@ -151,19 +150,6 @@ export function tabRejection(tab: Tab): EditRejection {
   return invalidResult('the tab', undefined, { field: 'id', rule: 'an id and a name' });
 }
 
-// Workshop notes a lane took in: a note no operation wrote reports the landing as its move.
-function noteLandings(state: EditState, landed: readonly Element[]): void {
-  for (const el of landed) {
-    if (state.byId.get(el.id) === el) continue;
-    replaceElement(state, el);
-    // Only notes that moved arrive, and moving one touches it.
-    const touched = state.touched.get(el.id)!;
-    if (touched.written.length > 0 || !state.before.has(el.id)) continue;
-    touched.moved = 'landed on a lane';
-    delete touched.shift;
-  }
-}
-
 // Every container directly before its earliest member when it is after it, innermost first, so an
 // outer container ends before the inner ones it holds (I6).
 export function containersBehindMembers(elements: readonly Element[]): Element[] {
@@ -198,8 +184,7 @@ export function finalise(state: EditState, log: EditLog): Tab | EditRejection {
   normaliseTouched(state, log);
   const issue = touchedIssue(state);
   if (issue) return issue;
-  const landed = landWorkshopArrivals(state.tab, [...currentElements(state)], 'ops');
-  noteLandings(state, landed);
+  const landed = [...currentElements(state)];
   const moved = movedBoxes(state.before, landed);
   const rebound = rerouteRebound(landed, rebindArrowAnchorsAfterMove(landed, moved), moved);
   // An element that ends as it began is the element it began as (E1, I2).

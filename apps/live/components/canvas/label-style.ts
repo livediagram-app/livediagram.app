@@ -102,10 +102,9 @@ export type LabelTextStyle = {
   // editor default. Applied to both the committed label and its live
   // editor so there's no font jump on commit.
   fontFamily?: string;
-  // Paint in capitals whatever was typed (an event-storming note,
-  // docs/specs/021-event-storming/event-storming.md). A CSS transform, not a rewrite: the stored label keeps the
-  // author's casing, and the live editor wears the same rule so typing
-  // shows the note as it will read.
+  // Paint in capitals whatever was typed (a text's Upper case). A CSS transform, not a rewrite: the stored
+  // label keeps the author's casing, and the live editor wears the same rule so typing
+  // shows the label as it will read.
   uppercase?: boolean;
 };
 

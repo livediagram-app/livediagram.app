@@ -70,10 +70,10 @@ describe('brand text contrast', () => {
     ['white', '#ffffff'],
     ['slate-300 (copy)', '#cbd5e1'],
     ['slate-400 (launcher lines)', '#94a3b8'],
-    ['sky-300 (eyebrows)', '#7dd3fc'],
+    ['violet-300 (eyebrows)', '#c4b5fd'],
     ['emerald (Free)', '#34d399'],
     ['amber (No Account)', '#fbbf24'],
-    ['sky (Open Source)', '#38bdf8'],
+    ['sky (Your Work, Yours)', '#38bdf8'],
     ['rose (Private)', '#fb7185'],
     ['violet (Live)', '#a78bfa'],
   ] as const;
@@ -83,7 +83,7 @@ describe('brand text contrast', () => {
   });
 
   it('keeps the CTA panels, eyebrows and FAQ links on those pairs', () => {
-    expect(read('../components/StartDrawingCta.tsx')).toContain(`bg-[${INDIGO}]`);
+    expect(read('../components/StartPlanningCta.tsx')).toContain(`bg-[${INDIGO}]`);
     expect(read('../components/PromisePrism.tsx')).toContain(`bg-[${INDIGO}]`);
     expect(read('../components/TryItCard.tsx')).toMatch(/bg-brand-700 .*dark:bg-brand-700/);
     expect(read('../components/eyebrow.ts')).toContain('text-brand-700');

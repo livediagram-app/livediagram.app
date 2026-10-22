@@ -57,7 +57,7 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `export --all --to <dir> [--format json,svg,png,mermaid,md]`                    | Every document to files                                                                                                                                                    |
 | `workbench open <doc>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`     | A single-use link that opens the document, or the whole workspace (on Home, or a folder), live in a paired workbench                                                       |
 | `workbench pair --origin <origin> [--name <name>] [--workspace]`                | Pairs the token with a workbench, approved once in the browser; `--workspace` asks for the whole workspace                                                                 |
-| `template ls\|view`, `icon search <text>`, `image ls [name]`, `schema [kind]`   | The catalogues, the image gallery an image element's `imageId=` takes ([Image element](../009-elements/images.md#agents)), and the element format, from the api            |
+| `template ls\|view`, `icon search <text>`, `schema [kind]`                      | The catalogues and the element format, from the api                                                                                                                        |
 | `guide [topic]`                                                                 | How-tos: `build`, `edit`, `views`, `comments`, `collaborate`, `workbench`                                                                                                  |
 | `skill print\|install --to <dir>`                                               | The agent skill file                                                                                                                                                       |
 | `api <method> <path> [--body <file>\|-]`                                        | Any api route, authenticated; the escape hatch                                                                                                                             |
@@ -149,9 +149,9 @@ In order of precedence:
 - A stored credential the api refuses mid-command (a newer `auth login` revoked it while a long command such as
   `watch` ran) is read again from the store, and the refused request is retried once with the new token.
   `LIVEPLANNER_TOKEN` is never re-read.
-- `LIVEPLANNER_TOKEN` goes to whichever host is active; set `LIVEPLANNER_HOST` beside it for a self-host.
+- `LIVEPLANNER_TOKEN` goes to whichever host is active; set `LIVEPLANNER_HOST` beside it for another host.
 
-## Profiles and self-hosting
+## Profiles and hosts
 
 - `~/.config/liveplanner/config.toml` names profiles, each a `host`; `--host`, `--profile`, `LIVEPLANNER_HOST` and
   `LIVEPLANNER_PROFILE` choose one. The default is `https://liveplanner.app`.
@@ -159,7 +159,7 @@ In order of precedence:
   document format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
   writes and names the version to install. Against a host storing a newer document format than it reads, the CLI
   refuses the commands that work on local files (`pull`, `push`, `export`, `graph`, `tab diff`) the same way.
-- A self-host profile never contacts liveplanner.app.
+- A profile for another host (staging, local development) never contacts liveplanner.app.
 
 ## Local files
 

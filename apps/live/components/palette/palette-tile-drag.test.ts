@@ -45,11 +45,8 @@ describe('tileDragStart', () => {
     expect(data.get(PALETTE_DND_MIME)).toBe('session-button|vote');
   });
 
-  it('carries a sticky note, with its event-storming kind when it has one', () => {
+  it('carries a sticky note', () => {
     expect(drag({ type: 'sticky' }).data.get(PALETTE_DND_MIME)).toBe('sticky');
-    expect(drag({ type: 'sticky', esKind: 'command' }).data.get(PALETTE_DND_MIME)).toBe(
-      'sticky|command',
-    );
   });
 
   it('carries a line icon on the icon mime', () => {

@@ -138,8 +138,7 @@ export const MODE_OPTIONS = chart(
   { typeIn: (t) => /^(Eraser|Format)/.test(t ?? '') },
 );
 
-// AI assistance (Editing tab). Ask and Clean split AI Requests by mode. The
-// photo import sends AI·Used too, under Photo* types, and has its own stack.
+// AI assistance (Editing tab). Ask and Clean split AI Requests by mode.
 export const AI_REQUESTS: Metric = {
   category: 'AI',
   action: 'Used',
@@ -172,43 +171,6 @@ export const AI_ASSISTANCE: MetricStack = {
   blurb: 'Requests in the editor AI panel, and how they split between Ask and Clean.',
   members: [AI_REQUESTS, AI_ASK, AI_CLEAN],
   headline: AI_REQUESTS,
-};
-
-// The photo import (event storming): a wall photo read into sticky notes.
-// Each photo analysed sends which detector found its notes (the model, on
-// WebGPU or WASM, or the classical fallback and why), and an import the
-// author commits sends PhotoNotes. Two units, so the head counts imports.
-export const PHOTOS_IMPORTED = chart(
-  'AI',
-  'Used',
-  'Photos Imported',
-  'A photo of a sticky-note wall turned into notes on the canvas, once the author confirmed the draft.',
-  { types: ['PhotoNotes'] },
-);
-
-export const MODEL_DETECTED = chart(
-  'AI',
-  'Used',
-  'Model Detected',
-  'A photo whose sticky notes the in-browser AI model found.',
-  { typeIn: (type) => (type ?? '').startsWith('PhotoDetectHybrid') },
-);
-
-export const FELL_BACK_TO_CLASSICAL = chart(
-  'AI',
-  'Used',
-  'Fell Back to Classical',
-  "A photo read by the simpler fallback detector, because the in-browser AI model couldn't run on that device, failed, took too long, or the photo was too flat to read.",
-  { typeIn: (type) => (type ?? '').startsWith('PhotoDetectClassical'), rising: 'bad' },
-);
-
-export const PHOTO_IMPORT: MetricStack = {
-  stack: true,
-  title: 'Photo Import',
-  blurb:
-    'Sticky-note walls photographed onto an event-storming board, and whether the in-browser model or the classical fallback read each photo.',
-  members: [PHOTOS_IMPORTED, MODEL_DETECTED, FELL_BACK_TO_CLASSICAL],
-  headline: PHOTOS_IMPORTED,
 };
 
 // Draw mode (docs/specs/007-editor/editor-modes.md): Whiteboard tabs made.

@@ -17,8 +17,7 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 | no colour            | a leading `ColourOption` with `none: true` (`noColour(id, label)`)                                                                                                                              |
 
 Grey is a **neutral stock colour**: `GREY_PEN_COLOUR = 'grey'`, `PenColourName = 'ink' | 'grey' | HuedPenColourName`.
-It is not in `PEN_COLOURS` (the hued list the snap and the board-scene import measure hues against), so snapping and
-import are unchanged.
+It is not in `PEN_COLOURS` (the hued list the snap measures hues against), so snapping is unchanged.
 
 ## Interfaces and contracts
 

@@ -3,7 +3,6 @@ import { searchStickers } from '@/lib/stickers';
 import { searchTechIcons } from '@/lib/tech-icons';
 import { tilesForCategory, type PaletteTileDef } from './palette-tile-defs';
 import { iconTileDef, stickerTileDef, techTileDef } from './palette-dynamic-tiles';
-import { visibleTiles } from './PaletteTileGrid';
 
 // Which tiles the Toolbar layout's strip shows for a category (docs/specs/007-editor/toolbar-layout.md):
 // the first STRIP_TILE_LIMIT of it, in the category's own order, and whether a More button is
@@ -32,7 +31,7 @@ const PHONE_STRIP_CHROME_PX = 236;
 // (top-left, 12px in, 96px wide with the mode switch, plus an 8px gap) on BOTH sides. Its own
 // chrome is wider than a phone's because the category picker shows its name:
 // measured at 239px with "Favourites" (as long as "Popular"), padded for a longer name like
-// "Event Storming". Twelve tiles fit from about 970px; a narrower window
+// "Technology". Twelve tiles fit from about 970px; a narrower window
 // sheds tiles to More rather than running the strip under the menu button.
 const DESKTOP_MENU_CLEARANCE_PX = 116;
 const DESKTOP_STRIP_CHROME_PX = 280;
@@ -81,7 +80,7 @@ export function stripCrowdsCorners(strip: Span, corners: Span[], gap = 8): boole
 // picker. They always get More, even
 // when the tiles alone would fit, because the rest of the body can only be
 // reached through it.
-const ALWAYS_MORE = new Set(['icons', 'stickers', 'technology', 'my-shapes']);
+const ALWAYS_MORE = new Set(['icons', 'stickers', 'technology']);
 
 function allTilesFor(
   categoryId: string,
@@ -118,17 +117,15 @@ const DIVIDER_TILES = 0.2;
 export function stripTilesFor(
   categoryId: string,
   {
-    hasImage,
     limit = STRIP_TILE_LIMIT,
     tiles,
   }: {
-    hasImage: boolean;
     limit?: number;
     // The category's tiles in the palette's mode (palette-layouts); its default tiles when absent.
     tiles?: readonly PaletteTileDef[] | null;
-  },
+  } = {},
 ): { tiles: PaletteTileDef[]; hasMore: boolean; dividersAfter: ReadonlySet<string> } {
-  const all = visibleTiles(allTilesFor(categoryId, tiles), hasImage);
+  const all = allTilesFor(categoryId, tiles);
   const between = (tiles: PaletteTileDef[]) => tiles.slice(0, -1).filter((t) => t.dividerAfter);
   const cost = (tiles: PaletteTileDef[]) => tiles.length + DIVIDER_TILES * between(tiles).length;
   // The whole category with its dividers, when it all fits.

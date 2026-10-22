@@ -41,7 +41,7 @@ describe('palette layouts', () => {
 
   it('offers only the categories in its layout', () => {
     for (const id of ids()) expect(paletteCategoryOffered(id), id).toBe(true);
-    for (const id of ['popular', 'shapes', 'event-storming', 'dashboard-layout'])
+    for (const id of ['popular', 'shapes', 'dashboard-layout'])
       expect(paletteCategoryOffered(id), id).toBe(false);
   });
 
@@ -56,12 +56,7 @@ describe('palette layouts', () => {
       'plan-content',
       'plan-tools',
     ]);
-    expect(tileIds('plan-content')).toEqual([
-      'tools:sticky',
-      'tools:text',
-      'tools:image',
-      'tools:page',
-    ]);
+    expect(tileIds('plan-content')).toEqual(['tools:sticky', 'tools:text', 'tools:page']);
     expect(tileIds('plan-tools')).toEqual([
       'collab:temperature',
       'tools:picker',

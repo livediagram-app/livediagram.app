@@ -9,8 +9,8 @@ import {
   DataIsYoursArt,
   EncryptedArt,
   NoSaleArt,
+  NoAdsArt,
   NoTrackersArt,
-  OpenSourceArt,
   PrivateByDefaultArt,
 } from './PrivacyArt';
 
@@ -24,32 +24,32 @@ const PROMISES: { title: string; description: string; art: React.ReactNode }[] =
   {
     title: 'Your data is yours',
     description:
-      "Every document lives in your own row, scoped to your owner id. Export any tab to PNG, SVG, PDF, Mermaid, Markdown, or portable JSON whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
+      "Every project lives in your own row, scoped to your owner id. Export a board or a sheet as CSV whenever you like, and delete your account from settings to remove it all in one go. We don't make money by holding it hostage.",
     art: <DataIsYoursArt />,
   },
   {
     title: 'Never sold, never traded',
     description:
-      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. There is no paid tier and no plan to add one, so we have no commercial pressure to monetise what you draw.",
+      "We don't sell your data. We don't trade it. We don't share it with advertisers or model trainers or anyone else. There is no paid tier and no plan to add one, so we have no commercial pressure to monetise what you plan.",
     art: <NoSaleArt />,
   },
   {
     title: 'Encrypted at rest and in transit',
     description:
-      'All persistence runs on Cloudflare D1 + R2, which encrypt every row and blob at rest with AES-256. Every request is TLS, end to end. The same protections protect telemetry, share links, and uploaded images.',
+      'All persistence runs on Cloudflare D1 + R2, which encrypt every row and blob at rest with AES-256. Every request is TLS, end to end. The same protections protect telemetry and share links.',
     art: <EncryptedArt />,
   },
   {
     title: 'Private by default',
     description:
-      'A new document is visible only to you until you generate a share link. Share links are unguessable codes you choose to hand out: protect them with a password, set them to expire automatically after a week, a month, or six months, or revoke them at any time, instantly disconnecting anyone currently using one.',
+      'A new project is visible only to you until you generate a share link. Share links are unguessable codes you choose to hand out: protect them with a password, set them to expire automatically after a week, a month, or six months, or revoke them at any time, instantly disconnecting anyone currently using one.',
     art: <PrivateByDefaultArt />,
   },
   {
-    title: 'Open source, auditable',
+    title: 'No ads, anywhere',
     description:
-      'The whole stack (editor, API, this site) is on GitHub under the MIT license. Anything we claim here, you can read in the source. Run your own copy if you prefer, on your own Cloudflare account, in an afternoon.',
-    art: <OpenSourceArt />,
+      'liveplanner shows no adverts and runs no ad network, so nothing you plan is ever used to target you. The privacy policy sets out, in plain English, every service that touches your data and why.',
+    art: <NoAdsArt />,
   },
 ];
 
@@ -64,7 +64,7 @@ export function PrivacySection() {
           </h2>
           <p className={BAND_LEAD}>
             We don&rsquo;t make money by being creepy. No third-party trackers, no ads, no resale,
-            no surprise audience. Just a diagram editor that treats your work like your work.
+            no surprise audience. Just a planner that treats your work like your work.
           </p>
         </div>
 

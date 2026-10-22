@@ -14,7 +14,6 @@ import {
   polygonStrokePx,
 } from '@liveplanner/document';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
-import { useDrawingAnimation } from '@/components/canvas/drawing-animation';
 
 // Browser chrome rendered as fixed-pixel HTML rather than scaled SVG so
 // the window dots stay round, the nav icons keep their stroke weight,
@@ -151,14 +150,6 @@ export function FreehandSvg({
   // with svgFreehandShape (the headless twin) by the spec.
   const isHighlighter = element.pen === 'highlighter';
   const dasharray = BORDER_DASH_ARRAY[element.strokeStyle ?? DEFAULT_BORDER_STYLE];
-  // A Drawing animation (docs/specs/028-animation/element-animations.md) works from the stroke's
-  // centre line: the drawn path itself for a stroked line, the raw points for pen ink.
-  const anim = useDrawingAnimation(
-    element,
-    pen ? () => penCentreLine(element) : d,
-    isHighlighter ? (element.penWidth ?? 14) : widthPx,
-    stroke,
-  );
   if (pen) {
     const { viewBox, d: outline } = penStrokeSvg(element);
     return (
@@ -169,10 +160,8 @@ export function FreehandSvg({
           preserveAspectRatio="none"
           aria-hidden
         >
-          {anim.defs}
-          <path d={outline} fill={stroke} stroke="none" {...anim.mainProps} />
+          <path d={outline} fill={stroke} stroke="none" />
         </svg>
-        {anim.overlay}
       </>
     );
   }
@@ -184,10 +173,8 @@ export function FreehandSvg({
         preserveAspectRatio="none"
         aria-hidden
       >
-        {anim.defs}
         {d && !handDrawn ? (
           <path
-            {...anim.mainProps}
             d={d}
             // Closed paths get the fill; open strokes leave fill at
             // none so the bounding box doesn't read as a closed shape.
@@ -195,11 +182,7 @@ export function FreehandSvg({
             stroke={stroke}
             strokeWidth={isHighlighter ? (element.penWidth ?? 14) : widthPx}
             strokeOpacity={isHighlighter ? 0.45 : undefined}
-            style={
-              isHighlighter
-                ? { ...anim.mainProps.style, mixBlendMode: 'multiply' }
-                : anim.mainProps.style
-            }
+            style={isHighlighter ? { mixBlendMode: 'multiply' } : undefined}
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeDasharray={isHighlighter ? undefined : (dasharray ?? undefined)}
@@ -207,13 +190,6 @@ export function FreehandSvg({
           />
         ) : null}
       </svg>
-      {anim.overlay}
     </>
   );
-}
-
-// A pen stroke's centre line in the canvas coordinates its svg draws in (penStrokeSvg).
-function penCentreLine(element: FreehandElement): string {
-  const pts = freehandCanvasPoints(element);
-  return pts.length < 2 ? '' : catmullRomToBezierPath(pts, element.closed);
 }

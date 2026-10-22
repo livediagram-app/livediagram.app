@@ -354,14 +354,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         }
         return;
       }
-      // Image (`9`): separate from EDIT_KEYS because its callback is
-      // nullable on guest deploys without an api worker.
-      if (lower === '9' && live.onAddImage) {
-        e.preventDefault();
-        live.onAddImage();
-        return;
-      }
-
       // Element adds (shapes / Text / Note / Arrow), editors only.
       const editAction = EDIT_KEYS[lower];
       if (editAction) {

@@ -10,41 +10,64 @@ split by viewport so the desktop and mobile pitches stay independent. Each is
 captioned with what it shows so copywriters can match it to a claim in
 [`../copy/facts.md`](../copy/facts.md).
 
+**To be re-shot.** Every screenshot below was taken before liveplanner became a
+planner, so it shows diagram canvases, diagram templates or the old sky-blue
+accent. Treat them as placeholders: retake each one in liveplanner (a project
+with Board, Sheet, Dashboard and Form tabs, violet accent) before using it, and
+delete the old file when its replacement lands. The diagram-only shots
+(flowchart, wireframe, isometric, spotlight, animation, article) have already
+been removed.
+
 ### Desktop (`desktop/`)
 
-| File                | Shows                                                                                                                                                                                  |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `landing.png`       | The marketing landing page: "A picture tells a thousand words, tell your story" hero, the **Start drawing** CTA, and a mind-map editor preview below.                                  |
-| `explorer.png`      | The Explorer library (`/live/explorer`): folders (Unsorted, Management, Product) with document counts, the Recent / Folders / Image Gallery / Shared sidebar, New diagram/folder.      |
-| `new.png`           | The **Quick Start** new-document modal (`/live/new`): the template grid (Blank, Mind map, Org chart, Retrospective, Flowchart, Kanban, SWOT, Timeline) and the theme picker.           |
-| `share.png`         | The **Share this diagram** dialog: editor vs view-only links, optional password gate, active links with copy, create-new-link.                                                         |
-| `comments.png`      | A comment thread open on an element, the element toolbar, and the Comments panel listing comment-bearing elements.                                                                     |
-| `more.png`          | The element context menu: Duplicate, Edit link, Bring to front / Send to back, Add note, Comment.                                                                                      |
-| `settings.png`      | The Settings dialog with its grouped toggles: Canvas, Interface, AI (AI Assistant), Privacy (anonymous usage events). Stale: it shows the removed Minimal panel layout toggle; retake. |
-| `org-hierarchy.png` | An org-chart diagram (CEO to VPs to leads) in **dark mode**, with theme-coloured tabs.                                                                                                 |
-| `backlog.png`       | A Kanban sprint board (Backlog to Done) in dark mode. Stale: it shows the removed Minimal layout's dock popover; retake.                                                               |
-| `sprint-review.png` | A retrospective / Sprint Review board with per-person image-upload cards. Stale: it shows the removed Tab Activity panel; retake.                                                      |
+| File                      | Re-shoot as                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------ |
+| `landing_page.png`        | The marketing home page hero, with its template fan.                           |
+| `landing_page_2.png`      | A landing story beat (boards, sheets or forms) further down the home page.     |
+| `editor_1.png`            | A project open on a Board tab: columns, cards, WIP limits, live cursors.       |
+| `editor_dark.png`         | The same board in dark mode.                                                   |
+| `editor_dark_context.png` | A card's context menu or detail panel, in dark mode.                           |
+| `editor_generated.png`    | A board or sheet an AI agent filled in over MCP.                               |
+| `editor_new_template.png` | Start Planning: the template step with Plan templates (boards, sheets, forms). |
+| `editor_new_theme.png`    | A Dashboard tab of live slots (board, sheet, chart, note).                     |
+| `collaborate.png`         | Two or three people in one project, presence avatars and selections showing.   |
+| `comments.png`            | A comment thread open on a card, with an @mention.                             |
+| `share.png`               | The Share dialog: editor, participant and view-only links, expiry.             |
+| `teams.png`               | A team and its shared folder of projects.                                      |
+| `recent_1.png`            | The Explorer's Home: recent projects and what happened.                        |
+| `recent_2_cards.png`      | The Explorer's project cards in a folder.                                      |
+| `search.png`              | Search across projects, tabs and cards.                                        |
+| `API_Tokens.png`          | The API tokens settings page used by MCP and the CLI.                          |
+| `help_1.png`              | The help centre home.                                                          |
+| `help_2.png`              | A Plan help article (boards, sheets or forms).                                 |
+| `telemetry_1.png`         | The anonymous usage telemetry page.                                            |
+| `telemetry_2.png`         | The same, scrolled to its charts.                                              |
 
 ### Mobile (`mobile/`)
 
-Stale: these predate the phone's Toolbar layout (the palette as one strip across the top, the Explorer behind a menu button) and show the old dock chrome, which is gone. Retake them.
-
-| File           | Shows                                                                                            |
-| -------------- | ------------------------------------------------------------------------------------------------ |
-| `canvas.PNG`   | The mobile editor: a diagram on the canvas with the bottom dock visible.                         |
-| `diagram.PNG`  | A diagram open on a phone, the dock collapsed so the canvas takes the full viewport.             |
-| `explorer.PNG` | The Explorer library on mobile, with the document list and the sidebar accessible from the dock. |
-| `palette.PNG`  | The mobile palette popover open above the dock, showing the shapes / tools / devices accordions. |
-| `search.PNG`   | The search panel on mobile, surfacing results across documents, folders, tabs, and elements.     |
+| File                | Re-shoot as                                       |
+| ------------------- | ------------------------------------------------- |
+| `landing.PNG`       | The marketing home page on a phone.               |
+| `editor.PNG`        | A Board tab on a phone, columns scrolling across. |
+| `editor_dark.PNG`   | The same board in dark mode.                      |
+| `editor_recent.PNG` | A Sheet tab on a phone.                           |
+| `context.PNG`       | A card's detail on a phone.                       |
+| `new_template.PNG`  | Start Planning on a phone.                        |
+| `new_theme.PNG`     | A public form, as someone answering it sees it.   |
+| `recent.PNG`        | The Explorer on a phone.                          |
+| `search.PNG`        | Search on a phone.                                |
+| `teams.PNG`         | Teams on a phone.                                 |
+| `help.PNG`          | The help centre on a phone.                       |
+| `telemetry.PNG`     | The telemetry page on a phone.                    |
 
 ## Logo (`logo/`)
 
 The Living Prism ([Brand mark](../../docs/specs/004-interface-design/brand-mark.md)), as SVG.
 
-| File                                | What it is                                                                    |
-| ----------------------------------- | ----------------------------------------------------------------------------- |
-| `liveplanner-mark-{light,dark}.svg` | The full mark (inner diagram, sheen, signal pulse) for light or dark grounds. |
-| `liveplanner-logo-{light,dark}.svg` | The horizontal lockup: mark plus `liveplanner` wordmark, `live` accented.     |
+| File                                | What it is                                                                  |
+| ----------------------------------- | --------------------------------------------------------------------------- |
+| `liveplanner-mark-{light,dark}.svg` | The full mark (inner prism, sheen, signal pulse) for light or dark grounds. |
+| `liveplanner-logo-{light,dark}.svg` | The horizontal lockup: mark plus `liveplanner` wordmark, `live` accented.   |
 
 The lockup's wordmark is live text in the system UI font; outline it in a design tool before print use.
 
@@ -63,14 +86,16 @@ also into `apps/marketing/public/`), rasterised by Playwright's Chromium. A test
 
 ## Guidance
 
-- **Brand color** is sky blue `#0EA5E9` ("liveplanner blue"); the logo has its own sky-to-indigo prism palette. Page background
-  `#F8FAFC`, canvas white. Full palette in [Theme](../../docs/specs/004-interface-design/color-scheme.md).
-- **Show, don't tell.** Screenshots should feature a real diagram with visible
-  multiplayer cursors, since "no sign-in, real-time" is the pitch.
+- **Brand colour** is violet `#8B5CF6` ("liveplanner violet"); the logo has its own violet-to-purple prism palette.
+  Page background `#F8FAFC`. Full palette in [Theme](../../docs/specs/004-interface-design/color-scheme.md).
+- **Show, don't tell.** Screenshots should feature a real plan (a board with
+  cards that look like a team's actual work) with visible multiplayer
+  presence, since "no sign-up, real-time" is the pitch.
+- **Say "project" in captions**, never "document".
 - **Keep claims current.** When the UI changes, retake the affected screenshot:
   a stale shot that shows a removed control is worse than none.
 - **Keep large binaries out of git where practical.** Prefer SVG for logos and
-  optimized PNG/WebP for screenshots. If files get heavy, consider storing them
+  optimised PNG/WebP for screenshots. If files get heavy, consider storing them
   outside the repo and linking instead.
 - Caption every asset above with what it shows so copywriters can match it to a
   claim in [`../copy/facts.md`](../copy/facts.md).

@@ -34,24 +34,22 @@ describe('elementTileSections', () => {
     expect(new Set(ids(tiles)).size).toBe(tiles.length);
     // Cards lead, so the first card type comes first.
     expect(tiles[0]?.section).toBe('plan-cards');
-    expect(ids(elementTileSections({ hasImage: true }).here)).toEqual(ids(tiles));
+    expect(ids(elementTileSections({}).here)).toEqual(ids(tiles));
   });
 
   it("puts the tiles Plan's palette does not offer in the other section, never in both", () => {
-    const { here, elsewhere } = elementTileSections({ hasImage: true });
+    const { here, elsewhere } = elementTileSections({});
     expect(ids(here)).toEqual(
       expect.arrayContaining(['plan:board-kanban', 'plan:view-gantt', 'plan:sheet']),
     );
-    expect(ids(elsewhere)).toEqual(
-      expect.arrayContaining(['data:pie', 'devices:phone', 'tools:es-domain-event']),
-    );
+    expect(ids(elsewhere)).toEqual(expect.arrayContaining(['data:pie', 'devices:phone']));
     expect(ids(here)).not.toContain('data:pie');
     const mine = new Set(ids(here));
     expect(elsewhere.filter((t) => mine.has(t.id))).toEqual([]);
   });
 
   it('covers every tile of every category between its two sections', () => {
-    const { here, elsewhere } = elementTileSections({ hasImage: true });
+    const { here, elsewhere } = elementTileSections({});
     const all = new Set([...ids(here), ...ids(elsewhere)]);
     for (const c of PALETTE_CATEGORIES) {
       if (CATALOGUE_CATEGORIES.has(c.id)) continue;
@@ -59,16 +57,9 @@ describe('elementTileSections', () => {
     }
   });
 
-  it('leaves out the image-upload tiles where the editor has none', () => {
-    const { here, elsewhere } = elementTileSections({ hasImage: false });
-    const needsImage = PALETTE_TILES.filter((t) => t.needsImage).map((t) => t.id);
-    expect([...ids(here), ...ids(elsewhere)].filter((id) => needsImage.includes(id))).toEqual([]);
-  });
-
   it("uses the document's own card types, and keeps the built-in ones out of elsewhere", () => {
     const own = [{ ...ITEM_TYPES[0], id: 'custom', label: 'Custom' }];
     const { here, elsewhere } = elementTileSections({
-      hasImage: true,
       planCardTiles: own.map(planCardTile),
     });
     expect(ids(here)).toContain('plan:card-custom');
@@ -79,23 +70,23 @@ describe('elementTileSections', () => {
 
 describe('searchElementTiles', () => {
   it('finds a tile by a synonym', () => {
-    const { elsewhere } = searchElementTiles({ query: 'database', hasImage: true });
+    const { elsewhere } = searchElementTiles({ query: 'database' });
     expect(ids(elsewhere)).toContain('shapes:cylinder');
   });
 
   it("finds a tile Plan's palette does not offer in the other section", () => {
-    const { here, elsewhere } = searchElementTiles({ query: 'pie', hasImage: true });
+    const { here, elsewhere } = searchElementTiles({ query: 'pie' });
     expect(ids(here)).toEqual([]);
     expect(ids(elsewhere)).toEqual(['data:pie']);
   });
 
   it("finds Plan's own tiles in its own section", () => {
-    const { here } = searchElementTiles({ query: 'gantt', hasImage: true });
+    const { here } = searchElementTiles({ query: 'gantt' });
     expect(ids(here)).toContain('plan:view-gantt');
   });
 
   it('finds nothing for nonsense, in either section', () => {
-    expect(searchElementTiles({ query: 'zzqqxx', hasImage: true })).toEqual({
+    expect(searchElementTiles({ query: 'zzqqxx' })).toEqual({
       here: [],
       elsewhere: [],
     });
@@ -104,7 +95,6 @@ describe('searchElementTiles', () => {
   it('lists only the element types on the tab before anything is typed', () => {
     const { here, elsewhere } = searchElementTiles({
       query: '  ',
-      hasImage: true,
       tabElements: [
         el({ type: 'shape', shape: 'circle' }),
         el({ type: 'shape', shape: 'circle' }),
@@ -118,7 +108,7 @@ describe('searchElementTiles', () => {
   });
 
   it('lists nothing before typing on an empty tab', () => {
-    expect(searchElementTiles({ query: '', hasImage: true })).toEqual({
+    expect(searchElementTiles({ query: '' })).toEqual({
       here: [],
       elsewhere: [],
     });
@@ -129,9 +119,6 @@ describe('tile and element signatures', () => {
   const sigOf = (id: string) => tileSignature(tileById(id)!);
 
   it('tell apart the choices an element records', () => {
-    expect(elementSignature(el({ type: 'sticky', esKind: 'domain-event' }))).toBe(
-      sigOf('tools:es-domain-event'),
-    );
     expect(elementSignature(el({ type: 'sticky' }))).toBe(sigOf('tools:sticky'));
     expect(elementSignature(el({ type: 'freehand' }))).toBe(sigOf('tools:polygon'));
     expect(elementSignature(el({ type: 'arrow', arrowEnds: 'none' }))).toBe(sigOf('tools:line'));
@@ -188,7 +175,7 @@ describe('rankTiles', () => {
 describe('a worst-case query', () => {
   it('ranks every tile well inside a keystroke budget', () => {
     const start = performance.now();
-    for (let i = 0; i < 50; i++) searchElementTiles({ query: 'e', hasImage: true });
+    for (let i = 0; i < 50; i++) searchElementTiles({ query: 'e' });
     // 50 searches matching most of the catalogue; a keystroke runs one.
     expect((performance.now() - start) / 50).toBeLessThan(16);
   });

@@ -80,7 +80,6 @@ export function ToolbarSearchPanel({
   const cataloguesLoaded = useIconCatalogs();
   const elements = searchElementTiles({
     query,
-    hasImage: actions.hasImage,
     planCardTiles,
     tabElements,
   });
