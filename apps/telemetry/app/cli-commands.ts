@@ -97,7 +97,6 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'FolderCreate', command: 'folder create', what: 'making a folder' },
   { type: 'TemplateLs', command: 'template ls', what: 'listing templates' },
   { type: 'TemplateView', command: 'template view', what: 'reading a template as an outline' },
-  { type: 'IconSearch', command: 'icon search', what: 'finding an icon' },
   { type: 'SchemaView', command: 'schema', what: 'reading the element format' },
   { type: 'Api', command: 'api', what: 'calling an api route directly' },
   { type: 'AuthLogin', command: 'auth login', what: 'signing in' },

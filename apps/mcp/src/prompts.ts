@@ -1,32 +1,20 @@
 // MCP prompts (docs/specs/015-api/mcp-server.md §4.10): pre-canned prompt templates the client can
 // surface (as slash commands / quick actions) so a user discovers what the
 // server is for without knowing the tool names. Each returns a single user
-// message that steers the model to the right tools + the graph-first path.
+// message that steers the model to the right tools.
 // Pure text — no api calls, no auth needed to list them.
 
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 
-// What a clear diagram asks of its author (docs/specs/015-api/mcp-server.md §4.7). A prompt is a message
-// the USER sends, so unlike a tool description it can ask for this: short
-// headings in the boxes, the detail in each node's note, related nodes grouped,
-// a layout that fits the subject.
-const CONCISE =
-  'Keep each node label a short heading of a few words (a noun phrase like ' +
-  '"Orders service", not a sentence) and put any explanation in the node\'s "note". ' +
-  'Group related nodes with "groups", and pick "direction" / "style" to fit (a ' +
-  'hierarchy is a "tree"). Pick a fitting theme. Don\'t set element colours.';
-
 export function registerPrompts(server: McpServer): void {
   server.registerPrompt(
-    'diagram_this',
+    'plan_this',
     {
-      title: 'Diagram this',
-      description: 'Turn a description into a new liveplanner diagram.',
+      title: 'Plan this',
+      description: 'Turn a goal or a piece of work into a new liveplanner project.',
       argsSchema: {
-        description: z
-          .string()
-          .describe('What to diagram — a system, a process, a set of relationships.'),
+        description: z.string().describe('What to plan: a project, a launch, a piece of work.'),
       },
     },
     ({ description }) => ({
@@ -36,11 +24,10 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text',
             text:
-              `Create a liveplanner diagram of the following, then give me a link to open it:\n\n` +
+              `Plan the following as a liveplanner project, then give me a link to open it:\n\n` +
               `${description}\n\n` +
-              `Use the create_document tool. Prefer the "graph" input (nodes + edges by id, or ` +
-              `the same as "mermaid") so the server lays it out: you only need to express ` +
-              `which nodes exist and what connects to what. ${CONCISE}`,
+              `Pick a fitting template from list_templates and make the project with create_document, then ` +
+              `add the real tasks as cards with change_items, in the columns they belong in.`,
           },
         },
       ],
@@ -48,26 +35,25 @@ export function registerPrompts(server: McpServer): void {
   );
 
   server.registerPrompt(
-    'flowchart_from_steps',
+    'board_from_tasks',
     {
-      title: 'Flowchart from steps',
-      description: 'Turn an ordered list of steps (with any branches) into a flowchart.',
+      title: 'Board from tasks',
+      description: 'Turn a list of tasks into cards on a board.',
       argsSchema: {
-        steps: z.string().describe('The steps, one per line; note any decisions or branches.'),
+        tasks: z.string().describe('The tasks, one per line; note any owners, dates or status.'),
       },
     },
-    ({ steps }) => ({
+    ({ tasks }) => ({
       messages: [
         {
           role: 'user',
           content: {
             type: 'text',
             text:
-              `Build a flowchart in liveplanner from these steps and give me a link:\n\n` +
-              `${steps}\n\n` +
-              `Use create_document with the "graph" input: one node per step (use shape ` +
-              `"diamond" for a decision, "stadium" for start/end, "square" otherwise) and ` +
-              `an edge for each transition, labelling branch edges (e.g. "yes"/"no"). ${CONCISE}`,
+              `Put these tasks on a liveplanner board and give me a link:\n\n` +
+              `${tasks}\n\n` +
+              `Make a project from the "kanban" template with create_document, then add one card per ` +
+              `task with change_items, setting the column, assignee and due date the list gives.`,
           },
         },
       ],
@@ -77,10 +63,10 @@ export function registerPrompts(server: McpServer): void {
   server.registerPrompt(
     'show_my_document',
     {
-      title: 'Show my document',
-      description: 'Find one of your documents by name and display it inline.',
+      title: 'Show my project',
+      description: 'Find one of your projects by name and display it inline.',
       argsSchema: {
-        name: z.string().describe('Part of the document’s name.'),
+        name: z.string().describe('Part of the project’s name.'),
       },
     },
     ({ name }) => ({
@@ -90,7 +76,7 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text',
             text:
-              `Find my liveplanner document matching "${name}" with find_documents, then ` +
+              `Find my liveplanner project matching "${name}" with find_documents, then ` +
               `read_document it to show me the image and a link. If several match, list them ` +
               `and ask which one.`,
           },

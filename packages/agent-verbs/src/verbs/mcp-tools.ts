@@ -24,7 +24,6 @@ import {
   deleteDocumentOutput,
   findDocumentsOutput,
   listTemplatesOutput,
-  searchIconsOutput,
   listTrashOutput,
   readDocumentOutput,
   renameDocumentOutput,
@@ -41,7 +40,6 @@ import {
   readDocumentShape,
   renameDocumentShape,
   restoreDocumentShape,
-  searchIconsShape,
   shareDocumentShape,
   updateDocumentShape,
 } from '../mcp/schema';
@@ -137,43 +135,26 @@ export const mcpListTemplates = mcpTool('list_templates', {
   behaviour: 'read',
   title: 'List templates',
   description:
-    'Browse the template library — the same hand-tuned scaffolds the editor\u2019s Quick ' +
-    'Start offers (kanban, flowchart, SWOT, gantt, ...). Returns categories ' +
-    'plus { kind, title, description, category } per template. Pass a kind as "template" ' +
-    'on create_document / add_tab to start from it, then personalise the labels with ' +
-    'update_document.',
+    'Browse the template library: the Plan templates the editor offers (kanban, project planner, bug ' +
+    'triage, sprint boards, budget sheets, forms, ...). Returns categories plus { kind, title, ' +
+    'description, category } per template. Pass a kind as "template" on create_document or add_tab to ' +
+    'start a project or a tab from it.',
   inputSchema: {},
   outputSchema: listTemplatesOutput,
-});
-
-export const mcpSearchIcons = mcpTool('search_icons', {
-  behaviour: 'read',
-  title: 'Search icons',
-  description:
-    'Find icons by what they show, best match first: the line-art set and the Technology set ' +
-    '(brand, cloud and database marks such as aws-lambda, postgresql, kafka). Each hit\u2019s id is ' +
-    'what an element\u2019s "iconId" takes; an iconId that names no icon is refused. An emoji- id draws ' +
-    'in the viewer\u2019s colour emoji, which a PNG preview cannot draw: it shows a disc labelled emoji there.',
-  inputSchema: searchIconsShape,
-  outputSchema: searchIconsOutput,
 });
 
 export const mcpCreateDocument = mcpTool('create_document', {
   behaviour: 'write',
   title: 'Create a document',
   description:
-    'Create a new document: a diagram (flowchart, architecture, org chart, mind map, sequence, ER), a whiteboard, ' +
-    'a Plan board or a spreadsheet. Each tab takes a "graph" ' +
-    '(nodes and edges, laid out in the template look: ' +
-    'sizes, elbows, side exits, loops round the outside, title and key), "mermaid", raw "elements" (the full ' +
-    'format is documented inline on the "tabs" argument below) or a "template". ' +
-    'Pass one tab, or several to build a multi-tab document in one call (an ' +
-    'overview plus detail tabs). A tab may pass "template" (a kind from list_templates) ' +
-    'instead of elements to start from a hand-tuned scaffold. The server validates, lays ' +
-    "out each tab per the layout arg, tags it as made by AI (the Explorer's Made by AI filter finds it), " +
-    "files it at the root of the user's My Documents (or in their default folder for what that " +
-    'document is made as, when they have set one), and returns the link, the folder, and an inline ' +
-    'PNG of the first tab.',
+    'Create a new project: Board tabs of cards, Sheets, Dashboards and Forms. Each tab takes a "template" ' +
+    '(a kind from list_templates: a kanban board, a project planner, a budget sheet, ...), a "dashboard" over ' +
+    'the call\u2019s other tabs, or raw "elements" (the full format is documented inline on the "tabs" argument ' +
+    'below). Pass one tab, or several to build a multi-tab project in one call. The server validates each tab, ' +
+    "tags the project as made by AI (the Explorer's Made by AI filter finds it), files it at the root of the " +
+    "user's My Documents (or in their default folder for what it is made as, when they have set one), and " +
+    'returns the link, the folder, and an inline PNG of the first tab. Cards, boards, sheets and forms are then ' +
+    'filled in with change_items, add_board, change_sheet and add_form.',
   inputSchema: createDocumentShape,
   outputSchema: createDocumentOutput,
 });
@@ -182,11 +163,10 @@ export const mcpAddTab = mcpTool('add_tab', {
   behaviour: 'write',
   title: 'Add a tab to a document',
   description:
-    'Add a NEW tab (its own canvas) to an existing document — e.g. a detail view zooming ' +
-    'into one part of an architecture. Produce the elements like create_document (or pass ' +
-    '"template" instead of elements to start from a hand-tuned scaffold); the ' +
-    'server validates, lays out per the layout arg, appends the tab, and returns an ' +
-    'inline PNG. Run read_document first to see the document and its existing tabs.',
+    'Add a NEW tab to an existing project: from a "template" (a kind from list_templates), a "dashboard" ' +
+    'over its Board and Sheet tabs by name, or raw "elements" as create_document takes them. The server ' +
+    'validates it, appends the tab, and returns an inline PNG. Run read_document first to see the project ' +
+    'and its existing tabs.',
   inputSchema: addTabShape,
   outputSchema: addTabOutput,
 });
@@ -195,12 +175,12 @@ export const mcpUpdateDocument = mcpTool('update_document', {
   behaviour: 'destructive',
   title: 'Update a document',
   description:
-    'Edit an existing tab. mode "replace" swaps the whole tab’s elements (validated + ' +
-    'auto-laid-out) and paints every element in the tab’s theme, its own colours replaced (a sticky keeps its own); ' +
-    'mode "ops" keeps the colours it is given, and applies an ordered list of add/update/remove against ' +
-    'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or ' +
-    'takes "edits": edit operations as text (insert between, wrap in a frame, connect, layout a selection, ' +
-    'place beside another element), the form each lint finding\u2019s fix is written in. Returns an inline PNG.',
+    'Edit an existing tab\u2019s elements. mode "replace" swaps the whole tab (its elements, or a Dashboard tab ' +
+    'rebuilt from "dashboard") and paints every element in the tab\u2019s theme, its own colours replaced (a ' +
+    'sticky keeps its own); mode "ops" keeps the colours it is given, and applies an ordered list of ' +
+    'add/update/remove against existing elements (by id, or the ref read_document prints), keeping positions, ' +
+    'or takes "edits": edit operations as text. Cards, boards, sheets and forms change through their own tools ' +
+    '(change_items, change_board, change_sheet, change_form). Returns an inline PNG.',
   inputSchema: updateDocumentShape,
   outputSchema: updateDocumentOutput,
 });
@@ -463,7 +443,6 @@ export const MCP_TOOL_VERBS: readonly McpToolVerb[] = [
   mcpFindDocuments,
   mcpReadDocument,
   mcpListTemplates,
-  mcpSearchIcons,
   mcpCreateDocument,
   mcpAddTab,
   mcpUpdateDocument,

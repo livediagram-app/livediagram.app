@@ -20,7 +20,7 @@ const GROUPED_ROWS = [
   },
   {
     words: ['pull', 'push'],
-    after: 'graph',
+    after: 'workbench',
     summary: 'one document to a file and back; export --all',
   },
 ] as const;
@@ -30,7 +30,6 @@ const NAMED_ONLY = [
   'form',
   'type',
   'template',
-  'icon',
   'schema',
   'guide',
   'skill',

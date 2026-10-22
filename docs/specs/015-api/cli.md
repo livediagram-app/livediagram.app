@@ -32,7 +32,7 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `document ls [query]`                                                           | Documents in the personal library and joined teams, newest first                                                                                                           |
 | `folder ls [--json]` / `folder create <name> [--in <f>]`                        | The person's folders as paths with their ids; a new folder, at the top of My documents or inside another                                                                   |
 | `document view <doc>`                                                           | The overview view                                                                                                                                                          |
-| `document create <name> [--tab <name>] [-f <file>\|--template <kind>]`          | A new document from a graph, Mermaid or template, compiled by the api                                                                                                      |
+| `document create <name> [--tab <name>] [-f <file>\|--template <kind>]`          | A new project from elements or a template, compiled by the api                                                                                                             |
 | `document rename\|share\|rm\|restore <doc>`                                     | As the MCP's verbs; `rm` moves to the Trash, there is no permanent delete                                                                                                  |
 | `tab ls <doc>`                                                                  | The document's tabs                                                                                                                                                        |
 | `tab view <doc> [--tab <t>] [--view <name>] [--budget <n>]`                     | A view; the outline by default; `show` takes `--ref`, `find` `--text`                                                                                                      |
@@ -52,12 +52,11 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `presence set\|clear <doc> [--tab <t>] [--status ..] [--focus ..]`              | The agent's presence                                                                                                                                                       |
 | `wait <doc> --for comment\|change [--timeout <s>]`                              | Blocks until it happens, prints it, exits                                                                                                                                  |
 | `watch <doc>`                                                                   | Streams changes, one line each, until interrupted                                                                                                                          |
-| `graph lint\|render <file>`                                                     | Lint or preview a graph or Mermaid file locally, before writing anything                                                                                                   |
 | `pull <doc> [--to <dir>] [--force]` / `push <file>`                             | Sync one document to a file and back                                                                                                                                       |
-| `export --all --to <dir> [--format json,svg,png,mermaid,md]`                    | Every document to files                                                                                                                                                    |
+| `export --all --to <dir> [--format json,svg,png,md]`                            | Every document to files                                                                                                                                                    |
 | `workbench open <doc>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`     | A single-use link that opens the document, or the whole workspace (on Home, or a folder), live in a paired workbench                                                       |
 | `workbench pair --origin <origin> [--name <name>] [--workspace]`                | Pairs the token with a workbench, approved once in the browser; `--workspace` asks for the whole workspace                                                                 |
-| `template ls\|view`, `icon search <text>`, `schema [kind]`                      | The catalogues and the element format, from the api                                                                                                                        |
+| `template ls\|view`, `schema [kind]`                                            | The catalogues and the element format, from the api                                                                                                                        |
 | `guide [topic]`                                                                 | How-tos: `build`, `edit`, `views`, `comments`, `collaborate`, `workbench`                                                                                                  |
 | `skill print\|install --to <dir>`                                               | The agent skill file                                                                                                                                                       |
 | `api <method> <path> [--body <file>\|-]`                                        | Any api route, authenticated; the escape hatch                                                                                                                             |
@@ -70,7 +69,7 @@ Elements are [refs and selectors](../024-agents/edit-operations.md#selectors); t
 element whose thread they act on, and `--cell <A1>` on a Sheet for a cell's thread
 ([Cell comments](../029-sheets/sheet.md#cell-comments)).
 
-**Files.** `-f <file>` holds edit operations, a graph, Mermaid, or elements, told apart by their content; a file
+**Files.** `-f <file>` holds edit operations, elements, or a `replace` body, told apart by their content; a file
 that is none of them is refused.
 
 **Changeset writes** (`element`, `changeset apply`, `tab add`, `push`) accept `--dry-run` (the plan, nothing
@@ -98,7 +97,7 @@ an agent through the CLI is designing their own diagram.
   points at `guide`, and at `guide workbench` when a message carries a `[liveplanner]`
   [selection reference](../013-workspace/workbench-embeds.md#the-selection-reference). `skill install --to <dir>`
   writes it into that agent skills directory; without `--to` it lists the common ones.
-- Help, guides and the skill come from the verb catalogue; templates, icons and the element format (`schema`) come
+- Help, guides and the skill come from the verb catalogue; templates and the element format (`schema`) come
   from the api. Tests hold each within its budget.
 
 ## Output
@@ -158,7 +157,7 @@ In order of precedence:
 - The CLI learns a host from `GET /api/capabilities`: the api base, whether sign-in and the OAuth server exist, the
   document format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
   writes and names the version to install. Against a host storing a newer document format than it reads, the CLI
-  refuses the commands that work on local files (`pull`, `push`, `export`, `graph`, `tab diff`) the same way.
+  refuses the commands that work on local files (`pull`, `push`, `export`, `tab diff`) the same way.
 - A profile for another host (staging, local development) never contacts liveplanner.app.
 
 ## Local files
@@ -176,7 +175,7 @@ In order of precedence:
 
 ## Previews
 
-`tab render` and `graph render` draw with the shared SVG renderer (`renderElementsToSvg`) and rasterise PNGs with
+`tab render` draws with the shared SVG renderer (`renderElementsToSvg`) and rasterise PNGs with
 `@liveplanner/render-png`, the MCP's resvg and embedded Inter. A stored tab is drawn from the api's
 `render.svg`, so the CLI and the MCP draw alike.
 

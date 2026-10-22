@@ -1,14 +1,13 @@
 // The catalogue verbs (docs/specs/015-api/cli.md "Commands"): the template library, one template as an outline,
-// icon search, and the element format, as the api serves them. The catalogue owns only their help; their content is
+// and the element format, as the api serves them. The catalogue owns only their help; their content is
 // the api's (blueprint "Catalogue routes").
 
 import { z } from 'zod';
-import type { IconSearchResponse, TemplateCatalogueResponse } from '@liveplanner/api-schema';
+import type { TemplateCatalogueResponse } from '@liveplanner/api-schema';
 import { ApiError } from '@liveplanner/api-client';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { columns } from './shared';
 
-export const ICON_SEARCH_DEFAULT_LIMIT = 20;
 const NEAREST_MAX = 6;
 
 // The names nearest one the api did not know: those sharing its start or holding it, else the first few.
@@ -50,7 +49,6 @@ async function namedText(
     });
   }
 }
-export const ICON_SEARCH_MAX_LIMIT = 50;
 
 export const templateLs = defineVerb({
   id: 'template.ls',
@@ -98,47 +96,6 @@ export const templateView = defineVerb({
     positionals: ['kind'],
     examples: ['liveplanner template view kanban', 'liveplanner template view start-stop-continue'],
     prints: 'the outline of the tab the template builds',
-  },
-});
-
-export const iconSearch = defineVerb({
-  id: 'icon.search',
-  summary: 'Find icons by name',
-  description: `Finds icons in the line-art and Technology catalogues, best match first; an icon's id goes in iconId=.`,
-  behaviour: 'read',
-  input: z.object({
-    text: z.string().min(1).max(60).describe('What the icon shows'),
-    limit: z.coerce
-      .number()
-      .int()
-      .min(1)
-      .max(ICON_SEARCH_MAX_LIMIT)
-      .default(ICON_SEARCH_DEFAULT_LIMIT)
-      .describe('At most this many'),
-  }),
-  output: z.object({
-    icons: z.array(z.object({ id: z.string(), label: z.string(), set: z.string() })),
-    more: z.number(),
-  }),
-  listKey: 'icons',
-  run: async (ctx, { text, limit }) =>
-    ctx.api.json<IconSearchResponse>(
-      `/icons?${new URLSearchParams({ query: text, limit: String(limit) })}`,
-    ),
-  text: ({ icons, more }) => [
-    ...(icons.length
-      ? columns(icons.map((i) => [i.id, JSON.stringify(i.label), i.set]))
-      : ['no icons match']),
-    ...(more > 0 ? [`… ${more} more; --limit ${icons.length + more}, or narrow the words`] : []),
-  ],
-  quiet: ({ icons }) => icons.map((i) => i.id),
-  cli: {
-    positionals: ['text'],
-    examples: [
-      'liveplanner icon search database',
-      'liveplanner icon search "message queue" --limit 5',
-    ],
-    prints: 'one icon a line: id, label, catalogue',
   },
 });
 

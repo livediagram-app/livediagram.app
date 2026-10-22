@@ -72,7 +72,6 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool('FindDocuments', 'Find Documents', 'Searching the user’s documents by name.'),
   mcpTool('ReadDocument', 'Read Document', 'Reading one document’s tabs and elements.'),
   mcpTool('ListTemplates', 'List Templates', 'Listing the templates a document can start from.'),
-  mcpTool('SearchIcons', 'Search Icons', 'Finding icons by name for diagram boxes.'),
   mcpTool('CreateDocument', 'Create Document', 'Making a new document.'),
   mcpTool('AddTab', 'Add Tab', 'Adding a tab to an existing document.'),
   mcpTool('UpdateDocument', 'Update Document', 'Editing a document’s elements.'),

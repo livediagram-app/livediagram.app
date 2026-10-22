@@ -35,7 +35,7 @@ describe('elementsIssue', () => {
       /^element "b1": iconId "database-" is not an icon; icons like it: database/,
     );
     expect(elementsIssue([box({ iconId: 'zzqx' })])).toBe(
-      'element "b1": iconId "zzqx" is not an icon; search_icons finds one by what it shows.',
+      'element "b1": iconId "zzqx" is not an icon.',
     );
   });
 

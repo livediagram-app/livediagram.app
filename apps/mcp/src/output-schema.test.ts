@@ -297,7 +297,6 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     args: { documentId: 'd1', format: 'json' },
   },
   { tool: 'list_templates', output: 'listTemplatesOutput', args: {} },
-  { tool: 'search_icons', output: 'searchIconsOutput', args: { query: 'database' } },
   {
     tool: 'create_document',
     output: 'createDocumentOutput',

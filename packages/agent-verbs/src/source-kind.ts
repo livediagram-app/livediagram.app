@@ -1,10 +1,10 @@
 // What a `-f` file holds (docs/specs/015-api/blueprints/cli.md CLI71), and the changeset body it becomes:
-// edit operations send `{ operations }`; a graph, Mermaid, elements or a whole `replace` send `{ replace }`.
+// edit operations send `{ operations }`; elements or a whole `replace` send `{ replace }`.
 
 import type { ChangesetRequest } from '@liveplanner/api-schema';
-import { isRecord, startsWithMermaidHeader } from '@liveplanner/document';
+import { isRecord } from '@liveplanner/document';
 
-type SourceKind = 'operations' | 'graph' | 'mermaid' | 'elements' | 'replace';
+type SourceKind = 'operations' | 'elements' | 'replace';
 
 type ClassifiedSource =
   | { kind: SourceKind; body: Pick<ChangesetRequest, 'operations' | 'replace'> }
@@ -30,12 +30,9 @@ export function classifySource(text: string): ClassifiedSource {
         ? { kind: 'operations', body: { operations: value } }
         : { kind: 'elements', body: { replace: { elements: value } } };
     if (!isRecord(value)) return { kind: 'unknown' };
-    if ('nodes' in value) return { kind: 'graph', body: { replace: { graph: value } } };
     if (isRecord(value.replace)) return { kind: 'replace', body: { replace: value.replace } };
     if (isOperation(value)) return { kind: 'operations', body: { operations: [value] } };
     return { kind: 'unknown' };
   }
-  if (startsWithMermaidHeader(text))
-    return { kind: 'mermaid', body: { replace: { mermaid: text } } };
   return { kind: 'operations', body: { operations: text } };
 }

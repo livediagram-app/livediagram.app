@@ -41,13 +41,13 @@ describe('document create', () => {
       return Response.json({ document: { id: b.id, name: b.name, tabs: b.tabs } }, { status: 201 });
     });
     const files: Record<string, string> = {
-      'a.mmd': 'flowchart LR\n a --> b',
-      'r.json': '{"replace":{"graph":{"nodes":[]},"theme":"ocean"}}',
+      'a.json': '[]',
+      'r.json': '{"replace":{"template":"swot","theme":"ocean"}}',
     };
     const ctx = contextOf(fakeApi({ '/documents': route }), [], [], {
       readInput: async (p) => files[p]!,
     });
-    const out = await documentCreate.run!(ctx, { name: 'Shop', file: 'a.mmd' });
+    const out = await documentCreate.run!(ctx, { name: 'Shop', file: 'a.json' });
     await documentCreate.run!(ctx, { name: 'Retro', tab: 'Board', template: 'kanban' });
     await documentCreate.run!(ctx, { name: 'Blank' });
     await documentCreate.run!(ctx, { name: 'R', file: 'r.json' });
@@ -56,7 +56,7 @@ describe('document create', () => {
         id: 'new-1',
         name: 'Shop',
         source: 'cli',
-        tabs: [{ id: 'new-2', name: 'Shop', mermaid: 'flowchart LR\n a --> b' }],
+        tabs: [{ id: 'new-2', name: 'Shop', elements: [] }],
       },
       {
         id: 'new-3',
@@ -74,7 +74,7 @@ describe('document create', () => {
         id: 'new-7',
         name: 'R',
         source: 'cli',
-        tabs: [{ id: 'new-8', name: 'R', graph: { nodes: [] } }],
+        tabs: [{ id: 'new-8', name: 'R', template: 'swot' }],
       },
     ]);
     expect(documentCreate.text!(out)).toEqual([

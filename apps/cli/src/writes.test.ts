@@ -192,19 +192,19 @@ describe('creating from the CLI', () => {
         { status: 201 },
       );
     };
-    const io = session(create, { files: { '/work/flow.mmd': 'flowchart LR\n  a --> b\n' } });
-    const result = await cli(io, ['document', 'create', 'Shop', '-f', 'flow.mmd']);
+    const io = session(create, { files: { '/work/tab.json': '[]' } });
+    const result = await cli(io, ['document', 'create', 'Shop', '-f', 'tab.json']);
     expect(result.code).toBe(0);
     const [body] = posted as {
       id: string;
       source: string;
-      tabs: { id: string; mermaid: string }[];
+      tabs: { id: string; elements: unknown[] }[];
     }[];
     expect(body!.id).toMatch(/^[0-9a-f-]{36}$/);
     expect(body!.tabs[0]!.id).not.toBe(body!.id);
     expect(body).toMatchObject({
       source: 'cli',
-      tabs: [{ name: 'Shop', mermaid: 'flowchart LR\n  a --> b\n' }],
+      tabs: [{ name: 'Shop', elements: [] }],
     });
     expect(result.out).toBe(
       `+ document ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://liveplanner.app/document/${body!.id}\n`,

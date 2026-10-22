@@ -51,8 +51,8 @@ function elementIssue(el: Rec, where: string): string | null {
     return (
       `${where}: iconId ${JSON.stringify(el.iconId)} is not an icon` +
       (like.length
-        ? `; icons like it: ${like.join(', ')}. search_icons finds others.`
-        : '; search_icons finds one by what it shows.')
+        ? `; icons like it: ${like.join(', ')}.`
+        : '.')
     );
   }
   return null;
@@ -67,19 +67,4 @@ export function elementsIssue(elements: readonly unknown[]): string | null {
     if (issue) return issue;
   }
   return null;
-}
-
-// A graph node whose icon names no icon, as a sentence; null when every icon is one.
-export function graphIconIssue(
-  nodes: readonly { id: string; icon?: string | undefined }[],
-): string | null {
-  const bad = nodes.find((n) => n.icon !== undefined && !isIconId(n.icon));
-  if (!bad) return null;
-  const like = iconsLike(bad.icon!).map((i) => i.id);
-  return (
-    `node "${bad.id}": icon ${JSON.stringify(bad.icon)} is not an icon` +
-    (like.length
-      ? `; icons like it: ${like.join(', ')}.`
-      : '; search_icons finds one by what it shows.')
-  );
 }

@@ -2,7 +2,7 @@
 // the verb's input, the profile and credential, the host's capabilities, the handler, and what it prints. The
 // exit code is one of eight; stdout carries data only.
 
-import { graphLint, renderSkill, type Verb, type VerbContext } from '@liveplanner/agent-verbs';
+import { renderSkill, type Verb, type VerbContext } from '@liveplanner/agent-verbs';
 import { DOCUMENT_FORMAT } from '@liveplanner/api-schema';
 import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
@@ -37,21 +37,10 @@ import { transport } from './transport';
 type Input = Record<string, unknown>;
 
 // The verbs that read no profile, no credential and no api.
-function runOffline(io: CliIo, verb: Verb, input: Input, log: DebugLog): Promise<unknown> | null {
+function runOffline(io: CliIo, verb: Verb, input: Input): Promise<unknown> | null {
   if (verb.id === 'guide') return Promise.resolve(guideOf(input.topic as string | undefined));
   if (verb.id === 'skill.print') return Promise.resolve({ text: renderSkill() });
   if (verb.id === 'skill.install') return installSkill(io, input.to as string | undefined);
-  // The render handlers load the icon catalogues and the PNG renderer: only when a render runs.
-  if (verb.id === 'graph.render')
-    return import('./commands/render').then(({ renderGraph }) =>
-      renderGraph(io, inputReader(io), input as { file: string; png?: string; svg?: string }, log),
-    );
-  if (verb.id === 'graph.lint') {
-    const file = input.file as string;
-    return inputReader(io)(file).then((text) =>
-      graphLint(text, file === '-' ? 'stdin' : file, input.compare as string | undefined, log),
-    );
-  }
   return null;
 }
 
@@ -206,7 +195,7 @@ export async function run(argv: readonly string[], io: CliIo): Promise<ExitCode>
     const pulled = await pullFileOf(io, input);
     let pending = pulled
       ? Promise.resolve(pullFileView(verb, input as ViewInput, pulled, io.now(), log))
-      : runOffline(io, verb, input, log);
+      : runOffline(io, verb, input);
     if (!pending) {
       const config = await readConfig(io);
       const profile = resolveProfile(globals, io, config);

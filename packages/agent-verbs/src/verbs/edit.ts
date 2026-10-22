@@ -37,9 +37,9 @@ async function targetOf(ctx: VerbContext, doc: string, tab: string | undefined) 
 
 export const changesetApply = defineVerb({
   id: 'changeset.apply',
-  summary: 'Apply edit operations, or a graph, from a file',
+  summary: 'Apply edit operations from a file',
   description:
-    'Sends a file (or stdin, with -f -) as one changeset: edit operations in the line form or JSON, or a graph, Mermaid or elements that replace the tab. All or nothing; prints one result line per element, then the revision, the lint verdict and the revert command.',
+    'Sends a file (or stdin, with -f -) as one changeset: edit operations in the line form or JSON, or elements that replace the tab. All or nothing; prints one result line per element, then the revision, the lint verdict and the revert command.',
   behaviour: 'write',
   input: z.object({
     doc: docArg,
@@ -57,7 +57,7 @@ export const changesetApply = defineVerb({
         status: 400,
         code: 'unknown_source',
         message: `can't tell what ${input.file === '-' ? 'stdin' : input.file} holds`,
-        hint: 'expected edit operations, a graph, Mermaid or elements: liveplanner guide edit',
+        hint: 'expected edit operations or elements: liveplanner guide edit',
       });
     const target = await targetOf(ctx, input.doc, input.tab);
     return outputOf(await submitChangeset(ctx, target, source.body, input));
@@ -69,7 +69,7 @@ export const changesetApply = defineVerb({
     flags: { file: { short: 'f' } },
     examples: [
       'liveplanner edit "Auth flow" -f ops.txt',
-      'liveplanner changeset apply 3f9c -f - --dry-run < arch.json',
+      'liveplanner changeset apply 3f9c -f - --dry-run < ops.txt',
     ],
     prints: 'one result line per element, then the revision, lint verdict and revert command',
   },

@@ -321,7 +321,12 @@ const EXPLORER_TIMELINE = new Set([
   'Page|View|/explorer/timeline',
 ]);
 
+// The agents' icon search (removed 2026-10-22, docs/specs/015-api/mcp-server.md): the MCP's search_icons and the CLI's
+// `icon search`, which found ids for diagram boxes. The palette's own icon search carries on (UI·Searched·IconSearch).
+const AGENT_ICON_SEARCH = new Set(['Mcp|Used|SearchIcons', 'Cli|Used|IconSearch']);
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (AGENT_ICON_SEARCH.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Document' && action === 'Reverted') return true;
   if (EXPLORER_TIMELINE.has(`${category}|${action}|${type ?? ''}`)) return true;
