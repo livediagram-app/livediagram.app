@@ -39,10 +39,10 @@ const EDGE_CLEAR = 12;
 // The straight run into the bar after the curve, so the line meets the arrowhead level at its tip.
 const LEAD_IN = 28;
 
-// The brand mark's prism (packages/ui/src/brand-prism.ts): its vivid sky out of the headline, its
-// primary blue into the search.
-const FROM = '#0284c7';
-const TO = '#2563eb';
+// The brand mark's prism (packages/ui/src/brand-prism.ts): its vivid violet out of the headline, its
+// primary purple into the search.
+const FROM = '#7c3aed';
+const TO = '#9333ea';
 
 function measure(root: HTMLElement): Layout | null {
   const title = root.querySelector<HTMLElement>('[data-hero-anchor="title"]');
