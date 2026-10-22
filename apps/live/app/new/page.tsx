@@ -9,12 +9,7 @@ import { DocumentLoading } from '@/components/chrome/DocumentLoading';
 import { OpeningScreen } from '@/components/chrome/OpeningScreen';
 import { useClerkApiBootstrap } from '@/hooks/persistence/useClerkApiBootstrap';
 import { useCtaAttribution } from './useCtaAttribution';
-import {
-  apiCreateDocument,
-  apiListDocumentsWithTeamRecent,
-  apiLoadSelf,
-  apiSaveSelf,
-} from '@/lib/api-client';
+import { apiCreateDocument, apiLoadSelf, apiSaveSelf } from '@/lib/api-client';
 import {
   createFailureCopy,
   createIdsFor,
@@ -26,9 +21,7 @@ import { offlineWriteItem } from '@/lib/offline/offline-items';
 import { seedAuthor } from '@/lib/seed-author';
 import { withTemplateSheets } from '@/lib/template-sheets';
 import { isOfflineLocation } from '@/lib/save-locations';
-import { useDocumentCount } from './useDocumentCount';
 import { useNewDocumentLocation } from './useNewDocumentLocation';
-import { markTourPending } from '@/lib/tour-pending';
 import { randomColor, randomName, type Participant } from '@/lib/identity';
 import { titleCaseType, track } from '@/lib/telemetry';
 import { trackDailyReturn } from '@/lib/daily-return';
@@ -105,10 +98,6 @@ export default function NewDocumentPage() {
   // bfcache listener, which must stand down once this document IS the editor.
   const [openedId, setOpenedId] = useState<string | null>(null);
   const handedOff = useRef(false);
-  // How many documents the user owns, before this visit's create. Reported by the list fetch below and awaited by the
-  // create; gates the interactive tour's welcome offer
-  // (docs/specs/007-editor/editor-tour.md), which is for brand-new (zero-document) users only.
-  const documentCount = useDocumentCount();
   // Set when the create fails: the card's copy and action (create-failure.ts). Shows instead of
   // navigating to the editor for a document that was never persisted (which would 404). The ref
   // keeps the last attempt's args so Retry can re-run the exact same create.
@@ -242,11 +231,6 @@ export default function NewDocumentPage() {
         debugLog(`[new] background identity failed: ${String(err)}`),
       );
     }
-    // Read before the create, so the new document is not in it. A cloud create has just settled identity, so the
-    // count's fetch is in flight: wait for it rather than miss the tour on a quick pick. This Browser opens at once
-    // and takes the count only if it is already in.
-    const priorDocuments = await documentCount.settled(offline ? 0 : undefined);
-
     // The template's tabs, card types and example cards, or one blank tab (lib/new-document-content.ts).
     const { tabs, tab, itemTypes, seedItems } = await newDocumentContent({
       templateKind,
@@ -320,13 +304,6 @@ export default function NewDocumentPage() {
     // team sends (docs/specs/017-telemetry/telemetry.md), only reached once the create, and so
     // its placement, succeeded.
     if (!offline && settings.teamId) track('Team', 'Added', 'Document');
-    // "Show me around" (docs/specs/007-editor/editor-tour.md): a brand-new user's (zero owned documents)
-    // first document gets the tour's welcome offer once the editor opens —
-    // handed across the hard navigation via a sessionStorage flag. The
-    // editor gates the offer on the synced `tourSeen` preference.
-    if (priorDocuments === 0) {
-      markTourPending();
-    }
     // Hand off in place: the editor URL takes /new's history entry, and the editor mounts here,
     // reading the id from the rewritten path exactly as a direct visit would.
     handedOff.current = true;
@@ -334,25 +311,6 @@ export default function NewDocumentPage() {
     window.history.replaceState(null, '', `/document/${documentId}`);
     setOpenedId(documentId);
   };
-
-  // How many documents the person had before this visit (the tour's gate): the list's length, once identity settles.
-  // A list that fails reports zero, so a fresh visitor on a flaky network still gets the tour.
-  const reportCount = documentCount.report;
-  useEffect(() => {
-    if (!selfId) return;
-    let cancelled = false;
-    void apiListDocumentsWithTeamRecent(selfId)
-      // A team member with nothing of their own is not new: their team's documents count.
-      .then(({ documents, teamRecent }) => {
-        if (!cancelled) reportCount(documents.length + teamRecent.length);
-      })
-      .catch(() => {
-        if (!cancelled) reportCount(0);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [selfId, reportCount]);
 
   // Every create from /new goes where new documents go by default (docs/specs/007-editor/new-document-route.md): the
   // store for who is creating, decided now (a guest at once, a signed-in browser once identity settles), and the

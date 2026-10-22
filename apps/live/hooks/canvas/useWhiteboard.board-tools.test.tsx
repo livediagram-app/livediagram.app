@@ -22,7 +22,7 @@ const diagram: Tab = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] }
 function setup(tab: Tab, pendingDraw: PendingDraw | null) {
   const deps = {
     activeTab: tab,
-    drawMode: tab.opensIn === 'draw',
+    drawMode: (tab as { opensIn?: string }).opensIn === 'draw',
     canvasTool: 'select' as const,
     pendingDraw,
     editsBlocked: false,

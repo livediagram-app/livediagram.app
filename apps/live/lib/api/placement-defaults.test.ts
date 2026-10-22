@@ -46,14 +46,14 @@ describe('placement default calls', () => {
   });
 
   it('clears a default', async () => {
-    await apiClearPlacementDefault('owner-1', 'mode:diagram');
+    await apiClearPlacementDefault('owner-1', 'mode:plan');
     expect(calls[0]).toMatchObject({ method: 'DELETE' });
-    expect(calls[0]!.url).toMatch(/\/placement-defaults\/mode%3Adiagram$/);
+    expect(calls[0]!.url).toMatch(/\/placement-defaults\/mode%3Aplan$/);
   });
 
   it('surfaces a refusal by its token', async () => {
     reply = new Response(JSON.stringify({ error: 'folder_not_found' }), { status: 404 });
-    const error = await apiSetPlacementDefault('owner-1', 'mode:draw', 'gone').catch(
+    const error = await apiSetPlacementDefault('owner-1', 'mode:plan', 'gone').catch(
       (e: unknown) => e,
     );
     expect(error).toBeInstanceOf(ApiError);

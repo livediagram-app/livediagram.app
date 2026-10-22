@@ -24,7 +24,7 @@ const PAGES_GRID_LABEL_PX = 32;
 // The pages a tab lays out, in their row; none for a tab that is not in Pages (pagesOf reads any other
 // tab as one page, which it only has once it is switched).
 export function laidOutPagesOf(tab: Tab): LaidOutPage[] {
-  if (!Array.isArray(tab.pages)) return [];
+  if ((tab as { opensIn?: string }).opensIn !== 'pages') return [];
   return layOutPages(pagesOf(tab));
 }
 

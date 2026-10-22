@@ -56,14 +56,14 @@ describe('seeded tabs compiled on create', () => {
     expect((await getDocument(db.env, 'd1'))?.source).toBe('cli');
   });
 
-  it('builds a template tab and derives the intent from it when none is given, a retro opening in Workshop', async () => {
+  it('builds a template tab and derives the intent from it when none is given, a retro opening in Plan', async () => {
     expect(
       (await create([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }])).status,
     ).toBe(201);
     expect((await getTab(db.env, 'd1', 't1'))?.elements.length).toBeGreaterThan(0);
     const summary = (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
     expect(summary).toMatchObject({
-      opensIn: 'workshop',
+      opensIn: 'plan',
       tabKind: 'diagram',
       templateFamily: 'retrospective',
     });
@@ -94,7 +94,6 @@ describe('seeded tabs compiled on create', () => {
       'Notes',
     ]);
     const actions = await getTab(db.env, 'd1', doc!.tabs[1]!.id);
-    expect(actions?.opensIn).toBe('plan');
     expect(actions?.elements.some((e) => e.type === 'shape' && e.shape === 'plan-board')).toBe(
       true,
     );
@@ -148,10 +147,10 @@ describe('seeded tabs compiled on create', () => {
 
   it('keeps an intent the create gives', async () => {
     await create([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }], {
-      intent: { mode: 'draw' },
+      intent: { mode: 'plan' },
     });
     const summary = (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
-    expect(summary).toMatchObject({ opensIn: 'draw', templateFamily: null });
+    expect(summary).toMatchObject({ opensIn: 'plan', templateFamily: null });
   });
 
   it('refuses the whole create by the tab the engine refused, writing nothing', async () => {
@@ -197,7 +196,7 @@ describe('compileSeededTabs', () => {
     );
     expect(out).toMatchObject({
       tabs: [{ id: 't1', name: 'Tab', background: 'dots' }],
-      intent: { mode: 'diagram' },
+      intent: { mode: 'plan' },
     });
   });
 });

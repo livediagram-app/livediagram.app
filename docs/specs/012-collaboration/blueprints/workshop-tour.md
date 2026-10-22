@@ -7,7 +7,6 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 
 | Thing               | Identifier                                                                                        |
 | ------------------- | ------------------------------------------------------------------------------------------------- |
-| The host            | `WorkshopTourHost` in `apps/live/components/tour/WorkshopTourHost.tsx`                            |
 | The steps           | `WORKSHOP_TOUR_STEPS`, `workshopTourSteps({ canShare })` in `workshop-tour-steps.ts`              |
 | The welcome art     | `WorkshopTourArt` in `apps/live/components/tour/WorkshopTourArt.tsx`                              |
 | The seen-guard      | `UserPreferences.workshopTourSeen` (synced)                                                       |

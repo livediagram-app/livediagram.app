@@ -26,14 +26,14 @@ describe('the editor’s first load', () => {
   });
 
   // docs/specs/007-editor/start-diagramming.md: the template starts carry every template's preview.
-  it('imports the template starts lazily, and nothing that draws a template preview', () => {
+  it('imports nothing that draws a template preview', () => {
     const imports = editorImports();
-    expect(imports).not.toContain('@/components/start/StartFromTemplates');
-    for (const always of [
-      'components/start/StartAgainTray.tsx',
-      'components/start/template-start-mode.ts',
-    ])
-      expect(staticImports(read(always))).not.toContain('@liveplanner/template-previews');
+    expect(imports).not.toContain('@liveplanner/template-previews');
+    expect(imports).not.toContain('@/components/start/template-card');
+    expect(imports).not.toContain('./template-card');
+    expect(staticImports(read('components/start/useTemplatePickMove.ts'))).not.toContain(
+      '@liveplanner/template-previews',
+    );
   });
 
   // docs/specs/013-workspace/default-folders.md "A template picked after creation": the mover reads the template

@@ -13,7 +13,7 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
 const flush = () => new Promise((r) => setTimeout(r, 0));
 
-function setup(opts: { planMode?: boolean; blocked?: boolean } = {}) {
+function setup(opts: { blocked?: boolean } = {}) {
   const addBoxedAt = vi.fn((x: number, y: number, make: (x: number, y: number) => unknown) =>
     make(x, y),
   );
@@ -21,7 +21,6 @@ function setup(opts: { planMode?: boolean; blocked?: boolean } = {}) {
   const toast = vi.fn();
   const { result } = renderHook(() =>
     useSheetCsvDrop({
-      planMode: opts.planMode ?? true,
       blocked: opts.blocked ?? false,
       addBoxedAt: addBoxedAt,
       dropOther,
@@ -52,13 +51,10 @@ describe('dropping a CSV file on the canvas', () => {
     expect(takePlacedSheet(el.planSheet.sheetId)).toEqual({ title: 'Budget', csv: 'a,b\n1,2' });
   });
 
-  it('hands other files, and any file outside Plan mode, to the canvas', () => {
+  it('hands other files to the canvas', () => {
     const other = setup();
     other.drop(new File(['{}'], 'scene.excalidraw'), { x: 0, y: 0 });
     expect(other.dropOther).toHaveBeenCalled();
-    const diagram = setup({ planMode: false });
-    diagram.drop(new File(['a'], 'a.csv'), { x: 0, y: 0 });
-    expect(diagram.dropOther).toHaveBeenCalled();
   });
 
   it('refuses a file too large for a sheet, and places nothing while blocked', async () => {

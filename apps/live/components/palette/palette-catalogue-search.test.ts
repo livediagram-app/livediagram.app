@@ -19,40 +19,27 @@ const el = (e: Record<string, unknown>) =>
   ({ id: 'x', x: 0, y: 0, width: 1, height: 1, type: 'shape', ...e }) as unknown as Element;
 
 describe('searchCatalogueTiles', () => {
-  it("finds icons and technology marks in Diagram's own section", () => {
-    const { here, elsewhere } = searchCatalogueTiles({ query: 'database', mode: 'diagram' });
-    expect(from(here, 'icon:').length).toBeGreaterThan(0);
-    expect(from(here, 'tech:').length).toBeGreaterThan(0);
-    // Stickers are Workshop's (docs/specs/012-collaboration/workshop-mode.md), so only they sit elsewhere.
-    expect(elsewhere.filter((t) => !t.id.startsWith('sticker:'))).toEqual([]);
-  });
-
-  it("still finds stickers from Diagram, in the other modes' section", () => {
+  // Plan's palette offers none of the catalogues (docs/specs/026-plan/plan-mode.md "The palette"), so every match is
+  // in the other section.
+  it('finds icons, stickers and technology marks, all in the other section', () => {
+    const { here, elsewhere } = searchCatalogueTiles({ query: 'database' });
+    expect(here).toEqual([]);
+    expect(from(elsewhere, 'icon:').length).toBeGreaterThan(0);
+    expect(from(elsewhere, 'tech:').length).toBeGreaterThan(0);
     const sticker = getStickerCatalog()[0]!;
-    const diagram = searchCatalogueTiles({ query: sticker.label, mode: 'diagram' });
-    expect(from(diagram.here, 'sticker:')).toEqual([]);
-    expect(ids(diagram.elsewhere)).toContain(`sticker:${sticker.id}`);
-    const workshop = searchCatalogueTiles({ query: sticker.label, mode: 'workshop' });
-    expect(ids(workshop.here)).toContain(`sticker:${sticker.id}`);
-  });
-
-  it("puts a catalogue the mode does not offer in the other modes' section", () => {
-    // Pages offers Icons and Stickers but not Technology; Plan offers none of them.
-    const pages = searchCatalogueTiles({ query: 'database', mode: 'pages' });
-    expect(from(pages.here, 'tech:')).toEqual([]);
-    expect(from(pages.elsewhere, 'tech:').length).toBeGreaterThan(0);
-    const plan = searchCatalogueTiles({ query: 'database', mode: 'plan' });
-    expect(plan.here).toEqual([]);
+    expect(ids(searchCatalogueTiles({ query: sticker.label }).elsewhere)).toContain(
+      `sticker:${sticker.id}`,
+    );
   });
 
   it('caps each catalogue, best match first', () => {
-    const { here } = searchCatalogueTiles({ query: 'e', mode: 'diagram' });
+    const { elsewhere } = searchCatalogueTiles({ query: 'e' });
     for (const prefix of ['icon:', 'tech:', 'sticker:']) {
-      expect(from(here, prefix).length).toBeLessThanOrEqual(CATALOGUE_MATCH_LIMIT);
+      expect(from(elsewhere, prefix).length).toBeLessThanOrEqual(CATALOGUE_MATCH_LIMIT);
     }
     const first = getLineArtIconCatalog()[0]!;
     // An exact name ranks first.
-    expect(ids(searchCatalogueTiles({ query: first.label, mode: 'diagram' }).here)[0]).toBe(
+    expect(ids(searchCatalogueTiles({ query: first.label }).elsewhere)[0]).toBe(
       `icon:${first.id}`,
     );
   });
@@ -62,7 +49,6 @@ describe('searchCatalogueTiles', () => {
     const sticker = getStickerCatalog()[0]!;
     const { here, elsewhere } = searchCatalogueTiles({
       query: '',
-      mode: 'diagram',
       tabElements: [
         el({ shape: 'icon', iconId: icon.id }),
         el({ shape: 'icon', iconId: 'aws-s3' }),
@@ -70,12 +56,14 @@ describe('searchCatalogueTiles', () => {
         el({ shape: 'square' }),
       ],
     });
-    expect(ids(here).sort()).toEqual([`icon:${icon.id}`, 'tech:aws-s3'].sort());
-    expect(ids(elsewhere)).toEqual([`sticker:${sticker.id}`]);
+    expect(here).toEqual([]);
+    expect(ids(elsewhere).sort()).toEqual(
+      [`icon:${icon.id}`, 'tech:aws-s3', `sticker:${sticker.id}`].sort(),
+    );
   });
 
   it('lists nothing before typing on a tab with no catalogue entries', () => {
-    expect(searchCatalogueTiles({ query: ' ', mode: 'diagram' })).toEqual({
+    expect(searchCatalogueTiles({ query: ' ' })).toEqual({
       here: [],
       elsewhere: [],
     });
@@ -83,13 +71,13 @@ describe('searchCatalogueTiles', () => {
 
   it('searches every catalogue well inside a keystroke budget', () => {
     const start = performance.now();
-    for (let i = 0; i < 20; i++) searchCatalogueTiles({ query: 'e', mode: 'diagram' });
+    for (let i = 0; i < 20; i++) searchCatalogueTiles({ query: 'e' });
     // A query matching most of every catalogue; a keystroke runs one.
     expect((performance.now() - start) / 20).toBeLessThan(16);
   });
 
   it('lists nothing until the catalogues have loaded', () => {
-    expect(searchCatalogueTiles({ query: 'database', mode: 'diagram', loaded: false })).toEqual({
+    expect(searchCatalogueTiles({ query: 'database', loaded: false })).toEqual({
       here: [],
       elsewhere: [],
     });

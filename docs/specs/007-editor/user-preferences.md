@@ -691,7 +691,7 @@ and the dialog stays as the one complete, browsable index of them.
   mark in the editor (Lucide layers for Layers, the Collaborate button's
   glyph; the Map and Quick Style, which have no
   toolbar button, take Lucide map and Lucide palette; Draw takes the
-  marker the editor mode switch shows for Draw mode; Notifications and
+  marker glyph; Notifications and
   API Tokens keep the bell and key they carried as top-level tiles). Search matches a
   sub-category's rows on its parent's name too, and the canvas search names
   it by path ("in Panels › Layers", "in Editor › Draw", "in Account ›

@@ -31,7 +31,7 @@ function harness(
     editingId?: string | null;
     isReadOnly?: boolean;
     withInsert?: boolean;
-    opensIn?: Tab['opensIn'];
+    opensIn?: string;
   } = {},
 ) {
   let elements: Element[] = [];
@@ -46,7 +46,7 @@ function harness(
       readSelection: () => ({ selectedId: null, multiSelectedIds: new Set<string>() }),
       editingId: options.editingId ?? null,
       setEditingId,
-      activeTab: { id: 't', name: 'Board', opensIn: options.opensIn, elements },
+      activeTab: { id: 't', name: 'Board', opensIn: options.opensIn, elements } as Tab,
       commit: (m) => {
         elements = m(elements);
       },

@@ -498,7 +498,6 @@ function tourTracksSwitch(
 }
 
 type TourSeenKey =
-  | 'tourSeen'
   | 'planTourSeen'
   | 'workshopTourSeen'
   | 'drawTourSeen'
@@ -1171,15 +1170,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
       },
     },
     rows: [
-      tourSwitch('tourSeen', {
-        // The Diagram tour (docs/specs/007-editor/editor-tour.md; the welcome tour until October 2026).
-        label: 'Diagram Tour',
-        event: { category: 'UI', on: 'TourSeenOff', off: 'TourSeenOn' },
-        keywords:
-          'tour walkthrough onboarding tutorial intro welcome getting started diagram shapes arrows palette replay',
-        description: 'On a Diagram tab: the palette, selecting, the element menu and tabs.',
-        helpArticle: 'diagramTour',
-      }),
       // The Plan tour: one switch over both tracks, then each track's own row beneath it (docs/specs/026-plan/plan-tour.md).
       tourTracksSwitch(
         'planTourSeen',

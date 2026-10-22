@@ -40,7 +40,6 @@ function mount(viewport: ViewportStore, tab = tabOf('t')) {
     (activeTab: Tab) =>
       usePagesMode({
         activeTab,
-        mode: 'pages',
         canEdit: true,
         tabLoaded: false,
         commitTabs: vi.fn(),

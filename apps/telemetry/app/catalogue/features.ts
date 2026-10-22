@@ -242,15 +242,6 @@ export const WHITEBOARD_RECOGNITION = chart(
   'Shape recognition switched on or off on a whiteboard.',
 );
 
-// Editor modes (docs/specs/007-editor/editor-modes.md): switches between the editor modes.
-export const EDITOR_MODE_SWITCHES = chart(
-  'Editor',
-  'Changed',
-  'Editor Mode Switches',
-  'A tab switched to another editor mode by the person working on it.',
-  { types: ['ModeDiagram', 'ModeDraw', 'ModePages', 'ModePlan', 'ModeWorkshop'] },
-);
-
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
 export const TAB_OPENS_IN = chart(
   'Tab',
@@ -281,7 +272,6 @@ export const PAGES = chart(
       'ArticleAdded',
       'SlidePageAdded',
       'PageRemoved',
-      'ArticlesToPages',
       'PageKindInfographic',
       'PageKindArticle',
       'PageKindSlide',
@@ -450,16 +440,6 @@ export const PAGE_BUILDING = chart(
   },
 );
 
-// Leaving Pages past the pages warning (docs/specs/007-editor/editor-modes.md "Leaving
-// Pages"): how often people go on to Diagram or Draw once told their pages will not show.
-export const LEAVE_PAGES_CONFIRMED = chart(
-  'Editor',
-  'Changed',
-  'Pages Left Past the Warning',
-  'Someone switched a Pages tab with pages to Diagram or Draw after the warning that its pages do not show there.',
-  { types: ['LeavePagesConfirmed'] },
-);
-
 // An empty infographic page's in-page layout card hidden (docs/specs/007-editor/pages-mode.md
 // "Layouts"): set beside Page Layout to see whether the card helps or gets in the way.
 export const EMPTY_PAGE_LAYOUTS_HIDDEN = chart(
@@ -536,11 +516,9 @@ export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Draw Mode',
   blurb:
-    'Whiteboard tabs made, mode switches, and the pens, erasers, backgrounds and recognition people use in Draw mode.',
+    'Whiteboard tabs made, and the pens, erasers, backgrounds and recognition people use in Draw mode.',
   members: [
     WHITEBOARDS_CREATED,
-    EDITOR_MODE_SWITCHES,
-    LEAVE_PAGES_CONFIRMED,
     TAB_OPENS_IN,
     PAGE_ORIENTATION,
     PAGES,
@@ -901,8 +879,7 @@ export const PALETTE_GROUPS_OPENED = chart(
       type === 'ToolbarMore' ||
       type === 'ToolbarExplorer' ||
       type === 'ToolbarSearch' ||
-      type === 'ToolbarSearchOtherModes' ||
-      type === 'ToolbarSearchUnavailable',
+      type === 'ToolbarSearchOtherModes',
   },
 );
 
@@ -1078,32 +1055,11 @@ export const MIND_OUTLINE_OPENED = opened(
   (t) => t === 'MindOutline',
 );
 
-export const TOUR_OFFERED = opened(
-  'Tour Offered',
-  'The Diagram tour (the welcome tour until October 2026) offered.',
-  (t) => t === 'TourOffer',
-);
-
 // The Plan tour's offer (docs/specs/026-plan/plan-tour.md); charted in its funnel on the Visitors tab.
 export const PLAN_TOUR_OFFERED = opened(
   'Plan Tour Offered',
   'The Plan tour offered, the first time someone works in Plan mode.',
   (t) => t === 'PlanTourOffer',
-);
-
-// The Workshop tour's offer (docs/specs/012-collaboration/workshop-tour.md); charted in its funnel on
-// the Visitors tab.
-export const WORKSHOP_TOUR_OFFERED = opened(
-  'Workshop Tour Offered',
-  'The Workshop tour offered, the first time someone works in Workshop mode.',
-  (t) => t === 'WorkshopTourOffer',
-);
-
-// The Draw tour's offer (docs/specs/023-draw-mode/draw-tour.md); charted in its funnel on the Visitors tab.
-export const DRAW_TOUR_OFFERED = opened(
-  'Draw Tour Offered',
-  'The Draw tour offered, the first time someone works in Draw mode.',
-  (t) => t === 'DrawTourOffer',
 );
 
 // The Forms tour's offer (docs/specs/030-forms/forms.md "The Forms tour"); charted in its funnel on the Visitors tab.
@@ -1118,13 +1074,6 @@ export const AVATAR_TOUR_OFFERED = opened(
   'Avatar Tour Offered',
   'The Avatar tour offered, the first time someone walks as an avatar.',
   (t) => t === 'AvatarTourOffer',
-);
-
-// The Pages tour's offer (docs/specs/007-editor/pages-tour.md); charted in its funnel on the Visitors tab.
-export const PAGES_TOUR_OFFERED = opened(
-  'Pages Tour Offered',
-  'The Pages tour offered, the first time someone works in Pages mode.',
-  (t) => t === 'PagesTourOffer',
 );
 
 // The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on
@@ -1246,16 +1195,6 @@ export const TEMPLATES_USED = chart(
   'A template picked to start a document or seed a tab.',
 );
 
-// A template a start's search found in another mode (docs/specs/007-editor/start-diagramming.md "Found in other
-// modes"), switching the tab to that mode: how often a search crosses modes. Each is a Template Used too.
-export const TEMPLATES_FROM_OTHER_MODES = chart(
-  'UI',
-  'Used',
-  'Templates From Other Modes',
-  "A template chosen from another mode's matches in a start's search, switching the tab to that mode.",
-  { types: ['StartOtherMode'] },
-);
-
 export const THEMES_CHOSEN = chart(
   'Theme',
   'Changed',
@@ -1322,10 +1261,9 @@ export const LOOK_AND_FEEL: MetricStack = {
   stack: true,
   title: 'Look & Feel',
   blurb:
-    "The visual presets people reach for: templates (and those found in another mode by a start's search), themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.",
+    'The visual presets people reach for: templates, themes, canvas styles, and their own themes. Headed by themes and canvas styles picked: a template also applies its theme, so adding templates would count that pick twice.',
   members: [
     TEMPLATES_USED,
-    TEMPLATES_FROM_OTHER_MODES,
     THEMES_CHOSEN,
     CANVAS_STYLES_PICKED,
     CANVAS_CONTROLS_TWEAKED,

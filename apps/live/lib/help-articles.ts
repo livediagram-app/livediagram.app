@@ -124,7 +124,6 @@ export const HELP_ARTICLES = {
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
-  diagramTour: 'getting-started/diagram-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
@@ -474,10 +473,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   powerUserMode: {
     title: 'Learn about power user mode',
     description: 'The recommended settings it applies, and Minimal chrome.',
-  },
-  diagramTour: {
-    title: 'Learn about the Diagram Tour',
-    description: 'What the tour covers and how replaying works.',
   },
   whatWeCollect: {
     title: 'Learn about what we collect',

@@ -18,40 +18,35 @@ export const metadata = helpMetadata({
 
 **Plan mode** is a way of working on a tab, made for running work on boards: a Kanban board, a sprint, a bug triage, a retro or a roadmap. A **Plan board** shows your work as columns of cards. Each card is an **item** (a task, a bug, a note or an idea) stored with the document rather than drawn on the tab, so moving a card changes the item for everyone at once, and the same item can sit on two boards (a sprint board and a roadmap) and move on both. See [Items](/help/canvas/plan-mode/items/).
 
-Plan is one of the five [editor modes](/help/canvas/editor-modes/), beside Diagram, Draw, Pages and Workshop, and it is on for everyone: there is nothing to turn on in Settings. Plan works in tabs of its own: a Board, Sheet, Dashboard or Visualisation tab is always in Plan, and a tab in another mode never switches into it.
+Every tab is worked on in Plan, for everyone: there is nothing to turn on in Settings or to switch.
 
 ## What Plan Mode Changes
 
 - **No palette:** boards, sheets and dashboards carry their own tools, so Plan hides the palette. Add a board or sheet from **Start Planning**, cards from a column's **Add card**, widgets from the **+** in a board's header, and metrics, charts and cards to a dashboard with **Add to Slot**.
 - **Tools:** Plan starts on the **Hand** tool, because cards take the pointer themselves and a drag on the empty canvas pans. Pick **Select** to move or resize a board. The Eraser and Format Painter are left out.
-- **The bottom-right corner** gains, where Layers sits in the other modes, one strip of buttons: the **Trash** (an editor's, not on a phone), **New Card**, **Find a Card**, which finds any card in the document, and **Card Types** (on a wide screen they read **New**, **Find** and **Types**). They show once the tab has a board, a view or a Sheet of your cards; on an empty tab they stay out of the way. The Layers panel and the Quick Style panel are hidden in Plan; a board's look comes from the tab's theme, and its colours are still in its right-click menu.
-- **Everything else works as in Diagram mode:** selection, arrows, text, sticky notes, snapping, undo and shortcuts, so notes and arrows around a board behave as they always do.
-- **Boards and sheets stay on Plan tabs:** paste one onto a tab in another mode and it is left out, with a note saying so; everything else you copied still pastes.
+- **The bottom-right corner** holds one strip of buttons: the **Trash** (an editor's, not on a phone), **New Card**, **Find a Card**, which finds any card in the document, and **Card Types** (on a wide screen they read **New**, **Find** and **Types**). They show once the tab has a board, a view or a Sheet of your cards; on an empty tab they stay out of the way. The Layers panel and the Quick Style panel are hidden in Plan; a board's look comes from the tab's theme, and its colours are still in its right-click menu.
+- **Everything else works as you'd expect:** selection, arrows, text, sticky notes, snapping, undo and shortcuts, so notes and arrows around a board behave as they always do.
 
 <Figure caption="In Plan mode the bottom-right corner holds Undo and Redo, then one strip with the Trash, New Card, Find a Card and Card Types, then the Theme & canvas button and zoom.">
   <PlanClusterScene />
 </Figure>
 
-## Getting to Plan
+## New Tabs and Projects
 
-- **A new Plan tab:** add a tab with the **+** in the tab bar, then on its start press the mode switch at the top of the list and choose **Plan** (or press **Shift+D** until you reach it). It opens on **Start Planning**. A tab with something on it keeps its mode.
-- **From a Plan tab:** add a tab with the **+** in the tab bar and it opens in Plan too.
-- **A new document:** pick **Blank Plan** in the New Document wizard (see [Starting a Board](#starting-a-board)).
-- **A Board, Sheet or Dashboard tab stays in Plan.** Picking another mode on its start asks, for example, **Open a New Diagram Tab?** and offers a new tab in that mode; the Plan tab itself never changes.
-- **View-only visitors** have no mode switch: they see each tab in its own mode, can open cards to read them, and cannot drag, add or change anything.
-
-Boards, sheets and charts from older documents may still sit on a tab in another mode. There a board is an element like any other: you can select it, move it, resize it and draw around it, and it still updates as cards change. Its cards only take clicks and drags in Plan mode; elsewhere, double-click a card to open it.
+- **A new tab:** add a tab with the **+** in the tab bar. It opens on **Start Planning**.
+- A new Project opens on one empty tab, on **Start Planning** (see [Starting a Board](#starting-a-board)).
+- **View-only visitors** can open cards to read them, and cannot drag, add or change anything.
 
 ## Starting a Board
 
-An empty Plan tab shows **Start Planning** in the middle: its rail on the left lists **Recommended**, **Boards**, **Spreadsheets**, **Visualisations** (one chart of your cards filling the tab, such as a Gantt chart or a due calendar), **Dashboards** (rows of slots showing your boards, sheets and charts side by side) and **Inspiration** (ready-made ways to run real work, such as a Hiring Pipeline or a Content Calendar, set up across tabs), each opening a grid of cards beside it, and **Something Else** opens the Quick Start. Type in the search box to look across all of them at once, by name, what it's for or the card types a board takes. Pick a card to start. The tab becomes a Board, Sheet, Visualisation or Dashboard tab. See [Boards](/help/canvas/plan-mode/boards/), [Sheets](/help/canvas/plan-mode/sheets/), [Charts of Your Cards](/help/canvas/plan-mode/visualisations/) and [Dashboards](/help/canvas/plan-mode/dashboards/).
+An empty tab shows **Start Planning** in the middle: its rail on the left lists **Recommended**, **Boards**, **Spreadsheets**, **Visualisations** (one chart of your cards filling the tab, such as a Gantt chart or a due calendar), **Dashboards** (rows of slots showing your boards, sheets and charts side by side) and **Inspiration** (ready-made ways to run real work, such as a Hiring Pipeline or a Content Calendar, set up across tabs), each opening a grid of cards beside it, and **Something Else** opens the Quick Start. Type in the search box to look across all of them at once, by name, what it's for or the card types a board takes. Pick a card to start. The tab becomes a Board, Sheet, Visualisation or Dashboard tab. See [Boards](/help/canvas/plan-mode/boards/), [Sheets](/help/canvas/plan-mode/sheets/), [Charts of Your Cards](/help/canvas/plan-mode/visualisations/) and [Dashboards](/help/canvas/plan-mode/dashboards/).
 
-- **A new document:** in the New Document wizard, choose **Plan**. The document opens on one empty Plan tab, with no board, on **Start Planning**, whose **Inspiration** holds the Plan templates, each of which sets up a way of working across several tabs, opening on a worked example of cards you can move, edit or delete (see [Plan Templates](#plan-templates) below).
+- A new Project opens on one empty tab, with no board, on **Start Planning**, whose **Inspiration** holds the Plan templates, each of which sets up a way of working across several tabs, opening on a worked example of cards you can move, edit or delete (see [Plan Templates](#plan-templates) below).
 - **Each board** (Kanban, To-do List, Sprint, Retro, Roadmap, Bug Triage, Week, All Cards or a blank board) takes the card types its work is made of (a Sprint board takes Stories, Tasks and Bugs; a Bug Triage board, Bugs). The first board in a new document gives it just those card types (a **Blank** board, the five everyday ones); boards after it bring any your document doesn't have yet.
 
 ## Plan Templates
 
-Every Plan template but **Blank Plan** makes several tabs, each with its board set up for the job (columns, rows, card fields and widgets), charts of your cards and, where a session is run, a how-to note, a timer and other tools beside it. Every tab opens in Plan mode.
+Every Plan template but **Blank Plan** makes several tabs, each with its board set up for the job (columns, rows, card fields and widgets), charts of your cards and, where a session is run, a how-to note, a timer and other tools beside it.
 
 | Template             | Tabs                                                                                                      | Card types                       |
 | -------------------- | --------------------------------------------------------------------------------------------------------- | -------------------------------- |

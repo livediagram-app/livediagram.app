@@ -147,21 +147,6 @@ const IMAGE_SEARCH_WARNINGS = [
   ),
 ];
 
-// The welcome tour's steps, in order, as tourStepTelemetryType makes them
-// (apps/live tour-steps.ts). The welcome card sends no step view.
-export const TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `TourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
 // The Plan tour's steps, as planTourStepTelemetryType makes them (apps/live plan-tour-steps.ts,
 // docs/specs/026-plan/plan-tour.md), both tracks; the two outros share one id. The welcome card sends no step view.
 const PLAN_TOUR_STEP_SOURCE: string[] = [
@@ -180,23 +165,6 @@ const PLAN_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Workshop tour's steps, as workshopTourStepTelemetryType makes them (apps/live
-// workshop-tour-steps.ts, docs/specs/012-collaboration/workshop-tour.md). The welcome card sends no step view.
-const WORKSHOP_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/workshop-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `WorkshopTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
-// The Draw tour's steps, as drawTourStepTelemetryType makes them (apps/live draw-tour-steps.ts,
-// docs/specs/023-draw-mode/draw-tour.md). The welcome card sends no step view.
 // The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
 // it runs inside the dialog (each `flows-` prefixed), then its closing card.
 const pascal = (id: string) =>
@@ -257,19 +225,6 @@ export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
   ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
 ];
 
-const DRAW_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/draw-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm),
-]
-  .map((m) => m[1]!)
-  .filter((id) => id !== 'welcome')
-  .map(
-    (id) =>
-      `DrawTourStep${id
-        .split('-')
-        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('')}`,
-  );
-
 // The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
 // docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
 // The welcome card sends no step view.
@@ -300,23 +255,6 @@ const AVATAR_TOUR_STEP_SOURCE: string[] = [
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('')}`,
   );
-
-// The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/live PagesTourHost.tsx,
-// docs/specs/007-editor/pages-tour.md): each page kind's track names its kind before the step. The welcome card
-// sends no step view.
-const camel = (id: string) =>
-  id
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-const PAGES_TOUR_STEP_SOURCE: string[] = (
-  ['slide', 'infographic', 'article', 'logo'] as const
-).flatMap((kind) =>
-  [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
-    .map((m) => m[1]!)
-    .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
-    .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
-);
 
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
 const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
@@ -626,10 +564,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: API_ERROR_WHY,
   },
   'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/WorkshopTourHost.tsx UI·View': {
-    values: WORKSHOP_TOUR_STEP_SOURCE,
-  },
-  'apps/live/components/tour/DrawTourHost.tsx UI·View': { values: DRAW_TOUR_STEP_SOURCE },
   'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
   'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
   'apps/live/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
@@ -643,10 +577,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
   'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/PagesTourHost.tsx UI·View': {
-    values: PAGES_TOUR_STEP_SOURCE,
-  },
-  'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],
     open: 'the shape the Shape Pen recognised',

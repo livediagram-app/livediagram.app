@@ -11,10 +11,8 @@ describe('participant cursors on Plan tabs', () => {
     expect(planHidesCursors(tab({}))).toBe(true);
   });
 
-  it('show on a Dashboard and on every non-Plan tab', () => {
+  it('show on a Dashboard, and with no tab', () => {
     expect(planHidesCursors(tab({ kind: 'dashboard' }))).toBe(false);
-    expect(planHidesCursors(tab({}))).toBe(false);
-    expect(planHidesCursors(tab({ opensIn: 'draw' }))).toBe(false);
     expect(planHidesCursors(undefined)).toBe(false);
   });
 });

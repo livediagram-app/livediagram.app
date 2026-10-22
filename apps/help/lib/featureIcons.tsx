@@ -381,16 +381,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // A board on its stand with a marker scribble.
-  // One canvas, two ways of working on it: a clean shape on one side of the split, a hand-drawn
-  // stroke on the other.
-  'editor-modes': (
-    <Glyph>
-      <rect x="3" y="3" width="18" height="18" rx="2" />
-      <path d="M3 3l18 18" />
-      <rect x="13.5" y="5.5" width="5" height="5" rx="1" />
-      <path d="M5.5 17.5c1-2.2 2-2.2 2.8 0s1.9 2.2 2.8-0.3" />
-    </Glyph>
-  ),
   'draw-mode': (
     <Glyph>
       <rect x="3" y="3.5" width="18" height="12" rx="1.5" />

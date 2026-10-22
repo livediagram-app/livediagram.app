@@ -74,7 +74,7 @@ describe('tabWindowArts', () => {
   it('draws a Pages tab as its pages, a Form tab as its form and a Board tab laid out', () => {
     const shown = [
       ...tabs,
-      tab('deck', 'Deck', [], { opensIn: 'pages' }),
+      tab('deck', 'Deck', [], { opensIn: 'pages' } as unknown as Partial<Tab>),
       tab('survey', 'Survey', [], {
         kind: 'form',
         form: { v: 1, heading: 'Team Survey', sections: [{ id: 's', title: '', questions: [] }] },

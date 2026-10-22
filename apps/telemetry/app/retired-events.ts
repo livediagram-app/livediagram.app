@@ -65,8 +65,73 @@ const LOCATION_STEP_AND_QUICK_START_UI = new Set([
   'Toggled|TemplateModePlan',
 ]);
 
+// The editor modes other than Plan (removed 2026-10-22, docs/specs/026-plan/plan-mode.md): every tab is a Plan tab, so
+// the mode switch and its Editor·Changed series (each mode, and leaving Pages past its warning) went with them, as did
+// the switch's turning of articles into pages, a start's templates from other modes, the toolbar search's "not in
+// this mode" note, the other modes' default-folder keys, and the Draw, Pages and Workshop tours' offers, starts,
+// ends and steps. Their Settings rows still send their seen-flag toggles, so those carry on. A Pages tab's board
+// put onto a page as it loads (Tab·Changed·PageFitToContent) and the toolbar's category picker carry on too.
+const EDITOR_MODES_UI = new Set([
+  'Used|StartOtherMode',
+  'Opened|ToolbarSearchUnavailable',
+  'Opened|DrawTourOffer',
+  'Closed|DrawTourOffer',
+  'Started|DrawTour',
+  'Ended|DrawTourCompleted',
+  'Ended|DrawTourSkipped',
+  'Opened|PagesTourOffer',
+  'Closed|PagesTourOffer',
+  'Started|PagesTour',
+  'Ended|PagesTourCompleted',
+  'Ended|PagesTourSkipped',
+  'Opened|WorkshopTourOffer',
+  'Closed|WorkshopTourOffer',
+  'Started|WorkshopTour',
+  'Ended|WorkshopTourCompleted',
+  'Ended|WorkshopTourSkipped',
+]);
+const EDITOR_MODES_TOUR_STEP_PREFIXES = ['DrawTourStep', 'PagesTourStep', 'WorkshopTourStep'];
+const EDITOR_MODES_DEFAULT_FOLDER_TYPES = new Set([
+  'DefaultModeDiagram',
+  'DefaultModeDraw',
+  'DefaultModeWorkshop',
+  'DefaultModePages',
+]);
+
+// The Diagram tour (removed 2026-10-22 with the Diagram mode, docs/specs/026-plan/plan-mode.md; the welcome tour
+// until October 2026): its offer, start, end and each step's view, and its Settings row. The Plan, Forms, Avatar and
+// element tours carry on under their own tokens.
+const DIAGRAM_TOUR_UI = new Set([
+  'Opened|TourOffer',
+  'Closed|TourOffer',
+  'Started|Tour',
+  'Ended|TourCompleted',
+  'Ended|TourSkipped',
+  'Toggled|TourSeenOff',
+  'Toggled|TourSeenOn',
+]);
+
+function isRetiredEditorModeEvent(category: string, action: string, type: string | null): boolean {
+  if (category === 'Editor') return true;
+  if (category === 'Tab') return action === 'Changed' && type === 'ArticlesToPages';
+  if (category === 'Folder') {
+    return (
+      (action === 'Changed' || action === 'Cleared') &&
+      EDITOR_MODES_DEFAULT_FOLDER_TYPES.has(type ?? '')
+    );
+  }
+  if (category !== 'UI') return false;
+  const key = `${action}|${type ?? ''}`;
+  if (EDITOR_MODES_UI.has(key) || DIAGRAM_TOUR_UI.has(key)) return true;
+  if (action !== 'View' || !type) return false;
+  return (
+    type.startsWith('TourStep') || EDITOR_MODES_TOUR_STEP_PREFIXES.some((p) => type.startsWith(p))
+  );
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
+  if (isRetiredEditorModeEvent(category, action, type)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))

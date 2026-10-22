@@ -76,7 +76,7 @@ export const categories: Category[] = [
     title: 'Getting Started',
     description:
       'Go from a blank canvas to a shared diagram in minutes, with the basics every new user needs.',
-    articleCount: 8,
+    articleCount: 7,
   },
   {
     slug: 'tips-and-tricks',
@@ -183,7 +183,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Master the infinite canvas: place, select, link, annotate, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 31,
+    articleCount: 30,
     kind: 'feature',
     groups: [
       'Basics',
@@ -369,16 +369,6 @@ export const articles: Article[] = [
     description: 'Create a diagram and add your first shapes in under a minute.',
     keywords:
       'start begin new create tutorial beginner basics quickstart onboarding wizard document template location',
-    category: 'Getting Started',
-    categorySlug: 'getting-started',
-  },
-  {
-    slug: 'diagram-tour',
-    title: 'The Diagram Tour',
-    description:
-      'The interactive Diagram mode walkthrough, offered once and replayable from Settings.',
-    keywords:
-      'tour walkthrough guide onboarding show me around intro tutorial replay rerun steps welcome diagram mode palette',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -1483,17 +1473,6 @@ export const articles: Article[] = [
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
-  },
-  {
-    slug: 'editor-modes',
-    title: 'Editor Modes',
-    description:
-      'Diagram, Draw, Workshop, Pages and Plan: what each mode is for, choosing one on an empty tab, and Opens in.',
-    keywords:
-      'editor mode editor modes mode switch switch mode change mode choose mode new tab tab window modes diagram draw pages plan workshop session shift+d shift d cycle next mode opens in open in default mode per tab per person tab pill mode icon whiteboard sketch pages infographic boards kanban phone mobile view only read only kind template leave pages switch to diagram confirm convert pages workflow way of working',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Modes and Boards',
   },
   {
     slug: 'draw-mode',

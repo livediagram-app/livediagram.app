@@ -17,9 +17,9 @@ person, not to a folder or a team: two teammates may send the same new documents
 | Term                 | Means                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
 | **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                            |
-| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:draw` (`PlacementDefaultKey`).                    |
+| **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:plan` (`PlacementDefaultKey`).                    |
 | **creation intent**  | What a new document is made as, captured once when it is created: opens in, tab kind and template family.  |
-| **opens in**         | The editor mode the document's first tab opens in (`EditorMode`).                                          |
+| **opens in**         | The editor mode the document is made in (`EditorMode`): Plan, the one mode.                                |
 | **tab kind**         | What the first tab is (`TabKind`): the general `diagram` tab, or a specific kind such as `event-storming`. |
 | **template family**  | The family of templates the document was made from, when it has one: `retrospective` or `kanban`.          |
 | **explicit root**    | The root of My Documents, chosen on purpose (the placement picker's root tile): a place like any other.    |
@@ -39,11 +39,7 @@ order:
 
 | Entry                 | Key                      |
 | --------------------- | ------------------------ |
-| Diagrams              | `mode:diagram`           |
-| Whiteboards           | `mode:draw`              |
-| Pages documents       | `mode:pages`             |
-| Plan boards           | `mode:plan`              |
-| Sessions              | `mode:workshop`          |
+| Projects              | `mode:plan`              |
 | Event Storming boards | `kind:event-storming`    |
 | Retrospectives        | `template:retrospective` |
 | Kanban boards         | `template:kanban`        |
@@ -113,6 +109,9 @@ never re-derived or rewritten afterwards:
 - A copy made by `POST /api/documents/:id/copy` carries the source's recorded values, as Duplicate
   does: they are a fact about the content, not derived again.
 - A stored value outside its list (one since retired) reads as null.
+- A stored opens-in of a retired editor mode (`diagram`, `draw`, `workshop`, `pages`, or an older name) reads as `plan`
+  (`parseEditorMode`), and a stored default key of one (`mode:diagram`, ...) is no longer in force: it is left out of
+  the person's defaults and never answers a create ([Editor mode](../007-editor/editor-modes.md#retired-modes)).
 - They feed the [Explorer filters](explorer-filters.md), one chip per dimension: **Opens
   in** (`opensIn`, one option per editor mode), **Kind** (`tabKind`: Event Storming boards) and **Template**
   (`templateFamily`: Retrospectives, Kanban boards). A document with an unknown value matches no option of a chip;
@@ -221,11 +220,7 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
 
 | Key                      | Label                 | In a sentence         | Icon                     |
 | ------------------------ | --------------------- | --------------------- | ------------------------ |
-| `mode:diagram`           | Diagrams              | diagrams              | The Diagram mode's icon  |
-| `mode:draw`              | Whiteboards           | whiteboards           | The Draw mode's icon     |
-| `mode:pages`             | Pages documents       | Pages documents       | The Pages mode's icon    |
-| `mode:plan`              | Plan boards           | Plan boards           | The Plan mode's icon     |
-| `mode:workshop`          | Sessions              | sessions              | The Workshop mode's icon |
+| `mode:plan`              | Projects              | Projects              | Plan's icon              |
 | `kind:event-storming`    | Event Storming boards | Event Storming boards | A sticky note            |
 | `template:retrospective` | Retrospectives        | retrospectives        | A clock turning back     |
 | `template:kanban`        | Kanban boards         | Kanban boards         | A board of three columns |
@@ -356,8 +351,7 @@ new <these>", opened by Settings' Change.
 
 ## Telemetry ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Folder` · `Changed` · `DefaultModeDiagram` / `DefaultModeDraw` / `DefaultModePages` /
-  `DefaultModePlan` / `DefaultModeWorkshop` / `DefaultKindEventStorming` /
+- `Folder` · `Changed` · `DefaultModePlan` / `DefaultKindEventStorming` /
   `DefaultTemplateRetrospective` / `DefaultTemplateKanban`, fired by the surface that sets a
   default, before the write.
 - `Folder` · `Cleared` · the same values, fired by the surface that clears one, before the write.

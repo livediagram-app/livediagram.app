@@ -3,9 +3,8 @@
 // A link to a Settings category (a timeline token card, its menu verb) sits
 // in code that holds none of the dialog's state, and the dialog is owned by
 // whichever host is mounted (the Explorer or the editor). A window event keeps
-// the two decoupled, the same way the welcome tour relaunch does
-// (lib/tour-pending.ts). Mail cannot raise it, so it links at the
-// `?settings=<category>` deep link instead. The host side is
+// the two decoupled, the same way a tour's relaunch does (lib/plan-tour.ts). Mail cannot raise it, so it links at
+// the `?settings=<category>` deep link instead. The host side is
 // hooks/ui/useOpenSettingsRequests.ts.
 export const OPEN_SETTINGS_EVENT = 'liveplanner:open-settings';
 

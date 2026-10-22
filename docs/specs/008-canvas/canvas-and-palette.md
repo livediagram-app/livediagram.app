@@ -757,18 +757,8 @@ Primary counts, in the table's order: 8, 17, 6, 5, 6, 17, 7, 9, 17, 5, 5, 15, 10
   Canvas.
 
 **Popular** is the open shelf on load, "Where most people start.", above the categories and not one of them. Its
-cards are a short curated list **per mode filter** (`POPULAR_BY_MODE` in `packages/templates/src/popular.ts`,
-`popularKindsFor(choice)`), each a list of that mode's templates with its blank first, so the shelf always fits
-the mode chosen:
-
-| Filter     | Popular                                                                                                                                                                                   |
-| ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Everything | Blank Diagram, Blank Whiteboard, Blank Session, Blank Illustration, Blank Plan, Mind map, Flowchart, Kanban Board, Sailboat retrospective, Budget Planner, Org chart, Sketchnote, Article |
-| Diagram    | Blank Diagram, Flowchart, Mind map, Org chart, Gantt Chart, Timeline, System architecture                                                                                                 |
-| Draw       | Blank Whiteboard, Sketchnote, Journey Doodle, Comic Strip, Idea Garden, Rich Picture                                                                                                      |
-| Workshop   | Blank Session, Sailboat retrospective, Retrospective, Town Hall Q&A, Lean Coffee, Crazy 8s, Pub Quiz                                                                                      |
-| Pages      | Blank Illustration, Article, Slide deck, Event Poster, Year in Review, Social Carousel                                                                                                    |
-| Plan       | Blank Plan, Project Planner, Kanban Board, Budget Planner, Team Retro, Bug Tracker, Invoice                                                                                               |
+cards are a short curated list of Plan's templates (`POPULAR_TEMPLATE_KINDS` in `packages/templates/src/popular.ts`): Blank
+Plan, Project Planner, Kanban Board, Budget Planner, Team Retro, Bug Tracker, Invoice ([Templates](../007-editor/templates-by-mode.md)).
 
 **Search** (a start's search box; also the marketing gallery's) matches a template when **every word
 typed** is found, case ignored, in its title, description, kind id, the labels of every category it is shown in, or

@@ -200,14 +200,6 @@ export type UserPreferences = {
   // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT. The owner
   // always sees their own picture whatever this says.
   showProfilePicture?: boolean;
-  // The Diagram tour's seen-guard (docs/specs/007-editor/editor-tour.md; named for the welcome tour it was
-  // until October 2026, so earlier answers still hold). True once the
-  // tour's welcome offer has been answered (taken, skipped, or declined),
-  // so the offer never re-appears for this user — synced, so it follows
-  // the account across devices like every other preference. Surfaced in
-  // Settings as Tours › "Diagram Tour" (inverted); turning it on there and
-  // closing Settings replays the tour. Missing / undefined === not seen.
-  tourSeen?: boolean;
   // The Plan tour's seen-guard (docs/specs/026-plan/plan-tour.md): true counts both tracks as seen while Power user
   // mode is on (lib/tour-tracks.ts); set with every track by Power user mode.
   planTourSeen?: boolean;

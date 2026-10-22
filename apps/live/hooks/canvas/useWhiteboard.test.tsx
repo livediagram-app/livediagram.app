@@ -15,13 +15,14 @@ import {
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 
-const board = (id = 'wb', over: Partial<Tab> = {}): Tab => ({
-  id,
-  name: 'Board',
-  opensIn: 'draw',
-  elements: [],
-  ...over,
-});
+const board = (id = 'wb', over: Partial<Tab> = {}): Tab =>
+  ({
+    id,
+    name: 'Board',
+    opensIn: 'draw',
+    elements: [],
+    ...over,
+  }) as unknown as Tab;
 const stroke = {
   id: 's1',
   type: 'freehand',
@@ -34,7 +35,7 @@ const diagram: Tab = { id: 'd', name: 'Diagram', kind: 'diagram', elements: [] }
 function setup(tab: Tab, pendingDraw: PendingDraw | null = null, canvasTool = 'select' as const) {
   const deps = {
     activeTab: tab,
-    drawMode: tab.opensIn === 'draw',
+    drawMode: (tab as { opensIn?: string }).opensIn === 'draw',
     canvasTool: canvasTool as 'select' | 'eraser',
     pendingDraw,
     editsBlocked: false,

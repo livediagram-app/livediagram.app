@@ -13,11 +13,10 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 ### Mode
 
-- An **editor mode** is how a general tab is worked on right now, by everyone on it: Diagram, Draw, Workshop, Pages or Plan.
-  (the Editor modes spec in 007-editor).
-- A mode is never a type of document or tab. Switching mode changes no content: it sets the tab's mode (one undo step) and everyone on the tab follows.
-- A tab stores the mode it **opens in**. "Opens in" is a choice among modes, not a binary, so a new mode needs no
-  new concept.
+- An **editor mode** is how a tab is worked on, by everyone on it: always **Plan**, the one mode (the Editor mode
+  spec in 007-editor). Diagram, Draw, Workshop and Pages were retired.
+- A mode is never a type of document or tab. A document's recorded creation intent still names the mode it was made
+  in (**opens in**), which is Plan.
 - Whiteboarding is Draw mode. There is no whiteboard tab kind and no whiteboard document type.
 - Running a session (a retro, a town hall) is Workshop mode. A session is an activity, never a tab kind or a
   stored thing; "Session" and "Collaborate" never name the mode, and neither does its old name, "Facilitate".

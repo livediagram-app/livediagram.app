@@ -9,7 +9,6 @@ import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { requestPlanTourRelaunch } from '@/lib/plan-tour';
 import { setActiveTour } from '@/lib/tour-active';
-import { clearTourPending, markTourPending } from '@/lib/tour-pending';
 import type { TourEngine } from './useTourEngine';
 import type { PlanTourApi } from './plan-tour-steps';
 import { PlanTourHost } from './PlanTourHost';
@@ -116,7 +115,6 @@ afterEach(() => {
   vi.useRealTimers();
   setActiveTour('welcome', false);
   setActiveTour('plan', false);
-  clearTourPending();
   document.body.innerHTML = '';
 });
 
@@ -213,17 +211,6 @@ describe('PlanTourHost offer', () => {
     });
     expect(offered()).toBe(false);
     act(() => setActiveTour('welcome', false));
-    act(() => {
-      vi.advanceTimersByTime(800);
-    });
-    expect(offered()).toBe(true);
-  });
-
-  // The Diagram tour never runs in Plan, so its owed handoff no longer holds this one back.
-  it('does not wait for the Diagram tour still being owed', () => {
-    markTourPending();
-    editor();
-    render(<PlanTourHost />);
     act(() => {
       vi.advanceTimersByTime(800);
     });

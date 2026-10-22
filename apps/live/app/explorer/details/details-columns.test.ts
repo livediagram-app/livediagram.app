@@ -21,7 +21,7 @@ const doc = (id: string, over: Partial<PaneDocument> = {}): PaneDocument => ({
   ...over,
 });
 const stats = (
-  mode: 'diagram' | 'draw' | 'plan',
+  mode: 'plan',
   elements: number,
   comments: number,
   bytes: number,
@@ -106,7 +106,7 @@ describe('sortDetailsEntries', () => {
 
   it('sorts by counted stats and keeps the uncounted last in both directions', () => {
     const docs = [
-      doc('few', { stats: stats('draw', 1, 1, 100) }),
+      doc('few', { stats: stats('plan', 1, 1, 100) }),
       doc('none', { stats: null }),
       doc('many', { stats: stats('plan', 9, 7, 9000) }),
     ];

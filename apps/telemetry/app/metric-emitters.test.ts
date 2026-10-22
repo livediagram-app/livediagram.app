@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { GROUPS as EDITING } from './EditingView';
 import { SETTINGS_CHANGED, SETTINGS_STACKS } from './metric-catalogue';
 import { GROUPS as SETTINGS } from './SettingsView';
-import { COMPUTED_EMITTERS, TOUR_STEP_SOURCE } from './computed-emitters';
+import { COMPUTED_EMITTERS } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 import { GROUPS as EXCEPTIONS, RECOVERY_GROUPS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
@@ -28,7 +28,6 @@ import {
   type MetricGroup,
 } from './metric-series';
 import { SELECTION_MODES } from './PaletteView';
-import { TOUR_STEP_TYPES } from './tour-steps';
 
 // Every card and every hard-coded ranking type on the dashboard must be an
 // event something in the repo can actually send. Two ways that went wrong:
@@ -205,11 +204,6 @@ describe('computed emitters', () => {
 
   it.each(Object.entries(COMPUTED_EMITTERS))('%s lists at least one value', (_site, spec) => {
     expect(spec.values.length).toBeGreaterThan(0);
-  });
-
-  it('read the tour steps the editor sends, in the order the Help tab ranks them', () => {
-    expect(TOUR_STEP_SOURCE.length).toBeGreaterThan(5);
-    expect([...TOUR_STEP_TYPES]).toEqual(TOUR_STEP_SOURCE);
   });
 });
 

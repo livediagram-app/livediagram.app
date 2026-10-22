@@ -40,7 +40,6 @@ function setup(active: Partial<Tab> = {}, over: Partial<BoardSceneImportDeps> = 
   const deps: BoardSceneImportDeps = {
     tabs: [{ id: 'a', name: 'A', elements: [], ...active }],
     activeId: 'a',
-    drawMode: false,
     ownerId: 'o',
     documentId: 'doc-1',
     replaceActiveTabContent: (t) => calls.replaced.push(t),
@@ -80,7 +79,6 @@ describe('importScenesAsNewDocuments', () => {
     expect(retro!.tabs).toHaveLength(1);
     expect(retro!.tabs[0]).toMatchObject({
       name: 'Whiteboard',
-      opensIn: 'draw',
       backgroundPattern: 'blank',
       templateChosen: true,
     });
@@ -176,18 +174,6 @@ describe('importSceneIntoActiveTab', () => {
     expect(outcome).toMatchObject({ status: 'done', scene: { landed: { shape: 1 } } });
     expect(calls.replaced[0]).toMatchObject({ id: 'a', name: 'A', backgroundColor: '#fff9db' });
     expect(calls.replaced[0]!.elements[0]).toMatchObject({ fillColor: 'transparent' });
-  });
-
-  it('keeps the tab’s own pattern in Draw mode unless the scene names one', async () => {
-    const board = setup({ backgroundPattern: 'grid' }, { drawMode: true });
-    await board.api.importSceneIntoActiveTab(boardScene([square]));
-    expect(board.calls.replaced[0]!.backgroundPattern).toBeUndefined();
-    expect(board.calls.replaced[0]!.elements[0]).not.toHaveProperty('fillColor');
-    const named = setup({}, { drawMode: true });
-    await named.api.importSceneIntoActiveTab(
-      boardScene([square], { background: { pattern: 'dots' } }),
-    );
-    expect(named.calls.replaced[0]!.backgroundPattern).toBe('grid');
   });
 
   it('refuses a locked tab', async () => {

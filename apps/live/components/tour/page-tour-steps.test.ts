@@ -5,7 +5,6 @@ import { describe, expect, it } from 'vitest';
 import { readPinnedPageToolbar } from '@/components/canvas/article/page-toolbar-presence';
 import type { PageTourApi } from './page-tour-api';
 import { pagesTourSteps, pageTourSteps, shownPageTourSteps, stepShown } from './page-tour-steps';
-import { pagesTourStepTelemetryType } from './PagesTourHost';
 
 const api: PageTourApi = { pageId: 'p1', openPanel: () => {}, closePanel: () => {} };
 const ids = (steps: { id: string }[]) => steps.map((s) => s.id);
@@ -111,14 +110,5 @@ describe('what the tour starts with', () => {
   it('always keeps a card with nothing to point at', () => {
     const outro = pageTourSteps('slide').find((s) => s.id === 'outro')!;
     expect(stepShown(outro, api, () => false)).toBe(true);
-  });
-});
-
-describe('telemetry', () => {
-  it('names the track in each step view', () => {
-    expect(pagesTourStepTelemetryType('slide', 'add-page')).toBe('PagesTourStepSlideAddPage');
-    expect(pagesTourStepTelemetryType('infographic', 'page-size')).toBe(
-      'PagesTourStepInfographicPageSize',
-    );
   });
 });

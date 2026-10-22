@@ -82,10 +82,7 @@ describe('tabWindowState', () => {
     });
     expect(tabWindowState('flow', tab('flow', 'Flow'), 'failed')).toMatchObject({ kind: 'failed' });
     expect(tabWindowState('b', tab('b', 'B', 0), 'loaded')).toEqual({ kind: 'empty', name: 'B' });
-    // A Pages tab always has a page and a Form tab its form, though neither holds an element.
-    expect(
-      tabWindowState('p', { ...tab('p', 'Deck', 0), opensIn: 'pages' }, 'loaded'),
-    ).toMatchObject({ kind: 'drawing' });
+    // A Form tab always has its form, though it holds no element.
     expect(
       tabWindowState('f', { ...tab('f', 'Survey', 0), kind: 'form', form: {} }, 'loaded'),
     ).toMatchObject({ kind: 'drawing' });

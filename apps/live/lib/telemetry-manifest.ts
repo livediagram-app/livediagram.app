@@ -63,8 +63,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Draw·Selected',
   'Draw·Toggled',
   'Document·Undone',
-  // Editor modes (docs/specs/007-editor/editor-modes.md): a tab switched to Diagram or Draw.
-  'Editor·Changed',
   // Explorer filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet gained a value.
   'Explorer·Selected',
   // Tags (docs/specs/013-workspace/tags.md "Telemetry"): a tag made, put on or taken off a document, renamed,

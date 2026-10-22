@@ -16,7 +16,7 @@ export const pageSlideIdFor = (tabId: string, pageId: string): string => `page:$
 // element edit keeps the array, so the deck's per-edit checks cost a lookup, not a parse of every page.
 const readPages = new WeakMap<object, Page[]>();
 function followedPages(tab: Tab): Page[] | null {
-  if (!Array.isArray(tab.pages)) return null;
+  if ((tab as { opensIn?: string }).opensIn !== 'pages' || !Array.isArray(tab.pages)) return null;
   // An empty list reads as the default first page, which takes the tab's orientation: not cached.
   if (tab.pages.length === 0) return pagesOf(tab);
   const known = readPages.get(tab.pages);

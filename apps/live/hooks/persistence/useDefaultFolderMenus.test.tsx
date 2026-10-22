@@ -29,7 +29,7 @@ const lists = {
 beforeEach(() => {
   resetPlacementDefaultsForTests();
   api.apiListPlacementDefaults.mockResolvedValue([
-    { key: 'mode:draw', folderId: 'w' },
+    { key: 'template:retrospective', folderId: 'w' },
     { key: 'template:kanban', folderId: 'gone' },
   ]);
   api.apiSetPlacementDefault.mockResolvedValue(undefined);
@@ -53,12 +53,12 @@ describe('useDefaultFolderMenus', () => {
   it('checks the keys a folder holds, and toggles them', async () => {
     const { result } = await ready();
     const menu = result.current.forFolder({ id: 'w' })!;
-    expect(menu.isChecked('mode:draw')).toBe(true);
-    expect(menu.isChecked('mode:diagram')).toBe(false);
-    await act(async () => menu.toggle('mode:draw'));
-    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:draw');
-    await act(async () => result.current.forFolder({ id: 'w' })!.toggle('mode:diagram'));
-    expect(api.apiSetPlacementDefault).toHaveBeenCalledWith('owner', 'mode:diagram', 'w');
+    expect(menu.isChecked('template:retrospective')).toBe(true);
+    expect(menu.isChecked('mode:plan')).toBe(false);
+    await act(async () => menu.toggle('template:retrospective'));
+    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'template:retrospective');
+    await act(async () => result.current.forFolder({ id: 'w' })!.toggle('mode:plan'));
+    expect(api.apiSetPlacementDefault).toHaveBeenCalledWith('owner', 'mode:plan', 'w');
   });
 
   it('offers a team folder only of a listed team', async () => {
@@ -70,13 +70,13 @@ describe('useDefaultFolderMenus', () => {
   it('checks My Documents for keys with no working default, and only clears', async () => {
     const { result } = await ready();
     const root = result.current.forRoot!;
-    expect(root.isChecked('mode:diagram')).toBe(true);
+    expect(root.isChecked('mode:plan')).toBe(true);
     expect(root.isChecked('template:kanban')).toBe(true); // dangling
-    expect(root.isChecked('mode:draw')).toBe(false);
-    expect(root.isDisabled('mode:diagram')).toBe(true);
-    await act(async () => root.toggle('mode:draw'));
-    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:draw');
-    await act(async () => result.current.forRoot!.toggle('mode:diagram'));
+    expect(root.isChecked('template:retrospective')).toBe(false);
+    expect(root.isDisabled('mode:plan')).toBe(true);
+    await act(async () => root.toggle('template:retrospective'));
+    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'template:retrospective');
+    await act(async () => result.current.forRoot!.toggle('mode:plan'));
     expect(api.apiClearPlacementDefault).toHaveBeenCalledTimes(1);
   });
 });

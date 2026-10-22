@@ -3,7 +3,6 @@
 // hands itself over as the popover's anchor.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { EditorModeProvider } from './editor-mode/editor-mode-context';
 import { ToolbarExplorerButton } from './ToolbarExplorerButton';
 
 afterEach(() => {
@@ -58,17 +57,4 @@ describe('ToolbarExplorerButton', () => {
     ).not.toBeNull();
   });
 
-  // docs/specs/007-editor/editor-modes.md "The mode switch": a tab's mode is chosen on its start, never
-  // beside the menu button, on any screen.
-  it.each([false, true])('carries no mode switch (inline %s)', (inline) => {
-    render(
-      <EditorModeProvider
-        value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}
-      >
-        <ToolbarExplorerButton open={false} onToggle={vi.fn()} inline={inline} />
-      </EditorModeProvider>,
-    );
-    expect(screen.getByRole('button', { name: 'Explorer' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: /mode:/ })).toBeNull();
-  });
 });

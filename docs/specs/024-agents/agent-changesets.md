@@ -142,12 +142,9 @@ The room's answer is the source; when the room cannot be reached, nothing counts
 
 ## Boards and Sheets only in Plan
 
-A Plan board or a Sheet goes only on a tab in Plan ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)). A changeset,
-operations or replace, whose result holds a board or Sheet the tab did not hold before, on a tab not in Plan, is
-refused `422 invalid_value`, naming each such element, with the hint to add a Board or Sheet tab with `add_tab`
-instead; nothing is applied. So is a Plan template replaced over an existing tab not in Plan. Boards and Sheets a tab
-already holds are left alone, and a replace that makes a new tab from a Plan template passes, the template making it a
-Plan tab.
+Every tab is in Plan, so a changeset may add a Plan board or a Sheet to any tab
+([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)). Until the other editor modes were retired (2026-10-22) one that
+left a new board or Sheet on a tab not in Plan was refused `422 invalid_value`.
 
 ## Revert
 

@@ -6,7 +6,7 @@
 
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { pagesOf, layOutPages, type EditorMode, type Tab } from '@liveplanner/document';
+import { pagesOf, layOutPages, type Tab } from '@liveplanner/document';
 import { computeFitBelow } from '@/lib/viewport';
 import { usePagesMode } from './usePagesMode';
 
@@ -25,7 +25,7 @@ const threePages = (): Tab =>
     ],
   }) as unknown as Tab;
 
-function mount(mode: EditorMode) {
+function mount() {
   const canvas = document.createElement('main');
   Object.defineProperty(canvas, 'offsetWidth', { value: 1200 });
   Object.defineProperty(canvas, 'offsetHeight', { value: 800 });
@@ -34,10 +34,9 @@ function mount(mode: EditorMode) {
   const frameFirstPageRef = { current: null as (() => void) | null };
   const tab = threePages();
   const hook = renderHook(
-    (m: EditorMode) =>
+    (activeTab: Tab) =>
       usePagesMode({
-        activeTab: tab,
-        mode: m,
+        activeTab,
         canEdit: true,
         tabLoaded: true,
         commitTabs: vi.fn(),
@@ -49,14 +48,14 @@ function mount(mode: EditorMode) {
         toastInfo: vi.fn(),
         frameFirstPageRef,
       }),
-    { initialProps: mode },
+    { initialProps: tab },
   );
   return { tab, canvas, setViewportZoom, setViewportOffset, frameFirstPageRef, ...hook };
 }
 
 describe('the tab-entry fit on a tab of pages', () => {
   it('frames the first page, not the whole row', () => {
-    const h = mount('pages');
+    const h = mount();
     h.setViewportZoom.mockClear();
     h.frameFirstPageRef.current!();
     const first = layOutPages(pagesOf(h.tab))[0]!;
@@ -67,10 +66,10 @@ describe('the tab-entry fit on a tab of pages', () => {
     expect(expected.zoom).toBeGreaterThan(0.5);
   });
 
-  it('leaves the ordinary fit alone outside the pages modes', () => {
-    const h = mount('pages');
+  it('leaves the ordinary fit alone on a tab without pages', () => {
+    const h = mount();
     expect(h.frameFirstPageRef.current).toBeTypeOf('function');
-    h.rerender('diagram');
+    h.rerender({ ...h.tab, pages: undefined });
     expect(h.frameFirstPageRef.current).toBeNull();
   });
 });

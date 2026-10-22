@@ -19,7 +19,6 @@ function slice() {
         write: vi.fn(),
       } as never,
       itemTypes: { types: ITEM_TYPES } as never,
-      editorMode: 'plan',
       canEdit: true,
       canVote: true,
       teamPeople: [],

@@ -167,7 +167,7 @@ It answers with the write as it landed, the sheet's new `rev` and the stored sta
   the MCP server's `change_sheet`, which work out the ids for you.
 </Tip>
 
-A Sheet shows on a tab in Plan through a Sheet element, as a board does; any other tab refuses either (`tab_not_plan` from `add_sheet` and `add_board`, `invalid_value` from a changeset), so start one with `add_tab` and the `blank-spreadsheet` or `kanban` template. `liveplanner sheet add` (or the MCP server's `add_sheet`) makes the sheet and places its element in one go. Over REST, `POST /documents/$DOC/sheets` with `{ "tabId": "…", "title": "Costs" }` makes the sheet (titles are unique on a tab), and a changeset adds its element: `{ "op": "add", "element": { "type": "shape", "shape": "plan-sheet", "x": 0, "y": 0, "width": 960, "height": 560, "planSheet": { "sheetId": "…" } } }`. See [Sheets](/help/canvas/plan-mode/sheets/) for what people see.
+A Sheet shows on a tab through a Sheet element, as a board does; start one on a new tab with `add_tab` and the `blank-spreadsheet` or `kanban` template, or place one on any tab. `liveplanner sheet add` (or the MCP server's `add_sheet`) makes the sheet and places its element in one go. Over REST, `POST /documents/$DOC/sheets` with `{ "tabId": "…", "title": "Costs" }` makes the sheet (titles are unique on a tab), and a changeset adds its element: `{ "op": "add", "element": { "type": "shape", "shape": "plan-sheet", "x": 0, "y": 0, "width": 960, "height": 560, "planSheet": { "sheetId": "…" } } }`. See [Sheets](/help/canvas/plan-mode/sheets/) for what people see.
 
 ## Images
 

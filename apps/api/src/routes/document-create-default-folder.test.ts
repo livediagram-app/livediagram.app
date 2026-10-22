@@ -19,10 +19,10 @@ import {
 let db: SqliteD1;
 let logs: string[];
 
-const DIAGRAM = { mode: 'diagram' };
-const DRAW = { mode: 'draw' };
-const KANBAN = { mode: 'diagram', templateFamily: 'kanban' };
-const EVENT_STORMING = { mode: 'diagram', tabKind: 'event-storming', templateFamily: 'kanban' };
+const PLAN = { mode: 'plan' };
+const RETRO = { mode: 'plan', templateFamily: 'retrospective' };
+const KANBAN = { mode: 'plan', templateFamily: 'kanban' };
+const EVENT_STORMING = { mode: 'plan', tabKind: 'event-storming', templateFamily: 'kanban' };
 
 function create(
   who: { owner: string; clerkUserId: string | null },
@@ -54,8 +54,8 @@ beforeEach(async () => {
   seedFolder(db, 'guest-sketches', 'guest-uuid');
   seedFolder(db, 'boards', 'user_alice');
   seedFolder(db, 'es-boards', 'user_alice');
-  await setPlacementDefault(db.env, 'user_alice', 'mode:diagram', 'diagrams');
-  await setPlacementDefault(db.env, 'user_alice', 'mode:draw', 'team-sketches');
+  await setPlacementDefault(db.env, 'user_alice', 'mode:plan', 'diagrams');
+  await setPlacementDefault(db.env, 'user_alice', 'template:retrospective', 'team-sketches');
 });
 
 afterEach(() => {
@@ -63,22 +63,24 @@ afterEach(() => {
 });
 
 describe('POST /documents with default folders', () => {
-  it('files a diagram in the diagram default when no place is sent', async () => {
-    const res = await create(asUser('user_alice'), { intent: DIAGRAM });
+  it('files a document in the Plan default when no place is sent', async () => {
+    const res = await create(asUser('user_alice'), { intent: PLAN });
     expect(res.status).toBe(201);
     expect(stored()).toEqual({ owner_id: 'user_alice', folder_id: 'diagrams', team_id: null });
     expect(logs).toContain(
-      'placement: resolved scope=personal folder=set via=default key=mode:diagram',
+      'placement: resolved scope=personal folder=set via=default key=mode:plan',
     );
   });
 
-  it('files a drawing in a team folder default, team_id in the same insert', async () => {
-    const res = await create(asUser('user_alice'), { intent: DRAW });
+  it('files a retrospective in a team folder default, team_id in the same insert', async () => {
+    const res = await create(asUser('user_alice'), { intent: RETRO });
     expect(res.status).toBe(201);
     expect(stored()).toEqual({ owner_id: 'user_alice', folder_id: 'team-sketches', team_id: 't1' });
     const body = (await res.json()) as { document: { teamId: string | null; folderId: string } };
     expect(body.document).toMatchObject({ teamId: 't1', folderId: 'team-sketches' });
-    expect(logs).toContain('placement: resolved scope=team folder=set via=default key=mode:draw');
+    expect(logs).toContain(
+      'placement: resolved scope=team folder=set via=default key=template:retrospective',
+    );
   });
 
   it('files a Kanban board in its template default before the mode default', async () => {
@@ -98,7 +100,7 @@ describe('POST /documents with default folders', () => {
     expect(stored()?.folder_id).toBe('diagrams');
     expect(logs).toContain('placement: default-skipped key=template:kanban reason=folder_missing');
     expect(logs).toContain(
-      'placement: resolved scope=personal folder=set via=default key=mode:diagram',
+      'placement: resolved scope=personal folder=set via=default key=mode:plan',
     );
   });
 
@@ -114,19 +116,19 @@ describe('POST /documents with default folders', () => {
   });
 
   it('lets an explicit root of My Documents win over the default', async () => {
-    const res = await create(asUser('user_alice'), { folderId: null, intent: DIAGRAM });
+    const res = await create(asUser('user_alice'), { folderId: null, intent: PLAN });
     expect(res.status).toBe(201);
     expect(stored()).toEqual({ owner_id: 'user_alice', folder_id: null, team_id: null });
     expect(logs).toContain('placement: resolved scope=personal folder=root via=explicit');
   });
 
   it('reads a null team beside an explicit null folder as the explicit root', async () => {
-    await create(asUser('user_alice'), { teamId: null, folderId: null, intent: DIAGRAM });
+    await create(asUser('user_alice'), { teamId: null, folderId: null, intent: PLAN });
     expect(stored()?.folder_id).toBeNull();
   });
 
   it('reads a null team alone as no choice, where the default answers', async () => {
-    await create(asUser('user_alice'), { teamId: null, intent: DIAGRAM });
+    await create(asUser('user_alice'), { teamId: null, intent: PLAN });
     expect(stored()?.folder_id).toBe('diagrams');
   });
 
@@ -138,24 +140,24 @@ describe('POST /documents with default folders', () => {
   });
 
   it('lets an explicit folder win over the default', async () => {
-    const res = await create(asUser('user_alice'), { folderId: 'picked', intent: DIAGRAM });
+    const res = await create(asUser('user_alice'), { folderId: 'picked', intent: PLAN });
     expect(res.status).toBe(201);
     expect(stored()?.folder_id).toBe('picked');
     expect(logs).toContain('placement: resolved scope=personal folder=set via=explicit');
   });
 
   it("lets an explicit team's root win over the default", async () => {
-    const res = await create(asUser('user_alice'), { teamId: 't1', intent: DIAGRAM });
+    const res = await create(asUser('user_alice'), { teamId: 't1', intent: PLAN });
     expect(res.status).toBe(201);
     expect(stored()).toEqual({ owner_id: 'user_alice', folder_id: null, team_id: 't1' });
   });
 
   it('skips a default whose folder was deleted, files at the root and keeps the default', async () => {
     db.sql.prepare("DELETE FROM folders WHERE id = 'diagrams'").run();
-    const res = await create(asUser('user_alice'), { intent: DIAGRAM });
+    const res = await create(asUser('user_alice'), { intent: PLAN });
     expect(res.status).toBe(201);
     expect(stored()).toEqual({ owner_id: 'user_alice', folder_id: null, team_id: null });
-    expect(logs).toContain('placement: default-skipped key=mode:diagram reason=folder_missing');
+    expect(logs).toContain('placement: default-skipped key=mode:plan reason=folder_missing');
     expect(logs).toContain('placement: resolved scope=personal folder=root via=root');
     expect(defaultsLeft().n).toBe(2);
   });
@@ -163,21 +165,26 @@ describe('POST /documents with default folders', () => {
   it('revives a default when its folder comes back under the same id', async () => {
     db.sql.prepare("DELETE FROM folders WHERE id = 'diagrams'").run();
     seedFolder(db, 'diagrams', 'user_alice');
-    await create(asUser('user_alice'), { intent: DIAGRAM });
+    await create(asUser('user_alice'), { intent: PLAN });
     expect(stored()?.folder_id).toBe('diagrams');
   });
 
-  it('skips a default in a team the person has left', async () => {
+  it('skips a default in a team the person has left, falling back to the mode default', async () => {
     db.sql.prepare("DELETE FROM team_members WHERE user_id = 'user_alice'").run();
-    const res = await create(asUser('user_alice'), { intent: DRAW });
+    const res = await create(asUser('user_alice'), { intent: RETRO });
     expect(res.status).toBe(201);
-    expect(stored()).toEqual({ owner_id: 'user_alice', folder_id: null, team_id: null });
-    expect(logs).toContain('placement: default-skipped key=mode:draw reason=team_not_joined');
+    expect(stored()).toEqual({ owner_id: 'user_alice', folder_id: 'diagrams', team_id: null });
+    expect(logs).toContain(
+      'placement: default-skipped key=template:retrospective reason=team_not_joined',
+    );
+    expect(logs).toContain(
+      'placement: resolved scope=personal folder=set via=default key=mode:plan',
+    );
   });
 
   it("files a guest in the guest's own default", async () => {
-    await setPlacementDefault(db.env, 'guest-uuid', 'mode:draw', 'guest-sketches');
-    const res = await create(asGuest('guest-uuid'), { intent: DRAW });
+    await setPlacementDefault(db.env, 'guest-uuid', 'template:retrospective', 'guest-sketches');
+    const res = await create(asGuest('guest-uuid'), { intent: RETRO });
     expect(res.status).toBe(201);
     expect(stored()).toEqual({
       owner_id: 'guest-uuid',
@@ -187,10 +194,10 @@ describe('POST /documents with default folders', () => {
   });
 
   it.each([
-    ['a string', 'mode:draw'],
+    ['a string', 'template:retrospective'],
     ['an unknown mode', { mode: 'pixel', kind: 'diagram' }],
-    ['an unknown template family', { mode: 'draw', templateFamily: 'mindmap' }],
-    ['the legacy whiteboard kind', { mode: 'draw', tabKind: 'whiteboard' }],
+    ['an unknown template family', { mode: 'plan', templateFamily: 'mindmap' }],
+    ['the legacy whiteboard kind', { mode: 'plan', tabKind: 'whiteboard' }],
     ['a missing mode', { templateFamily: 'kanban' }],
   ])('refuses %s as an intent, writing nothing', async (_label, intent) => {
     const res = await create(asUser('user_alice'), { intent });
@@ -203,7 +210,7 @@ describe('POST /documents with default folders', () => {
   it('keeps the stored place on a re-commit, whatever the intent', async () => {
     await create(asUser('user_alice'), { folderId: 'picked' });
     logs.length = 0;
-    const res = await create(asUser('user_alice'), { intent: DIAGRAM });
+    const res = await create(asUser('user_alice'), { intent: PLAN });
     expect(res.status).toBe(201);
     expect(stored()?.folder_id).toBe('picked');
     expect(logs).toContain('placement: skipped reason=existing');

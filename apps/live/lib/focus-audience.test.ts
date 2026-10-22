@@ -123,7 +123,6 @@ describe('focusPageAt', () => {
     id: 'tab-a',
     name: 'Pages',
     elements: [],
-    opensIn: 'pages',
     pages: [
       { id: 'p1', orientation: 'portrait' },
       { id: 'p2', orientation: 'landscape' },
@@ -149,7 +148,7 @@ describe('focusPageAt', () => {
 
   it('is null on a tab that is not showing pages', () => {
     const [p1] = rects();
-    expect(focusPageAt(tab({ opensIn: 'diagram' }), middleOf(p1!.rect))).toBeNull();
+    expect(focusPageAt(tab({ pages: undefined }), middleOf(p1!.rect))).toBeNull();
     expect(focusPageAt(undefined, middleOf(p1!.rect))).toBeNull();
   });
 });

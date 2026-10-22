@@ -1,7 +1,7 @@
 # Draw mode, round one: blueprint
 
 Derived from [Draw mode](../draw-mode.md), with [Editor modes](../../007-editor/editor-modes.md) (and
-its [blueprint](../../007-editor/blueprints/editor-modes.md)) for how Draw mode is entered, left and
+its [blueprint](../../007-editor/editor-modes.md)) for how Draw mode is entered, left and
 stored, [Highlighter](../../008-canvas/highlighter.md) for the marker recipe,
 [Eraser panel](../../008-canvas/eraser-panel.md) for the erase gesture and
 [Two pens instead of a pen and a mode](../../008-canvas/two-pens.md) for recognition. The spec decides;
@@ -51,7 +51,6 @@ Scope, by file:
 | `apps/live/components/canvas/CanvasChrome.tsx` and friends        | Hidden chrome; the dock's mount                                           |
 | `apps/live/hooks/canvas/useCanvasSurfaceGestures.ts`              | Pen versus touch; the eraser frame                                        |
 | `apps/live/components/canvas/useCanvasDrawGesture.ts`             | Hands a whiteboard pen press to `useWhiteboardPenGesture`                 |
-| `apps/live/components/palette/NewDocumentWizard.tsx`              | The Draw mode card (Blank Whiteboard); no theme step                      |
 | `apps/help/app/canvas/draw-mode/page.mdx`                         | Help article, registered in `packages/help-registry`                      |
 
 ## Domain and naming
@@ -84,7 +83,7 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 ### Mode
 
 - Draw mode is the person's effective editor mode on a general tab
-  ([editor-modes blueprint](../../007-editor/blueprints/editor-modes.md)): `useEditorState` derives
+  ([editor-modes blueprint](../../007-editor/editor-modes.md)): `useEditorState` derives
   `drawMode = editorMode.mode === 'draw'` and hands it to every gate below. A tab stored with
   `kind: 'whiteboard'` is migrated on read to a general tab that opens in Draw.
 
@@ -1018,7 +1017,6 @@ validated saves (`validate.ts` bounds `penWidth`). Colours written by a pen come
 | Pen versus touch on the canvas                                                                | `apps/live/hooks/canvas/useCanvasSurfaceGestures.whiteboard.test.tsx`                    |
 | A pinch discards a whiteboard stroke                                                          | `apps/live/components/canvas/useCanvasDrawGesture.whiteboard.test.tsx`                   |
 | Line / arrow heads, no colour                                                                 | `apps/live/lib/draw-commit.test.ts`                                                      |
-| No theme step for a whiteboard                                                                | `apps/live/components/palette/NewDocumentWizard.test.tsx`                                |
 | Sticky and text open for typing                                                               | `apps/live/lib/draw-mode.test.ts`                                                        |
 | Telemetry vocabulary and dashboard                                                            | `apps/live/lib/telemetry-coverage.test.ts`, `apps/telemetry/app/metric-emitters.test.ts` |
 | End to end                                                                                    | playwright-cli walkthrough, light / dark, desktop / narrow                               |

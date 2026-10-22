@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import {
-  BLANK_TEMPLATE_FOR_MODE,
   isBlankTemplate,
-  templateEditorMode,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   TEMPLATE_CONTENT_LAYER_ID,
@@ -262,20 +260,17 @@ describe('TEMPLATES catalogue', () => {
 });
 
 describe('templateCanvasOverrides', () => {
-  it('makes a general tab that opens in Draw, on a Grid board', () => {
-    // docs/specs/007-editor/editor-modes.md "Where the mode lives": the opening mode and the Grid
-    // land on every creation path through here (the template, a new tab, Quick Start, the MCP
+  it('makes a general tab on a Grid board', () => {
+    // The Grid lands on every creation path through here (the template, a new tab, the MCP
     // worker); the tab stays a general one.
     expect(templateCanvasOverrides('whiteboard')).toEqual({
-      opensIn: 'draw',
       backgroundPattern: 'graph',
     });
   });
 
-  it('makes an article that opens in Pages on one article page of writing', () => {
+  it('makes an article on one article page of writing', () => {
     // docs/specs/007-editor/article-pages.md: the template's page and writing are tab data.
     const o = templateCanvasOverrides('article');
-    expect(o.opensIn).toBe('pages');
     expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-brief' })]);
     expect(o.articles?.['art-brief']?.blocks.length).toBeGreaterThan(5);
   });
@@ -283,7 +278,6 @@ describe('templateCanvasOverrides', () => {
   // docs/specs/008-canvas/canvas-and-palette.md "Templates": Working Backwards is a PR/FAQ article in the Report look.
   it('makes Working Backwards a PR/FAQ article: press release, a page break, both FAQs and a review list', () => {
     const o = templateCanvasOverrides('working-backwards');
-    expect(o.opensIn).toBe('pages');
     expect(o.pages).toEqual([expect.objectContaining({ kind: 'article', flow: 'art-prfaq' })]);
     const flow = o.articles!['art-prfaq']!;
     expect(flow.style).toEqual({ look: 'report' });
@@ -335,12 +329,10 @@ describe('templateCanvasOverrides', () => {
       backgroundOpacity: 0.4,
     });
     // Layered templates (docs/specs/006-document/layers.md) additionally carry their Tab.layers.
-    // A sticky-note board the room fills in opens in Workshop (docs/specs/007-editor/templates-by-mode.md).
     expect(templateCanvasOverrides('swot')).toEqual({
       backgroundPattern: 'graph',
       backgroundOpacity: 0.4,
       layers: templateLayers('swot'),
-      opensIn: 'workshop',
     });
     expect(templateCanvasOverrides('gantt')).toEqual({
       backgroundPattern: 'graph',
@@ -358,12 +350,11 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('flywheel')).toEqual({ backgroundPattern: 'blank' });
   });
 
-  it('opens the slide deck in Pages on six 16:9 slide pages, keeping its layers', () => {
+  it('lays the slide deck on six 16:9 slide pages, keeping its layers', () => {
     // canvas-and-palette.md "Templates on pages": a plain surround, the pages are the paper.
     const o = templateCanvasOverrides('slide-deck');
     expect(o).toMatchObject({
       backgroundPattern: 'blank',
-      opensIn: 'pages',
       layers: templateLayers('slide-deck'),
     });
     expect(o.pages).toHaveLength(6);
@@ -382,9 +373,9 @@ describe('templateCanvasOverrides', () => {
     ]);
   });
 
-  it('opens the logo exploration on Logo pages, and timelines get ruled lines', () => {
+  it('lays the logo exploration on Logo pages, and timelines get ruled lines', () => {
     const o = templateCanvasOverrides('logo-design');
-    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'pages' });
+    expect(o).toMatchObject({ backgroundPattern: 'blank' });
     // Six lockup artboards, then the palette.
     expect(o.pages?.map((p) => p.name)).toEqual([
       'Horizontal',
@@ -408,13 +399,12 @@ describe('templateCanvasOverrides', () => {
       // The quieter of the lines rule (0.6) and the stage softening (0.8).
       backgroundOpacity: 0.6,
       layers: templateLayers('journey'),
-      opensIn: 'workshop',
     });
   });
 
-  it('opens the group card on a cover and an inside, both Portrait post (4:5) pages', () => {
+  it('lays the group card on a cover and an inside, both Portrait post (4:5) pages', () => {
     const o = templateCanvasOverrides('live-card');
-    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'pages' });
+    expect(o).toMatchObject({ backgroundPattern: 'blank' });
     expect(o.pages?.map((p) => [p.name, p.size, p.orientation, p.kind])).toEqual([
       ['Cover', 'social', 'portrait', 'infographic'],
       ['Inside', 'social', 'portrait', 'infographic'],
@@ -425,7 +415,7 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('blank')).toEqual({});
   });
 
-  it('opens the Kanban board in Plan mode on the quiet dot grid (docs/specs/026-plan/plan-mode.md)', () => {
+  it('opens the Kanban board on the quiet dot grid (docs/specs/026-plan/plan-mode.md)', () => {
     expect(templateCanvasOverrides('kanban')).toEqual({
       backgroundPattern: 'grid',
     });
@@ -1015,35 +1005,10 @@ describe('untitledNameForTemplate', () => {
   });
 });
 
-// Templates by mode (docs/specs/007-editor/templates-by-mode.md): the mode a card shows is the mode
-// its tab opens in, and each mode's blank is of that mode.
-describe('templateEditorMode', () => {
-  it('is the mode every template opens in', () => {
-    for (const t of TEMPLATES) {
-      expect(templateEditorMode(t.kind), t.kind).toBe(
-        templateCanvasOverrides(t.kind).opensIn ?? 'diagram',
-      );
-    }
-  });
-
-  it('gives every mode a blank of its own mode', () => {
-    for (const [mode, kind] of Object.entries(BLANK_TEMPLATE_FOR_MODE)) {
-      expect(templateEditorMode(kind)).toBe(mode);
-    }
-  });
-
-  it('opens every paged template in Pages', () => {
-    for (const t of TEMPLATES) {
-      if (templateCanvasOverrides(t.kind).pages) expect(templateEditorMode(t.kind)).toBe('pages');
-    }
-  });
-
-  // A session tool shipped on a Diagram tab could be started but never watched or ended: Diagram has
-  // no Session strip (docs/specs/012-collaboration/workshop-mode.md).
-  it('opens every template carrying a session tool in Workshop', () => {
-    for (const t of TEMPLATES) {
-      if (buildTemplate(t.kind, 0, 0).some((e) => 'session' in e && e.session))
-        expect(templateEditorMode(t.kind), t.kind).toBe('workshop');
-    }
+// No template writes an opening mode: Plan is the only one.
+describe('template opening mode', () => {
+  it('is set by no template', () => {
+    for (const t of TEMPLATES)
+      expect(templateCanvasOverrides(t.kind), t.kind).not.toHaveProperty('opensIn');
   });
 });

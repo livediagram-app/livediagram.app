@@ -1,6 +1,5 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { ModeSwitchScene, DrawDockScene } from '@/components/illustrations/editor-mode-switch';
 
 export const metadata = helpMetadata({
   title: 'Draw Mode',
@@ -16,20 +15,7 @@ export const metadata = helpMetadata({
   categorySlug="canvas"
 >
 
-**Draw mode** is a way of working on a tab, made for sketching by hand. There are five [editor modes](/help/canvas/editor-modes/): **Diagram**, with the palette, shapes, arrows and templates, **Draw**, with pens, erasers and a dock of tools, **Pages**, which lays the tab out as pages to build infographics and write articles (see [Pages Mode](/help/canvas/pages-mode/)), **Plan**, for boards of items in tabs of their own (see [Plan mode](/help/canvas/plan-mode/)), and **Workshop**, for running a session with your team (see [Workshop Mode](/help/canvas/workshop-mode/)). Switching never changes what is on the tab: a stroke you draw in Draw mode is still there in Diagram mode, and a shape placed in Diagram mode is still there in Draw mode, in the same colours. So a workshop can keep a free sketch next to a tidy diagram on the same canvas. Everything else works as always: sharing, live collaboration, comments, layers, undo and export.
-
-## Switching Modes
-
-- **On an empty tab's start**, the switch at the top of its list shows the current mode: press it and choose **Draw**. The start turns into **Start Drawing**, with a pen in hand.
-- **Shift+D** moves an empty tab to the next mode (Diagram, then Draw, Workshop, Pages, Plan and back to Diagram), and screen readers announce the mode you are now in. The switch's menu shows **⇧D** on the mode it leads to. It follows the character-key shortcuts setting.
-- **A tab with something on it keeps its mode.** To sketch beside a diagram, add a tab while you are on a Draw tab (it opens in Draw), or add one anywhere and choose **Draw** on its start. See [Editor Modes](/help/canvas/editor-modes/#choosing-a-mode).
-
-<Figure caption="The mode switch at the top of an empty tab's start, open on the five modes: the current one checked, ⇧D on the next.">
-  <ModeSwitchScene />
-</Figure>
-
-- **One mode for everyone:** the mode belongs to the tab, so everyone on it switches together, and **Undo** switches it back (see [Editor Modes](/help/canvas/editor-modes/#one-mode-for-everyone)). The icon at the start of each tab shows its mode.
-- People who can only view a tab see it in the mode it opens in, without the switch. Event storming boards have their own tools and no switch.
+**Draw mode** is a way of working on a tab, made for sketching by hand. Everything else works as always: sharing, live collaboration, comments, layers, undo and export.
 
 ## Starting a Drawing
 
@@ -43,10 +29,6 @@ Already drew it in Excalidraw? Copy it there and paste it onto a tab in Draw mod
 ## The Dock
 
 Draw mode swaps the palette strip for its own tools, in three groups: the **drawing tools**, the **shapes** and **Settings**. They form a dock across the top of the canvas, the same height as the strip, and a tool's options open just below it, pointing at its button. Undo and Redo are in the bottom-right corner, as in Diagram mode. Prefer the dock at the bottom, closer to hand when drawing on a tablet? Open **Settings**, choose **Editor**, then **Draw**, and set **Dock Position** to **Bottom**. The choice follows your account to every tab you draw on.
-
-<Figure caption="Draw mode's dock: the drawing tools, your pinned shapes and Shapes, then Settings, each with its key.">
-  <DrawDockScene />
-</Figure>
 
 The drawing tools:
 

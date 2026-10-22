@@ -47,7 +47,7 @@ const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
   'activity-panel/undo': 'canvas/undo',
   'activity-panel/redo': 'canvas/redo',
   'activity-panel/reverting-changes': 'canvas/undo',
-  'getting-started/welcome-tour': 'getting-started/diagram-tour',
+  'getting-started/welcome-tour': 'canvas/plan-mode/plan-tour',
 };
 
 export function legacyHelpRedirect(url: URL): Response | null {

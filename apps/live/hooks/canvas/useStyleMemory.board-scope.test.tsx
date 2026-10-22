@@ -1,13 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  createShape,
-  defaultScheme,
-  opensInOf,
-  type Element,
-  type Tab,
-} from '@liveplanner/document';
+import { createShape, defaultScheme, type Element, type Tab } from '@liveplanner/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { boardShape, whiteboardShapeIntent } from '@/lib/whiteboard-tool';
 import { useQuickStyle } from './useQuickStyle';
@@ -29,7 +23,7 @@ function setup(initial: Props) {
   return renderHook(
     ({ documentId, tab, intent }: Props) => {
       // The viewer's editor mode, as the editor resolves it: here the tab's opening mode.
-      const drawMode = opensInOf(tab) === 'draw';
+      const drawMode = (tab as { opensIn?: string }).opensIn === 'draw';
       const memory = useStyleMemory({ documentId, theme, board: drawMode });
       const quick = useQuickStyle({
         activeTab: tab,

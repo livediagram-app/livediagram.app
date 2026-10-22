@@ -118,22 +118,6 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('inverts the Diagram tour row against the stored preference', () => {
-    // The row asks "show me the tour?"; `tourSeen` records "already seen".
-    // Getting this backwards would re-offer the tour to everyone who has
-    // taken it, so it is worth pinning both directions explicitly.
-    const row = SWITCHES.find((r) => r.key === 'tourSeen')!;
-    expect(row.read({ tourSeen: true })).toBe(false);
-    expect(row.read({ tourSeen: false })).toBe(true);
-    expect(row.read({})).toBe(true);
-    expect(row.write({}, true).tourSeen).toBe(false);
-    expect(row.write({}, false).tourSeen).toBe(true);
-    // And the tokens still describe the PREFERENCE, so the dashboard series
-    // keeps its meaning: switching the row on means "not seen".
-    expect(row.event.on).toBe('TourSeenOff');
-    expect(row.event.off).toBe('TourSeenOn');
-  });
-
   it('gives each Plan tour track its own row, named for itself', () => {
     // docs/specs/026-plan/plan-tour.md "Where it appears": Boards Tour and Sheets Tour, never "Plan Tour".
     const boards = SWITCHES.find((r) => r.key === 'planTourSeen-boards')!;
@@ -177,7 +161,6 @@ describe('settings catalogue', () => {
   it('gives the tours a category of their own, a switch each with its own article', () => {
     const tours = SETTINGS_CATEGORIES.find((c) => c.id === 'tours')!;
     expect(tours.rows.map((r) => [r.key, r.kind, r.label, r.helpArticle])).toEqual([
-      ['tourSeen', 'toggle', 'Diagram Tour', 'diagramTour'],
       // A tour of several tracks: one switch over them all, then each track's own row beneath it.
       ['planTourSeen', 'toggle', 'Plan Tours', 'planTour'],
       ['planTourSeen-boards', 'toggle', 'Boards Tour', 'planTour'],

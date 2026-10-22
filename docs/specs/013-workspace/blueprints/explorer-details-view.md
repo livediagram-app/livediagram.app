@@ -48,7 +48,7 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 
 ### Tab stats
 
-- `tabStatsOf(body, data)` (`@liveplanner/document`) is pure. `mode = opensInOf(body)`;
+- `tabStatsOf(body, data)` (`@liveplanner/document`) is pure. `mode = 'plan'` (the one editor mode);
   `elementCount = body.elements.length` (0 when not an array); `commentCount` sums
   `commentThread.comments.length` over the elements; `dataBytes` is the UTF-8 length of `data`.
 - `tabStatsOfData(data)` (api) parses a stored body and counts it; a body that is not a JSON object
@@ -155,8 +155,7 @@ CREATE TABLE tab_stats (
 | ------------------------------------ | --------------------------------------------------------- |
 | Document with no tabs                | `stats: null`, cells `–`                                  |
 | Some tabs not yet counted            | `stats: null` until the backfill reaches them             |
-| Event-storming board                 | Mode Diagram (`opensInOf`)                                |
-| Legacy mode `infographic`            | Pages (`opensInOf` reads through `parseEditorMode`)       |
+| A stored row of a retired mode       | Plan (`readDocumentStats` reads through `parseEditorMode`) |
 | Corrupt tab body in the backfill     | Counted empty, warned                                     |
 | Write racing the backfill            | The write's row wins (`DO NOTHING`)                       |
 | Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)     |

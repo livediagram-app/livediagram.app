@@ -101,24 +101,22 @@ describe('page changes', () => {
     expect(tab.pages).toHaveLength(2);
     expect(body.tab.rev).toBe(tab.rev);
     expect(room.bodies.map((b) => b.op.kind)).toEqual(['tab-meta']);
-    expect(room.bodies[0]!.op).toMatchObject({ tabId: 't1', patch: { opensIn: 'pages' } });
+    expect(room.bodies[0]!.op).toMatchObject({ tabId: 't1', patch: { pages: tab.pages } });
     expect(info).toHaveBeenCalledWith(
       '[pages-agent] applied',
       expect.objectContaining({ kind: 'pages', changes: 2 }),
     );
   });
 
-  it('still answers at the address before the rename, and reads a stored `illustrate` as Pages', async () => {
+  it('still answers at the address before the rename', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
-    const { db } = await setUp(204, { opensIn: 'illustrate' });
+    const { db } = await setUp();
     const res = await call(
       db,
       { pages: [{ op: 'add', kind: 'slide' }] },
       { path: '/api/documents/D/tabs/t1/illustrate' },
     );
     expect(res.status).toBe(200);
-    const body = (await res.json()) as PagesAnswer;
-    expect(body.switched).toBe(false);
     expect(stored(db).pages).toHaveLength(1);
   });
 

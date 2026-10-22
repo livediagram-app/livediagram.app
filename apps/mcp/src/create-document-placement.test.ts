@@ -71,22 +71,18 @@ describe('create_document markUsed', () => {
 });
 
 describe('create_document intent', () => {
-  it('sends a diagram for elements', async () => {
+  it('sends a Plan intent for elements', async () => {
     const { run, posted } = harness(undefined);
     await run([elements]);
-    expect(posted[0]!.intent).toEqual({ mode: 'diagram', tabKind: 'diagram' });
+    expect(posted[0]!.intent).toEqual({ mode: 'plan', tabKind: 'diagram' });
   });
 
   it.each([
-    ['retrospective', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
-    ['four-ls', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
+    ['retrospective', { mode: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' }],
+    ['four-ls', { mode: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
-    ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
-    ['incident-postmortem', { mode: 'workshop', tabKind: 'diagram' }],
-    ['floor-plan', { mode: 'pages', tabKind: 'diagram' }],
-    ['lean-coffee', { mode: 'workshop', tabKind: 'diagram' }],
-    ['whiteboard', { mode: 'draw', tabKind: 'diagram' }],
-    ['flowchart', { mode: 'diagram', tabKind: 'diagram' }],
+    ['event-storming', { mode: 'plan', tabKind: 'event-storming' }],
+    ['flowchart', { mode: 'plan', tabKind: 'diagram' }],
   ])('sends the intent of a %s template tab', async (template, intent) => {
     const { run, posted } = harness(undefined);
     await run([{ name: 'Tab', template }]);
@@ -96,7 +92,7 @@ describe('create_document intent', () => {
   it('adds every tab of a Plan template with several, the first named as given', async () => {
     const { run, posted } = harness(undefined);
     await run([{ name: 'Plan', template: 'project-planner' }]);
-    const tabs = posted[0]!.tabs as { id: string; name: string; opensIn?: string }[];
+    const tabs = posted[0]!.tabs as { id: string; name: string }[];
     expect(tabs.map((t) => t.name)).toEqual([
       'Plan',
       'Backlog',
@@ -105,7 +101,6 @@ describe('create_document intent', () => {
       'Overview',
     ]);
     expect(new Set(tabs.map((t) => t.id)).size).toBe(5);
-    expect(tabs.every((t) => t.opensIn === 'plan')).toBe(true);
   });
 
   // docs/specs/026-plan/item-types.md "The type catalogue": a template's boards choose a new document's card types.
@@ -125,7 +120,7 @@ describe('create_document intent', () => {
   it('reads the intent from the first tab only', async () => {
     const { run, posted } = harness(undefined);
     await run([elements, { name: 'Board', template: 'kanban' }]);
-    expect(posted[0]!.intent).toEqual({ mode: 'diagram', tabKind: 'diagram' });
+    expect(posted[0]!.intent).toEqual({ mode: 'plan', tabKind: 'diagram' });
   });
 });
 

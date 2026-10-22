@@ -13,31 +13,40 @@ const row = (opens_in: string | null, tab_kind: string | null, template_family: 
 
 describe('readRecordedIntent', () => {
   it('reads a full record', () => {
-    expect(readRecordedIntent(row('diagram', 'diagram', 'retrospective'))).toEqual({
-      opensIn: 'diagram',
+    expect(readRecordedIntent(row('plan', 'diagram', 'retrospective'))).toEqual({
+      opensIn: 'plan',
       tabKind: 'diagram',
       templateFamily: 'retrospective',
     });
   });
 
   it('reads a known record with no family', () => {
-    expect(readRecordedIntent(row('draw', 'diagram', null))).toEqual({
-      opensIn: 'draw',
+    expect(readRecordedIntent(row('plan', 'diagram', null))).toEqual({
+      opensIn: 'plan',
       tabKind: 'diagram',
       templateFamily: null,
     });
   });
 
+  it.each(['diagram', 'draw', 'workshop', 'pages', 'illustrate', 'infographic', 'facilitate'])(
+    'reads a row opening in the retired %s as Plan',
+    (retired) => {
+      expect(readRecordedIntent(row(retired, 'diagram', 'kanban'))).toEqual({
+        opensIn: 'plan',
+        tabKind: 'diagram',
+        templateFamily: 'kanban',
+      });
+    },
+  );
+
   it('reads an event-storming board', () => {
-    expect(readRecordedIntent(row('diagram', 'event-storming', null)).tabKind).toBe(
-      'event-storming',
-    );
+    expect(readRecordedIntent(row('plan', 'event-storming', null)).tabKind).toBe('event-storming');
   });
 
   it.each([
     ['no record', row(null, null, null)],
     ['an unknown opens-in with stray values', row(null, 'diagram', 'kanban')],
-    ['a retired mode', row('pixel', 'diagram', 'kanban')],
+    ['an unknown mode', row('pixel', 'diagram', 'kanban')],
   ])('reads %s as unknown throughout', (_label, stored) => {
     expect(readRecordedIntent(stored)).toEqual({
       opensIn: null,
@@ -47,8 +56,8 @@ describe('readRecordedIntent', () => {
   });
 
   it('reads a retired tab kind or family as null', () => {
-    expect(readRecordedIntent(row('draw', 'whiteboard', 'mindmap'))).toEqual({
-      opensIn: 'draw',
+    expect(readRecordedIntent(row('plan', 'whiteboard', 'mindmap'))).toEqual({
+      opensIn: 'plan',
       tabKind: null,
       templateFamily: null,
     });

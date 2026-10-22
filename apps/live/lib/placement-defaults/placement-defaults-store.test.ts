@@ -29,7 +29,7 @@ beforeEach(() => {
   resetPlacementDefaultsForTests();
   for (const fn of Object.values(api)) fn.mockReset();
   track.mockReset();
-  api.apiListPlacementDefaults.mockResolvedValue([{ key: 'mode:draw', folderId: 'w' }]);
+  api.apiListPlacementDefaults.mockResolvedValue([{ key: 'mode:plan', folderId: 'w' }]);
   api.apiSetPlacementDefault.mockResolvedValue(undefined);
   api.apiClearPlacementDefault.mockResolvedValue(undefined);
 });
@@ -40,7 +40,7 @@ describe('loadPlacementDefaults', () => {
     await loadPlacementDefaults('owner');
     expect(api.apiListPlacementDefaults).toHaveBeenCalledTimes(1);
     expect(placementDefaultsSnapshot()).toMatchObject({ ownerId: 'owner', status: 'ready' });
-    expect(keys()).toEqual({ 'mode:draw': 'w' });
+    expect(keys()).toEqual({ 'mode:plan': 'w' });
   });
 
   it('replaces the state for a new owner and drops a stale answer', async () => {
@@ -50,10 +50,10 @@ describe('loadPlacementDefaults', () => {
     );
     const first = loadPlacementDefaults('guest');
     await loadPlacementDefaults('user');
-    answerFirst([{ key: 'mode:diagram', folderId: 'stale' }]);
+    answerFirst([{ key: 'template:retrospective', folderId: 'stale' }]);
     await first;
     expect(placementDefaultsSnapshot().ownerId).toBe('user');
-    expect(keys()).toEqual({ 'mode:draw': 'w' });
+    expect(keys()).toEqual({ 'mode:plan': 'w' });
   });
 
   it('marks a failed load and says so', async () => {
@@ -84,19 +84,19 @@ describe('setPlacementDefault and clearPlacementDefault', () => {
       expect(track).toHaveBeenCalled();
       return Promise.resolve();
     });
-    await setPlacementDefault('mode:diagram', 'x', 'settings');
+    await setPlacementDefault('template:retrospective', 'x', 'settings');
   });
 
   it('clears a key with its Cleared event', async () => {
-    expect(await clearPlacementDefault('mode:draw', 'settings')).toBe(true);
-    expect(track).toHaveBeenCalledWith('Folder', 'Cleared', 'DefaultModeDraw');
-    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:draw');
+    expect(await clearPlacementDefault('mode:plan', 'settings')).toBe(true);
+    expect(track).toHaveBeenCalledWith('Folder', 'Cleared', 'DefaultModePlan');
+    expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:plan');
     expect(keys()).toEqual({});
   });
 
   it('writes nothing when nothing changes', async () => {
-    expect(await setPlacementDefault('mode:draw', 'w', 'menu')).toBe(true);
-    expect(await clearPlacementDefault('mode:diagram', 'menu')).toBe(true);
+    expect(await setPlacementDefault('mode:plan', 'w', 'menu')).toBe(true);
+    expect(await clearPlacementDefault('template:retrospective', 'menu')).toBe(true);
     expect(api.apiSetPlacementDefault).not.toHaveBeenCalled();
     expect(api.apiClearPlacementDefault).not.toHaveBeenCalled();
     expect(track).not.toHaveBeenCalled();
@@ -105,17 +105,17 @@ describe('setPlacementDefault and clearPlacementDefault', () => {
   it('rolls a refused write back and says so', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     api.apiSetPlacementDefault.mockRejectedValue(new ApiError('set', 404, 'folder_not_found'));
-    expect(await setPlacementDefault('mode:draw', 'elsewhere', 'menu')).toBe(false);
-    expect(keys()).toEqual({ 'mode:draw': 'w' });
+    expect(await setPlacementDefault('mode:plan', 'elsewhere', 'menu')).toBe(false);
+    expect(keys()).toEqual({ 'mode:plan': 'w' });
     expect(warn).toHaveBeenCalledWith(
-      '[default-folders] write failed key=mode:draw code=folder_not_found, rolled back',
+      '[default-folders] write failed key=mode:plan code=folder_not_found, rolled back',
     );
     warn.mockRestore();
   });
 
   it('refuses to write before the defaults are loaded', async () => {
     resetPlacementDefaultsForTests();
-    expect(await setPlacementDefault('mode:draw', 'w', 'menu')).toBe(false);
+    expect(await setPlacementDefault('mode:plan', 'w', 'menu')).toBe(false);
     expect(api.apiSetPlacementDefault).not.toHaveBeenCalled();
   });
 });

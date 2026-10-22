@@ -65,7 +65,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   Error: '#dc2626',
   // Warm stone, the marker on a whiteboard: apart from every blue and green.
   Draw: '#78716c',
-  // Deep violet: the mode switch, apart from Draw's stone beside it.
+  // Deep violet: the mode switch (retired 2026-10-22; its stored rows never chart), apart from Draw's stone beside it.
   Editor: '#6d28d9',
   // Deep cyan: the Explorer's filters, apart from UI's lighter cyan and Search's indigo.
   Explorer: '#155e75',

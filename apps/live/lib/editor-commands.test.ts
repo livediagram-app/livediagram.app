@@ -424,11 +424,9 @@ describe('the photo-import command', () => {
   });
 });
 
-describe('tool commands on a whiteboard (docs/specs/023-draw-mode/draw-mode.md)', () => {
+describe('tool commands', () => {
   it('offers no format painter', () => {
-    const onBoard = ids({ ...base, whiteboard: true });
-    expect(onBoard).not.toContain('tool:format');
-    expect(ids(base)).toContain('tool:format');
+    expect(ids(base)).not.toContain('tool:format');
   });
 
   // docs/specs/008-canvas/highlighter.md "Not a selection mode": the marker is a Draw tile.
@@ -481,13 +479,13 @@ describe('buildEditorCommands — locked tab and Plan mode', () => {
     expect(got).toEqual(expect.arrayContaining(['create-tab', 'rename-document', 'fit-to-screen']));
   });
 
-  it('keeps them on an unlocked tab', () => {
+  it('keeps the element edits on an unlocked tab', () => {
     const got = ids({ ...base, selectionCount: 1, singleIsBoxed: true });
-    expect(got).toEqual(expect.arrayContaining(['auto-align', 'tool:eraser', 'tool:format']));
+    expect(got).toEqual(expect.arrayContaining(['delete', 'duplicate', 'auto-align']));
   });
 
-  it('leaves Eraser and Format out in Plan mode', () => {
-    const got = ids({ ...base, planMode: true });
+  it('leaves Eraser and Format out', () => {
+    const got = ids(base);
     expect(got).not.toContain('tool:eraser');
     expect(got).not.toContain('tool:format');
     expect(got).toContain('tool:laser');

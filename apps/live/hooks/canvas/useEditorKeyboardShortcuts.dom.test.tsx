@@ -307,63 +307,6 @@ describe('whiteboard keys (docs/specs/023-draw-mode/draw-mode.md "Keyboard short
   });
 });
 
-// Shift+D moves to the next editor mode (docs/specs/007-editor/editor-modes.md "The mode switch").
-describe('Shift+D', () => {
-  it('cycles the editor mode where a switch is offered', () => {
-    const onCycleEditorMode = vi.fn();
-    const { bag, spies } = deps({ selectedId: null, onCycleEditorMode });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    const e = press('D', { shiftKey: true });
-    expect(onCycleEditorMode).toHaveBeenCalledTimes(1);
-    expect(e.defaultPrevented).toBe(true);
-    expect(spies.onShortcutUsed).toHaveBeenCalledTimes(1);
-  });
-
-  it('does nothing where no switch is offered, and adds no diamond', () => {
-    const addShape = vi.fn();
-    const { bag } = deps({ selectedId: null, onCycleEditorMode: null, addShape });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    const e = press('D', { shiftKey: true });
-    expect(e.defaultPrevented).toBe(false);
-    expect(addShape).not.toHaveBeenCalled();
-  });
-
-  it('still reaches Draw mode, whose dock owns the plain keys', () => {
-    const onCycleEditorMode = vi.fn();
-    const { bag } = deps({ selectedId: null, onCycleEditorMode, whiteboard: {} as never });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('D', { shiftKey: true });
-    expect(onCycleEditorMode).toHaveBeenCalledTimes(1);
-  });
-
-  it('yields to type-to-edit on a selected labelled element', () => {
-    const onCycleEditorMode = vi.fn();
-    const onTypeIntoSelected = vi.fn(() => true);
-    const { bag } = deps({ onCycleEditorMode, onTypeIntoSelected });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('D', { shiftKey: true });
-    expect(onTypeIntoSelected).toHaveBeenCalledWith('a', 'D');
-    expect(onCycleEditorMode).not.toHaveBeenCalled();
-  });
-
-  it('obeys the shortcuts switch', () => {
-    const onCycleEditorMode = vi.fn();
-    const { bag } = deps({ selectedId: null, onCycleEditorMode, enabled: false });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('D', { shiftKey: true });
-    expect(onCycleEditorMode).not.toHaveBeenCalled();
-  });
-
-  it('leaves a modified D (duplicate) alone', () => {
-    const onCycleEditorMode = vi.fn();
-    const { bag } = deps({ selectedId: null, onCycleEditorMode });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    press('D', { shiftKey: true, metaKey: true });
-    press('D', { shiftKey: true, altKey: true });
-    expect(onCycleEditorMode).not.toHaveBeenCalled();
-  });
-});
-
 // docs/specs/004-interface-design/menus.md: while focus is inside a menu of either kind the
 // canvas's shortcuts stand down.
 describe('inside a menu', () => {
@@ -410,13 +353,12 @@ describe('a covered canvas', () => {
     expect(spies.setCanvasTool).not.toHaveBeenCalled();
   });
 
-  it('still undoes, redoes, searches, toggles zen and switches mode, and keeps the browser off canvas chords', () => {
+  it('still undoes, redoes, searches and toggles zen, and keeps the browser off canvas chords', () => {
     const spies = {
       undo: vi.fn(),
       redo: vi.fn(),
       onOpenSearch: vi.fn(),
       onToggleZen: vi.fn(),
-      onCycleEditorMode: vi.fn(),
       onDuplicate: vi.fn(),
       onSelectAll: vi.fn(),
       copySelection: vi.fn(),
@@ -428,12 +370,10 @@ describe('a covered canvas', () => {
     press('y', { ctrlKey: true });
     press('k', { metaKey: true });
     press('z');
-    press('D', { shiftKey: true });
     expect(spies.undo).toHaveBeenCalledTimes(1);
     expect(spies.redo).toHaveBeenCalledTimes(2);
     expect(spies.onOpenSearch).toHaveBeenCalledTimes(1);
     expect(spies.onToggleZen).toHaveBeenCalledTimes(1);
-    expect(spies.onCycleEditorMode).toHaveBeenCalledTimes(1);
     // Duplicate and select-all are prevented (no bookmark, no page select) and do nothing.
     expect(press('d', { metaKey: true }).defaultPrevented).toBe(true);
     expect(press('a', { metaKey: true }).defaultPrevented).toBe(true);

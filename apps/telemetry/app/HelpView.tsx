@@ -12,7 +12,6 @@ import { MetricGroups, type MetricGroup } from './MetricCards';
 import { CardColumns } from './CardColumns';
 import { isHelpArticleType } from './opened-types';
 import { RankCard, rank } from './RankCard';
-import { tourStepLabel, tourStepRows } from './tour-steps';
 import { rankTrend, windowLabel } from './windows';
 
 // Help section of the Pages & Help tab (docs/specs/017-telemetry/telemetry.md): how the help centre (apps/help) is doing. Article reads
@@ -27,9 +26,9 @@ import { rankTrend, windowLabel } from './windows';
 // (the last is the useful one; those articles are the ones to rewrite). A
 // vote counts the reader's final choice, not every tap.
 //
-// Two more read the help that lives inside the editor: the articles opened
-// from it (`UI·Opened·<slug>`, the same ids), and the Diagram tour's steps in
-// the order it shows them, a funnel whose fall-off says where people stop.
+// One more reads the help that lives inside the editor: the articles opened
+// from it (`UI·Opened·<slug>`, the same ids). (The Diagram tour's step funnel went
+// with the tour, docs/specs/017-telemetry/telemetry.md "Retired features".)
 export const GROUPS: MetricGroup[] = [
   {
     title: 'Help engagement',
@@ -53,14 +52,12 @@ export function HelpView({
     rows,
     (r) => r.category === 'UI' && r.action === 'Opened' && isHelpArticleType(r.type),
   );
-  const tourSteps = tourStepRows(rows);
 
   return (
     <div className="mt-8">
       <p className="text-sm text-slate-500 dark:text-slate-400">
         How the help centre is doing, for <span className="font-medium">{windowLabel(active)}</span>
-        : reads and per-article feedback, the articles opened from inside the editor, and how far
-        people get through the Diagram tour.
+        : reads and per-article feedback, and the articles opened from inside the editor.
       </p>
       <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
         Rows before late September 2026 for format-painter and command-palette also count the Tips
@@ -109,18 +106,6 @@ export function HelpView({
             items={fromEditor}
             daily={summary.daily}
             emptyLabel="No articles were opened from the editor in this window yet."
-          />
-          <RankCard
-            trend={trend}
-            ordered
-            title="Tour Steps"
-            subtitle="Each welcome tour step viewed, in the order the tour shows them: where the counts fall away is where people stop"
-            category="UI"
-            action="View"
-            items={tourSteps}
-            label={tourStepLabel}
-            daily={summary.daily}
-            emptyLabel="No tour steps were viewed in this window yet."
           />
         </CardColumns>
       </div>

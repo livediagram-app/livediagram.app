@@ -34,15 +34,15 @@ const fitOf = (pageId: string) => computeFitBelow(SIZE, row.find((p) => p.id ===
 
 function mount(
   viewport: ViewportStore,
-  opts: { suspended?: () => boolean; mode?: 'pages' | 'diagram' } = {},
+  opts: { suspended?: () => boolean; withoutPages?: boolean } = {},
 ) {
+  const activeTab = opts.withoutPages ? { ...tab, pages: undefined } : tab;
   const canvas = document.createElement('main');
   Object.defineProperty(canvas, 'offsetWidth', { value: SIZE.width });
   Object.defineProperty(canvas, 'offsetHeight', { value: SIZE.height });
   return renderHook(() =>
     usePagesMode({
-      activeTab: tab,
-      mode: opts.mode ?? 'pages',
+      activeTab,
       canEdit: true,
       tabLoaded: false,
       commitTabs: vi.fn(),
@@ -183,9 +183,9 @@ describe('a view moved by anything else', () => {
     expect(viewport.get()).toEqual(loose);
   });
 
-  it('does nothing outside Pages mode', () => {
+  it('does nothing on a tab without pages', () => {
     const viewport = createViewportStore(1);
-    mount(viewport, { mode: 'diagram' });
+    mount(viewport, { withoutPages: true });
     const loose = { zoom: 0.2, offset: { x: 5000, y: 0 } };
     act(() => viewport.setView(loose));
     rest();

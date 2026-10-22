@@ -262,9 +262,8 @@ describe('templates on pages', () => {
     'team-welcome',
     'workshop-kickoff',
   ]);
-  it.each(PAGED_KINDS)('%s: opens in Pages on pages of its kind', (kind) => {
+  it.each(PAGED_KINDS)('%s: is laid out on pages of its kind', (kind) => {
     const o = templateCanvasOverrides(kind);
-    expect(o.opensIn).toBe('pages');
     expect(o.pages?.length).toBeGreaterThan(0);
     const want = (i: number) =>
       SLIDE_DECK_KINDS.has(kind)
