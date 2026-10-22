@@ -1,4 +1,4 @@
--- Image element gallery, per docs/specs/009-elements/images.md.
+-- Image element gallery (retired with image uploads; dropped in the migration squash).
 --
 -- Each row indexes one image whose bytes live in the R2 bucket bound
 -- as IMAGES (key === images.id). The (owner_id, sha256) unique index

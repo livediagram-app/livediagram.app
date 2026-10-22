@@ -5,7 +5,6 @@ import {
   badRequest,
   CORS_HEADERS,
   forbidden,
-  imagesUnavailable,
   json,
   methodNotAllowed,
   missingAuth,
@@ -119,17 +118,6 @@ describe('forbidden', () => {
   });
 });
 
-describe('imagesUnavailable', () => {
-  it('returns a 503 with the canonical { error: "images_unavailable" } envelope', async () => {
-    // Surfaced when the R2 binding is unset (self-host without
-    // R2). The 503 lets clients fall back gracefully rather than
-    // treating it as a permanent server error.
-    const res = imagesUnavailable();
-    expect(res.status).toBe(503);
-    expect(await readJson(res)).toEqual({ error: 'images_unavailable' });
-  });
-});
-
 describe('rateLimited', () => {
   it('returns a 429 with the canonical { error: "rate_limited" } envelope', async () => {
     const res = rateLimited();
@@ -180,7 +168,7 @@ describe('missingAuth', () => {
 });
 
 describe('CORS_HEADERS', () => {
-  it('allows the four custom headers the editor needs to send', () => {
+  it('allows the custom headers the editor needs to send', () => {
     // Each of these headers must be in the Access-Control-Allow-
     // Headers list or the browser silently rejects the preflight
     // and the editor sees "Failed to fetch" with no other signal.
@@ -190,10 +178,7 @@ describe('CORS_HEADERS', () => {
     expect(allowHeaders).toContain('Authorization');
     expect(allowHeaders).toContain('X-Owner-Id');
     expect(allowHeaders).toContain('X-Share-Code');
-    expect(allowHeaders).toContain('X-Image-Sha256');
-    expect(allowHeaders).toContain('X-Image-Width');
-    expect(allowHeaders).toContain('X-Image-Height');
-    expect(allowHeaders).toContain('X-Image-Original-Name');
+    expect(allowHeaders).not.toContain('X-Image');
     expect(allowHeaders).toContain('Content-Type');
   });
 

@@ -115,7 +115,6 @@ export const API_ROUTE_RESOURCES: ReadonlySet<string> = new Set([
   // A form link's public doors (docs/specs/030-forms/forms.md).
   'forms',
   'shared',
-  'images',
   'documents',
   'folders',
   'custom-themes',

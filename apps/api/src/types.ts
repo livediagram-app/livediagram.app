@@ -15,7 +15,6 @@ export type {
   CustomTheme as CustomThemeDTO,
   CustomThemeDefinition,
   ApiToken as ApiTokenDTO,
-  ImageSummary,
   ParticipantRecord as ParticipantDTO,
   ParticipantPresence,
   ShareRole,
@@ -70,11 +69,10 @@ export type Env = {
   // a signed id unsigned; every newer id must prove possession. Unset = no
   // legacy exception.
   GUEST_SIGNING_LIVE_AT?: string;
-  // R2 bucket holding image-element bytes (docs/specs/009-elements/images.md). Optional so
-  // self-hosters who haven't provisioned R2 can still deploy the
-  // api worker: when unbound, the image endpoints all return 503
-  // and the live app hides the Image palette entry.
-  IMAGES?: R2Bucket;
+  // R2 bucket caching each project's SVG snapshot (`thumb/<id>`) and share card
+  // (docs/specs/006-document/document-snapshots.md). Optional so a deploy without R2 still runs:
+  // unbound, the snapshot doors answer 404 and the Explorer row keeps its icon.
+  SNAPSHOTS?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in
   // wrangler.toml. Optional so self-host deployments without the
@@ -182,17 +180,4 @@ export type Env = {
   // OSS self-hosters who run Clerk-less stay on the open path by
   // default.
   AI_REQUIRE_CLERK?: string;
-  // Per-owner soft cap on the number of images one owner may keep
-  // in the gallery (docs/specs/009-elements/images.md). Stored as a decimal string in
-  // wrangler.toml [vars]; parsed via parseInt at request time.
-  // Unset or non-positive = no limit (the OSS self-host default
-  // where the operator runs their own storage budget). Hosted
-  // liveplanner.app sets this to "100".
-  IMAGE_MAX_PER_OWNER?: string;
-  // Per-owner soft cap on the total bytes one owner may keep in
-  // the gallery (docs/specs/009-elements/images.md). Stored as a decimal byte count in
-  // wrangler.toml [vars]; parsed via parseInt at request time.
-  // Unset or non-positive = no limit. Hosted liveplanner.app sets
-  // this to "104857600" (100 MB).
-  IMAGE_MAX_BYTES_PER_OWNER?: string;
 };

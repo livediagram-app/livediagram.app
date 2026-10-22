@@ -108,7 +108,6 @@ const STACK_LABELS: Record<string, string> = {
   'account::theme_deleted': 'Themes Deleted',
   'account::folder_created': 'Folders Created',
   'account::folder_deleted': 'Folders Deleted',
-  'account::image_uploaded': 'Images Uploaded',
   'account::token_revoked': 'API Tokens Revoked',
   team_membership: 'Members Changed',
   sharing: 'Sharing Changed',

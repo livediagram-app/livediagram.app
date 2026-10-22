@@ -248,8 +248,6 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'participants/:owner'),
   shape('GET', 'preferences'),
   shape('GET', 'custom-themes'),
-  shape('POST', 'images'),
-  shape('GET', 'images/:p'),
   shape('GET,PUT', 'documents/:doc'),
   shape('GET,PUT,DELETE', 'documents/:doc/tabs/:p'),
   shape('PUT', 'documents/:doc/tabs/:p/name'),
@@ -259,7 +257,6 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
   shape('GET', 'documents/:doc/changesets/:p'),
   shape('GET', 'documents/:doc/comments'),
   shape('GET', 'documents/:doc/tabs/:p/render.svg'),
-  shape('GET', 'documents/:doc/tabs/:p/comment-pictures'),
   shape('POST', 'documents/:doc/tabs/:p/comments'),
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/reply'),
   shape('POST', 'documents/:doc/tabs/:p/comments/:p/resolve'),
@@ -303,7 +300,6 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
     'activity',
     'trash',
     'placement-defaults',
-    'images',
     'custom-themes',
   ].map((resource) => shape(ALL_METHODS, `${resource}/**`)),
   shape('GET', 'teams'),
@@ -319,8 +315,8 @@ const WORKSPACE_CLOSED: readonly RouteShape[] = [
 ];
 
 // Words a `:p` never matches: sibling routes that share a prefix with an allowed shape but are confined
-// (`GET images/usage` beside `GET images/:id`, `GET teams/invites` beside `GET teams/:id`).
-const WORKBENCH_RESERVED_SEGMENTS = new Set(['usage', 'invites', 'invite-link', 'invite-decline']);
+// (`GET teams/invites` beside `GET teams/:id`).
+const WORKBENCH_RESERVED_SEGMENTS = new Set(['invites', 'invite-link', 'invite-decline']);
 
 function matches(
   route: RouteShape,

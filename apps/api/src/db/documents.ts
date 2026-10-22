@@ -14,11 +14,8 @@ import { remapTabLinks, type Element } from '@liveplanner/document';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentDTO, DocumentSummary, Env, TabSummaryDTO } from '../types';
 import { getParticipant } from './participants';
-import { imageRefIdsFromData } from '../image-refs/extract';
 import { collabIndexCopyStatements } from './collab-index';
 import { redactTabDataAuthors } from '../comments';
-import { imageGrantCopyStatements, imageGrantOwnerChangeStatement } from './image-grants';
-import { imageRefAddStatements } from './image-refs';
 import { sheetRefCopyStatement } from './sheet-refs';
 import { documentRemovalStatements } from './document-removal';
 import { purgeRooms } from '../room-purge-client';
@@ -375,22 +372,8 @@ export async function setDocumentFolder(
            AND (?3 IS NOT NULL OR f.owner_id = COALESCE(?4, documents.owner_id))
        ))`,
   ).bind(id, folderId, teamId, owner);
-  if (newOwnerId === undefined) {
-    const res = await update.run();
-    return (res.meta.changes ?? 0) > 0;
-  }
-  // An owner change: the previous owner's images in it keep serving once it is the new owner's, granted in
-  // the same batch (a refused move leaves only a redundant grant, the old owner still owning it).
-  const [, res] = await env.DB.batch([
-    imageGrantOwnerChangeStatement(
-      env,
-      'd.id = ?2 AND d.owner_id <> ?3',
-      [id, newOwnerId],
-      Date.now(),
-    ),
-    update,
-  ]);
-  return (res?.meta.changes ?? 0) > 0;
+  const res = await update.run();
+  return (res.meta.changes ?? 0) > 0;
 }
 
 // Toggle the shareable flag on a document. The actual codes live in
@@ -458,7 +441,7 @@ export async function deleteDocument(env: Env, id: string): Promise<void> {
   // deleted document doesn't leave an orphaned R2 object behind. Best
   // effort: a missing binding or a missing object is a no-op, and a
   // failure here must never fail the delete itself.
-  if (env.IMAGES) await env.IMAGES.delete(snapshotKeys(id)).catch(() => {});
+  if (env.SNAPSHOTS) await env.SNAPSHOTS.delete(snapshotKeys(id)).catch(() => {});
 }
 
 // R2 object key for a document's cached SVG snapshot (docs/specs/006-document/document-snapshots.md). Shared by
@@ -583,11 +566,6 @@ export async function copyDocument(
       // data, so its index rows are copied the same way, without a
       // parse (docs/specs/013-workspace/inbox.md §2.1).
       ...collabIndexCopyStatements(env, row.id, freshTabId),
-      // Image references from the copied body itself, not the source rows, so
-      // a copy is indexed even if its source never was.
-      ...imageRefAddStatements(env, freshTabId, imageRefIdsFromData(data)),
-      // Placement grants (docs/specs/009-elements/images.md): the copy may serve what its source could.
-      ...imageGrantCopyStatements(env, sourceId, newId, imageRefIdsFromData(data), now),
       // The copy's Sheets reference the copied sheets, which keep their ids (sheet-refs.ts).
       sheetRefCopyStatement(env, row.id, freshTabId),
     ];

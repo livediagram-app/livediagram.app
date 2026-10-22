@@ -32,8 +32,8 @@ export type TimelineEventDraft = {
 };
 
 // The dedupe key for an event that should collapse to one row per
-// actor per UTC day — the coalesced document-editing event, and image
-// uploads. UTC rather than local because the row is shared by an
+// actor per UTC day, such as the coalesced document-editing event.
+// UTC rather than local because the row is shared by an
 // audience in many timezones; the day boundary has to be the same for
 // all of them or the same save writes two rows.
 export function dedupeKeyForDay(actorId: string | null, at: number): string {

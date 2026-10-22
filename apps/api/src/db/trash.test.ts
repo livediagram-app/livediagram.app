@@ -59,7 +59,7 @@ function count(sql: DatabaseSync, table: string, where: string, ...args: string[
 
 function withImages() {
   const del = vi.fn(async () => {});
-  const db = sqliteD1({ IMAGES: { delete: del } as unknown as Env['IMAGES'] });
+  const db = sqliteD1({ SNAPSHOTS: { delete: del } as unknown as Env['SNAPSHOTS'] });
   return { db, del };
 }
 
@@ -382,7 +382,7 @@ describe('purgeDocuments', () => {
     const del = vi.fn(async () => {
       throw new Error('r2 down');
     });
-    const db = sqliteD1({ IMAGES: { delete: del } as unknown as Env['IMAGES'] });
+    const db = sqliteD1({ SNAPSHOTS: { delete: del } as unknown as Env['SNAPSHOTS'] });
     liveDoc(db.sql, 'A');
     await trashDocument(db.env, 'A', T0);
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});

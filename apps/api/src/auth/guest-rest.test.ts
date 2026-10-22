@@ -32,7 +32,6 @@ describe('OWNER_SCOPED_SEGMENTS', () => {
     for (const s of [
       'documents',
       'folders',
-      'images',
       'custom-themes',
       'participants',
       'preferences',

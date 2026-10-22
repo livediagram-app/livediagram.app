@@ -84,7 +84,6 @@ const BY_EVENT: Record<KnownTimelineEventType, TimelineCategory> = {
   token_created: 'account',
   token_expiring: 'account',
   theme_saved: 'account',
-  image_uploaded: 'account',
 };
 
 export function eventCategory(eventType: string): TimelineCategory {

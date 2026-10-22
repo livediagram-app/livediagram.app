@@ -7343,41 +7343,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "ImageSummary": {
-    "additionalProperties": false,
-    "properties": {
-      "byteSize": {
-        "type": "number"
-      },
-      "contentType": {
-        "type": "string"
-      },
-      "createdAt": {
-        "type": "number"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "type": "string"
-      },
-      "originalName": {
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "contentType",
-      "byteSize",
-      "width",
-      "height",
-      "createdAt"
-    ],
-    "type": "object"
-  },
   "Item": {
     "additionalProperties": false,
     "properties": {
@@ -8134,8 +8099,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "token_revoked",
       "token_expiring",
       "theme_saved",
-      "theme_deleted",
-      "image_uploaded"
+      "theme_deleted"
     ],
     "type": "string"
   },
