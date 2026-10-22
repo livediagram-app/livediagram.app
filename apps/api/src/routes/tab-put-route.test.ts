@@ -271,7 +271,7 @@ describe('the tab read', () => {
 describe("someone else's tab id", () => {
   it('is refused, leaving the tab and its document as they were', async () => {
     const db = await documentWith([box('a', 'Original')]);
-    // A tab from before revisions (migration 0067), at rev 0 as most stored tabs are: the revision trigger alone
+    // A tab at rev 0, as a tab never revised is: the revision trigger alone
     // would let an overwrite through.
     db.sql
       .prepare("INSERT INTO tabs (id, name, data, updated_at, rev) VALUES ('old', 'Old', ?, 1, 0)")

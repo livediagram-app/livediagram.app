@@ -514,7 +514,7 @@ export function defaultCatalogue(): ItemTypeCatalogue {
 // What a document made before card types started empty reads as (docs/specs/026-plan/item-types.md "The type
 // catalogue"): one never chosen (`stored` null) that has cards kept the five default types its cards were made
 // with, so it reads as them; anything else reads as it is stored. Used where a document is read whole and its cards
-// are known (an offline record, a Drive file); D1 documents were given theirs by migration 0090.
+// are known (an offline record, a Drive file); a D1 document is stored with its catalogue.
 export function legacyCatalogue(
   stored: ItemTypeCatalogue | null,
   hasCards: boolean,

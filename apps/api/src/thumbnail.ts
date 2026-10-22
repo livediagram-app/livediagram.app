@@ -160,8 +160,8 @@ export async function renderTabSvg(
   });
 }
 
-// The lazy backfill of tabs.element_count (migration 0059): a tab stored before the count existed gets it
-// from the parse a render does anyway, so the lists know an old empty document after one ask. Best effort:
+// The lazy backfill of tabs.element_count: a tab whose count is still unknown (NULL) gets it
+// from the parse a render does anyway, so the lists know an empty document after one ask. Best effort:
 // a failed stamp leaves the count unknown, which only means the row asks again.
 function stampUnknownCount(
   env: Env,

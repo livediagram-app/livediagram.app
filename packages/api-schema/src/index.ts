@@ -118,7 +118,7 @@ export type SharedTabsSummary = {
   documents: number;
 };
 
-// One row of the "Shared with you" list (shared_with, migration 0010):
+// One row of the "Shared with you" list (shared_with):
 // a document a non-owner has previously opened via a share link. The api
 // worker (`listSharedWith` in db/shared.ts) builds this by joining
 // shared_with → documents → participants; the live editor's Explorer

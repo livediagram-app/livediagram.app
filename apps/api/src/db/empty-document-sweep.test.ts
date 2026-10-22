@@ -41,7 +41,7 @@ function state(sql: DatabaseSync, id: string) {
     .get(id) as { trashed_at: number | null; trash_reason: string | null; saved_at: number };
 }
 
-describe('migration 0056 (documents.trash_reason)', () => {
+describe('documents.trash_reason', () => {
   it('adds a nullable trash_reason', () => {
     const { sql } = sqliteD1();
     const col = sql

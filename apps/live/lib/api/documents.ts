@@ -317,7 +317,7 @@ export async function apiFetchDocumentThumbnailSvg(
 }
 
 // ---------------------------------------------------------------------
-// shared_with — "Shared with you" (migration 0010)
+// shared_with — "Shared with you"
 // ---------------------------------------------------------------------
 
 // The "Shared with you" row shape now lives in @liveplanner/api-schema

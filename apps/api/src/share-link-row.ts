@@ -5,17 +5,15 @@ import {
   type ShareLinkExpiry,
 } from '@liveplanner/api-schema';
 
-// share_links row shape as read from D1 (migration 0003 + the expiry
-// columns from 0020, the tab scope from 0048, the level from 0080). `role` and `level` arrive as free-form
-// strings here, but the wire-format DTO carries an AccessLevel. The mapper below normalises. `expiry` / `expires_at` are NULL on every
-// pre-0020 row (= never expires).
+// share_links row shape as read from D1 (with its expiry columns, tab scope and level). `role` and `level`
+// arrive as free-form strings here, but the wire-format DTO carries an AccessLevel. The mapper below normalises.
+// `expiry` / `expires_at` NULL means the link never expires.
 
 export type ShareLinkRow = {
   code: string;
   document_id: string;
   role: string;
-  // The access level (migration 0080, docs/specs/013-workspace/share-roles.md); NULL on a row written before it,
-  // which reads as its `role`.
+  // The access level (docs/specs/013-workspace/share-roles.md); NULL reads as the row's `role`.
   level: string | null;
   created_at: number;
   expiry: string | null;
@@ -53,19 +51,19 @@ function normaliseExpiry(value: string | null): ShareLinkExpiry {
   return value === 'week' || value === 'month' || value === 'sixMonths' ? value : 'never';
 }
 
-// A share_links or shared_with row's level: `level` (0080) when set, else the legacy `role`.
+// A share_links or shared_with row's level: `level` when set, else the legacy `role`.
 export function storedLevelOf(row: { role: string; level?: string | null }): AccessLevel {
   return parseStoredLevel(row.level ?? row.role);
 }
 
 // What a level is written as in the legacy two-valued `role` column: anything below edit is 'view', so a reader
-// that predates the `level` column reads a Participant link as a Viewer and fails closed (migration 0080).
+// that predates the `level` column reads a Participant link as a Viewer and fails closed.
 export function legacyRoleColumn(level: AccessLevel): 'edit' | 'view' {
   return level === 'edit' ? 'edit' : 'view';
 }
 
 // The level as stored in the `level` column: NULL where the legacy role already says it, so a Viewer or Editor
-// row reads exactly as one written before 0080.
+// row reads from its `role` alone.
 export function levelColumn(level: AccessLevel): AccessLevel | null {
   return level === 'participate' ? level : null;
 }

@@ -1,5 +1,5 @@
-// The recorded creation intent as stored on a documents row (migration 0062,
-// docs/specs/013-workspace/default-folders.md "Recorded intent"). Each stored value reads as itself
+// The recorded creation intent as stored on a documents row
+// (docs/specs/013-workspace/default-folders.md "Recorded intent"). Each stored value reads as itself
 // only when it is in its list, so a retired value never reaches a client as a live option. The
 // opens-in decides whether anything was recorded: when it reads null, so does everything else.
 

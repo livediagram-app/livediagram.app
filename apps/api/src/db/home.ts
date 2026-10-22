@@ -67,7 +67,7 @@ function placeOf(row: PlaceRow): HomeDocument {
 }
 
 /** An event a real actor made: not a reconstructed edit left by the retired personal-feed backfill
- *  (`$.backfilled`, marked by migration 0063), which may credit a teammate's save to the owner. On `e`. */
+ *  (`$.backfilled`), which may credit a teammate's save to the owner. On `e`. */
 const REAL_EDIT = `json_extract(e.snapshot, '$.backfilled') IS NOT 1`;
 
 /** A making that counts as a use of the document for its maker: a creation or a copy whose event

@@ -1,4 +1,4 @@
-// shared_with — "shared with you" tracking (migration 0010).
+// shared_with — "shared with you" tracking.
 
 import type { SharedWithItem } from '@liveplanner/api-schema';
 import type { Env, ShareRole } from '../types';

@@ -6,7 +6,7 @@ import { apiListFavourites, apiSetFavourite } from './favourites';
 // Starring an OFFLINE document (docs/specs/006-document/offline-mode.md) must stay in the browser.
 //
 // The favourites table carries `FOREIGN KEY (document_id) REFERENCES
-// documents(id)` (migration 0040), and an offline document has no row in
+// documents(id)`, and an offline document has no row in
 // `documents` by definition — it lives only in this browser's IndexedDB. So a
 // star sent to the server does not merely go unused, it is REJECTED:
 // "FOREIGN KEY constraint failed". apiSetFavourite swallows the failure, and

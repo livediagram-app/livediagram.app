@@ -1,6 +1,5 @@
 // How a palette search ranks an item against what was typed (docs/specs/007-editor/toolbar-layout.md), shared by
-// the editor's search and the api's icon search (docs/specs/015-api/blueprints/cli.md
-// CLI74), so a query finds the same icons first wherever it is typed.
+// every search in the editor, so a query finds the same icons first wherever it is typed.
 
 // Case-insensitive substring match. An empty query matches everything, which mirrors the picker's "show me the
 // list first, narrow with typing" behaviour.

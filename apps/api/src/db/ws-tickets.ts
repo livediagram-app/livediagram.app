@@ -1,4 +1,4 @@
-// ws_tickets — one-time WebSocket room tickets (migration 0037).
+// ws_tickets — one-time WebSocket room tickets.
 //
 // The WS upgrade can't carry the Bearer token or the guest signature
 // (browser limitation), so role resolution for identified callers runs

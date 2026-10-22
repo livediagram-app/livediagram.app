@@ -126,7 +126,7 @@ export const TELEMETRY_CATEGORIES = [
   // question; never a document or team name.
   'Trash',
   // Draw mode (docs/specs/007-editor/editor-modes.md), named 'Whiteboard' until its stored
-  // history was rewritten (migration 0061): a Whiteboard tab 'Created' (`type` how:
+  // history was rewritten: a Whiteboard tab 'Created' (`type` how:
   // 'Template' | 'NewTab'). Never content.
   'Draw',
   // Editor modes: a person switched a tab's editor mode, 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModePages'.

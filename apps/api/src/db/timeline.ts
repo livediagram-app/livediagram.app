@@ -1,5 +1,5 @@
-// timeline — the event record behind Home, a document's History and a team's Activity (migration 0042,
-// docs/specs/013-workspace/timeline.md).
+// timeline — the event record behind Home, a document's History and a team's Activity
+// (docs/specs/013-workspace/timeline.md).
 //
 // Every event is written inline on the write path that caused it.
 // There are no scanners and no scan cron: unlike the system this shape

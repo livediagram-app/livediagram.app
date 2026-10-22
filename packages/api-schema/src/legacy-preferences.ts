@@ -4,7 +4,7 @@
 // during the deploy). An opt-out must never be lost on the way.
 const RENAMED: Readonly<Record<string, string>> = {
   notifyDiagramJoin: 'notifyDocumentJoin',
-  // Facilitate mode became Workshop mode (migration 0098): a lost seen-guard would offer the tour again.
+  // Facilitate mode became Workshop mode: a lost seen-guard would offer the tour again.
 };
 
 // Preference keys whose feature is gone (docs/specs/007-editor/user-preferences.md "Retired keys"):

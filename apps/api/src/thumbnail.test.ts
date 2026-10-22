@@ -163,8 +163,8 @@ describe('getDocumentThumbnailSvg', () => {
     expect(db.markThumbRendered).not.toHaveBeenCalled();
   });
 
-  // The lazy backfill (migration 0059): a tab stored before the count existed gets it from this parse,
-  // so an old empty document is asked for at most once.
+  // The lazy backfill of tabs.element_count: a tab whose count is still unknown gets it from this parse,
+  // so an empty document is asked for at most once.
   it('records an unknown count from the body it parsed, empty or drawn', async () => {
     const env = { SNAPSHOTS: r2() } as unknown as Env;
     db.getThumbRenderedAt.mockResolvedValue(null);

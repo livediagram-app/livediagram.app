@@ -448,7 +448,6 @@ stay on their own lazy route.
 | `create_document` passes `markUsed` through only when given                             | `apps/mcp/src/create-document-placement.test.ts`                                          |
 | Signed in: an API create is in Jump Back In unopened; one with `markUsed: false` is not | `apps/live/e2e/clerk-stub/creation-use.spec.ts`                                           |
 | Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
-| The backfill marks its edit, never marks a real one                                     | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                      |
 | The feed and the unread count leave opens out                                           | `apps/api/src/db/timeline-opens.test.ts` (real SQLite)                                    |
 | Migration merge and account deletion                                                    | `apps/api/src/db/document-opens.test.ts`, `account-owner-columns.test.ts`                 |
 | Reply flag on both comment paths, `assigneeId` on assignment                            | `apps/api/src/timeline/tab-diff.test.ts`, `apps/api/src/routes/home-snapshots.test.ts`    |

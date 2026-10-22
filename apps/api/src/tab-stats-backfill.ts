@@ -1,6 +1,6 @@
-// Counting the tabs written before tab stats existed (migration 0084,
-// docs/specs/013-workspace/explorer-details-view.md "Counting the existing tabs"). Tabs written
-// since count themselves in their own batch; this reaches the rest.
+// Counting the tabs that have no tab_stats row yet
+// (docs/specs/013-workspace/explorer-details-view.md "Counting the existing tabs"). A tab write
+// counts its tab in its own batch; this reaches the rest.
 //
 // Driven by the daily cron. Each run reads a small page of tabs without stats, counts their bodies
 // with the same tabStatsOf every write uses, and inserts the rows, until it runs out of tabs, rows
@@ -14,7 +14,7 @@ import type { Env } from './types';
 export const TAB_STATS_BACKFILL_PAGE_ROWS = 10;
 // Tabs one run may count; the rest wait a day.
 export const TAB_STATS_BACKFILL_MAX_ROWS = 5000;
-// Wall-clock budget per run, as the image-refs backfill's.
+// Wall-clock budget per run.
 const TAB_STATS_BACKFILL_BUDGET_MS = 60 * 1000;
 
 // The backfill's insert: a row only where none exists.

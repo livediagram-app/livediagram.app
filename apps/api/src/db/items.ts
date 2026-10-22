@@ -1,4 +1,4 @@
-// items (migration 0068): a document's item store (docs/specs/026-plan/items.md, blueprint item-store.md
+// items: a document's item store (docs/specs/026-plan/items.md, blueprint item-store.md
 // "Data and persistence"). Every write raises the document's `items_rev` in the same batch, so the
 // room op carries one store revision per write; an update is guarded by the item's own `rev`.
 

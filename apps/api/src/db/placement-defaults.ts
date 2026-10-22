@@ -1,5 +1,5 @@
-// placement_defaults: per-person default folders (migration 0061,
-// docs/specs/013-workspace/default-folders.md). Rows are keyed on the resolved owner and a default
+// placement_defaults: per-person default folders
+// (docs/specs/013-workspace/default-folders.md). Rows are keyed on the resolved owner and a default
 // key; the folder is checked by the caller, on write and on every use, never by a foreign key.
 
 import {

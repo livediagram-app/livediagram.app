@@ -1,4 +1,4 @@
-// sheets + sheet_cells (migration 0078): a document's sheet store (docs/specs/029-sheets/sheet-store.md, blueprint
+// sheets + sheet_cells: a document's sheet store (docs/specs/029-sheets/sheet-store.md, blueprint
 // sheet-store.md "Data and persistence"). Cells are written through `json_each` over one JSON parameter, so a write
 // of thousands of cells is a handful of statements whatever D1's 100-parameter cap. Every write is one batch,
 // guarded by the sheet's rev: a lost race writes nothing and is retried by the route.

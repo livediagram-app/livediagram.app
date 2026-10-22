@@ -5,7 +5,7 @@
 // document-scoped form of deleteTabRow: the doomed documents' links go, a tab
 // with no link left goes with its history and index rows (their FKs cascade
 // from `tabs`), and a tab still linked elsewhere stays exactly as it is there.
-// Nothing cascades from `diagrams` into `tabs` (migration 0049), so a tab this
+// Nothing cascades from `documents` into `tabs`, so a tab this
 // doesn't drop would be stranded with no document to reach it from.
 
 import type { Env } from '../types';

@@ -44,16 +44,15 @@ type DocumentRow = {
   saved_at: number;
   created_at: number;
   // Derived via subquery in the SELECT; first (oldest) share_links
-  // row for this document, or NULL when no share links exist. Replaces
-  // the legacy diagrams.share_code column dropped in migration 0008.
+  // row for this document, or NULL when no share links exist.
   share_code: string | null;
 } & RecordedIntentRow;
 
 export type SummaryRow = DocumentRow & { first_tab_count: number | null; doc_stats: string | null };
 
 async function listTabSummariesFor(env: Env, documentId: string): Promise<TabSummaryDTO[]> {
-  // Read through the document_tabs link table (migration 0011 /
-  // docs/specs/006-document/tab-document-many-to-many.md) — order_index now lives on the link, not on the tab,
+  // Read through the document_tabs link table
+  // (docs/specs/006-document/tab-document-many-to-many.md) — order_index now lives on the link, not on the tab,
   // so two documents that share a tab can order it independently.
   const result = await env.DB.prepare(
     `SELECT t.id, dt.document_id, t.name, dt.order_index, '' AS data, t.updated_at, dt.folder
@@ -107,7 +106,7 @@ async function rowToDocument(env: Env, row: DocumentRow): Promise<DocumentDTO> {
 // minted for the document.
 const SHARE_CODE_EXPR =
   '(SELECT code FROM share_links WHERE share_links.document_id = documents.id ORDER BY created_at ASC LIMIT 1) AS share_code';
-// `opens_in`, `tab_kind`, `template_family`: the recorded creation intent (migration 0062).
+// `opens_in`, `tab_kind`, `template_family`: the recorded creation intent.
 const INTENT_COLS = 'opens_in, tab_kind, template_family';
 const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, item_types, item_types_rev, saved_at, created_at, ${SHARE_CODE_EXPR}`;
 // The list projection deliberately omits `item_types`: listing 100 documents
