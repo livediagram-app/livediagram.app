@@ -1,7 +1,7 @@
 import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
 import { Chip, Stage, Window } from './parts';
 
-// About livediagram: what it is in one picture. Three windows fanned out, one per way of working (planning on a
+// About livepages: what it is in one picture. Three windows fanned out, one per way of working (planning on a
 // board, a diagram, a page to publish), under the two promises: free, and open source.
 export function AboutArt() {
   return (

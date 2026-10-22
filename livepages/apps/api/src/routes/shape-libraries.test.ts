@@ -1,7 +1,7 @@
 import { makeTestRouteContext } from './test-route-context';
-import type { ShapeLibrary } from '@livediagram/api-schema';
+import type { ShapeLibrary } from '@livepages/api-schema';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { MAX_SHAPE_LIBRARIES_PER_OWNER, MAX_TAB_BYTES } from '@livediagram/api-schema';
+import { MAX_SHAPE_LIBRARIES_PER_OWNER, MAX_TAB_BYTES } from '@livepages/api-schema';
 
 // handleShapeLibraries (docs/specs/013-workspace/blueprints/shape-libraries.md "Interfaces and
 // contracts"): owner-scoped like custom themes, plus the cap, the size budget, item validation and

@@ -8,9 +8,9 @@
 // (page-background-custom.tsx), which preview each change and need no board warning.
 
 import { useRef, useState, type KeyboardEvent, type PointerEvent } from 'react';
-import { SOLID_BRAND_DARK_CONTROL, Tooltip, lucideGlyph } from '@livediagram/ui';
-import { lucideTriangleAlert } from '@livediagram/icons/lucide';
-import { penColourHardToSee, readablePenColour } from '@livediagram/document';
+import { SOLID_BRAND_DARK_CONTROL, Tooltip, lucideGlyph } from '@livepages/ui';
+import { lucideTriangleAlert } from '@livepages/icons/lucide';
+import { penColourHardToSee, readablePenColour } from '@livepages/document';
 import { hexToHsv, hsvToHex, type Hsv } from '@/lib/hsv';
 import { normaliseHex } from '@/lib/swatch-overrides';
 import { useEyeDropper } from '@/hooks/ui/useEyeDropper';

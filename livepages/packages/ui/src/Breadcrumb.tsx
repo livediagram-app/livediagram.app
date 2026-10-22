@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from 'react';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livepages/ui';
 
 // The breadcrumb trail shared by the marketing site and the help centre: a
 // home-icon root, chevron separators, and truncating labels.

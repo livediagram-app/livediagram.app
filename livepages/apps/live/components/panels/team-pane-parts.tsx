@@ -6,7 +6,7 @@ import {
   PictureDisc,
   IDENTITY_FILL,
   identityVars,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import type { TeamMember, TeamRole } from '@/lib/api-client';
 import { colorForKey, initialsOf } from '@/lib/identity';

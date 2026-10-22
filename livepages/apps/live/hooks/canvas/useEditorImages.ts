@@ -28,7 +28,7 @@
 // contract.
 
 import { useCallback, useEffect, useEffectEvent, useMemo, useState } from 'react';
-import { createImage, isBoxed, type Element } from '@livediagram/document';
+import { createImage, isBoxed, type Element } from '@livepages/document';
 import { apiFetchImageDataUrl, apiListImages, type ImageSummary } from '@/lib/api-client';
 import { isDataImageId } from '@/lib/offline/offline-images';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';

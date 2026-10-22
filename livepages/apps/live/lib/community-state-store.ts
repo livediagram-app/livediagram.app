@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import type { CommunityPostState } from '@livediagram/api-schema';
+import type { CommunityPostState } from '@livepages/api-schema';
 import { createListeners } from '@/lib/listeners';
 
 // Whether each open document has a Community post, and in which state (docs/specs/025-community/community.md),

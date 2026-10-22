@@ -29,7 +29,7 @@ import {
   rotationOf,
   finishSplitsFace,
   faceFinishOf,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { LaneGutter } from '@/components/canvas/LaneGutter';

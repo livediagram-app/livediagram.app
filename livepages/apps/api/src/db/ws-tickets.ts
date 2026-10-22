@@ -9,7 +9,7 @@
 // the REST access gates for this document moments ago.
 
 import type { Env, ShareRole } from '../types';
-import { isAccessLevel } from '@livediagram/api-schema';
+import { isAccessLevel } from '@livepages/api-schema';
 
 // Long enough to cover a slow page load between mint and upgrade; short
 // enough that a leaked ticket is useless almost immediately.

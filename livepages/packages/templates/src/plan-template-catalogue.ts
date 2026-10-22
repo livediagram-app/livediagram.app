@@ -11,8 +11,8 @@ import {
   type PlanBoardSetup,
   type PlanColumn,
   type PlanVisualisation,
-} from '@livediagram/items';
-import type { TemplateStartId } from '@livediagram/sheets';
+} from '@livepages/items';
+import type { TemplateStartId } from '@livepages/sheets';
 
 export const PLAN_TEMPLATE_KINDS = [
   'blank-plan',

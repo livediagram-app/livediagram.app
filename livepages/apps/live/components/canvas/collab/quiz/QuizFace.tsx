@@ -12,7 +12,7 @@ import {
   quizTally,
   responseOf,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { participantKey, type Participant } from '@/lib/identity';
 import { tint } from '@/lib/element-tint';
 import { useNow } from '@/hooks/ui/useNow';

@@ -12,14 +12,14 @@
 // because the destinations live in different apps stitched under one host by
 // the router, so client-side nav wouldn't cross them.
 
-import { COMMUNITY_HOME_PATH } from '@livediagram/api-schema';
+import { COMMUNITY_HOME_PATH } from '@livepages/api-schema';
 import { useRef, type ReactNode, useState } from 'react';
 import { useCommunityEnabled } from './community/useCommunityEnabled';
 import { useClickOutside } from './useClickOutside';
 import { useMenu } from './menu/useMenu';
 import { useMenuButton } from './menu/useMenuButton';
 import { ChevronDownIcon } from './icons';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livepages/ui';
 
 type ProductNavKey = 'home' | 'explorer' | 'editor' | 'community' | 'help' | 'telemetry';
 

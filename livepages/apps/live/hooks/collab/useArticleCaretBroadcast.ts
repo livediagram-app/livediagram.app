@@ -9,7 +9,7 @@
 // collaborators' carets on it are drawn.
 
 import { useEffect, useEffectEvent, type RefObject } from 'react';
-import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
+import type { RoomOp, RoomOutgoing } from '@livepages/api-schema';
 import {
   getLocalArticleCaret,
   setArticleCaretsTab,

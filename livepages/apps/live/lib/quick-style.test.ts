@@ -8,7 +8,7 @@ import {
   type ShapeElement,
   type StickyElement,
   type TextElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { describe, expect, it } from 'vitest';
 import {
   applyQuickFill,

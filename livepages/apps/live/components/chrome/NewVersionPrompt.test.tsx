@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
+import { DOCUMENT_FORMAT } from '@livepages/api-schema';
 import { noteServerDocumentFormat, resetServerReleaseForTests } from '@/lib/server-release';
 import { RELOAD_SAVE_WAIT_MS } from '@/lib/reload-when-saved';
 
@@ -37,7 +37,7 @@ describe('NewVersionPrompt', () => {
     render(<NewVersionPrompt hasUnsavedChanges={() => false} reload={vi.fn()} />);
     newer();
     const status = screen.getByRole('status');
-    expect(status.textContent).toContain('A new version of livediagram is ready.');
+    expect(status.textContent).toContain('A new version of livepages is ready.');
     expect(document.activeElement).not.toBe(screen.getByRole('button', { name: 'Reload' }));
     expect(screen.getByRole('button', { name: 'Not now' })).toBeTruthy();
     expect(track).toHaveBeenCalledWith('UI', 'Opened', 'NewVersionPrompt');

@@ -4,7 +4,7 @@
 // fits every size and orientation. Elements carry no colours of their own: the tab's theme paints
 // them, and a dark page inks them light. A "wide" box (landscape, a slide) gets a side-by-side
 // arrangement where a stack would be squashed.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { heading, kit, verticalSteps, type Kit, type LayoutBox } from './page-layout-kit';
 import {
   buildChecklist,

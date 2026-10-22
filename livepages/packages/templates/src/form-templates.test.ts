@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FORM_STARTERS } from '@livediagram/forms';
+import { FORM_STARTERS } from '@livepages/forms';
 import { buildTemplate, templateTabs } from './build-template';
 import {
   FORM_TEMPLATES,

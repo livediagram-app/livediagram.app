@@ -1,4 +1,4 @@
-import { SiteHeader } from '@livediagram/ui';
+import { SiteHeader } from '@livepages/ui';
 import { SearchInput } from '@/components/SearchInput';
 
 // Help-centre header: the shared SiteHeader (packages/ui, also marketing's and

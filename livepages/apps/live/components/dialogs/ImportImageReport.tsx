@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button } from '@livepages/ui';
 import { describeImportImageReport, type ImportImageReport as Report } from '@/lib/import-images';
 import type { BoardSceneReport } from '@/lib/board-scene/report';
 import { BoardSceneReportList } from './BoardSceneReportList';

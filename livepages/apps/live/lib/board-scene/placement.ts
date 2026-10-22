@@ -1,7 +1,7 @@
 // Where a landed scene goes (docs/specs/020-import-export/board-scene.md "Placement"): at a point
 // its bounds are centred there; at the origin its coordinates are the tab's.
 import type { SceneItem } from './scene';
-import type { Rect } from '@livediagram/document';
+import type { Rect } from '@livepages/document';
 
 export type BoardScenePlacement = { kind: 'at'; x: number; y: number } | { kind: 'origin' };
 type SceneBounds = Rect;

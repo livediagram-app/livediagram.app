@@ -6,7 +6,7 @@
 // canvas's, and every popover that finds an element by its `data-element-id` finds it in the Sheet. The Sheet's own
 // frame around it moves, resizes and selects it; this view takes no pointer itself (its indicators still do).
 import { useCallback, type ComponentProps, type ReactNode } from 'react';
-import { eventStormingNoteFont, resolveFontStack, type ShapeElement } from '@livediagram/document';
+import { eventStormingNoteFont, resolveFontStack, type ShapeElement } from '@livepages/document';
 import { BoxedElementView } from './BoxedElementView';
 import { ElementIndicatorStyleProvider } from './ElementIndicatorStyleContext';
 

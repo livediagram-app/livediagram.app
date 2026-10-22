@@ -9,7 +9,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { act, cleanup, render } from '@testing-library/react';
 import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { createPinnedArrow, createShape, createText } from '@livediagram/document';
+import { createPinnedArrow, createShape, createText } from '@livepages/document';
 import { Minimap } from './Minimap';
 
 afterEach(cleanup);

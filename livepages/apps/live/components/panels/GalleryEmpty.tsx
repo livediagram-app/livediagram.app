@@ -1,8 +1,8 @@
 // A picker's empty gallery (docs/specs/004-interface-design/empty-states.md): the image badge, "No images yet" and the
 // line saying how one gets there. Shared by the Image picker's Gallery tab and a page background's Choose From My
 // Images; the Gallery pane draws the page-sized EmptyState instead.
-import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
-import { lucideImage } from '@livediagram/icons/lucide';
+import { CompactEmptyState, lucideGlyph } from '@livepages/ui';
+import { lucideImage } from '@livepages/icons/lucide';
 
 const ImageIcon = lucideGlyph(lucideImage, 18);
 

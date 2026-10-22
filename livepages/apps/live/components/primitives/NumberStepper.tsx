@@ -6,8 +6,8 @@
 // the value on white. Given a `tone` (a Sheet's toolbar), it wears those colours instead, bordered like the controls
 // beside it, so it follows the Sheet's theme in light and dark.
 import { useState } from 'react';
-import { Tooltip, lucideGlyph } from '@livediagram/ui';
-import { lucideMinus, lucidePlus } from '@livediagram/icons/lucide';
+import { Tooltip, lucideGlyph } from '@livepages/ui';
+import { lucideMinus, lucidePlus } from '@livepages/icons/lucide';
 
 const MinusGlyph = lucideGlyph(lucideMinus, 14);
 const PlusGlyph = lucideGlyph(lucidePlus, 14);

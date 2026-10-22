@@ -20,7 +20,7 @@ import {
   type DashboardContent,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 const newId = () => crypto.randomUUID();
 import { CanvasCover } from '@/components/plan/MaximisedPlanLayer';
@@ -35,7 +35,7 @@ import { useSlotMove } from './useSlotMove';
 import { DashboardMenuName } from './DashboardMenuName';
 import { DashboardSettings } from './DashboardSettings';
 import { CANVAS_ROOT_SELECTOR } from '@/lib/canvas-selectors';
-import { elementFontId, resolveFinish, resolveFontStack } from '@livediagram/document';
+import { elementFontId, resolveFinish, resolveFontStack } from '@livepages/document';
 import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { planFontStyle } from '@/lib/plan-font';

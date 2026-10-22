@@ -2,7 +2,7 @@
 // Pricing Tiers. Same contract as page-layouts.ts: the page's content
 // box in, uncoloured elements out, in proportions of the box so each fits every size and
 // orientation; a wide page sets things side by side where a stack would be squashed.
-import type { Element, ShapeElement } from '@livediagram/document';
+import type { Element, ShapeElement } from '@livepages/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { iconDisc, SOURCE_H, sourceLine } from './page-layout-parts';
 

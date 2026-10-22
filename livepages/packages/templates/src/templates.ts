@@ -1,5 +1,5 @@
 import { FORM_TEMPLATES, type FormTemplateKind } from './form-templates';
-import { titleCase } from '@livediagram/api-schema';
+import { titleCase } from '@livepages/api-schema';
 import { UNTITLED_DOCUMENT_NAME, isUntitledDocumentName } from './legacy-untitled';
 
 export type TemplateKind =

@@ -5,8 +5,8 @@
 // checkerboard), what the kit holds, and the download. It owns the kit's making; the dialog hands
 // it the images it has loaded for previews.
 import { useState } from 'react';
-import type { LaidOutPage, Tab } from '@livediagram/document';
-import { Button, Select } from '@livediagram/ui';
+import type { LaidOutPage, Tab } from '@livepages/document';
+import { Button, Select } from '@livepages/ui';
 import { BackBar } from '@/components/primitives/BackBar';
 import { exportLogoKit, LOGO_KIT_PNG_SIZES, logoKitFileName } from '@/lib/export-logo-kit';
 import { exportPageLabel } from '@/lib/export-pages';

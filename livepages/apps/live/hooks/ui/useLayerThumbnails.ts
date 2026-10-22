@@ -14,7 +14,7 @@ import {
   svgBoxed,
   type Element,
   type Layer,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { useCanvasChartPalette, useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

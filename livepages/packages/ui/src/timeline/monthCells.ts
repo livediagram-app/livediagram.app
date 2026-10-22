@@ -6,7 +6,7 @@
 // reads local fields, matching `dateKey` in the grouping helper — the
 // day a cell represents has to be the same day the feed grouped events
 // into, or a dot appears on the wrong square. The day arithmetic is the
-// Plan views' (@livediagram/items plan-view-dates), so both month grids
+// Plan views' (@livepages/items plan-view-dates), so both month grids
 // pad, step and name months the same way.
 import {
   MONTH_LONG,
@@ -14,7 +14,7 @@ import {
   daysInMonth,
   monthStart,
   shiftMonth as shiftCivilMonth,
-} from '@livediagram/items';
+} from '@livepages/items';
 
 export type MonthCell = {
   // YYYY-MM-DD, or null for a leading/trailing pad square.

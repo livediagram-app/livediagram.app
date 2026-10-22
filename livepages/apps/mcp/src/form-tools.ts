@@ -1,8 +1,8 @@
 // The form tools (docs/specs/030-forms/forms.md "Agents", docs/specs/015-api/mcp-server.md §4.9e): read_form,
-// add_form, change_form, share_form and try_form, over the verbs the CLI shares (@livediagram/agent-verbs). A refusal is a tool
+// add_form, change_form, share_form and try_form, over the verbs the CLI shares (@livepages/agent-verbs). A refusal is a tool
 // error that says what is there. A write answers with the form's picture, as the other writing tools do.
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import type { TabResponse } from '@livediagram/api-schema';
+import type { TabResponse } from '@livepages/api-schema';
 import {
   addForm,
   changeForm,
@@ -10,14 +10,14 @@ import {
   shareForm,
   tryForm,
   type FormCallResult,
-} from '@livediagram/agent-verbs';
+} from '@livepages/agent-verbs';
 import {
   mcpAddForm,
   mcpChangeForm,
   mcpReadForm,
   mcpShareForm,
   mcpTryForm,
-} from '@livediagram/agent-verbs/mcp';
+} from '@livepages/agent-verbs/mcp';
 import { apiJson, clientFor } from './api';
 import type { Env } from './env';
 import { imageResult } from './image-result';

@@ -10,7 +10,7 @@
 // mid slate MUTED, which reads on both); anything drawn on a fill the
 // template picks carries an explicit ink chosen for that fill.
 
-import { createShape, createText, type Element } from '@livediagram/document';
+import { createShape, createText, type Element } from '@livepages/document';
 import { MUTED } from './template-session-parts';
 
 export { MUTED };

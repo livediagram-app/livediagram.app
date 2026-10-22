@@ -1,4 +1,4 @@
-import { defineProject } from '@livediagram/vitest-config';
+import { defineProject } from '@livepages/vitest-config';
 
 // Pure and small: every line and branch is covered (docs/specs/007-editor/pages-mode.md "Backgrounds").
 export default defineProject({

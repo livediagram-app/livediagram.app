@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
+import { TELEMETRY_TYPE_PATTERN } from '@livepages/api-schema';
 import { BOUNDARY_BACKENDS, CLASSICAL_REASONS } from './protocol';
 import { detectorTelemetryType } from './telemetry';
 

@@ -1,8 +1,8 @@
 // The CLI's pictures (docs/specs/015-api/blueprints/cli.md "Previews", CLI30, CLI31): an SVG drawn by the shared
-// renderer, written as is or rasterised at scale 1 with @livediagram/render-png, whose wasm and font the CLI reads
+// renderer, written as is or rasterised at scale 1 with @livepages/render-png, whose wasm and font the CLI reads
 // from beside its bundle only when a render runs.
 
-import { createPngRenderer } from '@livediagram/render-png';
+import { createPngRenderer } from '@livepages/render-png';
 import type { CliIo } from '../io';
 import { CliError } from '../output/cli-error';
 import { NPM_PACKAGE } from '../config/version';

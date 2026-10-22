@@ -1,6 +1,6 @@
 // The named constants of the draw.io importer
 // (docs/specs/020-import-export/blueprints/drawio-import.md "Constants").
-import type { ElementShadow } from '@livediagram/document';
+import type { ElementShadow } from '@livepages/document';
 
 const MiB = 1024 * 1024;
 
@@ -12,7 +12,7 @@ export const DRAWIO_MAX_INFLATED_BYTES = 100 * MiB;
 export const DRAWIO_MAX_PAGES = 100;
 /** draw.io's rounding factor for `rounded=1` without `arcSize`, in percent. */
 export const DRAWIO_DEFAULT_ARC_SIZE = 10;
-/** `shadow=1` as a livediagram drop shadow (D22). */
+/** `shadow=1` as a livepages drop shadow (D22). */
 export const DRAWIO_SHADOW: ElementShadow = { offsetX: 2, offsetY: 3, blur: 3, opacity: 0.25 };
 /** Height one caption line adds to an icon's box (D23). */
 export const DRAWIO_CAPTION_LINE_PX = 18;

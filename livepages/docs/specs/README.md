@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-This folder is the **source of truth** for what livediagram is and how it works. Before building anything, check here. After every product decision, update or add a spec.
+This folder is the **source of truth** for what livepages is and how it works. Before building anything, check here. After every product decision, update or add a spec.
 
 Specs live in numbered category folders: the reserved `001`–`005` first (vision, scope, architecture, interface design, roadmap), then one folder per domain concept. The specs themselves are unnumbered and named by subject.
 
@@ -34,7 +34,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
 - ./025-community/README.md - when working on Community: publishing documents to the public gallery, the Community app, likes, copies, and reports (moderation by reports alone)
 - ./026-plan/README.md - when working on Plan mode, Plan boards and cards, or items and the item store
-- ./027-repositories/README.md - when linking a code repository to livediagram: `livediagram.toml`, mirrors, sync and merge, git, diagram-as-code sources
+- ./027-repositories/README.md - when linking a code repository to livepages: `livepages.toml`, mirrors, sync and merge, git, diagram-as-code sources
 - ./028-animation/README.md - when working on element animations: the animation set each element takes (Shape, Text, Sticky, Drawing, Media, Table), the per-set menu categories, reveals, loops and the quality bar
 - ./029-sheets/README.md - when working on Sheets: the Sheet element (a spreadsheet tab placed from Plan mode), its formulas, or the sheet store
 - ./030-forms/README.md - when working on Form tabs: building forms, the public form link and its page, responses that become cards on a board

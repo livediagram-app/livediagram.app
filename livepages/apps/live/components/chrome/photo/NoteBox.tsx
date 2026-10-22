@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
-import { EVENT_STORMING_NOTES } from '@livediagram/document';
-import { Tooltip } from '@livediagram/ui';
-import type { DetectedSticky } from '@livediagram/sticky-vision';
+import { EVENT_STORMING_NOTES } from '@livepages/document';
+import { Tooltip } from '@livepages/ui';
+import type { DetectedSticky } from '@livepages/sticky-vision';
 import type { Corner } from '@/lib/photo-boxes';
 import { BoxEditControls } from './BoxEditControls';
 import { lineHeightPx, useFitText, WORDS_FONT } from './fitText';

@@ -5,8 +5,8 @@
 // the zoom so they read the same on screen at any zoom, so they read it themselves: a zoom re-renders
 // them, not the note (docs/specs/008-canvas/canvas-performance.md).
 
-import { ICON_STROKE_PX_SMALL } from '@livediagram/icons';
-import { Glyph, Tooltip } from '@livediagram/ui';
+import { ICON_STROKE_PX_SMALL } from '@livepages/icons';
+import { Glyph, Tooltip } from '@livepages/ui';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // A dashed accent frame just outside the paper, in the alignment guides' own language, saying "this

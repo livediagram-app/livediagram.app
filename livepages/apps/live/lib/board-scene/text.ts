@@ -11,7 +11,7 @@ import {
   type TextAlignY,
   type TextSize,
   type TextSizePreset,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { normaliseHex, sceneOklch, textColourFields } from './colour';
 import type { LandContext } from './context';
 import type { SceneText } from './scene';

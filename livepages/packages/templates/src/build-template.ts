@@ -9,7 +9,7 @@ import { buildWireframeFlow } from './template-builders-wireframe-flows';
 import { isFormTemplateKind } from './form-templates';
 import { buildVirtualOffice } from './template-builders-office';
 import { buildAllHandsHall, buildCoworkingSpace, buildTeamPod } from './template-builders-spaces';
-import { settleChips, type Element, type Tab } from '@livediagram/document';
+import { settleChips, type Element, type Tab } from '@livepages/document';
 import type { TemplateKind } from './templates';
 import { buildSlideDeck } from './template-builders-slides';
 import { buildPlanTemplate, isPlanTemplateKind, planTemplateTabs } from './template-builders-plan';

@@ -3,7 +3,7 @@
 // the sheet engine the MCP's list_sheets, read_sheet, change_sheet and add_sheet share. Sheets are named by title
 // or id, cells by A1, rows by number and columns by letter.
 import { z } from 'zod';
-import { parseCsv } from '@livediagram/sheets';
+import { parseCsv } from '@livepages/sheets';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
 import { addSheet } from '../sheets/add-sheet';
 import { changeSheet } from '../sheets/change-sheet';
@@ -12,9 +12,9 @@ import { readSheet } from '../sheets/read-sheet';
 import type { SheetChange } from '../sheets/sheet-change-build';
 import { columns, documentOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or livediagram URL');
+const docArg = z.string().describe('A name, id prefix or livepages URL');
 const sheetArg = z.string().describe('The sheet, by title or id');
-const LS_HINT = 'list the sheets with: livediagram sheet ls <doc>';
+const LS_HINT = 'list the sheets with: livepages sheet ls <doc>';
 
 const refusal = (code: string, message: string) =>
   new VerbRefusal({ status: code === 'sheet_not_found' ? 404 : 400, code, message, hint: LS_HINT });
@@ -76,7 +76,7 @@ export const sheetLs = defineVerb({
   listKey: 'sheets',
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram sheet ls "Budget 2027"', 'livediagram sheet ls 3f9c --tab tab-one'],
+    examples: ['livepages sheet ls "Budget 2027"', 'livepages sheet ls 3f9c --tab tab-one'],
     prints: '<title>  <tab>  <range in use>  <id>, one sheet a line',
   },
 });
@@ -133,8 +133,8 @@ export const sheetGet = defineVerb({
   cli: {
     positionals: ['doc', 'sheet', 'range'],
     examples: [
-      'livediagram sheet get "Budget 2027" Costs',
-      'livediagram sheet get 3f9c Costs B2:D40',
+      'livepages sheet get "Budget 2027" Costs',
+      'livepages sheet get 3f9c Costs B2:D40',
     ],
     prints: '<cell>  <input>, and → <value> after a formula, one cell a line',
   },
@@ -162,7 +162,7 @@ export const sheetSet = defineVerb({
         status: 400,
         code: 'usage',
         message: 'nothing to write: give values after the cell, or --csv <file>',
-        hint: 'for example: livediagram sheet set Budget Costs B2 1200 =B2*12',
+        hint: 'for example: livepages sheet set Budget Costs B2 1200 =B2*12',
       });
     return changeVia(ctx, input.doc, input.sheet, [{ op: 'set', at: input.at, rows }]);
   },
@@ -171,8 +171,8 @@ export const sheetSet = defineVerb({
   cli: {
     positionals: ['doc', 'sheet', 'at', '...values'],
     examples: [
-      'livediagram sheet set "Budget 2027" Costs B2 1200 =B2*12',
-      'cat costs.csv | livediagram sheet set 3f9c Costs A1 --csv -',
+      'livepages sheet set "Budget 2027" Costs B2 1200 =B2*12',
+      'cat costs.csv | livepages sheet set 3f9c Costs A1 --csv -',
     ],
     prints: '~ sheet "<title>": set <range>',
   },
@@ -223,8 +223,8 @@ export const sheetAdd = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livediagram sheet add "Budget 2027" --title Costs',
-      'livediagram sheet add 3f9c --tab tab-one --csv costs.csv',
+      'livepages sheet add "Budget 2027" --title Costs',
+      'livepages sheet add 3f9c --tab tab-one --csv costs.csv',
     ],
     prints: '+ sheet "<title>": <range filled>',
   },
@@ -289,8 +289,8 @@ export const sheetInsertRows = axisVerb(
   z.string().describe('The row number'),
   (i) => ({ op: 'insert_rows', at: Number(i.where), count: count(i.count), side: side(i.after) }),
   [
-    'livediagram sheet insert-rows Budget Costs 4',
-    'livediagram sheet insert-rows 3f9c Costs 4 --count 3 --after',
+    'livepages sheet insert-rows Budget Costs 4',
+    'livepages sheet insert-rows 3f9c Costs 4 --count 3 --after',
   ],
 );
 
@@ -301,8 +301,8 @@ export const sheetInsertCols = axisVerb(
   z.string().describe('The column letter'),
   (i) => ({ op: 'insert_cols', at: i.where, count: count(i.count), side: side(i.after) }),
   [
-    'livediagram sheet insert-cols Budget Costs C',
-    'livediagram sheet insert-cols 3f9c Costs C --count 2 --after',
+    'livepages sheet insert-cols Budget Costs C',
+    'livepages sheet insert-cols 3f9c Costs C --count 2 --after',
   ],
 );
 
@@ -312,7 +312,7 @@ export const sheetRmRows = axisVerb(
   'Deletes a row or a span of rows ("3:5") and their cells; a formula reading a deleted cell reads #REF!.',
   z.string().describe('A row number or span, like 3:5'),
   (i) => ({ op: 'delete_rows', rows: i.where }),
-  ['livediagram sheet rm-rows Budget Costs 7', 'livediagram sheet rm-rows 3f9c Costs 3:5'],
+  ['livepages sheet rm-rows Budget Costs 7', 'livepages sheet rm-rows 3f9c Costs 3:5'],
 );
 
 export const sheetRmCols = axisVerb(
@@ -321,7 +321,7 @@ export const sheetRmCols = axisVerb(
   'Deletes a column or a span of columns ("C:E") and their cells; a formula reading a deleted cell reads #REF!.',
   z.string().describe('A column letter or span, like C:E'),
   (i) => ({ op: 'delete_cols', cols: i.where }),
-  ['livediagram sheet rm-cols Budget Costs D', 'livediagram sheet rm-cols 3f9c Costs C:E'],
+  ['livepages sheet rm-cols Budget Costs D', 'livepages sheet rm-cols 3f9c Costs C:E'],
 );
 
 export const sheetVerbs: readonly Verb[] = [

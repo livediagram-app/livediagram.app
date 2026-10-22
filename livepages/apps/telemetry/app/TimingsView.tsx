@@ -1,6 +1,6 @@
 'use client';
 
-import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import type { TelemetrySummary, TelemetryWindowKey } from '@livepages/api-schema';
 import { EDITOR_TIMING_CHARTS, WEB_VITAL_CHARTS } from './metric-catalogue';
 import type { MetricGroup } from './metric-series';
 import { TimingCard } from './TimingCard';

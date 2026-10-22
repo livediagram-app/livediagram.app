@@ -1,6 +1,6 @@
 // form_links, form_reports and form_reads (migrations 0092 and 0093, docs/specs/030-forms/blueprints/forms.md §11): a Form
 // tab's public link, what respondents reported, and what each reader has seen of its responses.
-import { FORM_CODE_LENGTH } from '@livediagram/forms';
+import { FORM_CODE_LENGTH } from '@livepages/forms';
 import type { Env } from '../types';
 
 export type FormLinkRow = {

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, ITEM_TYPE_EXCLUDED_STATUSES_MAX, type ItemTypeDef } from '@livediagram/items';
+import { ITEM_TYPES, ITEM_TYPE_EXCLUDED_STATUSES_MAX, type ItemTypeDef } from '@livepages/items';
 import { ItemTypeEditor, deleteMessage } from './ItemTypeEditor';
 
 // docs/specs/026-plan/item-types.md "Editing a type": the editor's Configuration, States and Display tabs.

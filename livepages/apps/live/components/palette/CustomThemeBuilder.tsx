@@ -20,9 +20,9 @@ import {
   shade,
   tint,
   type ShapeKind,
-} from '@livediagram/document';
-import type { CustomThemeDefinition } from '@livediagram/api-schema';
-import { Button } from '@livediagram/ui';
+} from '@livepages/document';
+import type { CustomThemeDefinition } from '@livepages/api-schema';
+import { Button } from '@livepages/ui';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';
 import { PATTERNS, PatternButton } from '@/components/palette/palette-controls';
 import {

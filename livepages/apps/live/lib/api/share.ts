@@ -8,7 +8,7 @@ import {
   type ShareLinkExpiry,
   type ShareLinkResponse,
   type ShareRole,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import {
   API_BASE,
@@ -21,7 +21,7 @@ import {
   type SharePasswordResponse,
   apiFetch,
 } from './core';
-import { parseStoredLevel } from '@livediagram/api-schema';
+import { parseStoredLevel } from '@livepages/api-schema';
 
 // Resolve a share code to a full document + the role granted by that
 // code. Visitors landing on `/document/shared?s=<code>` use

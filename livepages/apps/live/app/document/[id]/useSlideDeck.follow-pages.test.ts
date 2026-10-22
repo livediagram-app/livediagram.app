@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { pageSlideIdFor, storePresentation, type Deck, type Tab } from '@livediagram/document';
+import { pageSlideIdFor, storePresentation, type Deck, type Tab } from '@livepages/document';
 import { useSlideDeck } from './useSlideDeck';
 import { tabsWithPageMoved } from './useDeckFollowsPages';
 

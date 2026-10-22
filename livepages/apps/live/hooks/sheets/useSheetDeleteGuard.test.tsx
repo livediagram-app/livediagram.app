@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livepages/document';
 import { track } from '@/lib/telemetry';
 import { sheetDeleteCopy, useSheetDeleteGuard } from './useSheetDeleteGuard';
 

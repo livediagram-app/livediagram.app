@@ -6,7 +6,7 @@ import {
   groupBy,
   groupDocumentsByFolder,
 } from './folder-tree';
-import type { Folder } from '@livediagram/api-schema';
+import type { Folder } from '@livepages/api-schema';
 
 const f = (id: string, name: string, parentId: string | null = null): Folder => ({
   id,

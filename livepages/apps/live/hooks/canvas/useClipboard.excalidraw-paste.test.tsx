@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement, Tab } from '@livediagram/document';
+import type { Element, StickyElement, Tab } from '@livepages/document';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import { serialiseElements } from '@/lib/clipboard-payload';
 import { excalidrawBuilder, excalidrawText } from '@/lib/excalidraw-fixtures';

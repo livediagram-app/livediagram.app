@@ -3,7 +3,7 @@
 
 import { useElementIndicatorsSuppressed } from './ElementIndicatorStyleContext';
 import type { CSSProperties, PointerEvent as ReactPointerEvent } from 'react';
-import { LockIcon, SOLID_BRAND_DARK } from '@livediagram/ui';
+import { LockIcon, SOLID_BRAND_DARK } from '@livepages/ui';
 import type { DragMode } from '@/lib/canvas';
 import { handlePressStarts } from '@/lib/double-press';
 import { ADORNMENT_MIN_ZOOM } from '@/components/canvas/element-badges';

@@ -8,7 +8,7 @@
 // Pure + reusable: `diffToElementOps` derives the ops from the before/after
 // element arrays the editor already computes on every commit, and `applyElementOp` applies one op to an
 // element array by id. Both are transport-agnostic — the room wraps an
-// `ElementOp` in a `{ tabId, op }` frame (see @livediagram/api-schema).
+// `ElementOp` in a `{ tabId, op }` frame (see @livepages/api-schema).
 //
 // Level 0 scope: `update` replaces the whole element by id (simple + correct;
 // two peers editing the same element still last-writer-wins, which the docs/specs/007-editor/live-app.md

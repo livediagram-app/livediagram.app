@@ -7,7 +7,7 @@
 
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import { parseSourceFiles } from '@livediagram/source-ast';
+import { parseSourceFiles } from '@livepages/source-ast';
 import {
   isBinaryExpression,
   isConditionalExpression,

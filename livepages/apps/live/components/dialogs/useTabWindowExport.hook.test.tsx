@@ -3,7 +3,7 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livepages/document';
 
 const loadTabImages = vi.fn(async () => new Map());
 vi.mock('@/lib/export-tab', async (real) => ({

@@ -5,7 +5,7 @@ import {
   DEVICE_CODE_GRANT,
   DEVICE_CODE_TTL_S,
   DEVICE_SLOW_DOWN_S,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import type { Env } from './env';
 import { registerOauthRoutes } from './oauth';
 
@@ -119,7 +119,7 @@ describe('the device page', () => {
     const s = await start();
     const typed = s.user_code.toLowerCase().replace('-', ' ');
     const found = await app.request(`/oauth/device/session/${encodeURIComponent(typed)}`, {}, env);
-    expect(await found.json()).toEqual({ clientName: 'livediagram CLI' });
+    expect(await found.json()).toEqual({ clientName: 'livepages CLI' });
     expect((await app.request('/oauth/device/session/BBBB-BBBB', {}, env)).status).toBe(404);
     expect((await app.request('/oauth/device/session/nope', {}, env)).status).toBe(404);
   });
@@ -237,7 +237,7 @@ describe('polling', () => {
 });
 
 describe('malformed requests', () => {
-  it('answers each with its refusal, and a host without a consent base links livediagram.app', async () => {
+  it('answers each with its refusal, and a host without a consent base links livepages.app', async () => {
     const bad = { method: 'POST', body: '{', headers: { 'Content-Type': 'application/json' } };
     expect((await app.request('/oauth/device/complete', bad, env)).status).toBe(400);
     expect((await app.request('/oauth/device/deny', bad, env)).status).toBe(400);
@@ -255,6 +255,6 @@ describe('malformed requests', () => {
       ).json(),
     ).toEqual({ error: 'invalid_client' });
     delete env.CONSENT_BASE_URL;
-    expect((await start()).verification_uri).toBe('https://livediagram.app/oauth/device');
+    expect((await start()).verification_uri).toBe('https://livepages.app/oauth/device');
   });
 });

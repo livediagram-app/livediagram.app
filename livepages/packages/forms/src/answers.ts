@@ -1,6 +1,6 @@
 // Checking answers (docs/specs/030-forms/forms.md "Checking answers", blueprint §4): one set of rules for the
 // respondent page, the builder's Preview and the api, so a response the page lets through is one the api keeps.
-import { isEmailAddress } from '@livediagram/items';
+import { isEmailAddress } from '@livepages/items';
 import { OTHER_MAX, PARAGRAPH_MAX, SHORT_ANSWER_MAX } from './limits';
 import { shownQuestions } from './branching';
 import type { FormDefinition, FormQuestion } from './model';

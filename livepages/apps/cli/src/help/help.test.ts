@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { COMMAND_ALIASES, defineVerb, RESOURCES, TOP_LEVEL, VERBS } from '@livediagram/agent-verbs';
-import { estimateTokens } from '@livediagram/document-views';
+import { COMMAND_ALIASES, defineVerb, RESOURCES, TOP_LEVEL, VERBS } from '@livepages/agent-verbs';
+import { estimateTokens } from '@livepages/document-views';
 import {
   HELP_RESOURCE_MAX_TOKENS,
   HELP_TOP_MAX_TOKENS,
@@ -37,16 +37,16 @@ describe('help', () => {
 
   it("shows a verb's usage, flags, examples and what it prints", () => {
     const view = verbHelp(VERBS.find((v) => v.id === 'tab.view')!);
-    expect(view).toContain('Usage: livediagram tab view <doc> [flags]');
+    expect(view).toContain('Usage: livepages tab view <doc> [flags]');
     expect(view).toContain('  --budget <n>  Fit the view to about this many tokens');
     expect(view).toContain('  --coarse  layout: rows instead of geometry');
     expect(view).toContain('  --view <outline|graph|layout|comments|show|find|pages>');
     expect(view).toContain('Prints: the view as the api serves it');
     expect(verbHelp(VERBS.find((v) => v.id === 'guide')!)).toContain(
-      'Usage: livediagram guide [topic]',
+      'Usage: livepages guide [topic]',
     );
     expect(verbHelp(VERBS.find((v) => v.id === 'skill.print')!)).toContain(
-      'Usage: livediagram skill print\n',
+      'Usage: livepages skill print\n',
     );
   });
 });
@@ -62,7 +62,7 @@ describe('verb help without a CLI projection', () => {
       output: z.object({}),
     });
     expect(verbHelp(bare)).toBe(
-      'Does a thing.\n\nUsage: livediagram probe bare [flags]\n\nFlags\n  --name <text>  \n',
+      'Does a thing.\n\nUsage: livepages probe bare [flags]\n\nFlags\n  --name <text>  \n',
     );
   });
 });
@@ -70,7 +70,7 @@ describe('verb help without a CLI projection', () => {
 describe('help for writes', () => {
   it('shows a rest positional, a short flag, and the edit alias', () => {
     expect(verbHelp(VERBS.find((v) => v.id === 'element.set')!)).toContain(
-      'Usage: livediagram element set <doc> <words…> [flags]',
+      'Usage: livepages element set <doc> <words…> [flags]',
     );
     expect(verbHelp(VERBS.find((v) => v.id === 'changeset.apply')!)).toContain(
       '  -f, --file <text>  The file to send, or - for stdin',

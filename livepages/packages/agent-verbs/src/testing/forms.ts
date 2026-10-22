@@ -1,13 +1,13 @@
 // A document for the form verb suites (docs/specs/030-forms/forms.md "Agents"): a Board tab "Bugs" whose board takes
 // only Bug cards, a Sheet tab "Budget", and a Form tab "Bug Report" sending Bug cards to New, its Severity a field.
-import type { PlanResponse } from '@livediagram/api-schema';
-import type { FormDefinition } from '@livediagram/forms';
+import type { PlanResponse } from '@livepages/api-schema';
+import type { FormDefinition } from '@livepages/forms';
 import {
   ITEM_TYPES,
   READY_MADE_CARD_TYPES,
   presetSetup,
   type ItemTypeDef,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { draftOf, type FormDraft } from '../forms/form-draft';
 import { worldOf, type FormTabBody, type FormWorld } from '../forms/form-world';
 

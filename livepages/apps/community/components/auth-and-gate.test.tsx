@@ -13,8 +13,8 @@ const h = vi.hoisted(() => ({
   replace: vi.fn(),
 }));
 
-vi.mock('@livediagram/ui', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@livediagram/ui')>()),
+vi.mock('@livepages/ui', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@livepages/ui')>()),
   useCommunityEnabled: () => h.enabled,
 }));
 vi.mock('@clerk/react', () => ({

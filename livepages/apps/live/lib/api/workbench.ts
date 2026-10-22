@@ -7,7 +7,7 @@ import type {
   WorkbenchPairingRequestView,
   WorkbenchPairingsResponse,
   WorkbenchSessionResponse,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk, expectOkOrNull } from './core';
 
 // How a redemption ended: a session, a refusal the page shows as such (the ticket was used, expired

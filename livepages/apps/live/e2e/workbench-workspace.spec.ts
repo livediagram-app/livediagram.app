@@ -30,7 +30,7 @@ test.afterAll(async () => {
 
 type Place = { type: string; view?: string; documentId?: string | null; [k: string]: unknown };
 const places = async (page: Parameters<typeof received>[0]) =>
-  (await received(page)).filter((m): m is Place => m.type === 'livediagram:place');
+  (await received(page)).filter((m): m is Place => m.type === 'livepages:place');
 
 test('a workspace frame is its own approval, browses the Explorer, and opens documents in place', async ({
   page,
@@ -75,10 +75,10 @@ test('a workspace frame is its own approval, browses the Explorer, and opens doc
   await expect(frame.getByRole('button', { name: 'Settings' })).toHaveCount(0);
   await expect(frame.getByRole('button', { name: 'New Team' })).toHaveCount(0);
   await expect(
-    frame.getByRole('link', { name: 'Open in livediagram (opens in a new tab)' }),
+    frame.getByRole('link', { name: 'Open in livepages (opens in a new tab)' }),
   ).toBeVisible();
   await expect
-    .poll(async () => (await received(page)).find((m) => m.type === 'livediagram:ready'))
+    .poll(async () => (await received(page)).find((m) => m.type === 'livepages:ready'))
     .toMatchObject({ scope: 'workspace', role: 'edit' });
   await expect.poll(async () => (await places(page)).at(-1)?.view).toBe('home');
 
@@ -139,7 +139,7 @@ test('a workspace frame is its own approval, browses the Explorer, and opens doc
   await page.evaluate(
     (id) =>
       (window as unknown as { post: (m: unknown) => void }).post({
-        type: 'livediagram:open',
+        type: 'livepages:open',
         v: 1,
         to: { folderId: id },
       }),

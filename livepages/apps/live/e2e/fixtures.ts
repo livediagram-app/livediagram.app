@@ -65,7 +65,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
 // their own unit tests. Marked seen for every page of the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
   await context.addInitScript(() => {
-    const key = 'livediagram:user-preferences:v1';
+    const key = 'livepages:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       // The Pages tour offers each page kind once (lib/tour-tracks.ts): every kind answered.
@@ -290,7 +290,7 @@ export async function openBlankSession(page: Page): Promise<void> {
   // The Workshop tour offers itself 800 ms into Workshop (WorkshopTourHost OFFER_DELAY_MS) and its
   // overlay would take these specs' presses; it has its own unit tests.
   await page.addInitScript(() => {
-    const key = 'livediagram:user-preferences:v1';
+    const key = 'livepages:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
       if (prefs.workshopTourSeen !== true)
@@ -394,8 +394,8 @@ export async function pageOwnerHeaders(
   extra: Record<string, string> = {},
 ): Promise<Record<string, string>> {
   const { id, sig } = await page.evaluate(() => ({
-    id: localStorage.getItem('livediagram:v2:self-id') ?? '',
-    sig: localStorage.getItem('livediagram:v2:self-sig'),
+    id: localStorage.getItem('livepages:v2:self-id') ?? '',
+    sig: localStorage.getItem('livepages:v2:self-sig'),
   }));
   return { 'X-Owner-Id': id, ...(sig ? { 'X-Owner-Sig': sig } : {}), ...extra };
 }

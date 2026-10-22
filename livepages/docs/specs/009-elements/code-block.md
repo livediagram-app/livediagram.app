@@ -59,7 +59,7 @@ shared thumbnail shows the same amount of code the canvas does.
 
 ## Plumbing checklist (per the data-shape route)
 
-`SHAPE_KINDS` + bounded field validation in `validate.ts`, colour defaults in `colors.ts`, kind label ("Code Block", title-cased by `elementKindLabel`), palette tile `tools:code-block` (Components category, favouritable, no letter shortcut), quick-connect excluded, the OpenAPI regen (`pnpm --filter @livediagram/api gen:openapi`), the MCP schema prose (built from `SHAPE_KINDS`, so no hand list), the AI-generate prompt vocabulary (excluded: the AI shouldn't emit code blocks unprompted), and the telemetry dashboard's TOOLS label set.
+`SHAPE_KINDS` + bounded field validation in `validate.ts`, colour defaults in `colors.ts`, kind label ("Code Block", title-cased by `elementKindLabel`), palette tile `tools:code-block` (Components category, favouritable, no letter shortcut), quick-connect excluded, the OpenAPI regen (`pnpm --filter @livepages/api gen:openapi`), the MCP schema prose (built from `SHAPE_KINDS`, so no hand list), the AI-generate prompt vocabulary (excluded: the AI shouldn't emit code blocks unprompted), and the telemetry dashboard's TOOLS label set.
 
 ## Telemetry
 

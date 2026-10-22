@@ -7,7 +7,7 @@ import {
   ER_GLYPHS,
   type CardinalityPreset,
   type ErShape,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { Divider } from '@/components/canvas/SelectionPopoverButton';
 import {
   noFocusSteal,

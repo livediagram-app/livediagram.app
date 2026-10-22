@@ -38,8 +38,8 @@ import {
   type CardSlot,
   type Item,
   type ItemTypeDef,
-} from '@livediagram/items';
-import { Button, CloseIcon, PlusIcon } from '@livediagram/ui';
+} from '@livepages/items';
+import { Button, CloseIcon, PlusIcon } from '@livepages/ui';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';

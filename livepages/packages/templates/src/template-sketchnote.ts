@@ -6,7 +6,7 @@
 // banner closes the page. Every line is a marker stroke from the sketch kit, every word hand
 // lettering, so the person draws straight over it. Pure: (cx, cy) -> Element[].
 
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { lightbulb } from './template-sketch-figures';
 import {
   BOLD,

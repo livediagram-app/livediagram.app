@@ -13,8 +13,8 @@ import {
   withReadableLabelInks,
   type Appearance,
   type Tab,
-} from '@livediagram/document';
-import { getResolvedAppearance } from '@livediagram/ui';
+} from '@livepages/document';
+import { getResolvedAppearance } from '@livepages/ui';
 import { resolveTabBackdrop, themeViewMap } from './themes';
 import { labelsFollowCanvas } from './tab-theme-apply';
 import { elementAsSeen, type PageView } from './stock-colour-projector';

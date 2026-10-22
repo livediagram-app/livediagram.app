@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { storePresentation, type Tab } from '@livediagram/document';
+import { storePresentation, type Tab } from '@livepages/document';
 import { useSlideDeck } from './useSlideDeck';
 
 // docs/specs/012-collaboration/presentation-mode.md "Presenting": a running deck stays on its slide when a peer

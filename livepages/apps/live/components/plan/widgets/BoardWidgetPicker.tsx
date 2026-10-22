@@ -6,11 +6,11 @@
 // board is left out (a section left with none goes too). A search narrows the gallery as it is typed. Picking a card adds the widget
 // at the end of the header; the gallery closes. The cards are a grid the arrow keys move through.
 import { useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { BOARD_WIDGET_KINDS, type BoardWidgetKind } from '@livediagram/items';
-import { CheckIcon, CompactEmptyState, NoMatches, lucideGlyph } from '@livediagram/ui';
-import { lucideSearch } from '@livediagram/icons/lucide';
+import { BOARD_WIDGET_KINDS, type BoardWidgetKind } from '@livepages/items';
+import { CheckIcon, CompactEmptyState, NoMatches, lucideGlyph } from '@livepages/ui';
+import { lucideSearch } from '@livepages/icons/lucide';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
-import { BOARD_WIDGET_INFO } from '@livediagram/plan-art';
+import { BOARD_WIDGET_INFO } from '@livepages/plan-art';
 import { BoardWidgetArt } from '../plan-tile-art';
 import type { PlanPalette } from '../plan-palette';
 

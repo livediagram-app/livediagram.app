@@ -3,7 +3,7 @@
 // A Gantt row's mark (docs/specs/026-plan/plan-views.md "Gantt Chart"): a bar from start to due filled to
 // the share of its children done, a diamond for a lone date, or nothing for no dates (the row is drawn on instead,
 // gantt-draw.tsx); with the drag handles (gantt-drag.tsx) when the dates may be dragged.
-import { ganttAt, type GanttRow } from '@livediagram/items';
+import { ganttAt, type GanttRow } from '@livepages/items';
 import type { PlanPalette } from '../plan-palette';
 import { OVERDUE_RED, PHASE_COLOURS } from './view-frame';
 import { GanttBarGrab, GanttHandle, type GanttDragApi } from './gantt-drag';

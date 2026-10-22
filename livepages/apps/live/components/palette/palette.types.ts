@@ -1,6 +1,6 @@
-import type { ShapeLibraryItem } from '@livediagram/api-schema';
-import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
-import type { ShapeKind } from '@livediagram/document';
+import type { ShapeLibraryItem } from '@livepages/api-schema';
+import type { EmbedProvider, EventStormingNoteKind } from '@livepages/document';
+import type { ShapeKind } from '@livepages/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 import type { EsBoardControls } from '@/components/palette/EventStormingBoardRows';
@@ -45,10 +45,10 @@ export type PaletteProps = {
   onAddShape: (
     kind: ShapeKind,
     opts?: {
-      session?: import('@livediagram/document').SessionTool;
-      reaction?: import('@livediagram/document').Reaction;
-      mode?: import('@livediagram/document').SelectionMode;
-      estimateScale?: import('@livediagram/document').EstimateScale;
+      session?: import('@livepages/document').SessionTool;
+      reaction?: import('@livepages/document').Reaction;
+      mode?: import('@livepages/document').SelectionMode;
+      estimateScale?: import('@livepages/document').EstimateScale;
       plan?: string;
       variant?: string;
     },
@@ -105,7 +105,7 @@ export type PaletteProps = {
   // on either end by default (i.e. a plain line). Users can flip the
   // arrowEnds afterwards via the Pointer accordion.
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
-  onAddArrow: (ends?: import('@livediagram/document').ArrowEnds) => void;
+  onAddArrow: (ends?: import('@livepages/document').ArrowEnds) => void;
   // Pencil tool: enters one-shot freehand draw mode. Unlike the
   // other add-element callbacks, this never drops at the viewport
   // centre, the pencil is gestural by design. See docs/specs/008-canvas/canvas-and-palette.md Pencil

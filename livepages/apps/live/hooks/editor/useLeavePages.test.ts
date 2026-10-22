@@ -8,7 +8,7 @@ import {
   type EditorMode,
   type ShapeElement,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { useLeavePages } from './useLeavePages';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

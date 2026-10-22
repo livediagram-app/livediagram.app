@@ -6,7 +6,7 @@
 
 - Three settings: **Light**, **Dark**, **System**. System resolves through `(prefers-color-scheme: dark)` and is watched, so an OS that turns dark at sunset takes every open page with it without a reload.
 - **System is the default** on every surface. Only an explicit Light or Dark pick overrides the device, and it keeps overriding it until the reader picks again.
-- Stored per browser in `localStorage` under `livediagram:v2:ui-mode` (`'light'` / `'dark'` / `'system'`; anything else reads as System). The key keeps its historical name because it is stored data. Every app is served from one origin by the router, so they share it. A pick made in another open tab applies on the next page load there.
+- Stored per browser in `localStorage` under `livepages:v2:ui-mode` (`'light'` / `'dark'` / `'system'`; anything else reads as System). The key keeps its historical name because it is stored data. Every app is served from one origin by the router, so they share it. A pick made in another open tab applies on the next page load there.
 - Painted as a `dark` class on `<html>`; the shared Tailwind theme maps `dark:` to that class and swaps in the Steel dark palette ([Colour scheme](color-scheme.md)). The document's CSS `color-scheme` follows the class, so form controls and native scrollbars match the painted appearance rather than the OS.
 
 ## No flash

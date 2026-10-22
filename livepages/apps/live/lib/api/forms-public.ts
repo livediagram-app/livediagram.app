@@ -5,7 +5,7 @@ import type {
   FormResponseAccepted,
   FormResponseRefusal,
   PublicFormResponse,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { API_BASE } from './base';
 
 const formUrl = (code: string, door = '') =>

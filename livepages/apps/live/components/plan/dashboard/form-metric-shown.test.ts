@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { FormLinkResponse } from '@livediagram/api-schema';
+import type { FormLinkResponse } from '@livepages/api-schema';
 import { formMetricShown } from './form-metric-shown';
 
 // What a figure from a form shows (docs/specs/026-plan/plan-tabs.md "Form Metrics").

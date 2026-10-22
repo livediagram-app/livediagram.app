@@ -10,3 +10,6 @@ packages:
   - 'liveplanner'
   - 'liveplanner/apps/*'
   - 'liveplanner/packages/*'
+  - 'livepages'
+  - 'livepages/apps/*'
+  - 'livepages/packages/*'

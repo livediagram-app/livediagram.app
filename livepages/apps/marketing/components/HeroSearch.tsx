@@ -1,10 +1,10 @@
 'use client';
 
-import { ctaHref } from '@livediagram/api-schema';
-import { editorModeLabel } from '@livediagram/document';
-import { TemplatePreview } from '@livediagram/template-previews';
-import { templateCreateHref, type TemplateKind } from '@livediagram/templates';
-import { EDITOR_MODE_ICONS, Glyph, START_BLANK_HREF } from '@livediagram/ui';
+import { ctaHref } from '@livepages/api-schema';
+import { editorModeLabel } from '@livepages/document';
+import { TemplatePreview } from '@livepages/template-previews';
+import { templateCreateHref, type TemplateKind } from '@livepages/templates';
+import { EDITOR_MODE_ICONS, Glyph, START_BLANK_HREF } from '@livepages/ui';
 import { useDeferredValue, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { heroSearch } from '@/lib/hero-starts';
 

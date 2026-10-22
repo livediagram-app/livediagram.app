@@ -1,4 +1,4 @@
-import type { ModelCues, ModelNote } from '@livediagram/sticky-vision';
+import type { ModelCues, ModelNote } from '@livepages/sticky-vision';
 import { decodeBoxes, labelCores } from './decode';
 import { CLASS } from './mask';
 

@@ -1,4 +1,4 @@
-import type { ImageSummary } from '@livediagram/api-schema';
+import type { ImageSummary } from '@livepages/api-schema';
 
 // images row shape as read from D1 (migration 0014 / docs/specs/009-elements/images.md). The
 // gallery list endpoint + the image-bytes read both pass rows

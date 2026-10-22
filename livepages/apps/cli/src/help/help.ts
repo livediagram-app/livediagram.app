@@ -1,7 +1,7 @@
 // The three help levels (docs/specs/015-api/cli.md "Help"): top, resource and verb, from the catalogue, each
 // within its token budget.
 
-import { COMMAND_ALIASES, RESOURCES, verbsOf, type Verb } from '@livediagram/agent-verbs';
+import { COMMAND_ALIASES, RESOURCES, verbsOf, type Verb } from '@livepages/agent-verbs';
 import { fieldsOf, flagOf, keyOf, restName } from '../dispatch/fields';
 
 export const HELP_TOP_MAX_TOKENS = 520;
@@ -65,8 +65,8 @@ export function topHelp(): string {
   );
   const pad = (s: string) => s.padEnd(width + 2);
   return [
-    'livediagram: read, build, edit and discuss documents.',
-    'Usage: livediagram <resource> <verb> [args] [flags]',
+    'livepages: read, build, edit and discuss documents.',
+    'Usage: livepages <resource> <verb> [args] [flags]',
     '',
     ...rows.flatMap((r) => [
       `  ${pad(label(r))}${verbsOf(r.name).map(verbWithAlias).join(', ')}`,
@@ -81,13 +81,13 @@ export function topHelp(): string {
     'Exit 0 done, 1 refused, 2 usage, 3 not found, 4 auth, 5 conflict, 6 rate limit, 7 network.',
     '',
     'Start',
-    '  livediagram document ls auth        find a document',
-    '  livediagram tab view "Auth flow"    its first tab, as an outline',
-    '  livediagram tab lint "Auth flow"    what is wrong with how it is drawn',
-    '  livediagram guide edit              change a tab with edit operations',
+    '  livepages document ls auth        find a document',
+    '  livepages tab view "Auth flow"    its first tab, as an outline',
+    '  livepages tab lint "Auth flow"    what is wrong with how it is drawn',
+    '  livepages guide edit              change a tab with edit operations',
     '',
-    'Sign in: LIVEDIAGRAM_TOKEN, or auth login --with-token. Never prompts.',
-    'More: livediagram <resource> --help, livediagram guide <topic>',
+    'Sign in: LIVEPAGES_TOKEN, or auth login --with-token. Never prompts.',
+    'More: livepages <resource> --help, livepages guide <topic>',
     '',
   ].join('\n');
 }
@@ -97,11 +97,11 @@ export function resourceHelp(resource: string): string {
   const verbs = verbsOf(resource);
   const width = Math.max(...verbs.map((v) => verbWord(v).length));
   return [
-    `livediagram ${resource}: ${entry.summary}`,
+    `livepages ${resource}: ${entry.summary}`,
     '',
     ...verbs.map((v) => `  ${verbWord(v).padEnd(width + 2)}${v.summary}`),
     '',
-    `More: livediagram ${resource} <verb> --help`,
+    `More: livepages ${resource} <verb> --help`,
     '',
   ].join('\n');
 }
@@ -117,7 +117,7 @@ export function verbHelp(verb: Verb): string {
     return fields.find((f) => f.key === key)?.required ? `<${key}>` : `[${key}]`;
   };
   const usage = [
-    `livediagram ${command}`,
+    `livepages ${command}`,
     ...positionals.map(shown),
     ...(fields.some((f) => !keys.includes(f.key)) ? ['[flags]'] : []),
   ].join(' ');

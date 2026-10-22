@@ -6,7 +6,7 @@
 // the section order, and each piece here is one cohesive slice.
 
 import { InboxIcon, TeamIcon } from '@/components/primitives/explorer-icons';
-import { CountBadge, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { CountBadge, IDENTITY_FILL, identityVars } from '@livepages/ui';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import type {
@@ -16,22 +16,22 @@ import type {
   ActivityFormResponses,
   ActivityPlace,
   ActivityThread,
-} from '@livediagram/api-schema';
-import { ITEM_TYPES } from '@livediagram/items';
+} from '@livepages/api-schema';
+import { ITEM_TYPES } from '@livepages/items';
 import {
   EmptyState,
   HoverCard,
   SOLID_BRAND_DARK,
   SOLID_BRAND_DARK_CONTROL,
   GlyphDisc,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import { ActionMenuIcon, CommentMenuIcon } from '@/components/palette/context-menu-icons';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import type { Located } from '@/app/explorer/useActivityFeed';
 import { PlanTypeGlyph } from '@/components/plan/plan-type-glyph';
 import { cardDeepLinkHref, collabDeepLinkHref, formResponsesHref } from '@/lib/collab-deep-link';
-import { lucideGlyph } from '@livediagram/ui';
-import { lucideClipboardList } from '@livediagram/icons/lucide';
+import { lucideGlyph } from '@livepages/ui';
+import { lucideClipboardList } from '@livepages/icons/lucide';
 
 const FormGlyph = lucideGlyph(lucideClipboardList, 16);
 import { helpArticleHref } from '@/lib/help-articles';

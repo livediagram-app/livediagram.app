@@ -25,7 +25,7 @@ export type ArticleEditorHandle = {
   flush: () => void;
   // The writing as typed, taken as written for an edit the host makes itself (no commit of its
   // own, so the host's edit is one undo step).
-  takeBlocks: () => import('@livediagram/document').ArticleBlock[];
+  takeBlocks: () => import('@livepages/document').ArticleBlock[];
   // The editor's own history, as ⌘Z and ⇧⌘Z in the writing.
   undo: () => void;
   redo: () => void;
@@ -40,7 +40,7 @@ export type ArticleEditorHandle = {
     near: { x: number; y: number } | null,
   ) => {
     id: string;
-    blocks: import('@livediagram/document').ArticleBlock[];
+    blocks: import('@livepages/document').ArticleBlock[];
     index: number;
     x: number;
     y: number;
@@ -54,8 +54,8 @@ export type ArticleEditorHandle = {
     id: string,
     kind: 'comment' | 'action',
   ) => {
-    blocks: import('@livediagram/document').ArticleBlock[];
-    place: import('@livediagram/document').ArticleNotePlace;
+    blocks: import('@livepages/document').ArticleBlock[];
+    place: import('@livepages/document').ArticleNotePlace;
   } | null;
   // The block boundary nearest a canvas point (never beside the block `skipId`): its position in
   // the writing, and the drop caret for it, a line across the column in canvas px.
@@ -71,7 +71,7 @@ export type ArticleEditorHandle = {
     near: ZoneMoveTo,
   ) => {
     id: string;
-    blocks: import('@livediagram/document').ArticleBlock[];
+    blocks: import('@livepages/document').ArticleBlock[];
     index: number;
     x: number;
     y: number;

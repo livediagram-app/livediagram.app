@@ -1,8 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import type { TeamInviteLinkInfo } from '@livediagram/api-schema';
-import { Button, buttonClassName, ButtonContent } from '@livediagram/ui';
+import type { TeamInviteLinkInfo } from '@livepages/api-schema';
+import { Button, buttonClassName, ButtonContent } from '@livepages/ui';
 import {
   Body,
   Eyebrow,

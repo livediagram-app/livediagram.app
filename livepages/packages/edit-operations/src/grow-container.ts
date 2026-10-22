@@ -9,7 +9,7 @@ import {
   isContainer,
   type BoxedElement,
   type ElementId,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { boxOf, shifted, type Box } from './placement';
 import {
   currentElements,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CARD_SIZES, PLAN_BOARD_EMPTY_HEIGHT_PX, presetSetup, type Item } from '@livediagram/items';
+import { CARD_SIZES, PLAN_BOARD_EMPTY_HEIGHT_PX, presetSetup, type Item } from '@livepages/items';
 import { PLAN_CARD_SIZES } from './validate-shape';
 import { createShape, SHAPE_DEFAULT_SIZE } from './shape-factory';
 import { elementKindLabel } from './element-kind-label';

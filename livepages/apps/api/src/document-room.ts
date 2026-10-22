@@ -8,8 +8,8 @@ import {
   ROOM_PING,
   ROOM_PONG,
   type AccessLevel,
-} from '@livediagram/api-schema';
-import { opForTheWire, stampCommentAuthor } from '@livediagram/document';
+} from '@livepages/api-schema';
+import { opForTheWire, stampCommentAuthor } from '@livepages/document';
 import { RoomParticipantWrites } from './room-participant';
 import { RoomLedgerStore } from './room-ledger-store';
 import { RoomLivePoll } from './room-live-poll';

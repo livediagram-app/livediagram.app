@@ -8,8 +8,8 @@
 // per message"). Syncing is automatic, so there is no Sync now.
 
 import { useEffect, useRef, useState } from 'react';
-import { lucideCloud, lucideTriangleAlert } from '@livediagram/icons/lucide';
-import { Button, StableLabel, lucideGlyph } from '@livediagram/ui';
+import { lucideCloud, lucideTriangleAlert } from '@livepages/icons/lucide';
+import { Button, StableLabel, lucideGlyph } from '@livepages/ui';
 import { ArrowOutIcon } from '@/components/primitives/HelpArticleLink';
 import { SettingsRowShell } from '@/components/dialogs/settings/SettingsRowShell';
 import type { SettingsCloudSyncRowSpec } from '@/components/dialogs/settings/settings-catalogue';
@@ -93,7 +93,7 @@ function useSinceNow(lastSyncedAt: number | null): number {
   return Math.max(tick, stepNow);
 }
 
-// The livediagram folder in Google Drive, in a new tab.
+// The livepages folder in Google Drive, in a new tab.
 function driveFolderUrl(folderId: string): string {
   return `https://drive.google.com/drive/folders/${encodeURIComponent(folderId)}`;
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FONTS, MARKER_FONT_ID, SKETCH_FONT_ID } from '@livediagram/document';
+import { FONTS, MARKER_FONT_ID, SKETCH_FONT_ID } from '@livepages/document';
 import { PLAN_HANDWRITING_EX, planFontStyle } from './plan-font';
 
 describe('planFontStyle', () => {

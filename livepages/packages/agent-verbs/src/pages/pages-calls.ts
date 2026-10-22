@@ -2,7 +2,7 @@
 // write_article on the MCP, `page set` and `article set` on the CLI, and `article get`. Each finds the
 // tab ("Which tab"), sends one request to the pages route, and answers what it did or why not,
 // in the same words on both doors.
-import { ApiError, type ApiClient } from '@livediagram/api-client';
+import { ApiError, type ApiClient } from '@livepages/api-client';
 import {
   CLIENT_HEADER,
   type ArticleWrite,
@@ -10,14 +10,14 @@ import {
   type PagesAnswer,
   type PageChange,
   type TabResponse,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   articlesOf,
   articleTitleOf,
   articleToMarkdown,
   opensInOf,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { apiRefusalOf } from '../plan/api-refusal';
 import { tabPath } from '../verbs/shared';
 

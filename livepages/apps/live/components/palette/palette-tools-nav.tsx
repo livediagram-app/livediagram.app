@@ -13,7 +13,7 @@
 
 import { BackBar } from '@/components/primitives/BackBar';
 import type { ReactNode } from 'react';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard } from '@livepages/ui';
 
 export type ToolsCategory = {
   id: string;

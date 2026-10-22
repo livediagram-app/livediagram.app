@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livepages/document';
 import { sheetsDeletedWith } from './sheet-references';
 
 // Which sheets a delete takes with its elements (docs/specs/029-sheets/sheet-store.md "Deleting a sheet").

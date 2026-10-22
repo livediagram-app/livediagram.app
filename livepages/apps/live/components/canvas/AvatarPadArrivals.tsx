@@ -1,7 +1,7 @@
 'use client';
 
 import { memo } from 'react';
-import { AVATAR_PALETTE, tint } from '@livediagram/document';
+import { AVATAR_PALETTE, tint } from '@livepages/document';
 import type { PadArrival } from '@/lib/avatar-pad';
 
 // The arrival beams (docs/specs/009-elements/avatar-pad.md "The arrival"): a column of pixel light in the arriving

@@ -7,8 +7,8 @@ import {
   PLACEMENT_DEFAULT_KEYS,
   type CreationIntent,
   type PlacementDefaultKey,
-} from '@livediagram/api-schema';
-import type { EditorMode } from '@livediagram/document';
+} from '@livepages/api-schema';
+import type { EditorMode } from '@livepages/document';
 
 export type IndexedFolder = {
   id: string;

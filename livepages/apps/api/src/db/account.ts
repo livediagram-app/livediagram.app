@@ -13,7 +13,7 @@ import { detachUserFromTeams } from './teams';
 import { migrateTagStatements } from './tags';
 import { imageGrantOwnerChangeStatement } from './image-grants';
 import { disconnectDrive } from '../drive/disconnect';
-import { uniqueLibraryName } from '@livediagram/api-schema';
+import { uniqueLibraryName } from '@livepages/api-schema';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard

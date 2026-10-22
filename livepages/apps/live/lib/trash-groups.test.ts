@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TRASH_RETENTION_MS, type TrashedDocument } from '@livediagram/api-schema';
+import { TRASH_RETENTION_MS, type TrashedDocument } from '@livepages/api-schema';
 import {
   daysLeftLabel,
   trashGroups,

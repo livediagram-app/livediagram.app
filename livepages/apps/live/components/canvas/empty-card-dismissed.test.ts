@@ -36,7 +36,7 @@ describe('bringing a closed card back', () => {
     expect(emptyCardDismissed('back:diagram')).toBe(true);
     restoreEmptyCard('back:diagram');
     expect(emptyCardDismissed('back:diagram')).toBe(false);
-    expect(localStorage.getItem('livediagram:v2:empty-card-dismissed') ?? '').not.toContain(
+    expect(localStorage.getItem('livepages:v2:empty-card-dismissed') ?? '').not.toContain(
       'back:diagram',
     );
     expect(told).toBe(2);

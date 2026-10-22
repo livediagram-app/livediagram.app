@@ -1,10 +1,10 @@
 // A template's Sheets made in the browser (docs/specs/029-sheets/sheet-store.md "Template starts"), for the paths
 // that make tabs without the api's create: a document in This Browser from the wizard, and Quick Start. The sheets engine
 // loads only when a tab holds such a Sheet (hasTemplateSheets is engine-free), so no other template pays for it.
-import { hasTemplateSheets } from '@livediagram/templates';
-import type { SheetCreateRequest } from '@livediagram/api-schema';
-import type { SheetJson } from '@livediagram/sheets';
-import type { Tab } from '@livediagram/document';
+import { hasTemplateSheets } from '@livepages/templates';
+import type { SheetCreateRequest } from '@livepages/api-schema';
+import type { SheetJson } from '@livepages/sheets';
+import type { Tab } from '@livepages/document';
 import { debugLog } from '@/lib/debug-log';
 
 // Who a template's sheet was last changed by: nobody yet.
@@ -17,7 +17,7 @@ export async function withTemplateSheets<T extends Tab>(
   now: number,
 ): Promise<{ tabs: T[]; sheets: SheetJson[]; creates: SheetCreateRequest[] } | null> {
   if (!hasTemplateSheets(tabs)) return null;
-  const { materialiseTemplateSheets } = await import('@livediagram/templates/template-sheets');
+  const { materialiseTemplateSheets } = await import('@livepages/templates/template-sheets');
   const made = materialiseTemplateSheets(tabs, now);
   debugLog('[sheets] template sheets made', { count: made.sheets.length });
   return {

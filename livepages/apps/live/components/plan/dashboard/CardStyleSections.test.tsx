@@ -7,7 +7,7 @@ import {
   type DashboardContent,
   type DashboardLayout,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { getTheme } from '@/lib/themes';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardSlotView } from './DashboardSlotView';

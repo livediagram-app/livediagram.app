@@ -14,7 +14,7 @@ import {
   type PageFill,
   type PageMotion,
   type ThemeDefinition,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 type PageMotionEntry = {
   id: PageMotion;

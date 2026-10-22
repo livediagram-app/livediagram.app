@@ -5,7 +5,7 @@
 // Likeness" box holds a stash of sticker stars to vote with, and the first votes are already in.
 // Pure: (cx, cy) -> Element[].
 
-import type { Element, PenColourName } from '@livediagram/document';
+import type { Element, PenColourName } from '@livepages/document';
 import { stopwatch } from './template-sketch-figures';
 import { portrait, type PortraitOpts } from './template-sketch-portrait';
 import { FINE, boxPath, drawn, letter, note, sticker, wavyPath } from './template-sketch-kit';

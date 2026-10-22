@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
-import type { TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@livepages/templates';
 import { useToast } from '@/hooks/ui/useToast';
 import {
   handTemplatePick,

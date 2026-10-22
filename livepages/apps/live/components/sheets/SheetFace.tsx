@@ -4,8 +4,8 @@
 // the title, then while it loads the site's loader in a Sheet's form (SheetBuildAnimation: a table filling in, with
 // the opening screen's title and sweep); else skeleton grid lines and a quiet line: Couldn't load this sheet (Try
 // Again), or This sheet is no longer in this document (Remove, for an editor).
-import { COLUMN_WIDTH_NEW, ROW_HEIGHT_NEW } from '@livediagram/sheets';
-import { LoadingSweep, SheetBuildAnimation } from '@livediagram/ui';
+import { COLUMN_WIDTH_NEW, ROW_HEIGHT_NEW } from '@livepages/sheets';
+import { LoadingSweep, SheetBuildAnimation } from '@livepages/ui';
 import { ScaleCapped } from '@/components/canvas/ScaleCapped';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 

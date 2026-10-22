@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type Item, type ItemTypeDef } from '@livediagram/items';
+import { ITEM_TYPES, type Item, type ItemTypeDef } from '@livepages/items';
 import { ItemPanel } from './ItemPanel';
 
 // docs/specs/026-plan/items.md "Comments": the thread ends the item panel's Overview tab, and a type that stops

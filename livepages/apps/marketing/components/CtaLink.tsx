@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { buttonClassName, ButtonContent } from '@livediagram/ui';
+import { buttonClassName, ButtonContent } from '@livepages/ui';
 
 // The marketing pages' primary CTA link: the brand pill at the ui package's
 // `cta` Button size (between md and lg). Five pages hand-rolled it and had

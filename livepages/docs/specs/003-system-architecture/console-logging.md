@@ -13,7 +13,7 @@ that matters.
   the editor's one logger. They show:
   - always in development and in tests (any build but production);
   - in a production build only when the **debug flag** is set for the browser:
-    `localStorage['livediagram:debug']` holding `*` (everything) or a comma-separated list of
+    `localStorage['livepages:debug']` holding `*` (everything) or a comma-separated list of
     fingerprint scopes (`drive-mirror,board-scene`; the scope is the text in the message's leading
     brackets, or the word before its first colon). The flag is read once per page load: set it in
     the console, then reload.

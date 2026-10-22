@@ -5,7 +5,7 @@
 // the tab (an edit, a collaborator's), drawn as the split view's other pane draws a tab (useTabSvg). Pressing it opens
 // the tab. The drawing's renderer is the export one, loaded only once a Diagram slot is shown.
 import dynamic from 'next/dynamic';
-import { tabHasDrawing, type Tab } from '@livediagram/document';
+import { tabHasDrawing, type Tab } from '@livepages/document';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useDashboard } from './dashboard-context';
 import { useSlotSettings } from './slot-menu';

@@ -5,9 +5,9 @@
 // nothing, the local sync state included (RL13).
 
 import { posix } from 'node:path';
-import type { VerbContext } from '@livediagram/agent-verbs';
-import { ApiError } from '@livediagram/api-client';
-import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@livediagram/document';
+import type { VerbContext } from '@livepages/agent-verbs';
+import { ApiError } from '@livepages/api-client';
+import { DOCUMENT_ENVELOPE_KIND, DOCUMENT_SCHEMA_VERSION } from '@livepages/document';
 import { readDocumentSnapshot } from '../commands/snapshot';
 import type { CliIo } from '../io';
 import { EXIT, type ExitCode } from '../output/exit-codes';
@@ -68,14 +68,14 @@ const exitOf = (action: SyncAction): ExitCode =>
       ? EXIT.rejected
       : EXIT.done;
 
-const revsOf = (pulled: MirrorFile['livediagramSync']['tabs']) =>
+const revsOf = (pulled: MirrorFile['livepagesSync']['tabs']) =>
   Object.fromEntries(Object.entries(pulled).map(([id, t]) => [id, t.rev]));
 
 const outlineOf = (file: MirrorFile) =>
   outlineFileText(
     file.document,
-    file.document.tabs.map((tab) => ({ tab, rev: file.livediagramSync.tabs[tab.id]!.rev })),
-    file.livediagramSync.host,
+    file.document.tabs.map((tab) => ({ tab, rev: file.livepagesSync.tabs[tab.id]!.rev })),
+    file.livepagesSync.host,
   );
 
 export async function runSyncPass(options: PassOptions): Promise<PassResult> {
@@ -200,7 +200,7 @@ async function writeAct(
       kind: DOCUMENT_ENVELOPE_KIND,
       schemaVersion: DOCUMENT_SCHEMA_VERSION,
       document: { ...snapshot.document, tabs: snapshot.tabs },
-      livediagramSync: { host, tabs: snapshot.pulled },
+      livepagesSync: { host, tabs: snapshot.pulled },
     };
   } catch (err) {
     const failure = failureOf(err, host);
@@ -222,7 +222,7 @@ async function writeAct(
   await acting.tree.write(path, mirrorFileText(file));
   if (!(await acting.tree.writeGenerated(outlinePathOf(path), outlineOf(file))))
     ctx.log(`kept ${outlinePathOf(path)}: not generated`);
-  const revs = revsOf(file.livediagramSync.tabs);
+  const revs = revsOf(file.livepagesSync.tabs);
   for (const tab of file.document.tabs)
     ctx.log(`wrote ${action.documentId} ${tab.id} rev ${revs[tab.id]}`);
   acting.mirrors.set(action.documentId, { path, tabs: file.document.tabs, revs });
@@ -252,7 +252,7 @@ async function inStepAct(acting: Acting, action: Extract<SyncAction, { kind: 'no
     // Rewritten only when missing, so CLIs of different versions never rewrite each other's outlines (RL12).
     if ((await acting.tree.read(outlinePathOf(path))) === null)
       await acting.tree.writeGenerated(outlinePathOf(path), outlineOf(tracked.file));
-    const revs = revsOf(tracked.file.livediagramSync.tabs);
+    const revs = revsOf(tracked.file.livepagesSync.tabs);
     acting.mirrors.set(action.documentId, { path, tabs: tracked.file.document.tabs, revs });
     record(acting, action.documentId, action.name, revs);
     return;

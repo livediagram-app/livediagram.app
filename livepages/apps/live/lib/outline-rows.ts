@@ -11,7 +11,7 @@ import {
   runsPlainText,
   type MindOutlineNode,
   type TextRun,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 export type OutlineRow = { id: string; level: number; marks: TextRun[] };
 // Where the caret goes after an edit: a row and a character offset in its text.

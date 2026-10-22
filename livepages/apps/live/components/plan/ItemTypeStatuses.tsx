@@ -6,11 +6,11 @@
 // what the type leaves out, so a status added later is open to every type. All may be unticked: such a card stays in
 // the status it is made in. A type leaves out at most ITEM_TYPE_EXCLUDED_STATUSES_MAX: at the cap a status still
 // ticked cannot be unticked (Deselect All stops there too), and a note says why.
-import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
-import { lucideColumns2 } from '@livediagram/icons/lucide';
+import { CompactEmptyState, lucideGlyph } from '@livepages/ui';
+import { lucideColumns2 } from '@livepages/icons/lucide';
 import { useId } from 'react';
-import { ITEM_TYPE_EXCLUDED_STATUSES_MAX, readyMadeDefaultStatus } from '@livediagram/items';
-import { Button, Select } from '@livediagram/ui';
+import { ITEM_TYPE_EXCLUDED_STATUSES_MAX, readyMadeDefaultStatus } from '@livepages/items';
+import { Button, Select } from '@livepages/ui';
 import { OptionRows } from './OptionRows';
 
 const StatesGlyph = lucideGlyph(lucideColumns2, 18);

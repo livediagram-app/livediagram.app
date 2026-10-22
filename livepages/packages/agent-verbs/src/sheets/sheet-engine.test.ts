@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { ApiClient } from '@livediagram/api-client';
-import { PLACED_BOARD_GAP } from '@livediagram/items';
-import { DOCUMENT_CELLS_MAX, SHEET_WRITE_CELLS_MAX } from '@livediagram/sheets';
+import type { ApiClient } from '@livepages/api-client';
+import { PLACED_BOARD_GAP } from '@livepages/items';
+import { DOCUMENT_CELLS_MAX, SHEET_WRITE_CELLS_MAX } from '@livepages/sheets';
 import { DOC_A, fakeApi, tabsOfA } from '../testing/fake-api';
 import { seeded, sheetJson, sheetServer, type SheetServer } from '../testing/sheets';
 import { addSheet } from './add-sheet';

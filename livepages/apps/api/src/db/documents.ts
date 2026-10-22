@@ -7,10 +7,10 @@ import {
   readItemTypeCatalogue,
   type ItemTypeCatalogue,
   type TabItemElement,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { copyItemsStatements, listItems } from './items';
 import { copySheetsStatements } from './sheets';
-import { remapTabLinks, type Element } from '@livediagram/document';
+import { remapTabLinks, type Element } from '@livepages/document';
 import { rowToTabSummary, type TabRow } from '../tab-row';
 import type { DocumentDTO, DocumentSummary, Env, TabSummaryDTO } from '../types';
 import { getParticipant } from './participants';
@@ -31,7 +31,7 @@ import {
   tabStatsStatement,
 } from './tab-stats';
 import { PUBLIC_POST } from './community';
-import type { RecordedIntent } from '@livediagram/api-schema';
+import type { RecordedIntent } from '@livepages/api-schema';
 import { readRecordedIntent, type RecordedIntentRow } from '../document-intent-row';
 
 type DocumentRow = {

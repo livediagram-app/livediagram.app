@@ -24,7 +24,7 @@ import {
   type ShapeElement,
   inAnimationSet,
   shapeAnimationsFor,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { AnimationMenuGlyph } from '@/components/palette/context-menu-icons';

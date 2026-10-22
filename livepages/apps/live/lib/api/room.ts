@@ -1,7 +1,7 @@
 // Realtime room (WebSocket) connection.
 //
 // Wire-format types for room messages (`RoomOp`, `RoomOutgoing`,
-// `RoomIncoming`) live in `@livediagram/api-schema` so the editor and
+// `RoomIncoming`) live in `@livepages/api-schema` so the editor and
 // (eventually) any other client share one definition. `RoomHandlers`
 // below is the client-side callback shape only — not on the wire —
 // so it stays here next to the connect helper.
@@ -18,8 +18,8 @@ import {
   type RoomIncoming,
   type RoomOp,
   type RoomOutgoing,
-} from '@livediagram/api-schema';
-import { opForTheWire } from '@livediagram/document';
+} from '@livepages/api-schema';
+import { opForTheWire } from '@livepages/document';
 import { splitPresenceFrame } from '../agent-presence-rows';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
 import { startEditorTiming } from '../timing';

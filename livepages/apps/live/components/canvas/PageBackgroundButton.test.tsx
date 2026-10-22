@@ -4,7 +4,7 @@
 // "Beside the cog").
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Page } from '@livediagram/document';
+import type { Page } from '@livepages/document';
 import { track } from '@/lib/telemetry';
 import { PageBackgroundButton, pageBackgroundRoom } from './PageBackgroundButton';
 

@@ -2,7 +2,7 @@
 
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape } from '@livediagram/document';
+import { createShape } from '@livepages/document';
 import { RichTextEditor } from './RichTextEditor';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

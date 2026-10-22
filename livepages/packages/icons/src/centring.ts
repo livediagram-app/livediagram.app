@@ -1,6 +1,6 @@
 // Geometric centring of SVG glyph markup (docs/specs/004-interface-design/iconography.md, "Guarding"):
 // the drawn geometry's bounding-box centre, stroke included, measured against the viewBox centre.
-// Test-only surface (subpath `@livediagram/icons/centring`); app code never imports it.
+// Test-only surface (subpath `@livepages/icons/centring`); app code never imports it.
 import { pathBounds, unionBounds, type Bounds } from './ink';
 import { svgElements } from './svg-tokens';
 

@@ -87,7 +87,7 @@ export function useQuickStylePlacement(
     };
     const resizeObserver = new ResizeObserver(schedule);
     measure();
-    const events = ['resize', 'livediagram:panel-layout-changed', PANEL_PRESENCE_EVENT] as const;
+    const events = ['resize', 'livepages:panel-layout-changed', PANEL_PRESENCE_EVENT] as const;
     for (const ev of events) window.addEventListener(ev, schedule);
     const captured = ['pointerup', 'keyup'] as const;
     for (const ev of captured) window.addEventListener(ev, schedule, true);

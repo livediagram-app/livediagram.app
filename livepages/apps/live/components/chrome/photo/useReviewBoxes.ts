@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import type { DetectedSticky } from '@livediagram/sticky-vision';
+import type { DetectedSticky } from '@livepages/sticky-vision';
 import { boxesFromLabel } from '@/lib/photo-boxes';
 
 // The boxes on the photograph under review, as the author has corrected them

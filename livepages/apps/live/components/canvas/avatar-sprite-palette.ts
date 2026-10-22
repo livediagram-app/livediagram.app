@@ -3,9 +3,9 @@
 // figure has to agree on, so it lives in one file rather than being threaded
 // between them or duplicated per view.
 
-import { AVATAR_PALETTE, shade as shadeHex } from '@livediagram/document';
+import { AVATAR_PALETTE, shade as shadeHex } from '@livepages/document';
 
-// The tones themselves live in @livediagram/document (AVATAR_PALETTE), shared with the Avatar Pad
+// The tones themselves live in @livepages/document (AVATAR_PALETTE), shared with the Avatar Pad
 // (docs/specs/009-elements/avatar-pad.md) so the pad is drawn in the characters' own palette.
 export const SKIN = AVATAR_PALETTE.skin;
 export const SKIN_DARK = AVATAR_PALETTE.skinDark;

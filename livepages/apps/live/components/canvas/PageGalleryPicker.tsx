@@ -4,7 +4,7 @@
 // from the person's own gallery, in a popover that opens beside the panel it is pressed in (the page panel, or the
 // Background popover beside the cog), so the panel stays in view. One press picks; the popover closes.
 import { useState } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button } from '@livepages/ui';
 import type { ImageSummary } from '@/lib/api-client';
 import type { PickedImage } from '@/lib/upload-image';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';

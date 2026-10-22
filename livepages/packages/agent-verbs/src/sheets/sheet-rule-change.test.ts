@@ -1,7 +1,7 @@
 // An agent's validation and format rules (docs/specs/029-sheets/data-validation.md, conditional-formatting.md
 // "Agents"): built by the engine's commands, refused in words, and read back.
 import { describe, expect, it } from 'vitest';
-import { NOBODY, Workbook, applySheetWrite, emptyLayout, type Sheet } from '@livediagram/sheets';
+import { NOBODY, Workbook, applySheetWrite, emptyLayout, type Sheet } from '@livepages/sheets';
 import { buildSheetChange, type SheetChange } from './sheet-change-build';
 import { AGENT_CONDITIONS, rulesRead } from './sheet-rule-change';
 

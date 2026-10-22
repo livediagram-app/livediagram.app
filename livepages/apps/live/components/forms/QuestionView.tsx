@@ -10,9 +10,9 @@ import {
   promptOf,
   type AnswerError,
   type PublicQuestion,
-} from '@livediagram/forms';
-import { lucideGlyph } from '@livediagram/ui';
-import { lucideCircleAlert } from '@livediagram/icons/lucide';
+} from '@livepages/forms';
+import { lucideGlyph } from '@livepages/ui';
+import { lucideCircleAlert } from '@livepages/icons/lucide';
 import { QuestionControl } from './QuestionControl';
 
 const AlertIcon = lucideGlyph(lucideCircleAlert, 16);

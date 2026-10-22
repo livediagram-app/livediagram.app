@@ -3,7 +3,7 @@
 // sits now, and the person's defaults over the folders they can see go in; the folder to move it to comes out, or
 // null to leave it. The same precedence as a create (kind, then template, then mode default), read by the same
 // resolveDefaultFor the wizard pre-selects with.
-import type { CreationIntent, DocumentPlacement } from '@livediagram/api-schema';
+import type { CreationIntent, DocumentPlacement } from '@livepages/api-schema';
 import {
   resolveDefaultFor,
   type DefaultFolderIndex,

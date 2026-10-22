@@ -8,11 +8,11 @@ import {
   type TelemetryWindow,
   type TelemetryWindowKey,
   isLoopbackHostname,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { telemetryDailyCountsSince } from '../db';
 import { json, notFound } from '../responses';
 import type { RouteContext } from './context';
-import { DAY_MS } from '@livediagram/items';
+import { DAY_MS } from '@livepages/items';
 
 const SERIES_DAYS = TELEMETRY_WINDOW_DAYS.last30;
 

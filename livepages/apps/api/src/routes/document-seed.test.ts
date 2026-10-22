@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { templateTabs } from '@livediagram/templates';
+import { templateTabs } from '@livepages/templates';
 import { compileSeededTabs, seededTabName } from './document-seed';
 
 // A seeded template's first tab name (docs/specs/026-plan/plan-templates.md "How a template with tabs is made").

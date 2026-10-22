@@ -1,13 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { MAX_IMAGE_MB } from '@livediagram/api-schema';
+import { MAX_IMAGE_MB } from '@livepages/api-schema';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES, bodyExceedsCap, declaredBodyBytes } from './limits';
 
 // The image cap is one number written in four places a reader will believe:
 // this worker's enforcement, the editor's pre-upload gate, docs/specs/009-elements/images.md, and the
 // help article. The first two now share the constant from
-// @livediagram/api-schema, so they cannot disagree. Prose cannot import, so it
+// @livepages/api-schema, so they cannot disagree. Prose cannot import, so it
 // is checked here — this is the app that enforces the cap, so it is the one
 // that should fail when the documentation stops describing what it enforces.
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url).href);

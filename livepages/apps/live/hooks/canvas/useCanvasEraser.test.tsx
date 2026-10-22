@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createFreehand, type Element } from '@livediagram/document';
+import { createFreehand, type Element } from '@livepages/document';
 import { canvasGestureNow, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { useCanvasEraser } from './useCanvasEraser';
 

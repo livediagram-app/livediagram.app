@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livepages/document';
 import type { ImportedPage } from '@/lib/drawio/import';
 import { applyDrawioPages } from './drawio-apply';
 

@@ -7,7 +7,7 @@
 // SVG's offset back to draw.io units. A curved path's points are its quadratic control points
 // between its ends, the corners draw.io smooths through.
 //
-//   pnpm --filter @livediagram/live exec tsx scripts/drawio-route-goldens.mts \
+//   pnpm --filter @livepages/live exec tsx scripts/drawio-route-goldens.mts \
 //     --drawio /path/to/squashfs-root/drawio [--out <dir>] [fixture.drawio | /abs/file.drawio ...]
 //
 // Writes <out>/<file>.json, by default lib/drawio/__fixtures__/routes/. A file named by an absolute

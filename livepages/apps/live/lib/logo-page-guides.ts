@@ -4,7 +4,7 @@
 // kept, the oldest dropped past LOGO_PAGE_GUIDES_MAX.
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 
-const STORAGE_KEY = 'livediagram:v2:logo-page-guides';
+const STORAGE_KEY = 'livepages:v2:logo-page-guides';
 /** How many pages' choices are kept (about 10 KB of local storage at most). */
 export const LOGO_PAGE_GUIDES_MAX = 200;
 

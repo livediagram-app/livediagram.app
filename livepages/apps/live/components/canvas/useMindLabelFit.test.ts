@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { PADDING_PX, createShape } from '@livediagram/document';
+import { PADDING_PX, createShape } from '@livepages/document';
 import { useMindLabelFit } from './useMindLabelFit';
 
 // docs/specs/009-elements/mind-node.md "A node grows to fit its label": while typing, the node is

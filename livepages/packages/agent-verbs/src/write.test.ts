@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { elementFingerprint } from '@livediagram/document';
-import type { ChangesetRequest } from '@livediagram/api-schema';
+import { elementFingerprint } from '@livepages/document';
+import type { ChangesetRequest } from '@livepages/api-schema';
 import { baseFromCopy, readPlainTab, recordCopy } from './copies';
 import { VerbRefusal } from './define';
 import { contextOf, DOC_A, fakeApi } from './testing/fake-api';
@@ -14,7 +14,7 @@ const written = (rebasedOver = 0) => ({
   dryRun: false,
   changeset: { id: 'cs_1', tabId: 'tab-one-0000', rev: 6, previousRev: 5, rebasedOver },
   results: [],
-  text: '+ n2  square "B"\nrev 5→6 · cs_1 · lint clean · revert: livediagram changeset revert d cs_1',
+  text: '+ n2  square "B"\nrev 5→6 · cs_1 · lint clean · revert: livepages changeset revert d cs_1',
   warnings: [],
   lint: null,
 });
@@ -169,7 +169,7 @@ describe('submitChangeset', () => {
       contextOf(fakeApi({ [`${TAB}/changesets`]: () => Response.json(body, { status }) }));
     const run = (ctx: ReturnType<typeof contextOf>, flags = { base: 4 }) =>
       submitChangeset(ctx, target, { operations: 'rm n1' }, flags).catch((e: unknown) => e);
-    const reread = 're-read: livediagram tab view "Auth flow" --tab "Overview"';
+    const reread = 're-read: livepages tab view "Auth flow" --tab "Overview"';
     expect(
       await run(
         refuse(409, {

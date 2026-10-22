@@ -4,13 +4,13 @@
 // face at the element's size. A double-click or double-tap, in any mode, opens the item;
 // a card whose item is not in this document's store says so and offers to go.
 import { planFontStyle } from '@/lib/plan-font';
-import type { ShapeElement } from '@livediagram/document';
+import type { ShapeElement } from '@livepages/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { usePlan } from './PlanContext';
 import { PlanCardFace } from './PlanCardFace';
 import { planOwnColours, planPalette } from './plan-palette';
-import { DEFAULT_CARD_FIELDS, itemAccessibleName } from '@livediagram/items';
+import { DEFAULT_CARD_FIELDS, itemAccessibleName } from '@livepages/items';
 
 export function PlanCardView({
   element,

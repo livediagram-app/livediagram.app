@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
+import { CHANGESET_MAX_OPERATIONS } from '@livepages/api-schema';
 import { checkoutFlow } from './fixtures/checkout-flow';
 import {
   elementLocked,
@@ -151,12 +151,12 @@ describe('rejection builders', () => {
     expect(invalidResult('x', 'shape', { field: 'x', rule: 'a finite number' })).toEqual({
       code: 'invalid_result',
       details: ['x x: a finite number'],
-      hint: 'see the format: livediagram schema shape',
+      hint: 'see the format: livepages schema shape',
     });
     expect(invalidResult('the tab', undefined, { field: 'elements', rule: 'unique ids' })).toEqual({
       code: 'invalid_result',
       details: ['the tab elements: unique ids'],
-      hint: 'see the format: livediagram schema',
+      hint: 'see the format: livepages schema',
     });
   });
 });

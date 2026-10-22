@@ -8,7 +8,7 @@ import {
   type Element,
   type StickyElement,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { getPhotoDraftView, setPhotoDraftView } from '@/lib/photo-draft-preview';
 import { usePhotoDraft, type PhotoReview } from './usePhotoDraft';
 
@@ -29,7 +29,7 @@ import {
   PhotoDetectFailed,
   type PhotoDetection,
 } from '@/lib/photo-detect';
-import type { DetectedSticky } from '@livediagram/sticky-vision';
+import type { DetectedSticky } from '@livepages/sticky-vision';
 import { track } from '@/lib/telemetry';
 
 // A review with nothing read yet.

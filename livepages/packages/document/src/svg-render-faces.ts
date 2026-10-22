@@ -61,8 +61,8 @@ import {
   type Face,
 } from './svg-render-face-kit';
 import { svgActionPanel, svgCommentPanel } from './svg-render-panel-faces';
-import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@livediagram/icons';
-import { MODE_GLYPHS } from '@livediagram/icons/mode-glyphs';
+import { glyphStrokePx, iconPrimsMarkup, strokeUnits } from '@livepages/icons';
+import { MODE_GLYPHS } from '@livepages/icons/mode-glyphs';
 
 // The canvas draws a mode glyph at the palette's 14px weight and scales the
 // SVG to 22px on the button face, with non-scaling strokes, so its lines stay

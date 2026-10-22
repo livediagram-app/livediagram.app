@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button } from '@livepages/ui';
 import { pickExport, readDrop, type PickedExport } from '@/lib/pick-folder';
 import type { ImportOutcome } from '@/lib/import-tab';
 import {
@@ -11,7 +11,7 @@ import {
 import { ImportChecklist } from './ImportChecklist';
 import { ImportDropZone } from './ImportDropZone';
 import { ImportImageReport } from './ImportImageReport';
-import { pluralGrouped } from '@livediagram/document';
+import { pluralGrouped } from '@livepages/document';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 

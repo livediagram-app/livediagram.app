@@ -1,5 +1,5 @@
-import type { ArrowElement, BoxedElement, TextRun } from '@livediagram/document';
-import { createShape, createSticky, createText } from '@livediagram/document';
+import type { ArrowElement, BoxedElement, TextRun } from '@livepages/document';
+import { createShape, createSticky, createText } from '@livepages/document';
 import { describe, expect, it } from 'vitest';
 import {
   applyPaint,

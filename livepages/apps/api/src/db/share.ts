@@ -7,7 +7,7 @@ import {
   SHARE_LINK_EXPIRY_MS,
   type ShareLinkExpiry,
   type SharePurpose,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   legacyRoleColumn,
   levelColumn,

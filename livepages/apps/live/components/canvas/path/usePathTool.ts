@@ -13,7 +13,7 @@ import {
   type Element,
   type PathAnchor,
   type PathElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { rubberBand } from '@/lib/path-draw';
 import { sharedNodeType, toWorld } from '@/lib/path-edit';

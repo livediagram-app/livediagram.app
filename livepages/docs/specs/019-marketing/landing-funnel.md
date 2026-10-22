@@ -63,7 +63,7 @@ nothing about where the visitor was before our own page.
 ## The vocabulary
 
 A source is `<Surface>.<Slot>`, drawn from a closed table,
-`CTA_SOURCES` in `@livediagram/api-schema` (`cta-sources.ts`). One table
+`CTA_SOURCES` in `@livepages/api-schema` (`cta-sources.ts`). One table
 serves the link builders, the editor's reader, the ingest validator and the
 dashboard, so a CTA can't be linked with a source the editor ignores or the
 ingest drops.

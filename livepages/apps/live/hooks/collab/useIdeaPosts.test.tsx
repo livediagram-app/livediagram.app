@@ -5,8 +5,8 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { IDEA_MAX_CARDS, type ShapeElement, type Tab } from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+import { IDEA_MAX_CARDS, type ShapeElement, type Tab } from '@livepages/document';
+import type { RoomOp } from '@livepages/api-schema';
 import { applyRoomOpToTabs } from '@/app/document/[id]/room-op-apply';
 import { IDEA_BOX_FULL_MESSAGE, useIdeaPosts } from './useIdeaPosts';
 

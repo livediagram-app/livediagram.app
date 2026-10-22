@@ -1,5 +1,5 @@
-import { trustedHtml } from '@livediagram/ui';
-import type { Element, Layer } from '@livediagram/document';
+import { trustedHtml } from '@livepages/ui';
+import type { Element, Layer } from '@livepages/document';
 import { LayersGlyph } from '@/components/palette/context-menu-icons';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape, type Element } from '@livediagram/document';
+import { createPinnedArrow, createShape, type Element } from '@livepages/document';
 import { useArrowLabelLayouts } from './useArrowLabelLayouts';
 
 // docs/specs/008-canvas/canvas-performance.md: the label pass runs once per element change, and the

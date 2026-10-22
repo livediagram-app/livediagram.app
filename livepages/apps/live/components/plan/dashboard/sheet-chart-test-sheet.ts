@@ -1,5 +1,5 @@
 // A small Budget sheet for the Sheet Chart tests (docs/specs/026-plan/plan-tabs.md "Sheet Chart").
-import { Workbook, cellKey, type Sheet } from '@livediagram/sheets';
+import { Workbook, cellKey, type Sheet } from '@livepages/sheets';
 import type { SheetRead } from './useSheetReader';
 
 export const SHEET_ID = 'sheetAAAA';

@@ -31,7 +31,7 @@ Scope, by file:
 | `apps/api/hosted-vars.json`, `apps/api/scripts/hosted-vars.mjs` | The hosted profile: the client id per environment, and its verifies                     |
 | `apps/api/src/openapi/manifest.ts`                              | The Drive routes, tag `Drive`                                                           |
 | `packages/fake-google/`                                         | The fake Google (Drive REST + OAuth) every test uses                                    |
-| `packages/document/src/document-envelope.ts`                    | The `livediagram.document` envelope                                                     |
+| `packages/document/src/document-envelope.ts`                    | The `livepages.document` envelope                                                     |
 | `apps/live/lib/api/drive.ts`                                    | Wire calls to `/api/drive/*`                                                            |
 | `apps/live/lib/drive/config.ts`                                 | Client id, Picker key, `driveUiMode`                                                    |
 | `apps/live/lib/drive/cadence.ts`                                | Every cadence constant                                                                  |
@@ -39,7 +39,7 @@ Scope, by file:
 | `apps/live/lib/drive/drive-client.ts`                           | `DriveClient` interface, `DriveApiError`                                                |
 | `apps/live/lib/drive/drive-rest-client.ts`                      | `DriveClient` over Google's REST API                                                    |
 | `apps/live/lib/drive/thumbnail.ts`                              | SVG snapshot to PNG `contentHints.thumbnail`                                            |
-| `apps/live/lib/drive/livediagram-port.ts`                       | `LivediagramPort` interface + implementation over `lib/api`                             |
+| `apps/live/lib/drive/livepages-port.ts`                       | `LivepagesPort` interface + implementation over `lib/api`                             |
 | `apps/live/lib/drive/snapshot.ts`                               | `MirrorSnapshot` and its indexes                                                        |
 | `apps/live/lib/drive/plan-outbound.ts`                          | Pure: snapshot + items to outbound ops                                                  |
 | `apps/live/lib/drive/plan-inbound.ts`                           | Pure: a change + snapshot + items to an inbound decision                                |
@@ -82,24 +82,24 @@ Scope, by file:
 | Connection     | `drive_connections` row, `DriveConnection`        | One user's grant and mirror state                                               |
 | Mode           | `DriveMode`: `off` \| `browser` \| `broker`       | How the deployment gets Google access tokens                                    |
 | Status         | `DriveConnectionStatus`                           | `connected` \| `needs_reconnect`                                                |
-| Item           | `drive_items` row, `DriveItem`                    | One mirrored document or folder and the Drive state livediagram last wrote      |
+| Item           | `drive_items` row, `DriveItem`                    | One mirrored document or folder and the Drive state livepages last wrote      |
 | Item kind      | `DriveItemKind`: `document` \| `folder`           |                                                                                 |
 | Root           | `root_folder_id`                                  | The mirror's root folder, named `driveRootName(host)`; the root of My Documents |
-| Document file  | `.livediagram` file                               | A document's mirror                                                             |
-| Envelope       | `DocumentEnvelope`, `livediagram.document`        | The file's contents                                                             |
+| Document file  | `.livepages` file                               | A document's mirror                                                             |
+| Envelope       | `DocumentEnvelope`, `livepages.document`        | The file's contents                                                             |
 | Drive state    | `fileState(file)`                                 | `{ name, parentId, trashed, md5, headRevisionId }` of one Drive file            |
-| Echo           | `planInbound` answering `echo`                    | A change whose Drive state equals the item's: livediagram's own write           |
+| Echo           | `planInbound` answering `echo`                    | A change whose Drive state equals the item's: livepages's own write           |
 | Foreign change | the differing attributes in `planInbound`         | The attributes of a change that differ from the item                            |
 | Pass           | `DriveMirrorEngine.pass(kind)`                    | One run: token, snapshot, inbound, outbound                                     |
-| Inbound        | `planInbound`                                     | Drive to livediagram                                                            |
-| Outbound       | `planOutbound`                                    | livediagram to Drive                                                            |
+| Inbound        | `planInbound`                                     | Drive to livepages                                                            |
+| Outbound       | `planOutbound`                                    | livepages to Drive                                                            |
 | Lease          | `lease_holder`, `lease_expires_at`                | Which device may write outbound                                                 |
-| Device id      | `livediagram:v2:drive-device`                     | A per-browser random id, the lease holder                                       |
-| Elected tab    | Web Lock `livediagram:drive-mirror`               | The one tab per browser that runs the engine                                    |
+| Device id      | `livepages:v2:drive-device`                     | A per-browser random id, the lease holder                                       |
+| Elected tab    | Web Lock `livepages:drive-mirror`               | The one tab per browser that runs the engine                                    |
 | Tombstone      | `SeenRow` in a `SeenStore`                        | A row this browser saw that has since disappeared                               |
-| Notice         | `notice = 'unseen_folder'`                        | The item was moved in Drive to a folder livediagram cannot see                  |
-| Adoption       | `adoptFolder`                                     | Showing an unseen folder to livediagram with the Picker                         |
-| Foreign file   | `resolveOpenWith` = `import` (`foreign`, `no-id`) | A `.livediagram` file from another deployment, or with no `ldDocumentId`        |
+| Notice         | `notice = 'unseen_folder'`                        | The item was moved in Drive to a folder livepages cannot see                  |
+| Adoption       | `adoptFolder`                                     | Showing an unseen folder to livepages with the Picker                         |
+| Foreign file   | `resolveOpenWith` = `import` (`foreign`, `no-id`) | A `.livepages` file from another deployment, or with no `ldDocumentId`        |
 | Account        | `google_account_id`                               | The Drive `permissionId` of the Google account the connection syncs with        |
 | Account switch | `pending_*` columns, `pendingAccountSwitch`       | A consent by another account, waiting for the owner to confirm or cancel        |
 
@@ -151,14 +151,14 @@ by the **Resume sync** click; any state to `disconnected` by **Disconnect**.
    Then **adopt**: list every file with `appProperties has { key='ldOrigin' and value='<host>' }` and record an item
    for each whose `ldDocumentId` / `ldFolderId` names a personal document, trashed document or folder with no item yet,
    using the file's current Drive state (the `adopt` decisions of `planInbound`), then re-read the snapshot. Two
-   files claiming the same document (an original and a copy the user opened with livediagram) are both left
+   files claiming the same document (an original and a copy the user opened with livepages) are both left
    unadopted (logged `adopt-ambiguous`); the next write makes a fresh file. On an
    `arrival` pass a recorded root is checked once (`files.get`): a 404 makes it null again; a binned root stays the
    root.
 4. **Inbound.** First the gate: `drive.getStartPageToken()`; when it equals the stored page token nothing changed
    since, and `changes.list` is skipped. Otherwise `changes.list` from the page token, `pageSize`
    `DRIVE_CHANGES_PAGE_SIZE`, every page, fields `DRIVE_CHANGE_FIELDS`), see [Inbound](#inbound). With
-   `localStorage['livediagram:v2:drive-diagnostics'] === '1'` every gated read logs
+   `localStorage['livepages:v2:drive-diagnostics'] === '1'` every gated read logs
    `console.info('drive: start-token moved=<bool> listed=<n>')`. Skipped when the pass kind is `write` (an idle
    write or a flush). After inbound applied anything, the snapshot is re-read and `onInboundApplied()` fires (see
    [Views follow](#views-follow)).
@@ -212,7 +212,7 @@ stops the pass on a rate-limit error. `expectedParent(folderId)` is the folder's
    deleted folder's parent, so `expectedParent` names that folder's Drive folder, or the root).
 
 Every write asks Google for `DRIVE_FILE_FIELDS` and records the returned state with `PUT /api/drive/items`
-(`ldName` the livediagram name written; `mirroredSavedAt` the `savedAt` of the content uploaded). Writes are
+(`ldName` the livepages name written; `mirroredSavedAt` the `savedAt` of the content uploaded). Writes are
 batched: the engine flushes recorded items every `DRIVE_ITEMS_PUT_BATCH` rows and at the end of the pass.
 A **404** on an update re-creates the item in its expected place (a create op) and records the new file id.
 
@@ -238,29 +238,29 @@ returns one `InboundDecision`:
 | Folder item, `trashed` became true                                                     | `bin-folder`                                                                  |
 | Document item, `trashed` became true, document live                                    | `trash`                                                                       |
 | Document item, `trashed` became false, document in the personal Trash                  | `restore` then placement by Drive parent                                      |
-| Name changed, livediagram name unchanged since sync (`name === ldName`) or Drive later | `rename` to `stripDriveName(file.name)`; empty keeps the old                  |
-| Parent changed, livediagram parent unchanged or Drive later, parent a mirrored folder  | `move` to that folder                                                         |
+| Name changed, livepages name unchanged since sync (`name === ldName`) or Drive later | `rename` to `stripDriveName(file.name)`; empty keeps the old                  |
+| Parent changed, livepages parent unchanged or Drive later, parent a mirrored folder  | `move` to that folder                                                         |
 | Parent changed, same, parent the root                                                  | `move` to the root of My Documents                                            |
 | Parent changed, same, parent unknown or none                                           | `move` to the root of My Documents (document) or top level (folder), `notice` |
 | Only `md5` / `headRevisionId` changed                                                  | `rewrite` (item `mirroredSavedAt` set to 0)                                   |
-| The value livediagram already holds                                                    | recorded only                                                                 |
+| The value livepages already holds                                                    | recorded only                                                                 |
 
 "Drive later" is `Date.parse(change.time) > ldChangedAt`, `ldChangedAt` being the document's `savedAt` or the
 folder's `updatedAt`. A decision may carry several effects (a restore that also moves). After applying, the item
 is always recorded with the file's Drive state, so a lost conflict is corrected by the next outbound pass.
 
-`bin-folder`: every live personal document in the folder's livediagram subtree goes to the Trash (`DELETE
+`bin-folder`: every live personal document in the folder's livepages subtree goes to the Trash (`DELETE
 /api/documents/:id`), then the subtree's folders are deleted deepest first (`DELETE /api/folders/:id`, which drops
 their items in its batch). `recreate-folder` re-creates the folder with its old id (`POST /api/folders`), records
 its item, then lists the folder's children (`files.list q="'<id>' in parents"`) and plans each as a change, so the
 documents restored with it come back inside it whether or not Drive emitted a change per child.
 
-Every applied decision goes through the ordinary routes via `LivediagramPort` and fires
+Every applied decision goes through the ordinary routes via `LivepagesPort` and fires
 `track('Drive', 'Applied', type)`.
 
 ### Tombstones
 
-`localSeenStore` keeps, per owner, in `localStorage` key `livediagram:v2:drive-seen:<ownerId>`, the rows the last
+`localSeenStore` keeps, per owner, in `localStorage` key `livepages:v2:drive-seen:<ownerId>`, the rows the last
 pass saw as `[kind, ldId, driveFileId]`. At the start of outbound, a remembered row that is no longer an item and
 whose entity is neither a live personal document / folder nor in the personal Trash becomes a tombstone op. The
 memory is rewritten at the end of each pass and cleared on disconnect.
@@ -269,9 +269,9 @@ A remembered folder row whose item and folder are both gone is a **deleted folde
 
 ### Tab election
 
-`electDriveTab(onElected)` calls `navigator.locks.request('livediagram:drive-mirror', () => new Promise(release))`;
+`electDriveTab(onElected)` calls `navigator.locks.request('livepages:drive-mirror', () => new Promise(release))`;
 the holder runs the engine until `stop()`, which resolves the promise. Without `navigator.locks` every tab is
-elected (D2). A `BroadcastChannel('livediagram:drive-mirror')` carries `status` (from the elected tab), `hello`
+elected (D2). A `BroadcastChannel('livepages:drive-mirror')` carries `status` (from the elected tab), `hello`
 (asks for status), `write` (an api write in a non-elected tab), `flush`, `sync-now`, `adopt`, and in browser-only mode `token` (a grant made in a
 non-elected tab, handed to the elected one).
 
@@ -292,7 +292,7 @@ non-elected tab, handed to the elected one).
 | `ldDocumentId`, `ldOrigin === host`, `port.listItems()` records another file for it | `import` (`copy`)             | `ImportOffered` |
 | `ldDocumentId`, `ldOrigin === host`, `port.canOpenDocument` true                    | `open`                        | `Opened`        |
 | `ldDocumentId`, `ldOrigin === host`, cannot open (404, 403, 410)                    | `import` (`no-access`)        | `ImportOffered` |
-| our MIME or `.livediagram`, other `ldOrigin` or no `ldDocumentId`                   | `import` (`foreign`, `no-id`) | `ImportOffered` |
+| our MIME or `.livepages`, other `ldOrigin` or no `ldDocumentId`                   | `import` (`foreign`, `no-id`) | `ImportOffered` |
 | anything else, 404, 403 or unreadable                                               | `error`                       | `Error`         |
 
 `import` shows **Import a copy** (`no-access`, `foreign`, `no-id`) or **Import as new document** (`copy`): download
@@ -302,7 +302,7 @@ with `remapTabLinks`, the deck carried). A `copy` import also runs `importAsNewD
 
 1. `port.getConnection()` for the root, `port.listItems()` and `port.listPersonalFolders()` for the placement:
    `placeCopy(parentId)` is `{ folderId: null, unseen: false }` for the root, the folder a live recorded folder item
-   names, else `{ folderId: null, unseen: true }` (a folder livediagram cannot see).
+   names, else `{ folderId: null, unseen: true }` (a folder livepages cannot see).
 2. `port.importDocumentCopy(envelope, { id: crypto.randomUUID(), name, folderId })`, `name` the copy's
    `stripDriveName(file.name)` or the envelope's name.
 3. `claimCopy` (**pending the operator's confirmation**; one function, the only place the rule lives), only when the
@@ -321,7 +321,7 @@ with the pending return set to this URL.
 
 ## Interfaces and contracts
 
-### Wire types (`@livediagram/api-schema`, `drive.ts`)
+### Wire types (`@livepages/api-schema`, `drive.ts`)
 
 ```ts
 type DriveMode = 'off' | 'browser' | 'broker';
@@ -377,7 +377,7 @@ Every route: `503 drive_not_configured` when `driveMode` is `off`; `401 sign_in_
 | `POST`   | `/drive/lease`               | `{ holder }`                                        | `200 DriveLease`             | `400 invalid_request`, `404 drive_not_connected`                                                                                                   |
 | `DELETE` | `/drive/lease?holder=`       |                                                     | `204`                        | `400 invalid_request`                                                                                                                              |
 
-Validation: ids and file ids 1..`DRIVE_ID_MAX` characters of `[A-Za-z0-9_-]` (Drive ids) or the livediagram id
+Validation: ids and file ids 1..`DRIVE_ID_MAX` characters of `[A-Za-z0-9_-]` (Drive ids) or the livepages id
 charset `[A-Za-z0-9_-]`; names 1..`DRIVE_NAME_MAX`; `holder` a 1..64 character `[A-Za-z0-9-]` string;
 `redirectUri` an absolute URL whose path is `/drive/connected`, scheme `https`, or `http` on `localhost` /
 `127.0.0.1`. `PUT /drive/connection` creates the row only in `browser` mode.
@@ -387,7 +387,7 @@ charset `[A-Za-z0-9_-]`; names 1..`DRIVE_NAME_MAX`; `holder` a 1..64 character `
 `state = base64url(JSON { sub, redirectUri, exp, nonce }) + '.' + base64url(HMAC-SHA256(key, payload))`, `exp` =
 now + `DRIVE_STATE_TTL_MS`, `nonce` 16 random bytes. `verifyDriveState(key, state, sub, now)` returns the
 `redirectUri` or null (bad shape, bad signature, other `sub`, expired). The HMAC key is derived from
-`DRIVE_TOKEN_KEY` with HKDF-SHA256 (`info = 'livediagram drive state'`), so the sealing key is never used to sign.
+`DRIVE_TOKEN_KEY` with HKDF-SHA256 (`info = 'livepages drive state'`), so the sealing key is never used to sign.
 
 ### Google OAuth (`drive/google-oauth.ts`)
 
@@ -476,20 +476,20 @@ type DriveFileWrite = {
 `rateLimitExceeded`), `isNotFound` (404), `isAuth` (401). Content up to `DRIVE_MULTIPART_MAX_BYTES` goes
 `uploadType=multipart`; larger `uploadType=resumable` (session from `Location`, then one `PUT`).
 
-### LivediagramPort (`lib/drive/livediagram-port.ts`)
+### LivepagesPort (`lib/drive/livepages-port.ts`)
 
 Reads: `listPersonalDocuments`, `listPersonalFolders`, `listPersonalTrash`, `loadEnvelope(id)`,
 `loadSnapshotSvg(id)`, `canOpenDocument(id)`. Writes: `renameDocument`, `moveDocument`, `trashDocument`,
 `restoreDocument`, `purgeDocument`, `createFolder(id, name, parentId)`, `renameFolder`, `moveFolder`, `deleteFolder`,
 `importDocumentCopy(envelope)`. Mirror rows: `getConnection`, `putConnection`, `listItems`, `putItems`, `deleteItem`,
 `acquireLease`, `releaseLease`. The production implementation is a thin map onto `lib/api/*`; tests use
-`FakeLivediagram`.
+`FakeLivepages`.
 
 ### Envelope (`packages/document/src/document-envelope.ts`)
 
 ```ts
 type DocumentEnvelope = {
-  kind: 'livediagram.document';
+  kind: 'livepages.document';
   schemaVersion: 1;
   exportedAt: number;
   document: {
@@ -584,7 +584,7 @@ beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/driv
 | Content over 5 MB                                       | Resumable upload                                                                                |
 | Thumbnail render fails                                  | Upload without thumbnail, logged                                                                |
 | Two devices                                             | Lease; the other still runs inbound                                                             |
-| A change for an item whose value livediagram holds      | Recorded only                                                                                   |
+| A change for an item whose value livepages holds      | Recorded only                                                                                   |
 | Folder move would cycle (`409 cycle`)                   | Recorded; outbound restores Drive's parent                                                      |
 | Name over `MAX_NAME_LEN` from Drive                     | Truncated to `MAX_NAME_LEN`                                                                     |
 | `PUT /drive/items` unique conflict on file id           | `409 drive_item_conflict`; the engine drops the stale row holding that file id and retries once |
@@ -625,7 +625,7 @@ beyond D1's own; a connection is re-creatable by reconnecting. `DELETE /api/driv
 ### Views follow
 
 `ApiWriteSignal` (`lib/api/write-signal.ts`) gains `drive?: true`. The elected tab's engine calls
-`onInboundApplied` after a pass whose inbound changed livediagram; `DriveMirrorProvider` raises
+`onInboundApplied` after a pass whose inbound changed livepages; `DriveMirrorProvider` raises
 `notifyApiWrite({ drive: true })` there and posts `{ type: 'drive-applied' }` on the tab channel, and every other tab
 raises the same signal on receipt. The provider's own write relay ignores `drive` signals (they are not edits).
 `useAfterDriveChange(onChange)` (`hooks/persistence/useAfterDriveChange.ts`) is `useAfterApiWrite` with a
@@ -648,13 +648,13 @@ one as `driveLog('inbound-not-ours', { fileId, hadAppProperties })`, so a copy t
 ### Root folder name
 
 `driveRootName(host)` (`packages/api-schema/src/drive.ts`), `host` as `window.location.host`: lower-cased, the port
-dropped (`[::1]:3000` → `::1`, `localhost:3000` → `localhost`):
+dropped (`[::1]:3200` → `::1`, `localhost:3200` → `localhost`):
 
 | Host (after normalising)                                   | Name                        |
 | ---------------------------------------------------------- | --------------------------- |
-| `livediagram.app`, `www.livediagram.app`                   | `livediagram`               |
-| `staging.livediagram.app`, `localhost`, `127.0.0.1`, `::1` | `livediagram (staging)`     |
-| anything else                                              | `livediagram (self-hosted)` |
+| `livepages.app`, `www.livepages.app`                   | `livepages`               |
+| `staging.livepages.app`, `localhost`, `127.0.0.1`, `::1` | `livepages (staging)`     |
+| anything else                                              | `livepages (self-hosted)` |
 
 ## Presentation and UX
 
@@ -685,7 +685,7 @@ keywords: 'drive google sync backup mirror cloud', description, helpArticle: 'go
 | `connected`     | a check the row asked for | Checking…                                    | **Disconnect**            | none                                                                       |
 | `connected`     | first mirror              | Copying {done} of {total}…                   | **Disconnect**            | none                                                                       |
 | `connected`     | `offline` / `failed`      | **Offline**                                  | **Disconnect**            | `DRIVE_OFFLINE`                                                            |
-| `connected`     | notices                   | **Needs attention**                          | **Disconnect**            | "{name}: Moved to a Drive folder livediagram can't see." + **Show folder** |
+| `connected`     | notices                   | **Needs attention**                          | **Disconnect**            | "{name}: Moved to a Drive folder livepages can't see." + **Show folder** |
 | `attention`     | `needs_reconnect`         | **Needs reconnecting** / Connecting…         | **Disconnect**            | `DRIVE_NEEDS_RECONNECT` + **Reconnect** / Connecting…                      |
 | `attention`     | `needs_resume`            | **Paused**                                   | **Disconnect**            | `DRIVE_NEEDS_RESUME` + **Resume**                                          |
 | `attention`     | reconnect failed to start | **Needs reconnecting**                       | **Disconnect**            | `DRIVE_CONNECT_FAILED` (`failed`) + **Reconnect**                          |
@@ -715,7 +715,7 @@ Logged `connect-failed` (warn). The status reads **Connecting…** while `connec
 `withSettingsTarget(path, 'account', 'cloud-sync')` (`history.replaceState`), then `rememberConsent(sessionStorage,
 state, thatPath)`, then `location.assign(google)`, so Back from Google reloads the entry with Cloud Sync open.
 `/drive/connected` `location.replace`s itself with the remembered path on success and on `error` (a cancel), and on a
-cancel first sets the one-shot `livediagram:v2:drive-connect-outcome` = `cancelled` in `sessionStorage`; the provider
+cancel first sets the one-shot `livepages:v2:drive-connect-outcome` = `cancelled` in `sessionStorage`; the provider
 reads and clears it on mount into `connectNote: 'cancelled'`, shown on the problem line as
 `DRIVE_CONNECT_CANCELLED` in the ordinary colour, the status **Not connected**. `safeReturnPath(path)` accepts only a
 path that starts with one `/`, holds no backslash and no control character, and resolves to the page's own origin;
@@ -762,15 +762,15 @@ arrival, or renamed (an inbound change for the root's file id), `null` until kno
 view (`block: 'start'`, smooth unless reduced motion) and takes focus (`preventScroll`). The editor's
 `openSettingsOn(categoryId, sectionId?)` and the Explorer's `?settings=<category>&section=<id>` deep link set it.
 
-Disconnect confirms: "Disconnect Google Drive? Your files stay in Drive; livediagram stops updating them."
+Disconnect confirms: "Disconnect Google Drive? Your files stay in Drive; livepages stops updating them."
 
 Banner (`needs_reconnect` / `needs_resume`), bottom-left, dismissible for the session: "Google Drive sync is paused."
 with **Reconnect** / **Resume sync**. `/drive/connected`: "Connecting Google Drive…", then back to the page the user
 started from; on `error=access_denied`: "Google Drive wasn't connected." with **Back**. `/drive/open`: "Opening from
-Google Drive…"; import: "This document isn't in your livediagram." **Import a copy**; a copy of a mirrored file:
+Google Drive…"; import: "This document isn't in your livepages." **Import a copy**; a copy of a mirrored file:
 "This is a copy made in Google Drive. Import it as a new document to open it here; the original stays as it is."
 **Import as new document**; error: "This file can't be
-opened in livediagram." with **Go to Explorer**.
+opened in livepages." with **Go to Explorer**.
 
 ### Account switch dialog
 
@@ -831,7 +831,7 @@ Events: `elected`, `pass-start`, `pass-end`, `token`, `root-created`, `root-foun
 | Bearer survives a second session mount      | `apps/live/hooks/persistence/useClerkApiBootstrap.test.tsx`             |
 | Telemetry vocabulary                        | `apps/live/lib/telemetry-coverage.test.ts`, `apps/telemetry` tests      |
 
-The browser e2e is opt-in (`pnpm --filter @livediagram/live test:e2e:drive`), kept out of CI's default run to spare
+The browser e2e is opt-in (`pnpm --filter @livepages/live test:e2e:drive`), kept out of CI's default run to spare
 its minutes: it rebuilds the live app with `NEXT_PUBLIC_E2E_AUTH=1`, which swaps Clerk for `E2EAuthBridge` (a
 session JWT the test mints against its own JWKS, verified by the worker exactly as Clerk's), and boots the stack
 with `E2E_DRIVE=1`. A real build never sets the flag, so the bridge is compiled out.
@@ -861,18 +861,18 @@ with `E2E_DRIVE=1`. A real build never sets the flag, so the bridge is compiled 
 | `DRIVE_MULTIPART_MAX_BYTES`                | 5 MiB                                                                 | cadence                  | Google multipart limit                                      |
 | `DRIVE_THUMBNAIL_WIDTH_PX`                 | 1600                                                                  | cadence                  | Google's recommendation; min 220                            |
 | `DRIVE_THUMBNAIL_MAX_BYTES`                | 2 MB                                                                  | cadence                  | Google limit                                                |
-| `DRIVE_FILE_MIME`                          | `application/vnd.livediagram+json`                                    | api-schema               | Spec                                                        |
-| `DRIVE_FILE_EXTENSION`                     | `.livediagram`                                                        | api-schema               | Spec                                                        |
-| `driveRootName(host)`                      | `livediagram` / `livediagram (staging)` / `livediagram (self-hosted)` | api-schema               | Spec, "The root folder's name"                              |
+| `DRIVE_FILE_MIME`                          | `application/vnd.livepages+json`                                    | api-schema               | Spec                                                        |
+| `DRIVE_FILE_EXTENSION`                     | `.livepages`                                                        | api-schema               | Spec                                                        |
+| `driveRootName(host)`                      | `livepages` / `livepages (staging)` / `livepages (self-hosted)` | api-schema               | Spec, "The root folder's name"                              |
 | `DRIVE_SCOPES`                             | `drive.file drive.install`                                            | api-schema               | Spec                                                        |
 
 Env: api `GOOGLE_CLIENT_ID` (var), `GOOGLE_CLIENT_SECRET` (secret), `DRIVE_TOKEN_KEY` (secret, base64 of 32 bytes,
 `openssl rand -base64 32`), `GOOGLE_OAUTH_BASE_URL` (tests only); live `NEXT_PUBLIC_GOOGLE_CLIENT_ID`,
-`NEXT_PUBLIC_GOOGLE_API_KEY`. On livediagram.app the client id and the Picker key are per environment (below).
+`NEXT_PUBLIC_GOOGLE_API_KEY`. On livepages.app the client id and the Picker key are per environment (below).
 
 ### Hosted profile per environment
 
-livediagram.app's per-environment Google identity lives in `apps/api/hosted-vars.json`, read by
+livepages.app's per-environment Google identity lives in `apps/api/hosted-vars.json`, read by
 `apps/api/scripts/hosted-vars.mjs`:
 
 ```json

@@ -3,12 +3,12 @@ import {
   cornerRadiusPx,
   headerLayout,
   WEB_TEXT_MAX,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { IconGlyph } from '@/components/primitives/icon-glyph';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';
-import { GlyphDisc } from '@livediagram/ui';
+import { GlyphDisc } from '@livepages/ui';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 
 // Header (docs/specs/009-elements/web-components-and-no-groups.md): a website header bar — a round logo, the brand (the

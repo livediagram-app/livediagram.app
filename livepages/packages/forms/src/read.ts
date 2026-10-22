@@ -1,9 +1,9 @@
 // readForm (docs/specs/030-forms/blueprints/forms.md §2): a stored or received form, made safe. It never throws and
 // never refuses a form for one bad part: the part is dropped or capped, so a form from an older or newer editor, an
 // agent or a hand-edited file still opens.
-import { CUSTOM_FIELD_ID_PATTERN, ITEM_TYPE_PATTERN } from '@livediagram/items';
-import { parseColourBackground } from '@livediagram/page-background';
-import { SHEET_ID_PATTERN } from '@livediagram/sheets';
+import { CUSTOM_FIELD_ID_PATTERN, ITEM_TYPE_PATTERN } from '@livepages/items';
+import { parseColourBackground } from '@livepages/page-background';
+import { SHEET_ID_PATTERN } from '@livepages/sheets';
 import {
   FORM_DESCRIPTION_MAX,
   FORM_HEADING_MAX,
@@ -136,7 +136,7 @@ function readQuestion(v: unknown): FormQuestion | null {
   return q;
 }
 
-// The cover: a colour background as a slide's (@livediagram/page-background), nothing kept when it is not one.
+// The cover: a colour background as a slide's (@livepages/page-background), nothing kept when it is not one.
 const readCover = (v: unknown): FormCover | undefined => parseColourBackground(v);
 
 function readDestination(v: unknown): FormDestination | undefined {

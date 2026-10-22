@@ -6,7 +6,7 @@
 
 import { useState } from 'react';
 import { PlusIcon } from '@/components/primitives/explorer-icons';
-import { SearchIcon } from '@livediagram/ui';
+import { SearchIcon } from '@livepages/ui';
 import { track } from '@/lib/telemetry';
 import { HERO_FIELD_LOOK } from '@/app/explorer/lens/LensField';
 import {

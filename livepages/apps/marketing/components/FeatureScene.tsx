@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import { useEffect, useRef, useState, type ComponentType } from 'react';
-import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livediagram/ui';
+import { PREFERS_REDUCED_MOTION, useMediaQuery } from '@livepages/ui';
 import { EditorWindow } from './hero-editor-window';
 import { heroSceneData, type HeroSceneKey } from './hero-scene-data';
 

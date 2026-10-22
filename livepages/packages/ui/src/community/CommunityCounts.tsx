@@ -1,7 +1,7 @@
 import { CopyIcon } from '../icons/actions';
 import { HeartIcon } from '../icons/community';
 import { formatCommunityCount } from './format-count';
-import { plural, pluralWord } from '@livediagram/document';
+import { plural, pluralWord } from '@livepages/document';
 
 // How a post has done, as a card's corner shows it (docs/specs/025-community/community.md "Gallery"): the copy count,
 // and, where the heart is not a button (the landing page), the like count. The words are for screen readers (the

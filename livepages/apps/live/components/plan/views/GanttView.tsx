@@ -9,7 +9,7 @@
 // own row order when it has one; a row's grip drags it to a new place (useGanttRowReorder).
 import { useMemo, useRef, useState } from 'react';
 import { useToday } from '@/hooks/ui/useToday';
-import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { IDENTITY_FILL, identityVars } from '@livepages/ui';
 import {
   ITEM_TYPES,
   ganttAt,
@@ -23,7 +23,7 @@ import {
   itemTitle,
   typeIn,
   type GanttRow,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { accentOn } from '../plan-palette';
 import { OVERDUE_RED, ViewFrame, openProps, viewState } from './view-frame';
 import type { PlanViewProps } from './PlanViewView';

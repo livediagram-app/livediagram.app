@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { layOutPages, type Tab } from '@livediagram/document';
+import { layOutPages, type Tab } from '@livepages/document';
 
 // A slide's animated background in its exports (docs/specs/007-editor/pages-mode.md
 // "Animated backgrounds"): the PNG and PDF paint it as the slide opens over the gradient, the SVG

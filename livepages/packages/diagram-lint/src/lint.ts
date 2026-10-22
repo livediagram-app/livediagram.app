@@ -1,7 +1,7 @@
 // The diagram lint (docs/specs/024-agents/diagram-lint.md; blueprint "Behaviour and state"): a pure
 // check of how a tab is drawn, returning its measures and findings in a fixed order.
 
-import type { LintCode, LintReport, LintSeverity } from '@livediagram/api-schema';
+import type { LintCode, LintReport, LintSeverity } from '@livepages/api-schema';
 import {
   opensInOf,
   conciseGraph,
@@ -9,7 +9,7 @@ import {
   type Element,
   type GraphInput,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { LINT_CHECKS } from './checks';
 import { aspectExtreme } from './checks/aspect-extreme';
 import { colourOnThemed } from './checks/colour-on-themed';

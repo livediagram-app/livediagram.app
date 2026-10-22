@@ -7,7 +7,7 @@ import {
   visibleLayerElements,
   type LaidOutPage,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { pageWritingFonts } from '@/lib/article/article-export';
 import { downloadBlob } from '@/lib/download-blob';
 import { embeddedFontFaceCss } from '@/lib/export-fonts';

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 
 // read_document's page (docs/specs/015-api/mcp-server.md §4.2): one page of a Pages tab, by id, place or name.
 vi.mock('./render', () => ({ svgToPngBase64: async () => 'cG5n' }));

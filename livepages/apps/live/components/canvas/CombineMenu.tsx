@@ -4,7 +4,7 @@
 // multi-selection toolbar's Combine button that opens them. The selection menu's Combine section
 // shows the same tiles (MultiSelectionContextMenu).
 import { useState } from 'react';
-import { HoverCard, Glyph } from '@livediagram/ui';
+import { HoverCard, Glyph } from '@livepages/ui';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { TOOLBAR_BTN, TOOLBAR_BTN_ON } from '@/components/canvas/toolbar-buttons';

@@ -4,8 +4,8 @@
 // selected question's Type button, and the add bar's Add Question. A radio list in a popover: arrows move, Enter
 // picks.
 import { useRef, useState, type ReactNode } from 'react';
-import { QUESTION_TYPE_NAMES, type QuestionType } from '@livediagram/forms';
-import { ChevronDownIcon } from '@livediagram/ui';
+import { QUESTION_TYPE_NAMES, type QuestionType } from '@livepages/forms';
+import { ChevronDownIcon } from '@livepages/ui';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { QUESTION_TYPE_ICONS, QUESTION_TYPE_ORDER } from './question-icons';
 

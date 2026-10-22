@@ -296,7 +296,7 @@ test('the photo import needs no model key', async ({ page, pageErrors }) => {
 // happens and carries what is on screen.
 test('a corrected review can be saved as ground truth', async ({ page, pageErrors }) => {
   await openPhotoBoard(page, { boundaryModel: false });
-  await page.evaluate(() => localStorage.setItem('livediagram:truth', '1'));
+  await page.evaluate(() => localStorage.setItem('livepages:truth', '1'));
   await importToReview(page, [
     { fill: ORANGE, x: 200, y: 120, w: 180, h: 180 },
     { fill: BLUE, x: 500, y: 120, w: 180, h: 180 },
@@ -475,7 +475,7 @@ test('?truth=1 arms the export from /new/, trailing slash and all', async ({
   const res = await page.goto('/new/?truth=1');
   expect(res?.status()).toBe(200);
   await page.getByText('New Document', { exact: false }).first().waitFor();
-  await expect.poll(() => page.evaluate(() => localStorage.getItem('livediagram:truth'))).toBe('1');
+  await expect.poll(() => page.evaluate(() => localStorage.getItem('livepages:truth'))).toBe('1');
   expect(new URL(page.url()).search).toBe('?truth=1');
 
   expectNoPageErrors(pageErrors);

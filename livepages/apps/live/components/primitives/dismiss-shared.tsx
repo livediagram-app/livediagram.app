@@ -1,4 +1,4 @@
-import { CloseIcon } from '@livediagram/ui';
+import { CloseIcon } from '@livepages/ui';
 
 // Dismissing a document someone shared with you: the verb, its hover card,
 // and its glyph. The editor panel's Shared rows and the Explorer page's

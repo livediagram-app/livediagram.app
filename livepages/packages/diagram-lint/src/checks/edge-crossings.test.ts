@@ -1,6 +1,6 @@
 import { fixes } from '../fixes';
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { LINT_MAX_ARROWS } from '../constants';
 import { arrow, box, frame, lint, of, tabOf } from '../fixtures/build';
 import { formatLintReport } from '../format';

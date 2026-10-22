@@ -20,7 +20,7 @@ import {
   withEditorModeSwitched,
   type EditorMode,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { resolveEditorMode } from '@/lib/editor-mode-store';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';

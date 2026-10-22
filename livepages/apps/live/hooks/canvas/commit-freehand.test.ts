@@ -8,7 +8,7 @@ import {
   type FreehandElement,
   type ShapeElement,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { makeCommitFreehand } from './commit-freehand';
 

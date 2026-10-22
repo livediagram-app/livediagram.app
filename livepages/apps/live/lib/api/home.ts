@@ -8,7 +8,7 @@
 // Opens are not sent from here: the editor declares them on its first tab read
 // (apiLoadTab's `open`).
 
-import type { HomeResponse } from '@livediagram/api-schema';
+import type { HomeResponse } from '@livepages/api-schema';
 import { API_BASE, apiFetch, apiHeaders } from './core';
 
 async function read<T>(ownerId: string, path: string, isShape: (body: unknown) => boolean) {

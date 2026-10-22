@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, TextElement } from '@livediagram/document';
+import type { Element, TextElement } from '@livepages/document';
 import { applyWordmarkToEl } from './style-presets';
 
 // docs/specs/007-editor/logo-pages.md "Wordmark type": the patch the Wordmark section commits.

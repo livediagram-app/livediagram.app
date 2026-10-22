@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livepages/vitest-config/cpu-time';
 import { createListeners } from './listeners';
 
 describe('createListeners', () => {

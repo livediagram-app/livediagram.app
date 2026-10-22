@@ -6,7 +6,7 @@
 // goes.
 
 import { useEffect, useRef, useState } from 'react';
-import { CompactEmptyState } from '@livediagram/ui';
+import { CompactEmptyState } from '@livepages/ui';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { phoneOrder, stripFade, type JumpBackInSet } from '@/app/explorer/home/home-model';
 import type { JumpBackInMenuFor } from './JumpBackInMenu';

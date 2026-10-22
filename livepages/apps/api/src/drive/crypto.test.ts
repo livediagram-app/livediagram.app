@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { base64ToBytes, bytesToBase64, bytesToBase64Url } from '@livediagram/api-schema';
+import { base64ToBytes, bytesToBase64, bytesToBase64Url } from '@livepages/api-schema';
 import { importDriveKey, openRefreshToken, sealRefreshToken } from './crypto';
 
 // The refresh token is sealed with AES-GCM under DRIVE_TOKEN_KEY before it

@@ -9,7 +9,7 @@ import {
   type Lens,
   type LensIssue,
   type LensSubject,
-} from '@livediagram/explorer-lens';
+} from '@livepages/explorer-lens';
 
 /** Recent lists this many of the newest documents that match. */
 export const RECENT_LIMIT = 12;

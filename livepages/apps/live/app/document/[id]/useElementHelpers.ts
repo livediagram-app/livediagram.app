@@ -1,4 +1,4 @@
-import { isFloorShape } from '@livediagram/document';
+import { isFloorShape } from '@livepages/document';
 import type { Dispatch, SetStateAction } from 'react';
 import {
   takesTypedLabel,
@@ -6,7 +6,7 @@ import {
   type BoxedElement,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { insertElementAt, type InsertionSlot } from '@/lib/insert-between';
 import { deriveNewBoxedColours } from '@/lib/themes';
 import { inheritedSizeFor } from '@/lib/canvas';

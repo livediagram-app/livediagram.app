@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages } from '@livediagram/document';
+import { layOutPages } from '@livepages/document';
 import { pagesClipPath } from './PageClip';
 
 // Pages mode cuts elements off at the page edges (docs/specs/007-editor/editor-modes.md

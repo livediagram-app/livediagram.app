@@ -1,6 +1,6 @@
 # Web performance
 
-What every site on livediagram.app loads up front, and the rules that keep it lean. The canvas's own
+What every site on livepages.app loads up front, and the rules that keep it lean. The canvas's own
 hot paths (drag, pan, zoom on large boards) are a separate subject:
 [Canvas performance](../008-canvas/canvas-performance.md).
 
@@ -98,7 +98,7 @@ is made only where it measurably wins.
 
 The help centre's search runs over the whole article registry; the box loads it on the reader's
 first focus, hover or keystroke, not with every page. Code that only builds links imports the
-registry's data-free helpers (`@livediagram/help-registry/hrefs`), and a help page's telemetry id
+registry's data-free helpers (`@livepages/help-registry/hrefs`), and a help page's telemetry id
 is worked out from its path, never by finding the article.
 
 ### Nothing cross-origin holds up first paint

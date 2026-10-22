@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import type { AccessLevel } from '@livediagram/api-schema';
-import { participantTabChange, type Tab } from '@livediagram/document';
+import type { AccessLevel } from '@livepages/api-schema';
+import { participantTabChange, type Tab } from '@livepages/document';
 import { debugLog } from '@/lib/debug-log';
 import { resolveEditorCapabilities } from '@/lib/editor-capabilities';
 

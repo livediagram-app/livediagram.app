@@ -16,7 +16,7 @@ import {
   type ElementGrid,
   type ElementIndex,
   type Rect,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { DragOverlay } from '@/lib/drag-preview';
 import { deriveArrowViewFrame, type ArrowViewFrame } from './arrow-view-frame';
 

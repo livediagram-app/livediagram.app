@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { FakeGoogle } from '@livediagram/fake-google';
-import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
+import { FakeGoogle } from '@livepages/fake-google';
+import { DRIVE_FILE_MIME } from '@livepages/api-schema';
 import {
   createFreehand,
   type FreehandElement,
   documentToEnvelopeText,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { createDriveRestClient } from './drive-rest-client';
 import {
   importOpenWithCopy,
@@ -14,14 +14,14 @@ import {
   parseOpenState,
   resolveOpenWith,
 } from './open-with';
-import { Clock, FakeLivediagram, HOST, OWNER } from './test-support';
+import { Clock, FakeLivepages, HOST, OWNER } from './test-support';
 
 // "Open with" outcomes (docs/specs/022-drive-mirror/drive-mirror.md, "Open with").
 
 function setup() {
   const clock = new Clock();
   const google = new FakeGoogle({ now: () => clock.now });
-  const ld = new FakeLivediagram(clock);
+  const ld = new FakeLivepages(clock);
   const drive = createDriveRestClient({
     fetch: google.fetch,
     getAccessToken: async () => google.issueAccessToken(OWNER),
@@ -42,7 +42,7 @@ function setup() {
   ) => {
     const id = google.otherUserFile({
       owner: over.owner ?? 'someone',
-      name: over.name ?? 'Shared plan.livediagram',
+      name: over.name ?? 'Shared plan.livepages',
       mimeType: over.mimeType ?? DRIVE_FILE_MIME,
       content: over.content ?? envelope,
       appProperties: props,
@@ -107,13 +107,13 @@ describe('resolveOpenWith', () => {
     });
   });
 
-  it('refuses a file that is not a livediagram file, or cannot be read', async () => {
+  it('refuses a file that is not a livepages file, or cannot be read', async () => {
     const s = setup();
     const notOurs = await resolveOpenWith(
       s.deps,
       s.file({}, { name: 'photo.png', mimeType: 'image/png' }),
     );
-    expect(notOurs).toEqual({ kind: 'error', reason: 'not-livediagram' });
+    expect(notOurs).toEqual({ kind: 'error', reason: 'not-livepages' });
     expect(openWithTelemetryType(notOurs)).toBe('Error');
     expect(await resolveOpenWith(s.deps, { fileId: 'missing' })).toEqual({
       kind: 'error',

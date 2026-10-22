@@ -6,7 +6,7 @@
 // and everything, expanding (collapsed by default, never remembered) to every action, newest first.
 
 import { useId, useState } from 'react';
-import type { HomeAction, HomeGroup } from '@livediagram/api-schema';
+import type { HomeAction, HomeGroup } from '@livepages/api-schema';
 import { track } from '@/lib/telemetry';
 import {
   actionDetail,
@@ -22,7 +22,7 @@ import { homeDocumentHref } from '@/app/explorer/home/home-model';
 import { AvatarStack, HomeAvatar } from './HomeAvatar';
 import { ChevronGlyph, VerbGlyph } from './home-icons';
 import { FOCUS_RING, MUTED, ROW } from './home-styles';
-import { SOLID_BRAND_DARK } from '@livediagram/ui';
+import { SOLID_BRAND_DARK } from '@livepages/ui';
 
 /** Newer than the person's last look: the Timeline card's New pill, words not colour. */
 function NewPill() {

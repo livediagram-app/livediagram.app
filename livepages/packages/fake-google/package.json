@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/fake-google",
+  "name": "@livepages/fake-google",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,8 +17,8 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@livepages/oxlint-config": "workspace:*",
+    "@livepages/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

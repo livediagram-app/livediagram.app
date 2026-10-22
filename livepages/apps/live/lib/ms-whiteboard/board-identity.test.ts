@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { NAME_MAX_LENGTH } from '@livediagram/document';
+import { NAME_MAX_LENGTH } from '@livepages/document';
 import { BOARD_DATES_FLOOR, boardDates, boardTitle } from './board-identity';
 
 const NOW = Date.parse('2026-10-01T12:00:00Z');

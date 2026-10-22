@@ -1,10 +1,10 @@
 # Router app
 
-A small Cloudflare Worker that fronts the apex domain (`livediagram.app`) and routes URL paths to the right underlying app.
+A small Cloudflare Worker that fronts the apex domain (`livepages.app`) and routes URL paths to the right underlying app.
 
-- **Workspace:** `apps/router` (`@livediagram/router`).
+- **Workspace:** `apps/router` (`@livepages/router`).
 - **Runtime:** Cloudflare Workers.
-- **Production hostname:** `livediagram.app` (custom domain configured in the Cloudflare dashboard). Default Workers URL also remains reachable.
+- **Production hostname:** `livepages.app` (custom domain configured in the Cloudflare dashboard). Default Workers URL also remains reachable.
 
 ## Routing table
 
@@ -19,7 +19,7 @@ A small Cloudflare Worker that fronts the apex domain (`livediagram.app`) and ro
 | a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                                           | 308 redirect to `/help/<path>`         |
 | everything else                                                                                                                                            | marketing app (`apps/marketing`)       |
 
-The live app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livediagram/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the live worker's `out/` files are already prefix-free).
+The live app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@livepages/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the live worker's `out/` files are already prefix-free).
 
 The one thing that keeps a `/live` prefix is the live app's bundled **`_next` assets** (its prod `assetPrefix: '/live'`). Both Next static exports want `/_next`, so the live app's assets ride `/live/_next/*` to avoid colliding with marketing's `/_next`. The router **strips** `/live` from those before forwarding (shared `forwardStripped()` helper, same as `/telemetry/*`) so the worker serves them from `out/_next`. (Next's `basePath` used to add the prefix to pages too; that's gone — only `assetPrefix` remains, on assets only.)
 
@@ -29,7 +29,7 @@ The one thing that keeps a `/live` prefix is the live app's bundled **`_next` as
 
 **Not found.** An address no site has a page for gets that site's own not-found page, never the framework's bare
 "404 | This page could not be found.": the site's header and footer around one card (`PageNotFound` in
-`@livediagram/ui`) titled **Page not found**, "There is no page at this address. It may have moved, or the link may
+`@livepages/ui`) titled **Page not found**, "There is no page at this address. It may have moved, or the link may
 have a typo.", with a way back to the site's home (marketing: **Go to the Home Page**; the help centre: **Browse Help
 Centre** and **Troubleshooting**; Community: **Back to Community**), then **Help Centre**. It is still a 404, so search
 engines drop it. The editor answers an unknown address with its own card instead
@@ -93,19 +93,19 @@ The help articles renamed with it ([Help app, Renamed articles](../018-help/help
 
 ## Local development
 
-The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port — `http://localhost:3000` serves marketing at `/`, the editor at `/new` etc., `/telemetry`, `/help`, `/community`, and `/api`, with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
+The router **also runs locally**, so `pnpm dev` gives you the production URL shape on one port — `http://localhost:3200` serves marketing at `/`, the editor at `/new` etc., `/telemetry`, `/help`, `/community`, and `/api`, with no per-app port to remember. Each app still runs on its own port underneath and stays directly reachable:
 
 | App       | Local URL                                                           |
 | --------- | ------------------------------------------------------------------- |
-| router    | `http://localhost:3000/` — everything, stitched like production     |
-| marketing | `http://localhost:3001/`                                            |
-| live      | `http://localhost:3002/new`, `/explorer/recent`, ... (clean routes) |
-| telemetry | `http://localhost:3003/telemetry` (basePath baked in)               |
-| help      | `http://localhost:3004/help` (basePath baked in)                    |
-| community | `http://localhost:3005/community` (basePath baked in)               |
-| api       | `http://localhost:8787/api/...` (wrangler dev)                      |
+| router    | `http://localhost:3200/` — everything, stitched like production     |
+| marketing | `http://localhost:3201/`                                            |
+| live      | `http://localhost:3202/new`, `/explorer/recent`, ... (clean routes) |
+| telemetry | `http://localhost:3203/telemetry` (basePath baked in)               |
+| help      | `http://localhost:3204/help` (basePath baked in)                    |
+| community | `http://localhost:3205/community` (basePath baked in)               |
+| api       | `http://localhost:8987/api/...` (wrangler dev)                      |
 
-**How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livediagram/router dev` runs `wrangler dev --env local --port 3000`, and the root `pnpm dev` includes it.
+**How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @livepages/router dev` runs `wrangler dev --env local --port 3200`, and the root `pnpm dev` includes it.
 
 Origin mode forwards **as-is, never stripped**: unlike the deployed static-asset workers (which hold prefix-free `out/` files), the local Next dev servers serve their own prefixes themselves — `basePath` for telemetry/help/community, and the live app's `/live` assetPrefix, which applies **in dev too** (Next's dev server serves both the prefixed and unprefixed asset paths) precisely so the local router can tell live's `/live/_next/*` apart from marketing's `/_next/*` the same way production does.
 

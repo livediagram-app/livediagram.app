@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSticky, createText, type Element } from '@livediagram/document';
+import { createSticky, createText, type Element } from '@livepages/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { countElements, headerLine, threadCounts, viewHeader, type HeaderFacts } from './header';
 

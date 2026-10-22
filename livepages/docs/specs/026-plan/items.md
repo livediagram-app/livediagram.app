@@ -354,11 +354,11 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 
 - **Duplicate** copies the item store with the document (same ids, same keys). A copied tab linked into another
   document finds its items only if that document has them; a Plan card whose item is not in the store says so.
-- **The `.livediagram` file** (the Google Drive mirror's document file) carries the items, and a copy imported
+- **The `.livepages` file** (the Google Drive mirror's document file) carries the items, and a copy imported
   from it gets them back. The field is additive, so the file stays version 1.
 - Images, thumbnails and api or MCP renders draw boards and cards from the document's items. The Export dialog's
   preview draws them too, so it shows what the download holds.
-- **A tab's JSON export** (the `livediagram.tab` file) carries the items the tab shows (`itemIdsShownOnTab`, the
+- **A tab's JSON export** (the `livepages.tab` file) carries the items the tab shows (`itemIdsShownOnTab`, the
   Trash left out) as `items`, and the document's stored type catalogue as `itemTypes` when it has one. Each item
   keeps its id, type, key, fields and rank, without its votes or comments: the file travels, and those name people.
   Both fields are additive and absent when the tab shows no items, so the file keeps its schema version.

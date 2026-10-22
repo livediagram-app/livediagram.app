@@ -1,13 +1,13 @@
 // Timing telemetry (docs/specs/017-telemetry/timing-telemetry.md): time a key moment of the
 // experience and report it as `Timing·Measured·<Metric>.<Bucket>`. The bucket is picked here, in the
-// browser, from the shared scales in @livediagram/api-schema, so the raw duration never leaves it.
+// browser, from the shared scales in @livepages/api-schema, so the raw duration never leaves it.
 //
 // Shared by the editor's own timings and every app's Web Vitals; each caller passes its own
 // policy-wrapped track(), as installClientErrorTracking does. A timing is dropped when the page was
 // hidden at any point while it ran: hidden pages are throttled, so the number would measure the
 // throttling, not the product.
 
-import { timingType } from '@livediagram/api-schema';
+import { timingType } from '@livepages/api-schema';
 
 export type TimingTrack = (category: 'Timing', action: 'Measured', type: string) => void;
 

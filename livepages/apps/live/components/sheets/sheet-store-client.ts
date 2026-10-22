@@ -3,7 +3,7 @@
 // they see), one workbook per tab, writes sent one at a time per sheet in order, undo steps, and the room's ops
 // merged by rev. Writes land on ids, so pending writes rebase cleanly over anyone else's.
 import { subscribeOfflineIds } from '@/lib/offline/offline-store';
-import type { SheetCreateRequest, SheetsRoomOp, SheetWriteResponse } from '@livediagram/api-schema';
+import type { SheetCreateRequest, SheetsRoomOp, SheetWriteResponse } from '@livepages/api-schema';
 import {
   Workbook,
   applyLayoutChange,
@@ -31,7 +31,7 @@ import {
   type SheetRejection,
   type SheetWrite,
   type WriteCheck,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import { debugLog } from '@/lib/debug-log';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { ApiError } from '@/lib/api/core';

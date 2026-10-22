@@ -3,7 +3,7 @@
 // them: Label takes focus, the address lists the document's tabs, Enter adds, Escape cancels.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DashboardLink, Tab } from '@livediagram/document';
+import type { DashboardLink, Tab } from '@livepages/document';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardLinksCard } from './DashboardLinksCard';
 

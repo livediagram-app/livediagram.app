@@ -6,7 +6,7 @@
 // the stale ones. It reflows by size (metricTier): compact puts the figure beside its name; large puts the picture
 // beside the figure when the tile is wide, under it otherwise.
 import type { CSSProperties, ReactNode } from 'react';
-import type { MetricKind } from '@livediagram/items';
+import type { MetricKind } from '@livepages/items';
 import { BoardWidgetArt } from '../plan-tile-art';
 import { PersonDisc } from '../PersonDisc';
 import type { PlanPalette } from '../plan-palette';
@@ -16,7 +16,7 @@ import {
   type MetricModel,
   type MetricTier,
   type MetricVisual,
-} from '@livediagram/plan-art';
+} from '@livepages/plan-art';
 
 const PEOPLE_ROWS = 5;
 

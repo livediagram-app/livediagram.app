@@ -7,7 +7,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata: Metadata = helpMetadata({
   title: 'Troubleshooting',
   description:
-    'Solutions to common problems with the livediagram editor and real-time collaboration.',
+    'Solutions to common problems with the livepages editor and real-time collaboration.',
   path: '/help/troubleshooting/',
 });
 

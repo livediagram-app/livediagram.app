@@ -5,7 +5,7 @@
 // picture of what it measures (a ring for completion, a bar split by type, a bar per column against its
 // WIP limit, pips for votes). Filter, Only Mine and Not on Board are controls. The pictures are CSS, so
 // they stay crisp at any zoom.
-import { plural } from '@livediagram/document';
+import { plural } from '@livepages/document';
 import {
   PRIORITY_LABELS,
   UNASSIGNED,
@@ -20,7 +20,7 @@ import {
   type PlanBoardSetup,
   type QuickFilter,
   type QuickDueWindow,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { PRIORITY_COLOURS, accentOn, type PlanPalette } from '../plan-palette';
 import { BoardWidgetArt } from '../plan-tile-art';
 import { PersonDisc } from '../PersonDisc';
@@ -37,9 +37,9 @@ import {
   dueCounts,
   overWipColumns,
   percentDone,
-} from '@livediagram/plan-art';
+} from '@livepages/plan-art';
 import { OVERDUE_RED, PHASE_COLOURS } from '../views/view-frame';
-import { CountBadge } from '@livediagram/ui';
+import { CountBadge } from '@livepages/ui';
 
 const PEOPLE_SHOWN = 5;
 const TYPES_SHOWN = 3;

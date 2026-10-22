@@ -66,7 +66,7 @@ across that line:
   is the main use for this, so an audience is handed a Participant link
   ([Share roles](../013-workspace/share-roles.md)): a Viewer only looks, and the
   room drops a Viewer's answer. `'poll-answer'` rides the presence class
-  (`PRESENCE_OP_KINDS` in `@livediagram/api-schema`), checked for level first.
+  (`PRESENCE_OP_KINDS` in `@livepages/api-schema`), checked for level first.
 - **`poll-start` / `poll-end` stay edit-role only**, via the existing gate. An
   audience member on a Participant link can answer, but cannot start a poll or
   end someone else's.
@@ -114,7 +114,7 @@ shows the truncation before it is asked rather than after.
 Precedent: the Picker ([Picker](picker.md)) already draws candidates from
 `participants`, and this is the same idea pointed at a poll.
 
-The union lives in **`@livediagram/document`** (`poll-style.ts`), not beside
+The union lives in **`@livepages/document`** (`poll-style.ts`), not beside
 `LivePoll` here, because a Session button ([Session button](session-button.md))
 STORES a style on the element and so needs it in a `Tab` field — and
 api-schema depends on document, never the reverse. `PollStyle` is re-exported

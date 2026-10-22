@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type Item, type PlanBoardSetup } from '@livediagram/items';
+import { ITEM_TYPES, type Item, type PlanBoardSetup } from '@livepages/items';
 import { PlanCardMenu, PlanCardMenuHost } from './PlanCardMenu';
 import type { PlanContextValue } from './PlanContext';
 

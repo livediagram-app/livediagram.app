@@ -3,7 +3,7 @@
 // than restated. The Shapes flyout's six open it under their dock names; every other palette shape
 // kind follows, grouped by its palette category. Icons, stickers, technology and the Components
 // category are not shapes here. Pure data; the dock renders each entry's preview.
-import type { ShapeKind } from '@livediagram/document';
+import type { ShapeKind } from '@livepages/document';
 import type { PendingDraw } from './draw-mode';
 import { SHAPE_TILES, shapeTileSearchItem } from './palette-search';
 import { PALETTE_CATEGORIES } from '@/components/palette/palette-categories';

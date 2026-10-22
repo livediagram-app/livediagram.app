@@ -1,4 +1,4 @@
-import type { TelemetryCount } from '@livediagram/api-schema';
+import type { TelemetryCount } from '@livepages/api-schema';
 import { typeLabel } from './event-vocab';
 
 // The Diagram tour's steps (docs/specs/007-editor/editor-tour.md), in the order the tour shows them, as

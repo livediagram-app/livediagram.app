@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TimelineEvent } from '@livediagram/ui';
+import type { TimelineEvent } from '@livepages/ui';
 import { mergeEvents, purgeEventsForSource, reconcileEvents } from './merge-events';
 
 function event(id: string, occurredAt: number, over: Partial<TimelineEvent> = {}): TimelineEvent {

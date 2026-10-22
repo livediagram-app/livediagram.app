@@ -6,7 +6,7 @@
 // canvas label editor does, lib: rich-text-dom), so React never reconciles the text being typed;
 // typing reads the DOM back into marks. Keys and paste go up to the row list, which owns structure.
 import { memo, useLayoutEffect, useRef, type ClipboardEvent, type KeyboardEvent } from 'react';
-import { normalizeRuns, type TextRun } from '@livediagram/document';
+import { normalizeRuns, type TextRun } from '@livepages/document';
 import {
   dataAttrsForRun,
   readRunsFromDom,

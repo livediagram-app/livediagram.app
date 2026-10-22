@@ -2,7 +2,7 @@
 // palette"): dragged or placed, it becomes a new item in the column and row under the pointer, never a
 // card on the canvas. Over no board, or over a board that does not show the type, nothing is made and
 // the reason is said.
-import { pointInRect, type Element } from '@livediagram/document';
+import { pointInRect, type Element } from '@livepages/document';
 import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
 import { getPaletteDragPreview, subscribePaletteDragPreview } from '@/lib/palette-drag-preview';
 import { dropSlotAt } from './usePlanCardDrag';

@@ -15,7 +15,7 @@
 // helper — those are separate concerns that stay in the page (or move
 // in their own pass).
 
-import { defaultTabName, isDefaultTabName } from '@livediagram/document';
+import { defaultTabName, isDefaultTabName } from '@livepages/document';
 import { boardsRenamedWithTab, planTitledWithTab, sheetIdsOn } from '@/lib/tab-named-plan';
 import { withFormHeading } from '@/lib/form-tab';
 import type { ImportedPlanItems } from '@/lib/import-tab';
@@ -27,7 +27,7 @@ import {
   type EditorMode,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { apiLinkTab } from '@/lib/api-client';
 import { newTabOpening, newTabSeed } from '@/lib/new-tab-seed';
 import { track } from '@/lib/telemetry';

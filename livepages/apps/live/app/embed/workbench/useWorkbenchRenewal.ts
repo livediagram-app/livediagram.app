@@ -10,7 +10,7 @@ import {
   WORKBENCH_RENEW_LEAD_MS,
   WORKBENCH_RENEW_RETRY_MS,
   type WorkbenchSessionResponse,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { apiEndWorkbenchSession, apiRedeemWorkbenchTicket } from '@/lib/api/workbench';
 import { debugLog } from '@/lib/debug-log';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
@@ -59,7 +59,7 @@ export function useWorkbenchRenewal({
 
   useEffect(() => {
     if (!port || secret === null || expiresAt === null) return;
-    const ask = () => port.send({ type: 'livediagram:renew', v: 1 });
+    const ask = () => port.send({ type: 'livepages:renew', v: 1 });
     let retry: ReturnType<typeof setInterval> | undefined;
     const lead = setTimeout(
       () => {
@@ -83,7 +83,7 @@ export function useWorkbenchRenewal({
   useEffect(() => {
     if (!port || !mounted) return;
     return port.subscribe((message) => {
-      if (message.type !== 'livediagram:ticket') return;
+      if (message.type !== 'livepages:ticket') return;
       void renewWith(message.ticket, currentSession, dispatch);
     });
   }, [port, mounted, dispatch]);

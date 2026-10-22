@@ -15,8 +15,8 @@ import {
   sanitisePollAnswer,
   type LivePoll,
   type RoomOutgoing,
-} from '@livediagram/api-schema';
-import { pollStyleUsesRoster } from '@livediagram/document';
+} from '@livepages/api-schema';
+import { pollStyleUsesRoster } from '@livepages/document';
 import { pollCollaboratorOptions, type PollCandidate } from '@/lib/poll-collaborators';
 import { ensureCollabSecret } from '@/lib/local-identity';
 import { track } from '@/lib/telemetry';

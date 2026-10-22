@@ -13,7 +13,7 @@ import {
   type FormatRule,
   type GridRange,
   type RuleSettings,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import type { SheetController } from '../sheet-controller';
 import type { RuleAnchor } from './useSheetRulesState';
 

@@ -3,7 +3,7 @@
 // with a scene in one undoable step (the Excalidraw card), or make each scene its own new document,
 // named and dated as its board (lib/board-scene-import, shared with the Explorer page).
 
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { landBoardScene } from '@/lib/board-scene/land';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import type { ImportImageProgress } from '@/lib/import-images';

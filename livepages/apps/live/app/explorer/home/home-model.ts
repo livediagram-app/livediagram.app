@@ -11,8 +11,8 @@ import {
   type HomeGroup,
   type HomeJumpBackInItem,
   type WithinReach,
-} from '@livediagram/api-schema';
-import { dateKey, formatDay, relativeSince } from '@livediagram/ui';
+} from '@livepages/api-schema';
+import { dateKey, formatDay, relativeSince } from '@livepages/ui';
 import type { LocalOpenDocument } from '@/lib/offline/offline-opens';
 
 /** One document of Jump Back In: a server document or one stored only in this browser. */

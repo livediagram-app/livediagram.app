@@ -2,7 +2,7 @@
 // kind; docs/specs/009-elements/concept-graphics.md): a step on the graphic or one of its rows (with an animation
 // previewed there, never stored), the "+" ring opened on the add it offers, the More button, and the closing card.
 // Each kind's own steps and words live in its own file (layer-stack-tour-steps.ts, ...).
-import type { ConceptRow } from '@livediagram/document';
+import type { ConceptRow } from '@livepages/document';
 import type { TourPreviewAnim } from '@/lib/concept-tour-preview';
 import type { ElementTourApi } from './element-tour-api';
 import { clearMenuPath, MENU_TARGET, openMenuPath } from './element-menu-tour';

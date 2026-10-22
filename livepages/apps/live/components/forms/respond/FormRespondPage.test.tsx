@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@livepages/vitest-config/sent-request';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import type { PublicFormResponse } from '@livediagram/api-schema';
-import { formLook } from '@livediagram/document';
+import type { PublicFormResponse } from '@livepages/api-schema';
+import { formLook } from '@livepages/document';
 import { FormRespondPage } from './FormRespondPage';
 
 // A form link's page (docs/specs/030-forms/forms.md "Filling in a form"): its states, a response sent and each
@@ -86,7 +86,7 @@ describe('the form page', () => {
     render(<FormRespondPage />);
     await screen.findByRole('heading', { name: 'Feedback' });
     // The title is set in an effect, which can flush after the heading paints when the machine is busy.
-    await waitFor(() => expect(document.title).toBe('Feedback | livediagram'));
+    await waitFor(() => expect(document.title).toBe('Feedback | livepages'));
     // The tab's look dresses the page: its finish, font and colour.
     const main = document.querySelector('main')!;
     expect(main.getAttribute('data-form-finish')).toBe('sketch');
@@ -173,7 +173,7 @@ describe('Report This Form', () => {
     expect(await screen.findByText('Thanks. We’ve recorded your report.')).toBeTruthy();
     const body = sentJson(calls[1]!.init) as Record<string, unknown>;
     expect(body).toMatchObject({ reason: 'phishing', note: 'Asks for my bank login' });
-    expect(body.browser).toBe(localStorage.getItem('livediagram:form-browser'));
+    expect(body.browser).toBe(localStorage.getItem('livepages:form-browser'));
   });
 
   it('says when a report could not be sent, and Cancel closes it', async () => {

@@ -5,15 +5,15 @@
 // press rules for an entry that opens a card.
 import { useSlotSettings } from '@/components/plan/dashboard/slot-menu';
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
-import { PLAN_VIEW_TITLE_MAX, STATUS_PHASES, STATUS_PHASE_LABELS } from '@livediagram/items';
+import { PLAN_VIEW_TITLE_MAX, STATUS_PHASES, STATUS_PHASE_LABELS } from '@livepages/items';
 import type { PlanPalette } from '../plan-palette';
 import type { PlanContextValue } from '../PlanContext';
-import { CountBadge, Tooltip } from '@livediagram/ui';
+import { CountBadge, Tooltip } from '@livepages/ui';
 import { IN_BOX_TITLE_CLASS, InMenuBox } from '../menu-name-slot';
 import { BAND_CONTROLS_CLASS, BAND_HEADER_END, bandControlsProps } from '../band-controls';
 
 // The phase colours and the overdue red (phase-colours.ts), shared with the views' still pictures.
-import { OVERDUE_RED, PHASE_COLOURS } from '@livediagram/plan-art';
+import { OVERDUE_RED, PHASE_COLOURS } from '@livepages/plan-art';
 export { OVERDUE_RED, PHASE_COLOURS };
 
 const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();

@@ -8,7 +8,7 @@ import { parseCsv, type ParsedCsv } from './csv';
 import { SHEET_ROWS_MAX } from './limits';
 import type { Workbook } from './engine/workbook';
 
-export const SHEET_CLIP_TYPE = 'web application/x-livediagram-sheet+json';
+export const SHEET_CLIP_TYPE = 'web application/x-livepages-sheet+json';
 
 export type SheetClip = {
   v: 1;
@@ -99,7 +99,7 @@ export function clipToHtml(clip: SheetClip): string {
         )
         .join('')}</tr>`,
   );
-  return `<meta charset="utf-8"><table data-livediagram-sheet="1">${rows.join('')}</table>`;
+  return `<meta charset="utf-8"><table data-livepages-sheet="1">${rows.join('')}</table>`;
 }
 
 export type PastedCell = { text: string; format?: CellFormat };

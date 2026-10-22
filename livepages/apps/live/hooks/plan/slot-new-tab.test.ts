@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { freshBoardSetup } from '@livediagram/items';
-import type { Tab } from '@livediagram/document';
+import { freshBoardSetup } from '@livepages/items';
+import type { Tab } from '@livepages/document';
 import { placedSheetTitle } from '@/lib/sheet-seeds';
 import { usePlanTabActions, withSlotContent, dashboardOf } from './usePlanTabActions';
 import { newSlotTab, withLookOf } from './slot-elements';

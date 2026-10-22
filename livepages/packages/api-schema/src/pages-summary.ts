@@ -1,8 +1,8 @@
 // How a tab's pages and articles are summarised for agents (docs/specs/024-agents/
 // pages-for-agents.md "change_pages" answer, "Reading: the pages view"): each page's place,
 // kind, size and rectangle on the canvas, where update_document puts elements onto it; each
-// article's title, pages and size. Shared by the api's answer (@livediagram/edit-operations) and
-// the pages view (@livediagram/document-views).
+// article's title, pages and size. Shared by the api's answer (@livepages/edit-operations) and
+// the pages view (@livepages/document-views).
 import {
   articlesOf,
   articleTitleOf,
@@ -17,7 +17,7 @@ import {
   pageShowsSystemBars,
   type PageBackground,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { ArticleSummary, PageSummary } from './pages';
 
 export type PagesTab = Pick<Tab, 'elements' | 'pages' | 'articles'> & { pageOrientation?: unknown };

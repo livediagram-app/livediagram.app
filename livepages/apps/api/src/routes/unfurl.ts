@@ -5,14 +5,14 @@
 // SSRF before any fetch and the read is bounded. Always returns 200 with at
 // least the resolved url (the card falls back to the bare URL on a miss).
 
-import type { UnfurlResult } from '@livediagram/api-schema';
+import type { UnfurlResult } from '@livepages/api-schema';
 import { badRequest, json, notFound, rateLimited } from '../responses';
 import { clientRateKey } from '../client-ip';
 import type { RouteContext } from './context';
 
 const FETCH_TIMEOUT_MS = 8000;
 const MAX_HTML_BYTES = 512 * 1024; // only the <head> is needed
-const USER_AGENT = 'livediagram-unfurl/1.0 (+https://livediagram.app)';
+const USER_AGENT = 'livepages-unfurl/1.0 (+https://livepages.app)';
 
 // --- Pure helpers (unit-tested) -------------------------------------------
 

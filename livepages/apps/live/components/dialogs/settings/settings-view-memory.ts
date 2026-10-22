@@ -3,7 +3,7 @@
 // you left it"). Device-local and never synced: where you were in a dialog
 // belongs to this screen, not to the account.
 
-export const SETTINGS_VIEW_STORAGE_KEY = 'livediagram:settings-view:v1';
+export const SETTINGS_VIEW_STORAGE_KEY = 'livepages:settings-view:v1';
 
 // The topmost visible row, and how far its top sat from the pane's top edge
 // (negative when partly scrolled past). Survives a reflow, unlike scrollTop.

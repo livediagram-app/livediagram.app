@@ -9,7 +9,7 @@ import {
   useMenu,
   type MenuKind,
   type MenuTree,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import { useMenuItemProps } from './menu-item-props';
 
 // The parts of a MenuFlyoutSection (MenuFlyoutSection.tsx): its trigger's two faces (a section

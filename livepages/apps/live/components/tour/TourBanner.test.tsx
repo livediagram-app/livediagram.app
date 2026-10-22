@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { planPalette } from '@livediagram/document';
+import { planPalette } from '@livepages/document';
 import { TOUR_CARD_ATTR, TourBanner } from './TourBanner';
 import { WELCOME_TOUR_COPY } from './tour-card-copy';
 

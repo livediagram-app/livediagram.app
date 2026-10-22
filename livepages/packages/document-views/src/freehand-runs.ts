@@ -1,6 +1,6 @@
 // Bare strokes fold into one counted line (docs/specs/024-agents/blueprints/document-views.md "Freehand
 // runs", VW56).
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { fieldOf, flagField, textField, threadOf } from './fields';
 import type { Placed } from './reading-order';
 

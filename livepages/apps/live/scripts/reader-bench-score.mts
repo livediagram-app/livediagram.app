@@ -1,6 +1,6 @@
 // Scoring reader-bench.mts runs: one row per results file.
 //
-//   pnpm --filter @livediagram/live exec tsx scripts/reader-bench-score.mts /tmp/reader-sweep/*.json
+//   pnpm --filter @livepages/live exec tsx scripts/reader-bench-score.mts /tmp/reader-sweep/*.json
 //
 // For a note with words: EXACT (case- and punctuation-insensitive), WORDS (share
 // of true words present), CER, and INVENTED — an answer that is mostly not the

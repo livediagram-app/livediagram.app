@@ -14,7 +14,7 @@ import {
   type LaneFieldKind,
   type CardSize,
   type SwimlaneBy,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { OptionRows } from '@/components/plan/OptionRows';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { CardSizeArt } from '@/components/plan/plan-tile-art';

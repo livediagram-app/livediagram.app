@@ -1,7 +1,7 @@
 // What a Links card's address field means (docs/specs/026-plan/plan-tabs.md "Cards", Links): a tab of this document
 // (picked from its list, or its name typed in full), else a web or mail address (safeLinkUrl), else a problem to show.
 // Pure, so the form (AddLinkForm) only draws.
-import { safeLinkUrl, type DashboardLink } from '@livediagram/document';
+import { safeLinkUrl, type DashboardLink } from '@livepages/document';
 
 export const LINK_ADDRESS_PROBLEM = 'Enter a web address, an email (mailto:) or a tab’s name';
 

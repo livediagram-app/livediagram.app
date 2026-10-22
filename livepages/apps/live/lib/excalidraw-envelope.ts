@@ -9,7 +9,7 @@ import {
   type ExcalidrawEnvelopeType,
   type ExcalidrawFiles,
 } from './excalidraw-types';
-import { isRecord } from '@livediagram/document';
+import { isRecord } from '@livepages/document';
 
 /** Excalidraw caps one image at 4 MiB; this admits about a dozen as data URLs. */
 export const EXCALIDRAW_MAX_SCENE_CHARS = 64 * 1024 * 1024;

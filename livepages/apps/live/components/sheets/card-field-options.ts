@@ -7,7 +7,7 @@ import {
   isCardDateField,
   type ItemPerson,
   type ItemTypeDef,
-} from '@livediagram/items';
+} from '@livepages/items';
 
 type CardFieldChoice = { kind: 'list'; options: string[] } | { kind: 'date' } | null;
 

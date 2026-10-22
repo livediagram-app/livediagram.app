@@ -21,7 +21,7 @@ import {
   Glyph,
   ButtonContent,
   Portal,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import { SignInIcon } from '@/components/chrome/AuthControls';
 import { useRef } from 'react';
 import type { ReactNode } from 'react';
@@ -127,7 +127,7 @@ export function SignInReasonsModal({
               Why sign in?
             </h2>
             <p className="mt-1 text-sm text-white/90">
-              livediagram always works without an account, but a free one unlocks a lot.
+              livepages always works without an account, but a free one unlocks a lot.
             </p>
           </div>
 

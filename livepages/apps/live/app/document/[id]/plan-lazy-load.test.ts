@@ -33,7 +33,7 @@ describe('the editor’s first load', () => {
       'components/start/StartAgainTray.tsx',
       'components/start/template-start-mode.ts',
     ])
-      expect(staticImports(read(always))).not.toContain('@livediagram/template-previews');
+      expect(staticImports(read(always))).not.toContain('@livepages/template-previews');
   });
 
   // docs/specs/013-workspace/default-folders.md "A template picked after creation": the mover reads the template
@@ -56,13 +56,13 @@ describe('the editor’s first load', () => {
       'lib/seed-author.ts',
     ])
       expect(staticImports(read(always))).not.toContain(
-        '@livediagram/templates/plan-template-seeds',
+        '@livepages/templates/plan-template-seeds',
       );
     expect(read('lib/new-document-content.ts')).toContain(
-      "import('@livediagram/templates/plan-template-seeds')",
+      "import('@livepages/templates/plan-template-seeds')",
     );
     expect(read('app/document/[id]/useTemplateFlow.ts')).toContain(
-      "'@livediagram/templates/plan-template-seeds'",
+      "'@livepages/templates/plan-template-seeds'",
     );
   });
 
@@ -80,10 +80,10 @@ describe('the editor’s first load', () => {
   // (about 130 KiB compressed of the document page's first load): each came in through one small import.
   it('loads the page layout builders only when a layout is applied', () => {
     expect(staticImports(read('hooks/editor/page-edits.ts'))).not.toContain(
-      '@livediagram/templates/page-layout-build',
+      '@livepages/templates/page-layout-build',
     );
     expect(read('hooks/editor/page-edits.ts')).toContain(
-      "import('@livediagram/templates/page-layout-build')",
+      "import('@livepages/templates/page-layout-build')",
     );
   });
 

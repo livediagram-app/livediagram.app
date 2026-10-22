@@ -18,7 +18,7 @@
 // with data they can recover from; Clerk-first would leave orphan
 // rows behind that the user could no longer reach.
 
-import { Button, useEscape, useFocusTrap, Portal } from '@livediagram/ui';
+import { Button, useEscape, useFocusTrap, Portal } from '@livepages/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { useEffect, useRef, useState } from 'react';
 import { apiDeleteAccount } from '@/lib/api-client';
@@ -151,7 +151,7 @@ export function DeleteAccountDialog({
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               This permanently removes your documents (including any in the Trash), folders, and
-              participant record from the livediagram server, then deletes your account. This cannot
+              participant record from the livepages server, then deletes your account. This cannot
               be undone.
             </p>
           </div>

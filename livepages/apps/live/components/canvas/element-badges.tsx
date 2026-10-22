@@ -10,7 +10,7 @@
 // deliberately NOT treated this way (element-parts.tsx): interaction
 // grips need a constant hit size.
 import { initialsOf } from '@/lib/identity';
-import { HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livepages/ui';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 import type { RemoteSelector } from '@/lib/presence-rows';
 

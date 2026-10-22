@@ -4,9 +4,9 @@
 import type { CliIo } from '../io';
 
 export function configDir(io: CliIo): string {
-  return `${io.env.XDG_CONFIG_HOME || `${io.homedir}/.config`}/livediagram`;
+  return `${io.env.XDG_CONFIG_HOME || `${io.homedir}/.config`}/livepages`;
 }
 
 export function cacheDir(io: CliIo): string {
-  return `${io.env.XDG_CACHE_HOME || `${io.homedir}/.cache`}/livediagram`;
+  return `${io.env.XDG_CACHE_HOME || `${io.homedir}/.cache`}/livepages`;
 }

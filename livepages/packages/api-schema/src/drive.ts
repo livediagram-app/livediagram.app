@@ -12,7 +12,7 @@ export type DriveItemKind = 'document' | 'folder';
 
 export const DRIVE_ITEM_KINDS: readonly DriveItemKind[] = ['document', 'folder'];
 
-// The item was moved in Drive into a folder livediagram cannot see.
+// The item was moved in Drive into a folder livepages cannot see.
 export type DriveNotice = 'unseen_folder';
 
 // The connection summary. The refresh token itself never leaves the worker;
@@ -29,9 +29,9 @@ export type DriveConnection = {
   pendingAccountSwitch: { expiresAt: number } | null;
 };
 
-// One mirrored document or folder, with the Drive state livediagram last wrote
+// One mirrored document or folder, with the Drive state livepages last wrote
 // (or last accepted from Drive). `name` is the name as Drive holds it; `ldName`
-// the livediagram name it mirrors.
+// the livepages name it mirrors.
 export type DriveItem = {
   kind: DriveItemKind;
   ldId: string;
@@ -51,8 +51,8 @@ export type DriveLease = { acquired: boolean; holder: string | null; expiresAt: 
 
 export type DriveAccessToken = { accessToken: string; expiresAt: number };
 
-export const DRIVE_FILE_MIME = 'application/vnd.livediagram+json';
-export const DRIVE_FILE_EXTENSION = '.livediagram';
+export const DRIVE_FILE_MIME = 'application/vnd.livepages+json';
+export const DRIVE_FILE_EXTENSION = '.livepages';
 export const DRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder';
 export const DRIVE_SCOPES = [
   'https://www.googleapis.com/auth/drive.file',
@@ -85,9 +85,9 @@ export function driveFileName(name: string): string {
   return `${name}${DRIVE_FILE_EXTENSION}`;
 }
 
-const EXTENSION_RE = /\.livediagram$/i;
+const EXTENSION_RE = /\.livepages$/i;
 
-// The livediagram name a Drive file name stands for: the extension dropped,
+// The livepages name a Drive file name stands for: the extension dropped,
 // trimmed, and cut to `max`. Null when nothing is left, so an empty rename in
 // Drive keeps the old name.
 export function stripDriveName(driveName: string, max = Number.POSITIVE_INFINITY): string | null {
@@ -109,18 +109,18 @@ export function isDriveFileId(value: unknown): value is string {
 }
 
 // Document and folder ids are uuids or short url-safe ids; the same charset.
-export const isLivediagramId = isDriveFileId;
+export const isLivepagesId = isDriveFileId;
 
 export function isDriveLeaseHolder(value: unknown): value is string {
   return typeof value === 'string' && LEASE_HOLDER_RE.test(value);
 }
 
-const PRODUCTION_HOSTS = new Set(['livediagram.app', 'www.livediagram.app']);
+const PRODUCTION_HOSTS = new Set(['livepages.app', 'www.livepages.app']);
 // Staging, and local development, which uses the staging Google client.
-const STAGING_HOSTS = new Set(['staging.livediagram.app', 'localhost', '127.0.0.1', '::1']);
+const STAGING_HOSTS = new Set(['staging.livepages.app', 'localhost', '127.0.0.1', '::1']);
 
 // A host as `location.host` gives it, lower-cased, without its port:
-// `[::1]:3000` → `::1`, `localhost:3000` → `localhost`.
+// `[::1]:3200` → `::1`, `localhost:3200` → `localhost`.
 function hostName(host: string): string {
   const lower = host.trim().toLowerCase();
   if (lower.startsWith('[')) return lower.slice(1, lower.indexOf(']'));
@@ -135,7 +135,7 @@ function hostName(host: string): string {
 // Drive. Given at creation only; a root the user renamed keeps its name.
 export function driveRootName(host: string): string {
   const name = hostName(host);
-  if (PRODUCTION_HOSTS.has(name)) return 'livediagram';
-  if (STAGING_HOSTS.has(name)) return 'livediagram (staging)';
-  return 'livediagram (self-hosted)';
+  if (PRODUCTION_HOSTS.has(name)) return 'livepages';
+  if (STAGING_HOSTS.has(name)) return 'livepages (staging)';
+  return 'livepages (self-hosted)';
 }

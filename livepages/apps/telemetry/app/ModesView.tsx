@@ -1,6 +1,6 @@
 'use client';
 
-import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import type { TelemetrySummary, TelemetryWindowKey } from '@livepages/api-schema';
 import { CardColumns } from './CardColumns';
 import { SELECTION_MODES } from './palette-types';
 import { RankCard, rank } from './RankCard';

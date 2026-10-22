@@ -23,8 +23,8 @@ import {
   type ItemPerson,
   type ItemTypeDef,
   type LinkedGroup,
-} from '@livediagram/items';
-import { DialogCloseButton } from '@livediagram/ui';
+} from '@livepages/items';
+import { DialogCloseButton } from '@livepages/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { DebouncedText } from './item-field-editors';

@@ -4,18 +4,18 @@
 // status every response is made in (New Board and New Card Type the last choice of each), and a sentence reading the
 // choice back; a pencil beside Card Type opens that type's editor. A choice that no longer holds (its board, column or
 // type gone) says so, and the form takes no responses until it is fixed.
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import {
   DESTINATION_PROBLEM_TEXT,
   destinationProblem,
   type FormDestination,
-} from '@livediagram/forms';
-import { boardAddTypes } from '@livediagram/items';
-import { PencilIcon, Select, Tooltip } from '@livediagram/ui';
+} from '@livepages/forms';
+import { boardAddTypes } from '@livepages/items';
+import { PencilIcon, Select, Tooltip } from '@livepages/ui';
 import { usePlan } from '@/components/plan/PlanContext';
 import { SettingsField } from '@/components/plan/settings-panel-parts';
-import { boardsOf, sheetsOf } from '@livediagram/templates';
-import { patchForm } from '@livediagram/forms';
+import { boardsOf, sheetsOf } from '@livepages/templates';
+import { patchForm } from '@livepages/forms';
 import { useFormBuilder } from './form-builder-context';
 
 // The value of each select's last choice, New Board or New Card Type.

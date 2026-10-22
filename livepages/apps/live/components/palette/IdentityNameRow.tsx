@@ -1,5 +1,5 @@
 import { initialsOf, randomName, type Participant } from '@/lib/identity';
-import { RefreshIcon, HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { RefreshIcon, HoverCard, GlyphDisc, IDENTITY_FILL, identityVars } from '@livepages/ui';
 
 // The name prompt's identity row (IdentityPrompt, the join flow): the avatar
 // bubble, the display-name input (read-only when the name is dictated

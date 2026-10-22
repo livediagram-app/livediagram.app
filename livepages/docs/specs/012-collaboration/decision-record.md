@@ -14,7 +14,7 @@ them somewhere the diagram can't see; teams that don't lose the reasoning
 entirely and re-litigate it every six months.
 
 Putting the decision **on the diagram, beside the thing it decided** is the
-whole idea. It is also the piece that makes a livediagram canvas a durable
+whole idea. It is also the piece that makes a livepages canvas a durable
 artefact rather than a picture of a whiteboard.
 
 ## The element

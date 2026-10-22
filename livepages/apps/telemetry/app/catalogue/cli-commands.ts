@@ -8,7 +8,7 @@ export const CLI_COMMAND_METRICS: readonly Metric[] = CLI_COMMANDS.map(
     category: 'Cli',
     action: 'Used',
     type,
-    title: `livediagram ${command}`,
+    title: `livepages ${command}`,
     blurb: `${what.charAt(0).toUpperCase()}${what.slice(1)}.`,
   }),
 );
@@ -17,6 +17,6 @@ export const CLI_COMMANDS_STACK: MetricStack = {
   stack: true,
   title: 'CLI Commands',
   blurb:
-    'Agents and scripts running the livediagram command line, by command. Only commands that succeeded count.',
+    'Agents and scripts running the livepages command line, by command. Only commands that succeeded count.',
   members: [...CLI_COMMAND_METRICS],
 };

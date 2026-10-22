@@ -5,7 +5,7 @@
 // under its button, keeps the writing's caret (buttons never take focus; the link field does and
 // hands it back), and closes on a choice, Escape or an outside press.
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
-import { useClickOutside, useEscape, Portal } from '@livediagram/ui';
+import { useClickOutside, useEscape, Portal } from '@livepages/ui';
 
 /** A popover hung under `anchor`, in the page toolbar's keep-active zone. */
 export function ToolbarPopover({

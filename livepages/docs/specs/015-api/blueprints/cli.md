@@ -18,7 +18,7 @@ Scope, by file:
 
 | File                                                                                                        | Role                                                                                                                                                                                                                                                                                                                                                                  |
 | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/agent-verbs/{package.json,tsconfig.json,oxlint.config.ts,vitest.config.ts}`                       | New private package `@livediagram/agent-verbs`, laid out like `packages/explorer-lens`; depends on zod 4                                                                                                                                                                                                                                                              |
+| `packages/agent-verbs/{package.json,tsconfig.json,oxlint.config.ts,vitest.config.ts}`                       | New private package `@livepages/agent-verbs`, laid out like `packages/explorer-lens`; depends on zod 4                                                                                                                                                                                                                                                              |
 | `packages/agent-verbs/src/define.ts`                                                                        | `Verb`, `defineVerb`, `VerbBehaviour`, `VerbContext`, `CliProjection`                                                                                                                                                                                                                                                                                                 |
 | `packages/agent-verbs/src/catalogue.ts`                                                                     | `VERBS`, `verbById`, `verbsOf`, `RESOURCES`, `RESOURCE_ALIASES`, `TOP_LEVEL`; `COMMAND_ALIASES` with `edit`                                                                                                                                                                                                                                                           |
 | `packages/agent-verbs/src/verbs/{document,tab,edit,lifecycle,changeset,comment,presence}.ts`                | The CLI's api verbs: schemas, descriptions, behaviour, handlers, compact text, CLI projections                                                                                                                                                                                                                                                                        |
@@ -38,9 +38,9 @@ Scope, by file:
 | `packages/agent-verbs/src/guides/index.ts`                                                                  | `GUIDE_TOPICS`, `GUIDE_TOPIC_NAMES`, `isGuideTopic`, `GUIDE_TOPIC_MAX_TOKENS`: build, edit, views, comments, collaborate, workbench                                                                                                                                                                                                                                   |
 | `packages/agent-verbs/src/skill.ts`                                                                         | `SKILL_NAME`, `SKILL_DESCRIPTION`, `SKILL_DIRECTORIES`, `SKILL_FRONTMATTER_MAX_TOKENS`, `SKILL_BODY_MAX_TOKENS`, `renderSkill()`                                                                                                                                                                                                                                      |
 | `packages/agent-verbs/src/testing/fake-api.ts`                                                              | `fakeApi`, `contextOf` and the library fixtures the verb suites share                                                                                                                                                                                                                                                                                                 |
-| `packages/api-client/package.json`, `packages/api-client/src/client.ts`, `packages/api-client/src/index.ts` | New package `@livediagram/api-client`: `createApiClient`, `ApiError`, `postEvents`, from `apps/mcp/src/api.ts`                                                                                                                                                                                                                                                        |
+| `packages/api-client/package.json`, `packages/api-client/src/client.ts`, `packages/api-client/src/index.ts` | New package `@livepages/api-client`: `createApiClient`, `ApiError`, `postEvents`, from `apps/mcp/src/api.ts`                                                                                                                                                                                                                                                        |
 | `packages/api-client/src/client.test.ts`                                                                    | Moved from the MCP's api suite, rewritten against the injected fetch                                                                                                                                                                                                                                                                                                  |
-| `packages/render-png/{package.json,...}`, `src/index.ts` (+ test)                                           | New package `@livediagram/render-png`: `createPngRenderer`, from `apps/mcp/src/render.ts`                                                                                                                                                                                                                                                                             |
+| `packages/render-png/{package.json,...}`, `src/index.ts` (+ test)                                           | New package `@livepages/render-png`: `createPngRenderer`, from `apps/mcp/src/render.ts`                                                                                                                                                                                                                                                                             |
 | `packages/render-png/fonts/{Inter-Regular.ttf,Inter-Bold.otf,Inter-OFL.txt}`                                | `git mv` of `apps/mcp/fonts/*`                                                                                                                                                                                                                                                                                                                                        |
 | `packages/api-schema/src/index.ts`                                                                          | `CapabilitiesResponse` gains five fields; `CurrentTokenResponse`; the catalogue route bodies                                                                                                                                                                                                                                                                          |
 | `packages/api-schema/src/oauth-clients.ts` (+ test)                                                         | `CLI_CLIENT_ID`, `CLI_CLIENT_NAME`, `CLI_REDIRECT_URIS`, `DEVICE_CODE_GRANT`, user-code helpers                                                                                                                                                                                                                                                                       |
@@ -51,8 +51,8 @@ Scope, by file:
 | `packages/edit-operations/src/element-format.ts` (+ test)                                                   | `elementKindsText()`, `elementFormatText(kind)`, `addableKinds()`, `SHAPE_COMMON_FIELDS`, `SHAPE_KIND_FIELDS` (CLI73)                                                                                                                                                                                                                                                 |
 | `packages/icons/src/{search-rank,search}.ts` (+ test)                                                       | `matches`, `paletteRank` moved from `apps/live/lib/search.ts`; `searchIcons(query, limit)` on the `./search` subpath (CLI74)                                                                                                                                                                                                                                          |
 | `packages/templates/src/template-catalogue.ts` (+ test)                                                     | `templateCatalogue()`, shared by the MCP's `list_templates` and `GET /api/templates`                                                                                                                                                                                                                                                                                  |
-| `apps/cli/{package.json,tsconfig.json,oxlint.config.ts,vitest.config.ts,README.md}`                         | New app `@livediagram/cli`, published as `@livediagram/cli`, command `livediagram` (CLI1)                                                                                                                                                                                                                                                                             |
-| `apps/cli/scripts/build.mjs`, `apps/cli/PACKAGE_README.md`                                                  | esbuild bundle `dist/livediagram.mjs`; `dist/package.json` named `@livediagram/cli`, `LICENSE`, the user README, `THIRD_PARTY_LICENSES` from the metafile and the licences page's embedded works; `resvg.wasm`, `Inter-Regular.ttf`, `Inter-Bold.otf` and `Inter-OFL.txt` beside the bundle (CLI31); a bundled package without a licence fails the build (CLI1, CLI2) |
+| `apps/cli/{package.json,tsconfig.json,oxlint.config.ts,vitest.config.ts,README.md}`                         | New app `@livepages/cli`, published as `@livepages/cli`, command `livepages` (CLI1)                                                                                                                                                                                                                                                                             |
+| `apps/cli/scripts/build.mjs`, `apps/cli/PACKAGE_README.md`                                                  | esbuild bundle `dist/livepages.mjs`; `dist/package.json` named `@livepages/cli`, `LICENSE`, the user README, `THIRD_PARTY_LICENSES` from the metafile and the licences page's embedded works; `resvg.wasm`, `Inter-Regular.ttf`, `Inter-Bold.otf` and `Inter-OFL.txt` beside the bundle (CLI31); a bundled package without a licence fails the build (CLI1, CLI2) |
 | `apps/cli/src/bin.ts`, `main.ts`, `io.ts`, `node-io.ts`                                                     | Process wiring; `run(argv, io): Promise<ExitCode>`; `CliIo` (with `openSocket`, `timer`, `onInterrupt` for the room stream, `stdoutIsTTY` for `workbench pair`); the real `nodeIo()`                                                                                                                                                                                  |
 | `apps/cli/src/{debug,transport}.ts`                                                                         | `debugLog` (CLI44); the api client per token with the CLI's headers and share code (CLI45)                                                                                                                                                                                                                                                                            |
 | `apps/cli/src/testing/fake-io.ts`                                                                           | `fakeIo`, the in-memory `CliIo` every suite runs on                                                                                                                                                                                                                                                                                                                   |
@@ -68,7 +68,7 @@ Scope, by file:
 | `apps/cli/src/commands/*.ts`                                                                                | Handlers of `pull`, `push`, `export`, `render`, `graph`, `diff`, `wait`, `watch`, `telemetry`                                                                                                                                                                                                                                                                         |
 | `apps/cli/src/sync/{pull-file,read-copies}.ts`                                                              | The pull file; the read copies that give the base and the diff                                                                                                                                                                                                                                                                                                        |
 | `apps/cli/src/room/{room-stream,room-events}.ts`                                                            | Ticket, socket, reconnect; op classification and lines                                                                                                                                                                                                                                                                                                                |
-| `apps/cli/src/render/png.ts`, `apps/cli/src/commands/render.ts`                                             | The Node loaders for `@livediagram/render-png`                                                                                                                                                                                                                                                                                                                        |
+| `apps/cli/src/render/png.ts`, `apps/cli/src/commands/render.ts`                                             | The Node loaders for `@livepages/render-png`                                                                                                                                                                                                                                                                                                                        |
 | `apps/cli/src/telemetry.ts` (+ test)                                                                        | `sendCliUsed`, `reportApiFailure`, `telemetryOffReason`, `setTelemetry`, the notice once (`state.json`)                                                                                                                                                                                                                                                               |
 | `apps/cli/src/update-check.ts` (planned)                                                                    | The npm check                                                                                                                                                                                                                                                                                                                                                         |
 | `apps/telemetry/app/cli-commands.ts`, `apps/telemetry/app/catalogue/cli-commands.ts`                        | `CLI_COMMANDS` (one row a counted verb), `cliCommandSentence`; the CLI Commands stack (CLI56)                                                                                                                                                                                                                                                                         |
@@ -77,13 +77,13 @@ Scope, by file:
 | `apps/api/src/routes/catalogues.ts` (+ test), `index.ts`                                                    | `GET /api/templates[/:kind]`, `/api/icons`, `/api/schema[/:kind]`; dispatch of the three segments                                                                                                                                                                                                                                                                     |
 | `apps/api/src/index.ts`                                                                                     | The token write choke point admits `DELETE /api/tokens/current` and the room-ticket mint                                                                                                                                                                                                                                                                              |
 | `apps/api/src/openapi/{manifest,document}.ts`                                                               | The capabilities fields; `tokens/current`; the catalogue routes                                                                                                                                                                                                                                                                                                       |
-| `apps/mcp/src/api.ts`, `render.ts`, `image-result.ts`                                                       | Wiring of the extracted packages; the schema resource reads `elementSchemaDoc` from `@livediagram/document`                                                                                                                                                                                                                                                           |
+| `apps/mcp/src/api.ts`, `render.ts`, `image-result.ts`                                                       | Wiring of the extracted packages; the schema resource reads `elementSchemaDoc` from `@livepages/document`                                                                                                                                                                                                                                                           |
 | `apps/mcp/src/oauth.ts`, `oauth-clients.ts`, `oauth-device.ts` (+ tests)                                    | Port-agnostic loopback, the built-in CLI client, the device grant; the session lookup returns `clientId`                                                                                                                                                                                                                                                              |
 | `apps/mcp/src/tools.ts`, `tool-annotations.ts`, `verb-parity.test.ts`                                       | Each tool registered from its verb in `mcp-tools.ts`; the parity test                                                                                                                                                                                                                                                                                                 |
 | `apps/live/app/oauth/oauth-shell.tsx`, `apps/live/app/oauth/consent/page.tsx`                               | `OauthShell` and `OauthHelpLink` lifted out of the consent page; `Token·Created·Cli` for the CLI client                                                                                                                                                                                                                                                               |
 | `apps/live/lib/mcp-consent-session.ts`                                                                      | `McpConsentSession` gains `clientId`                                                                                                                                                                                                                                                                                                                                  |
 | `apps/live/app/oauth/device/page.tsx`, `apps/live/lib/mcp-device-session.ts` (+ test)                       | The `/oauth/device` page and its trust boundary                                                                                                                                                                                                                                                                                                                       |
-| `apps/live/lib/export-tab.ts`, the envelope's callers, `lib/search.ts`                                      | Import the moved modules from `@livediagram/document` and `@livediagram/icons`                                                                                                                                                                                                                                                                                        |
+| `apps/live/lib/export-tab.ts`, the envelope's callers, `lib/search.ts`                                      | Import the moved modules from `@livepages/document` and `@livepages/icons`                                                                                                                                                                                                                                                                                        |
 | `apps/telemetry/app/catalogue/connections.ts`, `computed-emitters.ts`, `event-explanations.ts`              | The `CLI Commands` stack, `CLI Sign-Ins` in API Token Activity, the computed sites, the sentences (CLI56)                                                                                                                                                                                                                                                             |
 | `.github/workflows/ci.yml`, `.github/workflows/cli-publish.yml`                                             | Pack dry run on every PR; publish with provenance (CLI3)                                                                                                                                                                                                                                                                                                              |
 | `README.md`, `docs/development/{architecture,local-development}.md`, `docs/operations/self-hosting.md`      | The app, the packages, the two api vars, the CLI on a self-host, the env token's host; `AGENTS.md`'s layout needs the operator's permission                                                                                                                                                                                                                           |
@@ -93,13 +93,13 @@ Scope, by file:
 | Term                | Identifier                                                              | Meaning                                                                  |
 | ------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------ |
 | Verb                | `Verb`, id `<resource>.<verb>` (`tab.view`)                             | One capability; a command and a tool are its projections                 |
-| Command             | `livediagram <resource> <verb>`                                         | The CLI's front door to a verb                                           |
+| Command             | `livepages <resource> <verb>`                                         | The CLI's front door to a verb                                           |
 | Tool                | the MCP's snake_case name                                               | The MCP's front door to a verb                                           |
 | Resource            | `RESOURCES` entry (`document`, `tab`, ...)                              | The first word; `doc` and `el` are its aliases                           |
 | Behaviour           | `VerbBehaviour`: `read`, `write`, `destructive`                         | As the MCP's `ToolBehaviour`, which becomes an alias of it               |
 | Local verb          | `Verb.local: true`                                                      | A verb whose handler needs Node and lives in `apps/cli/src/commands`     |
 | Profile             | `Profile { name, host }`                                                | A named host in `config.toml`                                            |
-| Host                | `Profile.host`                                                          | The origin a profile talks to (`https://livediagram.app`)                |
+| Host                | `Profile.host`                                                          | The origin a profile talks to (`https://livepages.app`)                |
 | Api base            | `Capabilities.apiBase`                                                  | Where the api answers for that host                                      |
 | Capabilities        | `CapabilitiesResponse`, `loadCapabilities`                              | What a host offers, from `GET /api/capabilities`                         |
 | Credential          | `StoredCredential`, `CredentialSource` (`env`, `keychain`, `file`)      | The `lvd_` token the CLI presents, and where it came from                |
@@ -107,12 +107,12 @@ Scope, by file:
 | Read copy           | `ReadCopy`, `ReadCopies`, `recordCopy`, `baseFromCopy`                  | The plain tab as the CLI last read it at one revision                    |
 | Base                | `baseFromCopy(copy)` → `ChangesetBase`                                  | A read copy's revision and every element's fingerprint, sent with writes |
 | Source kind         | `SourceKind`: `graph`, `mermaid`, `elements`, `replace`, `operations`   | What a `-f` file holds                                                   |
-| Pull file           | `PullFile`, `<slug>.livediagram.json`                                   | One document on disk, with each tab's revision                           |
+| Pull file           | `PullFile`, `<slug>.livepages.json`                                   | One document on disk, with each tab's revision                           |
 | Preview             | `tab render`, `graph render`                                            | A PNG or SVG file of a tab or a graph                                    |
 | Loopback login      | `loginWithBrowser`                                                      | OAuth with PKCE and a `127.0.0.1` redirect                               |
 | Device login        | `loginWithDevice`, `DeviceGrant`                                        | The RFC 8628 grant; the person approves at `/oauth/device`               |
 | User code           | `userCode`, `formatUserCode`, `normaliseUserCode`                       | The 8-letter code the person types                                       |
-| Built-in CLI client | `CLI_CLIENT_ID` `livediagram-cli`, `CLI_CLIENT_NAME` `livediagram CLI`  | The public client the server vouches for                                 |
+| Built-in CLI client | `CLI_CLIENT_ID` `livepages-cli`, `CLI_CLIENT_NAME` `livepages CLI`  | The public client the server vouches for                                 |
 | Room stream         | `openRoomStream`                                                        | The CLI's listening socket for `wait` and `watch`                        |
 | Guide topic         | `GUIDE_TOPICS` key: `build`, `edit`, `comments`, ..., `workbench` (six) | One how-to                                                               |
 | Skill               | `renderSkill()`, `SKILL.md`                                             | The agent skill file                                                     |
@@ -136,7 +136,7 @@ anything the CLI does.
    with the global flags plus the options `buildParseOptions(verb)` generates, maps positionals by the verb's
    `cli.positionals`, then validates with `verb.input.safeParse`. Failures exit 2 or 1 (CLI15).
 3. **Profile.** `resolveProfile(flags, env, config)` (CLI7).
-4. **Credential.** `resolveCredential(profile, env, store)`: `LIVEDIAGRAM_TOKEN` when set and non-empty, else the
+4. **Credential.** `resolveCredential(profile, env, store)`: `LIVEPAGES_TOKEN` when set and non-empty, else the
    profile's stored credential, else none. Verbs that need no credential (`guide`, `skill`, `graph`, `telemetry`,
    `auth login`, and every read of a pull file) run without one; every other verb exits 4.
 5. **Capabilities.** `loadCapabilities(profile)` from the cache or `GET {host}/api/capabilities` (CLI8). An absent
@@ -175,7 +175,7 @@ Trash):
 
 | Input                                            | Resolves to                                                                                                                          |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| A path ending in `.livediagram.json` that exists | That pull file, read-only: `document view`, `tab ls` and `tab view` render with `renderView` locally; any other verb exits 2 (CLI70) |
+| A path ending in `.livepages.json` that exists | That pull file, read-only: `document view`, `tab ls` and `tab view` render with `renderView` locally; any other verb exits 2 (CLI70) |
 | A URL whose path is `/document/<id>`             | That id, after `parseDocumentUrl`; another origin than the host exits 2 (CLI21)                                                      |
 | A URL whose path is `/document/shared?s=<code>`  | The document of `GET /api/share/<code>`; every request of the command carries `X-Share-Code: <code>`                                 |
 | A full id (a 36-character UUID)                  | `GET /api/documents/<id>` directly, no list                                                                                          |
@@ -189,7 +189,7 @@ candidates. A share link's password is not sent: a password-protected link answe
 `resolveTab(document, input)`: absent is the first tab by `orderIndex`; else the tab whose name equals it ignoring
 case, or whose id starts with it (at least 4 characters) (CLI22). None or several exit 3 with the tab list.
 
-Comment verbs take an element ref, resolved with `resolveRef` from `@livediagram/document` (`element-refs.ts`)
+Comment verbs take an element ref, resolved with `resolveRef` from `@livepages/document` (`element-refs.ts`)
 over the plain tab: not found or ambiguous exits 3 with the candidates `resolveRef` names. `reply`, `resolve` and
 `reopen` act on the thread on that element through its last comment's id; an element with no thread exits 3
 (`no thread on <ref>`) (CLI78).
@@ -213,7 +213,7 @@ summary }`.
 4. On `409 elements_held` with `--wait-held <s>`: retry every `HELD_RETRY_INTERVAL_MS` until `s` seconds have
    passed since the first attempt, then exit 5 (CLI25).
 5. Print the api's `text`: the result lines, then the footer `formatResultFooter` wrote, carrying the revert command
-   `livediagram changeset revert <documentId> <changeset-id>` (CLI26); a dry run carries the engine's dry-run footer.
+   `livepages changeset revert <documentId> <changeset-id>` (CLI26); a dry run carries the engine's dry-run footer.
    Each of `warnings` prints to stderr.
 6. When the write landed with `rebasedOver` 0, read the plain tab and `recordCopy` it (CLI24); a rebased write keeps
    the older copy, so a later write over someone else's change conflicts rather than passes.
@@ -230,7 +230,7 @@ summary }`.
 | stored | `auth logout`, network failure                          | stored           | kept; exit 7                                                                                                                                          |
 | env    | `auth logout`                                           | env              | exit 2: the env token is not the CLI's to revoke (CLI38)                                                                                              |
 | stored | api answers 401, the store holds a different token      | stored (re-read) | `transport.forCredential` re-reads the store (`resolveCredential`), retries the refused request once with the new token; debug `credential refreshed` |
-| any    | api answers 401 (env token, store unchanged or emptied) | same             | exit 4 with `livediagram auth login`                                                                                                                  |
+| any    | api answers 401 (env token, store unchanged or emptied) | same             | exit 4 with `livepages auth login`                                                                                                                  |
 
 `auth status` warns on stderr when `expiresAt - now < TOKEN_EXPIRY_WARN_DAYS` days.
 
@@ -281,7 +281,7 @@ answers after it cannot write it back as pending, whatever KV's cross-region sta
 - Copies are keyed `<profile>|<documentId>|<tabId>`, at most `READ_COPY_REVS_PER_TAB` revisions each and
   `READ_COPY_MAX_BYTES` in all, evicted least recently used (CLI24, CLI76).
 - `tab diff <doc> [--tab] --since <rev>`: the read copy at `<rev>` is `before`; the plain tab read now is `after`;
-  `diffView(before, after, context)` from `@livediagram/document-views` prints, and `after` is recorded. No copy at
+  `diffView(before, after, context)` from `@livepages/document-views` prints, and `after` is recorded. No copy at
   `<rev>` exits 3 (`no copy of rev <rev>; tab diff compares against a revision this CLI has read`) naming the
   revisions it holds (CLI79). The api serves no diff view.
 
@@ -298,7 +298,7 @@ answers after it cannot write it back as pending, whatever KV's cross-region sta
   the check and overwrites.
 - `push <file>`: parses the pull file (`parsePullFile`), refuses another host than the profile's (exit 2); for each
   tab whose elements hash (`tabHashes`) differs from the pulled one, submits `replace { elements }` with
-  `base { rev }` (the tab's pulled revision) and `strict: true`; a tab missing from the document, or from `livediagramSync`, is created
+  `base { rev }` (the tab's pulled revision) and `strict: true`; a tab missing from the document, or from `livepagesSync`, is created
   by `replace { elements, name }` with no base (`WriteFlags.base: null`); a `412 stale_tab` prints
   `! stale tab "<name>"` and moves on; finally rewrites the file's revisions and hashes for the tabs that landed, and
   writes nothing on `--dry-run` (CLI28). An answer of `nothing changed` keeps the pulled revision.
@@ -309,13 +309,13 @@ answers after it cannot write it back as pending, whatever KV's cross-region sta
 ### Previews
 
 - `tab render`: `GET .../tabs/:tabId/render.svg`; `--svg <file>` writes it; `--png <file>` rasterises it with
-  `@livediagram/render-png` at scale 1 (CLI30). Prints `<path>  <width>×<height> · <size>`, never bytes.
+  `@livepages/render-png` at scale 1 (CLI30). Prints `<path>  <width>×<height> · <size>`, never bytes.
 - `graph render <file>`: reads graph JSON or Mermaid (`graphOfSource`), lays it out with `lintGraph`'s elements (the
   layout `create_document` uses), then `renderElementsToSvg` with `resolveIconExportArt` and `resolveStickerArt`;
   nothing reaches the api. An offline verb.
 - `export --format png` rasterises each tab's `render.svg` the same way. The render handlers and the renderer are
   imported dynamically, so other commands never evaluate them.
-- `graph lint <file> [--compare <variants>]`: the same tab through `@livediagram/diagram-lint` (`graphLint` in
+- `graph lint <file> [--compare <variants>]`: the same tab through `@livepages/diagram-lint` (`graphLint` in
   `packages/agent-verbs/src/verbs/graph.ts`: a graph or Mermaid file, validated by `graphBodyIssue`); an `offline` verb.
 
 ## Interfaces and contracts
@@ -354,7 +354,7 @@ type VerbContext = {
   api: ApiClient;
   host: string; // the profile's host, for links and messages
   useShareCode: (code: string) => void; // a pasted share link's code rides every later request
-  log: (line: string) => void; // a debug line, printed under LIVEDIAGRAM_DEBUG=1
+  log: (line: string) => void; // a debug line, printed under LIVEPAGES_DEBUG=1
   notice: (line: string) => void; // a line beside the output: stderr in the CLI
   now: () => number;
   sleep: (ms: number) => Promise<void>; // --wait-held
@@ -403,11 +403,11 @@ Positionals in `<>`, optional in `[]`. `<doc>` and `--tab` resolve as above. "Wr
 | `document create <name> [--tab <name>] [-f <file>\|--template <kind>]`                                                                  | `document.create`  | `POST /documents { id, name, source: 'cli', tabs: [{ id, name, graph \| mermaid \| template \| elements }] }`, compiled by the api (CLI75) | `+ document <ref> "<name>" · <n> tabs · <url>`                                                                                                             |
 | `document rename <doc> <name>`                                                                                                          | `document.rename`  | `PUT /documents/:id { name }`                                                                                                              | `~ document <ref> "<old>"→"<new>"`                                                                                                                         |
 | `document share <doc> [--role <r>] [--expiry <e>]`                                                                                      | `document.share`   | `POST /documents/:id/share`; values and defaults of `share_document`                                                                       | the link URL                                                                                                                                               |
-| `document rm <doc>`                                                                                                                     | `document.rm`      | `DELETE /documents/:id`                                                                                                                    | `- document <ref> "<name>" · in the Trash for 30 days · restore: livediagram document restore <id>`                                                        |
+| `document rm <doc>`                                                                                                                     | `document.rm`      | `DELETE /documents/:id`                                                                                                                    | `- document <ref> "<name>" · in the Trash for 30 days · restore: livepages document restore <id>`                                                        |
 | `document restore <doc>`                                                                                                                | `document.restore` | `POST /trash/:id/restore`                                                                                                                  | `+ document <ref> "<name>" restored`                                                                                                                       |
 | `tab ls <doc>`                                                                                                                          | `tab.ls`           | `GET /documents/:id`                                                                                                                       | `<n>  <ref>  "<name>"` per tab (CLI59)                                                                                                                     |
 | `tab view <doc> [--tab] [--view <name>] [--ref <ref>] [--text <text>] [--budget n] [--only <ref>] [--coarse] [--style] [--all] [--raw]` | `tab.view`         | `GET .../tabs/:tabId?view=…` (CLI69); `--raw` the plain tab                                                                                | the view as served                                                                                                                                         |
-| `tab add <doc> <name> [-f <file>\|--template <kind>]` + write flags                                                                     | `tab.add`          | changeset `replace` on a new tab id (CLI58)                                                                                                | `+ tab <id> "<name>"`, result lines and footer, its `undo: livediagram tab rm <doc> <tab>` in place of the revert (a revert empties the tab but leaves it) |
+| `tab add <doc> <name> [-f <file>\|--template <kind>]` + write flags                                                                     | `tab.add`          | changeset `replace` on a new tab id (CLI58)                                                                                                | `+ tab <id> "<name>"`, result lines and footer, its `undo: livepages tab rm <doc> <tab>` in place of the revert (a revert empties the tab but leaves it) |
 | `tab rename <doc> <tab> <name>`                                                                                                         | `tab.rename`       | `PUT /documents/:id/tabs/:tabId/name { name }`                                                                                             | `~ tab <ref> "<old>"→"<new>"`                                                                                                                              |
 | `tab rm <doc> <tab>`                                                                                                                    | `tab.rm`           | `DELETE /documents/:id/tabs/:tabId`                                                                                                        | `- tab <ref> "<name>"`                                                                                                                                     |
 | `tab diff <doc> [--tab] --since <rev>`                                                                                                  | `tab.diff`         | the plain tab; the diff is computed locally                                                                                                | the diff view                                                                                                                                              |
@@ -484,7 +484,7 @@ error: "Auth" matches 3 documents
   3f9c1a2b  "Auth flow"         personal
   7d02e1aa  "Auth flow v2"      Platform
   a11b0c3d  "Authentication"    personal
-hint: livediagram tab view 3f9c
+hint: livepages tab view 3f9c
 ```
 
 With `--json`, stderr holds `{"error":"<code>","message":"…","candidates":[…],"hint":"…"}` instead. A changeset
@@ -493,12 +493,12 @@ refusal prints the api's message.
 
 ### Help
 
-- **Top** (`livediagram`, `livediagram --help`), final copy, within `HELP_TOP_MAX_TOKENS`:
+- **Top** (`livepages`, `livepages --help`), final copy, within `HELP_TOP_MAX_TOKENS`:
 
 ```text
-livediagram: read, build, edit and discuss documents.
+livepages: read, build, edit and discuss documents.
 
-Usage: livediagram <resource> <verb> [args] [flags]
+Usage: livepages <resource> <verb> [args] [flags]
 
 Resources
   document (doc)  ls, view, create, rename, share, rm, restore
@@ -514,7 +514,7 @@ Resources
   template, icon, schema, guide, skill, api, auth, telemetry
 
 Addressing
-  <doc>     name, id prefix or livediagram URL     "Auth flow", 3f9c
+  <doc>     name, id prefix or livepages URL     "Auth flow", 3f9c
   --tab     tab name or id prefix; the first tab when omitted
   elements  refs from a view, or selectors          146b, type:sticky
 
@@ -526,37 +526,37 @@ Output
   5 conflict, 6 rate limited, 7 network or server.
 
 Start
-  livediagram document ls auth        find a document
-  livediagram tab view "Auth flow"    its first tab, as an outline
-  livediagram edit "Auth flow" -f -   edit operations from stdin
-  livediagram guide build             build a diagram from scratch
+  livepages document ls auth        find a document
+  livepages tab view "Auth flow"    its first tab, as an outline
+  livepages edit "Auth flow" -f -   edit operations from stdin
+  livepages guide build             build a diagram from scratch
 
-Sign in: LIVEDIAGRAM_TOKEN, or livediagram auth login. Never prompts.
-More: livediagram <resource> --help, livediagram guide <topic>
+Sign in: LIVEPAGES_TOKEN, or livepages auth login. Never prompts.
+More: livepages <resource> --help, livepages guide <topic>
 ```
 
-- **Resource** (`livediagram <resource> --help`), within `HELP_RESOURCE_MAX_TOKENS`: the resource's one-line
+- **Resource** (`livepages <resource> --help`), within `HELP_RESOURCE_MAX_TOKENS`: the resource's one-line
   description, then `  <verb>  <summary>` per verb in catalogue order, then
-  `More: livediagram <resource> <verb> --help`.
-- **Verb** (`livediagram <resource> <verb> --help`), within `HELP_VERB_MAX_TOKENS`: the description; `Usage:` built
+  `More: livepages <resource> <verb> --help`.
+- **Verb** (`livepages <resource> <verb> --help`), within `HELP_VERB_MAX_TOKENS`: the description; `Usage:` built
   from `cli.positionals` and the flags; `Flags`, one line each with the zod `.describe()` text; `Examples`, the two
   of `cli.examples`; `Prints: <cli.prints>`. Write flags share one description each, kept in `WRITE_FLAG_TEXT`.
-- **Guide** (`livediagram guide`) lists the six topics one line each; `guide <topic>` prints the topic, within
+- **Guide** (`livepages guide`) lists the six topics one line each; `guide <topic>` prints the topic, within
   `GUIDE_TOPIC_MAX_TOKENS` (CLI49). The `edit` topic shows `element connect <doc> <a> <b>` and says why `->` is
   never typed unquoted. The `workbench` topic is the
   [workbench blueprint](../../013-workspace/blueprints/workbench-embeds.md#the-cli)'s.
-- **Skill**: `renderSkill()` gives frontmatter `name: livediagram` and `description: SKILL_DESCRIPTION` (within
+- **Skill**: `renderSkill()` gives frontmatter `name: livepages` and `description: SKILL_DESCRIPTION` (within
   `SKILL_FRONTMATTER_MAX_TOKENS`), then a body naming the four starting commands, each guide topic's command and
-  the `[livediagram]` line that sends an agent to `guide workbench` (within `SKILL_BODY_MAX_TOKENS`).
-  `skill install --to <dir>` writes `<dir>/livediagram/SKILL.md`, overwriting only a file whose frontmatter `name`
-  is `livediagram` (CLI52). Without `--to` it exits 2 listing `SKILL_DIRECTORIES`:
+  the `[livepages]` line that sends an agent to `guide workbench` (within `SKILL_BODY_MAX_TOKENS`).
+  `skill install --to <dir>` writes `<dir>/livepages/SKILL.md`, overwriting only a file whose frontmatter `name`
+  is `livepages` (CLI52). Without `--to` it exits 2 listing `SKILL_DIRECTORIES`:
 
 ```text
 error: skill install needs --to <dir>, the skills directory of your agent
   ~/.claude/skills      Claude Code, every project
   ./.claude/skills      Claude Code, this project
   ./.agents/skills      the open Agent Skills layout, this project
-hint: livediagram skill install --to ~/.claude/skills
+hint: livepages skill install --to ~/.claude/skills
 ```
 
 ### Capabilities
@@ -603,11 +603,11 @@ max-age=300` (CLI72).
 | `GET /api/schema`              | 200 `text/plain`: `elementFormatText()`, the kinds one line each                                                               | none                                                                                             |
 | `GET /api/schema/:kind`        | 200 `text/plain`: `elementFormatText(kind)`, the kind's fields, values and defaults                                            | 404 `unknown_kind { kinds }`                                                                     |
 
-- `searchIcons(query, limit)` (`@livediagram/icons`) ranks the line-art and Technology catalogues by `paletteRank`
+- `searchIcons(query, limit)` (`@livepages/icons`) ranks the line-art and Technology catalogues by `paletteRank`
   over each icon's label and keywords, its id's words and a Technology icon's provider ("aws lambda" finds
   `aws-lambda`), ties in catalogue order (CLI74). A query that is an icon's id ranks it first; an emoji ranks
   `EMOJI_AFTER` (0.05) behind an icon answering as well, so a node's icon is a drawn glyph first.
-- `elementKindsText()` and `elementFormatText(kind)` (`@livediagram/edit-operations`) are read off the engine itself:
+- `elementKindsText()` and `elementFormatText(kind)` (`@livepages/edit-operations`) are read off the engine itself:
   the kinds `add` makes (`buildKind`'s factories), each kind's first size, the aliases `set` takes for it (`aliasesOf`)
   with their values (theme slots, sticky presets, border styles, text sizes, line styles), and its stored fields; a
   shape names `SHAPE_COMMON_FIELDS` and its kind's `SHAPE_KIND_FIELDS`, as the shape type's fields span every kind.
@@ -619,7 +619,7 @@ max-age=300` (CLI72).
 - **Clients.** `lookupClient(env, clientId)` returns `BUILT_IN_CLIENTS[clientId]` first, then the KV registration.
   `BUILT_IN_CLIENTS = { [CLI_CLIENT_ID]: { clientName: CLI_CLIENT_NAME, redirectUris: CLI_REDIRECT_URIS } }` with
   `CLI_REDIRECT_URIS = ['http://127.0.0.1/callback', 'http://[::1]/callback']` (CLI35). Registration mints random
-  hex ids, so it can never take `livediagram-cli`.
+  hex ids, so it can never take `livepages-cli`.
 - **Redirects.** `redirectUriAllowed(registered, uri)`: exact match, or, when the registered URI's host passes
   `isLoopbackHostname` and its scheme is `http:`, the same scheme, hostname and path with any port (RFC 8252 §7.3).
   `/oauth/authorize` uses it for every client.
@@ -646,7 +646,7 @@ random bytes, base64url; `user_code` is 8 letters of `USER_CODE_ALPHABET`, print
 - `discover(issuer)`: `GET {issuer}/.well-known/oauth-authorization-server`; the endpoints must share the issuer's
   origin, else exit 4.
 - `loginWithBrowser`: PKCE verifier of 32 random bytes (43 base64url characters), S256 challenge, 16-byte `state`;
-  `http.createServer` on `127.0.0.1`, port 0; authorize URL with `client_id=livediagram-cli`, `redirect_uri`
+  `http.createServer` on `127.0.0.1`, port 0; authorize URL with `client_id=livepages-cli`, `redirect_uri`
   `http://127.0.0.1:<port>/callback`, `response_type=code`, `code_challenge_method=S256`; opens the browser
   (`openerFor` in `apps/cli/src/node-io.ts`: `open` on macOS, `xdg-open` on Linux, `rundll32
 url.dll,FileProtocolHandler <url>` on Windows; the URL is one argument and never passes through a shell, so `&` in
@@ -667,9 +667,9 @@ url.dll,FileProtocolHandler <url>` on Windows; the URL is one argument and never
 
 ```ts
 type ApiClientOptions = {
-  baseUrl: string; // 'https://livediagram-api/api' for the MCP binding, caps.apiBase for the CLI
+  baseUrl: string; // 'https://livepages-api/api' for the MCP binding, caps.apiBase for the CLI
   fetch: (request: Request) => Promise<Response>;
-  headers: () => Record<string, string>; // Authorization; X-Livediagram-Client: mcp | cli; X-Share-Code when addressed by a link
+  headers: () => Record<string, string>; // Authorization; X-Livepages-Client: mcp | cli; X-Share-Code when addressed by a link
   onFailure?: (kind: string) => void; // 'Http503' | 'Internal', 5xx and network only
   timeoutMs?: number;
 };
@@ -716,7 +716,7 @@ file exits 7 naming it.
 
 ### The pull file
 
-The `livediagram.document` envelope (`DocumentEnvelope`, schema version 1, from the moved `document-envelope.ts`),
+The `livepages.document` envelope (`DocumentEnvelope`, schema version 1, from the moved `document-envelope.ts`),
 so the editor's "Import a copy" reads it, plus one key the envelope parser ignores (CLI27):
 
 ```ts
@@ -726,7 +726,7 @@ type PullSync = {
   // hash: SHA-256 hex of the canonical JSON of the elements; settingsHash: of every other field (CLI28)
   tabs: Record<string, { rev: number; hash: string; settingsHash: string }>;
 };
-type PullFile = DocumentEnvelope & { livediagramSync: PullSync };
+type PullFile = DocumentEnvelope & { livepagesSync: PullSync };
 ```
 
 ### Telemetry
@@ -736,7 +736,7 @@ type PullFile = DocumentEnvelope & { livediagramSync: PullSync };
   `Error·Api·Internal.<Verb>` on a network failure; never a 4xx (CLI41).
 - `POST {apiBase}/events` `{ events: [one] }`, no `Authorization`, no `Origin`, awaited at most
   `TELEMETRY_FLUSH_TIMEOUT_MS`.
-- Off when `LIVEDIAGRAM_TELEMETRY=0`, `DO_NOT_TRACK` is set to anything but `0` or empty (CLI42), or
+- Off when `LIVEPAGES_TELEMETRY=0`, `DO_NOT_TRACK` is set to anything but `0` or empty (CLI42), or
   `telemetry = false` in `config.toml`. `telemetry off` sends `UI·Toggled·TelemetryOff` and then writes the setting;
   `telemetry on` writes it and then sends `UI·Toggled·TelemetryOn`; neither sends `Cli·Used`.
 - The first command after install that would send prints the notice (Presentation) once, recorded in
@@ -747,9 +747,9 @@ type PullFile = DocumentEnvelope & { livediagramSync: PullSync };
 
 ### Update check
 
-After a command exits 0, when `CI` is unset or empty, stderr is a terminal, `LIVEDIAGRAM_NO_UPDATE_CHECK` is not
+After a command exits 0, when `CI` is unset or empty, stderr is a terminal, `LIVEPAGES_NO_UPDATE_CHECK` is not
 `1`, and `update.json`'s `checkedAt` is older than `UPDATE_CHECK_INTERVAL_MS`: `GET
-https://registry.npmjs.org/livediagram/latest` with `UPDATE_CHECK_TIMEOUT_MS`; `checkedAt` and `latest` are stored
+https://registry.npmjs.org/livepages/latest` with `UPDATE_CHECK_TIMEOUT_MS`; `checkedAt` and `latest` are stored
 whatever the answer; a newer `version` prints the notice (CLI43).
 
 ## Data and persistence
@@ -759,14 +759,14 @@ No D1 table, no migration. Local files (CLI5):
 | File                                                  | Class   | Notes                                                                                                                                                                             |
 | ----------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `<config>/config.toml`                                | config  | `default_profile`, `telemetry`, `[profiles.<name>] host`; written only by `telemetry`                                                                                             |
-| macOS Keychain, Secret Service: service `livediagram` | secret  | Account = profile name; value = the token alone (CLI4)                                                                                                                            |
+| macOS Keychain, Secret Service: service `livepages` | secret  | Account = profile name; value = the token alone (CLI4)                                                                                                                            |
 | `<config>/credentials.json`                           | secret  | `{ version: 1, profiles: { <name>: StoredCredential } }`; the token itself only when the file is its store, a DPAPI blob (`sealed`) on Windows; file 0600, directory 0700 (CLI40) |
 | `<cache>/capabilities/<profile>.json`                 | derived | `{ fetchedAt, host, capabilities }`; discarded when older than `CAPABILITIES_CACHE_TTL_MS`                                                                                        |
 | `<cache>/copies/index.json`                           | derived | `{ version: 1, entries: { key, rev, bytes, at }[] }`, most recent first                                                                                                           |
 | `<cache>/copies/<key hash>/<rev>.json`                | content | One read copy, the plain tab as served; files 0600 in 0700 directories (CLI76)                                                                                                    |
 | `<cache>/update.json`                                 | derived | `{ checkedAt, latest }`                                                                                                                                                           |
 | `<cache>/state.json`                                  | state   | `{ telemetryNoticeAt }`                                                                                                                                                           |
-| `<slug>.livediagram.json`                             | content | The pull file; the person's to keep                                                                                                                                               |
+| `<slug>.livepages.json`                             | content | The pull file; the person's to keep                                                                                                                                               |
 
 `StoredCredential = { host, token, tokenId, accountName, role, expiresAt }`. `<key hash>` is the first 16 hex of
 SHA-256 over `<profile>|<documentId>|<tabId>`. Every write is a temporary file in the same directory then
@@ -776,7 +776,7 @@ nothing in D1.
 
 ## Errors and edge cases
 
-- **E1** `livediagram.app` redirects to `www.livediagram.app`: the capabilities `GET` follows it, and every later
+- **E1** `livepages.app` redirects to `www.livepages.app`: the capabilities `GET` follows it, and every later
   request goes to `apiBase` directly, so no `Authorization` header crosses a redirect.
 - **E2** `connect a -> b` unquoted in a shell redirects stdout to a file named `b`: `element connect <doc> <a> <b>`
   takes the ends as two words and inserts the arrow (CLI23); the `edit` guide says so.
@@ -784,9 +784,9 @@ nothing in D1.
 - **E4** A ref printed earlier is now ambiguous: the api's `target_ambiguous` text, exit 1, hint to re-read.
 - **E5** The read copy is far behind: the api rebases or conflicts as for any base; nothing local special-cases it.
 - **E6** A tab deleted since the read copy: `resolveTab` fails first, exit 3.
-- **E7** A document moved to the Trash: 410, exit 3, hint `livediagram document restore <id>`.
+- **E7** A document moved to the Trash: 410, exit 3, hint `livepages document restore <id>`.
 - **E8** A token whose role does not admit the write: 403, exit 4, the api's message, hint
-  `livediagram auth status` (which shows the role).
+  `livepages auth status` (which shows the role).
 - **E9** The browser never returns (closed tab, wrong account): the loopback times out after `LOGIN_TIMEOUT_MS`,
   exit 4, hint `--device`.
 - **E10** The person's account is at the token cap: the consent page shows the token-limit line; the CLI times out (E9) and the
@@ -795,9 +795,9 @@ nothing in D1.
   server; a wrong `state` answers 400 and keeps waiting.
 - **E12** Device page and poll in different regions: a KV read can miss a fresh write for up to a minute; the page
   says "We couldn't find that code yet" with Try again, and the CLI keeps polling until expiry.
-- **E13** The platform's tool is missing, or refuses a store: the file store, with the one-line notice. A stored keychain token the tool cannot read back: exit 4, hint `livediagram auth login`.
+- **E13** The platform's tool is missing, or refuses a store: the file store, with the one-line notice. A stored keychain token the tool cannot read back: exit 4, hint `livepages auth login`.
 - **E14** `credentials.json` readable by group or others: stderr warning, mode set to 0600, read continues.
-- **E15** `LIVEDIAGRAM_TOKEN` is set but not `lvd_`-shaped: exit 4 "LIVEDIAGRAM_TOKEN is not an API token".
+- **E15** `LIVEPAGES_TOKEN` is set but not `lvd_`-shaped: exit 4 "LIVEPAGES_TOKEN is not an API token".
 - **E16** `--host` and `--profile` together: exit 2 (CLI7).
 - **E17** A pasted URL on another host than the profile's: exit 2, hint `--host <origin>` (CLI21).
 - **E18** `push` of a file pulled from another host: exit 2.
@@ -807,7 +807,7 @@ nothing in D1.
 - **E21** `tab diff --since` a revision with no read copy: exit 3 naming the revisions held (CLI79).
 - **E22** The room's 256 KiB frame cap: ops arrive whole or as `refetch: true` changesets; `watch` prints those
   with their counts, no element lines.
-- **E23** Reconnect misses ops: stderr `may have missed changes: livediagram tab diff <doc> --tab <t> --since <rev>`
+- **E23** Reconnect misses ops: stderr `may have missed changes: livepages tab diff <doc> --tab <t> --since <rev>`
   with the latest read copy's revision.
 - **E24** `export` meets the token read limiter (120 a minute): 429 answers are retried after 60 s, up to three
   times per request, before exit 6.
@@ -815,7 +815,7 @@ nothing in D1.
 - **E26** A render of a tab whose SVG fails to rasterise: exit 7 for the CLI's own failure, with the SVG still
   writable by `--svg`.
 - **E27** An unexpected exception: stderr `error: internal error (<ErrorName>)` and `hint: run again with
-LIVEDIAGRAM_DEBUG=1 and report it at https://github.com/livediagram-app/livediagram.app/issues`, exit 7 (CLI16).
+LIVEPAGES_DEBUG=1 and report it at https://github.com/livepages-app/livepages.app/issues`, exit 7 (CLI16).
 - **E28** Unknown keys in `config.toml`: ignored, logged under debug.
 - **E29** A read copy evicted between `wait` printing a revision and `tab diff`: E21.
 - **E30** `comment reply|resolve|reopen` on an element with no thread: exit 3 (CLI78).
@@ -837,7 +837,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
 - **The loopback.** Bound to `127.0.0.1` only; `state` checked; one use; closed after the code; PKCE S256 with a
   32-byte verifier. The port-agnostic match applies to `http` loopback URIs only, and the hostname must equal the
   registered one (`127.0.0.1`, `[::1]` and `localhost` are distinct).
-- **The built-in client.** Its name is the server's, so the consent page's "Connect livediagram CLI" is true; the
+- **The built-in client.** Its name is the server's, so the consent page's "Connect livepages CLI" is true; the
   anti-phishing line still shows the redirect host the server read. `clientId` on the session lookup is not a
   secret and decides nothing but the telemetry type.
 - **The device grant.** User codes have 20⁸ (2.6 × 10¹⁰) values, live 10 minutes, are single use, and their lookup
@@ -846,8 +846,8 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   and warns: "Only enter a code shown by a terminal you are using." The token travels from the page to the trusted
   `MCP_ORIGIN` only, as the consent page's does.
 - **Hosts.** A self-host profile reaches its own host only (I5); telemetry goes to that host's api; the update
-  check goes to npm and carries nothing but the request. `api` refuses absolute URLs. `LIVEDIAGRAM_TOKEN` goes to
-  whichever host is active; `auth status` shows that host, and the README says to set `LIVEDIAGRAM_HOST` beside it.
+  check goes to npm and carries nothing but the request. `api` refuses absolute URLs. `LIVEPAGES_TOKEN` goes to
+  whichever host is active; `auth status` shows that host, and the README says to set `LIVEPAGES_HOST` beside it.
 - **Share links.** A link's code rides only on the command that was given its URL, and only to that host.
 - **Catalogue routes** expose only public catalogue data, need no identity, and are cacheable.
 - **Supply chain.** Published by CI with provenance through npm trusted publishing (no npm token stored); the
@@ -862,7 +862,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   sweep, `2 + teams` reads. `tab view` reads the view and the plain tab in parallel; a changeset write adds one
   plain read after landing. `export --all`: the sweep plus, per document, one read and per tab one read and one
   `render.svg`, `EXPORT_CONCURRENCY` at a time, under the token's 120 reads a minute.
-- **Start-up.** One ESM file; `@livediagram/render-png`, the wasm and the font are loaded only by `tab render`,
+- **Start-up.** One ESM file; `@livepages/render-png`, the wasm and the font are loaded only by `tab render`,
   `graph render`, `pull --svg` and `export` with `png`. `--help` evaluates no handler module beyond the catalogue.
 - **Package.** At most `CLI_PACKAGE_MAX_BYTES` unpacked (the wasm is 2.5 MB, the font 0.3 MB).
 - **Room stream.** One socket; no frames sent; reconnect backoff bounded by `ROOM_RECONNECT_MAX_MS`.
@@ -875,12 +875,12 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
 ## Presentation and UX
 
 - **Callback page** (served by the loopback, `text/html`, no script, dark and light by `prefers-color-scheme`):
-  title "livediagram CLI", heading "You're signed in", body "Return to your terminal. You can close this tab." On
+  title "livepages CLI", heading "You're signed in", body "Return to your terminal. You can close this tab." On
   `access_denied`: "Sign-in cancelled", "Nothing was connected. You can close this tab."
 - **`/oauth/device` page**, in `OauthShell` (CLI65):
   - not `clerkEnabled`: "Connecting apps isn't available" / "This deployment doesn't have accounts enabled, so
     there's nothing to connect to."
-  - signed out: "Sign in to connect the livediagram CLI", with Sign in (back to this URL) and Cancel.
+  - signed out: "Sign in to connect the livepages CLI", with Sign in (back to this URL) and Cancel.
   - entry: heading "Connect a terminal", label "Code shown in your terminal", an 8-letter field formatted
     `XXXX-XXXX`, prefilled from `?code=`; button "Continue"; line "Only enter a code shown by a terminal you are
     using."
@@ -893,11 +893,11 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
     token cap (409 `token_limit_reached`) "Your account has reached its limit of API tokens. Revoke one in Settings,
     under Account › API Tokens, then try again."; anything else "Something went wrong. Please try again."
 - **CLI notices** (stderr), final copy:
-  - telemetry: `livediagram counts which commands succeed (the command's name only: never arguments, documents or
-hosts) and sends the count to <host>. Turn it off: livediagram telemetry off, or LIVEDIAGRAM_TELEMETRY=0.`
-  - update: `livediagram <latest> is available (this is <current>): npm install -g @livediagram/cli@latest, or
-npx @livediagram/cli@latest`
-  - expiry: `this token expires in <n> days: livediagram auth login to renew`
+  - telemetry: `livepages counts which commands succeed (the command's name only: never arguments, documents or
+hosts) and sends the count to <host>. Turn it off: livepages telemetry off, or LIVEPAGES_TELEMETRY=0.`
+  - update: `livepages <latest> is available (this is <current>): npm install -g @livepages/cli@latest, or
+npx @livepages/cli@latest`
+  - expiry: `this token expires in <n> days: livepages auth login to renew`
   - keychain: `no keychain here; the token is stored in <path> (readable only by you)`
   - loopback: `Opening <url> in your browser. If it does not open, open it yourself.`
   - device: `Open <verification_uri> and enter <XXXX-XXXX>. Waiting for approval…`
@@ -908,20 +908,20 @@ npx @livediagram/cli@latest`
 
 | Situation                 | `error:`                                                                   | `hint:`                                                                                         |
 | ------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| No credential             | `not signed in to <host>`                                                  | `livediagram auth login, or set LIVEDIAGRAM_TOKEN`                                              |
+| No credential             | `not signed in to <host>`                                                  | `livepages auth login, or set LIVEPAGES_TOKEN`                                              |
 | Host without sign-in      | `<host> has no sign-in, so the CLI cannot act there`                       | none                                                                                            |
-| Host without OAuth server | `<host> has no sign-in server for the CLI`                                 | `create a token in Settings › API Tokens, then pipe it to: livediagram auth login --with-token` |
-| Below the floor           | `<host> accepts writes from livediagram <min> or later; this is <v>`       | `UPGRADE_HINT`: `npm install -g @livediagram/cli@latest, or npx @livediagram/cli@latest`        |
-| Newer document format     | `<host> stores documents newer than this livediagram reads (<v>)`          | `UPGRADE_HINT`: `npm install -g @livediagram/cli@latest, or npx @livediagram/cli@latest`        |
-| Unknown verb              | `unknown verb "<v>" for "<resource>"`, `  did you mean: <x>`               | `livediagram <resource> --help`                                                                 |
-| Unknown flag              | `unknown flag <flag> for "<command>"`                                      | `livediagram <command> --help`                                                                  |
-| Not found                 | `no <document\|tab> matches "<x>"`, nearest lines                          | `livediagram document ls` / `livediagram tab ls <doc>`                                          |
+| Host without OAuth server | `<host> has no sign-in server for the CLI`                                 | `create a token in Settings › API Tokens, then pipe it to: livepages auth login --with-token` |
+| Below the floor           | `<host> accepts writes from livepages <min> or later; this is <v>`       | `UPGRADE_HINT`: `npm install -g @livepages/cli@latest, or npx @livepages/cli@latest`        |
+| Newer document format     | `<host> stores documents newer than this livepages reads (<v>)`          | `UPGRADE_HINT`: `npm install -g @livepages/cli@latest, or npx @livepages/cli@latest`        |
+| Unknown verb              | `unknown verb "<v>" for "<resource>"`, `  did you mean: <x>`               | `livepages <resource> --help`                                                                 |
+| Unknown flag              | `unknown flag <flag> for "<command>"`                                      | `livepages <command> --help`                                                                  |
+| Not found                 | `no <document\|tab> matches "<x>"`, nearest lines                          | `livepages document ls` / `livepages tab ls <doc>`                                          |
 | Ambiguous                 | `"<x>" matches <n> <documents\|tabs>`, candidates                          | the command with the first candidate's ref                                                      |
-| Unknown `-f` content      | `can't tell what <file> holds`                                             | `expected edit operations, a graph, Mermaid or elements: livediagram guide edit`                |
-| Conflict                  | `<n> elements changed since rev <base> (now <rev>):`, `  <ref> (<reason>)` | `re-read: livediagram tab view <doc> --tab <t>`                                                 |
+| Unknown `-f` content      | `can't tell what <file> holds`                                             | `expected edit operations, a graph, Mermaid or elements: livepages guide edit`                |
+| Conflict                  | `<n> elements changed since rev <base> (now <rev>):`, `  <ref> (<reason>)` | `re-read: livepages tab view <doc> --tab <t>`                                                 |
 | Held                      | `<n> elements are selected by people:`, `  <ref> (<name>)`                 | `retry later, or add --wait-held 30`                                                            |
-| Stale (`--strict`)        | `"<tab>" changed since rev <base> (now <rev>)`                             | `re-read: livediagram tab view <doc> --tab <t>`                                                 |
-| Unpushed changes          | `<path> changed here and is not pushed; not overwritten`                   | `send it: livediagram push <path>, or drop it: livediagram pull "<doc>" --force`                |
+| Stale (`--strict`)        | `"<tab>" changed since rev <base> (now <rev>)`                             | `re-read: livepages tab view <doc> --tab <t>`                                                 |
+| Unpushed changes          | `<path> changed here and is not pushed; not overwritten`                   | `send it: livepages push <path>, or drop it: livepages pull "<doc>" --force`                |
 | Rate limited              | `<host> is rate limiting this token`                                       | `wait a minute, then retry`                                                                     |
 | Network                   | `could not reach <host> (<code>)`                                          | `check the connection, or choose another host with --host`                                      |
 | Server                    | `<host> failed (HTTP <status>)`                                            | `retry shortly`                                                                                 |
@@ -946,7 +946,7 @@ interaction is a form submit and two fetches to the MCP origin, so INP stays a s
 
 ## Observability
 
-CLI lines print to stderr only under `LIVEDIAGRAM_DEBUG=1` (CLI44); server lines go to the worker logs.
+CLI lines print to stderr only under `LIVEPAGES_DEBUG=1` (CLI44); server lines go to the worker logs.
 
 | Fingerprint                                                                              | Where                 |
 | ---------------------------------------------------------------------------------------- | --------------------- |
@@ -971,7 +971,7 @@ CLI lines print to stderr only under `LIVEDIAGRAM_DEBUG=1` (CLI44); server lines
 | `[tokens] current <read\|revoked> <tokenId>`                                             | api, `tokens/current` |
 | `[catalogues] <templates\|icons\|schema> <status>`                                       | api, catalogue routes |
 
-Requests carry `X-Livediagram-Client: cli` and `User-Agent: livediagram-cli/<version> node/<version> <platform>`
+Requests carry `X-Livepages-Client: cli` and `User-Agent: livepages-cli/<version> node/<version> <platform>`
 (CLI45), so the api's own logs and the changeset front door (`Agent·*·Cli`) name the CLI.
 
 ## Testing
@@ -1021,7 +1021,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | A host without sign-in says so in one line                                                    | `apps/cli/src/main.test.ts`                                                                                                                                                     |
 | Profiles, flags, env, default host                                                            | `apps/cli/src/config/config.test.ts`                                                                                                                                            |
 | Capabilities fields; floor refuses writes, names the version; newer format                    | `apps/api/src/routes/capabilities.test.ts`, `apps/cli/src/config/config.test.ts`, `apps/cli/src/main.test.ts`                                                                   |
-| A self-host profile never contacts livediagram.app                                            | `apps/cli/src/main.test.ts` (every request across a session of commands; telemetry joins it when built)                                                                         |
+| A self-host profile never contacts livepages.app                                            | `apps/cli/src/main.test.ts` (every request across a session of commands; telemetry joins it when built)                                                                         |
 | Pull file: document, tabs, revisions; `--svg`                                                 | `apps/cli/src/sync/pull-file.test.ts`, `apps/cli/src/commands/pull-push.test.ts`                                                                                                |
 | Pull refuses a file with unpushed changes; `--force` overwrites (CLI27a)                      | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                                       |
 | Push: changed tabs as based changesets; conflict names the tab; elements only                 | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                                       |
@@ -1075,8 +1075,8 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | `UPDATE_CHECK_INTERVAL_MS`         | 86400000               | Spec "once a day at most"                   | fixed by spec      |
 | `UPDATE_CHECK_TIMEOUT_MS`          | 1500                   | CLI43                                       | 500 to 3000        |
 | `LOGIN_TIMEOUT_MS`                 | 600000                 | The authorize session's 10-minute TTL       | equal to it        |
-| `CLI_CLIENT_ID`                    | `livediagram-cli`      | MCP server §3                               | fixed              |
-| `CLI_CLIENT_NAME`                  | `livediagram CLI`      | Spec (the token's name)                     | fixed              |
+| `CLI_CLIENT_ID`                    | `livepages-cli`      | MCP server §3                               | fixed              |
+| `CLI_CLIENT_NAME`                  | `livepages CLI`      | Spec (the token's name)                     | fixed              |
 | `DEVICE_CODE_TTL_S`                | 600                    | The authorize session's TTL, CLI36          | 300 to 1800        |
 | `DEVICE_POLL_INTERVAL_S`           | 5                      | RFC 8628 §3.2 default                       | 5 to 15            |
 | `DEVICE_SLOW_DOWN_S`               | 5                      | RFC 8628 §3.5                               | fixed by RFC       |
@@ -1086,9 +1086,9 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | `DEVICE_LOOKUP_RATE_MAX`           | 30 per 600 s per IP    | CLI36                                       | 10 to 100          |
 | `CLI_PACKAGE_MAX_BYTES`            | 8388608                | CLI54                                       | 4 MiB to 16 MiB    |
 
-Environment the CLI reads: `LIVEDIAGRAM_TOKEN`, `LIVEDIAGRAM_HOST`, `LIVEDIAGRAM_PROFILE`, `LIVEDIAGRAM_TELEMETRY`,
-`DO_NOT_TRACK`, `LIVEDIAGRAM_NO_UPDATE_CHECK`, `LIVEDIAGRAM_DEBUG`, `CI`, `XDG_CONFIG_HOME`, `XDG_CACHE_HOME`.
-Api worker vars: `OAUTH_ISSUER` (hosted `https://mcp.livediagram.app`) and `CLI_MIN_VERSION` (unset until a
+Environment the CLI reads: `LIVEPAGES_TOKEN`, `LIVEPAGES_HOST`, `LIVEPAGES_PROFILE`, `LIVEPAGES_TELEMETRY`,
+`DO_NOT_TRACK`, `LIVEPAGES_NO_UPDATE_CHECK`, `LIVEPAGES_DEBUG`, `CI`, `XDG_CONFIG_HOME`, `XDG_CACHE_HOME`.
+Api worker vars: `OAUTH_ISSUER` (hosted `https://mcp.livepages.app`) and `CLI_MIN_VERSION` (unset until a
 release needs a floor), in `[vars]` and `[env.staging.vars]` (staging `OAUTH_ISSUER` is the staging MCP origin), so
 `pnpm staging:check` holds; both documented in `docs/operations/self-hosting.md`. No new secret, binding or migration.
 
@@ -1099,7 +1099,7 @@ release needs a floor), in `[vars]` and `[env.staging.vars]` (staging `OAUTH_ISS
 | Inter Regular, Inter Bold     | rsms/inter 3.19 (Bold: the release's `Inter Desktop/Inter-Bold.otf`) | OFL 1.1 | `packages/render-png/fonts/`; `dist/Inter-Regular.ttf`, `dist/Inter-Bold.otf` |
 | resvg wasm                    | `@resvg/resvg-wasm` 2.6.2                                            | MPL 2.0 | copied to `dist/resvg.wasm` by `build.mjs`                                    |
 | Bundled dependencies' notices | each bundled package's licence                                       | as each | `dist/THIRD_PARTY_LICENSES`, generated by `build.mjs` from esbuild's metafile |
-| livediagram's licence         | repository `LICENSE`                                                 | MIT     | `dist/LICENSE`                                                                |
+| livepages's licence         | repository `LICENSE`                                                 | MIT     | `dist/LICENSE`                                                                |
 | `@napi-rs/keyring` 2.1.0      | npm, optional dependency                                             | MIT     | installed by npm beside the package, never bundled                            |
 
 `build.mjs` regenerates every `dist` file from the workspace; nothing in `dist` is committed.

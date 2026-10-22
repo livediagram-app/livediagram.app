@@ -10,7 +10,7 @@ import {
   type GridRange,
   type IdRange,
   type SheetLayout,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import { anchorAt } from './sheet-charts';
 
 // A chart element as it sits on the tab.

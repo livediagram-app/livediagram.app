@@ -20,10 +20,10 @@ Drive traffic goes from each person's browser straight to Google. Your api Worke
 ### Create the Google Cloud Project
 
 <Step n={1}>In the Google Cloud console, create a project for your deployment and enable the **Google Drive API**.</Step>
-<Step n={2}>Configure the OAuth consent screen. It needs only two scopes, `drive.file` (the files livediagram creates or is shown) and `drive.install` (the **Open with** entry in Drive). Both are non-sensitive, so Google asks for no verification or security assessment.</Step>
-<Step n={3}>Create an OAuth client of type **Web application**. Add `https://<your-host>` as an authorised JavaScript origin and `https://<your-host>/drive/connected` as an authorised redirect URI. If your site redirects one host to another (as livediagram.app sends its bare domain to `www`), register both hosts.</Step>
-<Step n={4}>For **Open with** in Drive, configure the Drive API's Drive UI integration: Open URL `https://<your-host>/drive/open`, default MIME type `application/vnd.livediagram+json`, default extension `livediagram`.</Step>
-<Step n={5}>Optionally, create a browser API key for the Google Picker, restricted by HTTP referrer to your host. It lets people show livediagram a folder they made in Drive themselves; without it the mirror works and that one step is not offered.</Step>
+<Step n={2}>Configure the OAuth consent screen. It needs only two scopes, `drive.file` (the files livepages creates or is shown) and `drive.install` (the **Open with** entry in Drive). Both are non-sensitive, so Google asks for no verification or security assessment.</Step>
+<Step n={3}>Create an OAuth client of type **Web application**. Add `https://<your-host>` as an authorised JavaScript origin and `https://<your-host>/drive/connected` as an authorised redirect URI. If your site redirects one host to another (as livepages.app sends its bare domain to `www`), register both hosts.</Step>
+<Step n={4}>For **Open with** in Drive, configure the Drive API's Drive UI integration: Open URL `https://<your-host>/drive/open`, default MIME type `application/vnd.livepages+json`, default extension `livepages`.</Step>
+<Step n={5}>Optionally, create a browser API key for the Google Picker, restricted by HTTP referrer to your host. It lets people show livepages a folder they made in Drive themselves; without it the mirror works and that one step is not offered.</Step>
 
 ### Set the Variables
 
@@ -38,11 +38,11 @@ Drive traffic goes from each person's browser straight to Google. Your api Worke
 The api Worker and the live build must carry the **same** client id. Set the two secrets with:
 
 ```bash
-pnpm --filter @livediagram/api exec wrangler secret put GOOGLE_CLIENT_SECRET
-pnpm --filter @livediagram/api exec wrangler secret put DRIVE_TOKEN_KEY   # openssl rand -base64 32
+pnpm --filter @livepages/api exec wrangler secret put GOOGLE_CLIENT_SECRET
+pnpm --filter @livepages/api exec wrangler secret put DRIVE_TOKEN_KEY   # openssl rand -base64 32
 ```
 
-Once all of this is in place, signed-in people find the mirror in **Settings**, under **Account**, then **Cloud Sync**. The folder it creates in each person's Drive is named **livediagram (self-hosted)**, so someone who also uses livediagram.app never gets two folders with the same name.
+Once all of this is in place, signed-in people find the mirror in **Settings**, under **Account**, then **Cloud Sync**. The folder it creates in each person's Drive is named **livepages (self-hosted)**, so someone who also uses livepages.app never gets two folders with the same name.
 
 ### Browser-Only Mode
 
@@ -64,13 +64,13 @@ The MCP server is its own Cloudflare Worker, `apps/mcp`. It carries no AI model 
 </Step>
 <Step n={2}>
   Give the Worker a hostname of its own, such as `mcp.diagrams.example.com`: in the Cloudflare
-  dashboard, open the `livediagram-mcp` Worker and add a custom domain under **Domains & Routes**.
+  dashboard, open the `livepages-mcp` Worker and add a custom domain under **Domains & Routes**.
   The deploy token only uploads Workers, so hostnames are attached by hand, as for every other
   Worker.
 </Step>
 <Step n={3}>
   Point the pieces at each other with the three variables in the table below. Each ships with
-  livediagram.app's value, so a fork changes all three.
+  livepages.app's value, so a fork changes all three.
 </Step>
 <Step n={4}>
   Deploy the mcp Worker after the api Worker, since it reaches the api over a service binding. The
@@ -78,7 +78,7 @@ The MCP server is its own Cloudflare Worker, `apps/mcp`. It carries no AI model 
 </Step>
 
 ```bash
-pnpm --filter @livediagram/mcp exec wrangler kv namespace create OAUTH_KV
+pnpm --filter @livepages/mcp exec wrangler kv namespace create OAUTH_KV
 ```
 
 | Variable                 | Where                                   | Set it to                                                                       |
@@ -99,8 +99,8 @@ The bundled deploy workflow builds every app, then deploys the Workers. Two thin
 
 - **It always deploys the mcp Worker.** If you are not running the MCP server, remove that job from `.github/workflows/deploy-reusable.yml`, or create the KV namespace first so the deploy succeeds.
 - **It does not read most `NEXT_PUBLIC_*` values from repository secrets.** These are baked into the live build, so they must be in the build step's environment:
-  - `NEXT_PUBLIC_MCP_ORIGIN` comes from the `mcp_origin` input in `.github/workflows/deploy.yml`. Left empty, the live app falls back to `https://mcp.livediagram.app`, which is not yours, so set it to your MCP origin.
-  - `NEXT_PUBLIC_GOOGLE_CLIENT_ID` is only added for livediagram.app's own repository. Add it to the **Build all apps** step yourself.
+  - `NEXT_PUBLIC_MCP_ORIGIN` comes from the `mcp_origin` input in `.github/workflows/deploy.yml`. Left empty, the live app falls back to `https://mcp.livepages.app`, which is not yours, so set it to your MCP origin.
+  - `NEXT_PUBLIC_GOOGLE_CLIENT_ID` is only added for livepages.app's own repository. Add it to the **Build all apps** step yourself.
   - `NEXT_PUBLIC_GOOGLE_API_KEY` is the exception: the workflow passes a repository secret of that name through to the build.
 
 The `wrangler.toml` values and Worker secrets are read at runtime, so they do not need the workflow at all: edit the file, or run `wrangler secret put`.

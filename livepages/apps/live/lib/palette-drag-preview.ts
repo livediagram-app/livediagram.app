@@ -1,7 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
-import type { ShapeKind } from '@livediagram/document';
+import type { ShapeKind } from '@livepages/document';
 import { createListeners } from '@/lib/listeners';
 
 // Shared, transient state for the palette drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md). A

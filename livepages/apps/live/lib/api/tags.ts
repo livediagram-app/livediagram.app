@@ -10,7 +10,7 @@ import {
   type Tag,
   type TagLink,
   type TagsList,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import { isOfflineId, offlineListTagLinks, offlineSetDocumentTag } from '../offline/offline-store';
 import { API_BASE, ApiError, apiFetch, apiHeaders, expectOk, expectOkVoid } from './core';

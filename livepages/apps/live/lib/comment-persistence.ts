@@ -1,4 +1,4 @@
-import type { CommentMention } from '@livediagram/document';
+import type { CommentMention } from '@livepages/document';
 import { apiAddComment, apiDeleteComment, apiSetThreadResolved } from '@/lib/api-client';
 
 // How a comment change is kept (docs/specs/012-collaboration/comment-pin.md, docs/specs/013-workspace/share-roles.md):

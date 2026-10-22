@@ -12,14 +12,14 @@ import {
   WIREFRAME_DEVICES,
   type PageKind,
   type WireframeDeviceId,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   useClickOutside,
   useEscape,
   Portal,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import { BottomSheet } from '@/components/primitives/BottomSheet';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';

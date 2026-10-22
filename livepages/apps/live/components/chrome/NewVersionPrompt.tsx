@@ -1,12 +1,12 @@
 'use client';
 
-// "A new version of livediagram is ready." (docs/specs/016-platform/new-version-prompt.md): shown when
+// "A new version of livepages is ready." (docs/specs/016-platform/new-version-prompt.md): shown when
 // the server serves a newer document format than this editor was built for. Calm and non-blocking:
 // a polite status that never takes focus, never reloads by itself, and reloads only once everything
 // edited has been saved.
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
-import { Button } from '@livediagram/ui';
+import { DOCUMENT_FORMAT } from '@livepages/api-schema';
+import { Button } from '@livepages/ui';
 import {
   newVersionAvailable,
   serverDocumentFormat,
@@ -21,7 +21,7 @@ import { announceToastFloorChange } from '@/components/toast/toast-floor';
 type Phase = 'offered' | 'saving' | 'unsaved';
 
 const COPY: Record<Phase, string> = {
-  offered: 'A new version of livediagram is ready.',
+  offered: 'A new version of livepages is ready.',
   saving: 'Saving your changes…',
   unsaved: "Your latest changes aren't saved yet. Reload once they are.",
 };

@@ -6,8 +6,8 @@ import {
   TEMPLATE_FAMILIES,
   type SpecificTabKind,
   type TemplateFamily,
-} from '@livediagram/api-schema';
-import { EDITOR_MODES, type EditorMode } from '@livediagram/document';
+} from '@livepages/api-schema';
+import { EDITOR_MODES, type EditorMode } from '@livepages/document';
 
 /** The dimensions in canonical order: the order tokens are written in and chips are shown in. */
 export const LENS_DIMENSIONS = [

@@ -48,7 +48,7 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 
 ### Tab stats
 
-- `tabStatsOf(body, data)` (`@livediagram/document`) is pure. `mode = opensInOf(body)`;
+- `tabStatsOf(body, data)` (`@livepages/document`) is pure. `mode = opensInOf(body)`;
   `elementCount = body.elements.length` (0 when not an array); `commentCount` sums
   `commentThread.comments.length` over the elements; `dataBytes` is the UTF-8 length of `data`.
 - `tabStatsOfData(data)` (api) parses a stored body and counts it; a body that is not a JSON object
@@ -94,7 +94,7 @@ cron runs it in `waitUntil` beside the other sweeps, its failure logged as
   whatever is stored, and never writes; the stored choice returns once the query stops matching.
   `ViewToggle` carries `phone:hidden`, the CSS twin of the same query, so it takes no room there
   and never flashes in before hydration.
-- `useDetailsSort` reads `livediagram:explorer-details-sort` (`"<column>:<asc|desc>"`); an unreadable
+- `useDetailsSort` reads `livepages:explorer-details-sort` (`"<column>:<asc|desc>"`); an unreadable
   value is the default `updated:desc`. `toggle(column)` returns the column's natural direction
   (`DETAILS_COLUMNS[column].natural`) when it is not the current column, else the opposite one.
 - `sortDetailsEntries(folders, documents, sort, ctx)` returns folders then documents, each sorted by
@@ -265,7 +265,7 @@ CREATE TABLE tab_stats (
 | `TAB_STATS_BACKFILL_PAGE_ROWS` | 10                                  | `D147`: 10 bodies of at most `MAX_TAB_BYTES` stay under 20 MB | 1-20           |
 | `TAB_STATS_BACKFILL_MAX_ROWS`  | 5000                                | `D148`                                                        | 500-20000      |
 | `TAB_STATS_BACKFILL_BUDGET_MS` | 60 000                              | As the image-refs backfill                                    | 10 000-120 000 |
-| `DETAILS_SORT_STORAGE_KEY`     | `livediagram:explorer-details-sort` | Beside `livediagram:explorer-view`                            | n/a            |
+| `DETAILS_SORT_STORAGE_KEY`     | `livepages:explorer-details-sort` | Beside `livepages:explorer-view`                            | n/a            |
 
 ## Defaults ledger
 

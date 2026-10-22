@@ -1,4 +1,4 @@
-// One draw.io page to livediagram elements
+// One draw.io page to livepages elements
 // (docs/specs/020-import-export/blueprints/drawio-import.md step 15): walk the
 // layers depth-first in paint order, build each vertex, drop groups, skip
 // hidden and collapsed content, then build the edges against the elements
@@ -12,7 +12,7 @@ import {
   type BoxedElement,
   type Element,
   type Layer,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { absoluteRect, type DrawioCell, type DrawioGraph, type Rect } from './cells';
 import { buildEntity, buildLane, buildTable } from './containers';
 import { createEdgeBuilder, type EdgeSlot } from './edge-pass';

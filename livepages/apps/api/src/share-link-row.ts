@@ -4,7 +4,7 @@ import {
   type ShareLink as ShareLinkDTO,
   type ShareLinkExpiry,
   type SharePurpose,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 
 // share_links row shape as read from D1 (migration 0003 + the expiry
 // columns from 0020, the tab scope from 0048, the level from 0080). `role` and `level` arrive as free-form

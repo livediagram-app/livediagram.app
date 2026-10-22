@@ -6,7 +6,7 @@ import {
   sha256Hex,
   type LivePoll,
   type RoomOp,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { GUEST_VOTERS_PER_NETWORK } from './vote-integrity';
 
 // The poll that is running in a room, and everyone's answer to it (docs/specs/012-collaboration/collab-race-hardening.md).
@@ -125,7 +125,7 @@ export class RoomLivePoll {
         : null;
     const proofClaim =
       proof && claimedKey
-        ? `h:${(await sha256Hex(new TextEncoder().encode(`livediagram:poll-proof:v1:${proof}`))).slice(0, TAG_LEN)}`
+        ? `h:${(await sha256Hex(new TextEncoder().encode(`livepages:poll-proof:v1:${proof}`))).slice(0, TAG_LEN)}`
         : null;
 
     const current = this.state;

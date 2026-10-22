@@ -6,7 +6,7 @@
 // and nothing it prints may be committed. It exists so the choice of the
 // in-browser reader, and the guards around it, stay MEASUREMENTS.
 //
-//   pnpm --filter @livediagram/live exec tsx scripts/reader-bench.mts \
+//   pnpm --filter @livepages/live exec tsx scripts/reader-bench.mts \
 //     --reader smolvlm-256m [--edge 48] [--set words|tiny] [--out /tmp/x.json]
 //
 // Crops are cut the way the editor cuts them (photo-detect.ts): from the
@@ -19,7 +19,7 @@
 // Node runs the models on onnxruntime-node (CPU). The answers match the
 // browser's WASM path; the speed does not, so time in-browser separately.
 import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
-import { CROP_MAX_EDGE_PX } from '@livediagram/api-schema';
+import { CROP_MAX_EDGE_PX } from '@livepages/api-schema';
 import { cropRects, type DetectedSticky } from '../../../packages/sticky-vision/src';
 import { photoDir, truthFor } from '../../../packages/sticky-vision/scripts/truth';
 import { READERS, type BenchReader } from './reader-bench-readers.mts';

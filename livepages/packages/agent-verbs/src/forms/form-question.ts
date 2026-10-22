@@ -16,7 +16,7 @@ import {
   blankQuestion,
   type FormQuestion,
   type QuestionType,
-} from '@livediagram/forms';
+} from '@livepages/forms';
 import { refuse, type Named } from './form-names';
 
 export interface QuestionInput {

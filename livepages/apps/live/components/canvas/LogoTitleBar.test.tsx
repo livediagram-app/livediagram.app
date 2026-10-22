@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
-import { DEFAULT_MIRROR } from '@livediagram/document';
+import { DEFAULT_MIRROR } from '@livepages/document';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import { createSelectionStore } from '@/lib/selection-store';
 import { LogoTitleBar, logoTitleBarRoom } from './LogoTitleBar';

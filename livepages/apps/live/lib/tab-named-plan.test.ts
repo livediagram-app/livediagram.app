@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, defaultTabName, isDefaultTabName, type Element } from '@livediagram/document';
-import { presetSetup } from '@livediagram/items';
+import { createShape, defaultTabName, isDefaultTabName, type Element } from '@livepages/document';
+import { presetSetup } from '@livepages/items';
 import {
   boardTitleForTab,
   boardsRenamedWithTab,

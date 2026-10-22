@@ -1,6 +1,6 @@
 # Finding sticky notes in a photograph
 
-How `@livediagram/sticky-vision` reads a wall, what its constants are and why,
+How `@livepages/sticky-vision` reads a wall, what its constants are and why,
 and where it still falls over. Written while calibrating it against three
 photographs of a real workshop wall; every number below was moved by that
 exercise, and several of the first guesses were badly wrong in instructive ways.
@@ -392,7 +392,7 @@ the count and is a loss. So the sweep scores against hand-labelled notes when
 they exist:
 
 - Photographs and labels live **outside this repo**, in the private
-  `livediagram-app/vision-model-truths` repository (`event-storming/photos`
+  `livepages-app/vision-model-truths` repository (`event-storming/photos`
   and `event-storming/labels`) — they describe somebody's real workshop wall,
   this repo is public, and hours of hand-labelling must not live on one disk.
   The tools find a checkout at `$VISION_TRUTHS_DIR`, or cloned beside this
@@ -413,7 +413,7 @@ they exist:
   where the sweep looks:
 
   ```bash
-  pnpm --filter @livediagram/sticky-vision truth:add ~/Downloads/<photo>.json
+  pnpm --filter @livepages/sticky-vision truth:add ~/Downloads/<photo>.json
   ```
 
   In a `vision-model-truths` checkout it also **commits and pushes** the
@@ -424,7 +424,7 @@ they exist:
   since a note it never boxed is one you have to notice yourself.
 
 - To make one from a blank slate instead: run the sweep once so the working copy is cached under
-  `/tmp/livediagram-sticky-vision/<hash>/work-<photo>.png`, crop it into
+  `/tmp/livepages-sticky-vision/<hash>/work-<photo>.png`, crop it into
   overlapping tiles with a labelled grid drawn over them (25px steps, ImageMagick
   `-draw`), read each note's CENTRE off the grid by eye, and give it a nominal
   size for its kind (square ~52px, wide ~88x52, actor ~28x52 at the 1000px

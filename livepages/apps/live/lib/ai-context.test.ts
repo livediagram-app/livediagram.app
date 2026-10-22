@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element } from '@livepages/document';
 import { aiContextElements } from './ai-context';
 
 const els = (n: number): Element[] =>

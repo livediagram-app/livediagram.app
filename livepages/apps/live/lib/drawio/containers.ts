@@ -13,7 +13,7 @@ import {
   type TableElement,
   type TextAlignX,
   type TextElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { absoluteRect, type DrawioCell, type DrawioGraph, type Rect } from './cells';
 import { hexFill, hexInk, readColour, readFill } from './colour';
 import { cellLabel } from './label';

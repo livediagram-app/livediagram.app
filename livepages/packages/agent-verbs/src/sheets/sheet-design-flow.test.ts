@@ -2,7 +2,7 @@
 // "A design"): the cells written through the api, the design tinted for its tab's canvas, the charts added to the tab
 // over the Sheet in one changeset with their first read, and a new Sheet made as large as what it holds.
 import { describe, expect, it } from 'vitest';
-import type { ApiClient } from '@livediagram/api-client';
+import type { ApiClient } from '@livepages/api-client';
 import { DOC_A, fakeApi, tabsOfA } from '../testing/fake-api';
 import { seeded, sheetJson, sheetServer, type SheetServer } from '../testing/sheets';
 import { addSheet } from './add-sheet';

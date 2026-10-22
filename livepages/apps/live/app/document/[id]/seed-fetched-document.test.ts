@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { LiveDoc } from '@livediagram/api-schema';
+import type { LiveDoc } from '@livepages/api-schema';
 
 const apiLoadTab = vi.fn<typeof import('@/lib/api-client').apiLoadTabRevisioned>();
 vi.mock('@/lib/api-client', () => ({

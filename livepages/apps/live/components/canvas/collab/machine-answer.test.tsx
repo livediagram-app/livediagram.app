@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { createShape, type ShapeElement } from '@livediagram/document';
+import { createShape, type ShapeElement } from '@livepages/document';
 import { answerMachine, resetMachineAnswers } from '@/lib/machine-answer';
 import { FurnitureView } from './FurnitureView';
 

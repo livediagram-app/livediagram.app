@@ -1,4 +1,4 @@
-import type { IconPrim } from '@livediagram/icons';
+import type { IconPrim } from '@livepages/icons';
 
 import { Glyph, type IconProps } from './Glyph';
 import { Prims } from './Prims';

@@ -15,8 +15,8 @@ describe('emailEnabled', () => {
 });
 
 describe('appBaseUrl', () => {
-  it('defaults to livediagram.app', () =>
-    expect(appBaseUrl(noKey)).toBe('https://livediagram.app'));
+  it('defaults to livepages.app', () =>
+    expect(appBaseUrl(noKey)).toBe('https://livepages.app'));
   it('uses + trims a trailing slash from APP_BASE_URL', () =>
     expect(appBaseUrl({ APP_BASE_URL: 'https://example.com/' } as unknown as Env)).toBe(
       'https://example.com',
@@ -57,7 +57,7 @@ describe('sendEmail', () => {
     expect(JSON.parse(init.body as string)).toMatchObject({
       to: ['a@b.com'],
       subject: 'Hi',
-      from: expect.stringContaining('hello@livediagram.app'),
+      from: expect.stringContaining('hello@livepages.app'),
     });
   });
 

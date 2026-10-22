@@ -1,7 +1,7 @@
 // Posters layouts, part two (docs/specs/007-editor/pages-mode.md "Layouts"): a research
 // poster and a we're hiring poster. Pure builders on the shared kit: the page's content box in,
 // uncoloured elements out, a tall page stacking and a squarer or wide one setting side by side.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { iconDisc, iconRow } from './page-layout-parts';
 import {

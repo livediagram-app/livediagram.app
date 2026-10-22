@@ -10,7 +10,7 @@ import type {
   DocumentResponse,
   ShareLinkResponse,
   TabResponse,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   buildGraphTab,
   buildTab,
@@ -19,7 +19,7 @@ import {
   normaliseElements,
   resolveGraphInput,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   buildDashboardTab,
   buildTemplateTabs,
@@ -31,14 +31,14 @@ import {
   validTemplateKinds,
   closestTemplatesHint,
   type TemplateKind,
-} from '@livediagram/templates';
+} from '@livepages/templates';
 import {
   DEFAULT_MCP_SHARE_LEVEL,
   TRASH_RETENTION_DAYS,
   creationIntentOf,
   type LiveDoc,
   type TrashedDocument,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { createdFolderLabel } from './created-folder';
 import { ApiError, apiFetch, apiJson, clientFor, reportApiFailure } from './api';
 import { readDocument } from './read-document';
@@ -49,8 +49,8 @@ import {
   matchDocuments,
   resolveDashboardInput,
   type DashboardInput,
-} from '@livediagram/agent-verbs';
-import { catalogueWithBoardTypes, typesOf } from '@livediagram/items';
+} from '@livepages/agent-verbs';
+import { catalogueWithBoardTypes, typesOf } from '@livepages/items';
 import { dashboardTabKind, documentDashboard } from './dashboard-tabs';
 import {
   deepLink,
@@ -62,11 +62,11 @@ import {
   type Extra,
 } from './tool-helpers';
 import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
-import { withoutFindings } from '@livediagram/diagram-lint';
+import { withoutFindings } from '@livepages/diagram-lint';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue, graphIconIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
-import { searchIcons } from '@livediagram/icons/search';
+import { searchIcons } from '@livepages/icons/search';
 import { imageResult } from './image-result';
 import { imageIdIssue, registerImageTools } from './image-tools';
 import {
@@ -98,7 +98,7 @@ import {
   mcpSearchIcons,
   mcpShareDocument,
   mcpUpdateDocument,
-} from '@livediagram/agent-verbs/mcp';
+} from '@livepages/agent-verbs/mcp';
 
 export function registerTools(server: McpServer, env: Env): void {
   // The items Plan boards show (docs/specs/026-plan/plan-mode.md "Agents").
@@ -243,7 +243,7 @@ export function registerTools(server: McpServer, env: Env): void {
       if (!t.elements || !isValidTab(candidate)) {
         return errorResult(
           `Invalid elements in tab "${t.name}". Provide "elements" (or a "template" kind ` +
-            'from list_templates). Check the livediagram://schema/elements resource: every ' +
+            'from list_templates). Check the livepages://schema/elements resource: every ' +
             'element needs id/type/x/y/width/height (arrows need from/to), and arrays must ' +
             'be well-formed.',
         );
@@ -332,7 +332,7 @@ export function registerTools(server: McpServer, env: Env): void {
     if (!args.template && !input.graph && !args.elements && !dashboard) {
       return errorResult(
         'Invalid input. Provide a "graph" (nodes + edges), "mermaid", "elements", or a "template" kind ' +
-          'from list_templates. Check the livediagram://schema/elements resource.',
+          'from list_templates. Check the livepages://schema/elements resource.',
       );
     }
     const drawn = args.elements ? packFreehandPoints(args.elements) : null;

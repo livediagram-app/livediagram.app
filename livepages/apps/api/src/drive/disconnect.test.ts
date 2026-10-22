@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentForm } from '@livediagram/vitest-config/sent-request';
-import { bytesToBase64 } from '@livediagram/api-schema';
+import { sentForm } from '@livepages/vitest-config/sent-request';
+import { bytesToBase64 } from '@livepages/api-schema';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { deleteAccount } from '../db/account';
 import { getDriveConnection, putDriveItems, upsertBrokerConnection } from '../db/drive';

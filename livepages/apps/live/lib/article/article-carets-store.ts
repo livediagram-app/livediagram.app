@@ -6,7 +6,7 @@
 // ops, named and coloured from the room's presence list (useRoomConnection), read per article by
 // the writing that draws them, so the canvas never re-renders for a caret moving.
 import { useSyncExternalStore } from 'react';
-import type { ArticleCaret } from '@livediagram/api-schema';
+import type { ArticleCaret } from '@livepages/api-schema';
 import type { ArticleCaretPlace } from './article-caret';
 
 // How long a collaborator's caret shows their name after it moves.

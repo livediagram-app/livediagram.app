@@ -15,8 +15,8 @@
 // scaffold. Scaffold layers ship named but unlocked; locking is one
 // click in the panel.
 
-import type { Layer } from '@livediagram/document';
-import { eventStormingLayers } from '@livediagram/document';
+import type { Layer } from '@livepages/document';
+import { eventStormingLayers } from '@livepages/document';
 import type { TemplateKind } from './templates';
 
 export const TEMPLATE_SCAFFOLD_LAYER_ID = 'layer:template:scaffold';
@@ -112,7 +112,7 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     // Event storming (docs/specs/021-event-storming/event-storming.md) is the one four-layer template: a hidden
     // Timeline-rail scaffold under three workshop-stage bands (Big picture /
     // Process / Design) that the editor's view switcher toggles. The layer
-    // set lives in @livediagram/document beside the note catalogue so the
+    // set lives in @livepages/document beside the note catalogue so the
     // switcher and the template read one definition.
     case 'event-storming':
       return eventStormingLayers();

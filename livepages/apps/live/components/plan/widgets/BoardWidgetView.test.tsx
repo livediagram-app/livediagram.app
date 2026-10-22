@@ -8,7 +8,7 @@ import {
   projectBoard,
   type BoardWidgetKind,
   type Item,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { planPalette } from '../plan-palette';
 import { BoardWidgetView, type WidgetContext } from './BoardWidgetView';
 

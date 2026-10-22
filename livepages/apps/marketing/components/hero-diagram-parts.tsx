@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import type { IconPrim } from '@livediagram/icons';
-import { Prims } from '@livediagram/ui';
+import type { IconPrim } from '@livepages/icons';
+import { Prims } from '@livepages/ui';
 import { cursorRide, type Point } from '@/lib/hero-motion';
 import { FONT, at } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';

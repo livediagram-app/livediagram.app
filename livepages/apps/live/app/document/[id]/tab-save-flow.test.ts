@@ -7,9 +7,9 @@ import {
   type ElementLedger,
   type Tab,
   type VoteLedger,
-} from '@livediagram/document';
-import { presetSetup } from '@livediagram/items';
-import type { RoomOp, RoomOutgoing } from '@livediagram/api-schema';
+} from '@livepages/document';
+import { presetSetup } from '@livepages/items';
+import type { RoomOp, RoomOutgoing } from '@livepages/api-schema';
 import {
   participantElementOps,
   prepareTabSave,

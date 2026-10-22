@@ -1,7 +1,7 @@
 // The api client a command uses (blueprint CLI45): the profile's api base, the credential, the CLI's headers,
 // a share code once a pasted link resolved, a timeout, and a debug line per request.
 
-import { createApiClient, type ApiClient } from '@livediagram/api-client';
+import { createApiClient, type ApiClient } from '@livepages/api-client';
 import { CLI_VERSION } from './config/version';
 import type { DebugLog } from './debug';
 import type { CliIo } from './io';
@@ -36,8 +36,8 @@ export function transport(io: CliIo, apiBase: string, log: DebugLog): Transport 
       timeoutMs: REQUEST_TIMEOUT_MS,
       headers: () => ({
         Authorization: `Bearer ${token()}`,
-        'X-Livediagram-Client': 'cli',
-        'User-Agent': `livediagram-cli/${CLI_VERSION} ${io.runtime}`,
+        'X-Livepages-Client': 'cli',
+        'User-Agent': `livepages-cli/${CLI_VERSION} ${io.runtime}`,
         ...(shareCode ? { 'X-Share-Code': shareCode } : {}),
       }),
     });

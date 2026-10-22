@@ -1,6 +1,6 @@
 import type { Selection } from '@/lib/selection-store';
 import { useRef, type Dispatch, type SetStateAction } from 'react';
-import { isUntitledDocumentName } from '@livediagram/templates';
+import { isUntitledDocumentName } from '@livepages/templates';
 import {
   hasRichFormatting,
   isBoxed,
@@ -13,7 +13,7 @@ import {
   type TableElement,
   type Tab,
   type TextRun,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { whiteboardTakesTyping } from '@/lib/whiteboard-tool';
 import { hugCommittedText, hugsText } from '@/lib/text-hug';
 import { measureDrawnMindLabel, measureDrawnText } from '@/components/canvas/text-hug-measure';

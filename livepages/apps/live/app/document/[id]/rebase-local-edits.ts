@@ -5,7 +5,7 @@
 // baseline, by content, since a peer's op makes new objects on both sides) is applied to the fetched elements; so
 // is each tab field changed here. The baseline then moves to the fetched copy, so the next save sends exactly
 // these edits. Pure.
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livepages/document';
 
 const same = (a: unknown, b: unknown) => a === b || JSON.stringify(a) === JSON.stringify(b);
 

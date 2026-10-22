@@ -1,17 +1,17 @@
 // Live poll (docs/specs/012-collaboration/live-poll.md): an ephemeral pulse-check carried entirely by the
 // realtime room. Unlike the timer / dot-vote (docs/specs/012-collaboration/session-tools.md) NONE of this is a
 // `Tab` field — it never reaches D1, so the types live here beside the
-// other wire DTOs rather than in @livediagram/document, and the tally
+// other wire DTOs rather than in @livepages/document, and the tally
 // helpers below are pure so the results panel and the clipboard export
 // can't drift from one another.
 
 // How participants answer. Every style reduces to a single string `value`
 // on the wire, so one tally path serves all of them.
 //
-// The union itself lives in @livediagram/document (`poll-style.ts`), one
+// The union itself lives in @livepages/document (`poll-style.ts`), one
 // package down, because a Session button (docs/specs/012-collaboration/session-button.md) STORES a style on the
 // element and `SessionButtonConfig` is a `Tab` field. Re-exported here so
-// every existing `import { PollStyle } from '@livediagram/api-schema'`
+// every existing `import { PollStyle } from '@livepages/api-schema'`
 // keeps resolving and there is still only one list.
 import {
   POLL_OPTIONS_MAX,
@@ -19,7 +19,7 @@ import {
   pollStyleCarriesOptions,
   pollStyleTokens,
   type PollStyle,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 export type { PollStyle };
 // Re-exported, not redefined: the numbers live one package down so the Session
@@ -80,7 +80,7 @@ export const POLL_TEXT_ANSWER_MAX = 280;
 // Every answer token a poll can receive, in display order. Empty for a
 // free-text poll, which is the signal to render the answer list instead of
 // a bar chart. The fixed sets live with the style union in
-// @livediagram/document, so the authoring menus can preview a style's answers
+// @livepages/document, so the authoring menus can preview a style's answers
 // before any poll exists without a second copy of "Yes / No".
 export function pollOptionTokens(poll: LivePoll): string[] {
   return pollStyleTokens(poll.style, poll.options);

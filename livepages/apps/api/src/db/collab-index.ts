@@ -10,8 +10,8 @@
 // read is the Inbox's one query per kind.
 
 import { FORM_RESPONSES_SQL, formResponsesFromRows, type FormResponsesRow } from './activity-forms';
-import { collabIndexRowsFromElements, type Element } from '@livediagram/document';
-import type { ActivityAction, ActivityReadResult, ActivityThread } from '@livediagram/api-schema';
+import { collabIndexRowsFromElements, type Element } from '@livepages/document';
+import type { ActivityAction, ActivityReadResult, ActivityThread } from '@livepages/api-schema';
 import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
 import {
   CARDS_CTES,

@@ -4,8 +4,8 @@ import {
   type Tab,
   TAB_SCHEMA_VERSION,
   type ExportedTabEnvelope,
-} from '@livediagram/document';
-import { defaultCatalogue } from '@livediagram/items';
+} from '@livepages/document';
+import { defaultCatalogue } from '@livepages/items';
 import { parseImportedTab } from './import-tab';
 
 // A minimal but valid tab payload.
@@ -13,7 +13,7 @@ const validTab: Tab = { id: 'tab-1', name: 'Imported', elements: [] };
 
 // Build a well-formed envelope, overridable per test.
 const envelope = (overrides: Partial<ExportedTabEnvelope> = {}): ExportedTabEnvelope => ({
-  kind: 'livediagram.tab',
+  kind: 'livepages.tab',
   schemaVersion: TAB_SCHEMA_VERSION,
   exportedAt: 0,
   tab: validTab,
@@ -53,7 +53,7 @@ describe('parseImportedTab — rejections (never throws)', () => {
   it('rejects an object without the magic kind field', () => {
     const result = parse({ schemaVersion: 1, tab: validTab });
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.error).toMatch(/isn't a livediagram tab export/);
+    if (!result.ok) expect(result.error).toMatch(/isn't a livepages tab export/);
   });
 
   it('rejects a wrong kind value', () => {
@@ -62,7 +62,7 @@ describe('parseImportedTab — rejections (never throws)', () => {
   });
 
   it('rejects a missing or non-numeric schemaVersion', () => {
-    const result = parse({ kind: 'livediagram.tab', tab: validTab });
+    const result = parse({ kind: 'livepages.tab', tab: validTab });
     expect(result.ok).toBe(false);
     if (!result.ok) expect(result.error).toMatch(/Missing schemaVersion/);
   });
@@ -75,7 +75,7 @@ describe('parseImportedTab — rejections (never throws)', () => {
 
   it('rejects an envelope missing the tab payload', () => {
     const result = parse({
-      kind: 'livediagram.tab',
+      kind: 'livepages.tab',
       schemaVersion: TAB_SCHEMA_VERSION,
       exportedAt: 0,
     });

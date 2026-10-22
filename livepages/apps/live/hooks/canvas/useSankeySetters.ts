@@ -11,7 +11,7 @@ import {
   type SankeyFlow,
   type SankeyNodeStyle,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { track } from '@/lib/telemetry';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 

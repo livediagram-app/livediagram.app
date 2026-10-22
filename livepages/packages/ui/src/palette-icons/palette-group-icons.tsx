@@ -1,4 +1,4 @@
-import { lucideSmile } from '@livediagram/icons/lucide';
+import { lucideSmile } from '@livepages/icons/lucide';
 import { Glyph } from '../icons/Glyph';
 import { lucideGlyph } from '../icons/lucide-glyph';
 // Glyphs for the collapsible tile groups inside a palette category

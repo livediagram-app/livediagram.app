@@ -19,7 +19,7 @@ import {
   type CardSearchFilter,
   type Item,
   type SwimlaneBy,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { FilterSearchBox } from '@/components/primitives/FilterSearchBox';
 import { AddFilterPicker } from './AddFilterPicker';
 import type { PlanContextValue } from './PlanContext';

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
-import { PAGE_LAYOUTS } from '@livediagram/templates';
+import type { Element } from '@livepages/document';
+import { PAGE_LAYOUTS } from '@livepages/templates';
 
 // docs/specs/007-editor/pages-mode.md "Layouts": the Explainers category's layouts, each a
 // page that teaches one thing. A4's content boxes, portrait and landscape, and a story's.

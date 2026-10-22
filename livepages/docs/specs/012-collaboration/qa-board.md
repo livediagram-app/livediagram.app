@@ -76,7 +76,7 @@ the room, not against someone reading the api's logs.
 
 ### One vote per person per note, enforced by the server
 
-A voter id is `sha256("livediagram:qa-vote:v1:" + ownerId + ":" + elementId)`,
+A voter id is `sha256("livepages:qa-vote:v1:" + ownerId + ":" + elementId)`,
 truncated to 16 hex characters and computed **by the server** from the
 authenticated caller (`X-Owner-Id` or the Clerk `sub`). So:
 
@@ -87,7 +87,7 @@ authenticated caller (`X-Owner-Id` or the Clerk `sub`). So:
   nor correlated across two boards.
 - **The client can still tell which notes it voted for.** It knows its own
   owner id, so it computes the same hash locally (`qaVoterId`, shared by both
-  sides in `@livediagram/document`).
+  sides in `@livepages/document`).
 
 Votes are **set, not toggled**, on the wire (`{ type: 'vote', on: true }`) so a
 retried request can't flip a vote back off. Pressing your own upvote again

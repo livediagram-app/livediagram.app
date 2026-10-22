@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { OverviewView } from '@livediagram/api-schema';
+import type { OverviewView } from '@livepages/api-schema';
 import type { RemoteFact } from './remote';
 import { recordedStateOf, type RecordedDocument } from './recorded-state';
 

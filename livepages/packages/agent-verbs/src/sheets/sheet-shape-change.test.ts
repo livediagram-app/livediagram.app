@@ -9,7 +9,7 @@ import {
   emptyLayout,
   posRangeOf,
   type Sheet,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import { buildSheetChange, type SheetChange } from './sheet-change-build';
 
 let n = 1;

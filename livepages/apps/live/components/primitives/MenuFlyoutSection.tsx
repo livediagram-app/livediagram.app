@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { ChevronRightIcon, MENU_SURFACE_ATTR, useMenuKind, Portal } from '@livediagram/ui';
+import { ChevronRightIcon, MENU_SURFACE_ATTR, useMenuKind, Portal } from '@livepages/ui';
 import { useMenuItemProps } from './menu-item-props';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { useReposition } from '@/hooks/canvas/useReposition';

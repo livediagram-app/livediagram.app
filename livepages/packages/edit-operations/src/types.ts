@@ -1,8 +1,8 @@
 // The engine's types (docs/specs/024-agents/blueprints/edit-operations.md "Interfaces and
 // contracts"). The answer's wire shapes (result lines, warnings, rejections) live in
-// @livediagram/api-schema, where the changeset response carries them.
+// @livepages/api-schema, where the changeset response carries them.
 
-import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@livediagram/api-schema';
+import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@livepages/api-schema';
 import type {
   ElementId,
   ElementOp,
@@ -10,9 +10,9 @@ import type {
   GraphInput,
   Tab,
   ThemeDefinition,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { PlacementRelation } from './vocabulary';
-import type { DashboardSpec } from '@livediagram/templates';
+import type { DashboardSpec } from '@livepages/templates';
 
 // A ref, a quoted label, or `key:value` terms joined by spaces, all of which must match.
 export type Selector = string;

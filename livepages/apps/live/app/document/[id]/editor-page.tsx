@@ -89,11 +89,11 @@ export default function LivePage({ surface = 'app' }: { surface?: EditorSurface 
   // An access change just reloaded us (lib/access-notice.ts): taken once, on mount, so a refusal can say why. The
   // first page after the eject always takes it, whatever it shows (the editor, a password prompt, a refusal).
   const [accessEnded] = useState(() => takeAccessEnded());
-  // Tab title reflects the document: "<name> | livediagram" (falls back to
+  // Tab title reflects the document: "<name> | livepages" (falls back to
   // Untitled when the document has no name yet). Updates as the user renames.
   useEffect(() => {
     const name = state.documentName?.trim();
-    document.title = `${name || 'Untitled document'} | livediagram`;
+    document.title = `${name || 'Untitled document'} | livepages`;
   }, [state.documentName]);
   const {
     documentNotFound,

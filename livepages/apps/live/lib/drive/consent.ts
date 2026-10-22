@@ -3,12 +3,12 @@
 // drive.install with offline access. `prompt=consent` only when no refresh
 // token is stored, so the user normally consents once.
 
-import { DRIVE_SCOPES } from '@livediagram/api-schema';
+import { DRIVE_SCOPES } from '@livepages/api-schema';
 import { sameOriginPath } from '../same-origin-path';
 
 const AUTH_ENDPOINT = 'https://accounts.google.com/o/oauth2/v2/auth';
-const RETURN_KEY = 'livediagram:v2:drive-return';
-const STATE_KEY = 'livediagram:v2:drive-state';
+const RETURN_KEY = 'livepages:v2:drive-return';
+const STATE_KEY = 'livepages:v2:drive-state';
 const DEFAULT_RETURN = '/explorer';
 
 export function driveRedirectUri(origin: string): string {
@@ -74,7 +74,7 @@ export function takeConsent(storage: SessionLike, state: string | null): string 
   return safeReturnPath(returnPath);
 }
 
-const OUTCOME_KEY = 'livediagram:v2:drive-connect-outcome';
+const OUTCOME_KEY = 'livepages:v2:drive-connect-outcome';
 
 // A cancel at Google, for the page the user comes back to: said once, calmly.
 export function markConnectCancelled(storage: SessionLike): void {

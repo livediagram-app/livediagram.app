@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement } from '@livediagram/document';
+import { createShape, type BoxedElement } from '@livepages/document';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 
 // docs/specs/008-canvas/finish.md "Every other face is drawn by hand too" and "Lettering", through the real element

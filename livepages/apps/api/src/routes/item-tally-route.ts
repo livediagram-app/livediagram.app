@@ -3,7 +3,7 @@
 // meanwhile is skipped, the rest land. The updates go in one D1 batch, each guarded by the rev read, with one store
 // rev raise and one room op; a card a concurrent write moved on is read again and retried (item-write-loop.ts), and a
 // retry still busy at the end carries the cards already tallied, so the host never sends them again. Edit access.
-import type { ItemsResponse } from '@livediagram/api-schema';
+import type { ItemsResponse } from '@livepages/api-schema';
 import {
   ITEM_BULK_MAX,
   ITEM_VOTES_PER_PERSON_MAX,
@@ -11,7 +11,7 @@ import {
   applyTally,
   type Item,
   type ItemTally,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { badRequest, json } from '../responses';
 import { readBody, type RouteContext } from './context';
 import { forCaller, itemCaller, itemNotFound, writer } from './item-route-kit';

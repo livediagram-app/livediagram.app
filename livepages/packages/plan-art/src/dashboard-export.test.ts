@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { DashboardLayout, Element, Tab } from '@livediagram/document';
+import type { DashboardLayout, Element, Tab } from '@livepages/document';
 import { dashboardExportTab } from './dashboard-export';
 import { NOW, shape } from './test-fixtures';
 

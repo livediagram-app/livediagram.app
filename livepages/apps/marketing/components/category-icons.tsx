@@ -1,4 +1,4 @@
-import { Glyph, type IconProps } from '@livediagram/ui';
+import { Glyph, type IconProps } from '@livepages/ui';
 import type { ReactElement } from 'react';
 
 // One glyph per feature category (docs/specs/019-marketing/marketing-site.md), shown beside each

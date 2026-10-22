@@ -5,7 +5,7 @@ import {
   GRAPH_LAYOUT_MAX_NODES,
   type ArrowElement,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { importDrawio } from './import';
 import { jsonLabelText } from './json-export';
 import { DRAWIO_JSON_LOOSE_EDGE_PX } from './limits';

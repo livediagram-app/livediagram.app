@@ -7,7 +7,7 @@
 // anything leaves a notice; a lossless one leaves none.
 
 import { useEffect, useState, type RefObject } from 'react';
-import { MAX_ELEMENTS_PER_TAB, type Element, type Tab } from '@livediagram/document';
+import { MAX_ELEMENTS_PER_TAB, type Element, type Tab } from '@livepages/document';
 import { landBoardScene } from '@/lib/board-scene/land';
 import type { BoardScene } from '@/lib/board-scene/scene';
 import { reportHasLosses, type BoardSceneReport } from '@/lib/board-scene/report';

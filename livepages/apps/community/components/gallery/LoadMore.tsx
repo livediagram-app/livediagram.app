@@ -1,4 +1,4 @@
-import { Button } from '@livediagram/ui';
+import { Button } from '@livepages/ui';
 
 // Load More (docs/specs/025-community/community.md "Gallery": 24 per page). A failed page keeps the
 // button so the visitor can try again, and says so.

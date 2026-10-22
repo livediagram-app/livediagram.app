@@ -1,4 +1,4 @@
-import { formatCommunityCount } from '@livediagram/ui';
+import { formatCommunityCount } from '@livepages/ui';
 import { describe, expect, it } from 'vitest';
 import { formatDate, paragraphs } from './format';
 import { isMinePost } from './gallery-post';

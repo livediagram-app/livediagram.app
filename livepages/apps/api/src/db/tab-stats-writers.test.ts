@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { copyDocument } from './documents';
 import { tabStatsOf } from './tab-stats';

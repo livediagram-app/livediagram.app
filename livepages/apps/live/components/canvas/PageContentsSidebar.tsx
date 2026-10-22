@@ -10,8 +10,8 @@ import {
   lucideListOrdered,
   lucidePanelLeftClose,
   lucidePanelRightClose,
-} from '@livediagram/icons/lucide';
-import { HoverCard, lucideGlyph } from '@livediagram/ui';
+} from '@livepages/icons/lucide';
+import { HoverCard, lucideGlyph } from '@livepages/ui';
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import type { PageThumbTab } from '@/hooks/ui/usePageThumbnails';

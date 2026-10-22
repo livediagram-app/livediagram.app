@@ -8,7 +8,7 @@ import {
   typeIn,
   type Item,
   type ItemTypeDef,
-} from '@livediagram/items';
+} from '@livepages/items';
 
 export function typeStatusRefusal(
   types: readonly ItemTypeDef[],

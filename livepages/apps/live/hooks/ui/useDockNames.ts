@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, createElement, useContext, type ReactNode } from 'react';
-import { useMediaQuery } from '@livediagram/ui';
+import { useMediaQuery } from '@livepages/ui';
 
 // Whether the bottom-right cluster names its buttons beside their icons (docs/specs/007-editor/
 // live-app.md "Named on a wide desktop"): only from this width up. Narrower, a laptop's canvas

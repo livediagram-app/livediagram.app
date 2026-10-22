@@ -1,4 +1,4 @@
-import { isPhotoAcceptedType, PHOTO_ACCEPTED_TYPES } from '@livediagram/api-schema';
+import { isPhotoAcceptedType, PHOTO_ACCEPTED_TYPES } from '@livepages/api-schema';
 
 // What a wall photo may be, and why one is refused (docs/specs/021-event-storming/event-storming.md Phase 8), apart
 // from the detection pipeline (photo-detect.ts) so the file picker and the type check cost the editor's first load

@@ -52,7 +52,7 @@ Top to bottom:
    Shortcuts, Templates, Exporting Diagrams, Plan Mode). The list is `POPULAR_TOPICS` in `lib/home-sections.ts`
    and a test checks every entry names a real article.
 2. **Start here.** A full-width card, the Getting Started scene beside the first four Getting Started guides as
-   numbered steps and a link to the rest, then About livediagram and Tips and Tricks as two wide cards.
+   numbered steps and a link to the rest, then About livepages and Tips and Tricks as two wide cards.
 3. **Editor guides.** The feature categories as art cards, three across on a computer.
 4. **Your account and data.** Account and Data, Privacy and Security, Supported Devices and Policies.
 5. **Developers and self-hosting.** Developers and Self-Hosting, as wide cards.
@@ -104,7 +104,7 @@ with nothing else to tell a screen reader they came.
 it, then a title containing it, then a description match, then a keyword match alone, then, for a query of
 several words, an article holding every word somewhere across its title, description and keywords (more of them in
 the title first: "export png" finds Exporting Diagrams); registry order breaks ties (`searchArticles` in
-`@livediagram/help-registry`). The editor's Help group in global search keeps its own flat matching, every word
+`@livepages/help-registry`). The editor's Help group in global search keeps its own flat matching, every word
 across title and keywords ([Help app](help-app.md), "Out of scope").
 
 ## In-article figures

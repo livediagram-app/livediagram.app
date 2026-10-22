@@ -6,7 +6,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { pagesOf, layOutPages, type Tab } from '@livediagram/document';
+import { pagesOf, layOutPages, type Tab } from '@livepages/document';
 import { beginCanvasGesture, resetCanvasGesturesForTests } from '@/lib/canvas-gesture';
 import { track } from '@/lib/telemetry';
 import { computeFitBelow } from '@/lib/viewport';

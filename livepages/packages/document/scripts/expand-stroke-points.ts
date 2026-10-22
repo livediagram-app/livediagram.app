@@ -1,6 +1,6 @@
 // Prints a stored tab or document JSON file with every freehand's `packedPoints` expanded into
 // readable `{ nx, ny, p }` points (docs/specs/006-document/stroke-points.md), for debugging.
-//   pnpm --filter @livediagram/document stroke-points <file.json>   (or - for stdin)
+//   pnpm --filter @livepages/document stroke-points <file.json>   (or - for stdin)
 import { readFileSync } from 'node:fs';
 import { expandPackedPoints } from '../src/stroke-points-debug';
 

@@ -1,6 +1,6 @@
 'use client';
 
-import type { CommunityAuthor } from '@livediagram/api-schema';
+import type { CommunityAuthor } from '@livepages/api-schema';
 import { IDENTITY_FILL, identityVars } from '../identity-fill';
 import { PictureDisc } from '../PictureDisc';
 

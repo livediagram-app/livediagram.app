@@ -8,8 +8,8 @@ import {
   isBlankTemplate,
   templateCreateHref,
   type TemplateKind,
-} from '@livediagram/templates';
-import { EDITOR_MODES } from '@livediagram/document';
+} from '@livepages/templates';
+import { EDITOR_MODES } from '@livepages/document';
 
 /** How many Popular templates the welcome shows. */
 export const WELCOME_TEMPLATES_MAX = 8;

@@ -1,6 +1,6 @@
 import { useRightClickRelease } from '@/hooks/canvas/useRightClickRelease';
 import { useRef, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
-import { opensInlineLabelEditor, voteKeyOf } from '@livediagram/document';
+import { opensInlineLabelEditor, voteKeyOf } from '@livepages/document';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useLongPress } from '@/hooks/ui/useLongPress';
 import { pressLedger } from '@/lib/double-press';

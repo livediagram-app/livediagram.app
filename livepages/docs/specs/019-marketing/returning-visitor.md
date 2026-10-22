@@ -25,7 +25,7 @@ on the same origin (the router serves `/` and `/explorer` from one host).
 
 - **What:** up to six diagrams, newest save first: id, name, last saved time, the mode it opens in, and
   the team whose library holds it (null for your own). Stored in `localStorage` under
-  `livediagram:recent-diagrams:v1` as `{ v: 1, diagrams: [{ id, name, savedAt, mode, teamName }] }`. A
+  `livepages:recent-diagrams:v1` as `{ v: 1, diagrams: [{ id, name, savedAt, mode, teamName }] }`. A
   note written before `teamName` reads as your own diagrams.
 - **Which:** your documents and your teams', merged by save: the personal library the editor lists for
   you (`GET /api/documents` plus this browser's Offline Mode documents) and, from the same request
@@ -40,7 +40,7 @@ on the same origin (the router serves `/` and `/explorer` from one host).
   is as fresh as your last visit to the app, and again at once when you hide a diagram from Recent or
   return one to it. With none left to show, the note is removed.
 - **Thumbnails:** each diagram's snapshot SVG ([Document snapshots](../006-document/document-snapshots.md))
-  is kept beside the note in the browser's Cache Storage (`livediagram-recent-thumbs-v1`), keyed by id
+  is kept beside the note in the browser's Cache Storage (`livepages-recent-thumbs-v1`), keyed by id
   and save time, fetched by the editor through its authenticated client when a listed diagram's entry is
   missing, and pruned to the six in the note. A diagram the server has no snapshot for (one it could
   not draw) is remembered as having none, so it is not asked for again until it is saved, and shows its

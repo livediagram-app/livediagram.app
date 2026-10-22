@@ -15,7 +15,7 @@ import {
   type SessionButtonConfig,
   type TimerState,
   type SessionPlan,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { SessionSettingsMenu } from '@/components/canvas/SessionSettingsMenu';
 import { PollIcon, StopwatchIcon, TimerIcon, VoteIcon } from '@/components/palette/palette-icons';
@@ -28,9 +28,9 @@ const TOOL_ICON: Record<SessionPlan['tool'], React.ReactNode> = {
   poll: <PollIcon />,
 };
 
-// What the face says when the author hasn't written their own label (@livediagram/document, shared with the
+// What the face says when the author hasn't written their own label (@livepages/document, shared with the
 // headless render).
-export { sessionButtonText, type TimerState } from '@livediagram/document';
+export { sessionButtonText, type TimerState } from '@livepages/document';
 
 const TOOL_BLURB: Record<SessionPlan['tool'], string> = {
   timer: 'Starts a countdown everyone in the room can see.',

@@ -16,9 +16,9 @@ import { FolderRow } from './folder-row';
 import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
 import { RelativeTimeChip } from '@/components/primitives/RelativeTimeChip';
 import { DISMISS_SHARED, DismissSharedIcon } from '@/components/primitives/dismiss-shared';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard } from '@livepages/ui';
 import { LIST_CARD } from '@/components/primitives/surface-classes';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@livepages/api-schema';
 
 // The Shared with you chip per level (docs/specs/013-workspace/share-roles.md).
 const SHARED_CHIP: Record<AccessLevel, string> = {

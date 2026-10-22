@@ -2,7 +2,7 @@
 // Sheet (grouped shortcuts on keycaps), a Glossary (terms A to Z, each under its letter) and Myths
 // and Facts (each myth beside the fact that corrects it). Same contract as page-layouts.ts: the
 // page's content box in, uncoloured elements out, laid out in proportions of the box.
-import { createPinnedArrow, type Element } from '@livediagram/document';
+import { createPinnedArrow, type Element } from '@livepages/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { CROSS_ROSE, iconRow, sourceLine, TICK_GREEN } from './page-layout-parts';
 import { explainerHeading, FOOT, sizeToFit } from './page-layouts-set-explainers-parts';

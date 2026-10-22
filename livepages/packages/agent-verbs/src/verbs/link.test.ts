@@ -10,7 +10,7 @@ describe('link init', () => {
       linkInit.input.parse({ folder: 'Minigames', doc: ['3f9c', '7a1b'], level: 'files' }),
     ).toEqual({ folder: 'Minigames', doc: ['3f9c', '7a1b'], level: 'files' });
     expect(linkInit.input.safeParse({ level: 'all' }).success).toBe(false);
-    expect(linkInit.text!({ path: '/work/livediagram.toml' })).toEqual(['/work/livediagram.toml']);
+    expect(linkInit.text!({ path: '/work/livepages.toml' })).toEqual(['/work/livepages.toml']);
     expect(MIRROR_LEVELS).toEqual(['none', 'index', 'files']);
   });
 });
@@ -20,16 +20,16 @@ describe('link status', () => {
     all: false,
     links: [
       {
-        path: 'livediagram.toml',
+        path: 'livepages.toml',
         rows: [
           {
             state: 'in-step',
             ref: 'aaaa',
             name: 'Home screen',
-            path: 'diagrams/home-screen.livediagram.json',
+            path: 'diagrams/home-screen.livepages.json',
           },
           { state: 'behind', ref: 'bbbb1', name: 'Flow', path: null },
-          { state: 'conflicted', ref: null, name: null, path: 'diagrams/x.livediagram.json' },
+          { state: 'conflicted', ref: null, name: null, path: 'diagrams/x.livepages.json' },
           { state: '?', ref: 'cccc', name: 'Offline', path: null },
         ],
         totals: { 'in-step': 1, behind: 1, conflicted: 1, '?': 1 },
@@ -39,21 +39,21 @@ describe('link status', () => {
 
   it('prints one aligned row per document or file, then the totals in state order', () => {
     expect(linkStatus.text!(output)).toEqual([
-      'in-step     aaaa   "Home screen"  diagrams/home-screen.livediagram.json',
+      'in-step     aaaa   "Home screen"  diagrams/home-screen.livepages.json',
       'behind      bbbb1  "Flow"',
-      'conflicted  -                     diagrams/x.livediagram.json',
+      'conflicted  -                     diagrams/x.livepages.json',
       '?           cccc   "Offline"',
       '1 in-step · 1 behind · 1 conflicted · 1 ?',
     ]);
   });
 
   it('names each link before its rows under --all, a blank line between, and counts none when nothing is covered', () => {
-    const empty = { path: 'b/livediagram.toml', rows: [], totals: {} };
+    const empty = { path: 'b/livepages.toml', rows: [], totals: {} };
     expect(linkStatus.text!({ all: true, links: [output.links[0]!, empty] })).toEqual([
-      'livediagram.toml',
+      'livepages.toml',
       ...linkStatus.text!(output),
       '',
-      'b/livediagram.toml',
+      'b/livepages.toml',
       '0 documents',
     ]);
   });
@@ -75,7 +75,7 @@ describe('link ls', () => {
 
 describe('sync', () => {
   it('prints its lines, exits with the pass’s code, and counts --watch as SyncWatch', () => {
-    const result = { lines: ['+ diagrams/home.livediagram.json  "Home" · 1 tab · rev 3'], exit: 1 };
+    const result = { lines: ['+ diagrams/home.livepages.json  "Home" · 1 tab · rev 3'], exit: 1 };
     expect(sync.text!(result)).toEqual(result.lines);
     expect(sync.json!(result)).toEqual({ lines: result.lines });
     expect(sync.exitCode!(result)).toBe(1);

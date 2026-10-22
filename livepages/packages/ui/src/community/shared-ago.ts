@@ -1,5 +1,5 @@
 import { relativeSince } from '../relative-time';
-import { DAY_MS } from '@livediagram/items';
+import { DAY_MS } from '@livepages/items';
 
 const MONTH_DAYS = 30;
 const YEAR_DAYS = 365;

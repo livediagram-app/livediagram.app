@@ -124,7 +124,7 @@ Date.now())`; `whatHappened` as sent; call `onSeen()` (the unread clear: the rea
 ### New
 
 `useHome` keeps `lastSeenAt` from the first successful read of the mount (`undefined` when the api says `null`) and
-never replaces it. `isNewEvent(at, lastSeenAt)` (`@livediagram/ui`, the Timeline's rule: none without a mark) marks an
+never replaces it. `isNewEvent(at, lastSeenAt)` (`@livepages/ui`, the Timeline's rule: none without a mark) marks an
 `ActionEntry` by its action's `occurredAt` and a `SummaryEntry` by its `latestAt`. The pill is the Timeline card's:
 `bg-brand-600` (`SOLID_BRAND_DARK` in dark), white 9 px semibold caps, "New", first in the entry's meta line, inside
 the link or button so it is part of the accessible name.
@@ -368,7 +368,7 @@ w-[58%] h-40 rotate-[7deg]`, front `left-[20%] top-20 w-[62%] h-44` with a sky s
   (`PANEL_SURFACE rounded-[20px] p-5` round the Explorer's own Import From). The hero, on `heroFirstRun`: static pills
   (`PILL`, no link), the welcome greeting and lead, `WelcomeSearch` in the hero field's look (`HERO_FIELD_LOOK`),
   `HeroTemplateFan` (`next/dynamic`) in the sheets' places. The remembered answer lives in `localStorage`
-  (`livediagram:v2:home-has-documents`: `{ ownerId, has }`), written once the lists load.
+  (`livepages:v2:home-has-documents`: `{ ownerId, has }`), written once the lists load.
 - Body: one column, `flex flex-col gap-10` (40 px between sections); each section a `section` wrapper
   (`data-home-section="jump-back-in"` / `"what-happened"`).
 - Heading row (`SECTION_HEADER`): `flex items-baseline justify-between gap-4`, 16 px above the section's body, no

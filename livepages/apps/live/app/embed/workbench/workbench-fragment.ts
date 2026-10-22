@@ -3,7 +3,7 @@
 // document scope, `/embed/workbench/explorer[/folder/<id>]#ticket=<ticket>` for the workspace scope. The ticket is
 // read from the fragment and the fragment cleared before any request, so it never outlives the page load in the
 // address bar, the history or a reload. The page the address names is the scope its session must carry.
-import { WORKBENCH_HANDLE_PATTERN, type WorkbenchScope } from '@livediagram/api-schema';
+import { WORKBENCH_HANDLE_PATTERN, type WorkbenchScope } from '@livepages/api-schema';
 
 type Address = Pick<Location, 'hash' | 'pathname' | 'search'>;
 type AddressHistory = Pick<History, 'replaceState'>;

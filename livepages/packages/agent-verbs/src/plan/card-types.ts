@@ -3,8 +3,8 @@
 // moved to the Trash, as the type editor's Delete Type does. A refusal before the save saves nothing. The save names
 // the catalogue's revision it read; when someone else's change landed first, the plan is read again and the changes
 // applied to it (CARD_TYPES_SAVE_ATTEMPTS), so neither change overwrites the other.
-import type { ApiClient } from '@livediagram/api-client';
-import type { ItemResponse, ItemTypesRequest } from '@livediagram/api-schema';
+import type { ApiClient } from '@livepages/api-client';
+import type { ItemResponse, ItemTypesRequest } from '@livepages/api-schema';
 import {
   applyCardTypeChanges,
   isTrashed,
@@ -14,7 +14,7 @@ import {
   TRASHED_FROM_FIELD,
   typesOf,
   type CardTypeChange,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { apiRefusalOf } from './api-refusal';
 import { listedTypes, type ListedType } from './plan-listing';
 import { itemsPath } from '../verbs/shared';

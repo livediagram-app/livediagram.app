@@ -13,7 +13,7 @@ import {
   type Element,
   type ShapeElement,
   type TextRun,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { BOTTOM_EXITS, rake } from './template-rake';
 import {
   CONTENT,

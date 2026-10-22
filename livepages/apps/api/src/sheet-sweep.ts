@@ -5,7 +5,7 @@
 // cascade), so a run is bounded by cells: a batch holds at most SHEET_EXPIRY_BATCH_CELLS (always at least one
 // sheet), a run at most SHEET_EXPIRY_CELLS_MAX, and what is left waits a day.
 import type { Env } from './types';
-import { DAY_MS } from '@livediagram/items';
+import { DAY_MS } from '@livepages/items';
 
 export const SHEET_UNREFERENCED_DAYS = 30;
 const SHEET_EXPIRY_BATCH = 25;

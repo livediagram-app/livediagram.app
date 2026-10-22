@@ -5,7 +5,7 @@ import {
   COMMUNITY_SKELETON_BAR,
   EmptyState,
   buttonClassName,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import { BackIcon, PeopleIcon } from '../shared/icons';
 
 // The post page's not-found and loading states (docs/specs/025-community/community.md "Post";

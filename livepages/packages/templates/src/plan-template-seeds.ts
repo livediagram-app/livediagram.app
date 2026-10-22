@@ -1,7 +1,7 @@
 // A Plan template's example cards as the item store takes them (docs/specs/026-plan/plan-templates.md "Example cards"):
 // plan-template-seed-data.ts resolved for one document. Each card gets a fresh id (a card that links another names its
 // id), dates count from the day the document is made, people become the example team's identities, and votes come
-// from as many example voters. Pure, and a subpath of its own ('@livediagram/templates/plan-template-seeds') so only
+// from as many example voters. Pure, and a subpath of its own ('@livepages/templates/plan-template-seeds') so only
 // the paths that make a template's tabs for a person bundle it.
 
 import {
@@ -10,7 +10,7 @@ import {
   type ItemCreate,
   type ItemFields,
   type ItemPerson,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { isPlanTemplateKind } from './template-builders-plan';
 import {
   PLAN_TEMPLATE_SEEDS,

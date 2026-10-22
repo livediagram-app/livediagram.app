@@ -1,4 +1,4 @@
-name = "livediagram-telemetry"
+name = "livepages-telemetry"
 compatibility_date = "2026-05-29"
 
 # Static assets only — Cloudflare Workers serves files from `./out`
@@ -10,7 +10,7 @@ directory = "./out"
 not_found_handling = "404-page"
 
 # Staging (docs/specs/016-platform/staging-environment.md): `wrangler deploy --env staging` deploys the same
-# static `./out` as `livediagram-telemetry-staging`. The build that fills
+# static `./out` as `livepages-telemetry-staging`. The build that fills
 # `out/` is a different one — staging bakes its own NEXT_PUBLIC_* values —
 # so the two environments never share an artifact.
 #
@@ -21,7 +21,7 @@ not_found_handling = "404-page"
 # name on its own, but nothing in `--dry-run` prints the name it resolved,
 # and the router's service bindings depend on this exact string.
 [env.staging]
-name = "livediagram-telemetry-staging"
+name = "livepages-telemetry-staging"
 
 [env.staging.assets]
 directory = "./out"

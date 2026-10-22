@@ -116,7 +116,7 @@ type StoredPresentation = { decks: Deck[] };
 This is the one part of the feature that is not free. `diagrams.data` was dropped in migration 0006 and tab bodies live in their own table, so there is **no document-level JSON blob to extend** — unlike layers, which ride the opaque tab body and needed no api change at all.
 
 - A new `presentation TEXT NULL` column on `documents` (the ninth such column; `source`, `share_password` and `team_id` are the pattern), holding the serialised `Deck`.
-- The api's document DTO in `@livediagram/api-schema` carries it through, and the read / save routes round-trip it.
+- The api's document DTO in `@livepages/api-schema` carries it through, and the read / save routes round-trip it.
 - Null / absent = no deck, which is every existing document.
 
 ## Entry and the Slide Deck panel

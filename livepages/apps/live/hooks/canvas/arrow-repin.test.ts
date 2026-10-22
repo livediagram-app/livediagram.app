@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement } from '@livediagram/document';
+import type { ArrowElement } from '@livepages/document';
 import { repinnedArrow } from './arrow-repin';
 
 const imported: ArrowElement = {

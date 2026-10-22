@@ -15,7 +15,7 @@ import {
   SELF_PAINTING_SHAPES,
   type BoxedElement,
   type Point,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 // No traced outline strays further than this from its shape, in canvas px.
 const COMBINE_TOLERANCE_PX = 0.25;

@@ -2,7 +2,7 @@
 // by shapes and arrows: the small named unions plus their px / dasharray maps
 // and defaults. Split out of index.ts so the border appearance model lives in
 // one focused module (alongside arrow-style.ts and arrow-path.ts). Re-exported
-// from ./index, so the public `@livediagram/document` surface is unchanged.
+// from ./index, so the public `@livepages/document` surface is unchanged.
 
 // Border styling presets. Keep these as small unions so the
 // the palette can render them as 3-to-4-button icon rows that

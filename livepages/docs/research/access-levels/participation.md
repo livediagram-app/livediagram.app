@@ -3,7 +3,7 @@
 Research note for the access-levels design. Read-only research: nothing here changes a spec. It answers one angle:
 how live-facilitation products separate **running** a session from **taking part** in it, how they treat anonymous
 and link visitors, what abuse they defend against, how commenting relates to participating, and what that means
-for livediagram's own session tools.
+for livepages's own session tools.
 
 Sources were read on 2026-10-03. Every external claim links to the page it came from. Where a vendor's help centre
 could not be retrieved, this note says so and makes no claim about that product.
@@ -16,7 +16,7 @@ ladder. **Taking part** is where they diverge. Canvas tools either demand edit a
 estimation app) or let every board user vote, viewers included (Miro voting). Audience tools (Mentimeter, Slido,
 Kahoot, Miro Engage) let anyone holding a code take part with no document access at all, and put their abuse
 controls on the **session** (passcode, sign-in, one response per device, a rotating join pattern) rather than on a
-role. livediagram today sits awkwardly between the two: a view link can answer a poll, post and upvote on the Q&A
+role. livepages today sits awkwardly between the two: a view link can answer a poll, post and upvote on the Q&A
 board, comment and react, but cannot place a dot, estimate, take a temperature, drop an idea, mark itself done or
 answer a quiz. Webber's four positions (Viewer, Participant, Editor, and Owner as something apart) fit the evidence
 well, with one recommendation: make **Participant** the single level that may say something (comment and answer),
@@ -50,7 +50,7 @@ with a browser could fill these in; nothing below depends on them.
 
 1. **Running is a hat, not a rank.** Lucid makes it a self-assigned role gated on edit and share; Parabol lets any
    member take it; Miro lets the owner narrow who may start tools, while everyone may use them. Nobody models the
-   facilitator as a fourth access level. livediagram's baton
+   facilitator as a fourth access level. livepages's baton
    ([Facilitator](../../specs/012-collaboration/facilitator.md)) is already this pattern.
 2. **Two families answer "who takes part" differently.** Canvas tools tie it to the document role, and when they
    want an audience they **widen the role temporarily** (FigJam's open session). Audience tools detach it from the
@@ -66,7 +66,7 @@ with a browser could fill these in; nothing below depends on them.
    (Mentimeter's default) or a login (Mentimeter verified participants, Slido SSO). Without either, "one per person"
    is a courtesy.
 
-## 2. What livediagram has today
+## 2. What livepages has today
 
 Two roles reach the room, `edit` and `view`, fixed at the upgrade as `X-Verified-Role`
 ([API app, Realtime model](../../specs/015-api/api.md#realtime-model)). Three doors decide what a view-role visitor may

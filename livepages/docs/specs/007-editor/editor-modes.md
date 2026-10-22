@@ -142,7 +142,7 @@ switch lists every mode unlocked, and Shift+D steps through all five. The first 
   everyone, including a person opening it for the first time. The Whiteboard template, Quick
   Start entry and whiteboard imports set it to `draw`.
 - **Nothing is remembered per person.** A mode chosen before this change and kept in a browser
-  (`livediagram:v2:editor-mode:<tab>`) is no longer read: the tab's own mode wins. The keys are
+  (`livepages:v2:editor-mode:<tab>`) is no longer read: the tab's own mode wins. The keys are
   left in place and ignored.
 - **A new tab opens in the mode it was made from.** A tab added from the tab bar's **+** or the command palette's
   **Create New Tab** opens in the mode of the tab its maker was on (the active tab's mode, for everyone on the new

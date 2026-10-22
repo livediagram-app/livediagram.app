@@ -1,7 +1,7 @@
 // More page layouts (docs/specs/007-editor/pages-mode.md "Layouts"): a quote, a team, a
 // facts grid, a checklist and an event poster. Same contract as page-layouts.ts: the page's
 // content box in, uncoloured elements out, a tall page stacking and a wide one setting side by side.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { heading, kit, type Kit, type LayoutBox } from './page-layout-kit';
 
 // An avatar: a round image placeholder.

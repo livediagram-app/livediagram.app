@@ -94,14 +94,14 @@ proved the better introduction.
 ## Handoff
 
 Create hard-navigates to `/document/<id>`, so the intent crosses pages via a **sessionStorage flag**
-(`livediagram:v2:tour-pending`), set just before `window.location.assign`. The editor PEEKS at the flag and
+(`livepages:v2:tour-pending`), set just before `window.location.assign`. The editor PEEKS at the flag and
 clears it only when the offer is **resolved** (completed, skipped, or declined), never on mere page load, so
 reloading mid-offer or mid-tour brings the offer back instead of silently swallowing an unanswered tour. The
 flag is also what keeps the offer owed across a document that opened in another mode. sessionStorage keeps it
 per-tab; a URL param would survive into copy-pasted links. The editor shows the offer only when it's actually
 usable: hydrated, no welcome overlay, no start on screen, not read-only, not an embed, and the open tab in
 Diagram. The Settings
-relaunch crosses no navigation, so it's a window event (`livediagram:tour-relaunch`), which also re-marks the
+relaunch crosses no navigation, so it's a window event (`livepages:tour-relaunch`), which also re-marks the
 flag, so a mid-rerun reload re-offers the same way.
 
 ## The steps

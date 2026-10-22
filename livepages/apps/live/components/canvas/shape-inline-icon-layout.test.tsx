@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createShape, type ShapeElement } from '@livediagram/document';
+import { createShape, type ShapeElement } from '@livepages/document';
 import {
   ShapeInlineIconLayout,
   inlineIconGap,

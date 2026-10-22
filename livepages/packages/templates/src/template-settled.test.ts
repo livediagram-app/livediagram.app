@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { settleChips, type Element } from '@livediagram/document';
+import { settleChips, type Element } from '@livepages/document';
 import { buildTemplate } from './build-template';
 import { buildPageLayout } from './page-layout-build';
 import { layoutCatalogueFor } from './layout-catalogue';

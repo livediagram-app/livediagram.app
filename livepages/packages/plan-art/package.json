@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/plan-art",
+  "name": "@livepages/plan-art",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,15 +18,15 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livediagram/document": "workspace:*",
-    "@livediagram/forms": "workspace:*",
-    "@livediagram/icons": "workspace:*",
-    "@livediagram/items": "workspace:*",
-    "@livediagram/ui": "workspace:*"
+    "@livepages/document": "workspace:*",
+    "@livepages/forms": "workspace:*",
+    "@livepages/icons": "workspace:*",
+    "@livepages/items": "workspace:*",
+    "@livepages/ui": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@livepages/oxlint-config": "workspace:*",
+    "@livepages/vitest-config": "workspace:*",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",
     "typescript": "^7.0.2",

@@ -69,14 +69,14 @@ describe('form get', () => {
     const { ctx } = ctxWith();
     const out = await formGet.run!(ctx, formGet.input.parse({ doc: DOC_A }));
     expect(formGet.text!(out)).toEqual([
-      'Bug Report  closed  4 responses  https://livediagram.app/form/AbCdEfGhIjKlMnOpQrStUv',
+      'Bug Report  closed  4 responses  https://livepages.app/form/AbCdEfGhIjKlMnOpQrStUv',
       'responses: Bug cards in New on Bugs',
       'section 1',
       '  q-sum  short*  Summary  → Title',
       '  q-sev  single  Severity  → Severity',
       '  q-ok  checkbox  Can we contact you?  → Description',
     ]);
-    expect(formGet.quiet!(out)).toEqual(['https://livediagram.app/form/AbCdEfGhIjKlMnOpQrStUv']);
+    expect(formGet.quiet!(out)).toEqual(['https://livepages.app/form/AbCdEfGhIjKlMnOpQrStUv']);
   });
 });
 
@@ -173,7 +173,7 @@ describe('the form verbs, every path', () => {
     await expect(formGet.run!(ctx, formGet.input.parse({ doc: DOC_A }))).rejects.toMatchObject({
       status: 404,
       code: 'form_tab_none',
-      hint: 'make one with: livediagram form add <doc> --starter contact',
+      hint: 'make one with: livepages form add <doc> --starter contact',
     });
   });
 

@@ -2,8 +2,8 @@
 // from a file or stdin, one element command a call, and `tab diff` against a read copy.
 
 import { z } from 'zod';
-import type { ChangesetResponse } from '@livediagram/api-schema';
-import { diffView } from '@livediagram/document-views';
+import type { ChangesetResponse } from '@livepages/api-schema';
+import { diffView } from '@livepages/document-views';
 import { argvToOperationLine } from '../argv-line';
 import { readPlainTab } from '../copies';
 import { defineVerb, VerbRefusal, type Verb, type VerbContext } from '../define';
@@ -11,7 +11,7 @@ import { classifySource } from '../source-kind';
 import { submitChangeset, writeFlags } from '../write';
 import { tabOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or livediagram URL');
+const docArg = z.string().describe('A name, id prefix or livepages URL');
 const tabFlag = z
   .string()
   .optional()
@@ -57,7 +57,7 @@ export const changesetApply = defineVerb({
         status: 400,
         code: 'unknown_source',
         message: `can't tell what ${input.file === '-' ? 'stdin' : input.file} holds`,
-        hint: 'expected edit operations, a graph, Mermaid or elements: livediagram guide edit',
+        hint: 'expected edit operations, a graph, Mermaid or elements: livepages guide edit',
       });
     const target = await targetOf(ctx, input.doc, input.tab);
     return outputOf(await submitChangeset(ctx, target, source.body, input));
@@ -68,8 +68,8 @@ export const changesetApply = defineVerb({
     positionals: ['doc'],
     flags: { file: { short: 'f' } },
     examples: [
-      'livediagram edit "Auth flow" -f ops.txt',
-      'livediagram changeset apply 3f9c -f - --dry-run < arch.json',
+      'livepages edit "Auth flow" -f ops.txt',
+      'livepages changeset apply 3f9c -f - --dry-run < arch.json',
     ],
     prints: 'one result line per element, then the revision, lint verdict and revert command',
   },
@@ -136,8 +136,8 @@ function elementVerb(op: ElementOperation): Verb {
     cli: {
       positionals: ['doc', '...words'],
       examples: [
-        `livediagram element ${op} "Auth flow" ${example}`,
-        `livediagram element ${op} 3f9c ${example} --dry-run`,
+        `livepages element ${op} "Auth flow" ${example}`,
+        `livepages element ${op} 3f9c ${example} --dry-run`,
       ],
       prints: 'one result line per element, then the revision, lint verdict and revert command',
     },
@@ -179,7 +179,7 @@ export const tabDiff = defineVerb({
         code: 'no_copy',
         message: `no copy of rev ${input.since}; tab diff compares against a revision this CLI has read`,
         lines: [held.length ? `read copies: rev ${held.join(', ')}` : 'no read copies of this tab'],
-        hint: `livediagram tab view ${JSON.stringify(input.doc)} --tab ${JSON.stringify(found.tab.name)}`,
+        hint: `livepages tab view ${JSON.stringify(input.doc)} --tab ${JSON.stringify(found.tab.name)}`,
       });
     }
     const after = await readPlainTab(ctx, documentId, tabId);
@@ -202,8 +202,8 @@ export const tabDiff = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livediagram tab diff "Auth flow" --since 41',
-      'livediagram tab diff 3f9c --tab Overview --since 41 --json',
+      'livepages tab diff "Auth flow" --since 41',
+      'livepages tab diff 3f9c --tab Overview --since 41 --json',
     ],
     prints: 'the diff view: one line per element added, removed or changed',
   },

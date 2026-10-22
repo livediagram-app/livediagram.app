@@ -1,7 +1,7 @@
 // Format rules (docs/specs/029-sheets/conditional-formatting.md): conditions, custom formulas, colour scales, list
 // order, the layout changes and their undo, validation, the static render, and the drawing budget.
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuMsOf } from '@livepages/vitest-config/cpu-time';
 import { applySheetWrite, inverseSheetWrite, type SheetWrite } from '../store';
 import { validateWrite, validateSheetCreate } from '../validate';
 import { compileFormula } from '../formula/stored';

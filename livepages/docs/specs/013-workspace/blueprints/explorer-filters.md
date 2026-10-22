@@ -328,7 +328,7 @@ No environment variable or binding.
 
 ## The Explorer page
 
-The lens on `/explorer`, over `@livediagram/explorer-lens`. Files:
+The lens on `/explorer`, over `@livepages/explorer-lens`. Files:
 
 | File                                                   | Role                                                                                                       |
 | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |

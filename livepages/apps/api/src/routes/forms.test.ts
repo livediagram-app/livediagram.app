@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
-import type { FormLinkResponse, PublicFormResponse } from '@livediagram/api-schema';
-import { FROM_FORM_FIELD, type FormDefinition } from '@livediagram/forms';
-import { ITEMS_MAX, presetSetup, type Item } from '@livediagram/items';
+import { sentJson } from '@livepages/vitest-config/sent-request';
+import type { FormLinkResponse, PublicFormResponse } from '@livepages/api-schema';
+import { FROM_FORM_FIELD, type FormDefinition } from '@livepages/forms';
+import { ITEMS_MAX, presetSetup, type Item } from '@livepages/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { generateFormCode, listItems } from '../db';
 import { makeTestRouteContext } from './test-route-context';

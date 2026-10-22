@@ -14,7 +14,7 @@ export function bearerTokenOf(authorization: string | null | undefined): string 
 }
 
 // Loopback hostnames as `new URL(...).hostname` returns them. IPv6 keeps its
-// brackets there (`new URL('http://[::1]:3000').hostname === '[::1]'`), so the
+// brackets there (`new URL('http://[::1]:3200').hostname === '[::1]'`), so the
 // literal stays bracketed.
 export function isLoopbackHostname(hostname: string): boolean {
   return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';

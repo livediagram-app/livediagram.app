@@ -5,7 +5,7 @@
 // own data hooks. Loaded only when a section is first shown (ExplorerPanelPane's dynamic imports), and each read
 // starts only while its section is mounted, so opening the editor costs nothing more.
 import { useState } from 'react';
-import { dateKey, pickRenderer, timeLabel } from '@livediagram/ui';
+import { dateKey, pickRenderer, timeLabel } from '@livepages/ui';
 import { ActivityPane } from '@/components/panels/ActivityPane';
 import { GalleryPane } from '@/components/panels/GalleryPane';
 import { ThemesPane } from '@/components/panels/ThemesPane';
@@ -51,9 +51,9 @@ import {
 import { usePaneDocumentMenu } from '../explorer-tree/usePaneDocumentMenu';
 import { usePanelTree } from '../explorer-tree/PanelTreeContext';
 import type { JumpBackInItem } from '@/app/explorer/home/home-model';
-import type { HomeGroup, TimelineEvent } from '@livediagram/api-schema';
-import { lucideGlyph } from '@livediagram/ui';
-import { lucideRotateCcw, lucideTrash2 } from '@livediagram/icons/lucide';
+import type { HomeGroup, TimelineEvent } from '@livepages/api-schema';
+import { lucideGlyph } from '@livepages/ui';
+import { lucideRotateCcw, lucideTrash2 } from '@livepages/icons/lucide';
 
 const RestoreGlyph = lucideGlyph(lucideRotateCcw, 16);
 const DeleteGlyph = lucideGlyph(lucideTrash2, 16);

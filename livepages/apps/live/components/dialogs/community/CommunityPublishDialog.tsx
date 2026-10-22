@@ -11,8 +11,8 @@ import {
   type CommunityAuthor,
   type CommunityOwnPost,
   type CommunityPostInput,
-} from '@livediagram/api-schema';
-import { Button, TextInput, DialogHeader, DialogCloseButton, TextArea } from '@livediagram/ui';
+} from '@livepages/api-schema';
+import { Button, TextInput, DialogHeader, DialogCloseButton, TextArea } from '@livepages/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';

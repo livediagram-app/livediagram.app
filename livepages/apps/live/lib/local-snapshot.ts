@@ -6,7 +6,7 @@
 //
 // Like the server's snapshot, an empty first tab has no picture (null). Unlike it, images keep their
 // placeholders and Plan cards and Sheet cells are left out: a glance at the document, not an export.
-import { renderElementsToSvg } from '@livediagram/document';
+import { renderElementsToSvg } from '@livepages/document';
 import {
   ensureIconCatalogs,
   resolveIconArtLoaded,

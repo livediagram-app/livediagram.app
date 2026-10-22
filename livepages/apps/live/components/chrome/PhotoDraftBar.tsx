@@ -13,7 +13,7 @@
 
 // What each reader failure MEANS, in the bar's own voice: short enough for the
 // line, specific enough that the author knows whether retrying will help.
-import { SOLID_BRAND_DARK_CONTROL } from '@livediagram/ui';
+import { SOLID_BRAND_DARK_CONTROL } from '@livepages/ui';
 const READ_ERROR_LINES: Record<string, string> = {
   ai_quota: 'the model key has used up its quota',
   rate_limited: 'the model is busy right now',

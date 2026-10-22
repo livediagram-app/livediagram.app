@@ -1,4 +1,4 @@
-import type { NoteCrop } from '@livediagram/api-schema';
+import type { NoteCrop } from '@livepages/api-schema';
 import type { ModelDownload } from './download-progress';
 import type { ProcessorReason, ReaderBackend } from './reader-protocol';
 

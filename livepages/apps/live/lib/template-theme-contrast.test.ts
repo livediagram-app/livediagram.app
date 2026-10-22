@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, buildTemplate } from '@livediagram/templates';
+import { TEMPLATES, buildTemplate } from '@livepages/templates';
 import {
   THEMES,
   THEME_TEXT_CONTRAST,
@@ -7,7 +7,7 @@ import {
   viewElementInTheme,
   type Appearance,
   type Element,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { withThemeApplied } from './tab-theme-apply';
 import { themeViewMap } from './themes';
 

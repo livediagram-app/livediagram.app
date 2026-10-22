@@ -75,7 +75,7 @@ export const DASHBOARD_CARD_TYPES = [
   'links',
 ] as const satisfies readonly DashboardCardType[];
 
-// A sheet's row or column id (@livediagram/sheets AXIS_ID_PATTERN), as chart-source.ts reads one.
+// A sheet's row or column id (@livepages/sheets AXIS_ID_PATTERN), as chart-source.ts reads one.
 const AXIS_ID = /^[a-z0-9]{4,12}$/;
 const readCell = (v: unknown): SheetMetricCell | undefined => {
   if (!v || typeof v !== 'object') return undefined;

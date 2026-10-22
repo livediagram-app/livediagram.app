@@ -4,7 +4,7 @@ import {
   isValidElement,
   type ArrowElement,
   type Element,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { LANDING_RULES } from './context';
 import { IMPORT_COORD_MAX } from '@/lib/import-coords';
 import { landBoardScene, type LandOptions } from './land';

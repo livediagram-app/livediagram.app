@@ -5,7 +5,7 @@
 // the Custom Number Format popover) and what it is anchored to, a format rule's preview while it is edited, and the
 // formats Paint Format holds. The person's own view: nothing here is saved or sent.
 import { useMemo, useState } from 'react';
-import type { FormatRule, SheetClip } from '@livediagram/sheets';
+import type { FormatRule, SheetClip } from '@livepages/sheets';
 
 // What a panel is anchored to: the control that opened it, or the active cell (a menu row that closed).
 export type RuleAnchor = HTMLElement | 'cell';

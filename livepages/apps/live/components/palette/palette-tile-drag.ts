@@ -1,4 +1,4 @@
-import { eventStormingNoteSize, SHAPE_DEFAULT_SIZE } from '@livediagram/document';
+import { eventStormingNoteSize, SHAPE_DEFAULT_SIZE } from '@livepages/document';
 import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import { STICKER_DND_MIME } from '@/lib/stickers';

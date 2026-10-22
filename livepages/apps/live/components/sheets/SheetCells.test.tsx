@@ -12,7 +12,7 @@ import {
   type CellFormat,
   type Sheet,
   type SheetLayout,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import { planPalette } from '@/components/plan/plan-palette';
 import { SheetCells, fitNumber, fontPx, roughWidth } from './SheetCells';
 import { geometryOf, visibleWindow } from './sheet-geometry';

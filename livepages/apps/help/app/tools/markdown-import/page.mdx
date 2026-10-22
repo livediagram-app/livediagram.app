@@ -10,7 +10,7 @@ export const metadata = helpMetadata({
   path: '/help/tools/markdown-import/',
 });
 
-<ArticleLayout title="Markdown Import" description="Bring a Markdown outline into livediagram as a tidy, themed tree diagram." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("markdown-import")}>
+<ArticleLayout title="Markdown Import" description="Bring a Markdown outline into livepages as a tidy, themed tree diagram." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("markdown-import")}>
 
 Markdown import takes an outline written in Markdown and turns it into a real, editable diagram. It is built for the notes and mind maps you already have: an XMind export, an Obsidian or Logseq outline, or any file of headings and bullet points. The parser reads whatever hierarchy is actually in the file rather than expecting one fixed shape.
 
@@ -44,7 +44,7 @@ Everything is recoloured to a theme (the active tab's theme, or Default if it ha
 
 <Step n={2}>
   In the **Import to Tab** dialog, choose **Markdown** as the format. This sets the example text,
-  the file picker's filter, and tells livediagram to build a tree.
+  the file picker's filter, and tells livepages to build a tree.
 </Step>
 
 <Step n={3}>
@@ -62,7 +62,7 @@ If the file has nothing the importer recognises, the dialog says "No headings, l
 
 <Tip>
   The same dialog imports a `.json` tab export, a Mermaid diagram, an Excalidraw scene, or a draw.io
-  file. Pick the format that matches your content: livediagram does not guess. See [Importing a
+  file. Pick the format that matches your content: livepages does not guess. See [Importing a
   Tab](/help/tabs/import-tabs/).
 </Tip>
 

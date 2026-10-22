@@ -1,6 +1,6 @@
 // Each question type's icon (docs/specs/030-forms/forms.md "Question types"): in the Add Question menu, the Type list
 // and a question's type button.
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideGlyph } from '@livepages/ui';
 import {
   lucideAlignLeft,
   lucideAtSign,
@@ -12,8 +12,8 @@ import {
   lucideSquareCheck,
   lucideStar,
   lucideTextCursorInput,
-} from '@livediagram/icons/lucide';
-import type { QuestionType } from '@livediagram/forms';
+} from '@livepages/icons/lucide';
+import type { QuestionType } from '@livepages/forms';
 
 export const QUESTION_TYPE_ICONS: Readonly<Record<QuestionType, ReturnType<typeof lucideGlyph>>> = {
   short: lucideGlyph(lucideTextCursorInput, 16),

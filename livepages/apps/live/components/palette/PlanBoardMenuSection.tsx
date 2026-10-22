@@ -6,8 +6,8 @@
 // (the card size; what a card shows is its type's Display). A column's own settings sit on the column, behind its
 // cog. Each change is one element edit, through PlanContext.
 import { useState, type ComponentProps, type ReactNode } from 'react';
-import type { ShapeElement } from '@livediagram/document';
-import { boardAddTypes, normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
+import type { ShapeElement } from '@livepages/document';
+import { boardAddTypes, normaliseBoardSetup, type PlanBoardSetup } from '@livepages/items';
 import {
   Button,
   ChevronDownIcon,
@@ -15,13 +15,13 @@ import {
   PlanIcon,
   TextInput,
   lucideGlyph,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import {
   lucideClipboardList,
   lucideColumns3,
   lucideLayoutGrid,
   lucideRows2,
-} from '@livediagram/icons/lucide';
+} from '@livepages/icons/lucide';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MenuActionRow, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
 import { usePlan } from '@/components/plan/PlanContext';

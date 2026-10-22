@@ -24,8 +24,8 @@ describe('plainTestFilters', () => {
 describe('workspaceManifests', () => {
   it('reads every app and package in the repo', () => {
     const names = workspaceManifests().map((m) => m.name);
-    expect(names).toContain('@livediagram/live');
-    expect(names).toContain('@livediagram/document');
+    expect(names).toContain('@livepages/live');
+    expect(names).toContain('@livepages/document');
     // Guard against the glob going blind and the filter list collapsing to empty.
     expect(names.length).toBeGreaterThan(15);
   });

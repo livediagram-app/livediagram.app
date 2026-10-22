@@ -4,9 +4,9 @@
 // Maximise, for someone who may edit. It selects the board and opens its element menu under itself (the menu a
 // right-click on the board opens: its Board and Cards sections, Style, Collaborate and the rest); pressed again it
 // closes it.
-import { Tooltip, lucideGlyph } from '@livediagram/ui';
-import { lucideSettings } from '@livediagram/icons/lucide';
-import type { ShapeElement } from '@livediagram/document';
+import { Tooltip, lucideGlyph } from '@livepages/ui';
+import { lucideSettings } from '@livepages/icons/lucide';
+import type { ShapeElement } from '@livepages/document';
 import { openElementMenu } from '@/hooks/canvas/element-menu-opener';
 import type { PlanPalette } from './plan-palette';
 import { track } from '@/lib/telemetry';

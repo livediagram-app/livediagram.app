@@ -8,7 +8,7 @@ import {
   pageSummaries,
   type PagesView,
   type ViewDoor,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   articlesOf,
   articleToMarkdown,
@@ -19,8 +19,8 @@ import {
   PAGE_SIZES,
   type Element,
   type PageKind,
-} from '@livediagram/document';
-import { layoutCatalogueFor } from '@livediagram/templates';
+} from '@livepages/document';
+import { layoutCatalogueFor } from '@livepages/templates';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { headerLine, viewHeader } from './header';
 import type { ViewModel } from './model';

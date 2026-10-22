@@ -1,7 +1,7 @@
 @import 'tailwindcss';
-@import '@livediagram/tailwind-config';
-@import '@livediagram/template-previews/preview-art-tile.css';
-@import '@livediagram/template-previews/preview-motion.css';
+@import '@livepages/tailwind-config';
+@import '@livepages/template-previews/preview-art-tile.css';
+@import '@livepages/template-previews/preview-motion.css';
 @import './qa-board.css';
 @import './forms.css';
 @import './canvas-motion.css';
@@ -89,10 +89,10 @@
 
 @layer base {
   /* The pointer cursor on every enabled button now lives in the shared theme
-   * (@livediagram/tailwind-config), so every app gets it. */
+   * (@livepages/tailwind-config), so every app gets it. */
 
   /* The keyboard-focus ring (WCAG 2.4.7) now lives in the shared theme
-   * (@livediagram/tailwind-config) so every app gets the same branded ring;
+   * (@livepages/tailwind-config) so every app gets the same branded ring;
    * see there for the rationale. */
 
   /* An SVG node focused by a pointer press (an arrow's bend, curve or elbow handle, whose node
@@ -224,7 +224,7 @@
   --animate-row-close: row-close var(--transition-duration-long) cubic-bezier(0.4, 0, 0.2, 1)
     forwards;
   /* Empty-state illustration motion (--animate-empty-*) now lives in the
-     shared tailwind theme (@livediagram/tailwind-config) so every app's
+     shared tailwind theme (@livepages/tailwind-config) so every app's
      EmptyState animates alike; see packages/ui/src/EmptyState.tsx. */
 }
 

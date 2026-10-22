@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { contrastRatio } from '@livediagram/document';
-import { toneColor } from '@livediagram/ui';
+import { contrastRatio } from '@livepages/document';
+import { toneColor } from '@livepages/ui';
 
 // docs/specs/013-workspace/timeline.md "Colour": a tone's bold value labels a card's reason in 12 px text on the white
 // card, so in light mode it reads at 4.5:1 there (amber and emerald 600 fell short, 3.2:1 and 3.8:1), and paints the

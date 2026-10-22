@@ -5,7 +5,7 @@
 // Market), and a column on the right turns them into "What we'll do now", with tick boxes and an
 // owner each. Pure: (cx, cy) -> Element[].
 
-import type { Element, PenColourName } from '@livediagram/document';
+import type { Element, PenColourName } from '@livepages/document';
 import { sinkingShip, tickBox } from './template-sketch-props';
 import { FINE, boxPath, drawn, letter, note, sticker, wavyPath } from './template-sketch-kit';
 

@@ -4,8 +4,8 @@ import {
   lucideGlobe,
   lucideMessagesSquare,
   lucidePackage,
-} from '@livediagram/icons/lucide';
-import { Glyph, Prims } from '@livediagram/ui';
+} from '@livepages/icons/lucide';
+import { Glyph, Prims } from '@livepages/ui';
 import { FONT, TEAMMATE, YOU, at } from '@/components/art-tokens';
 import { CursorMark } from '@/components/hero-cursor';
 import { cursorRide } from '@/lib/hero-motion';
@@ -295,7 +295,7 @@ export function MindMapBoard({ portrait = false }: { portrait?: boolean }) {
       ))}
 
       {/* A rocket sticker on the centre, for the launch: the editor's sticker look (a die-cut white
-          plate on a soft shadow, @livediagram/icons sticker-markup.ts). An emoji's ink is the
+          plate on a soft shadow, @livepages/icons sticker-markup.ts). An emoji's ink is the
           platform's emoji font's, so it is left out of the optical audit
           (docs/specs/004-interface-design/blueprints/DEFAULTS.md D45). */}
       <g transform={`translate(${c.x + 6} ${c.y - c.r - 8}) rotate(8)`} data-optical-ignore="">

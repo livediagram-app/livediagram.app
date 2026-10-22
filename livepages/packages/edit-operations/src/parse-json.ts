@@ -3,7 +3,7 @@
 // are refused, booleans are `true` only (`false` reads as absent), and the operation count is
 // capped before anything is read.
 
-import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livediagram/api-schema';
+import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livepages/api-schema';
 import { parseError, tooLarge, unknownOperation } from './rejections';
 import type { EditOperation, ParseOutcome } from './types';
 import {
@@ -18,7 +18,7 @@ import {
   WRAP_CONTAINERS,
   type EditOperationName,
 } from './vocabulary';
-import { isRecord } from '@livediagram/document';
+import { isRecord } from '@livepages/document';
 
 type Raw = Record<string, unknown>;
 

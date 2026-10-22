@@ -18,7 +18,7 @@ import {
   LINE_DEFAULT_SERIES,
   legendFontPx,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { useChartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';

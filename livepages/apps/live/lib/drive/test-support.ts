@@ -1,5 +1,5 @@
 // Test support for the Drive mirror engine (docs/specs/022-drive-mirror/blueprints/drive-mirror.md,
-// "Testing"): an in-memory livediagram behind LivediagramPort that keeps the
+// "Testing"): an in-memory livepages behind LivepagesPort that keeps the
 // api's own rules (the Trash, folder deletion moving contents up, mirror rows
 // removed with their document or folder, the lease), and a harness wiring
 // engines to it and to the fake Google. Not a `.test.ts` file; tests import it.
@@ -8,28 +8,28 @@ import {
   documentToEnvelopeText,
   type DocumentEnvelope,
   type EnvelopeTab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   DRIVE_LEASE_MS,
   type DriveConnection,
   type DriveItem,
   type DriveItemKind,
   type DriveLease,
-} from '@livediagram/api-schema';
-import { FakeGoogle, fakePngBase64Url } from '@livediagram/fake-google';
+} from '@livepages/api-schema';
+import { FakeGoogle, fakePngBase64Url } from '@livepages/fake-google';
 import { ApiError } from '../api/core';
 import { createDriveRestClient } from './drive-rest-client';
 import { DriveMirrorEngine, type DriveMirrorStatus, type Timers } from './engine';
 import {
   copyEnvelope,
   type CopyTarget,
-  type LivediagramPort,
+  type LivepagesPort,
   type MirrorFolder,
-} from './livediagram-port';
+} from './livepages-port';
 import { memorySeenStore } from './tombstones';
 import type { TokenSource } from './token-source';
 
-export const HOST = 'livediagram.test';
+export const HOST = 'livepages.test';
 export const OWNER = 'user_me';
 export const T0 = Date.parse('2026-09-28T09:00:00Z');
 
@@ -86,7 +86,7 @@ class ManualTimers implements Timers {
   }
 }
 
-export class FakeLivediagram {
+export class FakeLivepages {
   readonly documents = new Map<string, StoredDocument>();
   readonly folders = new Map<string, MirrorFolder>();
   connection: DriveConnection | null = null;
@@ -99,7 +99,7 @@ export class FakeLivediagram {
     this.clock = clock;
   }
 
-  // ---- the person using livediagram --------------------------------------
+  // ---- the person using livepages --------------------------------------
   createDocument(id: string, name: string, folderId: string | null = null): void {
     const t = this.clock.now;
     this.documents.set(id, {
@@ -148,8 +148,8 @@ export class FakeLivediagram {
     return d.teamId === null;
   }
 
-  // ---- LivediagramPort ------------------------------------------------------
-  port(): LivediagramPort {
+  // ---- LivepagesPort ------------------------------------------------------
+  port(): LivepagesPort {
     const write = <T>(fn: () => T): Promise<T> => {
       this.writes += 1;
       return new Promise<T>((resolve) => resolve(fn()));
@@ -304,7 +304,7 @@ function fakeTokens(google: FakeGoogle, user = OWNER): TokenSource {
 
 export function makeEngine(opts: {
   google: FakeGoogle;
-  ld: FakeLivediagram;
+  ld: FakeLivepages;
   clock: Clock;
   timers: ManualTimers;
   deviceId?: string;
@@ -341,12 +341,12 @@ export function makeEngine(opts: {
   return { engine, statuses, events };
 }
 
-// A connected user with a clock, timers, the fake Google and livediagram.
+// A connected user with a clock, timers, the fake Google and livepages.
 export function world() {
   const clock = new Clock();
   const timers = new ManualTimers(clock);
   const google = new FakeGoogle({ now: () => clock.now });
-  const ld = new FakeLivediagram(clock);
+  const ld = new FakeLivepages(clock);
   ld.connection = {
     status: 'connected',
     hasRefreshToken: true,
@@ -360,7 +360,7 @@ export function world() {
 }
 
 // The Drive file mirroring a document or folder.
-export function fileOf(google: FakeGoogle, ld: FakeLivediagram, kind: DriveItemKind, ldId: string) {
+export function fileOf(google: FakeGoogle, ld: FakeLivepages, kind: DriveItemKind, ldId: string) {
   const item = ld.item(kind, ldId);
   return item ? google.get(item.driveFileId) : undefined;
 }

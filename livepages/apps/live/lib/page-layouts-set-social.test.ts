@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, ShapeElement, TextElement } from '@livediagram/document';
-import { PAGE_LAYOUTS } from '@livediagram/templates';
+import type { Element, ShapeElement, TextElement } from '@livepages/document';
+import { PAGE_LAYOUTS } from '@livepages/templates';
 
 // docs/specs/007-editor/pages-mode.md "Layouts": the further Social layouts, posts built
 // first for Square, Portrait post (4:5) and Story (9:16) pages, a wide page setting the picture,

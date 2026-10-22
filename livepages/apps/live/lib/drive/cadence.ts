@@ -6,7 +6,7 @@
 const SECOND = 1000;
 const MINUTE = 60 * SECOND;
 
-// Check Drive this often while a livediagram tab is visible: a 5-unit
+// Check Drive this often while a livepages tab is visible: a 5-unit
 // `changes.getStartPageToken`, and `changes.list` only when it moved.
 export const DRIVE_POLL_INTERVAL_MS = 2 * MINUTE;
 // The poll interval's ceiling under back-off.

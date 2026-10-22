@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@livepages/templates';
 import { pv } from './motion';
 
 // Group 25: the strategy and systems batch (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the Wardley

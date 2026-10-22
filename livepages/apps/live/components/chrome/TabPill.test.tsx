@@ -5,8 +5,8 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
-import { FlowchartIcon, MarkerIcon } from '@livediagram/ui';
+import type { Tab } from '@livepages/document';
+import { FlowchartIcon, MarkerIcon } from '@livepages/ui';
 import { EditorModeProvider } from './editor-mode/editor-mode-context';
 import { TabPill, type TabPillCtx } from './TabPill';
 
@@ -84,7 +84,7 @@ describe('TabPill opening-mode icon', () => {
   it("shows the tab's own mode, never one an earlier editor remembered in this browser", () => {
     const expected = render(<FlowchartIcon size={12} />).container.querySelector('svg')!.innerHTML;
     cleanup();
-    localStorage.setItem('livediagram:v2:editor-mode:pill-switched', 'draw');
+    localStorage.setItem('livepages:v2:editor-mode:pill-switched', 'draw');
     render(
       <EditorModeProvider
         value={{ mode: 'diagram', setMode: vi.fn(), canSwitch: true, canEdit: true }}

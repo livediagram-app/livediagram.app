@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ChevronRightIcon } from '@livediagram/ui';
+import { ChevronRightIcon } from '@livepages/ui';
 import { featureAnchor } from '@/lib/feature-anchor';
 import { EYEBROW } from '@/components/eyebrow';
 

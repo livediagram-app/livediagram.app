@@ -4,7 +4,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, ITEM_TYPE_CATALOGUE_VERSION, type Item } from '@livediagram/items';
+import { ITEM_TYPES, ITEM_TYPE_CATALOGUE_VERSION, type Item } from '@livepages/items';
 import { usePlanTabImport } from './usePlanTabImport';
 
 const person = { id: 'p', name: 'Sam', color: '#2563eb' };

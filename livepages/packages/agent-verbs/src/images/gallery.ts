@@ -1,7 +1,7 @@
 // The user's image gallery as an agent reads it (docs/specs/009-elements/images.md "Agents"): the listing the MCP's
 // list_images and the CLI's `image ls` answer, and the image ids a write would place, so the MCP can refuse one the
 // caller's gallery does not hold. Pure: the callers read the gallery (GET /api/images).
-import type { ImageSummary } from '@livediagram/api-schema';
+import type { ImageSummary } from '@livepages/api-schema';
 
 export const IMAGE_LIST_DEFAULT_LIMIT = 20;
 export const IMAGE_LIST_MAX_LIMIT = 50;

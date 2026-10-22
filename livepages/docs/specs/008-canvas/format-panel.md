@@ -35,7 +35,7 @@ The top of the panel is the brush itself: the source element's name and a swatch
 
 ## Persistence
 
-Device-local, in `localStorage` (`livediagram:v2:format-config`), like the other tool panels. Never sent to the api, never in the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
+Device-local, in `localStorage` (`livepages:v2:format-config`), like the other tool panels. Never sent to the api, never in the synced preferences blob ([User preferences](../007-editor/user-preferences.md)).
 
 The **Copies** toggles are the setting most likely to be wrong later — someone leaves Fill off, comes back tomorrow, and wonders why the painter isn't copying colours. So the panel keeps the count in view ("Copies: Border, Text") and the brush swatch shows only what is enabled.
 

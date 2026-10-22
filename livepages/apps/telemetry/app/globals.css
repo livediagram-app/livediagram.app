@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@livediagram/tailwind-config';
+@import '@livepages/tailwind-config';
 @import './dataviz-motion.css';
 
 /* Scan the shared UI package so utility classes used only inside its

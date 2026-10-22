@@ -11,7 +11,7 @@ export const metadata = helpMetadata({
 
 <ArticleLayout
   title="Exporting a Tab"
-  description="Take a tab out of livediagram: download it as an image, a PDF, a Mermaid flowchart, a Markdown outline, an Excalidraw scene, or a JSON file you can import back."
+  description="Take a tab out of livepages: download it as an image, a PDF, a Mermaid flowchart, a Markdown outline, an Excalidraw scene, or a JSON file you can import back."
   categoryTitle="Tabs"
   categorySlug="tabs"
 >
@@ -32,7 +32,7 @@ To export only part of a tab, select several elements and press the **Export** b
 
 The dialog shows a card per format:
 
-- **JSON**: a portable `.livediagram-tab.json` snapshot that [imports](/help/tabs/import-tabs/) back with full fidelity. A tab with Plan boards or Plan cards carries their cards and any custom card types too, without votes or comments.
+- **JSON**: a portable `.livepages-tab.json` snapshot that [imports](/help/tabs/import-tabs/) back with full fidelity. A tab with Plan boards or Plan cards carries their cards and any custom card types too, without votes or comments.
 - **Mermaid**: the tab as [Mermaid](https://mermaid.js.org/) flowchart text (`.mmd`), which keeps every connection and its style, so it rebuilds the diagram; frames export as `subgraph` blocks.
 - **Markdown**: the tab's labelled elements and every connection between them as a Markdown outline (`.md`), a readable summary rather than a full copy: a flowchart reads as its flow, step to step. Each Plan board lists its columns and every card in them.
 - **Excalidraw**: a `.excalidraw` scene you can open at [excalidraw.com](https://excalidraw.com/). Boxes, text, arrows (with their connections), and drawings carry over; element kinds Excalidraw doesn't have (charts, tables, device frames and so on) simplify to labelled boxes. A Plan board comes across as its columns and card faces.

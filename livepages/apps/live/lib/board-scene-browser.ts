@@ -1,7 +1,7 @@
 // The browser halves of landing a board scene (docs/specs/020-import-export/board-scene.md "In the
 // editor"), shared by paste (useBoardSceneInsert) and import (useBoardSceneImport): an image
 // session, and the text hug in our fonts. Both are seams the hooks' tests replace.
-import { resolveFontStack, type Element, type TextElement } from '@livediagram/document';
+import { resolveFontStack, type Element, type TextElement } from '@livepages/document';
 import type { ImportImageSession } from '@/lib/import-images';
 import { hugLandedText, landedTextFonts } from '@/lib/board-scene-hug';
 import type { MeasureTextBlock } from '@/lib/text-hug';

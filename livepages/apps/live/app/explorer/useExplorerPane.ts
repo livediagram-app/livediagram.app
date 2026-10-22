@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import type { Lens, LensSubject } from '@livediagram/explorer-lens';
+import type { Lens, LensSubject } from '@livepages/explorer-lens';
 import { leadsBackHome, VIEW_TITLES } from './view-titles';
 import type { DocumentListItem, Folder, SharedWithItem } from '@/lib/api-client';
 import { groupDocumentsByFolder } from '@/lib/folder-tree';

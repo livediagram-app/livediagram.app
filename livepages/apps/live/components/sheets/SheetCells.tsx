@@ -5,7 +5,7 @@
 // over empty neighbours to its right; numbers too wide for their column show fewer decimals, then scientific,
 // then ####. Memoised on what it draws, so moving the selection redraws none of it.
 import { memo, type CSSProperties } from 'react';
-import { cellColours, isLightColor, resolveFontStack } from '@livediagram/document';
+import { cellColours, isLightColor, resolveFontStack } from '@livepages/document';
 import {
   cellKey,
   displayValue,
@@ -24,7 +24,7 @@ import {
   type Sheet,
   type Value,
   type Workbook,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import { RULE_ARROW_PX, ruleCellDraw } from './rules/sheet-rule-draw';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { cellBox, mergeAt, type Geometry, type GridWindow } from './sheet-geometry';

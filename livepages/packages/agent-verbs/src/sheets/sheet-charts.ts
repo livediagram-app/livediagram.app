@@ -2,7 +2,7 @@
 // a design's charts over its tables, and change_sheet's `chart` over an A1 range. Each is an ordinary chart element
 // linked to the range by row and column ids (so it grows with rows inserted inside it), anchored in its Sheet at a
 // cell, carrying its first read for what draws it before a browser reads it live. Pure: the caller adds the elements.
-import { withArticle } from '@livediagram/items';
+import { withArticle } from '@livepages/items';
 import {
   CHART_SOURCE_COLS_MAX,
   SHEET_ANCHOR_MAX,
@@ -12,7 +12,7 @@ import {
   type ChartPaletteId,
   type ChartType,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   SHEET_ACCENTS,
   accentChartPalette,
@@ -30,7 +30,7 @@ import {
   type IdRange,
   type SheetLayout,
   type Workbook,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import type { DesignTableInput } from './sheet-design';
 import type { SheetRefusal } from './sheet-state';
 

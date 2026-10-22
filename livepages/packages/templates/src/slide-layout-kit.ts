@@ -3,7 +3,7 @@
 // discs and icon discs. A slide's content box is landscape, so its height is 100 units (a unit
 // is its short side over 100) and its width 133 (4:3) to 178 (16:9): every builder lays out in
 // those terms, so both shapes fit.
-import { LABEL_FONT_PX, type Element } from '@livediagram/document';
+import { LABEL_FONT_PX, type Element } from '@livepages/document';
 import type { Kit } from './page-layout-kit';
 
 // Body type on a slide: large text scaled so its glyphs stand this many units tall.

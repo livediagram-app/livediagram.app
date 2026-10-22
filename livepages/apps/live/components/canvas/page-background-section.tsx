@@ -19,8 +19,8 @@ import {
   type PageBackground,
   type PageFill,
   type PagePattern,
-} from '@livediagram/document';
-import { CheckIcon, Tooltip } from '@livediagram/ui';
+} from '@livepages/document';
+import { CheckIcon, Tooltip } from '@livepages/ui';
 import {
   backgroundCategoryOf,
   customGradientSeed,

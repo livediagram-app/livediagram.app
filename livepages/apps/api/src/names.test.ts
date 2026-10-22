@@ -1,4 +1,4 @@
-import { NAME_MAX_LENGTH } from '@livediagram/document';
+import { NAME_MAX_LENGTH } from '@livepages/document';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { capStoredName } from './names';
 

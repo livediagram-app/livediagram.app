@@ -13,7 +13,7 @@ import {
   RATING_SCALE_DEFAULT,
   SHORT_ANSWER_MAX,
   type PublicQuestion,
-} from '@livediagram/forms';
+} from '@livepages/forms';
 import { RatingInput } from './RatingInput';
 
 type QuestionControlProps = {

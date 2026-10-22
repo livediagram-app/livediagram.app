@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { newTypeForBoard, withTypeOnView } from './useTypeForBoard';
 
 // docs/specs/026-plan/plan-views.md "Gantt Chart": Add New Card Type from a Gantt chart.

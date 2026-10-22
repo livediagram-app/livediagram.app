@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { TRUSTED_TYPES_CSP } from '@livediagram/ui/trusted-types';
+import { TRUSTED_TYPES_CSP } from '@livepages/ui/trusted-types';
 import worker from './worker';
 
 function env() {
@@ -17,32 +17,32 @@ function env() {
 describe('live worker editor route', () => {
   it('serves the editor page for /document/<id>', async () => {
     const { env: e, seen } = env();
-    await worker.fetch(new Request('https://livediagram.app/document/abc'), e);
+    await worker.fetch(new Request('https://livepages.app/document/abc'), e);
     expect(seen).toEqual(['/document/placeholder']);
   });
 
   it('serves the form page for /form/<code>, not framed (docs/specs/030-forms/forms.md)', async () => {
     const { env: e, seen } = env();
     const res = await worker.fetch(
-      new Request('https://livediagram.app/form/AbCdEfGhIjKlMnOpQrStU1'),
+      new Request('https://livepages.app/form/AbCdEfGhIjKlMnOpQrStU1'),
       e,
     );
-    await worker.fetch(new Request('https://livediagram.app/form/placeholder'), e);
+    await worker.fetch(new Request('https://livepages.app/form/placeholder'), e);
     expect(seen).toEqual(['/form/placeholder', '/form/placeholder']);
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
   });
 
   it('leaves other paths to the static assets', async () => {
     const { env: e, seen } = env();
-    await worker.fetch(new Request('https://livediagram.app/explorer/recent'), e);
+    await worker.fetch(new Request('https://livepages.app/explorer/recent'), e);
     expect(seen).toEqual(['/explorer/recent']);
   });
 
   it('lands /explorer on Home', async () => {
     for (const path of ['/explorer', '/explorer/']) {
-      const res = await worker.fetch(new Request(`https://livediagram.app${path}`), env().env);
+      const res = await worker.fetch(new Request(`https://livepages.app${path}`), env().env);
       expect(res.status).toBe(302);
-      expect(res.headers.get('Location')).toBe('https://livediagram.app/explorer/home');
+      expect(res.headers.get('Location')).toBe('https://livepages.app/explorer/home');
     }
   });
 });
@@ -52,20 +52,20 @@ describe('live worker security headers', () => {
   it('enforces Trusted Types on every page', async () => {
     const { env: e } = env();
     for (const path of ['/document/abc', '/embed', '/explorer/home', '/oauth/consent']) {
-      const res = await worker.fetch(new Request(`https://livediagram.app${path}`), e);
+      const res = await worker.fetch(new Request(`https://livepages.app${path}`), e);
       expect(res.headers.get('Content-Security-Policy'), path).toBe(TRUSTED_TYPES_CSP);
     }
   });
 
   it('denies framing on the MCP OAuth consent screen', async () => {
     const { env: e } = env();
-    const res = await worker.fetch(new Request('https://livediagram.app/oauth/consent'), e);
+    const res = await worker.fetch(new Request('https://livepages.app/oauth/consent'), e);
     expect(res.headers.get('X-Frame-Options')).toBe('DENY');
   });
 
   it('leaves the embed view frameable', async () => {
     const { env: e } = env();
-    const res = await worker.fetch(new Request('https://livediagram.app/embed'), e);
+    const res = await worker.fetch(new Request('https://livepages.app/embed'), e);
     expect(res.headers.get('X-Frame-Options')).toBeNull();
   });
 
@@ -74,7 +74,7 @@ describe('live worker security headers', () => {
   it('leaves the workbench page frameable, with or without a trailing slash', async () => {
     const { env: e } = env();
     for (const path of ['/embed/workbench', '/embed/workbench/?d=doc-1']) {
-      const res = await worker.fetch(new Request(`https://livediagram.app${path}`), e);
+      const res = await worker.fetch(new Request(`https://livepages.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBeNull();
     }
   });
@@ -87,7 +87,7 @@ describe('live worker security headers', () => {
       '/embed/workbench/explorer/recent?q=x',
       '/embed/workbench/document/doc-1?s=CODE2345',
     ]) {
-      const res = await worker.fetch(new Request(`https://livediagram.app${path}`), e);
+      const res = await worker.fetch(new Request(`https://livepages.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBeNull();
     }
     expect(seen).toEqual([
@@ -106,7 +106,7 @@ describe('live worker security headers', () => {
       '/embedded',
       '/explorer/home',
     ]) {
-      const res = await worker.fetch(new Request(`https://livediagram.app${path}`), e);
+      const res = await worker.fetch(new Request(`https://livepages.app${path}`), e);
       expect(res.headers.get('X-Frame-Options')).toBe('DENY');
     }
   });

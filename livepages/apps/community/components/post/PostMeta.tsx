@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { communityCategoryLabel, type CommunityPost } from '@livediagram/api-schema';
+import { communityCategoryLabel, type CommunityPost } from '@livepages/api-schema';
 import { formatDate, paragraphs } from '@/lib/format';
 import { tagHref } from '@/lib/links';
-import { CommunityAuthorBadge, communitySharedAgo } from '@livediagram/ui';
+import { CommunityAuthorBadge, communitySharedAgo } from '@livepages/ui';
 
 // What a post says about itself (docs/specs/025-community/community.md "Post"): title, author,
 // publish date, category, tags (each opening the gallery filtered by it) and the full description,

@@ -84,9 +84,9 @@ describe('the hand-over from the editor', () => {
   it('is dropped when stale or malformed', () => {
     handOffDeleteUndo('d1', 'Personal', 'Roadmap', 1_000);
     expect(takeDeleteUndo(60_000)).toBeNull();
-    sessionStorage.setItem('livediagram:deleted-document', '{"id":1}');
+    sessionStorage.setItem('livepages:deleted-document', '{"id":1}');
     expect(takeDeleteUndo()).toBeNull();
-    sessionStorage.setItem('livediagram:deleted-document', 'not json');
+    sessionStorage.setItem('livepages:deleted-document', 'not json');
     expect(takeDeleteUndo()).toBeNull();
   });
 });

@@ -3,8 +3,8 @@
 // stored shape, so every op that carries elements (a whole tab, an added or updated
 // element) runs the stored-element migrations before anything applies it. Pure; the op
 // itself back when nothing needed migrating.
-import { migrateIncomingElements, migrateIncomingTab, type Tab } from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+import { migrateIncomingElements, migrateIncomingTab, type Tab } from '@livepages/document';
+import type { RoomOp } from '@livepages/api-schema';
 
 export function migrateRoomOp(op: RoomOp): RoomOp {
   if (op.kind === 'tab') {

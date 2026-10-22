@@ -1,7 +1,7 @@
 import { AppearanceToggle } from '@/components/chrome/AppearanceToggle';
 import { CHROME_BTN, CHROME_BTN_LABELLED, ChromeLabel } from '@/components/chrome/chrome-button';
 import { SettingsIcon, GithubIcon, SearchGlyph } from '@/components/chrome/tab-bar-icons';
-import { REPO_URL, HoverCard } from '@livediagram/ui';
+import { REPO_URL, HoverCard } from '@livepages/ui';
 
 // The right-hand control cluster shared by the editor's bottom tab bar and
 // the Explorer's bottom bar (docs/specs/007-editor/live-app.md): search, the open-source GitHub
@@ -61,7 +61,7 @@ export function ChromeControls({
           <span className="hidden sm:contents">
             <HoverCard
               title="Source on GitHub"
-              description="View livediagram's open-source code on GitHub."
+              description="View livepages's open-source code on GitHub."
             >
               <a
                 href={REPO_URL}

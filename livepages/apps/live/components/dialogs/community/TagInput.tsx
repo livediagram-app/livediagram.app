@@ -1,7 +1,7 @@
 'use client';
 
 import { useId, useRef, useState } from 'react';
-import { COMMUNITY_TAG_MAX, COMMUNITY_TAG_MIN, COMMUNITY_TAGS_MAX } from '@livediagram/api-schema';
+import { COMMUNITY_TAG_MAX, COMMUNITY_TAG_MIN, COMMUNITY_TAGS_MAX } from '@livepages/api-schema';
 import { ChipField, type ChipFieldHandle } from '@/components/primitives/ChipField';
 import { FieldError } from './FieldError';
 import { commitTag, commitTagInput, tagPreview, type TagRejection } from './tag-draft';

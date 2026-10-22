@@ -9,7 +9,7 @@
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { agendaFitHeight, createShape, createText, type Element } from '@livediagram/document';
+import { agendaFitHeight, createShape, createText, type Element } from '@livepages/document';
 import {
   actionChecklist,
   checklistHeight,

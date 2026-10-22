@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { planPalette } from '@livediagram/document';
+import { planPalette } from '@livepages/document';
 import { dashboardTabTiles } from '@/components/palette/palette-dashboard-tiles';
 import { slotFillSections } from './SlotFillPicker';
 import { SLOT_CATEGORIES, SlotCategoryCard } from './slot-fill-categories';

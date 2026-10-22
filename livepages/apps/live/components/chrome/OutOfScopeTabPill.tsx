@@ -1,8 +1,8 @@
 import { TabPresenceStack } from '@/components/chrome/TabPresenceStack';
 import { TabNotSharedIcon } from '@/components/chrome/tab-bar-icons';
 import type { Participant } from '@/lib/identity';
-import { HoverCard } from '@livediagram/ui';
-import type { AccessLevel } from '@livediagram/api-schema';
+import { HoverCard } from '@livepages/ui';
+import type { AccessLevel } from '@livepages/api-schema';
 
 // A tab outside a tab-scoped share session's scope (docs/specs/013-workspace/tab-scoped-share-links.md). It
 // keeps its place in the bar so the visitor knows the document has more, but

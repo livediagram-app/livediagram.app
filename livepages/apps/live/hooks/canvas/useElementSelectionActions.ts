@@ -22,7 +22,7 @@ import {
   withSheetCharts,
   type Element,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { type QuickConnectDirection, type QuickConnectKind } from '@/lib/canvas';
 import { quickAddPlacement } from '@/lib/quick-add-placement';
 import { useElementDuplication } from './useElementDuplication';

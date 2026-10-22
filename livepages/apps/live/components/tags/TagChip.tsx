@@ -5,8 +5,8 @@
 // +N for the rest, and the panel row's dots.
 
 import type { MouseEvent } from 'react';
-import { HoverCard, useAppearance } from '@livediagram/ui';
-import type { Tag } from '@livediagram/api-schema';
+import { HoverCard, useAppearance } from '@livepages/ui';
+import type { Tag } from '@livepages/api-schema';
 import { tagColourHex, tagWash } from './tag-colour';
 
 // At most this many chips on a row or card before +N (spec "Where tags show"). Safe range 1 to 3: past that a row's

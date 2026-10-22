@@ -6,14 +6,14 @@ import {
   lucideGitFork,
   lucideUsers,
   lucideUserX,
-} from '@livediagram/icons/lucide';
+} from '@livepages/icons/lucide';
 import {
   BrandMark,
   ChevronRightIcon,
   lucideGlyph,
   REPO_URL,
   type IconProps,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import {
   useEffect,
   useLayoutEffect,
@@ -146,7 +146,7 @@ export function PromisePrism() {
             Built with your values in mind
           </h2>
           <p className="mt-5 text-pretty text-lg leading-relaxed text-slate-300">
-            livediagram is free, open and private for everyone, and it stays that way. One light,
+            livepages is free, open and private for everyone, and it stays that way. One light,
             five promises, kept in the open.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3 lg:justify-start">

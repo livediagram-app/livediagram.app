@@ -13,7 +13,7 @@
 // pressing Start also runs it now. Those are the same number, which is why one
 // component can do both without a mode flag.
 
-import { formatTimerClock, type TimerMode } from '@livediagram/document';
+import { formatTimerClock, type TimerMode } from '@livepages/document';
 import {
   DIAL_LAP_MINUTES,
   clampTimerMinutes,
@@ -23,7 +23,7 @@ import {
 import { TimerPresetChips } from './TimerPresetChips';
 import { TimerDial } from './TimerDial';
 import { PlayGlyph, StudioButton, StudioSegmented } from './studio-ui';
-import { GlyphDisc } from '@livediagram/ui';
+import { GlyphDisc } from '@livepages/ui';
 
 const MODE_OPTIONS = [
   { value: 'countdown', label: 'Countdown' },

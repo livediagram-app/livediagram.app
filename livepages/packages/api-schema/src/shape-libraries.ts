@@ -6,7 +6,7 @@ import {
   isValidElement,
   migrateIncomingElements,
   type Element,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 /** How many shape libraries one owner can create. */
 export const MAX_SHAPE_LIBRARIES_PER_OWNER = 100;

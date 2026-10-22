@@ -6,7 +6,7 @@ the open editor asks, calmly, to be reloaded.
 
 ## The document format number
 
-- **`DOCUMENT_FORMAT`** (`@livediagram/api-schema`) is one integer, the version of the stored
+- **`DOCUMENT_FORMAT`** (`@livepages/api-schema`) is one integer, the version of the stored
   document shapes. The editor is built with it and the api worker serves it, from the same
   definition, so a deploy that changes it changes both.
 - It is bumped only when an older editor can no longer read what the server now serves: a new
@@ -21,8 +21,8 @@ No request is made for it; it rides traffic the editor already has. This **serve
 also carries the live build id, which [Stale builds](./stale-builds.md) uses; one mechanism, two
 facts.
 
-- **Every api response** carries the header `X-Livediagram-Format: <n>`, and
-  `X-Livediagram-Build: <id>` when the deploy set one (the WebSocket upgrade excepted). The editor's one fetch wrapper (`apiFetch`) reads it. Both headers are exposed to
+- **Every api response** carries the header `X-Livepages-Format: <n>`, and
+  `X-Livepages-Build: <id>` when the deploy set one (the WebSocket upgrade excepted). The editor's one fetch wrapper (`apiFetch`) reads it. Both headers are exposed to
   cross-origin callers (`Access-Control-Expose-Headers`), for a self-hosted or local editor on
   another origin.
 - **The realtime room** sends `{ kind: 'format', format, build? }` to each socket as it joins. A deploy
@@ -42,7 +42,7 @@ facts.
 
 - A small panel at the bottom centre of the screen, above the canvas, in the app's chrome
   colours, light and dark. It never covers the dialogs and never takes focus.
-- Copy: **"A new version of livediagram is ready."** with two buttons, **"Reload"** and
+- Copy: **"A new version of livepages is ready."** with two buttons, **"Reload"** and
   **"Not now"**.
 - `role="status"`, so a screen reader announces it once, politely; both buttons are in the tab
   order and work from the keyboard; it honours reduced motion (no slide-in).

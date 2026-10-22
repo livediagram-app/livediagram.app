@@ -36,17 +36,17 @@ describe('createWorkbenchPort', () => {
     const { win, parent } = fakeWindow();
     const port = createWorkbenchPort(ORIGIN, win);
 
-    port.send({ type: 'livediagram:hello', v: 1 });
-    port.send({ type: 'livediagram:renew', v: 1 });
+    port.send({ type: 'livepages:hello', v: 1 });
+    port.send({ type: 'livepages:renew', v: 1 });
 
     expect(parent.postMessage).toHaveBeenNthCalledWith(
       1,
-      { type: 'livediagram:hello', v: 1 },
+      { type: 'livepages:hello', v: 1 },
       ORIGIN,
     );
     expect(parent.postMessage).toHaveBeenNthCalledWith(
       2,
-      { type: 'livediagram:renew', v: 1 },
+      { type: 'livepages:renew', v: 1 },
       ORIGIN,
     );
     expect(port.origin).toBe(ORIGIN);
@@ -60,9 +60,9 @@ describe('createWorkbenchPort', () => {
     port.subscribe(a);
     port.subscribe(b);
 
-    deliver({ type: 'livediagram:theme', v: 1, colourScheme: 'dark' });
+    deliver({ type: 'livepages:theme', v: 1, colourScheme: 'dark' });
 
-    const theme = { type: 'livediagram:theme', v: 1, colourScheme: 'dark' };
+    const theme = { type: 'livepages:theme', v: 1, colourScheme: 'dark' };
     expect(a).toHaveBeenCalledWith(theme);
     expect(b).toHaveBeenCalledWith(theme);
   });
@@ -73,9 +73,9 @@ describe('createWorkbenchPort', () => {
     const listener = vi.fn();
     port.subscribe(listener);
 
-    deliver({ type: 'livediagram:theme', v: 1, colourScheme: 'dark' }, 'https://evil.example');
-    deliver({ type: 'livediagram:theme', v: 1, colourScheme: 'dark' }, ORIGIN, {});
-    deliver({ type: 'livediagram:dance', v: 1 }, 'https://evil.example');
+    deliver({ type: 'livepages:theme', v: 1, colourScheme: 'dark' }, 'https://evil.example');
+    deliver({ type: 'livepages:theme', v: 1, colourScheme: 'dark' }, ORIGIN, {});
+    deliver({ type: 'livepages:dance', v: 1 }, 'https://evil.example');
 
     expect(listener).not.toHaveBeenCalled();
     expect(warn).not.toHaveBeenCalled();
@@ -87,14 +87,14 @@ describe('createWorkbenchPort', () => {
     const listener = vi.fn();
     port.subscribe(listener);
 
-    deliver({ type: 'livediagram:dance', v: 1 });
-    deliver({ type: 'livediagram:dance', v: 1 });
-    deliver({ type: 'livediagram:theme', v: 2, colourScheme: 'dark' });
+    deliver({ type: 'livepages:dance', v: 1 });
+    deliver({ type: 'livepages:dance', v: 1 });
+    deliver({ type: 'livepages:theme', v: 2, colourScheme: 'dark' });
 
     expect(listener).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledTimes(2);
-    expect(warn).toHaveBeenCalledWith('[workbench] message-ignored', { type: 'livediagram:dance' });
-    expect(warn).toHaveBeenCalledWith('[workbench] message-ignored', { type: 'livediagram:theme' });
+    expect(warn).toHaveBeenCalledWith('[workbench] message-ignored', { type: 'livepages:dance' });
+    expect(warn).toHaveBeenCalledWith('[workbench] message-ignored', { type: 'livepages:theme' });
   });
 
   it('logs an invalid message once per type and never hands it on', () => {
@@ -103,13 +103,13 @@ describe('createWorkbenchPort', () => {
     const listener = vi.fn();
     port.subscribe(listener);
 
-    deliver({ type: 'livediagram:hello-ack', v: 1, name: '' });
-    deliver({ type: 'livediagram:hello-ack', v: 1 });
+    deliver({ type: 'livepages:hello-ack', v: 1, name: '' });
+    deliver({ type: 'livepages:hello-ack', v: 1 });
 
     expect(listener).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledWith('[workbench] message-invalid', {
-      type: 'livediagram:hello-ack',
+      type: 'livepages:hello-ack',
     });
   });
 
@@ -120,7 +120,7 @@ describe('createWorkbenchPort', () => {
     const off = port.subscribe(listener);
 
     off();
-    deliver({ type: 'livediagram:theme', v: 1, colourScheme: 'dark' });
+    deliver({ type: 'livepages:theme', v: 1, colourScheme: 'dark' });
     port.close();
 
     expect(listener).not.toHaveBeenCalled();

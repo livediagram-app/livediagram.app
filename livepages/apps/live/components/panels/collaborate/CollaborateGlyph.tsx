@@ -1,4 +1,4 @@
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livepages/ui';
 
 // The Collaborate glyph: a speech bubble with a line of text, the panel's
 // mark on its cluster button (docs/specs/012-collaboration/assigned-actions.md §5).

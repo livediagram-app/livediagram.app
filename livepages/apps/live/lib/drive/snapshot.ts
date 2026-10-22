@@ -1,10 +1,10 @@
 // One pass's view of both sides (docs/specs/022-drive-mirror/blueprints/drive-mirror.md,
-// "Passes"): My Documents as livediagram holds it, and the mirror's item
+// "Passes"): My Documents as livepages holds it, and the mirror's item
 // rows, indexed the ways the planners look them up.
 
-import type { DriveItem, DriveItemKind } from '@livediagram/api-schema';
+import type { DriveItem, DriveItemKind } from '@livepages/api-schema';
 import type { DriveFile } from './drive-client';
-import type { MirrorDocument, MirrorFolder, MirrorTrashed } from './livediagram-port';
+import type { MirrorDocument, MirrorFolder, MirrorTrashed } from './livepages-port';
 import type { SeenRow } from './tombstones';
 
 export type MirrorSnapshot = {
@@ -16,7 +16,7 @@ export type MirrorSnapshot = {
   // Keyed by itemKey(kind, ldId).
   items: Map<string, DriveItem>;
   itemsByFile: Map<string, DriveItem>;
-  // Folders this browser last saw mirrored that livediagram has since deleted, their rows gone with
+  // Folders this browser last saw mirrored that livepages has since deleted, their rows gone with
   // them: their Drive folders are about to be binned (a tombstone), so a change Drive still reports
   // for one (the create it made before the delete) is stale, never a folder to bring back.
   deletedFolders: Set<string>;
@@ -77,7 +77,7 @@ export function dropSnapshotItem(
   snapshot.items.delete(key);
 }
 
-// The Drive folder a livediagram folder id maps to: the Drive root for the root of My Documents,
+// The Drive folder a livepages folder id maps to: the Drive root for the root of My Documents,
 // the folder's file once mirrored, null while it is not mirrored yet.
 export function folderFileId(snapshot: MirrorSnapshot, folderId: string | null): string | null {
   if (folderId === null) return snapshot.rootFolderId;
@@ -85,7 +85,7 @@ export function folderFileId(snapshot: MirrorSnapshot, folderId: string | null):
 }
 
 // Where a document's file belongs. A document sitting at the root because it was
-// moved in Drive into a folder livediagram cannot see stays where the user put
+// moved in Drive into a folder livepages cannot see stays where the user put
 // it, so the notice's folder is its expected parent until it moves again.
 export function expectedDocumentParent(
   snapshot: MirrorSnapshot,
@@ -109,9 +109,9 @@ export function expectedFolderParent(
   return folderFileId(snapshot, folder.parentId);
 }
 
-// The livediagram folder a Drive parent id stands for: `null` for the root
+// The livepages folder a Drive parent id stands for: `null` for the root
 // (the root / top level), the folder id for a mirrored folder, `undefined`
-// for a folder livediagram cannot see (or no parent at all).
+// for a folder livepages cannot see (or no parent at all).
 export function ldFolderForParent(
   snapshot: MirrorSnapshot,
   parentId: string | null,

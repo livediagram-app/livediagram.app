@@ -1,4 +1,4 @@
-import type { EditorMode } from '@livediagram/document';
+import type { EditorMode } from '@livepages/document';
 
 // What the mode menu's preview shows for each mode beyond the catalogue's name and description
 // (docs/specs/007-editor/editor-modes.md "The mode switch"): the mode's tint and its main tools.

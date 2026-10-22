@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { CommentBadgesContext } from '@/components/canvas/CommentBadgesContext';
 import { SuppressElementIndicators } from '@/components/canvas/ElementIndicatorStyleContext';
 import { EditorModeProvider } from '@/components/chrome/editor-mode/editor-mode-context';
-import { truncateName } from '@livediagram/document';
+import { truncateName } from '@livepages/document';
 import { openSearchWithPrefetch } from '@/lib/open-search';
 import { track } from '@/lib/telemetry';
 import { NewVersionPrompt } from '@/components/chrome/NewVersionPrompt';
@@ -14,7 +14,7 @@ import { registerUnsavedWork } from '@/lib/unsaved-work';
 import { useRegionCycle } from '@/hooks/ui/useRegionCycle';
 import { useEffect, useMemo } from 'react';
 import { addToDocumentTargets } from '@/lib/add-to-document-targets';
-import { canvasSurface } from '@livediagram/document';
+import { canvasSurface } from '@livepages/document';
 import { getTheme } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { CanvasPatternContext } from '@/components/canvas/canvas-pattern-context';
@@ -37,7 +37,7 @@ import { CommunityBar } from '@/components/chrome/CommunityBar';
 import { useAutoCopyParam } from '@/hooks/canvas/useAutoCopyParam';
 import { documentIsPublic } from '@/lib/community-public';
 import { useCommunityState } from '@/lib/community-state-store';
-import { useCommunityEnabled } from '@livediagram/ui';
+import { useCommunityEnabled } from '@livepages/ui';
 import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { WorkbenchOpenLink, WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
@@ -587,7 +587,7 @@ export function EditorView() {
                                       />
                                     ) : null}
                                     {workbench ? (
-                                      // The workbench's Reconnect line; its Open in livediagram sits in the tab bar.
+                                      // The workbench's Reconnect line; its Open in livepages sits in the tab bar.
                                       <WorkbenchReconnectLine
                                         workbenchName={workbench.workbenchName}
                                         ended={workbench.ended}

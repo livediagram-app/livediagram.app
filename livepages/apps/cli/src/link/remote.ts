@@ -2,9 +2,9 @@
 // sync pass" step 5): its overview, and at `files` its envelope fields; or trashed, unreadable, or a transient
 // failure that keeps its files (RL14).
 
-import type { VerbContext } from '@livediagram/agent-verbs';
-import { ApiError } from '@livediagram/api-client';
-import type { DocumentResponse, OverviewView } from '@livediagram/api-schema';
+import type { VerbContext } from '@livepages/agent-verbs';
+import { ApiError } from '@livepages/api-client';
+import type { DocumentResponse, OverviewView } from '@livepages/api-schema';
 import { EXIT } from '../output/exit-codes';
 import { failureOf } from '../output/failure-of';
 import { SYNC_CONCURRENCY } from './constants';

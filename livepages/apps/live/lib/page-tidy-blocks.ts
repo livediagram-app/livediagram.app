@@ -1,7 +1,7 @@
 // The blocks an infographic page's Tidy Up moves (docs/specs/007-editor/pages-mode.md "Tidy";
 // lib/page-tidy.ts): the page's elements as a forest, each element carrying what it wholly holds,
 // and the rect arithmetic the steps share.
-import { type BoxedElement, type ElementId } from '@livediagram/document';
+import { type BoxedElement, type ElementId } from '@livepages/document';
 import { SQUARE_SHAPES } from './auto-align';
 
 // Below this, two values are the same (float noise from the layouts' own arithmetic).

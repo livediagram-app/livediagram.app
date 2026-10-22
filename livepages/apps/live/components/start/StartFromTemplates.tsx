@@ -7,7 +7,7 @@
 // from nothing. Choosing a template lands it on the tab at once, another mode's switching the tab to that mode.
 import { DeviceGlyph } from '@/components/canvas/wireframe/DeviceGlyph';
 import { useEffect, useMemo } from 'react';
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideGlyph } from '@livepages/ui';
 import {
   lucideClock,
   lucideCode,
@@ -32,9 +32,9 @@ import {
   lucideUsers,
   lucideVote,
   lucideWorkflow,
-} from '@livediagram/icons/lucide';
-import type { EditorMode } from '@livediagram/document';
-import type { TemplateKind } from '@livediagram/templates';
+} from '@livepages/icons/lucide';
+import type { EditorMode } from '@livepages/document';
+import type { TemplateKind } from '@livepages/templates';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 import { dismissEmptyCard } from '@/components/canvas/empty-card-dismissed';
 import { useEmptyCardDismissed } from '@/components/canvas/useEmptyCardDismissed';

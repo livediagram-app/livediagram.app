@@ -5,23 +5,23 @@ import type { Metadata, Viewport } from 'next';
 // inlined the origin, the ShareRail and the editor's GitHub link hardcoded
 // theirs), so the origin and the repo URL lived in five places.
 
-// The canonical origin. livediagram.app is one origin: the router stitches
+// The canonical origin. livepages.app is one origin: the router stitches
 // the apps together by path (docs/specs/016-platform/router-app.md), so every app's metadataBase, JSON-LD
 // ids and share links resolve against this one value (docs/specs/019-marketing/marketing-site.md "SEO and
 // metadata").
-export const SITE_URL = 'https://livediagram.app';
+export const SITE_URL = 'https://livepages.app';
 
 // The product / site name: the metadata siteName and the JSON-LD name.
-export const SITE_NAME = 'livediagram';
+export const SITE_NAME = 'livepages';
 
-// What livediagram is, in the words every public surface uses (docs/specs/019-marketing/marketing-site.md
+// What livepages is, in the words every public surface uses (docs/specs/019-marketing/marketing-site.md
 // "SEO and metadata"), kept here so they can't drift: the landing page's title, its description
 // (also the web app manifest's), and the one-line pitch the share card, the share images' alt text
 // and the share rail build on. It names every kind of thing the canvas makes, not just diagrams.
-export const SITE_TITLE = 'livediagram: Diagram, draw and make pages together, live';
+export const SITE_TITLE = 'livepages: Diagram, draw and make pages together, live';
 export const SITE_DESCRIPTION =
   'A free, real-time canvas for diagrams, whiteboards, mind maps, infographics and documents. Built for teams who think visually.';
-// Lower case: it follows "livediagram: " or starts a sentence through sentencePitch.
+// Lower case: it follows "livepages: " or starts a sentence through sentencePitch.
 export const SITE_PITCH =
   'a real-time canvas for diagrams, whiteboards, illustrations and documents';
 export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.slice(1)}.`;
@@ -29,12 +29,12 @@ export const sentencePitch = () => `${SITE_PITCH[0]!.toUpperCase()}${SITE_PITCH.
 // The open-source repository (docs/specs/002-project-scope/open-source-and-business-model.md: the codebase is public + MIT), linked
 // from the footer, the FAQ, the status page, the help centre's contact page,
 // the editor's bottom bar and Explorer menu, and the `sameAs` JSON-LD.
-export const REPO_URL = 'https://github.com/livediagram-app/livediagram.app';
+export const REPO_URL = 'https://github.com/livepages-app/livepages.app';
 
-// The public contact form (a livediagram Form, docs/specs/030-forms/forms.md), the one way to reach the
+// The public contact form (a livepages Form, docs/specs/030-forms/forms.md), the one way to reach the
 // team; no email address is published. Linked from the help centre's contact page, the FAQ, the status
 // page and the Terms and Privacy Policy.
-export const CONTACT_FORM_URL = 'https://www.livediagram.app/form/90Bgj5sY9eTpVrjhx9tTZj';
+export const CONTACT_FORM_URL = 'https://www.livepages.app/form/90Bgj5sY9eTpVrjhx9tTZj';
 
 // Favicon set for the apps that serve their pages from the origin root (or
 // reference the root's assets): the SVG mark, a raster PNG fallback for
@@ -49,7 +49,7 @@ export const CONTACT_FORM_URL = 'https://www.livediagram.app/form/90Bgj5sY9eTpVr
 export const BRAND_ICONS: NonNullable<Metadata['icons']> = {
   icon: [
     { url: '/icon.svg', type: 'image/svg+xml' },
-    { url: '/livediagram-icon-256.png', type: 'image/png', sizes: '256x256' },
+    { url: '/livepages-icon-256.png', type: 'image/png', sizes: '256x256' },
   ],
   apple: '/apple-icon',
 };

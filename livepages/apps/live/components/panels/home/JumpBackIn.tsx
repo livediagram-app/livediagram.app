@@ -7,7 +7,7 @@
 // and a document that leaves the Explorer's lists (moved to the Trash, taken off Shared With Me) leaves at once.
 
 import { useId, useMemo } from 'react';
-import { CompactEmptyState, useMediaQuery } from '@livediagram/ui';
+import { CompactEmptyState, useMediaQuery } from '@livepages/ui';
 import { track } from '@/lib/telemetry';
 import { useRelativeNow } from '@/lib/relative-time';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';

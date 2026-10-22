@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ShapeLibrary } from '@livediagram/api-schema';
+import type { ShapeLibrary } from '@livepages/api-schema';
 import type { ShapeLibrariesValue } from '@/components/primitives/ShapeLibraryProvider';
 import { ShapeLibrariesPane } from './ShapeLibrariesPane';
 

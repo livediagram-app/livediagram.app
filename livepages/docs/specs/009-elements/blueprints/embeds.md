@@ -80,7 +80,7 @@ kind), "thumbnail" for the poster, "provider field" (there is only the hint).
 7. **Loom** (`loom.com`): path matches `LOOM_ID` → `https://www.loom.com/embed/<id>`; otherwise
    `null` [QC8].
 8. **Figma** (`figma.com`, `figma.site`): always →
-   `https://www.figma.com/embed?embed_host=livediagram&url=<encodeURIComponent(parsed)>` [QC8].
+   `https://www.figma.com/embed?embed_host=livepages&url=<encodeURIComponent(parsed)>` [QC8].
 9. **Google** (`docs.google.com`): path must start `/document/`, `/spreadsheets/` or
    `/presentation/`, else `null`. A trailing `/edit` or `/view` with anything after it becomes
    `/preview`; a URL with neither passes through unchanged (D69) [QC8].
@@ -431,7 +431,7 @@ through `elementTelemetryType`), `Element·Used·Video` on play or load.
 | `TAP_TRAVEL_PX`       | `16`                                                                                      | `draw-commit.ts`; tap versus drag, canvas px             |
 | Poster variant        | `hqdefault.jpg`                                                                           | Exists for every video, unlike `maxresdefault`           |
 | Player query          | `autoplay=1&rel=0`                                                                        | `youtubeEmbedUrl` [QC8]                                  |
-| Figma `embed_host`    | `livediagram`                                                                             | `embedTargetFor` [QC8]                                   |
+| Figma `embed_host`    | `livepages`                                                                             | `embedTargetFor` [QC8]                                   |
 | Website sandbox       | see the iframe contract                                                                   | Never add `allow-top-navigation`                         |
 | Frame radius          | `10px`                                                                                    | `element-variant.ts`                                     |
 

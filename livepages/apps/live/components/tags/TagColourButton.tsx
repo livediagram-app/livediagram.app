@@ -6,8 +6,8 @@
 // No Theme Palette: a tag belongs to no tab.
 
 import type { ReactNode } from 'react';
-import { isHexColour } from '@livediagram/document';
-import { useAppearance } from '@livediagram/ui';
+import { isHexColour } from '@livepages/document';
+import { useAppearance } from '@livepages/ui';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { ColourPopover } from '@/components/colour/ColourPopover';

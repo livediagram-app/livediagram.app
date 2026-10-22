@@ -78,7 +78,7 @@ same section.
 
 ## Layout
 
-Each kind has one pure layout in `@livediagram/document` that the canvas and the headless renderer both call, so an
+Each kind has one pure layout in `@livepages/document` that the canvas and the headless renderer both call, so an
 export matches the editor. Text re-wraps and re-sizes with the element; it never zooms.
 
 - **Layer stack.** Bands share the height with a 6px gap. When any row has a note, the bands take the left 62% of the

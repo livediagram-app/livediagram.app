@@ -5,23 +5,23 @@ import {
   driveFileName,
   isDriveFileId,
   isDriveLeaseHolder,
-  isLivediagramId,
+  isLivepagesId,
   stripDriveName,
 } from './drive';
 
 describe('driveFileName', () => {
-  it('appends the .livediagram extension', () => {
+  it('appends the .livepages extension', () => {
     expect(driveFileName('Roadmap')).toBe(`Roadmap${DRIVE_FILE_EXTENSION}`);
   });
 });
 
 describe('stripDriveName', () => {
-  it('drops the .livediagram extension', () => {
-    expect(stripDriveName('Roadmap.livediagram')).toBe('Roadmap');
+  it('drops the .livepages extension', () => {
+    expect(stripDriveName('Roadmap.livepages')).toBe('Roadmap');
   });
 
   it('drops the extension case-insensitively and trims', () => {
-    expect(stripDriveName('  Plan.LIVEDIAGRAM ')).toBe('Plan');
+    expect(stripDriveName('  Plan.LIVEPAGES ')).toBe('Plan');
   });
 
   it('keeps a name without the extension', () => {
@@ -29,12 +29,12 @@ describe('stripDriveName', () => {
   });
 
   it('answers null for a name that is empty once stripped', () => {
-    expect(stripDriveName('.livediagram')).toBeNull();
+    expect(stripDriveName('.livepages')).toBeNull();
     expect(stripDriveName('   ')).toBeNull();
   });
 
   it('truncates to the given maximum', () => {
-    expect(stripDriveName('abcdef.livediagram', 3)).toBe('abc');
+    expect(stripDriveName('abcdef.livepages', 3)).toBe('abc');
   });
 });
 
@@ -46,10 +46,10 @@ describe('id validators', () => {
     expect(isDriveFileId('x'.repeat(201))).toBe(false);
   });
 
-  it('accepts livediagram ids (uuid and short ids)', () => {
-    expect(isLivediagramId('0f5ca4af-9a8a-4a60-be5e-1179e5555880')).toBe(true);
-    expect(isLivediagramId('abc_123')).toBe(true);
-    expect(isLivediagramId('../etc')).toBe(false);
+  it('accepts livepages ids (uuid and short ids)', () => {
+    expect(isLivepagesId('0f5ca4af-9a8a-4a60-be5e-1179e5555880')).toBe(true);
+    expect(isLivepagesId('abc_123')).toBe(true);
+    expect(isLivepagesId('../etc')).toBe(false);
   });
 
   it('accepts a lease holder of 1..64 url-safe characters', () => {
@@ -62,25 +62,25 @@ describe('id validators', () => {
 
 describe('driveRootName (docs/specs/022-drive-mirror/drive-mirror.md, "The root folder\'s name")', () => {
   it.each([
-    ['livediagram.app', 'livediagram'],
-    ['www.livediagram.app', 'livediagram'],
-    ['WWW.LiveDiagram.App', 'livediagram'],
-    ['staging.livediagram.app', 'livediagram (staging)'],
-    ['Staging.LIVEDIAGRAM.app', 'livediagram (staging)'],
-    ['localhost', 'livediagram (staging)'],
-    ['localhost:3000', 'livediagram (staging)'],
-    ['LOCALHOST:3002', 'livediagram (staging)'],
-    ['127.0.0.1', 'livediagram (staging)'],
-    ['127.0.0.1:3771', 'livediagram (staging)'],
-    ['[::1]', 'livediagram (staging)'],
-    ['[::1]:3000', 'livediagram (staging)'],
-    ['::1', 'livediagram (staging)'],
-    ['documents.example.org', 'livediagram (self-hosted)'],
-    ['documents.example.org:8443', 'livediagram (self-hosted)'],
-    ['192.168.1.20:3000', 'livediagram (self-hosted)'],
-    ['[2001:db8::1]:3000', 'livediagram (self-hosted)'],
-    ['livediagram.app.evil.example', 'livediagram (self-hosted)'],
-    ['staging.livediagram.app.example', 'livediagram (self-hosted)'],
+    ['livepages.app', 'livepages'],
+    ['www.livepages.app', 'livepages'],
+    ['WWW.LivePages.App', 'livepages'],
+    ['staging.livepages.app', 'livepages (staging)'],
+    ['Staging.LIVEPAGES.app', 'livepages (staging)'],
+    ['localhost', 'livepages (staging)'],
+    ['localhost:3200', 'livepages (staging)'],
+    ['LOCALHOST:3002', 'livepages (staging)'],
+    ['127.0.0.1', 'livepages (staging)'],
+    ['127.0.0.1:3771', 'livepages (staging)'],
+    ['[::1]', 'livepages (staging)'],
+    ['[::1]:3200', 'livepages (staging)'],
+    ['::1', 'livepages (staging)'],
+    ['documents.example.org', 'livepages (self-hosted)'],
+    ['documents.example.org:8443', 'livepages (self-hosted)'],
+    ['192.168.1.20:3000', 'livepages (self-hosted)'],
+    ['[2001:db8::1]:3200', 'livepages (self-hosted)'],
+    ['livepages.app.evil.example', 'livepages (self-hosted)'],
+    ['staging.livepages.app.example', 'livepages (self-hosted)'],
   ])('%s → %s', (host, name) => {
     expect(driveRootName(host)).toBe(name);
   });

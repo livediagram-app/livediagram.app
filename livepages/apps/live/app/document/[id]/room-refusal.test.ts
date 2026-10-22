@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { LiveDoc } from '@livediagram/api-schema';
+import type { LiveDoc } from '@livepages/api-schema';
 import { DocumentTrashedError } from '@/lib/document-trashed';
 
 // A join the room turned away is explained over REST (docs/specs/013-workspace/trash.md): the editor repeats

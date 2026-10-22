@@ -9,7 +9,7 @@ import { SharedDotIcon } from '@/components/chrome/share-state-icons';
 import { FolderOutlineIcon, StarIcon } from '@/components/primitives/explorer-icons';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { PaneDocument } from './views';
-import { HoverCard, Glyph, useCommunityEnabled } from '@livediagram/ui';
+import { HoverCard, Glyph, useCommunityEnabled } from '@livepages/ui';
 import { API_BASE } from '@/lib/api/base';
 import { isMinimalChrome } from '@/lib/power-user-mode';
 import { useOptionalExplorer } from './ExplorerContext';

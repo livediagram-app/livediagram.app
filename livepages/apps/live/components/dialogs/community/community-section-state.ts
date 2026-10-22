@@ -1,4 +1,4 @@
-import type { CommunityOwnPost } from '@livediagram/api-schema';
+import type { CommunityOwnPost } from '@livepages/api-schema';
 
 // Which face the Share dialog's Community section shows (docs/specs/025-community/community.md
 // "Publishing"; final copy in the blueprint §9). Pure, so the precedence is tested rather than read

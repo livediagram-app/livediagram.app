@@ -1,7 +1,7 @@
 // A type's glyph (docs/specs/026-plan/item-types.md "An item type"), from the Plan glyph set in
-// @livediagram/items, drawn inline on a 16-unit grid so a card never waits for an icon catalogue.
+// @livepages/items, drawn inline on a 16-unit grid so a card never waits for an icon catalogue.
 // Stroked in the type's colour by the caller.
-import { planGlyphPath } from '@livediagram/items';
+import { planGlyphPath } from '@livepages/items';
 
 export function PlanTypeGlyph({
   glyph,

@@ -5,9 +5,9 @@ import {
   lucideKey,
   lucideMail,
   lucideUsers,
-} from '@livediagram/icons/lucide';
+} from '@livepages/icons/lucide';
 import type { ReactNode } from 'react';
-import { Prims } from '@livediagram/ui';
+import { Prims } from '@livepages/ui';
 import { Glyph } from './featureIcons';
 
 /**
@@ -152,7 +152,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
     </Glyph>
   ),
   // ---- About ----
-  'what-is-livediagram': (
+  'what-is-livepages': (
     <Glyph>
       <circle cx="12" cy="12" r="9" />
       <path d="M12 11v5" />
@@ -164,7 +164,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideUsers} />
     </Glyph>
   ),
-  'why-livediagram': (
+  'why-livepages': (
     <Glyph>
       <path d="M9 18h6M10 21h4" />
       <path d="M12 3a6 6 0 0 0-4 10.5c.6.55 1 1.4 1 2.5h6c0-1.1.4-1.95 1-2.5A6 6 0 0 0 12 3Z" />
@@ -310,7 +310,7 @@ export const SUPPORT_ARTICLE_ICONS: Record<string, ReactNode> = {
       <path d="M7 7.5h.01M7 16.5h.01" />
     </Glyph>
   ),
-  'deploying-livediagram': (
+  'deploying-livepages': (
     <Glyph>
       <path d="M5 17a4 4 0 0 1 .8-7.9 6 6 0 0 1 11.3-1.6A3.6 3.6 0 0 1 18.5 17" />
       <path d="M12 13v6M9.5 15.5L12 13l2.5 2.5" />

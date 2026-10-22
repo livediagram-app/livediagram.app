@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { configDefaults } from 'vitest/config';
-import { defineProject } from '@livediagram/vitest-config';
+import { defineProject } from '@livepages/vitest-config';
 
 // Node stays the DEFAULT environment: the ~1,645 tests here are pure logic
 // (canvas geometry, parsers, config tables) and run faster without a DOM.
@@ -21,7 +21,7 @@ export default defineProject({
   // scope), so any .tsx module a test touches (e.g. the template
   // preview switches) must be transformed the same way here or it
   // throws "React is not defined" at render time.
-  esbuild: { jsx: 'automatic' },
+  oxc: { jsx: { runtime: 'automatic' } },
   // The e2e/ Playwright smoke suite (docs/specs/003-system-architecture/e2e-smoke.md) uses the same `.spec.ts`
   // extension but runs under Playwright, not Vitest — keep it out of
   // the unit run (it has its own `test:e2e` script).
@@ -32,7 +32,7 @@ export default defineProject({
     // Testing Library registering its own cleanup, and a tree left mounted
     // when jsdom is torn down crashes a later file in the same worker with
     // `window is not defined`. The shared setup file says why in full.
-    setupFiles: ['@livediagram/vitest-config/react-cleanup'],
+    setupFiles: ['@livepages/vitest-config/react-cleanup'],
     // The editor's source spans app/, components/ and hooks/ beside lib/ and src/: the report counts
     // all of it, so untested components show as such rather than vanishing from the total.
     coverage: {
@@ -43,7 +43,7 @@ export default defineProject({
   resolve: {
     // One React, shared with the workspace packages. `packages/ui` peers
     // react (correctly) but carries its own copy for its own tests, so a
-    // hook test here that renders a `@livediagram/ui` hook resolved TWO
+    // hook test here that renders a `@livepages/ui` hook resolved TWO
     // Reacts — the renderer's and the package's — and every useState threw
     // "Cannot read properties of null". Next's bundler dedupes for real
     // builds; the test resolver has to be told.

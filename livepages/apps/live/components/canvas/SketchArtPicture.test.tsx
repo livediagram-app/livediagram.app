@@ -6,7 +6,7 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { useSyncExternalStore } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { SKETCH_ART_FILTER_ID } from '@livediagram/document';
+import { SKETCH_ART_FILTER_ID } from '@livepages/document';
 import {
   SKETCH_ART_PICTURE_MARGIN,
   SKETCH_ART_PICTURE_MAX_PX,

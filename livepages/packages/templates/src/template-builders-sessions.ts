@@ -19,7 +19,7 @@ import {
   createShape,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   BUTTON_H,
   GAP,

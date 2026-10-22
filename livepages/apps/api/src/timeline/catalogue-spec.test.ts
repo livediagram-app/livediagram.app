@@ -1,7 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { TIMELINE_EVENT_TYPES } from '@livediagram/api-schema';
+import { TIMELINE_EVENT_TYPES } from '@livepages/api-schema';
 
 // The Timeline spec's event catalogue (docs/specs/013-workspace/timeline.md §4)
 // is what a renderer, filter or colour is built from, so it must name exactly

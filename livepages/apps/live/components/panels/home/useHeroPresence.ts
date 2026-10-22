@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { MOTION_MS } from '@livediagram/tailwind-config/motion';
+import { MOTION_MS } from '@livepages/tailwind-config/motion';
 
 // Home's hero comes and goes with Home (docs/specs/013-workspace/explorer-home.md "The hero"): leaving Home folds it
 // away, returning unfolds it, each over the `long` token, so the page under it slides rather than jumps. It is

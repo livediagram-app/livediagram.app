@@ -1,6 +1,6 @@
 // DOM <-> runs glue for the rich-text editor (docs/specs/008-canvas/canvas-and-palette.md). Kept separate from
 // the React component so the offset mapping is small, framework-free, and
-// easy to reason about. The pure runs algebra lives in @livediagram/document
+// easy to reason about. The pure runs algebra lives in @livepages/document
 // (rich-text.ts); this module only bridges it to a live contentEditable.
 //
 // Invariant the whole design rests on: the editor renders runs as a flat
@@ -9,7 +9,7 @@
 // and a single string-length walk converts between DOM points and character
 // offsets in both directions.
 
-import { normalizeRuns, type TextRun } from '@livediagram/document';
+import { normalizeRuns, type TextRun } from '@livepages/document';
 
 // data-* attribute names carried on each rendered span. Render
 // (`dataAttrsForRun`) and read-back (`readRunsFromDom`) must agree, so they

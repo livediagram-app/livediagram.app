@@ -8,7 +8,7 @@
 // Selection is reported via callbacks; the caller decides what "select" means (apply live). `onCommit` is the
 // double-click shortcut (defaults to onSelect when not given).
 
-import type { CustomTheme } from '@livediagram/api-schema';
+import type { CustomTheme } from '@livepages/api-schema';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { THEMES, type ThemeDefinition } from '@/lib/themes';
 import { CustomThemeCard, NewThemeCard, ThemeCard } from '@/components/palette/theme-picker-cards';

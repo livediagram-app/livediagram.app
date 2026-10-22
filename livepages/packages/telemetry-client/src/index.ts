@@ -27,7 +27,7 @@ import {
   type TelemetryAction,
   type TelemetryCategory,
   type TelemetryEvent,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 
 export { onPageHide } from './page-hide';
 export * from './timing';
@@ -36,7 +36,7 @@ const FLUSH_DELAY_MS = 10_000;
 const MAX_BUFFER = 25;
 
 // Where the editor keeps its per-user preferences (docs/specs/007-editor/user-preferences.md). The help
-// centre shares the livediagram.app origin, so an opt-out made in the
+// centre shares the livepages.app origin, so an opt-out made in the
 // editor has to be visible here — which means both apps read this exact
 // string, and a copy in each is a silent privacy bug waiting to happen:
 // version the key in the editor (`:v2`, an ordinary schema migration) and
@@ -48,7 +48,7 @@ const MAX_BUFFER = 25;
 // DTO would belong) isn't a dependency of apps/help, and telemetry is the
 // only field of it the help centre reads. If preferences ever need sharing
 // beyond the opt-out, this constant should move with them.
-export const USER_PREFERENCES_STORAGE_KEY = 'livediagram:user-preferences:v1';
+export const USER_PREFERENCES_STORAGE_KEY = 'livepages:user-preferences:v1';
 
 /**
  * The docs/specs/007-editor/user-preferences.md opt-out rule applied to the raw stored preferences JSON:

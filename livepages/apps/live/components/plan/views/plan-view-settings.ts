@@ -1,7 +1,7 @@
 // A plan view's settings and their changes (docs/specs/026-plan/plan-views.md "Card types", "Swimlanes", "Row
 // order", "Statuses"), shared by its element menu's View flyout and a Gantt chart's cog (GanttSettingsPanel): what it
 // can show, what it shows, and one element edit per change through PlanContext, each tracked.
-import { withArticle } from '@livediagram/ui';
+import { withArticle } from '@livepages/ui';
 import {
   breakdownGroupingOf,
   readPlanViewSettings,
@@ -13,8 +13,8 @@ import {
   viewTakesStatuses,
   type ItemTypeDef,
   type SwimlaneBy,
-} from '@livediagram/items';
-import type { PlanViewRef } from '@livediagram/document';
+} from '@livepages/items';
+import type { PlanViewRef } from '@livepages/document';
 import type { PlanContextValue } from '../PlanContext';
 import { track } from '@/lib/telemetry';
 

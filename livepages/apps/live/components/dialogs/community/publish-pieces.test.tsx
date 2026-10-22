@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { COMMUNITY_CATEGORIES, type CommunityCategory } from '@livediagram/api-schema';
+import { COMMUNITY_CATEGORIES, type CommunityCategory } from '@livepages/api-schema';
 
 // The publish dialog's pieces (docs/specs/025-community/community.md "Publishing"): the category radio group, the
 // card preview, and the confirmation once a post is live.

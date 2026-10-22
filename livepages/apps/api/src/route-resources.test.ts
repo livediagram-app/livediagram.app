@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { API_ROUTE_RESOURCES } from '@livediagram/api-schema';
+import { API_ROUTE_RESOURCES } from '@livepages/api-schema';
 
 // A server crash reports `Error·Api·Internal.<Method>.<Route>` (docs/specs/017-telemetry/telemetry.md), and
 // the route part only names a resource that is in API_ROUTE_RESOURCES:

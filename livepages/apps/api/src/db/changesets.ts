@@ -2,8 +2,8 @@
 // ops, inverse and result lines beside it, one row per part
 // (docs/specs/024-agents/blueprints/agent-changesets.md "Data and persistence").
 
-import type { ElementOp } from '@livediagram/document';
-import { CHANGESET_MERGE_PAGE, type ChangesetCounts } from '@livediagram/api-schema';
+import type { ElementOp } from '@livepages/document';
+import { CHANGESET_MERGE_PAGE, type ChangesetCounts } from '@livepages/api-schema';
 import type { Env } from '../types';
 
 type ChangesetPart = 'ops' | 'inverse' | 'results';

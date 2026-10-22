@@ -5,8 +5,8 @@
 // New Tag dialog. Inert on every other view, so the pane calls it unconditionally.
 
 import { useCallback, useState, type ReactNode } from 'react';
-import { Button } from '@livediagram/ui';
-import type { Tag } from '@livediagram/api-schema';
+import { Button } from '@livepages/ui';
+import type { Tag } from '@livepages/api-schema';
 import { PlusIcon } from '@/components/primitives/explorer-icons';
 import { useDocumentTags } from '@/components/tags/DocumentTagsProvider';
 import { useTagActionsMenu } from '@/components/tags/TagActionsMenu';

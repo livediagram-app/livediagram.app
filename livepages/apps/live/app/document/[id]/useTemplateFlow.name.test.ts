@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
-import type { TemplateKind } from '@livediagram/templates';
+import type { Tab } from '@livepages/document';
+import type { TemplateKind } from '@livepages/templates';
 import { useTemplateFlow } from './useTemplateFlow';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));

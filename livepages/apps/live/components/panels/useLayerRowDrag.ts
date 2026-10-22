@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState, type PointerEvent as ReactPointerEvent, type RefObject } from 'react';
-import type { Layer } from '@livediagram/document';
+import type { Layer } from '@livepages/document';
 
 // Drag a layer row onto another to take its slot (docs/specs/006-document/layers.md).
 //

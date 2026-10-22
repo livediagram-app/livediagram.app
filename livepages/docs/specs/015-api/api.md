@@ -2,8 +2,8 @@
 
 The HTTP + WebSocket layer the live editor calls for document persistence and realtime collab.
 
-- **Workspace:** `apps/api` (`@livediagram/api`).
-- **Worker name:** `livediagram-api`.
+- **Workspace:** `apps/api` (`@livepages/api`).
+- **Worker name:** `livepages-api`.
 - **Mount:** routed from the [router worker](../016-platform/router-app.md) at `/api/*`. The router forwards the request as-is — the api worker sees the full `/api/...` path.
 
 ## Why this exists
@@ -18,7 +18,7 @@ The first prototype phase ([spec 02](../005-project-roadmap/prototype-scope.md))
 
 ## Wire-format types
 
-The DTO shapes the api worker emits + the live editor consumes live in `packages/api-schema` (`@livediagram/api-schema`) — `LiveDoc` (published as `Document`), `TabSummary`, `TabRecord`, `Folder`, `ShareLink`, `ServerMessage` / `ClientMessage`, and the room op vocabulary (`RoomOp` / `RoomOutgoing` / `RoomIncoming`). Both apps import them; the api worker also re-exports under historical `XxxDTO` aliases (`apps/api/src/types.ts`) for backward compatibility with its existing call sites.
+The DTO shapes the api worker emits + the live editor consumes live in `packages/api-schema` (`@livepages/api-schema`) — `LiveDoc` (published as `Document`), `TabSummary`, `TabRecord`, `Folder`, `ShareLink`, `ServerMessage` / `ClientMessage`, and the room op vocabulary (`RoomOp` / `RoomOutgoing` / `RoomIncoming`). Both apps import them; the api worker also re-exports under historical `XxxDTO` aliases (`apps/api/src/types.ts`) for backward compatibility with its existing call sites.
 
 Defining the wire shapes once means server and client cannot drift — adding a field on one side without updating the other is a typechecker error. **Do not redefine these types inline in `apps/api/` or `apps/live/`**; extend the schema package instead. Per AGENTS.md the reuse-over-duplication rule is non-negotiable.
 
@@ -29,7 +29,7 @@ The api resolves the request owner through four identities, in this order of pre
 1. **Clerk Bearer JWT** — `Authorization: Bearer <jwt>`. Verified against `env.CLERK_JWKS_URL` in `apps/api/src/auth/clerk.ts` using `jose`'s `createRemoteJWKSet` + `jwtVerify`. The token's `sub` claim is the owner id. Returns null on any failure (invalid signature, expired, malformed, missing env var), logged as `[auth] clerk_jwt_rejected reason=<jose code>`, never 401, because the worker must still serve the other paths. `exp` / `nbf` allow 5 seconds of clock skew, matching Clerk's backend SDK. A bearer shaped as an API token (`isApiTokenFormat`, `lvd_…`) or a workbench session (`isWorkbenchSessionFormat`, `lvw_…`) is never handed to the verifier: it is no Clerk session token, so `getClerkIdentity` returns null for it at once and logs nothing, and the token paths below resolve it.
 2. **API token** — `Authorization: Bearer lvd_…`, consulted only when no Clerk JWT verified. `resolveApiToken` hashes it and looks up a live (non-revoked, non-expired) `api_tokens` row; the owner id is that row's Clerk userId, so a token request flows through the same ownership and gate checks as a signed-in one. A token minted **read-only** is refused on every `POST` / `PUT` / `DELETE` with `403 read_only_token`, at one choke point in `index.ts`.
 3. **Workbench session** — `Authorization: Bearer lvw_…`, consulted only when neither a Clerk JWT nor a token resolved ([Workbench embeds](../013-workspace/workbench-embeds.md)). `resolveWorkbenchSession` hashes it and looks up a live `workbench_sessions` row of a live token; an unknown, expired or revoked one is refused `401 invalid_session`, never read as a guest. The owner is the session's owner, `clerkUserId` and the token stay null (a person's editor, never an administrator or an agent), and `workbenchRefusal` confines it before any route runs, by its scope: a document session answers another document `404`, any route outside `WORKBENCH_ROUTES` `403 workbench_confined`, and an `X-Share-Code`, `X-Owner-Id` or `X-Share-Password` beside it `403 workbench_confined`; a workspace session reaches the Explorer's routes (`WORKSPACE_ROUTES`), never the account's, and only `X-Owner-Id` beside it is refused. A view session's write, or its read of the share-link list, is `403 workbench_read_only`.
-4. **Guest header** — `X-Owner-Id: <participant-id>`, used when no Bearer credential resolved. The participant id is server-minted by `POST /api/guest-id` and persisted in `localStorage` under `livediagram:v2:self-id`. On the owner-scoped segments (`OWNER_SCOPED_SEGMENTS` in `apps/api/src/auth/guest-rest.ts`: `documents`, `folders`, `images`, `custom-themes`, `shape-libraries`, `participants`, `preferences`, `shared`, `timeline`, `activity`, `favourites`, `trash`, `placement-defaults`) two guards run before any handler:
+4. **Guest header** — `X-Owner-Id: <participant-id>`, used when no Bearer credential resolved. The participant id is server-minted by `POST /api/guest-id` and persisted in `localStorage` under `livepages:v2:self-id`. On the owner-scoped segments (`OWNER_SCOPED_SEGMENTS` in `apps/api/src/auth/guest-rest.ts`: `documents`, `folders`, `images`, `custom-themes`, `shape-libraries`, `participants`, `preferences`, `shared`, `timeline`, `activity`, `favourites`, `trash`, `placement-defaults`) two guards run before any handler:
    - A header value shaped like a Clerk account id is refused unconditionally with `401 account_id_not_a_guest_credential` (`isClerkIdShape`): no real client ever sends one, so it can only be a replayed, harvested account id ([Public API and API tokens §4.1](public-api-and-tokens.md#41-a-clerk-account-id-in-x-owner-id-is-refused-unconditionally)).
    - Once enforcement is armed (`GUEST_ID_HMAC_SECRET` set **and** `GUEST_SIG_ENFORCE_AFTER` in the past, `guestSignatureEnforced`), the header must carry a matching HMAC in `X-Owner-Sig`, or the request gets `401 signature_required`. Until an operator arms it, an unsigned guest id is still accepted on REST; this is the legacy-guest grace window ([Public API and API tokens §4](public-api-and-tokens.md#4-x-owner-id-trust-change)).
 
@@ -302,7 +302,7 @@ Local `wrangler dev` does not enforce it, so the api enforces it itself:
   headroom covers the row's other columns (the tab id, a UUID; the name, at
   most 60 characters, so at most 240 bytes; `updated_at`; SQLite's record
   header) many times over, so a tab under the cap always fits its row.
-- Both numbers live in `@livediagram/api-schema`, so the editor checks the same
+- Both numbers live in `@livepages/api-schema`, so the editor checks the same
   cap the worker does and the two cannot drift.
 - **Every write of a tab's data** is checked against it, at the storage layer
   (`upsertTab`, `seedTabs`, `swapTabData`), so no route can store what D1
@@ -360,7 +360,7 @@ Edits and presence propagate as `op` messages. The room is **not** a stateless r
 
 ### Op classes
 
-Every op kind belongs to exactly one of three lists in `@livediagram/api-schema` (`packages/api-schema/src/room-messages.ts`), and the class decides its ordering, its role gate, and whether a client may send it at all. The room reads `op.kind` to classify; the payload stays `op: unknown` on the wire.
+Every op kind belongs to exactly one of three lists in `@livepages/api-schema` (`packages/api-schema/src/room-messages.ts`), and the class decides its ordering, its role gate, and whether a client may send it at all. The room reads `op.kind` to classify; the payload stays `op: unknown` on the wire.
 
 - **Presence** (`PRESENCE_OP_KINDS`): ephemeral, mutate nothing. Relayed unordered (no `seq`), never logged, never replayed, from **any** connected session, so a view-only visitor still shows peers their cursor, selection, laser, walking character and tab, and can answer a poll.
 - **Mutation** (`MUTATION_OP_KINDS`): change the document. Relayed **only from a session whose verified role is `edit`**; each gets a monotonic `seq` within the room's `epoch` and a slot in the catch-up log.
@@ -416,7 +416,7 @@ Mutations are totally ordered by the single-threaded DO: a monotonic `seq` withi
 Durable Object storage, never D1, and none of it a copy of the document:
 
 - **`order-state`**: `{ epoch, seq }`, written on every mutation.
-- **The collaboration ledger** (`RoomLedgerStore`, `room-ledger-store.ts`; entries defined by the pure `collab-ledger.ts` in `@livediagram/document`): for every `el-delta` and `vote` it sequences, the latest state of each answer, idea, checklist tick, comment and the round's dots, one key per element (plus the tab's vote), tagged with the `seq` that set it. An entry that would pass the storage value limit stops growing. The api reads it back to merge a tab save (see the tab `PUT` above).
+- **The collaboration ledger** (`RoomLedgerStore`, `room-ledger-store.ts`; entries defined by the pure `collab-ledger.ts` in `@livepages/document`): for every `el-delta` and `vote` it sequences, the latest state of each answer, idea, checklist tick, comment and the round's dots, one key per element (plus the tab's vote), tagged with the `seq` that set it. An entry that would pass the storage value limit stops growing. The api reads it back to merge a tab save (see the tab `PUT` above).
 - **The live poll** (`RoomLivePoll`, `room-live-poll.ts`, key `live-poll`): the running poll and every answer, replayed on `hello`, dropped on `poll-end`.
 - **The facilitator baton** (`RoomFacilitator`, `room-facilitator.ts`, key `facilitator`; rules in `facilitator.ts`): who holds it, the token only the holder was sent, and a grace deadline enforced by a DO alarm when the holder's socket goes away ([Facilitator](../012-collaboration/facilitator.md)).
 
@@ -520,8 +520,8 @@ A new owner-keyed table adds a row here, a statement to each function, and a see
 
 Before the first deploy:
 
-1. `pnpm --filter @livediagram/api exec wrangler d1 create livediagram`
-2. Copy the printed `database_id` into the `[[d1_databases]]` block in `apps/api/wrangler.toml`. The block is already there with its binding name (`DB`) — only the id changes. What is committed is livediagram.app's own database id, so a self-hoster is replacing a real value rather than filling in a blank.
-3. `pnpm --filter @livediagram/api run db:migrate:remote` to apply migrations.
+1. `pnpm --filter @livepages/api exec wrangler d1 create livepages`
+2. Copy the printed `database_id` into the `[[d1_databases]]` block in `apps/api/wrangler.toml`. The block is already there with its binding name (`DB`) — only the id changes. What is committed is livepages.app's own database id, so a self-hoster is replacing a real value rather than filling in a blank.
+3. `pnpm --filter @livepages/api run db:migrate:remote` to apply migrations.
 
-After that, GitHub Actions handles deploys via `deploy.yml` (`deploy-api` step). The router's service binding to `livediagram-api` means the API must deploy before the router.
+After that, GitHub Actions handles deploys via `deploy.yml` (`deploy-api` step). The router's service binding to `livepages-api` means the API must deploy before the router.

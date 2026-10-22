@@ -10,7 +10,7 @@ import {
   removeAgendaCurrent,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { useDataShapeSetters } from './useDataShapeSetters';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

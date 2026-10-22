@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ChangesetRoomOp } from '@livediagram/api-schema';
+import type { ChangesetRoomOp } from '@livepages/api-schema';
 import { admitChangesetOp, noteLoadedRev, type ChangesetSeen } from './changeset-seen';
 
 // Which relayed changesets an editor applies (docs/specs/024-agents/blueprints/agent-changesets.md

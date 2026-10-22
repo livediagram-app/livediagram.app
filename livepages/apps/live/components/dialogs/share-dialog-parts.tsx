@@ -1,6 +1,6 @@
 import type { ShareLinkExpiry, ShareRole } from '@/lib/api-client';
-import { Glyph, lucideGlyph } from '@livediagram/ui';
-import { lucideClock, lucideEye, lucidePencilLine, lucideVote } from '@livediagram/icons/lucide';
+import { Glyph, lucideGlyph } from '@livepages/ui';
+import { lucideClock, lucideEye, lucidePencilLine, lucideVote } from '@livepages/icons/lucide';
 
 // Presentational parts of the share dialog: the expiry-label lookup, the
 // role catalogue every pass surface reads (docs/specs/007-editor/live-app.md

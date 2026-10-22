@@ -1,7 +1,7 @@
 // The Sankey tour (docs/specs/007-editor/element-tours.md "The Sankey tour"): an element tour of the selected diagram.
 // It reads the diagram on the canvas first, lifting its widest band and a leftover as a hover would, then opens the
 // Flows dialog and carries on with the dialog's own Show Me steps, so the two never drift.
-import { sankeyFrame, type ShapeElement } from '@livediagram/document';
+import { sankeyFrame, type ShapeElement } from '@livepages/document';
 import { balanceNotes, rowsFromFlows } from '@/lib/sankey-flow-rows';
 import type { SankeyTourFocus } from '@/lib/sankey-tour-focus';
 import { sankeyFlowsTourSteps, type SankeyFlowsTourContext } from './sankey-flows-tour-steps';

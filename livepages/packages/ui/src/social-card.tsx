@@ -88,7 +88,7 @@ export function renderSocialCard(opts?: SocialCardOptions) {
           <img src={MARK_DATA_URI} width={64} height={64} alt="" />
           <div style={{ display: 'flex' }}>
             <span style={{ color: '#0284c7' }}>live</span>
-            <span>diagram</span>
+            <span>pages</span>
           </div>
         </div>
 
@@ -161,7 +161,7 @@ export function renderSocialCard(opts?: SocialCardOptions) {
               fontWeight: 500,
             }}
           >
-            livediagram.app
+            livepages.app
           </div>
           <div>{opts?.footer ?? 'No sign-up. Open the link, start drawing.'}</div>
         </div>

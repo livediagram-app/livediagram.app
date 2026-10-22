@@ -7,7 +7,7 @@ import {
   WORKBENCH_RENEW_RETRY_MS,
   type WorkbenchDocumentSessionResponse,
   type WorkbenchToPageMessage,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import type { WorkbenchRedeemOutcome } from '@/lib/api/workbench';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 import { workbenchTransition, type WorkbenchPhase } from './workbench-machine';
@@ -73,7 +73,7 @@ function mount(port: WorkbenchPort | null, initial: WorkbenchPhase) {
 
 const mounted: WorkbenchPhase = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
 const renews = (port: WorkbenchPort) =>
-  vi.mocked(port.send).mock.calls.filter(([m]) => m.type === 'livediagram:renew').length;
+  vi.mocked(port.send).mock.calls.filter(([m]) => m.type === 'livepages:renew').length;
 
 let log: ReturnType<typeof vi.spyOn>;
 let warn: ReturnType<typeof vi.spyOn>;
@@ -103,7 +103,7 @@ describe('useWorkbenchRenewal', () => {
     act(() => {
       vi.advanceTimersByTime(1);
     });
-    expect(port.send).toHaveBeenCalledWith({ type: 'livediagram:renew', v: 1 });
+    expect(port.send).toHaveBeenCalledWith({ type: 'livepages:renew', v: 1 });
     act(() => {
       vi.advanceTimersByTime(WORKBENCH_RENEW_RETRY_MS * 2);
     });
@@ -126,7 +126,7 @@ describe('useWorkbenchRenewal', () => {
     redeem.mockResolvedValue({ kind: 'opened', session: RENEWED });
     const { result } = mount(port, mounted);
 
-    await act(async () => deliver({ type: 'livediagram:ticket', v: 1, ticket: TICKET }));
+    await act(async () => deliver({ type: 'livepages:ticket', v: 1, ticket: TICKET }));
 
     expect(redeem).toHaveBeenCalledWith(TICKET);
     expect(result.current).toEqual({ ...mounted, session: RENEWED });
@@ -143,7 +143,7 @@ describe('useWorkbenchRenewal', () => {
     });
     expect(renews(port)).toBe(1);
 
-    await act(async () => deliver({ type: 'livediagram:ticket', v: 1, ticket: TICKET }));
+    await act(async () => deliver({ type: 'livepages:ticket', v: 1, ticket: TICKET }));
     act(() => {
       vi.advanceTimersByTime(WORKBENCH_RENEW_LEAD_MS);
     });
@@ -157,7 +157,7 @@ describe('useWorkbenchRenewal', () => {
     redeem.mockResolvedValue({ kind: 'opened', session: { ...RENEWED, documentId: 'doc-2' } });
     const { result } = mount(port, mounted);
 
-    await act(async () => deliver({ type: 'livediagram:ticket', v: 1, ticket: TICKET }));
+    await act(async () => deliver({ type: 'livepages:ticket', v: 1, ticket: TICKET }));
 
     expect(result.current).toMatchObject({ session: SESSION });
     expect(endSession).toHaveBeenCalledWith(RENEWED.session);
@@ -172,7 +172,7 @@ describe('useWorkbenchRenewal', () => {
     });
     const { result } = mount(port, mounted);
 
-    await act(async () => deliver({ type: 'livediagram:ticket', v: 1, ticket: TICKET }));
+    await act(async () => deliver({ type: 'livepages:ticket', v: 1, ticket: TICKET }));
 
     expect(result.current).toMatchObject({ session: SESSION });
     expect(warn).toHaveBeenCalledWith('[workbench] renew-failed', { reason: 'mismatch' });
@@ -183,11 +183,11 @@ describe('useWorkbenchRenewal', () => {
     const { result } = mount(port, mounted);
 
     redeem.mockResolvedValueOnce({ kind: 'refused', status: 401, reason: 'used' });
-    await act(async () => deliver({ type: 'livediagram:ticket', v: 1, ticket: TICKET }));
+    await act(async () => deliver({ type: 'livepages:ticket', v: 1, ticket: TICKET }));
     redeem.mockResolvedValueOnce({ kind: 'refused', status: 404, reason: null });
-    await act(async () => deliver({ type: 'livediagram:ticket', v: 1, ticket: TICKET }));
+    await act(async () => deliver({ type: 'livepages:ticket', v: 1, ticket: TICKET }));
     redeem.mockResolvedValueOnce({ kind: 'failed', status: 503 });
-    await act(async () => deliver({ type: 'livediagram:ticket', v: 1, ticket: TICKET }));
+    await act(async () => deliver({ type: 'livepages:ticket', v: 1, ticket: TICKET }));
 
     expect(result.current).toMatchObject({ session: SESSION });
     expect(warn).toHaveBeenCalledWith('[workbench] renew-failed', { reason: 'used' });
@@ -199,7 +199,7 @@ describe('useWorkbenchRenewal', () => {
     const { port, deliver } = fakePort();
     mount(port, mounted);
 
-    await act(async () => deliver({ type: 'livediagram:theme', v: 1, colourScheme: 'dark' }));
+    await act(async () => deliver({ type: 'livepages:theme', v: 1, colourScheme: 'dark' }));
 
     expect(redeem).not.toHaveBeenCalled();
   });

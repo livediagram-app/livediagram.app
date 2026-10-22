@@ -1,4 +1,4 @@
-import { PreviewFan } from '@livediagram/template-previews';
+import { PreviewFan } from '@livepages/template-previews';
 import { BAND_CARD, BAND_CONTROL_HOVER, BAND_LABEL } from '@/components/band-classes';
 import type { GalleryShelf, ShelfId } from '@/lib/template-gallery';
 

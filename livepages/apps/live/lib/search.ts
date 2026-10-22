@@ -11,8 +11,8 @@
 // + the dynamic-import wrapping.
 
 // The palette ranking lives with the icon catalogues, so the api's icon search ranks alike.
-import { matches, paletteRank } from '@livediagram/icons';
-import type { ShapeKind, Tab } from '@livediagram/document';
+import { matches, paletteRank } from '@livepages/icons';
+import type { ShapeKind, Tab } from '@livepages/document';
 
 // Every word typed is found somewhere in the fields, case ignored: "export png" finds Export… (named Export, its
 // keywords saying png), as a start's template search does (docs/specs/008-canvas/canvas-and-palette.md "Search
@@ -107,10 +107,10 @@ export type PaletteAdd =
   | {
       type: 'shape';
       shapeKind: ShapeKind;
-      session?: import('@livediagram/document').SessionTool;
-      reaction?: import('@livediagram/document').Reaction;
-      mode?: import('@livediagram/document').SelectionMode;
-      estimateScale?: import('@livediagram/document').EstimateScale;
+      session?: import('@livepages/document').SessionTool;
+      reaction?: import('@livepages/document').Reaction;
+      mode?: import('@livepages/document').SelectionMode;
+      estimateScale?: import('@livepages/document').EstimateScale;
       plan?: string;
       variant?: string;
     }

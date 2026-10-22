@@ -5,7 +5,7 @@ import {
   DEFAULT_BORDER_STROKE,
   isSelfDrawingShape,
   type MirroredPage,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { isSvgRenderedShape, ShapeSvgOverlay } from '@/components/canvas/shape-svg-overlay';
 import { POLYGON_CLOSE_PX } from '@/components/canvas/useCanvasPolygonGesture';
 import { isWhiteboardPenIntent, type PendingDraw } from '@/lib/draw-mode';

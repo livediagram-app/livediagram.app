@@ -7,8 +7,8 @@
 // comment the page has not asked about yet (a new comment), never on every render.
 
 import { useEffect, useSyncExternalStore } from 'react';
-import { isProfilePictureUrl } from '@livediagram/api-schema';
-import { elementThreads, type Element } from '@livediagram/document';
+import { isProfilePictureUrl } from '@livepages/api-schema';
+import { elementThreads, type Element } from '@livepages/document';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
 import { API_BASE, apiFetch, apiHeaders } from '@/lib/api/core';
 import { createListeners } from '@/lib/listeners';

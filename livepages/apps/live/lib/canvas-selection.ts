@@ -9,7 +9,7 @@ import {
   sheetDrawnChartIds,
   isChipShape,
   type Rect,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   elementBounds,
   isBoxed,
@@ -17,7 +17,7 @@ import {
   unionRects,
   type Element,
   type ElementId,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 type CanvasSelection = {
   // First element (in z-order) of an active marquee multi-selection,

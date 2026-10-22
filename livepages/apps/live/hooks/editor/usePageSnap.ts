@@ -5,7 +5,7 @@
 // canvas is never fought: nothing snaps while a gesture is open or a pointer is down, and a
 // gesture opening stops a glide under way.
 import { useEffect } from 'react';
-import type { LaidOutPage } from '@livediagram/document';
+import type { LaidOutPage } from '@livepages/document';
 import { canvasGestureNow, subscribeCanvasGesture } from '@/lib/canvas-gesture';
 import { debugLog } from '@/lib/debug-log';
 import { pageInView } from '@/lib/page-contents';

@@ -3,7 +3,7 @@
 // (packFreehandPoints quantises them, docs/specs/006-document/stroke-points.md), and the landing
 // writes no field at its default; what is left here is the boxes and arrow ends, kept to a
 // hundredth of a canvas px rather than a full double.
-import type { Element, Rect } from '@livediagram/document';
+import type { Element, Rect } from '@livepages/document';
 
 // Boxes, free arrow ends and arrow bends: 0.005 px at most.
 const BOX_DECIMALS = 2;

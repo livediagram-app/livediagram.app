@@ -7,7 +7,7 @@ import {
   pathAnchors,
   type PathAnchor,
   type PathElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { PATH_DOUBLE_PRESS_MS, PATH_DRAG_THRESHOLD_PX } from '@/lib/path-draw';

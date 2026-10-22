@@ -6,11 +6,11 @@ import {
   planBoardPatch,
   preferNewerQa,
   type Tab,
-} from '@livediagram/document';
-import { tabArticleOps, type RoomOp } from '@livediagram/api-schema';
+} from '@livepages/document';
+import { tabArticleOps, type RoomOp } from '@livepages/api-schema';
 
 // The article framing is shared with the api's relay of an agent's write.
-export { tabArticleOps } from '@livediagram/api-schema';
+export { tabArticleOps } from '@livepages/api-schema';
 
 // Turn the before/after of an autosaved tab into the realtime ops to
 // broadcast (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0). The room used to send the whole `Tab` on

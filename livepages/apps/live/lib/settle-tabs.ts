@@ -4,7 +4,7 @@ import {
   settleStacks,
   tagColoursOf,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 // Badges and step numbers (docs/specs/009-elements/badge.md "Attachment") settled on every tab a write changed, against
 // the tab as it was: fitted, numbered, kept on their hosts' points, attached where dropped. Both of the editor's

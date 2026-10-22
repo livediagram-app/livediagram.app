@@ -9,13 +9,13 @@ import {
   type FreehandElement,
   type ShapeElement,
   type TextElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   cornerRadiusPx,
   encodeStrokePoints,
   freehandCanvasPoints,
   strokePointCount,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 // Excalidraw text through the one parser and the shared landing, as the Import dialog runs it
 // (useTabImport, useBoardSceneImport), at the tab's own coordinates.
@@ -72,7 +72,7 @@ describe('Excalidraw import envelope', () => {
   });
 
   it('rejects JSON that is not an excalidraw scene', () => {
-    const r = importOnDiagram('{"kind":"livediagram.tab"}');
+    const r = importOnDiagram('{"kind":"livepages.tab"}');
     expect(r).toMatchObject({ ok: false });
     if (!r.ok) expect(r.error).toMatch(/excalidraw/i);
   });
@@ -260,7 +260,7 @@ describe('boxed element mapping', () => {
       strokeStyle: 'dashed',
       strokeWidth: 'thick',
     });
-    // livediagram has no groups (docs/specs/009-elements/web-components-and-no-groups.md): grouped Excalidraw elements
+    // livepages has no groups (docs/specs/009-elements/web-components-and-no-groups.md): grouped Excalidraw elements
     // arrive as separate elements.
     expect('groupId' in a!).toBe(false);
     expect('groupId' in b!).toBe(false);

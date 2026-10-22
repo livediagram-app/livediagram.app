@@ -3,7 +3,7 @@
 // filed before anything is written. The judgements are pure; the reads they need arrive through
 // `PlacementLookups`, so the whole decision is testable without a database.
 
-import type { CreationIntent, PlacementRejection } from '@livediagram/api-schema';
+import type { CreationIntent, PlacementRejection } from '@livepages/api-schema';
 import { defaultFolder } from './default-folder';
 import type {
   DefaultSkip,

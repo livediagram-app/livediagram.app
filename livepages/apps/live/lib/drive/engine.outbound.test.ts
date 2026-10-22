@@ -1,13 +1,13 @@
-import { parseDocumentEnvelope } from '@livediagram/document';
+import { parseDocumentEnvelope } from '@livepages/document';
 import { describe, expect, it } from 'vitest';
-import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
+import { DRIVE_FILE_MIME } from '@livepages/api-schema';
 import { DRIVE_WRITE_IDLE_MS, DRIVE_WRITE_MIN_INTERVAL_MS } from './cadence';
 import { fileOf, HOST, makeEngine, OWNER, world } from './test-support';
 import { DriveTokenError } from './token-source';
 
 // Every row of the spec's Outbound table, end to end through the engine, the
 // REST client and the fake Google (docs/specs/022-drive-mirror/drive-mirror.md,
-// "Outbound: livediagram to Drive").
+// "Outbound: livepages to Drive").
 
 async function connected() {
   const w = world();
@@ -16,7 +16,7 @@ async function connected() {
 }
 
 describe('first mirror', () => {
-  it('creates the livediagram root, the folder tree, then every document oldest first', async () => {
+  it('creates the livepages root, the folder tree, then every document oldest first', async () => {
     const w = await connected();
     w.ld.createFolderAs('f1', 'Work');
     w.ld.createFolderAs('f2', 'Plans', 'f1');
@@ -26,9 +26,9 @@ describe('first mirror', () => {
     await w.engine.start();
 
     const root = w.google.get(w.ld.connection!.rootFolderId!)!;
-    // The test host is neither livediagram.app nor staging nor loopback.
+    // The test host is neither livepages.app nor staging nor loopback.
     expect(root).toMatchObject({
-      name: 'livediagram (self-hosted)',
+      name: 'livepages (self-hosted)',
       appProperties: { ldRoot: HOST },
     });
     const f1 = fileOf(w.google, w.ld, 'folder', 'f1')!;
@@ -38,7 +38,7 @@ describe('first mirror', () => {
     expect(f2.appProperties).toEqual({ ldFolderId: 'f2', ldOrigin: HOST });
     const old = fileOf(w.google, w.ld, 'document', 'old')!;
     expect(old).toMatchObject({
-      name: 'Old one.livediagram',
+      name: 'Old one.livepages',
       mimeType: DRIVE_FILE_MIME,
       parents: [f2.id],
       appProperties: { ldDocumentId: 'old', ldOrigin: HOST },
@@ -142,7 +142,7 @@ describe('outbound rows', () => {
     const w = await mirrored();
     await w.ld.port().renameDocument('d1', 'Roadmap');
     await w.engine.syncNow();
-    expect(fileOf(w.google, w.ld, 'document', 'd1')!.name).toBe('Roadmap.livediagram');
+    expect(fileOf(w.google, w.ld, 'document', 'd1')!.name).toBe('Roadmap.livepages');
   });
 
   it('Document moved to another folder: file moved', async () => {
@@ -170,7 +170,7 @@ describe('outbound rows', () => {
     await w.engine.syncNow();
     const oldId = w.ld.item('document', 'd1')!.driveFileId;
     w.google.userDeleteForever(oldId);
-    // Drive's delete is read as `removed` while livediagram still has it in
+    // Drive's delete is read as `removed` while livepages still has it in
     // the Trash, which purges it; restore before the next read instead.
     await w.ld.port().restoreDocument('d1');
     await w.engine.flush();
@@ -271,7 +271,7 @@ describe('outbound rows', () => {
     await p.createFolder('brief', 'Brief', null);
     await w.engine.syncNow();
     const file = fileOf(w.google, w.ld, 'folder', 'brief')!.id;
-    // Deleted in livediagram before any pass read the Drive change its own create made.
+    // Deleted in livepages before any pass read the Drive change its own create made.
     await p.deleteFolder('brief');
     await w.engine.syncNow();
     await w.engine.syncNow();
@@ -279,7 +279,7 @@ describe('outbound rows', () => {
     expect(w.google.get(file)!.trashed).toBe(true);
   });
 
-  it('re-creates a file deleted outside livediagram when it next writes (404)', async () => {
+  it('re-creates a file deleted outside livepages when it next writes (404)', async () => {
     const w = await mirrored();
     const oldId = w.ld.item('document', 'd1')!.driveFileId;
     w.google.loseAccess(OWNER, oldId);
@@ -287,7 +287,7 @@ describe('outbound rows', () => {
     await w.engine.flush();
     const file = fileOf(w.google, w.ld, 'document', 'd1')!;
     expect(file.id).not.toBe(oldId);
-    expect(file.name).toBe('Again.livediagram');
+    expect(file.name).toBe('Again.livepages');
   });
 });
 

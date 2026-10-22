@@ -11,7 +11,7 @@ import {
   remapPresentationTabs,
   remapTabLinks,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 export function forkTakenTabIds(
   tabs: Tab[],

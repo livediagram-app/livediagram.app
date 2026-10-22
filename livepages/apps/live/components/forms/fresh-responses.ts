@@ -5,15 +5,15 @@
 // FRESH_OPENED_MAX ids), and read through a small store so every card drawing the mark updates when one is opened.
 import { useSyncExternalStore } from 'react';
 import { useToday } from '@/hooks/ui/useToday';
-import { FROM_FORM_FIELD, readFromForm } from '@livediagram/forms';
-import type { Item } from '@livediagram/items';
+import { FROM_FORM_FIELD, readFromForm } from '@livepages/forms';
+import type { Item } from '@livepages/items';
 import { createListeners } from '@/lib/listeners';
 
 // How long a response's card shows New when nobody opens it. Safe range 1..30 days.
 export const FRESH_RESPONSE_MS = 7 * 24 * 60 * 60 * 1000;
 // The most opened ids kept; past it the oldest go (they are older than a week by then on any busy board).
 export const FRESH_OPENED_MAX = 500;
-const KEY = 'livediagram:form-responses-opened';
+const KEY = 'livepages:form-responses-opened';
 
 let opened: string[] | null = null;
 // The same ids as a set, so each card's check is one lookup however many were opened.

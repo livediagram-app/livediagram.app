@@ -13,17 +13,17 @@ export type ChartSource = {
   cols?: string[];
 };
 
-// The most columns a source names: the series cap and a label column (@livediagram/sheets CHART_SERIES_MAX + 1).
+// The most columns a source names: the series cap and a label column (@livepages/sheets CHART_SERIES_MAX + 1).
 export const CHART_SOURCE_COLS_MAX = 13;
 
-// The table a range holds (@livediagram/sheets SheetChartTable, restated): one category per row, one series per
+// The table a range holds (@livepages/sheets SheetChartTable, restated): one category per row, one series per
 // value column.
 type ChartTable = {
   categories: string[];
   series: { name: string; values: number[] }[];
 };
 
-// A sheet's row or column id (@livediagram/sheets AXIS_ID_PATTERN, repeated so this package never imports it).
+// A sheet's row or column id (@livepages/sheets AXIS_ID_PATTERN, repeated so this package never imports it).
 const AXIS_ID = /^[a-z0-9]{4,12}$/;
 
 export function isChartSource(v: unknown): v is ChartSource {

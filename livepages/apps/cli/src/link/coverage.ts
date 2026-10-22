@@ -2,8 +2,8 @@
 // folder's subtree in the personal library or a team's, and its listed documents wherever they are, each with its
 // folder path (RL7). A covered folder no library holds leaves its documents unknown (RL6).
 
-import { readLibraries, type Libraries, type VerbContext } from '@livediagram/agent-verbs';
-import type { DocumentSummary, Folder } from '@livediagram/api-schema';
+import { readLibraries, type Libraries, type VerbContext } from '@livepages/agent-verbs';
+import type { DocumentSummary, Folder } from '@livepages/api-schema';
 import type { LinkFile } from './link-file';
 import { folderPathSegments } from './mirror-paths';
 

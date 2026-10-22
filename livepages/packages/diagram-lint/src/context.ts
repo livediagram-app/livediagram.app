@@ -26,7 +26,7 @@ import {
   type Rect,
   type RefTable,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { boxBounds, isLintBox } from './boxes';
 import { LINT_MEASURE_EPOCH } from './constants';
 

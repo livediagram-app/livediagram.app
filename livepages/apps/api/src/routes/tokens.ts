@@ -9,7 +9,7 @@
 //   GET    /api/tokens/current — the token this request presented (the CLI's auth status)
 //   DELETE /api/tokens/current — that token revoking itself (the CLI's auth logout)
 
-import type { CurrentTokenResponse } from '@livediagram/api-schema';
+import type { CurrentTokenResponse } from '@livepages/api-schema';
 import {
   badRequest,
   conflict,

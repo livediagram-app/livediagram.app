@@ -8,7 +8,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from 'react';
-import { CloseIcon, FIELD_INVALID } from '@livediagram/ui';
+import { CloseIcon, FIELD_INVALID } from '@livepages/ui';
 
 // The shared chip field: chips typed into one bordered field, the Community publish dialog's tags and
 // a Plan card's labels. Enter adds the draft (the caller decides what adding means, and handles a

@@ -2,15 +2,15 @@
 // Each call dispatches an offline document to its local store (../offline/offline-items) and a
 // cloud document to the api. A session on a tab-scoped link names its tab on every call.
 
-import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@livediagram/api-schema';
+import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@livepages/api-schema';
 import {
   ITEM_BULK_MAX,
   type Item,
   type ItemPerson,
   type ItemStoreState,
   type ItemWrite,
-} from '@livediagram/items';
-import { createComment, type CommentMention } from '@livediagram/document';
+} from '@livepages/items';
+import { createComment, type CommentMention } from '@livepages/document';
 import { isOfflineId } from '../offline/offline-store';
 import {
   offlineFetchItems,

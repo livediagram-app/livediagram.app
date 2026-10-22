@@ -1,6 +1,6 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { qaVoterId, type QaNote } from '@livediagram/document';
+import { qaVoterId, type QaNote } from '@livepages/document';
 import type { QaWriteRequest } from '../qa-board-write';
 
 // The Q&A board endpoint (docs/specs/012-collaboration/qa-board.md). What the ROUTE has to get right: the role

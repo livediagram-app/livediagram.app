@@ -6,10 +6,10 @@
 // the session (D10). Nothing is deleted either way.
 
 import { useState } from 'react';
-import { CloseIcon } from '@livediagram/ui';
+import { CloseIcon } from '@livepages/ui';
 import { useDriveMirror } from './drive-mirror-context';
 
-const DISMISS_KEY = 'livediagram:v2:drive-banner-dismissed';
+const DISMISS_KEY = 'livepages:v2:drive-banner-dismissed';
 
 export function DriveReconnectBanner() {
   const { status, connect, resume } = useDriveMirror();

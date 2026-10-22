@@ -1,5 +1,5 @@
 // The share page's head (docs/specs/013-workspace/share-link-previews.md). `/document/shared?s=<code>` is the same
-// static shell as every document, so a link preview, whose crawler never runs the page's script, saw "livediagram"
+// static shell as every document, so a link preview, whose crawler never runs the page's script, saw "livepages"
 // over an empty box. For a link whose preview may name its document, the api answers its name, and the shell's head
 // is rewritten to carry it and the share card before it is sent.
 //
@@ -10,7 +10,7 @@ import {
   shareCardImagePath,
   sharePreviewCardPath,
   type SharePreviewResponse,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 
 // The few runtime types used here, written out so the app's one DOM-lib typecheck covers this file too (as the
 // Community worker does, apps/community/worker/index.ts).
@@ -31,7 +31,7 @@ export const SHARE_CARD_TIMEOUT_MS = 1500;
 
 // What a named preview says under the document's name.
 export const SHARE_PITCH =
-  'Open it in livediagram: diagrams, whiteboards and documents, made together.';
+  'Open it in livepages: diagrams, whiteboards and documents, made together.';
 
 // A preview line is one line: a name with newlines or runs of spaces would wrap oddly in every chat app.
 const NAME_MAX = 200;
@@ -48,7 +48,7 @@ export function shareHead(name: string, code: string, origin: string): ShareHead
     title,
     description: SHARE_PITCH,
     image: `${origin}/api${shareCardImagePath(code)}`,
-    imageAlt: `${title}, drawn in livediagram`,
+    imageAlt: `${title}, drawn in livepages`,
   };
 }
 

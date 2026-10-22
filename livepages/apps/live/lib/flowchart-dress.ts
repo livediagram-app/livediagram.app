@@ -2,7 +2,7 @@
 // looks like its type", "Connectors"): the tab's theme like any new element, then the look of the
 // chart's latest step of the same type, never its size (a step is its type's size, which the layout
 // keeps). The connector takes the chart's latest connector's look, else an angled arrow.
-import type { ArrowElement, ShapeElement, Tab } from '@livediagram/document';
+import type { ArrowElement, ShapeElement, Tab } from '@livepages/document';
 import { paintableArrowFields } from '@/lib/format-painter';
 import { dressMindNode } from '@/lib/mind-dress';
 

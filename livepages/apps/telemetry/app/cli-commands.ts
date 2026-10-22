@@ -87,7 +87,7 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'Pull', command: 'pull', what: 'writing a document to a file' },
   { type: 'Push', command: 'push', what: 'sending a pulled file’s changes back' },
   { type: 'Export', command: 'export --all', what: 'exporting every document to files' },
-  { type: 'LinkInit', command: 'link init', what: 'linking a repository to livediagram' },
+  { type: 'LinkInit', command: 'link init', what: 'linking a repository to livepages' },
   { type: 'LinkStatus', command: 'link status', what: 'checking a repository link’s sync states' },
   { type: 'LinkLs', command: 'link ls', what: 'listing the documents a repository link covers' },
   { type: 'Sync', command: 'sync', what: 'mirroring a link’s documents into a repository' },
@@ -122,5 +122,5 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
 // `Cli·Used·<type>` as a sentence, for the event log.
 export function cliCommandSentence(type: string): string | null {
   const row = CLI_COMMANDS.find((c) => c.type === type);
-  return row ? `Someone ran livediagram ${row.command} from the command line: ${row.what}.` : null;
+  return row ? `Someone ran livepages ${row.command} from the command line: ${row.what}.` : null;
 }

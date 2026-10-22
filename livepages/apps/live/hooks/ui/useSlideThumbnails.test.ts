@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, svgBoxed, type Deck, type Tab } from '@livediagram/document';
-import { ITEM_TYPES, presetSetup, type Item } from '@livediagram/items';
+import { createShape, svgBoxed, type Deck, type Tab } from '@livepages/document';
+import { ITEM_TYPES, presetSetup, type Item } from '@livepages/items';
 import { useSlideThumbnails } from './useSlideThumbnails';
 
 // docs/specs/012-collaboration/presentation-mode.md "Board slides": a slide showing a Plan board draws its

@@ -1,4 +1,4 @@
-import { CHART_TYPE_LABELS, type ChartType, withArticle } from '@livediagram/document';
+import { CHART_TYPE_LABELS, type ChartType, withArticle } from '@livepages/document';
 import { conceptOutro, onGraphic } from './concept-element-tour-steps';
 import type { ElementTourApi } from './element-tour-api';
 import { menuStep, type MenuTourEnv } from './menu-tour-step';

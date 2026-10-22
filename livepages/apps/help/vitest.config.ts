@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { defineProject } from '@livediagram/vitest-config';
+import { defineProject } from '@livepages/vitest-config';
 
 // Node stays the default environment: most of these suites are documentation-correctness
 // checks (the registry, article links, repo paths in docs), not rendering.
@@ -14,6 +14,6 @@ import { defineProject } from '@livediagram/vitest-config';
 // The alias mirrors tsconfig's `"@/*": ["./*"]`, so a suite can import the modules the pages use (the category
 // scenes, the home page's sections) as the pages do.
 export default defineProject({
-  esbuild: { jsx: 'automatic' },
+  oxc: { jsx: { runtime: 'automatic' } },
   resolve: { alias: { '@': fileURLToPath(new URL('.', import.meta.url)) } },
 });

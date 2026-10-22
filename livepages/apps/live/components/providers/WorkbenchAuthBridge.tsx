@@ -6,7 +6,7 @@
 // token. The provider and the confinement are in place before any child's layout effect runs, so the
 // editor's first request already presents the session (and is judged by the allow-list).
 import { useLayoutEffect, useMemo, type ReactNode, type RefObject } from 'react';
-import type { WorkbenchConfinementSession } from '@livediagram/api-schema';
+import type { WorkbenchConfinementSession } from '@livepages/api-schema';
 import { registerTokenProvider, setWorkbenchConfinement } from '@/lib/api/core';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { DeferredAuthContext, type DeferredAuthState } from './deferred-auth';

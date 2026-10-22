@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseDocumentEnvelope } from '@livediagram/document';
+import { parseDocumentEnvelope } from '@livepages/document';
 import { parsePullFile } from '../sync/pull-file';
 import { hasConflictMarkers, mirrorFileText, type MirrorFile } from './mirror-file';
 
@@ -7,7 +7,7 @@ import { hasConflictMarkers, mirrorFileText, type MirrorFile } from './mirror-fi
 // no time, every key sorted, one element per line.
 
 const mirror = (): MirrorFile => ({
-  kind: 'livediagram.document',
+  kind: 'livepages.document',
   schemaVersion: 1,
   document: {
     id: 'doc-1',
@@ -40,12 +40,12 @@ const mirror = (): MirrorFile => ({
       { id: 'tab-2', name: 'Empty', elements: [], folder: 'Later' },
     ],
   },
-  livediagramSync: {
+  livepagesSync: {
     tabs: {
       'tab-1': { settingsHash: 's1', rev: 17, hash: 'h1' },
       'tab-2': { rev: 2, hash: 'h2', settingsHash: 's2' },
     },
-    host: 'https://livediagram.app',
+    host: 'https://livepages.app',
   },
 });
 
@@ -72,9 +72,9 @@ const GOLDEN = `{
       }
     ]
   },
-  "kind": "livediagram.document",
-  "livediagramSync": {
-    "host": "https://livediagram.app",
+  "kind": "livepages.document",
+  "livepagesSync": {
+    "host": "https://livepages.app",
     "tabs": {
       "tab-1": {
         "hash": "h1",
@@ -105,9 +105,9 @@ describe('mirrorFileText', () => {
     const pulled = parsePullFile(GOLDEN);
     expect(pulled).toMatchObject({
       ok: true,
-      file: { livediagramSync: { tabs: { 'tab-1': { rev: 17 } } } },
+      file: { livepagesSync: { tabs: { 'tab-1': { rev: 17 } } } },
     });
-    expect(pulled.ok && 'pulledAt' in pulled.file.livediagramSync).toBe(false);
+    expect(pulled.ok && 'pulledAt' in pulled.file.livepagesSync).toBe(false);
   });
 });
 
@@ -126,7 +126,7 @@ describe('a document with no tabs (E24)', () => {
     const empty: MirrorFile = {
       ...mirror(),
       document: { id: 'd', name: 'Empty', presentation: null, tabs: [] },
-      livediagramSync: { host: 'https://livediagram.app', tabs: {} },
+      livepagesSync: { host: 'https://livepages.app', tabs: {} },
     };
     expect(mirrorFileText(empty)).toContain('"tabs": []');
     expect(mirrorFileText(empty)).toContain('"tabs": {}');

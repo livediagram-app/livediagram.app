@@ -8,9 +8,9 @@ import type {
   NoteCrop,
   ReadNotesRequest,
   ReadNotesResponse,
-} from '@livediagram/api-schema';
-import { READ_MAX_CROPS_PER_REQUEST } from '@livediagram/api-schema';
-import { isTextSize, isValidElement, type Element } from '@livediagram/document';
+} from '@livepages/api-schema';
+import { READ_MAX_CROPS_PER_REQUEST } from '@livepages/api-schema';
+import { isTextSize, isValidElement, type Element } from '@livepages/document';
 import { API_BASE, apiHeaders, apiFetch } from './core';
 
 // Fetch server capabilities. Returns everything fail-closed (false) on any
@@ -101,7 +101,7 @@ const AI_DEFAULT_SHAPE_H = 64;
 const AI_ELEMENT_TYPES = new Set(['shape', 'text', 'sticky', 'arrow']);
 
 // Parse, normalise, then hold the result to the SAME structural guard every
-// save goes through (`isValidElement` from @livediagram/document). A looser
+// save goes through (`isValidElement` from @livepages/document). A looser
 // local copy used to live here: it let through arrows with junk endpoints and
 // non-finite coordinates, which rendered, then failed the api's tab validation
 // on save. Normalising first keeps the forgiving part (a stray kind or a

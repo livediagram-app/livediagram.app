@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CHANGESET_MERGE_WINDOW_MS } from '@livediagram/api-schema';
-import { elementFingerprint, type Element, type ElementOp } from '@livediagram/document';
+import { CHANGESET_MERGE_WINDOW_MS } from '@livepages/api-schema';
+import { elementFingerprint, type Element, type ElementOp } from '@livepages/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import type { ChangesetRecord } from '../db/changesets';

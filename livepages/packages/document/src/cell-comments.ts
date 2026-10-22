@@ -12,7 +12,7 @@ import type { CommentThread } from './comments';
 
 // The most cell threads one Sheet carries.
 export const CELL_THREADS_MAX = 1000;
-// A cell key: a row id and a column id (@livediagram/sheets AXIS_ID_PATTERN each), repeated here so the document
+// A cell key: a row id and a column id (@livepages/sheets AXIS_ID_PATTERN each), repeated here so the document
 // package never imports the engine.
 const CELL_KEY_PATTERN = /^[a-z0-9]{4,12}:[a-z0-9]{4,12}$/;
 

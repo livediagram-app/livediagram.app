@@ -3,7 +3,7 @@ import {
   UNTITLED_DOCUMENT_NAME,
   isUntitledDocumentName,
   untitledNameForTemplate,
-} from '@livediagram/templates';
+} from '@livepages/templates';
 
 // Documents created before the rename are stored as "Untitled diagram"
 // (docs/specs/006-document/document-structure.md); they still count as untitled.

@@ -1,6 +1,6 @@
 // GENERATED FILE — do not edit by hand.
-// Produced by scripts/gen-openapi-schemas.mjs from @livediagram/api-schema.
-// Regenerate with: pnpm --filter @livediagram/api gen:openapi
+// Produced by scripts/gen-openapi-schemas.mjs from @livepages/api-schema.
+// Regenerate with: pnpm --filter @livepages/api gen:openapi
 // Served as the `components.schemas` of GET /api/openapi.json (docs/specs/015-api/api-documentation.md).
 import type { ComponentSchemas } from './types';
 

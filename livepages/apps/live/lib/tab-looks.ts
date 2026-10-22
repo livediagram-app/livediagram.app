@@ -6,7 +6,7 @@ import {
   type BackgroundPattern,
   type Finish,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 import { SEASONAL_LOOKS, type Season } from '@/lib/seasonal-looks';
 

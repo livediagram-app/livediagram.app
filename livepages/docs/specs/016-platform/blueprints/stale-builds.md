@@ -7,7 +7,7 @@ Derived from [Stale builds](../stale-builds.md).
 | Term              | Identifier                              | Meaning                                                        |
 | ----------------- | --------------------------------------- | -------------------------------------------------------------- |
 | Build id          | `NEXT_PUBLIC_BUILD_ID`, `BUILD_ID`      | The deploy's commit, in the editor build and the api worker    |
-| Build header      | `BUILD_ID_HEADER`                       | `X-Livediagram-Build`, on every api response beside the format |
+| Build header      | `BUILD_ID_HEADER`                       | `X-Livepages-Build`, on every api response beside the format |
 | Editor build      | `EDITOR_BUILD_ID`                       | The id this page was built with                                |
 | Server build      | `serverBuild()`                         | The latest id the server release signal carried                |
 | Stale             | `runningStaleBuild()`                   | Both known and different                                       |
@@ -46,7 +46,7 @@ Derived from [Stale builds](../stale-builds.md).
 
 ```ts
 // packages/api-schema/src/build-id.ts
-export const BUILD_ID_HEADER = 'X-Livediagram-Build';
+export const BUILD_ID_HEADER = 'X-Livepages-Build';
 export function parseBuildId(value: unknown): string | null; // /^[A-Za-z0-9._-]{1,64}$/
 
 // apps/live/lib/server-release.ts (beside the format number)
@@ -94,11 +94,11 @@ export function setClientNavigator(
 - **One reload guard** (`apps/live/lib/reload-guard.ts`): `claimReloadIn(storage, key, url, now,
 windowMs)`, self-contained so the pre-boot guard embeds its source (`claimReloadIn.toString()`);
   `claimReload(url, storage, now)` is the app's call. A `sessionStorage` map under
-  `RELOAD_GUARD_KEY` (`livediagram:stale-chunk-reloads`) of page (`url` without its hash) to time;
+  `RELOAD_GUARD_KEY` (`livepages:stale-chunk-reloads`) of page (`url` without its hash) to time;
   true, and recorded, when the page has no entry inside `RELOAD_GUARD_WINDOW_MS`; entries older than
   the window are pruned on write; junk restarts the map; a read or write that throws refuses.
 - **Hand-over:** `installStaleBuildNavigation` sets `window[APP_RECOVERY_FLAG]`
-  (`__livediagramChunkRecovery`), removed on cleanup; the pre-boot guard's `error` listener
+  (`__livepagesChunkRecovery`), removed on cleanup; the pre-boot guard's `error` listener
   returns early while it is set.
 
 ## Behaviour and state
@@ -133,9 +133,9 @@ contentType)`: a build asset (`^(/[a-z-]+)?/_next/static/`) with 2xx or 304 is `
   claim (`claimReloadIn.toString()`). a capture-phase window `error`
   on a `SCRIPT` / `LINK` under `/_next/static/` → `reloadOnce`; at `DOMContentLoaded`, a
   `link[rel="stylesheet"]` under it without a `sheet`, or a resource timing entry under it with
-  `responseStatus >= 400` → `reloadOnce`; `pageshow` with `persisted` and a `livediagram-build`
+  `responseStatus >= 400` → `reloadOnce`; `pageshow` with `persisted` and a `livepages-build`
   meta → one `fetch(API_BASE + '/capabilities', { cache: 'no-store' })`, and a different
-  `X-Livediagram-Build` → `reloadOnce`. `reloadOnce`: once per page (later failures of the same
+  `X-Livepages-Build` → `reloadOnce`. `reloadOnce`: once per page (later failures of the same
   doomed page are ignored); the shared claim (`claim(sessionStorage, RELOAD_GUARD_KEY, pathname + search, now,
 RELOAD_GUARD_WINDOW_MS)`); then `location.reload()`. Its `error` listener stands down while
   `window[APP_RECOVERY_FLAG]` is set.

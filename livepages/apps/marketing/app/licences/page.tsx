@@ -2,12 +2,12 @@ import { BreadcrumbJsonLd } from '@/components/BreadcrumbJsonLd';
 import { Footer } from '@/components/Footer';
 import { LicencesView } from '@/components/licences/LicencesView';
 import { loadLicencesManifest } from '@/lib/licences-manifest';
-import { pageMetadata, SiteHeader } from '@livediagram/ui';
+import { pageMetadata, SiteHeader } from '@livepages/ui';
 
 export const metadata = pageMetadata({
-  title: 'Open-source licences · livediagram',
+  title: 'Open-source licences · livepages',
   description:
-    'The open-source projects livediagram ships, with their licences and notices, generated from what each app actually bundles.',
+    'The open-source projects livepages ships, with their licences and notices, generated from what each app actually bundles.',
   path: '/licences',
 });
 

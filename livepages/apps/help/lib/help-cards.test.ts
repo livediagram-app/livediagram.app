@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CARD_SUBTITLE_MAX } from '@livediagram/ui';
+import { CARD_SUBTITLE_MAX } from '@livepages/ui';
 import { articleHref, articles, categories, categoryHref } from './articles';
 import {
   cardRoute,
@@ -58,14 +58,14 @@ describe('help social cards', () => {
 
   it("links a page's own card in its metadata, and the brand card elsewhere", () => {
     expect(helpCardImage('/help/canvas/themes/')?.url).toBe(
-      'https://livediagram.app/help/og/canvas/themes.png',
+      'https://livepages.app/help/og/canvas/themes.png',
     );
     expect(helpCardImage('/help/')).toBeUndefined();
     const md = helpMetadata({ title: 'Themes', description: 'd', path: '/help/canvas/themes/' });
     expect(md.twitter).toMatchObject({
-      images: ['https://livediagram.app/help/og/canvas/themes.png'],
+      images: ['https://livepages.app/help/og/canvas/themes.png'],
     });
     const home = helpMetadata({ title: 'Help', description: 'd', path: '/help/' });
-    expect(home.twitter).toMatchObject({ images: ['https://livediagram.app/twitter-image'] });
+    expect(home.twitter).toMatchObject({ images: ['https://livepages.app/twitter-image'] });
   });
 });

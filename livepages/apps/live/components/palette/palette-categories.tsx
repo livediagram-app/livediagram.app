@@ -28,7 +28,7 @@ import {
   WriteTabIcon,
   EventStormingTabIcon,
   ParticipateTabIcon,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import {
   AskGroupIcon,
   WorkshopGroupIcon,
@@ -36,11 +36,11 @@ import {
   MoveGroupIcon,
   ReactionGroupIcon,
   RecordGroupIcon,
-} from '@livediagram/ui';
-import { PlanCardsIcon, PlanIcon } from '@livediagram/ui';
+} from '@livepages/ui';
+import { PlanCardsIcon, PlanIcon } from '@livepages/ui';
 import { SheetArt } from '@/components/sheets/sheet-art';
-import { Glyph, lucideGlyph } from '@livediagram/ui';
-import { lucidePanelTop, lucideRows2 } from '@livediagram/icons/lucide';
+import { Glyph, lucideGlyph } from '@livepages/ui';
+import { lucidePanelTop, lucideRows2 } from '@livepages/icons/lucide';
 
 const DashboardLayoutIcon = lucideGlyph(lucideRows2, 18);
 

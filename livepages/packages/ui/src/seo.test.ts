@@ -13,7 +13,7 @@ import { breadcrumbJsonLd, pageMetadata } from './seo';
 
 describe('pageMetadata', () => {
   it("uses a page's own card for both Open Graph and Twitter when it has one", () => {
-    const image = { url: 'https://livediagram.app/help/og/canvas/themes.png', alt: 'Themes' };
+    const image = { url: 'https://livepages.app/help/og/canvas/themes.png', alt: 'Themes' };
     const md = pageMetadata({ title: 't', description: 'd', path: '/help/canvas/themes/', image });
     expect(md.openGraph?.images).toEqual([{ ...image, width: 1200, height: 630 }]);
     expect(md.twitter?.images).toEqual([image.url]);
@@ -29,18 +29,18 @@ describe('pageMetadata', () => {
 
   it('passes title + description through to the top-level fields', () => {
     const md = pageMetadata({
-      title: 'FAQ | livediagram',
+      title: 'FAQ | livepages',
       description: 'Questions and answers',
       path: '/faq',
     });
-    expect(md.title).toBe('FAQ | livediagram');
+    expect(md.title).toBe('FAQ | livepages');
     expect(md.description).toBe('Questions and answers');
   });
 
   it('uses the supplied path as the canonical', () => {
     // The metadataBase in each app's layout resolves the relative
     // path against the production origin, so `/faq` becomes
-    // `https://livediagram.app/faq` in the emitted <link>. The
+    // `https://livepages.app/faq` in the emitted <link>. The
     // factory's job is to surface the supplied path verbatim.
     const md = pageMetadata({ title: 't', description: 'd', path: '/terms' });
     expect(md.alternates).toEqual({ canonical: '/terms' });
@@ -48,7 +48,7 @@ describe('pageMetadata', () => {
 
   it('emits an `article`-type openGraph block with the default siteName + en_GB locale', () => {
     const md = pageMetadata({
-      title: 'Terms | livediagram',
+      title: 'Terms | livepages',
       description: 'Legal terms',
       path: '/terms',
     });
@@ -59,8 +59,8 @@ describe('pageMetadata', () => {
     expect(md.openGraph).toMatchObject({
       type: 'article',
       url: '/terms',
-      siteName: 'livediagram',
-      title: 'Terms | livediagram',
+      siteName: 'livepages',
+      title: 'Terms | livepages',
       description: 'Legal terms',
       locale: 'en_GB',
     });
@@ -68,14 +68,14 @@ describe('pageMetadata', () => {
 
   it('emits a `summary_large_image` twitter card with title + description mirrors', () => {
     const md = pageMetadata({
-      title: 'Alternatives | livediagram',
-      description: 'How livediagram compares',
+      title: 'Alternatives | livepages',
+      description: 'How livepages compares',
       path: '/alternatives',
     });
     expect(md.twitter).toMatchObject({
       card: 'summary_large_image',
-      title: 'Alternatives | livediagram',
-      description: 'How livediagram compares',
+      title: 'Alternatives | livepages',
+      description: 'How livepages compares',
     });
   });
 
@@ -91,14 +91,14 @@ describe('pageMetadata', () => {
     const og = md.openGraph as Record<string, unknown> | undefined;
     expect(og?.images).toEqual([
       {
-        url: 'https://livediagram.app/opengraph-image',
+        url: 'https://livepages.app/opengraph-image',
         width: 1200,
         height: 630,
-        alt: 'livediagram: a real-time canvas for diagrams, whiteboards, illustrations and documents',
+        alt: 'livepages: a real-time canvas for diagrams, whiteboards, illustrations and documents',
       },
     ]);
     const tw = md.twitter as Record<string, unknown> | undefined;
-    expect(tw?.images).toEqual(['https://livediagram.app/twitter-image']);
+    expect(tw?.images).toEqual(['https://livepages.app/twitter-image']);
   });
 
   it('omits the shared card image when the page has its own route-level image (ownOgImage)', () => {
@@ -166,10 +166,10 @@ describe('pageMetadata siteName', () => {
       title: 'Themes',
       description: 'd',
       path: '/help/canvas/themes/',
-      siteName: 'livediagram Help',
+      siteName: 'livepages Help',
     });
     expect(md.title).toBe('Themes');
-    expect(md.openGraph).toMatchObject({ siteName: 'livediagram Help', title: 'Themes' });
+    expect(md.openGraph).toMatchObject({ siteName: 'livepages Help', title: 'Themes' });
     expect(md.twitter).toMatchObject({ card: 'summary_large_image', title: 'Themes' });
   });
 });
@@ -178,20 +178,20 @@ describe('breadcrumbJsonLd', () => {
   it('numbers the crumbs from 1 and omits `item` for an unlinked crumb', () => {
     expect(
       breadcrumbJsonLd([
-        { name: 'Help', url: 'https://livediagram.app/help/' },
-        { name: 'Canvas', url: 'https://livediagram.app/help/canvas/' },
+        { name: 'Help', url: 'https://livepages.app/help/' },
+        { name: 'Canvas', url: 'https://livepages.app/help/canvas/' },
         { name: 'Themes' },
       ]),
     ).toEqual({
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { '@type': 'ListItem', position: 1, name: 'Help', item: 'https://livediagram.app/help/' },
+        { '@type': 'ListItem', position: 1, name: 'Help', item: 'https://livepages.app/help/' },
         {
           '@type': 'ListItem',
           position: 2,
           name: 'Canvas',
-          item: 'https://livediagram.app/help/canvas/',
+          item: 'https://livepages.app/help/canvas/',
         },
         { '@type': 'ListItem', position: 3, name: 'Themes' },
       ],

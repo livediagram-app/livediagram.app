@@ -25,7 +25,7 @@ PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
   `updated_at INTEGER NOT NULL` (Unix ms). The JSON blob shape
   keeps the migration count low when new flags arrive: adding a
   field never requires altering the table.
-- **localStorage cache** keyed `livediagram:user-preferences:v1`
+- **localStorage cache** keyed `livepages:user-preferences:v1`
   (legacy key, unchanged). Read synchronously at page-load so the
   Settings dialog and gate caches (telemetry, draw-to-add, etc.)
   have a value to read before the network fetch returns.
@@ -37,7 +37,7 @@ PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
   When the server response arrives, merge it over the cache
   (server wins for any key present on both sides), persist back
   to localStorage, and dispatch the existing
-  `livediagram:preferences-changed` window event so in-process
+  `livepages:preferences-changed` window event so in-process
   listeners refresh. If the fetch fails the cache value stays
   authoritative for the session.
 - **On toggle**: update localStorage immediately (so the UI
@@ -60,7 +60,7 @@ PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
   - **A save that did not land keeps this device's copy.** From the
     moment a save is queued until one succeeds, this browser is
     marked unsynced for that owner
-    (`livediagram:user-preferences:unsynced`, holding the owner id).
+    (`livepages:user-preferences:unsynced`, holding the owner id).
     A refused or failed save (logged `[preferences] save-refused
 status=<n>` or `save-not-confirmed`) leaves the mark, and the
     next load lets the cache win over the server's blob and sends it
@@ -80,7 +80,7 @@ status=<n>` or `save-not-confirmed`) leaves the mark, and the
 The original v1 shape was localStorage-only on the grounds that
 flags were UI-only and a server round-trip per toggle was
 overkill. That trade-off was wrong for the user experience:
-signed-in users who use livediagram on a laptop and a phone had
+signed-in users who use livepages on a laptop and a phone had
 to re-flip every setting on each device. Per-account sync is the
 expected behaviour for an account-bound app.
 
@@ -94,7 +94,7 @@ keeps the same browser session still recovers their preferences.
 each corner panel docks into ([Panel corner docking](panel-docking.md)) is a
 per-device ergonomic choice (screen size, handedness, monitor), so it
 lives in its own **device-local** `localStorage` store
-(`livediagram:panel-layout:v1`) and is **not** part of this synced
+(`livepages:panel-layout:v1`) and is **not** part of this synced
 blob. Don't fold panel placement into `UserPreferences`.
 
 ### Sign-up migration
@@ -593,7 +593,7 @@ and the dialog stays as the one complete, browsable index of them.
     default category, or the top of the pane.
   - The search box always opens empty.
   - Stored device-local in `localStorage` under
-    `livediagram:settings-view:v1` and never synced: where you were in a
+    `livepages:settings-view:v1` and never synced: where you were in a
     dialog belongs to this screen, not the account. Unreadable or malformed
     storage is ignored with a `[settings-view]` warning.
   - Written when the dialog unmounts and on `pagehide`, never per scroll
@@ -883,7 +883,7 @@ Live in `apps/live/lib/user-preferences.ts`:
   fit, serialises and writes it back to localStorage AND, when
   `ownerId` is supplied, queues a `PUT /api/preferences` (one at a
   time, latest wins) so the value round-trips to D1. Also dispatches a
-  `livediagram:preferences-changed` window event so same-tab
+  `livepages:preferences-changed` window event so same-tab
   listeners (notably `lib/telemetry.ts`) can refresh their cached
   gate without polling. Callers without an `ownerId` (unit tests,
   the editor before identity resolves) skip the network step and
@@ -894,7 +894,7 @@ Live in `apps/live/lib/user-preferences.ts`:
   merges the server's value over the localStorage cache (server
   wins on conflict, unless this browser holds an unconfirmed save
   for the owner, when the cache wins and is sent again), writes the merged blob back to localStorage,
-  and dispatches `livediagram:preferences-changed`. Returns the
+  and dispatches `livepages:preferences-changed`. Returns the
   merged preferences, or null on failure / when the api worker
   is unreachable (the caller can treat that as "stick with the
   cache"). Called once at editor mount.

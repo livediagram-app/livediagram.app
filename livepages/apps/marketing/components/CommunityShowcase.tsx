@@ -9,7 +9,7 @@ import {
   type CommunityPost,
   COMMUNITY_HOME_PATH,
   isAbortError,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   buttonClassName,
   ButtonContent,
@@ -19,7 +19,7 @@ import {
   CommunityPostTile,
   CommunityPostTileSkeleton,
   useNearViewport,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import { BAND_LEAD, BAND_TITLE } from '@/components/band-classes';
 import { EYEBROW } from '@/components/eyebrow';
 

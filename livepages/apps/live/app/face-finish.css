@@ -1,6 +1,6 @@
 /* A face's own parts in its element's finish (docs/specs/008-canvas/finish.md "Faces"). The element's wrapper (and a
  * Plan body drawn over the canvas, MaximisedPlanLayer's OverFace) carries `data-face-finish` when its face follows a
- * finish (faceFinishOf in @livediagram/document); everything a face draws for itself is restyled from here, so a new
+ * finish (faceFinishOf in @livepages/document); everything a face draws for itself is restyled from here, so a new
  * face follows the finish with no code of its own. Parts that draw a look inline where these rules cannot reach it
  * read useFaceFinish(). The export does the same to its markup (svg-render-face-finish.ts). */
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, hexToRgb, hueName, planPalette, rgbToHex } from '@livediagram/document';
+import { contrastRatio, hexToRgb, hueName, planPalette, rgbToHex } from '@livepages/document';
 import {
   BANNER_FROM_CONTRAST,
   BANNER_INK,

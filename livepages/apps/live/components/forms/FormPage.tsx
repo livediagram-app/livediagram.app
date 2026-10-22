@@ -8,8 +8,8 @@
 import { useNow } from '@/hooks/ui/useNow';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { formLook, type Tab } from '@livediagram/document';
-import { ITEMS_MAX } from '@livediagram/items';
+import { formLook, type Tab } from '@livepages/document';
+import { ITEMS_MAX } from '@livepages/items';
 import {
   closedBySettings,
   destinationProblem,
@@ -19,9 +19,9 @@ import {
   sheetDestinationProblem,
   readForm,
   type FormDefinition,
-} from '@livediagram/forms';
-import { lucideGlyph, Tooltip } from '@livediagram/ui';
-import { lucideEye } from '@livediagram/icons/lucide';
+} from '@livepages/forms';
+import { lucideGlyph, Tooltip } from '@livepages/ui';
+import { lucideEye } from '@livepages/icons/lucide';
 import { CanvasCover } from '@/components/plan/MaximisedPlanLayer';
 import { DashboardMenuName } from '@/components/plan/dashboard/DashboardMenuName';
 import { setFormShareHost } from '@/lib/form-share-store';
@@ -30,7 +30,7 @@ import { usePlan } from '@/components/plan/PlanContext';
 import { useCanvasLayerInsets } from '@/hooks/ui/useCanvasLayerInsets';
 import type { FormActions } from '@/hooks/forms/useFormActions';
 import { useFormLink } from '@/hooks/forms/useFormLink';
-import { boardsOf, sheetsOf } from '@livediagram/templates';
+import { boardsOf, sheetsOf } from '@livepages/templates';
 import { sendPreview } from '@/hooks/forms/form-preview';
 import { apiSendFormPreview } from '@/lib/api/forms';
 import { FormBuilderContext, type FormBuilderValue } from './builder/form-builder-context';

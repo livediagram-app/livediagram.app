@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { FormLinkResponse } from '@livediagram/api-schema';
-import { OTHER_ANSWER, SHORT_ANSWER_MAX, type FormDefinition } from '@livediagram/forms';
+import type { FormLinkResponse } from '@livepages/api-schema';
+import { OTHER_ANSWER, SHORT_ANSWER_MAX, type FormDefinition } from '@livepages/forms';
 import { fakeApi } from '../testing/fake-api';
 import { bugForm, firstStatus, formPlan, formTabBody } from '../testing/forms';
 import { tryForm } from './form-try';

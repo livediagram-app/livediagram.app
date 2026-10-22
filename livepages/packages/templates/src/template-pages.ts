@@ -2,7 +2,7 @@
 // canvas-and-palette.md "Templates on pages"), and on which pages. The builders place their
 // elements on exactly these pages; templateCanvasOverrides ships them, so every application path
 // (the picker, /new, the MCP worker) lands the pages and the elements together.
-import type { Page } from '@livediagram/document';
+import type { Page } from '@livepages/document';
 import { liveCardPages } from './template-builders-livecard';
 import { logoDesignPages } from './template-builders-logo';
 import { slideDeckPages } from './template-builders-slides';

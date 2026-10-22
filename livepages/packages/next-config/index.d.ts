@@ -8,7 +8,7 @@ export declare function typescriptConfig(env?: NodeJS.ProcessEnv): { ignoreBuild
 export declare function isTurbopack(env?: NodeJS.ProcessEnv): boolean;
 
 /** The settings every Next app shares; an app spreads this and adds only what is its own. */
-export declare function livediagramNextConfig(options?: {
+export declare function livepagesNextConfig(options?: {
   env?: NodeJS.ProcessEnv;
   exportInDev?: boolean;
   /** Run the React Compiler (Rust port, under Turbopack only). The editor alone sets it. */

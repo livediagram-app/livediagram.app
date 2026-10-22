@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { addDashboardRow, DASHBOARD_ROWS_MAX, newDashboard } from '@livediagram/document';
+import { addDashboardRow, DASHBOARD_ROWS_MAX, newDashboard } from '@livepages/document';
 import { useFitGuard } from './useFitGuard';
 
 // docs/specs/026-plan/plan-tabs.md "Moving a slot": no bar between rows when a new row would pass the row limit.

@@ -1,6 +1,6 @@
 // The Sankey Diagram article's figures (docs/specs/009-elements/sankey.md). The budget's geometry is the
 // layout engine's own (`sankeyLayout(SANKEY_DEFAULT_FLOWS, { x: 40, y: 22, w: 340, h: 160 })` in
-// @livediagram/document), pinned here so the figure shows exactly what dropping a Sankey draws; rerun that
+// @livepages/document), pinned here so the figure shows exactly what dropping a Sankey draws; rerun that
 // call and paste its numbers if the layout ever changes.
 
 import { Label, Scene } from './primitives';

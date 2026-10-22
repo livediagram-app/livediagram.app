@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { EditorState, NodeSelection, TextSelection } from 'prosemirror-state';
-import type { ArticleBlock } from '@livediagram/document';
+import type { ArticleBlock } from '@livepages/document';
 import { blocksToDoc } from './article-convert';
 import { caretOf, resolveCaret } from './article-caret';
 

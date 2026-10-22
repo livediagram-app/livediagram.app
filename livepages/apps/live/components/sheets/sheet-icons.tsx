@@ -1,6 +1,6 @@
 // The Sheet toolbar's glyphs (blueprint sheet-element.md "Assets and external resources"): vendored Lucide where
 // the set has one, else hand-drawn on the same 24-unit grid with the house stroke, `currentColor`.
-import { Glyph, Prims } from '@livediagram/ui';
+import { Glyph, Prims } from '@livepages/ui';
 import {
   lucideALargeSmall,
   lucideArrowDownAZ,
@@ -39,8 +39,8 @@ import {
   lucideSquareChevronDown,
   lucideShieldCheck,
   lucideHighlighter,
-} from '@livediagram/icons/lucide';
-import type { FunctionFamily } from '@livediagram/sheets';
+} from '@livepages/icons/lucide';
+import type { FunctionFamily } from '@livepages/sheets';
 
 const SIZE = 16;
 

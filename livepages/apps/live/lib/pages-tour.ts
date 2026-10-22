@@ -1,11 +1,11 @@
-import type { PageKind } from '@livediagram/document';
+import type { PageKind } from '@livepages/document';
 import { tourTrackSeen, withTracksAnswered } from './tour-tracks';
 import type { UserPreferences } from './user-preferences';
 
 // The Pages tour's relaunch signal (docs/specs/007-editor/pages-tour.md "Where it appears"): the Settings
 // row Tours › "Slides Tour" (or another kind's), turned on from off and closed, reruns the tour. A window event keeps the dialog
 // decoupled from PagesTourHost, as the other tours' relaunches do.
-export const PAGES_TOUR_RELAUNCH_EVENT = 'livediagram:pages-tour-relaunch';
+export const PAGES_TOUR_RELAUNCH_EVENT = 'livepages:pages-tour-relaunch';
 
 export function requestPagesTourRelaunch(): void {
   if (typeof window === 'undefined') return;

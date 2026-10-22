@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TIMELINE_EVENT_TYPES } from '@livediagram/api-schema';
+import { TIMELINE_EVENT_TYPES } from '@livepages/api-schema';
 import {
   CATEGORY_LABELS,
   eventCategory,

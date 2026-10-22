@@ -11,7 +11,7 @@ import {
   type Tab,
   type ThemeDefinition,
   type WireframeDeviceId,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { TemplateKind } from './templates';
 
 // Each blank of a page kind and the kind its one page is.

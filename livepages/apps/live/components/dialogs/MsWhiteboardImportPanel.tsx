@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
-import { Button } from '@livediagram/ui';
+import { Button } from '@livepages/ui';
 import { pickExport, readDrop } from '@/lib/pick-folder';
 import { ImportChecklist } from './ImportChecklist';
 import { ImportDropZone } from './ImportDropZone';
@@ -11,7 +11,7 @@ import {
   type ImportScenes,
   type MsWhiteboardStep,
 } from '@/hooks/persistence/useMsWhiteboardImport';
-import { pluralGrouped } from '@livediagram/document';
+import { pluralGrouped } from '@livepages/document';
 
 type DoneOutcome = Extract<ImportOutcome, { status: 'done' }>;
 

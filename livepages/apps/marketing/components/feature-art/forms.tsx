@@ -99,7 +99,7 @@ export function FormShareArt() {
           FORM LINK
         </text>
         <text className={TEXT} x={30} y={57} fontSize="6.4" fontFamily="ui-monospace, monospace">
-          livediagram.app/f/7Kq2…
+          livepages.app/f/7Kq2…
         </text>
         <rect x={118} y={49} width="26" height="11" rx="5.5" fill={ACCENT} />
         <text x={131} y={56.6} fontSize="5.6" fontWeight="700" fill="#ffffff" textAnchor="middle">

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { newTabOpening, newTabSeed } from './new-tab-seed';
 
 // docs/specs/007-editor/editor-modes.md "A new tab opens in the mode it was made from", with no Quick Start.

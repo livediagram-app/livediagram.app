@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { storePresentation, type Deck, type Tab } from '@livediagram/document';
+import { storePresentation, type Deck, type Tab } from '@livepages/document';
 import { pageSlideLabels, useSlideDeck } from './useSlideDeck';
 
 // docs/specs/007-editor/pages-mode.md "Slides": a page slide is its page. Its row names the

@@ -2,7 +2,7 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { ITEMS_MAX, type Item, type ItemTypeDef, type PlanBoardSetup } from '@livediagram/items';
+import { ITEMS_MAX, type Item, type ItemTypeDef, type PlanBoardSetup } from '@livepages/items';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import { boardCsvEntryOf } from '@/components/plan/board-csv-registry';
 

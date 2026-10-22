@@ -13,7 +13,7 @@ import {
   sheetTemplate,
   sheetTemplateInfo,
   type SheetTemplateId,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import type { PlacedSheetStart } from '@/lib/sheet-seeds';
 import { SHEET_STARTS } from './start/start-planning-items';
 import type { PlanPalette } from './plan-palette';

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { setMenuNameSlot } from '@/components/plan/menu-name-slot';
 import { DashboardMenuName } from './DashboardMenuName';
 

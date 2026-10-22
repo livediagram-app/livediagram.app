@@ -75,7 +75,7 @@ throws. Only the parse stage has to be pure.
 ## What lands
 
 Every import that replaces a tab's content (a board import, draw.io pages, Excalidraw, Mermaid, Markdown, a
-`.livediagram` tab file) lands only elements the api will save (`savableElements` in `@livediagram/document`):
+`.livepages` tab file) lands only elements the api will save (`savableElements` in `@livepages/document`):
 each valid element once per id, up to the tab's element cap. An element the validator refuses would make every
 later save of that tab fail, so it is left out and counted rather than landed.
 

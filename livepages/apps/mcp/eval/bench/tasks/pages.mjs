@@ -170,7 +170,7 @@ export default [
       { file: 'form.png', name: 'Screenshot 2026-10-14 at 10.15.52.png' },
     ],
     prompt:
-      'Make an infographic about our product using the three screenshots I uploaded to livediagram: the planning board, the sales sheet and the RSVP form. Give each one a short caption saying what it shows.',
+      'Make an infographic about our product using the three screenshots I uploaded to livepages: the planning board, the sales sheet and the RSVP form. Give each one a short caption saying what it shows.',
     checks: [
       [
         'an infographic page',

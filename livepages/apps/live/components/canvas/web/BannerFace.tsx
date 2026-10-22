@@ -3,7 +3,7 @@ import {
   BORDER_RADIUS_PX,
   cornerRadiusPx,
   PAGE_HEADING_MAX,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { LabelRegion } from '@/components/canvas/web/LabelRegion';
 import { rectStyle, type WebFaceProps } from '@/components/canvas/web/web-face-props';

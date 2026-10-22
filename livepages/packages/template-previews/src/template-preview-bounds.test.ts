@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { TEMPLATES } from '@livediagram/templates';
+import { TEMPLATES } from '@livepages/templates';
 import { TemplatePreview } from './template-preview';
 
 // Every preview illustration must stay inside its declared viewBox: the

@@ -20,7 +20,7 @@ import {
   createText,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { rake } from './template-rake';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import { CONTENT, INK, MUTED, PAPER, SCAFFOLD } from './template-report-kit';

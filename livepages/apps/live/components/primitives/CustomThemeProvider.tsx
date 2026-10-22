@@ -3,7 +3,7 @@
 import { pruneCustomThemeSwatchOverrides } from '@/lib/swatch-override-prefs';
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import type { CustomTheme, CustomThemeDefinition } from '@livediagram/api-schema';
+import type { CustomTheme, CustomThemeDefinition } from '@livepages/api-schema';
 import {
   apiCreateCustomTheme,
   apiDeleteCustomTheme,

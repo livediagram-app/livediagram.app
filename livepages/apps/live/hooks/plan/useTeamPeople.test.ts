@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { itemPersonId } from '@livediagram/items';
-import type { TeamMember } from '@livediagram/api-schema';
+import { itemPersonId } from '@livepages/items';
+import type { TeamMember } from '@livepages/api-schema';
 import { teamMemberPerson } from './useTeamPeople';
 
 // docs/specs/026-plan/items.md "Who may do what": assignees are your teams' joined members.

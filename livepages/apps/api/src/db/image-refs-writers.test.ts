@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from '../routes/test-route-context';
 import { handleDocuments } from '../routes/documents';

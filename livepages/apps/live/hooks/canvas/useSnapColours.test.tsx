@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { track } from '@/lib/telemetry';
 import { useSnapColours } from './useSnapColours';
 

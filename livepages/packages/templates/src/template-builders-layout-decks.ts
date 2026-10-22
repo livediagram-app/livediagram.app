@@ -13,7 +13,7 @@ import {
   type Page,
   type PageBackground,
   type PageMotion,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { buildPageLayout } from './page-layout-build';
 import type { PageLayoutId } from './page-layouts';
 import { templateSlidePage } from './template-page-kit';

@@ -4,7 +4,7 @@
 // hunt for the Fit button below it. Rendered by CanvasChrome inside the
 // bottom-right dock container; positioned above it with `bottom-full`.
 
-import { Button } from '@livediagram/ui';
+import { Button } from '@livepages/ui';
 
 type OffscreenContentHintProps = {
   // Bring everything back into view (wired to fit-to-screen).

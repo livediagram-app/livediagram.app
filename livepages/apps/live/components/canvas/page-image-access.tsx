@@ -12,7 +12,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import type { LaidOutPage } from '@livediagram/document';
+import type { LaidOutPage } from '@livepages/document';
 import { apiFetchImageBlobUrl, releaseImageBlobUrl } from '@/lib/api-client';
 
 type PageImageAccess = { ownerId: string; documentId: string; shareCode: string | null };

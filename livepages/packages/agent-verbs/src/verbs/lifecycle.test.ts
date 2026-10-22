@@ -78,7 +78,7 @@ describe('document create', () => {
       },
     ]);
     expect(documentCreate.text!(out)).toEqual([
-      '+ document new-1 "Shop" · 1 tab · https://livediagram.app/document/new-1',
+      '+ document new-1 "Shop" · 1 tab · https://livepages.app/document/new-1',
     ]);
     expect(documentCreate.quiet!(out)).toEqual(['new-1']);
   });
@@ -92,7 +92,7 @@ describe('document create', () => {
         ),
     });
     expect((await documentCreate.run!(contextOf(api), { name: 'X' })).text).toBe(
-      '+ document abcdef12 "X" · 2 tabs · https://livediagram.app/document/abcdef1234',
+      '+ document abcdef12 "X" · 2 tabs · https://livepages.app/document/abcdef1234',
     );
   });
 
@@ -160,8 +160,8 @@ describe('document rename, share, rm and restore', () => {
     );
     expect(seen[0]).toMatchObject({ method: 'POST', body: { role: 'edit', expiry: 'never' } });
     expect(out).toEqual({
-      text: 'https://livediagram.app/document/shared?s=abc',
-      url: 'https://livediagram.app/document/shared?s=abc',
+      text: 'https://livepages.app/document/shared?s=abc',
+      url: 'https://livepages.app/document/shared?s=abc',
       role: 'edit',
       expiresAt: null,
     });
@@ -174,7 +174,7 @@ describe('document rename, share, rm and restore', () => {
     const out = await documentRm.run!(contextOf(api), { doc: 'Auth flow' });
     expect(seen).toEqual([{ method: 'DELETE', path: `/documents/${DOC_A}`, body: undefined }]);
     expect(out.text).toBe(
-      `- document aaaa1111 "Auth flow" · in the Trash for 30 days · restore: livediagram document restore ${DOC_A}`,
+      `- document aaaa1111 "Auth flow" · in the Trash for 30 days · restore: livepages document restore ${DOC_A}`,
     );
     const refused = docRoutes(() => Response.json({ error: 'forbidden' }, { status: 403 }));
     await expect(
@@ -215,7 +215,7 @@ describe('tab add, rename and rm', () => {
     const { seen, route } = recorder(() =>
       Response.json(
         written(
-          `+ n1  square "A"\nrev 0→1 · cs_1 · lint clean · revert: livediagram changeset revert ${DOC_A} cs_1`,
+          `+ n1  square "A"\nrev 0→1 · cs_1 · lint clean · revert: livepages changeset revert ${DOC_A} cs_1`,
         ),
       ),
     );
@@ -235,7 +235,7 @@ describe('tab add, rename and rm', () => {
     });
     // Named first, and undone by tab rm: a revert would take its elements and leave the tab.
     expect(tabAdd.text!(out)).toEqual([
-      `+ tab new-1 "Board"\n+ n1  square "A"\nrev 0→1 · cs_1 · lint clean · undo: livediagram tab rm ${DOC_A} new-1`,
+      `+ tab new-1 "Board"\n+ n1  square "A"\nrev 0→1 · cs_1 · lint clean · undo: livepages tab rm ${DOC_A} new-1`,
     ]);
     expect(tabAdd.quiet!(out)).toEqual(['cs_1']);
     expect(tabAdd.quiet!({ ...out, changeset: null })).toEqual([]);

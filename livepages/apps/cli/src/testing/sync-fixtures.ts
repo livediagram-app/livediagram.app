@@ -1,8 +1,8 @@
 // Building blocks for the sync planner's suites: a document's overview and envelope as the api answers them, a
 // tracked mirror file of it, and coverage.
 
-import type { OverviewView } from '@livediagram/api-schema';
-import type { Tab } from '@livediagram/document';
+import type { OverviewView } from '@livepages/api-schema';
+import type { Tab } from '@livepages/document';
 import type { Coverage, CoveredDocument } from '../link/coverage';
 import type { MirrorFile } from '../link/mirror-file';
 import type { ScannedFile, TabHashes } from '../link/mirror-scan';
@@ -58,7 +58,7 @@ export async function trackedFile(
 ): Promise<Extract<ScannedFile, { class: 'tracked' }>> {
   const tabs = doc.tabs.map(tabOf);
   const hashes: TabHashes = {};
-  const recorded: MirrorFile['livediagramSync']['tabs'] = {};
+  const recorded: MirrorFile['livepagesSync']['tabs'] = {};
   for (const [i, t] of doc.tabs.entries()) {
     hashes[t.id] = await tabHashes(tabs[i]!);
     recorded[t.id] = { rev: t.rev, ...hashes[t.id]! };
@@ -68,10 +68,10 @@ export async function trackedFile(
     class: 'tracked',
     path,
     file: {
-      kind: 'livediagram.document',
+      kind: 'livepages.document',
       schemaVersion: 1,
       document: { id: doc.id, name: doc.name, presentation: null, tabs },
-      livediagramSync: { host: 'https://livediagram.app', tabs: recorded },
+      livepagesSync: { host: 'https://livepages.app', tabs: recorded },
     },
     hashes,
   };

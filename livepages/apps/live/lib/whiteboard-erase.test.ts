@@ -9,7 +9,7 @@ import {
   type Element,
   type FreehandElement,
   type PathElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { partialEraseStep, pathsTouched, shapesTouched, strokesTouched } from './whiteboard-erase';
 
 const line = (id: string, y: number): FreehandElement => ({

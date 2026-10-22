@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livepages/document';
 import { localPreview, resetDragPreviewForTests } from '@/lib/drag-preview';
 import { useEditorDrag } from './useEditorDrag';
 import type { EditorDragDeps } from './useEditorDrag.types';

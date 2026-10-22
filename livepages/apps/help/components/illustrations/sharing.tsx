@@ -204,7 +204,7 @@ function LinkField({
         />
       )}
       <Label x={x + 8} y={y + 12} size={10} tone="muted">
-        livediagram.app/document/shared?s=…
+        livepages.app/document/shared?s=…
       </Label>
       {struck ? (
         <line

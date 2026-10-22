@@ -1,10 +1,10 @@
-import type { CommunityMineTotals } from '@livediagram/api-schema';
+import type { CommunityMineTotals } from '@livepages/api-schema';
 import {
   CommunityHelpLink,
   CopyIcon,
   formatCommunityCount,
   communityPlural,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import { HeartIcon, MineIcon } from '../shared/icons';
 
 // My Shares' header (docs/specs/025-community/community.md "My Shares"): how popular your posts are

@@ -3,7 +3,7 @@
 > **Status: implemented.** `GET /api/openapi.json` serves a valid OpenAPI
 > 3.1 description of the `/api/*` surface, assembled from a declarative
 > route manifest plus component schemas generated from
-> `@livediagram/api-schema`, with a drift test pinning both to the real
+> `@livepages/api-schema`, with a drift test pinning both to the real
 > handlers. The recommended approach in this spec is what shipped; the
 > "As built" note at the end records the concrete file layout. A
 > human-facing reference in the help centre links to this document
@@ -14,7 +14,7 @@
 The api worker ([API app](api.md)) is documented two ways today:
 
 - **Prose** in [API app](api.md) plus the per-feature specs (teams → [Teams](../013-workspace/teams.md), images → [Image element + per-owner gallery](../009-elements/images.md), telemetry → [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md), share password / expiry → [Share password](../013-workspace/share-password.md) / [Share-link expiry](../013-workspace/share-link-expiry.md)).
-- **Compile-time payload shapes** in `@livediagram/api-schema` — every request / response DTO, imported by both the worker (which builds them) and the live editor (which consumes them), so the typechecker catches drift between the two sides.
+- **Compile-time payload shapes** in `@livepages/api-schema` — every request / response DTO, imported by both the worker (which builds them) and the live editor (which consumes them), so the typechecker catches drift between the two sides.
 
 What's missing is a **single, machine-readable description of the surface**: the paths, methods, auth requirements, and status codes. The TS types cover payload _shape_ but say nothing about URL shape, verbs, or auth; the prose isn't discoverable, testable, or consumable by tooling. A self-hoster or integrator can't point a client generator, a Postman import, or a docs viewer at anything.
 
@@ -24,7 +24,7 @@ The goal is an **OpenAPI 3.1 document** for `/api/*` that is generated from the 
 
 - One OpenAPI 3.1 document covering every `/api/*` endpoint (the surface enumerated in [API app](api.md)): path template, method, summary, auth scheme, request body schema, response schema(s), and the meaningful status codes (200/201/204/400/401/403/404/409).
 - Served at **`GET /api/openapi.json`** — public, no auth, cacheable. It's the contract, not data, so a token holder isn't needed.
-- **Component schemas reuse `@livediagram/api-schema`**: DTO shapes are generated from those TS types, never re-typed by hand. Adding a field to a DTO updates the doc automatically.
+- **Component schemas reuse `@livepages/api-schema`**: DTO shapes are generated from those TS types, never re-typed by hand. Adding a field to a DTO updates the doc automatically.
 - **A drift test** (CI) that fails when a `(method, path-template)` is reachable in the worker's dispatch but absent from the OpenAPI doc, or vice versa, to the precision stated under "Drift test" below. This mirrors the test-pinned template / theme catalogues ([Canvas and palette](../008-canvas/canvas-and-palette.md)): the doc cannot fall behind the code without turning CI red.
 - Self-hostable: the doc is produced at build time and served by the worker. No external service, no secrets, works in pure-guest mode (Clerk unset).
 
@@ -43,10 +43,10 @@ The worker uses vanilla `fetch` handlers with segment-based dispatch (`apps/api/
 
 ### Recommended: route manifest + generated component schemas
 
-- **Route manifest** — `apps/api/src/openapi/manifest.ts`: an array, one entry per endpoint. Each entry carries the method, the path template (`/api/...` with `{param}` placeholders), a summary, the auth mode (public / guest / clerk / either), optional request and response schema names, and the meaningful status codes. The manifest is plain data referencing DTO names from `@livediagram/api-schema`; it is the single declaration of the surface.
+- **Route manifest** — `apps/api/src/openapi/manifest.ts`: an array, one entry per endpoint. Each entry carries the method, the path template (`/api/...` with `{param}` placeholders), a summary, the auth mode (public / guest / clerk / either), optional request and response schema names, and the meaningful status codes. The manifest is plain data referencing DTO names from `@livepages/api-schema`; it is the single declaration of the surface.
 - **Component schemas** — generated from the api-schema TS types into JSON Schema (e.g. `ts-json-schema-generator` as a build step in `packages/api-schema` or the api worker), emitted into the OpenAPI `components.schemas`. Shapes are never re-typed; the manifest only references them by name.
 - **Assembly** — a build step composes the manifest + generated schemas + the auth-scheme definitions (the guest `X-Owner-Id` header and the Clerk Bearer, per [Auth + guest access](../014-identity/auth-and-guest-access.md)) into one OpenAPI 3.1 object, written to a TS constant the worker serves verbatim at `GET /api/openapi.json`. Build-time generation keeps the request path a constant lookup, no per-request work.
-- **Drift test** — the dispatch is segment-based and imperative, not declarative, so there is no route table to diff; the manifest is the declaration and the test pins it to the running dispatch (see "Drift test" below). Every `requestSchema` / `responseSchema` name must also exist in `@livediagram/api-schema`. This is the anti-drift guarantee; without it the doc is just another thing that rots.
+- **Drift test** — the dispatch is segment-based and imperative, not declarative, so there is no route table to diff; the manifest is the declaration and the test pins it to the running dispatch (see "Drift test" below). Every `requestSchema` / `responseSchema` name must also exist in `@livepages/api-schema`. This is the anti-drift guarantee; without it the doc is just another thing that rots.
 
 ### Drift test
 
@@ -80,7 +80,7 @@ A human-facing viewer (Scalar / Redoc / Stoplight Elements) is nice but pulls a 
 
 - Served by the **api worker**, not Next.js — no SSR, no Node runtime added ([AGENTS.md](../../../AGENTS.md) static-only rule).
 - **Self-hostable** with no external dependency; the doc generates at build time and ships in the worker bundle.
-- **Reuse over duplication**: component schemas come from `@livediagram/api-schema`, the existing single source of truth, never re-typed.
+- **Reuse over duplication**: component schemas come from `@livepages/api-schema`, the existing single source of truth, never re-typed.
 
 ## Future direction
 
@@ -98,7 +98,7 @@ The recommended route-manifest approach shipped. Concrete layout, all under
   generated schemas) or an inline JSON Schema for the small response envelopes
   (`{ documents: DocumentSummary[] }` etc.) that aren't named DTOs.
 - **`schemas.generated.ts`** — committed, generated by
-  `scripts/gen-openapi-schemas.mjs` (`pnpm --filter @livediagram/api gen:openapi`)
+  `scripts/gen-openapi-schemas.mjs` (`pnpm --filter @livepages/api gen:openapi`)
   from the api-schema TS types via `ts-json-schema-generator` (`expose: 'export'`
   so only exported DTOs become named components; `Record<…>`/`Partial<…>`
   utilities inline). The generator is a dev dependency only and is **not** in the

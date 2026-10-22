@@ -12,9 +12,9 @@ import {
   labelFontPx,
   type Element,
   type LaidOutPage,
-} from '@livediagram/document';
-import type { PageLayoutId } from '@livediagram/templates';
-import { buildPageLayout } from '@livediagram/templates';
+} from '@livepages/document';
+import type { PageLayoutId } from '@livepages/templates';
+import { buildPageLayout } from '@livepages/templates';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { LayoutRenderThumb } from './layout-render-thumb';
 

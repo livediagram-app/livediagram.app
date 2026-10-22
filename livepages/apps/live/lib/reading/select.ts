@@ -1,4 +1,4 @@
-import type { NoteCrop } from '@livediagram/api-schema';
+import type { NoteCrop } from '@livepages/api-schema';
 import { apiAiReadNotes } from '@/lib/api/ai';
 import { readCropsInBrowser } from './browser-reader';
 import {

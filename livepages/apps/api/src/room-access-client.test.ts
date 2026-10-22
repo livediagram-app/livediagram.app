@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@livepages/vitest-config/sent-request';
 
 const { db } = vi.hoisted(() => ({ db: { listDocumentsByTeam: vi.fn() } }));
 vi.mock('./db', () => db);

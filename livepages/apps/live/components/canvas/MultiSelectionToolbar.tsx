@@ -1,4 +1,4 @@
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import {
   DuplicateIcon,
   EllipsisIcon,
@@ -6,7 +6,7 @@ import {
   TrashIcon,
   HoverCard,
   Glyph,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import type { CombineOp } from '@/lib/combine/combine';
 import { CombineMenuButton } from '@/components/canvas/CombineMenu';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';

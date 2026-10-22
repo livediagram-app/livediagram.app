@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/sticky-model",
+  "name": "@livepages/sticky-model",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -16,11 +16,11 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@livediagram/sticky-vision": "workspace:*"
+    "@livepages/sticky-vision": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@livepages/oxlint-config": "workspace:*",
+    "@livepages/vitest-config": "workspace:*",
     "@tensorflow/tfjs": "4.22.0",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",

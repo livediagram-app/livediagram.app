@@ -13,7 +13,7 @@
 // omitted in the visual ones (PNG, PDF) where they have no natural
 // rendering.
 
-import { type CanvasSurface, shade, type BoxedElement } from '@livediagram/document';
+import { type CanvasSurface, shade, type BoxedElement } from '@livepages/document';
 // Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
@@ -28,7 +28,7 @@ import {
   wrapLabel,
   type ExportRun,
   type ExportShape,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { isoDepthLayers, isoExtrudes, isoLayerBrightness, ISO_TILT_DEG } from './isometric';
 
 // Shared options for the image exports (PNG / SVG / PDF). `isometric` tilts

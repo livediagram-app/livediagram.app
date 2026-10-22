@@ -5,7 +5,7 @@ import {
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemTypeDef,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { RATING_SCALE_DEFAULT } from './limits';
 import type { AnswerTarget, FormDefinition, FormQuestion, QuestionType } from './model';
 import { questionsOf } from './model';

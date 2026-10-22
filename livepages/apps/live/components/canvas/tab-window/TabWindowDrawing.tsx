@@ -1,6 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@livepages/ui';
 
 // A tab window's drawing (docs/specs/009-elements/tab-window.md "The element"): the tab drawn as the editor shows it
 // (useTabSvg: the export renderer, in this person's appearance, with its photos and the document's cards), zoomed to
@@ -8,7 +8,7 @@ import { trustedHtml } from '@livediagram/ui';
 // up with it, as the editor paints them for that tab in its mode (useTabBackdropPaint). Inline rather than an image so the page's typefaces apply, its ids prefixed so
 // its gradients and markers never meet the canvas's. Loaded only once a window is on screen (the renderer is heavy).
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react';
-import { prefixSvgIds, type Tab } from '@livediagram/document';
+import { prefixSvgIds, type Tab } from '@livepages/document';
 import { useTabSvg } from '@/components/split/useTabSvg';
 import { usePlanImageExport } from '@/components/dialogs/usePlanImageExport';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';

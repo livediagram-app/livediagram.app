@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { WebVitalsTracker } from '@livediagram/ui';
+import { WebVitalsTracker } from '@livepages/ui';
 import { track } from '@/lib/telemetry';
 import { setTimingTrack } from '@/lib/timing';
 

@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 // docs/specs/006-document/save-locations.md "The default depends on who is creating": /new stores a guest's
-// document on This Browser, a signed-in person's on livediagram, and never makes a signed-in person's
+// document on This Browser, a signed-in person's on livepages, and never makes a signed-in person's
 // create This Browser because Clerk had not answered yet.
 
 import { renderHook } from '@testing-library/react';
@@ -30,9 +30,9 @@ describe('useNewDocumentLocation', () => {
   });
 
   describe('resolveSaveLocation', () => {
-    it('keeps a signed-in person on livediagram', async () => {
+    it('keeps a signed-in person on livepages', async () => {
       const { result } = render({ authLoaded: true, clerkUserId: 'user_1' });
-      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livediagram');
+      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livepages');
     });
 
     it('answers a guest at once, without waiting for identity', async () => {
@@ -49,7 +49,7 @@ describe('useNewDocumentLocation', () => {
         hook.rerender({ authLoaded: true, clerkUserId: 'user_1' });
       });
       await expect(hook.result.current.resolveSaveLocation(false, settle)).resolves.toBe(
-        'livediagram',
+        'livepages',
       );
       expect(settle).toHaveBeenCalledOnce();
     });
@@ -61,15 +61,15 @@ describe('useNewDocumentLocation', () => {
       await expect(hook.result.current.resolveSaveLocation(false, settle)).resolves.toBe('browser');
     });
 
-    it('keeps a folder or team link on livediagram', async () => {
+    it('keeps a folder or team link on livepages', async () => {
       const { result } = render({ authLoaded: false, clerkUserId: null });
-      await expect(result.current.resolveSaveLocation(true, vi.fn())).resolves.toBe('livediagram');
+      await expect(result.current.resolveSaveLocation(true, vi.fn())).resolves.toBe('livepages');
     });
 
-    it('keeps everyone on livediagram without sign-in', async () => {
+    it('keeps everyone on livepages without sign-in', async () => {
       clerk.clerkEnabled = false;
       const { result } = render({ authLoaded: false, clerkUserId: null });
-      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livediagram');
+      await expect(result.current.resolveSaveLocation(false, vi.fn())).resolves.toBe('livepages');
     });
   });
 });

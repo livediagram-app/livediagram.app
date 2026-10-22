@@ -18,7 +18,7 @@ Builds on [Items](items.md) (the item store, fields) and [Plan mode](plan-mode.m
 | **custom field**    | A field a person adds to a type: an id, a name and a field kind                                                                      | property, attribute, column |
 | **card type**       | The interface's name for an item type, on the Card Types panel and its button, because the interface shows items as cards            | (no other name)             |
 | **default types**   | Project, Task, Note, Idea and Action: what Add Default Types adds, and what a document made before card types started empty reads as | built-in types              |
-| **ready-made type** | A card type livediagram defines in code that a board can bring: the default types and the ten more a template uses                   | preset type, built-in type  |
+| **ready-made type** | A card type livepages defines in code that a board can bring: the default types and the ten more a template uses                   | preset type, built-in type  |
 
 ## The type catalogue
 

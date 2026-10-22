@@ -6,8 +6,8 @@
 // Fetched once a document has Plan content (docs/specs/026-plan/plan-mode.md "Cost"), and only when signed in:
 // a guest has no teams, so asking would only earn a 401 the browser logs on every load.
 import { useEffect, useState } from 'react';
-import { itemPersonId, type ItemPerson } from '@livediagram/items';
-import type { TeamMember } from '@livediagram/api-schema';
+import { itemPersonId, type ItemPerson } from '@livepages/items';
+import type { TeamMember } from '@livepages/api-schema';
 import { apiGetTeam, apiListTeams } from '@/lib/api/teams';
 import { colorForKey } from '@/lib/identity';
 

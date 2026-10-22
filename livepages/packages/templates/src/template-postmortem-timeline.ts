@@ -6,7 +6,7 @@
 //
 // Pure: every call returns fresh elements.
 
-import { createArrow, createShape, createText, type Element } from '@livediagram/document';
+import { createArrow, createShape, createText, type Element } from '@livepages/document';
 import { PM_PHASES, PM_SPANS } from './template-postmortem-data';
 import { CONTENT, HEADING_GAP, SCAFFOLD, SECTION_H, sectionHeading } from './template-report-kit';
 

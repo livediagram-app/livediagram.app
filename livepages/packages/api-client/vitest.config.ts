@@ -1,4 +1,4 @@
-import { defineProject } from '@livediagram/vitest-config';
+import { defineProject } from '@livepages/vitest-config';
 
 // The client is small and pure: every line and branch is covered (docs/specs/015-api/blueprints/cli.md).
 export default defineProject({

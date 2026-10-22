@@ -36,7 +36,7 @@ export const CONTENTS_SIDEBAR_MIN_PAGES = 2;
 // browser only and never synced.
 export const CONTENTS_SIDES = ['left', 'right'] as const;
 export type ContentsSide = (typeof CONTENTS_SIDES)[number];
-export const CONTENTS_SIDE_STORAGE_KEY = 'livediagram:contents-side:v1';
+export const CONTENTS_SIDE_STORAGE_KEY = 'livepages:contents-side:v1';
 
 export function readContentsSide(stored: string | null): ContentsSide {
   return stored === 'right' ? 'right' : 'left';

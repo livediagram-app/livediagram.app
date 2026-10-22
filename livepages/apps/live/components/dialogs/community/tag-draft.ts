@@ -1,4 +1,4 @@
-import { COMMUNITY_TAGS_MAX, normaliseCommunityTag } from '@livediagram/api-schema';
+import { COMMUNITY_TAGS_MAX, normaliseCommunityTag } from '@livepages/api-schema';
 
 // The pure half of the publish dialog's tag field (docs/specs/025-community/community.md "Tags"):
 // what typing, a comma, Enter or a paste does to the chips. The same `normaliseCommunityTag` the worker

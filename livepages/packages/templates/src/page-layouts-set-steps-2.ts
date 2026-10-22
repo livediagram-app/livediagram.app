@@ -3,7 +3,7 @@
 // page's content box in, uncoloured elements out, a tall page stacking and a wide one setting side
 // by side. Only the journey's mood faces (stickers) paint their own colours, since there the
 // colour is the meaning.
-import { createPinnedArrow, type Element, type ShapeElement } from '@livediagram/document';
+import { createPinnedArrow, type Element, type ShapeElement } from '@livepages/document';
 import { heading, type Kit } from './page-layout-kit';
 import { iconDisc } from './page-layout-parts';
 

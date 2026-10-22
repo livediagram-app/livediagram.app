@@ -1,4 +1,4 @@
-name = "livediagram-live"
+name = "livepages-live"
 main = "src/worker.ts"
 compatibility_date = "2026-05-29"
 
@@ -22,16 +22,16 @@ run_worker_first = ["/*", "!/_next/*"]
 # without it the share page is served as built and previews show the brand card.
 [[services]]
 binding = "API"
-service = "livediagram-api"
+service = "livepages-api"
 
 # Staging (docs/specs/016-platform/staging-environment.md): same path-rewrite worker, same static `./out`, deployed
-# as `livediagram-live-staging`. `main` is inheritable; the assets binding is
+# as `livepages-live-staging`. `main` is inheritable; the assets binding is
 # restated so this block describes the staging worker in full.
 # Named explicitly: wrangler would append "-staging" to the top-level
 # name on its own, but nothing in `--dry-run` prints the name it resolved,
 # and the router's service bindings depend on this exact string.
 [env.staging]
-name = "livediagram-live-staging"
+name = "livepages-live-staging"
 
 [env.staging.assets]
 directory = "./out"
@@ -42,4 +42,4 @@ run_worker_first = ["/*", "!/_next/*"]
 # Service bindings are not inherited: staging reads the staging api.
 [[env.staging.services]]
 binding = "API"
-service = "livediagram-api-staging"
+service = "livepages-api-staging"

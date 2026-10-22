@@ -9,8 +9,8 @@ import { LegalRedirect } from '@/components/LegalRedirect';
 const HELP_PRIVACY_URL = '/help/policies/privacy-policy/';
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy · livediagram',
-  description: 'The livediagram privacy policy now lives in the help centre.',
+  title: 'Privacy Policy · livepages',
+  description: 'The livepages privacy policy now lives in the help centre.',
   robots: { index: false, follow: true },
   alternates: { canonical: HELP_PRIVACY_URL },
 };

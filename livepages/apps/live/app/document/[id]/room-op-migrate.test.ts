@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, FreehandElement, Tab } from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+import type { Element, FreehandElement, Tab } from '@livepages/document';
+import type { RoomOp } from '@livepages/api-schema';
 import { migrateRoomOp } from './room-op-migrate';
 
 // docs/specs/006-document/stroke-points.md "Migration of stored strokes": a peer whose browser

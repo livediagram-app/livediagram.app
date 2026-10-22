@@ -1,6 +1,6 @@
 'use client';
 
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard } from '@livepages/ui';
 import { PHOTO_ZOOM_MAX } from '@/lib/photo-view';
 
 // The zoom, where it can be seen and clicked (docs/specs/021-event-storming/event-storming.md Phase 9). The wheel and

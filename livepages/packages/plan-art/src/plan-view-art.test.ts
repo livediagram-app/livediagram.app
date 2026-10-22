@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ShapeElement } from '@livediagram/document';
+import type { ShapeElement } from '@livepages/document';
 import { planViewArt } from './plan-view-art';
 import { NOW, artData, card, shape } from './test-fixtures';
 

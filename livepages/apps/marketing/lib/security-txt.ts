@@ -1,4 +1,4 @@
-import { REPO_URL, SITE_URL } from '@livediagram/ui';
+import { REPO_URL, SITE_URL } from '@livepages/ui';
 
 // RFC 9116 security.txt, served at /.well-known/security.txt by
 // app/.well-known/security.txt/route.ts. Built at deploy time so `Expires`

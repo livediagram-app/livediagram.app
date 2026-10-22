@@ -31,8 +31,8 @@ describe('readBrowserIdentity', () => {
   it('reads the guest identity and keeps only the id prefix', () => {
     const id = readBrowserIdentity({
       localStorage: storage({
-        'livediagram:v2:self-id': GUEST,
-        'livediagram:v2:self-sig': 'sig',
+        'livepages:v2:self-id': GUEST,
+        'livepages:v2:self-sig': 'sig',
       }),
       document: { cookie: '__client_uat=0' },
     });

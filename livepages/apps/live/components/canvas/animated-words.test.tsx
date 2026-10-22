@@ -1,6 +1,6 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { createShape, createText } from '@livediagram/document';
+import { createShape, createText } from '@livepages/document';
 import {
   TEXT_ANIM_MAX_LETTERS,
   TEXT_ANIM_MAX_WORDS,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeRefs, type Element } from '@livediagram/document';
+import { computeRefs, type Element } from '@livepages/document';
 import { arrowBetween, shapeAt } from './__fixtures__/build';
 import { edgeJson, edgesOf, edgeText, ownLineText } from './edges';
 

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@livepages/vitest-config/sent-request';
 import { MCP_ORIGIN } from './mcp-config';
 import { completeDevice, denyDevice, fetchDeviceSession, userCodeOf } from './mcp-device-session';
 
@@ -26,8 +26,8 @@ describe('userCodeOf', () => {
 
 describe('fetchDeviceSession', () => {
   it('asks the MCP origin and returns the client name', async () => {
-    const calls = stubFetch(() => Response.json({ clientName: 'livediagram CLI' }));
-    expect(await fetchDeviceSession('BCDF-GHJK')).toEqual({ clientName: 'livediagram CLI' });
+    const calls = stubFetch(() => Response.json({ clientName: 'livepages CLI' }));
+    expect(await fetchDeviceSession('BCDF-GHJK')).toEqual({ clientName: 'livepages CLI' });
     expect(calls[0]!.url).toBe(`${MCP_ORIGIN}/oauth/device/session/BCDF-GHJK`);
   });
 

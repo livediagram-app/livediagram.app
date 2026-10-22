@@ -10,7 +10,7 @@ import {
   webVitalMetric,
   type EditorTimingMetric,
   type WebVital,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import type { Metric } from '../metric-series';
 
 /**

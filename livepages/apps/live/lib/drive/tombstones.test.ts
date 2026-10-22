@@ -16,7 +16,7 @@ describe('localSeenStore', () => {
     const s = storage();
     const store = localSeenStore(s);
     store.write('user_a', [{ kind: 'document', ldId: 'd1', driveFileId: 'f1' }]);
-    expect(s.map.get('livediagram:v2:drive-seen:user_a')).toBe('[["document","d1","f1"]]');
+    expect(s.map.get('livepages:v2:drive-seen:user_a')).toBe('[["document","d1","f1"]]');
     expect(store.read('user_a')).toEqual([{ kind: 'document', ldId: 'd1', driveFileId: 'f1' }]);
     expect(store.read('user_b')).toEqual([]);
     store.clear('user_a');
@@ -25,9 +25,9 @@ describe('localSeenStore', () => {
 
   it('reads corrupt or foreign values as nothing', () => {
     const s = storage();
-    s.setItem('livediagram:v2:drive-seen:u', '{nope');
+    s.setItem('livepages:v2:drive-seen:u', '{nope');
     expect(localSeenStore(s).read('u')).toEqual([]);
-    s.setItem('livediagram:v2:drive-seen:u', '[["team","x","y"],["folder","f","g"]]');
+    s.setItem('livepages:v2:drive-seen:u', '[["team","x","y"],["folder","f","g"]]');
     expect(localSeenStore(s).read('u')).toEqual([{ kind: 'folder', ldId: 'f', driveFileId: 'g' }]);
   });
 });

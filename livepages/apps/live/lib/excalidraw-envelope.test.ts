@@ -20,7 +20,7 @@ describe('looksLikeExcalidraw', () => {
 
   it('turns down ordinary text, our own payload and other JSON', () => {
     expect(looksLikeExcalidraw('hello world')).toBe(false);
-    expect(looksLikeExcalidraw('{"kind":"livediagram.elements","elements":[]}')).toBe(false);
+    expect(looksLikeExcalidraw('{"kind":"livepages.elements","elements":[]}')).toBe(false);
     expect(looksLikeExcalidraw('{"type":"excalidrawish"}')).toBe(false);
     expect(looksLikeExcalidraw('{"elements":[],"type":"excalidraw"}')).toBe(false);
     expect(looksLikeExcalidraw('')).toBe(false);

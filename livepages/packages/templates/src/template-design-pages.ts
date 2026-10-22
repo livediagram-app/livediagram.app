@@ -6,7 +6,7 @@
 // measured, then again centred on its page.
 //
 // Pure: kind in, pages or elements out.
-import { elementBounds, layOutPages, type Element, type Page } from '@livediagram/document';
+import { elementBounds, layOutPages, type Element, type Page } from '@livepages/document';
 import { templatePage } from './template-page-kit';
 import type { TemplateKind } from './templates';
 

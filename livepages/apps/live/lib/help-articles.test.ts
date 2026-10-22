@@ -14,7 +14,7 @@ import {
 // help's URL structure at runtime, so reading help's app/ here to confirm
 // every link resolves is a legitimate cross-app guard: if help moves an
 // article, that link really is broken and this should fail. (Stronger than
-// checking against @livediagram/help-registry: the filesystem is what
+// checking against @livepages/help-registry: the filesystem is what
 // actually serves the page.)
 const HELP_APP = fileURLToPath(new URL('../../help/app', import.meta.url));
 

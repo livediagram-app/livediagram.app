@@ -1,18 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import { EmptyState, lucideGlyph } from '@livediagram/ui';
-import { lucideShapes } from '@livediagram/icons/lucide';
+import { EmptyState, lucideGlyph } from '@livepages/ui';
+import { lucideShapes } from '@livepages/icons/lucide';
 import {
   MAX_SHAPE_LIBRARY_NAME_CHARS,
   type ShapeLibrary,
   type ShapeLibraryItem,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { useConfirm } from '@/hooks/ui/useConfirm';
 import { useShapeLibraries } from '@/components/primitives/ShapeLibraryProvider';
 import { LibraryItemThumbnail } from '@/components/primitives/LibraryItemThumbnail';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { pluralGrouped } from '@livediagram/document';
+import { pluralGrouped } from '@livepages/document';
 
 // The Explorer's Shape libraries page (docs/specs/013-workspace/shape-libraries.md "Managing
 // libraries: the Explorer"): the owner's libraries, newest first, each a card to rename, delete, or

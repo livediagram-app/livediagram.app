@@ -2,7 +2,7 @@ import {
   lucideBrushCleaning,
   lucideLayers,
   lucideSlidersHorizontal,
-} from '@livediagram/icons/lucide';
+} from '@livepages/icons/lucide';
 
 import { Glyph, type IconProps } from './Glyph';
 import { lucideGlyph } from './lucide-glyph';

@@ -14,7 +14,7 @@
 // holder, whatever presence id it happens to be wearing today. A refresh keeps
 // the baton; nobody else can take it, because nobody else was ever sent it.
 
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@livepages/api-schema';
 
 /** How long a holder may be gone before the baton is released. */
 export const FACILITATOR_GRACE_MS = 90_000;

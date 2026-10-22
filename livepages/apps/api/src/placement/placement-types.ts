@@ -7,7 +7,7 @@ import type {
   DocumentPlacement,
   PlacementDefaultKey,
   PlacementRejection,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 
 /** The placement a create body asks for. `chosen` is whether the caller chose a place at all: a
  *  team, or the `folderId` key present (null being the space's root, chosen on purpose). A body

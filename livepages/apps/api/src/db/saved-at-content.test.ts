@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Item } from '@livediagram/items';
+import type { Item } from '@livepages/items';
 import { sqliteD1 } from '../test-sqlite-d1';
 import { T0, insert, liveDoc } from './test-trash-fixtures';
 import { deleteItemRow, insertItems, updateItemAtRev, updateItemsAtRev } from './items';

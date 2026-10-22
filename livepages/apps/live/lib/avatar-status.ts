@@ -1,7 +1,7 @@
 // A character's status in Avatar mode (docs/specs/008-canvas/avatar-mode.md "Status"): how you are, shown to the
 // room without a word. Presence for the session only; nothing here is stored.
 
-import type { AvatarStatus } from '@livediagram/api-schema';
+import type { AvatarStatus } from '@livepages/api-schema';
 
 export type { AvatarStatus };
 

@@ -3,8 +3,8 @@
 // Column letters across the top and row numbers down the left (docs/specs/029-sheets/sheet.md "The grid", "Rows and
 // columns"): tinted where the selection is, and a small double arrow between the neighbours of hidden lines that
 // shows them again. Resizing and header menus are the pointer's (useSheetPointer).
-import { columnLetters, type Selection } from '@livediagram/sheets';
-import { Tooltip } from '@livediagram/ui';
+import { columnLetters, type Selection } from '@livepages/sheets';
+import { Tooltip } from '@livepages/ui';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { type Geometry, type GridWindow } from './sheet-geometry';
 

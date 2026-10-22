@@ -1,7 +1,7 @@
 // The api's refusals as agents read them (docs/specs/026-plan/plan-agents.md "Errors that teach"): what was wrong
 // and the next call to make, the same words on the CLI and the MCP. A 5xx or anything not from the api is not a
 // refusal: the caller lets it throw.
-import { ApiError } from '@livediagram/api-client';
+import { ApiError } from '@livepages/api-client';
 import { SHEET_REFUSAL_WORDS } from '../sheets/sheet-refusals';
 
 export const FIELD_HINT =

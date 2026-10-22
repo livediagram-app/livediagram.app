@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { NAME_MAX_LENGTH } from '@livediagram/document';
+import { NAME_MAX_LENGTH } from '@livepages/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';

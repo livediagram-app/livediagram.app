@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'oxlint';
-import { ICON_ART_ALLOWLIST } from '@livediagram/oxlint-config/raw-svg';
+import { ICON_ART_ALLOWLIST } from '@livepages/oxlint-config/raw-svg';
 
 // The shared oxlint config every workspace's `oxlint.config.ts` re-exports
 // (docs/specs/003-system-architecture/linting.md). Rules are listed one by one, every category is
@@ -159,8 +159,8 @@ export default defineConfig({
     'react/unsupported-syntax': 'error',
 
     // The repo's own rules (./plugin.ts).
-    'livediagram/no-native-title': 'error',
-    'livediagram/no-raw-icon-svg': 'error',
+    'livepages/no-native-title': 'error',
+    'livepages/no-raw-icon-svg': 'error',
   },
   overrides: [
     {
@@ -241,7 +241,7 @@ export default defineConfig({
     {
       // Art keeps its own paint; only the title rule applies there.
       files: ICON_ART_ALLOWLIST,
-      rules: { 'livediagram/no-raw-icon-svg': 'off' },
+      rules: { 'livepages/no-raw-icon-svg': 'off' },
     },
   ],
 });

@@ -5,7 +5,7 @@ import {
   pasteIntoTable,
   setTableCell,
   type TableElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { composedWithAlt } from '@/lib/composed-key';
 
 // The selected-cell INPUT layer for TableView (docs/specs/008-canvas/canvas-and-palette.md Table): the

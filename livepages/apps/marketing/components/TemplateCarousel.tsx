@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 import { BAND_LABEL } from '@/components/band-classes';
-import { SnapCarousel } from '@livediagram/ui';
+import { SnapCarousel } from '@livepages/ui';
 
 // One category's row of the template gallery (docs/specs/019-marketing/marketing-site.md): the shared
 // SnapCarousel (the editor's template picker browses a category with the same

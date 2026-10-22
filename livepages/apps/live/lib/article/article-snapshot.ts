@@ -4,9 +4,9 @@
 // takes each word where it landed, with its font and colour, every painted background (a highlight,
 // code) and border (a quote's bar, a heading's rule, a divider), each list marker and to-do box, as
 // draw operations in canvas coordinates. article-draw.ts paints them into an SVG or onto a canvas.
-import type { ArticleDrawOp } from '@livediagram/document';
+import type { ArticleDrawOp } from '@livepages/document';
 
-export type { ArticleDrawOp } from '@livediagram/document';
+export type { ArticleDrawOp } from '@livepages/document';
 
 const transparent = (c: string) =>
   !c || c === 'transparent' || /rgba?\([^)]*,\s*0\)$/.test(c) || /\/\s*0\)$/.test(c);

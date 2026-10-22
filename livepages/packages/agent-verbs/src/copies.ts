@@ -2,8 +2,8 @@
 // a revision. They give a write its base and `tab diff` its before. The store is the CLI's (files); a front door
 // without one passes null and writes send no base.
 
-import { revOfEtag, type ChangesetBase } from '@livediagram/api-schema';
-import { elementFingerprint, type Tab } from '@livediagram/document';
+import { revOfEtag, type ChangesetBase } from '@livepages/api-schema';
+import { elementFingerprint, type Tab } from '@livepages/document';
 import type { VerbContext } from './define';
 
 export type ReadCopy = { rev: number; tab: Tab };

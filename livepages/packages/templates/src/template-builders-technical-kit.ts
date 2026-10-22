@@ -7,7 +7,7 @@
 //
 // Pure: every helper returns fresh elements.
 
-import { createText, type Element } from '@livediagram/document';
+import { createText, type Element } from '@livepages/document';
 
 export const TECH_MUTED = '#64748b';
 

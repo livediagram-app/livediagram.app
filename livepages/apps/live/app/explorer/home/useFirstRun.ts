@@ -13,7 +13,7 @@ import { isFirstRun } from './first-run';
 // saw for this person (`heroFirstRun`) until the lists land: no flash of the wrong greeting. A person this browser has
 // never seen is taken as new, which a newcomer is. The body waits for the real answer (`firstRun`).
 
-const SEEN_KEY = 'livediagram:v2:home-has-documents';
+const SEEN_KEY = 'livepages:v2:home-has-documents';
 
 // The answer this browser last saw. A guest's id resolves a beat after the Explorer mounts; until it does, the
 // browser's last answer stands for whoever is here (it is almost always the same person), so a returning guest

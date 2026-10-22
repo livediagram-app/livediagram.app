@@ -2,7 +2,7 @@
 
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import { createText, type Element, type TextElement } from '@livediagram/document';
+import { createText, type Element, type TextElement } from '@livepages/document';
 import { useTextStyleSetters } from './useTextStyleSetters';
 
 // Stands in for the DOM measure: the text block is 10 px a character at 14 px, scaled with the

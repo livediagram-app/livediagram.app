@@ -1,7 +1,7 @@
 'use client';
 
-import { isTrashed } from '@livediagram/items';
-import { PlanCardsIcon, SearchIcon } from '@livediagram/ui';
+import { isTrashed } from '@livepages/items';
+import { PlanCardsIcon, SearchIcon } from '@livepages/ui';
 import { ClusterPopoverSegment, ClusterStrip } from './ClusterPopoverButton';
 import { TrashDropTarget, TrashSegment, usePlanCardDragging } from './TrashClusterButton';
 import { NewCardSegment } from './NewCardClusterButton';

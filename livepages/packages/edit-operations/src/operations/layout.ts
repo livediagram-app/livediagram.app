@@ -4,7 +4,7 @@
 // no arrow joins are swept into rows below (from the top-left when none is joined). Nothing outside
 // the selection moves.
 
-import type { EditRejection } from '@livediagram/api-schema';
+import type { EditRejection } from '@livepages/api-schema';
 import {
   autoLayoutElements,
   flowDirectionOf,
@@ -12,7 +12,7 @@ import {
   type BoxedElement,
   type Element,
   type ElementId,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { shifted } from '../placement';
 import { resolveMembers } from '../selectors';
 import {

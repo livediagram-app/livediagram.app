@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import type { AgentPresence, AvatarPresence } from '@livediagram/api-schema';
+import type { AgentPresence, AvatarPresence } from '@livepages/api-schema';
 import type { RemoteSelection } from '@/lib/presence-rows';
 import { AWAY_AFTER_MS, type Participant } from '@/lib/identity';
 import { RELATIVE_TICK_MS } from '@/lib/relative-time';

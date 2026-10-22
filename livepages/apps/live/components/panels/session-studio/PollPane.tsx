@@ -19,8 +19,8 @@ import {
   POLL_QUESTION_MAX,
   type LivePoll,
   type PollStyle,
-} from '@livediagram/api-schema';
-import { POLL_STYLE_LABEL, pollStyleUsesRoster } from '@livediagram/document';
+} from '@livepages/api-schema';
+import { POLL_STYLE_LABEL, pollStyleUsesRoster } from '@livepages/document';
 import { pollCollaboratorOptions } from '@/lib/poll-collaborators';
 import { PollStyleTiles } from './PollStyleTiles';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';

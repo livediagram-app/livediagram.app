@@ -1,6 +1,6 @@
 'use client';
 
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@livepages/ui';
 
 // The sample diagram the Tab Style panels preview their setting on (docs/specs/011-theme/canvas-and-theme-dialog.md
 // "Finish panel", "Text panel"): a step, a decision, the arrow between and a sticky, drawn by the export renderer
@@ -13,7 +13,7 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   type Finish,
   type TextSize,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { finishPreviewSvg } from '@/lib/finish-preview';
 import { resolveTabBackdrop } from '@/lib/themes';

@@ -5,7 +5,7 @@
 // peer, an agent, an undo). One pass whenever the pages change, never on an element edit.
 
 import { useEffect, useEffectEvent, useMemo } from 'react';
-import { deckPagesKey, pageMovedTo, type Tab } from '@livediagram/document';
+import { deckPagesKey, pageMovedTo, type Tab } from '@livepages/document';
 
 // Called after the stored deck's own hydration effect, so a deck that arrives with the document is what the pass
 // builds on: an earlier pass over the empty deck would have saved its page slides alone over the stored deck.

@@ -40,7 +40,7 @@ export const SHEET_CELL_SIZES = {
 export type SheetCellSize = keyof typeof SHEET_CELL_SIZES;
 
 // The card fields written as dates (a date serial with a date format), by the names Setup Sheet's columns use; the
-// editor reads every other name for them with @livediagram/items' isCardDateField.
+// editor reads every other name for them with @livepages/items' isCardDateField.
 const CARD_DATE_FIELDS: ReadonlySet<string> = new Set(['Due', 'Start']);
 
 // The most card rows a setup writes (sheet.md "Setup Sheet").

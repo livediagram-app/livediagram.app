@@ -5,20 +5,20 @@ import { ApiTokensList } from '@/components/illustrations/account-settings';
 export const metadata = helpMetadata({
   title: 'API Tokens',
   description:
-    'Create an API token to call the livediagram API from your own scripts. A signed-in-only feature: tokens act as your account and last six months.',
+    'Create an API token to call the livepages API from your own scripts. A signed-in-only feature: tokens act as your account and last six months.',
   path: '/help/account-and-data/api-tokens/',
 });
 
 <ArticleLayout
   title="API Tokens"
-  description="Call the livediagram API from your own scripts with a revocable token. A signed-in-only feature for advanced users."
+  description="Call the livepages API from your own scripts with a revocable token. A signed-in-only feature for advanced users."
   categoryTitle="Account and Data"
   categorySlug="account-and-data"
 >
 
-An API token lets your own scripts and integrations talk to the livediagram API as you, outside the editor. A token carries your account's **full read and write access**, so treat it like a password.
+An API token lets your own scripts and integrations talk to the livepages API as you, outside the editor. A token carries your account's **full read and write access**, so treat it like a password.
 
-To connect an AI tool like Claude rather than write your own script, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/): it creates and uses one of these tokens for you. So does [the livediagram CLI](/help/developers/cli/) when you sign in with `livediagram auth login`.
+To connect an AI tool like Claude rather than write your own script, see [Connect an AI Tool (MCP)](/help/account-and-data/connect-ai-mcp/): it creates and uses one of these tokens for you. So does [the livepages CLI](/help/developers/cli/) when you sign in with `livepages auth login`.
 
 ## You need an account
 
@@ -40,11 +40,11 @@ The token's secret is shown **once**, right after you create it. Copy it then wi
 
 ## Using a token
 
-Send the token as a **bearer header** to the API, which lives under `/api` on your livediagram host (`https://livediagram.app/api` on the hosted service):
+Send the token as a **bearer header** to the API, which lives under `/api` on your livepages host (`https://livepages.app/api` on the hosted service):
 
 ```bash
 # List your documents
-curl https://livediagram.app/api/documents \
+curl https://livepages.app/api/documents \
   -H "Authorization: Bearer lvd_your_token_here"
 ```
 

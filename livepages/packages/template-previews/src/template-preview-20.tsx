@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import type { TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@livepages/templates';
 import { pv } from './motion';
 
 // Group 20: the blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): Blank

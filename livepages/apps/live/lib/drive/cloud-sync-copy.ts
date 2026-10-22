@@ -28,7 +28,7 @@ export const DRIVE_CONNECT_CANCELLED = "Connection cancelled. Connect whenever y
 const DRIVE_OFFLINE = "Can't reach Google Drive. Trying again automatically.";
 export const DRIVE_NEEDS_RECONNECT = 'Google Drive needs reconnecting. Your files are safe.';
 const DRIVE_NEEDS_RESUME = 'Syncing paused in this browser. Resume to continue.';
-export const DRIVE_NOTICE_TEXT = "Moved to a Drive folder livediagram can't see.";
+export const DRIVE_NOTICE_TEXT = "Moved to a Drive folder livepages can't see.";
 
 export function driveConnectedText(rootName: string | null): string {
   return rootName

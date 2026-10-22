@@ -5,11 +5,11 @@
 // textarea's own text is transparent, its caret not). Under it, the function list while a name is typed, the
 // argument hint inside a call, and the reason a formula cannot be saved.
 import { useEffect, useRef } from 'react';
-import { FUNCTION_DOCS, formatA1 } from '@livediagram/sheets';
+import { FUNCTION_DOCS, formatA1 } from '@livepages/sheets';
 import { argumentAt, argumentSlot, refSpans } from './formula-assist';
 import { useSheetController } from './sheet-controller';
 import { cellBox, mergeAt } from './sheet-geometry';
-import { cellColours, isLightColor, resolveFontStack } from '@livediagram/document';
+import { cellColours, isLightColor, resolveFontStack } from '@livepages/document';
 import { fontPx } from './SheetCells';
 import type { FormulaInput } from './useFormulaInput';
 

@@ -21,7 +21,7 @@ import {
   parseQaAction,
   qaVoterId,
   type QaNote,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { getDocument, getParticipant } from '../db';
 import type { QaWriteRequest } from '../qa-board-write';
 import { badRequest, conflict, forbidden, json, notFound, payloadTooLarge } from '../responses';

@@ -1,6 +1,6 @@
 'use client';
 
-import type { CommunityFacetsResponse } from '@livediagram/api-schema';
+import type { CommunityFacetsResponse } from '@livepages/api-schema';
 import { HashIcon } from '../shared/icons';
 import { SearchControlMenu } from './SearchControlMenu';
 

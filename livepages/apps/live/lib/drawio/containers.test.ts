@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { ENTITY_MAX_FIELDS } from '@livediagram/document';
+import { ENTITY_MAX_FIELDS } from '@livepages/document';
 import { ReportTally } from './notes';
 import { readGraph } from './cells';
 import { convertPage } from './convert-page';

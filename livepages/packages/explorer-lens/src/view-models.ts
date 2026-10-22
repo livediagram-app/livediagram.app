@@ -1,7 +1,7 @@
 // What the chips, the pills and the live region show and announce (docs/specs/013-workspace/
 // explorer-filters.md "The field", "Accessibility"). The copy lives here, once.
 
-import { withArticle } from '@livediagram/document';
+import { withArticle } from '@livepages/document';
 import {
   DIMENSION_LABELS,
   LENS_DIMENSIONS,

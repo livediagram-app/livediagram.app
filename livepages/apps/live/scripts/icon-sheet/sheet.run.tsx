@@ -7,7 +7,7 @@ import type { ComponentType, ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { it } from 'vitest';
 
-import * as uiIcons from '@livediagram/ui';
+import * as uiIcons from '@livepages/ui';
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
 
 const OUT = process.env.ICON_SHEET_DIR ?? '/tmp/icon-sheet';

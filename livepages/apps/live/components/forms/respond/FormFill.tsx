@@ -5,7 +5,7 @@
 // or Submit, Back / Next / Submit, and then the confirmation. The form link's page and the builder's Preview both draw
 // it; only what Submit does differs.
 import { useEffect, useRef } from 'react';
-import { answerErrorMessage, promptOf, type PublicForm } from '@livediagram/forms';
+import { answerErrorMessage, promptOf, type PublicForm } from '@livepages/forms';
 import { FormCoverBand } from '../FormCoverBand';
 import { LinkedText } from '../LinkedText';
 import { QuestionView } from '../QuestionView';
@@ -246,7 +246,7 @@ export function FormFill({
           </button>
         )}
         <span className="order-first mr-auto basis-full text-[12px] text-slate-500 sm:basis-auto dark:text-slate-400">
-          Never submit passwords through livediagram forms.
+          Never submit passwords through livepages forms.
         </span>
       </div>
       {footer}

@@ -203,7 +203,7 @@ An embed carries its link's role exactly (`docs/specs/013-workspace/embeds.md`, 
 differs from the plain link only in what the chrome withholds: no identity screen (comments and Q&A notes carry
 the default guest identity, so `getParticipant` often yields "Anonymous"), no palette, panels, tab bar, theme
 dialog or Make a copy button, no image upload or paste (`useEditorImages.ts`, `useClipboard.ts`), and the
-"Open in livediagram" badge instead.
+"Open in livepages" badge instead.
 
 ## Where the editor and the server disagree
 

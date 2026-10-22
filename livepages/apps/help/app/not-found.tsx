@@ -1,4 +1,4 @@
-import { PageNotFound } from '@livediagram/ui';
+import { PageNotFound } from '@livepages/ui';
 
 // An address under /help with no article (docs/specs/016-platform/router-app.md "Not found"): the layout's header
 // and footer around the shared card, its way back the help centre's front page.

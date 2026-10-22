@@ -4,7 +4,7 @@
 // A credential card in the current theme: an emerald-edged "done" card with
 // the secret in a monospace field, copied from inside the field.
 import { useState } from 'react';
-import { Button, CheckIcon, CopyIcon, Tooltip, useCopiedFlash } from '@livediagram/ui';
+import { Button, CheckIcon, CopyIcon, Tooltip, useCopiedFlash } from '@livepages/ui';
 
 const SECRET_PREFIX = 'lvd_';
 

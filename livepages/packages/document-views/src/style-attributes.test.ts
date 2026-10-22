@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createSticky, createTable, createText, type Element } from '@livediagram/document';
+import { createSticky, createTable, createText, type Element } from '@livepages/document';
 import { shapeAt } from './__fixtures__/build';
 import { styleAttributesOf, styleBaselines } from './style-attributes';
 

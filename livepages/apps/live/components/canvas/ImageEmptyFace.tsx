@@ -1,8 +1,8 @@
 'use client';
 
 import type { CSSProperties, MouseEvent, PointerEvent } from 'react';
-import { shade, tint } from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+import { shade, tint } from '@livepages/document';
+import { Glyph } from '@livepages/ui';
 import {
   EMPTY_FACE,
   imageEmptyLayout,

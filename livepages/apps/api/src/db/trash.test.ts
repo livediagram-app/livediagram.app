@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { TRASH_RETENTION_MS } from '@livediagram/api-schema';
+import { TRASH_RETENTION_MS } from '@livepages/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { DAY, T0, liveDoc, insert, team } from './test-trash-fixtures';
 import type { Env } from '../types';

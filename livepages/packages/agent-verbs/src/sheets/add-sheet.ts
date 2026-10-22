@@ -4,7 +4,7 @@
 // places a board, in one changeset (live to anyone with the tab open). The first cells are checked against the
 // store's caps before the sheet is made, and a sheet whose filling or placing then fails is deleted, so a failed
 // call leaves no unplaced sheet holding cells of the document's budget and a retry starts clean.
-import { ApiError, type ApiClient } from '@livediagram/api-client';
+import { ApiError, type ApiClient } from '@livepages/api-client';
 import {
   CLIENT_HEADER,
   type ChangesetRequest,
@@ -13,15 +13,15 @@ import {
   type SheetCreateRequest,
   type SheetResponse,
   type TabResponse,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   SHEET_COL_HEAD_H,
   SHEET_HEADER_H,
   SHEET_ROW_HEAD_W,
   createShape,
   tabTakesPlanOnly,
-} from '@livediagram/document';
-import { placeBeside } from '@livediagram/items';
+} from '@livepages/document';
+import { placeBeside } from '@livepages/items';
 import {
   AGENT_LOCALE,
   NOBODY,
@@ -45,7 +45,7 @@ import {
   type Rand,
   type Sheet,
   type SheetWrite,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import { apiRefusalOf } from '../plan/api-refusal';
 import { tabPath } from '../verbs/shared';
 import { capsRefusal, sendSheetWrite } from './change-sheet';

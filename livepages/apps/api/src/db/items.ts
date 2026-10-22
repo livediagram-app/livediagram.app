@@ -2,8 +2,8 @@
 // "Data and persistence"). Every write raises the document's `items_rev` in the same batch, so the
 // room op carries one store revision per write; an update is guarded by the item's own `rev`.
 
-import { isSafeColourValue } from '@livediagram/document';
-import type { Item, ItemPerson } from '@livediagram/items';
+import { isSafeColourValue } from '@livepages/document';
+import type { Item, ItemPerson } from '@livepages/items';
 import type { Env } from '../types';
 
 type ItemRow = {

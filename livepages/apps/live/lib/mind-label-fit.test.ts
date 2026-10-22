@@ -5,7 +5,7 @@ import {
   createShape,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { fitMindLabel, mindLabelFontPx, mindLabelHeight, mindLabelPadding } from './mind-label-fit';
 
 // docs/specs/009-elements/mind-node.md "A node grows to fit its label".

@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, type ReactNode } from 'react';
-import { useCommunityEnabled } from '@livediagram/ui';
+import { useCommunityEnabled } from '@livepages/ui';
 import { API_BASE } from '@/lib/config';
 
 // The whole Community app, unless it is switched off (docs/specs/025-community/community.md "Turning the Community

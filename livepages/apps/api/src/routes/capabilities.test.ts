@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bytesToBase64 } from '@livediagram/api-schema';
+import { bytesToBase64 } from '@livepages/api-schema';
 import type { Env } from '../types';
 import { handleCapabilities } from './capabilities';
 import { makeTestRouteContext } from './test-route-context';
@@ -76,12 +76,12 @@ describe('the CLI fields (docs/specs/015-api/blueprints/cli.md "Capabilities")',
   it('reports sign-in, an https issuer as its origin, and a well-formed version floor', async () => {
     const caps = await capabilities({
       CLERK_JWKS_URL: 'https://clerk/jwks',
-      OAUTH_ISSUER: 'https://mcp.livediagram.app/',
+      OAUTH_ISSUER: 'https://mcp.livepages.app/',
       CLI_MIN_VERSION: ' 1.2.3 ',
     });
     expect(caps).toMatchObject({
       authEnabled: true,
-      oauthIssuer: 'https://mcp.livediagram.app',
+      oauthIssuer: 'https://mcp.livepages.app',
       cli: { minVersion: '1.2.3' },
     });
   });

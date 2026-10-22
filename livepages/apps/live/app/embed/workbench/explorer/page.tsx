@@ -10,7 +10,7 @@ import { WorkbenchStatus } from '../WorkbenchStatus';
 // /embed/workbench/document/** (lib/workbench/workbench-frame-path.ts), and the page reads the real address. Under
 // /embed, so frameable; the page binds to the minting workbench before it shows anything.
 export const metadata: Metadata = {
-  title: 'Workbench | livediagram',
+  title: 'Workbench | livepages',
   robots: { index: false },
 };
 

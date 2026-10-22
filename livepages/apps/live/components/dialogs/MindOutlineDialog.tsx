@@ -5,8 +5,8 @@
 // what Save will do and, when Save would remove nodes, a question comes first: Keep Editing or
 // Remove. ⌘/Ctrl+Enter saves; Escape cancels (the Dialog's own). On a phone it rises as a sheet.
 import { useCallback, useMemo, useState, type ReactNode } from 'react';
-import { Button, DialogCloseButton, DialogHeader } from '@livediagram/ui';
-import type { MindOutlineSummary } from '@livediagram/document';
+import { Button, DialogCloseButton, DialogHeader } from '@livepages/ui';
+import type { MindOutlineSummary } from '@livepages/document';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { rowsFromText, rowText, textFromRows, type OutlineRow } from '@/lib/outline-rows';

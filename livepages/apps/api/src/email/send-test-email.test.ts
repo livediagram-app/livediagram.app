@@ -5,7 +5,7 @@
 // RESEND_TEST_TO are present (read from apps/api/.dev.vars, gitignored).
 //
 // Run it:
-//   RESEND_LIVE_TEST=1 pnpm --filter @livediagram/api exec \
+//   RESEND_LIVE_TEST=1 pnpm --filter @livepages/api exec \
 //     vitest run src/email/send-test-email.test.ts
 //
 // .dev.vars needs:
@@ -64,8 +64,8 @@ const ENABLED = nodeEnv.RESEND_LIVE_TEST === '1' && !!TO && !!KEY;
 
 const env = {
   RESEND_API_KEY: KEY,
-  RESEND_FROM: vars.RESEND_FROM ?? 'livediagram <onboarding@resend.dev>',
-  APP_BASE_URL: vars.APP_BASE_URL ?? 'https://livediagram.app',
+  RESEND_FROM: vars.RESEND_FROM ?? 'livepages <onboarding@resend.dev>',
+  APP_BASE_URL: vars.APP_BASE_URL ?? 'https://livepages.app',
 } as unknown as Env;
 
 describe.skipIf(!ENABLED)('live email send (manual harness)', () => {

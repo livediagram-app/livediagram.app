@@ -11,8 +11,8 @@ import {
   type ShapeElement,
   type StackAlign,
   type StackDirection,
-} from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+} from '@livepages/document';
+import { Glyph } from '@livepages/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import { BorderGrid } from '@/components/palette/context-menu-rows';

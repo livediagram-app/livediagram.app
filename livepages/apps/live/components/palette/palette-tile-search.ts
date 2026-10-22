@@ -7,8 +7,8 @@ import {
   editorModeLabel,
   type EditorMode,
   type Element,
-} from '@livediagram/document';
-import { paletteRank } from '@livediagram/icons';
+} from '@livepages/document';
+import { paletteRank } from '@livepages/icons';
 import { tileKeywords } from '@/lib/palette-tile-keywords';
 import { PALETTE_LAYOUTS, paletteCategoriesFor } from './palette-layouts';
 import { tileDisplayName, type PaletteTileDef, type PaletteTileSection } from './palette-tile-defs';

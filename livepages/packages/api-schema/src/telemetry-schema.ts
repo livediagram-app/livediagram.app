@@ -263,7 +263,7 @@ export const TELEMETRY_ACTIONS = [
   // back from the Trash.
   'Restored',
   // Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): a change made in Google
-  // Drive was applied to livediagram. Only ever paired with the 'Drive' category.
+  // Drive was applied to livepages. Only ever paired with the 'Drive' category.
   'Applied',
   // Agent changesets (docs/specs/024-agents/agent-changesets.md): a changeset refused because an
   // element it targets changed since the agent read it, or because a person holds one.

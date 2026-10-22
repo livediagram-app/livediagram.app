@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ArrowElement, Element } from '@livediagram/document';
+import type { ArrowElement, Element } from '@livepages/document';
 import { useArrowStyleSetters } from './useArrowStyleSetters';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

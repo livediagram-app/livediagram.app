@@ -1,6 +1,6 @@
 'use client';
 
-import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import type { TelemetrySummary, TelemetryWindowKey } from '@livepages/api-schema';
 import { ExceptionsView } from './ExceptionsView';
 import { SectionedView, type SectionFocus } from './SectionedView';
 import { TimingsView } from './TimingsView';

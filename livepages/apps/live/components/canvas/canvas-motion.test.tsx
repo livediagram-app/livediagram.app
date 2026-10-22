@@ -2,7 +2,7 @@
 
 import { render, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { BoxedElement } from '@livediagram/document';
+import type { BoxedElement } from '@livepages/document';
 import { createElement, type ReactNode } from 'react';
 import { useBoxedElementAnimation } from './useBoxedElementAnimation';
 import { CanvasStillProvider } from './CanvasStillContext';

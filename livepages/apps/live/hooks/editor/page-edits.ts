@@ -50,8 +50,8 @@ import {
   type WireframeDeviceId,
   type WireframeDevicePatch,
   type WireframeFrameLook,
-} from '@livediagram/document';
-import type { PageLayoutId } from '@livediagram/templates';
+} from '@livepages/document';
+import type { PageLayoutId } from '@livepages/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
 import { tidyPageElements } from '@/lib/page-tidy';
@@ -533,7 +533,7 @@ export function pageEdits({
   // so by the time one is applied the module is in hand.
   const applyLayout = async (pageId: string, layoutId: PageLayoutId): Promise<void> => {
     if (refusedLocked(pageId, 'layout')) return;
-    const { buildPageLayoutOver } = await import('@livediagram/templates/page-layout-build');
+    const { buildPageLayoutOver } = await import('@livepages/templates/page-layout-build');
     track('Tab', 'Changed', 'PageLayout');
     commitTab((t) => {
       const pages = layOutPages(pagesOf(t));

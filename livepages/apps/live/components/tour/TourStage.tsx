@@ -1,7 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { Portal } from '@livediagram/ui';
+import { Portal } from '@livepages/ui';
 import { useStartPalette } from '@/components/start/useStartPalette';
 import { TourBanner } from './TourBanner';
 import { TourPopover } from './TourPopover';

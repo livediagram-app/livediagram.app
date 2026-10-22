@@ -11,7 +11,7 @@
 // is in the Tab order, ArrowUp / ArrowDown / Home / End move between rows, Enter or Space picks. In the board's
 // colours given a `palette` (Setup Board), else the menu's.
 import { useRef, type KeyboardEvent, type ReactNode } from 'react';
-import { CheckIcon, useMenuKind } from '@livediagram/ui';
+import { CheckIcon, useMenuKind } from '@livepages/ui';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import type { PlanPalette } from './plan-palette';
 

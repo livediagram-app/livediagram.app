@@ -1,4 +1,4 @@
-import { classMaskOf, detectStickies, overlapArea } from '@livediagram/sticky-vision';
+import { classMaskOf, detectStickies, overlapArea } from '@livepages/sticky-vision';
 import { CUE_OPTIONS, cuesOf } from '../../src/cues';
 import { loadHybridWalls } from './walls';
 

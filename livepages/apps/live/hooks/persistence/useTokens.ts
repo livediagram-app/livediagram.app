@@ -7,7 +7,7 @@
 // configured), mirroring useTeams. Tokens are Clerk-only, so `ownerId` here is
 // always the signed-in account id when enabled.
 import { useCallback, useEffect, useState } from 'react';
-import type { ApiToken } from '@livediagram/api-schema';
+import type { ApiToken } from '@livepages/api-schema';
 import { apiCreateToken, apiListTokens, apiRevokeToken } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 
@@ -15,7 +15,7 @@ const MAX_TOKENS = 10;
 // Two instances can be mounted at once (the Explorer's, for its timeline
 // token menus, and the Settings token manager's), so a create or revoke in
 // one tells the others to re-read rather than leaving them stale.
-const TOKENS_CHANGED_EVENT = 'livediagram:tokens-changed';
+const TOKENS_CHANGED_EVENT = 'livepages:tokens-changed';
 const announceChange = () => window.dispatchEvent(new Event(TOKENS_CHANGED_EVENT));
 
 export type TokensController = {

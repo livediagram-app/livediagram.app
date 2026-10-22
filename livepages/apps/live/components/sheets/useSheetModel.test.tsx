@@ -5,9 +5,9 @@
 // too big to travel; and the Plan cards handed over when a formula reads them.
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { emptyLayout, type SheetJson } from '@livediagram/sheets';
-import type { Element, ShapeElement } from '@livediagram/document';
-import type { SheetPresenceOp } from '@livediagram/api-schema';
+import { emptyLayout, type SheetJson } from '@livepages/sheets';
+import type { Element, ShapeElement } from '@livepages/document';
+import type { SheetPresenceOp } from '@livepages/api-schema';
 import { ApiError } from '@/lib/api/core';
 import * as api from '@/lib/api/sheets';
 import { placeNewSheet, sheetsForClipboard, stashSheetSeeds } from '@/lib/sheet-seeds';
@@ -488,7 +488,7 @@ describe('Plan cards', () => {
     const { result } = model(element({ sheetId: 'sheetCRD1' }), b, plan);
     await waitFor(() => expect(result.current.sheet).toBeDefined());
     const setCards = vi.spyOn(result.current.store, 'setCards');
-    const { typeInto } = await import('@livediagram/sheets');
+    const { typeInto } = await import('@livepages/sheets');
     const t = typeInto(result.current.workbook, 'sheetCRD1', { r: 0, c: 0 }, '=CARDCOUNT()');
     if (!t?.ok) throw new Error('typed');
     act(() => void result.current.store.write('sheetCRD1', t.write));

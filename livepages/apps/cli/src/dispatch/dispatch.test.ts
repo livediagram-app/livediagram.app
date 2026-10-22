@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { defineVerb, verbById, type Verb } from '@livediagram/agent-verbs';
+import { defineVerb, verbById, type Verb } from '@livepages/agent-verbs';
 import { CliError, type CliFailure } from '../output/cli-error';
 import { didYouMean } from './did-you-mean';
 import { fieldsOf, flagOf } from './fields';
@@ -48,17 +48,17 @@ describe('route', () => {
     expect(failureOf(() => route(['tabs']))).toMatchObject({
       exit: 2,
       lines: ['did you mean: tab'],
-      hint: 'livediagram --help',
+      hint: 'livepages --help',
     });
     expect(failureOf(() => route(['zzzzzz']))).toEqual({
       exit: 2,
       code: 'usage',
       message: 'unknown command "zzzzzz"',
-      hint: 'livediagram --help',
+      hint: 'livepages --help',
     });
     expect(failureOf(() => route(['tab', 'vew']))).toMatchObject({
       lines: ['did you mean: view'],
-      hint: 'livediagram tab --help',
+      hint: 'livepages tab --help',
     });
     expect(failureOf(() => route(['tab', 'zzzzzz']))).not.toHaveProperty('lines');
   });
@@ -157,7 +157,7 @@ describe('parseVerbArgs', () => {
     expect(failureOf(() => parseVerbArgs(verb('document.ls'), ['--token', 'x']))).toMatchObject({
       exit: 2,
       message: 'unknown flag --token for "document ls"',
-      hint: 'livediagram document ls --help',
+      hint: 'livepages document ls --help',
     });
     expect(failureOf(() => parseVerbArgs(verb('tab.ls'), ['a', 'b']))).toMatchObject({
       message: 'unexpected "b"',

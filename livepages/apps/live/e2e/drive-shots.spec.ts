@@ -1,15 +1,15 @@
 import { writeFileSync, mkdirSync } from 'node:fs';
 import type { Server } from 'node:http';
 import type { Page } from '@playwright/test';
-import type { FakeGoogle } from '@livediagram/fake-google';
-import { DRIVE_FILE_MIME } from '@livediagram/api-schema';
+import type { FakeGoogle } from '@livepages/fake-google';
+import { DRIVE_FILE_MIME } from '@livepages/api-schema';
 import { test, expect } from './fixtures';
 import { routeGoogle, startFakeGoogle, TestIdentity } from './drive-support';
 
 // Screenshots of every Google Drive mirror state, in light and dark
 // (docs/specs/022-drive-mirror/drive-mirror.md): Settings > Account > Cloud Sync, Open with, and the Explorer following a change made in
 // Drive. Against the fake Google, with deterministic data and no personal data.
-// Opt-in: `pnpm --filter @livediagram/live test:e2e:drive-shots` (after the
+// Opt-in: `pnpm --filter @livepages/live test:e2e:drive-shots` (after the
 // drive build), writing to E2E_DRIVE_PR_SHOTS (default /tmp/ld-drive-pr-shots).
 
 test.describe.configure({ mode: 'serial' });
@@ -68,7 +68,7 @@ const pillOf = (row: import('@playwright/test').Locator) =>
 // the row has no Sync now, so the test uses the app's tab channel.
 async function syncNow(page: import('@playwright/test').Page) {
   await page.evaluate(() => {
-    const channel = new BroadcastChannel('livediagram:drive-mirror');
+    const channel = new BroadcastChannel('livepages:drive-mirror');
     channel.postMessage({ type: 'sync-now' });
     channel.close();
   });
@@ -115,8 +115,8 @@ for (const theme of THEMES) {
       await page.emulateMedia({ colorScheme: theme, reducedMotion: 'reduce' });
       await page.addInitScript(
         ([session, mode]) => {
-          localStorage.setItem('livediagram:e2e:session', session);
-          localStorage.setItem('livediagram:v2:ui-mode', mode);
+          localStorage.setItem('livepages:e2e:session', session);
+          localStorage.setItem('livepages:v2:ui-mode', mode);
         },
         [JSON.stringify({ token, userId: USER, email: EMAIL, firstName: 'Alex' }), theme] as const,
       );
@@ -244,8 +244,8 @@ for (const theme of THEMES) {
         'The Explorer before a rename made in Google Drive',
       );
       google.fake.userRename(
-        fileNamed('Meeting notes.livediagram')!.id,
-        'Standup notes.livediagram',
+        fileNamed('Meeting notes.livepages')!.id,
+        'Standup notes.livepages',
       );
       row = await openCloudSync(page);
       await syncNow(page);
@@ -260,13 +260,13 @@ for (const theme of THEMES) {
         'The Explorer after the rename in Drive reached it, without a reload',
       );
 
-      // Needs attention: a file moved into a folder livediagram cannot see.
+      // Needs attention: a file moved into a folder livepages cannot see.
       const hidden = google.fake.userCreateFolder(
         USER,
         'Clients',
-        fileNamed('livediagram (staging)')!.id,
+        fileNamed('livepages (staging)')!.id,
       );
-      google.fake.userMove(fileNamed('Quarterly plan.livediagram')!.id, hidden);
+      google.fake.userMove(fileNamed('Quarterly plan.livepages')!.id, hidden);
       row = await openCloudSync(page);
       await syncNow(page);
       await expect(problemOf(row)).toContainText("can't see");
@@ -280,10 +280,10 @@ for (const theme of THEMES) {
       // Open with.
       const theirs = google.fake.otherUserFile({
         owner: 'someone-else',
-        name: 'Team roadmap.livediagram',
+        name: 'Team roadmap.livepages',
         mimeType: DRIVE_FILE_MIME,
         content: JSON.stringify({
-          kind: 'livediagram.document',
+          kind: 'livepages.document',
           schemaVersion: 1,
           exportedAt: 1,
           document: {
@@ -305,7 +305,7 @@ for (const theme of THEMES) {
         'open-with-1-import-a-copy',
         'Open with on a file someone shared: Import a copy',
       );
-      const copy = google.fake.userCopy(fileNamed('Roadmap.livediagram')!.id);
+      const copy = google.fake.userCopy(fileNamed('Roadmap.livepages')!.id);
       await page.goto(
         `/drive/open?state=${encodeURIComponent(google.fake.openWithState(USER, copy))}`,
       );
@@ -315,7 +315,7 @@ for (const theme of THEMES) {
         'open-with-2-import-as-new-document',
         'Open with on a copy made in Drive: Import as new document',
       );
-      const mine = fileNamed('Architecture.livediagram')!;
+      const mine = fileNamed('Architecture.livepages')!;
       await page.goto(
         `/drive/open?state=${encodeURIComponent(google.fake.openWithState(USER, mine.id))}`,
       );

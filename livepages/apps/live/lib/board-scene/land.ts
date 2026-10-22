@@ -8,7 +8,7 @@ import {
   type BackgroundPattern,
   type Element,
   type EditorMode,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { ImportImageRequest } from '@/lib/import-images';
 import { createLandContext, LANDING_RULES, type LandContext } from './context';
 import { landFrame, landImage, landShape, landSticky, landText } from './land-boxes';

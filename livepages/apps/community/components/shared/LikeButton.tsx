@@ -1,6 +1,6 @@
 'use client';
 
-import { formatCommunityCount, communityPlural } from '@livediagram/ui';
+import { formatCommunityCount, communityPlural } from '@livepages/ui';
 import { useState, type MouseEvent } from 'react';
 import type { LikeState } from '@/lib/useLike';
 import { HeartIcon } from './icons';

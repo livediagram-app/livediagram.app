@@ -1,4 +1,4 @@
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { getTab } from '../db';
 import type { Env } from '../types';
 

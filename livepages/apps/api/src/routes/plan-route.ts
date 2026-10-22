@@ -1,10 +1,10 @@
 // A document's plan for agents (docs/specs/026-plan/plan-agents.md "Reading the plan"): GET
 // /api/documents/:id/plan answers its Plan boards, the statuses they name and the card types, built by
-// @livediagram/items' planOutline, and its tabs (id, name, kind, a Sheet tab's sheets). Read access as the items' list: a grant confined to one tab names it and sees
+// @livepages/items' planOutline, and its tabs (id, name, kind, a Sheet tab's sheets). Read access as the items' list: a grant confined to one tab names it and sees
 // that tab's boards only. Only tabs holding a board are read, a batch at a time, and reduced to board set-ups.
 
-import type { PlanResponse } from '@livediagram/api-schema';
-import { planOutline, type PlanTabInput } from '@livediagram/items';
+import type { PlanResponse } from '@livepages/api-schema';
+import { planOutline, type PlanTabInput } from '@livepages/items';
 import { getTab, tabBodiesWithBoards, tabOutlines } from '../db';
 import { json, methodNotAllowed } from '../responses';
 import type { RouteContext } from './context';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ADDER_KEY_LENGTH } from '@livediagram/document';
+import { ADDER_KEY_LENGTH } from '@livepages/document';
 import { adderKeyFor } from './adder-key';
 
 describe('adderKeyFor', () => {

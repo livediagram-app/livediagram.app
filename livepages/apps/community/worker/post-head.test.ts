@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { communityPostFixture } from '@livediagram/api-schema/testing';
+import { communityPostFixture } from '@livepages/api-schema/testing';
 import {
   escapeHtml,
   jsonLdScript,
@@ -23,7 +23,7 @@ describe('metaDescription', () => {
 
   it('falls back to a sentence naming the post when there is none', () => {
     expect(metaDescription({ title: 'Roadmap', description: '' })).toBe(
-      'Roadmap, shared to the livediagram Community. Open it, explore it, and make your own copy.',
+      'Roadmap, shared to the livepages Community. Open it, explore it, and make your own copy.',
     );
   });
 });
@@ -38,8 +38,8 @@ describe('postHead', () => {
         updatedAt: Date.UTC(2026, 1, 3),
       }),
     );
-    expect(head.title).toBe('Payments Platform | livediagram Community');
-    expect(head.canonical).toBe('https://livediagram.app/community/post/?id=p%201');
+    expect(head.title).toBe('Payments Platform | livepages Community');
+    expect(head.canonical).toBe('https://livepages.app/community/post/?id=p%201');
     const [work, crumbs] = (head.jsonLd as { '@graph': Record<string, unknown>[] })['@graph'];
     expect(work).toMatchObject({
       '@type': 'CreativeWork',
@@ -54,7 +54,7 @@ describe('postHead', () => {
     expect(crumbs).toMatchObject({
       '@type': 'BreadcrumbList',
       itemListElement: [
-        { position: 1, name: 'Community', item: 'https://livediagram.app/community/' },
+        { position: 1, name: 'Community', item: 'https://livepages.app/community/' },
         { position: 2, name: 'Payments Platform', item: head.canonical },
       ],
     });
@@ -85,7 +85,7 @@ describe('sitemapXml', () => {
   it('lists each post at its canonical address with when it last changed', () => {
     const xml = sitemapXml([{ id: 'a&b', updatedAt: Date.UTC(2026, 9, 1) }]);
     expect(xml).toContain(
-      '<url><loc>https://livediagram.app/community/post/?id=a%26b</loc><lastmod>2026-10-01T00:00:00.000Z</lastmod></url>',
+      '<url><loc>https://livepages.app/community/post/?id=a%26b</loc><lastmod>2026-10-01T00:00:00.000Z</lastmod></url>',
     );
     expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
   });

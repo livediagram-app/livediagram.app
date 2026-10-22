@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { presetSetup, statusColumn } from '@livediagram/items';
+import { presetSetup, statusColumn } from '@livepages/items';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { PlanColumnPopover } from './PlanColumnPopover';
 

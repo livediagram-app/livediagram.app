@@ -6,7 +6,7 @@ import {
   COMMUNITY_POSTS_PER_AUTHOR,
   validateCommunityPostInput,
   type CommunityOwnPost,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { communityEnabled } from '../community-enabled';
 import { rowState, rowToCommunityPost, type CommunityPostRow } from '../community-row';
 import {

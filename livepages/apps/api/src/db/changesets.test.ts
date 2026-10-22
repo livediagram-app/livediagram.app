@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { ElementOp, Tab } from '@livediagram/document';
-import { CHANGESET_MERGE_PAGE } from '@livediagram/api-schema';
+import type { ElementOp, Tab } from '@livepages/document';
+import { CHANGESET_MERGE_PAGE } from '@livepages/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import {
   changesetMergePages,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { labelBoxSize, type Element } from '@livediagram/document';
+import { labelBoxSize, type Element } from '@livepages/document';
 import { applyLabel, fitToLabel } from './labels';
 
 const square = {

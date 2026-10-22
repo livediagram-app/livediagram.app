@@ -1,14 +1,14 @@
-import { cardSubtitle, type SocialCardOptions } from '@livediagram/ui';
+import { cardSubtitle, type SocialCardOptions } from '@livepages/ui';
 import { articleHref, articles, categories, categoryHref, topCategorySlug } from './articles';
 import { HELP_URL } from './site';
 
 // The help centre's own social cards (docs/specs/018-help/help-app.md "SEO"): one per article and per
-// category landing, on the shared branded card (renderSocialCard in @livediagram/ui), pre-rendered to a
+// category landing, on the shared branded card (renderSocialCard in @livepages/ui), pre-rendered to a
 // PNG at build time by app/og/[...card]/route.tsx. A link to an article then previews with its own
 // title instead of the generic brand card. Pages outside the registry (the home, the features index)
 // keep the brand card.
 
-// Beside the livediagram.app pill, so the brand is not said twice.
+// Beside the livepages.app pill, so the brand is not said twice.
 export const HELP_CARD_FOOTER = 'Help Centre';
 
 // `canvas/themes`: the route, without the `/help/` prefix or slashes, a card is keyed by.
@@ -55,7 +55,7 @@ export function helpCardImage(path: string): { url: string; alt: string } | unde
   const route = cardRoute(path);
   const card = HELP_CARDS.get(route);
   if (!card) return undefined;
-  return { url: `${HELP_URL}/og/${route}.png`, alt: `${card.title}, livediagram Help Centre` };
+  return { url: `${HELP_URL}/og/${route}.png`, alt: `${card.title}, livepages Help Centre` };
 }
 
 // The catch-all params app/og/[...card]/route.tsx is built for: `canvas/themes` → ['canvas', 'themes.png'].

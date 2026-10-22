@@ -4,7 +4,7 @@
 
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type ShapeElement } from '@livediagram/document';
+import { createShape, type ShapeElement } from '@livepages/document';
 import { SequenceDialog, type SequenceRows } from './SequenceDialog';
 import { sequenceDialog } from '@/lib/sequence-dialog-handle';
 import { setActiveTour } from '@/lib/tour-active';

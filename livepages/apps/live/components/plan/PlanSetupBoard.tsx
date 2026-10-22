@@ -6,8 +6,8 @@
 // it is); Create Board, on the last step only, writes them all as one change. Someone who may only view reads that the
 // board is not set up yet.
 import { useState } from 'react';
-import { PLAN_COLUMNS_MAX, type ItemTypeDef } from '@livediagram/items';
-import { ChevronLeftIcon, Button, CheckIcon, PlanCardsIcon } from '@livediagram/ui';
+import { PLAN_COLUMNS_MAX, type ItemTypeDef } from '@livepages/items';
+import { ChevronLeftIcon, Button, CheckIcon, PlanCardsIcon } from '@livepages/ui';
 import { PlanBoardTileArt } from './plan-tile-art';
 import type { PlanPalette } from './plan-palette';
 import type { SetupColumn, SetupLayout } from './setup-board';

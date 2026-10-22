@@ -1,4 +1,4 @@
-import { cropFromStride, padToStride, rgbOf } from '@livediagram/sticky-model';
+import { cropFromStride, padToStride, rgbOf } from '@livepages/sticky-model';
 import type { BoundaryBackend, BoundaryFailure } from './protocol';
 import modelJson from './weights/model.json';
 import { debugLog } from '@/lib/debug-log';

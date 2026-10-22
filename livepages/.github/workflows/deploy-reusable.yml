@@ -40,7 +40,7 @@ on:
       mcp_origin:
         description: >-
           Baked into the live build as NEXT_PUBLIC_MCP_ORIGIN. Empty falls
-          back to the hosted https://mcp.livediagram.app (see
+          back to the hosted https://mcp.livepages.app (see
           apps/live/lib/mcp-config.ts).
         type: string
         default: ''
@@ -68,10 +68,10 @@ on:
         required: false
 
 # The hosted profile (docs/specs/016-platform/deployment.md "Hosted profile"):
-# livediagram.app's own deploys add the vars in apps/api/hosted-vars.json
+# livepages.app's own deploys add the vars in apps/api/hosted-vars.json
 # (telemetry on, per-owner image caps) and a fork's do not, so a fork deploying
 # this repo as documented is telemetry-off and uncapped. Keyed on the repository
-# ID of livediagram-app/livediagram.app rather than its name, so a rename or a
+# ID of livepages-app/livepages.app rather than its name, so a rename or a
 # transfer keeps the profile and no fork can match it. In a reusable workflow
 # the `github` context is the caller's, so both callers resolve it the same way.
 env:
@@ -156,13 +156,13 @@ jobs:
           NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED: 'true'
           # Which MCP host the live app points at. Empty in production (the
           # app's own default is the hosted one); staging passes
-          # mcp-staging.livediagram.app so a staging OAuth flow stays inside
+          # mcp-staging.livepages.app so a staging OAuth flow stays inside
           # staging (docs/specs/016-platform/staging-environment.md).
           NEXT_PUBLIC_MCP_ORIGIN: ${{ inputs.mcp_origin }}
           # This environment's key, handed over by the caller as the
           # NEXT_PUBLIC_GOOGLE_API_KEY secret (staging passes its _STAGING twin).
           # The Google Picker's browser API key for the Drive mirror's "Show this
-          # folder to livediagram" (docs/specs/022-drive-mirror/drive-mirror.md). Publishable
+          # folder to livepages" (docs/specs/022-drive-mirror/drive-mirror.md). Publishable
           # (restrict it by HTTP referrer in the Cloud Console); unset leaves the
           # mirror working and the folder adoption button hidden.
           NEXT_PUBLIC_GOOGLE_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY }}
@@ -519,7 +519,7 @@ jobs:
       # environment's database half-migrated.
       #
       # This is also the step staging exists for: on the staging
-      # caller it runs against `livediagram-staging`, so every merge
+      # caller it runs against `livepages-staging`, so every merge
       # to main rehearses the migration against a real remote D1 one
       # deploy before it reaches the database holding real diagrams
       # (docs/specs/016-platform/staging-environment.md).
@@ -548,8 +548,8 @@ jobs:
           BUILD_ID: ${{ needs.build.outputs.build_id }}
         # The D1 binding's `database_id` placeholder in wrangler.toml
         # must be filled in before the first deploy succeeds. Run
-        # `wrangler d1 create livediagram` locally once and commit the
-        # resulting id — and again as `livediagram-staging` for the
+        # `wrangler d1 create livepages` locally once and commit the
+        # resulting id — and again as `livepages-staging` for the
         # staging environment (docs/specs/016-platform/staging-environment.md "One-time setup"). Migrations
         # run via `pnpm db:migrate:remote` for ad-hoc local runs; the
         # deploy applies them automatically in the step above.
@@ -582,7 +582,7 @@ jobs:
   deploy-mcp:
     name: Deploy mcp
     # The MCP worker has a service binding to the api worker (docs/specs/015-api/mcp-server.md), so api
-    # must exist first. Not a router dependency — mcp.livediagram.app is its own
+    # must exist first. Not a router dependency — mcp.livepages.app is its own
     # host, not a path under the main hostname.
     needs: deploy-api
     runs-on: ubuntu-latest

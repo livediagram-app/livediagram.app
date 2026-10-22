@@ -2,8 +2,8 @@
 
 // The tab's canvas style behind a form link's page (docs/specs/030-forms/forms.md "Look"): the pattern in the
 // respondent's half, fixed to the window so it stays put as the form scrolls. Loaded only for a form that has one.
-import type { FormCanvas } from '@livediagram/document';
-import { useAppearance } from '@livediagram/ui';
+import type { FormCanvas } from '@livepages/document';
+import { useAppearance } from '@livepages/ui';
 import { TabPatternLayer } from '@/components/canvas/TabPatternLayer';
 
 export function FormCanvasLayer({ canvas }: { canvas: FormCanvas }) {

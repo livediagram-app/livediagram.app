@@ -6,7 +6,7 @@
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { anyModalOpen, modalClosed, modalOpened } from '@/lib/modal-guard';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element } from '@livepages/document';
 import { SelectionStoreProvider } from '@/hooks/canvas/useSelectionStore';
 import { elementTourOffer } from '@/lib/element-tour-offer';
 import { registerSankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';

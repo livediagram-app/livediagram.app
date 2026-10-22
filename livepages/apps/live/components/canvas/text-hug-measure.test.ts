@@ -6,7 +6,7 @@ import {
   createText,
   type ShapeElement,
   type TextElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   labelRuns,
   measureDrawnMindLabel,

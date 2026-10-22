@@ -4,7 +4,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type Element, type ShapeElement } from '@livediagram/document';
+import { createShape, type Element, type ShapeElement } from '@livepages/document';
 import { CardMenuSection } from './CardMenuSection';
 import type { ElementStyleOps } from '@/lib/element-style-ops';
 

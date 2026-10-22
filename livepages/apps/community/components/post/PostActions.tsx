@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import type { CommunityPost } from '@livediagram/api-schema';
+import type { CommunityPost } from '@livepages/api-schema';
 import {
   ButtonContent,
   CopyIcon,
   buttonClassName,
   formatCommunityCount,
   communityPlural,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import { makeCopyHref, openDocumentHref } from '@/lib/links';
 import { communityTelemetry } from '@/lib/telemetry';
 import { useLike } from '@/lib/useLike';

@@ -1,5 +1,5 @@
-import { EllipsisIcon as SharedEllipsisIcon, lucideGlyph } from '@livediagram/ui';
-import { lucideALargeSmall } from '@livediagram/icons/lucide';
+import { EllipsisIcon as SharedEllipsisIcon, lucideGlyph } from '@livepages/ui';
+import { lucideALargeSmall } from '@livepages/icons/lucide';
 
 import { MENU_ICON_PX } from '@/components/palette/context-menu-icons';
 // Inline SVG icons for the rich-text toolbars (the overflow ellipsis and the

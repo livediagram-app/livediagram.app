@@ -13,12 +13,12 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   DEFAULT_BUTTON_MODE,
   PEN_INK,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { usePageView } from '@/hooks/canvas/usePageView';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
-import { isBoxed, isVoteHost, threadAt } from '@livediagram/document';
+import { isBoxed, isVoteHost, threadAt } from '@livepages/document';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { pollHostFor } from '@/hooks/collab/useLivePoll';
 import { presentedPages } from '@/lib/presented-pages';

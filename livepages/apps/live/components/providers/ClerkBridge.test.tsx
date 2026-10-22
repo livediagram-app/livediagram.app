@@ -4,7 +4,7 @@
 // once per change of an auth field, with a delete-account action that always runs Clerk's newest
 // reverified delete.
 
-import { RECENT_DIAGRAMS_KEY } from '@livediagram/api-schema';
+import { RECENT_DIAGRAMS_KEY } from '@livepages/api-schema';
 import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';

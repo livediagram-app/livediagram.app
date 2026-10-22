@@ -4,7 +4,7 @@
 // Lilac); a grey or white one takes the neutral sticky nearest its lightness, so a pale note never
 // turns yellow and a yellow one never turns white.
 
-import { STICKY_PRESETS } from '@livediagram/document';
+import { STICKY_PRESETS } from '@livepages/document';
 import { sceneOklch } from '@/lib/board-scene/colour';
 
 /** Chroma (OKLCH) from which a note reads as tinted rather than grey (D45); 0.015 to 0.03. */

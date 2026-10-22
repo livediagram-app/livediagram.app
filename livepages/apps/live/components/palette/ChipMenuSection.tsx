@@ -9,8 +9,8 @@ import {
   withStepSequence,
   type ChipLook,
   type ShapeElement,
-} from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+} from '@livepages/document';
+import { Glyph } from '@livepages/ui';
 import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import { BorderGrid, MenuToggleRow } from '@/components/palette/context-menu-rows';

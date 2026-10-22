@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { labelBoxSize } from '@livediagram/document';
+import { labelBoxSize } from '@livepages/document';
 import { box, lint, of, tabOf } from '../fixtures/build';
 
 describe('label-overflow', () => {

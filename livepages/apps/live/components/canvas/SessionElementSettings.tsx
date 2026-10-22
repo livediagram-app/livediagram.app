@@ -30,7 +30,7 @@ import {
   sessionButtonPlan,
   type SessionButtonConfig,
   type TimerMode,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { TimerSetupBody } from '@/components/panels/session-studio/TimerSetupBody';
 import { VoteSetupBody } from '@/components/panels/session-studio/VotePane';

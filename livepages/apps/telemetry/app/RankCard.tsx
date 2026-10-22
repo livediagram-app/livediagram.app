@@ -1,7 +1,7 @@
 'use client';
 
-import { EmptyState } from '@livediagram/ui';
-import { metricKey, type TelemetryCount, type TelemetryDaily } from '@livediagram/api-schema';
+import { EmptyState } from '@livepages/ui';
+import { metricKey, type TelemetryCount, type TelemetryDaily } from '@livepages/api-schema';
 import { pct } from './chart-utils';
 import { typeLabel } from './event-vocab';
 import { ActivityGlyph } from './glyphs';

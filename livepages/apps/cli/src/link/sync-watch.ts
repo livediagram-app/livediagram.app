@@ -5,7 +5,7 @@
 // line per pass (RL25); Ctrl-C ends it, exit 0. The lock is held per pass, never between passes (RL19).
 
 import { posix } from 'node:path';
-import type { VerbContext } from '@livediagram/agent-verbs';
+import type { VerbContext } from '@livepages/agent-verbs';
 import { WAIT_SETTLE_MS } from '../commands/wait';
 import { debugLog } from '../debug';
 import type { CliIo } from '../io';

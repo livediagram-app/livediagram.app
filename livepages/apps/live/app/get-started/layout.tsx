@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import type { ReactNode } from 'react';
 
 export const metadata: Metadata = {
-  title: 'Create your account | livediagram',
-  description: 'Sign up for a livediagram account to keep your documents across devices.',
+  title: 'Create your account | livepages',
+  description: 'Sign up for a livepages account to keep your documents across devices.',
 };
 
 export default function GetStartedLayout({ children }: { children: ReactNode }) {

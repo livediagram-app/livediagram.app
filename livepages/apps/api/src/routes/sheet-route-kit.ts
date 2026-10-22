@@ -1,7 +1,7 @@
 // The sheet routes' shared parts (sheet-routes.ts, sheet-write-route.ts): who the caller is and which tab they are
 // confined to, the refusals, the writer, and the room relay (docs/specs/029-sheets/sheet-store.md "Who may do
 // what", "Live for everyone").
-import type { SheetError, SheetsRoomOp } from '@livediagram/api-schema';
+import type { SheetError, SheetsRoomOp } from '@livepages/api-schema';
 import { getDocument } from '../db';
 import { json } from '../responses';
 import { relaySheets } from '../room-client';

@@ -1,7 +1,7 @@
 import { isRepairClearable } from './kept-keys';
 
 // The repair itself (docs/specs/007-editor/load-recovery.md "Repairing a browser"): remove every
-// clearable livediagram key from local and session storage. Never IndexedDB (Offline Mode documents
+// clearable livepages key from local and session storage. Never IndexedDB (Offline Mode documents
 // live nowhere else), never cookies (repair never signs anyone out). Storage that cannot be read is
 // skipped, so a private window with storage blocked repairs what it can and reports nothing cleared.
 

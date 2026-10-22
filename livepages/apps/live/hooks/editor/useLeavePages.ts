@@ -16,7 +16,7 @@ import {
   type ArticleBlock,
   type EditorMode,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { articleHandleOf } from '@/lib/article/article-editor-store';
 import { articleLocked } from '@/lib/article/article-lock';
 import { debugLog } from '@/lib/debug-log';

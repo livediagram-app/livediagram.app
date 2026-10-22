@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { SettingsIllustration } from './settings-illustrations';
 import type { SettingsRowSpec } from './settings-catalogue';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livepages/ui';
 import { SETTINGS_CARD, useInSettingsGroup } from './SettingsGroup';
 
 // Everything a settings row has in common, whatever its control is: one CELL holding the label

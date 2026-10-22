@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { sentUrl } from '@livediagram/vitest-config/sent-request';
+import { sentUrl } from '@livepages/vitest-config/sent-request';
 import { embeddedFontFaceCss, latinFaceBlocks } from './export-fonts';
 
 // An export leaves the browser that made it: a font-family the reader hasn't

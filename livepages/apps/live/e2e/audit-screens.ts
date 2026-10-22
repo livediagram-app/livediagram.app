@@ -13,10 +13,10 @@ export const CANVAS = '[data-canvas-a11y-root]';
 export async function darkVisitor(page: Page, owner?: string): Promise<void> {
   await page.addInitScript(
     ({ id, sig }) => {
-      localStorage.setItem('livediagram:v2:ui-mode', 'dark');
-      localStorage.setItem('livediagram:v2:name-confirmed', '1');
-      if (id) localStorage.setItem('livediagram:v2:self-id', id);
-      if (sig) localStorage.setItem('livediagram:v2:self-sig', sig);
+      localStorage.setItem('livepages:v2:ui-mode', 'dark');
+      localStorage.setItem('livepages:v2:name-confirmed', '1');
+      if (id) localStorage.setItem('livepages:v2:self-id', id);
+      if (sig) localStorage.setItem('livepages:v2:self-sig', sig);
     },
     { id: owner ?? null, sig: owner ? guestSigFor(owner) : null },
   );
@@ -121,6 +121,6 @@ export async function freshDarkPage(browser: Browser, deviceScaleFactor = 1): Pr
     deviceScaleFactor,
     baseURL: test.info().project.use.baseURL,
   });
-  await context.addInitScript(() => localStorage.setItem('livediagram:v2:ui-mode', 'dark'));
+  await context.addInitScript(() => localStorage.setItem('livepages:v2:ui-mode', 'dark'));
   return context.newPage();
 }

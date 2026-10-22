@@ -17,7 +17,7 @@ export async function workbenchDb(base: Partial<Env> = {}): Promise<SqliteD1> {
   await upsertTab(db.env, 'doc1', { id: 't1', name: 'Wireframe', elements: [] }, 0);
   db.sql
     .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked, read_only)
-               VALUES ('tok1', 'user_1', 'h1', 'livediagram CLI', 1, ${NOW + 1e9}, 0, 0),
+               VALUES ('tok1', 'user_1', 'h1', 'livepages CLI', 1, ${NOW + 1e9}, 0, 0),
                       ('tok_ro', 'user_1', 'h3', 'Reader', 1, ${NOW + 1e9}, 0, 1),
                       ('tok2', 'user_2', 'h2', NULL, 1, ${NOW + 1e9}, 0, 0)`);
   return db;

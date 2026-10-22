@@ -13,7 +13,7 @@ import {
   type LaidOutPage,
   type LogoGuideSnapPart,
   type LogoGuideSnapTargets,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 type Point = { x: number; y: number };
 

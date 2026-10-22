@@ -5,7 +5,7 @@
 import { act, cleanup, fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
-import type { Element, ShapeElement } from '@livediagram/document';
+import type { Element, ShapeElement } from '@livepages/document';
 import { SheetsBridgeContext, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { SheetChartsContext } from './sheet-charts-context';
 import type { SheetChartRenderer } from '@/components/canvas/sheet-chart-renderer';

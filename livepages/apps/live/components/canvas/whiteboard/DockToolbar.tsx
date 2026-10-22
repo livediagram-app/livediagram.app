@@ -17,7 +17,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from 'react';
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip } from '@livepages/ui';
 import { PHONE_TOOLBAR_ITEMS } from '@/components/chrome/phone-toolbar-items';
 import { TOOLBAR_CONTROL_REST, TOOLBAR_DIVIDER } from '@/components/chrome/toolbar-surface';
 

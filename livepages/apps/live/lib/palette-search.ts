@@ -4,7 +4,7 @@
 // search matcher stays catalogue-agnostic and the Explorer (which never adds
 // elements) doesn't pull the icon data into its bundle.
 
-import type { ShapeKind } from '@livediagram/document';
+import type { ShapeKind } from '@livepages/document';
 
 import { tileKeywords } from '@/lib/palette-tile-keywords';
 import type { PaletteSearchItem } from '@/lib/search';
@@ -18,7 +18,7 @@ import {
   getLoadedStickerCatalog,
   getLoadedTechIconCatalog,
 } from '@/lib/icon-registry';
-import { isLegacyEmojiIconId } from '@livediagram/icons';
+import { isLegacyEmojiIconId } from '@livepages/icons';
 
 // The shape-placing tiles, in palette order. Derived from the shared
 // catalogue (palette-tile-defs) rather than restated, which is what keeps search from

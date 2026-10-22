@@ -9,7 +9,7 @@
 // through the index cycle TDZ-crashes plain-Node ESM consumers. Only TYPES
 // come from './index', and those are erased at build.
 import { DEFAULT_ROOM_DOOR, isOfficeShape } from './office';
-import { presetSetup } from '@livediagram/items';
+import { presetSetup } from '@livepages/items';
 import {
   DEFAULT_BUTTON_MODE,
   DEFAULT_PICKER_SOURCE,

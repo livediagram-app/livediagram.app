@@ -21,9 +21,9 @@ function stubUser(id: string): StubUser {
 
 async function signedIn(page: Page, baseURL: string, userId: string) {
   await page.addInitScript(() => {
-    localStorage.setItem('livediagram:v2:ui-mode', 'dark');
-    localStorage.setItem('livediagram:v2:name-confirmed', '1');
-    localStorage.setItem('livediagram:user-preferences:v1', JSON.stringify({ tourSeen: true }));
+    localStorage.setItem('livepages:v2:ui-mode', 'dark');
+    localStorage.setItem('livepages:v2:name-confirmed', '1');
+    localStorage.setItem('livepages:user-preferences:v1', JSON.stringify({ tourSeen: true }));
   });
   await installClerkStub(page, stubUser(userId));
   const token = await (await page.request.get(`/e2e/token?sub=${userId}`)).text();

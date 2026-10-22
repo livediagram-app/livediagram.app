@@ -2,7 +2,7 @@
 // client a typed code belongs to, and handing it the token or a refusal. The code a person types is the only
 // capability; the MCP answers the same "unknown" for an expired, used or never-issued code.
 
-import { normaliseUserCode, formatUserCode, isUserCode } from '@livediagram/api-schema';
+import { normaliseUserCode, formatUserCode, isUserCode } from '@livepages/api-schema';
 import { MCP_ORIGIN } from './mcp-config';
 
 // What a person typed, as the code the server knows, or null when it cannot be one.

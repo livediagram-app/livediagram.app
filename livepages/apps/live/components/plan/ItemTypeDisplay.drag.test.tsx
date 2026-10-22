@@ -7,7 +7,7 @@ import {
   cardLayoutFields,
   typeCardLayout,
   type CardSlot,
-} from '@livediagram/items';
+} from '@livepages/items';
 import type { ComponentProps } from 'react';
 import { ItemTypeDisplay } from './ItemTypeDisplay';
 

@@ -2,7 +2,7 @@
 // "Selectors", EO13): `downstream:x` follows arrows from their `from` to their `to`, `upstream:x`
 // against them. One breadth-first walk over an adjacency map; the start itself is left out.
 
-import type { Element, ElementId } from '@livediagram/document';
+import type { Element, ElementId } from '@livepages/document';
 
 export type Direction = 'downstream' | 'upstream';
 

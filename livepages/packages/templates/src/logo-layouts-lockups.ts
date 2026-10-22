@@ -1,5 +1,5 @@
 // Logo lockups (docs/specs/007-editor/logo-pages.md "Logo layouts"): an icon and the name together.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import type { Kit } from './page-layout-kit';
 import { iconDisc } from './page-layout-parts';
 import { ICON, NAME, TAGLINE, icon, rule, stacked, tagline, word } from './logo-layout-kit';

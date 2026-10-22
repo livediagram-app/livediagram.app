@@ -2,11 +2,11 @@
 // template as an outline, icon search, and the element format. Pure functions over bundled data; no identity, GET
 // only, cached five minutes; each answer logs `[catalogues] <segment> <status>`.
 
-import type { IconSearchResponse, TemplateCatalogueResponse } from '@livediagram/api-schema';
-import { renderView } from '@livediagram/document-views';
-import { addableKinds, elementFormatText, elementKindsText } from '@livediagram/edit-operations';
-import { ICON_QUERY_MAX, ICON_SEARCH_MAX_LIMIT, searchIcons } from '@livediagram/icons/search';
-import { buildTemplateTab, templateCatalogue, templateKindOf } from '@livediagram/templates';
+import type { IconSearchResponse, TemplateCatalogueResponse } from '@livepages/api-schema';
+import { renderView } from '@livepages/document-views';
+import { addableKinds, elementFormatText, elementKindsText } from '@livepages/edit-operations';
+import { ICON_QUERY_MAX, ICON_SEARCH_MAX_LIMIT, searchIcons } from '@livepages/icons/search';
+import { buildTemplateTab, templateCatalogue, templateKindOf } from '@livepages/templates';
 import { json, methodNotAllowed, notFound, textPlain } from '../responses';
 import type { RouteContext } from './context';
 

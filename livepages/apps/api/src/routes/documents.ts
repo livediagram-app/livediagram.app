@@ -10,9 +10,9 @@ import {
   legacyCatalogue,
   validateItemTypeCatalogue,
   type ItemTypeCatalogue,
-} from '@livediagram/items';
-import type { Tab } from '@livediagram/document';
-import { isValidTab, migrateIncomingTab } from '@livediagram/document';
+} from '@livepages/items';
+import type { Tab } from '@livepages/document';
+import { isValidTab, migrateIncomingTab } from '@livepages/document';
 import { capStoredName } from '../names';
 import {
   MAX_DECK_LEN,
@@ -31,7 +31,7 @@ import {
   TEAM_RECENT_INCLUDE,
   TEAM_RECENT_LIMIT,
   type CreationIntent,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {} from '../comments';
 import {
   copyDocument,
@@ -59,7 +59,7 @@ import {
   payloadTooLarge,
   svgImage,
 } from '../responses';
-import { documentDates, isDocumentSource } from '@livediagram/api-schema';
+import { documentDates, isDocumentSource } from '@livepages/api-schema';
 import { clientIp } from '../client-ip';
 import { documentImageSvg } from '../document-image';
 import { countCommunityCopy } from '../community-copy';
@@ -87,8 +87,8 @@ import { relayDocumentRename } from '../room-client';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { handleDocumentSubresources } from './document-subresource-routes';
 import { compileSeededTabs } from './document-seed';
-import { hasTemplateSheets } from '@livediagram/templates';
-import { materialiseTemplateSheets } from '@livediagram/templates/template-sheets';
+import { hasTemplateSheets } from '@livepages/templates';
+import { materialiseTemplateSheets } from '@livepages/templates/template-sheets';
 import { parsePlacement, resolvePlacement } from '../placement/resolve-placement';
 import { placementLookups } from '../placement/placement-lookups';
 import {

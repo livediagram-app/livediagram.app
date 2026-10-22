@@ -7,7 +7,7 @@ import {
   COMMUNITY_TAGS_MAX,
   COMMUNITY_TITLE_MAX,
   COMMUNITY_TITLE_MIN,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { ApiError } from './api/core';
 
 // The words the editor shows for each Community refusal (docs/specs/025-community/blueprints/

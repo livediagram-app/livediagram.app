@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button } from '@livepages/ui';
 import { Dialog } from '@/components/dialogs/Dialog';
 import { DialogFooter } from '@/components/dialogs/DialogFooter';
 

@@ -7,7 +7,7 @@
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh
 // Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates".
 
-import { createShape, createSticky, createText, type Element } from '@livediagram/document';
+import { createShape, createSticky, createText, type Element } from '@livepages/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 export { buildEmpathyMap } from './template-builders-empathy';
 

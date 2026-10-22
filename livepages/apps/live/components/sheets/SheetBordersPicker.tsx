@@ -3,8 +3,8 @@
 // The toolbar's Borders menu (docs/specs/029-sheets/sheet.md "Toolbar"): which borders, as a compact grid of drawn
 // squares (the lines it sets in ink, the rest faint), then the line as drawn swatches (thin, medium, thick, dashed,
 // dotted), the chosen one marked. Each is named by the shared tooltip and its accessible name.
-import type { BorderMode, BorderStyle } from '@livediagram/sheets';
-import { Glyph, Tooltip } from '@livediagram/ui';
+import type { BorderMode, BorderStyle } from '@livepages/sheets';
+import { Glyph, Tooltip } from '@livepages/ui';
 
 export type BorderLine = { label: string; w: 1 | 2 | 3; s: BorderStyle };
 

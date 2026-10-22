@@ -4,7 +4,7 @@
 // holds (the slot previews' own art, small), its glyph, its name, how many choices it has (the shared CountBadge) and
 // a line of what is inside. Pressing one drills into it (SlotFillPicker).
 import type { CSSProperties, ReactNode } from 'react';
-import { CountBadge, Glyph, lucideGlyph } from '@livediagram/ui';
+import { CountBadge, Glyph, lucideGlyph } from '@livepages/ui';
 import {
   lucideChartColumn,
   lucideClipboardList,
@@ -12,7 +12,7 @@ import {
   lucideSquareKanban,
   lucideStickyNote,
   lucideTable,
-} from '@livediagram/icons/lucide';
+} from '@livepages/icons/lucide';
 import type { PlanPalette } from '../plan-palette';
 import { BoardPreview, SHEET_TILES, SheetPreview } from '../PlanBoardPicker';
 import { MetricPreview, VisualisationPreview } from './slot-previews';

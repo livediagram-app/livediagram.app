@@ -4,8 +4,8 @@
 // "Tomorrow", "Today"), red once it has passed ("3 days ago"), and the date itself. An Editor types the heading and
 // picks the date in place; each lands as one step (the date when the field is left or Enter pressed, so typing a year
 // is one step, not four; the count follows the date as it is typed). The count moves on with the shared clock.
-import { calendarDayAfter, daysUntil, isCalendarDay } from '@livediagram/document';
-import { keyDateCount } from '@livediagram/plan-art';
+import { calendarDayAfter, daysUntil, isCalendarDay } from '@livepages/document';
+import { keyDateCount } from '@livepages/plan-art';
 import { useRelativeNow } from '@/lib/relative-time';
 import { useDashboard } from './dashboard-context';
 import { CARD_BODY, CardHeading } from './card-parts';

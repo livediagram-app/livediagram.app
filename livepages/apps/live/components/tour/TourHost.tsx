@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef } from 'react';
-import { createShape, isBoxed, type Element } from '@livediagram/document';
+import { createShape, isBoxed, type Element } from '@livepages/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';

@@ -7,7 +7,7 @@ import {
   pagesOf,
   type BoxedElement,
   type Element,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useOptionalSelectionStore } from '@/hooks/canvas/useSelectionStore';
 import { useLatest } from '@/hooks/ui/useLatest';

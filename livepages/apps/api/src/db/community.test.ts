@@ -1,14 +1,14 @@
 // Community posts against a real schema (docs/specs/025-community/blueprints/community.md §13): publish and Edit
 // Listing, what the public reads can and cannot see, filters, sorts, search, paging, facets, the cascades, likes,
 // copies, reports with automatic hiding,.
-import { COMMUNITY_COUNTED_PER_NETWORK } from '@livediagram/api-schema';
+import { COMMUNITY_COUNTED_PER_NETWORK } from '@livepages/api-schema';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
   COMMUNITY_MAX_OFFSET,
   COMMUNITY_PAGE_SIZE,
   EMPTY_COMMUNITY_QUERY,
   type CommunityListQuery,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import {
   communityFacets,

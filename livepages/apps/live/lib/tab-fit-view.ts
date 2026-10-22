@@ -4,7 +4,7 @@
 // the Fit button (hooks/canvas/useEditorViewport) and a double-tap's fit back out to the whole tab
 // (hooks/canvas/useDoubleTapZoom), so both land on the same view.
 
-import { isBoxed, unionBoxedBounds, type Element } from '@livediagram/document';
+import { isBoxed, unionBoxedBounds, type Element } from '@livepages/document';
 import { fitClearOfPanel, MAP_PANEL_SELECTOR, type FitInsets } from './fit-clear-of-panel';
 import { sideChromeInsets } from './side-chrome-insets';
 import {

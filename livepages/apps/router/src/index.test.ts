@@ -41,27 +41,27 @@ function makeEnv() {
 }
 
 const dispatch = (path: string, env: Env) =>
-  router.fetch(new Request(`https://livediagram.app${path}`), env);
+  router.fetch(new Request(`https://livepages.app${path}`), env);
 
 describe('production dispatch (service bindings)', () => {
   it('forwards /api/* to the api worker with the prefix KEPT', async () => {
     const { env, api } = makeEnv();
     await dispatch('/api/documents/abc', env);
-    expect(api.urls).toEqual(['https://livediagram.app/api/documents/abc']);
+    expect(api.urls).toEqual(['https://livepages.app/api/documents/abc']);
   });
 
   it('strips /live off the asset-prefix requests for the live worker', async () => {
     const { env, live } = makeEnv();
     await dispatch('/live/_next/static/chunk.js', env);
-    expect(live.urls).toEqual(['https://livediagram.app/_next/static/chunk.js']);
+    expect(live.urls).toEqual(['https://livepages.app/_next/static/chunk.js']);
   });
 
   it('strips the basePath for telemetry and help, keeping the query', async () => {
     const { env, telemetry, help } = makeEnv();
     await dispatch('/telemetry/data?window=30', env);
-    expect(telemetry.urls).toEqual(['https://livediagram.app/data?window=30']);
+    expect(telemetry.urls).toEqual(['https://livepages.app/data?window=30']);
     await dispatch('/help/canvas/themes/', env);
-    expect(help.urls).toEqual(['https://livediagram.app/canvas/themes/']);
+    expect(help.urls).toEqual(['https://livepages.app/canvas/themes/']);
   });
 
   it("puts the prefix back on a stripped app's own redirect, keeping its query", async () => {
@@ -92,16 +92,16 @@ describe('production dispatch (service bindings)', () => {
   it('strips the basePath for Community (docs/specs/025-community/community.md)', async () => {
     const { env, community, marketing } = makeEnv();
     await dispatch('/community/post/?id=ABCDEFGH23', env);
-    expect(community.urls).toEqual(['https://livediagram.app/post/?id=ABCDEFGH23']);
+    expect(community.urls).toEqual(['https://livepages.app/post/?id=ABCDEFGH23']);
     await dispatch('/community', env);
-    expect(community.urls[1]).toBe('https://livediagram.app/');
+    expect(community.urls[1]).toBe('https://livepages.app/');
     expect(marketing.urls).toEqual([]);
   });
 
   it('a bare stripped prefix forwards as the root path', async () => {
     const { env, telemetry } = makeEnv();
     await dispatch('/telemetry', env);
-    expect(telemetry.urls).toEqual(['https://livediagram.app/']);
+    expect(telemetry.urls).toEqual(['https://livepages.app/']);
   });
 
   it('forwards the clean live page routes UNstripped', async () => {
@@ -109,15 +109,15 @@ describe('production dispatch (service bindings)', () => {
     await dispatch('/document/abc123', env);
     await dispatch('/new?blank=1', env);
     expect(live.urls).toEqual([
-      'https://livediagram.app/document/abc123',
-      'https://livediagram.app/new?blank=1',
+      'https://livepages.app/document/abc123',
+      'https://livepages.app/new?blank=1',
     ]);
   });
 
   it("routes the live app's root-served icon to the live worker", async () => {
     const { env, live } = makeEnv();
     await dispatch('/icon.svg', env);
-    expect(live.urls).toEqual(['https://livediagram.app/icon.svg']);
+    expect(live.urls).toEqual(['https://livepages.app/icon.svg']);
   });
 
   it('serves the licences page and its texts from marketing', async () => {
@@ -126,8 +126,8 @@ describe('production dispatch (service bindings)', () => {
     await dispatch('/licences', env);
     await dispatch('/licences/texts/0123456789abcdef.txt', env);
     expect(marketing.urls).toEqual([
-      'https://livediagram.app/licences',
-      'https://livediagram.app/licences/texts/0123456789abcdef.txt',
+      'https://livepages.app/licences',
+      'https://livepages.app/licences/texts/0123456789abcdef.txt',
     ]);
   });
 
@@ -146,10 +146,10 @@ describe('local-dev dispatch (origin proxy)', () => {
     const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
     vi.stubGlobal('fetch', fetchMock);
     try {
-      await dispatch('/telemetry/data', { TELEMETRY_ORIGIN: 'http://localhost:3003' });
+      await dispatch('/telemetry/data', { TELEMETRY_ORIGIN: 'http://localhost:3203' });
       const req = fetchMock.mock.calls[0]![0];
       // Dev servers serve their own basePath, so no strip on this path.
-      expect(req.url).toBe('http://localhost:3003/telemetry/data');
+      expect(req.url).toBe('http://localhost:3203/telemetry/data');
     } finally {
       vi.unstubAllGlobals();
     }
@@ -192,7 +192,7 @@ describe('bare help-article paths', () => {
     const res = await dispatch('/privacy-and-security/data-privacy/', env);
     expect(res.status).toBe(308);
     expect(res.headers.get('location')).toBe(
-      'https://livediagram.app/help/privacy-and-security/data-privacy/',
+      'https://livepages.app/help/privacy-and-security/data-privacy/',
     );
     // Never reached marketing's 404, which is what it used to do.
     expect(marketing.urls).toEqual([]);
@@ -223,7 +223,7 @@ describe('bare help-article paths', () => {
     // The list in index.ts is hand-kept; this is what stops it drifting when
     // the help centre grows a category. `explorer` is the one exclusion: the
     // live app owns that segment.
-    const { categories } = await import('@livediagram/help-registry');
+    const { categories } = await import('@livepages/help-registry');
     expect(categories.length).toBeGreaterThan(15);
     const missed: string[] = [];
     for (const category of categories) {

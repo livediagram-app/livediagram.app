@@ -9,7 +9,7 @@
 import { fetchItems } from '../api/items';
 import { apiLoadDocument, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
 import { fetchCloudTags } from '@/lib/api/tags';
-import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER } from '@livepages/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import { embedTabImages, isDataImageId, tabImageIds } from './offline-images';
 import {

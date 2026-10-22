@@ -8,7 +8,7 @@ import {
   type CommunityAuthor,
   type CommunityPost,
   type CommunityPostState,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 
 // The post columns plus the author's participant columns from the LEFT JOIN (null when the author has no row).
 export type CommunityPostRow = {

@@ -3,7 +3,7 @@
 // MetricPicker (browse + search) and MetricSearch (the selected-metric
 // visualisation) so they agree on what a "metric" is.
 
-import type { TelemetryDaily } from '@livediagram/api-schema';
+import type { TelemetryDaily } from '@livepages/api-schema';
 import { eventLabel } from './event-vocab';
 
 export type Metric = {

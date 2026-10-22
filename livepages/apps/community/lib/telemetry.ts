@@ -1,4 +1,4 @@
-import { siteTrack } from '@livediagram/telemetry-client';
+import { siteTrack } from '@livepages/telemetry-client';
 
 // Anonymous, first-party telemetry for the Community app (docs/specs/025-community/community.md
 // "Telemetry"; docs/specs/017-telemetry/telemetry.md). The public sites' shared siteTrack(), the same

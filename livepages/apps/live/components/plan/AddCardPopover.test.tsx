@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES } from '@livediagram/items';
+import { ITEM_TYPES } from '@livepages/items';
 import { AddCardPopover } from './AddCardPopover';
 
 // docs/specs/026-plan/plan-board.md "Working on a board": Add a card closes on a press anywhere else (the canvas

@@ -220,7 +220,7 @@ CREATE INDEX shape_libraries_owner_created_idx ON shape_libraries (owner_id, cre
 | `MAX_SHAPE_LIBRARY_ITEM_ID_CHARS` | 64                                        | A UUID is 36 (D9)                                                                 |
 | `MAX_SHAPE_LIBRARY_ITEM_SIDE`     | 100 000                                   | Far past any real shape (D10)                                                     |
 | Items byte budget                 | `MAX_TAB_BYTES`                           | Spec: one row, as a tab                                                           |
-| `LIBRARY_SHAPE_DND_MIME`          | `application/x-livediagram-library-shape` | Beside the palette's other drag MIMEs                                             |
+| `LIBRARY_SHAPE_DND_MIME`          | `application/x-livepages-library-shape` | Beside the palette's other drag MIMEs                                             |
 | `SHAPE_LIBRARY_CARD_PREVIEWS`     | 8                                         | Spec ("the first eight")                                                          |
 | `LIBRARY_INSERT_GAP`              | 24                                        | The paste offset (`PASTE_OFFSET`), as the gap between consecutive clicked inserts |
 | `DRAWIO_MAX_LIBRARY_ITEMS`        | `MAX_SHAPE_LIBRARY_ITEMS`                 | The importer keeps what the api accepts                                           |

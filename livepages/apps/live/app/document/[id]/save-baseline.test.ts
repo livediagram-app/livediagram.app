@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+import type { Element, Tab } from '@livepages/document';
+import type { RoomOp } from '@livepages/api-schema';
 import { computeTabSaveDiff } from './editor-page-helpers';
 import { applyRoomOpToTabs } from './room-op-apply';
 import {

@@ -345,7 +345,7 @@ link.
   `onMoveDocumentToFolder(documentId, targetFolderId)` callback the
   picker uses, so the move travels through the same API path and
   optimistic update. Drag transfer uses a custom MIME type
-  (`application/x-livediagram-id`) so dragging a document never
+  (`application/x-livepages-id`) so dragging a document never
   triggers a browser navigation when dropped outside any target.
   The editor's Explorer floats over the canvas, so the canvas's own drop
   handling stands aside for a drag a target inside it has already
@@ -366,7 +366,7 @@ link.
 
 This is the full-page library view. Open to both guests and signed-in
 users: the owner id resolves the same way every other surface in the
-live app does (Clerk userId when signed in, the `livediagram:v2:self-id`
+live app does (Clerk userId when signed in, the `livepages:v2:self-id`
 localStorage UUID otherwise), so a guest sees the documents + folders +
 Image Gallery their per-browser id owns. AuthControls in the page header
 surfaces a "Sign in" CTA for guests who want to upgrade. The page is

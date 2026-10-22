@@ -3,7 +3,7 @@
 // between boxes, anchors facing each other; a second arrow a→b needs `again`. Rewiring moves one end
 // and re-anchors both, dropping the old route.
 
-import type { EditRejection } from '@livediagram/api-schema';
+import type { EditRejection } from '@livepages/api-schema';
 import {
   anchorPrimarySide,
   bestAnchorTowards,
@@ -15,7 +15,7 @@ import {
   type BoxedElement,
   type Element,
   type Endpoint,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { describeElement } from '../element-text';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';

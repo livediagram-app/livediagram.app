@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { formatRelativeTime } from '@livediagram/ui';
+import { formatRelativeTime } from '@livepages/ui';
 import { offlineIdCount, offlineListDocuments } from '@/lib/offline/offline-store';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { dismissLocalMove, shouldOfferLocalMove } from '@/lib/offline/local-move-dismissal';

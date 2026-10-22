@@ -5,7 +5,7 @@ import {
   communityCategoryLabel,
   type CommunityCategory,
   type CommunityFacetsResponse,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { CategoryIcon } from '../shared/icons';
 import { SearchControlMenu } from './SearchControlMenu';
 

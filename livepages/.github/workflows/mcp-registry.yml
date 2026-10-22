@@ -1,6 +1,6 @@
 name: Publish MCP server to registry
 
-# Lists the hosted MCP server (mcp.livediagram.app) in the official MCP
+# Lists the hosted MCP server (mcp.livepages.app) in the official MCP
 # Registry (registry.modelcontextprotocol.io) from the root server.json.
 # PulseMCP and other directories ingest from that registry.
 #
@@ -8,9 +8,7 @@ name: Publish MCP server to registry
 # version it has already seen, so bump "version" in server.json to republish.
 
 on:
-  push:
-    branches: [main]
-    paths: [server.json]
+  # Publishing on push is off until livepages has its own registry namespace.
   workflow_dispatch:
 
 permissions:
@@ -20,7 +18,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write # GitHub OIDC login for the io.github.livediagram-app namespace
+      id-token: write # GitHub OIDC login for the io.github.livepages-app namespace
       contents: read
     steps:
       - uses: actions/checkout@v7

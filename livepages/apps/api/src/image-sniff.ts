@@ -19,4 +19,4 @@ export {
   ACCEPTED_IMAGE_TYPES,
   sniffImageType,
   type AcceptedImageType,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';

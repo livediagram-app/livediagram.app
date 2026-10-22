@@ -9,7 +9,7 @@ import { fileOf, makeEngine, OWNER, world } from './test-support';
 import { createBrokerTokenSource, createBrowserTokenSource } from './token-source';
 
 // The mirror over time and across devices (docs/specs/022-drive-mirror/drive-mirror.md,
-// "Cadence", "Errors and edge cases", "Folders livediagram cannot see",
+// "Cadence", "Errors and edge cases", "Folders livepages cannot see",
 // "Disconnecting").
 
 const MIN = 60_000;
@@ -27,14 +27,14 @@ describe('two devices', () => {
     w.clock.tick(MIN);
     await w.ld.port().renameDocument('d1', 'From B');
     await b.engine.syncNow();
-    expect(fileOf(w.google, w.ld, 'document', 'd1')!.name).toBe('Plan.livediagram');
+    expect(fileOf(w.google, w.ld, 'document', 'd1')!.name).toBe('Plan.livepages');
     expect(b.statuses.at(-1)!.leaseHeldElsewhere).toBe(true);
     // A writes it.
     await a.engine.syncNow();
-    expect(fileOf(w.google, w.ld, 'document', 'd1')!.name).toBe('From B.livediagram');
+    expect(fileOf(w.google, w.ld, 'document', 'd1')!.name).toBe('From B.livepages');
 
     // B still applies a change made in Drive.
-    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Drive.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Drive.livepages');
     await b.engine.syncNow();
     expect(w.ld.document('d1')!.name).toBe('Drive');
 
@@ -44,7 +44,7 @@ describe('two devices', () => {
     w.clock.tick(MIN);
     await w.ld.port().renameDocument('d1', 'B again');
     await b.engine.syncNow();
-    expect(fileOf(w.google, w.ld, 'document', 'd1')!.name).toBe('B again.livediagram');
+    expect(fileOf(w.google, w.ld, 'document', 'd1')!.name).toBe('B again.livepages');
     expect(b.statuses.at(-1)!.leaseHeldElsewhere).toBe(false);
   });
 });
@@ -63,7 +63,7 @@ describe('arrival catch-up', () => {
     w.clock.tick(3 * 60 * MIN);
     w.ld.edit('d1');
     w.ld.createDocument('d3', 'New');
-    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd2')!.id, 'Renamed.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd2')!.id, 'Renamed.livepages');
     w.clock.tick(5 * MIN);
 
     const next = makeEngine(w);
@@ -112,7 +112,7 @@ describe('cadence', () => {
     const saved = () => w.ld.connection!.pageToken;
     const afterStart = saved();
 
-    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'X.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'X.livepages');
     await engine.syncNow();
     expect(saved()).toBe(afterStart);
 
@@ -121,7 +121,7 @@ describe('cadence', () => {
     expect(saved()).not.toBe(afterStart);
 
     const t = saved();
-    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Y.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Y.livepages');
     await engine.syncNow();
     expect(saved()).toBe(t);
     await engine.flush();
@@ -200,7 +200,7 @@ describe('tokens', () => {
   });
 });
 
-describe('folders livediagram cannot see', () => {
+describe('folders livepages cannot see', () => {
   it('adopting the picked folder makes the matching folder and moves the document in; it then syncs both ways', async () => {
     const w = world();
     w.ld.createFolderAs('f1', 'Work');
@@ -375,7 +375,7 @@ describe('the 2-minute gated pace (docs/specs/022-drive-mirror/drive-mirror.md, 
     const before = listCalls(w);
     await engine.syncNow();
     expect(listCalls(w)).toBe(before);
-    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Moved.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Moved.livepages');
     await engine.syncNow();
     expect(listCalls(w)).toBe(before + 1);
     expect(w.ld.document('d1')!.name).toBe('Moved');
@@ -389,7 +389,7 @@ describe('the 2-minute gated pace (docs/specs/022-drive-mirror/drive-mirror.md, 
     // Invisible activity elsewhere in the user's Drive moves the token too.
     w.google.userCreateFolder(OWNER, 'Elsewhere');
     await engine.syncNow();
-    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Seen.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Seen.livepages');
     await engine.syncNow();
     expect(w.ld.document('d1')!.name).toBe('Seen');
   });
@@ -411,7 +411,7 @@ describe('the 2-minute gated pace (docs/specs/022-drive-mirror/drive-mirror.md, 
         true,
       );
       lines.length = 0;
-      // Activity livediagram cannot see: whether the real token moves for it is
+      // Activity livepages cannot see: whether the real token moves for it is
       // exactly what the diagnostic is for (E-A3); the fake says it does.
       w.google.userCreateFolder(OWNER, 'Elsewhere');
       await d.engine.syncNow();
@@ -451,7 +451,7 @@ describe('views follow (docs/specs/022-drive-mirror/drive-mirror.md, "Other view
     await engine.start();
     await engine.syncNow();
     expect(applied).toBe(0);
-    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Renamed.livediagram');
+    w.google.userRename(fileOf(w.google, w.ld, 'document', 'd1')!.id, 'Renamed.livepages');
     await engine.syncNow();
     expect(applied).toBe(1);
   });
@@ -511,7 +511,7 @@ describe('the root folder name in the status (blueprint "Cloud Sync in Settings"
     const { engine, statuses } = makeEngine(w);
     await engine.start();
     // The test host is a self-hosted one.
-    expect(statuses.at(-1)!.rootName).toBe('livediagram (self-hosted)');
+    expect(statuses.at(-1)!.rootName).toBe('livepages (self-hosted)');
     w.google.userRename(w.ld.connection!.rootFolderId!, 'My Documents');
     await engine.syncNow();
     expect(statuses.at(-1)!.rootName).toBe('My Documents');

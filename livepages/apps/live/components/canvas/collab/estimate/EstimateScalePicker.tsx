@@ -11,8 +11,8 @@ import {
   ESTIMATE_SCALE_VALUES,
   ESTIMATE_SCALES,
   type EstimateScale,
-} from '@livediagram/document';
-import { Glyph, GlyphDisc } from '@livediagram/ui';
+} from '@livepages/document';
+import { Glyph, GlyphDisc } from '@livepages/ui';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { tint } from '../collab-chrome';
 import { QA_ACCENT, QA_ACCENT_INK, stopPointer } from '../qa/qa-parts';

@@ -43,7 +43,7 @@ export function WorkbenchPage() {
   const endedReason = phase.phase === 'ended' ? phase.reason : null;
   useEffect(() => {
     if (!endedReason || !port) return;
-    port.send({ type: 'livediagram:ended', v: 1, reason: endedReason });
+    port.send({ type: 'livepages:ended', v: 1, reason: endedReason });
     console.warn('[workbench] ended', { reason: endedReason });
   }, [endedReason, port]);
 

@@ -1,6 +1,6 @@
 # Purpose
 
-livediagram is a web app where teams build **diagrams together, in real time**.
+livepages is a web app where teams build **diagrams together, in real time**.
 
 This is the root of the spec tree: every other spec is a decision taken inside
 the boundaries set here. That only works if it stays true, so it carries a
@@ -122,7 +122,7 @@ here in the same change, with the spec that moved it.
 Most teams bounce between tools that are either single-player (Lucidchart,
 draw.io for casual users), heavyweight and slow (enterprise diagram suites), or
 general-purpose whiteboards that don't produce clean, structured output (Miro,
-FigJam). livediagram exists to be the **fast, focused, multiplayer-from-the-start**
+FigJam). livepages exists to be the **fast, focused, multiplayer-from-the-start**
 option for teams whose primary need is producing diagrams together.
 
 "Focused" is the load-bearing word and the hardest to keep. The surface is now
@@ -131,7 +131,7 @@ a team building a diagram together need this in the room?".
 
 ## How it ships
 
-livediagram is **open source** (MIT) and also runs as a **hosted product**, free
+livepages is **open source** (MIT) and also runs as a **hosted product**, free
 for everyone, no paid tier. Anyone can self-host the entire codebase; the hosted
 version is the easy default. See
 [03-open-source-and-business-model.md](../002-project-scope/open-source-and-business-model.md).

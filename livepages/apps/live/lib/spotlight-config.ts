@@ -127,7 +127,7 @@ export function parseSpotlightConfig(raw: unknown): SpotlightConfig {
 
 // --- Storage ----------------------------------------------------------------
 
-const STORAGE_KEY = 'livediagram:v2:spotlight-config';
+const STORAGE_KEY = 'livepages:v2:spotlight-config';
 
 export function loadSpotlightConfig(): SpotlightConfig {
   return parseSpotlightConfig(readLocalStorageSafe(STORAGE_KEY));

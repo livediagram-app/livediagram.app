@@ -5,15 +5,15 @@
 // document to the Trash; Keep Them takes the flag off every one. Either is one write and one undo step, and either
 // leaves no example card, so the strip goes for everyone. An Editor's alone: a Participant may not trash or reshape
 // others' cards (docs/specs/013-workspace/share-roles.md), and a Viewer only looks.
-import { lucideInfo } from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideInfo } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livepages/ui';
 import {
   EXAMPLE_FIELD,
   isExampleItem,
   isTrashed,
   type Item,
   type ItemPatchOf,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { track } from '@/lib/telemetry';
 import type { PlanPalette } from './plan-palette';
 import type { PlanContextValue } from './PlanContext';

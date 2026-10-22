@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { FINISH_PREVIEW_ELEMENTS } from './finish-preview';
 import { firstSelfClosingRect, lookPreviewSvg, lookPreviewTab } from './look-preview';
 import { resolveTheme } from './themes';

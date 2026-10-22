@@ -34,7 +34,7 @@ cross-origin requests), not through the api worker:
 
 - Openverse rate-limits anonymous callers per IP address (20 searches a minute, 200 a day). From the
   browser each user has their own allowance; through the worker every user would share one.
-- No livediagram server sees the query.
+- No livepages server sees the query.
 
 Picking a result downloads the picture in the browser too: first the full-size file from its host,
 and if that fails (the host refuses cross-origin reads, is down, or returns something that is not an

@@ -7,7 +7,7 @@
 //     model, which cannot renew without a click, so a lapsed token asks the
 //     user to **Resume sync** instead of syncing silently.
 
-import type { DriveAccessToken } from '@livediagram/api-schema';
+import type { DriveAccessToken } from '@livepages/api-schema';
 import { ApiError } from '../api/core';
 import { DRIVE_TOKEN_RENEW_BEFORE_MS } from './cadence';
 

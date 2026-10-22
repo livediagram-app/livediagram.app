@@ -1,4 +1,4 @@
-import type { LicencesManifest } from '@livediagram/licences';
+import type { LicencesManifest } from '@livepages/licences';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 

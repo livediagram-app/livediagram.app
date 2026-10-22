@@ -14,7 +14,7 @@ bold / italic / underline / headings / bullet + numbered lists / links.
 
 Element labels already carry per-range formatting as **runs**
 ([Canvas and palette](../008-canvas/canvas-and-palette.md), `rich-text.ts` in
-`@livediagram/document`): an array of `{ text, …deltas }` slices plus a
+`@livepages/document`): an array of `{ text, …deltas }` slices plus a
 plain-text mirror on the element. Notes use exactly that model, so there is
 one formatting algebra, one contentEditable ↔ runs bridge, and **no HTML is
 ever stored or rendered** — the runs are painted as React spans, which closes

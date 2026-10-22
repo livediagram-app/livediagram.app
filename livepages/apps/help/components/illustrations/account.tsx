@@ -36,7 +36,7 @@ export function GuestIdentity() {
         strokeWidth={1.5}
       />
       <Label x={118} y={41} size={10} tone="muted">
-        livediagram.app/new
+        livepages.app/new
       </Label>
       {/* The stored guest id */}
       <rect
@@ -52,7 +52,7 @@ export function GuestIdentity() {
         GUEST ID
       </Label>
       <Label x={82} y={98} size={11} weight={600} tone="accent">
-        livediagram:v2:self-id
+        livepages:v2:self-id
       </Label>
       {/* The documents it owns */}
       <Label x={70} y={128} size={10} weight={700} tone="muted">
@@ -90,7 +90,7 @@ export function SignInCard() {
     <Scene w={420} h={250} bg="plain">
       <Panel x={98} y={14} w={224} h={222}>
         <Label x={210} y={38} anchor="middle" size={14} weight={700} tone="strong">
-          livediagram
+          livepages
         </Label>
         <Label x={210} y={56} anchor="middle" size={10} tone="muted">
           Sign in to keep your documents

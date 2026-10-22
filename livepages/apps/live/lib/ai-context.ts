@@ -3,8 +3,8 @@
 // for a small selection; the selection alone goes then, and only a selection that is itself too big is refused,
 // with a message saying so rather than "Something went wrong".
 
-import { AI_MAX_ELEMENTS } from '@livediagram/api-schema';
-import type { Element } from '@livediagram/document';
+import { AI_MAX_ELEMENTS } from '@livepages/api-schema';
+import type { Element } from '@livepages/document';
 
 type AiContext = { ok: true; elements: Element[] } | { ok: false; message: string };
 

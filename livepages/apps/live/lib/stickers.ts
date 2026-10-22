@@ -5,21 +5,21 @@
 // `stickerId`), not an icon: it paints its own die-cut plate and shadow, tilts
 // when you drop it, is never tinted by the theme, carries no caption, and
 // never folds into another shape. This module owns the grouping and the
-// lookups; the artwork itself lives in @livediagram/icons so every renderer
+// lookups; the artwork itself lives in @livepages/icons so every renderer
 // draws the same sticker.
 //
 // Like lib/icons.ts this is a SYNCHRONOUS surface over an async catalogue
 // chunk: until it lands the lists come back empty and the tab shows its
 // loading note (consumers subscribe via useIconCatalogs).
 
-import { STICKER_ASPECT, type StickerDef } from '@livediagram/icons';
+import { STICKER_ASPECT, type StickerDef } from '@livepages/icons';
 import { getLoadedStickerCatalog, getStickerLoaded } from '@/lib/icon-registry';
 
 // DataTransfer MIME for dragging a sticker out of the palette onto the canvas.
 // Its OWN mime, not the icon one: an icon dropped on a shape folds into that
 // shape's label, and a sticker must never do that — it lands as a sticker
 // wherever you let go.
-export const STICKER_DND_MIME = 'application/x-livediagram-sticker';
+export const STICKER_DND_MIME = 'application/x-livepages-sticker';
 
 type StickerCategory = {
   id: string;

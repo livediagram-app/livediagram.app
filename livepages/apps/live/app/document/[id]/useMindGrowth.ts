@@ -11,7 +11,7 @@ import {
   type Element,
   type MindGrowthPlan,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { dressMindConnector, dressMindNode } from '@/lib/mind-dress';
 import { fitMindLabel } from '@/lib/mind-label-fit';
 import { measureDrawnMindLabel } from '@/components/canvas/text-hug-measure';

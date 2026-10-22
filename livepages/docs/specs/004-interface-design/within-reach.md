@@ -1,6 +1,6 @@
 # Within reach
 
-**Within reach** is how livediagram keeps the things a person reaches for close to hand: a small set of
+**Within reach** is how livepages keeps the things a person reaches for close to hand: a small set of
 **most used** items beside the **recent** ones. It is one pattern, used wherever a surface offers a short
 "what you probably want next" list, so every such list fills by the same rule and reads alike.
 
@@ -40,6 +40,6 @@ side's set and then the set of both, and loses nothing.
 
 ## Implementation
 
-One shared, pure function decides every within-reach set: `withinReach` in `@livediagram/api-schema`
+One shared, pure function decides every within-reach set: `withinReach` in `@livepages/api-schema`
 (`packages/api-schema/src/within-reach.ts`), used by the api worker and the live app alike
 ([blueprint](blueprints/within-reach.md)).

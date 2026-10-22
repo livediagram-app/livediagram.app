@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { CUSTOM_FIELD_KINDS } from '@livediagram/items';
+import { CUSTOM_FIELD_KINDS } from '@livepages/items';
 import { NewFieldForm } from './ItemTypeFieldForms';
 
 // docs/specs/026-plan/item-types.md "Editing a type": Add Field's New Custom Field, its kind tiles and preview.

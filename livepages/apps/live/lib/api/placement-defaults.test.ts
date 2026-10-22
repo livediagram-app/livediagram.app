@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
+import { sentJson } from '@livepages/vitest-config/sent-request';
 import { ApiError } from './core';
 import {
   apiClearPlacementDefault,

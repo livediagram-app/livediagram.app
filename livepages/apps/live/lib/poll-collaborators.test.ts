@@ -5,7 +5,7 @@
 // their votes into one bar. These cases are mostly about that.
 
 import { describe, expect, it } from 'vitest';
-import { POLL_OPTION_MAX, POLL_OPTIONS_MAX, sanitisePoll } from '@livediagram/api-schema';
+import { POLL_OPTION_MAX, POLL_OPTIONS_MAX, sanitisePoll } from '@livepages/api-schema';
 import { pollCollaboratorOptions } from './poll-collaborators';
 
 const person = (id: string, name: string) => ({ id, name });

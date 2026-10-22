@@ -69,7 +69,7 @@ describe('ALTERNATIVES catalogue', () => {
   it('every entry has at least one usBest and one themBest point', () => {
     // docs/specs/019-marketing/comparison-pages.md honesty rule: each comparison page MUST include real
     // reasons to pick the competitor (themBest) alongside the
-    // livediagram differentiators (usBest). Both arrays are
+    // livepages differentiators (usBest). Both arrays are
     // rendered as bulleted lists; an empty themBest would leave a
     // visibly empty "Where <competitor> is the better pick" card,
     // which reads as either a bug or a refusal to acknowledge the

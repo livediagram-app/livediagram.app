@@ -9,7 +9,7 @@
 // that board has rows); a drop on the canvas leaves a Plan card there.
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { isDragTravel } from '@/lib/press-gestures';
-import type { Item } from '@livediagram/items';
+import type { Item } from '@livepages/items';
 import { otherPlanBoardAt, planBoardTarget } from './plan-board-targets';
 import { createListeners } from '@/lib/listeners';
 

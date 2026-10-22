@@ -1,11 +1,11 @@
-import { normaliseBoardSetup, type PlanBoardSetup } from '@livediagram/items';
+import { normaliseBoardSetup, type PlanBoardSetup } from '@livepages/items';
 import {
   PLAN_TEMPLATE_KINDS,
   isSpreadsheetPlanTemplate,
   templateEditorMode,
-} from '@livediagram/templates';
+} from '@livepages/templates';
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the board, session and workshop starters redesigned

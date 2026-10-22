@@ -1,4 +1,4 @@
-import type { PathAnchor } from '@livediagram/document';
+import type { PathAnchor } from '@livepages/document';
 
 type Point = { x: number; y: number };
 

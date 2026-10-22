@@ -9,7 +9,7 @@
 
 import { endPlanCardDrag, planCardDragOver } from '@/hooks/plan/plan-card-drop';
 import type { DragEvent as ReactDragEvent, RefObject } from 'react';
-import type { ShapeKind } from '@livediagram/document';
+import type { ShapeKind } from '@livepages/document';
 import { pointerToCanvas } from '@/lib/canvas';
 import { ICON_DND_MIME, PALETTE_DND_MIME } from '@/lib/icons';
 import { STICKER_DND_MIME } from '@/lib/stickers';

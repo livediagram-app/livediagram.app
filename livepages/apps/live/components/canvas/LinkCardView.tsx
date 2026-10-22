@@ -1,9 +1,9 @@
 'use client';
 
-import { lucideFile, lucideLink, lucidePanelsTopLeft } from '@livediagram/icons/lucide';
+import { lucideFile, lucideLink, lucidePanelsTopLeft } from '@livepages/icons/lucide';
 import { useState } from 'react';
-import { defaultTextColor, type LinkCardElement } from '@livediagram/document';
-import { Glyph, Prims } from '@livediagram/ui';
+import { defaultTextColor, type LinkCardElement } from '@livepages/document';
+import { Glyph, Prims } from '@livepages/ui';
 
 // Inner content of a link-card element (docs/specs/009-elements/link-cards.md): a favicon / glyph + title +
 // destination row, with the OG image as a top banner when a URL has unfurled.

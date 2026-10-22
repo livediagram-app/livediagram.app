@@ -5,7 +5,7 @@
 
 import type { CliIo } from '../io';
 
-const KEYCHAIN_SERVICE = 'livediagram';
+const KEYCHAIN_SERVICE = 'livepages';
 
 // Where a profile's token is: in the file itself, sealed in the file, or in the platform's keychain.
 export type SavedToken = { token: string } | { sealed: string } | { keychain: true };
@@ -61,7 +61,7 @@ function storeFor(io: CliIo): Store | null {
             [
               'store',
               '--label',
-              `livediagram CLI (${profile})`,
+              `livepages CLI (${profile})`,
               'service',
               KEYCHAIN_SERVICE,
               'account',

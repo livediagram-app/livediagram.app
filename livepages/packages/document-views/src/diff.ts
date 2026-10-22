@@ -1,7 +1,7 @@
 // What changed between two reads of a tab (docs/specs/024-agents/blueprints/document-views.md "diff",
 // VW36), in the outline's terms. The CLI computes it from the tab it cached; no api door serves it.
-import type { DiffView, ViewDoor } from '@livediagram/api-schema';
-import { STYLE_KEYS, type Element, type Endpoint, type Tab } from '@livediagram/document';
+import type { DiffView, ViewDoor } from '@livepages/api-schema';
+import { STYLE_KEYS, type Element, type Endpoint, type Tab } from '@livepages/document';
 import { attributesOf } from './attributes';
 import { fitLines, fitOf, type ViewLine, type ViewResult } from './budget';
 import { LABEL_CUT_CHARS } from './constants';

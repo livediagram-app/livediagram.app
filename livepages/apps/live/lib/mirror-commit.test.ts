@@ -5,7 +5,7 @@ import {
   newLogoPage,
   type Element,
   type MirrorSettings,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { withMirrorTwins, withTwinsAdded } from './mirror-commit';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

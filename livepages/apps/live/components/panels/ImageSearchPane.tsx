@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Button, NoMatches, TextInput } from '@livediagram/ui';
+import { Button, NoMatches, TextInput } from '@livepages/ui';
 import { useImageSearch } from '@/hooks/ui/useImageSearch';
 import {
   licenceLabel,

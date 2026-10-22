@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Working with Documents',
   description:
-    'Worked livediagram API examples: list, read, create, and update documents, tabs, and folders, and create a share link, all with curl.',
+    'Worked livepages API examples: list, read, create, and update documents, tabs, and folders, and create a share link, all with curl.',
   path: '/help/developers/working-with-documents/',
 });
 
@@ -23,7 +23,7 @@ These examples use `curl` against the hosted service. Each request carries your 
 export TOKEN=lvd_your_token_here
 ```
 
-Paths are relative to `https://livediagram.app/api`. For the exact request and response shapes of every field, see the [OpenAPI reference](/help/developers/api-overview/) at `/api/openapi.json`.
+Paths are relative to `https://livepages.app/api`. For the exact request and response shapes of every field, see the [OpenAPI reference](/help/developers/api-overview/) at `/api/openapi.json`.
 
 {/* legacy-names */}
 
@@ -36,7 +36,7 @@ Paths are relative to `https://livediagram.app/api`. For the exact request and r
 A document **list** returns the documents in your personal library (documents in a team library are not included), as metadata only, not the tab contents:
 
 ```bash
-curl https://livediagram.app/api/documents \
+curl https://livepages.app/api/documents \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -51,14 +51,14 @@ curl https://livediagram.app/api/documents \
 Fetching one document returns its metadata and a list of **tab summaries**, but still not the elements on each tab:
 
 ```bash
-curl https://livediagram.app/api/documents/abc123 \
+curl https://livepages.app/api/documents/abc123 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 To get the actual contents of a tab, request it by id. This keeps listing a big document cheap:
 
 ```bash
-curl https://livediagram.app/api/documents/abc123/tabs/tab-1 \
+curl https://livepages.app/api/documents/abc123/tabs/tab-1 \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -78,7 +78,7 @@ curl https://livediagram.app/api/documents/abc123/tabs/tab-1 \
 The element JSON carries every coordinate and colour. When you want what a tab **means**, which is usually what a script or an AI model needs, ask for a **view** instead. The outline gives one line per element, nested by frame, with its arrows on the same line:
 
 ```bash
-curl "https://livediagram.app/api/documents/abc123/tabs/tab-1?view=outline" \
+curl "https://livepages.app/api/documents/abc123/tabs/tab-1?view=outline" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -111,12 +111,12 @@ Add `budget=2000` to fit any view except `lint` to about 2,000 tokens. The view 
 
 ## Create a document
 
-`POST /documents` creates a document. You supply the `id`, a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes. Ids are shared across all of livediagram, not just your account, so use a fresh UUID for the document, each tab and each folder; an id someone else already holds is refused or swapped for a new one:
+`POST /documents` creates a document. You supply the `id`, a `name`, and optionally the `tabs` to seed it with. Nodes are **shape** elements with a position and size; this creates one tab with two boxes. Ids are shared across all of livepages, not just your account, so use a fresh UUID for the document, each tab and each folder; an id someone else already holds is refused or swapped for a new one:
 
 ```bash
 DOC=$(uuidgen) TAB=$(uuidgen) FOLDER=$(uuidgen)
 
-curl -X POST https://livediagram.app/api/documents \
+curl -X POST https://livepages.app/api/documents \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -142,7 +142,7 @@ Arrows, text, images, and the rest of the element types follow the same pattern 
 Scripts and agents change a tab with a **changeset**: a short list of edit operations, applied together or not at all. Anyone with the document open sees the change arrive straight away, it is credited to you, and it can be undone as one unit for 30 days. Changes people make in the editor at the same time are kept.
 
 ```bash
-curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/changesets \
+curl -X POST https://livepages.app/api/documents/$DOC/tabs/$TAB/changesets \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -160,7 +160,7 @@ curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/changesets \
 The same operations read well as text, one a line, which is easier for a script or an agent to write. Send them as a string:
 
 ```bash
-curl -X POST https://livediagram.app/api/documents/$DOC/tabs/$TAB/changesets \
+curl -X POST https://livepages.app/api/documents/$DOC/tabs/$TAB/changesets \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -196,11 +196,11 @@ Plan cards, Sheet cells, images and pages have endpoints of their own: see [Plan
 Create a folder, then move a document into it:
 
 ```bash
-curl -X POST https://livediagram.app/api/folders \
+curl -X POST https://livepages.app/api/folders \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "id": "'"$FOLDER"'", "name": "Infrastructure" }'
 
-curl -X PUT https://livediagram.app/api/documents/$DOC/folder \
+curl -X PUT https://livepages.app/api/documents/$DOC/folder \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "folderId": "'"$FOLDER"'" }'
 ```
@@ -210,14 +210,14 @@ curl -X PUT https://livediagram.app/api/documents/$DOC/folder \
 `DELETE /documents/$DOC` moves the document to the [Trash](/help/account-and-data/trash/), where it waits for 30 days, and answers `204`. While it is there, reading or changing it answers `410 document_trashed`. Add `?permanent=true` to delete it for good straight away.
 
 ```bash
-curl -X DELETE https://livediagram.app/api/documents/$DOC \
+curl -X DELETE https://livepages.app/api/documents/$DOC \
   -H "Authorization: Bearer $TOKEN"
 
 # What you can restore: your own Trash and every team's you belong to
-curl https://livediagram.app/api/trash \
+curl https://livepages.app/api/trash \
   -H "Authorization: Bearer $TOKEN"
 
-curl -X POST https://livediagram.app/api/trash/$DOC/restore \
+curl -X POST https://livepages.app/api/trash/$DOC/restore \
   -H "Authorization: Bearer $TOKEN"
 ```
 
@@ -228,7 +228,7 @@ curl -X POST https://livediagram.app/api/trash/$DOC/restore \
 Create a share link with a role of `view`, `participate` or `edit`:
 
 ```bash
-curl -X POST https://livediagram.app/api/documents/$DOC/share \
+curl -X POST https://livepages.app/api/documents/$DOC/share \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "role": "view" }'
 ```

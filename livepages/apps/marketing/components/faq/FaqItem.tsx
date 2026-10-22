@@ -1,5 +1,5 @@
-import { lucideChevronDown } from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideChevronDown } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livepages/ui';
 import type { ReactNode } from 'react';
 
 const ChevronIcon = lucideGlyph(lucideChevronDown, 18);

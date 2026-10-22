@@ -2,7 +2,7 @@
 // a full id, an id prefix or a name; a tab by name or id prefix, the first by default. None or several refuse
 // with the nearest names or the candidates, never a guess.
 
-import type { ApiClient } from '@livediagram/api-client';
+import type { ApiClient } from '@livepages/api-client';
 import { listAllDocuments, type FoundDocument } from './find-documents';
 import { REF_MIN_PREFIX, shortestUniquePrefixes } from './refs';
 
@@ -39,7 +39,7 @@ type DocumentUrl = { id: string } | { shareCode: string };
 // resolves by name.
 const FULL_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// A pasted livediagram URL: `/document/<id>` or a share link `/document/shared?s=<code>`; null when the input
+// A pasted livepages URL: `/document/<id>` or a share link `/document/shared?s=<code>`; null when the input
 // is not a URL. A URL on another origin than the host is a usage error (CLI21).
 export function parseDocumentUrl(input: string, host: string): DocumentUrl | null {
   let url: URL;
@@ -69,7 +69,7 @@ export function parseDocumentUrl(input: string, host: string): DocumentUrl | nul
       input,
       candidates: [],
       message: `${input} is not a document link`,
-      hint: 'livediagram document ls',
+      hint: 'livepages document ls',
     });
   if (parts[1] === 'shared') {
     const code = url.searchParams.get('s');
@@ -80,7 +80,7 @@ export function parseDocumentUrl(input: string, host: string): DocumentUrl | nul
         input,
         candidates: [],
         message: `${input} has no share code`,
-        hint: 'livediagram document ls',
+        hint: 'livepages document ls',
       });
     return { shareCode: code };
   }
@@ -141,7 +141,7 @@ export async function resolveDocument(
       input,
       candidates: nearest(all, input).map(candidate),
       message: `no document matches "${input}"`,
-      hint: 'livediagram document ls',
+      hint: 'livepages document ls',
     });
   const listed = matches.map(candidate);
   throw refuse({
@@ -180,7 +180,7 @@ export function resolveTab(
       input: '',
       candidates: [],
       message: `${doc} has no tabs`,
-      hint: `livediagram tab add ${doc} <name>`,
+      hint: `livepages tab add ${doc} <name>`,
     });
   }
   const lower = input.toLowerCase();
@@ -203,6 +203,6 @@ export function resolveTab(
     input,
     candidates,
     message,
-    hint: `livediagram tab ls ${doc}`,
+    hint: `livepages tab ls ${doc}`,
   });
 }

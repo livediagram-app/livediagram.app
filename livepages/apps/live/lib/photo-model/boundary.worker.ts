@@ -1,4 +1,4 @@
-import { CUE_OPTIONS, cuesOf } from '@livediagram/sticky-model';
+import { CUE_OPTIONS, cuesOf } from '@livepages/sticky-model';
 import type { WorkerRequest, WorkerResponse } from './protocol';
 import { BoundaryRuntimeError, loadBoundaryRuntime, type BoundaryRuntime } from './runtime';
 

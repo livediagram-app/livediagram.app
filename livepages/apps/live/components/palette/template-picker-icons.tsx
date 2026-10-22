@@ -1,4 +1,4 @@
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livepages/ui';
 // Inline SVG icons for the New Document wizard and its neighbours (folder-open, spinner, sparkle). Pure
 // presentational.
 export function FolderOpenIcon() {

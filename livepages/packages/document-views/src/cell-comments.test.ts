@@ -1,7 +1,7 @@
 // A Sheet's cell threads in the views (docs/specs/029-sheets/sheet.md "Cell comments"): listed by the comments
 // view and the thread listing, printed by show, counted by diff, and never leaking an author id.
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livepages/document';
 import { commentHosts, commentsView, threadListingLines } from './comments';
 import { diffView } from './diff';
 import { cellThreadsOf } from './fields';

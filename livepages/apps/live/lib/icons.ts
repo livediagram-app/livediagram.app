@@ -11,7 +11,7 @@
 // PLACEHOLDER glyph rather than vanishing.
 //
 // This module is the SYNCHRONOUS API surface only. The catalogue data
-// (@livediagram/icons icon-catalog-1/2, ~36 kB of glyph geometry) loads as an async chunk
+// (@livepages/icons icon-catalog-1/2, ~36 kB of glyph geometry) loads as an async chunk
 // through lib/icon-registry.ts, keeping it out of the editor's first-load
 // JS. Nothing here may import those data modules statically; until the
 // chunk lands, lookups fall back to PLACEHOLDER_ICON and list views come
@@ -19,13 +19,13 @@
 // when the data arrives).
 
 import type { CSSProperties } from 'react';
-import { isStickerId } from '@livediagram/icons';
+import { isStickerId } from '@livepages/icons';
 import {
   ANIMATION_SPEED_FACTOR,
   DEFAULT_ANIMATION_SPEED,
   type AnimationSpeed,
   type IconAnimation,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 import type { IconDef, IconPrim } from './icon-types';
 import { getIconLoaded, getLoadedIconCatalog } from './icon-registry';
@@ -35,11 +35,11 @@ export type { IconDef, IconPrim };
 // DataTransfer MIME for dragging a palette icon onto a shape. Shared by
 // the palette (drag source) and BoxedElementView (drop target) so the
 // type string can't drift. Value carried = the icon id.
-export const ICON_DND_MIME = 'application/x-livediagram-icon';
+export const ICON_DND_MIME = 'application/x-livepages-icon';
 
 // Drag-from-palette MIME: a palette tile dragged onto the canvas drops a new
 // element at that point. Value carried = the ShapeKind (shapes + devices).
-export const PALETTE_DND_MIME = 'application/x-livediagram-palette';
+export const PALETTE_DND_MIME = 'application/x-livepages-palette';
 
 // The globals.css class for an `lvd-{prefix}-{anim}` keyframe set (undefined
 // anim = static, no class). The shared shape behind the per-element animation

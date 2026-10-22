@@ -2,13 +2,13 @@
 // layouts", docs/specs/007-editor/logo-pages.md "Logo layouts"): an infographic page the page
 // layouts, a slide page the slide layouts, a logo page the logo layouts, each by its own
 // categories; and any layout by its id, for placing it.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import type { LayoutBox } from './page-layout-kit';
 import { PAGE_LAYOUT_CATEGORIES, PAGE_LAYOUTS, type PageLayoutId } from './page-layouts';
 import { LOGO_LAYOUT_CATEGORIES, LOGO_LAYOUTS } from './logo-layouts';
 import { SLIDE_LAYOUT_CATEGORIES, SLIDE_LAYOUTS } from './slide-layouts';
 import { WIREFRAME_LAYOUTS, wireframeLayoutsFor } from './wireframe-layouts';
-import type { WireframeDeviceClass } from '@livediagram/document';
+import type { WireframeDeviceClass } from '@livepages/document';
 
 type CatalogueLayout = {
   id: PageLayoutId;

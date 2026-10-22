@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ShareLink } from '@livediagram/api-schema';
+import type { ShareLink } from '@livepages/api-schema';
 import type { Env } from '../types';
 
 // The share-side rules the REST gates, the share-code resolve, and the room

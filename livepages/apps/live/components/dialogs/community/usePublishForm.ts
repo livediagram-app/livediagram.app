@@ -7,7 +7,7 @@ import {
   type CommunityCategory,
   type CommunityInputField,
   type CommunityOwnPost,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { prefersReducedMotion } from '@/lib/motion-preference';
 import {
   publishFieldErrors,

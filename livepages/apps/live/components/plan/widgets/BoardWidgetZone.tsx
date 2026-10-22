@@ -6,10 +6,10 @@
 // Alt+→, and takes one off with its × (shown only while the board is selected) or Delete. The + at the zone's end opens
 // the widgets the board does not have yet (BoardWidgetPicker); one picked is added at the end.
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { placeWidget, removeWidget, nudgeWidget, type BoardWidgetKind } from '@livediagram/items';
-import { CloseIcon, PlusIcon } from '@livediagram/ui';
+import { placeWidget, removeWidget, nudgeWidget, type BoardWidgetKind } from '@livepages/items';
+import { CloseIcon, PlusIcon } from '@livepages/ui';
 import type { PlanPalette } from '../plan-palette';
-import { BOARD_WIDGET_INFO } from '@livediagram/plan-art';
+import { BOARD_WIDGET_INFO } from '@livepages/plan-art';
 import { InfoArt } from '../plan-tile-art';
 import { widgetSlotAt } from '@/hooks/plan/widget-slot';
 import { BoardWidgetPicker } from './BoardWidgetPicker';

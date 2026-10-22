@@ -7,7 +7,7 @@ Derived from [New version prompt](../new-version-prompt.md).
 | Term                   | Identifier                   | Meaning                                                   |
 | ---------------------- | ---------------------------- | --------------------------------------------------------- |
 | Document format number | `DOCUMENT_FORMAT`            | The version of the stored document shapes                 |
-| Format header          | `DOCUMENT_FORMAT_HEADER`     | `X-Livediagram-Format`, on every api response             |
+| Format header          | `DOCUMENT_FORMAT_HEADER`     | `X-Livepages-Format`, on every api response             |
 | Room format message    | `{ kind: 'format'; format }` | The room's number, sent to each socket on `hello`         |
 | Server format          | `serverDocumentFormat()`     | The highest number this page has heard from the server    |
 | Outdated editor        | `newVersionAvailable()`      | Server format greater than the editor's `DOCUMENT_FORMAT` |
@@ -36,7 +36,7 @@ Derived from [New version prompt](../new-version-prompt.md).
 ```ts
 // packages/api-schema/src/document-format.ts
 export const DOCUMENT_FORMAT = 2;
-export const DOCUMENT_FORMAT_HEADER = 'X-Livediagram-Format';
+export const DOCUMENT_FORMAT_HEADER = 'X-Livepages-Format';
 export function parseDocumentFormat(value: unknown): number | null; // a positive integer or null
 
 // apps/api/src/server-release-header.ts
@@ -97,7 +97,7 @@ current when called.
   import bars sit), on the chrome layer (`z-[var(--z-chrome)]`, below dialogs); max width 28rem,
   never wider than the viewport less 2rem; rounded panel, chrome surface colours (`bg-white` /
   `dark:bg-slate-900`, border `slate-200` / `slate-700`), shadow.
-- Text: "A new version of livediagram is ready." In `saving`: "Saving your changes…" with the
+- Text: "A new version of livepages is ready." In `saving`: "Saving your changes…" with the
   buttons disabled. In `unsaved`: "Your latest changes aren't saved yet. Reload once they are."
 - Buttons: primary "Reload", secondary "Not now" (the shared `Button` primitive).
 

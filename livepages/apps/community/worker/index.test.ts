@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { communityPostFixture } from '@livediagram/api-schema/testing';
+import { communityPostFixture } from '@livepages/api-schema/testing';
 import worker, { type Env } from './index';
 import { API_TIMEOUT_MS } from './post-head';
 
@@ -53,7 +53,7 @@ function makeEnv(api?: (path: string, init?: RequestInit) => Promise<Response> |
 }
 
 const get = (path: string, env: Env, method = 'GET') =>
-  worker.fetch(new Request(`https://livediagram.app${path}`, { method }), env);
+  worker.fetch(new Request(`https://livepages.app${path}`, { method }), env);
 
 beforeEach(() => {
   vi.stubGlobal('HTMLRewriter', RecordingRewriter);
@@ -75,22 +75,22 @@ describe('community worker: a post page', () => {
     expect(seen).toEqual(['/api/community/posts/p1']);
     expect(res.status).toBe(200);
     const edits = (await res.json()) as Edits;
-    expect(edits.title!.inner).toBe('Payments Platform | livediagram Community');
+    expect(edits.title!.inner).toBe('Payments Platform | livepages Community');
     expect(edits['meta[name="description"]']!.attrs.content).toBe(
       'How our payment services talk to each other.',
     );
     expect(edits['meta[property="og:title"]']!.attrs.content).toBe(
-      'Payments Platform | livediagram Community',
+      'Payments Platform | livepages Community',
     );
     expect(edits['meta[name="twitter:description"]']!.attrs.content).toBe(
       'How our payment services talk to each other.',
     );
     const head = edits.head!.appended.join('');
     expect(head).toContain(
-      '<link rel="canonical" href="https://livediagram.app/community/post/?id=p1"/>',
+      '<link rel="canonical" href="https://livepages.app/community/post/?id=p1"/>',
     );
     expect(head).toContain(
-      '<meta property="og:url" content="https://livediagram.app/community/post/?id=p1"/>',
+      '<meta property="og:url" content="https://livepages.app/community/post/?id=p1"/>',
     );
     expect(head).toContain('<script type="application/ld+json">');
   });
@@ -144,7 +144,7 @@ describe('community worker: the sitemap', () => {
     expect(res.headers.get('Content-Type')).toBe('application/xml; charset=utf-8');
     expect(res.headers.get('Cache-Control')).toBe('public, max-age=3600');
     expect(await res.text()).toContain(
-      '<loc>https://livediagram.app/community/post/?id=p1</loc><lastmod>2026-10-01T00:00:00.000Z</lastmod>',
+      '<loc>https://livepages.app/community/post/?id=p1</loc><lastmod>2026-10-01T00:00:00.000Z</lastmod>',
     );
   });
 

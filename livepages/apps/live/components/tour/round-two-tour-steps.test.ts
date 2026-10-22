@@ -4,7 +4,7 @@
 // diagram key and portal tours, each on its element's own parts, and the menu step they share.
 
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element } from '@livepages/document';
 import { boundaryTourSteps } from './boundary-tour-steps';
 import { diagramKeyTourSteps } from './diagram-key-tour-steps';
 import { ELEMENT_TOUR_DEFS } from './element-tour-defs';

@@ -13,7 +13,7 @@ import {
   resolveFontStack,
   type LaidOutPage,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { articleHandleOf } from './article-editor-store';
 import type { ArticleDrawOp } from './article-snapshot';
 

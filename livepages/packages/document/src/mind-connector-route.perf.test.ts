@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livepages/vitest-config/cpu-time';
 import { createPinnedArrow, createShape } from './factories';
 import { buildElementIndex } from './geometry';
 import { MIND_CONNECTOR_LOOK } from './mind-flow';

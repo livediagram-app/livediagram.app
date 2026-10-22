@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { AccessLevel, ShareRole } from '@livediagram/api-schema';
-import { ADDER_KEY_LENGTH } from '@livediagram/document';
+import type { AccessLevel, ShareRole } from '@livepages/api-schema';
+import { ADDER_KEY_LENGTH } from '@livepages/document';
 import { debugLog } from '@/lib/debug-log';
 
 // The role pill's toggle (docs/specs/007-editor/live-app.md#role-pill): someone whose role allows editing can preview

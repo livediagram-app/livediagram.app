@@ -7,9 +7,9 @@
 // one by its ×, shown on hover (always on a touch screen); each change is one step. Everything under the heading
 // scrolls when the slot is short, top-aligned.
 import { useState } from 'react';
-import { DASHBOARD_LINKS_MAX, type DashboardLink } from '@livediagram/document';
-import { linkLabelOf } from '@livediagram/plan-art';
-import { CompactEmptyState, lucideGlyph } from '@livediagram/ui';
+import { DASHBOARD_LINKS_MAX, type DashboardLink } from '@livepages/document';
+import { linkLabelOf } from '@livepages/plan-art';
+import { CompactEmptyState, lucideGlyph } from '@livepages/ui';
 import {
   lucideExternalLink,
   lucideGlobe,
@@ -17,7 +17,7 @@ import {
   lucideMail,
   lucidePlus,
   lucideX,
-} from '@livediagram/icons/lucide';
+} from '@livepages/icons/lucide';
 import { TabModeIcon } from '@/components/chrome/editor-mode/TabModeIcon';
 import { useDashboard } from './dashboard-context';
 import { CARD_BODY, CardHeading } from './card-parts';

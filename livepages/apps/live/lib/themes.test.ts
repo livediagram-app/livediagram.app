@@ -6,9 +6,9 @@ import type {
   StickyElement,
   TableElement,
   TextElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createPinnedArrow, createShape, DEFAULT_BACKGROUND_COLOR } from '@livediagram/document';
+import { createPinnedArrow, createShape, DEFAULT_BACKGROUND_COLOR } from '@livepages/document';
 import {
   THEMES,
   deriveNewBoxedColours,
@@ -32,7 +32,7 @@ import {
   registerCustomTheme,
   unregisterCustomTheme,
 } from './custom-theme-registry';
-import { encodeStrokePoints } from '@livediagram/document';
+import { encodeStrokePoints } from '@livepages/document';
 
 describe('THEMES catalogue', () => {
   it('has a unique id per theme', () => {

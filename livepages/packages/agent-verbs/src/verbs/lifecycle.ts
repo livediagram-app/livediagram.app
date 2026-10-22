@@ -3,14 +3,14 @@
 // CLI75), so the CLI never writes a tab whole; names change through their own routes.
 
 import { z } from 'zod';
-import { ApiError } from '@livediagram/api-client';
+import { ApiError } from '@livepages/api-client';
 import type {
   ChangesetReplaceBody,
   DocumentResponse,
   ShareLink,
   TrashedDocument,
-} from '@livediagram/api-schema';
-import { TRASH_RETENTION_DAYS } from '@livediagram/api-schema';
+} from '@livepages/api-schema';
+import { TRASH_RETENTION_DAYS } from '@livepages/api-schema';
 import { resolveTab } from '../addressing';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { shortestUniquePrefixes } from '../refs';
@@ -18,7 +18,7 @@ import { classifySource } from '../source-kind';
 import { submitChangeset, writeFlags, type WriteFlags } from '../write';
 import { documentOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or livediagram URL');
+const docArg = z.string().describe('A name, id prefix or livepages URL');
 const sourceFlags = {
   file: z
     .string()
@@ -68,7 +68,7 @@ async function replaceSourceOf(
       status: 400,
       code: 'unknown_source',
       message: `can't tell what ${named} holds`,
-      hint: 'expected a graph, Mermaid or elements: livediagram guide build',
+      hint: 'expected a graph, Mermaid or elements: livepages guide build',
     });
   return source.body.replace!;
 }
@@ -97,7 +97,7 @@ export const documentCreate = defineVerb({
     const source = await replaceSourceOf(
       ctx,
       input,
-      `livediagram document create ${JSON.stringify(input.name)}, then livediagram edit`,
+      `livepages document create ${JSON.stringify(input.name)}, then livepages edit`,
     );
     const { theme: _t, layout: _l, name: _n, ...tabSource } = source;
     const tab = { id: ctx.newId(), name: input.tab ?? input.name, ...tabSource };
@@ -117,8 +117,8 @@ export const documentCreate = defineVerb({
     positionals: ['name'],
     flags: { file: { short: 'f' } },
     examples: [
-      'livediagram document create "Shop" -f arch.json',
-      'livediagram document create "Retro" --template start-stop-continue',
+      'livepages document create "Shop" -f arch.json',
+      'livepages document create "Retro" --template start-stop-continue',
     ],
     prints: '+ document <ref> "<name>" · <n> tabs · <link>',
   },
@@ -147,8 +147,8 @@ export const documentRename = defineVerb({
   cli: {
     positionals: ['doc', 'name'],
     examples: [
-      'livediagram document rename "Auth flow" "Sign-in flow"',
-      'livediagram document rename 3f9c "Sign-in flow"',
+      'livepages document rename "Auth flow" "Sign-in flow"',
+      'livepages document rename 3f9c "Sign-in flow"',
     ],
     prints: '~ document <ref> "<old>"→"<new>"',
   },
@@ -191,8 +191,8 @@ export const documentShare = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livediagram document share "Auth flow"',
-      'livediagram document share 3f9c --role edit --expiry week',
+      'livepages document share "Auth flow"',
+      'livepages document share 3f9c --role edit --expiry week',
     ],
     prints: 'the link',
   },
@@ -210,14 +210,14 @@ export const documentRm = defineVerb({
     await send(ctx, docPath(found.id), { method: 'DELETE' });
     return {
       id: found.id,
-      text: `- document ${refOf(found.id)} ${JSON.stringify(found.name)} · in the Trash for ${TRASH_RETENTION_DAYS} days · restore: livediagram document restore ${found.id}`,
+      text: `- document ${refOf(found.id)} ${JSON.stringify(found.name)} · in the Trash for ${TRASH_RETENTION_DAYS} days · restore: livepages document restore ${found.id}`,
     };
   },
   text: lineText,
   quiet: quietId,
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram document rm "Old draft"', 'livediagram document rm 3f9c'],
+    examples: ['livepages document rm "Old draft"', 'livepages document rm 3f9c'],
     prints: '- document <ref> "<name>" · in the Trash · the restore command',
   },
 });
@@ -250,7 +250,7 @@ export const documentRestore = defineVerb({
         lines: (matches.length ? matches : trash.slice(0, 5)).map(
           (d) => `${refs.get(d.id)}  ${JSON.stringify(d.name)}  ${d.teamName ?? 'personal'}`,
         ),
-        hint: 'livediagram api GET /trash',
+        hint: 'livepages api GET /trash',
       });
     const [doc] = matches;
     await ctx.api.json(`/trash/${encodeURIComponent(doc!.id)}/restore`, { method: 'POST' });
@@ -263,7 +263,7 @@ export const documentRestore = defineVerb({
   quiet: quietId,
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram document restore "Old draft"', 'livediagram document restore 3f9c2a71'],
+    examples: ['livepages document restore "Old draft"', 'livepages document restore 3f9c2a71'],
     prints: '+ document <ref> "<name>" restored',
   },
 });
@@ -290,7 +290,7 @@ export const tabAdd = defineVerb({
     const source = await replaceSourceOf(
       ctx,
       input,
-      `livediagram tab add ${JSON.stringify(input.doc)} ${JSON.stringify(input.name)}, then livediagram edit`,
+      `livepages tab add ${JSON.stringify(input.doc)} ${JSON.stringify(input.name)}, then livepages edit`,
     );
     const target = {
       documentId: document.id,
@@ -307,8 +307,8 @@ export const tabAdd = defineVerb({
     );
     // Reverting the changeset takes the tab's elements back but leaves the tab, so the footer names what removes it.
     const footer = response.text.replace(
-      /revert: livediagram changeset revert \S+ \S+$/m,
-      `undo: livediagram tab rm ${document.id} ${target.tabId}`,
+      /revert: livepages changeset revert \S+ \S+$/m,
+      `undo: livepages tab rm ${document.id} ${target.tabId}`,
     );
     return {
       // The tab first, as `tab rename` names it: an empty tab has no element lines, so this is all that says which.
@@ -323,8 +323,8 @@ export const tabAdd = defineVerb({
     positionals: ['doc', 'name'],
     flags: { file: { short: 'f' } },
     examples: [
-      'livediagram tab add "Auth flow" Details -f detail.mmd',
-      'livediagram tab add 3f9c Board --template kanban',
+      'livepages tab add "Auth flow" Details -f detail.mmd',
+      'livepages tab add 3f9c Board --template kanban',
     ],
     prints:
       '+ tab <id> "<name>", the result lines, then the revision, lint verdict and the tab rm that undoes it',
@@ -362,8 +362,8 @@ export const tabRename = defineVerb({
   cli: {
     positionals: ['doc', 'tab', 'name'],
     examples: [
-      'livediagram tab rename "Auth flow" Overview Summary',
-      'livediagram tab rename 3f9c tab-2 "Data model"',
+      'livepages tab rename "Auth flow" Overview Summary',
+      'livepages tab rename 3f9c tab-2 "Data model"',
     ],
     prints: '~ tab <id> "<old>"→"<new>"',
   },
@@ -388,7 +388,7 @@ export const tabRm = defineVerb({
   quiet: quietId,
   cli: {
     positionals: ['doc', 'tab'],
-    examples: ['livediagram tab rm "Auth flow" Scratch', 'livediagram tab rm 3f9c tab-2'],
+    examples: ['livepages tab rm "Auth flow" Scratch', 'livepages tab rm 3f9c tab-2'],
     prints: '- tab <id> "<name>"',
   },
 });

@@ -1,4 +1,4 @@
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livepages/ui';
 // Accordion disclosure chevron: points down, rotates 180° when open. Was
 // copy-pasted identically into SettingsDialog and ShortcutsDialog (and is
 // the natural glyph for any future single-open accordion), so it lives here

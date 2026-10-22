@@ -26,7 +26,7 @@ export const LOAD_TIMEOUT_MS = 30_000;
 /** How long "Trying a fresh start" shows before the self-healing reload. */
 export const AUTO_RELOAD_DELAY_MS = 1_500;
 /** The sessionStorage map of page to its last self-healing reload. */
-export const AUTO_RELOAD_KEY = 'livediagram:load-auto-reloads';
+export const AUTO_RELOAD_KEY = 'livepages:load-auto-reloads';
 /** One self-healing reload per page within this window. */
 export const AUTO_RELOAD_WINDOW_MS = 10 * 60_000;
 

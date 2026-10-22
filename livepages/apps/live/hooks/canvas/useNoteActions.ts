@@ -9,7 +9,7 @@ import {
   type EsSide,
   type EventStormingNoteKind,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { buildEventStormingNote } from '@/lib/draw-commit';
 import { planNextNote } from '@/lib/next-note-add';
 import type { InsertionSlot } from '@/lib/insert-between';

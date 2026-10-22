@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { communityPostFixture } from '@livediagram/api-schema/testing';
+import { communityPostFixture } from '@livepages/api-schema/testing';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { clerkPublishableKeyOrNull } from '../clerk-key';

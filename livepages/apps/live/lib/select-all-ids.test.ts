@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Tab } from '@livediagram/document';
+import { createShape, type Tab } from '@livepages/document';
 import { selectAllIds } from './select-all-ids';
 
 // docs/specs/007-editor/pages-mode.md "Selecting on a page".

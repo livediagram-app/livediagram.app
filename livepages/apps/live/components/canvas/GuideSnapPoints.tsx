@@ -12,7 +12,7 @@ import {
   logoGuideSnapTargets,
   logoPageAt,
   type LaidOutPage,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { LogoToolsView } from '@/hooks/editor/useLogoTools';
 import type { PendingDraw } from '@/lib/draw-mode';
 import { pointerToCanvas } from '@/lib/canvas';

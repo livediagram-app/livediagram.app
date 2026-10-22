@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { checkMotionBudget, formatViolations } from '@livediagram/tailwind-config/motion-budget';
+import { checkMotionBudget, formatViolations } from '@livepages/tailwind-config/motion-budget';
 
 // The template previews are content (docs/specs/004-interface-design/motion.md): their
 // hover stories live only in preview-motion.css. Anything else here is chrome.

@@ -1,4 +1,4 @@
-import type { HeldElement } from '@livediagram/api-schema';
+import type { HeldElement } from '@livepages/api-schema';
 import type { RoomSelection } from '../room-client';
 
 // Which of an agent changeset's targets a person holds (docs/specs/024-agents/agent-changesets.md

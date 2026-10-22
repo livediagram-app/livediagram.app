@@ -1,6 +1,6 @@
 // What each board widget is called and is for (docs/specs/026-plan/board-widgets.md "Widget kinds"):
 // the palette tile's caption and hover card, and the widget's accessible name on the board.
-import type { BoardWidgetKind } from '@livediagram/items';
+import type { BoardWidgetKind } from '@livepages/items';
 
 export const BOARD_WIDGET_INFO: Record<BoardWidgetKind, { label: string; description: string }> = {
   count: { label: 'Item Count', description: 'How many items the board shows.' },

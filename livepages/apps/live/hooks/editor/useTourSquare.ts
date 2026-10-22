@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef } from 'react';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livepages/document';
 import { useLatest } from '@/hooks/ui/useLatest';
 
 // A tour's demonstration elements (docs/specs/007-editor/editor-tour.md "The steps", Element context menu; the Logo

@@ -8,7 +8,7 @@ import {
   DASHBOARD_CHECKLIST_ITEMS_MAX,
   DASHBOARD_CHECKLIST_ITEM_MAX,
   type DashboardChecklistItem,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { useDashboard } from './dashboard-context';
 import { useSlotDraft } from './useSlotDraft';
 import { CARD_BODY, CardHeading } from './card-parts';

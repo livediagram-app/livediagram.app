@@ -1,7 +1,7 @@
 // tabs — one row per tab, linked to documents through the
 // document_tabs many-to-many table (migration 0011 / docs/specs/006-document/tab-document-many-to-many.md).
 
-import { capElementActions, drawnCount, type Tab } from '@livediagram/document';
+import { capElementActions, drawnCount, type Tab } from '@livepages/document';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
 
@@ -14,7 +14,7 @@ function assertTabDataFits(tabId: string, data: string, write: string): void {
   logTabRefused(write, tabId, bytes);
   throw new TabTooLargeError(tabId, bytes, write);
 }
-import type { SharedTabsSummary } from '@livediagram/api-schema';
+import type { SharedTabsSummary } from '@livepages/api-schema';
 import type { Env, TabDTO } from '../types';
 import { imageRefIds, imageRefIdsFromData } from '../image-refs/extract';
 import { tabStatsOf, tabStatsStatement, type TabStats } from './tab-stats';

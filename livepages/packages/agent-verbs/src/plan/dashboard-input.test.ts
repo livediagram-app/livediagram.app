@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, type ItemTypeDef } from '@livediagram/items';
+import { ITEM_TYPES, type ItemTypeDef } from '@livepages/items';
 import { resolveDashboardInput } from './dashboard-input';
 
 // A Dashboard named as people name it (docs/specs/026-plan/plan-agents.md "Making a dashboard").

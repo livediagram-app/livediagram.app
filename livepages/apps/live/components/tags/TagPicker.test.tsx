@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { TagsList } from '@livediagram/api-schema';
+import type { TagsList } from '@livepages/api-schema';
 import { DocumentTagsProvider, useDocumentTags } from './DocumentTagsProvider';
 import { TagPicker } from './TagPicker';
 

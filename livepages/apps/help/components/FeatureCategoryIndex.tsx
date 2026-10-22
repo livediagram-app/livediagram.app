@@ -6,7 +6,7 @@ import { CategoryArt } from '@/components/category-art';
 import { guideCount } from '@/components/CategoryCard';
 import { articleHref, categories, categoryHref, getCategoryGroups } from '@/lib/articles';
 import { collectionJsonLd } from '@/lib/structured-data';
-import { JsonLd } from '@livediagram/ui';
+import { JsonLd } from '@livepages/ui';
 import { helpMetadata } from '@/lib/seo';
 
 // Shared index page for a feature-guide category (User Interface, Explorer, Palette, Canvas, Tabs, Collaboration,

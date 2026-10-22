@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { usePlanImageExport } from './usePlanImageExport';
 
 // docs/specs/026-plan/plan-tabs.md "Export": the image waits for the Sheets it draws, and a read that fails still

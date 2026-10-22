@@ -6,7 +6,7 @@
 // action off the canvas (and an undo or Restore this session puts it back); an action that goes leaves its card on the
 // board as a card of its own (and an undo links them again).
 import { useEffect, useMemo, useRef, useState } from 'react';
-import type { ElementActionAssignee, Tab } from '@livediagram/document';
+import type { ElementActionAssignee, Tab } from '@livepages/document';
 import {
   ITEM_BULK_MAX,
   cardLink,
@@ -22,8 +22,8 @@ import {
   type ItemStoreState,
   type ItemWrite,
   type LinkedRecord,
-} from '@livediagram/items';
-import { actionsBoardTab } from '@livediagram/templates';
+} from '@livepages/items';
+import { actionsBoardTab } from '@livepages/templates';
 import { colorForKey } from '@/lib/identity';
 import { debugLog } from '@/lib/debug-log';
 import { track } from '@/lib/telemetry';

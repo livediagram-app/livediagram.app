@@ -36,7 +36,7 @@ import are unchanged.
 min(chroma * SOFT_CHROMA_SCALE, SOFT_MAX_CHROMA), hue)`; grey at chroma 0.
   - `standardColourAt(hex)`: `{ name, label, tone, appearance } | null` for any version's hex, case-insensitive.
   - `isHexColour(v)`: `#rrggbb` only, for the apps. `packages/items` keeps its own `HEX_COLOUR` regex (it does not
-    depend on `@livediagram/document`).
+    depend on `@livepages/document`).
 - `quick-swatches.ts`: `colourWords(hexes)`: hue words, a repeat "Light"/"Deep", a third numbered.
 
 ### `packages/items` and `packages/agent-verbs`

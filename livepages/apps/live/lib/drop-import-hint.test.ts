@@ -9,7 +9,7 @@ describe('dropImportHint', () => {
     );
     expect(dropImportHint({ name: 'plan.mmd' })).toContain('a Mermaid file');
     expect(dropImportHint({ name: 'notes.md' })).toContain('a Markdown file');
-    expect(dropImportHint({ name: 'tab.json' })).toContain('a livediagram export');
+    expect(dropImportHint({ name: 'tab.json' })).toContain('a livepages export');
   });
 
   it('says nothing for any other file', () => {

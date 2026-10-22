@@ -6,10 +6,10 @@ import {
   FORM_REPORT_REASONS,
   type FormReportReason,
   type PublicFormResponse,
-} from '@livediagram/api-schema';
-import { formLook } from '@livediagram/document';
-import { FORM_CODE_PATTERN, closedMessageOf, closedReason, publicForm } from '@livediagram/forms';
-import { typesOf } from '@livediagram/items';
+} from '@livepages/api-schema';
+import { formLook } from '@livepages/document';
+import { FORM_CODE_PATTERN, closedMessageOf, closedReason, publicForm } from '@livepages/forms';
+import { typesOf } from '@livepages/items';
 import { clientIp } from '../client-ip';
 import { communityNetwork } from '../community-network';
 import { addFormReport, countSuspendedFormLinks, suspendFormLink } from '../db';

@@ -2,7 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { useSheetHomeTab } from '@/components/sheets/sheet-home-tab';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardTabPreview } from './DashboardTabPreview';

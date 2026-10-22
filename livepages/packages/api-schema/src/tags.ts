@@ -1,7 +1,7 @@
 // Tags (docs/specs/013-workspace/tags.md): the wire types, the limits, and the rules both sides apply
 // (the api enforces them; the client checks before it asks, so a refusal is only a race). Pure.
 
-import { STANDARD_COLOUR_NAMES, isHexColour, type StandardColourName } from '@livediagram/document';
+import { STANDARD_COLOUR_NAMES, isHexColour, type StandardColourName } from '@livepages/document';
 
 /** How many tags one person can make (spec "A tag"). Safe range 50 to 500: every tag list is bounded by it. */
 export const TAG_LIMIT = 100;

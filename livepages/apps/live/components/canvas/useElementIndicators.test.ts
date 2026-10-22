@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement, type ElementAction } from '@livediagram/document';
+import { createShape, type BoxedElement, type ElementAction } from '@livepages/document';
 import { elementIndicatorItems, useElementIndicators } from './useElementIndicators';
 
 // docs/specs/008-canvas/element-indicators.md: which indicators an element carries, and which

@@ -14,7 +14,7 @@ import {
   type PathAnchor,
   type PathElement,
   pointDistance,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { STROKE_HIT_SCREEN_PX } from './whiteboard-tool';
 
 type Point = { x: number; y: number };

@@ -7,7 +7,7 @@ import {
   type Element,
   type EsTimeline,
   type EventStormingNoteKind,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   getPaletteDragSnap,
   setPaletteDragPreview,

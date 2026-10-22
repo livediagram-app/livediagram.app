@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Tab } from '@livediagram/document';
+import { createShape, type Tab } from '@livepages/document';
 import { applyRoomOpToTabs } from './room-op-apply';
 import { migrateRoomOp } from './room-op-migrate';
 import { roomOpIsWellFormed } from './room-op-shape';

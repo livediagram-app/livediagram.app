@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_CONVERSION_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER } from '@livepages/api-schema';
 
 // Offline Mode conversions (docs/specs/006-document/offline-mode.md). "Take offline" DELETES the server copy,
 // so the ordering here is the difference between a failed conversion and a lost

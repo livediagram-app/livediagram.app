@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/sticky-vision",
+  "name": "@livepages/sticky-vision",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -18,11 +18,11 @@
     "truth:add": "tsx scripts/truth-add.ts"
   },
   "dependencies": {
-    "@livediagram/document": "workspace:*"
+    "@livepages/document": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@livepages/oxlint-config": "workspace:*",
+    "@livepages/vitest-config": "workspace:*",
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.4",
     "oxlint": "^1.88.0",

@@ -1,7 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES } from '@livediagram/templates';
+import { TEMPLATES } from '@livepages/templates';
 import { STORY_CLASSES } from './motion';
 import { TemplatePreview } from './template-preview';
 

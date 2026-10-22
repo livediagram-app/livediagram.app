@@ -13,7 +13,7 @@
 //
 // Pure: () -> Element[], placed on the post's page (versusPages) whatever centre is passed.
 
-import { pageMargin, type Element, type Page } from '@livediagram/document';
+import { pageMargin, type Element, type Page } from '@livepages/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';

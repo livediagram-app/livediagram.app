@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { communityPostFixture } from '@livediagram/api-schema/testing';
+import { communityPostFixture } from '@livepages/api-schema/testing';
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { useEffect, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -7,7 +7,7 @@ import type {
   CommunityMinePost,
   CommunityMineTotals,
   CommunityPost,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import type { CommunitySession } from '@/lib/session';
 
 // The gallery end to end (docs/specs/025-community/community.md "Gallery", "My Shares"): filters live in the URL

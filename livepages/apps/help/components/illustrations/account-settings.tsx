@@ -190,7 +190,7 @@ export function McpConsent() {
     <ConsentCard
       title="Connect Claude"
       intro={[
-        'Claude wants to access your livediagram documents',
+        'Claude wants to access your livepages documents',
         'on your behalf. Approving creates an API token.',
       ]}
       sentTo="claude.ai"

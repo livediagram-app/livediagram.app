@@ -138,7 +138,7 @@ element or add one:
   Note", "Add Domain Event Note"), the Toolbar strip's **Add Page** and **Add from Photo**, and
   the Draw dock's shapes. A catalogue entry (an icon, a sticker, a technology, an Event Storming
   note kind) keeps its own sentence-case name and its tile Title Cases it on the way
-  (`headlineCase` in `@livediagram/api-schema`).
+  (`headlineCase` in `@livepages/api-schema`).
 - **The quick-add ring's options**: "Add Row", "Add Column", "Add Child", "Add Sibling", "Add
   Point", "Add Stat".
 - **Buttons drawn on an element**: the selection toolbar ("Bring to Front", "Edit Points", "Add
@@ -221,7 +221,7 @@ None. Menus already count the verbs chosen in them; how focus moved is not an ac
 
 ## Where it lives
 
-- `@livediagram/ui` owns the keyboard model and the hooks every app's menus use (`useMenu`,
+- `@livepages/ui` owns the keyboard model and the hooks every app's menus use (`useMenu`,
   `useMenuButton`, `useControlMenu`), so the editor, help, telemetry, marketing and Community menus
   behave as one.
 - The editor's menu primitives (`PortalMenu`, `ContextMenu`, `MenuFlyoutSection` and the row

@@ -5,7 +5,7 @@
 // its tile (name, figure, its picture), a chart as its chart, a note as a heading over lines. Decorative: the card's
 // name says what it is.
 import type { ReactNode } from 'react';
-import type { MetricKind, PlanVisualisation } from '@livediagram/items';
+import type { MetricKind, PlanVisualisation } from '@livepages/items';
 import type { PlanPalette } from '../plan-palette';
 import { BoardWidgetArt } from '../plan-tile-art';
 

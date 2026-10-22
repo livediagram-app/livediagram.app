@@ -38,7 +38,7 @@ nobody's tally.
 - **Account sessions** (a ticket with a person tag): one answer per account per poll. The first key the account
   answers under becomes its key; a later answer from any of its sessions replaces that one answer.
 - **Other sessions** answer under their collab key with a **proof**: a per-browser secret
-  (`livediagram:v2:collab-secret`, `ensureCollabSecret`) that is never relayed, never stored raw (the room keeps its
+  (`livepages:v2:collab-secret`, `ensureCollabSecret`) that is never relayed, never stored raw (the room keeps its
   SHA-256) and never shown. The first proof to answer under a key claims it for the poll; an answer under a claimed key
   with a different proof is refused. The collab key is public (it rides the roster), the secret is not, so nobody can
   answer as somebody else, including somebody who has left.

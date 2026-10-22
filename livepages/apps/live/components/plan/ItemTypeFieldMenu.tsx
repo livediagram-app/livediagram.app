@@ -4,8 +4,8 @@
 // (the keyboard's way to reorder; a pointer or a finger drags the handle), Move to each other group, and Remove,
 // as icon-left rows, so a field's row keeps only its handle, name and the menu.
 import { useState } from 'react';
-import { ArrowDownIcon, ArrowUpIcon, TabsLabelIcon, TrashIcon, lucideGlyph } from '@livediagram/ui';
-import { lucideGripVertical } from '@livediagram/icons/lucide';
+import { ArrowDownIcon, ArrowUpIcon, TabsLabelIcon, TrashIcon, lucideGlyph } from '@livepages/ui';
+import { lucideGripVertical } from '@livepages/icons/lucide';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import {
   MenuActionRow,

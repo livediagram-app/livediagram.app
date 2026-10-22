@@ -1,5 +1,5 @@
-import { lucideWorkflow } from '@livediagram/icons/lucide';
-import type { EditorMode } from '@livediagram/document';
+import { lucideWorkflow } from '@livepages/icons/lucide';
+import type { EditorMode } from '@livepages/document';
 import type { ComponentType } from 'react';
 
 import { Glyph, type IconProps } from './Glyph';

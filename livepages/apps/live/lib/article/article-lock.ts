@@ -3,7 +3,7 @@
 // and zones as they are, and refuses the edits its pages share, from any of its pages. Pure, so the
 // writing's entry points (useArticles, useArticleIntake), its chrome (ArticleFlows) and the page
 // panel ask the same question the same way.
-import { pagesOf } from '@livediagram/document';
+import { pagesOf } from '@livepages/document';
 
 type LockablePage = { readonly id: string; readonly flow?: string; readonly locked?: true };
 

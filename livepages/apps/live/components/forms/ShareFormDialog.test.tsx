@@ -171,7 +171,7 @@ describe('Share Form on a document in This Browser (forms.md "Publishing and the
     expect(sync).toHaveBeenCalledOnce();
     expect(track).toHaveBeenCalledWith('Form', 'Moved', 'SyncedToShare');
     expect(toast.success).toHaveBeenCalledOnce();
-    // The document is on livediagram: the link is read first (Publish Form held), then ready.
+    // The document is on livepages: the link is read first (Publish Form held), then ready.
     rerender(<ShareFormDialog {...props} link={link({ link: null, status: 'loading' })} />);
     expect(publishButton().disabled).toBe(true);
     const l = link();

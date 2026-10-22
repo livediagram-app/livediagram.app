@@ -13,8 +13,8 @@ import {
   TrashIcon,
   Tooltip,
   identityVars,
-} from '@livediagram/ui';
-import type { Comment, CommentMention, CommentThread } from '@livediagram/document';
+} from '@livepages/ui';
+import type { Comment, CommentMention, CommentThread } from '@livepages/document';
 import { MentionMenu } from '@/components/primitives/MentionMenu';
 import { MentionText } from '@/components/primitives/MentionText';
 import { useMentionAutocomplete } from '@/hooks/ui/useMentionAutocomplete';

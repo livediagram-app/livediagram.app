@@ -5,7 +5,7 @@ import {
   freehandPressures,
   type Element,
   type FreehandElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { describe, expect, it } from 'vitest';
 import type { ShapeColorPreset } from './themes';
 import {

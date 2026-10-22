@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES, metricBoard, type Item, type StatusPhase } from '@livediagram/items';
+import { ITEM_TYPES, metricBoard, type Item, type StatusPhase } from '@livepages/items';
 import { heroSize, metricModel, metricTier } from './metric-tile-model';
 
 // docs/specs/026-plan/plan-tabs.md "Metric tiles".

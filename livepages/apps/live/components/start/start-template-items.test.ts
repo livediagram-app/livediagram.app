@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEMPLATES, popularKindsFor, templateEditorMode } from '@livediagram/templates';
+import { TEMPLATES, popularKindsFor, templateEditorMode } from '@livepages/templates';
 import { TEMPLATE_STARTS, type TemplateStartMode } from './start-template-items';
 
 // docs/specs/007-editor/start-diagramming.md

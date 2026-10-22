@@ -1,8 +1,8 @@
 // What a `-f` file holds (docs/specs/015-api/blueprints/cli.md CLI71), and the changeset body it becomes:
 // edit operations send `{ operations }`; a graph, Mermaid, elements or a whole `replace` send `{ replace }`.
 
-import type { ChangesetRequest } from '@livediagram/api-schema';
-import { isRecord, startsWithMermaidHeader } from '@livediagram/document';
+import type { ChangesetRequest } from '@livepages/api-schema';
+import { isRecord, startsWithMermaidHeader } from '@livepages/document';
 
 type SourceKind = 'operations' | 'graph' | 'mermaid' | 'elements' | 'replace';
 

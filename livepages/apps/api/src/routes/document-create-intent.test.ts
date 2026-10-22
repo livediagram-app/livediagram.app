@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DocumentSummary } from '@livediagram/api-schema';
+import type { DocumentSummary } from '@livepages/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, getDocument, listDocumentsByOwner } from '../db';
 import { makeTestRouteContext } from './test-route-context';

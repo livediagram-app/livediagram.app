@@ -13,7 +13,7 @@ const sameIds = (a: readonly string[], b: readonly string[]) =>
 
 // A tab in the file without a record, a record without a tab, or a tab hashing other than recorded.
 export function isLocallyChanged(file: MirrorFile, hashes: TabHashes): boolean {
-  const recorded = file.livediagramSync.tabs;
+  const recorded = file.livepagesSync.tabs;
   if (!sameIds(Object.keys(hashes), Object.keys(recorded))) return true;
   return Object.entries(hashes).some(
     ([id, h]) => h.hash !== recorded[id]!.hash || h.settingsHash !== recorded[id]!.settingsHash,
@@ -46,7 +46,7 @@ export function syncStateOf(input: {
   if (remote.kind === 'transient') return { state: 'transient', localChanged };
   if (remote.kind === 'unreadable') return { state: 'unreadable', localChanged };
   if (remote.kind === 'trashed' || covered === false) return { state: 'gone', localChanged };
-  const recorded = file.livediagramSync.tabs;
+  const recorded = file.livepagesSync.tabs;
   const tabs = remoteTabsOf(remote.overview);
   const remoteChanged =
     !sameIds(

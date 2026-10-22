@@ -9,7 +9,7 @@ import {
   shapeLibraryItemsBytes,
   type ShapeLibraryItem,
   type ShapeLibrarySource,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import type { BoardImportProgress } from '@/hooks/persistence/useBoardSceneImport';
 import type { BoardSceneReport } from '@/lib/board-scene/report';
 import { browserImageSession, type CreateImageSession } from '@/lib/board-scene-browser';

@@ -39,10 +39,10 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
 ### Moves out of the editor (no behaviour change)
 
 1. The paste reading of Markdown now lives in `packages/document/src/article-markdown.ts` (+ test), exported from
-   the package index; the editor's `article-paste.ts` imports it from `@livediagram/document`. It gains Markdown's
+   the package index; the editor's `article-paste.ts` imports it from `@livepages/document`. It gains Markdown's
    backslash escapes (`\*` is a literal `*`), so what `articleToMarkdown` escapes reads back as written.
 2. `buildPageLayout` now lives in `packages/templates/src/page-layout-build.ts`; the editor's callers import it
-   from `@livediagram/templates`.
+   from `@livepages/templates`.
 3. `withBackgroundPatch`, `sameFill` and `PAGE_GRADIENT_ANGLE` now live in
    `packages/document/src/page-paint.ts`; the editor's paint module re-exports them and keeps only what
    draws.

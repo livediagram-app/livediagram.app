@@ -5,7 +5,7 @@
 // days it spans. Either is one change (start and due together), after which the bar's ends resize as any bar's.
 // Escape or a cancelled pointer drops a draw.
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { IDENTITY_FILL, identityVars } from '@livepages/ui';
 import {
   ganttAt,
   ganttDayAt,
@@ -13,7 +13,7 @@ import {
   type GanttModel,
   type GanttRow,
   type ItemPatch,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { tint } from '../plan-card-parts';
 import { ganttDayLabel, swallowNextClick } from './gantt-drag';
 import { followWindowDrag } from '@/lib/window-drag';

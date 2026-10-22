@@ -6,10 +6,10 @@
 // until focus leaves it or Escape. Saved as `descriptionRich` with `description` as its plain-text mirror,
 // in one write: a moment after typing stops, when focus leaves, and when the panel closes.
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { PencilIcon } from '@livediagram/ui';
+import { PencilIcon } from '@livepages/ui';
 import { useLatest } from '@/hooks/ui/useLatest';
-import { runsFromPlainText, type TextRun } from '@livediagram/document';
-import { DESCRIPTION_RICH_FIELD, type Item, type ItemPatch } from '@livediagram/items';
+import { runsFromPlainText, type TextRun } from '@livepages/document';
+import { DESCRIPTION_RICH_FIELD, type Item, type ItemPatch } from '@livepages/items';
 import { NoteRichTextEditor } from '@/components/notes/NoteRichTextEditor';
 import { NoteRichText } from '@/components/notes/NoteRichText';
 

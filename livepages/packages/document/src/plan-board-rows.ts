@@ -7,7 +7,7 @@
 // own batch, and the editor's offline Inbox read (§2.6) uses them in place of the table.
 
 import type { Element } from './index';
-import { normaliseBoardSetup } from '@livediagram/items';
+import { normaliseBoardSetup } from '@livepages/items';
 
 // The status an All Cards board writes: it shows every card whatever its status, so the read can land a card
 // there when no column holds it. Never a real status (a status is trimmed text a person typed).

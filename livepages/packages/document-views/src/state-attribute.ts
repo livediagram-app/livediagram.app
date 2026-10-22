@@ -7,7 +7,7 @@ import {
   type AgendaItem,
   type Element,
   type SessionButtonConfig,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { NOTE_CUT_CHARS, PROGRESS_DEFAULT } from './constants';
 import { arrayField, flagField, numberField, stringField, textField } from './fields';
 import { attrValue, jsonString } from './text';

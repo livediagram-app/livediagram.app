@@ -10,7 +10,7 @@ import {
   type ShapeElement,
   type StickyElement,
   type TextElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { colourAlpha } from './colour';
 import { commonFields, endsMeet, limitPoints } from './common';
 import { LANDING_RULES, type LandContext } from './context';

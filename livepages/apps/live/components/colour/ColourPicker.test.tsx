@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { penColourHex, standardColours } from '@livediagram/document';
+import { penColourHex, standardColours } from '@livepages/document';
 import { EditorContext } from '@/app/document/[id]/EditorContext';
 import { getTheme, themePresetColors } from '@/lib/themes';
 import { ColourPicker, type ColourPickerProps } from './ColourPicker';

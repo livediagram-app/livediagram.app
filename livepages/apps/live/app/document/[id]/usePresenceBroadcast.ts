@@ -1,6 +1,6 @@
 import { useEffect, type MutableRefObject } from 'react';
 import { useLocalBesideTab } from '@/lib/split-presence';
-import { MAX_SELECTION_IDS } from '@livediagram/api-schema';
+import { MAX_SELECTION_IDS } from '@livepages/api-schema';
 
 import type { connectRoom } from '@/lib/api-client';
 import type { Selection, SelectionStore } from '@/lib/selection-store';

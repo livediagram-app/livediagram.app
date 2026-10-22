@@ -6,7 +6,7 @@ import {
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemTypeDef,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { FORM_VERSION, type FormDefinition, type FormQuestion, type StarterId } from './model';
 
 // A field a starter's question maps to: matched on the card type by name and kind, else added.

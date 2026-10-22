@@ -2,21 +2,21 @@ import {
   lucideCircleCheck,
   lucideClipboardPaste,
   lucideWandSparkles,
-} from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+} from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livepages/ui';
 
 // The three steps (docs/specs/019-marketing/build-with-ai.md "The page" 2), one row, joined by a line on wide
 // screens so they read as a sequence.
 const STEPS = [
   {
     icon: lucideGlyph(lucideClipboardPaste, 20),
-    title: 'Add livediagram',
+    title: 'Add livepages',
     body: 'Paste the address into your AI tool, or click once in Cursor and VS Code.',
   },
   {
     icon: lucideGlyph(lucideCircleCheck, 20),
     title: 'Approve',
-    body: 'A livediagram page opens. Sign in or create a free account, check where access goes, and choose Connect.',
+    body: 'A livepages page opens. Sign in or create a free account, check where access goes, and choose Connect.',
   },
   {
     icon: lucideGlyph(lucideWandSparkles, 20),

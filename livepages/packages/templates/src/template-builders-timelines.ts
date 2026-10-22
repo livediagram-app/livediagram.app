@@ -5,7 +5,7 @@
 // template-builders-milestones.ts.
 //
 // Pure: (cx, cy) -> Element[]. build-template dispatches here.
-import { createArrow, createShape, createText, type Element } from '@livediagram/document';
+import { createArrow, createShape, createText, type Element } from '@livepages/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { CANVAS_TONES } from './template-inks';
 

@@ -10,7 +10,7 @@ import {
   runsPlainText,
   type Element,
   type TextRun,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { PAPER_INK } from './template-inks';
 

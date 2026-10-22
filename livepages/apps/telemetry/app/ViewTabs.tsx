@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livepages/ui';
 
 // The dashboard's view selector (docs/specs/017-telemetry/telemetry.md). The `leads` (the Dashboard, then
 // Search) stand on their own to the left: the overview and the way to find any

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
-import type { ShapeLibraryItem } from '@livediagram/api-schema';
+import type { ShapeLibraryItem } from '@livepages/api-schema';
 import { libraryItemThumbnail } from './shape-library-thumbnail';
 // Loaded now, at collection: the thumbnail imports the exporter lazily, and a cold load of its
 // graph inside the first test spent its whole timeout on a busy CI runner.

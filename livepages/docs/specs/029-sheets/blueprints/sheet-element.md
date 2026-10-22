@@ -344,7 +344,7 @@ non-top-left cell holds an input.
 - `SheetCardRows`: the draft tint and the Save / Cancel strip (`STRIP_PX`, in the Controls column when there is one)
   draw for someone who may edit; Open Card in Plan mode; the active cell's dropdown (`cardFieldChoice`,
   `card-field-options.ts`) for an editor. On a date field the arrow calls `openDatePicker` on a hidden `DateInput`
-  (`@livediagram/ui`) laid over the cell, and a picked day before `DATE_YEAR_MIN` (1900) is dropped. Nothing is
+  (`@livepages/ui`) laid over the cell, and a picked day before `DATE_YEAR_MIN` (1900) is dropped. Nothing is
   drawn over the frozen rows or columns a row has scrolled under.
 
 ### Charts

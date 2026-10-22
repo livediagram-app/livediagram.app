@@ -10,13 +10,13 @@ import {
   type ActivityCard,
   type ActivityCardThread,
   type ActivityThread,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   ALL_CARDS_STATUS,
   collabIndexRowsFromElements,
   planBoardRowsFromElements,
   type Comment,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   ARCHIVED_FIELD,
   itemAssignee,
@@ -24,7 +24,7 @@ import {
   itemStatus,
   itemTitle,
   type Item,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { offlineBackend } from './offline-backend';
 import { offlineIdCount } from './offline-ids';
 import type { OfflineDocumentRecord } from './offline-store';

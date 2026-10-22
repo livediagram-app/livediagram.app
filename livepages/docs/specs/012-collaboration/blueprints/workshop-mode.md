@@ -79,7 +79,7 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
   `useTemplateModeFilter` events and counts, marketing `modeCounts`.
 - Non-exhaustive lists updated by hand: `VALUE_LABELS['opens-in']` (explorer-lens), settings
   icons, help `featureColours`, marketing `HeroMode` and `TemplateGallery` `CHOICES`.
-- OpenAPI `EditorMode` enum regenerated (`pnpm --filter @livediagram/api gen:openapi`).
+- OpenAPI `EditorMode` enum regenerated (`pnpm --filter @livepages/api gen:openapi`).
 - `TemplateKind` gains `'blank-session'`; `isBlankTemplate` covers it.
 
 ## Data and persistence

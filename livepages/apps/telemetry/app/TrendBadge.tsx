@@ -1,4 +1,4 @@
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip } from '@livepages/ui';
 import type { Rising } from './metric-series';
 
 // The arrow beside a number saying which way it moved against the span just

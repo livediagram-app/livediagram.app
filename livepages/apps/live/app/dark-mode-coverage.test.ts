@@ -67,7 +67,7 @@ describe('full-screen surfaces in dark chrome', () => {
 
 describe('tiles of light-canvas illustration art', () => {
   const GLOBALS = readFileSync(`${ROOT}app/globals.css`, 'utf8');
-  // The rule ships with the art, in @livediagram/template-previews, so the
+  // The rule ships with the art, in @livepages/template-previews, so the
   // marketing site's gallery re-lights its tiles with the same one.
   const RELIGHT_CSS = readFileSync(
     `${ROOT}../../packages/template-previews/src/preview-art-tile.css`,
@@ -79,7 +79,7 @@ describe('tiles of light-canvas illustration art', () => {
     // light-canvas art. One `.dark` rule flips the lot, so a preview nobody
     // has drawn yet is dark-correct the moment it lands.
     expect(RELIGHT_CSS).toMatch(/\.dark \.preview-art-tile \{[^}]*filter:[^}]*invert/);
-    expect(GLOBALS).toContain("@import '@livediagram/template-previews/preview-art-tile.css';");
+    expect(GLOBALS).toContain("@import '@livepages/template-previews/preview-art-tile.css';");
   });
 
   // The editor's tiles land on the dark CANVAS colour (docs/specs/007-editor/live-app.md), so a

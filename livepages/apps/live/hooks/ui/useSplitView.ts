@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import {
   clampRightWidth,
   fractionFor,

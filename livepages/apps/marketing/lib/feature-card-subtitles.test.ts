@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { cardSubtitle, CARD_SUBTITLE_MAX } from '@livediagram/ui';
+import { cardSubtitle, CARD_SUBTITLE_MAX } from '@livepages/ui';
 import { LANDING_SECTIONS } from './landing-content';
 
-// cardSubtitle itself is tested with the card in @livediagram/ui (src/social-card.test.ts); this holds
+// cardSubtitle itself is tested with the card in @livepages/ui (src/social-card.test.ts); this holds
 // marketing's own copy to it.
 describe('feature category card subtitles', () => {
   it('gives every feature category a subtitle that fits two lines and ends on a word', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the strategy / diagram starters redesigned together

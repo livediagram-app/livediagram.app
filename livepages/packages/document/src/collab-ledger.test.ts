@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { presetSetup } from '@livediagram/items';
+import { presetSetup } from '@livepages/items';
 import type { ElementLedger, ShapeElement, Tab, TabLedger, VoteLedger } from './index';
 import {
   ledgerCommentAuthors,

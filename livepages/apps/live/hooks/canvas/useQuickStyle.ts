@@ -15,9 +15,9 @@ import type {
   Tab,
   TextAlignX,
   ThemeDefinition,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { track } from '@/lib/telemetry';
-import { canvasSurface, PEN_INK } from '@livediagram/document';
+import { canvasSurface, PEN_INK } from '@livepages/document';
 import {
   applyBoardStroke,
   applyBoardTextColour,

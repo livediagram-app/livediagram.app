@@ -8,7 +8,7 @@
 // Text measurement degrades to a char-width estimate when there's no DOM
 // (Workers / jsdom), so wrapping still works headless.
 
-import type { Item, ItemTypeDef } from '@livediagram/items';
+import type { Item, ItemTypeDef } from '@livepages/items';
 import { svgPlanSheet, type SheetRenderModel } from './svg-render-plan-sheet';
 import { PAGE_EXPORT_PAPER, withinPageFrame, type PageExportFrame } from './page-frame';
 import { svgPlanBoard, svgPlanCard, svgPlanView } from './svg-render-plan';
@@ -622,7 +622,7 @@ export function renderElementsToSvg(
     // Each Sheet element's window of cells (docs/specs/029-sheets/sheet.md "Exports and images"), by sheet id,
     // worked out by the caller with the sheets engine. Without one a sheet draws its frame and headers.
     sheets?: ReadonlyMap<string, SheetRenderModel>;
-    // A plan view's or placeholder's picture (a Dashboard laid out, @livediagram/plan-art); its labelled box when
+    // A plan view's or placeholder's picture (a Dashboard laid out, @livepages/plan-art); its labelled box when
     // absent or answering nothing.
     resolvePlanArt?: ResolvePlanArt;
     // Each tab window's tab (docs/specs/009-elements/tab-window.md "Exports"); its frame named for its tab without.

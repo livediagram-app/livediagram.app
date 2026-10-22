@@ -1,9 +1,9 @@
 // What every Plan write reads first (docs/specs/026-plan/plan-agents.md "Cost"): the items and the plan, in
 // parallel, once per call however many changes it carries.
-import type { ApiClient } from '@livediagram/api-client';
-import type { ItemsResponse, PlanResponse } from '@livediagram/api-schema';
-import { ApiError } from '@livediagram/api-client';
-import type { Item } from '@livediagram/items';
+import type { ApiClient } from '@livepages/api-client';
+import type { ItemsResponse, PlanResponse } from '@livepages/api-schema';
+import { ApiError } from '@livepages/api-client';
+import type { Item } from '@livepages/items';
 import { itemsPath } from '../verbs/shared';
 
 export const planPath = (documentId: string) => `/documents/${encodeURIComponent(documentId)}/plan`;

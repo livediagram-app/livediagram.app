@@ -6,7 +6,7 @@
 // from the parent at that origin within WORKBENCH_HANDSHAKE_MS (I8). Every failure after a session
 // exists revokes it. Runs once per page load, whatever React does with effects.
 import { useEffect, useReducer, useRef, useState, type Dispatch } from 'react';
-import { WORKBENCH_HANDSHAKE_MS, type HelloAckMessage } from '@livediagram/api-schema';
+import { WORKBENCH_HANDSHAKE_MS, type HelloAckMessage } from '@livepages/api-schema';
 import { apiEndWorkbenchSession, apiRedeemWorkbenchTicket } from '@/lib/api/workbench';
 import { createWorkbenchPort, type WorkbenchPort } from '@/lib/workbench/workbench-port';
 import { debugLog } from '@/lib/debug-log';
@@ -29,7 +29,7 @@ function waitForAck(port: WorkbenchPort): Promise<HelloAckMessage | null> {
       resolve(null);
     }, WORKBENCH_HANDSHAKE_MS);
     const unsubscribe = port.subscribe((message) => {
-      if (message.type !== 'livediagram:hello-ack') return;
+      if (message.type !== 'livepages:hello-ack') return;
       clearTimeout(timer);
       unsubscribe();
       resolve(message);
@@ -65,7 +65,7 @@ export async function runWorkbenchHandshake(
   if (!sessionFitsAddress(session, address)) {
     console.warn('[workbench] redeem-failed', { status: 201, reason: 'mismatch' });
     void apiEndWorkbenchSession(session.session);
-    win.parent.postMessage({ type: 'livediagram:ended', v: 1, reason: 'refused' }, session.origin);
+    win.parent.postMessage({ type: 'livepages:ended', v: 1, reason: 'refused' }, session.origin);
     return null;
   }
 
@@ -77,7 +77,7 @@ export async function runWorkbenchHandshake(
   }
   const port = createWorkbenchPort(session.origin, win);
   const acked = waitForAck(port);
-  port.send({ type: 'livediagram:hello', v: 1 });
+  port.send({ type: 'livepages:hello', v: 1 });
   const ack = await acked;
   if (ack === null) {
     console.warn('[workbench] handshake-failed', { framed: true });

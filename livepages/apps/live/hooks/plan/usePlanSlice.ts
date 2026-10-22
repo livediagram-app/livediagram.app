@@ -10,7 +10,7 @@ import {
   type Tab,
   type PlanCardRef,
   type PlanViewRef,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   normaliseBoardSetup,
   TRASHED_FROM_FIELD,
@@ -26,7 +26,7 @@ import {
   type BoardStatusTypes,
   type PlanBoardSetup,
   type StatusPhase,
-} from '@livediagram/items';
+} from '@livepages/items';
 
 const NO_PHASES: ReadonlyMap<string, StatusPhase> = new Map();
 const NO_STATUS_TYPES: BoardStatusTypes = new Map();

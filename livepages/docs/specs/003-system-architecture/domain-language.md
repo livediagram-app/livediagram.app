@@ -150,7 +150,7 @@ The words for diagrams living beside code ([Repositories](../027-repositories/RE
 
 | Term                    | Means                                                                                 | Never called                           |
 | ----------------------- | ------------------------------------------------------------------------------------- | -------------------------------------- |
-| **repository link**     | `livediagram.toml`: binds a directory to the documents it **covers**                  | project, workspace, scope              |
+| **repository link**     | `livepages.toml`: binds a directory to the documents it **covers**                  | project, workspace, scope              |
 | **mirror level**        | How much of the covered documents a link writes: `none`, `index`, `files`             | sync mode                              |
 | **snapshot**            | A tab as a repository holds it, at a recorded revision                                | copy (that is Drive's), backup, cache  |
 | **sync**                | One pass of a link: read, merge, send, write                                          | refresh, update                        |
@@ -198,7 +198,7 @@ mark it, and where a new guest's documents start. A document is **in This Browse
 ## Names in a sentence
 
 Copy that builds a phrase around a name (a page kind, a field, a note, a template, a chart type, an element type in
-an agent's error) takes its article from the name: `withArticle` / `indefiniteArticle` in `@livediagram/items`
-(re-exported by `@livediagram/document` and `@livediagram/ui`). A vowel sound takes "an" ("Add an infographic
+an agent's error) takes its article from the name: `withArticle` / `indefiniteArticle` in `@livepages/items`
+(re-exported by `@livepages/document` and `@livepages/ui`). A vowel sound takes "an" ("Add an infographic
 page", "Create an Org Chart", "is not an Estimate option"), and a vowel said "you" keeps "a" ("a User Persona", "a
 UML Class"). A fixed "a" before an interpolated name is how "Create a Org Chart" reached the marketing site.

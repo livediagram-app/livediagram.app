@@ -1,6 +1,6 @@
 'use client';
 
-import { allDone, doneSplit, isDone, type ShapeElement } from '@livediagram/document';
+import { allDone, doneSplit, isDone, type ShapeElement } from '@livepages/document';
 
 import { answeringKeys, type Participant } from '@/lib/identity';
 import { CollabPanel } from './collab-chrome';

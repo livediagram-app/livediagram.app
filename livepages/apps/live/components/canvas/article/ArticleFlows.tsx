@@ -22,7 +22,7 @@ import {
   type Element,
   type LaidOutPage,
   type PageRect,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { pagesClipPath } from '@/components/canvas/PageClip';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -309,7 +309,7 @@ export function ArticleFlows({
 // element is in.
 function zoneTarget(
   byFlow: ReadonlyMap<string, LaidOutPage[]>,
-  articles: Readonly<Record<string, import('@livediagram/document').ArticleFlow>>,
+  articles: Readonly<Record<string, import('@livepages/document').ArticleFlow>>,
   zoneId: string | null,
   zoneFlow: string | null,
   selectedIds: ReadonlySet<string>,
@@ -415,7 +415,7 @@ function DropCaretMark({
 // boxes: what a floating object's zone bar is for, with their bounds.
 function floatingTarget(
   byFlow: ReadonlyMap<string, LaidOutPage[]>,
-  articles: Readonly<Record<string, import('@livediagram/document').ArticleFlow>>,
+  articles: Readonly<Record<string, import('@livepages/document').ArticleFlow>>,
   selectedIds: ReadonlySet<string>,
   elements: readonly Element[],
 ): { flow: string; ids: string[]; rect: PageRect } | null {

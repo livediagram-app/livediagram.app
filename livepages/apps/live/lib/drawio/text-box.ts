@@ -4,7 +4,7 @@
 // and its lines at the label line height, each plus the label padding, placed about the point by
 // `align` and `verticalAlign`. A size the cell does have is kept.
 
-import { PADDING_PX, labelFontPx } from '@livediagram/document';
+import { PADDING_PX, labelFontPx } from '@livepages/document';
 import type { DrawioCell, Rect } from './cells';
 import { cellLabel } from './label';
 import { DRAWIO_DEFAULT_FONT_PX } from './scale';

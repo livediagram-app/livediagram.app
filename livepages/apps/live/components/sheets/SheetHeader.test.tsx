@@ -13,7 +13,7 @@ import {
 import { SheetHeader } from './SheetHeader';
 import { downloadSheetCsv } from './sheet-csv';
 import { statusPick } from './sheet-status-pick';
-import { ROW_HEIGHT_MIN } from '@livediagram/sheets';
+import { ROW_HEIGHT_MIN } from '@livepages/sheets';
 import { setPlanCover } from '@/hooks/plan/plan-cover-store';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

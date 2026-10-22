@@ -33,7 +33,7 @@ the portal, the bring focus button, the chair and the link card.
   the stroke colour picker recolours posts and rails together.
 - Otherwise an ordinary element: move, resize, rotate, group, lock, copy, theme, export.
 - **One drawing, on the canvas and in an export**: both draw from the shared fence geometry in
-  `@livediagram/document`.
+  `@livepages/document`.
 
 ## Blocking
 

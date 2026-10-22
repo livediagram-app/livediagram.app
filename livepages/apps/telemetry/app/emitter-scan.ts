@@ -55,7 +55,7 @@ import {
   type SignatureDeclaration,
   type SourceFile,
 } from 'typescript/unstable/ast';
-import { parseSourceFiles } from '@livediagram/source-ast';
+import { parseSourceFiles } from '@livepages/source-ast';
 import { settingsRowEmits } from './emitter-scan-settings';
 
 export const COMPUTED = Symbol('computed');

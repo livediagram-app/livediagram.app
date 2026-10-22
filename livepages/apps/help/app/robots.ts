@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next';
-import { SITE_URL } from '@livediagram/ui';
+import { SITE_URL } from '@livepages/ui';
 import { HELP_URL } from '@/lib/site';
 
 // Help centre robots (docs/specs/018-help/help-app.md): fully crawlable, with a pointer to the

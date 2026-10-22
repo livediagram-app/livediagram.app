@@ -43,7 +43,7 @@ import { IDEA_MAX_CARDS, IDEA_MAX_TEXT } from './collab-shapes';
 import { CHECKLIST_MAX_TEXT } from './data-shapes';
 import { applyVoteDelta, type TabVote } from './session';
 import { isPlanBoardPatch, type PlanBoardPatch } from './plan-board-patch';
-import type { PlanColumn } from '@livediagram/items';
+import type { PlanColumn } from '@livepages/items';
 
 // One field's latest change: a value, or removed.
 type FieldEntry = { value?: unknown; cleared?: true; seq: number };

@@ -1,7 +1,7 @@
 'use client';
 
 import type { KeyboardEvent, MouseEvent, ReactNode } from 'react';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livepages/ui';
 
 // The deck frame of a stack's head card (docs/specs/017-telemetry/telemetry.md): one or two faux-card
 // layers stepping out behind it so it reads as a deck (the Timeline stack's

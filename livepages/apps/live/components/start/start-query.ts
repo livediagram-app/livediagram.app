@@ -2,7 +2,7 @@
 // link (the marketing site's Build yours, a gallery search) chooses a mode, and its words become the search in that
 // mode's start on the new document, so the templates it meant are the ones shown. Kept for this tab only, and read
 // once.
-const KEY = 'livediagram:v2:start-query';
+const KEY = 'livepages:v2:start-query';
 
 export function handStartQuery(query: string | null): void {
   try {

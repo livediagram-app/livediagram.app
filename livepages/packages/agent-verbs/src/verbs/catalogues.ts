@@ -3,8 +3,8 @@
 // the api's (blueprint "Catalogue routes").
 
 import { z } from 'zod';
-import type { IconSearchResponse, TemplateCatalogueResponse } from '@livediagram/api-schema';
-import { ApiError } from '@livediagram/api-client';
+import type { IconSearchResponse, TemplateCatalogueResponse } from '@livepages/api-schema';
+import { ApiError } from '@livepages/api-client';
 import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { columns } from './shared';
 
@@ -71,7 +71,7 @@ export const templateLs = defineVerb({
   quiet: ({ templates }) => templates.map((t) => t.kind),
   cli: {
     positionals: [],
-    examples: ['livediagram template ls', 'livediagram template ls -q'],
+    examples: ['livepages template ls', 'livepages template ls -q'],
     prints: 'one template a line: kind, title, category',
   },
 });
@@ -90,13 +90,13 @@ export const templateView = defineVerb({
       `/templates/${encodeURIComponent(kind)}`,
       'template',
       kind,
-      'livediagram template ls',
+      'livepages template ls',
     ),
   }),
   text: ({ text }) => [text],
   cli: {
     positionals: ['kind'],
-    examples: ['livediagram template view kanban', 'livediagram template view start-stop-continue'],
+    examples: ['livepages template view kanban', 'livepages template view start-stop-continue'],
     prints: 'the outline of the tab the template builds',
   },
 });
@@ -135,8 +135,8 @@ export const iconSearch = defineVerb({
   cli: {
     positionals: ['text'],
     examples: [
-      'livediagram icon search database',
-      'livediagram icon search "message queue" --limit 5',
+      'livepages icon search database',
+      'livepages icon search "message queue" --limit 5',
     ],
     prints: 'one icon a line: id, label, catalogue',
   },
@@ -161,13 +161,13 @@ export const schemaView = defineVerb({
             `/schema/${encodeURIComponent(kind)}`,
             'element kind',
             kind,
-            'livediagram schema',
+            'livepages schema',
           ),
   }),
   text: ({ text }) => [text],
   cli: {
     positionals: ['kind'],
-    examples: ['livediagram schema', 'livediagram schema sticky'],
+    examples: ['livepages schema', 'livepages schema sticky'],
     prints: 'the kinds, or one kind\u2019s format',
   },
 });

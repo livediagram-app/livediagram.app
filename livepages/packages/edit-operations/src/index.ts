@@ -1,4 +1,4 @@
-// @livediagram/edit-operations: the engine a changeset runs on
+// @livepages/edit-operations: the engine a changeset runs on
 // (docs/specs/024-agents/edit-operations.md, blueprint "Interfaces and contracts"): both forms of
 // the edit operations, applied to a tab, and `replace`.
 
@@ -55,5 +55,5 @@ export {
   type EditWarningCode,
   type FieldChange,
   type ResultLine,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 export * from './pages';

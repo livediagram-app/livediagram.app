@@ -6,9 +6,9 @@ import {
   communityCategoryLabel,
   type CommunityOwnPost,
   communityPostPath,
-} from '@livediagram/api-schema';
-import { Button, buttonClassName, lucideGlyph, communityPlural } from '@livediagram/ui';
-import { lucideExternalLink, lucideGlobe } from '@livediagram/icons/lucide';
+} from '@livepages/api-schema';
+import { Button, buttonClassName, lucideGlyph, communityPlural } from '@livepages/ui';
+import { lucideExternalLink, lucideGlobe } from '@livepages/icons/lucide';
 import { communityCodeMessage, communityErrorMessage } from '@/lib/community-errors';
 import { track } from '@/lib/telemetry';
 import { useToast } from '@/hooks/ui/useToast';

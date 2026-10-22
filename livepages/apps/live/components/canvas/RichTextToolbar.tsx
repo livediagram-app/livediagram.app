@@ -24,8 +24,8 @@ import type {
   RunHeading,
   TextAlignX,
   TextAlignY,
-} from '@livediagram/document';
-import { HoverCard } from '@livediagram/ui';
+} from '@livepages/document';
+import { HoverCard } from '@livepages/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';

@@ -2,7 +2,7 @@
 // docs/specs/026-plan/plan-templates.md "How a template with tabs is made"): each drawing agrees with the data it is
 // built from, the companion Sheets are made on every path, and the layouts keep what they hold where it belongs.
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement, Element, ShapeElement, StickyElement } from '@livediagram/document';
+import type { ArrowElement, Element, ShapeElement, StickyElement } from '@livepages/document';
 import {
   DRIVER_BASELINE,
   THREAT_EXAMPLES,
@@ -10,7 +10,7 @@ import {
   driverTree,
   threatRating,
   valueStreamTotals,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import { buildTemplate, templateTabs } from './build-template';
 import { buildTemplateTabs } from './template-tab';
 import { materialiseTemplateSheets } from './template-sheets';

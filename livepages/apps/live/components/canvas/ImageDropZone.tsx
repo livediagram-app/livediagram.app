@@ -1,9 +1,9 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { IMAGE_TYPES_LABEL, MAX_IMAGE_MB } from '@livediagram/api-schema';
+import { IMAGE_TYPES_LABEL, MAX_IMAGE_MB } from '@livepages/api-schema';
 import { UPLOAD_ACCEPT_ATTR } from '@/lib/upload-image';
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livepages/ui';
 
 // Drop / click target for image uploads. The same dashed-border
 // tile appeared inline in both ImagePicker (editor modal, 192px

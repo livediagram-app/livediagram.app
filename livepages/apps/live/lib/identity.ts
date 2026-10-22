@@ -3,9 +3,9 @@
 // random colour from a curated palette. This module is the single source
 // for that name/colour generation plus presence-status semantics.
 
-import { fnv1aString } from '@livediagram/document';
+import { fnv1aString } from '@livepages/document';
 import { randomPick } from './random';
-import type { AccessLevel } from '@livediagram/api-schema';
+import type { AccessLevel } from '@livepages/api-schema';
 
 export type ParticipantStatus = 'online' | 'away' | 'offline';
 
@@ -213,8 +213,8 @@ export function nextFreeColor(taken: Set<string>, preferred?: string): string {
 }
 
 // Up to two characters for the avatar: shared with the headless export, so
-// it lives in @livediagram/document (names.ts).
-export { initialsOf } from '@livediagram/document';
+// it lives in @livepages/document (names.ts).
+export { initialsOf } from '@livepages/document';
 
 // Status ring colour for the header avatar. Greens / oranges / reds are
 // the conventional presence vocabulary.

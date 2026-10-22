@@ -2,7 +2,7 @@
 // "Animated backgrounds"): its parts (lib/page-motion-parts.ts) painted onto the export canvas,
 // still, as they stand when the slide opens (lib/page-motion-frame.ts), over the page's gradient
 // and under everything on it. Browser-only (canvas 2D); the parts and poses are tested pure.
-import { hexToRgb, pageGradientLine, type PageMotion } from '@livediagram/document';
+import { hexToRgb, pageGradientLine, type PageMotion } from '@livepages/document';
 import { motionPaint } from './page-motion';
 import { animOrigin, openingPose } from './page-motion-frame';
 import {

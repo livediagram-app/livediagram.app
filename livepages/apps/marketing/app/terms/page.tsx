@@ -9,8 +9,8 @@ import { LegalRedirect } from '@/components/LegalRedirect';
 const HELP_TERMS_URL = '/help/policies/terms/';
 
 export const metadata: Metadata = {
-  title: 'Terms of Service · livediagram',
-  description: 'The livediagram terms of service now live in the help centre.',
+  title: 'Terms of Service · livepages',
+  description: 'The livepages terms of service now live in the help centre.',
   robots: { index: false, follow: true },
   alternates: { canonical: HELP_TERMS_URL },
 };

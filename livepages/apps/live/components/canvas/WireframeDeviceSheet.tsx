@@ -6,7 +6,7 @@
 // the canvas and every export draw the same frame. What is drawn over the screen's content (the
 // camera in it, the system bars) is WireframeDeviceOverlays, above the elements.
 import { memo, useMemo, type CSSProperties, type ReactNode } from 'react';
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@livepages/ui';
 import {
   deviceScreenPath,
   pageDeviceGeometry,
@@ -14,7 +14,7 @@ import {
   type LaidOutPage,
   type PageBackground,
   type WireframeFrameTheme,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { pageSheetStyle } from '@/lib/page-paint';
 
 export const WireframeDeviceSheet = memo(function WireframeDeviceSheet({

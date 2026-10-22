@@ -11,15 +11,15 @@ import type {
   Folder,
   ShareLink,
   ShareRole,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   BUILD_ID_HEADER,
   DOCUMENT_FORMAT_HEADER,
   isClerkIdShape,
   readErrorCode,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { noteServerBuild, noteServerDocumentFormat } from '../server-release';
-import { stampTabKind, type Tab } from '@livediagram/document';
+import { stampTabKind, type Tab } from '@livepages/document';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '../local-storage-safe';
 import { getGuestSelfSig } from '../local-identity';
 import { notifyApiWrite } from './write-signal';
@@ -44,9 +44,9 @@ import {
 
 // `API_BASE` resolution:
 //   1. `NEXT_PUBLIC_API_BASE` env var if set — used for local dev (e.g.
-//      `https://www.livediagram.app/api` to hit prod, or
-//      `http://localhost:8787/api` to point at a local `wrangler dev`
-//      session of `@livediagram/api`). Baked into the static export at
+//      `https://www.livepages.app/api` to hit prod, or
+//      `http://localhost:8987/api` to point at a local `wrangler dev`
+//      session of `@livepages/api`). Baked into the static export at
 //      build time so it works in deployed builds too.
 //   2. Default `/api` — same-origin, served by the router worker in
 //      production (router stitches the api worker onto the same
@@ -135,7 +135,7 @@ function isTimelinePath(url: string): boolean {
 }
 
 // Envelope shapes the API wraps payloads in. The canonical inner
-// types come from `@livediagram/api-schema`, as do the envelopes the
+// types come from `@livepages/api-schema`, as do the envelopes the
 // MCP server reads too (DocumentResponse, TabResponse, ...); the ones
 // below are the editor-only glue for `expectOk` to destructure.
 export type FolderResponse = { folder: Folder };
@@ -195,7 +195,7 @@ export type SharedDocumentResolution =
 // `X-Owner-Id: <participant-id>` as before.
 //
 // Module-level state (rather than threading a tokenProvider through
-// 22 function signatures) because livediagram ships only as a static
+// 22 function signatures) because livepages ships only as a static
 // export — single browser tab, single-threaded, single Clerk session
 // per page load. useClerkApiBootstrap wires it up once in a layout effect
 // (`setTokenProvider((opts) => getToken(opts))`) and clears on unmount.
@@ -290,7 +290,7 @@ export function getSessionSharePassword(): string | null {
 // protection of user data; storing plain text mirrors what the api
 // worker already does in D1. The owner cleartext-reads it on the
 // Share dialog anyway.
-const SHARE_PASSWORD_CACHE_PREFIX = 'livediagram:share-password:';
+const SHARE_PASSWORD_CACHE_PREFIX = 'livepages:share-password:';
 export function readCachedSharePassword(shareCode: string): string | null {
   const raw = readLocalStorageSafe(`${SHARE_PASSWORD_CACHE_PREFIX}${shareCode}`);
   return raw && raw.length > 0 ? raw : null;

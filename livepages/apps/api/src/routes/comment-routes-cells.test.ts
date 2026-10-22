@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DocumentCommentsResponse } from '@livediagram/api-schema';
-import type { Comment, Element } from '@livediagram/document';
+import type { DocumentCommentsResponse } from '@livepages/api-schema';
+import type { Comment, Element } from '@livepages/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';

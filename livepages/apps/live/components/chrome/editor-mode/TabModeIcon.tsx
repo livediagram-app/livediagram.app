@@ -1,11 +1,11 @@
-import { EDITOR_MODE_ICONS, lucideGlyph } from '@livediagram/ui';
+import { EDITOR_MODE_ICONS, lucideGlyph } from '@livepages/ui';
 import {
   lucideClipboardList,
   lucideGrid3x3,
   lucideLayoutGrid,
   lucideSquareKanban,
-} from '@livediagram/icons/lucide';
-import { isPlanTabKind, opensInOf, type PlanTabKind } from '@livediagram/document';
+} from '@livepages/icons/lucide';
+import { isPlanTabKind, opensInOf, type PlanTabKind } from '@livepages/document';
 import type { CSSProperties } from 'react';
 import type { EditorModeTab } from '@/lib/editor-mode-store';
 

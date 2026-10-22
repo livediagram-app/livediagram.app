@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/document-views",
+  "name": "@livepages/document-views",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -17,13 +17,13 @@
     "clean": "rm -rf node_modules .turbo coverage"
   },
   "dependencies": {
-    "@livediagram/api-schema": "workspace:*",
-    "@livediagram/document": "workspace:*",
-    "@livediagram/templates": "workspace:*"
+    "@livepages/api-schema": "workspace:*",
+    "@livepages/document": "workspace:*",
+    "@livepages/templates": "workspace:*"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@livepages/oxlint-config": "workspace:*",
+    "@livepages/vitest-config": "workspace:*",
     "@types/node": "^26.6.4",
     "@vitest/coverage-v8": "^5.0.3",
     "oxlint": "^1.88.0",

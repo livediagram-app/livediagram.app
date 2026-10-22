@@ -1,6 +1,6 @@
 # The agent as a collaborator next to a live human
 
-Research for the `livediagram` CLI: how an AI agent becomes a first-class participant in a
+Research for the `livepages` CLI: how an AI agent becomes a first-class participant in a
 document a person has open, and what the CLI's collaboration model should be.
 
 Scope: presence, attribution, streaming versus atomic writes, suggest and review, locking and
@@ -8,7 +8,7 @@ conflicts, how a stateless CLI call joins a room, comments as the conversation c
 and notifications, and undo of an agent's batch. It ends with a recommended model and a mock
 timeline.
 
-Facts about livediagram were read from the code and specs at the time of writing (paths given).
+Facts about livepages were read from the code and specs at the time of writing (paths given).
 Facts about other products are marked **verified** (read from their docs or source during this
 research) or **recalled** (from general knowledge; treat as indicative, check before quoting).
 
@@ -26,15 +26,15 @@ research) or **recalled** (from general knowledge; treat as indicative, check be
 - **Respect the human's selection lock.** The room remembers each session's selection; a
   changeset touching an element a person holds waits briefly, then skips it and says so.
 - **Comments are the asynchronous channel**, `@`-mentioning the agent summons it, and
-  `livediagram wait` blocks until something relevant happens (the `gh run watch` and long-poll
+  `livepages wait` blocks until something relevant happens (the `gh run watch` and long-poll
   shape agents already handle well). A long-lived daemon is not needed for v1.
 - **Undo of an agent batch is a revert of its changeset**, conflict-aware like `git revert`,
-  offered as a toast in the editor and as `livediagram changes revert`. Personal Ctrl+Z stays
+  offered as a toast in the editor and as `livepages changes revert`. Personal Ctrl+Z stays
   personal, as the spec already decides.
 - **Suggest mode comes second**: direct apply plus one-click revert covers the "person talks to
   the agent" case, where the conversation is the review. Unattended agents get `--propose` later.
 
-## 2. Where livediagram stands
+## 2. Where livepages stands
 
 ### 2.1 What exists and can be reused
 
@@ -88,12 +88,12 @@ research) or **recalled** (from general knowledge; treat as indicative, check be
 
 ## 3. Prior art
 
-| Product                                 | How the agent joins                                                                | Presence and attribution                                                                                | How edits land                                                                                         | Review and undo                                                                                                          | Lesson for livediagram                                                                              |
+| Product                                 | How the agent joins                                                                | Presence and attribution                                                                                | How edits land                                                                                         | Review and undo                                                                                                          | Lesson for livepages                                                                              |
 | --------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
 | **Liveblocks** (verified)               | Server-side, no socket: `liveblocks.mutateStorage(roomId, fn)` from Node           | `liveblocks.setPresence(roomId, { userId, userInfo, data: { editingId }, ttl: 30 })`; `ttl: 2` to clear | Through the same Sync document humans edit, so it is live for everyone                                 | Docs recommend saving a version snapshot before the agent modifies, so the person can revert; "AI comments" join threads | The stateless, TTL presence pattern fits a CLI exactly                                              |
 | **Hocuspocus / Yjs** (verified)         | `hocuspocus.openDirectConnection(name, context)` then `transact(fn)`, `disconnect` | Yjs Awareness: per-client JSON state, peers drop a client after 30 s without a heartbeat                | A CRDT transaction, merged with concurrent human edits                                                 | `Y.UndoManager({ trackedOrigins })` undoes only changes from chosen origins: per-actor undo                              | Tag every change with an origin; per-actor revert without a CRDT via changeset ids                  |
 | **tldraw agent starter kit** (verified) | Agent runs beside the canvas, driven from a chat panel                             | Agent has its own viewport it moves to look at parts of the canvas                                      | Actions stream: shapes are created, updated, deleted "incrementally as each action finishes streaming" | Keeps a todo list; schedules follow-up reviews of its own work                                                           | Compact context: simplified shapes in view plus clusters outside; reveal work as it lands           |
-| **Figma multiplayer** (recalled)        | Server-authoritative; clients send property changes                                | Cursors, avatar stack, "spotlight" and follow                                                           | Per-object, per-property last-writer-wins, server orders                                               | Undo is per user, of one's own changes                                                                                   | livediagram is Figma-shaped already, but per element, not per property: add a field-level patch op  |
+| **Figma multiplayer** (recalled)        | Server-authoritative; clients send property changes                                | Cursors, avatar stack, "spotlight" and follow                                                           | Per-object, per-property last-writer-wins, server orders                                               | Undo is per user, of one's own changes                                                                                   | livepages is Figma-shaped already, but per element, not per property: add a field-level patch op  |
 | **Figma AI features** (recalled)        | In-client features act on the selection or file                                    | The person invoked it, so it is attributed to them                                                      | Applied as an ordinary edit                                                                            | Undoable as one step by the invoker                                                                                      | A batch should be one undo unit                                                                     |
 | **Google Docs** (recalled)              | Gemini drafts inside the doc; humans use Suggesting mode                           | Suggestions carry author and time in the margin                                                         | Suggestion = pending, attributed change rendered inline                                                | Accept or reject per suggestion                                                                                          | The suggest-mode model, if built, should be per changeset with per-element reject                   |
 | **Notion AI** (recalled)                | In-page AI blocks and an agent that edits pages                                    | AI output marked as such while pending                                                                  | Drafts in place                                                                                        | Keep or discard; page history as the backstop                                                                            | Pending-then-keep is friendly when the human is present                                             |
@@ -118,7 +118,7 @@ Three patterns recur:
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
 | A. REST only (today)                 | `PUT` whole tabs                                                                                             | Simple                                                                                            | Invisible and erasable (section 2.2); disqualified                                                              |
 | **B. REST relayed through the room** | `POST /api/documents/:id/changes`; the worker gates, the room sequences and broadcasts, the worker writes D1 | Every one-shot command is live-safe; no process to keep alive; mirrors Liveblocks `mutateStorage` | Room becomes part of the write path for agent changes; needs a ledger extension so racing saves keep the change |
-| C. Session daemon holding the socket | `livediagram session start` forks a local process with a ticketed WebSocket; commands talk to it             | Live state, cursor, sub-second lock awareness, cheapest writes                                    | Agents juggle a background process; stale daemons; harder in sandboxes and CI; a second client to maintain      |
+| C. Session daemon holding the socket | `livepages session start` forks a local process with a ticketed WebSocket; commands talk to it             | Live state, cursor, sub-second lock awareness, cheapest writes                                    | Agents juggle a background process; stale daemons; harder in sandboxes and CI; a second client to maintain      |
 | D. CRDT peer (Yjs, Hocuspocus style) | Server-side direct connection                                                                                | Field-level merge                                                                                 | Dropped deliberately in `realtime-conflict-resolution.md`; would bring back a document copy in the room         |
 
 **Recommendation: B for every write, plus a socket only while a `wait` or `watch` command runs.**
@@ -129,7 +129,7 @@ as an optimisation, built on the same pure functions; it is not needed for corre
 ### 4.2 Presence and attribution
 
 - **Who the agent is.** The token proves the human; the agent names itself (`--as Claude`, or
-  `LIVEDIAGRAM_AGENT` in the environment, default from the token's name). The server always
+  `LIVEPAGES_AGENT` in the environment, default from the token's name). The server always
   renders it as **"Claude for Webber"**: the agent part is a self-declared label, the "for" part is
   the verified token owner, so an agent can never pass itself off as a person.
 - **Presence without a socket.** `POST /api/documents/:id/presence` with `{ status, tabId,
@@ -224,11 +224,11 @@ summary }`. The room relays it as **one** sequenced `changeset` op (one log slot
   changed by someone else since is left alone and reported (`kept: el-7, changed by Webber`),
   like `git revert` refusing a conflicting hunk. Removed elements come back; added ones go.
 - Surfaces: the toast's Undo, a "Recent agent changes" list in the timeline, and
-  `livediagram changes revert <changesetId>`. A person's own Ctrl+Z is untouched.
+  `livepages changes revert <changesetId>`. A person's own Ctrl+Z is untouched.
 
 ### 4.8 Comments as the conversation channel
 
-- **Reading.** `livediagram comments <doc> --open` lists open threads compactly, one line per
+- **Reading.** `livepages comments <doc> --open` lists open threads compactly, one line per
   comment, with element id, label and author. `--mentions` narrows to threads that mention the
   agent.
 - **Writing.** `comment add <element> "text"`, `comment reply <threadElement> "text"`,
@@ -239,7 +239,7 @@ summary }`. The room relays it as **one** sequenced `changeset` op (one log slot
   recently ("Claude for Webber"), stored as a mention of kind `agent`. Only the agent's owner's
   `wait` sees it as addressed to them; nobody else's agent is summoned.
 - **Acknowledge at once.** On picking a thread up, the agent sets presence `focus` on that element
-  with status "reading your comment", the Copilot "eyes" reaction in livediagram's terms, then
+  with status "reading your comment", the Copilot "eyes" reaction in livepages's terms, then
   replies, edits, and resolves or leaves open for the person.
 - **Trust.** Comment text is untrusted input to the agent. The CLI prints it fenced and labelled
   with its author; a comment from a share-link visitor is never treated as an instruction from
@@ -247,9 +247,9 @@ summary }`. The room relays it as **one** sequenced `changeset` op (one log slot
 
 ### 4.9 Watch and wait
 
-- `livediagram watch <doc>` streams one compact line per event until interrupted, for agents that
+- `livepages watch <doc>` streams one compact line per event until interrupted, for agents that
   can run a background stream, and for humans.
-- `livediagram wait <doc> --for mention|comment|change|presence [--timeout 300]` blocks, prints
+- `livepages wait <doc> --for mention|comment|change|presence [--timeout 300]` blocks, prints
   the first matching event, and exits 0; exit 2 on timeout. This is the shape agents handle best:
   a single blocking call, then act, then wait again.
 - Both open a ticketed WebSocket, `sync` with `--since <rev>` so nothing is missed between calls,
@@ -285,22 +285,22 @@ summary }`. The room relays it as **one** sequenced `changeset` op (one log slot
 ### 5.1 CLI surface for this angle
 
 ```bash
-livediagram whoami                                   # token owner, agent label
-livediagram read <doc> [--tab t] [--view outline|graph|comments|changes] [--since rev]
-livediagram apply <doc> --tab t <ops.json|-> [--summary "..."] [--if-unchanged] [--wait-lock 5] [--force] [--propose]
-livediagram presence <doc> --status "adding payment service" [--focus el-4,el-9] [--ttl 20] [--clear]
-livediagram comments <doc> [--open] [--mentions]
-livediagram comment add|reply|resolve|reopen ...
-livediagram changes <doc> [--mine]                   # recent changesets with ids
-livediagram changes revert <changesetId>
-livediagram watch <doc> [--since rev]
-livediagram wait <doc> --for mention|comment|change [--timeout 300] [--since rev]
+livepages whoami                                   # token owner, agent label
+livepages read <doc> [--tab t] [--view outline|graph|comments|changes] [--since rev]
+livepages apply <doc> --tab t <ops.json|-> [--summary "..."] [--if-unchanged] [--wait-lock 5] [--force] [--propose]
+livepages presence <doc> --status "adding payment service" [--focus el-4,el-9] [--ttl 20] [--clear]
+livepages comments <doc> [--open] [--mentions]
+livepages comment add|reply|resolve|reopen ...
+livepages changes <doc> [--mine]                   # recent changesets with ids
+livepages changes revert <changesetId>
+livepages watch <doc> [--since rev]
+livepages wait <doc> --for mention|comment|change [--timeout 300] [--since rev]
 ```
 
 Output is compact text by default, `--json` on request. A changeset result:
 
 ```bash
-$ livediagram apply d_7Kq --tab main ops.json --summary "add payment service"
+$ livepages apply d_7Kq --tab main ops.json --summary "add payment service"
 cs_91 applied rev=e1f3:418 +3 ~2 -0
 skipped el-12 held by Webber (5s)
 ```
@@ -308,11 +308,11 @@ skipped el-12 held by Webber (5s)
 A `wait` result:
 
 ```bash
-$ livediagram wait d_7Kq --for mention
+$ livepages wait d_7Kq --for mention
 mention rev=e1f3:431 tab=main el-9 "Payments" Webber: "@Claude should this be async?"
 ```
 
-### 5.2 What livediagram needs to change
+### 5.2 What livepages needs to change
 
 | Change                                                                                     | Where                                                          | Size   |
 | ------------------------------------------------------------------------------------------ | -------------------------------------------------------------- | ------ |
@@ -375,7 +375,7 @@ Webber decided these four forks; specs should record them when this work is spec
 
 ## 8. Sources
 
-- livediagram: `docs/specs/012-collaboration/realtime-conflict-resolution.md`,
+- livepages: `docs/specs/012-collaboration/realtime-conflict-resolution.md`,
   `collab-race-hardening.md`, `resync-without-reload.md`, `comment-mentions.md`,
   `comment-pin.md`; `docs/specs/007-editor/live-app.md` (concurrent-selection lock);
   `docs/specs/015-api/mcp-server.md`, `public-api-and-tokens.md`;

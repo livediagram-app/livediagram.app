@@ -5,7 +5,7 @@ import {
   isBoxed,
   isVotableInVote,
   type Element,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import type { InsertShift } from '@/hooks/canvas/useInsertShift';
 import type {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livepages/document';
 import { arrowBetween, shapeAt, strokeAt } from './__fixtures__/build';
 import { buildViewModel } from './model';
 import { selectionReference } from './selection-reference';
@@ -40,7 +40,7 @@ describe('selectionReference', () => {
     const { text } = selectionReference(input([]));
 
     expect(text.split('\n')[0]).toBe(
-      `[livediagram] "Home screen" › tab "Wireframe" (doc doc-3h9x2a, tab ${tabRef()}, rev 41)`,
+      `[livepages] "Home screen" › tab "Wireframe" (doc doc-3h9x2a, tab ${tabRef()}, rev 41)`,
     );
   });
 
@@ -61,7 +61,7 @@ describe('selectionReference', () => {
     );
     const firstRef = itemOf('el-play').split(' ')[1];
     expect(read).toBe(
-      `read: livediagram tab view doc-3h9x2a --tab ${tabRef()} --view show --ref ${firstRef}`,
+      `read: livepages tab view doc-3h9x2a --tab ${tabRef()} --view show --ref ${firstRef}`,
     );
     expect(ref.count).toBe(2);
     expect(ref.text.endsWith('\n')).toBe(false);
@@ -127,7 +127,7 @@ describe('selectionReference', () => {
     expect(lines[1]!.split(', ')).toHaveLength(20);
     expect(lines[1]).toMatch(
       new RegExp(
-        ` … and 3 more: livediagram tab view doc-3h9x2a --tab ${tabRef()} --view show --ref selected$`,
+        ` … and 3 more: livepages tab view doc-3h9x2a --tab ${tabRef()} --view show --ref selected$`,
       ),
     );
     expect(ref.count).toBe(23);
@@ -136,6 +136,6 @@ describe('selectionReference', () => {
   it('quotes the document and tab names as JSON', () => {
     const ref = selectionReference({ ...input([]), documentName: 'A "quoted" name' });
 
-    expect(ref.text).toMatch(/^\[livediagram\] "A \\"quoted\\" name" › tab "Wireframe"/);
+    expect(ref.text).toMatch(/^\[livepages\] "A \\"quoted\\" name" › tab "Wireframe"/);
   });
 });

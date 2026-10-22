@@ -14,7 +14,7 @@ import { ViewInfo } from './ViewInfo';
 import { PaneLensBar } from './lens/PaneLensBar';
 import { FilteredEmpty, LoadFailed } from './lens/LensStates';
 import { narrowRows } from './lens/pane-lens';
-import { TimelineControls } from '@livediagram/ui';
+import { TimelineControls } from '@livepages/ui';
 import { DocumentHistoryDialog } from '@/components/panels/DocumentHistoryDialog';
 import { isOfflineIdSync } from '@/lib/offline/offline-store';
 import { useTimelineFeed } from './useTimelineFeed';

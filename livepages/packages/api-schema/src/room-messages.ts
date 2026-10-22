@@ -1,5 +1,5 @@
 import type { AgentPresence } from './agent-presence';
-import type { ArticleOp, ElementDelta, QaNote, RoomElementOp, Tab } from '@livediagram/document';
+import type { ArticleOp, ElementDelta, QaNote, RoomElementOp, Tab } from '@livepages/document';
 import type { ParticipantPresence } from './index';
 import type { AvatarConfig } from './avatar';
 import type { AvatarSayOp } from './avatar-say';
@@ -427,7 +427,7 @@ export type RoomOp =
   // A single element on a tab changed (docs/specs/012-collaboration/realtime-conflict-resolution.md, Level 0): add / update /
   // remove / reorder, applied by id so a peer editing a DIFFERENT element
   // on the same tab merges instead of overwriting the whole tab. `op`
-  // carries the element payload (see @livediagram/document ElementOp).
+  // carries the element payload (see @livepages/document ElementOp).
   | { kind: 'el'; tabId: string; op: RoomElementOp }
   // A tab's non-element metadata changed (name, background, font, …) —
   // the element array is untouched, so this rides alongside `el` ops

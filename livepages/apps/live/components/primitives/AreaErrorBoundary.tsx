@@ -1,8 +1,8 @@
 'use client';
 
 import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { errorNameToken, errorTypeToken } from '@livediagram/api-schema';
-import { Button } from '@livediagram/ui';
+import { errorNameToken, errorTypeToken } from '@livepages/api-schema';
+import { Button } from '@livepages/ui';
 import { track } from '@/lib/telemetry';
 import { browserNavigationDeps, recoverInBrowser } from '@/lib/stale-build-navigation';
 import { isChunkLoadError } from '@/lib/stale-chunks';

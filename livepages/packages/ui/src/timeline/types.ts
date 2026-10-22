@@ -8,7 +8,7 @@
 // inheriting the Explorer's copy.
 
 import type { MouseEvent, ReactNode } from 'react';
-import type { TimelineEvent } from '@livediagram/api-schema';
+import type { TimelineEvent } from '@livepages/api-schema';
 import type { TimelineStack } from './stacking';
 
 export type { TimelineEvent };

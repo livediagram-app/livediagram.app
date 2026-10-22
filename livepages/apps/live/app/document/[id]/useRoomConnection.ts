@@ -8,7 +8,7 @@ import {
 } from 'react';
 import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
-import type { EditorMode, QaNote, Tab } from '@livediagram/document';
+import type { EditorMode, QaNote, Tab } from '@livepages/document';
 import {
   parseArticleCaret,
   type AgentPresence,
@@ -20,7 +20,7 @@ import {
   type SheetsRoomOp,
   type FacilitatorReason,
   type LivePoll,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
 import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';

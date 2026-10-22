@@ -1,8 +1,8 @@
 # Excalidraw import & export
 
-Excalidraw content reaches livediagram four ways, all through **one parser**:
+Excalidraw content reaches livepages four ways, all through **one parser**:
 
-- **Paste**: copy in Excalidraw, press Cmd/Ctrl+V on a livediagram canvas. In Draw
+- **Paste**: copy in Excalidraw, press Cmd/Ctrl+V on a livepages canvas. In Draw
   mode it lands as whiteboard-native content (marker strokes, shapes,
   text boxes that hug, stickies, arrows, a frame) as if drawn there; in
   Diagram mode it lands as diagram elements.
@@ -120,7 +120,7 @@ exposes the custom type only to pages in the same browser engine, so:
   `text/plain`, and takes the first that passes `looksLikeExcalidraw`.
 - It runs after the image-file branch and before our own element payload in
   `useClipboard`'s paste handler (the two envelopes cannot be confused: ours is
-  `livediagram.elements`). Everything that already gates a canvas paste (a
+  `livepages.elements`). Everything that already gates a canvas paste (a
   modal open, a text field focused, read-only, a label being edited) gates it
   too.
 - A recognised paste on a **whiteboard** tab lands with the whiteboard profile;
@@ -143,7 +143,7 @@ exposes the custom type only to pages in the same browser engine, so:
   element centred where it was released, through the same upload as a pasted one
   ([Image import pipeline](import-image-pipeline.md)), so dragging a screenshot in works as pasting it does. Any
   other dropped file is refused with an info toast: _"Drop an Excalidraw file, or an Excalidraw image with the
-  scene embedded."_ A file the Import dialog reads (a draw.io, Mermaid, Markdown or livediagram JSON file, by
+  scene embedded."_ A file the Import dialog reads (a draw.io, Mermaid, Markdown or livepages JSON file, by
   its name) is told where it goes instead: _"To bring in a draw.io file, use Import in the tab menu."_ (Import
   replaces the tab's content, so a drop never does it unasked; `lib/drop-import-hint.ts`.) A photo dropped on
   an event-storming board still goes to the wall reader first
@@ -333,13 +333,13 @@ The editor's tab-scoped Import dialog card, paste and drop stay as they are.
 ## Export degradation table (Tab → `.excalidraw`)
 
 Every element exports (nothing is dropped), but only geometry, colours, label
-text, links, rotation, opacity and lock survive (`groupIds` is always empty); livediagram-only
+text, links, rotation, opacity and lock survive (`groupIds` is always empty); livepages-only
 behaviour (animations, markers, notes, comments, actions, non-URL links,
 layers: the list flattens) does not. Export emits `version: 2` with
-`source: "https://livediagram.app"`, `appState.viewBackgroundColor` from the
+`source: "https://livepages.app"`, `appState.viewBackgroundColor` from the
 tab's background colour, and an empty `files` map. Kind by kind:
 
-| livediagram                                                                                                | Excalidraw                                                                                                                                                                                                                                         |
+| livepages                                                                                                | Excalidraw                                                                                                                                                                                                                                         |
 | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `square`                                                                                                   | `rectangle` (`borderRadius: 'none'` → sharp, else `roundness` type 3)                                                                                                                                                                              |
 | `circle`, `annotation`                                                                                     | `ellipse`                                                                                                                                                                                                                                          |

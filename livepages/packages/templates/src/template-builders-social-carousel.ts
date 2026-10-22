@@ -18,7 +18,7 @@
 // Pure: () -> Element[], placed on the carousel's pages (socialCarouselPages) whatever centre is
 // passed.
 
-import type { Element, Page, PageBackground } from '@livediagram/document';
+import type { Element, Page, PageBackground } from '@livepages/document';
 import type { Kit } from './page-layout-kit';
 import { CARD_SHADOW, glyph, iconDisc, lockedFill, panel } from './template-page-design';
 import { pageKits, templatePage } from './template-page-kit';

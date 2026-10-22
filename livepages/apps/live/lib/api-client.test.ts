@@ -1,5 +1,5 @@
-import type { Tab } from '@livediagram/document';
-import { DOCUMENT_OPEN_HEADER } from '@livediagram/api-schema';
+import type { Tab } from '@livepages/document';
+import { DOCUMENT_OPEN_HEADER } from '@livepages/api-schema';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   apiCreateDocument,

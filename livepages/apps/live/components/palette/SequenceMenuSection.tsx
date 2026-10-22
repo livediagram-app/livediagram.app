@@ -1,7 +1,7 @@
 'use client';
 
-import { withSequenceNumbered, type ShapeElement } from '@livediagram/document';
-import { Button } from '@livediagram/ui';
+import { withSequenceNumbered, type ShapeElement } from '@livepages/document';
+import { Button } from '@livepages/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';
 import { MenuToggleRow } from '@/components/palette/context-menu-rows';

@@ -6,7 +6,7 @@
 // the same wherever it lives. Everything but the totals is the sheet's, seen by everyone and undoable; the totals
 // pick is the viewer's own.
 import { Fragment, useState, type ReactNode } from 'react';
-import { TextInput, lucideGlyph } from '@livediagram/ui';
+import { TextInput, lucideGlyph } from '@livepages/ui';
 import {
   lucideColumns2,
   lucideEye,
@@ -17,7 +17,7 @@ import {
   lucideRotateCcw,
   lucideTable,
   lucideTrash2,
-} from '@livediagram/icons/lucide';
+} from '@livepages/icons/lucide';
 import {
   AXIS_SIZE_MAX,
   COLUMN_WIDTH_MIN,
@@ -30,7 +30,7 @@ import {
   cellSizeDefaults,
   cellSizeOf,
   type SheetCellSize,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection';
 import { SheetNamedRanges } from './SheetNamedRanges';
 import { SheetFormatRuleList, SheetValidationRules } from './rules/SheetRuleSettings';

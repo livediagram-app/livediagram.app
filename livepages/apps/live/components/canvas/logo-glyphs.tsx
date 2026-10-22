@@ -1,8 +1,8 @@
 'use client';
 
 // Glyphs for a logo page's tools (docs/specs/007-editor/logo-pages.md).
-import type { MirrorAxis } from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+import type { MirrorAxis } from '@livepages/document';
+import { Glyph } from '@livepages/ui';
 
 // Mirror Copy (docs/specs/007-editor/logo-pages.md "Mirror"): a shape and its reflection either
 // side of a dashed axis.

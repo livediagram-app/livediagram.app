@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { useDeckFollowsPages } from './useDeckFollowsPages';
 
 // docs/specs/007-editor/pages-mode.md "Slides": one follow pass when the pages change, none on an element edit

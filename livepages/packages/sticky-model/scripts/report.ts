@@ -1,4 +1,4 @@
-import { holdsPoint } from '@livediagram/sticky-vision';
+import { holdsPoint } from '@livepages/sticky-vision';
 import { meetsBar, type Score } from '../../sticky-vision/scripts/truth';
 
 // The per-wall table in the same columns as the classical sweep

@@ -4,7 +4,7 @@
 import {
   DASHBOARD_CHART_VIEWS as CHART_VIEWS,
   DASHBOARD_METRIC_KINDS as METRIC_KINDS,
-} from '@livediagram/templates';
+} from '@livepages/templates';
 const isObj = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);
 

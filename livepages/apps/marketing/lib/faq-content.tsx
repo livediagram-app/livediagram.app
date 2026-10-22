@@ -9,8 +9,8 @@ import {
   lucideSparkles,
   lucideUsers,
   lucideZap,
-} from '@livediagram/icons/lucide';
-import { CONTACT_FORM_URL, lucideGlyph, REPO_URL } from '@livediagram/ui';
+} from '@livepages/icons/lucide';
+import { CONTACT_FORM_URL, lucideGlyph, REPO_URL } from '@livepages/ui';
 import type { ReactNode } from 'react';
 
 // The /faq page's content (docs/specs/019-marketing/marketing-site.md "Content pages (FAQ)"): questions grouped
@@ -31,7 +31,7 @@ export type FaqCategory = {
 };
 
 const ICON = 18;
-// Written out rather than read from @livediagram/templates: this module ships in the FAQ's client bundle, and the
+// Written out rather than read from @livepages/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
 export const TEMPLATE_COUNT = 147;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
@@ -46,15 +46,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: 'getting-started',
     title: 'Getting started',
-    blurb: 'What livediagram is and how to begin.',
+    blurb: 'What livepages is and how to begin.',
     icon: lucideGlyph(lucideZap, ICON),
     items: [
       {
-        q: 'What is livediagram?',
+        q: 'What is livepages?',
         a: 'A free, real-time canvas for diagrams, whiteboards, illustrations and plans. Every document is a stack of tabs, and each tab can be worked on in five modes: Diagram for shapes and arrows, Draw for freehand whiteboarding, Workshop for running a session with your team, Pages for slides, articles, posters and logos, and Plan for boards of cards, spreadsheets and forms. Your team can join any of them live.',
       },
       {
-        q: 'Do I need an account to use livediagram?',
+        q: 'Do I need an account to use livepages?',
         a: (
           <>
             No. Open the editor and start drawing straight away, with no sign-up. Your work saves in
@@ -516,7 +516,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I connect my own AI assistant, like Claude?',
         a: (
           <>
-            Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool
+            Yes. livepages runs an MCP server at mcp.livepages.app. Connect a compatible AI tool
             and, after a one-time authorisation, it can find, read, create and edit the documents in
             your account, including writing articles, building slide decks and designing logos. Its
             changes appear live for anyone on the tab, outlined so you can see them and undo them.{' '}
@@ -525,7 +525,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           </>
         ),
         aText:
-          'Yes. livediagram runs an MCP server at mcp.livediagram.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account, including writing articles, building slide decks and designing logos. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
+          'Yes. livepages runs an MCP server at mcp.livepages.app. Connect a compatible AI tool and, after a one-time authorisation, it can find, read, create and edit the documents in your account, including writing articles, building slide decks and designing logos. Its changes appear live for anyone on the tab, outlined so you can see them and undo them. Build with AI walks you through connecting Claude, ChatGPT, Cursor and more.',
       },
       {
         q: 'Is there AI built into the editor?',
@@ -545,7 +545,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Is there a command-line tool?',
-        a: 'Yes. Install it from npm as @livediagram/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export documents from your terminal, which makes it handy for scripts and coding agents.',
+        a: 'Yes. Install it from npm as @livepages/cli (or run it with npx). It signs in through your browser and can read, edit, create, share and export documents from your terminal, which makes it handy for scripts and coding agents.',
       },
       {
         q: 'Can I keep my diagrams next to my code?',
@@ -553,12 +553,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           <>
             Yes. Link a repository to a folder of documents with the CLI, and it keeps a snapshot of
             each one in the repository, so coding agents find your diagrams by name and read them as
-            text. livediagram stays the home of every document. See{' '}
+            text. livepages stays the home of every document. See{' '}
             <a href="/help/developers/repositories/">diagrams in your repository</a>.
           </>
         ),
         aText:
-          'Yes. Link a repository to a folder of documents with the CLI, and it keeps a snapshot of each one in the repository, so coding agents find your diagrams by name and read them as text. livediagram stays the home of every document. See diagrams in your repository.',
+          'Yes. Link a repository to a folder of documents with the CLI, and it keeps a snapshot of each one in the repository, so coding agents find your diagrams by name and read them as text. livepages stays the home of every document. See diagrams in your repository.',
       },
     ],
   },
@@ -574,7 +574,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Does it work with Mermaid?',
-        a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram or ER diagram and livediagram lays it out on the canvas with every connection intact. Export a diagram tab back to Mermaid text for your READMEs, issues and AI tools. Other Mermaid types, such as sequence, class, Gantt, pie and mind map, are not supported.',
+        a: 'Yes, both ways. Paste or open a Mermaid flowchart, state diagram or ER diagram and livepages lays it out on the canvas with every connection intact. Export a diagram tab back to Mermaid text for your READMEs, issues and AI tools. Other Mermaid types, such as sequence, class, Gantt, pie and mind map, are not supported.',
       },
       {
         q: 'Can I move my boards over from another tool?',
@@ -582,7 +582,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I turn a photo of sticky notes into a board?',
-        a: 'Yes, on an event storming board. Take a photo of the wall and livediagram finds the sticky notes and places them on the canvas for you to tidy up.',
+        a: 'Yes, on an event storming board. Take a photo of the wall and livepages finds the sticky notes and places them on the canvas for you to tidy up.',
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',
@@ -629,13 +629,13 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         a: (
           <>
             A document kept only in your browser goes with it, so share it or sign in first. Share
-            syncs a document online in one step, and after you sign in livediagram offers to move
+            syncs a document online in one step, and after you sign in livepages offers to move
             every browser-only document into your account. Documents saved to your account are never
             touched. See <a href="/help/privacy-and-security/offline-mode/">Offline Mode</a>.
           </>
         ),
         aText:
-          'A document kept only in your browser goes with it, so share it or sign in first. Share syncs a document online in one step, and after you sign in livediagram offers to move every browser-only document into your account. Documents saved to your account are never touched. See Offline Mode.',
+          'A document kept only in your browser goes with it, so share it or sign in first. Share syncs a document online in one step, and after you sign in livepages offers to move every browser-only document into your account. Documents saved to your account are never touched. See Offline Mode.',
       },
       {
         q: 'Is my work saved automatically?',
@@ -662,7 +662,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     icon: lucideGlyph(lucidePackage, ICON),
     items: [
       {
-        q: 'Can I self-host livediagram?',
+        q: 'Can I self-host livepages?',
         a: (
           <>
             Yes. It is MIT-licensed and the source is{' '}
@@ -671,11 +671,11 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             </a>
             . Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare
             account and you get every feature. See{' '}
-            <a href="/help/self-hosting/deploying-livediagram/">deploying livediagram</a>.
+            <a href="/help/self-hosting/deploying-livepages/">deploying livepages</a>.
           </>
         ),
         aText:
-          'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare account and you get every feature. See deploying livediagram.',
+          'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare account and you get every feature. See deploying livepages.',
       },
       {
         q: 'Do I need sign-in or an AI key to self-host?',
@@ -703,7 +703,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Try reloading first. If it still will not open, the editor offers to repair this browser’s saved state without touching your documents. The troubleshooting guide walks through every step.',
       },
       {
-        q: 'Is livediagram up right now?',
+        q: 'Is livepages up right now?',
         a: (
           <>
             The <a href="/status">status page</a> lists every part of the service and notes any
@@ -714,7 +714,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'The status page lists every part of the service and notes any incident we are working on. If it loads, the site is up.',
       },
       {
-        q: 'Who makes livediagram?',
+        q: 'Who makes livepages?',
         a: (
           <>
             It is built in the open by{' '}

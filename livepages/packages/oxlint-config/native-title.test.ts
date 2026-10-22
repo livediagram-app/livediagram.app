@@ -4,7 +4,7 @@ import { findingsOf, lintFixtures, type Finding } from './lint-fixtures';
 // Native `title` is not a hint (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md): the
 // shared config rejects it everywhere except the elements where it is an accessible name rather
 // than a hover.
-const RULE = 'livediagram(no-native-title)';
+const RULE = 'livepages(no-native-title)';
 
 const FIXTURES = {
   'button.tsx': 'export const A = () => <button title="Zoom in" />;',

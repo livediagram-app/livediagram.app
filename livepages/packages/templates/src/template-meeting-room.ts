@@ -5,7 +5,7 @@
 //
 // Pure: returns fresh content elements.
 
-import { createText, type Element } from '@livediagram/document';
+import { createText, type Element } from '@livepages/document';
 import { MUTED, chip, initialsDisc, type Tint } from './template-planner-parts';
 
 const ROLE_TINTS: Record<string, Tint> = {

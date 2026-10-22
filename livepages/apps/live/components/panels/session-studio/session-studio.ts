@@ -7,7 +7,7 @@ import {
   voteHidesCursors,
   voteHidesTallies,
   type TabVote,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 // --- Timer dial --------------------------------------------------------------
 //

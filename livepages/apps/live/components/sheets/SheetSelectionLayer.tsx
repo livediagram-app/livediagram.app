@@ -5,8 +5,8 @@
 // marquee, each peer's selection in their colour with their name, the references a formula being written names
 // (in their colours), and the filter's buttons on its header row.
 import { useEffect, useState } from 'react';
-import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
-import type { GridRange, Selection } from '@livediagram/sheets';
+import { IDENTITY_FILL, identityVars } from '@livepages/ui';
+import type { GridRange, Selection } from '@livepages/sheets';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { cellBox, mergeAt, type Geometry } from './sheet-geometry';
 import { FilterIcon } from './sheet-icons';

@@ -10,7 +10,7 @@ import {
   type Point,
   type Rect,
   rotatePoint,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { LINT_OVERLAP_TOLERANCE_PX } from './constants';
 
 const NOT_BOXES: ReadonlySet<string> = new Set(['text', 'annotation', 'freehand', 'path']);

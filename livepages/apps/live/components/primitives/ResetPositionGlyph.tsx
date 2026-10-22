@@ -1,4 +1,4 @@
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livepages/ui';
 // A diagonal arrow tucking back into a corner: the "snap back to the
 // default corner" glyph shared by the panel settings popovers (Palette,
 // Map) and the MovablePanel header reset button, so the reset affordances

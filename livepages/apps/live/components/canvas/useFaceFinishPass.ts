@@ -14,8 +14,8 @@ import {
   type FacePartPaint,
   type FacePartShape,
   type Finish,
-} from '@livediagram/document';
-import { trustedHtml } from '@livediagram/ui';
+} from '@livepages/document';
+import { trustedHtml } from '@livepages/ui';
 import { watchUntilSettled } from '@/components/canvas/settle-watch';
 
 // A face's own parts in its finish on the canvas. Under Marker (docs/specs/008-canvas/finish.md "Marker", "Faces: frames and shapes"):

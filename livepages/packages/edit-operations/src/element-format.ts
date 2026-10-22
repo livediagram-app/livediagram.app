@@ -13,7 +13,7 @@ import {
   THEMES,
   type Element,
   withArticle,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { fillSlotNames } from './colours';
 import { aliasesOf, ARROW_STYLES, BORDER_STYLES, TEXT_SIZES } from './fields';
 import { buildKind, NOT_ADDED, OTHER_KINDS } from './operations/add-kind';
@@ -43,7 +43,7 @@ export function addableKinds(): string[] {
 
 export function elementKindsText(): string {
   return [
-    'Element kinds: add <kind> makes one; livediagram schema <kind> shows its fields.',
+    'Element kinds: add <kind> makes one; livepages schema <kind> shows its fields.',
     `  ${OTHER_KINDS.join(', ')}`,
     '  shapes:',
     ...wrapped([...SHAPE_KINDS], '    ', ', '),

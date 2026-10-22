@@ -14,7 +14,7 @@ import {
   type Item,
   type ItemPatch,
   type ItemTypeDef,
-} from '@livediagram/items';
+} from '@livepages/items';
 import {
   isoFromSerial,
   cellKey,
@@ -27,7 +27,7 @@ import {
   type SheetWrite,
   type Value,
   type Workbook,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 
 export type CardPlan = {
   items: ReadonlyMap<string, Item>;

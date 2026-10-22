@@ -10,8 +10,8 @@ import {
   normaliseBoardSetup,
   type ItemTypeDef,
   type PlanViewId,
-} from '@livediagram/items';
-import { tabKindOf, type Tab } from '@livediagram/document';
+} from '@livepages/items';
+import { tabKindOf, type Tab } from '@livepages/document';
 
 type SuggestedSlot =
   | { span: number; tab: { tabId: string; of: 'board' | 'sheet' } }

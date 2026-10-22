@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { layOutPages, type Page } from '@livediagram/document';
+import { layOutPages, type Page } from '@livepages/document';
 import type { PagesModeView } from '@/hooks/editor/usePagesMode';
 import { ViewportStoreProvider } from '@/hooks/canvas/useViewportStore';
 import { createViewportStore } from '@/lib/viewport-store';

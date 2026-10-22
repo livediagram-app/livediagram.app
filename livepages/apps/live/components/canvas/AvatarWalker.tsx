@@ -7,9 +7,9 @@
 // same component draws PEERS' characters (from their presence snapshot), which
 // is why every animation input is a prop rather than read from the walk hook.
 
-import type { DrinkKind } from '@livediagram/document';
+import type { DrinkKind } from '@livepages/document';
 import { avatarStatusColour, avatarStatusLabel, type AvatarStatus } from '@/lib/avatar-status';
-import { IDENTITY_FILL, identityVars } from '@livediagram/ui';
+import { IDENTITY_FILL, identityVars } from '@livepages/ui';
 import { AVATAR_FALLBACK_COLOUR, avatarScale, type AvatarConfig } from '@/lib/avatar-config';
 import type { AvatarFacing } from '@/lib/avatar-walk';
 import { AVATAR_HEIGHT, avatarBox } from '@/lib/avatar-walk';

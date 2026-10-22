@@ -27,7 +27,7 @@ export const VIEW_TITLES: Readonly<Record<NamedKind, string>> = {
 
 // The document title a static Explorer page exports.
 export function viewDocumentTitle(kind: NamedKind): string {
-  return `${VIEW_TITLES[kind]} | livediagram`;
+  return `${VIEW_TITLES[kind]} | livepages`;
 }
 
 // The view reached from Home, without a sidebar row of its own: Recent (See More). Its breadcrumb

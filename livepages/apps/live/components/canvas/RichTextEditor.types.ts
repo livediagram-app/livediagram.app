@@ -4,7 +4,7 @@ import type {
   TextAlignY,
   TextRun,
   TextSize,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { LabelPadding } from './label-style';
 
 export type RichTextEditorProps = {

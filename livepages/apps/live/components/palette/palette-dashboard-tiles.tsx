@@ -5,7 +5,7 @@
 // `layout:` choice, which only a Dashboard takes (hooks/plan/dashboard-drop.ts); the category shows on a Dashboard tab
 // alone. Each tile's picture is the row it makes.
 import type { ReactNode } from 'react';
-import { Glyph, PlanIcon, lucideGlyph } from '@livediagram/ui';
+import { Glyph, PlanIcon, lucideGlyph } from '@livepages/ui';
 import {
   lucideCalendar,
   lucideCircleCheck,
@@ -13,15 +13,15 @@ import {
   lucideHash,
   lucideLink,
   lucideWorkflow,
-} from '@livediagram/icons/lucide';
+} from '@livepages/icons/lucide';
 import { SheetArt } from '@/components/sheets/sheet-art';
 import {
   FORM_METRICS,
   SHEET_METRICS,
   type FormMetricKind,
   type SheetMetricKind,
-} from '@livediagram/document';
-import { FORM_METRIC_LINES, FORM_METRIC_NAMES, SHEET_METRIC_NAMES } from '@livediagram/plan-art';
+} from '@livepages/document';
+import { FORM_METRIC_LINES, FORM_METRIC_NAMES, SHEET_METRIC_NAMES } from '@livepages/plan-art';
 import {
   DASHBOARD_CARD_KINDS,
   formMetricChoice,

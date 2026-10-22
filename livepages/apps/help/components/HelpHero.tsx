@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 
 // The header band every help page opens on (docs/specs/018-help/help-pages.md "Shared look"): the marketing
-// hero's band (`hero-band` in @livediagram/ui), the canvas's dot grid fading out towards its foot, a display
+// hero's band (`hero-band` in @livepages/ui), the canvas's dot grid fading out towards its foot, a display
 // title in the band's ink, and optionally a category scene on the right from `lg` up. The home page passes
 // `home` for the centred, display-size version.
 export function HelpHero({

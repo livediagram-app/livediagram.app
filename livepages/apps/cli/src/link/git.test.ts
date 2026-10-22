@@ -12,7 +12,7 @@ import { parseLinkFile } from './link-file';
 // repository-link.md "Testing"); skipped where git is absent.
 
 const hasGit = spawnSync('git', ['--version']).status === 0;
-const base = realpathSync(mkdtempSync(join(tmpdir(), 'livediagram-git-')));
+const base = realpathSync(mkdtempSync(join(tmpdir(), 'livepages-git-')));
 const sh = (cwd: string, ...args: string[]) => {
   const run = spawnSync('git', args, { cwd, encoding: 'utf8' });
   if (run.status !== 0) throw new Error(run.stderr);
@@ -40,14 +40,14 @@ describe.skipIf(!hasGit)('git', () => {
     expect(await gitDirOf(io, worktree)).toBe(join(repo, '.git/worktrees/worktree'));
     expect(await gitDirOf(io, base)).toBeNull();
     const link = (root: string) =>
-      parseLinkFile('[covers]\nfolder = "f"\n', join(root, 'livediagram.toml'));
+      parseLinkFile('[covers]\nfolder = "f"\n', join(root, 'livepages.toml'));
     const [main, other] = [
       await linkStateDir(io, link(repo)),
       await linkStateDir(io, link(worktree)),
     ];
-    expect(main).toMatch(new RegExp(`^${join(repo, '.git/livediagram/')}[0-9a-f]{16}$`));
+    expect(main).toMatch(new RegExp(`^${join(repo, '.git/livepages/')}[0-9a-f]{16}$`));
     expect(other).toMatch(
-      new RegExp(`^${join(repo, '.git/worktrees/worktree/livediagram/')}[0-9a-f]{16}$`),
+      new RegExp(`^${join(repo, '.git/worktrees/worktree/livepages/')}[0-9a-f]{16}$`),
     );
   });
 

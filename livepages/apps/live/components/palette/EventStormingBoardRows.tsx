@@ -1,6 +1,6 @@
 'use client';
 
-import { Glyph } from '@livediagram/ui';
+import { Glyph } from '@livepages/ui';
 
 // The BOARD-level controls at the top of the palette's Event Storming category
 // (docs/specs/021-event-storming/event-storming.md). Everything below them adds a note; these change what the board

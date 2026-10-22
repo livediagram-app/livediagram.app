@@ -6,7 +6,7 @@ import {
   iconMakesRoomForLabel,
 } from './icon-band';
 
-// The editor's CSS bands mirror iconBandBounds / iconCaptionBand in @livediagram/document
+// The editor's CSS bands mirror iconBandBounds / iconCaptionBand in @livepages/document
 // (docs/specs/010-palette/technology-icons.md), so a captioned icon draws as it exports.
 describe('icon bands', () => {
   it('puts a middle-centre label on the glyph: both keep the whole box (issue #489)', () => {

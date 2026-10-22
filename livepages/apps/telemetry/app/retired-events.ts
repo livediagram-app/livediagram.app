@@ -1,4 +1,4 @@
-import type { TelemetrySummary, TelemetryWindow } from '@livediagram/api-schema';
+import type { TelemetrySummary, TelemetryWindow } from '@livepages/api-schema';
 
 // Events of features that no longer exist (docs/specs/017-telemetry/telemetry.md "Retired features").
 // The stored rows stay in D1 until retention ages them out, but the dashboard

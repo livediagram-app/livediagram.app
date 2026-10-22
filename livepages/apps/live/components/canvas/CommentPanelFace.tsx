@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, useState } from 'react';
 
-import type { CommentMention, ShapeElement } from '@livediagram/document';
+import type { CommentMention, ShapeElement } from '@livepages/document';
 
 import { useRelativeNow } from '@/lib/relative-time';
 import { CollabPanel, tint } from '@/components/canvas/collab/collab-chrome';

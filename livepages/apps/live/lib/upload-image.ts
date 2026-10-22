@@ -1,5 +1,5 @@
-import { sha256Hex, type ImageSummary } from '@livediagram/api-schema';
-import type { ImageCredit } from '@livediagram/document';
+import { sha256Hex, type ImageSummary } from '@livepages/api-schema';
+import type { ImageCredit } from '@livepages/document';
 import { ApiError, apiUploadImage } from './api-client';
 import { isOfflineIdSync } from './offline/offline-store';
 import {
@@ -9,7 +9,7 @@ import {
   MAX_IMAGE_BYTES,
   MAX_IMAGE_MB,
   type AcceptedImageType,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { blobToDataUrl } from '@/lib/blob-data-url';
 
 // Map the api worker's upload error tokens (responses.ts / images.ts)
@@ -86,7 +86,7 @@ export async function uploadImageFile(ownerId: string, file: File): Promise<Uplo
   const bytes = await file.arrayBuffer();
   // SHA-256 dedupe key. The server re-verifies this against the
   // body so a client can't poison the gallery with a fake hash.
-  // Shared with the api worker via @livediagram/api-schema so
+  // Shared with the api worker via @livepages/api-schema so
   // both sides produce byte-for-byte identical hex.
   const sha = await sha256Hex(bytes);
   const dims = await readImageDimensions(file);

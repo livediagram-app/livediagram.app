@@ -4,7 +4,7 @@
 // own text in its own look and colours, so the tile is what lands on the canvas. The colours are the canvas's
 // (chipColours over the tab theme's element colours, else the Default theme's), and a preset's own colour (the
 // Warning's rose) wins, as on the canvas.
-import { chipColours, type ChipLook } from '@livediagram/document';
+import { chipColours, type ChipLook } from '@livepages/document';
 import { usePaletteTint } from './PaletteIconButton';
 
 // A fresh shape's colours on the Default theme, as the canvas draws one (its stroke, fill and label ink).

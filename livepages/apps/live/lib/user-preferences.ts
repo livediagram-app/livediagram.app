@@ -6,28 +6,28 @@ export type MapSize = 'short' | 'medium' | 'tall';
 //   - D1 (`user_preferences` table) is the authoritative store, fetched
 //     once at editor mount via fetchUserPreferences() so a signed-in
 //     user's flags follow them across devices.
-//   - `localStorage` under `livediagram:user-preferences:v1` is a warm
+//   - `localStorage` under `livepages:user-preferences:v1` is a warm
 //     cache so the editor never blocks on the network at boot. Reads
 //     are synchronous; writes go to BOTH localStorage and the api
 //     (one PUT at a time, latest wins, lib/preferences-sync). Last-write-wins per device.
 //
 // Cross-tab consistency: callers can listen for the native `storage`
 // event on STORAGE_KEY. Same-tab writes also fire a window event
-// `livediagram:preferences-changed` so listeners that can't observe
+// `livepages:preferences-changed` so listeners that can't observe
 // their own `localStorage.setItem` (like `lib/telemetry.ts`'s
 // in-memory gate cache) still refresh promptly. Every write sends the
 // WHOLE blob, so a change is built on the cache, never on a render's
 // snapshot (see rebaseUserPreferences): another tab's write since that
 // render would otherwise be undone.
 
-import { upgradeLegacyPreferences } from '@livediagram/api-schema';
-import type { PageKind } from '@livediagram/document';
+import { upgradeLegacyPreferences } from '@livepages/api-schema';
+import type { PageKind } from '@livepages/document';
 import type { ElementTourKind } from './element-tours';
 import type { PlanTourTrack } from './plan-tour';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import type { WhiteboardShapeKey } from './whiteboard-shape-catalogue';
 import type { ShapePicks } from './whiteboard-shape-slots';
-import { USER_PREFERENCES_STORAGE_KEY } from '@livediagram/telemetry-client';
+import { USER_PREFERENCES_STORAGE_KEY } from '@livepages/telemetry-client';
 import { apiGetPreferences } from './api-client';
 import { fitPreferences, preferencesUnsynced, savePreferences } from './preferences-sync';
 import { getWorkbenchConfinement } from './api/workbench-confinement';
@@ -314,7 +314,7 @@ export function toggleRecentExcluded(prefs: UserPreferences, documentId: string)
 // centre reads the telemetry field out of this same blob and must never get
 // the string wrong — see the note there.
 export const STORAGE_KEY = USER_PREFERENCES_STORAGE_KEY;
-export const PREFERENCES_CHANGED_EVENT = 'livediagram:preferences-changed';
+export const PREFERENCES_CHANGED_EVENT = 'livepages:preferences-changed';
 
 // The effective "Auto-Attach Arrows" state (docs/specs/007-editor/user-preferences.md): on by
 // default, so only an explicit `false` turns the on-move rebind off. The
@@ -361,7 +361,7 @@ export function readUserPreferences(): UserPreferences {
 // tests, the editor before identity resolves) skip the network step.
 // The blob is first trimmed to fit the api's size cap, so the cache and
 // the server hold the same thing. On success a same-tab
-// `livediagram:preferences-changed` event fires so in-process
+// `livepages:preferences-changed` event fires so in-process
 // listeners refresh without polling. The browser handles cross-tab
 // via its native `storage` event.
 export function writeUserPreferences(prefs: UserPreferences, ownerId?: string | null): void {
@@ -411,7 +411,7 @@ export function commitUserPreferences(
 }
 
 // Fetch preferences from D1, merge over the localStorage cache, and
-// dispatch `livediagram:preferences-changed` so in-process listeners
+// dispatch `livepages:preferences-changed` so in-process listeners
 // pick up the merged value. Returns the merged preferences (or null
 // when the fetch failed; the caller can treat that as "stick with
 // the cache"). Called once at editor mount per docs/specs/007-editor/user-preferences.md's sync flow.

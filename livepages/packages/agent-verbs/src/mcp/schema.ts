@@ -10,13 +10,13 @@
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
 import { z } from 'zod';
-import { METRIC_KINDS, PLAN_VISUALISATIONS } from '@livediagram/items';
+import { METRIC_KINDS, PLAN_VISUALISATIONS } from '@livepages/items';
 import {
   FIND_QUERY_MAX_LENGTH,
   REF_INPUT_MAX_LENGTH,
   TAB_VIEW_NAMES,
   VIEW_BUDGET_MAX,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   ANCHORS,
   BADGE_LABEL_MAX,
@@ -46,9 +46,9 @@ import {
   STICKY_PRESETS,
   THEMES,
   truncateName,
-} from '@livediagram/document';
+} from '@livepages/document';
 
-export const SCHEMA_RESOURCE_URI = 'livediagram://schema/elements';
+export const SCHEMA_RESOURCE_URI = 'livepages://schema/elements';
 
 const types = [...ELEMENT_TYPES].join(', ');
 const anchors = [...ANCHORS].join(', ');
@@ -198,7 +198,7 @@ const ELEMENT_SCHEMA_HINT =
   CONTENT_KINDS;
 
 export function elementSchemaDoc(): string {
-  return `# livediagram element schema
+  return `# livepages element schema
 
 A tab is { name, elements: Element[] }. Every element needs a unique string "id".
 A document has one or more tabs, each its own canvas. create_document makes a
@@ -283,7 +283,7 @@ tabs in a create_document call.
 // resources (docs/specs/015-api/mcp-server.md §4.5). Phrased as facts about the server (what it does
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
-export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livediagram documents.
+export const SERVER_INSTRUCTIONS = `Tools to find, view, create, add tabs to, edit, share, rename, delete (to the Trash) and restore the user's livepages documents.
 The calling model produces the diagram elements AND decides their layout; this
 server validates, persists, and renders them, and only auto-arranges the graph
 when you ask it to (or leave nodes unplaced). The full element format is
@@ -353,7 +353,7 @@ const layoutField = z
   );
 
 // Template kinds are validated at runtime against the shared catalogue
-// (@livediagram/templates) rather than a z.enum, so a new template is one
+// (@livepages/templates) rather than a z.enum, so a new template is one
 // catalogue entry with no schema churn; list_templates is the discovery
 // surface.
 // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard"), everything named as people name it.

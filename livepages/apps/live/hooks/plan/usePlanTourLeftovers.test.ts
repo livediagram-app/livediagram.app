@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
-import type { Item, ItemWrite } from '@livediagram/items';
+import type { Element, Tab } from '@livepages/document';
+import type { Item, ItemWrite } from '@livepages/items';
 import { readLeftover, writeLeftover } from '@/lib/plan-tour';
 import { LEFTOVER_SHEET_RETRY_MS, usePlanTourLeftovers } from './usePlanTourLeftovers';
 

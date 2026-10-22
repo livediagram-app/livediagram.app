@@ -36,7 +36,7 @@ palette), beside the portal, the chairs and the fence: like them it is somewhere
   furniture and characters stand on it. A character walks over it freely (it never blocks), and standing on it
   does not ring it as "the element you are on": the arrival is the pad's highlight.
 - Otherwise an ordinary element: move, resize, rotate, lock, copy, delete, export.
-- **One drawing, on the canvas and in an export**: both paint the shared pixel table in `@livediagram/document`.
+- **One drawing, on the canvas and in an export**: both paint the shared pixel table in `@livepages/document`.
   The export draws the pad as it stands, ring lit; the shimmer and the arrival are the canvas's.
 
 ## Starting on the pad

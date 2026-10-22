@@ -1,7 +1,7 @@
 // A Form tab's link, as its document's people read and change it (docs/specs/030-forms/forms.md "Publishing and the
 // form link"). The respondent's side is forms-public.ts, kept apart so the form page loads none of this.
-import type { FormLinkResponse } from '@livediagram/api-schema';
-import type { AnswerError } from '@livediagram/forms';
+import type { FormLinkResponse } from '@livepages/api-schema';
+import type { AnswerError } from '@livepages/forms';
 import { API_BASE, apiFetch, apiHeaders, expectOk } from './core';
 
 const linkUrl = (

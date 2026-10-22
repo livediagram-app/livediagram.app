@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '@livediagram/tailwind-config';
+@import '@livepages/tailwind-config';
 
 /* Scan the shared UI package so utility classes used only inside its components (the <Brand> mark,
  * the site header and footer) are generated here too. Tailwind v4 skips node_modules, where the

@@ -2,8 +2,8 @@
 // templates make a second tab after their drawing, a Sheet of the live numbers behind it, filling its tab and opening
 // in Plan. The drawing keeps the template's own canvas (pattern, layers, mode); the companion takes the theme only,
 // so it is the same Sheet tab Start Planning would make.
-import type { TemplateStartId } from '@livediagram/sheets';
-import type { Element } from '@livediagram/document';
+import type { TemplateStartId } from '@livepages/sheets';
+import type { Element } from '@livepages/document';
 import type { TemplateTabDef } from './build-template';
 import { sheetTabDef } from './template-builders-plan';
 import type { TemplateKind } from './templates';

@@ -14,7 +14,7 @@ import {
   type ShapeElement,
   type ShapeKind,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 export const CHECKOUT_TAB_ID = '0b3481f3-59fb-4bd0-a21a-152f1ba9bba5';
 export const CHECKOUT_REV = 41;

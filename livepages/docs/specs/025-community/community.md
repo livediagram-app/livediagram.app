@@ -8,7 +8,7 @@ post's document read-only, like it, and make their own copy of it. It lives in i
 ## Why
 
 [Purpose](../001-project-vision/purpose.md) makes the growth model distribution: every shared document is a way in. Two
-things are missing today. A visitor who has never used livediagram has no way to see what people actually make with it
+things are missing today. A visitor who has never used livepages has no way to see what people actually make with it
 beyond our own templates, and a person who has made something good has nowhere to show it beyond sending a link. Community
 is both: inspiration for the first, recognition for the second, and a starting point for anyone (copying a post is a
 better start than a blank canvas).
@@ -167,7 +167,7 @@ type) and on the worker (authoritative).
   and again once the post loads. The static shell, shared by every post, carries none, and its Open Graph block has no
   `og:url`, so a link preview never folds a post into the gallery.
 - The gallery's metadata (canonical, Open Graph and Twitter card with the brand card) comes from the shared
-  `pageMetadata` in `@livediagram/ui`, with `og:type` `website` ([Marketing site](../019-marketing/marketing-site.md)
+  `pageMetadata` in `@livepages/ui`, with `og:type` `website` ([Marketing site](../019-marketing/marketing-site.md)
   "SEO and metadata").
 
 ### Search engines
@@ -178,7 +178,7 @@ app is a static export with one shell for every post, so a small worker script i
 only two paths; everything else is served straight from the assets.
 
 - **A post's page** (`/community/post/?id=<postId>`): the worker reads the post from the api and rewrites the shell's
-  head with the post's own title (`<Title> | livediagram Community`, as the page sets once it loads), a description
+  head with the post's own title (`<Title> | livepages Community`, as the page sets once it loads), a description
   (the post's, cut at a whole word to 160 characters; a sentence naming the post when it has none), a canonical and
   `og:url` at its own address, the Open Graph and Twitter title and description, and JSON-LD: a `CreativeWork` (name,
   description, category as `genre`, tags as `keywords`, published and modified dates, the author unless the post is

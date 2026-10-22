@@ -1,7 +1,7 @@
 // Who arrives: visitors, accounts, page views, the sign-in prompts and the first-visit welcome and tour (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
-import { pageViewApp, type PageViewApp } from '@livediagram/api-schema';
+import { pageViewApp, type PageViewApp } from '@livepages/api-schema';
 import type { Metric, MetricStack } from '../metric-series';
 import {
   ACTION_SIGN_IN_NUDGE,

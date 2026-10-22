@@ -19,9 +19,9 @@ import {
   type Endpoint,
   type LaidOutPage,
   type Tab,
-} from '@livediagram/document';
-import { readForm } from '@livediagram/forms';
-import { formArt } from '@livediagram/plan-art';
+} from '@livepages/document';
+import { readForm } from '@livepages/forms';
+import { formArt } from '@livepages/plan-art';
 import { pageWritingFonts } from './article/article-export';
 import { renderTabToSvg, type ImageExportOpts } from './export-tab';
 

@@ -126,9 +126,9 @@ test.describe('explorer sidebar', () => {
     await page.evaluate(
       () =>
         new Promise<void>((resolve, reject) => {
-          const del = indexedDB.deleteDatabase('livediagram-offline');
+          const del = indexedDB.deleteDatabase('livepages-offline');
           del.onsuccess = () => {
-            const req = indexedDB.open('livediagram-offline', 1);
+            const req = indexedDB.open('livepages-offline', 1);
             req.onupgradeneeded = () => req.result.createObjectStore('diagrams', { keyPath: 'id' });
             req.onsuccess = () => {
               const db = req.result;
@@ -161,7 +161,7 @@ test.describe('explorer sidebar', () => {
     await darkVisitor(page, await mintSignedGuest(page.request));
     await page.addInitScript(() =>
       localStorage.setItem(
-        'livediagram:user-preferences:v1',
+        'livepages:user-preferences:v1',
         JSON.stringify({ powerUserMode: true, minimalChrome: true }),
       ),
     );
@@ -206,7 +206,7 @@ test.describe('editor Explorer panel', () => {
     const owner = await mintSignedGuest(page.request);
     const origin = new URL(baseURL!).origin;
     await darkVisitor(page, owner);
-    await page.addInitScript(() => localStorage.setItem('livediagram:v2:tour-seen', '1'));
+    await page.addInitScript(() => localStorage.setItem('livepages:v2:tour-seen', '1'));
     const id = crypto.randomUUID();
     const make = async (docId: string, name: string) => {
       const res = await page.request.post(`${apiBase}/documents`, {

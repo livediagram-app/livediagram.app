@@ -13,7 +13,7 @@ import {
   type ChartPaletteId,
   type SheetAnchor,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   posRangeOf,
   regionAround,
@@ -21,7 +21,7 @@ import {
   type IdRange,
   type Sheet,
   type Workbook,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import type { SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { track } from '@/lib/telemetry';

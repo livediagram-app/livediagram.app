@@ -3,7 +3,7 @@
 // row every post signs off with, and a column that pins its first and last parts to its ends and
 // centres the rest between them. Social posts are mostly Square, Portrait post (4:5) and Story
 // (9:16) pages, so type here grows with the page rather than staying at the preset sizes.
-import { LABEL_FONT_PX, type Element, type TextElement } from '@livediagram/document';
+import { LABEL_FONT_PX, type Element, type TextElement } from '@livepages/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 
 // A headline's type as a share of its line box, and a bold glyph's mean advance as a share of the

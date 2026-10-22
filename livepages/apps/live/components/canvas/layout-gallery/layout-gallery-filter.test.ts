@@ -1,6 +1,6 @@
 // docs/specs/007-editor/pages-mode.md "The layout gallery": what it shows for each chip and search.
 import { describe, expect, it } from 'vitest';
-import { SLIDE_LAYOUT_CATEGORIES, SLIDE_LAYOUTS, type PageLayoutId } from '@livediagram/templates';
+import { SLIDE_LAYOUT_CATEGORIES, SLIDE_LAYOUTS, type PageLayoutId } from '@livepages/templates';
 import {
   ALL_LAYOUTS,
   categoryCounts,

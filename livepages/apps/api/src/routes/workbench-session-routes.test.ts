@@ -3,7 +3,7 @@ import {
   isWorkbenchSessionFormat,
   WORKBENCH_SESSION_TTL_MS,
   WORKBENCH_TICKET_TTL_MS,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { hashWorkbenchSecret } from '../auth/workbench-session';
 import type { SqliteD1 } from '../test-sqlite-d1';
 import type { WorkbenchContext } from './context';

@@ -1,7 +1,7 @@
 // What the layout gallery shows (docs/specs/007-editor/pages-mode.md "The layout gallery"): a
 // page's layouts narrowed by the chosen category and the words typed, grouped into sections while
 // nothing narrows them, and the layout Surprise Me lands on. Pure, so each rule is tested alone.
-import type { PageLayoutId } from '@livediagram/templates';
+import type { PageLayoutId } from '@livepages/templates';
 
 export type GalleryLayout = {
   id: PageLayoutId;

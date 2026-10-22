@@ -5,7 +5,7 @@
 // Dashboard slot showing another tab's Sheet provides that tab's, not to be changed from there (`editable` false).
 // Kept tiny and free of the sheet chunk: the canvas, in the main bundle, provides it.
 import { createContext, useContext } from 'react';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import type { SheetChartRenderer } from '@/components/canvas/sheet-chart-renderer';
 
 export type SheetChartsValue = {

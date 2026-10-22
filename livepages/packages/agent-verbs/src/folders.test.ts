@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Folder } from '@livediagram/api-schema';
+import type { Folder } from '@livepages/api-schema';
 import { VerbRefusal } from './define';
 import type { Libraries } from './find-documents';
 import { folderChoices, matchFolders, resolveFolderRef } from './folders';

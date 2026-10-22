@@ -30,9 +30,9 @@ import {
   lucideToggleRight,
   lucideUsers,
   lucideVote,
-} from '@livediagram/icons/lucide';
-import { topCategorySlug } from '@livediagram/help-registry';
-import { Prims, Glyph as UiGlyph } from '@livediagram/ui';
+} from '@livepages/icons/lucide';
+import { topCategorySlug } from '@livepages/help-registry';
+import { Prims, Glyph as UiGlyph } from '@livepages/ui';
 import type { ReactNode } from 'react';
 
 /** Feature slug → icon (full <svg>). Used by the home grid, the features

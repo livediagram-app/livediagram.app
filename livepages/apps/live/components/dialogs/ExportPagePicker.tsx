@@ -4,9 +4,9 @@
 // "Export"): All pages or One page (the shared segmented control), with One page the page itself,
 // and a line saying what the download will be. With All pages a page is still picked, for the
 // preview.
-import { plural } from '@livediagram/document';
-import type { LaidOutPage } from '@livediagram/document';
-import { ACTIVE_SEGMENT, SEGMENT_TRACK, Select } from '@livediagram/ui';
+import { plural } from '@livepages/document';
+import type { LaidOutPage } from '@livepages/document';
+import { ACTIVE_SEGMENT, SEGMENT_TRACK, Select } from '@livepages/ui';
 import { SegmentSlider } from '@/components/primitives/SegmentSlider';
 import { exportPageLabel, type PageExportFormat, type PageScope } from '@/lib/export-pages';
 

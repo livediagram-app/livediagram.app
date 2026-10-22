@@ -449,7 +449,7 @@ describe('a covered canvas', () => {
     const { bag } = deps({ canvasCovered: () => false, copySelection });
     renderHook(() => useEditorKeyboardShortcuts(bag));
     const p = document.createElement('p');
-    p.textContent = 'https://livediagram.app/s/abc';
+    p.textContent = 'https://livepages.app/s/abc';
     document.body.appendChild(p);
     window.getSelection()!.selectAllChildren(p);
     expect(press('c', { metaKey: true }).defaultPrevented).toBe(false);

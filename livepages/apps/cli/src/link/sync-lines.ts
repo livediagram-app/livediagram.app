@@ -3,7 +3,7 @@
 
 import type { MirrorLevel } from './link-file';
 import type { SyncAction, TabMove } from './sync-plan';
-import { plural } from '@livediagram/document';
+import { plural } from '@livepages/document';
 import { oneLine } from '../output/one-line';
 
 export type LineContext = {
@@ -38,18 +38,18 @@ function writeLine(action: Extract<SyncAction, { kind: 'write' }>, lc: LineConte
 
 function refuseLine(action: Extract<SyncAction, { kind: 'refuse' }>, lc: LineContext): string {
   const p = lc.pathOf(action.path);
-  const send = `livediagram push ${p}`;
+  const send = `livepages push ${p}`;
   switch (action.reason) {
     case 'ahead':
       return `! ${p}: changed here; send it: ${send}`;
     case 'diverged':
-      return `! ${p}: changed here and in livediagram; send it: ${send}`;
+      return `! ${p}: changed here and in livepages; send it: ${send}`;
     case 'gone-changed':
       return `! ${p}: gone from the link, but changed here and not sent; kept. Send it: ${send}, or delete it`;
     case 'lowered-changed':
       return `! ${p}: level ${action.detail} keeps no mirror files, but this one changed here and is not sent; kept. Send it: ${send}, or delete it`;
     case 'conflicted':
-      return `! ${p}: holds git conflict markers. Keep one side: git checkout --ours ${p} (or --theirs), then livediagram sync`;
+      return `! ${p}: holds git conflict markers. Keep one side: git checkout --ours ${p} (or --theirs), then livepages sync`;
     case 'invalid':
       return `! ${p}: ${action.detail}`;
     case 'foreign-host':
@@ -57,7 +57,7 @@ function refuseLine(action: Extract<SyncAction, { kind: 'refuse' }>, lc: LineCon
     case 'duplicate':
       return `! ${p}: names the same document as ${lc.pathOf(action.detail!)}`;
     case 'occupied':
-      return `! ${p}: not moved, ${lc.pathOf(action.detail!)} is already there and livediagram did not write it; kept. Move or rename that file, then livediagram sync --relocate`;
+      return `! ${p}: not moved, ${lc.pathOf(action.detail!)} is already there and livepages did not write it; kept. Move or rename that file, then livepages sync --relocate`;
   }
 }
 
@@ -76,11 +76,11 @@ export function actionLine(action: SyncAction, lc: LineContext): string | null {
     case 'relocate':
       return lc.relocate
         ? `» ${lc.pathOf(action.path)} → ${lc.pathOf(action.to)}`
-        : `» ${lc.pathOf(action.path)} would move to ${lc.pathOf(action.to)}: livediagram sync --relocate`;
+        : `» ${lc.pathOf(action.path)} would move to ${lc.pathOf(action.to)}: livepages sync --relocate`;
     case 'report':
       return action.reason === 'unreadable'
         ? `? ${action.path === null ? action.documentId : lc.pathOf(action.path)}: no document this account can open; left as it is`
-        : `? ${lc.pathOf(action.path!)}: a document written by hand; this version of livediagram does not create it`;
+        : `? ${lc.pathOf(action.path!)}: a document written by hand; this version of livepages does not create it`;
     case 'transient':
       return `! ${quoted(action.name)}: ${action.failure}; files kept`;
     case 'refuse':
@@ -88,8 +88,8 @@ export function actionLine(action: SyncAction, lc: LineContext): string | null {
     case 'held': {
       const p = lc.pathOf(action.path);
       return action.broken === 'conflicted'
-        ? `! ${quoted(action.name)}: not written while ${p} holds git conflict markers. Keep one side: git checkout --ours ${p} (or --theirs), then livediagram sync`
-        : `! ${quoted(action.name)}: not written while ${p} is invalid (${action.message}); fix or delete it, then livediagram sync`;
+        ? `! ${quoted(action.name)}: not written while ${p} holds git conflict markers. Keep one side: git checkout --ours ${p} (or --theirs), then livepages sync`
+        : `! ${quoted(action.name)}: not written while ${p} is invalid (${action.message}); fix or delete it, then livepages sync`;
     }
   }
 }

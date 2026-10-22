@@ -7,7 +7,7 @@ import {
   isCreditUrl,
   isRecord,
   type ImageCredit,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 const OPENVERSE_API_BASE = 'https://api.openverse.org/v1';
 // Openverse's anonymous maximum.

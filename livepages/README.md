@@ -1,8 +1,8 @@
-# livediagram
+# livepages
 
 A collaborative diagram editor that works without signing in. Open a link, draw, share. Real-time presence, cursors, comments, undo and redo. The canvas never sits behind an auth wall, so the friction to start is "open the link, start drawing."
 
-**Live at [livediagram.app](https://livediagram.app).** MIT-licensed and self-hostable end-to-end.
+**Live at [livepages.app](https://livepages.app).** MIT-licensed and self-hostable end-to-end.
 
 ```
 apps/        marketing site + editor + telemetry dashboard + help centre + community + api + mcp server + router + cli
@@ -16,7 +16,7 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 
 | If you want to...                                     | Read                                                                           |
 | ----------------------------------------------------- | ------------------------------------------------------------------------------ |
-| Understand what livediagram does and where it's going | [docs/README.md](docs/README.md)                                               |
+| Understand what livepages does and where it's going | [docs/README.md](docs/README.md)                                               |
 | Run it on your machine                                | [docs/development/local-development.md](docs/development/local-development.md) |
 | Host it on your own Cloudflare account                | [docs/operations/self-hosting.md](docs/operations/self-hosting.md)             |
 | See the repo's shape (apps, packages, deploy)         | [docs/development/architecture.md](docs/development/architecture.md)           |
@@ -31,9 +31,9 @@ marketing/   off-site copy + media for listings and promotion (see docs/specs/01
 - **Telemetry** at `/telemetry` is the public anonymous-events dashboard (off in OSS forks by default).
 - **Help** at `/help` is the static help centre (guides, feature docs, troubleshooting).
 - **Community** at `/community` is the public gallery of shared documents: browse, like and copy what people publish ([Community](docs/specs/025-community/community.md)).
-- **MCP** at `mcp.livediagram.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
+- **MCP** at `mcp.livepages.app` is a Cloudflare Worker that exposes the document tools to AI clients (Claude and other MCP hosts) over OAuth — its own host, not a router path.
 - **Router** stitches the six under one hostname.
-- **CLI** (`apps/cli`) is `livediagram`, the command line agents and scripts read, lint and change documents with, published on npm as `@livediagram/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
+- **CLI** (`apps/cli`) is `livepages`, the command line agents and scripts read, lint and change documents with, published on npm as `@livepages/cli`. It also links a repository to its diagrams and opens a document inside a developer tool ([CLI](docs/specs/015-api/cli.md), [Repositories](docs/specs/027-repositories/README.md), [Workbench embeds](docs/specs/013-workspace/workbench-embeds.md)).
 
 The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps). There's no Node-hosted backend, no SSR, no Next.js API routes.
 
@@ -46,10 +46,10 @@ The whole stack runs on Cloudflare Workers (Static Assets for the Next.js apps).
 
 ## Security
 
-Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livediagram-app/livediagram.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://livediagram.app/help/policies/report-a-vulnerability/).
+Found a vulnerability? Please report it privately through [GitHub's advisory form](https://github.com/livepages-app/livepages.app/security/advisories/new), never in a public issue. See [`SECURITY.md`](SECURITY.md) and the [full policy](https://livepages.app/help/policies/report-a-vulnerability/).
 
 ## License
 
-[MIT](LICENSE). Anyone can self-host. A free hosted version runs alongside at [livediagram.app](https://livediagram.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — Clerk (auth), Resend (transactional email), and OpenAI (the AI assistant), each gated on its own key — and the editor runs fully without any of them.
+[MIT](LICENSE). Anyone can self-host. A free hosted version runs alongside at [livepages.app](https://livepages.app); there's **no paid tier and no plan to introduce one** ([`docs/specs/002-project-scope/open-source-and-business-model.md`](docs/specs/002-project-scope/open-source-and-business-model.md)). Its SaaS integrations are all optional — Clerk (auth), Resend (transactional email), and OpenAI (the AI assistant), each gated on its own key — and the editor runs fully without any of them.
 
-Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livediagram.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).
+Icon artwork includes Lucide (ISC) and Feather (MIT); see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Every third-party work the deployed apps ship is credited, with its licence and notices, on the generated [/licences](https://livepages.app/licences) page ([Third-party licences](docs/specs/002-project-scope/third-party-licences.md)).

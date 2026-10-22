@@ -4,7 +4,7 @@
 // one channel that survives a room's lighting reasonably well — as long as the
 // whole image is balanced first, which is what `greyWorldBalance` is for.
 
-import { hexToRgb as parseHex } from '@livediagram/document';
+import { hexToRgb as parseHex } from '@livepages/document';
 
 export type Rgb = { r: number; g: number; b: number };
 // h in 0..360, s and v in 0..1.

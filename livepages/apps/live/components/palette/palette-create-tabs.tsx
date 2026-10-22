@@ -4,7 +4,7 @@ import type { PendingDraw } from '@/lib/draw-mode';
 import { PaletteTileGrid, type PaletteTileActions } from './PaletteTileGrid';
 import { PaletteToolRows } from './PaletteToolRows';
 import { PaletteTileGroup } from './PaletteTileGroup';
-import { EmbedGroupIcon, WebGroupIcon } from '@livediagram/ui';
+import { EmbedGroupIcon, WebGroupIcon } from '@livepages/ui';
 import type { PaletteTileDef } from './palette-tile-defs';
 import { EventStormingBoardRows, type EsBoardControls } from './EventStormingBoardRows';
 

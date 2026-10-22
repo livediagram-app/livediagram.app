@@ -4,7 +4,7 @@
 //
 // Pure: takes a centre (cx, cy), returns a fresh Element[].
 
-import { createPinnedArrow, createShape, type Anchor, type Element } from '@livediagram/document';
+import { createPinnedArrow, createShape, type Anchor, type Element } from '@livepages/document';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 
 // A Plateful order's lifecycle as a UML state machine, using the notation

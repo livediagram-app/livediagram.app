@@ -10,7 +10,7 @@ import {
   rowPageAt,
   type Element,
   type LaidOutPage,
-} from '@livediagram/document';
+} from '@livepages/document';
 
 export function pageElementBuckets(
   elements: readonly Element[],

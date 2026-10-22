@@ -3,7 +3,7 @@
 // added here since the last save (not in the baseline) is not in it, and one deleted here since (still in the
 // baseline) is. Replacing the screen with it dropped the new tab before its save, and brought the deleted one
 // back as an empty placeholder whose next save emptied the real tab for everyone. Pure.
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 
 export function keepUnsavedTabChanges(
   // The tabs as they were before the peer's list, and as the list leaves them.

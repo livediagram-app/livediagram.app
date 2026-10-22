@@ -12,9 +12,9 @@ import {
   type Finish,
   type TextSize,
   type TextSizePreset,
-} from '@livediagram/document';
-import { Glyph, lucideGlyph } from '@livediagram/ui';
-import { lucideChevronRight } from '@livediagram/icons/lucide';
+} from '@livepages/document';
+import { Glyph, lucideGlyph } from '@livepages/ui';
+import { lucideChevronRight } from '@livepages/icons/lucide';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';
 import { FINISH_LABELS, FinishSwatch } from '@/components/palette/FinishSection';
 import { patternLabel as labelOfPattern } from '@/components/palette/palette-patterns';

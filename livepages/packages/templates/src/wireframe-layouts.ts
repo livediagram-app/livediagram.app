@@ -2,7 +2,7 @@
 // wireframe page starts from, by category. Each phone, tablet and computer layout is responsive
 // (built for the form its safe area takes); a watch has its own. A page is offered its device
 // class's: the watch's on a watch, the rest elsewhere.
-import type { Element, WireframeDeviceClass } from '@livediagram/document';
+import type { Element, WireframeDeviceClass } from '@livepages/document';
 import type { LayoutBox } from './page-layout-kit';
 import type { PageLayoutId } from './page-layouts';
 import {

@@ -1,3 +1,3 @@
-import { defineProject } from '@livediagram/vitest-config';
+import { defineProject } from '@livepages/vitest-config';
 
 export default defineProject({});

@@ -5,7 +5,7 @@ import {
   dashboardFromPreset,
   setDashboardContent,
   type DashboardLayout,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { track } from '@/lib/telemetry';
 import { DashboardSettings } from './DashboardSettings';

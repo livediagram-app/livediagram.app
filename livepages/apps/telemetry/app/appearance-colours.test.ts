@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { DARK_CARD, DARK_MIN_CONTRAST, darkFloor, forAppearance } from './appearance-colours';
 import { contrastRatio } from './colour-maths';
 import { categoryColor } from './event-vocab';
-import { TELEMETRY_CATEGORIES } from '@livediagram/api-schema';
+import { TELEMETRY_CATEGORIES } from '@livepages/api-schema';
 
 describe('forAppearance', () => {
   it('leaves every colour alone in light', () => {

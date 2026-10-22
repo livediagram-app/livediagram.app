@@ -6,7 +6,7 @@
 
 export type AccessEnded = 'revoked' | 'changed';
 
-const KEY = 'livediagram:access-ended:v1';
+const KEY = 'livepages:access-ended:v1';
 // Only the landing that follows the eject explains it; a stale note never reaches a later visit.
 export const ACCESS_NOTICE_TTL_MS = 60_000;
 

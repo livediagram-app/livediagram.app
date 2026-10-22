@@ -5,7 +5,7 @@ import {
   type NoteText,
   type ReadNotesRequest,
   type ReadNotesResponse,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { aiError, CORS_HEADERS, json } from '../responses';
 import { chatCompletions, providerOf } from '../ai-client';
 import { aiGate } from './ai-gate';

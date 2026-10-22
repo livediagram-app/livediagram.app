@@ -5,7 +5,7 @@
 // has both. Shown in place of the panel's body, in the same popover over the Avatar button.
 
 import { useState } from 'react';
-import { Button } from '@livediagram/ui';
+import { Button } from '@livepages/ui';
 import { SpeechCounter, SpeechDraftField } from '@/components/canvas/AvatarSpeechBubble';
 
 export function AvatarMessagePopover({

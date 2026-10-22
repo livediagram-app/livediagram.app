@@ -6,7 +6,7 @@
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { TabTimer, TabVote } from '@livediagram/document';
+import type { TabTimer, TabVote } from '@livepages/document';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { SessionPopover, type SessionPopoverProps } from './SessionPopover';
 

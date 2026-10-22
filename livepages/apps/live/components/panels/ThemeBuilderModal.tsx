@@ -6,7 +6,7 @@
 // the same thing from both places.
 
 import { Dialog } from '@/components/dialogs/Dialog';
-import { DialogCloseButton } from '@livediagram/ui';
+import { DialogCloseButton } from '@livepages/ui';
 import { CustomThemeBuilder, type CustomThemeDraft } from '@/components/palette/CustomThemeBuilder';
 
 export type { CustomThemeDraft };

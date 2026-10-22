@@ -1,5 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
-import type { TemplateKind } from '@livediagram/templates';
+import type { TemplateKind } from '@livepages/templates';
 import { pv } from './motion';
 
 // Group 15: the Plan templates (docs/specs/026-plan/plan-templates.md), drawn as the Plan board the

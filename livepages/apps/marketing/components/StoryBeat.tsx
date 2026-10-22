@@ -1,4 +1,4 @@
-import { CheckIcon, ChevronRightIcon, GlyphDisc, RAIL_CLEAR_PADDING } from '@livediagram/ui';
+import { CheckIcon, ChevronRightIcon, GlyphDisc, RAIL_CLEAR_PADDING } from '@livepages/ui';
 import { CATEGORY_ICONS } from '@/components/category-icons';
 import { CtaLink } from '@/components/CtaLink';
 import { FeatureScene } from '@/components/FeatureScene';

@@ -1,7 +1,7 @@
 // Steps and Time layouts, part 3 (docs/specs/007-editor/pages-mode.md "Layouts"): a project
 // plan (a Gantt chart) and a decision flow. Same contract as page-layouts.ts: the page's content
 // box in, uncoloured elements out, a tall page stacking and a wide one setting side by side.
-import { createPinnedArrow, type Element, type ShapeElement } from '@livediagram/document';
+import { createPinnedArrow, type Element, type ShapeElement } from '@livepages/document';
 import { heading, type Kit } from './page-layout-kit';
 import { rule } from './page-layouts-set-steps-2';
 

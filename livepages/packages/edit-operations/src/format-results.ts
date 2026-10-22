@@ -3,7 +3,7 @@
 // (labels at 60, other text at 48), tokens and numbers print bare, objects and arrays as
 // `(changed)`, and an absent value as nothing (EO43).
 
-import type { FieldChange, JsonValue, ResultLine } from '@livediagram/api-schema';
+import type { FieldChange, JsonValue, ResultLine } from '@livepages/api-schema';
 import { quoteCut } from './element-text';
 import type { ResultFooter } from './types';
 import { LABEL_CUT_CHARS, VALUE_CUT_CHARS } from './vocabulary';
@@ -110,6 +110,6 @@ export function formatResultFooter(footer: ResultFooter): string {
     `rev ${footer.previousRev}→${footer.rev}${rebased}`,
     footer.changesetId,
     footer.lint,
-    `revert: livediagram changeset revert ${footer.documentId} ${footer.changesetId}`,
+    `revert: livepages changeset revert ${footer.documentId} ${footer.changesetId}`,
   ].join(' · ');
 }

@@ -100,7 +100,7 @@ the left beside Cell Size and Freeze Header Row on the right.
 
 A **sheet template** is a finished sheet a person starts from: example data that shows it working, laid out and
 styled the way a good spreadsheet is, every figure but the examples a live formula. One catalogue
-(`@livediagram/sheets` `SHEET_TEMPLATES`) serves Setup Sheet, Start Planning's Spreadsheets, a Dashboard slot's Sheet
+(`@livepages/sheets` `SHEET_TEMPLATES`) serves Setup Sheet, Start Planning's Spreadsheets, a Dashboard slot's Sheet
 and the Plan templates' sheets ([Spreadsheet templates](../026-plan/plan-templates.md#spreadsheet-templates)).
 
 Every template has the same shape:
@@ -564,7 +564,7 @@ view gets the header and **Copy** alone.
 ### Readable cells
 
 A cell's colours are stored as picked (hex), but drawn for the Sheet they are shown on, so a sheet set up or
-coloured in one theme reads in the other (`@livediagram/document` `cellColours`):
+coloured in one theme reads in the other (`@livepages/document` `cellColours`):
 
 - On a dark Sheet a pale fill (contrast with white under 1.35: a band, a total's tint, an input's yellow, a light
   highlight) is drawn as 16% of itself over the Sheet's surface: its hue, quietly. On a light Sheet a dark grey tint

@@ -5,7 +5,7 @@
 // the add-a-page popover. Infographic keeps the page and puts the choice away; Article makes it the
 // first page of an article, the caret in its title; Slide turns it into a 16:9 landscape slide;
 // Logo into the 1024 artboard. Held at one screen size, centred on the page.
-import type { PageKind, WireframeDeviceId } from '@livediagram/document';
+import type { PageKind, WireframeDeviceId } from '@livepages/document';
 import { useRef, useState } from 'react';
 import { rememberWireframeDevice } from '@/lib/wireframe-device-memory';
 import { ChooseDeviceStep } from './wireframe/ChooseDeviceStep';

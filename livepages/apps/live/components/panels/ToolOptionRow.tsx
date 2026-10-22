@@ -1,7 +1,7 @@
 'use client';
 
 import { AccordionSection } from '@/components/primitives/AccordionSection';
-import { HoverCard } from '@livediagram/ui';
+import { HoverCard } from '@livepages/ui';
 
 // One collapsible row of mutually-exclusive choices, the shape every
 // tool-config panel is built from (docs/specs/008-canvas/avatar-mode.md, docs/specs/008-canvas/laser-panel.md, docs/specs/008-canvas/spotlight-panel.md, docs/specs/008-canvas/eraser-panel.md):

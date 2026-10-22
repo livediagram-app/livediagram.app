@@ -1,7 +1,7 @@
 // Per-element comment threads: the Comment / CommentThread shapes plus the
 // helpers that create a comment and count the active (unresolved) ones. Split
 // out of index.ts so the comments model lives in one focused module. Re-exported
-// from ./index, so the public `@livediagram/document` surface is unchanged.
+// from ./index, so the public `@livepages/document` surface is unchanged.
 // (The ./index import below is type-only — erased at compile — so it can't
 // re-introduce the runtime module cycle this split avoided.)
 

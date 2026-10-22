@@ -1,4 +1,4 @@
-import { metricKey, type TelemetryCount } from '@livediagram/api-schema';
+import { metricKey, type TelemetryCount } from '@livepages/api-schema';
 
 // Old spelling -> current token, for one ranking's type column. Historic rows
 // keep the spelling they were stored with; a ranking that folds them in reads

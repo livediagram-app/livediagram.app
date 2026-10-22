@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { ICON_STROKE_PX, ICON_STROKE_PX_SMALL } from '@livediagram/icons';
+import { ICON_STROKE_PX, ICON_STROKE_PX_SMALL } from '@livepages/icons';
 import { render } from '@testing-library/react';
 import type { ComponentType } from 'react';
 import { describe, expect, it } from 'vitest';

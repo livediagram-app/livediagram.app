@@ -13,9 +13,9 @@ test('offline documents saved before the rename survive the store upgrade', asyn
   await page.evaluate(
     () =>
       new Promise<void>((resolve, reject) => {
-        const del = indexedDB.deleteDatabase('livediagram-offline');
+        const del = indexedDB.deleteDatabase('livepages-offline');
         del.onsuccess = () => {
-          const req = indexedDB.open('livediagram-offline', 1);
+          const req = indexedDB.open('livepages-offline', 1);
           req.onupgradeneeded = () => req.result.createObjectStore('diagrams', { keyPath: 'id' });
           req.onsuccess = () => {
             const db = req.result;
@@ -43,7 +43,7 @@ test('offline documents saved before the rename survive the store upgrade', asyn
   const stores = await page.evaluate(
     () =>
       new Promise<string[]>((resolve) => {
-        const req = indexedDB.open('livediagram-offline');
+        const req = indexedDB.open('livepages-offline');
         req.onsuccess = () => {
           resolve([...req.result.objectStoreNames]);
           req.result.close();

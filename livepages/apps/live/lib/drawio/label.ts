@@ -1,10 +1,10 @@
-// A draw.io label to livediagram text (docs/specs/020-import-export/blueprints/drawio-import.md
+// A draw.io label to livepages text (docs/specs/020-import-export/blueprints/drawio-import.md
 // step 8). HTML labels are PARSED, never rendered: DOMParser('text/html') is an
 // inert document (no scripts, no loads), and only text plus a closed set of
 // formats is read out of it.
 
-import { parseInert } from '@livediagram/ui/trusted-types';
-import { normalizeRuns, type RunHeading, type RunSize, type TextRun } from '@livediagram/document';
+import { parseInert } from '@livepages/ui/trusted-types';
+import { normalizeRuns, type RunHeading, type RunSize, type TextRun } from '@livepages/document';
 import { htmlFontSizePx } from './text-size';
 import { hexInk } from './colour';
 

@@ -6,7 +6,7 @@ import {
   endpointPosition,
   isValidElement,
   type ArrowElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { DRAWIO_CAPTION_WIDTH_SLACK } from './edges';
 import { labelTextWidth } from './text-size';
 import type { Pt } from './cells';
@@ -198,7 +198,7 @@ describe('edge heads and stroke', () => {
     expect(convert(boxA + boxB + edge('endSize=10;')).arrow.arrowheadSize).toBe('extra-large');
   });
 
-  it('counts heads livediagram does not draw', () => {
+  it('counts heads livepages does not draw', () => {
     expect(convert(boxA + boxB + edge('endArrow=async;')).notes).toEqual([
       { kind: 'arrowhead-approximated', count: 1 },
     ]);

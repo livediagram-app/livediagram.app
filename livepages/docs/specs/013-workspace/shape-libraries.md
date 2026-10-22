@@ -1,14 +1,14 @@
 # Shape libraries
 
 A **shape library** is a named set of reusable shapes that belongs to a person: a draw.io library (the
-"preset" kept in a draw.io scratchpad or a Drive file) brought into livediagram, its shapes ready to
+"preset" kept in a draw.io scratchpad or a Drive file) brought into livepages, its shapes ready to
 place on any tab from the palette's **My shapes** category. Importing several libraries gives several,
 each under its own name; they are never merged into one pile.
 
 ## Why
 
 People who work in draw.io keep their house shapes in libraries: a UML preset, a set of team icons,
-a notation of their own. Moving to livediagram should not mean redrawing them. A library is theirs,
+a notation of their own. Moving to livepages should not mean redrawing them. A library is theirs,
 reusable across documents, and named as they named it, so a library imported today and another next
 week stay two libraries.
 
@@ -21,7 +21,7 @@ week stay two libraries.
   a guest who signs up carries them over with the existing `POST /api/migrate` owner-id remap.
 - **An item**: an id, a **title** (may be empty), a **width** and **height** (the size of its
   elements), and its **elements**:
-  ordinary livediagram elements positioned from the item's top-left corner at (0, 0), as the draw.io
+  ordinary livepages elements positioned from the item's top-left corner at (0, 0), as the draw.io
   mapping ([draw.io import](../020-import-export/drawio-import.md)) produced them, connections
   between them included. Pictures in an item (an image item, or an image inside a shape snippet) are
   stored through the [Import image pipeline](../020-import-export/import-image-pipeline.md) when the

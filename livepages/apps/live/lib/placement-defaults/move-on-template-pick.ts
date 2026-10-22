@@ -3,8 +3,8 @@
 // editor imports it dynamically): it reads the template's intent, the document's place, the person's defaults and the
 // folders they can see, then moves the document when a default answers somewhere else. Every failure leaves the
 // document where it is: being unable to apply a default is no reason to disturb the work.
-import { creationIntentOf, type PlacementDefaultKey } from '@livediagram/api-schema';
-import { templateFamilyOf, type TemplateKind } from '@livediagram/templates';
+import { creationIntentOf, type PlacementDefaultKey } from '@livepages/api-schema';
+import { templateFamilyOf, type TemplateKind } from '@livepages/templates';
 import {
   apiGetTeamLibrary,
   apiListFolders,

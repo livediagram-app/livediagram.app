@@ -1,6 +1,6 @@
 'use client';
 
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip } from '@livepages/ui';
 import type { ImportSource, ImportSourceId } from './import-sources';
 
 // The Explorer page header's "Import from" group (docs/specs/013-workspace/folders.md): Help's

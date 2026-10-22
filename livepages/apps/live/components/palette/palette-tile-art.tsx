@@ -1,9 +1,9 @@
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@livepages/ui';
 // Tile pictures that are art, not icons (docs/specs/004-interface-design/iconography.md, "Art"):
 // the code block's fixed dark card, the embed providers' marks, and the event-storming notes in
 // their own stationery colour. They keep their own paint.
 
-import type { EventStormingNoteSize } from '@livediagram/document';
+import type { EventStormingNoteSize } from '@livepages/document';
 
 // The code block's dark editor card with angle brackets; it stays untinted like the element.
 export function CodeBlockTileArt() {

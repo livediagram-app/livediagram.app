@@ -4,7 +4,7 @@
 // SOFT — returns null on any error / non-200 so the card just shows the
 // bare URL rather than blocking on the network.
 
-import type { UnfurlResult } from '@livediagram/api-schema';
+import type { UnfurlResult } from '@livepages/api-schema';
 import { API_BASE, apiFetch } from './core';
 
 export async function apiUnfurl(url: string): Promise<UnfurlResult | null> {

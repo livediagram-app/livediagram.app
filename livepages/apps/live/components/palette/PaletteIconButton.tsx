@@ -1,11 +1,11 @@
-import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livediagram/document';
-import { planViewSize } from '@livediagram/items';
+import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livepages/document';
+import { planViewSize } from '@livepages/items';
 import { PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import { tileCaption } from './tile-caption';
 import { useModKeyHeld } from '@/hooks/ui/useModKeyHeld';
 import { createContext, useContext } from 'react';
-import { HoverCard, Tooltip } from '@livediagram/ui';
+import { HoverCard, Tooltip } from '@livepages/ui';
 import { useMinimalChrome } from '@/components/providers/minimal-chrome';
 import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
 import { paletteFinishClass } from './palette-tile-finish';

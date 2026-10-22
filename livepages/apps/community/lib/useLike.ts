@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useRef, useState } from 'react';
-import type { CommunityPost } from '@livediagram/api-schema';
+import type { CommunityPost } from '@livepages/api-schema';
 import { CommunityApiError, likePost, unlikePost } from './api';
 import { communityTelemetry } from './telemetry';
 

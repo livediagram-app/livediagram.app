@@ -4,8 +4,8 @@
 // pages-mode.md "An empty page offers its layouts"): a phone, or a page zoomed out small. One
 // Choose a Layout button in the page's middle, held at one screen size whatever the zoom, that
 // opens the page's panel on its Layouts (a bottom sheet on a phone) with the whole gallery.
-import { lucideSparkles } from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+import { lucideSparkles } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livepages/ui';
 
 const SparklesIcon = lucideGlyph(lucideSparkles, 15);
 

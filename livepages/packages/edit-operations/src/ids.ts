@@ -3,8 +3,8 @@
 // the kind word for an unlabelled element (`arrow`, `arrow-2`), free among every id of the tab and
 // every id minted earlier in the changeset.
 
-import type { EditRejection } from '@livediagram/api-schema';
-import { SLUG_ID_MAX_LENGTH, isSlugId, slugIdFor } from '@livediagram/document';
+import type { EditRejection } from '@livepages/api-schema';
+import { SLUG_ID_MAX_LENGTH, isSlugId, slugIdFor } from '@livepages/document';
 import { idTaken, invalidValue } from './rejections';
 import type { EditState } from './state';
 import { RESERVED_WORDS } from './vocabulary';

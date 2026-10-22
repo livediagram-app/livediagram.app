@@ -3,8 +3,8 @@
 // What every part of the Form tab builder reads (docs/specs/030-forms/forms.md "Building a form"): the form, whether
 // this person may change it, the selection, and the edits. Provided by FormPage.
 import { createContext, useContext } from 'react';
-import type { FormDefinition } from '@livediagram/forms';
-import type { ItemTypeDef } from '@livediagram/items';
+import type { FormDefinition } from '@livepages/forms';
+import type { ItemTypeDef } from '@livepages/items';
 import type { FormActions } from '@/hooks/forms/useFormActions';
 import type { FormSettingsSection } from './FormSettingsButton';
 

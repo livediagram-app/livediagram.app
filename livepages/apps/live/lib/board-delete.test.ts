@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { typesOrphanedBy } from './board-delete';
 
 // docs/specs/026-plan/plan-board.md "Deleting a board".

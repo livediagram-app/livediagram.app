@@ -3,11 +3,11 @@
 // a reload) frames that page rather than the first. Not a synced preference: those are capped at
 // 4 KB, and tab ids would fill it. The most recent tabs are kept, the oldest dropped past
 // LAST_PAGE_MAX.
-import type { LaidOutPage } from '@livediagram/document';
+import type { LaidOutPage } from '@livepages/document';
 import { readLocalStorageSafe, safeJson, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 
 // Kept under the mode's old name (Illustrate), so nobody loses the page they were on.
-const STORAGE_KEY = 'livediagram:v2:last-illustrate-page';
+const STORAGE_KEY = 'livepages:v2:last-illustrate-page';
 /** How many tabs' pages are kept (about 20 KB of local storage at most). */
 export const LAST_PAGE_MAX = 200;
 /** How long the view rests before the page under it counts as the one you are on: a pan or a

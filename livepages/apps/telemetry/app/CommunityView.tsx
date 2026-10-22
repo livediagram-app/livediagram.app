@@ -6,7 +6,7 @@ import {
   type TelemetrySummary,
   type TelemetryWindowKey,
   COMMUNITY_CATEGORY_TYPES,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   COMMUNITY_COPIES,
   COMMUNITY_DISCOVERY,

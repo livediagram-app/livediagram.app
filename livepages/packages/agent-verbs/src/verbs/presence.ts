@@ -2,7 +2,7 @@
 // a tab what it is doing and what it is looking at, under its owner's name, for a while; or stops showing it.
 
 import { z } from 'zod';
-import { ApiError } from '@livediagram/api-client';
+import { ApiError } from '@livepages/api-client';
 import {
   AGENT_PRESENCE_FOCUS_MAX,
   AGENT_PRESENCE_MAX_TTL_MS,
@@ -10,11 +10,11 @@ import {
   parseAgentPresenceRequest,
   type AgentPresenceRequestCode,
   type AgentPresenceResult,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { defineVerb, VerbRefusal } from '../define';
 import { tabOf, tabPath } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or livediagram URL');
+const docArg = z.string().describe('A name, id prefix or livepages URL');
 const tabFlag = z
   .string()
   .optional()
@@ -75,7 +75,7 @@ export const presenceSet = defineVerb({
         status: 400,
         code: parsed.code,
         message: REFUSALS[parsed.code],
-        hint: 'livediagram presence set --help',
+        hint: 'livepages presence set --help',
       });
     const { document, tab } = await tabOf(ctx, input.doc, input.tab);
     const { presence } = await ctx.api.json<{ presence: AgentPresenceResult }>(
@@ -90,8 +90,8 @@ export const presenceSet = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livediagram presence set "Shop" --status "Adding the payment flow" --focus api,db',
-      'livediagram presence set 3f9c --tab Flow --status "Reviewing" --ttl 120',
+      'livepages presence set "Shop" --status "Adding the payment flow" --focus api,db',
+      'livepages presence set 3f9c --tab Flow --status "Reviewing" --ttl 120',
     ],
     prints: 'the tab and when the presence goes (UTC)',
   },
@@ -115,7 +115,7 @@ export const presenceClear = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['doc'],
-    examples: ['livediagram presence clear "Shop"', 'livediagram presence clear 3f9c --tab Flow'],
+    examples: ['livepages presence clear "Shop"', 'livepages presence clear 3f9c --tab Flow'],
     prints: 'the tab it left',
   },
 });

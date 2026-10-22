@@ -1,7 +1,7 @@
 'use client';
 
-import { lucideCheck, lucideCopy } from '@livediagram/icons/lucide';
-import { lucideGlyph, useCopiedFlash } from '@livediagram/ui';
+import { lucideCheck, lucideCopy } from '@livepages/icons/lucide';
+import { lucideGlyph, useCopiedFlash } from '@livepages/ui';
 
 const CopyIcon = lucideGlyph(lucideCopy, 14);
 const CheckIcon = lucideGlyph(lucideCheck, 14);

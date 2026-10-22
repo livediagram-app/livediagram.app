@@ -1,14 +1,14 @@
 // Changing a Plan board (docs/specs/026-plan/plan-agents.md "Changing a board"): its title, its columns by name and
 // the card types it takes, as one changeset on the board element (reshapeBoard), revertible like any agent edit.
 // A board is named by its title, or its element id when two share a title.
-import type { ApiClient } from '@livediagram/api-client';
+import type { ApiClient } from '@livepages/api-client';
 import {
   CLIENT_HEADER,
   type ChangesetRequest,
   type ChangesetResponse,
   type TabResponse,
-} from '@livediagram/api-schema';
-import { elementFingerprint } from '@livediagram/document';
+} from '@livepages/api-schema';
+import { elementFingerprint } from '@livepages/document';
 import {
   CARD_FIELD_LABELS,
   SWIMLANE_BY,
@@ -22,7 +22,7 @@ import {
   type BoardChange,
   type CardSize,
   type PlanBoardOutline,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { apiRefusalOf } from './api-refusal';
 import { readPlanState } from './plan-state';
 import { tabPath } from '../verbs/shared';

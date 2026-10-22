@@ -1,7 +1,7 @@
 'use client';
 
-import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@livediagram/document';
-import { Glyph } from '@livediagram/ui';
+import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@livepages/document';
+import { Glyph } from '@livepages/ui';
 
 // The session timer's LOOK, in one place (docs/specs/012-collaboration/session-tools.md, docs/specs/012-collaboration/session-button.md).
 //

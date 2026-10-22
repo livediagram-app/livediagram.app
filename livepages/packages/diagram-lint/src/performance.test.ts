@@ -3,8 +3,8 @@
 // does not. A tab of 300 boxes and 300 arrows costs about 10 ms here, under LINT_BUDGET_CPU_MS; four times the
 // tab costs under eight times as much (the pair check is bounded by LINT_MAX_ARROWS).
 import { describe, expect, it } from 'vitest';
-import { cpuMsOf } from '@livediagram/vitest-config/cpu-time';
-import type { Element } from '@livediagram/document';
+import { cpuMsOf } from '@livepages/vitest-config/cpu-time';
+import type { Element } from '@livepages/document';
 import { arrow, box, lint, tabOf } from './fixtures/build';
 
 // `n` boxes on a grid, each joined to its right and lower neighbours until `n` arrows are drawn.

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { CROP_MAX_BYTES, READ_MAX_CROPS_PER_REQUEST, type NoteText } from '@livediagram/api-schema';
+import { CROP_MAX_BYTES, READ_MAX_CROPS_PER_REQUEST, type NoteText } from '@livepages/api-schema';
 import { handleAiReadNotes } from './ai-read-notes';
 import type { RouteContext } from './context';
 import type { Env } from '../types';
@@ -78,7 +78,7 @@ describe('the shared gate still guards this route', () => {
   it('403 from an origin the deployment does not serve', async () => {
     const res = await handleAiReadNotes(
       makeCtx({
-        env: { AI_ALLOWED_ORIGINS: 'https://livediagram.app' },
+        env: { AI_ALLOWED_ORIGINS: 'https://livepages.app' },
         origin: 'https://evil.example',
       }),
     );

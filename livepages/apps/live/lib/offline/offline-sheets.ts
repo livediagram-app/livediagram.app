@@ -1,5 +1,5 @@
 // An offline document's sheet store (docs/specs/029-sheets/sheet-store.md "Offline documents"): the sheets live in
-// the document's own record, and every write is the same pure transition the api applies (@livediagram/sheets
+// the document's own record, and every write is the same pure transition the api applies (@livepages/sheets
 // applySheetWrite), validated the same way, serialised with the record's other writes. Loaded only for an offline
 // document (lib/api/sheets.ts), as it carries the engine.
 
@@ -8,7 +8,7 @@ import type {
   SheetCreateRequest,
   SheetWriteRequest,
   SheetWriteResponse,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   DOCUMENT_SHEETS_MAX,
   applySheetWrite,
@@ -22,7 +22,7 @@ import {
   validateWrite,
   type SheetJson,
   type SheetPerson,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import { ApiError } from '../api/core';
 import {
   offlineGetRecord,

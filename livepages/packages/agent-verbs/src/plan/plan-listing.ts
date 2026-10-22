@@ -24,7 +24,7 @@ import {
   type ItemTypeDef,
   type PlanStatusName,
   type PlanBoardOutline,
-} from '@livediagram/items';
+} from '@livepages/items';
 import type { PlanState } from './plan-state';
 
 export const NO_BOARD_HINT =

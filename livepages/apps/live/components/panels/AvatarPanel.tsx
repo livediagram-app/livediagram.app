@@ -31,14 +31,14 @@ import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@/lib/avatar-action-ke
 import { AvatarSprite } from '@/components/canvas/avatar-sprite';
 // The same glyph the welcome flow's "shuffle a random name" button uses — same
 // meaning (give me another random one), so it stays the same icon.
-import { RefreshIcon, HoverCard } from '@livediagram/ui';
+import { RefreshIcon, HoverCard } from '@livepages/ui';
 import { ToolOptionRow } from '@/components/panels/ToolOptionRow';
-import { REACTION_EMOJI, REACTION_LABEL, REACTIONS, type Reaction } from '@livediagram/document';
+import { REACTION_EMOJI, REACTION_LABEL, REACTIONS, type Reaction } from '@livepages/document';
 import { ModePanel, type ModePanelProps } from '@/components/panels/ModePanel';
 import { ChevronIcon } from '@/components/primitives/ChevronIcon';
-import { Button } from '@livediagram/ui';
-import { lucideMessageCircle } from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+import { Button } from '@livepages/ui';
+import { lucideMessageCircle } from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livepages/ui';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { AvatarMessagePopover } from './AvatarMessagePopover';
 

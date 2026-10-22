@@ -66,7 +66,7 @@ the guard runs; it therefore both listens and, once the document is parsed, look
   timing entry with a 4xx or 5xx status). Either way: one reload of the current URL.
 - **A page restored from bfcache** (`pageshow` with `persisted`): it asks the api once (a single
   request, `cache: 'no-store'`) for the live build id from the server release signal; when that
-  differs from the page's own `livediagram-build`, one reload.
+  differs from the page's own `livepages-build`, one reload.
 - **One reload guard** (below): its reload claims the shared allowance; a second failure inside the
   window leaves the page as it is.
 - **It stands down once the app runs:** when the editor's own chunk recovery is installed, failures
@@ -87,12 +87,12 @@ two paths cannot drift apart. Storage that cannot be read refuses the reload.
 ## Knowing which build is live
 
 - **The build id** is the commit the deploy built (the build job's checkout), baked into the editor's static export as
-  `NEXT_PUBLIC_BUILD_ID` (and exposed in every page as `<meta name="livediagram-build">`) and given to the api worker as `BUILD_ID`, in the same deploy run. A build
+  `NEXT_PUBLIC_BUILD_ID` (and exposed in every page as `<meta name="livepages-build">`) and given to the api worker as `BUILD_ID`, in the same deploy run. A build
   without one (local development, a self-host that sets neither) disables this layer; the safety
   net still works.
 - **The running app learns the live one** from the server release signal it already hears for the
   document format number ([New version prompt](./new-version-prompt.md)): every api response
-  carries `X-Livediagram-Build: <id>` beside `X-Livediagram-Format`, and the realtime room's
+  carries `X-Livepages-Build: <id>` beside `X-Livepages-Format`, and the realtime room's
   `format` message carries `build`. No request is made for it and nothing polls.
 - **Stale** means both ids are known and differ. One mechanism, two responses: a newer document
   format offers a reload (the prompt); a newer build changes how the app navigates (below), and

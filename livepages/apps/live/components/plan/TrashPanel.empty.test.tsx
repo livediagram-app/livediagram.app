@@ -2,7 +2,7 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, TRASH_STATUS, type Item } from '@livediagram/items';
+import { ITEM_TYPES, TRASH_STATUS, type Item } from '@livepages/items';
 import { TrashPanel } from './TrashPanel';
 
 // docs/specs/026-plan/items.md "Trash": Empty Trash deletes them all at once, unasked, and closes the panel.

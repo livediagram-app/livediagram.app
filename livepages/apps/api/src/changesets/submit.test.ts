@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { getDocument } from '../db';
 import { seedTabs } from '../db/tabs';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';

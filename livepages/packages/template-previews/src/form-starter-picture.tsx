@@ -2,14 +2,14 @@
 // its own questions, its cover in the starter's colour, each question its prompt line and a hint of its control
 // (a box, a paragraph, radio dots, checkboxes, stars), in the tab's own light or dark look; a badge in its top right
 // corner says where its responses go, a board or a sheet (none for Blank, which goes nowhere yet).
-import { formStarter, type QuestionType, type StarterId } from '@livediagram/forms';
-import { lucideSquareKanban, lucideTable } from '@livediagram/icons/lucide';
-import { Prims, lucideGlyph } from '@livediagram/ui';
+import { formStarter, type QuestionType, type StarterId } from '@livepages/forms';
+import { lucideSquareKanban, lucideTable } from '@livepages/icons/lucide';
+import { Prims, lucideGlyph } from '@livepages/ui';
 import { FILL_BOX } from './story-parts';
 
 const BoardGlyph = lucideGlyph(lucideSquareKanban, 15);
 const SheetGlyph = lucideGlyph(lucideTable, 15);
-import type { PlanPalette } from '@livediagram/document';
+import type { PlanPalette } from '@livepages/document';
 
 const W = 160;
 const H = 100;

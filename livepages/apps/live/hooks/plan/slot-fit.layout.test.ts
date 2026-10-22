@@ -4,7 +4,7 @@ import {
   moveDashboardSlot,
   type DashboardContent,
   type DashboardLayout,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { keepsFit, rowHeightFloor, slotWidthFloor, spanPx, type FitOf } from './slot-fit';
 import { dashboardCandidates, dashboardZone, type DashboardGeometry } from './dashboard-drop';
 

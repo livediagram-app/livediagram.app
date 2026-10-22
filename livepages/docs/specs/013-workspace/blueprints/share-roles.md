@@ -137,7 +137,7 @@ applies `mergeLedgerAnswersIntoTab(tab, ledger)` and compare-and-swaps it, throu
 answers persist as today, through its own save.
 
 Adder key: `adderKeyFor(documentId, ownerId)` is the first `ADDER_KEY_LENGTH` hex characters of
-SHA-256(`livediagram:adder:v1:<documentId>:<ownerId>`) (SR4). The ticket mint stores it on the ticket when the
+SHA-256(`livepages:adder:v1:<documentId>:<ownerId>`) (SR4). The ticket mint stores it on the ticket when the
 effective level is `participate` and an owner resolves, and answers it beside the ticket (`RoomTicketResponse`) so the
 editor knows which elements are its own; the upgrade forwards it as `X-Verified-Adder` and the document id as
 `X-Verified-Document` (both set on every path, empty when none); the room keeps both on the attachment. A Participant

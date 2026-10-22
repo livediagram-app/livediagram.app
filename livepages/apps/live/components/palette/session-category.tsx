@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react';
 import type { PendingDraw } from '@/lib/draw-mode';
-import { BehaviourTabIcon } from '@livediagram/ui';
+import { BehaviourTabIcon } from '@livepages/ui';
 import { PaletteCategoryBrowser } from './PaletteCategoryBrowser';
 import { tileHandler, visibleTiles, type PaletteTileActions } from './PaletteTileGrid';
 import { rankTiles } from './palette-tile-search';

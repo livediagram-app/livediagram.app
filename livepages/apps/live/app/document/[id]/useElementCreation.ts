@@ -1,6 +1,6 @@
 import { dashboardItemOf, placeOnDashboard } from '@/hooks/plan/dashboard-drop';
 import { planBoardPlacement } from '@/lib/plan-board-placement';
-import { isPlanViewId, planViewSize } from '@livediagram/items';
+import { isPlanViewId, planViewSize } from '@livepages/items';
 import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
@@ -26,7 +26,7 @@ import {
   type ShapeKind,
   type Tab,
   withVariantColours,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { takeInsertionSlot } from '@/lib/insertion-preview';
 import type { InsertionSlot } from '@/lib/insert-between';
 import { getTechIcon, isTechIconId } from '@/lib/tech-icons';

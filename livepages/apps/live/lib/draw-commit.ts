@@ -7,7 +7,7 @@ import {
   planBoardHeightFor,
   planBoardWidthFor,
   planViewSize,
-} from '@livediagram/items';
+} from '@livepages/items';
 import {
   defaultSessionConfig,
   eventStormingNote,
@@ -21,7 +21,7 @@ import {
   REACTION_PAD_LABEL,
   type EventStormingNoteKind,
   type StickyElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,
@@ -41,9 +41,9 @@ import {
   type Element,
   type Endpoint,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import type { ThemeDefinition } from '@livediagram/document';
+import type { ThemeDefinition } from '@livepages/document';
 import { isTechIconId } from '@/lib/tech-icons';
 import { getSticker, stickerDropSize } from '@/lib/stickers';
 import type { PendingDraw } from '@/lib/draw-mode';

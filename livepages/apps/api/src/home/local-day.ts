@@ -5,7 +5,7 @@
 // instant's own offset, daylight saving included. Opens are counted per UTC day, the boundary every
 // coalesced timeline event uses, because one row is shared and must not split by who reads it.
 
-import { HOME_TZ_MAX_LENGTH } from '@livediagram/api-schema';
+import { HOME_TZ_MAX_LENGTH } from '@livepages/api-schema';
 
 /** The time zone to group in: UTC when none is sent, null when the name is not one Intl knows. */
 export function parseTimeZone(raw: string | null): string | null {

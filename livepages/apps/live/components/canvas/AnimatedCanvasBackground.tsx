@@ -21,7 +21,7 @@
 //   - Deterministic: all positions / delays come from fixed tables (no
 //     Math.random) so server and client markup match.
 
-import { shade, tint, type AnimatedBackgroundPattern } from '@livediagram/document';
+import { shade, tint, type AnimatedBackgroundPattern } from '@livepages/document';
 import type { CSSProperties } from 'react';
 import {
   AURORA_GLOWS,

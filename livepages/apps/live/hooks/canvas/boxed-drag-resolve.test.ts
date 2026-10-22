@@ -9,7 +9,7 @@ import {
   type Element,
   type EsTimeline,
   type StickyElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { ShapeBounds } from '@/lib/canvas';
 import { resolveBoxedMove } from './boxed-drag-resolve';
 

@@ -4,7 +4,7 @@
 // the Cards panel's search become rows.
 import { act, fireEvent, screen, within } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livediagram/items';
+import { ITEM_TYPES, type Item } from '@livepages/items';
 import { track } from '@/lib/telemetry';
 import {
   makeSheet,

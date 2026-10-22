@@ -5,8 +5,8 @@
 // saying where it leads ("Opens in Workshop"). At most OTHER_MODE_CARDS_MAX a mode, then Show All. Choosing one lands
 // it on the tab, which switches to the template's mode. The host keys it on the search, so a new search starts folded.
 import { useState, type CSSProperties } from 'react';
-import { CountBadge, EDITOR_MODE_ICONS } from '@livediagram/ui';
-import { editorModeLabel, type EditorMode } from '@livediagram/document';
+import { CountBadge, EDITOR_MODE_ICONS } from '@livepages/ui';
+import { editorModeLabel, type EditorMode } from '@livepages/document';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 import { StartCardGrid, startTint, type StartPanelCard } from './StartCard';
 import { OTHER_MODE_CARDS_MAX } from './other-mode-matches';

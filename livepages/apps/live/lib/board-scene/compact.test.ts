@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createFreehand, type Element } from '@livediagram/document';
+import { createFreehand, type Element } from '@livepages/document';
 import { compactLanded, roundTo } from './compact';
 
 // docs/specs/020-import-export/board-scene.md "Compact output": boxes and arrow ends to a

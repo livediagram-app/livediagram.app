@@ -1,6 +1,6 @@
 // Folder calls (docs/specs/013-workspace/folders.md): list / create / update / delete, plus moving
 // a document into (or out of) a folder.
-import type { Folder } from '@livediagram/api-schema';
+import type { Folder } from '@livepages/api-schema';
 import { dedupeInFlight } from '../dedupe';
 import { isOfflineId, offlineSetDocumentFolder } from '../offline/offline-store';
 import {

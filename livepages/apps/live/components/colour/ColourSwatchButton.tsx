@@ -4,7 +4,7 @@
 // swatch-only trigger (a toolbar's text colour, a data row's slice colour) opening the picker in a
 // popover. A pick closes it and hands focus back to the trigger.
 import { useState, type ReactNode } from 'react';
-import { Tooltip } from '@livediagram/ui';
+import { Tooltip } from '@livepages/ui';
 import { SwatchChip } from './ColourSwatch';
 import { ColourPopover } from './ColourPopover';
 import type { ColourPickerProps } from './ColourPicker';

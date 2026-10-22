@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 
-import type { CommunityShareInfo } from '@livediagram/api-schema';
+import type { CommunityShareInfo } from '@livepages/api-schema';
 import { connectRoom, type ShareLink, type ShareRole } from '@/lib/api-client';
 import { mayShareDocument } from './editor-page-helpers';
 import { useChangesetSeen } from './useChangesetSeen';

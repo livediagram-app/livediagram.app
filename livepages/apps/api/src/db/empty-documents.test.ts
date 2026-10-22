@@ -2,7 +2,7 @@
 // is never asked for"), against the real migrations: the lists read the first tab's element count, which
 // every tab write binds from the tab it already holds, so an Explorer of blank documents requests no thumbnail.
 
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { describe, expect, it } from 'vitest';
 import { migrateFrom, sqliteD1 } from '../test-sqlite-d1';
 import { copyDocument, listDocumentsByOwner, listDocumentsByTeam } from './documents';

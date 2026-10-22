@@ -1,10 +1,10 @@
 // What every sheet tool reads first (docs/specs/029-sheets/sheet-store.md "Agents"): the document's sheets, the one a
 // call names (by title or id, never row or column ids), and a workbook over its tab's sheets so values are worked
 // out by the engine the editor uses, Plan cards included when a formula reads them.
-import type { ApiClient } from '@livediagram/api-client';
-import type { DocumentResponse, ItemsResponse, SheetsResponse } from '@livediagram/api-schema';
-import { cardSourceOf, readItemTypeCatalogue, typesOf } from '@livediagram/items';
-import { AGENT_LOCALE, sheetFromJson, Workbook, type SheetJson } from '@livediagram/sheets';
+import type { ApiClient } from '@livepages/api-client';
+import type { DocumentResponse, ItemsResponse, SheetsResponse } from '@livepages/api-schema';
+import { cardSourceOf, readItemTypeCatalogue, typesOf } from '@livepages/items';
+import { AGENT_LOCALE, sheetFromJson, Workbook, type SheetJson } from '@livepages/sheets';
 import { itemsPath } from '../verbs/shared';
 
 export const sheetsPath = (documentId: string) =>

@@ -5,7 +5,7 @@
 // picks them. `base` itself back while the tab has none. `chartIds` are those charts alone: the Sheet selects one to
 // open its element menu, so the selection keeps them (usePruneInertSelection's `kept`).
 import { useMemo } from 'react';
-import { sheetDrawnChartIds, type Element } from '@livediagram/document';
+import { sheetDrawnChartIds, type Element } from '@livepages/document';
 
 export function useSheetChartInertIds(
   elements: readonly Element[],

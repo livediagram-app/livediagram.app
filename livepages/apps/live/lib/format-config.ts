@@ -160,7 +160,7 @@ function structuredCopy(config: FormatConfig): FormatConfig {
 
 // --- Storage ----------------------------------------------------------------
 
-const STORAGE_KEY = 'livediagram:v2:format-config';
+const STORAGE_KEY = 'livepages:v2:format-config';
 
 export function loadFormatConfig(): FormatConfig {
   return parseFormatConfig(readLocalStorageSafe(STORAGE_KEY));

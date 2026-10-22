@@ -14,7 +14,7 @@
    Deliberately NOT applied to colour-scheme swatches: those are showing you a
    scheme's actual colours, so re-lighting them would be a lie.
 
-   Shipped by @livediagram/template-previews next to the art it re-lights,
+   Shipped by @livepages/template-previews next to the art it re-lights,
    and imported by every app that renders a preview (the editor and the
    marketing site's template gallery), each under its `.dark` appearance. */
 

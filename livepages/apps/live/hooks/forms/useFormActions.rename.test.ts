@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { useFormActions } from './useFormActions';
 
 // Renaming a form (docs/specs/030-forms/forms.md "Responses Go To and Settings"): the board or sheet its responses go

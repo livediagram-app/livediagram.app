@@ -22,7 +22,7 @@ import {
   TIMELINE_PAGE_SIZE,
   parseScope,
   type TimelineScopeRef,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import {
   DISMISS_BATCH_MAX,
   countUnseen,

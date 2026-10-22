@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { useSlideDeck } from './useSlideDeck';
 
 // docs/specs/012-collaboration/presentation-mode.md "Board slides": a whole Plan board as a slide is an

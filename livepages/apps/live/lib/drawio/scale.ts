@@ -1,6 +1,6 @@
 // The page scale (docs/specs/020-import-export/drawio-import.md "The page scale", blueprint steps
-// 15.0 and 15.9): draw.io sets labels smaller and lighter than livediagram does, so the whole page
-// grows until every label has the room draw.io gave it, in livediagram's own type. Positions,
+// 15.0 and 15.9): draw.io sets labels smaller and lighter than livepages does, so the whole page
+// grows until every label has the room draw.io gave it, in livepages's own type. Positions,
 // sizes, waypoints and label offsets scale; strokes, presets and font sizes do not.
 
 import {
@@ -9,7 +9,7 @@ import {
   isBoxed,
   type Element,
   type Endpoint,
-} from '@livediagram/document';
+} from '@livepages/document';
 import type { DrawioGraph } from './cells';
 import { cellLabel } from './label';
 import {

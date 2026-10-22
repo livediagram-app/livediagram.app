@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { insertTabsAfter, landTemplateOnTab, templateFollowerTabs } from './template-tab-set';
 
 // docs/specs/026-plan/plan-templates.md "How a template with tabs is made": Quick Start lands the first

@@ -4,7 +4,7 @@ import {
   nextNoteBounds,
   type Element,
   type StickyElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { applyInsertionShift } from './insert-between';
 import { planNextNote } from './next-note-add';
 

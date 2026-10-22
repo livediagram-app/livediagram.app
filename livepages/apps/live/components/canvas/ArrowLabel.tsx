@@ -10,7 +10,7 @@ import {
   LABEL_PAD_X_PX,
   LABEL_PAD_Y_PX,
   type ArrowLabelLayout,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { BRAND_600 } from './arrow-handle-style';
 import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
 

@@ -7,8 +7,8 @@
 // (it closes so the page shows). Docked, Contents is PageContentsSidebar; the two share
 // usePageContents and PageContentsList.
 import { useEffect, useState } from 'react';
-import { lucidePanelLeftOpen } from '@livediagram/icons/lucide';
-import { HoverCard, lucideGlyph, useEscape } from '@livediagram/ui';
+import { lucidePanelLeftOpen } from '@livepages/icons/lucide';
+import { HoverCard, lucideGlyph, useEscape } from '@livepages/ui';
 import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { BottomSheet } from '@/components/primitives/BottomSheet';

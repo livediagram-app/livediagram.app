@@ -5,7 +5,7 @@ import {
   laneCentre,
   type Element,
   type EsTimeline,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { paletteDragSnapAt } from './palette-drag-snap';
 
 // Alignment help BEFORE the drop (docs/specs/021-event-storming/event-storming.md): while a palette tile is dragged

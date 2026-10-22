@@ -7,7 +7,7 @@
 // as Not Started, In Progress and Done. Keyed by a signature of the columns, so the maps (and the Plan
 // context) change only when a column does.
 import { useMemo } from 'react';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livepages/document';
 import {
   normaliseBoardSetup,
   statusColumnsOfSetups,
@@ -15,7 +15,7 @@ import {
   type BoardStatusTypes,
   type StatusBoardSource,
   type StatusPhase,
-} from '@livediagram/items';
+} from '@livepages/items';
 
 // A tab's board set-ups, cached by its elements array: a tab's elements are replaced, never mutated,
 // so an unchanged tab is not walked again on the next render.

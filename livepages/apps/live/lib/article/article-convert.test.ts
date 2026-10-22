@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArticleBlock } from '@livediagram/document';
+import type { ArticleBlock } from '@livepages/document';
 import { blocksToDoc, docToBlocks } from './article-convert';
 
 // docs/specs/007-editor/article-pages.md "Blocks": every block survives the round trip.
@@ -12,7 +12,7 @@ const blocks: ArticleBlock[] = [
     runs: [
       { text: 'plain ' },
       { text: 'bold\nnext', b: true },
-      { text: ' link', href: 'https://livediagram.app', u: true },
+      { text: ' link', href: 'https://livepages.app', u: true },
       { text: ' red', color: '#dc2626', hl: '#fef08a' },
       { text: 'x', sup: true },
     ],

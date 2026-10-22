@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab, TabVote } from '@livediagram/document';
-import { applyElementDelta, responseDeltaFor, type ShapeElement } from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+import type { Element, Tab, TabVote } from '@livepages/document';
+import { applyElementDelta, responseDeltaFor, type ShapeElement } from '@livepages/document';
+import type { RoomOp } from '@livepages/api-schema';
 import { applyRoomOpToTabs } from './room-op-apply';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 import { clearArticleGrow, isArticleGrowPending } from '@/lib/article/article-grow-store';

@@ -1,4 +1,4 @@
-import { documentPath } from '@livediagram/api-schema';
+import { documentPath } from '@livepages/api-schema';
 
 // Where the Community app links out to (docs/specs/025-community/community.md "Post"). The editor
 // routes sit outside this app's `/community` basePath, so they are plain origin-absolute hrefs used

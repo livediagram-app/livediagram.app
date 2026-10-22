@@ -10,7 +10,7 @@ import {
   reshapePath,
   type Element,
   type PathAnchor,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { track } from '@/lib/telemetry';
 import type { PathCommit } from '@/components/canvas/path/usePathDrawGesture';
 import { debugLog } from '@/lib/debug-log';

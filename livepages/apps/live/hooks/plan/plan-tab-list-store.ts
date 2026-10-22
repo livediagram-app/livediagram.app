@@ -5,7 +5,7 @@
 // plan-cover-store.ts, published by usePlanCoverWiring; listeners hear only a real change (a tab added, removed,
 // renamed or turned), never an element moved.
 import { useSyncExternalStore } from 'react';
-import { tabKindOf, type DashboardTabOf, type Tab } from '@livediagram/document';
+import { tabKindOf, type DashboardTabOf, type Tab } from '@livepages/document';
 import { createListeners } from '@/lib/listeners';
 
 export type PlanTabEntry = { id: string; name: string; of: DashboardTabOf };

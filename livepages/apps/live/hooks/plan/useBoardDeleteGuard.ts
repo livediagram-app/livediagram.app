@@ -4,8 +4,8 @@
 // the cards is the default, and closing the question keeps them. It asks only once every tab has loaded, since a board
 // on an unloaded tab could still show those types.
 import { useCallback } from 'react';
-import { isTrashed, type Item, type ItemTypeDef } from '@livediagram/items';
-import type { Tab } from '@livediagram/document';
+import { isTrashed, type Item, type ItemTypeDef } from '@livepages/items';
+import type { Tab } from '@livepages/document';
 import { typesOrphanedBy } from '@/lib/board-delete';
 import { track } from '@/lib/telemetry';
 import type { SheetDeleteGuard } from '@/hooks/sheets/useSheetDeleteGuard';

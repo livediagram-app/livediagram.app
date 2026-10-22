@@ -7,7 +7,7 @@ import { useViewportOf, useViewportStore } from '@/hooks/canvas/useViewportStore
 import { useDoubleTapZoom } from '@/hooks/canvas/useDoubleTapZoom';
 import { useSmallElementDoubleTap } from '@/hooks/canvas/useSmallElementDoubleTap';
 import { useCallback, useEffect, useMemo, useRef, ViewTransition } from 'react';
-import { isAnimatedPattern } from '@livediagram/document';
+import { isAnimatedPattern } from '@livepages/document';
 import { tabBackgroundStyle, worldPatternOrigin } from '@/lib/canvas-backgrounds';
 import { useObservedSize } from '@/hooks/canvas/useObservedSize';
 import { AnimatedCanvasBackground } from '@/components/canvas/AnimatedCanvasBackground';
@@ -20,7 +20,7 @@ import { useQuickRing } from '@/hooks/canvas/useQuickRing';
 import { useZoomControls } from '@/hooks/canvas/useZoomControls';
 import { usePaletteDrop } from '@/hooks/canvas/usePaletteDrop';
 import { isDarkCanvas } from '@/lib/dark-canvas';
-import { isEventStormingTab } from '@livediagram/document';
+import { isEventStormingTab } from '@livepages/document';
 import { CanvasSelectionToolbars } from '@/components/canvas/CanvasSelectionToolbars';
 // Reused as the excludeIds argument to snapResizeBounds during draw-
 // to-size: the new element doesn't exist yet, so there's nothing to

@@ -131,7 +131,7 @@ All under `/api/teams`, Clerk Bearer required, handled by `apps/api/src/routes/t
 - `POST /api/teams/invite-decline/:token` — open. Declines that invite: `200 { teamName, status }` (`declined`, or `expired` when it already had); `409 already_joined`; `404 invite_not_found`. Idempotent.
 - `POST /api/teams/invite-link/:token/join` — signed-in; join via the link.
 
-Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`) live in `@livediagram/api-schema`.
+Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`) live in `@livepages/api-schema`.
 
 ## Explorer UI
 

@@ -1,5 +1,5 @@
 {
-  "name": "@livediagram/ui",
+  "name": "@livepages/ui",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -27,8 +27,8 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
-    "@livediagram/oxlint-config": "workspace:*",
-    "@livediagram/vitest-config": "workspace:*",
+    "@livepages/oxlint-config": "workspace:*",
+    "@livepages/vitest-config": "workspace:*",
     "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -39,12 +39,12 @@
     "vitest": "^5.0.3"
   },
   "dependencies": {
-    "@livediagram/api-schema": "workspace:*",
-    "@livediagram/document": "workspace:*",
-    "@livediagram/help-registry": "workspace:*",
-    "@livediagram/icons": "workspace:^",
-    "@livediagram/items": "workspace:*",
-    "@livediagram/tailwind-config": "workspace:*",
-    "@livediagram/telemetry-client": "workspace:*"
+    "@livepages/api-schema": "workspace:*",
+    "@livepages/document": "workspace:*",
+    "@livepages/help-registry": "workspace:*",
+    "@livepages/icons": "workspace:^",
+    "@livepages/items": "workspace:*",
+    "@livepages/tailwind-config": "workspace:*",
+    "@livepages/telemetry-client": "workspace:*"
   }
 }

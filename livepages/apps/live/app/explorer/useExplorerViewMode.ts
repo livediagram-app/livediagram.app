@@ -11,7 +11,7 @@ export type ExplorerViewMode = 'list' | 'card' | 'details';
 
 const MODES: readonly ExplorerViewMode[] = ['list', 'card', 'details'];
 
-const STORAGE_KEY = 'livediagram:explorer-view';
+const STORAGE_KEY = 'livepages:explorer-view';
 
 // Cards, not rows, for somebody who has never chosen. A document is a picture,
 // and a wall of names in one typeface makes you read every line to find the one

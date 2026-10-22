@@ -17,7 +17,7 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { dressMindConnector, dressMindNode } from '@/lib/mind-dress';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';

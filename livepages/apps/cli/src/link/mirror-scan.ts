@@ -1,10 +1,10 @@
 // Scanning the mirror directory (docs/specs/027-repositories/blueprints/repository-link.md "Scanning the mirror
-// directory"): every `*.livediagram.json` under the link's `dir`, walked as `linksBelow` walks and skipping a
-// subdirectory that holds its own livediagram.toml (that link's files are its own, RL4), each classified in order.
+// directory"): every `*.livepages.json` under the link's `dir`, walked as `linksBelow` walks and skipping a
+// subdirectory that holds its own livepages.toml (that link's files are its own, RL4), each classified in order.
 // Paths are relative to the mirror directory.
 
 import { posix } from 'node:path';
-import { parseDocumentEnvelope } from '@livediagram/document';
+import { parseDocumentEnvelope } from '@livepages/document';
 import type { CliIo } from '../io';
 import { parsePullFile, PULL_FILE_SUFFIX, sha256, tabHashes } from '../sync/pull-file';
 import { LINK_FILE_NAME } from './constants';
@@ -28,7 +28,7 @@ export type ScannedFile = (
 };
 
 const hasSyncKey = (text: string) =>
-  Object.prototype.hasOwnProperty.call(Object(JSON.parse(text)), 'livediagramSync');
+  Object.prototype.hasOwnProperty.call(Object(JSON.parse(text)), 'livepagesSync');
 
 async function classify(io: CliIo, path: string, rel: string, host: string): Promise<ScannedFile> {
   const text = (await io.files.read(path)) ?? '';
@@ -49,10 +49,10 @@ async function classifyText(text: string, rel: string, host: string): Promise<Sc
   }
   const { file } = parsed;
   // A host edited into something that is not a URL refuses this one file; it never stops the pass (E5a).
-  if (!URL.canParse(file.livediagramSync.host))
-    return { class: 'invalid', path: rel, message: 'livediagramSync.host is not a URL' };
-  if (!sameHost(file.livediagramSync.host, host))
-    return { class: 'foreign-host', path: rel, host: file.livediagramSync.host };
+  if (!URL.canParse(file.livepagesSync.host))
+    return { class: 'invalid', path: rel, message: 'livepagesSync.host is not a URL' };
+  if (!sameHost(file.livepagesSync.host, host))
+    return { class: 'foreign-host', path: rel, host: file.livepagesSync.host };
   const hashes: TabHashes = {};
   for (const tab of file.document.tabs) hashes[tab.id] = await tabHashes(tab);
   return { class: 'tracked', path: rel, file, hashes };

@@ -193,7 +193,7 @@ export function CommunityGuide() {
           Show your board to the world
         </h3>
         <p className="text-xs leading-relaxed text-slate-600 dark:text-slate-300">
-          Community is livediagram&rsquo;s public gallery of boards people are proud of. Publishing
+          Community is livepages&rsquo;s public gallery of boards people are proud of. Publishing
           this document lets anyone, with or without an account, find it, learn from it and reuse
           it.
         </p>

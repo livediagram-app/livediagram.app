@@ -3,8 +3,8 @@
 // but named geometry and a shape growing to fit its label. A target the fields leave as it was is
 // not touched, so it is never normalised (E1, I2).
 
-import type { EditRejection } from '@livediagram/api-schema';
-import type { ArrowElement, Element } from '@livediagram/document';
+import type { EditRejection } from '@livepages/api-schema';
+import type { ArrowElement, Element } from '@livepages/document';
 import { sameValue } from '../equality';
 import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';

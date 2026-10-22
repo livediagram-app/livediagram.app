@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import {
   ITEM_TYPES,
   defaultCatalogue,
   presetSetup,
   type ItemTypeCatalogue,
-} from '@livediagram/items';
+} from '@livepages/items';
 import { usePresetCardTypes } from './usePresetCardTypes';
 
 // docs/specs/026-plan/item-types.md "The type catalogue": a board adds the card types it names that the document

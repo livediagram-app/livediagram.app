@@ -1,7 +1,7 @@
 // Posters layouts, part three (docs/specs/007-editor/pages-mode.md "Layouts"): a travel
 // poster and a workshop with a tear-off strip. Pure builders on the shared kit: the page's content
 // box in, uncoloured elements out, a tall page stacking and a squarer or wide one side by side.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { kit, type Kit, type LayoutBox } from './page-layout-kit';
 import { iconRow } from './page-layout-parts';
 import {

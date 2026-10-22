@@ -1,8 +1,8 @@
 'use client';
 
 import type { ReactElement } from 'react';
-import { Tooltip } from '@livediagram/ui';
-import type { PathHandleMode } from '@livediagram/document';
+import { Tooltip } from '@livepages/ui';
+import type { PathHandleMode } from '@livepages/document';
 import { FloatingToolbar } from '@/components/chrome/FloatingToolbar';
 
 export type PathToolbarView = {

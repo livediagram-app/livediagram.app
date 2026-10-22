@@ -19,9 +19,9 @@ import {
   lucideItalic,
   lucidePilcrow,
   lucideUnderline,
-} from '@livediagram/icons/lucide';
-import { toggleFormatInRange, type RunBoolKey, type TextRun } from '@livediagram/document';
-import { ArrowDownIcon, ArrowUpIcon, IndentIcon, OutdentIcon, lucideGlyph } from '@livediagram/ui';
+} from '@livepages/icons/lucide';
+import { toggleFormatInRange, type RunBoolKey, type TextRun } from '@livepages/document';
+import { ArrowDownIcon, ArrowUpIcon, IndentIcon, OutdentIcon, lucideGlyph } from '@livepages/ui';
 import {
   domSelectionToOffsets,
   insertTextAtCaret,

@@ -5,7 +5,7 @@
 // no low-entropy value to time-attack, unlike a password). Tokens authenticate
 // signed-in (Clerk) accounts only; see docs/specs/015-api/public-api-and-tokens.md.
 
-import { API_TOKEN_PREFIX, randomBase64Url, sha256Hex } from '@livediagram/api-schema';
+import { API_TOKEN_PREFIX, randomBase64Url, sha256Hex } from '@livepages/api-schema';
 
 const TOKEN_PREFIX = API_TOKEN_PREFIX;
 const TOKEN_RANDOM_BYTES = 32; // 256 bits

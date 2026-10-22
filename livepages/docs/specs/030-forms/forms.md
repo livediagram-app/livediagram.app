@@ -3,7 +3,7 @@
 A **Form tab** is a Plan tab that holds one form: questions someone builds in place, shared as a **form link**
 that anyone can open and fill in without an account. Each **response** becomes a card on a Board tab of the same
 document, in the status the form names, so collecting answers leads straight into working them on a board. It is
-livediagram's answer to Google Forms: building a form, sharing it and reading the answers happen in the document
+livepages's answer to Google Forms: building a form, sharing it and reading the answers happen in the document
 where the work then happens.
 
 ## Why
@@ -136,7 +136,7 @@ previewing), the help link and the form's **cog**.
   "Backgrounds", "Animated backgrounds"): the slide's **Background** section with **Solid**, **Gradient** (the tab
   theme's gradients first) and **Animated** (the slide motions, moving on screen; still under reduced motion), then
   **Pattern**. No **Image**: a cover takes no picture. Stored as `form.cover` (`{ fill?, pattern? }`, the
-  `@livediagram/page-background` shape a slide's colours share). A hover previews on the band; a press sets it.
+  `@livepages/page-background` shape a slide's colours share). A hover previews on the band; a press sets it.
   Without a cover, a 10 px band of the form colour. **Add Cover** / **Change Cover** on hover (always shown on a
   touch screen, which has no hover) opens the cover popover, with **Remove Cover**.
 - **Heading**: the form's name (1 to 80 characters), edited in place (renaming it renames the board or sheet its
@@ -405,7 +405,7 @@ Tour** stack beside the Draw tour's.
   - A document kept on this device only (an offline document) cannot publish until it is synced, so Share Form offers
     the same move the document's Share dialog does ([Offline mode](../006-document/offline-mode.md#sharing-a-document-in-this-browser)):
     the shared sync prompt (`SyncDocumentPrompt`, the one `ShareOfflineGate` draws) says **This Document Is in This Browser**,
-    "It is saved only in this browser, so this form can't be published yet. Sync it to livediagram to publish it: the
+    "It is saved only in this browser, so this form can't be published yet. Sync it to livepages to publish it: the
     form link and its responses need it on our servers. You can take it offline again any time.", with **Sync
     Document**. It syncs the document in place; the toast confirms and the same dialog carries straight on to the
     unpublished view (Publish Form, held while the link is first read), so the Editor publishes without reopening
@@ -455,7 +455,7 @@ The form link opens a page of its own, outside the editor: no Explorer, no docum
 no editor code loaded (its own small bundle).
 
 - **Look**: the form in its tab's [look](#look) (colour, font, finish and backdrop, each following the respondent's
-  system). The Report This Form panel keeps livediagram's own look. A footer: "Made with livediagram" linking to the marketing site, and
+  system). The Report This Form panel keeps livepages's own look. A footer: "Made with livepages" linking to the marketing site, and
   **Report This Form** (below).
 - **Sections**: one section at a time, a progress bar across the top ("Section 2 of 3"), **Back** and **Next**; Next
   checks only that section's questions. The last section's button is **Submit**. Sections that do not show for the
@@ -490,7 +490,7 @@ no editor code loaded (its own small bundle).
   found page, its Form tab says "This form’s link was suspended after reports from respondents", and the owner is
   emailed. Publishing again makes a new link; a document whose form links have been suspended twice cannot publish
   another.
-- Beside Submit, in small type: "Never submit passwords through livediagram forms."
+- Beside Submit, in small type: "Never submit passwords through livepages forms."
 
 ## What a response makes
 
@@ -527,7 +527,7 @@ board settings, for switching back.
   question. No mapping needed." A sheet no longer on its tab says "Its sheet was removed. Choose where responses go."
   and pauses the form, as a broken board destination does.
 - **In the builder**: a question's footer reads "Its own column in the sheet" in place of the Answer goes to badge.
-- **The row** (`responseRowWrite`, `@livediagram/forms`): the sheet's first row holds the headers, **#**,
+- **The row** (`responseRowWrite`, `@livepages/forms`): the sheet's first row holds the headers, **#**,
   **Submitted** and each question's wording (a repeated wording gets " (2)"); a question finds its column by its
   header, ignoring case, and one with none takes the next free column after the last header (columns added in one
   insert when the sheet has too few). Headers the form writes are bold, and a sheet given its first headers has row 1

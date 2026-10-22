@@ -1,4 +1,4 @@
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { hasNewComments } from '../comments';
 import { emailEnabled } from '../email/client';
 import { notifyNewComment } from '../email/notifications';

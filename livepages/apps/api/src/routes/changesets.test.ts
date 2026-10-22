@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
-import { CHANGESET_MAX_OPERATIONS } from '@livediagram/api-schema';
-import { elementFingerprint, type Element } from '@livediagram/document';
+import { sentJson } from '@livepages/vitest-config/sent-request';
+import { CHANGESET_MAX_OPERATIONS } from '@livepages/api-schema';
+import { elementFingerprint, type Element } from '@livepages/document';
 import { createShareLink } from '../db/share';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
@@ -119,7 +119,7 @@ describe('submitting a changeset', () => {
         operations: [{ op: 'set', target: 'a', fields: { label: 'Sign in' } }],
         summary: '  rename a  ',
       },
-      { token: true, headers: { 'X-Livediagram-Client': 'mcp' } },
+      { token: true, headers: { 'X-Livepages-Client': 'mcp' } },
     );
     expect(res.status).toBe(200);
     const body = (await res.json()) as {
@@ -464,7 +464,7 @@ describe('reverting', () => {
       'POST',
       `/api/documents/D/changesets/${cs.changeset.id}/revert`,
       undefined,
-      { headers: { 'X-Livediagram-Client': 'editor' } },
+      { headers: { 'X-Livepages-Client': 'editor' } },
     );
     expect(res.status).toBe(200);
     expect(await res.json()).toMatchObject({

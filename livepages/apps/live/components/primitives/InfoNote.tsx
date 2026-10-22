@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
-import { lucideInfo } from '@livediagram/icons/lucide';
-import { Glyph, Prims } from '@livediagram/ui';
+import { lucideInfo } from '@livepages/icons/lucide';
+import { Glyph, Prims } from '@livepages/ui';
 
 // A small bordered note with an info glyph: the quiet line under an Explorer
 // view's title that says what the view is (the Dynamic folders, the Trash).

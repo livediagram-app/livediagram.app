@@ -2,8 +2,8 @@
 
 // Sheet Settings' Named Ranges (docs/specs/029-sheets/sheet.md "Named ranges"): each name with its range, Go To
 // (selects it) and, for an Editor, Remove (one undo step). Names are made in the name box.
-import { CloseIcon, Tooltip } from '@livediagram/ui';
-import { formatRange, posRangeOf } from '@livediagram/sheets';
+import { CloseIcon, Tooltip } from '@livepages/ui';
+import { formatRange, posRangeOf } from '@livepages/sheets';
 import { useSheetController } from './sheet-controller';
 import type { SheetActions } from './useSheetActions';
 

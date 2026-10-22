@@ -1,4 +1,4 @@
-import { isFixedSizeElement } from '@livediagram/document';
+import { isFixedSizeElement } from '@livepages/document';
 import {
   alignmentGuides,
   distributionSnap,
@@ -15,7 +15,7 @@ import {
   type Element,
   type EsTimeline,
   type TextElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { hugResizedText, hugsText, type MeasureTextBlock } from '@/lib/text-hug';
 import type { LanePreview } from '@/lib/lane-preview';
 import {

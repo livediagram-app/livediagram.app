@@ -1,6 +1,6 @@
 # Agent changesets
 
-**Status: built.** Closed livediagram-app/livediagram.app#343. Operations are the full
+**Status: built.** Closed livepages-app/livepages.app#343. Operations are the full
 [edit operations](edit-operations.md), in the line form or JSON, plus `replace`. Every answer carries the [lint](diagram-lint.md) of the tab it leaves; the
 [agent presence](agent-presence.md) refresh is not built yet.
 

@@ -12,10 +12,10 @@ import {
   effectiveTarget,
   promptOf,
   type FormQuestion,
-} from '@livediagram/forms';
-import { ArrowDownIcon, ArrowUpIcon, DuplicateIcon, TrashIcon, lucideGlyph } from '@livediagram/ui';
-import { lucideGripVertical } from '@livediagram/icons/lucide';
-import { Tooltip } from '@livediagram/ui';
+} from '@livepages/forms';
+import { ArrowDownIcon, ArrowUpIcon, DuplicateIcon, TrashIcon, lucideGlyph } from '@livepages/ui';
+import { lucideGripVertical } from '@livepages/icons/lucide';
+import { Tooltip } from '@livepages/ui';
 import {
   deleteQuestion,
   duplicateQuestion,
@@ -24,8 +24,8 @@ import {
   setOptions,
   setQuestionType,
   updateQuestion,
-} from '@livediagram/forms';
-import { newFormPartId } from '@livediagram/forms';
+} from '@livepages/forms';
+import { newFormPartId } from '@livepages/forms';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import { QuestionControl } from '../QuestionControl';
 import { QuestionView } from '../QuestionView';

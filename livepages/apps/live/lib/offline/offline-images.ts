@@ -19,7 +19,7 @@
 // element's current reference rather than aborting the whole conversion (a
 // kept R2 id still renders while online; a kept data URI renders anywhere).
 
-import { pageImageIds, withPageImageIds, type Tab } from '@livediagram/document';
+import { pageImageIds, withPageImageIds, type Tab } from '@livepages/document';
 import { apiFetchImageDataUrl } from '../api/images';
 import { uploadImageFile } from '../upload-image';
 

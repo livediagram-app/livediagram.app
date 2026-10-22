@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES } from '@livediagram/items';
+import { ITEM_TYPES } from '@livepages/items';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { boardAdd, boardSet } from './board';

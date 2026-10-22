@@ -9,9 +9,9 @@ import {
   type StoredCredential,
 } from './credentials';
 
-const FILE = '/home/agent/.config/livediagram/credentials.json';
+const FILE = '/home/agent/.config/livepages/credentials.json';
 const stored: StoredCredential = {
-  host: 'https://livediagram.app',
+  host: 'https://livepages.app',
   token: TOKEN,
   tokenId: 't1',
   accountName: 'Ada',
@@ -33,8 +33,8 @@ async function failureOf(fn: () => unknown): Promise<CliFailure> {
 }
 
 describe('credentials', () => {
-  it("prefers LIVEDIAGRAM_TOKEN, then the profile's stored token, else none", async () => {
-    const io = fakeIo({ env: { LIVEDIAGRAM_TOKEN: ` ${TOKEN} ` } });
+  it("prefers LIVEPAGES_TOKEN, then the profile's stored token, else none", async () => {
+    const io = fakeIo({ env: { LIVEPAGES_TOKEN: ` ${TOKEN} ` } });
     expect(await resolveCredential(io, 'default')).toEqual({ token: TOKEN, source: 'env' });
     const plain = fakeIo();
     expect(await resolveCredential(plain, 'default')).toBeNull();
@@ -71,7 +71,7 @@ describe('credentials', () => {
   it('refuses a malformed token in the environment and a file that does not read', async () => {
     expect(
       await failureOf(() =>
-        resolveCredential(fakeIo({ env: { LIVEDIAGRAM_TOKEN: 'eyJ.jwt' } }), 'default'),
+        resolveCredential(fakeIo({ env: { LIVEPAGES_TOKEN: 'eyJ.jwt' } }), 'default'),
       ),
     ).toMatchObject({ exit: 4 });
     for (const data of ['{', '{"version":2,"profiles":{}}', '{"version":1,"profiles":null}'])
@@ -79,7 +79,7 @@ describe('credentials', () => {
         await failureOf(() => resolveCredential(fakeIo({ files: { [FILE]: data } }), 'default')),
       ).toMatchObject({
         exit: 2,
-        message: `${FILE} does not read as livediagram credentials`,
+        message: `${FILE} does not read as livepages credentials`,
       });
   });
 });

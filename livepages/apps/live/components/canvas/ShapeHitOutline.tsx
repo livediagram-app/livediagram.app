@@ -5,7 +5,7 @@ import {
   shapeHitOutline,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { strokeHitWidth } from '@/lib/whiteboard-tool';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 

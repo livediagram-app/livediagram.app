@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { ApiError } from '@livediagram/api-client';
-import { WORKBENCH_NAME_MAX_LENGTH } from '@livediagram/api-schema';
+import { ApiError } from '@livepages/api-client';
+import { WORKBENCH_NAME_MAX_LENGTH } from '@livepages/api-schema';
 import { AddressError } from '../addressing';
 import { VerbRefusal } from '../define';
 import { contextOf, DOC_A, DOC_C, fakeApi, library, tabsOfA } from '../testing/fake-api';
@@ -10,7 +10,7 @@ import { workbenchNameOf, workbenchOpen, workbenchOriginOf, workbenchPair } from
 
 const ORIGIN = 'https://127.0.0.1:5175';
 const minted = {
-  url: `https://livediagram.app/embed/workbench?d=${DOC_A}#ticket=${'t'.repeat(22)}`,
+  url: `https://livepages.app/embed/workbench?d=${DOC_A}#ticket=${'t'.repeat(22)}`,
   documentId: DOC_A,
   tabId: null,
   expiresAt: Date.UTC(2026, 9, 5, 8, 1),
@@ -80,7 +80,7 @@ describe('workbench open', () => {
       status: 403,
       code: 'pairing_required',
       message: 'this workbench is not paired with your token',
-      hint: `livediagram workbench pair --origin ${ORIGIN}`,
+      hint: `livepages workbench pair --origin ${ORIGIN}`,
     });
     expect(logs).toContain('workbench open pairing-required');
   });
@@ -115,7 +115,7 @@ describe('workbench open', () => {
     const api = fakeApi({});
     const logs: string[] = [];
     const err = await workbenchOpen.run!(contextOf(api, [], logs), {
-      doc: 'https://livediagram.app/document/shared?s=abc',
+      doc: 'https://livepages.app/document/shared?s=abc',
       origin: ORIGIN,
     }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(AddressError);
@@ -235,7 +235,7 @@ describe('workbench open --workspace', () => {
     },
   };
   const workspaceMinted = {
-    url: `https://livediagram.app/embed/workbench/explorer#ticket=${'t'.repeat(22)}`,
+    url: `https://livepages.app/embed/workbench/explorer#ticket=${'t'.repeat(22)}`,
     scope: 'workspace' as const,
     folderId: null,
     expiresAt: Date.UTC(2026, 9, 5, 8, 1),
@@ -291,7 +291,7 @@ describe('workbench open --workspace', () => {
     expect(refusal).toMatchObject({
       status: 403,
       code: 'pairing_required',
-      hint: `livediagram workbench pair --origin ${ORIGIN} --workspace`,
+      hint: `livepages workbench pair --origin ${ORIGIN} --workspace`,
     });
   });
 

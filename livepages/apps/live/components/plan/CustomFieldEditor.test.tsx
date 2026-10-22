@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { CustomFieldDef } from '@livediagram/items';
+import type { CustomFieldDef } from '@livepages/items';
 import { CustomFieldEditor } from './CustomFieldEditor';
 import { CustomFieldForm } from './ItemTypeFieldForms';
 import { CustomFieldPreview } from './CustomFieldKindParts';

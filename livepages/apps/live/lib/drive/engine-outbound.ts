@@ -9,7 +9,7 @@ import {
   DRIVE_PROP_ORIGIN,
   driveFileName,
   type DriveItem,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { DriveApiError, type DriveFile } from './drive-client';
 import { folderAppProperties } from './engine-inbound';
 import { driveLog, driveWarn } from './log';
@@ -22,7 +22,7 @@ import {
   fileState,
   itemKey,
 } from './snapshot';
-import type { MirrorDocument } from './livediagram-port';
+import type { MirrorDocument } from './livepages-port';
 
 type OutboundHooks = {
   onContentWritten(documentId: string): void;
@@ -191,7 +191,7 @@ async function runOp(ctx: PassContext, op: OutboundOp, hooks: OutboundHooks): Pr
         );
         if (content) hooks.onContentWritten(op.document.id);
       } catch (err) {
-        // Deleted outside livediagram's knowledge: re-create it where it belongs.
+        // Deleted outside livepages's knowledge: re-create it where it belongs.
         if (err instanceof DriveApiError && err.isNotFound) {
           driveLog('recreated', { id: op.document.id, fileId: item.driveFileId });
           await createDocumentFile(ctx, op.document, hooks, item);

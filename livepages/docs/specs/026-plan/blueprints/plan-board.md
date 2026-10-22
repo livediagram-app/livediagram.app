@@ -9,7 +9,7 @@ editor views.
 | ------------ | --------------------------------------------------------------------------------- |
 | Plan board   | `ShapeKind` `'plan-board'`; set-up field `ShapeElement.planBoard: PlanBoardSetup` |
 | Plan card    | `ShapeKind` `'plan-card'`; field `ShapeElement.planCard: { itemId: string }`      |
-| board set-up | `PlanBoardSetup` (`@livediagram/items` `board.ts`)                                |
+| board set-up | `PlanBoardSetup` (`@livepages/items` `board.ts`)                                |
 | column       | `PlanColumn`                                                                      |
 | swimlane     | `SwimlaneBy` (+ `swimlaneField` for `'field'`) + projected `lanes`, `swimlanes`   |
 | lane field   | `LaneField` (`laneFieldsOf`, `laneFieldOf`); a drop's patch is `laneDropPatch`    |
@@ -17,7 +17,7 @@ editor views.
 | unplaced     | projection `unplaced`                                                             |
 | quick filter | `QuickFilter` (per person, React state, never stored)                             |
 | face-down    | `cardIsFaceDown(item, setup, viewerId)`                                           |
-| board preset | `PLAN_BOARD_PRESETS` (`@livediagram/items` `presets.ts`), id `PlanBoardPresetId`  |
+| board preset | `PLAN_BOARD_PRESETS` (`@livepages/items` `presets.ts`), id `PlanBoardPresetId`  |
 
 ## Element model (`packages/document`)
 
@@ -40,7 +40,7 @@ editor views.
   the board's `cardSize` (slots lead/trail, lead/row/trail, head/headEnd/body/foot/footEnd), gating built-ins by
   `cardFieldsAt(size, cardFields)`; custom fields as `Label: value` pills via `customFieldText`; the title wraps to 2
   (Minimal, Compact) or 3 (Detailed) lines; returns `{ svg, height }`. `ctx.height` pins a Plan card element's frame.
-  Card values (`dayLabel`, `customFieldText`, `checklistProgress`) live in `@livediagram/items` `card-text.ts`.
+  Card values (`dayLabel`, `customFieldText`, `checklistProgress`) live in `@livepages/items` `card-text.ts`.
 - Board layout: `plan-board-layout.ts` `planBoardLayout(el, items, types, cardHeight?)` stacks cards at
   `cardHeight(item, width)` (absent: `PLAN_CARD_H`) and, with swimlanes, returns `lanes: PlanLaneSlot[]`, each a
   `PLAN_LANE_HEAD_H` header row plus its fullest column.
@@ -85,7 +85,7 @@ ExistingStatusList.tsx   the picker's Existing Statuses: heading + count, Add Al
                          the field keeps focus, mousemove highlights, click adds; colour transitions off under
                          motion-reduce. Without rows: `NoMatches`, "No states match “{text}”".
 AddColumnPickerPopover.tsx the picker hung from + Add Column After (304px wide): a portal at z-popover (`data-add-column-picker`), placed by
-                         @livediagram/ui `placeHint` with order right, left, bottom, top (8px gap, 8px margin) and an
+                         @livepages/ui `placeHint` with order right, left, bottom, top (8px gap, 8px margin) and an
                          arrow at its `arrowOffset`; its own capture Escape and outside press close it and refocus the
                          button. PlanColumnPopover's Escape is disabled while it is open, and its outside press treats
                          `[data-add-column-picker]` as inside
@@ -157,7 +157,7 @@ ItemDescription.tsx      the description: NoteRichTextEditor (note=false), saved
                          typing, on blur and on close as one patch of description + descriptionRich
 item-field-editors.tsx   editors for text (debounced), person, priority, labels, number, date, checklist
 plan-board-keys.ts       the board's keyboard as a pure function of the projection
-plan-palette.ts          re-exports planPalette from @livediagram/document (shared with the SVG export) and
+plan-palette.ts          re-exports planPalette from @livepages/document (shared with the SVG export) and
                          planOwnColours(element)
 MaximisedPlanLayer.tsx  MaximisableSlot (a board's or view's body through a portal into its own host element,
                          moved between the canvas slot and the overlay), the overlay (portal to document.body,

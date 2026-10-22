@@ -18,8 +18,8 @@ import {
   type CustomFieldDef,
   type CustomFieldKind,
   type ItemFieldId,
-} from '@livediagram/items';
-import { Button, CloseIcon, PlusIcon, Select, TextArea, TextInput } from '@livediagram/ui';
+} from '@livepages/items';
+import { Button, CloseIcon, PlusIcon, Select, TextArea, TextInput } from '@livepages/ui';
 import { CustomFieldKindTiles, CustomFieldPreview } from './CustomFieldKindParts';
 import { usePlan } from './PlanContext';
 

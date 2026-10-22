@@ -1,4 +1,4 @@
-import { ENTITY_MAX_FIELDS, entityPartAt, type ShapeElement } from '@livediagram/document';
+import { ENTITY_MAX_FIELDS, entityPartAt, type ShapeElement } from '@livepages/document';
 import { setEntityFieldEdit } from '@/lib/entity-field-edit';
 
 /**

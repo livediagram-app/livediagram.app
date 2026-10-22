@@ -8,10 +8,10 @@
 // that mode's own start (Start Diagramming, Start Planning, ...), where the templates are. Arrow keys move between the
 // cards, and 1 to 5 (printed on each card) choose one straight away.
 import { useEffect, useRef, type KeyboardEvent } from 'react';
-import { EDITOR_MODE_ICONS } from '@livediagram/ui';
-import { EDITOR_MODES, editorModeLabel, type EditorMode } from '@livediagram/document';
-import { PreviewFan } from '@livediagram/template-previews';
-import { isBlankTemplate, popularKindsFor, type TemplateKind } from '@livediagram/templates';
+import { EDITOR_MODE_ICONS } from '@livepages/ui';
+import { EDITOR_MODES, editorModeLabel, type EditorMode } from '@livepages/document';
+import { PreviewFan } from '@livepages/template-previews';
+import { isBlankTemplate, popularKindsFor, type TemplateKind } from '@livepages/templates';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { isTypingTarget } from '@/lib/typing-target';
 import { Spinner } from './template-picker-icons';

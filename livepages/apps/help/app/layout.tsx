@@ -17,9 +17,9 @@ import {
   trustedHtml,
   trustedScriptOrigins,
   trustedTypesBootScript,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 
-// The livediagram help centre (docs/specs/018-help/help-app.md). Indexable static site served
+// The livepages help centre (docs/specs/018-help/help-app.md). Indexable static site served
 // under /help by the router. No third-party scripts, it stays
 // self-host-clean (docs/specs/002-project-scope/open-source-and-business-model.md).
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
@@ -35,19 +35,19 @@ const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   // Consistent document titles across the help centre: every page reads
-  // "<Page Title> | livediagram" (the template reaches every child segment;
+  // "<Page Title> | livepages" (the template reaches every child segment;
   // the root index spells the suffix out itself). Link previews carry the
   // bare title, per the shared pageMetadata rule (docs/specs/018-help/help-app.md "SEO").
   title: {
-    default: 'Help | livediagram',
-    template: '%s | livediagram',
+    default: 'Help | livepages',
+    template: '%s | livepages',
   },
   description:
-    'Guides, tutorials, and answers for livediagram. Browse feature documentation, getting-started guides, and troubleshooting.',
+    'Guides, tutorials, and answers for livepages. Browse feature documentation, getting-started guides, and troubleshooting.',
   alternates: { canonical: '/help' },
   openGraph: {
     type: 'website',
-    siteName: 'livediagram Help',
+    siteName: 'livepages Help',
     locale: 'en_GB',
   },
   twitter: {

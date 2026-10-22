@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
-import { THEMES, type ShapeElement } from '@livediagram/document';
+import { THEMES, type ShapeElement } from '@livepages/document';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { styleMemoryKey } from '@/lib/style-memory';
 import { STYLE_MEMORY_WRITE_DEBOUNCE_MS, useStyleMemory } from './useStyleMemory';

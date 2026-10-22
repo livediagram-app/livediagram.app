@@ -15,8 +15,8 @@ import {
   type ElementDelta,
   type ElementOp,
   type Tab,
-} from '@livediagram/document';
-import type { RoomOp } from '@livediagram/api-schema';
+} from '@livepages/document';
+import type { RoomOp } from '@livepages/api-schema';
 import { META_SKIP, mergeRemoteTab, mergeRemoteVote } from './tab-broadcast-ops';
 import { markArticleGrow } from '@/lib/article/article-grow-store';
 

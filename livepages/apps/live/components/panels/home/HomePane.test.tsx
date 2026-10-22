@@ -20,8 +20,8 @@ vi.mock('./HomeWelcome', () => ({
     <div data-home-welcome="" data-offer-sign-in={String(p.offerSignIn)} />
   ),
 }));
-vi.mock('@livediagram/ui', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@livediagram/ui')>()),
+vi.mock('@livepages/ui', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@livepages/ui')>()),
   useMediaQuery: () => wide.value,
 }));
 

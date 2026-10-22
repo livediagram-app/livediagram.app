@@ -16,7 +16,7 @@ import {
   timerDisplayMs,
   type TabTimer,
   type TimerMode,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { useNow } from '@/hooks/ui/useNow';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { DIAL_LAP_MINUTES, dialFraction, formatMinutesLabel } from './session-studio';

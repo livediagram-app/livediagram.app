@@ -14,7 +14,7 @@ import {
   type ArrowheadShape,
   type Element,
   type EntityField,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { techHeader, TECH_HEADER_H, TECH_MUTED } from './template-builders-technical-kit';
 
 // Plateful's order domain model in real UML class notation, laid out as a

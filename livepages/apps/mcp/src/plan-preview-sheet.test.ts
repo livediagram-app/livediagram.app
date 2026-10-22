@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type Tab } from '@livediagram/document';
+import { createShape, type Tab } from '@livepages/document';
 
 // A Sheet tab's preview shows every filled cell, as the tab does (docs/specs/015-api/mcp-server.md §5): its sheet is
 // read once, sizes the image and is handed on for the drawing.

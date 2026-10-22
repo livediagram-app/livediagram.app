@@ -6,8 +6,8 @@
 // focus and the highlighted row is its active descendant, so arrows move through the rows, Enter adds the
 // highlighted one, and a press on a row adds it.
 import { useEffect } from 'react';
-import { NoMatches, PlusIcon } from '@livediagram/ui';
-import type { MissingStatus } from '@livediagram/items';
+import { NoMatches, PlusIcon } from '@livepages/ui';
+import type { MissingStatus } from '@livepages/items';
 
 export const HEADING =
   'text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400';

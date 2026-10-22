@@ -1,9 +1,9 @@
 'use client';
 
-import type { AccessLevel, DocumentStats } from '@livediagram/api-schema';
-import { editorModeLabel } from '@livediagram/document';
-import { lucideKey, lucideMessageSquare, lucideShapes } from '@livediagram/icons/lucide';
-import { EDITOR_MODE_ICONS, Glyph, Prims, Tooltip, lucideGlyph } from '@livediagram/ui';
+import type { AccessLevel, DocumentStats } from '@livepages/api-schema';
+import { editorModeLabel } from '@livepages/document';
+import { lucideKey, lucideMessageSquare, lucideShapes } from '@livepages/icons/lucide';
+import { EDITOR_MODE_ICONS, Glyph, Prims, Tooltip, lucideGlyph } from '@livepages/ui';
 import { ROLE_PASS } from '@/components/dialogs/share-dialog-parts';
 import { FolderSolidIcon } from '@/components/primitives/explorer-icons';
 import { isPowerUserMode } from '@/lib/power-user-mode';

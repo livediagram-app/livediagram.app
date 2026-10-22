@@ -1,7 +1,7 @@
 // What stops a form being published (docs/specs/030-forms/forms.md "Publishing and the form link"): the problems Share
 // Form lists before Publish Form, and the api refuses (409 form_not_ready). Pure, so both agree. Responses that have
 // nowhere to go are destinationProblem's, checked beside these.
-import type { ItemTypeDef } from '@livediagram/items';
+import type { ItemTypeDef } from '@livepages/items';
 import { ruleQuestion } from './branching';
 import { effectiveTarget } from './mapping';
 import { questionsOf, type FormDefinition } from './model';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ITEM_TYPES_MAX } from '@livediagram/items';
+import { ITEM_TYPES_MAX } from '@livepages/items';
 import { mayCreateCardType } from './may-create-card-type';
 
 describe('mayCreateCardType', () => {

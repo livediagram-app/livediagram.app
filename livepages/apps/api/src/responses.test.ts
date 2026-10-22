@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DOCUMENT_CONVERSION_HEADER, DOCUMENT_OPEN_HEADER } from '@livediagram/api-schema';
+import { DOCUMENT_CONVERSION_HEADER, DOCUMENT_OPEN_HEADER } from '@livepages/api-schema';
 import {
   aiError,
   badRequest,

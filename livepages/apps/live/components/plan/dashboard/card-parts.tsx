@@ -2,7 +2,7 @@
 
 // What the written cards share (docs/specs/026-plan/plan-tabs.md "Cards"): the heading an Editor types into in place
 // (a plain heading to anyone else), landing as one step when left, and the card's padding, clear of the slot's menu.
-import { DASHBOARD_CARD_TITLE_MAX } from '@livediagram/document';
+import { DASHBOARD_CARD_TITLE_MAX } from '@livepages/document';
 import { useSlotDraft } from './useSlotDraft';
 
 export const CARD_BODY = 'flex h-full flex-col gap-2 overflow-hidden p-4';

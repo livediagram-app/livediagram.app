@@ -3,7 +3,7 @@
 // unsaved for 30 days, to the Trash. It stamps the sweep's own time, so the
 // Trash's purge still gives it the full 30 days there.
 
-import { EMPTY_DOCUMENT_STALE_MS } from '@livediagram/api-schema';
+import { EMPTY_DOCUMENT_STALE_MS } from '@livepages/api-schema';
 import type { Env } from '../types';
 
 // Documents per statement: one bounded UPDATE over a scan measured at ~10 ms on

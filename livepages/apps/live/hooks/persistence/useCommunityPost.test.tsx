@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CommunityOwnPost } from '@livediagram/api-schema';
+import type { CommunityOwnPost } from '@livepages/api-schema';
 
 // The owner's post as the Share dialog reads it (docs/specs/025-community/community.md "Publishing"), and the header
 // badge's store it keeps in step.

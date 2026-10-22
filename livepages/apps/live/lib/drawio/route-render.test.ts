@@ -12,7 +12,7 @@ import {
   curveAnchorPoints,
   endpointPosition,
   type ArrowElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { axisOf } from './arrow-route';
 import { importDrawio } from './import';
 import { fixtureBytes } from './test-support';

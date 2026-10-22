@@ -4,7 +4,7 @@
 //
 // Pure: (cx, cy) -> Element[]. See docs/specs/008-canvas/canvas-and-palette.md "Templates".
 
-import { createShape, createText, type Element } from '@livediagram/document';
+import { createShape, createText, type Element } from '@livepages/document';
 import { TEMPLATE_CONTENT_LAYER_ID, TEMPLATE_SCAFFOLD_LAYER_ID } from './template-layers';
 import { uiAt } from './template-wireframe-kit';
 

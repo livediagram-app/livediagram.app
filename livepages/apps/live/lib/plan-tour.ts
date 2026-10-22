@@ -13,7 +13,7 @@ import type { UserPreferences } from './user-preferences';
 
 // Settings → Plan tour: the Tours › "Boards Tour" or "Sheets Tour" row, turned on from off and closed, reruns the tour. A
 // window event keeps the dialog decoupled from PlanTourHost, as the welcome tour's relaunch does.
-export const PLAN_TOUR_RELAUNCH_EVENT = 'livediagram:plan-tour-relaunch';
+export const PLAN_TOUR_RELAUNCH_EVENT = 'livepages:plan-tour-relaunch';
 
 export function requestPlanTourRelaunch(): void {
   if (typeof window === 'undefined') return;
@@ -53,7 +53,7 @@ type PlanTourContent = {
   itemIds: string[];
 };
 
-export const PLAN_TOUR_CONTENT_KEY = 'livediagram:v2:plan-tour-content';
+export const PLAN_TOUR_CONTENT_KEY = 'livepages:v2:plan-tour-content';
 
 // A record written before the Sheets track named the element `boardId`; it reads as the same thing.
 function asContent(value: unknown): PlanTourContent | null {

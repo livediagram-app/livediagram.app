@@ -1,7 +1,7 @@
 // A form as an agent reads it (docs/specs/030-forms/forms.md "Agents": read_form): its sections and questions in
 // words, where each answer goes by the field's name, where responses go, its settings, state, count, link and the
 // problems Share Form would list. Pure: the verbs read the world and the link, this says what they hold.
-import type { FormLinkResponse } from '@livediagram/api-schema';
+import type { FormLinkResponse } from '@livepages/api-schema';
 import {
   DEFAULT_CLOSED_MESSAGE,
   DEFAULT_CONFIRMATION,
@@ -21,8 +21,8 @@ import {
   type DestinationProblem,
   type FormDefinition,
   type FormQuestion,
-} from '@livediagram/forms';
-import type { ItemTypeDef } from '@livediagram/items';
+} from '@livepages/forms';
+import type { ItemTypeDef } from '@livepages/items';
 import type { BoardRef, SheetRef } from './form-world';
 
 export type FormState = 'not_published' | 'accepting' | 'closed' | 'paused' | 'suspended';

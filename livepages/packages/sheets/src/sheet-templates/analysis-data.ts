@@ -1,7 +1,7 @@
 // The worked examples behind the three analysis sheets (docs/specs/029-sheets/sheet.md "Sheet templates"): Threat
 // Register, Driver Model and Value Stream. They are also the companion Sheets of the Threat model, Metric tree and
 // Value stream map templates (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"), whose
-// drawings read these same rows (@livediagram/templates), so the drawing and its sheet agree when made. Pure data and
+// drawings read these same rows (@livepages/templates), so the drawing and its sheet agree when made. Pure data and
 // the arithmetic both sides share.
 
 // ---- Threat Register ----------------------------------------------------------------------------------------------

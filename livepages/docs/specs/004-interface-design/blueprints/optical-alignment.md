@@ -247,7 +247,7 @@ and a feature page. Help, telemetry and the Community are same-origin under the 
 
 `checkOpticalAlignment({ root }): OpticalViolation[]` parses every `.tsx` under `root` (not tests, not
 `e2e/`, not the primitives' own `optical/` folder) with TypeScript 7's native compiler
-(`parseSourceFiles` from `@livediagram/source-ast`, [Source scanners](../../003-system-architecture/source-scanners.md))
+(`parseSourceFiles` from `@livepages/source-ast`, [Source scanners](../../003-system-architecture/source-scanners.md))
 and flags a JSX element that:
 
 - has a class string (static chunks of a literal or template) with `rounded-full` and a centring token,

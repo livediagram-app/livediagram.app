@@ -1,6 +1,6 @@
 // Which drags on an event-storming board meet its timeline lanes (docs/specs/021-event-storming/event-storming.md
 // "Always on a lane"), and which dragged note they snap by. Pure, so the drag hook asks once per gesture.
-import { isEventStormingNote, type Element } from '@livediagram/document';
+import { isEventStormingNote, type Element } from '@livepages/document';
 
 // The dragged elements, in one pass over the board (a selection may be large).
 function draggedOf(elements: readonly Element[], ids: ReadonlySet<string>): Element[] {

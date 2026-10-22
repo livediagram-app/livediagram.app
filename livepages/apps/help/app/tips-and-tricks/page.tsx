@@ -6,7 +6,7 @@ import { helpMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = helpMetadata({
   title: 'Tips and Tricks',
-  description: 'Shortcuts and lesser-known features that make editing in livediagram faster.',
+  description: 'Shortcuts and lesser-known features that make editing in livepages faster.',
   path: '/help/tips-and-tricks/',
 });
 

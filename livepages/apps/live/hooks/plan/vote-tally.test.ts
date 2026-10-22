@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { itemPersonId } from '@livediagram/items';
+import { itemPersonId } from '@livepages/items';
 import { voteTallies } from './vote-tally';
 
 // docs/specs/026-plan/items.md "Tally".

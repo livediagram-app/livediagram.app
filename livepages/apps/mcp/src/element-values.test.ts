@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTemplateTabs, validTemplateKinds, type TemplateKind } from '@livediagram/templates';
+import { buildTemplateTabs, validTemplateKinds, type TemplateKind } from '@livepages/templates';
 import { elementsIssue } from './element-values';
 
 const box = (extra: Record<string, unknown>) => ({

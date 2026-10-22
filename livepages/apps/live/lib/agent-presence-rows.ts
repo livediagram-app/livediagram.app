@@ -10,10 +10,10 @@ import {
   MAX_PARTICIPANT_NAME_LEN,
   type AgentPresence,
   type ParticipantPresence,
-} from '@livediagram/api-schema';
+} from '@livepages/api-schema';
 import { debugLog } from './debug-log';
 import type { Participant } from './identity';
-import { isRecord } from '@livediagram/document';
+import { isRecord } from '@livepages/document';
 
 // The longest id an entry carries: element ids, presence ids and the room's entry ids are all under it.
 const AGENT_ID_MAX = 128;

@@ -12,13 +12,13 @@ file). Built on [Board import](board-import.md); evidence in
 - **REST API only.** The Miro clipboard carries more (pen strokes, link
   previews), but decoding it means reverse engineering an undocumented format,
   which Miro's Terms of Service (2.9 d) and Developer Terms (3.3 g) forbid.
-  livediagram does not do it. What REST cannot read is reported, not guessed.
+  livepages does not do it. What REST cannot read is reported, not guessed.
 - **No stored Miro credentials.** The api Worker only exchanges the one-time
   code; tokens live in the tab for the session.
 
 ## Connecting
 
-- One Miro app in a livediagram-owned developer team, distributed by its
+- One Miro app in a livepages-owned developer team, distributed by its
   installation URL. No Marketplace listing.
 - Scope: `boards:read`.
 - The click on **Connect Miro** opens Miro's consent page in a popup. The user
@@ -26,7 +26,7 @@ file). Built on [Board import](board-import.md); evidence in
   `GET /api/import/miro/callback` on the api Worker, which checks `state`
   (random, bound to the opener), exchanges the code with the client secret, and
   returns a page that `postMessage`s the access token (60 minutes) and refresh
-  token to the opener, targeted at the livediagram origin only, then closes.
+  token to the opener, targeted at the livepages origin only, then closes.
   Nothing is written to D1.
 - Every later call goes **browser to `api.miro.com`** (CORS `*`). An expired
   access token is refreshed once from the tab through
@@ -51,7 +51,7 @@ Positions are item centres, relative to the board centre or, when
 `position.relativeTo` is `parent_top_left`, to the parent frame's top-left
 corner; the parser resolves absolute top-left coordinates first.
 
-| Miro                                                                                     | livediagram                                                                                                                                                                              | Outcome                                                        |
+| Miro                                                                                     | livepages                                                                                                                                                                              | Outcome                                                        |
 | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | sticky note                                                                              | `sticky`, nearest palette colour; HTML content to text with line breaks                                                                                                                  | imported                                                       |
 | shape                                                                                    | `shape` of the nearest kind (rectangle, round rectangle, circle, rhombus to diamond, triangle, and so on)                                                                                | imported, or degraded to a rectangle for kinds without a match |
@@ -65,7 +65,7 @@ corner; the parser resolves absolute top-left coordinates first.
 | document, doc format                                                                     | `link-card` to the board item when Miro gives a URL                                                                                                                                      | degraded, or skipped without a URL                             |
 | mind map node                                                                            | `mind-node` tree under its root                                                                                                                                                          | imported                                                       |
 | code widget                                                                              | code block                                                                                                                                                                               | imported                                                       |
-| group                                                                                    | members import individually (livediagram has no groups)                                                                                                                                  | degraded                                                       |
+| group                                                                                    | members import individually (livepages has no groups)                                                                                                                                  | degraded                                                       |
 | pen stroke, link preview, table, kanban, mockup, emoji, user story map, any unknown type | nothing                                                                                                                                                                                  | skipped, named and counted                                     |
 
 ## Images

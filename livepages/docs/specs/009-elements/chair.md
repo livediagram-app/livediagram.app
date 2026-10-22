@@ -38,7 +38,7 @@ A **shape kind**, `chair`, in the palette's **Collaborate** category under
 - Otherwise a completely ordinary element: move, resize, rotate, theme, group,
   lock, copy, export.
 - **One drawing, on the canvas and in an export.** The chair is a piece of the shared furniture table
-  (`FURNITURE_ART` in `@livediagram/document`) with the desk and the sofa: `FurnitureView` and the
+  (`FURNITURE_ART` in `@livepages/document`) with the desk and the sofa: `FurnitureView` and the
   headless render (`svg-render-faces.ts`) both paint it, with one seat rule (`chairSeatFill`: the
   element's fill, or with the default `transparent` a wash of its stroke).
 - **Animations ([Canvas and palette](../008-canvas/canvas-and-palette.md)) run on the drawing, not the box.** The element box is
@@ -137,7 +137,7 @@ Where they differ from the chair:
   a side wall is a tall sofa rather than a squashed one. A chair is square enough to turn in place.
 - **Aspect locked** to their drawings, like the chair.
 - **One drawing, on the canvas and in an export**: the chair, the desk and the sofa are a shared
-  table of parts in `@livediagram/document` (`FURNITURE_ART`), one drawing per view, that both
+  table of parts in `@livepages/document` (`FURNITURE_ART`), one drawing per view, that both
   renderers paint.
 
 ## Not in scope

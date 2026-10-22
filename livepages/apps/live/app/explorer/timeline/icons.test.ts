@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TIMELINE_EVENT_TYPES } from '@livediagram/api-schema';
+import { TIMELINE_EVENT_TYPES } from '@livepages/api-schema';
 import { EVENT_GLYPH_PATHS } from './icons';
 
 // A card shows its glyph twice, small in the reason line and large in

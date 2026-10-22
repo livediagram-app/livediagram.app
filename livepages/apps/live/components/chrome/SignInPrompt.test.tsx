@@ -8,7 +8,7 @@ vi.mock('@/components/chrome/auth-shared', () => ({ useAuthHrefs: () => ({}) }))
 
 const { SignInPrompt } = await import('./SignInPrompt');
 
-const KEY = 'livediagram:v2:signin-prompt-dismissed';
+const KEY = 'livepages:v2:signin-prompt-dismissed';
 
 afterEach(() => {
   cleanup();

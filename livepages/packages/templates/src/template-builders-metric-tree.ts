@@ -1,6 +1,6 @@
 // The Metric tree template (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Plateful's north star, on-time
 // orders a week, broken into the inputs teams own. This builds its first tab, the drawing; the second, the Driver
-// Model, is the companion Sheet (template-companions.ts) worked from the same inputs (@livediagram/sheets
+// Model, is the companion Sheet (template-companions.ts) worked from the same inputs (@livepages/sheets
 // DRIVER_BASELINE, driverTree), so every value on a card here is a figure that sheet works out.
 //
 // The tree reads top-down: the north star (violet, with a progress ring towards its goal), the outputs it is made
@@ -20,7 +20,7 @@ import {
   type Element,
   type ShapeElement,
   type TextRun,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   DRIVER_BASELINE,
   DRIVER_LEVERS,
@@ -28,7 +28,7 @@ import {
   driverTree,
   leverGain,
   type DriverInputKey,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import { rake } from './template-rake';
 import { techHeader, TECH_HEADER_H } from './template-builders-technical-kit';
 import { CONTENT, INK, MUTED, PAPER, SCAFFOLD, chipRow } from './template-report-kit';

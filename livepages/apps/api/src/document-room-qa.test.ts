@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { applyQaAction, type QaNote } from '@livediagram/document';
+import { applyQaAction, type QaNote } from '@livepages/document';
 
 // The Q&A board's write queue in the room (docs/specs/012-collaboration/qa-board.md), under the failure the
 // dot vote once had (docs/specs/012-collaboration/session-tools.md): one person's write carried a snapshot from

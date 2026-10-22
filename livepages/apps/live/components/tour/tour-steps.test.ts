@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TELEMETRY_TYPE_PATTERN } from '@livediagram/api-schema';
+import { TELEMETRY_TYPE_PATTERN } from '@livepages/api-schema';
 import { TOUR_STEPS, tourStepsFor, tourStepTelemetryType } from './tour-steps';
 
 // The Diagram tour's stage-view telemetry (docs/specs/007-editor/editor-tour.md + docs/specs/017-telemetry/telemetry.md): every step id must

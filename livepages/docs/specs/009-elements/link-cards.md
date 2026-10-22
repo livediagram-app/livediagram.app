@@ -6,7 +6,7 @@ OG image. The URL is edited the same way every other element's link is.
 
 ## The element
 
-`LinkCardElement` (`type: 'link-card'`, `@livediagram/document`, declared in
+`LinkCardElement` (`type: 'link-card'`, `@livepages/document`, declared in
 `src/element-types.ts`) is a
 boxed element added through the standard new-type surface (the `annotation`
 precedent): `isBoxed`, `createLinkCard` (280×120 default), the `colors.ts`
@@ -53,7 +53,7 @@ The endpoint is **SSRF-safe** (public, self-hostable repo):
   self-host). Always returns 200 with at least the resolved `url`.
 
 The pure helpers (`isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult`)
-are unit-tested. `UnfurlResult` is a shared `@livediagram/api-schema` DTO.
+are unit-tested. `UnfurlResult` is a shared `@livepages/api-schema` DTO.
 
 ## Images
 

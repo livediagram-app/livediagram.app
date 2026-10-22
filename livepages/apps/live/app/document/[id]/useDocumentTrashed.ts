@@ -7,7 +7,7 @@
 // row is there exactly when they may (owner, or a joined team member), and
 // never for a share-link visitor.
 import { useCallback, useEffect, useState } from 'react';
-import type { TrashedDocument } from '@livediagram/api-schema';
+import type { TrashedDocument } from '@livepages/api-schema';
 import { apiListTrash, apiRestoreDocument } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';

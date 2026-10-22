@@ -3,7 +3,7 @@
 // full bleed: the kit's bleed reaches past the content box to the page's edge) and keep the words
 // inside the margins. Pure builders on the slide kit, in units of the slide's height, so a 16:9
 // and a 4:3 slide both fit.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import type { Kit } from './page-layout-kit';
 import {
   bleedImage,

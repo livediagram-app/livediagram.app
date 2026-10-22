@@ -1,5 +1,5 @@
-import type { DocumentStats } from '@livediagram/api-schema';
-import { tabStatsOf, type Tab } from '@livediagram/document';
+import type { DocumentStats } from '@livepages/api-schema';
+import { tabStatsOf, type Tab } from '@livepages/document';
 
 // What the Explorer's Details view shows for a document saved only in this browser
 // (docs/specs/013-workspace/explorer-details-view.md): its tabs counted with the api's own rule,

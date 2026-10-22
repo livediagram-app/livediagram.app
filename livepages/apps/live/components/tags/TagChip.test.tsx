@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tag } from '@livediagram/api-schema';
+import type { Tag } from '@livepages/api-schema';
 import { DocumentTagChips, DocumentTagDots, TagChip, chipsFloor } from './TagChip';
 import { deleteTagMessage } from './TagActionsMenu';
 

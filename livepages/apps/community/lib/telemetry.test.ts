@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const siteTrack = vi.fn<typeof import('@livediagram/telemetry-client').siteTrack>();
-vi.mock('@livediagram/telemetry-client', () => ({
+const siteTrack = vi.fn<typeof import('@livepages/telemetry-client').siteTrack>();
+vi.mock('@livepages/telemetry-client', () => ({
   siteTrack: (...a: Parameters<typeof siteTrack>) => siteTrack(...a),
 }));
 
-import { TELEMETRY_ACTIONS, TELEMETRY_CATEGORIES } from '@livediagram/api-schema';
+import { TELEMETRY_ACTIONS, TELEMETRY_CATEGORIES } from '@livepages/api-schema';
 import { communityTelemetry } from './telemetry';
 
 // docs/specs/025-community/community.md "Telemetry": every Community app event, on the closed enums, with a preset

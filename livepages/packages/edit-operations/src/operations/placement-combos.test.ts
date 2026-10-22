@@ -1,7 +1,7 @@
 // Placements that pair a side with a group or an alignment (docs/specs/024-agents/blueprints/edit-operations.md
 // "Placement"): `inside:<g> right-of:<x>` (within), `below:<x> align:<y>` (alignTo) and `inside:<g> align:<y>`.
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@livediagram/document';
+import type { Element, Tab } from '@livepages/document';
 import { checkoutFlow } from '../fixtures/checkout-flow';
 import { applied, refused } from '../fixtures/outcomes';
 import { run } from '../fixtures/run';

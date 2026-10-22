@@ -6,7 +6,7 @@
 #
 #   scripts/install-tfjs-node.sh [--gpu]
 set -euo pipefail
-DIR="${STICKY_MODEL_TF_DIR:-${STICKY_MODEL_DIR:-/tmp/livediagram-sticky-model}/tfjs}"
+DIR="${STICKY_MODEL_TF_DIR:-${STICKY_MODEL_DIR:-/tmp/livepages-sticky-model}/tfjs}"
 PACKAGES=("@tensorflow/tfjs-node@4.22.0")
 if [[ "${1:-}" == "--gpu" ]]; then PACKAGES+=("@tensorflow/tfjs-node-gpu@4.22.0"); fi
 mkdir -p "$DIR"

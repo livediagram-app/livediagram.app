@@ -4,7 +4,7 @@
 // Content only: never a document's contents, only the user's own account facts
 // plus a team name the inviter already chose.
 
-import { xmlEscape } from '@livediagram/icons';
+import { xmlEscape } from '@livepages/icons';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 
@@ -16,7 +16,7 @@ const MUTED = '#475569';
 // The brand prism's light-to-deep sky run, for the band across the top of the
 // card. Outlook ignores the gradient and paints BRAND underneath instead.
 const BAND_GRADIENT = 'linear-gradient(90deg,#38bdf8 0%,#0ea5e9 45%,#1d4ed8 100%)';
-// The page behind the card: brand-50, so the frame reads livediagram before a
+// The page behind the card: brand-50, so the frame reads livepages before a
 // word is read.
 const CANVAS = '#f0f9ff';
 
@@ -24,14 +24,14 @@ const CANVAS = '#f0f9ff';
 // inline SVG: Gmail and Outlook drop SVG, and most clients block data: images.
 // `pnpm icons:brand` writes it into the marketing app's public/email/, a path kept
 // for email alone because every message ever sent points at it. 64px, 2x the slot.
-const LOGO_PATH = '/email/livediagram-mark-64.png';
+const LOGO_PATH = '/email/livepages-mark-64.png';
 const LOGO_SIZE = 28;
 
 // Default sign-off, used by the onboarding emails (their recipients all have an
 // account). The invite + account-deleted builders pass their own, since those
 // recipients may not have (or no longer have) an account.
 const ACCOUNT_FOOTER =
-  'You’re receiving this because you have a livediagram account. The editor is free and open source.';
+  'You’re receiving this because you have a livepages account. The editor is free and open source.';
 
 // docs/specs/014-identity/transactional-email.md: footer for an opt-out notification email, the reason plus a link to
 // the settings where the recipient can turn the category off in one click.
@@ -46,7 +46,7 @@ function manageNotificationsFooter(env: Env, reason: string): string {
 function tipsFooter(env: Env): string {
   return manageNotificationsFooter(
     env,
-    'You’re receiving this because you have a livediagram account and tips and check-ins are on.',
+    'You’re receiving this because you have a livepages account and tips and check-ins are on.',
   );
 }
 
@@ -108,7 +108,7 @@ type Section = {
   footer?: string;
 };
 
-// The mark + "live"/"diagram" wordmark, linked home. A table rather than flex so
+// The mark + "live"/"pages" wordmark, linked home. A table rather than flex so
 // the two sit on one baseline in Outlook too. The image's alt is empty because
 // the wordmark beside it already says the name when images are blocked.
 function lockup(base: string, fontSize: number, centred = false): string {
@@ -116,7 +116,7 @@ function lockup(base: string, fontSize: number, centred = false): string {
   const margin = centred ? 'margin:0 auto' : 'margin:0';
   return `<a href="${base}" style="text-decoration:none"><table role="presentation" cellpadding="0" cellspacing="0" style="${margin}"><tr>
           <td style="padding-right:10px;vertical-align:middle"><img src="${base}${LOGO_PATH}" width="${mark}" height="${mark}" alt="" style="display:block;border:0;outline:none;width:${mark}px;height:${mark}px"></td>
-          <td style="vertical-align:middle;font-size:${fontSize}px;font-weight:600;letter-spacing:-0.3px;color:${INK}"><span style="color:${WORDMARK_ACCENT}">live</span>diagram</td>
+          <td style="vertical-align:middle;font-size:${fontSize}px;font-weight:600;letter-spacing:-0.3px;color:${INK}"><span style="color:${WORDMARK_ACCENT}">live</span>pages</td>
         </tr></table></a>`;
 }
 
@@ -176,11 +176,11 @@ export function welcomeEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Welcome',
-    subject: 'Welcome to livediagram',
+    subject: 'Welcome to livepages',
     html: shell(env, {
       heading: 'Welcome, let’s draw something',
       intro:
-        'livediagram is a fast, no-friction canvas for diagrams. Here’s how to get your first one going:',
+        'livepages is a fast, no-friction canvas for diagrams. Here’s how to get your first one going:',
       points: [
         '<strong>Drop a shape</strong> from the palette, double-click it to type, and drag the corners to resize.',
         '<strong>Connect things</strong> by hovering an element’s edge and dragging an arrow to another, and the arrow stays pinned as you move them.',
@@ -261,7 +261,7 @@ function teamInviteSection(
     ctaText: 'View your invite',
     ctaHref: `${appBaseUrl(env)}/explorer/invites`,
     footer:
-      'You’re receiving this because someone invited you to a team on livediagram. If it wasn’t expected, you can safely ignore it, nothing happens unless you accept.',
+      'You’re receiving this because someone invited you to a team on livepages. If it wasn’t expected, you can safely ignore it, nothing happens unless you accept.',
   };
 }
 
@@ -280,14 +280,14 @@ export function teamInviteEmail(
   const name = teamNames(teamName);
   return {
     kind: 'TeamInvite',
-    subject: `You’ve been invited to ${name.text} on livediagram`,
+    subject: `You’ve been invited to ${name.text} on livepages`,
     html: shell(
       env,
       teamInviteSection(
         env,
         {
           heading: `You’re invited to ${name.html}`,
-          intro: `Someone invited you to join <strong>${name.html}</strong> on livediagram, a shared space for documents you and your teammates can open and edit together.`,
+          intro: `Someone invited you to join <strong>${name.html}</strong> on livepages, a shared space for documents you and your teammates can open and edit together.`,
         },
         declineToken,
       ),
@@ -299,19 +299,19 @@ export function teamInviteEmail(
 // one says the invite closes in a week, which is when it expires.
 const REMINDER_COPY: Record<1 | 2 | 3, (team: { html: string; text: string }) => TeamInviteCopy> = {
   1: (team) => ({
-    subject: `Reminder: you’re invited to ${team.text} on livediagram`,
+    subject: `Reminder: you’re invited to ${team.text} on livepages`,
     heading: `Your invite to ${team.html} is waiting`,
-    intro: `Yesterday someone invited you to join <strong>${team.html}</strong> on livediagram, a shared space for documents you and your teammates can open and edit together.`,
+    intro: `Yesterday someone invited you to join <strong>${team.html}</strong> on livepages, a shared space for documents you and your teammates can open and edit together.`,
   }),
   2: (team) => ({
     subject: `Your invite to ${team.text} is still waiting`,
     heading: `Still thinking about ${team.html}?`,
-    intro: `A week ago someone invited you to join <strong>${team.html}</strong> on livediagram. The invite is still open whenever you are ready.`,
+    intro: `A week ago someone invited you to join <strong>${team.html}</strong> on livepages. The invite is still open whenever you are ready.`,
   }),
   3: (team) => ({
     subject: `Last reminder: your invite to ${team.text} closes in a week`,
     heading: `Your invite to ${team.html} closes soon`,
-    intro: `Someone invited you to join <strong>${team.html}</strong> on livediagram three weeks ago. This is the last reminder: the invite closes in a week if nobody answers it.`,
+    intro: `Someone invited you to join <strong>${team.html}</strong> on livepages three weeks ago. This is the last reminder: the invite closes in a week if nobody answers it.`,
   }),
 };
 
@@ -333,11 +333,11 @@ export function accountDeletedEmail(env: Env): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'AccountDeleted',
-    subject: 'Your livediagram account has been deleted',
+    subject: 'Your livepages account has been deleted',
     html: shell(env, {
       heading: 'Your account has been deleted',
       intro:
-        'This confirms that your livediagram account and the documents stored under it have been permanently removed, as you requested. There’s nothing left for you to do.',
+        'This confirms that your livepages account and the documents stored under it have been permanently removed, as you requested. There’s nothing left for you to do.',
       outro:
         'If this wasn’t you, or you change your mind, you’re always welcome back. The canvas is free and needs no account to start.',
       ctaText: 'Start a new diagram',
@@ -462,7 +462,7 @@ export function actionAssignedEmail(
             ctaText: 'Open the document',
             ctaHref: `${base}/document/${encodeURIComponent(document.id)}`,
           }
-        : { ctaText: 'Open livediagram', ctaHref: `${base}/explorer` }),
+        : { ctaText: 'Open livepages', ctaHref: `${base}/explorer` }),
       footer: manageNotificationsFooter(
         env,
         'You’re receiving this because a teammate assigned you an action.',
@@ -557,7 +557,7 @@ export function tokenExpiringEmail(
   const when = `${EXPIRY_MONTHS[d.getUTCMonth()]!} ${d.getUTCDate()}, ${d.getUTCFullYear()}`;
   return {
     kind: 'TokenExpiring',
-    subject: 'Your livediagram API token expires soon',
+    subject: 'Your livepages API token expires soon',
     html: shell(env, {
       heading: 'An API token is about to expire',
       intro: `Your API token <strong>${name}</strong> expires on ${when}. Once it lapses, any script or connected tool using it will stop being able to reach your documents.`,
@@ -570,7 +570,7 @@ export function tokenExpiringEmail(
       ctaText: 'Manage your tokens',
       ctaHref: `${base}/explorer?settings=tokens`,
       footer:
-        'You’re receiving this because an API token on your livediagram account is nearing its expiry.',
+        'You’re receiving this because an API token on your livepages account is nearing its expiry.',
     }),
   };
 }
@@ -585,7 +585,7 @@ export function activationEmail(env: Env): RenderedEmail {
     html: shell(env, {
       heading: 'Ready when you are',
       intro:
-        'You signed up for livediagram but haven’t made a diagram yet. It takes about thirty seconds to get going:',
+        'You signed up for livepages but haven’t made a diagram yet. It takes about thirty seconds to get going:',
       points: [
         'Open a blank canvas and drop a shape, or start from a template (flowchart, mind map, kanban and more).',
         'Double-click to type, drag from an edge to connect, and it all autosaves as you go.',
@@ -704,7 +704,7 @@ export function winBackEmail(env: Env): RenderedEmail {
     html: shell(env, {
       heading: 'It’s been a while',
       intro:
-        'You haven’t opened livediagram in a few weeks, and your documents are right where you left them. A few things you can pick back up:',
+        'You haven’t opened livepages in a few weeks, and your documents are right where you left them. A few things you can pick back up:',
       points: [
         'Start something new in seconds from a template or theme.',
         'Share a document with a live link, or bring a team onto the canvas.',
@@ -725,10 +725,10 @@ export function milestoneEmail(env: Env, count: number): RenderedEmail {
   const base = appBaseUrl(env);
   return {
     kind: 'Milestone',
-    subject: `You’ve made ${count} documents on livediagram`,
+    subject: `You’ve made ${count} documents on livepages`,
     html: shell(env, {
       heading: `That’s ${count} documents`,
-      intro: `Nice work, you’ve created <strong>${count}</strong> documents on livediagram. Thanks for building with us.`,
+      intro: `Nice work, you’ve created <strong>${count}</strong> documents on livepages. Thanks for building with us.`,
       outro: 'Here’s to the next one.',
       ctaText: 'Open your Explorer',
       ctaHref: `${base}/explorer`,

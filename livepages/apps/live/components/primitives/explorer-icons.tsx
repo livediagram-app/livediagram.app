@@ -9,7 +9,7 @@ import {
   Prims,
   SparkleIcon as SharedSparkleIcon,
   TrashIcon as SharedTrashIcon,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import {
   lucideAppWindow,
   lucideClock,
@@ -29,7 +29,7 @@ import {
   lucideShare2,
   lucideStar,
   lucideTag,
-} from '@livediagram/icons/lucide';
+} from '@livepages/icons/lucide';
 
 // The one glyph set for both Explorer surfaces: the full-page /explorer
 // route and the editor's floating Explorer panel, plus the menus and panes
@@ -47,7 +47,7 @@ import {
 // FolderSolidIcon (the page's filled folder, which morphs open) and
 // FolderOutlineIcon (the line folder of the panel tree and the menus).
 //
-// The close / dismiss X is not here: it is CloseIcon in @livediagram/ui.
+// The close / dismiss X is not here: it is CloseIcon in @livepages/ui.
 
 type IconProps = { size?: number };
 
@@ -172,8 +172,8 @@ export const PaletteIcon = lucideGlyph(lucidePalette, 13);
 // Three shapes: the Shape libraries section (docs/specs/013-workspace/shape-libraries.md).
 export const ShapesIcon = lucideGlyph(lucideShapes, 13);
 export const KeyIcon = lucideGlyph(lucideKey, 13);
-// A team: one drawing, shared with the landing page (@livediagram/ui).
-export { TeamIcon } from '@livediagram/ui';
+// A team: one drawing, shared with the landing page (@livepages/ui).
+export { TeamIcon } from '@livepages/ui';
 export const InviteIcon = lucideGlyph(lucideMail, 13);
 // The sidebar rows of docs/specs/013-workspace/explorer-structure.md: Home (the Timeline), My
 // documents (a root folder), Library, and This Browser (a browser window).
@@ -186,7 +186,7 @@ export const TagIcon = lucideGlyph(lucideTag, 13);
 
 // ---------- Verbs ----------------------------------------------------
 
-// The shared verbs from @livediagram/ui, at this set's default sizes.
+// The shared verbs from @livepages/ui, at this set's default sizes.
 export function PlusIcon({ size = 12 }: IconProps) {
   return <SharedPlusIcon size={size} />;
 }

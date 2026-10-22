@@ -1,4 +1,4 @@
-// draw.io font sizes (px) to livediagram's text presets
+// draw.io font sizes (px) to livepages's text presets
 // (docs/specs/020-import-export/blueprints/drawio-import.md "Text size"): a whole element's
 // `fontSize`, and a span's size inside an HTML label. Every size the importer sets comes from here:
 // text under 12 px takes the extra-small run size (`xs`, RUN_XS_PX), and text under what `xs`
@@ -10,7 +10,7 @@ import {
   RUN_XS_PX,
   arrowLabelFontSize,
   type RunSize,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { nearest } from './nearest';
 
 /** The scale an element's text sizes on: a shape's label, a sticky note's, an arrow's. */

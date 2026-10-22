@@ -2,7 +2,7 @@
 // `empty` the way the server list will, judged only from a first tab the editor really holds.
 
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import { emptyAfterSave } from './list-row-empty';
 
 const tab = (id: string, n: number) =>

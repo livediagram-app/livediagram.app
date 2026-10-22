@@ -8,9 +8,9 @@
 // Presentation + the link field only; every command is dispatched by the
 // editor, which owns the runs and the selection.
 
-import { lucideList, lucideListOrdered } from '@livediagram/icons/lucide';
+import { lucideList, lucideListOrdered } from '@livepages/icons/lucide';
 import { useEffect, useRef, useState } from 'react';
-import type { ListStyle, RunBoolKey, RunHeading } from '@livediagram/document';
+import type { ListStyle, RunBoolKey, RunHeading } from '@livepages/document';
 import { LinkMenuIcon } from '@/components/palette/context-menu-icons';
 import { noFocusSteal } from '@/components/rich-text/ToolbarDropdown';
 import {
@@ -21,7 +21,7 @@ import {
 import { BlockTypePicker } from '@/components/rich-text/BlockTypePicker';
 import type { ActiveFormat } from '@/components/rich-text/rich-text-format';
 import { normaliseUrl } from '@/lib/url-safety';
-import { HoverCard, SOLID_BRAND_DARK_CONTROL, lucideGlyph } from '@livediagram/ui';
+import { HoverCard, SOLID_BRAND_DARK_CONTROL, lucideGlyph } from '@livepages/ui';
 
 const BulletGlyph = lucideGlyph(lucideList, 16);
 const NumberedGlyph = lucideGlyph(lucideListOrdered, 16);

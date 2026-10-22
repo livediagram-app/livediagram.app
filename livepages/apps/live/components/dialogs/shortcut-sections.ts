@@ -14,7 +14,7 @@ import {
   modesBesidePlanRule,
   REACTION_LABEL,
   REACTIONS,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { AVATAR_BEHAVIOUR_KEYS, AVATAR_BURST_KEYS } from '@/lib/avatar-action-keys';
 import { AVATAR_REACTIONS } from '@/lib/avatar-reactions';
 

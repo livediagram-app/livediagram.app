@@ -174,7 +174,7 @@ describe('storage', () => {
       pens: DEFAULT_WHITEBOARD_PREFS.pens.map((p) => (p.id === 'third' ? { ...p, width: 2.5 } : p)),
     };
     saveWhiteboardPrefs(prefs);
-    const stored: unknown = JSON.parse(localStorage.getItem('livediagram:v2:whiteboard-pens')!);
+    const stored: unknown = JSON.parse(localStorage.getItem('livepages:v2:whiteboard-pens')!);
     expect(stored).toHaveProperty(['pens', 2, 'width'], 'bold');
     expect(loadWhiteboardPrefs()).toEqual(prefs);
   });

@@ -1,4 +1,4 @@
-import type { ShapeLibrary, ShapeLibraryItem, ShapeLibrarySource } from '@livediagram/api-schema';
+import type { ShapeLibrary, ShapeLibraryItem, ShapeLibrarySource } from '@livepages/api-schema';
 
 // shape_libraries row shape as read from D1 (migration 0060). The `items` column is a JSON string
 // (the validated item list); every read parses it here so the rest of the worker handles a

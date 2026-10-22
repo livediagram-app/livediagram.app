@@ -7,7 +7,7 @@ import {
   createShape,
   type Element,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { ELEMENT_TOUR_KINDS } from '@/lib/element-tours';
 import { ELEMENT_TOUR_DEFS, elementTourStepTelemetryType } from './element-tour-defs';
 import type { ElementTourApi } from './element-tour-api';

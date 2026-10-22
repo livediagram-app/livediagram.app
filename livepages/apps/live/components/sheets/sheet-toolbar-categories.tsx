@@ -10,7 +10,7 @@ import {
   FONT_SIZE_MIN,
   stepFontSize,
   type CellFormat,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import { NumberStepper } from '@/components/primitives/NumberStepper';
 import { SheetColourSwatches, SWATCHES_PX } from './SheetColourSwatches';
 import { FONT_BUTTON_PX, SheetFontButton } from './SheetFontButton';

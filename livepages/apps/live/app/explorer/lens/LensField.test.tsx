@@ -11,7 +11,7 @@ import {
   parseLens,
   type LensContext,
   type LensSubject,
-} from '@livediagram/explorer-lens';
+} from '@livepages/explorer-lens';
 import { LensField, LensFieldStill } from './LensField';
 import { requestBarFocus, takeBarFocus } from './lens-focus-handoff';
 import type { ExplorerLens } from './useExplorerLens';

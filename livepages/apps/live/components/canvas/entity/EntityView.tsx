@@ -13,7 +13,7 @@ import {
   entityKeyGutterPx,
   type EntityField,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { EntityKeyGlyph } from './EntityKeyGlyph';
 import dynamic from 'next/dynamic';
 import type { EntityCanvasActions } from './entity-actions';

@@ -96,10 +96,10 @@ describe('apiRouteLabel', () => {
     expect(apiRouteLabel('PUT', '/api/documents/0b7c5f9e-1111/tabs/abc123')).toBe(
       'Put.Documents.Tabs',
     );
-    expect(apiRouteLabel('POST', 'https://livediagram.app/api/documents/x/tabs/y/comments')).toBe(
+    expect(apiRouteLabel('POST', 'https://livepages.app/api/documents/x/tabs/y/comments')).toBe(
       'Post.Documents.Tabs.Comments',
     );
-    expect(apiRouteLabel('GET', 'http://localhost:8787/api/timeline?cursor=abc')).toBe(
+    expect(apiRouteLabel('GET', 'http://localhost:8987/api/timeline?cursor=abc')).toBe(
       'Get.Timeline',
     );
     expect(apiRouteLabel('GET', '/api/custom-themes')).toBe('Get.CustomThemes');

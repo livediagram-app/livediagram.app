@@ -1,10 +1,10 @@
 import { BADGE_PRESET_TILES, CARD_PRESET_TILES } from './palette-element-presets';
 import { BadgePresetGlyph } from './BadgePresetGlyph';
-import { headlineCase } from '@livediagram/api-schema';
-import { badgePresetFace, type PenColour } from '@livediagram/document';
+import { headlineCase } from '@livepages/api-schema';
+import { badgePresetFace, type PenColour } from '@livepages/document';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
-import type { EmbedProvider, EventStormingNoteKind } from '@livediagram/document';
-import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livediagram/document';
+import type { EmbedProvider, EventStormingNoteKind } from '@livepages/document';
+import { EVENT_STORMING_NOTES, REACTION_EMOJI } from '@livepages/document';
 
 import type {
   ComponentKind,
@@ -13,7 +13,7 @@ import type {
   SelectionMode,
   SessionTool,
   ShapeKind,
-} from '@livediagram/document';
+} from '@livepages/document';
 import {
   AgendaIcon,
   AvatarModeIcon,
@@ -64,8 +64,8 @@ import {
   lucideStickyNote,
   lucideTable,
   lucideType,
-} from '@livediagram/icons/lucide';
-import { Glyph, Prims } from '@livediagram/ui';
+} from '@livepages/icons/lucide';
+import { Glyph, Prims } from '@livepages/ui';
 import { PLAN_TILES } from './palette-plan-tiles';
 import { WIREFRAME_TILES } from './palette-wireframe-tiles';
 import { tileCaption } from './tile-caption';
@@ -185,7 +185,7 @@ type PaletteTileAction =
   // The Path tool (docs/specs/023-draw-mode/path-tool.md): a logo page's Pen (logo-pages.md).
   | { type: 'path' }
   // `ends`: the Line tile's `'none'`; the Arrow tile leaves it to the tool's pointer at its end.
-  | { type: 'arrow'; ends?: import('@livediagram/document').ArrowEnds }
+  | { type: 'arrow'; ends?: import('@livepages/document').ArrowEnds }
   // `fill` rides the sticky action for the Event Storming tiles (docs/specs/021-event-storming/event-storming.md):
   // eight semantic colours over the one sticky type, one tile per note kind.
   // `fill` + `esKind` ride the sticky action for the Event Storming tiles
@@ -2384,7 +2384,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   // The Event Storming notation (docs/specs/021-event-storming/event-storming.md): one tile per note kind, derived
-  // from the EVENT_STORMING_NOTES catalogue in @livediagram/document so the
+  // from the EVENT_STORMING_NOTES catalogue in @livepages/document so the
   // palette can never drift from the colours the template builder (and any
   // future consumer) uses. Each tile arms the ordinary sticky gesture with
   // the kind's canonical fill + kind riding the intent (the kind routes the

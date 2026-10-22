@@ -1,4 +1,4 @@
-import { Button } from '@livediagram/ui';
+import { Button } from '@livepages/ui';
 import {
   CHECKLIST_MAX_ITEMS,
   CHECKLIST_MAX_TEXT,
@@ -7,7 +7,7 @@ import {
   type LegendItem,
   type LineSeries,
   type PieSlice,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useDocumentColours } from '@/hooks/ui/useDocumentColours';

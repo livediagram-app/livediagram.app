@@ -51,7 +51,7 @@ function onCi() {
  * The variable the shared Vitest config hands its workers when the run collects coverage (`--coverage`):
  * instrumented code runs the same work slower, wherever it runs.
  */
-export const UNDER_COVERAGE_ENV = 'LIVEDIAGRAM_COVERAGE';
+export const UNDER_COVERAGE_ENV = 'LIVEPAGES_COVERAGE';
 
 /**
  * A speed test's CPU budget: `ms` as written on a developer's machine, `ms x CI_CPU_HEADROOM` on

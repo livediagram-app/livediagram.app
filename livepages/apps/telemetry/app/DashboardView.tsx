@@ -1,6 +1,6 @@
 'use client';
 
-import type { TelemetrySummary, TelemetryWindowKey } from '@livediagram/api-schema';
+import type { TelemetrySummary, TelemetryWindowKey } from '@livepages/api-schema';
 import {
   ACCOUNT_ACTIVITY,
   AGENT_VIEWED,

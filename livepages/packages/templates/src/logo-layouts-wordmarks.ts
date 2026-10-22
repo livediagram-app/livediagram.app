@@ -1,5 +1,5 @@
 // Logo wordmarks (docs/specs/007-editor/logo-pages.md "Logo layouts"): the name is the mark.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import type { Kit } from './page-layout-kit';
 import { INITIALS, NAME, SECOND, TAGLINE, stacked, word } from './logo-layout-kit';
 export function wordmark(k: Kit): Element[] {

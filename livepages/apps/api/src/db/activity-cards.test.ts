@@ -2,8 +2,8 @@
 // migrations: the hashed-assignee match, what counts as open, where a row opens the card, and the library
 // scope that keeps a card off the page of someone who cannot open its document.
 
-import type { Tab } from '@livediagram/document';
-import { itemPersonId } from '@livediagram/items';
+import type { Tab } from '@livepages/document';
+import { itemPersonId } from '@livepages/items';
 import type { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';

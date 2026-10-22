@@ -1,7 +1,7 @@
 'use client';
 
-import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@livediagram/document';
-import { HoverCard, SOLID_BRAND_DARK } from '@livediagram/ui';
+import { formatTimerClock, timerDone, timerDisplayMs, type TabTimer } from '@livepages/document';
+import { HoverCard, SOLID_BRAND_DARK } from '@livepages/ui';
 import { PollMenuIcon, TimerMenuIcon, VoteMenuIcon } from '@/components/palette/context-menu-icons';
 import { timerFillStyle } from '@/components/chrome/timer-pill';
 import { useNow } from '@/hooks/ui/useNow';

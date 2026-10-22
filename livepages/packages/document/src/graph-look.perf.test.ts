@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cpuBudgetMs, cpuMsOf } from '@livediagram/vitest-config/cpu-time';
+import { cpuBudgetMs, cpuMsOf } from '@livepages/vitest-config/cpu-time';
 import { layoutGraph, type GraphInput } from './graph-input';
 import { GRAPH_LAYOUT_MAX_EDGES, GRAPH_LAYOUT_MAX_NODES } from './graph-limits';
 

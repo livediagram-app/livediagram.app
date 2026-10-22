@@ -312,7 +312,7 @@ only skips a settle the forger could have undone. MCP input is already validated
 
 - No layout shift: the settle moves canvas content only, inside the transformed canvas layer;
   the toast is the existing overlay toast. No new bundle: the helpers are in
-  `@livediagram/document`, already in the editor chunk.
+  `@livepages/document`, already in the editor chunk.
 
 ## Observability
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import { coversAnother } from './board-growth';
 
 const box = (id: string, x: number, y: number, width = 100, height = 50) =>

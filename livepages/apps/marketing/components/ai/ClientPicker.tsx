@@ -7,8 +7,8 @@ import {
   lucideLink,
   lucideMessagesSquare,
   lucideSquareCode,
-} from '@livediagram/icons/lucide';
-import { lucideGlyph } from '@livediagram/ui';
+} from '@livepages/icons/lucide';
+import { lucideGlyph } from '@livepages/ui';
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 
 import { AI_CLIENT_GROUPS, AI_CLIENTS, type AiClient, type AiClientGroup } from '@/lib/ai-clients';

@@ -33,7 +33,7 @@ describe('tabToJsonText', () => {
     const t = tab('My tab', [shape('a', { label: 'A' })]);
     const env = JSON.parse(tabToJsonText(t)) as ExportedTabEnvelope;
     expect(env.schemaVersion).toBe(TAB_SCHEMA_VERSION);
-    expect(env.kind).toBe('livediagram.tab');
+    expect(env.kind).toBe('livepages.tab');
     expect(typeof env.exportedAt).toBe('number');
     expect(env.tab).toEqual(t);
   });

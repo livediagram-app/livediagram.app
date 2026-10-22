@@ -1,4 +1,4 @@
-import { EllipsisIcon } from '@livediagram/ui';
+import { EllipsisIcon } from '@livepages/ui';
 import { forwardRef, type KeyboardEvent, type MouseEvent, type PointerEvent } from 'react';
 
 // The three-dot glyph every ⋯ trigger draws. Exported for the few menus

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { ShapeKind } from '@livediagram/document';
+import type { ShapeKind } from '@livepages/document';
 
 // Mini glyphs for every ShapeKind on a 16x16 viewBox, shown next to the shape
 // kind picker in SelectedElementSection, the context-menu Shape category, and

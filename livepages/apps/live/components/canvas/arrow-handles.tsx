@@ -1,5 +1,5 @@
 import type { MouseEvent as ReactMouseEvent, PointerEvent as ReactPointerEvent } from 'react';
-import { useMediaQuery } from '@livediagram/ui';
+import { useMediaQuery } from '@livepages/ui';
 
 import { BRAND_600 } from './arrow-handle-style';
 

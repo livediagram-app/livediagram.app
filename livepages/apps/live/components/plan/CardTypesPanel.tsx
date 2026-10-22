@@ -11,7 +11,7 @@ import type { DockAnchor } from '@/lib/canvas-chrome';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { usePlan } from './PlanContext';
-import { ITEM_TYPES_MAX, defaultTypesToAdd } from '@livediagram/items';
+import { ITEM_TYPES_MAX, defaultTypesToAdd } from '@livepages/items';
 import {
   Button,
   DuplicateIcon,
@@ -19,7 +19,7 @@ import {
   PencilIcon,
   PlanCardsIcon,
   Tooltip,
-} from '@livediagram/ui';
+} from '@livepages/ui';
 import { PlanTypeGlyph } from './plan-type-glyph';
 import { ACCENT_BG, ACCENT_TEXT, ACCENT_TINT, accentVars } from './plan-palette';
 

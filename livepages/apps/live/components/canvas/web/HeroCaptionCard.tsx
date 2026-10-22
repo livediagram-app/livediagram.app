@@ -4,7 +4,7 @@ import {
   PAGE_HEADING_MAX,
   type HeroCaption,
   type ImageElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { InlineTextLine } from '@/components/canvas/InlineTextLine';
 import { rectStyle } from '@/components/canvas/web/web-face-props';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PLACEMENT_DEFAULT_KEYS } from '@livediagram/api-schema';
+import { PLACEMENT_DEFAULT_KEYS } from '@livepages/api-schema';
 import {
   DEFAULT_KEY_ENTRIES,
   defaultFolderDescription,

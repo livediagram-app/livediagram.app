@@ -11,7 +11,7 @@ import {
 
 // The Details view's sort (docs/specs/013-workspace/explorer-details-view.md "Sorting"): device-local,
 // beside the view choice, the same for every folder.
-export const DETAILS_SORT_STORAGE_KEY = 'livediagram:explorer-details-sort';
+export const DETAILS_SORT_STORAGE_KEY = 'livepages:explorer-details-sort';
 
 export function useDetailsSort(): [DetailsSort, (column: DetailsColumnId) => void] {
   const sort = parseDetailsSort(useLocalStorageValue(DETAILS_SORT_STORAGE_KEY));

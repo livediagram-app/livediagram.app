@@ -3,7 +3,7 @@
 // handoff and Escape on an empty grown node all reach growth through `canGrow` / `grow` / `abandon` /
 // `escapeGrown`; routing here lets every one of them serve a flowchart step without a second copy of
 // that plumbing. A child is a step's next step, a sibling a parallel one.
-import type { FlowchartGrowth } from '@livediagram/document';
+import type { FlowchartGrowth } from '@livepages/document';
 
 type MindGrowthApi = {
   canGrowMindNode: (id: string) => boolean;

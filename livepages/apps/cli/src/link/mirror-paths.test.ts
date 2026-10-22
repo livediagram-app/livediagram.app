@@ -34,22 +34,22 @@ describe('mirrorPathFor', () => {
   const doc = { id: 'abcdef12-3456', name: 'Home screen' };
 
   it('names the file by its slug under its folder path', () => {
-    expect(mirrorPathFor(doc, ['screens'], new Set())).toBe('screens/home-screen.livediagram.json');
-    expect(mirrorPathFor(doc, [], new Set())).toBe('home-screen.livediagram.json');
+    expect(mirrorPathFor(doc, ['screens'], new Set())).toBe('screens/home-screen.livepages.json');
+    expect(mirrorPathFor(doc, [], new Set())).toBe('home-screen.livepages.json');
   });
 
   it('steps aside for a path another document holds: its short id, then its whole id', () => {
-    const taken = new Set(['home-screen.livediagram.json']);
-    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12.livediagram.json');
-    taken.add('home-screen-abcdef12.livediagram.json');
-    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12-3456.livediagram.json');
-    taken.add('home-screen-abcdef12-3456.livediagram.json');
-    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12-3456.livediagram.json');
+    const taken = new Set(['home-screen.livepages.json']);
+    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12.livepages.json');
+    taken.add('home-screen-abcdef12.livepages.json');
+    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12-3456.livepages.json');
+    taken.add('home-screen-abcdef12-3456.livepages.json');
+    expect(mirrorPathFor(doc, [], taken)).toBe('home-screen-abcdef12-3456.livepages.json');
   });
 });
 
 describe('outlinePathOf', () => {
   it('sits beside the mirror file as <slug>.md', () => {
-    expect(outlinePathOf('screens/home-screen.livediagram.json')).toBe('screens/home-screen.md');
+    expect(outlinePathOf('screens/home-screen.livepages.json')).toBe('screens/home-screen.md');
   });
 });

@@ -1,7 +1,7 @@
 // Slide closers (docs/specs/007-editor/pages-mode.md "Slide layouts", Closers): the slides a
 // talk ends on, besides Thank You and Team. Pure builders on the slide kit, in units of the
 // slide's height.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import type { Kit } from './page-layout-kit';
 import {
   eyebrow,

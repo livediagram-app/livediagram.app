@@ -23,8 +23,8 @@ import {
   requiredFieldsOf,
   newCustomFieldId,
   type ItemFieldId,
-} from '@livediagram/items';
-import { ArrowDownIcon, ArrowUpIcon, CloseIcon, PlusIcon } from '@livediagram/ui';
+} from '@livepages/items';
+import { ArrowDownIcon, ArrowUpIcon, CloseIcon, PlusIcon } from '@livepages/ui';
 import {
   BUILT_IN_FIELD_LABELS,
   CustomFieldForm,

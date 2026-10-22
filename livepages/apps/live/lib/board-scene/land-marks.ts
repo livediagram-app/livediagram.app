@@ -10,7 +10,7 @@ import {
   type FreehandElement,
   type PathAnchor,
   type PathElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { colourAlpha, lineColourFields, resolveFill } from './colour';
 import { commonFields, endsMeet, limitPoints, turnPoints } from './common';
 import { LANDING_RULES, type LandContext } from './context';

@@ -2,8 +2,8 @@
 // owner id and share code, a tab-scoped session names its tab on every call, named sheets are read 50 a call, and a
 // refusal maps to an ApiError with its code. An offline document never reaches the network.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { sentJson } from '@livediagram/vitest-config/sent-request';
-import type { SheetJson } from '@livediagram/sheets';
+import { sentJson } from '@livepages/vitest-config/sent-request';
+import type { SheetJson } from '@livepages/sheets';
 import { __setOfflineBackend, offlinePutRecord } from '../offline/offline-store';
 import { memBackend, testRecord } from '../offline/offline-test-utils';
 import { ApiError, API_BASE } from './core';

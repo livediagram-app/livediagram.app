@@ -2,7 +2,7 @@
 // drawio-import.md "The import report", board-scene.md "The report"): what landed, counted by kind,
 // and each change on the way in as a rule, a short sentence the report shows as "count · rule".
 
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import type { BoardSceneReport, ReportRule } from '@/lib/board-scene/report';
 import type { SceneItemKind } from '@/lib/board-scene/scene';
 import { importImageReportTotal, type ImportImageReport } from '@/lib/import-images';
@@ -17,17 +17,17 @@ import type { ImportedPage } from './import';
 
 /** Each draw.io note's rule: final copy, the count shown before it. */
 export const DRAWIO_RULES: Readonly<Record<ImportNoteKind, string>> = {
-  'shape-unmatched': 'Shapes with no livediagram match came in as labelled boxes',
-  'shape-approximated': 'Shapes came in as the nearest livediagram shape',
-  'icon-substituted': 'Vendor icons came in as the matching livediagram icon',
+  'shape-unmatched': 'Shapes with no livepages match came in as labelled boxes',
+  'shape-approximated': 'Shapes came in as the nearest livepages shape',
+  'icon-substituted': 'Vendor icons came in as the matching livepages icon',
   'image-unavailable': 'Images linked outside the diagram came in as placeholders or were left out',
-  'arrowhead-approximated': "Arrowheads livediagram doesn't draw took the nearest one",
+  'arrowhead-approximated': "Arrowheads livepages doesn't draw took the nearest one",
   'connection-loosened': "Connection ends that couldn't stay attached were left where they were",
   'label-moved': 'Labels were moved inside their shapes or merged onto one line',
   'group-flattened': 'Groups were dropped',
   'hidden-skipped': 'Hidden items were left out',
   'collapsed-skipped': 'Items inside collapsed containers were left out',
-  'link-dropped': "Links of a kind livediagram can't follow were dropped",
+  'link-dropped': "Links of a kind livepages can't follow were dropped",
   'text-truncated': 'Texts were shortened to fit',
   'text-below-xs': 'Text smaller than 10 px came in at 10 px',
   'auto-layout': "Positions and styles weren't in the file; the layout is automatic",

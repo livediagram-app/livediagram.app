@@ -1,4 +1,4 @@
-import { objectOrEmpty, type WorkbenchRole } from '@livediagram/api-schema';
+import { objectOrEmpty, type WorkbenchRole } from '@livepages/api-schema';
 // Shared per-request context for the route handlers. The worker's
 // `fetch` entry (src/index.ts) builds one of these after resolving the
 // caller's identity + running the cross-cutting gates (CORS, write

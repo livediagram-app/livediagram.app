@@ -6,7 +6,7 @@ import { keymap } from 'prosemirror-keymap';
 import { baseKeymap, chainCommands } from 'prosemirror-commands';
 import { NodeSelection, TextSelection, type Command, type Plugin } from 'prosemirror-state';
 import type { MarkType } from 'prosemirror-model';
-import type { ArticleParagraphStyle } from '@livediagram/document';
+import type { ArticleParagraphStyle } from '@livepages/document';
 import { articleSchema } from './article-schema';
 import {
   backspaceAtStart,

@@ -1,6 +1,6 @@
-import { trustedHtml } from '@livediagram/ui';
+import { trustedHtml } from '@livepages/ui';
 import type { CSSProperties, ReactNode } from 'react';
-import { stickerArt } from '@livediagram/icons';
+import { stickerArt } from '@livepages/icons';
 import { FONT } from '@/components/art-tokens';
 
 // The small pieces the Town Hall window (hero-townhall-board.tsx, hero-townhall-kit.tsx) is drawn
@@ -156,7 +156,7 @@ export function Handle({ x, y }: { x: number; y: number }) {
   );
 }
 
-// A sticker drawn with the editor's own artwork (stickerArt, @livediagram/icons): the die-cut white
+// A sticker drawn with the editor's own artwork (stickerArt, @livepages/icons): the die-cut white
 // plate on its shadow, the emoji on it.
 export function Sticker({
   x,

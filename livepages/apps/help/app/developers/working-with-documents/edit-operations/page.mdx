@@ -5,7 +5,7 @@ import { helpMetadata } from '@/lib/seo';
 export const metadata = helpMetadata({
   title: 'Edit Operations Reference',
   description:
-    'Every livediagram edit operation, selector, placement, flag and lint finding: the changeset vocabulary the API, the CLI and the MCP server share.',
+    'Every livepages edit operation, selector, placement, flag and lint finding: the changeset vocabulary the API, the CLI and the MCP server share.',
   path: '/help/developers/working-with-documents/edit-operations/',
 });
 
@@ -16,7 +16,7 @@ A **changeset** changes a tab with a short list of edit operations, applied toge
 The same vocabulary reaches a tab three ways:
 
 - **The API**: `POST /documents/{id}/tabs/{tabId}/changesets` with `"operations"` as a string (the line form) or an array of objects (the JSON form).
-- **The CLI**: `livediagram edit "Auth flow" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livediagram element add|set|rm|move|connect|insert|wrap` sends one operation. `livediagram guide edit` explains the line form, and `livediagram schema view sticky` lists the fields a kind takes.
+- **The CLI**: `livepages edit "Auth flow" -f ops.txt` sends a file (or stdin, with `-f -`) as one changeset, and `livepages element add|set|rm|move|connect|insert|wrap` sends one operation. `livepages guide edit` explains the line form, and `livepages schema view sticky` lists the fields a kind takes.
 - **The MCP server**: `update_document` in `ops` mode turns its `add`, `update` and `remove` into `add`, `set` and `rm`, so removing a node removes its arrows too.
 
 ## Two Forms
@@ -145,7 +145,7 @@ A changeset answers with one line per element, the same for a dry run (`?dryRun=
 + arrow  verify→n4 (style of a3)
 » n4 n5 n6  +0,+160 (make room)
 f2  +verify
-rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livediagram changeset revert 3f9c2a71-… cs_8k2m4q7d1x
+rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: livepages changeset revert 3f9c2a71-… cs_8k2m4q7d1x
 ```
 
 | Mark          | Means                                                     |
@@ -196,7 +196,7 @@ nothing was applied
 
 ## Lint Findings
 
-Every changeset lints the whole tab it leaves behind, and `GET /documents/{id}/tabs/{tabId}?view=lint` (or `livediagram tab lint`) lists the findings, each ending with a fix you can send as a changeset:
+Every changeset lints the whole tab it leaves behind, and `GET /documents/{id}/tabs/{tabId}?view=lint` (or `livepages tab lint`) lists the findings, each ending with a fix you can send as a changeset:
 
 ```text
 5 crossings · 2 behind · 0 overlaps · 1317×1196 → 3 warnings, 6 info

@@ -1,6 +1,6 @@
 // Shared test helpers for the offline modules: an in-memory OfflineBackend
 // (swapped in via __setOfflineBackend) and record/tab factories.
-import type { Tab } from '@livediagram/document';
+import type { Tab } from '@livepages/document';
 import type { OfflineBackend, OfflineDocumentRecord } from './offline-store';
 
 export const testTab = (id: string, over: Partial<Tab> = {}): Tab => ({

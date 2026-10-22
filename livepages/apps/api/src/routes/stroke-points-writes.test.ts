@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { parseStrokePoints } from '@livediagram/document';
+import { parseStrokePoints } from '@livepages/document';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';

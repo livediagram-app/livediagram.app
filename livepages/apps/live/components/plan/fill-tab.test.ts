@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
-import { presetSetup } from '@livediagram/items';
+import { createShape, type Element } from '@livepages/document';
+import { presetSetup } from '@livepages/items';
 import { fillTabElementOf } from './fill-tab';
 
 // docs/specs/026-plan/plan-board.md "Fill Tab".

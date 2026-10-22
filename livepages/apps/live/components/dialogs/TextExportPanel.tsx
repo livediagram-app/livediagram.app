@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { BackBar } from '@/components/primitives/BackBar';
-import { Button } from '@livediagram/ui';
-import { useCopiedFlash } from '@livediagram/ui';
+import { Button } from '@livepages/ui';
+import { useCopiedFlash } from '@livepages/ui';
 
 // The view/edit/copy sub-view for a text export format (docs/specs/020-import-export/markdown-import.md + docs/specs/020-import-export/mermaid.md):
 // a textarea pre-filled with the tab serialised to text, editable for a

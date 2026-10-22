@@ -3,7 +3,7 @@
 // list a function the Sheet does not have, or miss one. Rendered at build time: no script reaches the page. Drawn
 // with the article's own heading, table and code pieces (raw tags skip the MDX map: an unstyled table that ran off a
 // phone's edge, its Example column out of reach).
-import { FUNCTION_DOCS, FUNCTION_FAMILIES } from '@livediagram/sheets';
+import { FUNCTION_DOCS, FUNCTION_FAMILIES } from '@livepages/sheets';
 import { InlineCode, SectionHeading, Table, Td, Th } from '@/mdx-components';
 
 export function SheetFunctionList() {

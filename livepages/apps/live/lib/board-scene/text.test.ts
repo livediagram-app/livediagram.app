@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { TEXT_SCALE_MAX, TEXT_SCALE_MIN } from '@livediagram/document';
+import { TEXT_SCALE_MAX, TEXT_SCALE_MIN } from '@livepages/document';
 import { createLandContext, LANDING_RULES } from './context';
 import type { SceneText } from './scene';
 import { diagramTextSize, labelFields, textBoxFields, textPreset } from './text';

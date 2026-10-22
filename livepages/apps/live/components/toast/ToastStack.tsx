@@ -11,7 +11,7 @@ import {
   type AnimationEvent,
   type FocusEvent,
 } from 'react';
-import { Portal, atLeastInset, safeInset } from '@livediagram/ui';
+import { Portal, atLeastInset, safeInset } from '@livepages/ui';
 import { ToastCard, type ToastCardAction } from './ToastCard';
 import { toastTimeout, type ToastEntry } from './toast-queue';
 import { useToastFloor } from './useToastFloor';

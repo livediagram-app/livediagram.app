@@ -2,7 +2,7 @@
 // spotlight, a behind-the-scenes mosaic, a giveaway and a webinar promo. Same contract as page-layouts.ts:
 // the page's content box in, uncoloured elements out, built first for Square, Portrait post (4:5)
 // and Story (9:16) pages, a tall page stacking and a wide one setting the picture beside the words.
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import type { Kit, LayoutBox } from './page-layout-kit';
 import { iconRow } from './page-layout-parts';
 import {

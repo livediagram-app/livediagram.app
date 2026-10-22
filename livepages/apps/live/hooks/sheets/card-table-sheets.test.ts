@@ -3,7 +3,7 @@
 // a card table; never on an empty tab or one of plain Sheets and diagrams.
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@livediagram/document';
+import { createShape, type Element } from '@livepages/document';
 import {
   forgetCardTableSheets,
   markCardTableSheet,

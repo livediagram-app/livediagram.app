@@ -18,7 +18,7 @@ restores exactly what was there.
 - Every tab has a finish, `Tab.finish`, unset meaning **Flexible**.
 - An element may carry its own, `finish` on the element, unset meaning **it follows its tab**.
 - The finish an element is drawn in is its own when set, else its tab's, else Flexible. This one resolution
-  (`resolveFinish` in `@livediagram/document`) is read by the canvas and every export, so what is seen and what is
+  (`resolveFinish` in `@livepages/document`) is read by the canvas and every export, so what is seen and what is
   exported agree.
 - Changing a tab's finish restyles every element that follows it; an element with its own finish keeps it.
 
@@ -199,7 +199,7 @@ not a hand's stroke, and follow their tab's finish as a shape does:
 
 ### Flexible
 
-Draws exactly as livediagram did before finishes existed.
+Draws exactly as livepages did before finishes existed.
 
 ## Where it is set
 

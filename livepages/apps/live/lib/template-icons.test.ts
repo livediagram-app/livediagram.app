@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { resolveIconExportArt, resolveStickerArt } from '@livediagram/icons/resolve';
-import { buildTemplateTabs, TEMPLATES } from '@livediagram/templates';
+import { resolveIconExportArt, resolveStickerArt } from '@livepages/icons/resolve';
+import { buildTemplateTabs, TEMPLATES } from '@livepages/templates';
 
 // Every icon and sticker a template places must exist in the catalogues: an unknown id renders the
 // placeholder glyph (a boxed "?") on the canvas, which reads as broken in a template meant to show

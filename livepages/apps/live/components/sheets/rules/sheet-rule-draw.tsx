@@ -2,9 +2,9 @@
 // dropdown's chip or arrow, and the invalid mark. Pure parts for SheetCells, which stays pointer-free: the presses
 // on a box, chip or arrow are the grid pointer's (useSheetPointer, via ruleTargetAt).
 import type { CSSProperties, ReactNode } from 'react';
-import { bestInk } from '@livediagram/document';
-import { lucideGlyph } from '@livediagram/ui';
-import { lucideCheck, lucideChevronDown } from '@livediagram/icons/lucide';
+import { bestInk } from '@livepages/document';
+import { lucideGlyph } from '@livepages/ui';
+import { lucideCheck, lucideChevronDown } from '@livepages/icons/lucide';
 import {
   checkboxValue,
   isArray,
@@ -15,7 +15,7 @@ import {
   type RuleCtx,
   type ValidationRule,
   type Value,
-} from '@livediagram/sheets';
+} from '@livepages/sheets';
 import type { PlanPalette } from '@/components/plan/plan-palette';
 
 // data-validation.md "Drawing"; blueprint sheet-rules.md "Constants and configuration".

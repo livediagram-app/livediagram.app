@@ -11,8 +11,8 @@
 // Nothing is decided before the document's items are read (an old document with cards reads as the default types,
 // legacyCatalogue): a `bring` made earlier (a Plan template picked outside Plan mode) waits for them.
 import { useCallback, useEffect, useRef, type RefObject } from 'react';
-import type { Tab } from '@livediagram/document';
-import { catalogueWithBoardTypes, type ItemTypeCatalogue } from '@livediagram/items';
+import type { Tab } from '@livepages/document';
+import { catalogueWithBoardTypes, type ItemTypeCatalogue } from '@livepages/items';
 import { debugLog } from '@/lib/debug-log';
 import { useLatest } from '@/hooks/ui/useLatest';
 

@@ -1,7 +1,7 @@
 // A form link's address, /form/<code> (docs/specs/030-forms/forms.md "Publishing and the form link"). One static
 // page backs every code: the live worker rewrites /form/<anything> onto /form/placeholder, and the page reads the code
 // from the address.
-import { FORM_CODE_PATTERN } from '@livediagram/forms';
+import { FORM_CODE_PATTERN } from '@livepages/forms';
 
 export const FORM_PLACEHOLDER_PATH = '/form/placeholder';
 

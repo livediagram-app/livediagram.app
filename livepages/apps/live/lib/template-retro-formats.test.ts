@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@livediagram/document';
+import type { Element } from '@livepages/document';
 import {
   TEMPLATE_CONTENT_LAYER_ID,
   TEMPLATE_SCAFFOLD_LAYER_ID,
   templateCanvasOverrides,
   templateLayers,
-} from '@livediagram/templates';
+} from '@livepages/templates';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 
 // Structure pins for the retro formats (docs/specs/008-canvas/canvas-and-palette.md "Templates"):

@@ -1,7 +1,7 @@
 // The cell sizes a sheet can take (docs/specs/029-sheets/sheet.md "Setup Sheet" and "Sheet Settings"): one labelled
 // list, read by Setup Sheet's Style step and Sheet Settings' Cells section, over the engine's SHEET_CELL_SIZES (whose
 // cellSizeDefaults and cellSizeOf turn a size into a sheet's defaults and back).
-import type { SheetCellSize } from '@livediagram/sheets';
+import type { SheetCellSize } from '@livepages/sheets';
 
 export const CELL_SIZE_OPTIONS: readonly { id: SheetCellSize; label: string; hint: string }[] = [
   { id: 'compact', label: 'Compact', hint: '100 by 24, to see more at once' },

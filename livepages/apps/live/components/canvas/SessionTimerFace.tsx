@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { DialTicks } from '@/components/canvas/paper-kit';
 
-import { formatTimerClock, timerDone, type TabTimer } from '@livediagram/document';
+import { formatTimerClock, timerDone, type TabTimer } from '@livepages/document';
 
 import {
   TIMER_BUTTON_CLASS,

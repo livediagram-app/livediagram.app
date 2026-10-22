@@ -3,7 +3,7 @@
 // their attached ends are freed where they are drawn instead. A mind node's parent link to a removed
 // node is removed (EO30).
 
-import type { EditRejection } from '@livediagram/api-schema';
+import type { EditRejection } from '@livepages/api-schema';
 import {
   endpointPosition,
   type ArrowElement,
@@ -11,7 +11,7 @@ import {
   type ElementId,
   type Endpoint,
   type ShapeElement,
-} from '@livediagram/document';
+} from '@livepages/document';
 import { resolveSome } from '../selectors';
 import {
   type EditState,

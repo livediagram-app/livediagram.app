@@ -2,7 +2,7 @@
 // (docs/specs/013-workspace/shape-libraries.md). Mirrors custom-themes.ts: flat owner-keyed rows, a
 // newest-first list, a JSON column the row mapper parses.
 
-import type { ShapeLibrary, ShapeLibraryItem, ShapeLibrarySource } from '@livediagram/api-schema';
+import type { ShapeLibrary, ShapeLibraryItem, ShapeLibrarySource } from '@livepages/api-schema';
 import { rowToShapeLibrary, type ShapeLibraryRow } from '../shape-library-row';
 import type { Env } from '../types';
 

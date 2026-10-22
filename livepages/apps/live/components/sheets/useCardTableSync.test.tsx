@@ -3,8 +3,8 @@
 // their rows quietly; this person's edits write the cards, make new ones and trash deleted rows' cards.
 import { act, waitFor } from '@testing-library/react';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ITEM_TYPES, type Item } from '@livediagram/items';
-import type { CardTable } from '@livediagram/sheets';
+import { ITEM_TYPES, type Item } from '@livepages/items';
+import type { CardTable } from '@livepages/sheets';
 import {
   makeSheet,
   renderSheet,

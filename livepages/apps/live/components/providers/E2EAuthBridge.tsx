@@ -11,7 +11,7 @@ import { useEffect } from 'react';
 import { readLocalStorageSafe, safeJson } from '@/lib/local-storage-safe';
 import { DEFERRED_AUTH_DEFAULT, type DeferredAuthState } from './deferred-auth';
 
-export const E2E_SESSION_KEY = 'livediagram:e2e:session';
+export const E2E_SESSION_KEY = 'livepages:e2e:session';
 
 type E2ESession = { token: string; userId: string; email: string; firstName: string };
 
