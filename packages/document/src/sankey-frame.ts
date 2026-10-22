@@ -86,10 +86,7 @@ type SankeyFrame = {
   summary: string;
 };
 
-export function sankeyFrame(
-  element: ShapeElement,
-  palette?: readonly string[],
-): SankeyFrame {
+export function sankeyFrame(element: ShapeElement, palette?: readonly string[]): SankeyFrame {
   const w = Math.max(1, element.width);
   const h = Math.max(1, element.height);
   const fontPx = sankeyLabelPx(element.textSize);

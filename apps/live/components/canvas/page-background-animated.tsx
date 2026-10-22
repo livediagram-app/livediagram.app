@@ -246,7 +246,9 @@ export function AnimatedBackgroundChoices({
           />
         </div>
       ) : null}
-      <p className="mt-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">{MOTION_NOTE}</p>
+      <p className="mt-2 text-[11px] leading-snug text-slate-500 dark:text-slate-400">
+        {MOTION_NOTE}
+      </p>
     </div>
   );
 }

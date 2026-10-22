@@ -1721,7 +1721,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press leaves on
   // screen, and what taking it does. Placed after the viewport because taking
   // one navigates through it.
-  const focusLanding = useFocusLanding({ activeId, setActiveId, land: (_tabId, at) => centreOn(at) });
+  const focusLanding = useFocusLanding({
+    activeId,
+    setActiveId,
+    land: (_tabId, at) => centreOn(at),
+  });
   const focusInvite = useFocusInvite({
     onFollowTab: focusLanding.onFollowTab,
     onCentreOn: focusLanding.onCentreOn,

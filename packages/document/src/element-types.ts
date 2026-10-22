@@ -1179,10 +1179,9 @@ export type PathElement = {
   height: number;
   nodes: PathNode[];
   closed: boolean;
-  // Further contours after `nodes`, closed or open as the path is (docs/specs/007-editor/
-  // logo-pages.md "Combine", "Mirror"): a combined shape's islands and holes, filled even-odd, or a
-  // mirrored line's two halves. Such a path moves and restyles as a whole and its points are not
-  // edited one by one.
+  // Further contours after `nodes`, closed or open as the path is (docs/specs/023-draw-mode/
+  // path-tool.md): islands and holes, filled even-odd. Such a path moves and restyles as a whole and
+  // its points are not edited one by one.
   subpaths?: PathNode[][];
   fillColor?: string;
   strokeColor?: string;

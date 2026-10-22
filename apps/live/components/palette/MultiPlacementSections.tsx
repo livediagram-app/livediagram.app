@@ -18,10 +18,7 @@ import {
   RotationMenuIcon,
   SquareMenuIcon,
 } from '@/components/palette/context-menu-icons';
-import {
-  MenuAccordionSection,
-  MenuActionButton,
-} from '@/components/primitives/PortalMenu';
+import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
 import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
 import { OpacityRow } from '@/components/palette/context-menu-rows';
 import { MoveToLayerRow } from '@/components/palette/MoveToLayerRow';

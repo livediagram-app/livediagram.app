@@ -27,9 +27,7 @@ const SAFE_INLINE_IMAGE = /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=
 /** The image ids a tab draws, once each: its image elements' pictures. */
 export function tabImageIds(tab: Pick<Tab, 'elements'>): string[] {
   return Array.from(
-    new Set(
-      tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : [])),
-    ),
+    new Set(tab.elements.flatMap((el) => (el.type === 'image' && el.imageId ? [el.imageId] : []))),
   );
 }
 

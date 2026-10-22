@@ -404,26 +404,23 @@ export function useSlideDeck({
   // --- Presenting -----------------------------------------------------------
 
   // From the first slide.
-  const start = useCallback(
-    async () => {
-      if (runnable.length === 0) return;
-      // A deck reaching into a tab nobody has visited would stall mid-show, so
-      // pull every unloaded tab before the first slide paints (docs/specs/006-document/per-tab-storage.md).
-      // The overlay's code too (it loads on demand, lib/editor-deferred-code.ts), so its keys listen from the
-      // first slide. A failed load is left to the overlay's own render, which recovers a stale build.
-      setStartingDeck(true);
-      try {
-        await Promise.all([loadAllTabs?.(), loadPresentationOverlay().catch(() => {})]);
-      } finally {
-        setStartingDeck(false);
-      }
-      setSelectedId(null);
-      setMultiSelectedIds(new Set());
-      setPresentingAt(0);
-      track('UI', 'Started', 'Presentation');
-    },
-    [loadAllTabs, runnable, setMultiSelectedIds, setPresentingAt, setSelectedId],
-  );
+  const start = useCallback(async () => {
+    if (runnable.length === 0) return;
+    // A deck reaching into a tab nobody has visited would stall mid-show, so
+    // pull every unloaded tab before the first slide paints (docs/specs/006-document/per-tab-storage.md).
+    // The overlay's code too (it loads on demand, lib/editor-deferred-code.ts), so its keys listen from the
+    // first slide. A failed load is left to the overlay's own render, which recovers a stale build.
+    setStartingDeck(true);
+    try {
+      await Promise.all([loadAllTabs?.(), loadPresentationOverlay().catch(() => {})]);
+    } finally {
+      setStartingDeck(false);
+    }
+    setSelectedId(null);
+    setMultiSelectedIds(new Set());
+    setPresentingAt(0);
+    track('UI', 'Started', 'Presentation');
+  }, [loadAllTabs, runnable, setMultiSelectedIds, setPresentingAt, setSelectedId]);
 
   const exitPresentation = useCallback(() => {
     setPresenting((at) => {

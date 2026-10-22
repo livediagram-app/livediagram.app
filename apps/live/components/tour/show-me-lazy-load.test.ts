@@ -10,11 +10,12 @@ const staticImports = (src: string) =>
   [...src.matchAll(/^import\s+(?!type\b)[^;]*?from\s+'([^']+)'/gms)].map((m) => m[1]!);
 
 describe('Show Me in the editor’s first load', () => {
-  it.each([
-    ['PhotoReviewTour.tsx', './photo-review-tour-steps'],
-  ])('%s imports its steps only at the press', (file, steps) => {
-    const src = read(file);
-    expect(staticImports(src)).not.toContain(steps);
-    expect(src).toContain(`import('${steps}')`);
-  });
+  it.each([['PhotoReviewTour.tsx', './photo-review-tour-steps']])(
+    '%s imports its steps only at the press',
+    (file, steps) => {
+      const src = read(file);
+      expect(staticImports(src)).not.toContain(steps);
+      expect(src).toContain(`import('${steps}')`);
+    },
+  );
 });

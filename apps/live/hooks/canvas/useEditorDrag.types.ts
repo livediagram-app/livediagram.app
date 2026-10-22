@@ -1,12 +1,6 @@
 import type { Selection } from '@/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type {
-  Anchor,
-  Element,
-  IconPosition,
-  Tab,
-  FrameHandle,
-} from '@liveplanner/document';
+import type { Anchor, Element, IconPosition, Tab, FrameHandle } from '@liveplanner/document';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
 import type { InsertionGate } from '@/lib/insert-between';
 import type { SnapGuideStore } from './useSnapGuideState';

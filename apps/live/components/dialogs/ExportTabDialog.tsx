@@ -415,9 +415,7 @@ export function ExportTabDialog({
             busy={busy || !windows.ready}
             error={error}
             hasHiddenLayers={
-              !plain &&
-              offerHiddenLayers &&
-              tabLayers(tab.layers).some((l) => !isLayerVisible(l))
+              !plain && offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
             }
             renderPreview={renderPreview}
             previewReady={previewReady && planImage.ready && windows.ready}

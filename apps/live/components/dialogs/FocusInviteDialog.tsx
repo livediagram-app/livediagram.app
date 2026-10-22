@@ -38,7 +38,8 @@ export function FocusInviteDialog({
             {from} wants you to look at something
           </h2>
           <p className="text-[13px] leading-snug text-slate-500 dark:text-slate-400">
-            This will move your view to where they are pointing, keeping your zoom. Your view is your own again straight afterwards.
+            This will move your view to where they are pointing, keeping your zoom. Your view is
+            your own again straight afterwards.
           </p>
         </div>
         <div className="flex items-center justify-end gap-2">

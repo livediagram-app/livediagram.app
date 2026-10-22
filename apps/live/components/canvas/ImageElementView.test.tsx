@@ -45,13 +45,7 @@ const image = (over: Partial<ImageElement> = {}): ImageElement => ({
 
 function draw(
   el: ImageElement,
-  {
-    canvas = 'light',
-    onOpenPicker = () => {},
-    canPick = true,
-    theme = null,
-    fontFamily,
-  } = {} as {
+  { canvas = 'light', onOpenPicker = () => {}, canPick = true, theme = null, fontFamily } = {} as {
     canvas?: 'light' | 'dark';
     onOpenPicker?: (id: string) => void;
     canPick?: boolean;

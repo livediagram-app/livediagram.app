@@ -3,7 +3,13 @@
 // any other tab its canvas (renderTabToSvg). Shared by useTabSvg (a tab window, the split view's other pane and its
 // drop preview, a Dashboard's Diagram slot) and a window in an export (tabWindowArts), so each draws a tab the same
 // way.
-import { exportFontIds, formLook, resolveFontStack, tabKindOf, type Tab } from '@liveplanner/document';
+import {
+  exportFontIds,
+  formLook,
+  resolveFontStack,
+  tabKindOf,
+  type Tab,
+} from '@liveplanner/document';
 import { readForm } from '@liveplanner/forms';
 import { formArt } from '@liveplanner/plan-art';
 import { renderTabToSvg, type ImageExportOpts } from './export-tab';

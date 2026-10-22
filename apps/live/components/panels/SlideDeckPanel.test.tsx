@@ -84,7 +84,7 @@ describe('SlideDeckPanel', () => {
     expect(screen.getByText(/The element stays on the canvas\./)).toBeTruthy();
   });
 
-  it("names a slide by its headline, its tab, and counts the deck and its minutes", () => {
+  it('names a slide by its headline, its tab, and counts the deck and its minutes', () => {
     panel(
       {
         slides: [

@@ -127,70 +127,68 @@ export function SlideRowMenu({
               }}
             />
             <div className="ml-auto">
-                <MenuToolButton
-                  icon={<TrashIcon />}
-                  label="Delete"
-                  description={
-                    slide.elementIds.length === 1
-                      ? 'Remove this slide from the deck. The element stays on the canvas.'
-                      : 'Remove this slide from the deck. The elements stay on the canvas.'
-                  }
-                  onClick={() => {
-                    // Hand the menu button up as the anchor so the panel can
-                    // open the confirm beside it — the same pattern the
-                    // Explorer's row menu uses for its own Delete.
-                    onDelete(button);
-                    close();
-                  }}
-                />
-              </div>
+              <MenuToolButton
+                icon={<TrashIcon />}
+                label="Delete"
+                description={
+                  slide.elementIds.length === 1
+                    ? 'Remove this slide from the deck. The element stays on the canvas.'
+                    : 'Remove this slide from the deck. The elements stay on the canvas.'
+                }
+                onClick={() => {
+                  // Hand the menu button up as the anchor so the panel can
+                  // open the confirm beside it — the same pattern the
+                  // Explorer's row menu uses for its own Delete.
+                  onDelete(button);
+                  close();
+                }}
+              />
+            </div>
           </MenuToolbar>
           {/* No MenuGroupSeparator here: MenuAccordionSection draws its own
               top hairline, and the two together read as a double rule. */}
-            <MenuAccordionSection
-              title="Selection"
-              icon={<SelectionIcon />}
-              open={section === 'selection'}
-              onToggle={() => setSection((s) => (s === 'selection' ? null : 'selection'))}
-            >
-              <div className="px-2 py-1.5">
-                {/* What the two buttons DO, above them rather than under: a pair
+          <MenuAccordionSection
+            title="Selection"
+            icon={<SelectionIcon />}
+            open={section === 'selection'}
+            onToggle={() => setSection((s) => (s === 'selection' ? null : 'selection'))}
+          >
+            <div className="px-2 py-1.5">
+              {/* What the two buttons DO, above them rather than under: a pair
                   of bare verbs called Add and Remove says nothing about what
                   they act on, and by the time you have read the caption
                   underneath you have already had to guess. */}
-                <p className="px-1 pb-1.5 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
-                  {canEditMembership
-                    ? `Put what you have selected on this slide, or take it off. It holds ${
-                        slide.elementIds.length === 1
-                          ? '1 element'
-                          : `${slide.elementIds.length} elements`
-                      } now.`
-                    : membershipWhy}
-                </p>
-                <MenuTileGrid cols={2}>
-                  <MenuTile
-                    icon={<PlusIcon />}
-                    label={
-                      canEditMembership && selectionCount > 1 ? `Add ${selectionCount}` : 'Add'
-                    }
-                    disabled={!canEditMembership}
-                    onClick={() => {
-                      close();
-                      onAddSelection();
-                    }}
-                  />
-                  <MenuTile
-                    icon={<MinusIcon />}
-                    label="Remove"
-                    disabled={!canEditMembership}
-                    onClick={() => {
-                      close();
-                      onRemoveSelection();
-                    }}
-                  />
-                </MenuTileGrid>
-              </div>
-            </MenuAccordionSection>
+              <p className="px-1 pb-1.5 text-[10px] leading-snug text-slate-500 dark:text-slate-400">
+                {canEditMembership
+                  ? `Put what you have selected on this slide, or take it off. It holds ${
+                      slide.elementIds.length === 1
+                        ? '1 element'
+                        : `${slide.elementIds.length} elements`
+                    } now.`
+                  : membershipWhy}
+              </p>
+              <MenuTileGrid cols={2}>
+                <MenuTile
+                  icon={<PlusIcon />}
+                  label={canEditMembership && selectionCount > 1 ? `Add ${selectionCount}` : 'Add'}
+                  disabled={!canEditMembership}
+                  onClick={() => {
+                    close();
+                    onAddSelection();
+                  }}
+                />
+                <MenuTile
+                  icon={<MinusIcon />}
+                  label="Remove"
+                  disabled={!canEditMembership}
+                  onClick={() => {
+                    close();
+                    onRemoveSelection();
+                  }}
+                />
+              </MenuTileGrid>
+            </div>
+          </MenuAccordionSection>
           <MenuAccordionSection
             title="Visibility"
             icon={slide.hidden ? <EyeOffIcon /> : <EyeIcon />}

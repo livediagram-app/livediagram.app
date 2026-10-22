@@ -408,7 +408,7 @@ function pathIssue(el: Record<string, unknown>): ElementValidationIssue | null {
   if (!boundedArray(el.nodes, MAX_PATH_NODES) || el.nodes.length < 2)
     return issue('nodes', nodesRule);
   if (!el.nodes.every(isPathNode)) return issue('nodes', nodesRule);
-  // A path's further contours (docs/specs/007-editor/logo-pages.md "Combine", "Mirror"): each
+  // A path.s further contours (docs/specs/023-draw-mode/path-tool.md): each
   // closed like the path (three nodes or more) or open (two or more), every contour's nodes within
   // the one budget.
   if (el.subpaths !== undefined) {

@@ -907,14 +907,13 @@ export function EditorCanvasHost() {
               // the loaded element's name and the three colours the swatch draws.
               formatBrushSource={
                 formatSource
-                    ? {
-                        name: describeOne(formatSource),
-                        fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
-                        stroke:
-                          'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
-                        textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
-                      }
-                    : null
+                  ? {
+                      name: describeOne(formatSource),
+                      fill: 'fillColor' in formatSource ? formatSource.fillColor : undefined,
+                      stroke: 'strokeColor' in formatSource ? formatSource.strokeColor : undefined,
+                      textColor: 'textColor' in formatSource ? formatSource.textColor : undefined,
+                    }
+                  : null
               }
               formatPanelPosition={formatPanelPosition}
               onMoveFormatPanel={(x, y) => setFormatPanelPosition({ x, y })}

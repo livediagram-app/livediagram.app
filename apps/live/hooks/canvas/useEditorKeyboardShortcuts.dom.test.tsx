@@ -575,4 +575,3 @@ describe('undo and redo from the start search', () => {
     input.remove();
   });
 });
-

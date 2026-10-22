@@ -348,4 +348,3 @@ export function applyArrowPresetToEl(
     flowSpeed: p.flow ? (el.flowSpeed ?? DEFAULT_ANIMATION_SPEED) : el.flowSpeed,
   };
 }
-

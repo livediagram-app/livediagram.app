@@ -100,14 +100,10 @@ export function svgElementBody(
 ): string {
   if (el.type !== 'shape') return '';
   const { labelColor, fontFamily, stroke, fill, chartPalette, label } = o;
-  if (isPieShape(el.shape))
-    return svgPieChart(el, labelColor, chartPalette, fontFamily);
-  if (isBarShape(el.shape))
-    return svgBarChart(el, labelColor, chartPalette, fontFamily);
-  if (isLineShape(el.shape))
-    return svgLineChart(el, labelColor, chartPalette, fontFamily);
-  if (isSankeyShape(el.shape))
-    return svgSankey(el, labelColor, chartPalette, fontFamily);
+  if (isPieShape(el.shape)) return svgPieChart(el, labelColor, chartPalette, fontFamily);
+  if (isBarShape(el.shape)) return svgBarChart(el, labelColor, chartPalette, fontFamily);
+  if (isLineShape(el.shape)) return svgLineChart(el, labelColor, chartPalette, fontFamily);
+  if (isSankeyShape(el.shape)) return svgSankey(el, labelColor, chartPalette, fontFamily);
   // The empty track is the element's OWN fill, else the paper's default track,
   // the one the canvas's ProgressView draws (docs/specs/009-elements/progress.md).
   const track = progressTrackColour(el, o.surface);

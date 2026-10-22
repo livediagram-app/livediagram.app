@@ -167,8 +167,7 @@ export function SlideDeckPanel({
             </p>
             <p className="max-w-[18rem] text-xs leading-snug text-slate-500 dark:text-slate-400">
               Select what you want on the first slide, then press{' '}
-              <span className="font-medium text-slate-700 dark:text-slate-200">New slide</span>
-              .
+              <span className="font-medium text-slate-700 dark:text-slate-200">New slide</span>.
             </p>
           </div>
         ) : (
@@ -206,7 +205,9 @@ export function SlideDeckPanel({
                         onToggleHidden={() => toggleSlideHidden(slide.id)}
                         onDuplicate={() => duplicateSlide(slide.id)}
                         onDelete={(anchor) =>
-                          anchor ? setConfirmDelete({ id: slide.id, anchor }) : deleteSlide(slide.id)
+                          anchor
+                            ? setConfirmDelete({ id: slide.id, anchor })
+                            : deleteSlide(slide.id)
                         }
                       />
                     )

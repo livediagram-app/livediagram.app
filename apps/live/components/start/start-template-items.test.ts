@@ -92,10 +92,7 @@ describe('every listed template on its own start', () => {
     const start = TEMPLATE_STARTS[mode];
     const shown = new Set(start.groups.flatMap((g) => g.kinds));
     const missing = TEMPLATES.filter(
-      (t) =>
-        !t.hidden &&
-        templateEditorMode(t.kind) === mode &&
-        !shown.has(t.kind),
+      (t) => !t.hidden && templateEditorMode(t.kind) === mode && !shown.has(t.kind),
     ).map((t) => t.kind);
     expect(missing).toEqual([]);
   });

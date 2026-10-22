@@ -100,12 +100,13 @@ export function templateEditorMode(kind: TemplateKind): EditorMode {
 }
 
 /** Each mode's blank (docs/specs/007-editor/templates-by-mode.md "Five blanks"). */
-export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<Exclude<EditorMode, 'pages'>, TemplateKind>> = {
-  diagram: 'blank',
-  draw: 'whiteboard',
-  plan: 'blank-plan',
-  workshop: 'blank-session',
-};
+export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<Exclude<EditorMode, 'pages'>, TemplateKind>> =
+  {
+    diagram: 'blank',
+    draw: 'whiteboard',
+    plan: 'blank-plan',
+    workshop: 'blank-session',
+  };
 
 // The blanks beyond each mode's own (docs/specs/007-editor/templates-by-mode.md "The blanks"): Blank Spreadsheet, an
 // empty Sheet, and Blank Form, beside Blank Plan.

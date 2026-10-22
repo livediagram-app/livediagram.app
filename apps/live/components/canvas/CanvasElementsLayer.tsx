@@ -577,39 +577,39 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             above all boxes inside a single SVG layer). Each arrow
             gets its own <svg> overlay; pointer events on the SVG are
             disabled in CSS, only the inner arrow line picks them up. */}
-            <CanvasElementList
-              shownOrder={shownOrder}
-              previewStore={previewStore}
-              h={h}
-              boxedShared={boxedShared}
-              arrowGeometry={arrowGeometry}
-              arrowLabels={arrowLabels}
-              elements={elements}
-              editingId={editingId}
-              editCursorAtEnd={editCursorAtEnd}
-              reshapingArrowId={props.reshapingArrowId}
-              isPaintMode={isPaintMode}
-              tabLocked={tabLocked}
-              readOnly={readOnly}
-              insertShift={insertShift}
-              shiftDupGhostIds={shiftDupGhostIds}
-              draftView={draftView}
-              tabVote={tabVote}
-              tabLayers={tabLayers}
-              remoteSelectionsByElement={remoteSelectionsByElement}
-              canMove={canMove}
-              canWriteText={canWriteText}
-              canResize={canResize}
-              voteReview={voteReview}
-              commentActionsFor={commentActionsFor}
-              actionActionsFor={actionActionsFor}
-              revealedIds={revealedIds}
-              reactionBursts={reactionBursts}
-              tabFont={tabFont}
-              tabFinish={tabFinish}
-              fontEpoch={fontEpoch}
-              stackedIds={stackedIds}
-            />
+          <CanvasElementList
+            shownOrder={shownOrder}
+            previewStore={previewStore}
+            h={h}
+            boxedShared={boxedShared}
+            arrowGeometry={arrowGeometry}
+            arrowLabels={arrowLabels}
+            elements={elements}
+            editingId={editingId}
+            editCursorAtEnd={editCursorAtEnd}
+            reshapingArrowId={props.reshapingArrowId}
+            isPaintMode={isPaintMode}
+            tabLocked={tabLocked}
+            readOnly={readOnly}
+            insertShift={insertShift}
+            shiftDupGhostIds={shiftDupGhostIds}
+            draftView={draftView}
+            tabVote={tabVote}
+            tabLayers={tabLayers}
+            remoteSelectionsByElement={remoteSelectionsByElement}
+            canMove={canMove}
+            canWriteText={canWriteText}
+            canResize={canResize}
+            voteReview={voteReview}
+            commentActionsFor={commentActionsFor}
+            actionActionsFor={actionActionsFor}
+            revealedIds={revealedIds}
+            reactionBursts={reactionBursts}
+            tabFont={tabFont}
+            tabFinish={tabFinish}
+            fontEpoch={fontEpoch}
+            stackedIds={stackedIds}
+          />
 
           {/* Editor-only marks, left out of an animated GIF (GifOmit). */}
           <GifOmit>

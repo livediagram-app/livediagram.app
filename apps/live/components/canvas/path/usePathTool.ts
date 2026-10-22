@@ -115,7 +115,7 @@ export function usePathTool({
   // A tool picked, the path locked, out of reach or deleted (by a peer too): edit mode leaves.
   const stale =
     editingId !== null && elements.some((e) => e.id === editingId && e.type === 'path') && !editing;
-  // Edit mode asked of a combined shape, which has no points to edit one by one.
+  // Edit mode asked of a path of several contours, which has no points to edit one by one.
   const askedCompound =
     stale && elements.some((e) => e.id === editingId && e.type === 'path' && isCompoundPath(e));
   const lastEditedRef = useRef<string | null>(null);
@@ -125,7 +125,7 @@ export function usePathTool({
     if (!stale && !vanished) return;
     debugLog(`[path] edit left: ${vanished && !stale ? 'path gone' : 'no longer editable'}`);
     // A path of several contours is not edited point by point (docs/specs/023-draw-mode/path-tool.md).
-    if (askedCompound) toast.info('Combined shapes edit as a whole.');
+    if (askedCompound) toast.info('This shape edits as a whole.');
     onLeaveEdit();
   }, [stale, editing, editingId, onLeaveEdit, askedCompound, toast]);
   const edit = usePathEditGesture({

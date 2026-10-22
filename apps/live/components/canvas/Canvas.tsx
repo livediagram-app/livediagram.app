@@ -151,12 +151,7 @@ function CanvasView(props: CanvasProps) {
   // Long tasks, with the gesture they fell in, while the canvas-perf debug scope is on
   // (docs/specs/008-canvas/canvas-performance.md "Observability").
   useCanvasLongTaskLog();
-  const offscreenContent = useOffscreenContent(
-    elements,
-    viewportOffset,
-    viewportZoom,
-    mainRef,
-  );
+  const offscreenContent = useOffscreenContent(elements, viewportOffset, viewportZoom, mainRef);
   // The canvas's size, for the pattern's zoom centre (worldPatternOrigin).
   const mainSize = useObservedSize(mainRef) ?? { width: 0, height: 0 };
 
