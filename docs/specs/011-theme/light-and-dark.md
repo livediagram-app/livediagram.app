@@ -58,7 +58,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   theme touched keeps its ink however low it reads, since that is someone's choice. Pages tabs are left out:
   their words sit on pages with their own paper. `apps/live/lib/template-overlay-contrast.test.ts` holds every
   template's labels at 3:1 under every theme, picked in either half and seen in either
-  ([#819](https://github.com/liveplanner-app/liveplanner.app/issues/819)).
+  (issue #819).
 - **A page's own paper.** In Pages mode, an element on a page with a fill of its own (a solid, a gradient, an
   image) is drawn for that page, not for the viewer's chrome: its theme colours in the half whose surface matches
   the page's (a light slide takes the light half, a dark one the dark half), its stock colours for that surface. A

@@ -151,9 +151,9 @@ In order of precedence:
 - A stored credential the api refuses mid-command (a newer `auth login` revoked it while a long command such as
   `watch` ran) is read again from the store, and the refused request is retried once with the new token.
   `LIVEPLANNER_TOKEN` is never re-read.
-- `LIVEPLANNER_TOKEN` goes to whichever host is active; set `LIVEPLANNER_HOST` beside it for a self-host.
+- `LIVEPLANNER_TOKEN` goes to whichever host is active; set `LIVEPLANNER_HOST` beside it for another host.
 
-## Profiles and self-hosting
+## Profiles and hosts
 
 - `~/.config/liveplanner/config.toml` names profiles, each a `host`; `--host`, `--profile`, `LIVEPLANNER_HOST` and
   `LIVEPLANNER_PROFILE` choose one. The default is `https://liveplanner.app`.
@@ -161,7 +161,7 @@ In order of precedence:
   document format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
   writes and names the version to install. Against a host storing a newer document format than it reads, the CLI
   refuses the commands that work on local files (`pull`, `push`, `export`, `graph`, `tab diff`) the same way.
-- A self-host profile never contacts liveplanner.app.
+- A profile for another host (staging, local development) never contacts liveplanner.app.
 
 ## Local files
 

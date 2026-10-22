@@ -590,7 +590,7 @@ board settings, for switching back.
 - **Email**: the document's owner gets "New response to Bug Report", naming the card's title and its document, with
   **Open the board**. At most one email per form per 15 minutes: the next one sent says "And 4 more responses have
   arrived since the last email." Turned off with **Someone Fills In My Form** in Settings' email notifications;
-  never sent where email is not configured (a self-hosted install without it).
+  never sent where email is not configured (a deployment without it).
 
 ## Who may do what
 

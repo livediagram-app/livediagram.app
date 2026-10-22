@@ -32,7 +32,7 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `apps/marketing/app/sitemap.ts`                                           | Lists `/licences`                                                     |
 | `packages/ui/src/SiteFooter.tsx`                                          | "Licences" footer link; legal strip at AA contrast                    |
 | `packages/ui/src/ShareRail.tsx`                                           | Its "Share" label at AA contrast (found by the page's axe run)        |
-| `apps/live/components/panels/ExplorerHeaderMenu.tsx`                      | "Licences" row beside GitHub                                          |
+| `apps/live/components/panels/ExplorerHeaderMenu.tsx`                      | "Licences" row                                                        |
 | `apps/live/components/chrome/tab-bar-icons.tsx`                           | `ScaleIcon` (vendored Lucide `scale`, at `MENU_ICON_PX`)              |
 | `packages/icons/lucide-manifest.json`                                     | Gains `scale`                                                         |
 | `turbo.json`, `apps/marketing/package.json`, `package.json`, `.gitignore` | Build wiring                                                          |
@@ -241,8 +241,8 @@ copy in the same box.
 Route `/licences`, the shared `SiteHeader` without a funnel surface (D15) and marketing's `Footer`,
 content column `max-w-3xl`.
 
-- Title (h1): "Open-source licences".
-- Lead: "liveplanner is MIT licensed and built on the work of many open-source projects. These are
+- Title (h1): "Third-party licences".
+- Lead: "liveplanner is built on the work of many third-party projects. These are
   the ones our apps ship, generated from what each app actually bundles every time the site is
   built."
 - Section h2 "In your browser", intro: "Sent to your browser by the editor, this website, the help

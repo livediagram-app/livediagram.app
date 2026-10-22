@@ -202,7 +202,7 @@ limits; the cap bounds the writes at 2,000 per run, the same order as the Trash 
 | `EMPTY_SWEEP_BATCH`         | 500   | One bounded UPDATE; measured scan cost (D144)     | 50 to 1000 |
 | `EMPTY_SWEEP_MAX_BATCHES`   | 4     | 2,000 moves a run, the purge's order of magnitude | 1 to 20    |
 
-No new environment variable or binding; self-hosting needs only the migration.
+No new environment variable or binding; a deployment needs only the migration.
 
 ## Defaults ledger
 

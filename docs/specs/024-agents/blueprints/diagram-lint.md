@@ -514,7 +514,7 @@ added: the front doors already count the verbs (`Cli·Used·TabLint`, `Cli·Used
 | `LINT_MESSAGE_COLUMN_MAX`     | 48    | The fix column stays inside a 100-column terminal (LN19)                                                                                                     | 32 to 64    |
 | `LINT_BUDGET_CPU_MS`          | 50    | 300 × 300 with the label pass; a measured aim, the gate is growth (LN35)                                                                                     | 20 to 200   |
 
-No environment variable, binding or migration; self-hosting needs nothing.
+No environment variable, binding or migration; a deployment needs nothing.
 
 ## Defaults ledger
 

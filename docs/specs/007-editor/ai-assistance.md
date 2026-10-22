@@ -4,9 +4,9 @@
 
 An optional AI assistant panel in the diagram editor. Disabled by default; users opt in
 via Settings. Requires a model key (`GOOGLE_AI_STUDIO_API_KEY`, `OPENAI_API_KEY`, or a generic `AI_API_KEY` + `AI_BASE_URL`) in the api worker environment —
-if absent the feature is **hidden entirely** (no UI surface, no API routes respond). This
-keeps the OSS/self-host promise intact: contributors who don't want to provision an
-OpenAI key get zero AI surface with no extra code paths to reason about.
+if absent the feature is **hidden entirely** (no UI surface, no API routes respond). A
+deployment without a model key (local development, previews) gets zero AI surface with
+no extra code paths to reason about.
 
 ## Capability detection
 
@@ -41,10 +41,10 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
 ## Security
 
 - Auth required: Clerk JWT or `X-Owner-Id`. The hosted deployment additionally requires
-  Clerk (see `AI_REQUIRE_CLERK` below); self-hosters can accept anonymous owners by
+  Clerk (see `AI_REQUIRE_CLERK` below); a deployment can accept anonymous owners by
   leaving the flag unset.
 - Per-IP rate limiter (`AI_RATE_LIMITER` binding, 20 req/60 s). Optional — absent on
-  self-host deployments falls through to "allow", matching the pattern used by
+  a deployment it falls through to "allow", matching the pattern used by
   `WRITE_RATE_LIMITER` and `EVENTS_RATE_LIMITER`.
 - Optional `Origin` allow-list (`AI_ALLOWED_ORIGINS`). When set, every `/api/ai` request
   must carry an `Origin` header whose value matches one of the entries; otherwise the
@@ -59,14 +59,14 @@ Each AI request optionally includes a `history` array of prior `{ role, content 
   The value is **`https://www.liveplanner.app,https://liveplanner.app`**, and the `www`
   entry is the load-bearing one: the apex 301-redirects to `www`, so `www` is the origin a
   real browser sends. The apex-only value this spec used to recommend would have returned
-  403 for every genuine request from the editor. Self-hosters set their own hostname —
+  403 for every genuine request from the editor. Another deployment (staging) sets its own hostname —
   whichever one the browser actually lands on after redirects — plus dev origins like
   `http://localhost:3102`.
 - Optional Clerk-only gate (`AI_REQUIRE_CLERK`). When set to `"true"`, `/api/ai` rejects
   any request without a verified Clerk Bearer JWT with `401 { error: 'sign_in_required' }`;
   the legacy `X-Owner-Id` guest path still works for every OTHER endpoint, just not for
   AI. Unset = guests can still use AI (the default before this flag landed), preserving
-  the OSS self-host story where Clerk is optional. Combined with the origin allow-list,
+  the rule that Clerk is optional. Combined with the origin allow-list,
   this is the spend-DoS defence on a public deployment: a third-party site can no longer
   drain the operator's OpenAI budget by minting fresh `X-Owner-Id` UUIDs.
 - Prompt capped at 1 000 characters server-side; element payload capped at 200 elements
@@ -162,14 +162,14 @@ reference kind with them (arrow ends, mind-map parents, portal partners) through
 Error responses follow the standard worker envelope, `{ "error": "<token>" }`. The route emits
 exactly six:
 
-| Token                | Status | When                                                       |
-| -------------------- | ------ | ---------------------------------------------------------- |
-| `sign_in_required`   | 401    | The assistant is signed-in only.                           |
-| `origin_not_allowed` | 403    | The request came from an origin the worker does not serve. |
-| `method_not_allowed` | 405    | Anything but a `POST`.                                     |
-| `rate_limited`       | 429    | The caller's per-owner request budget is spent.            |
-| `ai_error`           | 502    | The upstream model call failed.                            |
-| `ai_not_configured`  | 503    | No model key on this deployment (the self-host default).   |
+| Token                | Status | When                                                         |
+| -------------------- | ------ | ------------------------------------------------------------ |
+| `sign_in_required`   | 401    | The assistant is signed-in only.                             |
+| `origin_not_allowed` | 403    | The request came from an origin the worker does not serve.   |
+| `method_not_allowed` | 405    | Anything but a `POST`.                                       |
+| `rate_limited`       | 429    | The caller's per-owner request budget is spent.              |
+| `ai_error`           | 502    | The upstream model call failed.                              |
+| `ai_not_configured`  | 503    | No model key on this deployment (the default without a key). |
 
 A request with no identity at all (neither a Clerk session nor an `X-Owner-Id`)
 gets the worker-wide `bad_request` 400 every owner-scoped route sends.
@@ -198,7 +198,7 @@ that speaks the OpenAI chat-completions wire.
 ### Which key wins
 
 The assistant (Ask / Clean, `/api/ai`) takes the first present key in its preference order:
-openai → google → generic. A self-hoster sets one key and changes nothing.
+openai → google → generic. A deployment sets one key and changes nothing.
 
 - **The generic key is the last resort.** `AI_API_KEY` serves only
   when neither named key is set. Set beside a named key it serves nothing, so
@@ -216,7 +216,7 @@ unused`) rather than left as a dead secret nobody notices.
 `aiEnabled` is "a provider resolved".
 
 `OPENAI_API_KEY` is not a compatibility alias — it is the OpenAI preset's own
-key, so a self-hoster already on OpenAI changes nothing. `OPENAI_MODEL` is gone;
+key, so a deployment already on OpenAI changes nothing. `OPENAI_MODEL` is gone;
 it is `AI_MODEL` now.
 
 **How the Gemini default was chosen (2026-09-16).** Not guessed: the key's own

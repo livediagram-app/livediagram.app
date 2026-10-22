@@ -5,7 +5,7 @@ browser** — never to the API, never to the server. It is the default for a gue
 new document ([Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local))
 and an opt-in choice for everyone else. It suits private/local-first work, air-gapped or
 no-account use, and anyone who wants a document that physically never leaves
-their machine. It also reinforces the OSS promise ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)): the editor is fully
+their machine. It also keeps the editor's degrade-never-break rule ([Business model + licence](../002-project-scope/business-model-and-licence.md)): the editor is fully
 usable with the API _and_ auth switched off.
 
 This is a **deliberate, permanent choice for a document**, not a temporary
@@ -523,7 +523,7 @@ Track adoption without content, reusing the closed vocabulary:
 
 ## References
 
-See [Open source + distribution](../002-project-scope/open-source-and-business-model.md) (no required SaaS),
+See [Business model + licence](../002-project-scope/business-model-and-licence.md) (no required SaaS),
 [Auth + guest access](../014-identity/auth-and-guest-access.md) (auth / guest),
 [Document structure](document-structure.md) (document model),
 [API app](../015-api/api.md) (api + persistence),

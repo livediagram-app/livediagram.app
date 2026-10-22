@@ -33,9 +33,9 @@ shared helpers from `packages/document`; the MCP adds no business logic that
 isn't reusable.
 
 This must not weaken the friction-free guest model
-([Auth + guest access](../014-identity/auth-and-guest-access.md)) or self-hosting
-([Open source + distribution](../002-project-scope/open-source-and-business-model.md)). Like API tokens and teams,
-the MCP is **signed-in only** and **absent end-to-end** on a no-auth self-host.
+([Auth + guest access](../014-identity/auth-and-guest-access.md)) or the degrade-never-break rule
+([Business model + licence](../002-project-scope/business-model-and-licence.md)). Like API tokens and teams,
+the MCP is **signed-in only** and **absent end-to-end** on a deployment without sign-in.
 
 ## 2. Architecture
 
@@ -158,10 +158,10 @@ web connectors expects OAuth, and the user chose the OAuth path. Because it stil
 resolves to an `lvd_` token, the heavy lifting (verification, gating, revoke,
 caps) is already built — OAuth is the front door, not a new lock.
 
-**Self-hosting / Clerk gating.** OAuth depends on the consent page authenticating
+**Clerk gating.** OAuth depends on the consent page authenticating
 the user via Clerk and on `/api/oauth/exchange` requiring a Clerk identity — the
 same gate as `/api/tokens` ([Public API and API tokens §3.7](public-api-and-tokens.md)). A
-no-auth self-host: the exchange endpoint rejects every caller and the consent
+deployment without sign-in: the exchange endpoint rejects every caller and the consent
 page has no signed-in user, so the MCP can mint nothing. Operators who don't want
 the MCP simply don't deploy `apps/mcp`; nothing else references it.
 
@@ -963,10 +963,10 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name                  | Where                          | Absent means                                                                                                                                                                     |
-| --------------------- | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://liveplanner.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
-| `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))          |
+| Name                  | Where                          | Absent means                                                                                                                                                                              |
+| --------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://liveplanner.app`, so another deployment's OAuth callers land on the hosted consent screen unless it sets its own. Also the host of every tool's `url` and share link |
+| `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))                   |
 
 `INTERNAL_EVENTS_KEY` exists because §4.12's telemetry posts travel over the
 **service binding**, which carries no `CF-Connecting-IP` — so the api's
@@ -1060,12 +1060,12 @@ them) ingest from, so one listing reaches several catalogues.
   publishing needs no DNS record and no secret. One `remotes` entry,
   `streamable-http` at `https://mcp.liveplanner.app/mcp`, with no `headers`:
   OAuth (§3) is discovered from the server's metadata, not configured by the
-  client. The icon is the 512px mark in `marketing/media/icons`.
+  client. The icon is the 512px mark served at `https://liveplanner.app/liveplanner-icon-512.png`. It carries no `repository` field: the source is not public.
 - **Publishing.** `.github/workflows/mcp-registry.yml` runs `mcp-publisher
 login github-oidc` then `mcp-publisher publish` when `server.json` changes on
   `main`, or on manual dispatch. The registry rejects a version it already
   holds, so republishing means bumping `version` in `server.json`.
-- **Self-hosts** are not listed: the descriptor names the hosted origin only.
+- Only the hosted origin is listed.
 
 ### 4.17 Structured output and described parameters
 
@@ -1277,7 +1277,7 @@ Worker (no DOM, no React).
      connecting it to Claude/an AI tool, the signed-in-only limitation, that it
      mints a revocable API token — **registered in `apps/help/lib/articles.ts`**.
    - `docs/development/architecture.md` — the new `apps/mcp` worker in the layout + deploy
-     order; `docs/operations/self-hosting.md` — MCP needs Clerk (like tokens/teams) and is
+     order; [Deployment](../016-platform/deployment.md) — MCP needs Clerk (like tokens/teams) and is
      optional to deploy; `README.md` repo-layout tree gets the new app.
    - Cross-link from the API-token help/docs ([Public API and API tokens](public-api-and-tokens.md)).
 

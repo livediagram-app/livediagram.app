@@ -403,7 +403,7 @@ from` moves every row the account does not already hold; each leftover (opened u
   team and folder are not disclosed (`D69`).
 - Person ids on the wire are the same actor ids `GET /api/timeline` already carries to the same audience.
 - `HOME_RATE_LIMITER`: 60 reads per 60 s per resolved owner (`D73`); an API token caller is also under
-  `API_TOKEN_READ_RATE_LIMITER`. Absent binding → allow (self-host).
+  `API_TOKEN_READ_RATE_LIMITER`. Absent binding → allow.
 
 ## Performance and limits
 

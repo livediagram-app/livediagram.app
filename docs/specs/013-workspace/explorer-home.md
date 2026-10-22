@@ -107,7 +107,7 @@ last answer stands for whoever is here. Only a first run fetches the welcome's t
 
 The hero speaks to a beginning:
 
-- **Pills** say what is true of every start and are not links: "Free and open source" (green dot) and, for a guest,
+- **Pills** say what is true of every start and are not links: "Free, no trackers" (green dot) and, for a guest,
   "No sign-up to start" (sky dot); for someone signed in, "Saved to your account".
 - **The greeting** is "Welcome to liveplanner. What are you making first?".
 - **The lead** is "Pick a starting point, or search the templates. Whatever you make lands here, ready to pick up

@@ -50,7 +50,7 @@ has happened since they were last here**, not just a list of files.
   since shipped (§2.9): a busy day needed pruning more than it needed
   starring.
 - **No AI day summary.** Manager Toolkit gates one behind Pro;
-  liveplanner has no paid tier ([Open source + distribution](../002-project-scope/open-source-and-business-model.md)), so it would be free for
+  liveplanner has no paid tier ([Business model + licence](../002-project-scope/business-model-and-licence.md)), so it would be free for
   everyone and gated only on the model key. Deferred as its own
   decision rather than smuggled in with this one.
 - **No manual entries.** Every event is emitted by the system from a
