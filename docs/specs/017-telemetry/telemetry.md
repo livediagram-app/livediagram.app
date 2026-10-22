@@ -33,7 +33,7 @@ In practice a `type` is either a literal or derived from a closed vocabulary —
 
 ## Storage (existing D1)
 
-A new `events` table on the **existing** `DB` database (migration `apps/api/migrations/0015_*`), deliberately not a separate database so a deployment that already provisioned `DB` gets telemetry with zero extra setup:
+A new `events` table on the **existing** `DB` database (migration `apps/api/migrations/0001_liveplanner_baseline.sql`), deliberately not a separate database so a deployment that already provisioned `DB` gets telemetry with zero extra setup:
 
 ```sql
 CREATE TABLE events (

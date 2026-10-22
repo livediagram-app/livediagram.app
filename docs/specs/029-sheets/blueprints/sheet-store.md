@@ -17,7 +17,7 @@ writes are the engine's ([sheets-engine](sheets-engine.md#writes-storets)); this
 
 ## Data and persistence: D1
 
-Migration `apps/api/migrations/0078_sheets.sql`:
+Migration `apps/api/migrations/0001_liveplanner_baseline.sql`:
 
 ```sql
 CREATE TABLE sheets (
@@ -48,7 +48,7 @@ CREATE TABLE sheet_cells (
 );
 ```
 
-Migration `apps/api/migrations/0079_sheet_refs.sql` (Deleting a sheet):
+Migration `apps/api/migrations/0001_liveplanner_baseline.sql` (Deleting a sheet):
 
 ```sql
 ALTER TABLE sheets RENAME COLUMN unframed_since TO unreferenced_since;

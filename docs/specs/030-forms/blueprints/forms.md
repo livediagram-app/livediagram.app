@@ -10,7 +10,7 @@ Derived from [Forms](../forms.md). Implementation contracts: files, types, const
 | The `form` tab kind, `Tab.form`                                                                  | `packages/document` (`tab-kind.ts`, `index.ts`)                                                                                                                                                                                                                                                     |
 | Multiple Choice and Rating field kinds                                                           | `packages/items` (`item-types.ts`, `type-catalogue.ts`, `card-text.ts`, `board-csv.ts`, `type-changes.ts`, `plan-names.ts`); agents in `packages/agent-verbs/src/plan/plan-listing.ts` and `packages/agent-verbs/src/mcp/plan-schema.ts`                                                            |
 | Wire DTOs (`FormLinkResponse`, `PublicFormResponse`, `FormResponseBody`, report reasons)         | `packages/api-schema` (`forms.ts`); the Inbox's `ActivityFormResponses` in `activity.ts`; `/form` in `page-views.ts`; `forms` in `error-telemetry.ts`; `Form` in `telemetry-schema.ts`                                                                                                              |
-| `form_links`, `form_reports`, `form_reads`                                                       | `apps/api/migrations/0092_forms.sql`, `0093_form_links_deleted.sql`, `apps/api/src/db/forms.ts`, the Inbox read `apps/api/src/db/activity-forms.ts`                                                                                                                                                 |
+| `form_links`, `form_reports`, `form_reads`                                                       | `apps/api/migrations/0001_liveplanner_baseline.sql`, `apps/api/src/db/forms.ts`, the Inbox read `apps/api/src/db/activity-forms.ts`                                                                                                                                                 |
 | Owner routes, public routes, the response write                                                  | `apps/api/src/routes/form-link-routes.ts`, `apps/api/src/routes/forms.ts`, `apps/api/src/forms/respond.ts`, `apps/api/src/forms/form-tab.ts`                                                                                                                                                        |
 | Emails                                                                                           | `apps/api/src/email/templates.ts` (`formResponseEmail`, `formSuspendedEmail`), `notifications.ts` (`notifyFormResponse`, `notifyFormSuspended`)                                                                                                                                                     |
 | The Form tab                                                                                     | `apps/live/components/forms/FormPage.tsx` and `components/forms/builder/*`; actions in `apps/live/hooks/forms/*`                                                                                                                                                                                    |
@@ -244,7 +244,7 @@ for rating. No item store change: a list of strings and a number are already val
 
 ## 11. Api
 
-### Tables (migrations `0092_forms.sql`, `0093_form_links_deleted.sql`)
+### Tables (migrations `0092_forms.sql`)
 
 ```sql
 form_links (code PK, document_id → documents ON DELETE CASCADE, tab_id, open, created_at, responses,

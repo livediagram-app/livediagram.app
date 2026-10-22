@@ -199,7 +199,7 @@ typeLabel? })` keeps live cards of any type id (no catalogue filter), narrowed t
 
 ## Data and persistence: D1
 
-Migration `apps/api/migrations/0071_items.sql`:
+Migration `apps/api/migrations/0001_liveplanner_baseline.sql`:
 
 ```sql
 CREATE TABLE items (

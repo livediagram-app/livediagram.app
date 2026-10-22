@@ -132,10 +132,8 @@ beforeEach(() => {
   vi.spyOn(console, 'warn').mockImplementation(capture);
   vi.spyOn(console, 'error').mockImplementation(capture);
   seed();
-  // The Timeline user scope counts as seeded unless a test says otherwise.
-  db.sql.exec(
-    `INSERT INTO timeline_scope_state (scope_type, scope_id, backfilled_at) VALUES ('user', '${ME}', 1)`,
-  );
+  // The Timeline user scope has its state row unless a test says otherwise.
+  db.sql.exec(`INSERT INTO timeline_scope_state (scope_type, scope_id) VALUES ('user', '${ME}')`);
 });
 
 afterEach(() => {
@@ -264,7 +262,7 @@ describe('Jump back in', () => {
     expect((await home()).jumpBackIn).toEqual([]);
   });
 
-  // Rows the retired personal-feed backfill reconstructed (marked by migration 0063) are not uses.
+  // Rows the retired personal-feed backfill reconstructed (their snapshots marked backfilled) are not uses.
   it('leaves out reconstructed edits: only real uses count', async () => {
     db.sql
       .prepare(
@@ -416,7 +414,7 @@ describe('the read', () => {
     expect(logs).toContain('home: read jump=0 used=0 recent=0 groups=0 actions=0');
   });
 
-  it("seeds nothing: the Timeline backfill is the feed's business", async () => {
+  it('writes no events into the feed', async () => {
     db.sql.exec('DELETE FROM timeline_scope_state');
     await home();
     await Promise.all(pending);

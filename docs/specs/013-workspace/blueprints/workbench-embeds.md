@@ -41,7 +41,7 @@ It provides these names to sibling blueprints ([CLI](../../015-api/blueprints/cl
 
 | File                                                                                                                                                                         | Role                                                                                                                                                                                                                      |
 | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api/migrations/0077_workbench.sql`                                                                                                                                     | Tables `workbench_pairing_requests`, `workbench_pairings`, `workbench_tickets`, `workbench_sessions`; `ws_tickets.workbench_pairing`                                                                                      |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                                                                                                                                     | Tables `workbench_pairing_requests`, `workbench_pairings`, `workbench_tickets`, `workbench_sessions`; `ws_tickets.workbench_pairing`                                                                                      |
 | `packages/api-schema/src/workbench.ts` (new, + test)                                                                                                                         | Constants; wire types of every route; `parseWorkbenchOrigin`; `isWorkbenchSessionFormat`; `WorkbenchRole`, `capWorkbenchRole`; `WORKBENCH_ERROR_CODES`; `WORKBENCH_ROUTES`, `workbenchRouteVerdict`                       |
 | `packages/api-schema/src/workbench-messages.ts` (new, + test)                                                                                                                | The ten message types, `WORKBENCH_MESSAGE_TYPES`, `parseWorkbenchMessage`                                                                                                                                                 |
 | `packages/api-schema/src/room-messages.ts`                                                                                                                                   | `WORKBENCH_ENDED_CLOSE = 4006`                                                                                                                                                                                            |
@@ -133,7 +133,7 @@ The workspace scope adds or changes, by file:
 
 | File                                                                                                                                                     | Role                                                                                                                                                       |
 | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `apps/api/migrations/0099_workbench_workspace.sql`                                                                                                       | `scope` on requests, pairings, tickets and sessions; `folder_id` and a nullable `document_id` on tickets and sessions (rebuilt); `workbench_session_rooms` |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`                                                                                                       | `scope` on requests, pairings, tickets and sessions; `folder_id` and a nullable `document_id` on tickets and sessions (rebuilt); `workbench_session_rooms` |
 | `packages/api-schema/src/workbench.ts`                                                                                                                   | `WorkbenchScope`, `WORKBENCH_SCOPES`, `pairingCoversScope`; the scoped wire types; `workbenchRouteVerdict` by scope (`WORKSPACE_ROUTES`)                   |
 | `packages/api-schema/src/workbench-messages.ts`                                                                                                          | `liveplanner:place`, `liveplanner:open`; the workspace `ready`                                                                                             |
 | `apps/api/src/db/workbench.ts`                                                                                                                           | Scope and folder on every row; requests per scope; approval widens a pairing; `noteWorkbenchSessionRoom`                                                   |
@@ -961,7 +961,7 @@ covers them by dispatch probe.
 
 ## Data and persistence
 
-Migration `apps/api/migrations/0077_workbench.sql` (WB40):
+Migration `apps/api/migrations/0001_liveplanner_baseline.sql` (WB40):
 
 ```sql
 CREATE TABLE workbench_pairing_requests (
@@ -1025,7 +1025,7 @@ CREATE INDEX workbench_sessions_expiry ON workbench_sessions (expires_at);
 ALTER TABLE ws_tickets ADD COLUMN workbench_pairing TEXT NULL;
 ```
 
-Migration `apps/api/migrations/0099_workbench_workspace.sql` (WB64) adds the scope. Tickets and sessions are rebuilt,
+Migration `apps/api/migrations/0001_liveplanner_baseline.sql` (WB64) adds the scope. Tickets and sessions are rebuilt,
 since SQLite cannot drop a `NOT NULL`; no table references either, so the rebuild drops and renames with no parked
 rows, and every row is copied as `document`:
 

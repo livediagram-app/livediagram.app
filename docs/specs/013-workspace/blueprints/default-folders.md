@@ -13,8 +13,8 @@ Scope, by file:
 | `packages/document/src/editor-mode.ts`                    | `EDITOR_MODES` (read off `EDITOR_MODE_CATALOGUE`), `EditorMode`, `DEFAULT_EDITOR_MODE`, `isEditorMode` (`D27`) |
 | `packages/api-schema/src/placement-defaults.ts`           | Dimensions, keys, intent, `creationIntentOf`, `readCreationIntent`, telemetry values                           |
 | `packages/templates/src/template-families.ts`             | `templateFamilyOf`: the one exhaustive template to template family map                                         |
-| `apps/api/migrations/0061_placement_defaults.sql`         | The `placement_defaults` table (`D17`)                                                                         |
-| `apps/api/migrations/0062_document_creation_intent.sql`   | `documents.opens_in`, `documents.tab_kind`, `documents.template_family`                                        |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`         | The `placement_defaults` table (`D17`)                                                                         |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`   | `documents.opens_in`, `documents.tab_kind`, `documents.template_family`                                        |
 | `apps/api/src/document-intent-row.ts`                     | `readRecordedIntent`: stored text to the lists, else null                                                      |
 | `apps/api/src/db/documents.ts`                            | The create insert writes the record; reads expose it; the copy carries it                                      |
 | `apps/api/src/db/placement-defaults.ts`                   | `listPlacementDefaults`, `setPlacementDefault`, `clearPlacementDefault`                                        |

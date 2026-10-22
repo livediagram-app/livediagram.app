@@ -23,7 +23,7 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `packages/document/src/participant-content.ts` (new)                                                         | The participant content rule: `applyParticipantOp`, `PARTICIPANT_ADDABLE_TYPES`, field sets    |
 | `packages/document/src/element-types.ts`, `validate.ts`                                                      | `addedBy?: string` on `StickyElement` and `TextElement`; validated                             |
 | `packages/document/src/collab-ledger.ts`                                                                     | `mergeLedgerAnswersIntoTab`: votes and responses only                                          |
-| `apps/api/migrations/0080_participate_links.sql` (new)                                                       | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                    |
+| `apps/api/migrations/0001_liveplanner_baseline.sql` (new)                                                       | A `level` column on `share_links` and `shared_with`; `ws_tickets.adder_key`                    |
 | `apps/api/src/share-link-row.ts`, `db/ws-tickets.ts`, `db/shared.ts`                                         | Readers through `parseStoredLevel`; the ticket's `adderKey`                                    |
 | `apps/api/src/auth/document-access.ts`                                                                       | Gates compare levels; `canParticipateDocument`                                                 |
 | `apps/api/src/routes/context.ts`                                                                             | `gateParticipate` is the Participant check                                                     |

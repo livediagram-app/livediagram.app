@@ -83,10 +83,6 @@ const OWNER_COLUMNS: OwnerColumn[] = [
   { table: 'workbench_sessions', column: 'owner_id', migrate: { kind: 'account-only' } },
 ];
 
-// Tables the migrations still create but no code reads or writes: the image gallery's, retired with
-// image uploads and dropped when the migrations are squashed. They hold no rows to delete or move.
-const RETIRED_TABLES = ['images'];
-
 // Column names that mark an owner-keyed column wherever they appear.
 const OWNER_COLUMN_NAMES = ['owner_id', 'user_id', 'sender_id'];
 
@@ -200,7 +196,7 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
     scope_id: id,
     added_at: T0,
   });
-  insert(sql, 'timeline_scope_state', { scope_type: 'user', scope_id: id, backfilled_at: T0 });
+  insert(sql, 'timeline_scope_state', { scope_type: 'user', scope_id: id, last_seen_at: T0 });
   insert(sql, 'collab_index_state', { owner_id: id, backfilled_at: T0 });
   insert(sql, 'owner_aliases', { owner_id: id, alias_id: `legacy-${id}`, created_at: T0 });
   // A changeset they wrote on the peer's document, which outlives their own documents.
@@ -286,8 +282,7 @@ function schemaOwnerColumns(sql: DatabaseSync): string[] {
   const tables = sql
     .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'")
     .all()
-    .map((t) => String(t.name))
-    .filter((t) => !RETIRED_TABLES.includes(t));
+    .map((t) => String(t.name));
   return tables.flatMap((table) =>
     sql
       .prepare(`SELECT name FROM pragma_table_info(?)`)

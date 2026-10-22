@@ -208,8 +208,8 @@ or opens a hole; "should" is a strong preference.
   Q&A (anything less is a loss). Gaining dots and answers is a widening that needs Webber's explicit
   consent (worktree Open A1).
 - **C23. The schema enforces two roles.** `share_links.role` and `shared_with.role` carry
-  `CHECK (role IN ('edit', 'view'))` ([0003](../../../apps/api/migrations/0003_share_links.sql),
-  [0010](../../../apps/api/migrations/0010_shared_with.sql)). SQLite cannot alter a CHECK in place; it
+  `CHECK (role IN ('edit', 'view'))` ([0003](../../../apps/api/migrations/0001_liveplanner_baseline.sql),
+  [0010](../../../apps/api/migrations/0001_liveplanner_baseline.sql)). SQLite cannot alter a CHECK in place; it
   needs the table rebuild procedure ([SQLite: ALTER TABLE](https://www.sqlite.org/lang_altertable.html#otheralter)).
 - **C24. Old readers fail open.** During the deploy window the migration is applied just before the
   new api worker goes live ([Deployment](../../specs/016-platform/deployment.md)), so the old worker
