@@ -1,8 +1,8 @@
-// The app side of signing in through accounts.liveworkspace.app: an authorization-code
-// flow with PKCE. The redirect leaves the app's domain on purpose. livediagram.app,
-// liveplanner.app and liveworkspace.app are separate sites, so the accounts cookie can
-// only be read on a full-page visit to accounts.liveworkspace.app, never from a fetch or
-// an iframe inside another app (Safari blocks those third-party cookies outright).
+// The app side of signing in through liveworkspace.app: an authorization-code flow with
+// PKCE. The redirect leaves the app's domain on purpose. livediagram.app, liveplanner.app
+// and liveworkspace.app are separate sites, so the accounts cookie can only be read on a
+// full-page visit to liveworkspace.app, never from a fetch or an iframe inside another app
+// (Safari blocks those third-party cookies outright).
 //
 // exchangeCode and refreshTokens send the client secret, so they run in the app's
 // Worker. authorizeUrl and createPkcePair are safe anywhere.
@@ -15,7 +15,7 @@ export interface PkcePair {
 }
 
 export interface ClientCredentials {
-  // e.g. `https://accounts.liveworkspace.app`
+  // e.g. `https://liveworkspace.app`
   accountsUrl: string;
   clientId: string;
   clientSecret: string;

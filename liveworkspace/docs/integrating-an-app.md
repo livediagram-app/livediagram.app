@@ -7,13 +7,13 @@ app's own Worker.
 
 ## Secrets and config on the app's Worker
 
-| Name                              | Example                                                                                             |
-| --------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `ACCOUNTS_URL`                    | `https://accounts.liveworkspace.app`                                                                |
-| `ACCOUNTS_ISSUER`                 | `https://accounts.liveworkspace.app/api/auth` (the `issuer` in `/.well-known/openid-configuration`) |
-| `ACCOUNTS_CLIENT_ID`              | from `register-client.ts`                                                                           |
-| `ACCOUNTS_CLIENT_SECRET` (secret) | from `register-client.ts`                                                                           |
-| `API_RESOURCE`                    | `https://livediagram.app/api`                                                                       |
+| Name                              | Example                                                                                    |
+| --------------------------------- | ------------------------------------------------------------------------------------------ |
+| `ACCOUNTS_URL`                    | `https://liveworkspace.app`                                                                |
+| `ACCOUNTS_ISSUER`                 | `https://liveworkspace.app/api/auth` (the `issuer` in `/.well-known/openid-configuration`) |
+| `ACCOUNTS_CLIENT_ID`              | from `register-client.ts`                                                                  |
+| `ACCOUNTS_CLIENT_SECRET` (secret) | from `register-client.ts`                                                                  |
+| `API_RESOURCE`                    | `https://livediagram.app/api`                                                              |
 
 ## Three routes on the app's Worker
 
@@ -143,7 +143,7 @@ once per environment with its callback on each origin it serves:
 
 ```sh
 ADMIN_TOKEN=… node apps/accounts/scripts/register-client.ts \
-  --accounts https://accounts.liveworkspace.app \
+  --accounts https://liveworkspace.app \
   --name liveplanner \
   --redirect https://www.liveplanner.app/api/auth/callback \
   --redirect https://liveplanner.app/api/auth/callback \

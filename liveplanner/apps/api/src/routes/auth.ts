@@ -2,7 +2,7 @@ import { SIGNED_IN_HINT_COOKIE } from '@liveplanner/api-schema';
 // /api/auth/* — signing in through the liveworkspace accounts Worker
 // (docs/specs/014-identity/auth-and-guest-access.md "Signing in").
 //
-// liveplanner.app and accounts.liveworkspace.app are separate sites, so the
+// liveplanner.app and liveworkspace.app are separate sites, so the
 // browser is sent there on a full-page visit and comes back with a one-time
 // code (OAuth 2.1 authorization code + PKCE). This worker swaps the code for
 // tokens, because the swap sends the client secret. The refresh token stays

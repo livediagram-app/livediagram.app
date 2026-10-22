@@ -22,7 +22,7 @@ One pnpm workspace and one lockfile, at the root. Node 22+, pnpm via corepack.
 corepack pnpm install
 corepack pnpm dev:diagram        # livediagram's apps
 corepack pnpm dev:planner        # liveplanner's apps
-corepack pnpm dev:accounts       # accounts.liveworkspace.app on :8787
+corepack pnpm dev:accounts       # liveworkspace.app's sign-in paths on :8787
 corepack pnpm dev:telemetry      # liveworkspace.app/telemetry on :8790
 corepack pnpm dev:site           # liveworkspace.app on :3300
 corepack pnpm typecheck          # everything; or inside a product folder, just that product

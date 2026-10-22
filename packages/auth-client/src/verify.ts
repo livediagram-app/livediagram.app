@@ -4,7 +4,7 @@
 import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from 'jose';
 
 export interface VerifierOptions {
-  // The accounts Worker's issuer, e.g. `https://accounts.liveworkspace.app/api/auth`.
+  // The accounts Worker's issuer, e.g. `https://liveworkspace.app/api/auth`.
   issuer: string;
   // The resource this app's API was registered as, e.g. `https://livediagram.app/api`.
   // A token minted for another app carries that app's audience and is refused here.

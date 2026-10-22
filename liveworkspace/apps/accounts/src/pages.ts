@@ -93,7 +93,7 @@ function page(title: string, card: string, scripts: string[], pitch: boolean): R
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${title}</title>
-<link rel="stylesheet" href="/assets/accounts.css">
+<link rel="stylesheet" href="/accounts-assets/accounts.css">
 ${scripts.map((src) => `<script src="${src}" defer></script>`).join('\n')}
 </head>
 <body>
@@ -181,7 +181,7 @@ ${NAME_STEP}
 ${DONE}
 ${captcha(turnstileSiteKey)}
 <p class="footer">New to liveworkspace? <a id="switch" href="/sign-up">Create an account</a></p>`,
-    ['/assets/sign-in.js', TURNSTILE_SCRIPT],
+    ['/accounts-assets/sign-in.js', TURNSTILE_SCRIPT],
     true,
   );
 }
@@ -204,7 +204,7 @@ ${NAME_STEP}
 ${DONE}
 ${captcha(turnstileSiteKey)}
 <p class="footer">Already have an account? <a id="switch" href="/sign-in">Sign in</a></p>`,
-    ['/assets/sign-in.js', TURNSTILE_SCRIPT],
+    ['/accounts-assets/sign-in.js', TURNSTILE_SCRIPT],
     true,
   );
 }
@@ -218,7 +218,7 @@ export function consentPage(): Response {
   <button type="button" id="allow" class="primary">Allow</button>
 </div>
 <p id="error" class="alert error" role="alert" hidden></p>`,
-    ['/assets/consent.js'],
+    ['/accounts-assets/consent.js'],
     false,
   );
 }

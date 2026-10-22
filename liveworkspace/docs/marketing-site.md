@@ -13,7 +13,7 @@ apps/marketing    the site at liveworkspace.app (a Next static export, Cloudflar
 - Someone who heard of "liveworkspace" and wants to know what it is.
 - Someone on one app who wants to know what the others are (every app's logo links here,
   [site-switcher.md](site-switcher.md)).
-- Someone who landed on accounts.liveworkspace.app or the telemetry dashboard and wants the bigger
+- Someone who signed in at liveworkspace.app/sign-in or landed on the telemetry dashboard and wants the bigger
   picture.
 
 ## The page
@@ -30,7 +30,7 @@ apps/marketing    the site at liveworkspace.app (a Next static export, Cloudflar
    a new app can't ship with an empty card.
 4. **How it fits**: what every app shares:
    - **Live by default**: everything is real-time and shared by link.
-   - **One account**: signing in goes through accounts.liveworkspace.app (email code, no password),
+   - **One account**: signing in goes through liveworkspace.app (email code, no password),
      so one sign-in covers each app that uses it.
    - **Open about data**: no third-party trackers; the anonymous telemetry is public, for every app
      at once or one at a time.

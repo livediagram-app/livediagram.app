@@ -17,9 +17,9 @@ import {
 import { overCodeLimit } from './rate-limit.ts';
 
 const ASSETS: Record<string, { body: string; type: string }> = {
-  '/assets/accounts.css': { body: STYLES, type: 'text/css; charset=utf-8' },
-  '/assets/sign-in.js': { body: SIGN_IN_SCRIPT, type: 'text/javascript; charset=utf-8' },
-  '/assets/consent.js': { body: CONSENT_SCRIPT, type: 'text/javascript; charset=utf-8' },
+  '/accounts-assets/accounts.css': { body: STYLES, type: 'text/css; charset=utf-8' },
+  '/accounts-assets/sign-in.js': { body: SIGN_IN_SCRIPT, type: 'text/javascript; charset=utf-8' },
+  '/accounts-assets/consent.js': { body: CONSENT_SCRIPT, type: 'text/javascript; charset=utf-8' },
 };
 
 function asset(path: string): Response | null {
@@ -35,17 +35,17 @@ function asset(path: string): Response | null {
   });
 }
 
+// Only the paths routed to this Worker reach it (wrangler.toml): it shares liveworkspace.app with
+// the marketing site, so it has no / of its own.
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const { pathname } = url;
 
     if (request.method === 'GET') {
-      if (pathname === '/') return Response.redirect(new URL('/sign-in', url).toString(), 302);
       if (pathname === '/sign-in') return signInPage(env.TURNSTILE_SITE_KEY);
       if (pathname === '/sign-up') return signUpPage(env.TURNSTILE_SITE_KEY);
       if (pathname === '/consent') return consentPage();
-      if (pathname === '/health') return new Response('ok');
       const file = asset(pathname);
       if (file) return file;
       // Discovery at the root as well as under the issuer path, for clients that only look

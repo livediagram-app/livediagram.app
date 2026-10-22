@@ -13,7 +13,7 @@ const PILLARS = [
   },
   {
     title: 'One account',
-    body: 'Signing in goes through accounts.liveworkspace.app with a code sent to your email, no password to remember. Sign in once, and each app that uses it knows you.',
+    body: 'Signing in goes through liveworkspace.app with a code sent to your email, no password to remember. Sign in once, and each app that uses it knows you.',
   },
   {
     title: 'Open about data',

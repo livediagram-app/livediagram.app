@@ -28,7 +28,7 @@ export function Footer() {
           <a href="/telemetry" className={linkClass}>
             Telemetry
           </a>
-          <a href="https://accounts.liveworkspace.app/sign-in" className={linkClass}>
+          <a href="https://liveworkspace.app/sign-in" className={linkClass}>
             Accounts
           </a>
         </FooterColumn>

@@ -10,7 +10,7 @@ liveworkspace/                 git root, one pnpm workspace, one lockfile, one t
 │  └─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 ├─ liveworkspace/              the platform's own apps
 │  ├─ apps/marketing           liveworkspace.app: what liveworkspace is, and the way to each app
-│  ├─ apps/accounts            accounts.liveworkspace.app: sign-in for every product
+│  ├─ apps/accounts            liveworkspace.app/sign-in: sign-in for every product
 │  ├─ apps/telemetry           liveworkspace.app/telemetry: every product's events, own D1
 │  └─ apps/telemetry-dashboard the public dashboard: all apps, or one at a time
 ├─ livediagram/                imported with full history (main at 82e6ed79a)

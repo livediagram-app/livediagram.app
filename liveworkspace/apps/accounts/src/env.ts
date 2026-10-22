@@ -1,6 +1,6 @@
 export interface Env {
   ENVIRONMENT: 'production' | 'staging' | 'development';
-  // This Worker's own origin, e.g. https://accounts.liveworkspace.app
+  // The origin this Worker answers on, e.g. https://liveworkspace.app (it owns only its own paths there)
   BASE_URL: string;
   // An address on a domain onboarded to Cloudflare Email Sending.
   EMAIL_FROM: string;

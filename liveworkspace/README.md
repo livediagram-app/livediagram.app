@@ -1,13 +1,18 @@
 # liveworkspace-auth
 
 One account across livediagram, liveplanner and the rest of liveworkspace. People sign in once at
-**accounts.liveworkspace.app** with a code sent to their email, and every app trusts that sign-in.
+**liveworkspace.app/sign-in** with a code sent to their email, and every app trusts that sign-in.
 
 It replaces Clerk. It runs on Cloudflare Workers + D1, using [Better Auth](https://www.better-auth.com)
 with its email-code (`emailOTP`) and OAuth 2.1 / OpenID Connect provider plugins.
 
+The accounts Worker shares liveworkspace.app with the marketing site: it is routed only
+`/sign-in`, `/sign-up`, `/consent`, `/accounts-assets/*`, `/api/auth/*`, `/internal/clients` and
+the two discovery documents under `/.well-known/` (`apps/accounts/wrangler.toml`), and the
+marketing site keeps every other path. The issuer is `https://liveworkspace.app/api/auth`.
+
 ```
-apps/accounts          the Worker at accounts.liveworkspace.app: sign-in and registration pages, codes, tokens, JWKS
+apps/accounts          the Worker behind liveworkspace.app/sign-in and /api/auth: sign-in and registration pages, codes, tokens, JWKS
 packages/auth-client   what each app imports: sign-in redirect, code swap, refresh, token check
 docs/                  adding an app, moving off Clerk
 ```
@@ -23,9 +28,9 @@ liveworkspace also runs every app's anonymous telemetry, at liveworkspace.app/te
 The apps live on different sites (`livediagram.app`, `liveplanner.app`), so they can't share a
 cookie. Each app sends the browser to the accounts site and gets it back with a one-time code:
 
-1. The app redirects to `accounts.liveworkspace.app/api/auth/oauth2/authorize` (PKCE, `state`).
+1. The app redirects to `liveworkspace.app/api/auth/oauth2/authorize` (PKCE, `state`).
 2. Not signed in there yet? The person types their email, gets a 6-digit code, and enters it.
-   The accounts site now has its own first-party cookie.
+   liveworkspace.app now has its own first-party cookie.
 3. The browser lands on the app's `/auth/callback?code=…`. The app's Worker swaps the code for
    an access token, a refresh token and an ID token.
 4. The app's API checks access tokens locally against the published keys
@@ -79,7 +84,7 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
 1. Create the databases and put their ids in `apps/accounts/wrangler.toml` (they are placeholders):
    `wrangler d1 create liveworkspace-accounts` (and `liveworkspace-accounts-staging`).
 2. Turn on Email Sending for the domain: `wrangler email sending enable liveworkspace.app`.
-3. Create a Turnstile widget for `accounts.liveworkspace.app` and put its site key in
+3. Create a Turnstile widget for `liveworkspace.app` and put its site key in
    `TURNSTILE_SITE_KEY`.
 4. Set the secrets: `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), `TURNSTILE_SECRET_KEY`,
    and `ADMIN_TOKEN` (`openssl rand -hex 32`).
@@ -94,7 +99,7 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
 
    ```sh
    ADMIN_TOKEN=… node apps/accounts/scripts/register-client.ts \
-     --accounts https://accounts.liveworkspace.app \
+     --accounts https://liveworkspace.app \
      --name livediagram \
      --redirect https://www.livediagram.app/auth/callback \
      --redirect https://livediagram.app/auth/callback \

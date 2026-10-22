@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { authorizeUrl, createPkcePair, exchangeCode, randomState, refreshTokens } from './oauth';
 
 const credentials = {
-  accountsUrl: 'https://accounts.liveworkspace.app',
+  accountsUrl: 'https://liveworkspace.app',
   clientId: 'client-1',
   clientSecret: 's3cret',
 };
@@ -39,9 +39,7 @@ describe('authorizeUrl', () => {
         resource: 'https://livediagram.app/api',
       }),
     );
-    expect(url.origin + url.pathname).toBe(
-      'https://accounts.liveworkspace.app/api/auth/oauth2/authorize',
-    );
+    expect(url.origin + url.pathname).toBe('https://liveworkspace.app/api/auth/oauth2/authorize');
     expect(Object.fromEntries(url.searchParams)).toEqual({
       response_type: 'code',
       client_id: 'client-1',
@@ -98,7 +96,7 @@ describe('exchangeCode', () => {
       scope: 'openid email',
     });
     const [url, init] = fetchImpl.mock.calls[0]!;
-    expect(String(url)).toBe('https://accounts.liveworkspace.app/api/auth/oauth2/token');
+    expect(String(url)).toBe('https://liveworkspace.app/api/auth/oauth2/token');
     expect(new Headers(init?.headers).get('authorization')).toBe(
       `Basic ${btoa('client-1:s3cret')}`,
     );

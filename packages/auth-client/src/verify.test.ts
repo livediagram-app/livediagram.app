@@ -2,7 +2,7 @@ import { createLocalJWKSet, exportJWK, generateKeyPair, SignJWT } from 'jose';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { createVerifier } from './verify';
 
-const ISSUER = 'https://accounts.liveworkspace.app/api/auth';
+const ISSUER = 'https://liveworkspace.app/api/auth';
 const AUDIENCE = 'https://livediagram.app/api';
 
 let privateKey: CryptoKey;

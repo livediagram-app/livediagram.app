@@ -32,7 +32,7 @@ function assert(condition: unknown, message: string): asserts condition {
   console.log(`ok  ${message}`);
 }
 
-// A tiny cookie jar: the browser's side of accounts.liveworkspace.app.
+// A tiny cookie jar: the browser's side of liveworkspace.app.
 const jar = new Map<string, string>();
 async function browser(url: string, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers);
