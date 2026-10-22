@@ -54,7 +54,7 @@ afterEach(() => {
 
 const makeEmitter = (over: Partial<Parameters<Emitter['createTelemetryEmitter']>[0]> = {}) =>
   mod.createTelemetryEmitter({
-    url: 'https://t.test/telemetry',
+    url: 'https://t.test/api/telemetry',
     app: 'liveplanner.app',
     enabled: true,
     isOptedIn: () => true,
@@ -74,7 +74,7 @@ describe('createTelemetryEmitter', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const sent: unknown[] = fetchMock.mock.calls[0]!;
     const [url, init] = sent;
-    expect(url).toBe('https://t.test/telemetry/api/events');
+    expect(url).toBe('https://t.test/api/telemetry/events');
     // A cross-site simple request: text/plain, no cookies, so no preflight.
     expect(init).toMatchObject({
       keepalive: true,
@@ -121,7 +121,7 @@ describe('createTelemetryEmitter', () => {
     documentTarget.visibilityState = 'hidden';
     documentTarget.fire('visibilitychange');
     expect(sendBeacon).toHaveBeenCalledTimes(1);
-    expect(sendBeacon.mock.calls[0]![0]).toBe('https://t.test/telemetry/api/events');
+    expect(sendBeacon.mock.calls[0]![0]).toBe('https://t.test/api/telemetry/events');
     expect((sendBeacon.mock.calls[0]![1] as Blob).type).toBe('text/plain');
     // The beacon drained the buffer; the pending timer sends nothing.
     vi.advanceTimersByTime(10_000);
@@ -464,7 +464,7 @@ describe('createLazyTrack', () => {
   it('sends through the shared engine when enabled and opted in', () => {
     withPrefs(null);
     const track = mod.createLazyTrack({
-      url: 'https://t.test/telemetry',
+      url: 'https://t.test/api/telemetry',
       app: 'liveplanner.app',
       enabled: true,
     });
@@ -478,14 +478,14 @@ describe('createLazyTrack', () => {
 
   it('honours the stored opt-out and the build gate', () => {
     withPrefs(JSON.stringify({ telemetryEnabled: false }));
-    mod.createLazyTrack({ url: 'https://t.test/telemetry', app: 'liveplanner.app', enabled: true })(
+    mod.createLazyTrack({ url: 'https://t.test/api/telemetry', app: 'liveplanner.app', enabled: true })(
       'Page',
       'View',
       '/',
     );
     withPrefs(null);
     mod.createLazyTrack({
-      url: 'https://t.test/telemetry',
+      url: 'https://t.test/api/telemetry',
       app: 'liveplanner.app',
       enabled: false,
     })('Page', 'View', '/');

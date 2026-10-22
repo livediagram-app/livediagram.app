@@ -97,7 +97,7 @@ export type TelemetryEmitter = {
 export const TELEMETRY_APP: TelemetryApp = 'livediagram.app';
 
 export function createTelemetryEmitter(opts: {
-  // The telemetry service, e.g. 'https://liveworkspace.app/telemetry': events go to
+  // The telemetry service, e.g. 'https://liveworkspace.app/api/telemetry': events go to
   // `${url}/api/events`.
   url: string;
   // Which app the batch counts for on the shared dashboard.

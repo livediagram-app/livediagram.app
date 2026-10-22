@@ -51,8 +51,8 @@ No sign-in button: signing in only means something inside an app.
 ## Hosting
 
 One Worker, static assets only, on the route `liveworkspace.app/*` (and `www.`). The telemetry
-Worker's route `liveworkspace.app/telemetry*` is more specific, so Cloudflare sends
-`/telemetry` there and everything else here. Security headers come from `public/_headers`.
+Worker's routes (`liveworkspace.app/api/telemetry*` and `liveworkspace.app/telemetry*`) and the
+accounts Worker's are more specific, so Cloudflare sends those paths there and everything else here. Security headers come from `public/_headers`.
 
 ## Not done yet
 

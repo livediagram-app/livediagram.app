@@ -4,11 +4,15 @@ import type { TelemetryApp } from './apps';
 
 // Where the service lives. Apps take it as configuration (NEXT_PUBLIC_TELEMETRY_URL in the browser,
 // TELEMETRY_URL in a Worker), so local development and staging can point elsewhere.
-export const TELEMETRY_URL = 'https://liveworkspace.app/telemetry';
+export const TELEMETRY_URL = 'https://liveworkspace.app/api/telemetry';
 
-// The ingest and summary paths, under the service's URL.
-export const TELEMETRY_EVENTS_PATH = '/api/events';
-export const TELEMETRY_SUMMARY_PATH = '/api/summary';
+// The public dashboard page, which every app's own /telemetry redirects to.
+export const TELEMETRY_DASHBOARD_URL = 'https://liveworkspace.app/telemetry';
+
+// The ingest and summary paths, under the service's URL. Like every liveworkspace API, the service
+// sits under /api; the dashboard page is /telemetry.
+export const TELEMETRY_EVENTS_PATH = '/events';
+export const TELEMETRY_SUMMARY_PATH = '/summary';
 
 // One event: three small fields, never user content (each app's vocabulary is closed, and checked
 // at ingest). `type` is optional.

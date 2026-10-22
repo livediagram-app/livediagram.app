@@ -74,7 +74,7 @@ describe('createTelemetryEmitter', () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const sent: unknown[] = fetchMock.mock.calls[0]!;
     const [url, init] = sent;
-    expect(url).toBe('https://telemetry.test/api/events');
+    expect(url).toBe('https://telemetry.test/events');
     expect(init).toMatchObject({
       keepalive: true,
       credentials: 'omit',
@@ -121,7 +121,7 @@ describe('createTelemetryEmitter', () => {
     documentTarget.visibilityState = 'hidden';
     documentTarget.fire('visibilitychange');
     expect(sendBeacon).toHaveBeenCalledTimes(1);
-    expect(sendBeacon.mock.calls[0]![0]).toBe('https://telemetry.test/api/events');
+    expect(sendBeacon.mock.calls[0]![0]).toBe('https://telemetry.test/events');
     // The beacon drained the buffer; the pending timer sends nothing.
     vi.advanceTimersByTime(10_000);
     expect(fetchMock).not.toHaveBeenCalled();

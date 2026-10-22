@@ -1,8 +1,12 @@
 name = "liveworkspace-telemetry"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
-# Only /telemetry on liveworkspace.app: the rest of the zone is someone else's.
-routes = [{ pattern = "liveworkspace.app/telemetry*", zone_name = "liveworkspace.app" }]
+# Only its API (/api/telemetry) and the dashboard (/telemetry) on liveworkspace.app: the rest of the
+# zone is the marketing site's and the accounts Worker's.
+routes = [
+  { pattern = "liveworkspace.app/api/telemetry*", zone_name = "liveworkspace.app" },
+  { pattern = "liveworkspace.app/telemetry*", zone_name = "liveworkspace.app" },
+]
 
 # Secrets (wrangler secret put): each app's Worker key, sent as X-Telemetry-Key.
 #   TELEMETRY_KEY_LIVEDIAGRAM   shared with livediagram's api and mcp Workers as TELEMETRY_KEY
@@ -37,7 +41,10 @@ crons = ["17 3 * * *"]
 
 [env.staging]
 name = "liveworkspace-telemetry-staging"
-routes = [{ pattern = "staging.liveworkspace.app/telemetry*", zone_name = "liveworkspace.app" }]
+routes = [
+  { pattern = "staging.liveworkspace.app/api/telemetry*", zone_name = "liveworkspace.app" },
+  { pattern = "staging.liveworkspace.app/telemetry*", zone_name = "liveworkspace.app" },
+]
 
 [env.staging.vars]
 ENVIRONMENT = "staging"

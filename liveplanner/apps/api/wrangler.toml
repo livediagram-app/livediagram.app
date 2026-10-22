@@ -26,8 +26,8 @@ globs = ["**/*.ttf", "**/*.otf"]
 # "true" turns it on; anything else, or absent, keeps it fully off. The
 # service's URL is TELEMETRY_URL, also from the hosted profile (per
 # environment, mirrored into the frontends as NEXT_PUBLIC_TELEMETRY_URL);
-# unset means production's (https://liveworkspace.app/telemetry). Locally,
-# `TELEMETRY_URL=http://localhost:8790/telemetry` in .dev.vars.
+# unset means production's (https://liveworkspace.app/api/telemetry). Locally,
+# `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
 
 # Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md). Stated HERE, not in the

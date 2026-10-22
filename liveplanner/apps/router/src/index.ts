@@ -6,7 +6,7 @@
 import { applyCachePolicy } from './cache-policy';
 import { legacyEditorRedirect, legacyHelpRedirect } from './legacy-editor-route';
 import { LIVE_ROUTE_SEGMENTS } from '@liveplanner/api-schema';
-import { TELEMETRY_URL } from '@liveworkspace/telemetry';
+import { TELEMETRY_DASHBOARD_URL } from '@liveworkspace/telemetry';
 
 export interface Env {
   // Production service bindings (absent in the `local` env).
@@ -227,7 +227,7 @@ async function route(request: Request, env: Env): Promise<Response> {
 
 // Where /telemetry and everything under it now lives: the central dashboard, filtered to liveplanner.
 export function telemetryRedirect(env: Env): Response {
-  const target = new URL(env.TELEMETRY_DASHBOARD_URL || TELEMETRY_URL);
+  const target = new URL(env.TELEMETRY_DASHBOARD_URL || TELEMETRY_DASHBOARD_URL);
   target.searchParams.set('app', 'liveplanner.app');
   // Built by hand: Response.redirect's headers are immutable, and the caching rules still stamp this one.
   return new Response(null, { status: 301, headers: { Location: target.toString() } });

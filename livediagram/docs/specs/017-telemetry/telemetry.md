@@ -5,7 +5,7 @@ First-party, anonymous product analytics, surfaced on a **public** dashboard so 
 ## Principles
 
 - **Anonymous, aggregate, first-party.** Events carry no user id, no IP, no user-generated content (never a document name, tab name, participant name, element text, share code, or document id). Only a fixed, app-defined vocabulary of enum values is ever stored.
-- **No external vendors.** Events go to the **liveworkspace telemetry service** ([liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md)), our own Worker on `liveworkspace.app/telemetry` that counts usage for livediagram and its sister apps, and are stored in its own D1 database. The dashboard is its own app too. Nothing is sent to a third party, and data is never sold or shared beyond the public dashboard.
+- **No external vendors.** Events go to the **liveworkspace telemetry service** ([liveworkspace/docs/telemetry.md](../../../../liveworkspace/docs/telemetry.md)), our own Worker on `liveworkspace.app/api/telemetry` (its dashboard is `liveworkspace.app/telemetry`) that counts usage for livediagram and its sister apps, and are stored in its own D1 database. The dashboard is its own app too. Nothing is sent to a third party, and data is never sold or shared beyond the public dashboard.
 - **Off by default.** A single env var gates the whole system, so OSS self-hosters and forks emit/serve nothing unless they opt in. No committed config turns it on: livediagram.app's own deploys do, through the hosted profile ([Deployment](../016-platform/deployment.md) "Hosted profile"), which a fork's deploys never apply. This keeps the "no required SaaS calls" rule ([03](../002-project-scope/open-source-and-business-model.md)) intact.
 - **Transparent.** The dashboard is public (`liveworkspace.app/telemetry`; `livediagram.app/telemetry` redirects there with livediagram picked), and the privacy policy + landing page say plainly what we capture and why, and link to it.
 
@@ -49,7 +49,7 @@ The dashboard surfaces three fixed windows that top out at **30 days**, and comp
 
 ## Sending events
 
-- **Browsers** (editor, help centre, marketing, Community) post straight to the service, `POST <TELEMETRY_URL>/api/events`, with `{ app: 'livediagram.app', events }`, as `text/plain` JSON with no credentials, so the cross-site send is a CORS simple request: no preflight, no cookies. The service takes a browser batch only from one of livediagram.app's own origins. `NEXT_PUBLIC_TELEMETRY_URL` names the service at build time; unset means production's, `https://liveworkspace.app/telemetry`.
+- **Browsers** (editor, help centre, marketing, Community) post straight to the service, `POST <TELEMETRY_URL>/events` (`https://liveworkspace.app/api/telemetry/events`), with `{ app: 'livediagram.app', events }`, as `text/plain` JSON with no credentials, so the cross-site send is a CORS simple request: no preflight, no cookies. The service takes a browser batch only from one of livediagram.app's own origins. `NEXT_PUBLIC_TELEMETRY_URL` names the service at build time; unset means production's, `https://liveworkspace.app/telemetry`.
 - **The api and mcp workers** post the events only they can count (`reportServerEvent` / `reportServerEvents` in `apps/api/src/server-telemetry.ts`, `postTelemetry` in `apps/mcp/src/api.ts`) with the `X-Telemetry-Key: <TELEMETRY_KEY>` header, which proves a batch with no Origin is livediagram's own. Fire-and-forget, off the response's critical path.
 
 ### The relay
@@ -62,7 +62,7 @@ The dashboard's data, `GET /api/summary?app=`, is the service's too; the api no 
 
 `TELEMETRY_ENABLED` (worker var, default off; livediagram.app sets it through the hosted profile in `apps/api/hosted-vars.json`, a self-host in its own `wrangler.toml [vars]`) gates everything the api worker sends, its own events and the relay's. Every emitting frontend (editor, help centre, marketing, Community) also reads `NEXT_PUBLIC_TELEMETRY_ENABLED` (baked at build; the deploy mirrors it from the hosted profile) to skip emitting entirely when off.
 
-Two more, from the same profile and secrets: **`TELEMETRY_URL`** (per environment: staging sends to `staging.liveworkspace.app/telemetry`, and the frontends get it as `NEXT_PUBLIC_TELEMETRY_URL`) and **`TELEMETRY_KEY`** (a worker secret, the same value on the **api and mcp** workers and on the service as `TELEMETRY_KEY_LIVEDIAGRAM`). Without a key the workers send nothing, which is what a self-host gets with no configuration.
+Two more, from the same profile and secrets: **`TELEMETRY_URL`** (per environment: staging sends to `staging.liveworkspace.app/api/telemetry`, and the frontends get it as `NEXT_PUBLIC_TELEMETRY_URL`) and **`TELEMETRY_KEY`** (a worker secret, the same value on the **api and mcp** workers and on the service as `TELEMETRY_KEY_LIVEDIAGRAM`). Without a key the workers send nothing, which is what a self-host gets with no configuration.
 
 ## Abuse controls
 

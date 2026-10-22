@@ -16,7 +16,7 @@ function stubTelemetryFetch(calls: Request[]): void {
 
 afterEach(() => vi.unstubAllGlobals());
 
-const isEvents = (r: Request) => new URL(r.url).pathname.endsWith('/api/events');
+const isEvents = (r: Request) => new URL(r.url).pathname === '/api/telemetry/events';
 
 function envWith(handler: (req: Request) => Response): { env: Env; calls: Request[] } {
   const calls: Request[] = [];
@@ -148,7 +148,7 @@ describe('postTelemetry', () => {
       TELEMETRY_URL: 'https://telemetry.test',
     };
     postTelemetry(env, 'Mcp', 'Used', 'ReadDocument');
-    expect(calls[0]!.url).toBe('https://telemetry.test/api/events');
+    expect(calls[0]!.url).toBe('https://telemetry.test/events');
     expect(calls[0]!.headers.get('X-Telemetry-Key')).toBe('k');
     expect(await calls[0]!.json()).toEqual({
       app: 'livediagram.app',

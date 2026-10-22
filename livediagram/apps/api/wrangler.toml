@@ -20,8 +20,8 @@ globs = ["**/*.ttf", "**/*.otf"]
 # telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md):
 # "true" turns it on; anything else, or absent, keeps it fully off. TELEMETRY_URL
 # names that service per environment (hosted-vars.json); unset means
-# production's, https://liveworkspace.app/telemetry. Local dev sets
-# TELEMETRY_URL=http://localhost:8790/telemetry in .dev.vars.
+# production's, https://liveworkspace.app/api/telemetry. Local dev sets
+# TELEMETRY_URL=http://localhost:8790/api/telemetry in .dev.vars.
 [vars]
 
 # Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md). Stated HERE, not in the
@@ -398,7 +398,7 @@ name = "livediagram-api-staging"
 
 # TELEMETRY_ENABLED, TELEMETRY_URL and the image caps come from `hosted-vars.json`, exactly as
 # for production (see the top of this file). Staging's events go to the STAGING telemetry
-# service (staging.liveworkspace.app/telemetry), never into production's published numbers.
+# service (staging.liveworkspace.app/api/telemetry), never into production's published numbers.
 [env.staging.vars]
 # APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).

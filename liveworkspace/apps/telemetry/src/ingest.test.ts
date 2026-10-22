@@ -3,7 +3,7 @@ import { handleIngest, rateKey } from './ingest';
 import { testEnv } from './test-env';
 
 const post = (body: unknown, headers: Record<string, string> = {}) =>
-  new Request('https://liveworkspace.app/telemetry/api/events', {
+  new Request('https://liveworkspace.app/api/telemetry/events', {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain', ...headers },
     body: typeof body === 'string' ? body : JSON.stringify(body),

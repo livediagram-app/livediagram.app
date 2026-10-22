@@ -16,7 +16,7 @@ describe('app filter', () => {
   });
 
   it('asks the service for the filter it shows', () => {
-    expect(summaryUrl('all')).toBe('/telemetry/api/summary?app=all');
-    expect(summaryUrl('livediagram.app')).toBe('/telemetry/api/summary?app=livediagram.app');
+    expect(summaryUrl('all')).toBe('/api/telemetry/summary?app=all');
+    expect(summaryUrl('livediagram.app')).toBe('/api/telemetry/summary?app=livediagram.app');
   });
 });

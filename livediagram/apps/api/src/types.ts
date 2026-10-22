@@ -121,7 +121,7 @@ export type Env = {
   // default, so OSS forks never send analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
   // The liveworkspace telemetry service (liveworkspace/docs/telemetry.md). Unset means production's,
-  // https://liveworkspace.app/telemetry; staging and local development name their own.
+  // https://liveworkspace.app/api/telemetry; staging and local development name their own.
   TELEMETRY_URL?: string;
   // livediagram's secret on that service, sent as X-Telemetry-Key: it proves a batch with no Origin
   // is this app's own. A secret (wrangler secret put TELEMETRY_KEY); unset sends nothing.

@@ -35,7 +35,7 @@ export function searchWithApp(search: string, app: TelemetryAppFilter): string {
 // The service's summary for a filter. Same origin in production (the Worker serves this page);
 // NEXT_PUBLIC_TELEMETRY_URL points a local build at a local service.
 export function summaryUrl(app: TelemetryAppFilter): string {
-  const base = process.env.NEXT_PUBLIC_TELEMETRY_URL ?? '/telemetry';
+  const base = process.env.NEXT_PUBLIC_TELEMETRY_URL ?? '/api/telemetry';
   return `${base}${TELEMETRY_SUMMARY_PATH}?${APP_PARAM}=${encodeURIComponent(app)}`;
 }
 

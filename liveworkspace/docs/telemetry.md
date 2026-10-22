@@ -1,8 +1,9 @@
 # Telemetry
 
-Every liveworkspace app sends its anonymous product events to one service,
-**liveworkspace.app/telemetry**. The service stores them in its own D1 database and publishes them
-on one public dashboard. The dashboard shows every app together, or one app at a time.
+Every liveworkspace app sends its anonymous product events to one service, whose API is
+**liveworkspace.app/api/telemetry** (every liveworkspace API sits under `/api`). The service stores
+them in its own D1 database and publishes them on one public dashboard,
+**liveworkspace.app/telemetry**. The dashboard shows every app together, or one app at a time.
 
 ```
 packages/telemetry               @liveworkspace/telemetry: the apps, the batch format, the summary
@@ -34,7 +35,7 @@ sent.
 
 ## Sending events
 
-`POST https://liveworkspace.app/telemetry/api/events` with a JSON body:
+`POST https://liveworkspace.app/api/telemetry/events` with a JSON body:
 
 ```json
 { "app": "livediagram.app", "events": [{ "category": "Document", "action": "Created" }] }
@@ -64,7 +65,7 @@ Each app configures where to send:
 
 | Where               | Setting                                                                               |
 | ------------------- | ------------------------------------------------------------------------------------- |
-| Browser builds      | `NEXT_PUBLIC_TELEMETRY_URL` (default `https://liveworkspace.app/telemetry`)           |
+| Browser builds      | `NEXT_PUBLIC_TELEMETRY_URL` (default `https://liveworkspace.app/api/telemetry`)       |
 | api and mcp Workers | `TELEMETRY_URL` var (same default) and the `TELEMETRY_KEY` secret                     |
 | Both                | The app's own `TELEMETRY_ENABLED` / `NEXT_PUBLIC_TELEMETRY_ENABLED` gates still apply |
 
@@ -83,7 +84,7 @@ explanations. Picking an app on the page updates the link.
 - **One app** shows the dashboard that app had before, unchanged. Each app's catalogue lives in
   `app/<app>/` in the dashboard, and only loads when that app is picked.
 
-The numbers come from `GET /telemetry/api/summary?app=all|livediagram.app|liveplanner.app`, built from
+The numbers come from `GET /api/telemetry/summary?app=all|livediagram.app|liveplanner.app`, built from
 one grouped per-day query over the last 59 days (the last 30, and the 30 before them for the trend
 arrows). Each window carries `byApp`, and the daily series carries `byApp` too. The response is
 cached at the edge for 5 minutes per filter, so a traffic spike on the public page is answered from
@@ -99,11 +100,11 @@ A daily cron (03:17 UTC) deletes events older than 60 days.
 cd liveworkspace/apps/telemetry
 cp .dev.vars.example .dev.vars
 corepack pnpm db:migrate:local
-corepack pnpm dev                     # http://localhost:8790/telemetry
+corepack pnpm dev                     # dashboard http://localhost:8790/telemetry, API /api/telemetry
 ```
 
 Development accepts events from any `localhost` page. Point an app at it with
-`NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/telemetry` (and `TELEMETRY_URL`, plus the dev key
+`NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry` (and `TELEMETRY_URL`, plus the dev key
 from `.dev.vars`, for its Workers). To see the dashboard, build it first
 (`corepack pnpm --filter @liveworkspace/telemetry-dashboard build`), or run it on its own with
 `corepack pnpm --filter @liveworkspace/telemetry-dashboard dev` (port 3301) and the same
@@ -118,8 +119,8 @@ from `.dev.vars`, for its Workers). To see the dashboard, build it first
    `openssl rand -hex 32`, then `wrangler secret put TELEMETRY_KEY_LIVEDIAGRAM` and
    `TELEMETRY_KEY_LIVEPLANNER`.
 3. `corepack pnpm db:migrate:remote`, build the dashboard, then `corepack pnpm deploy`.
-4. The Worker takes the route `liveworkspace.app/telemetry*` only, so the rest of the zone is
-   untouched.
+4. The Worker takes the routes `liveworkspace.app/api/telemetry*` and `liveworkspace.app/telemetry*`
+   only, so the rest of the zone is untouched.
 
 liveplanner's Workers live on a separate Cloudflare account. That's fine: they reach the service over
 HTTPS, not a service binding. Only the key has to be copied across.

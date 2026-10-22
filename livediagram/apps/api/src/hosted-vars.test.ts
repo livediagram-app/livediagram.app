@@ -110,8 +110,8 @@ describe('hosted-vars script', () => {
     ]);
     expect(buildEnv({ IMAGE_MAX_PER_OWNER: '1' })).toEqual([]);
     // The frontends send to the same telemetry service as the api.
-    expect(buildEnv({ TELEMETRY_URL: 'https://staging.liveworkspace.app/telemetry' })).toEqual([
-      'NEXT_PUBLIC_TELEMETRY_URL=https://staging.liveworkspace.app/telemetry',
+    expect(buildEnv({ TELEMETRY_URL: 'https://staging.liveworkspace.app/api/telemetry' })).toEqual([
+      'NEXT_PUBLIC_TELEMETRY_URL=https://staging.liveworkspace.app/api/telemetry',
     ]);
   });
 

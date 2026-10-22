@@ -89,7 +89,7 @@ export type TelemetryEmitter = {
 };
 
 export function createTelemetryEmitter(opts: {
-  // The central service's URL, e.g. 'https://liveworkspace.app/telemetry' — events go to
+  // The central service's URL, e.g. 'https://liveworkspace.app/api/telemetry' — events go to
   // `${url}/api/events`.
   url: string;
   // Which app the events are from: the dashboard's filter.

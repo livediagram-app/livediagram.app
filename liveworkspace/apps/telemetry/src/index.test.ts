@@ -1,6 +1,7 @@
 import type { TelemetrySummary } from '@liveworkspace/telemetry';
 import { describe, expect, it } from 'vitest';
-import worker, { PAGE_HEADERS, RETENTION_MS } from './index';
+import { PAGE_HEADERS, RETENTION_MS } from './config';
+import worker from './index';
 import { testEnv } from './test-env';
 
 const ctx = {
@@ -14,7 +15,7 @@ describe('telemetry worker', () => {
     const env = testEnv();
     const send = (app: string) =>
       worker.fetch(
-        new Request('https://liveworkspace.app/telemetry/api/events', {
+        new Request('https://liveworkspace.app/api/telemetry/events', {
           method: 'POST',
           headers: { Origin: 'http://localhost:3000' },
           body: JSON.stringify({ app, events: [{ category: 'Document', action: 'Created' }] }),
@@ -29,14 +30,14 @@ describe('telemetry worker', () => {
     await send('liveplanner.app');
 
     const all = (await (
-      await worker.fetch(get('/telemetry/api/summary'), env, ctx)
+      await worker.fetch(get('/api/telemetry/summary'), env, ctx)
     ).json()) as TelemetrySummary;
     expect(all.app).toBe('all');
     expect(all.windows.today.total).toBe(3);
     expect(all.windows.today.byApp).toEqual({ 'livediagram.app': 1, 'liveplanner.app': 2 });
 
     const one = (await (
-      await worker.fetch(get('/telemetry/api/summary?app=liveplanner.app'), env, ctx)
+      await worker.fetch(get('/api/telemetry/summary?app=liveplanner.app'), env, ctx)
     ).json()) as TelemetrySummary;
     expect(one.app).toBe('liveplanner.app');
     expect(one.windows.today.total).toBe(2);
@@ -44,10 +45,10 @@ describe('telemetry worker', () => {
 
   it('refuses an unknown app filter, and answers disabled when off', async () => {
     expect(
-      (await worker.fetch(get('/telemetry/api/summary?app=x.app'), testEnv(), ctx)).status,
+      (await worker.fetch(get('/api/telemetry/summary?app=x.app'), testEnv(), ctx)).status,
     ).toBe(400);
     const off = await worker.fetch(
-      get('/telemetry/api/summary'),
+      get('/api/telemetry/summary'),
       testEnv({ TELEMETRY_ENABLED: 'false' }),
       ctx,
     );
@@ -71,7 +72,29 @@ describe('telemetry worker', () => {
       PAGE_HEADERS['Content-Security-Policy'],
     );
     expect((await worker.fetch(get('/elsewhere'), env, ctx)).status).toBe(404);
-    expect((await worker.fetch(get('/telemetry/api/nope'), env, ctx)).status).toBe(404);
+    expect((await worker.fetch(get('/api/telemetry/nope'), env, ctx)).status).toBe(404);
+  });
+
+  it('keeps its API under /api: the old /telemetry/api path takes no events', async () => {
+    const env = testEnv({
+      ASSETS: {
+        fetch: async () => new Response('not found', { status: 404 }),
+      } as unknown as Fetcher,
+    });
+    const res = await worker.fetch(
+      new Request('https://liveworkspace.app/telemetry/api/events', {
+        method: 'POST',
+        headers: { Origin: 'http://localhost:3000' },
+        body: JSON.stringify({
+          app: 'livediagram.app',
+          events: [{ category: 'Document', action: 'Created' }],
+        }),
+      }),
+      env,
+      ctx,
+    );
+    expect(res.status).toBe(404);
+    expect(env.rows).toEqual([]);
   });
 
   it('sweeps rows older than 60 days', async () => {
