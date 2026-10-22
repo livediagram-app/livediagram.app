@@ -6,7 +6,6 @@ import { FORM_STARTERS, QUESTION_TYPE_TELEMETRY } from '@liveplanner/forms';
 import { canonicalElementType, PALETTE_KINDS, type PaletteTab } from '../palette-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
-import { LOGO_TOOL_TYPES } from '../logo-types';
 import { LOCAL_MOVE_OFFERED, TIDY_UP_OPENED } from './features';
 
 // The Element types that are a table's rows and columns, not elements, and
@@ -469,12 +468,10 @@ const DATA_MODEL_CHANGED = ['Entity', 'Cardinality'];
 export const OTHER_ELEMENTS_ADDED: Metric = {
   category: 'Element',
   action: 'Added',
-  // Article inserts (`Article…`) are their own card (Article Inserts, features.ts).
   typeIn: (type) =>
     !PALETTE_KINDS.has(canonicalElementType(type)) &&
     !isTablePart(type) &&
-    !DATA_MODEL_ADDED.includes(type ?? '') &&
-    !/^Article[A-Z]/.test(type ?? ''),
+    !DATA_MODEL_ADDED.includes(type ?? ''),
   title: 'Other Elements Added',
   blurb:
     'Kinds the palette catalogue does not list, such as pasted images. Table rows and columns are in Tables, entity fields in Data Models.',
@@ -507,15 +504,8 @@ export const ELEMENTS_CHANGED = chart(
   'Changed',
   'Elements Changed',
   'Restyled or edited: colour, text, arrow ends, size, presets, the format painter and more.',
-  // An article's writing formatted (`Article…`) is its own card (Article Formatting, features.ts),
-  // as are a logo page's tools (Logo Tools Used).
   // An entity's fields and a relationship's cardinality are Data Models'.
-  {
-    typeIn: (t) =>
-      !/^Article[A-Z]/.test(t ?? '') &&
-      !LOGO_TOOL_TYPES.includes(t ?? '') &&
-      !DATA_MODEL_CHANGED.includes(t ?? ''),
-  },
+  { typeIn: (t) => !DATA_MODEL_CHANGED.includes(t ?? '') },
 );
 
 export const ELEMENTS_DELETED = chart(

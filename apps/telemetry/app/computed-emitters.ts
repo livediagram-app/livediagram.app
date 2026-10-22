@@ -301,23 +301,6 @@ const AVATAR_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Pages tour's steps, as pagesTourStepTelemetryType makes them (apps/live PagesTourHost.tsx,
-// docs/specs/007-editor/pages-tour.md): each page kind's track names its kind before the step. The welcome card
-// sends no step view.
-const camel = (id: string) =>
-  id
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-const PAGES_TOUR_STEP_SOURCE: string[] = (
-  ['slide', 'infographic', 'article', 'logo'] as const
-).flatMap((kind) =>
-  [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
-    .map((m) => m[1]!)
-    .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
-    .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
-);
-
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.
 const PLAN_ITEM_TYPES = ['Task', 'Story', 'Bug', 'Epic', 'Note', 'Idea', 'Action', 'Risk'];
 const PLAN_TYPE_WHY = "titleCaseType(type): an item type's id, or a later type an agent made";
@@ -432,14 +415,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/dialogs/settings/settings-catalogue.ts UI·Changed': {
     values: PRESENTATION_SETTINGS.changed,
-  },
-  // ARTICLE_BLOCK_INSERT_EVENT (apps/live/lib/article/article-telemetry.ts): a block put into an
-  // article from the page toolbar's Insert or the slash menu.
-  'apps/live/components/canvas/article/PageToolbar.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
-  },
-  'apps/live/components/canvas/article/ArticleEditor.tsx Element·Added': {
-    values: ['ArticleDivider', 'ArticlePageBreak', 'ArticleQuote', 'ArticleCode'],
   },
   'apps/live/app/document/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
@@ -643,9 +618,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
   },
   'apps/live/components/tour/AvatarTourHost.tsx UI·View': { values: AVATAR_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/PagesTourHost.tsx UI·View': {
-    values: PAGES_TOUR_STEP_SOURCE,
-  },
   'apps/live/components/tour/TourHost.tsx UI·View': { values: TOUR_STEP_SOURCE },
   'apps/live/hooks/canvas/commit-freehand.ts Element·Added': {
     values: ['Square', 'Circle', 'Diamond', 'Triangle'],
@@ -667,29 +639,10 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     open: 'titleCaseType(pattern): a background pattern',
   },
   'apps/live/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
-  'apps/live/hooks/editor/useLogoTools.ts UI·Toggled': {
-    values: [
-      'LogoGuidesOn',
-      'LogoGuidesOff',
-      'LogoMirrorOn',
-      'LogoMirrorOff',
-      ...['CentreLines', 'Diagonals', 'SafeArea', 'Circles', 'Square', 'Grid'].flatMap((p) => [
-        `LogoGuide${p}On`,
-        `LogoGuide${p}Off`,
-      ]),
-    ],
-  },
-  'apps/live/hooks/editor/useLogoTools.ts UI·Changed': {
-    values: ['LogoGuideStrengthFaint', 'LogoGuideStrengthMedium', 'LogoGuideStrengthStrong'],
-  },
   'apps/live/hooks/canvas/useStylePreview.ts Element·Changed': {
-    // The wordmark fields, and the types the element menu's generic style ops pass through it
+    // The types the element menu's generic style ops pass through it
     // (apps/live/lib/element-style-ops.ts): the accent edge, card slots and chip looks.
     values: [
-      'TextTracking',
-      'TextWeight',
-      'TextCase',
-      'TextArc',
       'AccentEdge',
       'CardSlots',
       'ChipLook',

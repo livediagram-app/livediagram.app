@@ -124,12 +124,6 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   ),
   mcpTool('AddSheet', 'Add Sheet', 'Putting a new Sheet on a tab, blank or from rows or CSV.'),
   mcpTool(
-    'ChangePages',
-    'Change Pages',
-    'Adding, changing, laying out, moving or deleting pages: slides, logos, infographics.',
-  ),
-  mcpTool('WriteArticle', 'Write Article', 'Writing an article on pages from Markdown.'),
-  mcpTool(
     'ReadForm',
     'Read Form',
     'Reading a form: its questions, where responses go, its state and link.',
