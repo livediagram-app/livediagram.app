@@ -475,8 +475,8 @@ page's first paint, and a visit that does not scroll there costs nothing. Intera
 
 ## 12. Observability
 
-The telemetry dashboard reads these through a Community tab (liveworkspace/apps/telemetry-dashboard/app/livediagram/CommunityView.tsx) and the
-Community cards (liveworkspace/apps/telemetry-dashboard/app/livediagram/catalogue/community.ts); its emitter scan recognises `siteTrack`, so the
+The telemetry dashboard reads these through a Community tab (liveworkspace/apps/site/app/telemetry/livediagram/CommunityView.tsx) and the
+Community cards (liveworkspace/apps/site/app/telemetry/livediagram/catalogue/community.ts); its emitter scan recognises `siteTrack`, so the
 Community app's events are covered by the completeness tests.
 
 Worker logs with fingerprints: `[community] published`, `[community] updated`, `[community] removed`,

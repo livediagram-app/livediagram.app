@@ -1104,7 +1104,7 @@ kind`, `turn refused: landscape only`, `pattern refused: a logo page`, `refused:
   `[arrow-connect] skipped: another page`; `console.warn` `[page] picture
 unavailable` / `picture failed` (a sheet's fetch, or a carried picture's in a layout preview), `picture tone unreadable`,
   `background upload failed`.
-- Telemetry as the spec's Telemetry section, charted in the features catalogue of liveworkspace's telemetry dashboard (`liveworkspace/apps/telemetry-dashboard/app/livediagram/catalogue/`)
+- Telemetry as the spec's Telemetry section, charted in the features catalogue of liveworkspace's telemetry dashboard (`liveworkspace/apps/site/app/telemetry/livediagram/catalogue/`)
   (`PAGE_ORIENTATION`, `PAGES`, `PAGE_SETUP`,
   `PAGE_BUILDING`) and the collaboration catalogue (`SLIDES_ADDED`, `SLIDE_DECK_OPENED`), with
   explanations in `event-explanations.ts`.

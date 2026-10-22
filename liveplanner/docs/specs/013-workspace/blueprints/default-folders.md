@@ -275,8 +275,8 @@ PascalCase (`DefaultModePlan`, `DefaultKindEventStorming`, `DefaultTemplateRetro
 `Folder·Cleared·<value>` before the write; the one emitter is the store
 (`placement-defaults-store.ts`), which every surface writes through. The dashboard charts them as Default
 Folders Set and Default Folders Cleared in its Organisation stack
-(`../liveworkspace/apps/telemetry-dashboard/app/liveplanner/catalogue/features.ts`), their values read from `PLACEMENT_DEFAULT_KEYS`
-(`../liveworkspace/apps/telemetry-dashboard/app/liveplanner/computed-emitters.ts`).
+(`../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/features.ts`), their values read from `PLACEMENT_DEFAULT_KEYS`
+(`../liveworkspace/apps/site/app/telemetry/liveplanner/computed-emitters.ts`).
 
 ## Defaults ledger
 

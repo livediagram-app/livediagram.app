@@ -26,12 +26,6 @@
     // other apps' builds because Next's analyzer uses an app's Turbopack build
     // cache (.next/cache) whatever its distDir: beside that app's own build, the
     // two processes corrupt it.
-    // The telemetry Worker serves the dashboard's static export as its assets, so wrangler's dry run
-    // needs out/ built first (liveworkspace/docs/telemetry.md).
-    "@liveworkspace/telemetry-service#build": {
-      "dependsOn": ["^build", "@liveworkspace/telemetry-dashboard#build"],
-      "outputs": ["dist/**"]
-    },
     "@livediagram/marketing#build": {
       "dependsOn": [
         "^build",

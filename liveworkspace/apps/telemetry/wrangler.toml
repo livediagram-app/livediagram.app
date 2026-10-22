@@ -1,12 +1,9 @@
 name = "liveworkspace-telemetry"
 main = "src/index.ts"
 compatibility_date = "2026-05-29"
-# Only its API (/api/telemetry) and the dashboard (/telemetry) on liveworkspace.app: the rest of the
-# zone is the marketing site's and the accounts Worker's.
-routes = [
-  { pattern = "liveworkspace.app/api/telemetry*", zone_name = "liveworkspace.app" },
-  { pattern = "liveworkspace.app/telemetry*", zone_name = "liveworkspace.app" },
-]
+# Only its API, /api/telemetry, on liveworkspace.app: every page, the dashboard at /telemetry
+# included, is the static site's (apps/site), and /api/auth/* the accounts Worker's.
+routes = [{ pattern = "liveworkspace.app/api/telemetry*", zone_name = "liveworkspace.app" }]
 
 # Secrets (wrangler secret put): each app's Worker key, sent as X-Telemetry-Key.
 #   TELEMETRY_KEY_LIVEDIAGRAM   shared with livediagram's api and mcp Workers as TELEMETRY_KEY
@@ -14,13 +11,6 @@ routes = [
 [vars]
 ENVIRONMENT = "production"
 TELEMETRY_ENABLED = "true"
-
-# The dashboard: the static export from ../telemetry-dashboard (build that first).
-[assets]
-directory = "../telemetry-dashboard/out"
-binding = "ASSETS"
-not_found_handling = "404-page"
-run_worker_first = true
 
 # Its own database, apart from accounts and from every app's own data.
 [[d1_databases]]
@@ -41,20 +31,11 @@ crons = ["17 3 * * *"]
 
 [env.staging]
 name = "liveworkspace-telemetry-staging"
-routes = [
-  { pattern = "staging.liveworkspace.app/api/telemetry*", zone_name = "liveworkspace.app" },
-  { pattern = "staging.liveworkspace.app/telemetry*", zone_name = "liveworkspace.app" },
-]
+routes = [{ pattern = "staging.liveworkspace.app/api/telemetry*", zone_name = "liveworkspace.app" }]
 
 [env.staging.vars]
 ENVIRONMENT = "staging"
 TELEMETRY_ENABLED = "true"
-
-[env.staging.assets]
-directory = "../telemetry-dashboard/out"
-binding = "ASSETS"
-not_found_handling = "404-page"
-run_worker_first = true
 
 [[env.staging.d1_databases]]
 binding = "TELEMETRY_DB"

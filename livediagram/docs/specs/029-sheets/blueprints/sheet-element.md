@@ -301,7 +301,7 @@ non-top-left cell holds an input.
 - Escape order inside the grid: close a menu or the Find bar, else cancel the edit, else (nothing open)
   `restorePlanElement()` when maximised, else blur. The grid handles Escape before the layer's own Escape listener
   (it stops propagation when it consumed it).
-- liveworkspace/apps/telemetry-dashboard/app/livediagram/computed-emitters.ts and liveworkspace/apps/telemetry-dashboard/app/livediagram/catalogue/content.ts add `SheetMaximised` and `SheetRestored`.
+- liveworkspace/apps/site/app/telemetry/livediagram/computed-emitters.ts and liveworkspace/apps/site/app/telemetry/livediagram/catalogue/content.ts add `SheetMaximised` and `SheetRestored`.
 
 ### Fill Tab
 

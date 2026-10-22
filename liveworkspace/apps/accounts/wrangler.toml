@@ -3,15 +3,11 @@ main = "src/index.ts"
 compatibility_date = "2026-05-29"
 # Better Auth reads AsyncLocalStorage from node:async_hooks.
 compatibility_flags = ["nodejs_compat"]
-# The paths below on liveworkspace.app; every other path is the marketing site's (and /telemetry the
-# telemetry Worker's). Each route is more specific than marketing's liveworkspace.app/*, so it wins.
+# The accounts API on liveworkspace.app: /api/auth/* and the two discovery documents. Every other
+# path is the static site's (apps/site), and /api/telemetry/* the telemetry Worker's. Each route is
+# more specific than the site's liveworkspace.app/*, so it wins.
 routes = [
-  { pattern = "liveworkspace.app/sign-in*", zone_name = "liveworkspace.app" },
-  { pattern = "liveworkspace.app/sign-up*", zone_name = "liveworkspace.app" },
-  { pattern = "liveworkspace.app/consent*", zone_name = "liveworkspace.app" },
-  { pattern = "liveworkspace.app/accounts-assets/*", zone_name = "liveworkspace.app" },
   { pattern = "liveworkspace.app/api/auth/*", zone_name = "liveworkspace.app" },
-  { pattern = "liveworkspace.app/internal/clients", zone_name = "liveworkspace.app" },
   { pattern = "liveworkspace.app/.well-known/openid-configuration*", zone_name = "liveworkspace.app" },
   { pattern = "liveworkspace.app/.well-known/oauth-authorization-server*", zone_name = "liveworkspace.app" },
 ]
@@ -19,7 +15,7 @@ routes = [
 # Secrets (wrangler secret put, or .dev.vars locally; see .dev.vars.example):
 #   BETTER_AUTH_SECRET    signs cookies and the OAuth query; 32+ random bytes
 #   TURNSTILE_SECRET_KEY  Turnstile on "send code"
-#   ADMIN_TOKEN           guards POST /internal/clients (registering an app)
+#   ADMIN_TOKEN           guards POST /api/auth/internal/clients (registering an app)
 #   GOOGLE_CLIENT_ID      "Continue with Google"; optional, the button only shows with both
 #   GOOGLE_CLIENT_SECRET
 [vars]
@@ -52,12 +48,7 @@ simple = { limit = 3, period = 60 }
 [env.staging]
 name = "liveworkspace-accounts-staging"
 routes = [
-  { pattern = "staging.liveworkspace.app/sign-in*", zone_name = "liveworkspace.app" },
-  { pattern = "staging.liveworkspace.app/sign-up*", zone_name = "liveworkspace.app" },
-  { pattern = "staging.liveworkspace.app/consent*", zone_name = "liveworkspace.app" },
-  { pattern = "staging.liveworkspace.app/accounts-assets/*", zone_name = "liveworkspace.app" },
   { pattern = "staging.liveworkspace.app/api/auth/*", zone_name = "liveworkspace.app" },
-  { pattern = "staging.liveworkspace.app/internal/clients", zone_name = "liveworkspace.app" },
   { pattern = "staging.liveworkspace.app/.well-known/openid-configuration*", zone_name = "liveworkspace.app" },
   { pattern = "staging.liveworkspace.app/.well-known/oauth-authorization-server*", zone_name = "liveworkspace.app" },
 ]

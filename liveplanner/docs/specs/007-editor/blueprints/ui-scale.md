@@ -203,7 +203,7 @@ load: the first render already carries the resolved scales.
 
 `UI` / `Changed` / `UiScale`, `UiScalePanels`, `UiScaleToolbar` and
 `UiScaleCornerButtons`, each with an explanation in
-`../liveworkspace/apps/telemetry-dashboard/app/liveplanner/event-explanations.ts` and a row in the telemetry
+`../liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts` and a row in the telemetry
 dashboard's `APPEARANCE_SETTINGS` stack.
 
 ## Testing

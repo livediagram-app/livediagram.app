@@ -35,8 +35,8 @@ MARKETING_ORIGIN = "http://127.0.0.1:3101"
 LIVE_ORIGIN = "http://127.0.0.1:3102"
 API_ORIGIN = "http://127.0.0.1:8887"
 # /telemetry redirects to the central dashboard (liveworkspace/docs/telemetry.md), run locally by
-# liveworkspace/apps/telemetry; production's needs no var.
-TELEMETRY_DASHBOARD_URL = "http://localhost:8790/telemetry"
+# liveworkspace/apps/site; production's needs no var.
+TELEMETRY_DASHBOARD_URL = "http://localhost:3300/telemetry"
 HELP_ORIGIN = "http://127.0.0.1:3104"
 
 # ---------------------------------------------------------------------------

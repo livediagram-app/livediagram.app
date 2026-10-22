@@ -4,7 +4,9 @@
 // account its name after the code, start a Google sign-in, and close an account.
 //
 //   pnpm dev   (in another terminal; .dev.vars from .dev.vars.example, with any
-//              GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET: Google itself is never called)
+//              GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET: Google itself is never called),
+//              and the site's dev server (apps/site), which serves this Worker at
+//              http://localhost:3300/api/auth, the origin it signs for
 //   ADMIN_TOKEN=local-admin-token node scripts/e2e-local.ts
 //
 // The emailed code is read back from the local email simulation's log, so pass the
@@ -20,7 +22,7 @@ import {
   refreshTokens,
 } from '@liveworkspace/auth-client';
 
-const ACCOUNTS = process.env.ACCOUNTS_URL ?? 'http://localhost:8787';
+const ACCOUNTS = process.env.ACCOUNTS_URL ?? 'http://localhost:3300';
 const RESOURCE = 'http://localhost/api';
 const REDIRECT = 'http://localhost:3000/auth/callback';
 const EMAIL = process.env.E2E_EMAIL ?? `e2e+${Date.now()}@example.com`;
@@ -62,7 +64,7 @@ async function redirectOf(response: Response): Promise<URL | null> {
   return body?.redirect && body.url ? new URL(body.url, ACCOUNTS) : null;
 }
 
-const register = await fetch(`${ACCOUNTS}/internal/clients`, {
+const register = await fetch(`${ACCOUNTS}/api/auth/internal/clients`, {
   method: 'POST',
   headers: {
     'content-type': 'application/json',
@@ -366,7 +368,7 @@ assert(
   (await close(basic(client.client_id, 'wrong'), namelessTokens.accessToken)).status === 401,
   'closing with a wrong client secret is refused',
 );
-const otherRegister = await fetch(`${ACCOUNTS}/internal/clients`, {
+const otherRegister = await fetch(`${ACCOUNTS}/api/auth/internal/clients`, {
   method: 'POST',
   headers: {
     'content-type': 'application/json',

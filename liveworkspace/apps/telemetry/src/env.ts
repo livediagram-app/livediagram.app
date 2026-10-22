@@ -8,8 +8,6 @@ export interface Env {
   // Only the literal "true" stores or serves anything, so a fresh deployment is off until it opts in.
   TELEMETRY_ENABLED?: string;
   TELEMETRY_DB: D1Database;
-  // Static assets: the dashboard's export (out/).
-  ASSETS: Fetcher;
   // Per-network cap on browser batches. Optional: absent allows every batch.
   EVENTS_RATE_LIMITER?: RateLimiter;
   // Each app's Worker secret (wrangler secret put), proving a batch with no Origin came from that

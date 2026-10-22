@@ -195,7 +195,7 @@ on the page (CLS).
 
 `track('Element', 'Added', 'Sankey')` on create; `Changed` with `SankeyFlows`, `SankeyStyle`, `SankeyAnim` on
 edits; Show Me sends `UI` `Started` `SankeyFlowsTour` and `UI` `Ended` `SankeyFlowsTourCompleted` /
-`SankeyFlowsTourSkipped` (all explained in `../liveworkspace/apps/telemetry-dashboard/app/liveplanner/event-explanations.ts`). A refused write surfaces through the api's
+`SankeyFlowsTourSkipped` (all explained in `../liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts`). A refused write surfaces through the api's
 generic `invalid tab` path.
 
 ## Testing

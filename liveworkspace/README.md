@@ -6,21 +6,23 @@ One account across livediagram, liveplanner and the rest of liveworkspace. Peopl
 It replaces Clerk. It runs on Cloudflare Workers + D1, using [Better Auth](https://www.better-auth.com)
 with its email-code (`emailOTP`), Google and OAuth 2.1 / OpenID Connect provider plugins.
 
-The accounts Worker shares liveworkspace.app with the marketing site: it is routed only
-`/sign-in`, `/sign-up`, `/consent`, `/accounts-assets/*`, `/api/auth/*`, `/internal/clients` and
-the two discovery documents under `/.well-known/` (`apps/accounts/wrangler.toml`), and the
-marketing site keeps every other path. The issuer is `https://liveworkspace.app/api/auth`.
+liveworkspace.app is one static website ([docs/site.md](docs/site.md)): the front door, the
+telemetry dashboard, and the sign-in, registration and consent pages. The accounts Worker is an
+API only, on the same origin: it is routed `/api/auth/*` and the two discovery documents under
+`/.well-known/` (`apps/accounts/wrangler.toml`), and the site keeps every other path. The issuer
+is `https://liveworkspace.app/api/auth`.
 
 ```
-apps/accounts          the Worker behind liveworkspace.app/sign-in and /api/auth: sign-in and registration pages, codes, tokens, JWKS
+apps/site              liveworkspace.app: every page, the sign-in pages included (a Next static export)
+apps/accounts          the accounts API at liveworkspace.app/api/auth: codes, Google, tokens, JWKS
 packages/auth-client   what each app imports: sign-in redirect, code swap, refresh, token check
-docs/                  adding an app, moving off Clerk
+docs/                  the site, adding an app, moving off Clerk
 ```
 
-liveworkspace.app itself is a short site that explains the platform and points at each app
-([docs/marketing-site.md](docs/marketing-site.md)). Every app's logo lists liveworkspace's sites on hover: see [docs/site-switcher.md](docs/site-switcher.md).
+Every app's logo lists liveworkspace's sites on hover: see [docs/site-switcher.md](docs/site-switcher.md).
 
-liveworkspace also runs every app's anonymous telemetry, at liveworkspace.app/telemetry: see
+liveworkspace also runs every app's anonymous telemetry, its API at liveworkspace.app/api/telemetry
+and its dashboard at liveworkspace.app/telemetry: see
 [docs/telemetry.md](docs/telemetry.md).
 
 ## How signing in works
@@ -40,8 +42,11 @@ cookie. Each app sends the browser to the accounts site and gets it back with a 
 
 ## The sign-in and registration pages
 
-`/sign-in` and `/sign-up` are livediagram's account pages, in liveworkspace's slate: the wordmark,
-the card, and beside it what an account adds (`src/pages.ts`). Both ask for an email, then a
+`/sign-in` and `/sign-up` are livediagram's account pages, in liveworkspace's slate: the site's
+header, the card, and beside it what an account adds (`apps/site/components/account/`). They are
+static pages that call this API; on arrival they ask it for the deployment's options
+(`GET /api/auth/sign-in-options`: the Turnstile site key, whether Google is set up, and the name
+length), so one build of the site serves production and staging. Both ask for an email, then a
 6-digit code. Registration also asks for a **first and last name**, stored as `givenName` and
 `familyName` on the account (with `name` the two joined). Someone who signs in with a code to an
 address that has no name yet is asked for one after the code, before going back to the app.
@@ -85,17 +90,24 @@ corepack pnpm install
 cd apps/accounts
 cp .dev.vars.example .dev.vars
 corepack pnpm db:migrate:local
-corepack pnpm dev                     # http://localhost:8787/sign-in
+cd ../..
+corepack pnpm dev:workspace           # http://localhost:3300/sign-in
 ```
 
-Locally, emails aren't sent. Each code email is printed in the `pnpm dev` output. Turnstile uses
-Cloudflare's always-pass test keys.
+`dev:workspace` runs the site on 3300 with the accounts Worker (8787) and the telemetry Worker
+(8790) behind it: the site's dev server forwards `/api/auth/*` and `/.well-known/*` to the
+accounts Worker, so the pages and the API share one origin, as on liveworkspace.app. That origin,
+`http://localhost:3300`, is the Worker's `BASE_URL` and the issuer apps check locally.
+
+Locally, emails aren't sent. Each code email is printed in the accounts Worker's output. Turnstile
+uses Cloudflare's always-pass test keys.
 
 To run the whole flow (register a client, request and enter a code, swap it, verify, sign in again
-without a code, refresh, start a Google sign-in, close an account) against the running Worker:
+without a code, refresh, start a Google sign-in, close an account) through the site's origin, with
+the site's dev server running and the accounts Worker's output in a file:
 
 ```sh
-corepack pnpm dev > dev.log 2>&1 &
+corepack pnpm dev > dev.log 2>&1 &   # in apps/accounts
 DEV_LOG=dev.log corepack pnpm e2e:local
 ```
 
@@ -140,7 +152,7 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
   minute per IP, and at 3 a minute per email address, so nobody can flood an inbox from many
   IPs. Better Auth's own limiter is off: on Workers it would count per isolate, which an attacker
   can spread across.
-- **Registering clients:** only `POST /internal/clients` with `ADMIN_TOKEN` can do it. Better
+- **Registering clients:** only `POST /api/auth/internal/clients` with `ADMIN_TOKEN` can do it. Better
   Auth's default would let any signed-in account register its own OAuth client, so
   `clientPrivileges` refuses everything without the admin token. Dynamic registration stays off.
 - **Account ids** keep Clerk's `user_` prefix (`src/ids.ts`). Imported accounts keep their exact
@@ -148,18 +160,19 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
 - **Closing an account** needs an app's client secret and an access token issued to that app.
 - **Names** are trimmed and cut to 80 characters whenever an account is created or updated.
 - **The sign-in pages** can't be framed, send no Referer (the URL carries the signed OAuth
-  request), and load scripts only from this origin and Turnstile.
+  request), and load scripts only from this origin and Turnstile (the site's Trusted Types policy).
 
 ## Performance
 
-These were measured locally with `wrangler dev`. Production numbers will differ but should be in
-the same range.
+These were measured locally with `wrangler dev`, through the site's dev server. Production numbers
+will differ but should be in the same range. The sign-in pages themselves are static files now:
+see [docs/site.md](docs/site.md) for their weight.
 
 |                                            |                                                                                                       |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| Worker bundle                              | 2.98 MB, 499 KiB gzipped (well under the 10 MB limit; Better Auth, zod and kysely make up most of it) |
+| Worker bundle                              | 2.95 MB, 490 KiB gzipped (well under the 10 MB limit; Better Auth, zod and kysely make up most of it) |
 | Startup (`wrangler check startup`)         | 211 ms CPU, inside the 1 s limit. The Better Auth instance is built once per isolate, not per request |
-| Sign-in page / authorize / JWKS            | 5 / 12 / 8 ms                                                                                         |
+| Sign-in options / authorize / JWKS         | 4 / 12 / 11 ms (options cached at the edge for 5 minutes)                                             |
 | Send code / sign in with code / token swap | 69 / 30 / 32 ms average                                                                               |
 
 There is no cost per app request: apps check tokens against cached keys, and the accounts

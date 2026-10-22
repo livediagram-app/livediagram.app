@@ -60,7 +60,7 @@ Scope, by file:
 | `apps/live/components/primitives/ParticipantAvatar.tsx`                                                                   | The status line in the hover card and the accessible name                                                                                               |
 | `apps/live/components/dialogs/CollaboratorsDialog.tsx`                                                                    | The status line on a row                                                                                                                                |
 | `apps/live/components/canvas/AgentFocusOverlay.tsx` (+ test), `CanvasElementsLayer.tsx`, `EditorView.tsx`                 | `AgentFocusOverlay` beneath the remote cursors, fed by `AgentFocusContext`                                                                              |
-| `../liveworkspace/apps/telemetry-dashboard/app/liveplanner/catalogue/`                                                    | The `Present` series on the Agent stack the agent-changesets blueprint adds                                                                             |
+| `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/`                                                         | The `Present` series on the Agent stack the agent-changesets blueprint adds                                                                             |
 | `packages/api-schema/src/index.ts`                                                                                        | `MAX_PARTICIPANT_NAME_LEN`, `MAX_COLOR_LEN`, moved from `apps/api/src/limits.ts` so the editor clamps to them                                           |
 
 ## Domain and naming

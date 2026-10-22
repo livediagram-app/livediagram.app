@@ -2,13 +2,14 @@
 
 Every liveworkspace app sends its anonymous product events to one service, whose API is
 **liveworkspace.app/api/telemetry** (every liveworkspace API sits under `/api`). The service stores
-them in its own D1 database and publishes them on one public dashboard,
-**liveworkspace.app/telemetry**. The dashboard shows every app together, or one app at a time.
+them in its own D1 database, and its numbers are published on one public dashboard,
+**liveworkspace.app/telemetry**, a page of liveworkspace's static site ([site.md](site.md)). The
+dashboard shows every app together, or one app at a time.
 
 ```
-packages/telemetry               @liveworkspace/telemetry: the apps, the batch format, the summary
-liveworkspace/apps/telemetry     the Worker: ingest, summary, retention, serves the dashboard
-liveworkspace/apps/telemetry-dashboard   the dashboard (a Next static export)
+packages/telemetry                       @liveworkspace/telemetry: the apps, the batch format, the summary
+liveworkspace/apps/telemetry             the API Worker: ingest, summary, retention
+liveworkspace/apps/site/app/telemetry    the dashboard page, in the static site
 ```
 
 Before October 2026, each app had its own `/api/events` ingest, its own `events` table, and its own
@@ -82,7 +83,7 @@ explanations. Picking an app on the page updates the link.
   last 30 days) and the 30-day trend line, each app's share against the span before it, and the
   busiest events. The same event from two apps counts as one row, added up.
 - **One app** shows the dashboard that app had before, unchanged. Each app's catalogue lives in
-  `app/<app>/` in the dashboard, and only loads when that app is picked.
+  `<app>/` in the dashboard's folder, and only loads when that app is picked.
 
 The numbers come from `GET /api/telemetry/summary?app=all|livediagram.app|liveplanner.app`, built from
 one grouped per-day query over the last 59 days (the last 30, and the 30 before them for the trend
@@ -100,15 +101,13 @@ A daily cron (03:17 UTC) deletes events older than 60 days.
 cd liveworkspace/apps/telemetry
 cp .dev.vars.example .dev.vars
 corepack pnpm db:migrate:local
-corepack pnpm dev                     # dashboard http://localhost:8790/telemetry, API /api/telemetry
+corepack pnpm dev                     # the API, http://localhost:8790/api/telemetry
 ```
 
 Development accepts events from any `localhost` page. Point an app at it with
 `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry` (and `TELEMETRY_URL`, plus the dev key
-from `.dev.vars`, for its Workers). To see the dashboard, build it first
-(`corepack pnpm --filter @liveworkspace/telemetry-dashboard build`), or run it on its own with
-`corepack pnpm --filter @liveworkspace/telemetry-dashboard dev` (port 3301) and the same
-`NEXT_PUBLIC_TELEMETRY_URL`.
+from `.dev.vars`, for its Workers). The dashboard is the site's: `corepack pnpm dev:workspace` from
+the repo root runs the site with this Worker behind it, at http://localhost:3300/telemetry.
 
 ## First deploy
 
@@ -118,9 +117,10 @@ from `.dev.vars`, for its Workers). To see the dashboard, build it first
 2. Set one key per app, and give each app's api and mcp Workers the same value as `TELEMETRY_KEY`:
    `openssl rand -hex 32`, then `wrangler secret put TELEMETRY_KEY_LIVEDIAGRAM` and
    `TELEMETRY_KEY_LIVEPLANNER`.
-3. `corepack pnpm db:migrate:remote`, build the dashboard, then `corepack pnpm deploy`.
-4. The Worker takes the routes `liveworkspace.app/api/telemetry*` and `liveworkspace.app/telemetry*`
-   only, so the rest of the zone is untouched.
+3. `corepack pnpm db:migrate:remote`, then `corepack pnpm deploy`. The dashboard ships with the
+   site ([site.md](site.md)).
+4. The Worker takes the route `liveworkspace.app/api/telemetry*` only, so the rest of the zone is
+   untouched.
 
 liveplanner's Workers live on a separate Cloudflare account. That's fine: they reach the service over
 HTTPS, not a service binding. Only the key has to be copied across.
@@ -131,8 +131,8 @@ HTTPS, not a service binding. Only the key has to be copied across.
    `packages/telemetry/src/apps.ts`.
 2. Add its vocabulary to `apps/telemetry/src/vocabularies.ts`, and a `TELEMETRY_KEY_<APP>` secret to
    `src/env.ts` and `appKey`.
-3. Add its dashboard under `apps/telemetry-dashboard/app/<app>/`, with a `Body` the page loads
-   when the app is picked.
+3. Add its dashboard under `apps/site/app/telemetry/<app>/`, with a `Body` the page loads when the
+   app is picked.
 4. In the app, send batches as above, and allow `https://liveworkspace.app` in its CSP
    `connect-src`.
 
@@ -144,7 +144,8 @@ HTTPS, not a service binding. Only the key has to be copied across.
   a test folds a worst case (59 days × 2 apps × 1,500 events) inside a time budget.
 - **Index**: `(app, ts)` for one app's range, and `(ts)` for every app and for the sweep.
 - **Dashboard**: "All apps" loads neither app's catalogue. Each app's dashboard is split out and
-  loads when picked.
+  loads when picked. Its styles are its own stylesheet, loaded only on `/telemetry`: the site's
+  other pages carry 9.5 KB of CSS (gzipped), and the dashboard adds 16.6 KB.
 - **Apps**: a browser batch is now cross-site, so it can't reuse the app's own connection; the first
   send on a page opens one more connection, to liveworkspace.app. Sends are batched (every 10
   seconds, and on page hide), so this is one connection per page view, off the critical path.

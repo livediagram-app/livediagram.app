@@ -11,7 +11,7 @@ import { parseArgs } from 'node:util';
 
 const { values } = parseArgs({
   options: {
-    accounts: { type: 'string', default: 'http://localhost:8787' },
+    accounts: { type: 'string', default: 'http://localhost:3300' },
     name: { type: 'string' },
     redirect: { type: 'string', multiple: true },
     resource: { type: 'string' },
@@ -26,7 +26,7 @@ if (!adminToken || !values.name || !values.redirect?.length || !values.resource)
   process.exit(1);
 }
 
-const response = await fetch(new URL('/internal/clients', values.accounts), {
+const response = await fetch(new URL('/api/auth/internal/clients', values.accounts), {
   method: 'POST',
   headers: { 'content-type': 'application/json', authorization: `Bearer ${adminToken}` },
   body: JSON.stringify({

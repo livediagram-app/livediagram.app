@@ -1,6 +1,6 @@
 import type { TelemetrySummary } from '@liveworkspace/telemetry';
 import { describe, expect, it } from 'vitest';
-import { PAGE_HEADERS, RETENTION_MS } from './config';
+import { RETENTION_MS } from './config';
 import worker from './index';
 import { testEnv } from './test-env';
 
@@ -55,32 +55,19 @@ describe('telemetry worker', () => {
     expect(await off.json()).toEqual({ enabled: false });
   });
 
-  it('serves the dashboard from its assets, prefix stripped, with the page headers', async () => {
-    const asked: string[] = [];
-    const env = testEnv({
-      ASSETS: {
-        fetch: async (req: Request) => {
-          asked.push(new URL(req.url).pathname);
-          return new Response('ok');
-        },
-      } as unknown as Fetcher,
-    });
-    const res = await worker.fetch(get('/telemetry/_next/static/a.js'), env, ctx);
-    await worker.fetch(get('/telemetry'), env, ctx);
-    expect(asked).toEqual(['/_next/static/a.js', '/']);
-    expect(res.headers.get('Content-Security-Policy')).toBe(
-      PAGE_HEADERS['Content-Security-Policy'],
-    );
-    expect((await worker.fetch(get('/elsewhere'), env, ctx)).status).toBe(404);
-    expect((await worker.fetch(get('/api/telemetry/nope'), env, ctx)).status).toBe(404);
+  it("answers nothing outside its API: every page is the static site's", async () => {
+    const env = testEnv();
+    for (const path of [
+      '/telemetry',
+      '/telemetry/_next/static/a.js',
+      '/elsewhere',
+      '/api/telemetry/nope',
+    ])
+      expect((await worker.fetch(get(path), env, ctx)).status).toBe(404);
   });
 
   it('keeps its API under /api: the old /telemetry/api path takes no events', async () => {
-    const env = testEnv({
-      ASSETS: {
-        fetch: async () => new Response('not found', { status: 404 }),
-      } as unknown as Fetcher,
-    });
+    const env = testEnv();
     const res = await worker.fetch(
       new Request('https://liveworkspace.app/telemetry/api/events', {
         method: 'POST',

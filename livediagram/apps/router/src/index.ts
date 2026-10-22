@@ -38,7 +38,7 @@ export function telemetryDashboardUrl(env: Pick<Env, 'DEPLOY_ENV'>): string {
     env.DEPLOY_ENV === 'staging'
       ? 'https://staging.liveworkspace.app/telemetry'
       : env.DEPLOY_ENV === 'local'
-        ? 'http://localhost:8790/telemetry'
+        ? 'http://localhost:3300/telemetry'
         : 'https://liveworkspace.app/telemetry';
   return `${base}?app=livediagram.app`;
 }

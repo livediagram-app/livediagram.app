@@ -68,9 +68,6 @@ export function testEnv(overrides: Partial<Env> = {}): Env & { rows: Row[] } {
     ENVIRONMENT: 'development',
     TELEMETRY_ENABLED: 'true',
     TELEMETRY_DB: db as unknown as D1Database,
-    ASSETS: {
-      fetch: async () => new Response('<html></html>', { status: 200 }),
-    } as unknown as Fetcher,
     TELEMETRY_KEY_LIVEDIAGRAM: 'ld-key',
     TELEMETRY_KEY_LIVEPLANNER: 'lp-key',
     ...overrides,

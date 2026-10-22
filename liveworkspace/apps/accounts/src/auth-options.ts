@@ -112,7 +112,7 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         // The apps' Teams features match invites against a verified email, and every
         // request carries the access token, so the email rides in it rather than costing
         // a /userinfo call.
-        // Only our own apps are clients, registered through POST /internal/clients. Left at
+        // Only our own apps are clients, registered through POST /api/auth/internal/clients. Left at
         // the default, any signed-in account could register an OAuth client of its own (with
         // its own redirect URIs) through /oauth2/create-client, so every client and resource
         // action needs the admin token.

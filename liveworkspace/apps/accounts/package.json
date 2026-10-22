@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev --port 8787 --local-upstream localhost:8787",
+    "dev": "wrangler dev --port 8787 --local-upstream localhost:3300",
     "build": "wrangler deploy --dry-run --outdir dist",
     "deploy": "wrangler deploy",
     "lint": "oxlint",
@@ -18,7 +18,6 @@
   },
   "dependencies": {
     "@better-auth/oauth-provider": "1.7.12",
-    "@liveworkspace/sites": "workspace:*",
     "better-auth": "1.7.12"
   },
   "devDependencies": {
