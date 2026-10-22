@@ -525,8 +525,8 @@ stack, and where the swap would squeeze either slot below what its content needs
 Nothing waits for a hover on a touch screen: a slot's floating cog and a link's × are always shown there, and the slot's
 cog, Add to Slot (which offers everything, as the stacked slot takes the height its content needs) and the Dashboard
 Settings cog in the top row all work by tap. A view's header gives way in a narrow slot: its own controls (a Gantt's
-Today, steps and scale) scroll sideways while Maximise and the cog stay in reach. The canvas's zoom cluster, which
-has nothing to offer a dashboard (zoom is off), is not shown on a touch screen, a tablet's as a phone's.
+Today, steps and scale) scroll sideways while Maximise and the cog stay in reach. The canvas's zoom buttons, which
+have nothing to offer a dashboard, are not shown (only a Sheet zooms).
 
 ## Showing a tab
 

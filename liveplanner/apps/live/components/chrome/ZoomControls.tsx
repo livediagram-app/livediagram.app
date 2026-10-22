@@ -1,4 +1,3 @@
-import { useCoarsePointer } from '@/hooks/ui/useCoarsePointer';
 import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
 import { ZoomMenu, type ZoomRange } from '@/components/chrome/ZoomMenu';
 import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';
@@ -27,9 +26,9 @@ type ZoomControlsProps = {
   // A phone (docs/specs/007-editor/live-app.md): the cluster also carries Activity + Layers there, so
   // the step buttons go (pinch zooms) and Fit stays.
   pinchOnly?: boolean;
-  // A Plan element covers the canvas (docs/specs/026-plan/plan-board.md "Maximised board"): the controls stay in
-  // place, disabled, their hover cards saying why.
-  zoomOff?: boolean;
+  // Zoom belongs to a Sheet (docs/specs/029-sheets/sheet.md "Zoom"); on every other tab a Board, Dashboard or Form
+  // fills the canvas and there is nothing to zoom, so the zoom buttons go and only Isometric and Zen stay.
+  zoomHidden?: boolean;
   // What the controls zoom: the canvas, or a Sheet covering it (docs/specs/029-sheets/sheet.md "Zoom"), which only
   // their hover cards tell apart.
   zoomScope?: 'canvas' | 'sheet';
@@ -51,8 +50,6 @@ const ZOOM_COPY = {
   },
 } as const;
 
-export const ZOOM_OFF_REASON = 'Zoom is off while a board, view or sheet fills the canvas.';
-
 // Floating zoom controls, bottom-right of the canvas. Three
 // controls: -10% / current % (click to fit, hover for the preset-level
 // popover — see ZoomMenu) / +10%. Below `sm` the percentage button is
@@ -70,23 +67,15 @@ export function ZoomControls({
   zenActive,
   zenEnterHere,
   pinchOnly = false,
-  zoomOff = false,
+  zoomHidden = false,
   zoomScope = 'canvas',
   zoomRange,
 }: ZoomControlsProps) {
   const copy = ZOOM_COPY[zoomScope];
-  const why = (description: string) => (zoomOff ? ZOOM_OFF_REASON : description);
-  // On a touch screen (pinch zooms; a tablet too, not only a phone) with zoom off (a Dashboard, a covering board) all
-  // that is left is a disabled level: nothing to offer, so the cluster goes rather than sit over the page (plan-tabs.md
-  // "On a phone").
-  const touch = useCoarsePointer();
-  if (
-    (pinchOnly || touch) &&
-    zoomOff &&
-    !(onIsoOrbit && onIsoReset) &&
-    !(onToggleZen && (zenActive || zenEnterHere))
-  )
-    return null;
+  const iso = onIsoOrbit && onIsoReset;
+  const zen = onToggleZen && (zenActive || zenEnterHere);
+  // With zoom hidden and neither Isometric nor Zen to offer, the cluster goes rather than sit empty over the page.
+  if (zoomHidden && !iso && !zen) return null;
   return (
     <div
       data-zoom-controls
@@ -97,65 +86,71 @@ export function ZoomControls({
       }}
       className="pointer-events-auto flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
     >
-      {pinchOnly ? null : (
-        <HoverCard title="Zoom out" description={why(copy.out)}>
-          <IconButton onClick={onZoomOut} label="Zoom out" disabled={zoomOff}>
-            <Glyph size={14} units={14}>
-              <line x1="3" y1="7" x2="11" y2="7" />
-            </Glyph>
-          </IconButton>
-        </HoverCard>
-      )}
-      <ZoomMenu
-        zoom={zoom}
-        onSetZoom={onSetZoom}
-        onFitToScreen={onFitToScreen}
-        range={zoomRange}
-        {...(zoomOff ? { offReason: ZOOM_OFF_REASON } : {})}
-      />
-      {pinchOnly ? null : (
-        <HoverCard title="Zoom in" description={why(copy.in)}>
-          <IconButton onClick={onZoomIn} label="Zoom in" disabled={zoomOff}>
-            <Glyph size={14} units={14}>
-              <line x1="3" y1="7" x2="11" y2="7" />
-              <line x1="7" y1="3" x2="7" y2="11" />
-            </Glyph>
-          </IconButton>
-        </HoverCard>
-      )}
-      {/* Mobile-only Fit: below `sm` the percentage button (whose click
+      {zoomHidden ? null : (
+        <>
+          {pinchOnly ? null : (
+            <HoverCard title="Zoom out" description={copy.out}>
+              <IconButton onClick={onZoomOut} label="Zoom out">
+                <Glyph size={14} units={14}>
+                  <line x1="3" y1="7" x2="11" y2="7" />
+                </Glyph>
+              </IconButton>
+            </HoverCard>
+          )}
+          <ZoomMenu
+            zoom={zoom}
+            onSetZoom={onSetZoom}
+            onFitToScreen={onFitToScreen}
+            range={zoomRange}
+          />
+          {pinchOnly ? null : (
+            <HoverCard title="Zoom in" description={copy.in}>
+              <IconButton onClick={onZoomIn} label="Zoom in">
+                <Glyph size={14} units={14}>
+                  <line x1="3" y1="7" x2="11" y2="7" />
+                  <line x1="7" y1="3" x2="7" y2="11" />
+                </Glyph>
+              </IconButton>
+            </HoverCard>
+          )}
+          {/* Mobile-only Fit: below `sm` the percentage button (whose click
           is Fit on desktop) is hidden, and hover popovers don't exist on
           touch, so a plain Fit button keeps the action reachable. */}
-      <span className="contents sm:hidden">
-        {pinchOnly ? null : (
-          <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
-        )}
-        <HoverCard title="Fit to screen" description={why(copy.fit)}>
-          <button
-            type="button"
-            onClick={onFitToScreen}
-            aria-label="Fit to screen"
-            disabled={zoomOff}
-            className="flex h-9 items-center justify-center rounded-md px-2.5 text-xs font-medium text-slate-700 transition enabled:hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-200 dark:enabled:hover:bg-slate-800"
-          >
-            Fit
-          </button>
-        </HoverCard>
-      </span>
-      {onIsoOrbit && onIsoReset ? (
+          <span className="contents sm:hidden">
+            {pinchOnly ? null : (
+              <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+            )}
+            <HoverCard title="Fit to screen" description={copy.fit}>
+              <button
+                type="button"
+                onClick={onFitToScreen}
+                aria-label="Fit to screen"
+                className="flex h-9 items-center justify-center rounded-md px-2.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                Fit
+              </button>
+            </HoverCard>
+          </span>
+        </>
+      )}
+      {iso ? (
         <>
-          <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+          {zoomHidden ? null : (
+            <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+          )}
           <IsometricOrbitButton onOrbit={onIsoOrbit} onReset={onIsoReset} />
         </>
       ) : null}
-      {onToggleZen && (zenActive || zenEnterHere) ? (
+      {zen ? (
         // Exit-only in normal sessions: entering zen moved to the
         // canvas-tool dropdown (under Isometric), so outside zen the dock
         // stays minimal. Inside zen the dock is the only chrome left, so
         // the exit button lives here. zenEnterHere (palette-less sessions)
         // keeps the old enter button too.
         <>
-          <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+          {zoomHidden && !iso ? null : (
+            <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+          )}
           <HoverCard
             title={zenActive ? 'Exit zen mode' : 'Zen mode'}
             description={
@@ -177,12 +172,10 @@ export function ZoomControls({
 function IconButton({
   onClick,
   label,
-  disabled = false,
   children,
 }: {
   onClick: () => void;
   label: string;
-  disabled?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -190,8 +183,7 @@ function IconButton({
       type="button"
       onClick={onClick}
       aria-label={label}
-      disabled={disabled}
-      className="flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition enabled:hover:bg-slate-100 enabled:hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:text-slate-300 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white"
+      className="flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
     >
       {children}
     </button>

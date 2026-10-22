@@ -255,8 +255,8 @@ export const articles: Article[] = [
   {
     slug: 'zoom-controls',
     title: 'Zoom Controls',
-    description: 'Zoom in and out, fit the canvas to the screen, and reset to 100%.',
-    keywords: 'zoom in out magnify fit screen percentage scale reset view dock',
+    description: "Make a Sheet's cells larger or smaller, step by step or to a preset level.",
+    keywords: 'zoom in out magnify sheet cells percentage scale reset view',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },

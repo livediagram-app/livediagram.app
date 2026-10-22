@@ -839,8 +839,8 @@ A sheet maximises exactly as a board does ([Maximised board](../026-plan/plan-bo
 
 ## Zoom
 
-While a Sheet covers the canvas (maximised, or filling its tab), the canvas cannot zoom, so the bottom-right zoom
-controls zoom the **sheet's cells** instead of standing down as they do for a board or view
+A Sheet is the only tab that zooms. While it covers the canvas (maximised, or filling its tab) the bottom-right zoom
+controls zoom the **sheet's cells**; on any other tab they are not shown
 ([Maximised board](../026-plan/plan-board.md#maximised-board)):
 
 - **Ctrl (or Cmd) and the wheel**, or a trackpad pinch, zoom the sheet's cells too, smoothly within the same range;

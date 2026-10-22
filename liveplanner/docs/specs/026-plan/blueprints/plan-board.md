@@ -296,8 +296,8 @@ cancelled` (Escape, pointercancel). `pressed → idle` on pointerup without movi
   own sizes as fallbacks: `h-[var(--plan-band-h,52px)]` (40 px a Sheet's, 2.5rem a view's),
   `pl-[var(--plan-band-left,…)]`, and `max-w-[var(--plan-band-mid,none)]` on the title (and widgets, count) group, the
   trailing controls `ml-auto`; `SheetFindBar` sits at `calc(var(--plan-band-h, 40px) + 6px)`.
-  `ViewZoomControls` passes `zoomOff={useCanvasCovered()}`: `ZoomControls` disables Zoom out, Zoom in and Fit, and
-  `ZoomMenu` (`offReason`) shows the level disabled with no presets, each hover card reading `ZOOM_OFF_REASON`. Header, tab bar and footer are outside `main`. `zenMode` is not
+  `ViewZoomControls` passes `zoomHidden` unless `useSheetCovering()` names a Sheet: `ZoomControls` then leaves out
+  Zoom out, the level, Zoom in and Fit (and their dividers), rendering only Isometric and Zen, or nothing. Header, tab bar and footer are outside `main`. `zenMode` is not
   touched. The layer is a `CanvasCover` (`data-canvas-cover`, `absolute inset-0` at `CANVAS_LAYER_Z`, `background: inherit`
   from the canvas `main` so it paints the canvas's colour and pattern, stopping
   pointerdown, double-click, context-menu and wheel) holding the element at its insets; `useCanvasSurfaceGestures`'

@@ -574,11 +574,10 @@ A board can be maximised to work on it without the rest of the canvas around it.
   element menu leaves out **Layer**, **Size**, **Rotation** and its **Animation** categories (they would change
   where and how it sits on the canvas it hides), and its animation does not play; restored, it animates in its
   place again and the categories come back.
-- **Zoom stands down**: while a board, view or Sheet is maximised or fills its tab, the canvas cannot zoom, so the
-  bottom-right zoom controls (Zoom out, the zoom level and its menu, Zoom in, and a phone's Fit) stay where they
-  are but are disabled, each hover card saying why: "Zoom is off while a board, view or sheet fills the canvas." They
-  come back the moment it is restored. A Sheet is the exception: covering the canvas, the controls zoom its cells
-  instead ([Zoom](../029-sheets/sheet.md#zoom)).
+- **Zoom is a Sheet's alone**: the bottom-right zoom buttons (Zoom out, the zoom level and its menu, Zoom in, and a
+  phone's Fit) show only while a Sheet covers the canvas, and zoom its cells ([Zoom](../029-sheets/sheet.md#zoom)). On
+  a Board, Dashboard or Form tab there is nothing to zoom, so they are not shown; the cluster keeps Isometric and Zen
+  when they apply, and goes when neither does.
 - **Five slots across**: maximised (or filling its tab), a column slot is a fifth of the board's body
   (`MAXIMISED_BOARD_SLOTS`), never narrower than a column's floor (220 px a slot); a column
   set wider takes its slots and the gaps between them. On a phone a column takes the board's width less 48 px whatever
