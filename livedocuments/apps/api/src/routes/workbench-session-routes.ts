@@ -97,7 +97,6 @@ export async function redeemWorkbenchTicket(ctx: RouteContext): Promise<Response
       id: t.ownerId,
       name: participant?.name ?? null,
       color: participant?.color ?? null,
-      pictureUrl: participant?.pictureUrl ?? null,
     },
   };
   return json(answer, { status: 201 });

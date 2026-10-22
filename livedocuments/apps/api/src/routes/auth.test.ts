@@ -187,7 +187,7 @@ describe('POST /api/auth/token', () => {
     expect(body).toMatchObject({
       signedIn: true,
       accessToken: 'access-1',
-      user: { id: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace', picture: null },
+      user: { id: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace' },
     });
     expect(typeof body.expiresAt).toBe('number');
     expect(cookieValue(res, 'lp_refresh')).toBe('refresh-3');

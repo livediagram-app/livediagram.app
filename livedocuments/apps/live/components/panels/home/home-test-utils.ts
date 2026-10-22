@@ -28,7 +28,6 @@ export const fixturePerson = (id: string, name: string | null = id): HomePerson 
   id,
   name,
   color: '#0ea5e9',
-  pictureUrl: null,
 });
 
 export const fixtureAction = (

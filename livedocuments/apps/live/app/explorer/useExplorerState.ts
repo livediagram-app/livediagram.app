@@ -5,7 +5,6 @@ import { browser } from 'react-dom';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useAppNavigation } from '@/hooks/navigation/useAppNavigation';
 import { useAccountBootstrap } from '@/hooks/persistence/useAccountBootstrap';
-import { usePublishPicture } from '@/hooks/persistence/usePublishedPicture';
 import {
   apiListDocuments,
   apiListSharedWith,
@@ -79,8 +78,6 @@ export function useExplorerState() {
   const { authLoaded, accountUserId, accountDisplayName, isSignedIn } = useAccountBootstrap();
   // In a workspace frame the Explorer drops the app's surroundings and the account (explorer-surface.ts).
   const surface = explorerSurfaceFlags(useExplorerSurface());
-  // Keep the participant record's profile picture current (docs/specs/014-identity/profile-picture.md §6).
-  usePublishPicture(surface.publishPicture ? accountUserId : null);
 
   // Synced user preferences (docs/specs/007-editor/user-preferences.md). Owned HERE rather than in
   // ExplorerShell because the pane needs them too (Recent honours the

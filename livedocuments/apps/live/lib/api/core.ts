@@ -165,7 +165,6 @@ export type ParticipantResponse = {
     name: string;
     color: string;
     createdAt: number;
-    pictureUrl?: string | null;
   } | null;
 };
 

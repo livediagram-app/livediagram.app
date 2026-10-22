@@ -15,7 +15,6 @@ import {
   type ChangesetRoomOp,
 } from '@livedocuments/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
-import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
 import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
 import { parseLaserConfig } from '@/lib/laser-config';
 import {
@@ -173,28 +172,15 @@ export function useRoomConnection(opts: {
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
   // change goes out over the open socket rather than warranting a reconnect.
-  //
-  // A signed-in session's ticket tells the room it is an account (the only kind that may publish a
-  // profile picture or see others'), and it says hello with its published picture
-  // (docs/specs/014-identity/profile-picture.md §6).
-  const picture = usePublishedPicture();
-  const selfForRoom = () => ({
-    id: selfParticipant.id,
-    key: selfParticipant.key,
-    name: selfParticipant.name,
-    color: selfParticipant.color,
-    ...(picture ? { picture } : {}),
-  });
   const connectAs = useEffectEvent(() => ({
-    self: selfForRoom(),
+    self: {
+      id: selfParticipant.id,
+      key: selfParticipant.key,
+      name: selfParticipant.name,
+      color: selfParticipant.color,
+    },
     shareCode: sessionShareCode,
   }));
-  // The switch flipped, or the picture changed: tell the open room, which updates the roster in
-  // place (switch off = initials for everyone from this update on).
-  const announceSelf = useEffectEvent(() => roomRef.current?.updateSelf(selfForRoom()));
-  useEffect(() => {
-    announceSelf();
-  }, [picture]);
   // Each peer's server-verified role by presence id, refreshed with every presence list.
   const roleByPresenceRef = useRef<Map<string, string | undefined>>(new Map());
   const roomReadFollowing = useEffectEvent(() => readFollowing());
@@ -239,9 +225,6 @@ export function useRoomConnection(opts: {
           // and stamped it onto the broadcast row). Optional on the
           // wire so a connection without role info still parses.
           ...(p.role ? { role: p.role } : {}),
-          // Only ever present when the room judged us an account session
-          // (docs/specs/014-identity/profile-picture.md §5).
-          ...(p.picture ? { picture: p.picture } : {}),
         })),
       );
       // Seed lastSeen for any presence-arrival we haven't tracked yet, publishing it so the next

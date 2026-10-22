@@ -3,7 +3,7 @@
 // Header sign-in / sign-out pill. Shows:
 //
 //   - signed out → "Sign in" link to /live/sign-in/
-//   - signed in  → account avatar (profile picture or initial) + dropdown with "Profile" + "Sign out"
+//   - signed in  → account avatar (initial) + dropdown with "Profile" + "Sign out"
 //
 // Mounted in EditorHeader (and any future header chrome that wants
 // auth controls). Pure presentational — it reads the deferred auth
@@ -28,7 +28,7 @@ import {
   Glyph,
   useMenu,
   useMenuButton,
-  PictureDisc,
+  GlyphDisc,
 } from '@livedocuments/ui';
 import { sessionsEnabled } from '@/lib/auth-config';
 import { track } from '@/lib/telemetry';
@@ -111,15 +111,13 @@ function AuthControlsEnabled({ onOpenAccount }: AuthControlsProps) {
         className={`${HEADER_ACTION_BTN} ${HEADER_ACTION_TONE}`}
       >
         <HeaderGlyph>
-          {/* The profile picture when there is one (docs/specs/014-identity/profile-picture.md). */}
-          <PictureDisc
-            pictureUrl={user?.pictureUrl}
+          <GlyphDisc
             size={HEADER_ICON_SLOT_PX}
             aria-hidden
             className={`bg-brand-700 text-[10px] font-semibold text-white ${SOLID_BRAND_DARK}`}
           >
             {accountInitial(user)}
-          </PictureDisc>
+          </GlyphDisc>
         </HeaderGlyph>
         <span className="max-w-[4.5rem] truncate">{pillLabel ?? 'Account'}</span>
       </button>

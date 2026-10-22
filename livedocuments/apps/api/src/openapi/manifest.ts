@@ -705,20 +705,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
   {
-    method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/comment-pictures',
-    segment: 'documents',
-    tag: 'Documents',
-    summary:
-      "The published profile pictures of a tab's comment authors, keyed by comment id. Empty unless the caller is signed in.",
-    auth: 'guest-or-clerk',
-    responseSchema: {
-      type: 'object',
-      properties: { pictures: { type: 'object', additionalProperties: { type: 'string' } } },
-    },
-    statuses: [200, 403, 404],
-  },
-  {
     method: 'POST',
     path: '/documents/{id}/tabs/{tabId}/link',
     segment: 'documents',
@@ -1203,7 +1189,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'participants',
     tag: 'Participants',
     summary:
-      "Get a participant's display name and colour; their published picture only for a signed-in caller. Your own id before you have saved a profile answers { participant: null }.",
+      "Get a participant's display name and colour. Your own id before you have saved a profile answers { participant: null }.",
     auth: 'public',
     responseSchema: {
       type: 'object',
@@ -1225,25 +1211,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       required: ['name', 'color'],
     },
     responseSchema: wrap('participant', 'ParticipantRecord'),
-    statuses: [200, 400, 401, 403, 404],
-  },
-  {
-    method: 'PUT',
-    path: '/participants/{id}/picture',
-    segment: 'participants',
-    tag: 'Participants',
-    summary:
-      'Set or clear your published profile picture (a Clerk image URL; signed-in session only).',
-    auth: 'clerk',
-    requestSchema: {
-      type: 'object',
-      properties: { pictureUrl: { type: ['string', 'null'] } },
-      required: ['pictureUrl'],
-    },
-    responseSchema: {
-      type: 'object',
-      properties: { pictureUrl: { type: ['string', 'null'] } },
-    },
     statuses: [200, 400, 401, 403, 404],
   },
 

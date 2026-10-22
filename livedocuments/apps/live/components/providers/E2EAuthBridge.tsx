@@ -47,7 +47,6 @@ export function E2EAuthBridge({ onState }: { onState: (state: DeferredAuthState)
         username: null,
         email: session.email,
         createdAt: null,
-        pictureUrl: null,
       },
       getToken: async () => readSession()?.token ?? null,
       signOut: async () => {

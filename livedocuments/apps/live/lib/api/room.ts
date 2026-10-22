@@ -123,15 +123,12 @@ const ROOM_KEEPALIVE_TICK_MS = 5_000;
 const RECONNECT_MAX_MS = 15_000;
 
 /** Who this client says it is to the room: the room overrides `id` (see connectRoom). */
-type RoomSelf = { id: string; name: string; color: string; picture?: string };
+type RoomSelf = { id: string; name: string; color: string };
 
 export function connectRoom(
   documentId: string,
   // The room OVERRIDES `id` with its own per-socket presence id (docs/specs/015-api/public-api-and-tokens.md §6).
-  //
-  // `picture` is the published profile picture (docs/specs/014-identity/profile-picture.md §6); the
-  // room keeps it only for an account session.
-  initialParticipant: RoomSelf,
+  participant: RoomSelf,
   handlers: RoomHandlers,
   options: RoomConnectOptions = {},
 ): {
@@ -139,10 +136,7 @@ export function connectRoom(
   close: () => void;
   cursor: () => { epoch: string; seq: number } | null;
   sequence: (op: RoomOp) => Promise<boolean>;
-  updateSelf: (participant: RoomSelf) => void;
 } {
-  // Read at every (re)connect, and replaced by updateSelf, so a reconnect says hello as we are now.
-  let participant = initialParticipant;
   // The ticket rides the query string (see roomQueryString); every reconnect mints a fresh one,
   // even after a mint that failed.
   let ticket = options.ticket ?? null;
@@ -446,14 +440,6 @@ export function connectRoom(
     // what the client changed offline must not be overruled by the room.
     cursor: (): { epoch: string; seq: number } | null =>
       isOpen() && lastEpoch !== null ? { epoch: lastEpoch, seq: lastSeq } : null,
-    // An identity change over the open socket (docs/specs/014-identity/profile-picture.md §4): the
-    // room updates the roster in place. A closed socket just remembers it for the next hello.
-    updateSelf: (next) => {
-      participant = next;
-      if (ws && isOpen()) {
-        ws.send(JSON.stringify({ kind: 'identity', participant } satisfies RoomOutgoing));
-      }
-    },
     close: () => {
       closed = true;
       stopResuming();

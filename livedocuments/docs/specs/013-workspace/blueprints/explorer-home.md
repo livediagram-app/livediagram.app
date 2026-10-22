@@ -180,7 +180,7 @@ DESC`, limit `HOME_WHAT_HAPPENED_ACTION_MAX` (`D68`).
 
 - Key `<documentId>:<localDay(occurredAt, tz)>`. Groups ordered by their newest action, descending.
 - `actions`: every row, newest first, `{ id, verb, personId, occurredAt, detail }`.
-- `people`: distinct actors, newest action first (`D78`), each `{ id, name, color, pictureUrl }` from `participants`.
+- `people`: distinct actors, newest action first (`D78`), each `{ id, name, color }` from `participants`.
 - `verbs`: distinct verbs with counts, in `HOME_VERBS` order. `total` = number of actions; `latestAt` = newest.
 - `summary` = `people.length > 1`.
 
@@ -251,7 +251,6 @@ type HomePerson = {
   id: string;
   name: string | null;
   color: string | null;
-  pictureUrl: string | null;
 };
 type HomeAction = {
   id: string;
@@ -364,7 +363,7 @@ from` moves every row the account does not already hold; each leftover (opened u
 | Tab-scoped shared document                           | In Jump Back In; never in What Happened                                     |
 | Own action on someone else's document                | Not in What Happened (`me`); a use day when it is an edit                   |
 | Guest-era action of the person (aliased id)          | Excluded from What Happened by `me`                                         |
-| Actor without a participant row                      | `HomePerson.name` / `color` / `pictureUrl` null                             |
+| Actor without a participant row                      | `HomePerson.name` / `color` null                                            |
 | Legacy `comment_added` / `action_assigned` rows      | `commented` / `assigned`                                                    |
 | Future-dated event                                   | Excluded (`occurred_at <= now`)                                             |
 | What Happened over its cap                           | First 200 actions newest first; `what-happened-capped` logged               |

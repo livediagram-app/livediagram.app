@@ -255,7 +255,6 @@ export function withServerRules(tab: Tab, stored: StoredTab | null, author: Auth
     name: author.name,
     color: author.color,
     createdAt: 0,
-    pictureUrl: null,
   });
   const name = stored ? stored.tab.name : capStoredName(migrated.name, null, 'tab');
   return { ...migrated, name, elements };

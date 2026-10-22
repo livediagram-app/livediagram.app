@@ -76,7 +76,6 @@ export {
 } from './brand-classes';
 export * from './timeline';
 export * from './icons';
-export { PictureDisc } from './PictureDisc';
 export {
   TRUSTED_TYPES_CSP,
   isAllowedScriptUrl,

@@ -12,7 +12,6 @@ import type { SettingsCategoryId, SettingsIconId } from './settings-icons';
 import { titleCase, type TelemetryCategory } from '@livedocuments/api-schema';
 import {
   autoRebindArrowsEnabled,
-  showProfilePictureEnabled,
   panelEnabled,
   type MapSize,
   type PanelSwitch,
@@ -1319,24 +1318,10 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         key: 'identity',
         section: 'You',
         label: 'Guest',
-        keywords:
-          'account profile identity name email signed in sign in avatar picture photo google joined',
+        keywords: 'account profile identity name email signed in sign in avatar joined',
         description:
-          'Your name, email and picture come from your account. Signed out, your documents belong to this browser.',
+          'Your name and email come from your account. Signed out, your documents belong to this browser.',
         helpArticle: 'guestVsAccount',
-      },
-      {
-        kind: 'toggle',
-        key: 'showProfilePicture',
-        keywords: 'profile picture photo avatar google show hide privacy collaborators',
-        section: 'You',
-        label: 'Show My Profile Picture',
-        description:
-          'To signed-in collaborators, on presence, cursors and comments. Others always see your initials.',
-        available: (ctx) => ctx.signedIn,
-        read: (p) => showProfilePictureEnabled(p),
-        write: (p, v) => ({ ...p, showProfilePicture: v }),
-        event: { category: 'UI', on: 'ShowProfilePictureOn', off: 'ShowProfilePictureOff' },
       },
       {
         kind: 'trash',
