@@ -159,7 +159,6 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   ],
   agenda: ['agendaItems'],
   decision: ['decisionStatus', 'decisionDate', 'decisionDrivers'],
-  quiz: ['quizOptions', 'quizCorrect', 'quizSeconds'],
   picker: ['pickerOptions', 'pickerSource'],
   'stat-row': ['stats'],
   process: ['processSteps'],

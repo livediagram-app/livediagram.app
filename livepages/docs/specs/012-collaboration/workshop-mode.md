@@ -59,7 +59,7 @@ boards.
 - **Diagram keeps Icons**, Technology, Media and everything else it has.
 - **Content stays.** A session element already on a tab (a session button, a reveal zone, an
   agenda, a sticker) renders and works in every mode exactly as before: pressing a session button
-  in Diagram still starts its tool, a reveal zone still reveals, a quiz still takes answers. Only
+  in Diagram still starts its tool, a reveal zone still reveals. Only
   what the palette **offers to add** changes, as with every narrowed palette.
 - **Search still finds them.** The Toolbar strip's Search keeps offering every tile of every
   mode ([Toolbar layout](../007-editor/toolbar-layout.md#search-every-element-type)), the ones
@@ -111,7 +111,7 @@ stop to draw):
   [Collaborate](../010-palette/palette-top-level-categories.md#collaborate-one-category-fully-grouped)
   is its own category in a **Collaborate** band (the heading names the elements, where Dynamic
   named a mechanism), in the same room-first order, each a list of rows:
-  - **Ask**: Dot vote, Poll, Quiz, the estimate scales, Temperature check, Idea box.
+  - **Ask**: Dot vote, Poll, the estimate scales, Temperature check, Idea box.
   - **Tools**: Timer, Stopwatch, Reveal zone, Done check, Picker.
   - **Record**: Comment panel, Action card, Agenda, Decision record, Roll call.
   - **React**: the five reaction pads.
@@ -165,8 +165,8 @@ Session templates open in Workshop, as the Draw templates open in Draw
   `objectives-planner`, `roadmap`, `raci-matrix`, `user-story-map`, `swot`, `business-model-canvas`,
   `stakeholder-map` and `opportunity-solution-tree` (grouped in Start a Workshop under Retrospectives, Workshops, Planning
   and Strategy, [Templates by mode](../007-editor/templates-by-mode.md#workshop-templates));
-- the quizzes and games, `pub-quiz`, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather` and
-  `people-bingo` ([Quiz and game templates](quiz-and-game-templates.md));
+- the games, `icebreaker-questions`, `two-truths-and-a-lie`, `would-you-rather` and
+  `people-bingo` ([Game templates](game-templates.md));
 - the spaces to walk round in Avatar mode, `virtual-office`, `coworking-space`, `team-pod` and `all-hands-hall`
   ([Virtual Office template](virtual-office-template.md)).
 

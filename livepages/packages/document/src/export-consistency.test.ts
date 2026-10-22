@@ -76,7 +76,6 @@ describe('every kind with a body draws one', () => {
     'decision',
     'roll-call',
     'done-check',
-    'quiz',
     'focus-button',
   ];
 

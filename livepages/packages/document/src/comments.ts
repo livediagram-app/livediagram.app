@@ -177,11 +177,6 @@ export const LIVE_ELEMENT_FIELDS = [
   'agendaCurrent',
   'agendaTimerStartedAt',
   'pickerResult',
-  // A quiz round's state (docs/specs/012-collaboration/quiz.md): started, locked and revealed are room
-  // presses, not edits, so an undo must not un-start somebody's round.
-  'quizStartedAt',
-  'quizLockedAt',
-  'quizRevealed',
 ] as const;
 type LiveFieldBag = {
   commentThread?: CommentThread;
@@ -200,9 +195,6 @@ type LiveFieldBag = {
   | 'agendaCurrent'
   | 'agendaTimerStartedAt'
   | 'pickerResult'
-  | 'quizStartedAt'
-  | 'quizLockedAt'
-  | 'quizRevealed'
 >;
 
 function applyLiveField<K extends keyof LiveFieldBag>(
@@ -222,12 +214,9 @@ function applyLiveField<K extends keyof LiveFieldBag>(
 export function graftLiveTabState(
   from: Tab[],
   onto: Tab[],
-  // `mintRound` makes the new round id a reset needs (a quiz whose edit is
-  // undone); a test passes a fixed one.
-  opts: { sessionFields?: boolean; mintRound?: () => string } = {},
+  opts: { sessionFields?: boolean } = {},
 ): Tab[] {
   const sessionFields = opts.sessionFields !== false;
-  const mintRound = opts.mintRound ?? (() => crypto.randomUUID());
   return onto.map((tab) => {
     const src = from.find((t) => t.id === tab.id);
     if (!src) return tab;
@@ -271,7 +260,7 @@ export function graftLiveTabState(
       }
       // Presses that were about the authored fields follow them back.
       if (next.type === 'shape' && liveEl?.type === 'shape') {
-        const reconciled = reconcileRestoredElement(next, liveEl, mintRound);
+        const reconciled = reconcileRestoredElement(next, liveEl);
         if (reconciled !== next) {
           changed = true;
           next = reconciled;

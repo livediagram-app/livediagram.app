@@ -87,9 +87,8 @@ export type TemplateKind =
   | 'affinity-map'
   | 'brainstorm'
   | 'workshop-board'
-  // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): a pub quiz on Quiz cards with a
-  // scoreboard, icebreakers spun on Pickers, and three party games run on polls, timers and reaction pads.
-  | 'pub-quiz'
+  // Games (docs/specs/012-collaboration/game-templates.md): icebreakers spun on Pickers, and three party
+  // games run on polls, timers and reaction pads.
   | 'icebreaker-questions'
   // A whole office to walk round in Avatar mode (docs/specs/012-collaboration/virtual-office-template.md).
   | 'virtual-office'
@@ -774,13 +773,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Workshop Board',
     description:
       'The kickoff wall for a longer session: a check-in and icebreaker, goals, a timed agenda and ground rules.',
-    extra: true,
-  },
-  {
-    kind: 'pub-quiz',
-    title: 'Pub Quiz',
-    description:
-      'Three rounds of timed quiz questions, a team scoreboard, a quizmaster kit and a tie-breaker under a cover.',
     extra: true,
   },
   {

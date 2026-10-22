@@ -140,7 +140,7 @@ describe('a face\'s words under Sketch (docs/specs/008-canvas/finish.md "Letteri
   });
 
   it('gives words that name no face the element’s, through its group', () => {
-    for (const kind of ['idea-box', 'quiz', 'mode-button', 'picker', 'reaction-pad']) {
+    for (const kind of ['idea-box', 'mode-button', 'picker', 'reaction-pad']) {
       expect(words(kind), kind).toMatch(/<g font-family="[^"]*Caveat/);
     }
   });

@@ -9,7 +9,6 @@
 // Everything here is re-exported from './index'.
 
 import type { ShapeKind } from './index';
-import { isQuizShape } from './quiz';
 import { isSelfDrawingShape } from './data-shapes';
 
 // --- Estimate card (docs/specs/012-collaboration/estimate-card.md) ---------------------------------------------
@@ -328,8 +327,7 @@ export function isCollabPanelShape(kind: ShapeKind): boolean {
     isIdeaBoxShape(kind) ||
     isAgendaShape(kind) ||
     isRollCallShape(kind) ||
-    isDecisionShape(kind) ||
-    isQuizShape(kind)
+    isDecisionShape(kind)
   );
 }
 
@@ -353,20 +351,16 @@ export function hasOwnFace(kind: ShapeKind): boolean {
     kind === 'comment-pin' ||
     kind === 'action-card' ||
     kind === 'reaction-pad' ||
-    kind === 'portal' ||
-    isQuizShape(kind)
+    kind === 'portal'
   );
 }
 
 // Whether double-click, Space or typing opens the inline label editor on this
-// kind. Not on a self-drawing kind (it has no label), and not on a quiz
-// (docs/specs/012-collaboration/quiz.md): its label is the question, which the
-// Edit Quiz dialog owns, and editing it inline would print the hidden question
-// over the closed disc for anybody who double-clicked the card.
+// kind. Not on a self-drawing kind (it has no label).
 export function opensInlineLabelEditor(kind: ShapeKind): boolean {
   // A sequence diagram's words are its rows, written in its dialog (docs/specs/009-elements/sequence-diagram.md); its
   // box keeps its border controls, so it is not self-drawing, but a click never opens a label editor on it.
-  return !isSelfDrawingShape(kind) && !isQuizShape(kind) && kind !== 'sequence';
+  return !isSelfDrawingShape(kind) && kind !== 'sequence';
 }
 
 // Whether text alignment does anything on this kind: not a self-drawing kind

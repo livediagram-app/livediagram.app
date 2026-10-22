@@ -74,7 +74,7 @@ Sources: [room-messages.ts](../../../packages/api-schema/src/room-messages.ts) (
 [API app](../../specs/015-api/api.md) (comment and Q&A rows),
 [Per-participant responses](../../specs/012-collaboration/participant-responses.md) ("Edit-role only"),
 [Session tools](../../specs/012-collaboration/session-tools.md) ("the facilitator and participants share an edit link"),
-[Quiz](../../specs/012-collaboration/quiz.md) ("View-role visitors cannot answer").
+the Quiz, since removed ("View-role visitors cannot answer").
 
 The consequence: **a retrospective today needs an edit link for everybody who votes**, which is the
 problem a Participant level solves.

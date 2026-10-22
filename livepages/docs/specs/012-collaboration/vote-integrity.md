@@ -67,7 +67,7 @@ A refused vote answers `429 { error: 'vote_limit' }` and logs `[vote-integrity] 
 
 ## Not covered
 
-- **Dot votes, estimates, done checks, quizzes and temperature checks** are document state written by editors
+- **Dot votes, estimates, done checks and temperature checks** are document state written by editors
   ([Per-participant responses](participant-responses.md), [Session tools](session-tools.md)). An editor can already
   rewrite the whole document, so these stay keyed on the claimed collab key.
 - **Many real browsers on many networks** are many voters. Only signing in, or a facilitator who knows the room, can

@@ -110,9 +110,9 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
   },
   {
     id: 'games',
-    label: 'Quizzes & Games',
-    searchWords: 'quiz trivia icebreaker icebreakers warm up energiser fun team building',
-    description: 'Quizzes, icebreakers and games for the room.',
+    label: 'Games',
+    searchWords: 'icebreaker icebreakers warm up energiser fun team building',
+    description: 'Icebreakers, bingo and party games for the room.',
   },
 ];
 
@@ -285,8 +285,7 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'incident-postmortem': 'technical',
   'threat-model': 'technical',
   'value-stream-map': 'technical',
-  // Quizzes and Games: the lighter end of running a room.
-  'pub-quiz': 'games',
+  // Games: the lighter end of running a room.
   'icebreaker-questions': 'games',
   'two-truths-and-a-lie': 'games',
   'would-you-rather': 'games',

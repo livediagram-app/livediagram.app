@@ -662,8 +662,6 @@ export * from './plan-only';
 export * from './responses';
 export * from './collab-shapes';
 export * from './agenda-current';
-// Quiz (docs/specs/012-collaboration/quiz.md). A leaf module, for the same cycle.
-export * from './quiz';
 export * from './shape-geometry';
 // Fence (docs/specs/009-elements/fence.md): the run, its posts and the line it blocks.
 export * from './fence';

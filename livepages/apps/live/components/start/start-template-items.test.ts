@@ -56,7 +56,7 @@ describe.each(MODES)('the %s template start', (mode) => {
 });
 
 describe('Start a Workshop', () => {
-  it('groups by the session run: Retrospectives, Meetings, Quizzes & Games, Ideation, Planning, Strategy, Decisions', () => {
+  it('groups by the session run: Retrospectives, Meetings, Games, Ideation, Planning, Strategy, Decisions', () => {
     expect(TEMPLATE_STARTS.workshop.groups.map((g) => g.id)).toEqual([
       'recommended',
       'retrospectives',
@@ -73,7 +73,6 @@ describe('Start a Workshop', () => {
     expect(group('retrospectives')).toContain('incident-postmortem');
     expect(group('ideation')).toContain('user-persona');
     expect(group('games')).toEqual([
-      'pub-quiz',
       'icebreaker-questions',
       'two-truths-and-a-lie',
       'would-you-rather',

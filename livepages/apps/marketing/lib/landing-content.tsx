@@ -251,7 +251,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Present & workshop',
         title: 'A mode for running the room',
         description:
-          'Switch a tab to Workshop and it brings the session to hand: stickies, timers, votes, polls, reveals and quizzes on its palette, and the Session strip at the foot of the canvas. Retrospectives and brainstorms open there, and Diagram stays about diagrams.',
+          'Switch a tab to Workshop and it brings the session to hand: stickies, timers, votes, polls and reveals on its palette, and the Session strip at the foot of the canvas. Retrospectives and brainstorms open there, and Diagram stays about diagrams.',
       },
       {
         art: <FacilitatorArt />,
@@ -534,7 +534,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         group: 'Templates & themes',
         title: 'A hundred and fifty starter templates',
         description:
-          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, meeting agendas and risk matrices, pub quizzes and icebreakers, budgets and invoices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by the job to be done in the picker, edit one, or start blank.',
+          'Start from a board that already makes sense: flowcharts and mind maps, retrospectives and Kanban, roadmaps and org charts, meeting agendas and risk matrices, icebreakers, budgets and invoices, wireframes, architecture and UML, even a to-scale floor plan. Browse them by the job to be done in the picker, edit one, or start blank.',
       },
       {
         art: <ThemesArt />,

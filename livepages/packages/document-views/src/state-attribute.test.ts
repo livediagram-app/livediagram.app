@@ -20,7 +20,7 @@ describe('stateAttributeOf (R14, VW22)', () => {
     expect(state('roll-call', { rollCall: [{}, {}] })).toBe('present=2');
   });
 
-  it('places an agenda and a quiz', () => {
+  it('places an agenda', () => {
     const segment = { label: 'A', minutes: 10 };
     expect(state('agenda', { agendaItems: [segment, segment, segment], agendaCurrent: 1 })).toBe(
       'item=2/3 minutes=30',
@@ -28,12 +28,6 @@ describe('stateAttributeOf (R14, VW22)', () => {
     expect(state('agenda', { agendaItems: [segment, segment], agendaCurrent: undefined })).toBe(
       'items=2 minutes=20',
     );
-    expect(state('quiz', { quizRevealed: true })).toBe('state=revealed');
-    expect(state('quiz', { quizLockedAt: 5 })).toBe('state=locked');
-    expect(state('quiz', { quizStartedAt: 5 })).toBe('state=open');
-    expect(
-      state('quiz', { quizStartedAt: undefined, quizLockedAt: undefined, quizRevealed: undefined }),
-    ).toBe('state=ready');
   });
 
   it('names a decision, a pick and a reveal only when set', () => {

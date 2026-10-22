@@ -214,10 +214,10 @@ unchanged; only the mode they open in moved from Diagram.
 - The **Spaces** group, after Meetings: **Virtual Office** (`virtual-office`), **Coworking Space**
   (`coworking-space`), **Team Pod** (`team-pod`) and **All-Hands Hall** (`all-hands-hall`), "Offices and halls to walk
   round together in Avatar mode." ([Virtual Office template](../012-collaboration/virtual-office-template.md)).
-- The **Quizzes & Games** group, after Spaces: **Pub Quiz** (`pub-quiz`), **Icebreaker Questions**
+- The **Games** group, after Spaces: **Icebreaker Questions**
   (`icebreaker-questions`), **Two Truths and a Lie** (`two-truths-and-a-lie`), **Would You Rather**
-  (`would-you-rather`) and **Find Someone Who Bingo** (`people-bingo`), "Quizzes, icebreakers and games to warm up
-  the room." ([Quiz and game templates](../012-collaboration/quiz-and-game-templates.md)).
+  (`would-you-rather`) and **Find Someone Who Bingo** (`people-bingo`), "Icebreakers and games to warm up
+  the room." ([Game templates](../012-collaboration/game-templates.md)).
 
 ## Testing
 

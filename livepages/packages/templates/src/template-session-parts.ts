@@ -1,4 +1,4 @@
-// Shared parts of the live-session boards (template-builders-meeting.ts, template-builders-quiz-games.ts and the
+// Shared parts of the live-session boards (template-builders-meeting.ts, template-builders-icebreakers.ts and the
 // rest): the heading, section labels, guidance
 // lines, a checklist sized to its rows and a column of joined step cards, plus the spacing they share.
 

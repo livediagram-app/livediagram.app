@@ -224,7 +224,7 @@ Ending a vote persists the host's final state. Server-side merge of the map is
   the `frame` shape (a section backdrop) and not text / freehand / table /
   arrow / annotation. Nor the controls: the Behaviour elements and the
   collaboration panels (estimate, temperature, done check, idea box, agenda,
-  roll call, decision, quiz), whose own presses answer them, so a dot would give
+  roll call, decision), whose own presses answer them, so a dot would give
   one tap two meanings.
   Nor the readouts (stat row, pie, bar and line charts, Sankey, progress bar and
   ring, legend, diagram key) or a checklist: a readout shows what the board says

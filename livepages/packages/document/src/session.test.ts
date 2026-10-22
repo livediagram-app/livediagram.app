@@ -90,7 +90,7 @@ describe('isVotable', () => {
 
   // The collaboration panels are controls too: a press on one answers it.
   it('rejects the collaboration panels', () => {
-    for (const kind of ['estimate', 'temperature', 'done-check', 'quiz', 'idea-box'] as const) {
+    for (const kind of ['estimate', 'temperature', 'done-check', 'idea-box'] as const) {
       expect(isVotable(shape(kind, { shape: kind }))).toBe(false);
     }
   });

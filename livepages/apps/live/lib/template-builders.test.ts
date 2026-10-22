@@ -68,7 +68,6 @@ const ALL_KINDS = [
   'raci-matrix',
   'user-story-map',
   'affinity-map',
-  'pub-quiz',
   'icebreaker-questions',
   'virtual-office',
   'coworking-space',

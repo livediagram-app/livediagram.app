@@ -463,8 +463,6 @@ export const PALETTE_TELEMETRY_TYPES = {
     'ReactionPad',
     // Done check (docs/specs/012-collaboration/done-check.md): a Behaviour element by its palette home.
     'DoneCheck',
-    // Quiz (docs/specs/012-collaboration/quiz.md): a Behaviour element by its palette home.
-    'Quiz',
     // Chair (docs/specs/009-elements/chair.md): a Behaviour element, so it ranks with them.
     'Chair',
     // Desk, sofa and fence (docs/specs/009-elements/chair.md, fence.md): beside the chair in Navigate.

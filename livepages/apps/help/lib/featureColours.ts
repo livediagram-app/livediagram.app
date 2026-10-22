@@ -188,7 +188,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   'comment-panels': '#f59e0b',
   'action-panels': '#10b981',
   'estimate-cards': '#8b5cf6',
-  quizzes: '#16a34a',
   'temperature-checks': '#ef4444',
   'idea-boxes': '#eab308',
   agendas: '#0891b2',

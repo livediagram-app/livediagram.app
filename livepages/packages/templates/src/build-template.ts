@@ -49,7 +49,7 @@ import { buildStateMachine } from './template-builders-state-machine';
 import { buildFloorPlan } from './template-builders-floorplan';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
-import { buildIcebreakerQuestions, buildPubQuiz } from './template-builders-quiz-games';
+import { buildIcebreakerQuestions } from './template-builders-icebreakers';
 import {
   buildPeopleBingo,
   buildTwoTruthsAndALie,
@@ -253,8 +253,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildBrainstorm(cx, cy);
     case 'workshop-board':
       return buildWorkshopBoard(cx, cy);
-    case 'pub-quiz':
-      return buildPubQuiz(cx, cy);
     case 'icebreaker-questions':
       return buildIcebreakerQuestions(cx, cy);
     case 'virtual-office':

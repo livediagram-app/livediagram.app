@@ -33,7 +33,7 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livepages/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 144;
+export const TEMPLATE_COUNT = 143;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
 // Pages mode's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
@@ -440,12 +440,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
             Very. Switch a tab to Workshop, the mode for running a session, or start from a
             retrospective template, which opens there. Whoever holds the facilitator role runs the
             room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature
-            check shows how the room feels, a quiz asks what it knows, and an idea box collects
+            check shows how the room feels, and an idea box collects
             anonymous ideas. See <a href="/help/canvas/workshop-mode/">Workshop mode</a>.
           </>
         ),
         aText:
-          'Very. Switch a tab to Workshop, the mode for running a session, or start from a retrospective template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, a quiz asks what it knows, and an idea box collects anonymous ideas. See Workshop mode.',
+          'Very. Switch a tab to Workshop, the mode for running a session, or start from a retrospective template, which opens there. Whoever holds the facilitator role runs the room’s timer, votes, polls and reveals. Estimate cards run planning poker, a temperature check shows how the room feels, and an idea box collects anonymous ideas. See Workshop mode.',
       },
     ],
   },

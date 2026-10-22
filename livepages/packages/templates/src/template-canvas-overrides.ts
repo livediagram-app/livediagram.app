@@ -115,7 +115,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'affinity-map': 'grid',
   brainstorm: 'grid',
   'workshop-board': 'grid',
-  'pub-quiz': 'grid',
   'icebreaker-questions': 'grid',
   // Grid: an office's floor plan reads as one on gridded paper, the rooms carrying their own floors.
   'virtual-office': 'grid',

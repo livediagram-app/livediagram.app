@@ -1,4 +1,4 @@
-tab edge-tab "Edge cases" · 51 elements: 42 boxes, 2 frames, 7 arrows · 2 hidden · 3 unknown
+tab edge-tab "Edge cases" · 50 elements: 41 boxes, 2 frames, 7 arrows · 2 hidden · 3 unknown
 square huge "Huge"
 frame frame-a "A"
   square both "In both"
@@ -28,7 +28,6 @@ idea-box state-idea-box "Ideas" ideas=2
 agenda state-agenda "Agenda" item=2/2 minutes=15
 decision state-decision "We will …" status=accepted
 roll-call state-roll-call "Roll call" present=0
-quiz state-quiz "Which planet is closest to the sun?" state=open
 picker state-picker picked=Sam
 reveal state-reveal "Hidden" revealed
 stat-row state-stat-row stats=3

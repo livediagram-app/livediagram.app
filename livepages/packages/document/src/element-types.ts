@@ -327,16 +327,6 @@ export type ShapeElement = {
   // roll was taken — names and colours copied, never re-joined to the live
   // participant. Only meaningful on 'roll-call'.
   rollCall?: RollCallEntry[];
-  // Quiz (docs/specs/012-collaboration/quiz.md): the answers, which one is right, the round's length in
-  // seconds, and the round's state (started / locked early / revealed). The
-  // question is the label; each person's pick rides `responses` as the
-  // answer's index. Only meaningful on 'quiz'.
-  quizOptions?: string[];
-  quizCorrect?: number;
-  quizSeconds?: number;
-  quizStartedAt?: number;
-  quizLockedAt?: number;
-  quizRevealed?: boolean;
   // A timeline rail saved before the Timeline (docs/specs/009-elements/concept-graphics.md "Timeline"): its point count
   // and labels, read once to make its milestones (element-normalise railToTimeline) and never written again.
   railCount?: number;

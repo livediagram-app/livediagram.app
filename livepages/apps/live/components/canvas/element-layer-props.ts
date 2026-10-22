@@ -36,12 +36,6 @@ const COLLAB_HANDLERS = [
   'pressAgendaItem',
   'resetAgenda',
   'takeRoll',
-  'answerQuiz',
-  'startQuiz',
-  'lockQuiz',
-  'revealQuiz',
-  'resetQuiz',
-  'saveQuiz',
 ] as const satisfies readonly CollabHandlerKey[];
 
 type CollabHandlerKey = {

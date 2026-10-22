@@ -27,7 +27,6 @@ const STATE_KINDS: [ShapeKind, Record<string, unknown>][] = [
   ],
   ['decision', { decisionStatus: 'accepted' }],
   ['roll-call', { rollCall: [] }],
-  ['quiz', { quizStartedAt: 1 }],
   ['picker', { pickerResult: 'Sam' }],
   ['reveal', { revealed: true }],
   ['stat-row', {}],

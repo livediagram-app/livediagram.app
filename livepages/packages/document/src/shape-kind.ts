@@ -150,9 +150,6 @@ export type ShapeKind =
   // Roll call (docs/specs/012-collaboration/roll-call.md): a frozen snapshot of who was in the room, in
   // `rollCall`.
   | 'roll-call'
-  // Quiz (docs/specs/012-collaboration/quiz.md): one multiple-choice question the facilitator opens for
-  // the room, locks on a timer and reveals, naming who answered correctly.
-  | 'quiz'
   | 'stadium'
   | 'actor'
   // UML final state (docs/specs/008-canvas/canvas-and-palette.md "UML"): a ring around a solid dot, one element, so the

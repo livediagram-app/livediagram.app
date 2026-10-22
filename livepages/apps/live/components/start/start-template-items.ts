@@ -92,10 +92,9 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
     },
     {
       id: 'games',
-      name: 'Quizzes & Games',
-      line: 'Quizzes, icebreakers and games to warm up the room.',
+      name: 'Games',
+      line: 'Icebreakers and games to warm up the room.',
       kinds: [
-        'pub-quiz',
         'icebreaker-questions',
         'two-truths-and-a-lie',
         'would-you-rather',

@@ -262,10 +262,10 @@ describe('the session kit from Diagram', () => {
     const diagram = elementTileSections({ mode: 'diagram', hasImage: true });
     expect(ids(diagram.here)).not.toContain('tools:session-timer');
     expect(ids(diagram.elsewhere)).toContain('tools:session-timer');
-    expect(ids(diagram.elsewhere)).toContain('collab:quiz');
+    expect(ids(diagram.elsewhere)).toContain('collab:idea-box');
     const workshop = elementTileSections({ mode: 'workshop', hasImage: true });
     expect(ids(workshop.here)).toContain('tools:session-timer');
-    expect(ids(workshop.here)).toContain('collab:quiz');
+    expect(ids(workshop.here)).toContain('collab:idea-box');
   });
 
   it("keeps the Comment panel and the Action card in Diagram's own section", () => {

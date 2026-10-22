@@ -4008,21 +4008,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "quiz": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "rating": {
             "additionalProperties": false,
             "properties": {
@@ -12663,27 +12648,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "pyramidVariant": {
         "$ref": "#/components/schemas/PyramidVariant"
       },
-      "quizCorrect": {
-        "type": "number"
-      },
-      "quizLockedAt": {
-        "type": "number"
-      },
-      "quizOptions": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "quizRevealed": {
-        "type": "boolean"
-      },
-      "quizSeconds": {
-        "type": "number"
-      },
-      "quizStartedAt": {
-        "type": "number"
-      },
       "railCount": {
         "type": "number"
       },
@@ -12987,7 +12951,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "agenda",
       "decision",
       "roll-call",
-      "quiz",
       "stadium",
       "actor",
       "final-state",

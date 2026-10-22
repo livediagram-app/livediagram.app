@@ -14,7 +14,6 @@ import { SELECTION_MODES, isPickerSource, isSelectionMode, isSessionTool } from 
 import { RESPONSES_MAX, RESPONSE_VALUE_MAX } from './responses';
 import { COLLAB_ROUND_MAX, COMMENTS_MAX, isComment } from './element-deltas';
 import { CELL_THREADS_MAX, isCellKey } from './cell-comments';
-import { QUIZ_MAX_OPTIONS, QUIZ_OPTION_MAX_TEXT } from './quiz';
 import {
   AGENDA_MAX_ITEMS,
   AGENDA_MAX_TEXT,
@@ -460,16 +459,6 @@ const SHAPE_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: rowsOf(ROLL_CALL_MAX, isRollCallEntry),
     rule: arrayRule(ROLL_CALL_MAX, '{ name, color, at } entries'),
   },
-  {
-    field: 'quizOptions',
-    valid: rowsOf(QUIZ_MAX_OPTIONS, isStrUpTo(QUIZ_OPTION_MAX_TEXT)),
-    rule: arrayRule(QUIZ_MAX_OPTIONS, `strings of ${QUIZ_OPTION_MAX_TEXT} characters`),
-  },
-  finite('quizCorrect'),
-  finite('quizSeconds'),
-  finite('quizStartedAt'),
-  finite('quizLockedAt'),
-  flag('quizRevealed'),
   {
     field: 'checklistItems',
     valid: rowsOf(CHECKLIST_MAX_ITEMS, isChecklistItem),

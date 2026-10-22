@@ -348,7 +348,6 @@ The table line prints its label first when it has one. Every text a summary prin
 | `session-button`        | `session=<tool>`, with `:<minutes>m` (timer), `:<dots>` (vote) or `:<style>` (poll)   |
 | `decision`              | `status=<decisionStatus>` when set                                                    |
 | `roll-call`             | `present=<rollCall.length>`                                                           |
-| `quiz`                  | `state=revealed`, `state=locked`, `state=open` (started) or `state=ready`             |
 | `picker`                | `picked=<attrValue(pickerResult)>` when set                                           |
 | `reveal`                | `revealed` when `revealed`                                                            |
 | `stat-row`              | `stats=<stats.length>`                                                                |

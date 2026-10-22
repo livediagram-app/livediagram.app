@@ -167,7 +167,6 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
       'card',
       'desk',
       'plan-board',
-      'quiz',
       'entity',
     ]) {
       expect(finishSplitsFace(shape(kind)), kind).toBe(true);

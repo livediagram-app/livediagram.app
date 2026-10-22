@@ -143,7 +143,7 @@ export function elementAriaLabel(el: Element): string {
 }
 
 // The kinds whose face carries controls of its own: a timer's Start, a checklist's ticks, a poll's Ask, an agenda's
-// items, a quiz's answer, a reaction pad's button, a picker's draw, a reveal, a decision
+// items, a reaction pad's button, a picker's draw, a reveal, a decision
 // record's settings and a mode button.
 const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
   'session-button',
@@ -151,7 +151,6 @@ const CONTROL_FACE_SHAPES: ReadonlySet<string> = new Set<ShapeKind>([
   'temperature',
   'agenda',
   'reaction-pad',
-  'quiz',
   'picker',
   'reveal',
   'decision',

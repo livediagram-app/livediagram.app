@@ -191,7 +191,7 @@ arrive at runtime rather than being drawn by the author?**
 
 | Group              | Holds                                                                                                                             |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
-| **Ask**            | the three estimate scales, Quiz, Temperature, Idea box, Dot vote, Poll                                                            |
+| **Ask**            | the three estimate scales, Temperature, Idea box, Dot vote, Poll                                                                  |
 | **Tools**          | Reveal, Done, Picker, Timer                                                                                                       |
 | **Record**         | Comment panel, Agenda, Decision record, Roll call                                                                                 |
 | **Reactions**      | the five pads                                                                                                                     |

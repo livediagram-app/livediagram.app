@@ -175,8 +175,6 @@ export const SHAPE_KINDS = new Set<string>([
   'agenda',
   'decision',
   'roll-call',
-  // Quiz (docs/specs/012-collaboration/quiz.md).
-  'quiz',
   'stadium',
   'actor',
   'final-state',

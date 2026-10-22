@@ -40,8 +40,6 @@ export const BEHAVIOUR_SHAPES: readonly ShapeKind[] = [
   'rug',
   'done-check',
   'estimate',
-  // Quiz (docs/specs/012-collaboration/quiz.md).
-  'quiz',
   'temperature',
   'idea-box',
   'agenda',
@@ -73,7 +71,7 @@ export function isBehaviourShape(kind: ShapeKind): boolean {
  */
 export function drawsOwnElementMenu(kind: ShapeKind): boolean {
   return (
-    kind === 'session-button' || kind === 'done-check' || kind === 'idea-box' || kind === 'quiz'
+    kind === 'session-button' || kind === 'done-check' || kind === 'idea-box'
   );
 }
 

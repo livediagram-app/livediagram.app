@@ -2,17 +2,15 @@ import type { ReactElement } from 'react';
 import type { TemplateKind } from '@livepages/templates';
 import { pv } from './motion';
 
-// Group 22: Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): Pub Quiz, Icebreaker
-// Questions, Two Truths and a Lie, Would You Rather and Find Someone Who Bingo. Each draws its board's centrepiece
-// (the quiz discs, the Picker, the statement stickies, the A-or-B cards, the bingo card) and its hover story plays
-// the moment the game is for: a right answer turning green, a hello landing, the lie crossed out, the room's votes
+// Group 22: Games (docs/specs/012-collaboration/game-templates.md): Icebreaker Questions, Two Truths and
+// a Lie, Would You Rather and Find Someone Who Bingo. Each draws its board's centrepiece (the Picker, the statement
+// stickies, the A-or-B cards, the bingo card) and its hover story plays the moment the game is for: a hello landing, the lie crossed out, the room's votes
 // growing, a full line of names.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 
 const INK = 'rgb(71 85 105)';
 const RULE = 'rgb(203 213 225)';
 const PAPER = 'white';
-const GREEN = 'rgb(22 163 74)';
 const AMBER = 'rgb(253 230 138)';
 const AMBER_INK = 'rgb(217 119 6)';
 const SKY = 'rgb(224 242 254)';
@@ -22,84 +20,8 @@ const PINK_INK = 'rgb(190 24 93)';
 const VIOLET = 'rgb(221 214 254)';
 const RED = 'rgb(220 38 38)';
 
-// A quiz card in miniature: the disc with its four answers on a ring around it.
-function QuizDisc({ cx, cy }: { cx: number; cy: number }) {
-  return (
-    <>
-      <circle cx={cx} cy={cy} r="3.6" fill={PAPER} stroke={INK} strokeWidth="0.6" />
-      {[
-        [0, -6],
-        [6, 0],
-        [0, 6],
-        [-6, 0],
-      ].map(([dx, dy]) => (
-        <rect
-          key={`${dx},${dy}`}
-          x={cx + dx! - 2}
-          y={cy + dy! - 1}
-          width="4"
-          height="2"
-          rx="1"
-          fill={PAPER}
-          stroke={RULE}
-          strokeWidth="0.5"
-        />
-      ))}
-    </>
-  );
-}
-
 export function templatePreviewGroup22(kind: TemplateKind): ReactElement | null {
   switch (kind) {
-    case 'pub-quiz':
-      // Three rounds of three quiz discs beside the scoreboard. Hover story: right answers turn green.
-      return (
-        <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
-          <rect
-            x="3"
-            y="5"
-            width="20"
-            height="18"
-            rx="1.2"
-            fill={PAPER}
-            stroke={RULE}
-            strokeWidth="0.6"
-          />
-          <rect x="3" y="5" width="20" height="3.6" rx="1.2" fill={AMBER} />
-          {[12, 15.5, 19].map((y) => (
-            <rect key={y} x="5" y={y} width="9" height="1.2" rx="0.6" fill={RULE} />
-          ))}
-          <rect x="3" y="28" width="20" height="9" rx="1.2" fill={AMBER} />
-          <rect
-            x="3"
-            y="28"
-            width="20"
-            height="9"
-            rx="1.2"
-            fill="rgb(241 245 249)"
-            opacity="0.92"
-          />
-          <circle cx="13" cy="32.5" r="1.6" fill={AMBER_INK} />
-          {[10, 25, 40].map((cy, r) =>
-            [36, 52, 68].map((cx, i) => (
-              <g key={`${r}-${i}`}>
-                <QuizDisc cx={cx} cy={cy} />
-                <rect
-                  className="pv-new"
-                  style={pv({ '--pv-at': `${400 + (r * 3 + i) * 120}ms` })}
-                  opacity="0"
-                  x={cx + ((r + i) % 2 === 0 ? 4 : -8)}
-                  y={cy - 1}
-                  width="4"
-                  height="2"
-                  rx="1"
-                  fill={GREEN}
-                />
-              </g>
-            )),
-          )}
-        </svg>
-      );
     case 'icebreaker-questions':
       // The two Pickers (the question, then the person) beside the hello wall. Hover story: a hello lands.
       return (

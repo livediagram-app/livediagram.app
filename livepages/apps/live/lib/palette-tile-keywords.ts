@@ -72,7 +72,6 @@ export const SHAPE_KEYWORDS: Partial<Record<ShapeKind, string>> = {
   rug: 'rug carpet mat floor lounge reception office',
   estimate: 'points sizing poker fist estimate vote',
   temperature: 'mood check pulse gauge feeling',
-  quiz: 'quiz question trivia test answer correct right wrong multiple choice timed kahoot',
   'idea-box': 'suggestions ideas inbox submit',
   agenda: 'plan schedule topics running order',
   decision: 'decided outcome record resolution',

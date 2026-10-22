@@ -76,7 +76,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
   Sketch picked on the element itself is more specific than the tab's font: that element is written by hand even
   on a tab with a typeface (Style → Finish on one heading of a Boardroom slide); its own font still wins. A code block keeps its monospace font.
   The face covers every word on the element, not only its label: a face that writes its own (a progress value, a
-  panel's rows, a button, a quiz) is lettered in it too, on the canvas and in exports. The same holds for a tab's
+  panel's rows, a button) is lettered in it too, on the canvas and in exports. The same holds for a tab's
   font and Professional's Inter.
 - **Arrows** are drawn as hand-drawn lines; a triangle, hollow triangle or line arrowhead is drawn as two loose
   strokes. Circle and diamond heads keep their shapes, because they carry meaning (UML composition, ER
@@ -92,7 +92,7 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 - **Every other face is drawn by hand too.** Whatever an element draws beyond its sketched body is split into two
   layers: charts, legends, progress, rating, checklists, code blocks, concept graphics, Sankey,
   badges, steps, cards, pointer notes, stacks, boundaries, diagram keys, people, web components, office furniture
-  and rooms, Plan boards, cards, views and sheets, collaboration panels, buttons, pickers, reveals, portals, quizzes,
+  and rooms, Plan boards, cards, views and sheets, collaboration panels, buttons, pickers, reveals, portals,
   a tab window's frame, link cards, a video's frame, annotation markers, a table's grid, a lane's gutter, a record's
   rows, a page's fold, a browser's chrome and an inline icon beside a label.
   - Its **ink** (fills, outlines, bars, discs, rules, glyphs) is drawn through the same wobble as icons.
@@ -101,9 +101,9 @@ element leaves unset, plus how a line is drawn (Sketch, Marker).
 
   The two layers line up exactly, so a face reads and behaves as in any finish: its controls are pressed and typed
   into as before. The ink is a still copy of the face, so a hover or press tint on a face's own control is not
-  drawn on a Sketch tab. A face's own animations (a quiz's answers fanning out from its disc) play in the copy in
+  drawn on a Sketch tab. A face's own animations play in the copy in
   step with the live face: each new copy picks up each animation where the live one is, never from the start, so a
-  face that keeps changing (a quiz's countdown) does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
+  face that keeps changing does not drag its moving parts back. Photos inside a face (an avatar, a link card's preview, a video's poster) are not wobbled,
   and a tab window's content keeps the finish of the tab it shows. Exports draw the same two layers.
   A Plan board, view or sheet that fills its tab or is maximised is drawn over the canvas, outside its element's
   box, and keeps its finish there too: its face is split and wobbled as it is on the canvas.

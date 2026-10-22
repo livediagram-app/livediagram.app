@@ -1,6 +1,6 @@
-// The party games of the Quizzes & Games category (docs/specs/012-collaboration/quiz-and-game-templates.md): Two
+// The party games of the Games category (docs/specs/012-collaboration/game-templates.md): Two
 // Truths and a Lie, Would You Rather and Find Someone Who Bingo. Built from the session boards' parts
-// (template-session-parts.ts), the quiz boards' siblings in template-builders-quiz-games.ts.
+// (template-session-parts.ts), Icebreaker Questions' siblings in template-builders-icebreakers.ts.
 //
 // Each builder is pure: it takes a centre (cx, cy) and returns a fresh Element[].
 
@@ -22,7 +22,7 @@ import {
   section,
   sessionButton,
 } from './template-session-parts';
-import { BINGO_PROMPTS, TWO_TRUTHS_PLAYERS, WOULD_YOU_RATHER } from './template-quiz-games-data';
+import { BINGO_PROMPTS, TWO_TRUTHS_PLAYERS, WOULD_YOU_RATHER } from './template-games-data';
 import { YELLOW } from './template-workshop-stickies';
 
 // A reaction pad as tall as a session button, with the line that says when to press it beside it.

@@ -23,10 +23,10 @@ describe('template categories', () => {
       'Finance',
       'Flowcharts',
       'Forms',
+      'Games',
       'Org Charts',
       'Planning',
       'Presentations',
-      'Quizzes & Games',
       'Spreadsheets',
       'Strategy',
       'Technical',
@@ -72,7 +72,7 @@ describe('template categories', () => {
       design: 14,
       presentations: 17,
       technical: 9,
-      games: 5,
+      games: 4,
     });
   });
 

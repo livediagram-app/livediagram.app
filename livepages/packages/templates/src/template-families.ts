@@ -76,7 +76,6 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'affinity-map': null,
   brainstorm: null,
   'workshop-board': null,
-  'pub-quiz': null,
   'icebreaker-questions': null,
   'virtual-office': null,
   'coworking-space': null,

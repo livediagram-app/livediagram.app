@@ -47,13 +47,6 @@ function sessionState(el: Element): ViewAttribute {
   return countAttribute('session', `${plan.tool}${setting}`);
 }
 
-function quizState(el: Element): ViewAttribute {
-  if (flagField(el, 'quizRevealed')) return countAttribute('state', 'revealed');
-  if (numberField(el, 'quizLockedAt') !== null) return countAttribute('state', 'locked');
-  if (numberField(el, 'quizStartedAt') !== null) return countAttribute('state', 'open');
-  return countAttribute('state', 'ready');
-}
-
 function textState(
   key: string,
   text: string | null,
@@ -88,8 +81,6 @@ export function stateAttributeOf(el: Element): ViewAttribute[] {
       return textState('status', stringField(el, 'decisionStatus'), attrValue);
     case 'roll-call':
       return [countAttribute('present', countOf(el, 'rollCall'))];
-    case 'quiz':
-      return [quizState(el)];
     case 'picker':
       return textState('picked', stringField(el, 'pickerResult'), attrValue);
     case 'reveal':

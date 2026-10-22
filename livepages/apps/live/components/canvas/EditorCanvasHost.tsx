@@ -297,7 +297,6 @@ export function EditorCanvasHost() {
     unresolveThread,
     pickerFor,
     collabElements,
-    quiz,
     followMe,
     keepPollResults,
     tabs,
@@ -561,14 +560,6 @@ export function EditorCanvasHost() {
     pressAgendaItem: isReadOnly || runBlocked ? undefined : collabElements.pressAgendaItem,
     resetAgenda: isReadOnly || runBlocked ? undefined : collabElements.resetAgenda,
     takeRoll: isReadOnly || runBlocked ? undefined : collabElements.takeRoll,
-    // The Quiz (docs/specs/012-collaboration/quiz.md). Picking is everyone's with edit rights;
-    // editing and running the round are the facilitator's, else any editor's.
-    answerQuiz: can.takePart ? quiz.answerQuiz : undefined,
-    startQuiz: isReadOnly || runBlocked ? undefined : quiz.startQuiz,
-    lockQuiz: isReadOnly || runBlocked ? undefined : quiz.lockQuiz,
-    revealQuiz: isReadOnly || runBlocked ? undefined : quiz.revealQuiz,
-    resetQuiz: isReadOnly || runBlocked ? undefined : quiz.resetQuiz,
-    saveQuiz: isReadOnly || runBlocked ? undefined : quiz.saveQuiz,
   });
   // Object props the canvas boundary compares by identity (docs/specs/008-canvas/canvas-performance.md
   // "The canvas re-renders only for what it shows"): new only when their data changes.

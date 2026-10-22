@@ -1,27 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { POLL_OPTION_MAX } from '@livepages/api-schema';
 import { STICKY_PRESETS } from '@livepages/document';
-import {
-  quizPhase,
-  sessionButtonPlan,
-  type Element,
-  type ShapeElement,
-} from '@livepages/document';
+import { sessionButtonPlan, type Element, type ShapeElement } from '@livepages/document';
 import { buildTemplate } from './build-template';
 import { templateCategory } from './template-categories';
 import { templateEditorMode } from './template-modes';
-import {
-  BINGO_PROMPTS,
-  ICEBREAKER_QUESTIONS,
-  PUB_QUIZ_ROUNDS,
-  PUB_QUIZ_SECONDS,
-  TWO_TRUTHS_PLAYERS,
-} from './template-quiz-games-data';
+import { BINGO_PROMPTS, ICEBREAKER_QUESTIONS, TWO_TRUTHS_PLAYERS } from './template-games-data';
 import type { TemplateKind } from './templates';
 
-// docs/specs/012-collaboration/quiz-and-game-templates.md "Testing".
+// docs/specs/012-collaboration/game-templates.md "Testing".
 const GAMES: readonly TemplateKind[] = [
-  'pub-quiz',
   'icebreaker-questions',
   'two-truths-and-a-lie',
   'would-you-rather',
@@ -31,40 +19,11 @@ const GAMES: readonly TemplateKind[] = [
 const shapes = (els: Element[], shape: string): ShapeElement[] =>
   els.filter((e): e is ShapeElement => e.type === 'shape' && e.shape === shape);
 
-describe('quiz and game templates', () => {
-  it.each(GAMES)('%s opens in Workshop, files under Quizzes & Games and builds', (kind) => {
+describe('game templates', () => {
+  it.each(GAMES)('%s opens in Workshop, files under Games and builds', (kind) => {
     expect(templateEditorMode(kind)).toBe('workshop');
     expect(templateCategory(kind)).toBe('games');
     expect(buildTemplate(kind, 0, 0).length).toBeGreaterThan(5);
-  });
-
-  it('sets up every Pub Quiz card ready to run: four answers, a right one, the round length', () => {
-    const quizzes = shapes(buildTemplate('pub-quiz', 0, 0), 'quiz');
-    expect(quizzes).toHaveLength(9);
-    for (const q of quizzes) {
-      expect(quizPhase(q, Date.now()), q.label).toBe('ready');
-      expect(q.quizOptions, q.label).toHaveLength(4);
-      expect(q.quizCorrect, q.label).toBeGreaterThanOrEqual(0);
-      expect(q.quizCorrect, q.label).toBeLessThan(4);
-      expect(q.quizSeconds).toBe(PUB_QUIZ_SECONDS);
-    }
-    expect(new Set(quizzes.map((q) => q.label)).size).toBe(9);
-  });
-
-  it('hides the tie-breaker answer under a reveal zone, closed', () => {
-    const els = buildTemplate('pub-quiz', 0, 0);
-    const [cover] = shapes(els, 'reveal');
-    const answer = els.find((e) => e.type === 'sticky')!;
-    expect(cover).toBeDefined();
-    expect(cover!.revealed).toBeFalsy();
-    expect([cover!.x, cover!.y, cover!.width, cover!.height]).toEqual([
-      answer.x,
-      answer.y,
-      answer.width,
-      answer.height,
-    ]);
-    // The cover paints over the answer, so it comes after it.
-    expect(els.indexOf(cover!)).toBeGreaterThan(els.indexOf(answer));
   });
 
   it.each(GAMES)('%s ships only session buttons that can start', (kind) => {
@@ -107,17 +66,6 @@ describe('quiz and game templates', () => {
     expect(new Set(BINGO_PROMPTS).size).toBe(16);
     const cells = shapes(buildTemplate('people-bingo', 0, 0), 'square');
     expect(cells.map((c) => c.label)).toEqual(BINGO_PROMPTS);
-  });
-});
-
-describe('the Pub Quiz answers', () => {
-  it('spreads the right answers over the letters, so picking one letter scores nothing special', () => {
-    const correct = PUB_QUIZ_ROUNDS.flatMap((r) => r.questions.map((q) => q.correct));
-    const share = (i: number) => correct.filter((c) => c === i).length;
-    for (const i of [0, 1, 2, 3]) expect(share(i), `letter ${'ABCD'[i]}`).toBeLessThanOrEqual(3);
-    // And no round answers one letter throughout.
-    for (const r of PUB_QUIZ_ROUNDS)
-      expect(new Set(r.questions.map((q) => q.correct)).size).toBeGreaterThan(1);
   });
 });
 

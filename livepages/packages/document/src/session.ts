@@ -231,7 +231,7 @@ export function voteKeyOf(element: Element): string {
 
 export function isVotable(element: Element): boolean {
   if (element.type === 'sticky' || element.type === 'image') return true;
-  // The collaboration panels (estimate, quiz, idea box, ...) are controls for the same reason as the Behaviour
+  // The collaboration panels (estimate, idea box, ...) are controls for the same reason as the Behaviour
   // elements above: their buttons let the press through to the element, so pressing an estimate mid-vote both
   // answered and spent a dot.
   return (

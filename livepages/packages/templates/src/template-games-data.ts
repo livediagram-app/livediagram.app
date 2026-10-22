@@ -1,91 +1,9 @@
-// The worked content of the quiz and game boards (docs/specs/012-collaboration/quiz-and-game-templates.md): the pub
-// quiz's rounds, the icebreaker questions, the would-you-rather dilemmas, the bingo prompts and the two-truths
-// players. Pure data, read by template-builders-quiz-games.ts and template-builders-party-games.ts. Every answer
-// marked correct is correct: a quiz that marks the room wrong is the one bug a quizmaster cannot talk round.
+// The worked content of the game boards (docs/specs/012-collaboration/game-templates.md): the icebreaker
+// questions, the would-you-rather dilemmas, the bingo prompts and the two-truths players. Pure data, read by
+// template-builders-icebreakers.ts and template-builders-party-games.ts.
 
 // The sticky paper and ink each player writes on: the sticky presets' own pairs, so the colour picker names them.
 import { BLUE, LILAC, PINK } from './template-workshop-stickies';
-
-type QuizQuestion = { question: string; options: readonly string[]; correct: number };
-type QuizRound = { title: string; questions: readonly QuizQuestion[] };
-
-export const PUB_QUIZ_ROUNDS: readonly QuizRound[] = [
-  {
-    title: 'Round 1 · General knowledge',
-    questions: [
-      {
-        question: 'How many sides does a hexagon have?',
-        options: ['5', '6', '7', '8'],
-        correct: 1,
-      },
-      {
-        question: 'Which is the largest ocean on Earth?',
-        options: ['Atlantic', 'Indian', 'Pacific', 'Arctic'],
-        correct: 2,
-      },
-      {
-        question: 'What colour do you get by mixing blue and yellow?',
-        options: ['Green', 'Purple', 'Orange', 'Brown'],
-        correct: 0,
-      },
-    ],
-  },
-  {
-    title: 'Round 2 · Geography',
-    questions: [
-      {
-        question: 'What is the capital of Australia?',
-        options: ['Sydney', 'Melbourne', 'Canberra', 'Perth'],
-        correct: 2,
-      },
-      {
-        question: 'Mount Kilimanjaro is in which country?',
-        options: ['Kenya', 'Tanzania', 'Uganda', 'Ethiopia'],
-        correct: 1,
-      },
-      {
-        question: 'Which river flows through Cairo?',
-        options: ['The Nile', 'The Congo', 'The Niger', 'The Zambezi'],
-        correct: 0,
-      },
-    ],
-  },
-  {
-    title: 'Round 3 · Science and nature',
-    questions: [
-      {
-        question: 'What is the chemical symbol for gold?',
-        options: ['Ag', 'Gd', 'Go', 'Au'],
-        correct: 3,
-      },
-      {
-        question: 'How many legs does a spider have?',
-        options: ['8', '6', '10', '12'],
-        correct: 0,
-      },
-      {
-        question: 'Which planet is known as the Red Planet?',
-        options: ['Venus', 'Jupiter', 'Mars', 'Saturn'],
-        correct: 2,
-      },
-    ],
-  },
-];
-
-// How long each pub quiz question stays open: long enough to confer as a team.
-export const PUB_QUIZ_SECONDS = 30;
-
-export const PUB_QUIZ_TEAMS: readonly string[] = [
-  'The Quizzly Bears',
-  'Les Quizérables',
-  'Quiz Khalifa',
-  'Agatha Quiztie',
-];
-
-export const PUB_QUIZ_TIE_BREAK = {
-  question: 'Closest guess wins: in what year did people first walk on the Moon?',
-  answer: '1969, Apollo 11',
-};
 
 // Each under the Picker's two-line result at its width (about 80 characters).
 export const ICEBREAKER_QUESTIONS: readonly string[] = [

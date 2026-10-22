@@ -22,8 +22,6 @@ import { AgendaFace } from './AgendaFace';
 import { RollCallFace } from './RollCallFace';
 import { DecisionFace } from './DecisionFace';
 import { DoneCheckFace } from './DoneCheckFace';
-import { QuizFace } from './quiz/QuizFace';
-import type { QuizDraft } from '@/hooks/canvas/useQuizElements';
 
 // What a collaboration face needs from the editor. Absent entirely on a
 // surface with no session behind it (the read-only embed, the export
@@ -60,14 +58,6 @@ export type CollabApi = {
   // Back to "not started" (docs/specs/012-collaboration/agenda.md).
   resetAgenda?: (element: ShapeElement) => void;
   takeRoll?: (element: ShapeElement) => void;
-  // The Quiz (docs/specs/012-collaboration/quiz.md). `answerQuiz` is anyone with edit rights; the rest
-  // run the round, so they are absent for everyone but whoever runs it.
-  answerQuiz?: (element: ShapeElement, index: number) => void;
-  startQuiz?: (element: ShapeElement) => void;
-  lockQuiz?: (element: ShapeElement) => void;
-  revealQuiz?: (element: ShapeElement) => void;
-  resetQuiz?: (element: ShapeElement) => void;
-  saveQuiz?: (element: ShapeElement, draft: QuizDraft) => void;
 };
 
 export function CollabFaceRouter({
@@ -97,10 +87,6 @@ export function CollabFaceRouter({
   // The colour showing THROUGH a card's holes and tears (docs/specs/012-collaboration/participant-responses.md's paper
   // kit): its own fill, so a punch reads as an opening rather than a dot.
   const surface = element.fillColor ?? defaultFillColor(element, paper);
-  // Bind a verb to this element once, so a face with many deals in its own
-  // ids (a quiz answer) rather than in elements.
-  const bind = <A extends unknown[], R>(fn?: (el: ShapeElement, ...args: A) => R) =>
-    fn ? (...args: A) => fn(element, ...args) : undefined;
 
   if (element.shape === 'done-check') {
     return (
@@ -166,27 +152,6 @@ export function CollabFaceRouter({
         onReveal={api?.revealIdeas ? () => api.revealIdeas!(element) : undefined}
         onClear={api?.clearIdeas ? () => api.clearIdeas!(element) : undefined}
         onScatter={api?.scatterIdeas ? () => api.scatterIdeas!(element) : undefined}
-        onOpenSettings={onOpenSettings}
-      />
-    );
-  }
-  if (element.shape === 'quiz') {
-    return (
-      <QuizFace
-        element={element}
-        label={label}
-        textColor={textColor}
-        surface={surface}
-        selfKey={api?.selfKey ?? ''}
-        participants={api?.participants ?? []}
-        actions={{
-          answer: bind(api?.answerQuiz),
-          start: bind(api?.startQuiz),
-          lock: bind(api?.lockQuiz),
-          reveal: bind(api?.revealQuiz),
-          reset: bind(api?.resetQuiz),
-          save: bind(api?.saveQuiz),
-        }}
         onOpenSettings={onOpenSettings}
       />
     );

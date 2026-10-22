@@ -243,8 +243,7 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'icebreaker',
     'session',
   ],
-  // Quizzes & Games.
-  'pub-quiz': ['quiz', 'trivia', 'quiz night', 'game', 'teams', 'fun', 'social'],
+  // Games.
   'coworking-space': [
     'coworking',
     'cowork',
