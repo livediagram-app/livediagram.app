@@ -1,0 +1,44 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { RedoStep } from '@/components/illustrations/undo-redo';
+
+export const metadata = helpMetadata({
+  title: 'Redo',
+  description:
+    'Re-apply something you just undid with Cmd+Shift+Z, Ctrl+Y, the Redo button or the search palette. Step back and forth through your recent changes.',
+  path: '/help/canvas/redo/',
+});
+
+<ArticleLayout
+  title="Redo"
+  description="Re-apply something you just undid with a keyboard shortcut or the redo button."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles("redo")}
+>
+
+## Putting a change back
+
+Redo re-applies something you just undid. You can:
+
+- Press **Cmd+Shift+Z** or **Cmd+Y** on a Mac.
+- Press **Ctrl+Y** or **Ctrl+Shift+Z** on Windows and Linux.
+- Click the **Redo** button in the controls at the bottom-right of the canvas, beside Undo. It is greyed out when there is nothing to redo.
+- Open the search palette (**Cmd+K** or **Cmd+.**, **Ctrl** on Windows and Linux) and type **redo**. It is listed only when there is something to redo.
+
+<Figure caption="Redo re-applies the change you just undid.">
+  <RedoStep />
+</Figure>
+
+## Stepping back and forth
+
+Like undo, redo is personal to you and applies to your current session. Keep undoing and redoing to move back and forth through your recent changes, up to 500 steps either way, until the canvas looks the way you want.
+
+Making a new change after undoing clears what you could redo: the new change starts a fresh path, and the steps you undid are gone. If you might want them, redo first.
+
+<Tip>If you undo a few steps too many, redo is the quickest way to return to where you were.</Tip>
+
+Redo, like undo, is not available to Viewers. Participants redo their own changes with the shortcuts and the button, though Redo is not in their search palette. To go the other direction, see [Undo](/help/canvas/undo/).
+
+</ArticleLayout>

@@ -1,0 +1,148 @@
+'use client';
+
+import type { PointerEvent as ReactPointerEvent, ReactNode, RefObject } from 'react';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import type { HelpArticleKey } from '@/lib/help-articles';
+import { ResetPositionGlyph } from '@/components/primitives/ResetPositionGlyph';
+import { HoverCard, Glyph } from '@livediagram/ui';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+
+// A panel's title. Minimal chrome (docs/specs/007-editor/power-user-mode.md) keeps it for
+// assistive technology only; the header keeps its height from its buttons.
+export function PanelTitle({ title }: { title: string }) {
+  const minimalChrome = useMinimalChrome();
+  if (minimalChrome) return <span className="sr-only">{title}</span>;
+  return (
+    <span className="select-none text-[10px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-200">
+      {title}
+    </span>
+  );
+}
+
+// The panel's header row, lifted out of MovablePanel: the drag handle (the
+// whole row), the title, the caller's extra header content / actions, the
+// reset-position button, and a collapsible panel's collapse toggle with its
+// plus / dash glyphs. Pure render — all the
+// state stays in MovablePanel, which mounts this once per panel.
+export function MovablePanelHeader({
+  headerRef,
+  beginDrag,
+  dragging,
+  title,
+  headerExtra,
+  titleAdornment,
+  headerActions,
+  helpArticle,
+  onReset,
+  collapsible,
+  effectiveCollapsed,
+  onToggleCollapsed,
+}: {
+  headerRef: RefObject<HTMLDivElement | null>;
+  beginDrag: (e: ReactPointerEvent) => void;
+  dragging: boolean;
+  title: string;
+  headerExtra?: ReactNode;
+  titleAdornment?: ReactNode;
+  headerActions?: ReactNode;
+  helpArticle?: HelpArticleKey;
+  onReset?: () => void;
+  collapsible: boolean;
+  effectiveCollapsed: boolean;
+  onToggleCollapsed: () => void;
+}) {
+  const minimalChrome = useMinimalChrome();
+  return (
+    <div
+      ref={headerRef}
+      onPointerDown={beginDrag}
+      className={`flex items-center justify-between gap-2 rounded-t-lg border-b border-slate-200 px-2 pb-1.5 pt-2 dark:border-slate-800 ${dragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+    >
+      <span className="flex min-w-0 items-center gap-1.5">
+        <PanelTitle title={title} />
+        {titleAdornment}
+      </span>
+      {headerExtra ? (
+        <div onPointerDown={(e) => e.stopPropagation()} className="ml-auto mr-1 flex items-center">
+          {headerExtra}
+        </div>
+      ) : null}
+      {/* ml-auto keeps the buttons at the right when Minimal chrome hides the
+          title (docs/specs/007-editor/power-user-mode.md): nothing moves. */}
+      <div className="ml-auto flex items-center gap-1">
+        {headerActions ? (
+          <div onPointerDown={(e) => e.stopPropagation()} className="flex items-center gap-1">
+            {headerActions}
+          </div>
+        ) : null}
+        {/* The panel's help article (docs/specs/018-help/contextual-help-links.md), first in the chrome cluster so
+            it sits in the same spot on every panel. stopPropagation because
+            the header is the drag handle: pressing `?` must open the article,
+            not start moving the panel. */}
+        {helpArticle && !minimalChrome ? (
+          <div onPointerDown={(e) => e.stopPropagation()} className="flex items-center">
+            <HelpArticleLink article={helpArticle} />
+          </div>
+        ) : null}
+        {onReset ? (
+          // Hidden on mobile: drag-to-move isn't available on touch
+          // (the title row is repurposed as a tap-to-collapse target,
+          // see beginDrag above), so a reset-position affordance has
+          // nothing to reset. The button reappears on `sm:` and up
+          // where dragging the title row pans the panel.
+          <HoverCard title="Reset position" description="Snap back to the default corner.">
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={onReset}
+              aria-label={`Reset ${title.toLowerCase()} position`}
+              className="relative hidden h-5 w-5 touch-target items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 sm:flex dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              {/* className="" so the glyph inherits the button's
+                  currentColor (and its hover), not the fixed slate. */}
+              <ResetPositionGlyph size={12} className="" />
+            </button>
+          </HoverCard>
+        ) : null}
+        {collapsible ? (
+          <HoverCard
+            title={
+              effectiveCollapsed
+                ? `Expand ${title.toLowerCase()}`
+                : `Collapse ${title.toLowerCase()}`
+            }
+            description={
+              effectiveCollapsed ? 'Show the panel body.' : 'Hide the panel body, keep the banner.'
+            }
+          >
+            <button
+              type="button"
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={onToggleCollapsed}
+              aria-label={
+                effectiveCollapsed
+                  ? `Expand ${title.toLowerCase()}`
+                  : `Collapse ${title.toLowerCase()}`
+              }
+              className="relative flex h-5 w-5 touch-target items-center justify-center rounded text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-slate-100"
+            >
+              {effectiveCollapsed ? (
+                // Plus glyph: expand the body. Same 12 x 12 grid as
+                // the dash so the button slot doesn't visually
+                // jitter when the icon flips.
+                <Glyph size={12} units={12}>
+                  <line x1="6" y1="2.5" x2="6" y2="9.5" />
+                  <line x1="2.5" y1="6" x2="9.5" y2="6" />
+                </Glyph>
+              ) : (
+                <Glyph size={12} units={12}>
+                  <line x1="2.5" y1="6" x2="9.5" y2="6" />
+                </Glyph>
+              )}
+            </button>
+          </HoverCard>
+        ) : null}
+      </div>
+    </div>
+  );
+}

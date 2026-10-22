@@ -1,0 +1,332 @@
+import { SHAPE_DEFAULT_SIZE, type ShapeKind } from '@livediagram/document';
+import { planViewSize } from '@livediagram/items';
+import { PALETTE_DND_MIME } from '@/lib/icons';
+import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
+import { tileCaption } from './tile-caption';
+import { useModKeyHeld } from '@/hooks/ui/useModKeyHeld';
+import { createContext, useContext } from 'react';
+import { HoverCard, Tooltip } from '@livediagram/ui';
+import { useMinimalChrome } from '@/components/providers/minimal-chrome';
+import { useTabFinish } from '@/components/canvas/CanvasFinishContext';
+import { paletteFinishClass } from './palette-tile-finish';
+import type { PaletteTileDef } from './palette-tile-defs';
+
+// The active tab theme's element colours, made available to every palette
+// tile so the palette previews the theme rather than a fixed slate. `stroke`
+// tints line-art glyphs (all the `stroke="currentColor"` SVGs); `fill` is the
+// shape interior used by the filled tiles (shapes / devices / annotation),
+// applied via the `palette-tile-filled` rule in globals.css. Both are
+// undefined for the Default theme, where the palette keeps its default look.
+//
+// `shapeColors` carries a per-shape-kind override (docs/specs/011-theme/canvas-and-theme-dialog.md Formal / UML +
+// docs/specs/011-theme/custom-themes.md custom themes): a tile whose `dragKind` has an entry previews
+// THAT kind's colour instead of the base — so a UML diamond tile shows
+// amber, a cylinder purple, etc., matching what the shape becomes when
+// added. Kinds without an entry fall back to stroke/fill.
+export type PaletteTint = {
+  stroke?: string;
+  fill?: string;
+  // The theme's element text colour, for a tile that draws an element's label in it (a badge preset).
+  text?: string;
+  shapeColors?: Partial<Record<ShapeKind, { fill?: string; stroke?: string }>>;
+};
+
+const PaletteTintContext = createContext<PaletteTint | undefined>(undefined);
+
+export function PaletteTintProvider({
+  tint,
+  children,
+}: {
+  tint?: PaletteTint;
+  children: React.ReactNode;
+}) {
+  return <PaletteTintContext.Provider value={tint}>{children}</PaletteTintContext.Provider>;
+}
+
+/** The theme tint the palette is drawn in; undefined on the Default theme. */
+export function usePaletteTint(): PaletteTint | undefined {
+  return useContext(PaletteTintContext);
+}
+
+type TileHint = 'tooltip' | 'hover-card';
+
+// The hint a palette tile carries when its caller does not choose one.
+export function tileHint(hint: TileHint | undefined, hideCaption: boolean | undefined): TileHint {
+  return hint ?? (hideCaption ? 'hover-card' : 'tooltip');
+}
+
+type IconButtonProps = {
+  label: string;
+  description: string;
+  onClick: () => void;
+  children: React.ReactNode;
+  disabled?: boolean;
+  // Greyed out with a reason (docs/specs/026-plan/plan-mode.md "The palette"): dimmed, no press and no drag, but
+  // still focusable (aria-disabled), with the reason in its hover card.
+  disabledReason?: string | undefined;
+  // Pressed-state styling. Used by the shape buttons during draw-to-
+  // size mode so the user sees which shape is queued for the next
+  // canvas drag (the cursor + the banner already say it, but a
+  // highlighted palette button closes the loop for the
+  // "where did I click?" question).
+  active?: boolean;
+  // Single-key shortcut letter (e.g. "R"). Renders a corner badge
+  // whenever the user is holding Cmd/Ctrl, so the palette becomes a
+  // self-documenting cheat sheet without permanent visual clutter.
+  // The shortcut itself is bound centrally in useEditorKeyboardShortcuts;
+  // this prop is purely the visual reveal.
+  shortcut?: string;
+  // Optional HTML5 drag source. Used by the icon tiles so an icon can be
+  // dragged onto a shape (the drop sets the shape's inline icon). When
+  // unset the button isn't draggable.
+  draggable?: boolean;
+  onDragStart?: (e: React.DragEvent) => void;
+  // Called when a drag from this tile ends, dropped or not (the event's
+  // dropEffect says which). The drag ghost is cleared either way.
+  onDragEnd?: (e: React.DragEvent) => void;
+  // Which hint the tile carries (docs/specs/004-interface-design/tooltips-hover-cards-popovers.md).
+  // Default: a Tooltip with the full name when the caption shows (the
+  // caption may be shortened), a hover card with the description when it is
+  // hidden. The icon-picker grid asks for a Tooltip on its caption-less
+  // glyphs: a hover card on each of ~60 glyphs is noise, the name is not.
+  hint?: TileHint;
+  // Suppress the caption under the icon. The icon-picker grid sets this:
+  // its glyphs are a dense gallery where per-tile names would be noise (and
+  // it stays a 6-up grid), unlike the shape / tool / device grids.
+  hideCaption?: boolean;
+  // A Toolbar strip tile (PaletteTile `compact`): a phone's strip draws it a little narrower, so more fit in view.
+  stripTile?: boolean;
+  // Override the caption text (default is derived from `label`). Used where
+  // the derived name is too long for the tile, e.g. "Bubble".
+  caption?: string;
+  // The tile's creation-time choice (which session tool, which reaction,
+  // which mode, which estimate scale), carried alongside the kind so a drag
+  // places what the tile says it places.
+  dragChoice?: string;
+  // Makes the tile draggable to place this shape kind on the canvas (drag
+  // alternative to click-to-add). Wires the palette DnD payload.
+  dragKind?: ShapeKind;
+  // Render the glyph as a filled mini-preview of a themed element: the
+  // theme's element fill paints the shape interior on top of the stroke
+  // tint, so the tile previews what gets dropped. Set on the boxed-shape
+  // tiles (shapes / devices / annotation); line-art tools + icons leave it
+  // off and just take the stroke tint. No-op under the Default theme.
+  filled?: boolean;
+  // Opt out of the theme tint entirely — for tiles whose colours are fixed
+  // regardless of theme: the sticky note (always amber), the image
+  // placeholder + link card (neutral chrome), and Technology brand icons.
+  noTint?: boolean;
+  // Show the shortcut letter permanently, small in the bottom-right corner,
+  // instead of the badge that appears only while Cmd/Ctrl is held. The
+  // Toolbar layout's strip (docs/specs/007-editor/toolbar-layout.md) sets it: a tool bar is where people
+  // learn the letters, so it shows them the whole time.
+  shortcutAlwaysVisible?: boolean;
+  // The tile's action: its glyph previews the tab's finish (palette-tile-finish.ts). Omitted for a button that
+  // places nothing (a tool).
+  finishAction?: PaletteTileDef['action'];
+};
+
+export function IconButton({
+  label,
+  description,
+  onClick,
+  children,
+  disabled: disabledProp,
+  disabledReason,
+  active,
+  shortcut,
+  draggable,
+  dragChoice,
+  onDragStart,
+  onDragEnd,
+  hint,
+  hideCaption,
+  stripTile = false,
+  caption: captionOverride,
+  dragKind,
+  filled,
+  noTint,
+  shortcutAlwaysVisible,
+  finishAction,
+}: IconButtonProps) {
+  // A reason greys the tile out as `disabled` does, but keeps it focusable so the reason can be read.
+  const refused = !!disabledReason && !disabledProp;
+  const disabled = disabledProp || refused;
+  // Minimal chrome (docs/specs/007-editor/power-user-mode.md): icon only, named by a Tooltip.
+  const minimalChrome = useMinimalChrome();
+  const captionHidden = hideCaption || minimalChrome;
+  const hintKind = minimalChrome ? (hint ?? 'tooltip') : tileHint(hint, hideCaption);
+  // A dragKind tile is draggable and carries the palette DnD payload; an
+  // explicit draggable/onDragStart (the icon grid) is used otherwise.
+  const effectiveDraggable = refused ? false : dragKind ? true : draggable;
+  const effectiveDragStart = dragKind
+    ? (e: React.DragEvent) => {
+        // `kind` alone, or `kind|choice` where the tile carries a
+        // creation-time one (docs/specs/009-elements/mode-button.md, /105, /123, /135). Without it a
+        // dragged Poll tile dropped a timer, because every session tile is
+        // the same shape kind and the choice lived only on the click path.
+        e.dataTransfer.setData(
+          PALETTE_DND_MIME,
+          dragChoice ? `${dragKind}|${dragChoice}` : dragKind,
+        );
+        e.dataTransfer.effectAllowed = 'copy';
+        // Publish the footprint so the canvas ghost (docs/specs/010-palette/palette-drag-ghost.md) can preview
+        // where this shape will land.
+        // A plan view's footprint is its view's (docs/specs/026-plan/plan-views.md).
+        const { width, height } =
+          dragKind === 'plan-view' ? planViewSize(dragChoice) : SHAPE_DEFAULT_SIZE[dragKind];
+        setPaletteDragPreview({
+          kind: dragKind,
+          width,
+          height,
+          ...(dragKind === 'plan-card' && dragChoice ? { planType: dragChoice } : {}),
+          ...(dragChoice ? { choice: dragChoice } : {}),
+        });
+      }
+    : onDragStart;
+  const modHeld = useModKeyHeld();
+  const showBadge = !disabled && !!shortcut && modHeld && !shortcutAlwaysVisible;
+  const showCornerLetter = !disabled && !!shortcut && shortcutAlwaysVisible;
+  const tone = refused
+    ? 'cursor-not-allowed text-slate-600 opacity-50 dark:text-slate-100'
+    : active
+      ? // Inset, as the dock's (DOCK_PRESSED): on a strip centred to a half pixel an outer ring lost its left edge.
+        'bg-brand-100 text-brand-700 ring-1 ring-inset ring-brand-300 dark:bg-brand-500/20 dark:text-brand-200 dark:ring-brand-500/50'
+      : 'text-slate-600 enabled:hover:bg-slate-100 enabled:hover:text-slate-900 dark:text-slate-100 dark:enabled:hover:bg-slate-800 dark:enabled:hover:text-white';
+  const { glyphStyle, glyphClass } = useTileGlyph({
+    dragKind,
+    filled,
+    noTint,
+    plain: !!active || !!disabled,
+    finishAction,
+  });
+  // Short caption under the icon (see tileCaption — shared with the Tools
+  // tab's rows so the same tool is never named two ways).
+  const caption = tileCaption(label, captionOverride);
+  const button = (
+    <button
+      type="button"
+      onClick={refused ? undefined : onClick}
+      aria-label={label}
+      aria-pressed={active}
+      aria-disabled={refused || undefined}
+      disabled={disabledProp}
+      draggable={effectiveDraggable}
+      onDragStart={(e) => {
+        if (refused) {
+          e.preventDefault();
+          return;
+        }
+        // Hide the browser's tile-snapshot drag image for shape tiles so the
+        // canvas ghost is the only preview (icons keep the native image until
+        // they're wired to the ghost too).
+        if (dragKind) suppressNativeDragImage(e);
+        effectiveDragStart?.(e);
+      }}
+      onDragEnd={(e) => {
+        setPaletteDragPreview(null);
+        onDragEnd?.(e);
+      }}
+      className={
+        hideCaption
+          ? `relative flex h-9 w-9 items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${stripTile ? 'phone:w-8' : ''} ${tone}`
+          : minimalChrome
+            ? // Keeps its grid cell's width, so the icon stays centred where the
+              // captioned tile had it.
+              `relative flex h-9 w-full items-center justify-center rounded-md transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
+            : `relative flex w-full flex-col items-center justify-start gap-0.5 rounded-md px-0.5 py-1 transition disabled:cursor-not-allowed disabled:opacity-50 ${tone}`
+      }
+    >
+      {captionHidden ? (
+        <span style={glyphStyle} className={`${glyphClass}flex items-center justify-center`}>
+          {children}
+        </span>
+      ) : (
+        <>
+          <span style={glyphStyle} className={`${glyphClass}flex h-6 items-center justify-center`}>
+            {children}
+          </span>
+          {/* 10px, not 9: at 9px the caption's stems fell under a pixel wide
+              and anti-aliased to grey, which read as blur beside the glyph. */}
+          <span className="w-full truncate text-center text-[10px] leading-none">{caption}</span>
+        </>
+      )}
+      {showBadge ? (
+        <kbd
+          aria-hidden
+          className="pointer-events-none absolute right-0.5 top-0.5 flex h-3.5 min-w-[0.875rem] items-center justify-center rounded-[3px] border border-slate-300 bg-white px-0.5 text-[8px] font-semibold leading-none text-slate-700 shadow-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-200"
+        >
+          <span className="text-optical-line text-optical-caps [--optical-tracking:0em]">
+            {shortcut}
+          </span>
+        </kbd>
+      ) : null}
+      {showCornerLetter ? (
+        <span
+          aria-hidden
+          className="pointer-events-none absolute bottom-0 right-0.5 text-[8px] font-medium uppercase leading-none text-slate-500 dark:text-slate-400 pointer-coarse:hidden"
+        >
+          {shortcut}
+        </span>
+      ) : null}
+    </button>
+  );
+  if (refused) {
+    return (
+      <HoverCard title={label} description={disabledReason}>
+        {button}
+      </HoverCard>
+    );
+  }
+  if (disabled) return button;
+  if (hintKind === 'tooltip') return <Tooltip label={label}>{button}</Tooltip>;
+  return (
+    <HoverCard title={label} description={description}>
+      {button}
+    </HoverCard>
+  );
+}
+
+/** How a tile's glyph is drawn: in the tab theme's tint (a shape kind's own colours where the theme has them, its
+ *  fill too for a `filled` tile), and previewing the tab's finish. `plain` (an armed or disabled tile) keeps the
+ *  brand treatment instead. Shared by the palette tile and the category flyout's tiles, so the two never differ. */
+export function useTileGlyph({
+  dragKind,
+  filled,
+  noTint,
+  plain,
+  finishAction,
+}: {
+  dragKind?: ShapeKind | undefined;
+  filled?: boolean | undefined;
+  noTint?: boolean | undefined;
+  plain: boolean;
+  finishAction?: PaletteTileDef['action'] | undefined;
+}): { glyphStyle: React.CSSProperties | undefined; glyphClass: string } {
+  const tabFinish = useTabFinish();
+  // Theme tint for the glyph. The active (queued) tile keeps the brand
+  // pressed treatment so it still reads as "selected"; disabled + opted-out
+  // tiles render plain. The stroke colour drives every `currentColor` glyph;
+  // the filled tiles additionally expose the fill as a CSS var consumed by
+  // the `palette-tile-filled` rule. Caption text stays on the slate `tone`
+  // (the style only lands on the glyph wrapper), so labels keep their
+  // contrast.
+  const themeTint = useContext(PaletteTintContext);
+  // Per-shape themes (UML / custom) colour a tile by its own kind; fall
+  // back to the theme's single element stroke / fill for kinds without an
+  // override (and for non-shape tiles, which carry no dragKind).
+  const shapeOverride = dragKind ? themeTint?.shapeColors?.[dragKind] : undefined;
+  const baseStroke = shapeOverride?.stroke ?? themeTint?.stroke;
+  const baseFill = shapeOverride?.fill ?? themeTint?.fill;
+  const tintStroke = !plain && !noTint ? baseStroke : undefined;
+  const tintFill = tintStroke && filled ? baseFill : undefined;
+  const glyphStyle: React.CSSProperties | undefined = tintStroke
+    ? {
+        color: tintStroke,
+        ...(tintFill ? { '--tile-fill': tintFill } : {}),
+      }
+    : undefined;
+  const finishClass = finishAction ? paletteFinishClass(tabFinish, finishAction) : '';
+  const glyphClass = `${tintFill ? 'palette-tile-filled ' : ''}${finishClass ? `${finishClass} ` : ''}`;
+  return { glyphStyle, glyphClass };
+}

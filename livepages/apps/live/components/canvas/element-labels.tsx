@@ -1,0 +1,244 @@
+// Label rendering primitives used inside boxed element views (shape,
+// text, sticky). Five renderers and two editors covering the four
+// committed sizes (scale / sm / md / lg) and both single-line and
+// multi-line layouts. Lifted out of element-parts.tsx (was 643 lines,
+// two-thirds of it labels) so the parts file is scoped to selection
+// chrome (lock badge, resize handles) and labels live with
+// their own shared CSS / font tables.
+//
+// The split lines up cleanly: nothing in the selection-chrome half
+// referenced any of these symbols (alignment constants, font tables,
+// the label style type, the SVG preserveAspectRatio helper, the
+// renderers themselves), and BoxedElementView was the single consumer
+// of every exported label. The element-parts.tsx import block in
+// BoxedElementView is split here in the same change.
+
+import {
+  hasRichFormatting,
+  isEventStormingNote,
+  labelFontPx,
+  type BoxedElement,
+  type TextAlignX,
+  type TextAlignY,
+  type TextRun,
+  type TextSize,
+} from '@livediagram/document';
+import { RichTextEditor } from '@/components/canvas/RichTextEditor';
+import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
+import { FixedSizeLabel, MultilineLabel, RichLabel, ScalingLabel } from './element-label-views';
+import type { TextHugLabel } from './useTextHug';
+import type { TextAnimView } from './useTextAnimation';
+import { wordmarkTextStyle } from './label-style';
+import { WordmarkArcLabel } from './WordmarkArcLabel';
+
+export function renderLabel(
+  element: BoxedElement,
+  label: string,
+  textSize: TextSize,
+  alignX: TextAlignX,
+  alignY: TextAlignY,
+  padding: number,
+  isEditing: boolean,
+  // Commits the edited label: the plain-text mirror plus the per-range
+  // runs (docs/specs/008-canvas/canvas-and-palette.md). Runs are normalized + may be empty for plain text.
+  onCommitLabel: (label: string, runs: TextRun[]) => void,
+  onCancelEdit: () => void,
+  editCursorAtEnd: boolean,
+  fontFamily?: string,
+  // Whole-element alignment setter surfaced in the edit toolbar (docs/specs/008-canvas/canvas-and-palette.md).
+  // Operates on the current selection = the editing element.
+  onSetAlign?: (x: TextAlignX, y: TextAlignY) => void,
+  // When the element carries an inline icon or a status marker, the editor
+  // renders as a flex child (not a full-box fill) so the glyph stays in its
+  // place beside the text while typing; the inline-icon layout owns
+  // positioning + padding.
+  inlineIcon = false,
+  // Text-native animation class (docs/specs/008-canvas/canvas-and-palette.md): applied to the label content node
+  // so glow / pulse / trace / gradient ride the glyphs rather than the
+  // element's invisible bounding box. Set only for text elements (see
+  // isTextNativeAnim in BoxedElementView); undefined otherwise.
+  labelAnimClass?: string,
+  // A whiteboard text box hugging its text (docs/specs/023-draw-mode/draw-mode.md "Text boxes"):
+  // its own padding, no placeholder (the caret is the whole box), its size preset drawn at a
+  // fixed px rather than fitted, and the editor's live text reported so the box grows with it.
+  hug?: TextHugLabel,
+  // The label's Text animation (docs/specs/028-animation/element-animations.md "Text"), undefined
+  // when it has none or is being edited; useTextAnimation builds it.
+  textAnim?: TextAnimView,
+  // Told the editor's live content on every change, for a label that sizes its box without the
+  // rest of `hug`: a mind node growing to fit its lines (useMindLabelFit).
+  onLiveText?: (editor: HTMLElement) => void,
+) {
+  const isSticky = element.type === 'sticky';
+  // A Shift-resized whiteboard text box draws its text scaled (docs/specs/023-draw-mode/draw-mode.md).
+  const textScale = element.type === 'text' ? (element.textScale ?? 1) : 1;
+  const textPadding = hug ? hug.padding : padding;
+  // Shape elements don't carry a placeholder during edit. The user
+  // is already mid-double-click on a visible shape, so the empty
+  // input doesn't need "Label" filler nudging them; the surrounding
+  // shape silhouette communicates context already. Sticky notes
+  // and standalone text elements DO get a placeholder because their
+  // pre-edit affordance is just an empty rectangle / nothing.
+  const placeholder = element.type === 'text' ? (hug ? '' : 'Text') : isSticky ? 'Note' : '';
+
+  // Workshop notes are written in capitals (docs/specs/021-event-storming/event-storming.md) — a presentation rule,
+  // so it rides the label STYLE (and the fit below) rather than touching the
+  // stored text. Display label, rich runs and the live editor all take the
+  // same flag, or the note would change case on double-click.
+  const caps = isEventStormingNote(element);
+
+  const wordmark = wordmarkTextStyle(element);
+  const textStyle = {
+    bold: element.textBold,
+    italic: element.textItalic,
+    underline: element.textUnderline,
+    strikethrough: element.textStrikethrough,
+    fontFamily,
+    ...wordmark,
+    uppercase: caps || wordmark.uppercase,
+  };
+
+  const richText = (element as { richText?: TextRun[] }).richText;
+
+  // Auto-fit (docs/specs/021-event-storming/event-storming.md): on a multi-line label (sticky) 'scale' means FILL
+  // THE NOTE — measured here once, then handed to whichever of the two
+  // surfaces renders (label or editor), so they can never disagree and
+  // double-clicking never shifts the text.
+  const fitBox =
+    isSticky && textSize === 'scale'
+      ? { width: element.width, height: element.height, padding }
+      : undefined;
+  const fitPx = fitBox
+    ? fitMultilineFontPx({
+        text: label,
+        width: fitBox.width,
+        height: fitBox.height,
+        padding,
+        bold: !!element.textBold,
+        italic: !!element.textItalic,
+        uppercase: caps,
+        fontFamily,
+      })
+    : undefined;
+
+  if (isEditing) {
+    // Per-element placeholder colour: typed text inherits the element's
+    // resolved textColor via currentColor (set on the parent view), so the
+    // editor matches the committed label instead of snapping to a default.
+    // A note's placeholder is its own ink, faded.
+    const textClass = isSticky
+      ? 'placeholder:opacity-50'
+      : element.type === 'text'
+        ? 'placeholder:text-slate-400'
+        : 'placeholder:text-brand-300';
+    return (
+      <RichTextEditor
+        element={element}
+        initialLabel={label}
+        initialRuns={richText}
+        placeholder={placeholder}
+        textSize={textSize}
+        fitBox={fitBox}
+        alignX={alignX}
+        alignY={alignY}
+        padding={textPadding}
+        textScale={textScale}
+        onLiveText={hug?.onLiveText ?? onLiveText}
+        fontFamily={fontFamily}
+        multiline={isSticky}
+        uppercase={caps}
+        cursorAtEnd={editCursorAtEnd}
+        textClassName={textClass}
+        onCommit={onCommitLabel}
+        onCancel={onCancelEdit}
+        onSetAlign={onSetAlign}
+        inline={inlineIcon}
+      />
+    );
+  }
+
+  // Arched wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): one line along an
+  // arc, drawn as an SVG face. Editing shows it flat (above); the arc returns on commit.
+  if (element.type === 'text' && element.textArc) {
+    if (!label) return null;
+    return (
+      <WordmarkArcLabel
+        element={element}
+        text={label}
+        padding={padding}
+        fontFamily={fontFamily}
+        style={textStyle}
+      />
+    );
+  }
+
+  // Per-range formatting (docs/specs/008-canvas/canvas-and-palette.md): once a label carries non-trivial
+  // runs, render them as styled spans regardless of size (the `scale`
+  // auto-fit opt-out). Empty / single override-free runs fall through to
+  // the legacy whole-element renderers below.
+  if (hasRichFormatting(richText)) {
+    return (
+      <RichLabel
+        runs={richText!}
+        element={element}
+        textSize={textSize}
+        alignX={alignX}
+        alignY={alignY}
+        padding={textPadding}
+        textScale={textScale}
+        fontFamily={fontFamily}
+        multiline={isSticky}
+        uppercase={caps}
+        wordmark={wordmark}
+        animClass={labelAnimClass}
+      />
+    );
+  }
+
+  if (isSticky) {
+    return (
+      <MultilineLabel
+        text={label}
+        placeholder={placeholder}
+        textSize={textSize}
+        fitPx={fitPx}
+        alignX={alignX}
+        alignY={alignY}
+        padding={padding}
+        style={textStyle}
+        textAnim={textAnim}
+      />
+    );
+  }
+
+  if (textSize === 'scale' && !hug) {
+    if (!label) return null;
+    return (
+      <ScalingLabel
+        text={label}
+        alignX={alignX}
+        alignY={alignY}
+        padding={padding}
+        style={textStyle}
+        // The gradient relies on background-clip:text, which can't paint an SVG
+        // <text> fill — withhold it here so the glyphs don't vanish; glow /
+        // pulse / trace ride the SVG drop-shadow fine.
+        animClass={labelAnimClass === 'lvd-anim-text-gradient' ? undefined : labelAnimClass}
+        textAnim={textAnim}
+      />
+    );
+  }
+
+  return (
+    <FixedSizeLabel
+      text={label}
+      px={hug ? hug.fontPx : labelFontPx(textSize) * textScale}
+      alignX={alignX}
+      alignY={alignY}
+      padding={textPadding}
+      style={textStyle}
+      animClass={labelAnimClass}
+      textAnim={textAnim}
+    />
+  );
+}

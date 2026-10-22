@@ -1,0 +1,56 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { NotificationSettings } from '@/components/illustrations/account-settings';
+
+export const metadata = helpMetadata({
+  title: 'Email Notifications',
+  description:
+    'The emails livediagram can send to signed-in users, what they contain, and how to turn each kind off in Settings.',
+  path: '/help/account-and-data/email-notifications/',
+});
+
+<ArticleLayout title="Email Notifications" description="Optional emails for signed-in users, and how to control every kind of them in Settings." categoryTitle="Account and Data" categorySlug="account-and-data">
+
+Email is an optional capability of livediagram. It only does anything when the deployment has been set up to send mail. Almost everything goes to signed-in users, because email needs an address and a [guest identity](/help/account-and-data/guest-identity/) has none. The exceptions are mail addressed to someone by email before they have an account: a team invite, and an action assigned to or a mention of a team member who has not signed up yet. The canvas itself never needs an account or an email, so this is purely additive.
+
+## What we might send
+
+There are four groups:
+
+- **Tips and check-ins.** A short welcome when you first sign in, a nudge a few days later if you have not made a document yet, a couple of getting-started notes over your first two weeks, and a friendly nudge if you have been away for about four weeks. The welcome goes straight away; everything after it can be turned off.
+- **Milestones.** A small celebration when you hit a milestone: your first share link, and your tenth document.
+- **Notifications about your work.** When a signed-in person opens a document you shared for the first time (at most one email per document every 15 minutes), when someone accepts or declines an invite to a team you are an admin of, when someone else comments on a document you own (at most one email per document every 15 minutes, however busy the thread), when someone fills in one of your [forms](/help/canvas/plan-mode/forms/) (at most one email per form every 15 minutes), when a teammate assigns you an action on an element, and when a teammate @-mentions you in a comment. Each of these has its own switch.
+- **Account messages.** A team invite when you are invited, with up to three reminders (a day, a week and three weeks later) while nobody has answered it, each with a **Decline invite** link that turns it down without an account (an invite nobody answers expires after four weeks), a confirmation when you delete your account, a one-time heads-up in the last week before an [API token](/help/account-and-data/api-tokens/) expires, and a note if one of your [forms](/help/canvas/plan-mode/forms/) is suspended after reports. These are tied to something you or a teammate did, so they always send.
+
+## What an email contains
+
+Notification emails keep your work out of your inbox where they can. A comment notification tells you who commented and on which document, with a link to open it, but not what the comment said.
+
+Two carry a little more, because the words are addressed to you: a **mention** email quotes the comment you were mentioned in (cut to about 280 characters), and an **assigned action** email names the action and includes the start of its description (up to 200 characters). Both link to the document, or to the Plan card when the mention was on one. An assigned-action email sent to someone who can't open the document yet leaves the document out and links to livediagram instead. Nothing else from the document, and never a picture of it, goes into an email.
+
+## Turning them off
+
+Open **Settings**, go to **Account**, then **Notifications** beneath it (the account menu's **Account** opens Settings on **Account**, one step away). The **Email** section has one switch per optional kind: **Someone Joins My Document**, **Someone Comments on My Document**, **Someone Mentions Me in a Comment**, **Someone Fills In My Form**, **Someone Assigns Me an Action**, **Someone Responds to a Team Invite**, **Tips and Check-Ins**, and **Milestones**. They are all on until you turn them off. The whole row is the switch, so click anywhere on it.
+
+<Figure
+  caption="Settings, Account, Notifications: one switch per kind of optional email, under the in-editor notifications switch."
+  width="narrow"
+>
+  <NotificationSettings />
+</Figure>
+
+<Tip>
+  Every email you can turn off carries a "Manage your notifications" link in its footer that opens
+  these switches, and mail apps that show a native unsubscribe button point at the same place. Only
+  the welcome email has no link.
+</Tip>
+
+The switches are saved to your account, so they apply wherever you are signed in, and the change takes effect before the next email would go out. Account messages (the invite and its reminders, the deletion confirmation, and the token-expiry reminder) are not on this list, because they confirm something rather than nudge you.
+
+As a guest, the same place shows a short note asking you to sign in instead of the switches (on a deployment that sends email). **In-Editor Notifications**, above them, is a different thing: it controls the brief confirmations inside the editor and never sends email.
+
+## Self-hosting
+
+If you run your own instance without email configured, none of this applies: no emails are sent, and the **Email** section of the Notifications settings does not appear. See [Signing In](/help/account-and-data/signing-in/) for how accounts work, and the project's self-hosting docs for enabling email.
+
+</ArticleLayout>

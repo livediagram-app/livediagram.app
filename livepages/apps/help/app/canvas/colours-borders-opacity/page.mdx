@@ -1,0 +1,103 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { ColoursSection, BorderSection } from '@/components/illustrations/colours-borders';
+
+export const metadata = helpMetadata({
+  title: 'Colours, Borders and Opacity',
+  description:
+    "Recolour an element's text, background and border with the colour picker, set border strength, pattern and corner radius, and fade elements with Opacity.",
+  path: '/help/canvas/colours-borders-opacity/',
+});
+
+<ArticleLayout
+  title="Colours, Borders and Opacity"
+  description="Recolour an element, style its border and corners, and fade it, one element or a whole selection at a time."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+>
+
+Every element starts in your tab's [theme](/help/canvas/themes/) colours, so a new diagram already looks coherent. When one element needs to stand apart (a warning in red, a dashed box for something planned, a pill-shaped button, a faded background note), its colours, border and opacity are all in its right-click menu. Open the menu by right-clicking the element (a long press on a touch screen), or press the **⋯** button on its selection toolbar. Colours and Border live under **Style**, which opens beside the menu; Opacity lives under **Layer**, at the top of the menu.
+
+These controls are for Editors. Viewers and Participants don't get the element menu, so they see your colours but can't change them. In [Draw mode](/help/canvas/draw-mode/) and for quick one-click changes, the [Quick Style Panel](/help/canvas/quick-style-panel/) offers the most common colours and strokes without opening a menu.
+
+## Colours
+
+Open **Style**, then **Colours**. Each row names the surface it paints, shows the colour in force on its right, and opens the colour picker beside the menu:
+
+- **Text** colours the element's label (all of it; to colour only some words, see [Formatting Label Text](/help/canvas/text-and-fonts/formatting-label-text/)).
+- **Background** fills the element.
+- **Border** colours its outline.
+- **Heading** appears on a lane and a table, for the lane's title strip and the table's header row.
+- **Icon** replaces Border on a line-art icon, because its stroke is the glyph itself. A [Technology](/help/palette/technology/) icon keeps its brand colours, so it has no Icon row.
+
+An arrow's Colours category has **Line** and **Pointer** instead, so the arrowheads can differ from the line ([Arrows](/help/palette/arrows/)).
+
+Under the rows, **Reset to Theme** puts the element's colours back to the tab theme's, as one step you can undo. It only touches colours: borders, shadows and fonts stay as they are.
+
+<Figure caption="The Colours category with its Border row open: the picker beside the menu offers the Theme Palette, the standard colours and your custom colours.">
+  <ColoursSection />
+</Figure>
+
+### The Colour Picker
+
+Every colour row opens the same picker, the one used everywhere in the editor. From the top:
+
+- **No colour first.** The first swatch, a white square with a slash ("No border colour", "No background colour"), clears the colour: a frame or shape shows the canvas through it, or a border simply disappears.
+- **Theme Palette**: the active tab's theme colours, spun into light, base and dark steps plus a neutral ramp, each named by a colour word ("Blue", "Light blue", "Deep blue"). Switch themes and this group follows.
+- **Standard Colours**: ten colours, the same everywhere. Text, Border, Line, Pointer and Icon rows get the strong tone (Ink, Grey, Red, Orange, Yellow, Green, Teal, Blue, Violet, Pink); Background and Heading rows get the soft tone, washes of the same hues with White in Ink's place.
+- **Custom Colours**: colours anyone has picked with **Add a custom colour** in this document, newest first, shared with everyone on it. **Add a custom colour** (four coloured dots) opens an editor with a saturation square, a hue slider, a hex field and, in browsers that support it, an eyedropper to pick a colour from anywhere on screen. Press **Use** to apply it.
+
+With a mouse, hovering a swatch previews it on the element; clicking commits it and closes the picker. The keyboard works too: arrow keys move between swatches, **Enter** picks and **Escape** closes. On a text or line row, the custom colour editor warns you when a colour would be hard to read on a light or dark canvas, and offers a readable version beside the warning.
+
+### Ink and Colours That Adapt
+
+**Ink** is the first strong standard colour: near-black on a light canvas, near-white on a dark one. A strong standard colour you pick for a shape's text or border, a text element, a sticky note's text, an arrow or a pen stroke is stored by its name, so it is drawn in its version for the canvas you see it on and stays readable when a tab or a reader switches between light and dark. Text with no colour of its own is drawn in Ink. Any other colour is kept exactly as picked.
+
+## Borders
+
+Open **Style**, then **Border**. Three grids of small preview tiles set the outline, and hovering a tile previews it before you click:
+
+- **Strength**: no border (a faint dashed outline), then thin, medium, thick and extra thick. New shapes start at medium and tables at thin.
+- **Pattern**: solid, dashed, dotted, dash-dot, long dash and dash-dot-dot.
+- **Radius**: the corners, from none through small (4 px), medium (12 px) and large (24 px) to full. Full rounds the shorter sides completely, giving a pill on a long box and a circle on a square.
+
+<Figure caption="The Border category's Strength, Pattern and Radius grids, with a thick dashed border and large corners on the selected shape.">
+  <BorderSection />
+</Figure>
+
+### Accent Edge
+
+Under the Radius grid, **Accent Edge** puts a coloured strip down the left side, or across the top or bottom, of a rectangle, a stadium, a [card](/help/palette/cards-and-callouts/) or a mind node: a way to colour-code nodes by team or status without filling them. **Edge Colour** picks its colour, and **Match Border** sets it back to the border's colour. It is drawn inside the shape's corners, and the format painter copies it with the border.
+
+A corner is never rounded more than a quarter of the box's shorter side, so a small rounded square stays a rounded square instead of turning into a circle (Full is the exception, by design). Unset, a shape's corners are slightly rounded and the Radius grid highlights small; a mind node's start at medium.
+
+### Which Elements Have a Border
+
+- **Strength and Pattern** are offered on shapes, pen strokes, paths and tables.
+- **Radius** is offered only where a corner can be rounded: the rectangle, the browser frame, cards (callouts included), boundaries and mind nodes. Circles, diamonds, hexagons and the other outlined shapes have their corners built in.
+- **No Border category** on text elements, sticky notes (a note's **Border** colour row still draws an edge), images, stickers, icons, the actor, and the elements that draw their own faces: charts, progress bars and rings, ratings, timeline rails, code blocks, checklists, legends, Plan boards and cards, portals, reveals, chairs, quizzes, and the banner, header bar, stat row and process components.
+
+A few elements skip Colours too: images and stickers keep their own colours, a code block picks a colour scheme under **Presets** instead, and charts are coloured from their own data. A note on an [event storming board](/help/canvas/event-storming-boards/) has a short menu of its own with no Style at all, since its colour is what it means.
+
+## Opacity
+
+Open **Layer**, the first section of the menu, and drag the **Opacity** slider from 100% (solid) down to 0% (invisible). It fades the whole element, its fill, border, text and shadow together, and the canvas shows it live as you drag. A whole drag is one undo step. Opacity sits beside **Bring to Front** and **Send to Back**, since fading and stacking are both about how an element sits among its neighbours (see [Layer Order](/help/canvas/layer-order/)). Exports and snapshots show the same opacity you see.
+
+## Styling Several Elements at Once
+
+Select several elements and open the menu: its **Style** section has **Colours** and **Border** too, and its **Layer** section has **Opacity**.
+
+- Each row and grid applies to **every selected element that supports it**: a background colour skips text elements, and a border strength skips sticky notes.
+- The values shown are read from the first element that has them.
+- **Colours** shows **Text**, **Background** and **Border** as the selection allows. A selection of only arrows shows **Line** instead of Border, and on a mixed selection the Border colour recolours the arrows too.
+- **Radius** appears when at least one selected element can round its corners, and sets those that can.
+- **Opacity** sets every selected element to the same value.
+- **Reset to Theme** resets every selected element's colours in one step.
+
+<Tip>
+  Use colour for meaning, not decoration. Keep most elements in the theme's colours and give one
+  kind of thing (risks, decisions, external systems) one colour, and a reader learns the code at a
+  glance. **Reset to Theme** is the quick way back when a diagram gets too colourful.
+</Tip>
+
+</ArticleLayout>

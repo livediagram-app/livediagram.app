@@ -1,0 +1,25 @@
+{
+  "name": "@livediagram/help-registry",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./telemetry": "./src/telemetry.ts",
+    "./community": "./src/community.ts",
+    "./hrefs": "./src/hrefs.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "devDependencies": {
+    "@livediagram/oxlint-config": "workspace:*",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2"
+  }
+}

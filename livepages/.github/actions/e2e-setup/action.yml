@@ -1,0 +1,40 @@
+name: E2E setup
+description: >-
+  pnpm, Node and the workspace's dependencies inside Playwright's container image, then a check
+  that every job's image carries the locked Playwright version (docs/specs/003-system-architecture/e2e-smoke.md).
+
+runs:
+  using: composite
+  steps:
+    - name: Set up pnpm
+      uses: pnpm/action-setup@v6
+      with:
+        version: 9.15.0
+
+    # No `cache: pnpm`: inside the container the store path never matches a saved cache, so it only
+    # adds a ~75-second save to every job, while a cold install takes about 15 seconds.
+    - name: Set up Node
+      uses: actions/setup-node@v7
+      with:
+        node-version: 22
+        package-manager-cache: false
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile
+
+    # The image's browsers belong to one Playwright version: a bump of @playwright/test without the
+    # image tags would look for a Chromium the image doesn't have. Every job names the image, so
+    # every occurrence must match.
+    - name: Check the images match Playwright
+      shell: bash
+      run: |
+        set -euo pipefail
+        locked="$(pnpm --filter @livediagram/live exec playwright --version | awk '{print $2}')"
+        expected="mcr.microsoft.com/playwright:v${locked}-noble"
+        echo "Playwright ${locked}, expecting ${expected}"
+        stale="$(grep -o 'mcr.microsoft.com/playwright:v[0-9.]*-noble' .github/workflows/e2e.yml | grep -vxF "${expected}" || true)"
+        if [ -n "${stale}" ]; then
+          echo "::error::Set every e2e.yml container image to ${expected} (found ${stale//$'\n'/, })"
+          exit 1
+        fi

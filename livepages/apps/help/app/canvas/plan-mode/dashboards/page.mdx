@@ -1,0 +1,120 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Dashboards',
+  description:
+    'Build a Plan mode dashboard: show boards, sheets, metrics, charts and notes side by side in rows of live slots, arranged by dragging or from the keyboard.',
+  path: '/help/canvas/plan-mode/dashboards/',
+});
+
+<ArticleLayout
+  title="Dashboards"
+  description="Your boards, sheets, metrics and charts side by side on one tab, in rows of slots, all live."
+  categoryTitle="Canvas"
+  categorySlug="canvas/plan-mode"
+>
+
+A **Dashboard** is a [Plan mode](/help/canvas/plan-mode/) tab laid out as a page of rows, each row split into slots. Each slot shows one thing, live: a board you can work on, a sheet you can edit, a metric, a chart or a note. Use one for a team's overview, a sprint report or a single place to keep an eye on everything.
+
+## Start a Dashboard
+
+On an empty Plan tab, choose **Dashboards** in **Start Planning**'s rail, then a layout to start from:
+
+- **Two by Two**: four even slots.
+- **Overview**: a row of metrics over two charts.
+- **Focus**: one wide board with a side column.
+- **Three Columns**: three slots side by side, twice.
+- **Stacked**: full-width rows, one under another.
+- **Report**: metrics, a wide chart, then two side by side.
+
+The layout is only a start: add, move and resize rows and slots whenever you like. A Dashboard started on an unnamed tab is called **Dashboard**; rename the tab as you would any other.
+
+## Dashboards Made From Your Work
+
+Once your document has boards, **Start Planning** also offers dashboards built around them, ahead of the layouts under **Dashboards**. Each is badged **For You**, its chips say what it holds, and picking one makes it with every slot already filled, live from your own boards and cards:
+
+- **_Board_ Timeline**, for a board whose cards have start and due dates: Completion, Due Soon, Item Count and Unassigned, a Gantt chart of its dates, and the board.
+- **_Board_ Sprint Health**, for a board with estimates (or a Points widget): Points, Completion, People and Stale Cards, the board, then Cards by Field and Priority by Status.
+- **_Board_ Triage**, for a board with a row per priority, or one that takes Bugs: Priorities, Unassigned, Stale Cards and Due Soon, Priority by Status and Cards by Field, then the board.
+- **_Board_ Summary**, for a board with votes: Top Voted, Item Count and People, the board, and Cards by Field.
+- **Team Overview**, once you have two boards or more: Completion, Due Soon, Item Count and People, your boards two to a row (up to six), then Cards by Field and a Due Calendar.
+- **_Board_ and _Sheet_**, for a board and a [Sheet](/help/canvas/plan-mode/sheets/): Completion, Due Soon and Item Count above the two side by side.
+
+Each takes your board's name (and your sheet's), and a tab still on its default name takes the dashboard's. The first one also takes the place of the Overview layout in **Recommended**. Archive and All Cards boards suggest nothing. Once made, a suggested dashboard is an ordinary Dashboard: rearrange or refill its slots like any other. See [Charts of Your Cards](/help/canvas/plan-mode/visualisations/) for what each chart shows.
+
+## Fill a slot
+
+An empty slot shows **Empty Slot** and an **Add to Slot** button. Press it to see the kinds of thing the slot can show, then pick one to see its choices; the bar at the top (or Escape) takes you back. It only offers what looks good at the slot's size. The kinds are:
+
+- **This Document's Tabs**: one of your Board or Sheet tabs, shown live and worked on right there, or any other tab as a **Diagram**: its drawing, kept up to date as it changes. Press a diagram to open its tab, or use **Open Tab** in the slot's menu.
+- **New Board** or **New Sheet**: a board of any preset, or a sheet. Each gets a tab of its own, added straight after the dashboard and named like the board or sheet, and the slot shows that tab, so you can also open it full size. One undo takes back the tab and the slot together.
+- **Card Metrics** and **Visualisations**: completion, item count, due soon, workload, a Gantt chart, due and start calendars and more, counted over every card.
+- **Form Metrics**, while the document has a [form](/help/canvas/plan-mode/forms/): its responses, the new ones, whether it takes responses, its responses against its limit, when it closes, or its link to copy.
+- **From a Sheet**: numbers and charts read live from any sheet in the document, changing as its cells do.
+  - **Sheet Figure**, **Column Summary** and **Trend**: one cell's value (with an optional target), a column's total, average, lowest, highest or count, or a column's latest number and how it moved. Press **Choose a Sheet** in the slot to pick where it reads from.
+  - **Sheet Chart**: a chart of any type: column, bar, line, area, scatter, pie or doughnut. Pick the sheet, then one of the charts it already has, or type a range (such as A1:C6), choose its **Type** (**Column**, **Bar**, **Line**, **Area**, **Scatter**, **Pie** or **Doughnut**) and press **Add Chart**. To show a different chart later, open the slot's cog and press **Change Chart** in its **Slot** section.
+- **Utilities**, written on the dashboard itself:
+  - **Note**: a heading and a few lines of text.
+  - **Title**: a big heading with a description, to name a section of the page.
+  - **Status**: On Track, At Risk or Off Track, with a line of why and when it last changed.
+  - **Checklist**: items you tick off, with how many are done. Press Enter to add the next item.
+  - **Key Date**: a date counted down to, such as "12 days to go", shown in red once it has passed.
+  - **Links**: labelled links to websites, email addresses or other tabs in the document. Press **Add Link**, give it a label if you like, then type an address or pick a tab from the list under the field. Enter adds it, Escape cancels.
+
+## Metrics with room to breathe
+
+A metric in a slot is a tile: its name, a large figure that grows with the slot, a line saying what it counts and, where there is room, a picture of what the figure is made of (a ring, bars, people or the cards themselves). Short slots show just the figure; tall, wide ones show the full picture beside it.
+
+## Arrange the page
+
+- **Add rows and slots**: open the cog on the slot (the board's, sheet's or chart's own cog, or the slot's cog at its top right) and, in its **Slot** section under **Add a Slot**, pick a side: **Left** or **Right** adds a slot beside it, **Above** or **Below** adds a row. A side is dimmed when there's no room there; hover it to see why.
+- **Resize**: drag the bar between two slots to share the row differently, or the bar under a row to make it taller or shorter.
+- **Move a slot**: drag it by its grip, the small handle on the middle of its top edge. Drop it on another slot to swap them, at a slot's side or between two slots to move it into that row, or between rows to give it a row of its own. Press Escape to put it back.
+- **From the keyboard**: tab to a slot's grip and press the arrow keys to swap it with its neighbour that way. Focus follows the slot.
+
+Every change is one step to undo.
+
+## On a phone
+
+On a phone the slots stack one under another, each across the whole screen, in the order you read them on a wide screen. A title is as tall as its words, a note or other card as tall as what is in it, and a board, sheet or chart takes most of the screen so you can work in it. Scroll the page to move through them. Tap a slot's cog for its settings, or **Add to Slot** to fill an empty one. Your layout is untouched: on a wide screen the dashboard is as you arranged it.
+
+## Dashboard settings
+
+Press the cog at the top right of a Dashboard for its settings:
+
+- **Name**: rename the tab.
+- **Background**: keep the page **Plain**, or give it a soft **Tinted** wash behind the slots.
+- **Layout**: **Add Row** puts two empty slots at the foot. Pick a layout under it, such as **Overview** or **Report**, to start over from its empty slots; if any slot holds something, you're asked first.
+- **Clear**: **Clear Dashboard** empties every slot and keeps the rows.
+
+At the top of the settings, **Show Me** walks you round the page: its rows, filling a slot, changing or moving one, and these settings. Everything stays live while it runs, so you can fill a slot as you go. The first time you open a dashboard you can edit, the same tour offers itself (**Getting started with Dashboards?**); you can switch that offer back on in Settings › Tours › **Dashboards Tour**.
+
+Only people who can edit the document see the cog.
+
+## Style a card
+
+Open a utility's cog (a Note, Status, Checklist, Key Date or Links) and choose **Style**, the same style options a shape on the canvas has:
+
+- **Presets**: a whole look in one click, matched to the tab's theme. Hover a tile to preview it on the card. **Reset to Default** brings back the dashboard's own card.
+- **Colours**: the card's **Text**, **Background** and **Border** colours. **Reset to Theme** clears them.
+- **Border**: how strong the edge is, and its pattern.
+- **Shadow**: how the card lifts off the page, or **None**.
+
+Text stays readable: on a colour you pick, the card's writing turns white or dark to suit it. A **Title** sits on the page without a card, so its menu offers just its **Colours** (the text colour). Each change is one step to undo, and only people who can edit the document see these options.
+
+## Clear or remove a slot
+
+Each slot has one menu, its cog: a board's **Board Settings**, a sheet's **Sheet Settings**, a chart's **Chart Settings**, or the slot's own **Slot Settings**. A toolbar across its top holds **Open Tab** for a slot showing one of your tabs, **Duplicate Slot**, which puts a copy beside it (or in a new row below when the row is full), **Clear Slot**, which empties it, and **Remove Slot**, which takes the slot away (its neighbour widens to fill the gap). A sheet that lives on the dashboard can't be duplicated; show its tab instead. When the slot showed one of your tabs, the menu asks whether to delete that tab too: **Keep the Tab** or **Delete the Tab Too**. A sheet that lives on the dashboard asks the same about its cells. Boards keep their cards either way: cards belong to the document, not to one board.
+
+## Import and export
+
+From the Dashboard tab's menu (the **⋯** on its tab), **Export** saves the page as a PNG, SVG or PDF, each slot drawn as it looks, or as JSON. **Import** takes that JSON back, into this Dashboard or another one, replacing its rows and slots in one step; it accepts nothing else. See [Exporting tabs](/help/tabs/export-tabs/#board-sheet-and-dashboard-tabs) and [Importing tabs](/help/tabs/import-tabs/).
+
+## Sharing
+
+Anyone who can edit the document can change a Dashboard. People with a participant or view-only link see it live and can open its tabs, but can't rearrange or fill it. Inside the slots, a board or sheet lets each person do what it would on its own tab.
+
+See also [Boards](/help/canvas/plan-mode/boards/), [Sheets](/help/canvas/plan-mode/sheets/) and [Cards](/help/canvas/plan-mode/cards/).
+
+</ArticleLayout>

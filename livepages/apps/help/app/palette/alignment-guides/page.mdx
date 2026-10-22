@@ -1,0 +1,44 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SettingsEditorPane } from '@/components/illustrations/settings-dialog';
+import { SnappingGuides } from '@/components/illustrations/canvas';
+
+export const metadata = helpMetadata({
+  title: 'Alignment Guides',
+  description:
+    "Alignment guides show faint lines as you move or resize, so you see when an element lines up with others' edges and centres. Snapping works with them off.",
+  path: '/help/palette/alignment-guides/',
+});
+
+<ArticleLayout
+  title="Alignment Guides"
+  description="Show the guide lines that explain a snap while you move or resize an element."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("alignment-guides")}
+>
+
+Alignment Guides is a switch, and it is on by default. You will find it in [Settings](/help/user-interface/settings/), under **Editor**. It is your own preference: it applies to every document you open, follows you to other devices when you are signed in, and changes nothing for anyone else.
+
+<Figure caption="Settings open on Editor, with Alignment Guides highlighted and switched on.">
+  <SettingsEditorPane highlight="guides" />
+</Figure>
+
+## What it does
+
+As you drag or resize an element, it [snaps](/help/canvas/snapping/) into line when an edge or centre comes within a few pixels of a neighbour's, or settles at an equal gap between two others. With Alignment Guides on, a faint dashed line marks each match that is in effect, and a short coloured span marks a matched gap, so you can see why the element jumped. Under the switch the description reads: "Shows snap lines while you move or resize an element, so it lines up with its neighbours."
+
+<Figure caption="Dragging B next to A snaps their top edges together; the dashed guide shows the alignment.">
+  <SnappingGuides />
+</Figure>
+
+The same guides show while you drag an arrow's endpoint or bend, so a connector can line up with the shapes around it.
+
+## Turning it off
+
+Switch it off for a cleaner drag with no lines on screen. Switching it off **hides the lines only**: elements still snap to their neighbours exactly as before, you just no longer see the hint.
+
+To place one element freely, with no snapping at all, hold **Cmd** (Mac) or **Ctrl** (Windows and Linux) while you drag or resize it. That turns both the snap and its guides off for that one gesture, whatever this setting says. See [Alignment & Snapping](/help/canvas/snapping/).
+
+</ArticleLayout>

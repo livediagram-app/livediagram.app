@@ -1,0 +1,93 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import { useLatest } from '@/hooks/ui/useLatest';
+
+// Bring Focus (docs/specs/012-collaboration/bring-focus.md): the invitation somebody else's press puts on your
+// screen, and what taking it does.
+//
+// The whole of this element's restraint lives here. A press moves NOBODY: it
+// leaves a dialog that says who wants you where, and your view is untouched
+// until you take it. That is the one place this parts company with Follow Me
+// (docs/specs/012-collaboration/follow-me-viewport.md), which is unilateral by design: the difference is push versus
+// pull. A follower chose to be moved and can stop whenever; a yank arrives
+// unasked, in the middle of whatever you were doing, and a canvas where anybody
+// can teleport everybody is a canvas where somebody's half-typed note is lost.
+
+/** A live invitation: where it points, and who sent it. */
+type FocusInvite = {
+  /** The presence id of whoever pressed, so the dialog can name them from the
+   *  participant list (the op carries no name: a renamed participant's
+   *  invitation should read correctly). */
+  from: string;
+  tabId: string;
+  at: { x: number; y: number };
+};
+
+// Long enough to look up from what you were doing, short enough that it is
+// never answering a sentence from two topics ago.
+const EXPIRY_MS = 60_000;
+
+export function useFocusInvite(deps: {
+  /** Switch to the tab the invitation points at, when it is not this one. */
+  onFollowTab: (tabId: string) => void;
+  /** Centre a canvas point, keeping this viewer's own zoom: the presser's zoom
+   *  shows a different amount of canvas on a different screen size. */
+  onCentreOn: (at: { x: number; y: number }) => void;
+  /** Is this view already the one the invitation would give? */
+  isAlreadyThere: (tabId: string, at: { x: number; y: number }) => boolean;
+}): {
+  invite: FocusInvite | null;
+  /** An invitation arrived. Replaces any earlier one: the room has one current
+   *  "look at this", and an older one is stale by definition. */
+  receiveFocusHere: (from: string, tabId: string, at: { x: number; y: number }) => void;
+  /** Take it: switch tab if needed, then centre. One-off, so it clears itself
+   *  and leaves nothing pinned. */
+  acceptFocus: () => void;
+  dismissFocus: () => void;
+} {
+  const [invite, setInvite] = useState<FocusInvite | null>(null);
+  // Live ref so the timer and the accept path read the current handlers
+  // without re-arming on every render.
+  const ref = useLatest(deps);
+
+  // Expiry is per invitation, so a second one restarts the clock rather than
+  // inheriting the remains of the first one's.
+  useEffect(() => {
+    if (!invite) return;
+    const timer = setTimeout(() => setInvite(null), EXPIRY_MS);
+    return () => clearTimeout(timer);
+  }, [invite]);
+
+  const receiveFocusHere = useCallback(
+    (from: string, tabId: string, at: { x: number; y: number }) => {
+      // Already looking at it? Then there is nothing to
+      // offer. A press gets repeated (to catch latecomers, or because the
+      // first one went out before somebody joined), and a repeat has to reach
+      // the people who said no without putting a dialog over the people who
+      // came. Their view is the difference between the two, so it decides.
+      if (ref.current.isAlreadyThere(tabId, at)) return;
+      setInvite({ from, tabId, at });
+    },
+    [ref],
+  );
+  // The live invitation in a ref as well as in state, so accepting can read it
+  // without doing the work inside a setState UPDATER: React runs those during
+  // the render phase, and navigating from one updates the page while this is
+  // rendering (which React says, loudly).
+  const liveRef = useLatest<FocusInvite | null>(invite);
+
+  const acceptFocus = useCallback(() => {
+    const current = liveRef.current;
+    if (!current) return;
+    setInvite(null);
+    // Tab first: centring a point on a tab you are not on yet would leave you
+    // looking at the right coordinates of the wrong canvas.
+    ref.current.onFollowTab(current.tabId);
+    ref.current.onCentreOn(current.at);
+  }, [ref, liveRef]);
+
+  const dismissFocus = useCallback(() => setInvite(null), []);
+
+  return { invite, receiveFocusHere, acceptFocus, dismissFocus };
+}

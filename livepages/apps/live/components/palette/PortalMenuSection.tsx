@@ -1,0 +1,121 @@
+'use client';
+
+// The Portal element's menu section (docs/specs/009-elements/portal-element.md): its name, where it leads, and
+// a way to make the other end when it doesn't exist yet.
+//
+// Its own file rather than another branch inside ElementDataSections: the
+// portal is the only element setting that reaches across tabs, so it carries
+// candidate grouping, a text field, and a create action that none of the other
+// data sections need.
+//
+// The NAME lives here and only here. It shows in this picker, in the travel
+// hover card, and in the linked portal's label — never drawn on the canvas ring,
+// where a caption over the energy looked like a sticker on a window.
+
+import type { ShapeElement, Tab } from '@livediagram/document';
+import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
+import { MenuTile, MenuTileGrid } from '@/components/primitives/MenuTiles';
+import { MENU_ICON_PX, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
+import { portalName, portalSites } from '@/lib/portals';
+import { PlusIcon } from '@livediagram/ui';
+import { useFollowingDraft } from '@/hooks/ui/useFollowingDraft';
+
+function PlusGlyph() {
+  return <PlusIcon size={MENU_ICON_PX} />;
+}
+
+export function PortalMenuSection({
+  portal,
+  tabs,
+  activeTabId,
+  onSetPortalTarget,
+  onSetPortalName,
+  onCreateLinkedPortal,
+  sectionProps,
+}: {
+  portal: ShapeElement;
+  tabs: Tab[];
+  activeTabId: string;
+  onSetPortalTarget: (targetId: string | null) => void;
+  onSetPortalName: (name: string) => void;
+  onCreateLinkedPortal: () => void;
+  // The accordion plumbing from the menu scaffold (open state + toggle).
+  sectionProps: { open: boolean; onToggle: () => void };
+}) {
+  // Typed locally and committed on blur / Enter, like every other text field in
+  // the editor: committing per keystroke would push one history entry per
+  // letter. Re-seeded (during render) on a different portal or a label changed elsewhere.
+  const label = portal.label ?? '';
+  // Reset by another portal or a new label: both are in the key.
+  const [name, setName] = useFollowingDraft(`${portal.id}\u0000${label}`, () => label);
+
+  // Every OTHER portal in the document, this tab first — a link can cross tabs
+  // (walk through here, come out on the Detail tab), so the candidate list is
+  // document-wide and each off-tab option says which tab it lives on.
+  const candidates = portalSites(tabs)
+    .filter((site) => site.portal.id !== portal.id)
+    .map((site) => {
+      const tab = tabs.find((t) => t.id === site.tabId);
+      return {
+        id: site.portal.id,
+        name: portalName(tab?.elements ?? [], site.portal),
+        tabName: site.tabId === activeTabId ? null : site.tabName,
+      };
+    })
+    .sort((a, b) => Number(a.tabName !== null) - Number(b.tabName !== null));
+
+  // The positional name this portal answers to when it has no label, so the
+  // placeholder shows what the pickers will call it ("Portal 3") rather than a
+  // generic word.
+  const ownName = portalName(tabs.find((t) => t.id === activeTabId)?.elements ?? [], portal);
+
+  const commitName = () => {
+    if ((portal.label ?? '') !== name.trim()) onSetPortalName(name);
+  };
+
+  return (
+    <MenuAccordionSection title="Portal" icon={<ToolsMenuGlyph />} {...sectionProps}>
+      <div className="px-3 pt-1">
+        <label className="text-[10px] font-medium text-slate-500 dark:text-slate-400">
+          Name
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={commitName}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                commitName();
+              }
+              // The menu listens for keys; typing a name must not trigger them.
+              e.stopPropagation();
+            }}
+            placeholder={ownName}
+            className="mt-1 w-full rounded-md border border-slate-200 bg-white px-2 py-1 text-[11px] text-slate-700 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+          />
+        </label>
+      </div>
+      <p className="px-3 pt-2 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+        Leads to
+      </p>
+      <MenuTileGrid cols={2}>
+        {candidates.map((candidate) => (
+          <MenuTile
+            key={candidate.id}
+            icon={<ToolsMenuGlyph />}
+            label={candidate.tabName ? `${candidate.name} · ${candidate.tabName}` : candidate.name}
+            active={portal.portalTarget === candidate.id}
+            onClick={() =>
+              // Picking the current target again unlinks it, so the tiles
+              // double as an off switch.
+              onSetPortalTarget(portal.portalTarget === candidate.id ? null : candidate.id)
+            }
+          />
+        ))}
+        {/* Always offered, and the only option when this is the first portal in
+            the document: the far end usually doesn't exist yet. */}
+        <MenuTile icon={<PlusGlyph />} label="Create Portal" onClick={onCreateLinkedPortal} />
+      </MenuTileGrid>
+    </MenuAccordionSection>
+  );
+}
