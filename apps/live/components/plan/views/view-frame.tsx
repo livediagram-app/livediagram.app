@@ -21,7 +21,7 @@ const stop = (e: { stopPropagation: () => void }) => e.stopPropagation();
 // An entry that opens a card: in Plan mode a press opens it (and keeps the press from the canvas); in any
 // mode a double-click does (docs/specs/026-plan/plan-views.md "On the canvas").
 export function openProps(plan: PlanContextValue | undefined, itemId: string) {
-  const interactive = !!plan?.planInput;
+  const interactive = !!plan;
   return {
     onPointerDown: interactive ? stop : undefined,
     onClick: (e: React.MouseEvent) => {

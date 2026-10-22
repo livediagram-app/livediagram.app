@@ -84,7 +84,7 @@ export function nextFanKind(
   return { kind: pool[from]!, at: from };
 }
 
-// A curated kind's descriptor (its title, description and mode), from the same catalogue.
+// A curated kind's descriptor (its title and description), from the same catalogue.
 export function heroTemplate(kind: TemplateKind): HeroMatch {
   const t = ALL.find((m) => m.kind === kind);
   if (!t) throw new Error(`hero template not listed: ${kind}`);

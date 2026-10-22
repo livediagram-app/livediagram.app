@@ -59,18 +59,18 @@ describe('GET /api/placement-defaults', () => {
 
 describe('PUT /api/placement-defaults/:key', () => {
   it("sets a default to the person's own personal folder", async () => {
-    const res = await put(asUser('user_alice'), 'mode:diagram', { folderId: 'alice-folder' });
+    const res = await put(asUser('user_alice'), 'mode:plan', { folderId: 'alice-folder' });
     expect(res.status).toBe(204);
     expect(await list(asUser('user_alice'))).toEqual([
-      { key: 'mode:diagram', folderId: 'alice-folder' },
+      { key: 'mode:plan', folderId: 'alice-folder' },
     ]);
-    expect(logs).toContain('placement-defaults: set key=mode:diagram scope=personal');
+    expect(logs).toContain('placement-defaults: set key=mode:plan scope=personal');
   });
 
   it('sets a default to a folder of a joined team', async () => {
-    const res = await put(asUser('user_alice'), 'mode:draw', { folderId: 't1-folder' });
+    const res = await put(asUser('user_alice'), 'mode:plan', { folderId: 't1-folder' });
     expect(res.status).toBe(204);
-    expect(logs).toContain('placement-defaults: set key=mode:draw scope=team');
+    expect(logs).toContain('placement-defaults: set key=mode:plan scope=team');
   });
 
   it('sets a kind default and a template default, listed in key order', async () => {
@@ -84,24 +84,36 @@ describe('PUT /api/placement-defaults/:key', () => {
   });
 
   it('reads a percent-encoded key', async () => {
-    const res = await put(asUser('user_alice'), 'mode%3Adraw', { folderId: 'alice-folder' });
+    const res = await put(asUser('user_alice'), 'mode%3Aplan', { folderId: 'alice-folder' });
     expect(res.status).toBe(204);
     expect(await list(asUser('user_alice'))).toEqual([
-      { key: 'mode:draw', folderId: 'alice-folder' },
+      { key: 'mode:plan', folderId: 'alice-folder' },
+    ]);
+  });
+
+  it('leaves a stored retired key out of the list', async () => {
+    db.sql
+      .prepare(
+        'INSERT INTO placement_defaults (owner_id, default_key, folder_id, updated_at) VALUES (?, ?, ?, ?)',
+      )
+      .run('user_alice', 'mode:draw', 'alice-folder', 1);
+    await put(asUser('user_alice'), 'mode:plan', { folderId: 'alice-folder' });
+    expect(await list(asUser('user_alice'))).toEqual([
+      { key: 'mode:plan', folderId: 'alice-folder' },
     ]);
   });
 
   it('replaces the folder of a key set again', async () => {
-    await put(asUser('user_alice'), 'mode:draw', { folderId: 'alice-folder' });
-    await put(asUser('user_alice'), 'mode:draw', { folderId: 't1-folder' });
-    expect(await list(asUser('user_alice'))).toEqual([{ key: 'mode:draw', folderId: 't1-folder' }]);
+    await put(asUser('user_alice'), 'mode:plan', { folderId: 'alice-folder' });
+    await put(asUser('user_alice'), 'mode:plan', { folderId: 't1-folder' });
+    expect(await list(asUser('user_alice'))).toEqual([{ key: 'mode:plan', folderId: 't1-folder' }]);
   });
 
   it("gives a guest a default on the guest's own folder", async () => {
-    const res = await put(asGuest('guest-uuid'), 'mode:draw', { folderId: 'guest-folder' });
+    const res = await put(asGuest('guest-uuid'), 'mode:plan', { folderId: 'guest-folder' });
     expect(res.status).toBe(204);
     expect(await list(asGuest('guest-uuid'))).toEqual([
-      { key: 'mode:draw', folderId: 'guest-folder' },
+      { key: 'mode:plan', folderId: 'guest-folder' },
     ]);
   });
 
@@ -112,6 +124,8 @@ describe('PUT /api/placement-defaults/:key', () => {
     ['template:mindmap'],
     ['draw'],
     ['mode:pixel'],
+    ['mode:diagram'],
+    ['mode:draw'],
     ['%E0%A4%A'],
   ])('refuses the key %s', async (key) => {
     const res = await put(asUser('user_alice'), key, { folderId: 'alice-folder' });
@@ -127,13 +141,13 @@ describe('PUT /api/placement-defaults/:key', () => {
     ['a null folder', { folderId: null }],
     ['an array body', ['alice-folder']],
   ])('refuses %s', async (_label, body) => {
-    const res = await put(asUser('user_alice'), 'mode:draw', body);
+    const res = await put(asUser('user_alice'), 'mode:plan', body);
     expect(res.status).toBe(400);
     expect(await errorOf(res)).toBe('default_folder_invalid');
   });
 
   it('refuses a body that is not JSON', async () => {
-    const ctx = makeTestRouteContext('PUT', '/api/placement-defaults/mode:draw', {
+    const ctx = makeTestRouteContext('PUT', '/api/placement-defaults/mode:plan', {
       env: db.env,
       ...asUser('user_alice'),
     });
@@ -151,7 +165,7 @@ describe('PUT /api/placement-defaults/:key', () => {
     ['a folder of a team only invited to', asUser('user_bob'), 't1-folder'],
     ["a team folder, on the guest path under a member's id", asGuest('user_alice'), 't1-folder'],
   ])('hides %s as not found, writing nothing', async (_label, who, folderId) => {
-    const res = await put(who, 'mode:draw', { folderId });
+    const res = await put(who, 'mode:plan', { folderId });
     expect(res.status).toBe(404);
     expect(await errorOf(res)).toBe('folder_not_found');
     expect(await list(who)).toEqual([]);
@@ -161,18 +175,18 @@ describe('PUT /api/placement-defaults/:key', () => {
 
 describe('DELETE /api/placement-defaults/:key', () => {
   it('clears one key and keeps the other', async () => {
-    await put(asUser('user_alice'), 'mode:draw', { folderId: 'alice-folder' });
-    await put(asUser('user_alice'), 'mode:diagram', { folderId: 'alice-folder' });
-    const res = await call(asUser('user_alice'), 'DELETE', '/api/placement-defaults/mode:draw');
+    await put(asUser('user_alice'), 'mode:plan', { folderId: 'alice-folder' });
+    await put(asUser('user_alice'), 'template:kanban', { folderId: 'alice-folder' });
+    const res = await call(asUser('user_alice'), 'DELETE', '/api/placement-defaults/mode:plan');
     expect(res.status).toBe(204);
     expect(await list(asUser('user_alice'))).toEqual([
-      { key: 'mode:diagram', folderId: 'alice-folder' },
+      { key: 'template:kanban', folderId: 'alice-folder' },
     ]);
-    expect(logs).toContain('placement-defaults: cleared key=mode:draw');
+    expect(logs).toContain('placement-defaults: cleared key=mode:plan');
   });
 
   it('answers 204 for a key with no default', async () => {
-    const res = await call(asUser('user_alice'), 'DELETE', '/api/placement-defaults/mode:draw');
+    const res = await call(asUser('user_alice'), 'DELETE', '/api/placement-defaults/mode:plan');
     expect(res.status).toBe(204);
   });
 
@@ -187,8 +201,8 @@ describe('other requests', () => {
   it.each([
     ['POST', '/api/placement-defaults'],
     ['PUT', '/api/placement-defaults'],
-    ['GET', '/api/placement-defaults/mode:draw'],
-    ['PUT', '/api/placement-defaults/mode:draw/extra'],
+    ['GET', '/api/placement-defaults/mode:plan'],
+    ['PUT', '/api/placement-defaults/mode:plan/extra'],
   ])('answers %s %s as not found', async (method, path) => {
     const body = method === 'GET' ? undefined : { folderId: 'alice-folder' };
     const res = await call(asUser('user_alice'), method, path, body);

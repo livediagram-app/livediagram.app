@@ -23,7 +23,6 @@ const formTab = (): Tab => ({
   name: 'Party RSVP',
   elements: [],
   kind: 'form',
-  opensIn: 'plan',
   form: form as Tab['form'],
   theme: 'ocean',
 });
@@ -35,7 +34,6 @@ describe('form replace', () => {
       id: 'form-tab',
       name: 'Party RSVP',
       kind: 'form',
-      opensIn: 'plan',
       theme: 'ocean',
       elements: [],
     });
@@ -71,7 +69,7 @@ describe('form replace', () => {
 describe('a new tab of elements made a Board tab', () => {
   it('stamps the kind and Plan on a new tab only', () => {
     const out = applied(applyReplace(null, { elements: [] }, { ...options, kind: 'board' }));
-    expect(out.tab).toMatchObject({ kind: 'board', opensIn: 'plan' });
+    expect(out.tab).toMatchObject({ kind: 'board' });
     const kept = applied(
       applyReplace(checkoutFlow(), { elements: [] }, { ...options, kind: 'board' }),
     );

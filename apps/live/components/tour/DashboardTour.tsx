@@ -109,7 +109,6 @@ export function useDashboardTourOffer({
     canWork &&
     owed &&
     ctx.prefsSettled &&
-    ctx.editorMode.mode === 'plan' &&
     !ctx.isReadOnly &&
     !ctx.embedMode &&
     shown === null &&

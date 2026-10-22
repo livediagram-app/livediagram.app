@@ -94,10 +94,6 @@ export function useCanvasToolPanels({
     activeTabId,
     readOnly,
   } = props;
-  // Draw mode keeps its eraser settings in the dock's flyouts
-  // and has no format painter (docs/specs/023-draw-mode/draw-mode.md "What a whiteboard shows").
-  const whiteboard = props.editorMode === 'draw';
-
   const laserWiring = panelWiringFor('laser', laserPanelPosition ?? null, () =>
     onResetLaserPanel?.(),
   );
@@ -185,7 +181,7 @@ export function useCanvasToolPanels({
   // Eraser Panel (docs/specs/008-canvas/eraser-panel.md): the brush's settings, mounted only while the
   // Eraser tool is active.
   const eraserEl =
-    !chromeHidden && !whiteboard && canvasTool === 'eraser' && eraserConfig ? (
+    !chromeHidden && canvasTool === 'eraser' && eraserConfig ? (
       <EraserPanel
         config={eraserConfig}
         onChange={(field, value) => onChangeEraserField?.(field, value)}
@@ -199,7 +195,7 @@ export function useCanvasToolPanels({
   // Format Panel (docs/specs/008-canvas/format-panel.md): what the painter copies, mounted only while the
   // Format tool is active.
   const formatEl =
-    !chromeHidden && !whiteboard && canvasTool === 'format' && formatConfig ? (
+    !chromeHidden && canvasTool === 'format' && formatConfig ? (
       <FormatPanel
         config={formatConfig}
         onToggleGroup={(group) => onToggleFormatGroup?.(group)}

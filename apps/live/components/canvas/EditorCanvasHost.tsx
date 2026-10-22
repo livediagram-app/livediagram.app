@@ -32,7 +32,6 @@ import { track } from '@/lib/telemetry';
 import { useTeamFolderActions } from '@/hooks/ui/useTeamFolderActions';
 import { getTheme, themeChartPalette, themeViewMap, type ThemeId } from '@/lib/themes';
 import { resolveViewBackdrop } from '@/lib/view-backdrop';
-import { readDrawPattern } from '@/lib/whiteboard-dock-prefs';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
@@ -353,23 +352,13 @@ export function EditorCanvasHost() {
     undo,
     userPreferences,
     zenMode,
-    whiteboardDock,
     drag,
-    editorMode,
     loadedTabIds,
-    autoAlignTab,
-    autoLayoutTab,
-    previewCleanup,
-    endCleanupPreview,
-    assessCleanupKind,
     isOutOfScope,
     tabLoadErrors,
   } = useEditorContext();
   // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
   const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
-  // The viewer's editor mode (docs/specs/007-editor/editor-modes.md): Draw brings the dock and its
-  // rules into focus; the board look keys on it through hasBoardLook.
-  const drawMode = editorMode.mode === 'draw';
   // A shape dragged from My shapes (docs/specs/013-workspace/shape-libraries.md): resolved against the
   // owner's libraries, then placed at the drop point.
   const { libraries } = useShapeLibraries();
@@ -466,11 +455,7 @@ export function EditorCanvasHost() {
     const el = activeTab.elements.find((e) => e.id === elementId);
     return el && isBoxed(el) ? threadAt(el) : undefined;
   };
-  const backdrop = resolveViewBackdrop(
-    activeTab,
-    { mode: editorMode.mode, drawPattern: readDrawPattern(userPreferences) },
-    appearance,
-  );
+  const backdrop = resolveViewBackdrop(activeTab, appearance);
   // Stock colours stored by name are drawn in their version for this canvas, on every tab and in
   // either mode (docs/specs/007-editor/editor-modes.md "One look"). Display only: the projector
   // caches per element, so an unchanged element keeps its identity and the memoised views stay quiet.
@@ -521,7 +506,7 @@ export function EditorCanvasHost() {
     editingId,
     elements: activeTab.elements,
     isReadOnly,
-    whiteboard: drawMode,
+    whiteboard: false,
     setContextMenu,
   });
 
@@ -653,14 +638,12 @@ export function EditorCanvasHost() {
               elements={canvasElements}
               tabLayers={activeTab.layers}
               tabKind={activeTab.kind}
-              editorMode={editorMode.mode}
-              whiteboardDock={whiteboardDock.whiteboard ? whiteboardDock : undefined}
               whiteboardInk={PEN_INK[surface]}
               previewDrawnArrow={(intent, startX, startY, endX, endY) =>
                 drawnArrowAsShown(intent, startX, startY, endX, endY, {
                   elements: activeTab.elements,
                   theme: activeTheme,
-                  whiteboard: drawMode,
+                  whiteboard: false,
                   styleNewElement,
                   surface,
                 })
@@ -955,22 +938,6 @@ export function EditorCanvasHost() {
                   : () => {
                       setCanvasThemeTab('looks');
                       track('UI', 'Opened', 'ThemePicker');
-                    }
-              }
-              // Diagram mode's Tidy Up button (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button"): an
-              // Editor's, so a Participant or Viewer (read-only for structure) and an embed get no button.
-              tidyUp={
-                isReadOnly || embedMode
-                  ? undefined
-                  : {
-                      run: (kind, judged) =>
-                        kind === 'align'
-                          ? autoAlignTab({ judged })
-                          : autoLayoutTab(kind, { judged }),
-                      preview: previewCleanup,
-                      endPreview: endCleanupPreview,
-                      assess: assessCleanupKind,
-                      blocked: activeTabLocked,
                     }
               }
               onSelectLayer={setActiveLayer}

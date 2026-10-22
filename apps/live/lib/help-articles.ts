@@ -123,12 +123,9 @@ export const HELP_ARTICLES = {
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
-  diagramTour: 'getting-started/diagram-tour',
   whatWeCollect: 'privacy-and-security/what-we-collect',
   offlineMode: 'privacy-and-security/offline-mode',
   // Onboarding / empty states
-  yourFirstDiagram: 'getting-started/your-first-diagram',
-  templates: 'canvas/templates',
   drawMode: 'canvas/draw-mode',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
@@ -464,10 +461,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about power user mode',
     description: 'The recommended settings it applies, and Minimal chrome.',
   },
-  diagramTour: {
-    title: 'Learn about the Diagram Tour',
-    description: 'What the tour covers and how replaying works.',
-  },
   whatWeCollect: {
     title: 'Learn about what we collect',
     description: "Exactly which anonymous events are sent, and what isn't.",
@@ -475,14 +468,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   offlineMode: {
     title: 'Learn about Offline Mode',
     description: 'Documents saved only in this browser, and how to sync them.',
-  },
-  yourFirstDiagram: {
-    title: 'Learn about your first diagram',
-    description: 'A short walkthrough of building your first diagram.',
-  },
-  templates: {
-    title: 'Learn about templates',
-    description: 'How templates give you a themed starting point.',
   },
   drawMode: {
     title: 'Learn about Draw mode',

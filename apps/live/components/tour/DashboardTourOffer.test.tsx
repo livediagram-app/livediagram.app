@@ -26,7 +26,6 @@ const editor = (over: Record<string, unknown> = {}) => {
   ctx.current = {
     userPreferences: {},
     prefsSettled: true,
-    editorMode: { mode: 'plan' },
     isReadOnly: false,
     embedMode: false,
     setUserPreferences,
@@ -83,7 +82,6 @@ describe('useDashboardTourOffer', () => {
 
   it.each([
     ['a Viewer or a covered dashboard', false, {}],
-    ['outside Plan', true, { editorMode: { mode: 'diagram' } }],
     ['a read-only document', true, { isReadOnly: true }],
     ['an embed', true, { embedMode: true }],
     ['before the synced preferences are in', true, { prefsSettled: false }],

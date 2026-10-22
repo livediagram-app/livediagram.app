@@ -75,7 +75,6 @@ describe('migrateWhiteboardKind', () => {
   it('makes a whiteboard a general tab that opens in Draw', () => {
     const out = migrateWhiteboardKind(board({ backgroundPattern: 'graph' }));
     expect(out.kind).toBe('diagram');
-    expect(out.opensIn).toBe('draw');
     expect(out.backgroundPattern).toBe('graph');
     expect(out.name).toBe('Board');
   });

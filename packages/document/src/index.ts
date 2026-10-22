@@ -16,7 +16,6 @@ import type { TagColour } from './tag-colours';
 import { isSelfDrawingShape } from './data-shapes';
 import type { TabKind } from './tab-kind';
 import type { DashboardLayout } from './dashboard';
-import type { EditorMode } from './editor-mode';
 import type { TabTimer, TabVote } from './session';
 
 // Layer type used by the `Tab.layers` field below (docs/specs/006-document/layers.md). Type-only
@@ -349,10 +348,6 @@ export type Tab = {
   dashboard?: DashboardLayout;
   // A Form tab's form (docs/specs/030-forms/forms.md), read via `readForm` from @liveplanner/forms.
   form?: FormDefinition;
-  // The tab's editor mode, the same for everyone on it and the mode it opens in
-  // (docs/specs/007-editor/editor-modes.md "Where the mode lives"). Absent = 'diagram' (read via
-  // `opensInOf`); a switch sets it as one tab edit (withEditorModeSwitched).
-  opensIn?: EditorMode;
   // An event-storming board whose workshop notes have been settled onto the
   // lanes once (docs/specs/021-event-storming/event-storming.md "Always on a lane"). Set by that settle, by the
   // template, or by a file import; never cleared, and grafted across undo.
@@ -469,7 +464,6 @@ export * from './editor-mode';
 export * from './tab-stats';
 export * from './ink-legibility';
 export * from './colour-background';
-export * from './editor-mode-switch';
 export * from './tab-window';
 export * from './tab-has-drawing';
 export { migrateWhiteboardKind } from './legacy-whiteboard-tab';
@@ -617,7 +611,6 @@ export * from './chart-marks';
 export * from './chart-axis';
 export * from './chart-values';
 export * from './chart-source';
-export * from './plan-only';
 // Per-participant responses (docs/specs/012-collaboration/participant-responses.md) + the collaboration element family
 // (docs/specs/012-collaboration/estimate-card.md to docs/specs/009-elements/chair.md). Both leaf modules, for the factories cycle.
 export * from './responses';

@@ -1,4 +1,3 @@
-import type { TidyUpActions } from './tidy-up-actions';
 import type { PenInk } from '@/hooks/canvas/commit-freehand';
 import type { SnapGuideStore } from '@/hooks/canvas/useSnapGuideState';
 import type { RemoteSelector } from '@/lib/presence-rows';
@@ -21,7 +20,6 @@ import type {
 import type {
   BackgroundPattern,
   TabKind,
-  EditorMode,
   Element,
   Layer,
   IconPosition,
@@ -91,9 +89,6 @@ export type CanvasProps = {
   // The tab’s tab kind (docs/specs/021-event-storming/event-storming.md), which decides whether this canvas
   // presents as an event-storming board.
   tabKind?: TabKind;
-  // The viewer's editor mode on the tab (docs/specs/007-editor/editor-modes.md): Draw trades the
-  // palette, the strip and the tool panels for the dock, and keeps the canvas still.
-  editorMode?: EditorMode;
   // The whiteboard dock's model and the board's ink for this appearance
   // (docs/specs/023-draw-mode/draw-mode.md), present on a whiteboard tab.
   whiteboardDock?: import('@/hooks/canvas/useWhiteboard').WhiteboardDockModel;
@@ -515,9 +510,6 @@ export type CanvasProps = {
   // Bottom-dock "Theme & canvas" button (docs/specs/011-theme/canvas-and-theme-dialog.md): opens the
   // CanvasThemeDialog. Omitted in read-only / embed sessions (no button).
   onOpenCanvasTheme?: () => void;
-  // Diagram mode's Tidy Up button and popover (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up
-  // button"). Absent in a session that may not tidy (a Participant, a Viewer, an embed): no button.
-  tidyUp?: TidyUpActions;
   onSelectLayer: (layerId: string) => void;
   onAddLayer: () => void;
   onRemoveLayer: (layerId: string) => void;

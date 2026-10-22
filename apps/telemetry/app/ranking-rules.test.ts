@@ -4,7 +4,6 @@ import { NON_PATTERN_CANVAS_TYPES, THEME_ALIASES } from './LookAndFeelView';
 import { PALETTE_TYPE_ALIASES, SELECTION_MODES } from './PaletteView';
 import { isHelpArticleType, isSettingsCategory } from './opened-types';
 import { aliasedSeries, foldAliases, rank } from './rank';
-import { TOUR_STEP_TYPES, tourStepRows } from './tour-steps';
 
 // The read-time rules the rankings apply to stored rows (docs/specs/017-telemetry/telemetry.md): folding old
 // spellings into today's token, and keeping events that aren't the thing a
@@ -123,24 +122,5 @@ describe('UI·Opened splits', () => {
     expect(isHelpArticleType('your-first-diagram')).toBe(true);
     expect(isHelpArticleType('Settings')).toBe(false);
     expect(isHelpArticleType(null)).toBe(false);
-  });
-});
-
-describe('tourStepRows', () => {
-  it('lists every step in tour order, a step no one reached reading 0', () => {
-    const rows = [
-      row('UI', 'View', 'TourStepOutro', 1),
-      row('UI', 'View', 'TourStepPalette', 9),
-      row('UI', 'Opened', 'TourStepPalette', 4),
-    ];
-    const steps = tourStepRows(rows);
-    expect(steps.map((r) => r.type)).toEqual([...TOUR_STEP_TYPES]);
-    expect(steps[0]!.count).toBe(9);
-    expect(steps[1]!.count).toBe(0);
-    expect(steps.at(-1)!.count).toBe(1);
-  });
-
-  it('is empty when no step was viewed', () => {
-    expect(tourStepRows([row('UI', 'Opened', 'TourOffer', 3)])).toEqual([]);
   });
 });

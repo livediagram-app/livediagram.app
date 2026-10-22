@@ -50,7 +50,8 @@ describe('apiListDocuments', () => {
 
     expect(parseRecentDiagrams(localStorage.getItem(RECENT_DIAGRAMS_KEY))).toEqual([
       { id: 'new', name: 'New', savedAt: 2, mode: null, teamName: null },
-      { id: 'old', name: 'Old', savedAt: 1, mode: 'draw', teamName: null },
+      // A retired mode is read as Plan, the only one.
+      { id: 'old', name: 'Old', savedAt: 1, mode: 'plan', teamName: null },
     ]);
   });
 

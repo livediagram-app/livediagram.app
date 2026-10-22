@@ -13,7 +13,7 @@ describe('dashboard replace', () => {
       { tabId: 't1', name: 'Overview' },
     );
     if ('errors' in out) throw new Error(JSON.stringify(out.errors));
-    expect(out.tab).toMatchObject({ kind: 'dashboard', opensIn: 'plan', name: 'Overview' });
+    expect(out.tab).toMatchObject({ kind: 'dashboard', name: 'Overview' });
     expect(out.tab.elements).toHaveLength(3);
     expect(out.tab.dashboard!.rows).toHaveLength(2);
   });

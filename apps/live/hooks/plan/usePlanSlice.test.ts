@@ -26,7 +26,6 @@ describe('usePlanSlice', () => {
       usePlanSlice({
         planItems,
         itemTypes,
-        editorMode: 'plan',
         canEdit: true,
         canVote: true,
         teamPeople: participants,
@@ -53,7 +52,6 @@ describe('usePlanSlice', () => {
       usePlanSlice({
         planItems,
         itemTypes,
-        editorMode: 'plan',
         canEdit: true,
         canVote: true,
         teamPeople: participants,
@@ -78,7 +76,6 @@ describe('usePlanSlice', () => {
       usePlanSlice({
         planItems,
         itemTypes,
-        editorMode: 'plan' as const,
         canEdit: true,
         canVote: true,
         teamPeople: participants,
@@ -102,7 +99,6 @@ describe('usePlanSlice', () => {
       usePlanSlice({
         planItems: { ...(planItems as object), comment, ownerId: 'owner-me' } as never,
         itemTypes,
-        editorMode: 'plan',
         canEdit: true,
         canVote: true,
         teamPeople: participants,
@@ -125,7 +121,6 @@ describe('usePlanSlice', () => {
       usePlanSlice({
         planItems,
         itemTypes,
-        editorMode: 'plan',
         canEdit: true,
         canVote: true,
         teamPeople: participants,
@@ -171,7 +166,6 @@ describe('usePlanSlice', () => {
       usePlanSlice({
         planItems: { ...(planItems as object), items, write } as never,
         itemTypes,
-        editorMode: 'plan',
         canEdit: true,
         canVote: true,
         teamPeople: participants,
@@ -212,7 +206,6 @@ describe('usePlanSlice', () => {
       usePlanSlice({
         planItems: { ...(planItems as object), write } as never,
         itemTypes,
-        editorMode: 'plan',
         canEdit: true,
         canVote: true,
         teamPeople: participants,
@@ -244,7 +237,6 @@ describe('usePlanSlice', () => {
       usePlanSlice({
         planItems,
         itemTypes,
-        editorMode: 'plan',
         canEdit: true,
         canVote: true,
         teamPeople: participants,
@@ -274,7 +266,6 @@ describe('usePlanSlice', () => {
       usePlanSlice({
         planItems,
         itemTypes,
-        editorMode: 'plan',
         canEdit: true,
         canVote: true,
         teamPeople: participants,
@@ -312,7 +303,6 @@ describe('a canvas Plan card dropped on a board', () => {
       usePlanSlice({
         planItems: { items, status: 'ready', self: null, refetch: vi.fn(), write } as never,
         itemTypes: { types } as never,
-        editorMode: 'plan',
         canEdit: true,
         canVote: true,
         teamPeople: [],
@@ -404,7 +394,6 @@ describe('usePlanSlice emptyTrash', () => {
           writeQuiet,
         } as never,
         itemTypes: { types: ITEM_TYPES } as never,
-        editorMode: 'plan',
         canEdit: true,
         canVote: true,
         teamPeople: [],

@@ -1,9 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 import {
-  BLANK_TEMPLATE_FOR_MODE,
   isBlankTemplate,
-  templateEditorMode,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   TEMPLATE_CONTENT_LAYER_ID,
@@ -217,13 +215,12 @@ describe('TEMPLATES catalogue', () => {
 });
 
 describe('templateCanvasOverrides', () => {
-  it('makes a general tab that opens in Draw, on a Grid board', () => {
-    // docs/specs/007-editor/editor-modes.md "Where the mode lives": the opening mode and the Grid
-    // land on every creation path through here (the template, a new tab, Quick Start, the MCP
+  it('makes a general tab on a Grid board', () => {
+    // The Grid lands on every creation path through here (the template, a new tab, the MCP
     // worker); the tab stays a general one.
     expect(templateCanvasOverrides('whiteboard')).toEqual({
-      opensIn: 'draw',
       backgroundPattern: 'graph',
+      backgroundOpacity: 0.4,
     });
   });
 
@@ -256,12 +253,10 @@ describe('templateCanvasOverrides', () => {
       backgroundOpacity: 0.4,
     });
     // Layered templates (docs/specs/006-document/layers.md) additionally carry their Tab.layers.
-    // A sticky-note board the room fills in opens in Workshop (docs/specs/007-editor/templates-by-mode.md).
     expect(templateCanvasOverrides('swot')).toEqual({
       backgroundPattern: 'graph',
       backgroundOpacity: 0.4,
       layers: templateLayers('swot'),
-      opensIn: 'workshop',
     });
     expect(templateCanvasOverrides('gantt')).toEqual({
       backgroundPattern: 'graph',
@@ -290,7 +285,6 @@ describe('templateCanvasOverrides', () => {
       // The quieter of the lines rule (0.6) and the stage softening (0.8).
       backgroundOpacity: 0.6,
       layers: templateLayers('journey'),
-      opensIn: 'workshop',
     });
   });
 
@@ -298,10 +292,9 @@ describe('templateCanvasOverrides', () => {
     expect(templateCanvasOverrides('blank')).toEqual({});
   });
 
-  it('opens the Kanban board in Plan mode on the quiet dot grid (docs/specs/026-plan/plan-mode.md)', () => {
+  it('opens the Kanban board on the quiet dot grid (docs/specs/026-plan/plan-mode.md)', () => {
     expect(templateCanvasOverrides('kanban')).toEqual({
       backgroundPattern: 'grid',
-      opensIn: 'plan',
     });
   });
 });
@@ -856,29 +849,10 @@ describe('untitledNameForTemplate', () => {
   });
 });
 
-// Templates by mode (docs/specs/007-editor/templates-by-mode.md): the mode a card shows is the mode
-// its tab opens in, and each mode's blank is of that mode.
-describe('templateEditorMode', () => {
-  it('is the mode every template opens in', () => {
-    for (const t of TEMPLATES) {
-      expect(templateEditorMode(t.kind), t.kind).toBe(
-        templateCanvasOverrides(t.kind).opensIn ?? 'diagram',
-      );
-    }
-  });
-
-  it('gives every mode a blank of its own mode', () => {
-    for (const [mode, kind] of Object.entries(BLANK_TEMPLATE_FOR_MODE)) {
-      expect(templateEditorMode(kind)).toBe(mode);
-    }
-  });
-
-  // A session tool shipped on a Diagram tab could be started but never watched or ended: Diagram has
-  // no Session strip (docs/specs/012-collaboration/workshop-mode.md).
-  it('opens every template carrying a session tool in Workshop', () => {
-    for (const t of TEMPLATES) {
-      if (buildTemplate(t.kind, 0, 0).some((e) => 'session' in e && e.session))
-        expect(templateEditorMode(t.kind), t.kind).toBe('workshop');
-    }
+// No template writes an opening mode: Plan is the only one.
+describe('template opening mode', () => {
+  it('is set by no template', () => {
+    for (const t of TEMPLATES)
+      expect(templateCanvasOverrides(t.kind), t.kind).not.toHaveProperty('opensIn');
   });
 });

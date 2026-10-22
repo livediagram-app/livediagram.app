@@ -124,7 +124,7 @@ describe('DetailsView', () => {
   it('caps the count in the bubble at 99+', () => {
     render(
       <DetailsView
-        {...view([doc('Busy', { stats: { mode: 'draw', elements: 1, comments: 150, bytes: 1 } })])}
+        {...view([doc('Busy', { stats: { mode: 'plan', elements: 1, comments: 150, bytes: 1 } })])}
       />,
     );
     const cell = within(screen.getAllByRole('row')[1]!).getAllByRole('cell')[2]!;

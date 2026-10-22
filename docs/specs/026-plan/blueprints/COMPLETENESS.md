@@ -29,14 +29,6 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## plan-mode
-
-- [x] Domain and naming
-- [x] Behaviour and state
-- [x] Interfaces and contracts
-- [x] Testing
-- [x] Defaults ledger
-
 ## item-types
 
 - [x] Domain and naming

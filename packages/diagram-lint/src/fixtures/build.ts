@@ -52,7 +52,7 @@ export const tabOf = (...elements: Element[]): Pick<Tab, 'elements' | 'layers' |
 export const quiet = () => {};
 
 export const lint = (
-  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & Partial<Pick<Tab, 'opensIn'>>,
+  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & { opensIn?: string },
   options: LintOptions = {},
 ): LintReport => lintTab(tab, { log: quiet, ...options });
 

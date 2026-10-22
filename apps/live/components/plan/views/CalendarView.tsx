@@ -105,7 +105,7 @@ export function CalendarView({
   );
 
   // Moving cards: an Editor's and a Participant's, never a Viewer's, and only while the view takes input.
-  const canMove = !!plan?.planInput && !!plan.canEditCards;
+  const canMove = !!plan && !!plan.canEditCards;
   const gridRef = useRef<HTMLDivElement>(null);
   // The card a keyboard move just carried, focused again where it lands (once its move shows in the model).
   const refocus = useRef<string | null>(null);

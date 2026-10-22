@@ -24,14 +24,14 @@ describe('lensSubjectOf', () => {
   it('reads one of my own documents as mine, by me, with its recorded intent', () => {
     expect(
       lensSubjectOf(
-        doc('a', { source: 'mcp', opensIn: 'draw', tabKind: 'diagram', templateFamily: 'kanban' }),
+        doc('a', { source: 'mcp', opensIn: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }),
         'me',
       ),
     ).toMatchObject({
       space: 'mine',
       people: 'me',
       madeByAi: true,
-      opensIn: 'draw',
+      opensIn: 'plan',
       kind: null,
       template: 'kanban',
     });

@@ -23,9 +23,6 @@ export type { BoardImportProgress, NewBoardDocument } from '@/lib/board-scene-im
 export type BoardSceneImportDeps = {
   tabs: Tab[];
   activeId: string;
-  // The viewer works on the active tab in Draw mode (docs/specs/007-editor/editor-modes.md): a
-  // scene lands the whiteboard way.
-  drawMode: boolean;
   ownerId: string;
   // The open document: an Offline Mode one makes Offline Mode documents, as a copy does.
   documentId: string | null;
@@ -48,9 +45,8 @@ export function useBoardSceneImport(deps: BoardSceneImportDeps) {
     if (active.locked) {
       return { status: 'error', error: 'This tab is locked. Unlock it before importing.' };
     }
-    const whiteboard = deps.drawMode;
     const landed = landBoardScene(scene, {
-      profile: whiteboard ? 'whiteboard' : 'diagram',
+      profile: 'diagram',
       placement: { kind: 'origin' },
       mintId: () => crypto.randomUUID(),
     });
@@ -58,7 +54,7 @@ export function useBoardSceneImport(deps: BoardSceneImportDeps) {
     const { elements, images } = await finishLanding(landed, {
       ownerId: deps.ownerId,
       documentId: deps.documentId,
-      whiteboard,
+      whiteboard: false,
       tabFont: active.font,
       onProgress,
       createImageSession: deps.createImageSession,
@@ -71,10 +67,6 @@ export function useBoardSceneImport(deps: BoardSceneImportDeps) {
       elements,
       theme: active.theme,
       ...(tabPatch.backgroundColor ? { backgroundColor: tabPatch.backgroundColor } : {}),
-      // In Draw mode the tab keeps its own background unless the scene names one.
-      ...(whiteboard && scene.background?.pattern
-        ? { backgroundPattern: tabPatch.backgroundPattern }
-        : {}),
     });
     debugLog('[board-scene] import', { boards: 1, target: 'replace-tab', failures: 0 });
     return { status: 'done', ...(images ? { images } : {}), scene: landed.report };

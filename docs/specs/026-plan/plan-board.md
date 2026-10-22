@@ -615,7 +615,7 @@ A board can be maximised to work on it without the rest of the canvas around it.
   a Sheet zooms its cells: [Sheet](../029-sheets/sheet.md#zoom)), so restoring it gives back the view it covered. The canvas's
   own keyboard shortcuts stand down (no arrow nudge, Delete, select-all, duplicate, lock, z-order, zoom, paste or
   tool key; the chords the browser would take over, Cmd+D and Cmd+A among them, are prevented), while undo and redo
-  (Cmd+Z, Cmd+Shift+Z, Ctrl+Y), search (Cmd+K), zen (Z), the mode switch (Shift+D), Escape, the chrome (header, tab
+  (Cmd+Z, Cmd+Shift+Z, Ctrl+Y), search (Cmd+K), zen (Z), Escape, the chrome (header, tab
   bar, palette, panels, the bottom-right controls) and everything on the board keep working; copy and cut are left to
   the browser, for text on the board.
 - **No selection chrome over it**: while a board is maximised (or fills its tab, [Fill Tab](#fill-tab)), no selection

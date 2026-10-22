@@ -1,8 +1,4 @@
-import {
-  DEFAULT_EDITOR_MODE,
-  type EmbedProvider,
-  type EventStormingNoteKind,
-} from '@liveplanner/document';
+import type { EmbedProvider, EventStormingNoteKind } from '@liveplanner/document';
 import { useEffect, useState } from 'react';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import type { PaletteTileActions } from '@/components/palette/PaletteTileGrid';
@@ -29,7 +25,6 @@ import { dashboardTabTiles } from './palette-dashboard-tiles';
 import { getMaximisedPlanId, restorePlanElement } from '@/hooks/plan/maximised-plan';
 import type { WhiteboardPenId } from '@/lib/whiteboard-prefs';
 import type { AddShapeOptions } from '@/lib/draw-mode';
-import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
 // Everything a palette SURFACE needs that isn't how it is drawn: the tile
 // add-handler bundle, the category catalogue with each category's body, the
@@ -105,8 +100,6 @@ export function usePaletteCatalogue({
   // appears / disappears as the viewport crosses the breakpoint; a client
   // mount reads it synchronously, so there's no flicker.
   const { libraries } = useShapeLibraries();
-  // The viewer's editor mode picks the palette layout (palette-layouts).
-  const editorMode = useEditorModeState()?.mode ?? DEFAULT_EDITOR_MODE;
   const isMobile = useIsMobileViewport();
   // If the viewport shrinks into mobile while Spotlight is active (desktop ->
   // resize / rotate), revert to Select: the option has just left the picker,
@@ -239,11 +232,10 @@ export function usePaletteCatalogue({
   // (the headings CATEGORY_BANDS names).
   // It renders the dropdown straight from this order, so the array IS
   // the grid layout.
-  // The mode's palette layout (palette-layouts): its categories, in order, with their tiles. My
-  // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md);
-  // Event Storming only on an ES board (docs/specs/021-event-storming/event-storming.md).
+  // Plan's palette layout (palette-layouts): its categories, in order, with their tiles. My
+  // shapes shows only when the owner has a shape to place (docs/specs/013-workspace/shape-libraries.md).
   const hasLibraryShapes = libraries.some((l) => l.items.length > 0);
-  // A board filling its tab: cards land only on a board (a maximised one keeps the mode's palette).
+  // A board filling its tab: cards land only on a board (a maximised one keeps the palette).
   const boardFillingTab = useBoardFillingTab();
   // A Dashboard tab's palette is what fills a slot (docs/specs/026-plan/plan-tabs.md "Dashboard tab").
   const dashboardTab = usePlanTabKind() === 'dashboard';
@@ -251,7 +243,7 @@ export function usePaletteCatalogue({
   const planTabList = usePlanTabList();
   // While a Plan board fills its tab, only Cards (coveredPaletteCategories).
   const categories = participant
-    ? participantPaletteCategories(editorMode, !!esBoard)
+    ? participantPaletteCategories()
     : boardFillingTab
       ? coveredPaletteCategories()
       : dashboardTab
@@ -262,9 +254,7 @@ export function usePaletteCatalogue({
                 ? [{ ...c, tiles: dashboardTabTiles(planTabList) }]
                 : [],
           )
-        : paletteCategoriesFor(editorMode, { esBoard: !!esBoard }).filter(
-            (c) => hasLibraryShapes || c.id !== 'my-shapes',
-          );
+        : paletteCategoriesFor().filter((c) => hasLibraryShapes || c.id !== 'my-shapes');
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -294,7 +284,6 @@ export function usePaletteCatalogue({
     canvasEmpty,
     isMobile,
     includeZen: !!onToggleZen,
-    planMode: editorMode === 'plan',
     currentTool: canvasTool,
   });
   const canvasToolOptions = participant
@@ -308,7 +297,6 @@ export function usePaletteCatalogue({
   return {
     tileActions,
     tabs,
-    editorMode,
     canvasToolOptions,
     onCanvasToolChange,
     iconCatalogsLoaded,

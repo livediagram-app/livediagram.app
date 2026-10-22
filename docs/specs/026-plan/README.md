@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./plan-mode.md - when working on Plan mode (an editor mode, see ../007-editor/editor-modes.md): offering it, its palette, its templates, collaboration, agents and telemetry
+- ./plan-mode.md - when working on Plan mode, the one editor mode (see ../007-editor/editor-modes.md): what it brings, starting a board, tools, no palette, templates, collaboration, agents and telemetry
 - ./plan-templates.md - when working on the Plan templates: the catalogue, the tabs each makes, hand-offs between their boards
 - ./plan-board.md - when working on the Plan board or Plan card elements: board set-up, columns, swimlanes, WIP limits, card faces, dragging, the item panel, voting, hide writing, CSV import and download
 - ./board-widgets.md - when working on a Plan board's header: its widgets, the Widgets palette category, placing, reordering and removing widgets

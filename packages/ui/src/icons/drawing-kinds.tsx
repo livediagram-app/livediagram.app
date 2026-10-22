@@ -75,13 +75,8 @@ export function PlanCardsIcon({ size = 16, ...rest }: IconProps) {
   );
 }
 
-// Each editor mode's mark (docs/specs/007-editor/editor-modes.md "Each mode's mark"), keyed by the
-// mode's id: the same glyph on the mode switch, Opens in, the tab pill, the template mode filter
-// and the marketing site's mode pictures.
+// The editor mode's mark (docs/specs/026-plan/plan-mode.md "Plan's mark"), keyed by the mode's id: the glyph a
+// general tab's pill, a document's mode and a `mode:` default folder show.
 export const EDITOR_MODE_ICONS: Readonly<Record<EditorMode, ComponentType<IconProps>>> = {
-  diagram: FlowchartIcon,
-  draw: MarkerIcon,
-  pages: PagesIcon,
   plan: PlanIcon,
-  workshop: FlipchartIcon,
 };

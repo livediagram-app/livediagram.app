@@ -4864,13 +4864,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "type": "string"
   },
   "EditorMode": {
-    "enum": [
-      "diagram",
-      "draw",
-      "workshop",
-      "pages",
-      "plan"
-    ],
+    "const": "plan",
     "type": "string"
   },
   "Element": {
@@ -8965,9 +8959,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "hidden": {
             "type": "number"
           },
-          "mode": {
-            "$ref": "#/components/schemas/EditorMode"
-          },
           "outOfScope": {
             "const": false,
             "type": "boolean"
@@ -12988,9 +12979,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "name": {
         "type": "string"
       },
-      "opensIn": {
-        "$ref": "#/components/schemas/EditorMode"
-      },
       "patternColor": {
         "type": "string"
       },
@@ -13105,9 +13093,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "name": {
         "type": "string"
-      },
-      "opensIn": {
-        "$ref": "#/components/schemas/EditorMode"
       },
       "orderIndex": {
         "type": "number"
@@ -14860,9 +14845,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       },
       "hidden": {
         "type": "number"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/EditorMode"
       },
       "rev": {
         "type": [

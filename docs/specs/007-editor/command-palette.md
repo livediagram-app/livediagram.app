@@ -43,8 +43,8 @@ in the pure builder where it's unit-tested.
 
 The palette offers only what would do something. On a **locked tab** (`tabLocked`) the element
 verbs, layout cleanup, the photo reader and the Eraser and Format tools are withheld, since the
-tab refuses every element edit; the document, tab and view commands stay. In **Plan mode**
-(`planMode`) Eraser and Format are left out, as the tool dropdown leaves them out.
+tab refuses every element edit; the document, tab and view commands stay. Eraser and Format are always left
+out, as Plan's tool dropdown leaves them out ([Plan mode](../026-plan/plan-mode.md#tools)).
 
 ## Unchanged on purpose
 

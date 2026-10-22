@@ -4,15 +4,13 @@ import type { TelemetrySummary, TelemetryWindowKey } from '@liveplanner/api-sche
 import { HelpView } from './HelpView';
 import {
   AVATAR_TOUR,
-  DRAW_TOUR,
   ELEMENT_TOURS,
-  WORKSHOP_TOUR,
   FORM_TOUR,
   NEW_VERSION_PROMPT,
   PLAN_TOUR,
   POWER_USER_OFFER,
   SHOW_ME_TOURS,
-  WELCOME_TOUR,
+  WELCOME_DIALOG_CLOSED,
 } from './metric-catalogue';
 import { MetricGroups, type MetricGroup } from './MetricCards';
 import { PagesView } from './PagesView';
@@ -27,10 +25,8 @@ export const TOURS_GROUPS: MetricGroup[] = [
   {
     title: 'Tours',
     metrics: [
-      WELCOME_TOUR,
+      WELCOME_DIALOG_CLOSED,
       PLAN_TOUR,
-      WORKSHOP_TOUR,
-      DRAW_TOUR,
       FORM_TOUR,
       AVATAR_TOUR,
       ELEMENT_TOURS,

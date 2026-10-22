@@ -23,7 +23,7 @@ async function signedIn(page: Page, baseURL: string, userId: string) {
   await page.addInitScript(() => {
     localStorage.setItem('liveplanner:v2:ui-mode', 'dark');
     localStorage.setItem('liveplanner:v2:name-confirmed', '1');
-    localStorage.setItem('liveplanner:user-preferences:v1', JSON.stringify({ tourSeen: true }));
+    localStorage.setItem('liveplanner:user-preferences:v1', JSON.stringify({ planTourSeen: true }));
   });
   await installClerkStub(page, stubUser(userId));
   const token = await (await page.request.get(`/e2e/token?sub=${userId}`)).text();

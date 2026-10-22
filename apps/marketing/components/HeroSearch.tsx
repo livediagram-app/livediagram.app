@@ -1,10 +1,9 @@
 'use client';
 
 import { ctaHref } from '@liveplanner/api-schema';
-import { editorModeLabel } from '@liveplanner/document';
 import { TemplatePreview } from '@liveplanner/template-previews';
 import { templateCreateHref, type TemplateKind } from '@liveplanner/templates';
-import { EDITOR_MODE_ICONS, Glyph, START_BLANK_HREF } from '@liveplanner/ui';
+import { Glyph, START_BLANK_HREF } from '@liveplanner/ui';
 import { useDeferredValue, useEffect, useId, useRef, useState, type KeyboardEvent } from 'react';
 import { heroSearch } from '@/lib/hero-starts';
 
@@ -131,30 +130,23 @@ export function HeroSearch() {
       >
         {matches.length > 0 ? (
           <ul aria-label="Matching templates" className="flex flex-col">
-            {matches.map((t) => {
-              const ModeIcon = EDITOR_MODE_ICONS[t.mode];
-              return (
-                <li key={t.kind}>
-                  <a
-                    data-hero-result=""
-                    href={createHref(t.kind)}
-                    className="flex items-center gap-4 rounded-xl px-3 py-2.5 outline-none hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:ring-2 focus-visible:ring-sky-500"
-                  >
-                    <span className="flex h-12 w-[4.5rem] shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 [&>svg]:h-9 [&>svg]:w-auto">
-                      <TemplatePreview kind={t.kind} />
-                    </span>
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[15px] font-semibold">{t.title}</span>
-                      <span className="block truncate text-sm text-slate-600">{t.description}</span>
-                    </span>
-                    <span className="hidden shrink-0 items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700 sm:inline-flex">
-                      <ModeIcon size={13} aria-hidden />
-                      {editorModeLabel(t.mode)}
-                    </span>
-                  </a>
-                </li>
-              );
-            })}
+            {matches.map((t) => (
+              <li key={t.kind}>
+                <a
+                  data-hero-result=""
+                  href={createHref(t.kind)}
+                  className="flex items-center gap-4 rounded-xl px-3 py-2.5 outline-none hover:bg-slate-100 focus-visible:bg-slate-100 focus-visible:ring-2 focus-visible:ring-sky-500"
+                >
+                  <span className="flex h-12 w-[4.5rem] shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 [&>svg]:h-9 [&>svg]:w-auto">
+                    <TemplatePreview kind={t.kind} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[15px] font-semibold">{t.title}</span>
+                    <span className="block truncate text-sm text-slate-600">{t.description}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
           </ul>
         ) : (
           <p className="px-3 py-3 text-[15px] text-slate-700">

@@ -1,7 +1,5 @@
 import { describe, expect, it } from 'vitest';
 
-import { EDITOR_MODES, editorModeLabel } from '@liveplanner/document';
-
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
 import { ALTERNATIVES } from './alternatives';
@@ -81,10 +79,11 @@ describe('product claims in marketing copy', () => {
   }
 });
 
-// A sentence that walks through the modes lists them in the editor's own order (Workshop after
-// Draw since #548), the order the mode switch shows.
+// A sentence that walks through the modes lists them in the order the hero's mocks show them
+// (Workshop after Draw since #548). The editor now has only Plan; the copy keeps these until the
+// site is redesigned.
 describe('mode lists in marketing copy', () => {
-  const labels = EDITOR_MODES.map(editorModeLabel);
+  const labels = ['Diagram', 'Draw', 'Workshop', 'Pages', 'Plan'];
   // Every string on its own, so one field's sentence never runs into the next field's.
   const strings = (v: unknown): string[] =>
     typeof v === 'string'

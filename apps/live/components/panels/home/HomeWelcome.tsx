@@ -12,8 +12,7 @@ import { BrandMark } from '@liveplanner/ui';
 import type { TemplateKind } from '@liveplanner/templates';
 import { track } from '@/lib/telemetry';
 import { useAuthHrefs } from '@/components/chrome/auth-shared';
-import { TemplatePicture } from '@/components/start/template-card';
-import { templateOf } from '@/components/start/start-template-items';
+import { TemplatePicture, templateOf } from '@/components/start/template-card';
 import { WELCOME_ALL_TEMPLATES_HREF, WELCOME_COPY } from '@/app/explorer/home/first-run';
 import {
   WELCOME_BLANKS,

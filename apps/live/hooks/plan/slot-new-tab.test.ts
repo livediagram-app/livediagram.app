@@ -19,7 +19,6 @@ function setup(extra: Tab[] = []) {
       id: 'd',
       name: 'Overview',
       kind: 'dashboard',
-      opensIn: 'plan',
       theme: 'ocean',
       font: 'serif',
       elements: [],
@@ -57,7 +56,6 @@ describe('a new board picked for a slot', () => {
     expect(later!.id).toBe('z');
     expect(made).toMatchObject({
       kind: 'board',
-      opensIn: 'plan',
       name: freshBoardSetup('kanban').title,
       // The dashboard's look, as a new tab takes the active tab's.
       theme: 'ocean',
@@ -102,7 +100,7 @@ describe('a new Sheet picked for a slot', () => {
     const s = setup();
     act(() => s.result.current.placeItem({ kind: 'sheet', start: 'budget' }, null));
     const [dash, made] = s.tabs();
-    expect(made).toMatchObject({ kind: 'sheet', opensIn: 'plan', name: 'Budget' });
+    expect(made).toMatchObject({ kind: 'sheet', name: 'Budget' });
     const sheet = made!.elements[0] as unknown as { shape: string; planSheet: { sheetId: string } };
     expect(sheet.shape).toBe('plan-sheet');
     expect(placedSheetTitle(sheet.planSheet.sheetId)).toBe('Budget');

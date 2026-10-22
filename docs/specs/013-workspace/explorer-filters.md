@@ -6,7 +6,7 @@ Status: shipped. The grammar, matching, suggestion engine and view models live i
 ## What
 
 Every Explorer list can be narrowed by one **lens**: a single filter state written as one string of words and
-**tokens**. People pick **chips**; experts type tokens like `opens-in:draw template:retrospective made-by:ai edited:7d`
+**tokens**. People pick **chips**; experts type tokens like `opens-in:plan template:retrospective made-by:ai edited:7d`
 into the top-bar search. Both edit the same string:
 
 - Choosing a chip value **writes its token** into the string.
@@ -68,20 +68,20 @@ Each dimension is a closed list of values. The interface says what a value means
 kind or a template family a "type", and it keeps "board type" for what it means elsewhere: a board that leaves the
 general diagram tab's environment.
 
-| Dimension | Key        | Chip label  | Values and their labels                                                                                                              |
-| --------- | ---------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Text      | (none)     | (the field) | Free words                                                                                                                           |
-| Opens in  | `opens-in` | Opens in    | `diagram` Diagram, `draw` Draw, `pages` Pages, `plan` Plan, `workshop` Workshop: the editor mode the document was created to open in |
-| Kind      | `kind`     | Kind        | `event-storming` Event Storming: the first tab's kind when the document was created                                                  |
-| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the document was made from                                       |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is the AI assistant or an AI tool through the MCP server (not the CLI)                      |
-| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                                     |
-| People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                                                     |
-| Space     | `space`    | Space       | `mine` My Documents, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                                      |
+| Dimension | Key        | Chip label  | Values and their labels                                                                                         |
+| --------- | ---------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
+| Text      | (none)     | (the field) | Free words                                                                                                      |
+| Opens in  | `opens-in` | Opens in    | `plan` Plan: the editor mode the document was created in (a retired mode's id, `opens-in:draw`, reads as Plan)  |
+| Kind      | `kind`     | Kind        | `event-storming` Event Storming: the first tab's kind when the document was created                             |
+| Template  | `template` | Template    | `retrospective` Retrospective, `kanban` Kanban: the template family the document was made from                  |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is the AI assistant or an AI tool through the MCP server (not the CLI) |
+| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                |
+| People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                                |
+| Space     | `space`    | Space       | `mine` My Documents, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                 |
 
 - **Opens in**, **Kind** and **Template** read the creation intent recorded on the document
   (Default folders: `opensIn`, `tabKind`, `templateFamily` on the document
-  summary). Opens in offers one value per editor mode (`EDITOR_MODES`); Kind offers the specific tab kinds, every
+  summary). Opens in offers one value per editor mode (`EDITOR_MODES`: Plan alone); Kind offers the specific tab kinds, every
   creatable kind but the general diagram tab, so today only Event Storming; Template offers the template families
   (`TEMPLATE_FAMILIES`). A document whose recorded value is unknown (made before the intent was recorded) matches no
   value of that dimension; it shows whenever that dimension is not set. A general diagram tab matches no Kind value, and

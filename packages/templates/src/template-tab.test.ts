@@ -33,17 +33,10 @@ describe('buildTemplateTab', () => {
   });
 });
 
-// docs/specs/007-editor/editor-modes.md: the Whiteboard template makes a general tab that opens in
-// Draw mode; there is no whiteboard kind.
+// The Whiteboard template makes a general tab; there is no whiteboard kind.
 describe('buildTemplateTab: the Whiteboard template', () => {
-  it('makes a general tab that opens in Draw', () => {
-    const tab = buildTemplateTab('tab-wb', 'Whiteboard', 'whiteboard');
-    expect(tab.kind).toBe('diagram');
-    expect(tab.opensIn).toBe('draw');
-  });
-
-  it('leaves every other template opening in Diagram', () => {
-    expect(buildTemplateTab('tab-b', 'Blank', 'blank').opensIn).toBeUndefined();
+  it('makes a general tab', () => {
+    expect(buildTemplateTab('tab-wb', 'Whiteboard', 'whiteboard').kind).toBe('diagram');
   });
 });
 
@@ -73,7 +66,7 @@ describe('resolveTemplate', () => {
 
 // docs/specs/026-plan/plan-templates.md "How a template with tabs is made".
 describe('buildTemplateTabs', () => {
-  it('makes every tab of a Plan template, the first named as given, each valid and opening in Plan', () => {
+  it('makes every tab of a Plan template, the first named as given, each valid', () => {
     let n = 0;
     const tabs = buildTemplateTabs({ id: 'first', name: 'Mine' }, 'team-retro', () => `t${++n}`);
     expect(tabs.map((t) => [t.id, t.name])).toEqual([
@@ -86,7 +79,6 @@ describe('buildTemplateTabs', () => {
     expect(tabs.map((t) => t.kind)).toEqual(['board', 'board', 'board', 'dashboard']);
     for (const tab of tabs) {
       expect(isValidTab(tab), tab.name).toBe(true);
-      expect(tab.opensIn).toBe('plan');
       expect(tab.templateChosen).toBe(true);
     }
   });

@@ -79,11 +79,9 @@ export async function newDocumentContent(input: {
   const tab: Tab = tabs
     ? tabs[0]!
     : {
-        // A blank tab with the theme's backdrop, in Plan, so the editor opens it on Start Planning with no seeded
-        // elements.
+        // A blank tab with the theme's backdrop, so the editor opens it on Start Planning with no seeded elements.
         id: tabId,
         name: 'Tab 1',
-        opensIn: 'plan',
         elements: [],
         theme: themeId,
         backgroundColor: theme.backgroundColor,

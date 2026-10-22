@@ -1,120 +1,61 @@
-// The editor mode each template opens in (docs/specs/007-editor/templates-by-mode.md "A template's
-// mode"): declared once here, read by the template step (its mode filter and the glyph on every
-// card) and by templateCanvasOverrides (the tab's `opensIn`), so the two can never disagree.
-import type { EditorMode } from '@liveplanner/document';
+// Plan's templates (docs/specs/026-plan/plan-templates.md "Plan's templates"): the boards, Sheets and forms Start
+// Planning, /new and the Explorer offer to start from. Every other template in the catalogue is still made by name (an
+// agent's add_tab), but never offered, and no start's search finds it.
 import type { TemplateKind } from './templates';
 
-// Every template not named here is a Diagram template.
-const TEMPLATE_MODES: Partial<Record<TemplateKind, EditorMode>> = {
-  whiteboard: 'draw',
-  sketchnote: 'draw',
-  'rich-picture': 'draw',
-  'comic-strip': 'draw',
-  'doodle-warmup': 'draw',
-  'paper-prototype': 'draw',
-  'journey-doodle': 'draw',
-  'pre-mortem': 'draw',
-  'idea-garden': 'draw',
-  // Plan templates (docs/specs/026-plan/plan-templates.md).
-  'blank-plan': 'plan',
-  'blank-spreadsheet': 'plan',
-  kanban: 'plan',
-  'project-planner': 'plan',
-  'bug-triage': 'plan',
-  'team-retro': 'plan',
-  'weekly-planner': 'plan',
-  'content-calendar': 'plan',
-  'hiring-pipeline': 'plan',
-  okrs: 'plan',
-  'product-launch': 'plan',
-  'feedback-board': 'plan',
-  'budget-planner': 'plan',
-  timesheet: 'plan',
-  'contact-list': 'plan',
-  'task-tracker': 'plan',
-  invoice: 'plan',
-  'expense-report': 'plan',
-  'loan-calculator': 'plan',
-  'sales-pipeline': 'plan',
-  inventory: 'plan',
-  'guest-list': 'plan',
-  'grade-book': 'plan',
-  'habit-tracker': 'plan',
+const PLAN_TEMPLATES: ReadonlySet<TemplateKind> = new Set<TemplateKind>([
+  'blank-plan',
+  'blank-spreadsheet',
+  'kanban',
+  'project-planner',
+  'bug-triage',
+  'team-retro',
+  'weekly-planner',
+  'content-calendar',
+  'hiring-pipeline',
+  'okrs',
+  'product-launch',
+  'feedback-board',
+  'budget-planner',
+  'timesheet',
+  'contact-list',
+  'task-tracker',
+  'invoice',
+  'expense-report',
+  'loan-calculator',
+  'sales-pipeline',
+  'inventory',
+  'guest-list',
+  'grade-book',
+  'habit-tracker',
   // A form is started on a Plan tab (form-templates.ts).
-  'blank-form': 'plan',
-  'bug-report-form': 'plan',
-  'feedback-form': 'plan',
-  'feature-request-form': 'plan',
-  'rsvp-form': 'plan',
-  'job-application-form': 'plan',
-  'contact-form': 'plan',
-  // Session formats (docs/specs/012-collaboration/workshop-mode.md "Templates"): run with the room,
-  // so they open where the Collaborate kit and the Session strip are.
-  'blank-session': 'workshop',
-  retrospective: 'workshop',
-  'start-stop-continue': 'workshop',
-  'mad-sad-glad': 'workshop',
-  'four-ls': 'workshop',
-  sailboat: 'workshop',
-  'town-hall': 'workshop',
-  'lean-coffee': 'workshop',
-  brainstorm: 'workshop',
-  'workshop-board': 'workshop',
-  'crazy-eights': 'workshop',
-  'meeting-agenda': 'workshop',
-  // Quizzes & Games (docs/specs/012-collaboration/quiz-and-game-templates.md): run on quiz cards, pickers and polls.
-  'pub-quiz': 'workshop',
-  'icebreaker-questions': 'workshop',
-  'virtual-office': 'workshop',
-  'coworking-space': 'workshop',
-  'team-pod': 'workshop',
-  'all-hands-hall': 'workshop',
-  'two-truths-and-a-lie': 'workshop',
-  'would-you-rather': 'workshop',
-  'people-bingo': 'workshop',
-  // Boards that ship a dot vote: only Workshop's Session strip can watch, end and keep a vote.
-  'affinity-map': 'workshop',
-  'prioritization-matrix': 'workshop',
-  'risk-matrix': 'workshop',
-  // Boards a team fills in together in a session, rather than a diagram one person draws.
-  'incident-postmortem': 'workshop',
-  'objectives-planner': 'workshop',
-  roadmap: 'workshop',
-  'raci-matrix': 'workshop',
-  'user-story-map': 'workshop',
-  'business-model-canvas': 'workshop',
-  'stakeholder-map': 'workshop',
-  'value-proposition-canvas': 'workshop',
-  'opportunity-solution-tree': 'workshop',
-  'user-persona': 'workshop',
-  // Sticky-note boards a group fills in together (docs/specs/007-editor/templates-by-mode.md "A template's mode"):
-  // a note per voice is the room's work, not a diagram one person draws.
-  swot: 'workshop',
-  'empathy-map': 'workshop',
-  journey: 'workshop',
-};
+  'blank-form',
+  'bug-report-form',
+  'feedback-form',
+  'feature-request-form',
+  'rsvp-form',
+  'job-application-form',
+  'contact-form',
+]);
 
-/** The mode a template's tab opens in. */
-export function templateEditorMode(kind: TemplateKind): EditorMode {
-  return TEMPLATE_MODES[kind] ?? 'diagram';
+/** True for a template Plan offers to start from. */
+export function isPlanTemplate(kind: TemplateKind): boolean {
+  return PLAN_TEMPLATES.has(kind);
 }
 
-/** Each mode's blank (docs/specs/007-editor/templates-by-mode.md "Five blanks"). */
-export const BLANK_TEMPLATE_FOR_MODE: Readonly<Record<Exclude<EditorMode, 'pages'>, TemplateKind>> =
-  {
-    diagram: 'blank',
-    draw: 'whiteboard',
-    plan: 'blank-plan',
-    workshop: 'blank-session',
-  };
+// The blanks (docs/specs/026-plan/plan-templates.md "The blanks"), in the order the landing page's Blank Slate lists
+// them: Blank Plan first, beside it Blank Spreadsheet (an empty Sheet) and Blank Form; the catalogue's other blanks
+// after.
+export const BLANK_TEMPLATES: readonly TemplateKind[] = [
+  'blank-plan',
+  'blank-spreadsheet',
+  'blank-form',
+  'blank',
+  'whiteboard',
+  'blank-session',
+];
 
-// The blanks beyond each mode's own (docs/specs/007-editor/templates-by-mode.md "The blanks"): Blank Spreadsheet, an
-// empty Sheet, and Blank Form, beside Blank Plan.
-export const EXTRA_BLANK_TEMPLATES: readonly TemplateKind[] = ['blank-spreadsheet', 'blank-form'];
-
-/** True for the blanks: each mode's, Blank Spreadsheet and Blank Form. Quick-picks on Popular, never on a category shelf or tile. */
+/** True for the blanks. Quick-picks on Popular, never on a category shelf or tile. */
 export function isBlankTemplate(kind: TemplateKind): boolean {
-  return (
-    Object.values(BLANK_TEMPLATE_FOR_MODE).includes(kind) || EXTRA_BLANK_TEMPLATES.includes(kind)
-  );
+  return BLANK_TEMPLATES.includes(kind);
 }

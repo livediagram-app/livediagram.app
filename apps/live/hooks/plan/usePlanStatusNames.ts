@@ -134,14 +134,10 @@ export function documentStatusSignatures(
   return next;
 }
 
-const OFF: Signatures = { names: '[]', phases: '[]', types: '[]', boards: '[]' };
-
-// The document's status names and phases, read only where Plan is in play
-// (docs/specs/026-plan/plan-mode.md "Cost"); each map keeps its identity while its signature does.
+// The document's status names and phases; each map keeps its identity while its signature does.
 export function usePlanStatuses(
   tabs: readonly Tab[],
   activeId: string,
-  enabled: boolean,
   typeIds?: readonly string[],
 ): {
   names: ReadonlyMap<string, string>;
@@ -149,7 +145,7 @@ export function usePlanStatuses(
   types: BoardStatusTypes;
   boards: readonly StatusBoard[];
 } {
-  const sig = enabled ? documentStatusSignatures(tabs, activeId, typeIds) : OFF;
+  const sig = documentStatusSignatures(tabs, activeId, typeIds);
   const names = useMemo(() => new Map(JSON.parse(sig.names) as [string, string][]), [sig.names]);
   const phases = useMemo(
     () => new Map(JSON.parse(sig.phases) as [string, StatusPhase][]),

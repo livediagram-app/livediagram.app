@@ -7,7 +7,6 @@ import {
   type Tab,
 } from '@liveplanner/document';
 import { templateLayers } from './template-layers';
-import { templateEditorMode } from './template-modes';
 import type { TemplateKind } from './templates';
 
 // The canvas backdrop pattern that best suits each template's layout.
@@ -191,10 +190,7 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // louder the pattern, the further it steps back (TEMPLATE_PATTERN_OPACITY);
   // a few radial / stage layouts soften further still, and the lower of the
   // two wins.
-  // A whiteboard draws its own quiet board pattern (docs/specs/023-draw-mode/draw-mode.md "Board
-  // background"), so it never takes a template's dimming.
-  const mode = templateEditorMode(kind);
-  const quiet = pattern && mode !== 'draw' ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
+  const quiet = pattern ? TEMPLATE_PATTERN_OPACITY[pattern] : undefined;
   const soft =
     kind === 'mindmap' ||
     kind === 'mindmap-tree' ||
@@ -210,10 +206,6 @@ export function templateCanvasOverrides(kind: TemplateKind): Partial<Tab> {
   // The kind, not a layer id, is what the editor reads to decide it is a
   // workshop board, so it must land on every application path: the picker,
   // /new, and the MCP worker all go through here.
-  // A template's mode (docs/specs/007-editor/templates-by-mode.md): the Draw templates are general
-  // tabs that OPEN in Draw mode (docs/specs/007-editor/editor-modes.md "Where the mode lives";
-  // whiteboarding is no kind).
-  if (mode !== 'diagram') overrides.opensIn = mode;
   if (kind === 'event-storming') {
     overrides.kind = 'event-storming';
     // The seed note is built on a lane, so the board is born settled and the

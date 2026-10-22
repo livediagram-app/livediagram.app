@@ -893,9 +893,8 @@ not in Sheet Settings, not anywhere.
 
 ## Only in Plan
 
-A Sheet element is placed only on a tab in Plan, as a board is ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)):
-a paste onto a tab in another mode leaves out its Sheets and the charts they draw, and an agent's `add_sheet` or
-changeset onto one is refused. Its grid takes no input outside Plan, and a double-click there offers nothing.
+Every tab is in Plan, so a Sheet element goes on any tab, as a board does
+([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
 
 - A Sheet element is never added to another document by a tab's **Add to Document**, as a board's tab is not.
 

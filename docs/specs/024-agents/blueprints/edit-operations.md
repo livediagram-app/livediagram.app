@@ -712,11 +712,8 @@ Edge cases:
 - **E16** A `connect` whose `a` or `b` is an arrow: `invalid_value` ("arrows connect boxes").
 - **E17** `connect a->b->c` or `connect a -> b -> c`: `parse_error` at the second `->` word, expected
   `one -> in connect: <a> -> <b>`; the `<a>-><b>` selector term with a third end is a parse error too.
-- **E18** A result holding a board or Sheet the tab did not hold, on a tab not in Plan (operations after `finalise`,
-  replace after `nextTab`; `planOnlyAddedOutsidePlan`): `invalid_value` (`planOnlyOutsidePlan`), detail `a board or
-Sheet goes only on a tab in Plan: <ids>`, hint `add a Board tab or a Sheet tab with add_tab (template "kanban" or
-"blank-spreadsheet")` ([Agent changesets](../agent-changesets.md#boards-and-sheets-only-in-plan)). One the tab
-  already held passes.
+- **E18** Retired with the other editor modes: a board or Sheet on any tab passes
+  ([Agent changesets](../agent-changesets.md#boards-and-sheets-only-in-plan)).
 
 ## Security and trust
 

@@ -18,7 +18,7 @@ describe('buildDashboardTab', () => {
     });
     expect(isValidTab(tab)).toBe(true);
     expect(dropped).toBe(0);
-    expect(tab).toMatchObject({ id: 't9', name: 'Overview', kind: 'dashboard', opensIn: 'plan' });
+    expect(tab).toMatchObject({ id: 't9', name: 'Overview', kind: 'dashboard' });
     const rows = tab.dashboard!.rows;
     const kinds = rows.map((r) => r.slots.map((s) => s.content?.type).join(','));
     // tabs, metrics (4 then 1), the Gantt alone, the other charts, the note.

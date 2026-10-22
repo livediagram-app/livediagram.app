@@ -156,7 +156,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
       const lower = key.toLowerCase();
 
       // --- A Plan board covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it moves") ---
-      // Nothing on the canvas changes from the keyboard; undo, redo, search, zen, the mode switch and Escape still
+      // Nothing on the canvas changes from the keyboard; undo, redo, search, zen and Escape still
       // work, and a canvas chord the browser would take over (Cmd+D, Cmd+A...) is prevented.
       if (live.canvasCovered?.()) {
         if (inText) return;
@@ -169,8 +169,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         }
         if (key !== 'Escape') {
           e.preventDefault();
-          if (lower === 'z') live.onToggleZen();
-          else live.onCycleEditorMode?.();
+          live.onToggleZen();
           return;
         }
       }
@@ -365,17 +364,6 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
           e.preventDefault();
           return;
         }
-      }
-
-      // --- Editor mode (Shift+D, docs/specs/007-editor/editor-modes.md) ---
-      // After type-to-edit, so a capital D still types into a selected
-      // label; before the dock keys, so it works in Draw mode too. Where no
-      // switch is offered it does nothing (it is never Diamond's D).
-      if (e.shiftKey && !e.altKey && lower === 'd') {
-        if (!live.onCycleEditorMode) return;
-        e.preventDefault();
-        live.onCycleEditorMode();
-        return;
       }
 
       // Walking, the Avatar Panel's action keys are the character's (docs/specs/008-canvas/avatar-mode.md

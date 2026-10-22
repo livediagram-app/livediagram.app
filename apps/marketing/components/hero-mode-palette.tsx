@@ -2,11 +2,10 @@
 // "The palette per mode", toolbar-layout.md "The category bar"): the mode's glyph and name for its
 // switch, then Diagram's, Workshop's and Pages mode's category bars (each category's glyph and its
 // one-word name, in bands), Draw's dock in place of the palette, and none for Plan, whose tab brings
-// its own bar (hero-plan-bars.tsx). Keyed by the editor's own EditorMode, so a new mode fails typecheck here. At the mock's
+// its own bar (hero-plan-bars.tsx). Keyed by HeroMode, the five modes the hero still pictures. At the mock's
 // scale, drawn from the editor's own glyphs where it has them. The strip is ToolbarStrip
 // (hero-editor-chrome.tsx).
 
-import type { EditorMode } from '@liveplanner/document';
 import { MODE_GLYPHS } from '@liveplanner/icons/mode-glyphs';
 import {
   AskGroupIcon,
@@ -18,11 +17,14 @@ import {
   DevicesTabIcon,
   DiagramsTabIcon,
   DrawTabIcon,
-  EDITOR_MODE_ICONS,
+  FlipchartIcon,
+  FlowchartIcon,
   Glyph,
   IconsTabIcon,
   MarkerIcon,
   MediaTabIcon,
+  PagesIcon,
+  PlanIcon,
   Prims,
   ShapesTabIcon,
   StickersTabIcon,
@@ -33,15 +35,17 @@ import {
 import type { ComponentType, ReactNode } from 'react';
 import { Shape } from './hero-illustration-glyphs';
 
-export type HeroMode = EditorMode;
+// The modes the hero's pictures show. The editor itself now has only Plan; these stay
+// marketing-only until the site is redesigned.
+export type HeroMode = 'diagram' | 'draw' | 'workshop' | 'pages' | 'plan';
 
-// Each mode's name and its glyph, the editor's own (EDITOR_MODE_ICONS).
+// Each mode's name and its glyph, drawn from the editor's own icons.
 export const HERO_MODE: Record<HeroMode, { label: string; Icon: ComponentType<IconProps> }> = {
-  diagram: { label: 'Diagram', Icon: EDITOR_MODE_ICONS.diagram },
-  draw: { label: 'Draw', Icon: EDITOR_MODE_ICONS.draw },
-  workshop: { label: 'Workshop', Icon: EDITOR_MODE_ICONS.workshop },
-  pages: { label: 'Pages', Icon: EDITOR_MODE_ICONS.pages },
-  plan: { label: 'Plan', Icon: EDITOR_MODE_ICONS.plan },
+  diagram: { label: 'Diagram', Icon: FlowchartIcon },
+  draw: { label: 'Draw', Icon: MarkerIcon },
+  workshop: { label: 'Workshop', Icon: FlipchartIcon },
+  pages: { label: 'Pages', Icon: PagesIcon },
+  plan: { label: 'Plan', Icon: PlanIcon },
 };
 
 // `hint` is the shortcut the editor prints under the tile; `group` starts a new group in Draw's dock.

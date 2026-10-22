@@ -295,8 +295,8 @@ style       := "~" (strokeStyle | "none" | "both" | "from")
 attribute   := key "=" attrValue | flag
 ```
 
-`kind=` prints only for a tab whose `tabKindOf` is not `diagram`; `mode=` only for a tab whose `opensInOf` is not
-`diagram`; `finish=` only when the tab sets one;
+`kind=` prints only for a tab whose `tabKindOf` is not `diagram` (the `mode=` segment went with the other editor
+modes: every tab is in Plan); `finish=` only when the tab sets one;
 `threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 

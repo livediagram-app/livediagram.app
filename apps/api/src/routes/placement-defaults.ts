@@ -11,7 +11,7 @@
 // per-owner write rate limit in index.ts.
 
 import {
-  parsePlacementDefaultKey,
+  isPlacementDefaultKey,
   type PlacementDefaultKey,
   type PlacementDefaultRejection,
 } from '@liveplanner/api-schema';
@@ -38,7 +38,7 @@ function rejected(reason: PlacementDefaultRejection | 'folder_not_found'): Respo
   return json({ error: reason }, { status: REJECTION_STATUS[reason] });
 }
 
-/** The key a path segment names, raw (`mode:draw`) or percent-encoded (`mode%3Adraw`). */
+/** The key a path segment names, raw (`mode:plan`) or percent-encoded (`mode%3Aplan`). */
 function keyOf(segment: string): PlacementDefaultKey | null {
   let decoded: string;
   try {
@@ -46,7 +46,7 @@ function keyOf(segment: string): PlacementDefaultKey | null {
   } catch {
     return null;
   }
-  return parsePlacementDefaultKey(decoded);
+  return isPlacementDefaultKey(decoded) ? decoded : null;
 }
 
 /** The `folderId` of a PUT body, or null when the body is not `{ folderId: <non-empty string> }`. */

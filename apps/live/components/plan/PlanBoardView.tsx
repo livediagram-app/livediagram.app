@@ -134,7 +134,7 @@ export function PlanBoardView({
     () => (setup ? boardItems(projectBoard(setup, items, undefined, types, statusNames)) : []),
     [setup, items, types, statusNames],
   );
-  const interactive = !!plan?.planInput;
+  const interactive = !!plan;
   // Selected (alone or with others): the header shows its move handle.
   const selected = useSelectionOf(
     (s) => s.selectedId === element.id || s.multiSelectedIds.has(element.id),

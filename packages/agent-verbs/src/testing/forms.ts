@@ -75,7 +75,6 @@ export const formTabBody = (form: FormDefinition = bugForm()): FormTabBody => ({
   id: 'form',
   name: form.heading,
   kind: 'form',
-  opensIn: 'plan',
   elements: [],
   form,
   rev: 7,

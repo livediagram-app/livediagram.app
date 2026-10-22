@@ -359,7 +359,6 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
 | A sheet whose element never reached the api                    | Noted at create (`sheetNoteUnreferencedStatement`), so it expires                                                                             |
 | Agent change past a sheet or document cap                      | `capsRefusal` before any part is sent: the cap's code, "none of it was written"                                                               |
 | Agent change whose later part the api refuses                  | The landed parts kept and reported as a `partly` line, then the refusal                                                                       |
-| add_sheet onto a tab not in Plan                               | `tab_not_plan` after one tab read (`tabTakesPlanOnly`), before any sheet is made; the read also tints a design                                |
 | add_sheet fill or placing refused                              | The made sheet deleted, so a retry does not spend the document's cells again                                                                  |
 | Design on a sheet with cells                                   | `sheet_not_empty`, naming clear and add_sheet                                                                                                 |
 | Charts' changeset refused after the writes                     | The writes stand; the answer carries their lines and the refusal                                                                              |

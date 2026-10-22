@@ -200,7 +200,6 @@ export function PlanTourHost() {
     setActiveTour('plan', active);
   }, [active]);
 
-  const inPlan = ctx.editorMode.mode === 'plan';
   // Each track offers itself once (lib/plan-tour.ts): a track already answered is not offered again.
   const prefs = ctx.userPreferences;
   const owed = PLAN_TOUR_TRACKS.filter((t) => !planTrackSeen(prefs, t));
@@ -225,16 +224,11 @@ export function PlanTourHost() {
   // Armed on entering Plan (or mounting in it), on an owed track's work arriving, and by a relaunch; disarmed on
   // leaving it or once offered. Adjusted during render when the mode or the work changes. A relaunch waits for a
   // board or Sheet like a first offer.
-  const [armed, setArmed] = useState(false);
-  const [wasInPlan, setWasInPlan] = useState(false);
+  const [armed, setArmed] = useState(true);
   const [lastOffer, setLastOffer] = useState(offerKey);
-  if (inPlan !== wasInPlan) {
-    setWasInPlan(inPlan);
-    setArmed(inPlan);
-  }
   if (offerKey !== lastOffer) {
     setLastOffer(offerKey);
-    if (inPlan && hasPlanWork) setArmed(true);
+    if (hasPlanWork) setArmed(true);
   }
   // Every track answered already (here, or on another device): nothing is owed on this entry, so a later Settings
   // change while in Plan does not offer it behind the dialog (only the rerun does).
@@ -266,7 +260,7 @@ export function PlanTourHost() {
   // Another tour ending re-renders this through useActiveTour, so the Plan tour follows it.
   useEffect(() => {
     if (!armed || active || seen) return;
-    if (!inPlan || !canWork || otherTour || modalOpen || !hasPlanWork) return;
+    if (!canWork || otherTour || modalOpen || !hasPlanWork) return;
     let tries = 0;
     let t: ReturnType<typeof setTimeout>;
     const look = () => {
@@ -294,19 +288,16 @@ export function PlanTourHost() {
     return () => clearTimeout(t);
     // workKey stands for boardIds and sheetIds.
     // oxlint-disable-next-line react/exhaustive-deps
-  }, [armed, active, seen, inPlan, canWork, otherTour, modalOpen, hasPlanWork, workKey, engineRef]);
+  }, [armed, active, seen, canWork, otherTour, modalOpen, hasPlanWork, workKey, engineRef]);
 
   // Settings rerun (the Tours › "Boards Tour" or "Sheets Tour" row, turned on from off + closed): offers again in Plan once a
   // board or Sheet is open, and otherwise the next time the person enters it (the row has cleared
   // the answered tracks). It places nothing to show: an empty tab offers Start Planning, which makes one.
-  const inPlanRef = useLatest(inPlan);
   useEffect(() => {
-    const onRelaunch = () => {
-      if (inPlanRef.current) setArmed(true);
-    };
+    const onRelaunch = () => setArmed(true);
     window.addEventListener(PLAN_TOUR_RELAUNCH_EVENT, onRelaunch);
     return () => window.removeEventListener(PLAN_TOUR_RELAUNCH_EVENT, onRelaunch);
-  }, [inPlanRef]);
+  }, []);
 
   // Ends as skipped when the tour can no longer run where it started: edit rights gone, Plan left, another
   // tab opened, or the tour subject deleted.
@@ -320,11 +311,11 @@ export function PlanTourHost() {
       return;
     }
     startedOnRef.current ??= activeId;
-    if (!canWork || !inPlan || startedOnRef.current !== activeId || subjectGone) {
+    if (!canWork || startedOnRef.current !== activeId || subjectGone) {
       engineRef.current.stop();
       endTourRef.current('skipped');
     }
-  }, [active, canWork, inPlan, activeId, subjectGone, engineRef, endTourRef]);
+  }, [active, canWork, activeId, subjectGone, engineRef, endTourRef]);
 
   useEffect(() => () => setActiveTour('plan', false), []);
 

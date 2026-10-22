@@ -3,24 +3,24 @@
 // and the hero's template fan, so the catalogue never weighs on any other Home.
 
 import {
-  BLANK_TEMPLATE_FOR_MODE,
   POPULAR_TEMPLATE_KINDS,
   isBlankTemplate,
   templateCreateHref,
   type TemplateKind,
 } from '@liveplanner/templates';
-import { EDITOR_MODES } from '@liveplanner/document';
 
 /** How many Popular templates the welcome shows. */
 export const WELCOME_TEMPLATES_MAX = 8;
 
 /** The three previews fanned in the hero, the front one first. */
-export const WELCOME_FAN: readonly TemplateKind[] = ['flowchart', 'mindmap', 'kanban'];
+export const WELCOME_FAN: readonly TemplateKind[] = ['kanban', 'project-planner', 'budget-planner'];
 
-/** Start Blank: each mode's blank, in mode order. */
-export const WELCOME_BLANKS: readonly TemplateKind[] = EDITOR_MODES.flatMap((mode) =>
-  mode === 'pages' ? [] : [BLANK_TEMPLATE_FOR_MODE[mode]],
-);
+/** Start Blank: Plan's blanks, a board, a Sheet and a form. */
+export const WELCOME_BLANKS: readonly TemplateKind[] = [
+  'blank-plan',
+  'blank-spreadsheet',
+  'blank-form',
+];
 
 /** Popular Templates: the shared Popular list without its blanks, cut to WELCOME_TEMPLATES_MAX. */
 export const WELCOME_POPULAR: readonly TemplateKind[] = POPULAR_TEMPLATE_KINDS.filter(

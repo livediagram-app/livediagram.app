@@ -11,7 +11,7 @@ const subject = (overrides: Partial<LensSubject> = {}): LensSubject => ({
   space: 'mine',
   people: 'me',
   madeByAi: false,
-  opensIn: 'diagram',
+  opensIn: 'plan',
   kind: null,
   template: null,
   ...overrides,

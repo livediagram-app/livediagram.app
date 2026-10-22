@@ -77,7 +77,6 @@ export function migrateWhiteboardKind<T extends Pick<Tab, 'elements' | 'backgrou
   return {
     ...tab,
     kind: 'diagram',
-    opensIn: 'draw',
     backgroundPattern: tab.backgroundPattern ?? WHITEBOARD_UNSET_PATTERN,
     elements,
   };

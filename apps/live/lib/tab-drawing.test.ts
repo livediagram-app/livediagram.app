@@ -30,11 +30,9 @@ const form: FormDefinition = {
 };
 
 describe('renderTabDrawingSvg', () => {
-  it('draws a Diagram or Draw tab as its canvas', () => {
+  it('draws a canvas tab as its canvas', () => {
     const t = tab({ elements: [box('a', 'Checkout', { x: 0, y: 0 })] });
     expect(renderTabDrawingSvg(t)).toBe(renderTabToSvg(t));
-    const draw = { ...t, opensIn: 'draw' as const };
-    expect(renderTabDrawingSvg(draw)).toBe(renderTabToSvg(draw));
   });
 
   it('draws a Form tab as its form on its look, though no element is on it', () => {

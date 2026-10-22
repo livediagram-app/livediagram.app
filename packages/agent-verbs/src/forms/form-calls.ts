@@ -426,7 +426,6 @@ export async function addForm(
         elements: [],
         defaultTextSize: 'sm',
         kind: 'form',
-        opensIn: 'plan',
         form: d.form,
         ...(tabTheme ? { theme: tabTheme } : {}),
       };

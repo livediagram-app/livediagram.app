@@ -1,7 +1,7 @@
 # Draw mode, round one: blueprint
 
 Derived from [Draw mode](../draw-mode.md), with [Editor modes](../../007-editor/editor-modes.md) (and
-its [blueprint](../../007-editor/blueprints/editor-modes.md)) for how Draw mode is entered, left and
+its [blueprint](../../007-editor/editor-modes.md)) for how Draw mode is entered, left and
 stored, [Highlighter](../../008-canvas/highlighter.md) for the marker recipe,
 [Eraser panel](../../008-canvas/eraser-panel.md) for the erase gesture and
 [Two pens instead of a pen and a mode](../../008-canvas/two-pens.md) for recognition. The spec decides;
@@ -83,7 +83,7 @@ marker), "rubber", "eraser size" on a whiteboard, "theme" for the whiteboard loo
 ### Mode
 
 - Draw mode is the person's effective editor mode on a general tab
-  ([editor-modes blueprint](../../007-editor/blueprints/editor-modes.md)): `useEditorState` derives
+  ([editor-modes blueprint](../../007-editor/editor-modes.md)): `useEditorState` derives
   `drawMode = editorMode.mode === 'draw'` and hands it to every gate below. A tab stored with
   `kind: 'whiteboard'` is migrated on read to a general tab that opens in Draw.
 

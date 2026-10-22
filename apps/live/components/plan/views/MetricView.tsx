@@ -55,7 +55,7 @@ export function MetricView({
       <div
         className="absolute inset-0"
         onPointerDown={
-          plan?.planInput
+          plan
             ? (e) => {
                 if ((e.target as HTMLElement).closest('button')) e.stopPropagation();
               }
@@ -103,7 +103,7 @@ export function MetricView({
         <div
           className="flex min-w-0 items-center overflow-hidden"
           onPointerDown={
-            plan?.planInput
+            plan
               ? (e) => {
                   if ((e.target as HTMLElement).closest('button')) e.stopPropagation();
                 }

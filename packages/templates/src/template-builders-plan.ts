@@ -121,7 +121,7 @@ export function planTemplateTabs(kind: PlanTemplateKind): PlanTemplateTabDef[] {
       views,
       ids[0] ?? 't',
     );
-    return { kind: 'dashboard', opensIn: 'plan', ...(dashboard ? { dashboard } : {}) };
+    return { kind: 'dashboard', ...(dashboard ? { dashboard } : {}) };
   };
   const out: PlanTemplateTabDef[] = specs.map((spec) => {
     const name = named ? spec.name : null;
@@ -129,7 +129,7 @@ export function planTemplateTabs(kind: PlanTemplateKind): PlanTemplateTabDef[] {
       return {
         name,
         build: (cx, cy) => [centred(board(spec.board!, 0, 0), cx, cy)],
-        tab: () => ({ kind: 'board', opensIn: 'plan' }),
+        tab: () => ({ kind: 'board' }),
       };
     if (spec.sheet) return sheetTabDef(name, spec.sheet);
     if (spec === dashSpec)
@@ -147,7 +147,7 @@ export function sheetTabDef(name: string | null, spec: SheetSpec): PlanTemplateT
   return {
     name,
     build: (cx, cy) => [centred(sheet(spec, 0, 0), cx, cy)],
-    tab: () => ({ kind: 'sheet', opensIn: 'plan' }),
+    tab: () => ({ kind: 'sheet' }),
   };
 }
 

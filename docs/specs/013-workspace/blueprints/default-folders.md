@@ -288,9 +288,8 @@ No environment variable or binding is added.
 ## Telemetry
 
 `placementDefaultTelemetryType(key)` derives one closed value per key, `Default` + each part in
-PascalCase (`DefaultModeDiagram`, `DefaultModeDraw`, `DefaultKindEventStorming`,
-`DefaultTemplateRetrospective`, `DefaultTemplateKanban`), so a new editor mode gains its value with its
-key. The surfaces that set and clear defaults fire `Folder·Changed·<value>` and
+PascalCase (`DefaultModePlan`, `DefaultKindEventStorming`, `DefaultTemplateRetrospective`,
+`DefaultTemplateKanban`), so a new key gains its value with it. The surfaces that set and clear defaults fire `Folder·Changed·<value>` and
 `Folder·Cleared·<value>` before the write; the one emitter is the store
 (`placement-defaults-store.ts`), which every surface writes through. The dashboard charts them as Default
 Folders Set and Default Folders Cleared in its Organisation stack

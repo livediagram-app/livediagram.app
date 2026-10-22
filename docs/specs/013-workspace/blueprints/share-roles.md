@@ -382,7 +382,7 @@ Share dialog cards, in `LEVEL_ORDER = ['edit', 'participate', 'view']`:
 - Pill: **Participating**, `bg-teal-100 text-teal-800 dark:bg-teal-500/15 dark:text-teal-200`, the vote glyph; static.
 - A Participant's palette strip: the selection-mode dropdown (Select, Hand, Laser, Spotlight, Avatar, Isometric,
   Zen), the category picker holding **Participate** alone (ballot glyph, "Add stickies and text to the board."),
-  and its tiles; the mode switch, tab add, rename and delete and context menus' structural rows are absent.
+  and its tiles; tab add, rename and delete and context menus' structural rows are absent.
 - A Viewer sees no comment composer, resolve or delete (`CommentThreadPopover canComment`), no poll prompt, no Q&A
   add or upvote, no card votes or comments, no reactions. Its selection holds nothing
   (`RemoteSelector.holds`, `lockedByOther`).

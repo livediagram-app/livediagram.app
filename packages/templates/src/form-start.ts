@@ -53,7 +53,6 @@ export function responsesSheetTab(heading: string, formTab: Tab, sheetId: string
     elements: [{ ...createShape('plan-sheet', 0, 0), planSheet: { sheetId } }],
     defaultTextSize: 'sm',
     kind: 'sheet',
-    opensIn: 'plan',
     ...(formTab.theme ? { theme: formTab.theme } : {}),
   };
 }
@@ -130,7 +129,6 @@ export function responsesBoardTab(
     elements: [element],
     defaultTextSize: 'sm',
     kind: 'board',
-    opensIn: 'plan',
     ...(formTab.theme ? { theme: formTab.theme } : {}),
   };
 }

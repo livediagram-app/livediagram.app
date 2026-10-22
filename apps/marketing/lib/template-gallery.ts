@@ -1,14 +1,11 @@
-import type { EditorMode } from '@liveplanner/document';
-import { EDITOR_MODES, seededRandom } from '@liveplanner/document';
+import { seededRandom } from '@liveplanner/document';
 import {
-  BLANK_TEMPLATE_FOR_MODE,
-  EXTRA_BLANK_TEMPLATES,
+  BLANK_TEMPLATES,
   TEMPLATES,
   TEMPLATE_CATEGORIES,
   isBlankTemplate,
   templateCategories,
   templateCategoryLabel,
-  templateEditorMode,
   templateMatchesQuery,
   templateQueryWords,
   type TemplateCategory,
@@ -18,9 +15,9 @@ import {
 // The landing page's template gallery (docs/specs/019-marketing/marketing-site.md): every template
 // the editor ships, each a link that creates that document straight away (/new?template=<kind>,
 // docs/specs/007-editor/new-document-route.md), laid out as the editor's template step lays them
-// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (every blank and nothing else: each
-// mode's, and Blank Spreadsheet), then one shelf per category. The data half lives here
-// so the lists and the filters can be tested without rendering the section.
+// out (docs/specs/008-canvas/canvas-and-palette.md "Templates"): Blank Slate first (every blank and
+// nothing else), then one shelf per category. The data half lives here so the lists and the filters
+// can be tested without rendering the section.
 
 export type GalleryTemplate = TemplateDescriptor & {
   // Its primary category (docs/specs/008-canvas/canvas-and-palette.md "Template categories"), then any it is
@@ -28,8 +25,6 @@ export type GalleryTemplate = TemplateDescriptor & {
   category: TemplateCategory | null;
   categories: readonly TemplateCategory[];
   categoryLabel: string;
-  // The editor mode the template opens in (docs/specs/007-editor/templates-by-mode.md).
-  mode: EditorMode;
 };
 
 // The open shelf: Blank Slate (its id `popular`, the shelf it replaced), or a category.
@@ -49,7 +44,6 @@ export function toGallery(t: TemplateDescriptor): GalleryTemplate {
     category,
     categories,
     categoryLabel: category ? templateCategoryLabel(category) : '',
-    mode: templateEditorMode(t.kind),
   };
 }
 
@@ -60,15 +54,8 @@ export function galleryTemplates(): GalleryTemplate[] {
   return TEMPLATES.filter((t) => !t.hidden && !isBlankTemplate(t.kind)).map(toGallery);
 }
 
-// Blank Slate's blanks in mode order (the mode switch's), Blank Spreadsheet beside Blank Plan.
-const BLANK_SLATE_KINDS = EDITOR_MODES.flatMap((mode) =>
-  mode === 'pages'
-    ? []
-    : [
-        BLANK_TEMPLATE_FOR_MODE[mode],
-        ...EXTRA_BLANK_TEMPLATES.filter((k) => templateEditorMode(k) === mode),
-      ],
-);
+// Blank Slate's blanks in the catalogue's blank order (BLANK_TEMPLATES).
+const BLANK_SLATE_KINDS = BLANK_TEMPLATES;
 
 // Blank Slate: every blank and nothing else, in its fixed order.
 export function popularTemplates(): GalleryTemplate[] {

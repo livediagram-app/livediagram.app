@@ -214,10 +214,10 @@ shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the p
 
 ### Input by mode
 
-- `interactive = plan.planInput` (Plan mode) as boards; `canEdit` from the bridge. Not interactive: the grid's
-  `pointer-events: none`, so the element moves and selects as any, and a double-click offers nothing (a Sheet goes
-  only on a tab in Plan: [Sheet](../sheet.md#only-in-plan)).
-- In Plan mode the header drags the element (as the board header); the grid takes pointer and wheel (wheel
+- `interactive` while a Plan context is provided (every tab, [Sheet](../sheet.md#only-in-plan)), as boards; `canEdit`
+  from the bridge. Not interactive (no Plan context, as in a preview): the grid's `pointer-events: none`, so the element
+  moves and selects as any, and a double-click offers nothing.
+- The header drags the element (as the board header); the grid takes pointer and wheel (wheel
   `stopPropagation` while the grid can scroll that way, else the canvas pans).
 
 ### Keyboard and focus

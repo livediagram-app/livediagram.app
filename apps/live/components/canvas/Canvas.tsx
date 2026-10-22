@@ -400,7 +400,7 @@ function CanvasView(props: CanvasProps) {
     onCanvasDoubleClick: (x, y, byFinger) =>
       routeBoardDoubleClick(
         {
-          whiteboard: props.editorMode === 'draw',
+          whiteboard: false,
           elements,
           layers: tabLayers,
           inertIds: props.layerInertIds,
@@ -607,7 +607,7 @@ function CanvasView(props: CanvasProps) {
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
               {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-              <CanvasStillProvider still={props.editorMode === 'draw'}>
+              <CanvasStillProvider still={false}>
                 <CanvasArrivalProvider
                   tabId={props.activeTabId ?? ''}
                   loaded={props.activeTabLoaded ?? true}
@@ -871,10 +871,7 @@ function CanvasView(props: CanvasProps) {
               drawHover={drawHover}
               stamp={stamp}
               // Off a whiteboard, a marker's live stroke guides off its box as the pencil's does.
-              penPoints={
-                penPoints ??
-                (penStroke && props.editorMode !== 'draw' ? penStroke.points.slice() : null)
-              }
+              penPoints={penPoints ?? (penStroke ? penStroke.points.slice() : null)}
               polygonVertices={polygonVertices}
               polygonCursor={polygonCursor}
               wrapperRef={wrapperRef}

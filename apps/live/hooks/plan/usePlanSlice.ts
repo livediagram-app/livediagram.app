@@ -4,8 +4,6 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import {
   createShape,
-  hasPlanInput,
-  type EditorMode,
   type Element,
   type Tab,
   type PlanCardRef,
@@ -59,7 +57,6 @@ export function usePlanSlice(opts: {
   planItems: PlanItems;
   // The document's item types (docs/specs/026-plan/item-types.md).
   itemTypes: ItemTypesSlice;
-  editorMode: EditorMode;
   canEdit: boolean;
   // Cards, not structure (docs/specs/013-workspace/share-roles.md): an Editor's and a Participant's.
   canEditCards?: boolean;
@@ -90,7 +87,7 @@ export function usePlanSlice(opts: {
   // The Actions board's links (useLinkedActionCards); stable callbacks, placeOf changes with the tabs.
   linkedActions?: PlanContextValue['linkedActions'];
 }) {
-  const { planItems, itemTypes, editorMode, canEdit, canVote, presence } = opts;
+  const { planItems, itemTypes, canEdit, canVote, presence } = opts;
   const canEditCards = opts.canEditCards ?? canEdit;
   // The editor hands these over fresh each render; read through refs, so the callbacks built on them,
   // and the context value, keep their identity and boards re-render only when Plan state changes.
@@ -518,7 +515,6 @@ export function usePlanSlice(opts: {
       status: planItems.status,
       self: planItems.self,
       people,
-      planInput: hasPlanInput(editorMode),
       canEdit,
       canEditCards,
       canVote,
@@ -566,7 +562,6 @@ export function usePlanSlice(opts: {
       planItems.self,
       planItems.refetch,
       people,
-      editorMode,
       canEdit,
       canEditCards,
       canVote,

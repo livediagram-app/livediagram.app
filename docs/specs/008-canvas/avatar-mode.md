@@ -66,7 +66,7 @@ Every Behaviour and every Reaction in the panel is also **one key**, so a presen
 - **Behaviour on its initial**: `J` Jumping jacks, `W` Wave, `S` Spin, `C` Cheer, `D` Dance.
 - **Reactions on `1` to `5`**, in the panel's order: Confetti, Sparkles, Hearts, Applause, Fireworks.
 - A key plays exactly what its panel button plays (the same `playReaction` and burst handlers), the panel open or not. Pressing it again restarts the performance or replays the burst, as a second click does.
-- **Plain presses only**: any modifier (Shift+D stays the mode switch, Cmd+C copies) and an autorepeat from a held key do nothing, so holding a key never machine-guns a burst.
+- **Plain presses only**: any modifier (Cmd+C copies) and an autorepeat from a held key do nothing, so holding a key never machine-guns a burst.
 - **Never while typing**: a focused text field (the message composer, a rename, a comment), an open dialog or a focused menu keeps the key, as it does for the arrows and Space.
 - While walking these keys are the character's, so the editor's own meanings stand aside (`S` does not open Search, `1` does not pick Select). `V` / `H` / `K` / `I` / `Z` and `Escape` remain the ways out.
 - The panel shows each key on its button (desktop only, as the message button's `Enter` hint), and the Settings Keyboard reference lists them under **While walking (Avatar mode)**. The key map lives in `lib/avatar-action-keys.ts` (pure, unit-tested); `hooks/canvas/useAvatarActionKeys.ts` plays it.

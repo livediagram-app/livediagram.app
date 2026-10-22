@@ -5,7 +5,7 @@ import type { PlacementDefaultKey } from '@liveplanner/api-schema';
 import { PortalMenu } from '@/components/primitives/PortalMenu';
 import { UseAsDefaultMenu } from './UseAsDefaultMenu';
 
-// The submenu (docs/specs/013-workspace/default-folders.md "Use as Default for"): the six entries
+// The submenu (docs/specs/013-workspace/default-folders.md "Use as Default for"): the four entries
 // as checkable items under "New documents that open as".
 
 beforeAll(() => {
@@ -43,9 +43,9 @@ describe('UseAsDefaultMenu', () => {
     const sub = screen.getByRole('menu', { name: 'New documents that open as' });
     const trigger = screen.getByRole('menuitem', { name: /use as default for/i });
     expect(trigger.getAttribute('aria-controls')).toBe(sub.id);
-    expect(document.activeElement?.textContent).toBe('Diagrams');
+    expect(document.activeElement?.textContent).toBe('Projects');
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowDown' });
-    expect(document.activeElement?.textContent).toBe('Whiteboards');
+    expect(document.activeElement?.textContent).toBe('Event Storming boards');
     fireEvent.keyDown(document.activeElement!, { key: 'ArrowLeft' });
     expect(screen.queryByRole('menu', { name: 'New documents that open as' })).toBeNull();
     expect(document.activeElement).toBe(trigger);
@@ -53,32 +53,24 @@ describe('UseAsDefaultMenu', () => {
 
   it('lists the entries as checkable items, checked where the folder holds them', () => {
     open({
-      isChecked: (key) => key === 'mode:draw',
+      isChecked: (key) => key === 'template:kanban',
       isDisabled: () => false,
       toggle: () => {},
     });
     expect(screen.getByText('New documents that open as')).toBeTruthy();
     const items = screen.getAllByRole('menuitemcheckbox');
     expect(items.map((i) => i.textContent)).toEqual([
-      // The modes in mode order (EDITOR_MODES), then the kinds and template families.
-      'Diagrams',
-      'Whiteboards',
-      'Sessions',
-      'Pages documents',
-      'Plan boards',
+      // Plan's mode, then the kinds and template families.
+      'Projects',
       'Event Storming boards',
       'Retrospectives',
       'Kanban boards',
     ]);
     expect(items.map((i) => i.getAttribute('aria-checked'))).toEqual([
       'false',
+      'false',
+      'false',
       'true',
-      'false',
-      'false',
-      'false',
-      'false',
-      'false',
-      'false',
     ]);
   });
 
@@ -87,15 +79,15 @@ describe('UseAsDefaultMenu', () => {
     open({ isChecked: () => false, isDisabled: () => false, toggle });
     fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Retrospectives' }));
     expect(toggle).toHaveBeenCalledWith('template:retrospective');
-    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(8);
+    expect(screen.getAllByRole('menuitemcheckbox')).toHaveLength(4);
   });
 
   it('keeps a disabled entry in place and inert', () => {
     const toggle = vi.fn();
-    open({ isChecked: () => true, isDisabled: (key) => key === 'mode:diagram', toggle });
-    const diagrams = screen.getByRole('menuitemcheckbox', { name: 'Diagrams' });
-    expect(diagrams.getAttribute('aria-disabled')).toBe('true');
-    fireEvent.click(diagrams);
+    open({ isChecked: () => true, isDisabled: (key) => key === 'mode:plan', toggle });
+    const projects = screen.getByRole('menuitemcheckbox', { name: 'Projects' });
+    expect(projects.getAttribute('aria-disabled')).toBe('true');
+    fireEvent.click(projects);
     expect(toggle).not.toHaveBeenCalled();
   });
 });

@@ -30,7 +30,8 @@ export type LintOptions = {
 const TAB_CHECKS = [...LINT_CHECKS, textOverprint];
 
 export function lintTab(
-  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & Partial<Pick<Tab, 'opensIn' | 'kind'>>,
+  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> &
+    Partial<Pick<Tab, 'kind'>> & { opensIn?: string },
   options: LintOptions = {},
 ): LintReport {
   const started = performance.now();

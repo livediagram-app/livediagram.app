@@ -249,7 +249,6 @@ describe('plan templates', () => {
         } else {
           expect(els, label).toEqual([]);
         }
-        expect(fields.kind === undefined || fields.opensIn === 'plan', label).toBe(true);
       });
     }
   });

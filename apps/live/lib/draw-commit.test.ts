@@ -164,15 +164,7 @@ describe('buildDrawnBoxed', () => {
   });
 
   it('keeps a Diagram mode text box at its default size, whatever the tab opens in', () => {
-    const out = buildDrawnBoxed(
-      { type: 'text' },
-      500,
-      300,
-      502,
-      301,
-      null,
-      tab({ opensIn: 'draw' }),
-    );
+    const out = buildDrawnBoxed({ type: 'text' }, 500, 300, 502, 301, null, tab());
     expect(out).toMatchObject({ label: 'Text', width: 220, height: 64 });
     expect(out).not.toHaveProperty('sizing');
   });

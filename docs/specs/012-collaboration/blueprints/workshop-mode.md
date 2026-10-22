@@ -1,7 +1,7 @@
 # Workshop mode blueprint
 
 Derived from [Workshop mode](../workshop-mode.md). The mode machinery it joins (store, switch,
-Opens in, Shift+D, peer switches) is [Editor modes](../../007-editor/blueprints/editor-modes.md);
+Opens in, Shift+D, peer switches) is [Editor modes](../../007-editor/editor-modes.md);
 this blueprint adds only what the fifth mode changes.
 
 ## Domain and naming
@@ -146,7 +146,6 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 
 | Spec rule                                                                                 | Test                                                                                                                       |
 | ----------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Five modes, order, labels, Shift+D wraps                                                  | `packages/document/src/editor-mode.test.ts`, `hooks/editor/editor-mode-shortcut.test.ts`                                   |
 | Workshop's palette layout and Popular                                                     | `components/palette/palette-layouts.test.ts`                                                                               |
 | Diagram drops Stickers + Collaborate, keeps Icons, Comment panel and Action card in Write | `palette-layouts.test.ts`                                                                                                  |
 | Search still finds them in Diagram                                                        | `palette-tile-search.test.ts`, `palette-catalogue-search.test.ts`                                                          |

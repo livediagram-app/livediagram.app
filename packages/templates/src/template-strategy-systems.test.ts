@@ -48,7 +48,7 @@ describe('companion Sheets', () => {
       shape: 'plan-sheet',
       planSheet: { start: c.start, fillTab: true },
     });
-    expect(defs[1]!.tab!(['a', 'b'])).toEqual({ kind: 'sheet', opensIn: 'plan' });
+    expect(defs[1]!.tab!(['a', 'b'])).toEqual({ kind: 'sheet' });
   });
 
   it.each(companions)('%s: an agent’s create makes both tabs, the sheet beside them', (kind) => {
@@ -61,7 +61,6 @@ describe('companion Sheets', () => {
     expect(drawing!.backgroundPattern).toBe('graph');
     expect(sheetTab).toMatchObject({
       kind: 'sheet',
-      opensIn: 'plan',
       name: TEMPLATE_COMPANION_SHEETS[kind].sheet,
     });
     expect(sheetTab!.layers).toBeUndefined();

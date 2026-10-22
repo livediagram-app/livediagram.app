@@ -107,8 +107,8 @@ export function ViewTransition(props: {
 
 ## Performance and limits
 
-- A View Transition captures its surface twice per change: it is used only for whole-surface swaps (a slide move,
-  the start's mode switch), never per keystroke or pointer move.
+- A View Transition captures its surface twice per change: it is used only for whole-surface swaps (a slide move
+  in a presentation), never per keystroke or pointer move.
 - `use(browser())` costs nothing in the browser; in the prerender it moves the content after hydration, so a site
   above the fold reserves its size (CLS stays 0).
 

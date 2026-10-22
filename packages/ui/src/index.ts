@@ -14,7 +14,6 @@ export { SiteHeader } from './SiteHeader';
 export { RAIL_CLEAR_PADDING } from './share-rail-clearance';
 export { EXPLORER_HOME_HREF } from './HeaderPrimaryCta';
 export { BuildWithAiLink } from './BuildWithAiLink';
-export { ModeFilterMenu, type ModeFilterOption } from './ModeFilterMenu';
 export { CountBadge } from './CountBadge';
 export { SiteFooter } from './SiteFooter';
 export {

@@ -144,8 +144,9 @@ export const TELEMETRY_CATEGORIES = [
   // 'RecognitionOff', and for one stroke 'RecogniseOnceKey' | 'RecogniseOnceChip' |
   // 'BreakShapeKey' | 'BreakShapeChip'). Presets only; never content.
   'Draw',
-  // Editor modes (docs/specs/007-editor/editor-modes.md): a person switched a tab's editor mode,
-  // 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModePages', fired before the mode applies.
+  // Editor modes: a person switched a tab's editor mode, 'Changed' with 'ModeDiagram' | 'ModeDraw' | 'ModePages'.
+  // No longer sent since every tab is a Plan tab (docs/specs/017-telemetry/telemetry.md "Retired features"); kept
+  // so the stored rows still validate and chart as retired until retention ages them out.
   'Editor',
   // The Explorer's filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): 'Selected' with
   // `type` the facet that gained a value ('Text' | 'OpensIn' | 'Kind' | 'Template' | 'MadeBy' |

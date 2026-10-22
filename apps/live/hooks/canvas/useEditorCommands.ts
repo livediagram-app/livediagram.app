@@ -75,9 +75,6 @@ export function useEditorCommands(open: boolean): {
   const { selectedId, multiSelectedIds } = useSelectionOf(
     useCallback((s: Selection) => (open ? s : EMPTY_SELECTION), [open]),
   );
-  // Draw mode (docs/specs/007-editor/editor-modes.md) has no format painter.
-  const whiteboard = ctx.editorMode.mode === 'draw';
-  const planMode = ctx.editorMode.mode === 'plan';
   const {
     isReadOnly,
     canShareDocument,
@@ -180,8 +177,6 @@ export function useEditorCommands(open: boolean): {
       canvasEmpty,
       isMobile,
       esBoard,
-      whiteboard,
-      planMode,
       tabLocked,
       photoImportAvailable,
     }),
@@ -205,8 +200,6 @@ export function useEditorCommands(open: boolean): {
       canvasEmpty,
       isMobile,
       esBoard,
-      whiteboard,
-      planMode,
       tabLocked,
       photoImportAvailable,
     ],

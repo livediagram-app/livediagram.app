@@ -838,8 +838,8 @@ unknown name with the ones there are.
 - **`change_items`** (destructive, as it may delete): up to 50 changes in order, each `add` `{ title, type,
 status, fields }`, `set` `{ item, fields, clear, type }`, `move` `{ item, status, before }` or `delete`
   `{ item }`. A refusal answers what was applied before it. Each change reaches open boards at once.
-- **`add_board`** (write): a Plan board on a tab in Plan, from a preset or columns by name, as one changeset; any
-  other tab is refused `tab_not_plan` ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
+- **`add_board`** (write): a Plan board on a tab, from a preset or columns by name, as one changeset
+  ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
 - **`change_board`** (write): a board's title, columns (by name) or the card types it takes, as one changeset.
 - **`change_card_types`** (destructive, as deleting a type moves its cards to the Trash): up to 32 card type
   changes (`add`, `set`, `delete`, `add_default_types`; `restore_built_ins` is its older name), checked whole and saved once.
@@ -879,8 +879,8 @@ scale, first? }` and `clear_conditional_formats` `{ range? }` ([Data validation]
   its own write id). A formula that cannot be read is refused naming the cell (`formula_invalid`), as is a value a Reject
   validation rule does not allow (`value_invalid`, with what the rule allows); a refusal
   answers what was applied before it.
-- **`add_sheet`** (write): a new sheet on a tab in Plan (the tab named, else the first with a sheet, else the first;
-  any other tab is refused `tab_not_plan` before a sheet is made, [Plan tabs](../026-plan/plan-tabs.md#only-in-plan)), titled
+- **`add_sheet`** (write): a new sheet on a tab (the tab named, else the first with a sheet, else the first,
+  [Plan tabs](../026-plan/plan-tabs.md#only-in-plan)), titled
   uniquely on the tab, blank or filled from A1 with `rows`, `csv` or a `design` (one of them), then a Sheet element
   framing it placed beside what the tab holds, as `add_board` places a board, in one changeset with a design's charts.
   The element is 960 x 560, grown to show every filled cell (up to 1,800 x 1,400).

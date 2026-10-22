@@ -89,9 +89,8 @@ function bridge(over: Partial<SheetsBridge> = {}) {
 }
 
 const announce = vi.fn();
-const plan = (planInput = true) =>
+const plan = () =>
   ({
-    planInput,
     announce,
     items: new Map(),
     types: [],
@@ -242,9 +241,9 @@ describe('the grid', () => {
   });
 
   // A Sheet goes only on a tab in Plan (sheet.md "Only in Plan"), so nothing offers to switch.
-  it('offers nothing on a double-click outside Plan mode', async () => {
+  it('offers nothing on a double-click without a plan', async () => {
     fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
-    draw(element({ sheetId: 'sheetAAAA' }), bridge(), plan(false));
+    draw(element({ sheetId: 'sheetAAAA' }), bridge(), undefined);
     await screen.findByText('Budget');
     fireEvent.doubleClick(screen.getByText('Budget'));
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -469,7 +468,7 @@ describe('Import CSV', () => {
 });
 
 describe('maximising', () => {
-  it('moves the same Sheet into the overlay and lets go of it outside Plan mode', async () => {
+  it('moves the same Sheet into the overlay and lets go of it without a plan', async () => {
     fetchSheets.mockResolvedValue([sheetJson('sheetAAAA')]);
     const b = bridge();
     const el = element({ sheetId: 'sheetAAAA' });
@@ -480,10 +479,10 @@ describe('maximising', () => {
     expect(screen.getByText('Budget')).toBe(title);
     const slot = document.querySelector<HTMLElement>('[data-plan-slot="el1"]')!;
     expect(slot.style.borderStyle).toBe('solid');
-    // Leaving Plan mode lets the maximised Sheet go.
+    // Losing the plan lets the maximised Sheet go.
     view.rerender(
       <CanvasSurfaceProvider surface="light">
-        <PlanProvider value={plan(false)}>
+        <PlanProvider value={undefined}>
           <SheetsBridgeContext.Provider value={b}>
             <div data-element-id="el1">
               <PlanSheetView element={el} />

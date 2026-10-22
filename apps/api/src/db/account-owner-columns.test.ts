@@ -161,7 +161,7 @@ function seedGuestHoldable(sql: DatabaseSync, id: string, peerDocument: string) 
   insert(sql, 'user_preferences', { owner_id: id, prefs: '{}', updated_at: T0 });
   insert(sql, 'placement_defaults', {
     owner_id: id,
-    default_key: 'mode:draw',
+    default_key: 'mode:plan',
     folder_id: `f-${id}`,
     updated_at: T0,
   });

@@ -68,8 +68,7 @@ export function GanttView({
   const acceptedKey = accepted.join(',');
   // Add Card under the last row (GanttAddCard): for someone who may add cards, with a type to add.
   // An Editor gets it with no type to draw yet too, for Add New Card Type.
-  const canAdd =
-    !!plan?.planInput && !!plan.canEditCards && (accepted.length > 0 || !!plan.canEdit);
+  const canAdd = !!plan && !!plan.canEditCards && (accepted.length > 0 || !!plan.canEdit);
   // Recomputed when the cards, the phases, the accepted types or the day change.
   const model = useMemo(
     () => ganttModel(items.values(), phases, new Date(dayKey), acceptedKey.split(',')),
@@ -115,12 +114,12 @@ export function GanttView({
   // Every tick keeps its gridline; labels thin out so each has room (about TICK_LABEL_PX).
   const axisPx = Math.max(1, width - namesPx);
   const trackRef = useRef<HTMLDivElement>(null);
-  const editable = !!plan?.canEdit && !!plan?.planInput;
+  const editable = !!plan?.canEdit;
   // The viewer's own scale and window over the timeline (useGanttWindow).
   const timeline = useGanttWindow({
     model,
     trackRef,
-    interactive: !!plan?.planInput,
+    interactive: !!plan,
     ready: viewState(plan, n > 0) === 'ready',
   });
   const view = timeline.view;
@@ -184,9 +183,7 @@ export function GanttView({
       // Someone who may add cards sees the empty chart with its Add Card row, not the empty note.
       state={viewState(plan, n > 0 || canAdd)}
       empty="No cards of these types yet."
-      aside={
-        plan?.planInput ? <GanttScaleControls timeline={timeline} palette={palette} /> : undefined
-      }
+      aside={plan ? <GanttScaleControls timeline={timeline} palette={palette} /> : undefined}
     >
       <div
         className="absolute inset-0 grid"
@@ -237,8 +234,8 @@ export function GanttView({
         </div>
         <div
           ref={trackRef}
-          data-own-wheel-x={plan?.planInput ? '' : undefined}
-          className={`relative min-w-0 overflow-hidden ${plan?.planInput ? 'touch-none' : ''}`}
+          data-own-wheel-x={plan ? '' : undefined}
+          className={`relative min-w-0 overflow-hidden ${plan ? 'touch-none' : ''}`}
         >
           {/* The axis: a label and a gridline per tick. */}
           {view.ticks.map((t, i) => {
@@ -263,7 +260,7 @@ export function GanttView({
           })}
           {/* The axis strip: shows the timeline pans (a drag anywhere on it does, useGanttWindow). */}
           <div
-            className={`absolute inset-x-0 border-b ${plan?.planInput ? 'cursor-grab active:cursor-grabbing' : ''}`}
+            className={`absolute inset-x-0 border-b ${plan ? 'cursor-grab active:cursor-grabbing' : ''}`}
             style={{ top: 0, height: AXIS_H, borderColor: palette.border }}
           />
           {/* A swimlane's header band across the timeline. */}

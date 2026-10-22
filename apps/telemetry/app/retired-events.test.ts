@@ -44,7 +44,6 @@ describe('isRetiredEvent', () => {
       'TemplateModePlan',
     ])
       expect(isRetiredEvent('UI', 'Toggled', type)).toBe(true);
-    expect(isRetiredEvent('UI', 'Used', 'StartOtherMode')).toBe(false);
     expect(isRetiredEvent('Template', 'Used', 'Kanban')).toBe(false);
   });
 
@@ -60,7 +59,6 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Toggled', 'PagesModeOff')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOn')).toBe(true);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanModeOff')).toBe(true);
-    expect(isRetiredEvent('Editor', 'Changed', 'ModePlan')).toBe(false);
     expect(isRetiredEvent('UI', 'Opened', 'SettingsAi')).toBe(false);
   });
 
@@ -87,6 +85,62 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Started', 'PlanTour')).toBe(false);
     expect(isRetiredEvent('Document', 'Exported', 'PNG')).toBe(false);
     expect(isRetiredEvent('Help', 'View', 'pages')).toBe(false);
+  });
+
+  it('retires the editor modes other than Plan, not what Plan still sends', () => {
+    for (const type of ['ModeDiagram', 'ModeDraw', 'ModePages', 'ModePlan', 'ModeWorkshop'])
+      expect(isRetiredEvent('Editor', 'Changed', type)).toBe(true);
+    expect(isRetiredEvent('Editor', 'Changed', 'LeavePagesConfirmed')).toBe(true);
+    expect(isRetiredEvent('Tab', 'Changed', 'ArticlesToPages')).toBe(true);
+    expect(isRetiredEvent('UI', 'Used', 'StartOtherMode')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'ToolbarSearchUnavailable')).toBe(true);
+    for (const mode of ['Diagram', 'Draw', 'Workshop', 'Pages']) {
+      expect(isRetiredEvent('Folder', 'Changed', `DefaultMode${mode}`)).toBe(true);
+      expect(isRetiredEvent('Folder', 'Cleared', `DefaultMode${mode}`)).toBe(true);
+    }
+    for (const tour of ['Draw', 'Pages', 'Workshop']) {
+      expect(isRetiredEvent('UI', 'Opened', `${tour}TourOffer`)).toBe(true);
+      expect(isRetiredEvent('UI', 'Closed', `${tour}TourOffer`)).toBe(true);
+      expect(isRetiredEvent('UI', 'Started', `${tour}Tour`)).toBe(true);
+      expect(isRetiredEvent('UI', 'Ended', `${tour}TourCompleted`)).toBe(true);
+      expect(isRetiredEvent('UI', 'Ended', `${tour}TourSkipped`)).toBe(true);
+      expect(isRetiredEvent('UI', 'View', `${tour}TourStepOutro`)).toBe(true);
+      // Their Settings rows still send.
+      expect(isRetiredEvent('UI', 'Toggled', `${tour}TourSeenOff`)).toBe(false);
+    }
+    expect(isRetiredEvent('Folder', 'Changed', 'DefaultModePlan')).toBe(false);
+    expect(isRetiredEvent('Folder', 'Changed', 'DefaultKindEventStorming')).toBe(false);
+    expect(isRetiredEvent('Tab', 'Changed', 'PageFitToContent')).toBe(false);
+    expect(isRetiredEvent('UI', 'Changed', 'ToolbarCategory')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'ToolbarSearch')).toBe(false);
+  });
+
+  it("retires the removed modes' help articles, not the Plan tour's", () => {
+    for (const id of ['editor-modes', 'diagram-tour']) {
+      expect(isRetiredEvent('Help', 'View', id)).toBe(true);
+      expect(isRetiredEvent('Help', 'Helpful', id)).toBe(true);
+      expect(isRetiredEvent('Help', 'Unhelpful', id)).toBe(true);
+      expect(isRetiredEvent('UI', 'Opened', id)).toBe(true);
+    }
+    expect(isRetiredEvent('Help', 'View', 'plan-tour')).toBe(false);
+    expect(isRetiredEvent('Help', 'View', 'plan-mode')).toBe(false);
+    expect(isRetiredEvent('UI', 'Opened', 'plan-tour')).toBe(false);
+  });
+
+  it('retires the Diagram tour, not the tours that carry on', () => {
+    expect(isRetiredEvent('UI', 'Opened', 'TourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'Closed', 'TourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'Tour')).toBe(true);
+    expect(isRetiredEvent('UI', 'Ended', 'TourCompleted')).toBe(true);
+    expect(isRetiredEvent('UI', 'Ended', 'TourSkipped')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'TourStepPalette')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'TourSeenOff')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'TourSeenOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'PlanTourOffer')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'PlanTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'PlanTourStepBoard')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'SankeyTourStepOutro')).toBe(false);
+    expect(isRetiredEvent('UI', 'Toggled', 'PlanTourSeenOff')).toBe(false);
   });
 
   it('keeps everything that still exists', () => {

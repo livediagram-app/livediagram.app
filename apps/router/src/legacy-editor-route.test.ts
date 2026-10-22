@@ -98,7 +98,7 @@ describe('legacyHelpRedirect', () => {
       ['/help/activity-panel/how-it-works/', '/help/canvas/undo/'],
       ['/help/activity-panel/reverting-changes/', '/help/canvas/undo/'],
       // The Welcome Tour became the Diagram Tour (docs/specs/007-editor/editor-tour.md).
-      ['/help/getting-started/welcome-tour/', '/help/getting-started/diagram-tour/'],
+      ['/help/getting-started/welcome-tour/', '/help/canvas/plan-mode/plan-tour/'],
     ];
     for (const [from, to] of cases) {
       const res = legacyHelpRedirect(new URL(`https://liveplanner.app${from}`))!;

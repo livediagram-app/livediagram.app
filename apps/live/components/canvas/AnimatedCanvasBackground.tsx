@@ -220,8 +220,8 @@ function Ripple({ scale }: { scale: number }) {
 }
 
 // ── Ribbons ──────────────────────────────────────────────────────────────
-// Thick curved lines that slowly draw + flow along their paths, coloured
-// from the theme: every ribbon is a tint / shade of the tab's pattern colour, so the effect stays
+// Thick curved lines that slowly draw + flow along their paths, coloured from
+// the theme: every ribbon is a tint / shade of the tab's pattern colour, so the effect stays
 // "theme related" while keeping the layered, multi-tone depth. Resting
 // frame: the dashed curves, drawn in place.
 const RIBBONS: { d: string; width: number; dur: number; delay: number }[] = [
