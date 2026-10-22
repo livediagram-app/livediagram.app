@@ -2,6 +2,7 @@
 // `CLERK_JWKS_URL` check: same shape (a JWT checked against a published key set), so
 // verifying stays a local signature check with no call to the accounts Worker per request.
 import { createRemoteJWKSet, jwtVerify, type JWTVerifyGetKey } from 'jose';
+import { readTeamsClaim, type TeamClaim } from './account';
 
 export interface VerifierOptions {
   // The accounts Worker's issuer, e.g. `https://liveworkspace.app/api/auth`.
@@ -19,6 +20,10 @@ export interface AccountClaims {
   email: string | null;
   emailVerified: boolean;
   scopes: string[];
+  // The teams the account is in, as liveworkspace minted them into the token; null from a token
+  // minted before teams were in it. Up to an hour old, so an app reads it as a sign its own copy may
+  // be behind, never as who may see what (liveworkspace/docs/accounts.md "Teams").
+  teams: TeamClaim[] | null;
 }
 
 // One verifier per isolate: `createRemoteJWKSet` caches the key set and refetches only
@@ -39,6 +44,7 @@ export function createVerifier(options: VerifierOptions) {
         email: typeof payload.email === 'string' ? payload.email : null,
         emailVerified: payload.email_verified === true,
         scopes: typeof payload.scope === 'string' ? payload.scope.split(' ').filter(Boolean) : [],
+        teams: readTeamsClaim(payload.teams),
       };
     } catch {
       return null;

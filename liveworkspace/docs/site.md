@@ -33,7 +33,8 @@ the rest.
 - **Signed out**: **Sign in**, which opens `/sign-in` with the page to come back to
   (`?return=/telemetry`, say). Once signed in, the page goes back there. Only a path on this site
   is followed, so the link can't send anyone elsewhere.
-- **Signed in**: the account's first name (or full name, or email) and **Sign out**, which ends
+- **Signed in**: the account's first name (or full name, or email), linking to
+  [Your account](#your-account-account), and **Sign out**, which ends
   the liveworkspace session here. It doesn't sign anyone out of an app: each app holds its own
   tokens.
 
@@ -89,6 +90,16 @@ The public dashboard for every app's anonymous events, all apps at once or one a
 as its own header does, the prism and the wordmark in the app's accent. It reads its numbers from
 `/api/telemetry/summary`. Its styles (and both apps' shared UI, which its views render) are in
 their own stylesheet, `app/telemetry/telemetry.css`, so the other pages don't carry them.
+
+### Your account (`/account/…`)
+
+Where a signed-in person runs what belongs to their account rather than to an app
+([accounts.md](accounts.md)): `/account/teams` (invitations waiting for them, making a team, and each
+team's name, members, roles and invitations) and `/account/tokens` (making an API token, seeing it
+once, and revoking it, the AI tools connected in an app among them). `/account` opens the teams.
+Signed out, the pages ask them to sign in and come back. They read and write
+`/api/account/*` on this origin with the session cookie (`lib/account-api.ts`), and are kept out of
+search.
 
 ### Accounts (`/sign-in`, `/sign-up`, `/consent`)
 

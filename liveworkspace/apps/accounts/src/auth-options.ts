@@ -23,6 +23,9 @@ export interface AuthConfig {
   // "Continue with Google", when the Worker has a Google OAuth client.
   google: { clientId: string; clientSecret: string } | null;
   sendCode: (email: string, code: string) => Promise<void>;
+  // The teams an account is in, for its access tokens (teams.ts teamsClaim). Left out where there is
+  // no database to ask, as when generating the schema.
+  teamsFor?: (userId: string) => Promise<{ id: string; name: string; role: string }[]>;
 }
 
 export function authOptions(config: AuthConfig, database: BetterAuthOptions['database']) {
@@ -121,8 +124,16 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         // Clients belong to liveworkspace, not to whichever account registered them, so
         // deleting an account never takes an app's client with it.
         clientReference: () => 'liveworkspace',
-        customAccessTokenClaims: ({ user }) =>
-          user ? { email: user.email, email_verified: user.emailVerified } : {},
+        // The account's teams ride in the token too (liveworkspace/docs/accounts.md "Teams"): an app
+        // compares them with its own copy and catches up when they differ, at no cost per request.
+        customAccessTokenClaims: async ({ user }) =>
+          user
+            ? {
+                email: user.email,
+                email_verified: user.emailVerified,
+                ...(config.teamsFor && { teams: await config.teamsFor(user.id) }),
+              }
+            : {},
         // The provider sends profile and email claims only from /userinfo. The apps read who
         // signed in from the ID token they already have, so the claims go in it as well.
         customIdTokenClaims: ({ user, scopes }) => idTokenClaims(user, scopes),
