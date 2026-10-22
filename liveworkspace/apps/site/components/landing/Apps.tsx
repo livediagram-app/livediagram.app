@@ -1,25 +1,24 @@
-import { Brand as LivediagramBrand, BrandMark, lucideGlyph } from '@livediagram/ui';
-import { Brand as LiveplannerBrand } from '@liveplanner/ui';
+import { BrandMark, lucideGlyph } from '@livediagram/ui';
 import { lucideCheck } from '@livediagram/icons/lucide';
-import { PLATFORM_SITE, type SiteId } from '@liveworkspace/sites';
-import { listedApps } from '@/lib/apps';
-import { AppWindow, BoardScene, DiagramScene } from './AppWindow';
+import { PLATFORM_SITE } from '@liveworkspace/sites';
+import type { CSSProperties, ReactNode } from 'react';
+import { type AppArt, pageApps } from '@/lib/apps';
+import { AppLogo } from './AppLogo';
+import { AppWindow, BoardScene, DesignScene, DiagramScene, DocumentScene } from './AppWindow';
 
 const CheckIcon = lucideGlyph(lucideCheck, 16);
 
-const LOGOS: Partial<Record<SiteId, typeof LivediagramBrand>> = {
-  'livediagram.app': LivediagramBrand,
-  'liveplanner.app': LiveplannerBrand,
+const SCENES: Record<AppArt, { address: string; scene: ReactNode }> = {
+  diagram: { address: 'livediagram.app/d/launch-plan', scene: <DiagramScene /> },
+  board: { address: 'liveplanner.app/p/launch', scene: <BoardScene /> },
+  document: { address: 'livedocuments.app/d/quarterly-review', scene: <DocumentScene /> },
+  design: { address: 'livedesign.app/d/northwind', scene: <DesignScene /> },
 };
 
-const ADDRESSES: Record<'diagram' | 'board', string> = {
-  diagram: 'livediagram.app/d/launch-plan',
-  board: 'liveplanner.app/p/launch',
-};
-
-// The apps (liveworkspace/docs/site.md "The front door"): one section each, in the shared order,
-// with its own logo, what it is for, three things it does, a window onto its work, and the way in.
-// Each says it signs in with the liveworkspace account: the thread between them.
+// The apps (liveworkspace/docs/site.md "The front door"): one section each, the live ones in the
+// shared order and then those on their way, with its own logo, what it is for, three things it does,
+// a window onto its work, and the way in (or Coming soon). Each says it signs in with the
+// liveworkspace account: the thread between them.
 export function Apps() {
   return (
     <section id="apps" className="scroll-mt-20">
@@ -36,11 +35,11 @@ export function Apps() {
         </p>
 
         <div className="mt-14 flex flex-col gap-8 sm:gap-10">
-          {listedApps().map((app, i) => {
-            const Logo = LOGOS[app.id];
+          {pageApps().map((app, i) => {
+            const scene = SCENES[app.art];
             return (
               <article
-                key={app.id}
+                key={app.domain}
                 className="relative overflow-hidden rounded-[2rem] border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/70"
               >
                 <div
@@ -52,7 +51,7 @@ export function Apps() {
                 />
                 <div className="relative grid items-center gap-10 p-6 sm:p-10 lg:grid-cols-[5fr_6fr] lg:gap-14 lg:p-14">
                   <div className={i % 2 ? 'lg:order-2' : ''}>
-                    {Logo ? <Logo size="lg" /> : null}
+                    <AppLogo app={app} />
                     <h3 className="mt-6 text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl dark:text-white">
                       {app.tagline}
                     </h3>
@@ -76,24 +75,37 @@ export function Apps() {
                       ))}
                     </ul>
                     <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
-                      <a
-                        href={app.url}
-                        className="relative touch-target-y inline-flex min-h-12 items-center gap-2 rounded-full px-6 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2"
-                        style={{ backgroundColor: app.deep, outlineColor: app.deep }}
-                      >
-                        Open {app.id}
-                        <span aria-hidden>→</span>
-                      </a>
+                      {app.url ? (
+                        <a
+                          href={app.url}
+                          className="relative touch-target-y inline-flex min-h-12 items-center gap-2 rounded-full px-6 text-sm font-semibold text-white shadow-lg transition hover:-translate-y-px focus-visible:outline-2 focus-visible:outline-offset-2"
+                          style={{ backgroundColor: app.deep, outlineColor: app.deep }}
+                        >
+                          Open {app.domain}
+                          <span aria-hidden>→</span>
+                        </a>
+                      ) : (
+                        <span
+                          className="inline-flex min-h-12 items-center gap-2 rounded-full border-2 border-dashed px-6 text-sm font-semibold text-[var(--lw-ink)] dark:text-[var(--lw-ink-dark)]"
+                          style={
+                            {
+                              borderColor: app.accent,
+                              '--lw-ink': app.deep,
+                              '--lw-ink-dark': app.accent,
+                            } as CSSProperties
+                          }
+                        >
+                          Coming soon to {app.domain}
+                        </span>
+                      )}
                       <span className="flex items-center gap-2 text-sm text-slate-500 dark:text-slate-400">
                         <BrandMark accentColor={PLATFORM_SITE.accent} className="size-4 shrink-0" />
-                        Signs in with your liveworkspace account
+                        {app.url ? 'Signs in' : 'Will sign in'} with your liveworkspace account
                       </span>
                     </div>
                   </div>
                   <div className={i % 2 ? 'lg:order-1' : ''}>
-                    <AppWindow address={ADDRESSES[app.art]}>
-                      {app.art === 'diagram' ? <DiagramScene /> : <BoardScene />}
-                    </AppWindow>
+                    <AppWindow address={scene.address}>{scene.scene}</AppWindow>
                   </div>
                 </div>
               </article>

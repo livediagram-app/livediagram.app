@@ -26,7 +26,7 @@ The two APIs are Workers on more specific routes of the same origin, so the page
 ### The header
 
 Every page has the same header: the liveworkspace wordmark, with the site switcher on hover
-(the current site highlighted), links to Apps, How it fits and Telemetry, the Appearance toggle (Light, Dark, System, as on the
+(the current site highlighted), links to Our Apps, How it fits and Telemetry, the Appearance toggle (Light, Dark, System, as on the
 apps' sites; the boot script applies the choice before paint), and the account control. On a phone the wordmark, the Appearance toggle and the account control show; the footer has
 the rest.
 
@@ -51,11 +51,18 @@ moves between them, and the one account that joins them.
    **Explore the apps**. Signed in, they become "Welcome back" and a button into each app. Beside
    it, the platform's prism with each app's logo joined to it by a line in its accent, and what they
    share (one sign-in, open numbers) on quieter lines, with a collaborator's cursor at each app.
-2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order: its own
+   The apps on their way sit at the free corners on dashed lines, marked Soon.
+2. **The apps** (`#apps`): one section per app in `@liveworkspace/sites`, in that order, then one
+   for each app on its way (`UPCOMING_APPS` in `lib/apps.ts`: livedocuments, then livedesign). Each
+   has its own
    logo, a tagline, its summary, three things it does, a window onto its work with someone in it (a
    flowchart; a board with a card on the move), **Open <app>** in its deep accent, and "Signs in with
-   your liveworkspace account". The copy is `lib/apps.ts`; a test requires it for every app and that
-   white text on each deep accent passes WCAG AA.
+   your liveworkspace account". An app on its way has **Coming soon to <domain>** in place of the
+   button, and its logo is the shared prism tinted with its accent (livedocuments amber, livedesign
+   rose), since its own UI package isn't here yet. It stays out of `@liveworkspace/sites`, so the
+   logo switchers, the footer and the telemetry filters only list it once it ships. The copy is
+   `lib/apps.ts`; tests require it for every app, that white text on each deep accent passes WCAG AA,
+   and that no app on its way is listed as live.
 3. **How it fits together** (`#how-it-fits`): the path a piece of work takes (sketch it in
    livediagram, plan it in liveplanner, share one link), then what every app shares: one account
    (the large tile, with Create your account), live by default, share by link, open about data
@@ -122,5 +129,7 @@ one origin, as it does in production. Run `corepack pnpm dev:site` for the pages
 ## Not done yet
 
 - **A liveworkspace privacy policy and terms.** Today the footer links to each app's own.
-- **livedocuments.app** joins when it ships: a row in `@liveworkspace/sites` and its copy in
-  `lib/apps.ts`.
+- **livedocuments.app and livedesign.app** join properly when they ship: a row in
+  `@liveworkspace/sites` (which puts them in every switcher and the footer), their entry moved from
+  `UPCOMING_APPS` to `APP_COPY` with a privacy policy, and their own logo package in place of the
+  tinted prism.

@@ -58,7 +58,10 @@ export default function Home() {
                   liveplanner
                 </a>
                 , and move between them with one account. Every link opens straight into the work,
-                with everyone already in it.
+                with everyone already in it.{' '}
+                <span className="text-slate-500 dark:text-slate-400">
+                  livedocuments and livedesign are on their way.
+                </span>
               </p>
               <div className="mt-9">
                 <HeroActions />

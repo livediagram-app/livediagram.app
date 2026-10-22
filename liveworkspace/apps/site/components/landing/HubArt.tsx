@@ -2,23 +2,26 @@ import { Brand as LivediagramBrand, BrandMark, lucideGlyph } from '@livediagram/
 import { Brand as LiveplannerBrand } from '@liveplanner/ui';
 import { lucideChartLine, lucideLock } from '@livediagram/icons/lucide';
 import { PLATFORM_SITE } from '@liveworkspace/sites';
+import { UPCOMING_APPS } from '@/lib/apps';
 import { Cursor } from './Cursor';
 
 const ChartIcon = lucideGlyph(lucideChartLine, 14);
 const LockIcon = lucideGlyph(lucideLock, 14);
 
 // The hero's picture of how liveworkspace fits together (liveworkspace/docs/site.md "The front
-// door"): the platform's prism at the centre, each app joined to it by a line in its accent with a
-// current running along it, and what every app shares (the one sign-in, the open numbers) on lines of
-// its own. Laid out on a 600 × 500 grid that the lines and the cards share, so it scales as one.
+// door"): the platform's prism at the centre, each live app joined to it by a line in its accent with
+// a current running along it, the apps on their way on dashed lines, and what every app shares (the
+// one sign-in, the open numbers) on dotted lines of its own. Laid out on a 600 × 500 grid that the lines and the cards share, so it scales as one.
 // Decorative: the words beside it say all of this.
 
 const HUB = { x: 300, y: 250 };
 const NODES = {
   diagram: { x: 140, y: 112 },
   planner: { x: 462, y: 392 },
-  account: { x: 112, y: 398 },
-  numbers: { x: 492, y: 102 },
+  documents: { x: 478, y: 104 },
+  design: { x: 124, y: 400 },
+  account: { x: 300, y: 474 },
+  numbers: { x: 300, y: 28 },
 };
 
 const at = ({ x, y }: { x: number; y: number }) => ({
@@ -35,6 +38,12 @@ const CARD =
   'absolute -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/70 bg-white/85 shadow-xl shadow-slate-900/10 backdrop-blur-md dark:border-slate-700/80 dark:bg-slate-900/85 dark:shadow-black/40';
 const CHIP =
   'absolute -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 whitespace-nowrap rounded-full border border-slate-200 bg-white/90 px-3 py-1.5 text-xs font-semibold text-slate-700 shadow-md shadow-slate-900/5 backdrop-blur dark:border-slate-700 dark:bg-slate-900/90 dark:text-slate-200';
+
+// The apps on their way, by name, at the two free corners.
+const SOON = UPCOMING_APPS.map((app, i) => ({
+  app,
+  node: i === 0 ? NODES.documents : NODES.design,
+}));
 
 export function HubArt() {
   return (
@@ -97,7 +106,19 @@ export function HubArt() {
           strokeLinecap="round"
           className="lw-flow"
         />
-        {/* What they share: quieter, dashed. */}
+        {/* The apps on their way: dashed, in their accents. */}
+        {SOON.map(({ app, node }) => (
+          <path
+            key={app.name}
+            d={curve(node, HUB)}
+            stroke={app.accent}
+            strokeWidth="2"
+            strokeDasharray="4 7"
+            strokeLinecap="round"
+            opacity="0.7"
+          />
+        ))}
+        {/* What they share: quieter, dotted. */}
         <path
           d={curve(HUB, NODES.account)}
           className="stroke-slate-300 dark:stroke-slate-600"
@@ -139,6 +160,22 @@ export function HubArt() {
           Boards · sheets · forms
         </p>
       </div>
+
+      {SOON.map(({ app, node }) => (
+        <div
+          key={app.name}
+          className={`${CARD} flex items-center gap-2 px-3 py-2 opacity-90`}
+          style={at(node)}
+        >
+          <BrandMark accentColor={app.accent} className="size-5 shrink-0" />
+          <span className="text-sm font-semibold whitespace-nowrap text-slate-900 dark:text-slate-100">
+            {app.name}
+          </span>
+          <span className="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold whitespace-nowrap text-slate-500 dark:bg-slate-800 dark:text-slate-400">
+            Soon
+          </span>
+        </div>
+      ))}
 
       <span className={CHIP} style={at(NODES.account)}>
         <LockIcon />
