@@ -110,7 +110,6 @@ describe('the catalogue', () => {
     expect(verbsOf('tab').map((v) => v.id)).toEqual([
       'tab.ls',
       'tab.view',
-      'tab.lint',
       'tab.render',
       'tab.diff',
       'tab.add',
@@ -133,7 +132,9 @@ describe('the guides and the skill', () => {
   });
 
   it('teach edit operations that parse', () => {
-    const lines = GUIDE_TOPICS.edit.text.split('\n').filter((l) => /^ {2}(set|insert|connect) /.test(l));
+    const lines = GUIDE_TOPICS.edit.text
+      .split('\n')
+      .filter((l) => /^ {2}(set|insert|connect) /.test(l));
     expect(lines).toHaveLength(3);
     expect(parseEditOperations(lines.map((l) => l.trim()).join('\n'))).toHaveProperty('operations');
   });

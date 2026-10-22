@@ -41,7 +41,7 @@ import {
   tabRename,
   tabRm,
 } from './verbs/lifecycle';
-import { tabLint, tabLs, tabView } from './verbs/tab';
+import { tabLs, tabView } from './verbs/tab';
 import { itemVerbs } from './verbs/item';
 import { boardVerbs } from './verbs/board';
 import { cardTypeVerbs } from './verbs/card-type';
@@ -60,7 +60,6 @@ export const VERBS: readonly Verb[] = [
   documentRestore,
   tabLs,
   tabView,
-  tabLint,
   tabRender,
   tabDiff,
   tabAdd,
@@ -113,7 +112,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
     summary: 'Documents: find, read, create, rename, share and remove them',
   },
   { name: 'folder', summary: 'Folders: their paths and ids, and a new one' },
-  { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
+  { name: 'tab', summary: 'Tabs: their views and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'item', summary: 'Items: the work Plan boards show' },
   { name: 'board', summary: 'Plan boards: add one' },

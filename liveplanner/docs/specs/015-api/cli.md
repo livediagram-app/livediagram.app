@@ -39,7 +39,6 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `tab add\|rename\|rm <doc> ...`                                                 | Tab lifecycle; `add` takes `-f` or `--template`                                                                                                                            |
 | `tab diff <doc> [--tab <t>] --since <rev>`                                      | The diff view, computed by the CLI from its copy of the tab at that rev                                                                                                    |
 | `tab render <doc> [--tab <t>] --png <file>\|--svg <file>`                       | A preview image; prints the path and its size, never image bytes                                                                                                           |
-| `tab lint <doc> [--tab <t>]`                                                    | The [diagram lint](../024-agents/diagram-lint.md), served as a view                                                                                                        |
 | `element add\|set\|rm\|move\|connect\|insert\|wrap <doc> ...`                   | One [edit operation](../024-agents/edit-operations.md) as a changeset                                                                                                      |
 | `item ls\|add\|set\|move\|rm <doc> ...`                                         | [Items](../026-plan/items.md) by number (`#12`); columns, types, fields by name                                                                                            |
 | `board add\|set <doc> ...`                                                      | Add a Plan board, or change one's title, columns or card types ([Plan for agents](../026-plan/plan-agents.md#adding-a-board))                                              |
@@ -106,7 +105,7 @@ an agent through the CLI is designing their own diagram.
 - Compact text by default. `--json` gives the same data as JSON; `--json <fields>` picks fields; `-q` prints only
   refs or ids.
 - Every write prints its result lines ([Edit operations](../024-agents/edit-operations.md#results)): what changed,
-  the revision, the changeset, the lint summary and the revert command.
+  the revision, the changeset and the revert command.
 - Lists end with one line saying what was left out and how to see it, never silently cut.
 - Errors name what was wrong, the valid values or candidates, and one runnable fix.
 

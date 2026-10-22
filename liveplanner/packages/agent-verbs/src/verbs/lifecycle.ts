@@ -20,10 +20,7 @@ import { documentOf } from './shared';
 
 const docArg = z.string().describe('A name, id prefix or liveplanner URL');
 const sourceFlags = {
-  file: z
-    .string()
-    .optional()
-    .describe('An elements file to fill it from, or - for stdin'),
+  file: z.string().optional().describe('An elements file to fill it from, or - for stdin'),
   template: z.string().optional().describe('A template kind to build it from'),
 };
 
@@ -327,7 +324,7 @@ export const tabAdd = defineVerb({
       'liveplanner tab add 3f9c Board --template kanban',
     ],
     prints:
-      '+ tab <id> "<name>", the result lines, then the revision, lint verdict and the tab rm that undoes it',
+      '+ tab <id> "<name>", the result lines, then the revision and the tab rm that undoes it',
   },
 });
 

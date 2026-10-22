@@ -287,19 +287,6 @@ describe('the tools on changesets', () => {
             results: [],
             text: 'done',
             warnings: [],
-            lint: {
-              measures: {
-                crossings: 1,
-                behind: 0,
-                overlaps: 0,
-                extent: { width: 300, height: 200 },
-                arrows: 2,
-                boxes: 3,
-              },
-              findings: [],
-              counts: { error: 0, warning: 1, info: 0 },
-              skipped: { crossings: false },
-            },
           })
         : undefined,
     );
@@ -317,11 +304,9 @@ describe('the tools on changesets', () => {
       },
     });
     expect(sent.some((s) => s.method === 'PUT' && /\/tabs\/[^/]+$/.test(s.path))).toBe(false);
-    const line = '1 crossing · 0 behind · 0 overlaps · 300×200 → 1 warning';
     expect(result.structuredContent).toMatchObject({
       changesetId: 'cs_0000000001',
       text: 'done',
-      lint: line,
     });
   });
 
@@ -347,25 +332,21 @@ describe('the tools on changesets', () => {
 
 describe('mcpResultText', () => {
   it('says how printed positions map to canvas coordinates when the content does not start at 0,0', () => {
-    const text = '+ a  square "A" @10,20 140×60\nrev 1→2 · cs_1 · lint clean';
+    const text = '+ a  square "A" @10,20 140×60\nrev 1→2 · cs_1';
     expect(mcpResultText(text, { x: 120, y: 75.6 })).toBe(
       `${text}\n@x,y above are from the content's top-left: an element's x, y = @x + 120, @y + 76.`,
     );
     expect(mcpResultText(text, { x: 0, y: 0 })).toBe(text);
     expect(mcpResultText(text, { x: 0, y: -104 })).toMatch(/x, y = @x \+ 0, @y - 104\.$/);
-    expect(mcpResultText('rev 1→2 · cs_1 · lint clean', { x: 5, y: 5 })).toBe(
-      'rev 1→2 · cs_1 · lint clean',
-    );
+    expect(mcpResultText('rev 1→2 · cs_1', { x: 5, y: 5 })).toBe('rev 1→2 · cs_1');
   });
 
   it('leaves off the CLI revert line no MCP tool runs, keeping the rest', () => {
     expect(
-      mcpResultText(
-        '+ a\nrev 1→2 · cs_1 · lint clean · revert: liveplanner changeset revert doc_1 cs_1',
-      ),
-    ).toBe('+ a\nrev 1→2 · cs_1 · lint clean');
-    expect(mcpResultText('dry run · rev 4 · lint clean · nothing written')).toBe(
-      'dry run · rev 4 · lint clean · nothing written',
+      mcpResultText('+ a\nrev 1→2 · cs_1 · revert: liveplanner changeset revert doc_1 cs_1'),
+    ).toBe('+ a\nrev 1→2 · cs_1');
+    expect(mcpResultText('dry run · rev 4 · nothing written')).toBe(
+      'dry run · rev 4 · nothing written',
     );
   });
 });

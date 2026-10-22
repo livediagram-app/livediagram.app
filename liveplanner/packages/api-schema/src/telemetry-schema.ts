@@ -243,7 +243,7 @@ export const TELEMETRY_ACTIONS = [
   'Present',
   'Held',
   // Document views (docs/specs/024-agents/document-views.md): a view the api answered, typed by the
-  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find' | 'Lint').
+  // view ('Overview' | 'Outline' | 'Graph' | 'Layout' | 'Comments' | 'Show' | 'Find'; 'Lint' until 2026-10-22).
   'Viewed',
   // Email (docs/specs/014-identity/transactional-email.md): a transactional / lifecycle email left the worker for
   // the provider. Only ever paired with the 'Email' category.

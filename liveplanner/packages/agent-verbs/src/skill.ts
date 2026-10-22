@@ -35,7 +35,6 @@ export function renderSkill(): string {
     '- `liveplanner document ls <query>`: find a document',
     '- `liveplanner tab view <doc>`: its first tab, as an outline',
     '- `liveplanner edit <doc> -f -`: edit operations from stdin, as one changeset',
-    '- `liveplanner tab lint <doc>`: what is wrong with how it is drawn',
     '',
     'Guides, each a command:',
     '',

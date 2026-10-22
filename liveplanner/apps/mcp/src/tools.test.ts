@@ -151,7 +151,6 @@ function okResponse(request: Request): Response {
       results: [],
       text: '',
       warnings: [],
-      lint: null,
     });
   }
   if (path.endsWith('/name')) return json({ tab: { id: 't_1', name: 'A diagram', orderIndex: 0 } });

@@ -112,7 +112,6 @@ liveplanner document ls auth                  # documents whose name contains "a
 liveplanner tab ls "Auth flow"                # the document's tabs
 liveplanner tab view "Auth flow"              # the first tab, as an outline
 liveplanner tab view "Auth flow" --tab Flow --view graph
-liveplanner tab lint "Auth flow"              # what is wrong with how it is drawn
 liveplanner tab render "Auth flow" --png auth.png
 ```
 
@@ -140,7 +139,7 @@ liveplanner tab add "Auth flow" Details --template kanban  # a new tab, empty, f
 liveplanner tab rm "Auth flow" Scratch                      # delete one tab; the others stay
 ```
 
-Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision, a lint summary and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `liveplanner guide edit` explains how edit operations read.
+Every change is **one changeset**, applied all or nothing and checked against the version of the tab you last read, so the CLI never silently overwrites someone else's work. Each write prints what changed, the new revision and the command that reverts it. Add `--dry-run` to see the plan without writing anything, and `--summary` to say what the change is for. `liveplanner guide edit` explains how edit operations read.
 
 `document rm` moves a document to the [Trash](/help/account-and-data/trash/) for 30 days, and `document restore` brings it back to its folder (or the top level, when that folder is gone); the CLI has no permanent delete.
 

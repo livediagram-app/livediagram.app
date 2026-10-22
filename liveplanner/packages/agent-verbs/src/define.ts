@@ -84,7 +84,7 @@ export type Verb<I extends z.ZodObject = z.ZodObject, O extends z.ZodType = z.Zo
   json?: (output: z.infer<O>) => unknown;
   // `-q`: refs or ids.
   quiet?: (output: z.infer<O>) => string[];
-  // A non-zero exit for an output that is not an error (the lint's error findings exit 1).
+  // A non-zero exit for an output that is not an error.
   exitCode?: (output: z.infer<O>) => number;
   // The array a list verb returns, for `--json` fields and the footer.
   listKey?: string;

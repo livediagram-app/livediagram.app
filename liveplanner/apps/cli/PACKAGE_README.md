@@ -35,7 +35,6 @@ The CLI never prompts. Another liveplanner host (a staging or local stack) is re
 ```bash
 liveplanner document ls auth            # find a document
 liveplanner tab view "Auth flow"        # its first tab, as an outline
-liveplanner tab lint "Auth flow"        # what is wrong with how it is drawn
 liveplanner edit "Auth flow" -f ops.txt # change it with edit operations
 liveplanner guide edit                  # how edit operations read
 ```

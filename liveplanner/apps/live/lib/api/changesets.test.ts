@@ -15,7 +15,6 @@ describe('apiRevertChangeset', () => {
             changeset: null,
             reverted: 0,
             kept: [{ id: 'a', reason: 'changed' }],
-            lint: null,
           }),
         );
       }),

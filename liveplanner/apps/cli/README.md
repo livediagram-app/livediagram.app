@@ -1,6 +1,6 @@
 # liveplanner CLI
 
-`liveplanner` is the command line agents and scripts read, lint and change liveplanner documents with. The
+`liveplanner` is the command line agents and scripts read and change liveplanner documents with. The
 behaviour is specified in [CLI](../../docs/specs/015-api/cli.md) and its
 [blueprint](../../docs/specs/015-api/blueprints/cli.md); the verbs themselves live in `@liveplanner/agent-verbs`.
 

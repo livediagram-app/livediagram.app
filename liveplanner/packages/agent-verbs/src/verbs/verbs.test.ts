@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { ChangesetSummary, LintReport } from '@liveplanner/api-schema';
+import type { ChangesetSummary } from '@liveplanner/api-schema';
 import { contextOf, DOC_A, DOC_C, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { changesetLs, changesetRevert, changesetShow } from './changeset';
 import { documentLs, documentView } from './document';
 import { columns } from './shared';
-import { tabLint, tabLs, tabView } from './tab';
+import { tabLs, tabView } from './tab';
 
 const tabPath = `/documents/${DOC_A}/tabs/tab-one-0000`;
 
@@ -126,41 +126,6 @@ describe('tab view', () => {
   });
 });
 
-const report = (errors: number): LintReport => ({
-  measures: {
-    crossings: 0,
-    behind: 0,
-    overlaps: errors,
-    extent: { width: 400, height: 200 },
-    arrows: 1,
-    boxes: 2,
-  },
-  findings: errors
-    ? [
-        {
-          code: 'box-overlap',
-          severity: 'error',
-          refs: ['n1', 'n2'],
-          message: 'n1 overlaps n2',
-          fix: 'move n2 right-of:n1',
-        },
-      ]
-    : [],
-  counts: { error: errors, warning: 0, info: 0 },
-  skipped: { crossings: false },
-});
-
-describe('tab lint', () => {
-  it('prints the report and exits 1 on an error finding', async () => {
-    const api = fakeApi({ ...library, ...tabsOfA, [`${tabPath}?view=lint&json=1`]: report(1) });
-    const out = await tabLint.run!(contextOf(api), { doc: 'Auth flow' });
-    expect(out.errors).toBe(1);
-    expect(tabLint.text!(out)[0]).toContain('n1 overlaps n2');
-    expect(tabLint.exitCode!(out)).toBe(1);
-    expect(tabLint.exitCode!({ ...out, errors: 0 })).toBe(0);
-  });
-});
-
 const changeset = (over: Partial<ChangesetSummary>): ChangesetSummary => ({
   id: 'cs_8k2m4q7d1x',
   tabId: 'tab-one-0000',
@@ -242,7 +207,6 @@ describe('changeset show', () => {
 });
 
 describe('changeset revert', () => {
-  const lint = report(0);
   const path = `/documents/${DOC_A}/changesets/cs_8k2m4q7d1x/revert`;
 
   it('reverts one changeset as a new one, naming what it kept', async () => {
@@ -253,7 +217,6 @@ describe('changeset revert', () => {
         changeset: { id: 'cs_9', tabId: 'tab-one-0000', rev: 6, previousRev: 5, rebasedOver: 0 },
         reverted: 2,
         kept: [{ id: 'n3', reason: 'changed' }],
-        lint,
       },
     });
     const out = await changesetRevert.run!(contextOf(api), {
@@ -261,7 +224,7 @@ describe('changeset revert', () => {
       changeset: 'cs_8k2m4q7d1x',
     });
     expect(changesetRevert.text!(out)).toEqual([
-      'reverted 2 · rev 5→6 · cs_9 · lint clean',
+      'reverted 2 · rev 5→6 · cs_9',
       'kept n3 (changed)',
     ]);
     expect(changesetRevert.quiet!(out)).toEqual(['cs_9']);
@@ -271,7 +234,7 @@ describe('changeset revert', () => {
     const api = fakeApi({
       ...library,
       ...tabsOfA,
-      [path]: { changeset: null, reverted: 0, kept: [{ id: 'n1', reason: 'gone' }], lint: null },
+      [path]: { changeset: null, reverted: 0, kept: [{ id: 'n1', reason: 'gone' }] },
     });
     const out = await changesetRevert.run!(contextOf(api), {
       doc: 'Auth flow',

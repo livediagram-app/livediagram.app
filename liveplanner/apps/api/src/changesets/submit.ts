@@ -1,10 +1,4 @@
-import type {
-  ChangesetResponse,
-  ChangesetWritten,
-  EditRejection,
-  LintReport,
-} from '@liveplanner/api-schema';
-import { lintFooterPart } from '@liveplanner/diagram-lint';
+import type { ChangesetResponse, ChangesetWritten, EditRejection } from '@liveplanner/api-schema';
 import { migrateIncomingTab, type Tab } from '@liveplanner/document';
 import {
   applyEditOperations,
@@ -20,12 +14,10 @@ import { personTagFor } from '../person-tag';
 import { readRoomSelections, type RoomSelection } from '../room-client';
 import type { DocumentDTO, Env } from '../types';
 import { makeTemplateSheets } from './template-sheets';
-import type { ChangesetBody } from './request';
 import { afterChangeset } from './after';
 import { checkBase, type BaseOutcome } from './base-check';
 import type { FrontDoor } from './front-door';
 import { heldTargets } from './held-check';
-import { lintResult } from './lint';
 import { changesetLog, engineLog } from './log';
 import { engineRefusal, type ParsedChangeset } from './request';
 import { readStoredTab, withRev, type StoredTab } from './stored-tab';
@@ -95,19 +87,13 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
     const lines = formatResultLines(compiled.results);
     if (args.dryRun) {
       changesetLog('info', '[changeset] dry-run', { ...where, targets: compiled.targets.length });
-      const lint = lintResult(compiled.tab, where, priorOf(request.body, stored));
-      const footer = formatResultFooter({
-        dryRun: true,
-        rev: stored?.rev ?? 0,
-        lint: lintFooterPart(lint),
-      });
+      const footer = formatResultFooter({ dryRun: true, rev: stored?.rev ?? 0 });
       return answer({
         dryRun: true,
         changeset: null,
         results: compiled.results,
         text: [...lines, footer].join('\n'),
         warnings,
-        lint,
       });
     }
     const ruled = withServerRules(compiled.tab, stored, args.author);
@@ -120,7 +106,6 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
             color: args.author.color,
           })
         : ruled;
-    const lint = lintResult(next, where, priorOf(request.body, stored));
     const outcome = await writeChangeset(env, {
       documentId: document.id,
       tabId,
@@ -134,7 +119,7 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       rebasedOver: base.rebasedOver,
       prevRev,
       results: compiled.results,
-      textFor: (written) => [...lines, writtenFooter(written, document.id, lint)].join('\n'),
+      textFor: (written) => [...lines, writtenFooter(written, document.id)].join('\n'),
       revertOf: null,
     });
     if (outcome.kind === 'stale') {
@@ -151,7 +136,6 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
         results: compiled.results,
         text: [...lines, 'nothing changed'].join('\n'),
         warnings,
-        lint: null,
       });
     }
     changesetLog('info', '[changeset] applied', {
@@ -179,17 +163,12 @@ export async function submitChangeset(args: SubmitArgs): Promise<SubmitResult> {
       results: compiled.results,
       text: outcome.text,
       warnings,
-      lint,
     });
   }
   return refusal(409, 'tab_busy', 'the tab kept changing; read it again and resubmit');
 }
 
-export function writtenFooter(
-  written: ChangesetWritten,
-  documentId: string,
-  lint: LintReport | null,
-): string {
+export function writtenFooter(written: ChangesetWritten, documentId: string): string {
   return formatResultFooter({
     dryRun: false,
     previousRev: written.previousRev,
@@ -197,7 +176,6 @@ export function writtenFooter(
     rebasedOver: written.rebasedOver,
     changesetId: written.id,
     documentId,
-    lint: lintFooterPart(lint),
   });
 }
 
@@ -298,13 +276,4 @@ function refusal(status: number, error: string, message: string): SubmitResult {
 
 function answer(body: ChangesetResponse): SubmitResult {
   return { status: 200, body };
-}
-
-// What a changeset's lint judges its colours against (lint.ts): a replace landing a template is the template's own.
-function priorOf(
-  body: ChangesetBody,
-  stored: StoredTab | null,
-): StoredTab['tab'] | 'template' | null {
-  if (body.kind === 'replace' && 'template' in body.replace) return 'template';
-  return stored?.tab ?? null;
 }

@@ -31,7 +31,6 @@ const written = (text: string) => ({
   results: [],
   text,
   warnings: [],
-  lint: null,
 });
 
 describe('document create', () => {
@@ -215,7 +214,7 @@ describe('tab add, rename and rm', () => {
     const { seen, route } = recorder(() =>
       Response.json(
         written(
-          `+ n1  square "A"\nrev 0→1 · cs_1 · lint clean · revert: liveplanner changeset revert ${DOC_A} cs_1`,
+          `+ n1  square "A"\nrev 0→1 · cs_1 · revert: liveplanner changeset revert ${DOC_A} cs_1`,
         ),
       ),
     );
@@ -235,7 +234,7 @@ describe('tab add, rename and rm', () => {
     });
     // Named first, and undone by tab rm: a revert would take its elements and leave the tab.
     expect(tabAdd.text!(out)).toEqual([
-      `+ tab new-1 "Board"\n+ n1  square "A"\nrev 0→1 · cs_1 · lint clean · undo: liveplanner tab rm ${DOC_A} new-1`,
+      `+ tab new-1 "Board"\n+ n1  square "A"\nrev 0→1 · cs_1 · undo: liveplanner tab rm ${DOC_A} new-1`,
     ]);
     expect(tabAdd.quiet!(out)).toEqual(['cs_1']);
     expect(tabAdd.quiet!({ ...out, changeset: null })).toEqual([]);

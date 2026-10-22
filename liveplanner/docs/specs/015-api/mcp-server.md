@@ -301,16 +301,14 @@ keeps it through their next save. `ops` mode sends its ops as
 [edit operations](../024-agents/edit-operations.md) based on the revision
 `read_document` returned, so nothing a person saved in between is overwritten: a
 touched element that changed is a conflict, an element a person has selected is
-refused as held. Both return the changeset's result lines, its [lint](../024-agents/diagram-lint.md) summary line
-(also as its own text block; `create_document` carries one per created tab) and
+refused as held. Both return the changeset's result lines and
 the rendered PNG of the result. The model picks the mode: rebuild → `replace`;
 tweak → `ops`.
 
 **Edits.** `ops` mode takes `edits` instead of `ops` (`mode: "edits"` names the same mode, as agents read it): [edit operations](../024-agents/edit-operations.md) in the line
 form, one a line, sent as the changeset's operations text for the api to parse and apply all or nothing. They reach
 what JSON ops cannot say in one step (`insert … between a b` making room, `wrap … in frame`, `connect a -> b`, `layout`
-of a selection, placement beside another element), and they are the language each [lint](../024-agents/diagram-lint.md)
-finding's fix is written in, so a finding in a write's result can be applied as printed. The base is the revision the
+of a selection, placement beside another element). The base is the revision the
 model read (else the tab as loaded) and every element's fingerprint as loaded, since the text may name any of them.
 Coordinates in edits are relative to the content origin, as views print them. `ops` and `edits` together are refused.
 The tool's `edits` description carries the vocabulary, selectors, placements and keys in brief.

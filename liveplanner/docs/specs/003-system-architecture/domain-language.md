@@ -104,7 +104,6 @@ The words for a program working on documents for a person ([Agents](../024-agent
 | **view**           | A read-only text projection of a tab (outline, graph, layout, ...)                                      | mode, format                            |
 | **ref**            | The short name a view prints for an element: its id, or its shortest unique id prefix                   | handle (that is a mention), alias       |
 | **selector**       | An expression matching one or more elements (a ref, `type:sticky`, `in:f1`)                             | query, filter (that is the Explorer's)  |
-| **lint finding**   | One problem the diagram lint reports (`box-overlap`), with the refs involved                            | warning, issue                          |
 | **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
 | **ownership**      | The owner's powers over a document (sharing, delete, move), apart from any level                        | admin, edit level                       |
 

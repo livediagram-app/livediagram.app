@@ -39,7 +39,6 @@ async function connect() {
         results: [],
         text: '',
         warnings: [],
-        lint: null,
       });
     }
     if (path.endsWith('/name')) {

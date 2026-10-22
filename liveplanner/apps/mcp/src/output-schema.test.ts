@@ -88,7 +88,6 @@ const CHANGESET = {
   results: [],
   text: 'rev 3→4 · cs_0000000001',
   warnings: [],
-  lint: null,
 };
 const ITEM = {
   id: 'item123abc',

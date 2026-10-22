@@ -8,7 +8,6 @@ import type { DocumentDTO, Env } from '../types';
 import { afterChangeset } from './after';
 import type { FrontDoor } from './front-door';
 import { heldTargets } from './held-check';
-import { lintResult } from './lint';
 import { changesetLog } from './log';
 import { planRevert } from './revert-plan';
 import { readStoredTab } from './stored-tab';
@@ -61,7 +60,6 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
       }
     }
     const next = { ...stored.tab, elements: plan.elements };
-    const lint = lintResult(next, where, stored.tab);
     const outcome = await writeChangeset(env, {
       documentId: document.id,
       tabId: record.tabId,
@@ -76,7 +74,7 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
       prevRev,
       results: [],
       textFor: (written) =>
-        [...formatResultLines([]), writtenFooter(written, document.id, lint)].join('\n'),
+        [...formatResultLines([]), writtenFooter(written, document.id)].join('\n'),
       revertOf: record.id,
     });
     if (outcome.kind === 'stale') {
@@ -109,7 +107,6 @@ export async function revertChangeset(args: RevertArgs): Promise<SubmitResult> {
       changeset,
       reverted: plan.reverted,
       kept: plan.kept,
-      lint: changeset ? lint : null,
     };
     return { status: 200, body };
   }

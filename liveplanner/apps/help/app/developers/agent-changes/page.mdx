@@ -68,7 +68,7 @@ liveplanner changeset show "Auth flow" cs_8k2m4q7d1x
 cs_8k2m4q7d1x  rev 42  "Overview"  Webber (agent)  "add payment service"  +2 ~0 -0  2026-10-11 09:14
 + pay  square "Payment service" @520,120 160×64
 + arrow  n2→pay
-rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: liveplanner changeset revert abc123 cs_8k2m4q7d1x
+rev 41→42 · cs_8k2m4q7d1x · revert: liveplanner changeset revert abc123 cs_8k2m4q7d1x
 ```
 
 Every write the CLI makes ends with that same footer, so the command that takes it back is printed beside the change. To undo one:
@@ -78,7 +78,7 @@ liveplanner changeset revert "Auth flow" cs_8k2m4q7d1x
 ```
 
 ```text
-reverted 1 · rev 44→45 · cs_5m2q8r1t6w · lint clean
+reverted 1 · rev 44→45 · cs_5m2q8r1t6w
 kept pay (changed)
 ```
 

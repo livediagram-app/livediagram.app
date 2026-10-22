@@ -4,8 +4,7 @@ import { layoutGraph, type GraphInput } from './graph-input';
 import type { BoxedElement } from './index';
 
 // Edge labels in the graph look (docs/specs/015-api/mcp-server.md §4.7 "Flow lines are elbows"): the gap between two
-// ranks fits the widest label crossing it. Labels clear of boxes are held by the routing fixtures' collision ceiling
-// (packages/diagram-lint/src/fixtures/routing-baseline.json).
+// ranks fits the widest label crossing it.
 
 let n = 0;
 const lay = (g: GraphInput) => layoutGraph(g, { makeEdgeId: () => `e${n++}` });

@@ -3,7 +3,6 @@
 
 import { z } from 'zod';
 import type { ChangesetDetail, ChangesetSummary, RevertResponse } from '@liveplanner/api-schema';
-import { lintFooterPart } from '@liveplanner/diagram-lint';
 import { resolveTab } from '../addressing';
 import { defineVerb } from '../define';
 import { documentOf, LIST_DEFAULT_LIMIT, LIST_MAX_LIMIT, minute } from './shared';
@@ -114,7 +113,6 @@ export const changesetRevert = defineVerb({
     changeset: z.object({ id: z.string(), rev: z.number(), previousRev: z.number() }).nullable(),
     reverted: z.number(),
     kept: z.array(z.object({ id: z.string(), reason: z.string() })),
-    lint: z.string(),
   }),
   run: async (ctx, { doc, changeset }) => {
     const document = await documentOf(ctx, doc);
@@ -130,12 +128,11 @@ export const changesetRevert = defineVerb({
       },
       reverted: answer.reverted,
       kept: answer.kept,
-      lint: lintFooterPart(answer.lint),
     };
   },
-  text: ({ changeset, reverted, kept, lint }) => [
+  text: ({ changeset, reverted, kept }) => [
     changeset
-      ? `reverted ${reverted} · rev ${changeset.previousRev}→${changeset.rev} · ${changeset.id} · ${lint}`
+      ? `reverted ${reverted} · rev ${changeset.previousRev}→${changeset.rev} · ${changeset.id}`
       : 'nothing to revert',
     ...kept.map((k) => `kept ${k.id} (${k.reason})`),
   ],

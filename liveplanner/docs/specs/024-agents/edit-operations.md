@@ -1,8 +1,7 @@
 # Edit operations
 
 **Status: built.** `@liveplanner/edit-operations` reads both forms and applies every operation below, by ref or
-selector, through the changeset route; the MCP's `ops` mode takes refs. A result's footer names the [lint](diagram-lint.md)
-verdict, and the [CLI](../015-api/cli.md) is not built.
+selector, through the changeset route; the MCP's `ops` mode takes refs, and the [CLI](../015-api/cli.md) is not built.
 
 An **edit operation** is one step of a [changeset](agent-changesets.md): a small, closed vocabulary of
 intent-level verbs addressed by ref or selector, compiled by the api into element ops. Building from scratch and
@@ -156,8 +155,8 @@ rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: liveplanner changeset reve
 ```
 
 `+` added, `~` changed (before→after), `-` removed, `»` moved without being named, a container ref followed by its
-membership changes, `!` a warning. The last line carries the revision, the changeset, the
-[lint](diagram-lint.md) summary and the revert command.
+membership changes, `!` a warning. The last line carries the revision, the changeset and the
+revert command.
 
 ## Rejections
 

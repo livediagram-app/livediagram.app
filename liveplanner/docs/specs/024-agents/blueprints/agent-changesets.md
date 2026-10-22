@@ -6,9 +6,8 @@ ledger merge of [Collaboration race hardening](../../012-collaboration/collab-ra
 [Realtime conflict resolution](../../012-collaboration/realtime-conflict-resolution.md) (locked decision 3), the
 attribution and person tag of [Agent presence](../agent-presence.md), the gates of
 [Share roles](../../013-workspace/share-roles.md) and the `Agent` telemetry of
-[Telemetry](../../017-telemetry/telemetry.md). The edit-operations engine and the diagram lint are dependencies,
-consumed through the interfaces their blueprints export ([edit operations](edit-operations.md),
-[diagram lint](diagram-lint.md)). The spec decides; this file only adds engineering precision. Defaults applied
+[Telemetry](../../017-telemetry/telemetry.md). The edit-operations engine is a dependency,
+consumed through the interface its blueprint exports ([edit operations](edit-operations.md)). The spec decides; this file only adds engineering precision. Defaults applied
 where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `CSn`.
 
 Scope, by file:
@@ -318,7 +317,6 @@ type ChangesetResponse = {
   results: ResultLine[]; // the engine's result lines, structured
   text: string; // formatResultLines + formatResultFooter: the same for a dry run and a write
   warnings: string[]; // 'no_base', engine warnings
-  lint: null; // the lint's report once it lands (LN25); null until then, the footer reading "lint unavailable"
 };
 type ChangesetConflict = {
   id: string;

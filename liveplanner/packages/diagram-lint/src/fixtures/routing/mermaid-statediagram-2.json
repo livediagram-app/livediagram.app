@@ -1,3 +1,0 @@
-{
-  "mermaid": "---\ntitle: Order lifecycle\n---\nstateDiagram-v2\n    direction TB\n    [*] --> Created\n    Created --> Paid : payment captured\n    Paid --> Packed : items picked\n    Packed --> Shipped : handed to carrier\n    Shipped --> Delivered : signed for\n    Created --> Cancelled : customer cancels\n    Paid --> Cancelled : cancelled before packing\n    Delivered --> Returned : return received\n    Returned --> Refunded : refund issued\n    Delivered --> [*]\n    Cancelled --> [*]\n    Refunded --> [*]\n"
-}

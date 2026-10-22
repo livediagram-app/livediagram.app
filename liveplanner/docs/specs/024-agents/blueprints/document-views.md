@@ -1,8 +1,7 @@
 # Document views: blueprint
 
 Derived from [Document views](../document-views.md), with the selector vocabulary and rejection codes of
-[Edit operations](../edit-operations.md), the tab revision of [Agent changesets](../agent-changesets.md), the findings
-of [Diagram lint](../diagram-lint.md), the route row of [API](../../015-api/api.md) ("Agents"), `read_document` of
+[Edit operations](../edit-operations.md), the tab revision of [Agent changesets](../agent-changesets.md), the route row of [API](../../015-api/api.md) ("Agents"), `read_document` of
 [MCP server](../../015-api/mcp-server.md) §4.2, the anonymous events of [Telemetry](../../017-telemetry/telemetry.md)
 and the terms of [Domain language](../../003-system-architecture/domain-language.md#agents). The spec decides; this
 file only adds engineering precision. Defaults applied where the spec is silent are ledgered in
@@ -64,7 +63,7 @@ Scope, by file:
 | `apps/mcp/src/image-result.ts`                                          | `tabPreview`: the PNG on its own, which `imageResult` and `readDocument` attach                                             |
 | `apps/telemetry/app/catalogue/connections.ts`                           | The `Agent·Viewed` chart, by view                                                                                           |
 | `docs/development/architecture.md`, `README.md`                         | The new package in the layout and the package list                                                                          |
-| `@liveplanner/edit-operations`, `@liveplanner/diagram-lint` (own)       | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@liveplanner/document`                      |
+| `@liveplanner/edit-operations` (own)                                    | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@liveplanner/document`                      |
 | The cross-tab comments route (agent-presence's blueprint)               | Imports `computeRefs` from `@liveplanner/document`                                                                          |
 
 The repo layout block in `AGENTS.md` gains the package only with the operator's permission (agent files are not
@@ -394,12 +393,10 @@ is the full view's estimate and the step it took (a ladder state, or `lines-drop
 | `comments` | `commentsView`                          | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
 | `show`     | `showView` (`ref`), `showSelectedView`  | api, CLI offline         | One element in full                                                                     |
 | `find`     | `findView` (`q` required)               | api, CLI offline         | Matches with their container chains                                                     |
-| `lint`     | `@liveplanner/diagram-lint` (not built) | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
 | `diff`     | `diffView(before, after, context)`      | CLI only, from its cache | Added, removed, changed and moved elements                                              |
 | `overview` | `overviewView(document, tabs, options)` | api, CLI offline         | One line per tab                                                                        |
 
-`renderView` dispatches `lint` to the diagram-lint package's renderer; this package owns only its header and the
-query plumbing (`VW58`). `diff` has no api door: the CLI keeps the last tab it read per document, tab and `rev` and runs
+`diff` has no api door: the CLI keeps the last tab it read per document, tab and `rev` and runs
 `diffView` on that copy and the current tab.
 
 **`graph`** (`VW30`):
@@ -667,9 +664,8 @@ through `textPlain`, with `Cache-Control: no-cache`, the CORS set and the `ETag`
 `parseViewQuery(url, scope)` validates (`VW43`), each failure a JSON `{ error, message }` naming the parameter and its
 allowed values:
 
-- `view` in the door's names: `overview` on the document; `outline`, `graph`, `layout`, `comments`, `show`, `find`,
-  `lint` on the tab once the lint is built. `diff` is `unknown_view` with the message "diff is computed by the CLI:
-  liveplanner tab diff"; until then `lint` is `unknown_view` with "the lint view arrives with the diagram lint".
+- `view` in the door's names: `overview` on the document; `outline`, `graph`, `layout`, `comments`, `show` and `find`
+  on the tab. `diff` is `unknown_view` with the message "diff is computed by the CLI: liveplanner tab diff".
 - `budget`: an integer in `[1, VIEW_BUDGET_MAX]`.
 - `only`, `ref`: resolved by `resolveRef`; `only` (outline and layout only) naming an arrow is `invalid_value`
   (`VW41`). The header still counts the whole tab.
@@ -725,7 +721,7 @@ types join `ROOT_TYPES`.
 ### The CLI
 
 The CLI blueprint maps `tab view --view <name>`, `--budget`, `--only`, `--coarse`, `--style`, `--json`, `--raw`,
-`show`, `find`, `--all` and `tab lint` to the query above online, and calls `renderView` on a pulled file's tab
+`show`, `find` and `--all` to the query above online, and calls `renderView` on a pulled file's tab
 offline. `tab diff --since` runs `diffView` on the CLI's cached tab and the current one. An unknown kind is never
 dropped online or offline.
 

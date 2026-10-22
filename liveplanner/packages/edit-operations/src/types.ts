@@ -3,13 +3,7 @@
 // @liveplanner/api-schema, where the changeset response carries them.
 
 import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@liveplanner/api-schema';
-import type {
-  ElementId,
-  ElementOp,
-  Finish,
-  Tab,
-  ThemeDefinition,
-} from '@liveplanner/document';
+import type { ElementId, ElementOp, Finish, Tab, ThemeDefinition } from '@liveplanner/document';
 import type { PlacementRelation } from './vocabulary';
 import type { DashboardSpec } from '@liveplanner/templates';
 
@@ -166,7 +160,7 @@ export type ApplyOutcome = ApplySuccess | ApplyRejection;
 
 // The last line of a changeset's answer, composed by the api or the CLI from what only they know.
 export type ResultFooter =
-  | { dryRun: true; rev: number; lint: string }
+  | { dryRun: true; rev: number }
   | {
       dryRun: false;
       previousRev: number;
@@ -175,5 +169,4 @@ export type ResultFooter =
       changesetId: string;
       // The document the changeset belongs to: the revert command names it (CLI26).
       documentId: string;
-      lint: string;
     };

@@ -19,7 +19,6 @@
     "@liveplanner/agent-verbs": "workspace:*",
     "@liveplanner/api-client": "workspace:*",
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/diagram-lint": "workspace:*",
     "@liveplanner/document": "workspace:*",
     "@liveplanner/document-views": "workspace:*",
     "@liveplanner/icons": "workspace:*",

@@ -1,9 +1,8 @@
-// The tab verbs that read (docs/specs/015-api/cli.md "Commands"): the tabs of a document, a view of one, and
-// its lint, as the api serves them.
+// The tab verbs that read (docs/specs/015-api/cli.md "Commands"): the tabs of a document and a view of one, as
+// the api serves them.
 
 import { z } from 'zod';
-import { revOfEtag, TAB_VIEW_NAMES, type LintReport } from '@liveplanner/api-schema';
-import { formatLintReport } from '@liveplanner/diagram-lint';
+import { revOfEtag, TAB_VIEW_NAMES } from '@liveplanner/api-schema';
 import { readPlainTab, recordCopy, type ReadCopy } from '../copies';
 import { defineVerb, type VerbContext } from '../define';
 import { shortestUniquePrefixes } from '../refs';
@@ -142,37 +141,5 @@ export const tabView = defineVerb({
       'liveplanner tab view 3f9c --view show --ref orders',
     ],
     prints: 'the view as the api serves it',
-  },
-});
-
-export const tabLint = defineVerb({
-  id: 'tab.lint',
-  summary: 'The diagram lint: what is wrong with how the tab is drawn',
-  description:
-    'Prints the diagram lint of a tab: a summary line, then one finding a line, each ending with a fix as edit operations. Exits 1 when a finding is an error.',
-  behaviour: 'read',
-  input: z.object({
-    doc: z.string().describe('A name, id prefix or liveplanner URL'),
-    tab: tabFlag,
-  }),
-  output: z.object({ findings: z.array(z.unknown()), errors: z.number(), text: z.string() }),
-  listKey: 'findings',
-  run: async (ctx, input) => {
-    const { document, tab } = await tabOf(ctx, input.doc, input.tab);
-    const report = await ctx.api.json<LintReport>(
-      `${tabPath(document.id, tab.id)}?view=lint&json=1`,
-    );
-    return {
-      findings: report.findings,
-      errors: report.counts.error,
-      text: formatLintReport(report),
-    };
-  },
-  text: ({ text }) => [text],
-  exitCode: ({ errors }) => (errors > 0 ? 1 : 0),
-  cli: {
-    positionals: ['doc'],
-    examples: ['liveplanner tab lint "Auth flow"', 'liveplanner tab lint 3f9c --tab Overview'],
-    prints: 'the lint summary line, then one finding a line',
   },
 });

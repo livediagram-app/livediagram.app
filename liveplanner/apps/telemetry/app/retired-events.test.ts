@@ -11,6 +11,12 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('Element', 'Changed', 'Video')).toBe(false);
   });
 
+  it('retires the diagram lint view, keeping the other agent views', () => {
+    expect(isRetiredEvent('Agent', 'Viewed', 'Lint')).toBe(true);
+    expect(isRetiredEvent('Cli', 'Used', 'TabLint')).toBe(true);
+    expect(isRetiredEvent('Agent', 'Viewed', 'Outline')).toBe(false);
+  });
+
   it('retires the Activity panel events', () => {
     expect(isRetiredEvent('Document', 'Reverted', null)).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'Activity')).toBe(true);

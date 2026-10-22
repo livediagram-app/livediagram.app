@@ -264,14 +264,8 @@ describe('submitting a changeset', () => {
     const { db } = await setUp();
     const res = await submit(db, { operations: 'set a fill=green\nconnect a -> b label=next' });
     expect(res.status).toBe(200);
-    const body = (await res.json()) as {
-      text: string;
-      lint: { measures: { boxes: number } } | null;
-    };
-    expect(body.text.split('\n').at(-1)).toMatch(
-      /^rev 1→2 · cs_\w+ · lint (clean|\d+ \w+(, \d+ \w+)*) · revert: /,
-    );
-    expect(body.lint).toMatchObject({ measures: { boxes: 2, arrows: 1 } });
+    const body = (await res.json()) as { text: string };
+    expect(body.text.split('\n').at(-1)).toMatch(/^rev 1→2 · cs_\w+ · revert: /);
     expect(body.text.split('\n').slice(0, 2)).toEqual([
       '~ a  fill →green · textSize →md',
       '+ next  a→b "next"',
@@ -295,8 +289,7 @@ describe('submitting a changeset', () => {
     expect(await res.json()).toMatchObject({
       dryRun: true,
       changeset: null,
-      text: expect.stringMatching(/dry run · rev 1 · lint clean · nothing written$/),
-      lint: { counts: { error: 0, warning: 0, info: 0 }, measures: { boxes: 1 } },
+      text: expect.stringMatching(/dry run · rev 1 · nothing written$/),
     });
     expect(stored(db).map((e) => e.id)).toEqual(['a', 'b']);
     expect(records(db)).toEqual([]);
@@ -471,7 +464,6 @@ describe('reverting', () => {
       reverted: 1,
       kept: [],
       changeset: { rev: 3 },
-      lint: { measures: { boxes: 2 } },
     });
     expect(stored(db).map((e) => e.id)).toEqual(['a', 'b']);
     expect(records(db)[1]).toMatchObject({ revert_of: cs.changeset.id, token_id: null, added: 1 });

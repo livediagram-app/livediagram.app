@@ -101,7 +101,7 @@ export function formatResultLines(results: readonly ResultLine[]): string[] {
 
 // The last line: what was written and how to take it back, or that a dry run wrote nothing (EO44).
 export function formatResultFooter(footer: ResultFooter): string {
-  if (footer.dryRun) return `dry run · rev ${footer.rev} · ${footer.lint} · nothing written`;
+  if (footer.dryRun) return `dry run · rev ${footer.rev} · nothing written`;
   const rebased =
     footer.rebasedOver > 0
       ? ` · rebased over ${footer.rebasedOver} write${footer.rebasedOver === 1 ? '' : 's'}`
@@ -109,7 +109,6 @@ export function formatResultFooter(footer: ResultFooter): string {
   return [
     `rev ${footer.previousRev}→${footer.rev}${rebased}`,
     footer.changesetId,
-    footer.lint,
     `revert: liveplanner changeset revert ${footer.documentId} ${footer.changesetId}`,
   ].join(' · ');
 }

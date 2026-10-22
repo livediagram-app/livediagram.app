@@ -67,10 +67,9 @@ function host(options: { refuse?: () => Response | undefined } = {}) {
           : { id: 'cs_1', tabId: 'main', rev: state.current.rev, previousRev, rebasedOver: 0 },
         results: [],
         text: dryRun
-          ? 'dry run · rev 5 · lint clean · nothing written'
-          : `+ n2  square "B"\nrev ${previousRev}→${state.current.rev} · cs_1 · lint clean · revert: liveplanner changeset revert ${DOC} cs_1`,
+          ? 'dry run · rev 5 · nothing written'
+          : `+ n2  square "B"\nrev ${previousRev}→${state.current.rev} · cs_1 · revert: liveplanner changeset revert ${DOC} cs_1`,
         warnings: state.requests.at(-1)!.base ? [] : ['no_base'],
-        lint: null,
       });
     }
     return undefined;
@@ -95,7 +94,7 @@ describe('writing from the CLI', () => {
     const edit = await cli(io, ['edit', 'Auth flow', '-f', 'ops.txt', '--summary', 'Add B']);
     expect(edit).toEqual({
       code: 0,
-      out: `+ n2  square "B"\nrev 5→6 · cs_1 · lint clean · revert: liveplanner changeset revert ${DOC} cs_1\n`,
+      out: `+ n2  square "B"\nrev 5→6 · cs_1 · revert: liveplanner changeset revert ${DOC} cs_1\n`,
       err: '',
     });
     expect(state.requests[0]).toMatchObject({
@@ -116,7 +115,7 @@ describe('writing from the CLI', () => {
     const io = session(route, { stdin: 'rm n1' });
     expect(await cli(io, ['edit', 'Auth flow', '-f', '-', '--dry-run'])).toEqual({
       code: 0,
-      out: 'dry run · rev 5 · lint clean · nothing written\n',
+      out: 'dry run · rev 5 · nothing written\n',
       err: 'warning: no_base\n',
     });
   });

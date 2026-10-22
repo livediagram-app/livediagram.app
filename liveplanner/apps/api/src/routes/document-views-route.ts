@@ -6,7 +6,6 @@ import {
   INVALID_VIEW_VALUE_ERROR,
   isTabViewName,
   isViewDoor,
-  LINT_VIEW_NAME,
   tabEtag,
   TAB_VIEW_NAMES,
   UNKNOWN_VIEW_ERROR,
@@ -18,8 +17,6 @@ import {
   type ViewDoor,
   type ViewQueryParameter,
 } from '@liveplanner/api-schema';
-import { formatLintReport, lintTab } from '@liveplanner/diagram-lint';
-import { lintLog } from '../changesets/lint';
 import { isKnownElement } from '@liveplanner/document';
 import {
   FIND_QUERY_MAX_LENGTH,
@@ -43,8 +40,6 @@ import type { DocumentDTO, Env, TabDTO } from '../types';
 import type { RouteContext } from './context';
 
 export type ParsedView = { request: ViewRequest; json: boolean };
-// `view=lint` (docs/specs/024-agents/diagram-lint.md): answered by the lint, not by `renderView`.
-type ParsedLintView = { lint: true; json: boolean };
 
 type Scope = 'tab' | 'document';
 
@@ -70,43 +65,15 @@ function unknownView(view: string, scope: Scope): Response {
   const message =
     view === 'diff'
       ? 'diff is computed by the CLI: liveplanner tab diff'
-      : view === LINT_VIEW_NAME
-        ? 'the lint is a tab view: GET …/tabs/:tabId?view=lint'
-        : `view takes ${names.join(', ')} here`;
+      : `view takes ${names.join(', ')} here`;
   return refuse('view', UNKNOWN_VIEW_ERROR, message);
 }
 
 // The view a request asks for, a 400 naming what is wrong, or null for the plain read.
-// `view=lint` takes only `json=1` (blueprint "Interfaces and contracts").
-function parseLintQuery(query: URLSearchParams): ParsedLintView | Response {
-  for (const parameter of new Set(query.keys())) {
-    if (parameter !== VIEW_QUERY.view && parameter !== VIEW_QUERY.json)
-      return refuse(
-        parameter,
-        INVALID_VIEW_VALUE_ERROR,
-        `${parameter} does not apply to view lint`,
-      );
-  }
-  const jsonFlag = query.get(VIEW_QUERY.json);
-  if (jsonFlag !== null && jsonFlag !== '1')
-    return refuse('json', INVALID_VIEW_VALUE_ERROR, 'json takes 1');
-  return { lint: true, json: jsonFlag === '1' };
-}
-
-// The lint is a tab view only.
-export function parseViewQuery(url: URL, scope: 'document'): ParsedView | Response | null;
-export function parseViewQuery(
-  url: URL,
-  scope: 'tab',
-): ParsedView | ParsedLintView | Response | null;
-export function parseViewQuery(
-  url: URL,
-  scope: Scope,
-): ParsedView | ParsedLintView | Response | null {
+export function parseViewQuery(url: URL, scope: Scope): ParsedView | Response | null {
   const query = url.searchParams;
   const view = query.get(VIEW_QUERY.view);
   if (view === null) return null;
-  if (scope === 'tab' && view === LINT_VIEW_NAME) return parseLintQuery(query);
   const tabView = isTabViewName(view);
   if (scope === 'tab' ? !tabView : view !== 'overview') return unknownView(view, scope);
   const name = tabView ? view : 'overview';
@@ -177,8 +144,7 @@ export function parseViewQuery(
   return { request, json: flag('json') === true };
 }
 
-const TITLE_CASE: Record<DocumentViewName | TabViewName | typeof LINT_VIEW_NAME, string> = {
-  lint: 'Lint',
+const TITLE_CASE: Record<DocumentViewName | TabViewName, string> = {
   overview: 'Overview',
   outline: 'Outline',
   graph: 'Graph',
@@ -188,10 +154,7 @@ const TITLE_CASE: Record<DocumentViewName | TabViewName | typeof LINT_VIEW_NAME,
   find: 'Find',
 };
 
-function countViewed(
-  ctx: RouteContext,
-  view: DocumentViewName | TabViewName | typeof LINT_VIEW_NAME,
-): void {
+function countViewed(ctx: RouteContext, view: DocumentViewName | TabViewName): void {
   const { env } = ctx;
   ctx.waitUntil?.(reportServerEvent(env, 'Agent', 'Viewed', TITLE_CASE[view]));
 }
@@ -206,26 +169,6 @@ function logUnknownKinds(tab: TabDTO): void {
   }
   if (unknown.size > 0)
     viewsLog('info', '[views] unknown kinds', { tab: tab.id, ...Object.fromEntries(unknown) });
-}
-
-// The lint of a tab (docs/specs/024-agents/diagram-lint.md "Where it runs"), as text or (`json=1`) the
-// report. A lint that throws answers 500 with `lint unavailable` and logs `[lint] failed` (LN23).
-function answerLintView(
-  ctx: RouteContext,
-  parsed: ParsedLintView,
-  document: DocumentDTO,
-  tab: TabDTO,
-): Response {
-  let report;
-  try {
-    report = lintTab(tab, { log: lintLog({ documentId: document.id, tabId: tab.id }) });
-  } catch (err) {
-    console.error('[lint] failed', { where: 'view', tab: tab.id, error: String(err) });
-    return json({ error: 'lint_failed', message: 'lint unavailable' }, { status: 500 });
-  }
-  countViewed(ctx, LINT_VIEW_NAME);
-  const headers = { ETag: tabEtag(tab.rev) };
-  return parsed.json ? json(report, { headers }) : textPlain(formatLintReport(report), { headers });
 }
 
 // What the caller has selected on the tab now, for `show selected` only (blueprint "REST"): the `mine` selections
@@ -258,12 +201,11 @@ async function ownerSelection(
 // A tab view, after the tab GET's gate and redaction; `owner` is the caller the GET resolved.
 export async function answerTabView(
   ctx: RouteContext,
-  parsed: ParsedView | ParsedLintView,
+  parsed: ParsedView,
   document: DocumentDTO,
   tab: TabDTO,
   owner: string,
 ): Promise<Response> {
-  if ('lint' in parsed) return answerLintView(ctx, parsed, document, tab);
   const selected = await ownerSelection(ctx, parsed.request, document.id, tab.id, owner);
   const started = Date.now();
   const rendered = renderView(parsed.request, tab, {

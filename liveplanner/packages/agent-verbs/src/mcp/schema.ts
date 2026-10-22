@@ -588,8 +588,8 @@ export const updateDocumentShape = {
     .max(EDITS_MAX_CHARS)
     .optional()
     .describe(
-      'ops mode, instead of "ops": edit operations, one a line, applied all or nothing. The language the lint ' +
-        'fixes are written in. Operations: add <kind> [id=<id>] key=value… [placement]; set <sel> key=value… ' +
+      'ops mode, instead of "ops": edit operations, one a line, applied all or nothing. ' +
+        'Operations: add <kind> [id=<id>] key=value… [placement]; set <sel> key=value… ' +
         '[all]; rm <sel> [all] [keep-arrows]; move <sel> <placement>|by=dx,dy; connect <a> -> <b> [label=…] ' +
         '[line=straight|angled|curved]; rewire <arrow> from=<x> to=<y>; insert <kind> key=value… between <a> <b> ' +
         '(puts a node on the a→b arrow and makes room); wrap <sel…> in frame|lane [label=…] [tidy]; unwrap ' +

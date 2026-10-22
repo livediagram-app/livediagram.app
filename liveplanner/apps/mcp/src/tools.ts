@@ -60,8 +60,6 @@ import {
   textResult,
   type Extra,
 } from './tool-helpers';
-import { lintLineOf, lintReportsOf, lintTextOf } from './lint-summary';
-import { withoutFindings } from '@liveplanner/diagram-lint';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue } from './element-values';
 import { packFreehandPoints } from './freehand-points';
@@ -154,8 +152,6 @@ export function registerTools(server: McpServer, env: Env): void {
     // Every template tab's elements: their Plan boards bring their card types
     // (docs/specs/026-plan/plan-templates.md "Card types a template uses").
     const templateElements: Tab['elements'] = [];
-    // The tabs a template made, whose colours are its own.
-    const templateTabIds = new Set<string>();
     for (const [index, given] of inputTabs.entries()) {
       const tabId = crypto.randomUUID();
       // A template tab's name follows the templates' rule; any other unnamed tab is "Tab n".
@@ -184,10 +180,7 @@ export function registerTools(server: McpServer, env: Env): void {
           t.theme ?? args.theme,
         );
         tabs.push(...made);
-        for (const m of made) {
-          templateElements.push(...m.elements);
-          templateTabIds.add(m.id);
-        }
+        for (const m of made) templateElements.push(...m.elements);
         continue;
       }
       // A Dashboard (docs/specs/026-plan/plan-agents.md "Making a dashboard"): made once every other tab is, so it
@@ -256,12 +249,6 @@ export function registerTools(server: McpServer, env: Env): void {
       }),
     });
     const tabIds = tabs.map((t) => t.id);
-    // A template's colours are its design, not the agent's doing (diagram-lint.md "Where it runs"): its tabs' lint
-    // names none.
-    const reports = (await lintReportsOf(env, token, id, tabIds)).map((r, i) =>
-      r && templateTabIds.has(tabIds[i]!) ? withoutFindings(r, 'colour-on-themed') : r,
-    );
-    const lint = reports.map(lintLineOf);
     return imageResult(
       {
         id,
@@ -271,11 +258,9 @@ export function registerTools(server: McpServer, env: Env): void {
         tabIds,
         folder: await createdFolderLabel(env, token, created),
         url: deepLink(env, id),
-        lint,
       },
       tabs[0]!,
       { env, token },
-      reports.map(lintTextOf),
     );
   });
 
@@ -359,12 +344,10 @@ export function registerTools(server: McpServer, env: Env): void {
         changesetId: answer.changeset?.id ?? null,
         rev: tab.rev,
         text: mcpResultText(answer.text),
-        lint: lintLineOf(answer.lint),
         ...templateNote(args.template),
       },
       tab,
       { env, token },
-      [lintTextOf(answer.lint)],
     );
   });
 
@@ -429,11 +412,6 @@ export function registerTools(server: McpServer, env: Env): void {
       token,
       `/documents/${encodeURIComponent(args.documentId)}/tabs/${encodeURIComponent(tabId)}`,
     );
-    // An edit that changed nothing records no changeset and so carries no lint: the tab's own lint is read instead, so
-    // the answer still says what is wrong with it rather than "lint unavailable".
-    const lint =
-      answer.lint ??
-      (answer.changeset ? null : (await lintReportsOf(env, token, args.documentId, [tabId]))[0]!);
     return imageResult(
       {
         id: args.documentId,
@@ -443,11 +421,9 @@ export function registerTools(server: McpServer, env: Env): void {
         changesetId: answer.changeset?.id ?? null,
         rev: next.rev,
         text: mcpResultText(answer.text, contentOrigin(tab.elements)),
-        lint: lintLineOf(lint),
       },
       next,
       { env, token },
-      [lintTextOf(lint)],
     );
   });
 

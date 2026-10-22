@@ -3,8 +3,7 @@
 // `@liveplanner/document-views` (docs/specs/024-agents/blueprints/document-views.md, VW49).
 import type { Finish, TabKind } from '@liveplanner/document';
 
-// Every view. `lint` is answered by `@liveplanner/diagram-lint` (docs/specs/024-agents/diagram-lint.md), not
-// by `renderView`; it takes only `json`.
+// Every view.
 export const VIEW_NAMES = [
   'overview',
   'outline',
@@ -14,9 +13,7 @@ export const VIEW_NAMES = [
   'show',
   'find',
   'diff',
-  'lint',
 ] as const;
-export const LINT_VIEW_NAME = 'lint' satisfies ViewName;
 export type ViewName = (typeof VIEW_NAMES)[number];
 
 // What each api door serves. `diff` has no api door: the CLI computes it from its cache.

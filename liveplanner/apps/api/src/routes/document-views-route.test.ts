@@ -257,46 +257,6 @@ describe('show selected over REST (R27)', () => {
   });
 });
 
-describe('the lint over REST', () => {
-  it('answers the lint as text with the tab revision, and counts it', async () => {
-    quiet();
-    const db = await setUp();
-    const res = await tabView(db, 'view=lint');
-    expect(res.status).toBe(200);
-    expect(res.headers.get('Content-Type')).toBe('text/plain; charset=utf-8');
-    expect(res.headers.get('ETag')).toBe('W/"1"');
-    const text = await res.text();
-    expect(text.split('\n')[0]).toMatch(/^0 crossings · 0 behind · 0 overlaps · \d+×\d+ → /);
-    expect(logged('[lint] run')).toMatchObject({
-      documentId: 'D',
-      tabId: 't1',
-      source: 'tab',
-      elements: 6,
-    });
-    await settled();
-    expect(viewed(db)).toEqual(['Lint']);
-  });
-
-  it('answers the report as JSON with json=1', async () => {
-    quiet();
-    const db = await setUp();
-    const res = await tabView(db, 'view=lint&json=1');
-    expect(res.status).toBe(200);
-    const report = (await res.json()) as { measures: { boxes: number }; findings: unknown[] };
-    expect(report.measures.boxes).toBe(4);
-    expect(Array.isArray(report.findings)).toBe(true);
-  });
-
-  it('stays behind the read gate', async () => {
-    quiet();
-    const db = await setUp();
-    const stranger = { owner: 'user_stranger' };
-    const plain = await call(db, 'GET', '/api/documents/D/tabs/t1', undefined, stranger);
-    expect(plain.status).toBe(403);
-    expect((await tabView(db, 'view=lint', stranger)).status).toBe(plain.status);
-  });
-});
-
 describe('ref refusals over REST (R4, R5, E17, E18)', () => {
   it('answers 404 with the nearest refs for a ref that names nothing', async () => {
     quiet();
@@ -369,25 +329,13 @@ describe('parseViewQuery (VW43)', () => {
     });
   });
 
-  it('refuses views the door does not serve, naming diff and lint', async () => {
+  it('refuses views the door does not serve, naming diff', async () => {
     quiet();
     expect(await refusal('view=diff')).toEqual({
       error: 'unknown_view',
       message: 'diff is computed by the CLI: liveplanner tab diff',
     });
-    expect(await refusal('view=lint', 'document')).toMatchObject({
-      message: 'the lint is a tab view: GET …/tabs/:tabId?view=lint',
-    });
-    expect(parse('view=lint')).toEqual({ lint: true, json: false });
-    expect(parse('view=lint&json=1')).toEqual({ lint: true, json: true });
-    expect(await refusal('view=lint&budget=10')).toEqual({
-      error: 'invalid_value',
-      message: 'budget does not apply to view lint',
-    });
-    expect(await refusal('view=lint&json=2')).toEqual({
-      error: 'invalid_value',
-      message: 'json takes 1',
-    });
+    expect(await refusal('view=lint')).toMatchObject({ error: 'unknown_view' });
     expect(await refusal('view=overview')).toMatchObject({
       error: 'unknown_view',
       message: expect.stringContaining('outline, graph'),

@@ -14,9 +14,8 @@ const written = {
   dryRun: false,
   changeset: { id: 'cs_1', tabId: 'tab-one-0000', rev: 6, previousRev: 5, rebasedOver: 1 },
   results: [],
-  text: '- n1  square "A"\nrev 5→6 · cs_1 · lint clean · revert: liveplanner changeset revert d cs_1',
+  text: '- n1  square "A"\nrev 5→6 · cs_1 · revert: liveplanner changeset revert d cs_1',
   warnings: [],
-  lint: null,
 };
 
 function recording() {

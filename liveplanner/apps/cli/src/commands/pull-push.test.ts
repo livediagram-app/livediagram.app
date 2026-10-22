@@ -80,7 +80,6 @@ function host(
           results: [],
           text: 'nothing changed',
           warnings: [],
-          lint: null,
         });
       const rev = (stored?.rev ?? 0) + 1;
       if (!dryRun)
@@ -97,7 +96,6 @@ function host(
         results: [],
         text: `~ replaced ${tabId}`,
         warnings: [],
-        lint: null,
       });
     }
     if (!stored) return Response.json({ error: 'not_found' }, { status: 404 });

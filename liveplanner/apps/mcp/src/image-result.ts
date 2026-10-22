@@ -179,7 +179,7 @@ function usesItalic(elements: Tab['elements']): boolean {
   );
 }
 
-// `notes` are short text blocks after the structured result, such as the lint summary line.
+// `notes` are short text blocks after the structured result.
 export async function imageResult(
   value: StructuredValue,
   tab: Tab,

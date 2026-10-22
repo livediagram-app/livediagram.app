@@ -135,7 +135,7 @@ describe('useChangesetFeed', () => {
   });
 
   it('Undo reverts each changeset of the burst newest first, then says what it kept', async () => {
-    apiRevertChangeset.mockResolvedValue({ changeset: null, reverted: 1, kept: [], lint: null });
+    apiRevertChangeset.mockResolvedValue({ changeset: null, reverted: 1, kept: [] });
     const { result, press, lastToast } = setup();
     act(() => result.current.receiveChangeset(op()));
     act(() => result.current.receiveChangeset(op({ id: 'cs_0000000002', rev: 3, prevRev: 2 })));
@@ -149,7 +149,7 @@ describe('useChangesetFeed', () => {
   });
 
   it('raises no toast for the revert its own Undo relays back', async () => {
-    apiRevertChangeset.mockResolvedValue({ changeset: null, reverted: 1, kept: [], lint: null });
+    apiRevertChangeset.mockResolvedValue({ changeset: null, reverted: 1, kept: [] });
     const { result, press, toast } = setup();
     act(() => result.current.receiveChangeset(op()));
     await press('Undo');

@@ -145,7 +145,7 @@ A changeset answers with one line per element, the same for a dry run (`?dryRun=
 + arrow  verify→n4 (style of a3)
 » n4 n5 n6  +0,+160 (make room)
 f2  +verify
-rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: liveplanner changeset revert 3f9c2a71-… cs_8k2m4q7d1x
+rev 41→42 · cs_8k2m4q7d1x · revert: liveplanner changeset revert 3f9c2a71-… cs_8k2m4q7d1x
 ```
 
 | Mark          | Means                                                     |
@@ -157,7 +157,7 @@ rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: liveplanner changeset reve
 | `f2  +verify` | A frame or lane's membership changed                      |
 | `!`           | A warning                                                 |
 
-The last line carries the tab's new revision, the changeset's id, the lint verdict and the command that reverts it. A changeset that changes nothing answers `nothing changed`.
+The last line carries the tab's new revision, the changeset's id and the command that reverts it. A changeset that changes nothing answers `nothing changed`.
 
 **Warnings** do not stop a changeset: `shape_coerced` (an unknown shape kind became a known one), `value_coerced`, `label_capped` (a shape's label over 40 characters kept its heading and moved the full text into the note), `colour_overrides_theme`, `arrows_freed` (from `keep-arrows`), and `no_base` (sent without a `base` revision).
 
@@ -193,37 +193,3 @@ nothing was applied
 | `elements_held`      | Someone has a target selected in the editor                   |
 | `invalid_result`     | The result would not be a valid tab                           |
 | `too_large`          | Over 500 operations, or the tab's size cap                    |
-
-## Lint Findings
-
-Every changeset lints the whole tab it leaves behind, and `GET /documents/{id}/tabs/{tabId}?view=lint` (or `liveplanner tab lint`) lists the findings, each ending with a fix you can send as a changeset:
-
-```text
-5 crossings · 2 behind · 0 overlaps · 1317×1196 → 3 warnings, 6 info
-W arrow-behind-box   orders→bus passes behind pay  fix: set orders->bus line=angled
-```
-
-| Code                | Severity | Finding                                                          | Suggested fix                              |
-| ------------------- | -------- | ---------------------------------------------------------------- | ------------------------------------------ |
-| `box-overlap`       | error    | Two boxes that arrows connect partly overlap                     | `move b right-of:a`                        |
-| `arrow-dangling`    | error    | An arrow is pinned to an element that is gone                    | `rm <arrow>`                               |
-| `arrow-behind-box`  | warning  | An arrow passes through a box it does not connect                | `set <arrow> line=angled`                  |
-| `edge-crossings`    | warning  | More crossing arrow pairs than a quarter of the arrows           | `layout type:shape`                        |
-| `label-collision`   | warning  | An arrow's label overlaps a box                                  | A shorter arrow label                      |
-| `label-overflow`    | warning  | A label needs more lines than its box holds                      | `text=sm`, or a shorter label and a `note` |
-| `node-isolated`     | warning  | A shape with no arrows, on a tab that is otherwise a graph       | `connect <ref> -> a`                       |
-| `group-escape`      | warning  | A member lies outside its frame                                  | `move a inside:<frame>`                    |
-| `group-split-edges` | info     | Most of a frame's arrows cross its border                        | `unwrap <frame>`                           |
-| `duplicate-label`   | info     | Two boxes share a label                                          | Rename one                                 |
-| `flow-backwards`    | info     | An arrow points against the drawing's flow                       | `rewire <arrow> from=y to=x`               |
-| `aspect-extreme`    | info     | The drawing is more than 3 times wider than tall, or the reverse | `layout type:shape direction=down`         |
-| `colour-on-themed`  | info     | A fill or stroke the theme would not paint, bound to no swatch   | `set a fill=` to give it back to the theme |
-
-Boxes no arrow connects count as decoration and may overlap; the group checks judge frames, not lanes. Above 300 arrows the crossing check is skipped (the summary says so) and every other check still runs. The verdict on a changeset's last line reads `lint clean` or, say, `lint 2 warnings, 1 info`.
-
-<Tip>
-  Send a changeset with `?dryRun=1` first while you learn the vocabulary: the answer and the lint
-  are exactly what a write would give, and nothing changes.
-</Tip>
-
-</ArticleLayout>

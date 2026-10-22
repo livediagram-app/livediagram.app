@@ -71,7 +71,7 @@ export const changesetApply = defineVerb({
       'liveplanner edit "Auth flow" -f ops.txt',
       'liveplanner changeset apply 3f9c -f - --dry-run < ops.txt',
     ],
-    prints: 'one result line per element, then the revision, lint verdict and revert command',
+    prints: 'one result line per element, then the revision and revert command',
   },
 });
 
@@ -139,7 +139,7 @@ function elementVerb(op: ElementOperation): Verb {
         `liveplanner element ${op} "Auth flow" ${example}`,
         `liveplanner element ${op} 3f9c ${example} --dry-run`,
       ],
-      prints: 'one result line per element, then the revision, lint verdict and revert command',
+      prints: 'one result line per element, then the revision and revert command',
     },
   });
 }

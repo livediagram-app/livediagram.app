@@ -45,7 +45,6 @@ describe('formatResultLines', () => {
       rebasedOver: 0,
       changesetId: 'cs_8k2m4q7d1x',
       documentId: 'd-auth',
-      lint: 'lint clean',
     });
     expect([...formatResultLines(results), footer].join('\n')).toBe(
       [
@@ -56,7 +55,7 @@ describe('formatResultLines', () => {
         '+ arrow  verify→n4 (style of a3)',
         '» n4 n5 n6 n7 n8  +0,+160 (make room)',
         'f2  +verify',
-        'rev 41→42 · cs_8k2m4q7d1x · lint clean · revert: liveplanner changeset revert d-auth cs_8k2m4q7d1x',
+        'rev 41→42 · cs_8k2m4q7d1x · revert: liveplanner changeset revert d-auth cs_8k2m4q7d1x',
       ].join('\n'),
     );
   });
@@ -136,8 +135,8 @@ describe('formatResultLines', () => {
 
 describe('formatResultFooter', () => {
   it('prints a dry run', () => {
-    expect(formatResultFooter({ dryRun: true, rev: 41, lint: 'lint unavailable' })).toBe(
-      'dry run · rev 41 · lint unavailable · nothing written',
+    expect(formatResultFooter({ dryRun: true, rev: 41 })).toBe(
+      'dry run · rev 41 · nothing written',
     );
   });
 
@@ -147,10 +146,9 @@ describe('formatResultFooter', () => {
       previousRev: 41,
       changesetId: 'cs_1',
       documentId: 'd1',
-      lint: 'x',
     };
     expect(formatResultFooter({ ...write, rev: 44, rebasedOver: 3 })).toBe(
-      'rev 41→44 · rebased over 3 writes · cs_1 · x · revert: liveplanner changeset revert d1 cs_1',
+      'rev 41→44 · rebased over 3 writes · cs_1 · revert: liveplanner changeset revert d1 cs_1',
     );
     expect(formatResultFooter({ ...write, rev: 43, rebasedOver: 1 })).toContain(
       'rebased over 1 write ·',

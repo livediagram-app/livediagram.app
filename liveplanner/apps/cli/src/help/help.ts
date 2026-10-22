@@ -74,7 +74,6 @@ export function topHelp(): string {
     'Start',
     '  liveplanner document ls auth        find a document',
     '  liveplanner tab view "Auth flow"    its first tab, as an outline',
-    '  liveplanner tab lint "Auth flow"    what is wrong with how it is drawn',
     '  liveplanner guide edit              change a tab with edit operations',
     '',
     'Sign in: LIVEPLANNER_TOKEN, or auth login --with-token. Never prompts.',

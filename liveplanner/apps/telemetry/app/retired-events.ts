@@ -330,6 +330,10 @@ const AGENT_ICON_SEARCH = new Set(['Mcp|Used|SearchIcons', 'Cli|Used|IconSearch'
 const isElementUsedInPlace = (category: string, action: string) =>
   category === 'Element' && action === 'Used';
 
+// The diagram lint (removed 2026-10-22, plans/0001-liveplanner-fork.md Phase 4): the agents' `view=lint` and the CLI's
+// `tab lint`.
+const DIAGRAM_LINT_EVENTS = new Set(['Agent|Viewed|Lint', 'Cli|Used|TabLint']);
+
 // liveplanner's diagram tours and palette (removed 2026-10-22, plans/0001-liveplanner-fork.md Phase 4): the element
 // tours offered beside a selected diagram element, the Tab Style dialog's Show Me, their Settings switches, and the
 // strip palette's Icons, Stickers and Technology searches and groups. Each tour's events carry its token as the type
@@ -377,6 +381,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (isRetiredDiagramTourEvent(category, action, type)) return true;
   if (AGENT_ICON_SEARCH.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isElementUsedInPlace(category, action)) return true;
+  if (DIAGRAM_LINT_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Document' && action === 'Reverted') return true;
   if (EXPLORER_TIMELINE.has(`${category}|${action}|${type ?? ''}`)) return true;

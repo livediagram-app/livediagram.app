@@ -22,7 +22,7 @@ const verb = (id: string): Verb => verbById(id)!;
 
 describe('didYouMean', () => {
   it('names the nearest word within two edits, or nothing', () => {
-    expect(didYouMean('vew', ['ls', 'view', 'lint'])).toBe('view');
+    expect(didYouMean('vew', ['ls', 'view', 'diff'])).toBe('view');
     expect(didYouMean('documnet', ['document', 'tab'])).toBe('document');
     expect(didYouMean('zzzzzz', ['document', 'tab'])).toBeNull();
   });
@@ -37,9 +37,9 @@ describe('route', () => {
       rest: ['edit'],
     });
     expect(route(['doc'])).toEqual({ kind: 'resource', resource: 'document' });
-    expect(route(['tab', 'lint', 'x'])).toMatchObject({
+    expect(route(['tab', 'view', 'x'])).toMatchObject({
       kind: 'verb',
-      verb: { id: 'tab.lint' },
+      verb: { id: 'tab.view' },
       rest: ['x'],
     });
   });

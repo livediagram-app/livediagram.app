@@ -69,7 +69,6 @@ A view answers one question about a tab at the lowest token cost:
   comments  open threads; --all adds resolved ones
   show      one element in full: --ref n3
   find      elements whose text matches: --text api
-  lint      what is wrong with how it is drawn: liveplanner tab lint
 
   liveplanner tab view "Auth flow" --view graph --budget 2000
 
