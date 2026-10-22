@@ -5,11 +5,10 @@
 
 /**
  * The editor's own bottom chrome: the tab bar, the bottom-right cluster (Undo / Redo, the Session strip's Timer, Vote
- * and Poll, Layers, Zoom) and the whiteboard dock. The sign-in banner stands on it, so it never covers them
+ * and Poll, Layers, Zoom). The sign-in banner stands on it, so it never covers them
  * (docs/specs/014-identity/sign-in-encouragement.md "Where it shows").
  */
-export const BOTTOM_CHROME_SELECTOR =
-  '[data-editor-tabbar], [data-zoom-cluster], [data-whiteboard-dock]';
+export const BOTTOM_CHROME_SELECTOR = '[data-editor-tabbar], [data-zoom-cluster]';
 
 /** Bottom chrome the stack clears: the editor's, plus anything that opts in with `data-toast-floor`. */
 export const TOAST_FLOOR_SELECTOR = `[data-toast-floor], ${BOTTOM_CHROME_SELECTOR}`;

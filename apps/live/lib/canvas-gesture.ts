@@ -9,8 +9,7 @@ import { useSyncExternalStore } from 'react';
 import { debugLog } from './debug-log';
 import { createListeners } from '@/lib/listeners';
 
-export type CanvasGesture =
-  'pan' | 'zoom' | 'move' | 'resize' | 'reshape' | 'marquee' | 'stroke' | 'erase';
+export type CanvasGesture = 'pan' | 'zoom' | 'move' | 'resize' | 'reshape' | 'marquee' | 'stroke';
 
 type CanvasGestureState = CanvasGesture | 'idle';
 
@@ -20,7 +19,6 @@ export const ELEMENT_GESTURES: ReadonlySet<CanvasGesture> = new Set([
   'resize',
   'reshape',
   'stroke',
-  'erase',
 ]);
 
 // A wheel has no end event: a wheel pan or zoom ends this long after its last wheel event
