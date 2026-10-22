@@ -2,17 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { renderElementsToSvg } from './svg-render';
 import { createShape, createText } from './factories';
 import { wrapLabel } from './svg-render-primitives';
-import type { ShapeElement, Tab } from './index';
+import type { Tab } from './index';
 
 // Faces export the way the canvas draws them (docs/specs/020-import-export/export-fidelity.md).
-
-const shape = (kind: string, overrides: Partial<ShapeElement> = {}): ShapeElement => ({
-  ...createShape(kind as ShapeElement['shape'], 0, 0),
-  id: `el-${kind}`,
-  ...overrides,
-});
-const svgOf = (el: ShapeElement, background?: string) =>
-  renderElementsToSvg({ id: 't', name: 'T', elements: [el] }, { background });
 
 describe('Face export', () => {
   it('draws an arrow whose stored head shape this build does not know with the default head', () => {
@@ -36,16 +28,6 @@ describe('Face export', () => {
       ],
     });
     expect(svg).toContain('<polygon');
-  });
-
-  it('starts a page label under the masthead, and turns back its corner', () => {
-    const el = shape('page', { label: 'Body', pageTitle: 'Doc', pageSubtitle: 'Sub' });
-    const svg = svgOf(el, '#0d121a');
-    const bodyY = Number(/<text x="[\d.]+" y="([\d.]+)"[^<>]*font-size="14"/.exec(svg)?.[1]);
-    const ruleY = Number(/<path d="M 26 ([\d.]+) L/.exec(svg)?.[1]);
-    expect(bodyY).toBeGreaterThan(ruleY);
-    // The cut corner shows the paper under the page.
-    expect(svg).toContain('fill="#0d121a"/><path');
   });
 });
 

@@ -21,7 +21,6 @@ import {
   StickersTabIcon,
   TechTabIcon,
   WriteTabIcon,
-  ParticipateTabIcon,
 } from '@livedocuments/ui';
 import { Glyph } from '@livedocuments/ui';
 
@@ -69,15 +68,6 @@ export const PALETTE_CATEGORIES: {
     icon: <PopularTabIcon />,
   },
   {
-    // Participate (docs/specs/013-workspace/share-roles.md): a Participant's whole palette, what it may add. In no
-    // mode's layout: participantPaletteCategories offers it, and only to a Participant.
-    id: 'participate',
-    label: 'Participate',
-    fullWidth: true,
-    description: 'Add stickies and text to the board.',
-    icon: <ParticipateTabIcon />,
-  },
-  {
     id: 'shapes',
     label: 'Shapes',
     group: 0,
@@ -88,7 +78,7 @@ export const PALETTE_CATEGORIES: {
     id: 'write',
     label: 'Write',
     group: 0,
-    description: 'The wordy elements: pages, text, sticky notes, annotations and pointer notes.',
+    description: 'The wordy elements: text, sticky notes and pointer notes.',
     icon: <WriteTabIcon />,
   },
 
@@ -113,7 +103,7 @@ export const PALETTE_CATEGORIES: {
     id: 'build',
     label: 'Build',
     group: 1,
-    description: 'The structural elements: frames, stacks, tables, and Sankey diagrams.',
+    description: 'The structural elements: stacks, tables, and Sankey diagrams.',
     icon: <BuildTabIcon />,
   },
   {

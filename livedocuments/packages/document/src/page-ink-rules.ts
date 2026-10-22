@@ -47,7 +47,6 @@ const BOX_KINDS = new Set<string>([
   'parallelogram',
   'hexagon',
   'document',
-  'page',
   'callout',
   'card',
   'stadium',
@@ -56,7 +55,6 @@ const BOX_KINDS = new Set<string>([
   'trapezoid',
   'star',
   'speech-bubble',
-  'frame',
   'foldable',
 ]);
 // Shapes drawn straight onto what they sit on, in their stroke (the accent) and text colours.
@@ -74,7 +72,7 @@ const ACCENT_INK_KINDS = new Set<string>([
 const CHART_KINDS = new Set<string>(['pie-chart', 'bar-chart', 'line-chart', 'sankey']);
 
 /** How re-inking treats an element:
- *  - `box`: a fill under a label (a shape box, a closed filled path or sketch, an annotation);
+ *  - `box`: a fill under a label (a shape box, a closed filled path or sketch);
  *  - `ink`: lines and text straight on its ground (text, arrows, open paths, icons, charts);
  *  - `table`: its grid and text;
  *  - `keep`: left as it is (its colours are what it is, its text on its own surface). */
@@ -87,8 +85,6 @@ export function inkKindOf(el: Element): InkKind {
       return 'ink';
     case 'table':
       return 'table';
-    case 'annotation':
-      return 'box';
     case 'freehand':
       if (el.pen === 'highlighter') return 'keep';
       return el.closed ? 'box' : 'ink';

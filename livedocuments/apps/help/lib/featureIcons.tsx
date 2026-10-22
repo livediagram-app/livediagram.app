@@ -18,7 +18,6 @@ import {
   lucidePencilLine,
   lucideRoute,
   lucideSearch,
-  lucideSparkles,
   lucideSquarePlus,
   lucideStarHalf,
   lucideUsers,
@@ -340,12 +339,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M3 12h4l2 5 4-12 2 7h6" />
     </Glyph>
   ),
-  ai: (
-    <Glyph>
-      <path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z" />
-      <path d="M19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14z" />
-    </Glyph>
-  ),
   'markdown-import': (
     <Glyph>
       <rect x="3" y="6" width="18" height="12" rx="2" />
@@ -624,8 +617,8 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <Prims prims={lucideCircleDot} />
     </Glyph>
   ),
-  // The last ten cards: the slide-deck trio, Locking a Tab, the two Tools
-  // cleanups, Ask and Clean, and the three User Interface guides. With these the
+  // The last cards: the slide-deck trio, Locking a Tab, the two Tools
+  // cleanups, and the three User Interface guides. With these the
   // catalogue is fully drawn, and the category fallback becomes a safety net for
   // cards not yet written rather than something a reader actually sees.
   'building-a-deck': (
@@ -669,12 +662,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M14 6h4a2 2 0 012 2v2" />
       <rect x="13" y="14" width="8" height="6" rx="1.5" />
       <path d="M15 14v-1.5a2 2 0 014 0V14" />
-    </Glyph>
-  ),
-  // Two helpers, not one: a question asked, and a sweep that tidies.
-  'ai-tools': (
-    <Glyph>
-      <Prims prims={lucideSparkles} />
     </Glyph>
   ),
   // An element snapped onto the grid, with the nudge that put it there. Drawn as
@@ -1205,14 +1192,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M5.5 11.5h1M8 11.5h6M5.5 14.5h1M8 14.5h5" />
     </Glyph>
   ),
-  frames: (
-    <Glyph>
-      <path d="M3.5 7.5V6a1.5 1.5 0 011.5-1.5h4.5V7.5" />
-      <rect x="3.5" y="7.5" width="17" height="12.5" rx="1.5" />
-      <rect x="6.5" y="10.5" width="5" height="4" rx="1" />
-      <circle cx="16" cy="15.5" r="2" />
-    </Glyph>
-  ),
   technology: (
     <Glyph>
       <Prims prims={lucideCpu} />
@@ -1221,12 +1200,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
   drawing: (
     <Glyph>
       <Prims prims={lucidePencilLine} />
-    </Glyph>
-  ),
-  annotations: (
-    <Glyph>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 8v4M12 16h.01" />
     </Glyph>
   ),
   layers: (

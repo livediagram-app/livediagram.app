@@ -7,7 +7,6 @@ import {
   PALETTE_LAYOUTS,
   paletteCategoriesFor,
   paletteLandingCategory,
-  participantTiles,
 } from './palette-layouts';
 import { tileById, tilesForCategory } from './palette-tile-defs';
 
@@ -41,14 +40,6 @@ describe('palette layouts', () => {
     expect(tileIds('concepts')).toContain('tools:timeline');
   });
 
-  it('gives a Participant Sticky and Text, and an image', () => {
-    expect(participantTiles().map((t) => t.id)).toEqual([
-      'tools:sticky',
-      'tools:text',
-      'tools:image',
-    ]);
-  });
-
   it('narrows Pages to the categories a visual page is made of', () => {
     expect(ids()).toEqual([
       'popular',
@@ -73,17 +64,11 @@ describe('palette layouts', () => {
     expect(tileIds('write')).toEqual(['tools:text', 'tools:sticky', 'tools:pointer-note']);
   });
 
-  it('leaves mind nodes, lanes, frames, annotations and entities out of Pages', () => {
+  it('leaves mind nodes, lanes, frames and entities out of Pages', () => {
     const everywhere = paletteCategoriesFor('pages').flatMap((c) =>
       (c.tiles ?? []).map((t) => t.id),
     );
-    for (const id of [
-      'tools:mind-node',
-      'tools:lane',
-      'tools:frame',
-      'tools:annotation',
-      'tools:entity',
-    ]) {
+    for (const id of ['tools:mind-node', 'tools:lane', 'tools:entity']) {
       expect(everywhere, id).not.toContain(id);
     }
     // No Build: its three page tiles sit in Components and Data.

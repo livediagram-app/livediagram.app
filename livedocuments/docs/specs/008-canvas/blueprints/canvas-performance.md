@@ -105,7 +105,7 @@ Derived from [Canvas performance](../canvas-performance.md). The measurements it
   layer) carries it; every child that sizes by zoom reads `useCanvasZoom()`: `ShapeHitOutline`,
   `RemoteSelectorsStrip`, `ElementIndicators`, `LockBadge`, `SelectionChromeLayer`,
   `PhotoDraftRing` and `PhotoMatchedBadge` (`photo-badges.tsx`), `RichTextEditor` (mounted only
-  while editing), `HeroCaptionCard`, `TableView`, `PageMasthead` and the web faces. A stroke's
+  while editing), `HeroCaptionCard`, `TableView` and the web faces. A stroke's
   hit band is `StrokeHitPath`: `FreehandSvg` and `PathSvg` take `hitPenWidth` and only that
   path reads the zoom, so a zoom re-renders no ink. `BrowserChrome` takes no zoom.
 - `ArrowView` takes `frame: ArrowViewFrame` and `holes: Rect[]` in place of `elementIndex` and
@@ -235,7 +235,7 @@ queryElementGrid(grid, arrowBounds))`. `arrowViewPropsEqual` compares `frame` wi
 
 ### The Map is one image
 
-- `Minimap`'s memo builds the board's markup (`svgBoxed` / `svgArrow`, frames first, arrows on
+- `Minimap`'s memo builds the board's markup (`svgBoxed` / `svgArrow`, stacks first, arrows on
   top) and wraps it in a standalone document over the padded content box (`PAD_FRACTION`,
   `PAD_MIN`): `<svg xmlns viewBox width height>` + `svgShadowDefs(elements)` + the markup. Arrowheads
   are inline polygons and masks travel with their arrows, so nothing references the page's defs.
@@ -445,7 +445,7 @@ export function budgetIssueComment(report: BudgetIssueReport): string;
 | `end()` called twice                              | No-op                                                                                     |
 | A gesture never ends (a lost pointerup)           | `useEditorDrag`'s existing `pointerup` on window ends it; the Map unfreezes with it       |
 | An element with `NaN` or infinite bounds          | Not bucketed; `[element-grid] skipped element` logged once per id                         |
-| A giant element (a frame over the whole board)    | Oversize list, returned by every query                                                    |
+| A giant element (a stack over the whole board)    | Oversize list, returned by every query                                                    |
 | Arrow-to-arrow and group-anchored ends            | Resolved by `deriveArrowViewFrame` as today; the frame compares by value                  |
 | A hidden layer                                    | The Map's input is memoised; hidden elements stay out of the grid (`drawnElements`)       |
 | A remote edit during a local drag                 | The Map stays frozen until the drag ends, then shows the latest elements                  |

@@ -7,10 +7,10 @@ import {
   activeCommentCount,
   elementActions,
   isClosedAction,
-  type AnnotationElement,
+  type ArticleNoteElement,
 } from '@livedocuments/document';
 
-export function ArticleNoteFace({ element }: { element: AnnotationElement }) {
+export function ArticleNoteFace({ element }: { element: ArticleNoteElement }) {
   if (element.articleNote === 'action') {
     const actions = elementActions(element);
     const done = actions.length > 0 && actions.every(isClosedAction);

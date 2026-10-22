@@ -45,15 +45,13 @@ function isBoxedEl(el: Element): el is Boxed {
 const NOT_HOSTS = new Set([
   'badge',
   'step',
-  'annotation',
-  'frame',
   // Containers too: a mark belongs on what a stack holds, not on the stack's outline, which reflows under it.
   'stack',
 ]);
 
 /** Whether an element can hold a badge or a step number. */
 export function canHost(el: Element): boolean {
-  if (!isBoxedEl(el) || el.type === 'annotation') return false;
+  if (!isBoxedEl(el) || el.type === 'article-note') return false;
   return !(el.type === 'shape' && NOT_HOSTS.has(el.shape));
 }
 

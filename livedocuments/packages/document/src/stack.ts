@@ -186,7 +186,7 @@ function settlePass(elements: Element[]): { next: Element[]; grew: boolean } {
       const dx = l.at[i]!.x - k.x;
       const dy = l.at[i]!.y - k.y;
       if (dx === 0 && dy === 0) return;
-      // The child carries what it holds (a frame's or a nested stack's contents), as a drag would.
+      // The child carries what it holds (a nested stack's contents), as a drag would.
       for (const id of containerContents(current, new Set([k.id]), holders)) {
         if (!deltas.has(id)) deltas.set(id, { dx, dy });
       }

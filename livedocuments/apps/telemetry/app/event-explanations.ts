@@ -14,15 +14,6 @@
 // can send gets a real sentence, free of code names and jargon.
 
 export const EXACT: Readonly<Record<string, string>> = {
-  'AI|Toggled|AiOff': 'Someone turned off the AI Assistant panel, in Settings under AI Tools.',
-  'AI|Toggled|AiOn': 'Someone turned on the AI Assistant panel, in Settings under AI Tools.',
-  'AI|Toggled|AiSuggestedPromptsOff': 'Someone turned off Suggested Prompts for the AI Assistant.',
-  'AI|Toggled|AiSuggestedPromptsOn':
-    "Someone turned on Suggested Prompts, the row of one-click starter prompts under the AI Assistant's mode buttons.",
-  'AI|Used|Ask':
-    'Someone asked the AI Assistant a question about the active tab and got an answer.',
-  'AI|Used|Clean':
-    "Someone used the AI Assistant's Clean mode to tidy up a tab's labels, sizes, and styles.",
   'Action|Changed|Edited':
     "Someone edited the details of an action assigned to an element, without changing who it's assigned to.",
   'Action|Changed|Reassigned':
@@ -1675,7 +1666,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'An agent showed itself on a tab, with what it is doing, through the MCP server, the CLI or the API.',
   'Agent|Reverted':
     "An agent's changeset was undone, from the editor's toast or another front door.",
-  'Mcp|Used': 'An AI tool connected to livedocuments over MCP used one of its actions on a document.',
+  'Mcp|Used':
+    'An AI tool connected to livedocuments over MCP used one of its actions on a document.',
   'Note|Added': 'A note was added to an element (first non-empty save).',
   'Cli|Used': 'Someone ran a livedocuments command from the command line, and it succeeded.',
   'Note|Changed': "An existing note's text was edited.",

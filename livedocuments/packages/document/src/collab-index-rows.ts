@@ -13,7 +13,7 @@
 // save be a replace rather than a diff.
 
 import type { Comment } from './comments';
-import { ACTION_CARD_MAX, elementActions, isClosedAction } from './element-action';
+import { elementActions, isClosedAction } from './element-action';
 import { elementDisplayLabel } from './element-display-label';
 import { isBoxed, type Element } from './index';
 
@@ -70,9 +70,7 @@ export function collabIndexRowsFromElements(elements: Element[]): CollabIndexRow
     // §1, docs/specs/008-canvas/canvas-and-palette.md), which is also what gives them a display label.
     if (!isBoxed(el)) continue;
     // One row per action elementActions reads.
-    // Capped like the stored list, so the index stays bounded even for a tab
-    // written before the cap existed.
-    for (const action of elementActions(el).slice(0, ACTION_CARD_MAX)) {
+    for (const action of elementActions(el)) {
       actions.push({
         elementId: el.id,
         actionId: action.id,

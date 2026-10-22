@@ -32,7 +32,6 @@ vi.mock('../auth/document-access', () => gates);
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocumentRoomRoutes } from './document-room-routes';
 import { personTagFor } from '../person-tag';
-import { adderKeyFor } from '../adder-key';
 import { signOwnerId } from '../auth/owner-signature';
 
 // A DOCUMENT_ROOM binding that records the Request it was handed, so a test can
@@ -279,7 +278,6 @@ describe('POST room-ticket', () => {
       account: true,
       personTag: await personTagFor('d1', 'user_1'),
       workbenchPairing: 'pair-1',
-      adderKey: null,
     });
   });
 
@@ -297,7 +295,6 @@ describe('POST room-ticket', () => {
       account: false,
       personTag: null,
       workbenchPairing: null,
-      adderKey: null,
     });
   });
 
@@ -315,7 +312,6 @@ describe('POST room-ticket', () => {
       account: false,
       personTag: null,
       workbenchPairing: null,
-      adderKey: null,
     });
   });
 
@@ -405,7 +401,6 @@ describe('WebSocket upgrade: tab scope', () => {
       account: false,
       personTag: null,
       workbenchPairing: null,
-      adderKey: null,
     });
   });
 });
@@ -539,7 +534,6 @@ describe('person tag', () => {
       account: true,
       personTag: 'tag1',
       workbenchPairing: 'pair-1',
-      adderKey: null,
     });
     const ticketed = roomEnv();
     await handleDocumentRoomRoutes(
@@ -563,9 +557,8 @@ describe('person tag', () => {
     expect(spoofed.seen[0]!.headers.get('X-Verified-Workbench-Pairing')).toBe('');
   });
 
-  // docs/specs/013-workspace/share-roles.md "Integrity": a Participant's ticket carries its adder key, which the
-  // upgrade forwards; every other leg forwards none, whatever the client sent.
-  it("mints a Participant's ticket with its adder key, and nobody else's", async () => {
+  // docs/specs/013-workspace/share-roles.md "Integrity": a Participant's ticket is a ticket like any other.
+  it("mints a Participant's ticket with nothing beside it", async () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'other', teamId: null });
     gates.resolveDocumentGrant.mockResolvedValue({
       role: 'participate',
@@ -575,26 +568,15 @@ describe('person tag', () => {
     const minted = await handleDocumentRoomRoutes(
       makeTestRouteContext('POST', '/api/documents/d1/room-ticket', { owner: 'visitor' }),
     );
-    const key = await adderKeyFor('d1', 'visitor');
-    expect(await minted!.json()).toEqual({ ticket: 'TICKET-1', adderKey: key });
+    expect(await minted!.json()).toEqual({ ticket: 'TICKET-1' });
     expect(db.createWsTicket).toHaveBeenCalledWith(
       expect.anything(),
       'd1',
-      expect.objectContaining({ role: 'participate', adderKey: key }),
-    );
-    db.createWsTicket.mockClear();
-    gates.resolveDocumentGrant.mockResolvedValue({ role: 'edit', tabScope: null, shareCode: 'C' });
-    await handleDocumentRoomRoutes(
-      makeTestRouteContext('POST', '/api/documents/d1/room-ticket', { owner: 'visitor' }),
-    );
-    expect(db.createWsTicket).toHaveBeenCalledWith(
-      expect.anything(),
-      'd1',
-      expect.objectContaining({ adderKey: null }),
+      expect.objectContaining({ role: 'participate' }),
     );
   });
 
-  it('stamps X-Verified-Adder from the ticket and X-Verified-Document on every leg', async () => {
+  it('stamps X-Verified-Document on every leg', async () => {
     db.getDocumentMeta.mockResolvedValue({ ownerId: 'owner-uuid', teamId: null });
     db.consumeWsTicket.mockResolvedValue({
       role: 'participate',
@@ -603,7 +585,6 @@ describe('person tag', () => {
       account: false,
       personTag: null,
       workbenchPairing: null,
-      adderKey: 'k'.repeat(32),
     });
     const ticketed = roomEnv();
     await handleDocumentRoomRoutes(
@@ -614,7 +595,6 @@ describe('person tag', () => {
       }),
     );
     expect(ticketed.seen[0]!.headers.get('X-Verified-Role')).toBe('participate');
-    expect(ticketed.seen[0]!.headers.get('X-Verified-Adder')).toBe('k'.repeat(32));
     expect(ticketed.seen[0]!.headers.get('X-Verified-Document')).toBe('d1');
 
     db.getShareLink.mockResolvedValue({ documentId: 'd1', role: 'participate' });
@@ -622,12 +602,11 @@ describe('person tag', () => {
     await handleDocumentRoomRoutes(
       makeTestRouteContext('GET', '/api/documents/d1/ws?s=CODE1234', {
         owner: null,
-        headers: { Upgrade: 'websocket', 'X-Verified-Adder': 'forged', 'X-Verified-Document': 'x' },
+        headers: { Upgrade: 'websocket', 'X-Verified-Document': 'x' },
         env: spoofed.env,
       }),
     );
     expect(spoofed.seen[0]!.headers.get('X-Verified-Role')).toBe('participate');
-    expect(spoofed.seen[0]!.headers.get('X-Verified-Adder')).toBe('');
     expect(spoofed.seen[0]!.headers.get('X-Verified-Document')).toBe('d1');
   });
 });

@@ -15,7 +15,6 @@ afterEach(() => {
 
 const action = (status: 'open' | 'done' = 'open', mine = false): ActionRow => ({
   elementId: 'el-1',
-  actionId: 'a-1',
   label: 'Payments API',
   actionName: 'Confirm the retry budget',
   status,

@@ -45,7 +45,7 @@ clearance margin:
   the flush case bow), except samples within 26 px of their own endpoint,
   since the curve necessarily starts on the element's boundary.
 - Obstacles that contain an endpoint (an arrow drawn out of overlapping
-  elements, or members inside a frame) are unclearable and ignored.
+  elements, or members inside a stack) are unclearable and ignored.
 - If the straight chord is clear, the arrow stays straight (`null`).
 - Otherwise both perpendicular sides are searched in 8 px steps up to a
   280 px control offset (a ~140 px visual bow); the smaller clearing offset

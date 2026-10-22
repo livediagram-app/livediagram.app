@@ -1,5 +1,5 @@
 // Factories for every element type EXCEPT shapes: text, tables, stickies,
-// annotations, link cards, videos, images, freehand strokes and arrows, plus
+// link cards, videos, images, freehand strokes and arrows, plus
 // scaleElements. The shape kind table and createShape moved to
 // './shape-factory' when this file reached 719 lines.
 //
@@ -9,7 +9,6 @@
 import {
   isBoxed,
   type Anchor,
-  type AnnotationElement,
   type LinkCardElement,
   type EmbedProvider,
   type VideoElement,
@@ -73,26 +72,6 @@ export function createSticky(x: number, y: number): StickyElement {
     width: 200,
     height: 200,
     textSize: 'md',
-  };
-}
-
-// Fixed marker size for an annotation (see docs/specs/009-elements/annotations.md). It never resizes, so
-// this is its size for life; `inheritedSizeFor` keeps it at this regardless
-// of the current selection.
-const ANNOTATION_SIZE = 44;
-
-// A note marker dropped at (x, y). The note text starts empty — the user
-// clicks the marker to add it. Aspect-locked by default so resizing keeps
-// the marker round (docs/specs/009-elements/annotations.md).
-export function createAnnotation(x: number, y: number): AnnotationElement {
-  return {
-    id: crypto.randomUUID(),
-    type: 'annotation',
-    x,
-    y,
-    width: ANNOTATION_SIZE,
-    height: ANNOTATION_SIZE,
-    aspectLocked: true,
   };
 }
 

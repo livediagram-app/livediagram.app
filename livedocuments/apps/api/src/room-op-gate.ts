@@ -6,8 +6,10 @@ import { scopedSenderMayRelay } from './room-scope';
 type OpGate =
   /** Never relayed, never answered. */
   | { kind: 'drop' }
-  /** A Participant's `el` op: through the participant content rule, never relayed as sent. */
+  /** A Participant's `el` op: through the participant content rule (text only), never relayed as sent. */
   | { kind: 'participant-content' }
+  /** A Participant's `article` frame: through the participant writing rule, never relayed as sent. */
+  | { kind: 'participant-article' }
   /** Relayed: unordered when `presence`. */
   | { kind: 'relay'; presence: boolean };
 
@@ -39,14 +41,16 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // document's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
   const presence = isPresenceOpKind(opKind);
-  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's `el` op
-  // goes through the participant content rule and never relays as sent; everything else needs an Editor.
+  // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's `el` op and
+  // `article` frame go through the participant rules (text only) and never relay as sent; everything else needs an
+  // Editor.
   const level = parseStoredLevel(sender.role);
   // A Viewer only looks (docs/specs/013-workspace/share-roles.md): of the presence class, a reaction is taking
   // part, so it needs a Participant.
   if (level === 'view' && opKind === 'reaction') return DROP;
   if (!presence && level !== 'edit') {
     if (level === 'participate' && opKind === 'el') return { kind: 'participant-content' };
+    if (level === 'participate' && opKind === 'article') return { kind: 'participant-article' };
     return DROP;
   }
   // A drag preview (docs/specs/008-canvas/drag-preview.md) is presence, but shows elements moving: only

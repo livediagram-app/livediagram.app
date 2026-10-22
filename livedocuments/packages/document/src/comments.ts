@@ -158,11 +158,10 @@ export function stampCommentAuthor(
 //
 // Also what an element fingerprint leaves out (docs/specs/024-agents/agent-changesets.md): people
 // change these through deltas that never conflict with an agent's edit.
-export const LIVE_ELEMENT_FIELDS = ['commentThread', 'action', 'actions'] as const;
+export const LIVE_ELEMENT_FIELDS = ['commentThread', 'action'] as const;
 type LiveFieldBag = {
   commentThread?: CommentThread;
   action?: ElementAction;
-  actions?: ElementAction[];
 };
 
 function applyLiveField<K extends keyof LiveFieldBag>(

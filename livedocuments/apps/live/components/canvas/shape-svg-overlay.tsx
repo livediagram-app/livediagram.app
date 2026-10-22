@@ -42,16 +42,13 @@ export function isSvgRenderedShape(kind: ShapeKind): boolean {
   // routed to the plain HTML box path instead, so it renders a square box rather
   // than an invisible node. Valid kinds keep their existing routing.
   if (!SHAPE_KINDS.has(kind)) return false;
-  // A page (docs/specs/009-elements/page-element.md) is a plain rectangle with a fill and a border, so it
-  // belongs on the CSS box path with square — the SVG overlay has no case for
-  // it and would draw an invisible element. This predicate is allow-BY-DEFAULT,
-  // so a new CSS-drawn kind left off it renders as a transparent nothing.
+  // This predicate is allow-BY-DEFAULT, so a new CSS-drawn kind left off it
+  // renders as a transparent nothing.
   return (
     kind !== 'square' &&
     kind !== 'circle' &&
     kind !== 'stadium' &&
     kind !== 'browser' &&
-    kind !== 'page' &&
     // A pointer note (docs/specs/009-elements/pointer-note.md) is a CSS box, its leader drawn by an overlay.
     kind !== 'pointer-note' &&
     // A stack (docs/specs/009-elements/stack.md) is a CSS box (a dashed outline) behind what it holds.
@@ -112,13 +109,6 @@ export function ShapeSvgOverlay({
       strokeDasharray: dash,
       vectorEffect: 'non-scaling-stroke',
       strokeLinejoin: 'round',
-    },
-    outline: {
-      fill: effectiveFill,
-      stroke,
-      strokeWidth,
-      strokeDasharray: dash,
-      vectorEffect: 'non-scaling-stroke',
     },
     detail: {
       fill: 'none',

@@ -43,7 +43,7 @@ const diagram = {
             {
               id: 'g',
               type: 'shape',
-              shape: 'frame',
+              shape: 'stack',
               label: 'Notifications',
               x: 0,
               y: 200,

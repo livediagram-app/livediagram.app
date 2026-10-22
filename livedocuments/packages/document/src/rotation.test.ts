@@ -4,14 +4,13 @@ import { drawnBounds, rotationOf, supportsRotation } from './rotation';
 import { svgBoxed } from './svg-render';
 import type { BoxedElement, Element } from './index';
 
-// docs/specs/009-elements/blueprints/annotations.md [QD8]: Rotation is hidden for annotations.
 describe('supportsRotation', () => {
   it('lets a boxed element rotate', () => {
     expect(supportsRotation(createShape('square', 0, 0))).toBe(true);
   });
 
-  it('never rotates an annotation marker', () => {
-    const marker = { ...createShape('square', 0, 0), type: 'annotation' } as unknown as Element;
+  it('never rotates an article margin note', () => {
+    const marker = { ...createShape('square', 0, 0), type: 'article-note' } as unknown as Element;
     expect(supportsRotation(marker)).toBe(false);
   });
 
@@ -66,7 +65,7 @@ describe('drawnBounds', () => {
     expect(b.width).toBeCloseTo(2 * half);
   });
 
-  it('never turns an annotation marker, which does not rotate', () => {
-    expect(drawnBounds(bar(90, 'annotation'))).toEqual({ x: 20, y: 45, width: 60, height: 10 });
+  it('never turns a margin note, which does not rotate', () => {
+    expect(drawnBounds(bar(90, 'article-note'))).toEqual({ x: 20, y: 45, width: 60, height: 10 });
   });
 });

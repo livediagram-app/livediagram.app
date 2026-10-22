@@ -20,7 +20,6 @@ import type { Element, ShapeKind, Tab } from './index';
 // './index'), keeping this module out of the index ⇄ factories cycle.
 import { ALL_ANCHORS } from './arrow-types';
 import { isPenColourName } from './pen-colours';
-import { ADDER_KEY_LENGTH } from './adder';
 import { PAGE_HEADING_MAX } from './data-shapes';
 import { isQuickSwatchSlot } from './quick-swatches';
 import { isImageCredit } from './image-credit';
@@ -74,7 +73,7 @@ export const ELEMENT_TYPES = new Set([
   'sticky',
   'image',
   'freehand',
-  'annotation',
+  'article-note',
   'link-card',
   'video',
   'arrow',
@@ -94,10 +93,6 @@ export const SHAPE_KINDS = new Set<string>([
   'parallelogram',
   'hexagon',
   'document',
-  // Document element (docs/specs/009-elements/page-element.md): a paper-proportioned page you write
-  // prose into. Named 'page' internally because the flowchart output symbol
-  // above already owns 'document'.
-  'page',
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md).
   'banner',
   'callout',
@@ -123,7 +118,6 @@ export const SHAPE_KINDS = new Set<string>([
   'trapezoid',
   'star',
   'speech-bubble',
-  'frame',
   'browser',
   'monitor',
   'laptop',
@@ -172,12 +166,6 @@ const COMMON_FIELD_CHECKS: readonly FieldCheck[] = [
     valid: isElementKey,
     rule: `a string of at most ${ELEMENT_KEY_MAX} characters`,
   })),
-  // A Participant's adder key (docs/specs/013-workspace/share-roles.md), stamped by the server.
-  {
-    field: 'addedBy',
-    valid: (v) => typeof v === 'string' && v.length > 0 && v.length <= ADDER_KEY_LENGTH,
-    rule: `an adder key of 1 to ${ADDER_KEY_LENGTH} characters`,
-  },
 ];
 
 // An import's exact end and its own label width (docs/specs/008-canvas/arrow-anchors.md "Exact
@@ -340,7 +328,12 @@ function boxedIssue(el: Record<string, unknown>): ElementValidationIssue | null 
       return freehandIssue(el);
     case 'text':
       return firstFieldIssue(el, TEXT_FIELD_CHECKS);
-    // sticky / annotation / link-card / video carry no extra required fields.
+    // A margin note says what it holds (docs/specs/007-editor/article-pages.md "Comments and actions").
+    case 'article-note':
+      return el.articleNote === 'comment' || el.articleNote === 'action'
+        ? null
+        : issue('articleNote', oneOfRule(['comment', 'action']));
+    // sticky / link-card / video carry no extra required fields.
     default:
       return null;
   }

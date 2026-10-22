@@ -2,7 +2,7 @@
 
 // Read-only rendering of a rich-text note (docs/specs/009-elements/rich-text-notes.md). One component for every
 // place a note is shown without being edited: the read-only popover body for
-// view-role participants, and the annotation hover preview (docs/specs/009-elements/annotations.md).
+// view-role participants.
 //
 // Runs are painted as React elements, never as HTML — there is no
 // dangerouslySetInnerHTML anywhere on this path, so a note that arrived from

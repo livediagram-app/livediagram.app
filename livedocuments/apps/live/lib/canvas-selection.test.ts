@@ -203,14 +203,14 @@ describe('deriveCanvasSelection', () => {
     });
     // A lone table shows the pluses (the slimmed table ring, docs/specs/008-canvas/canvas-and-palette.md).
     expect(derive({ elements: [table('t')], selectedId: 't' }).showPlus).toBe(true);
-    // A frame shows them as well: it is a container you chain from, the same
-    // as a lane, which always did.
-    const frame = box('f', { shape: 'frame', width: 600, height: 400 });
-    expect(derive({ elements: [frame], selectedId: 'f' }).showPlus).toBe(true);
-    // An annotation marker is a note rather than a node to chain from.
+    // A stack shows them as well: it is a container you chain from.
+    const stack = box('f', { shape: 'stack', width: 600, height: 400 });
+    expect(derive({ elements: [stack], selectedId: 'f' }).showPlus).toBe(true);
+    // A margin note is a note rather than a node to chain from.
     const marker: Element = {
       id: 'n',
-      type: 'annotation',
+      type: 'article-note',
+      articleNote: 'comment',
       x: 0,
       y: 0,
       width: 24,

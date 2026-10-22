@@ -7,7 +7,6 @@ Follow the references below only as needed; never upfront.
 - ./start-diagramming.md - when working on an empty tab's template start (Start Making Pages): when it shows, Recommended and groups, search, the palette tray's Show Templates, the hidden first page and deletable last page, the tour waiting, its look
 - ./new-document-route.md - when working on Dedicated route for new-document creation: The welcome / create-new flow at `/new`, split from the editor
 - ./user-preferences.md - when working on User preferences: Per-user editor preference flags (footer settings dialog)
-- ./ai-assistance.md - when working on AI Assistance: Optional AI assistant (Build / Clean / Ask / Review) on the canvas
 - ./split-view.md - when working on Side by side tabs: dragging a tab to the right edge to open it beside the active tab, each tab keeping its side under one header, the editor following a click or a resting pointer between panes with no view jump, the live other pane, the drop zone and ghost, resizing, persistence
 - ./zen-mode.md - when working on Zen mode: Distraction-free focus mode: hide all chrome, keep canvas + zoom
 - ./panel-docking.md - when working on Panel corner docking: Choose which corner each corner panel (AI, Minimap, tool panels) sits in: desktop drag with snap-to-corner guides, free drop kept where released, stacking + reflow within a corner, device-local localStorage layout

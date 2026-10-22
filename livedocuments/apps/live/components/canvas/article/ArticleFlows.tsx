@@ -96,15 +96,16 @@ export function ArticleFlows({
   // Derived once per change of what they read (the writing, the selection, the board), never per
   // canvas render: `flows` keeps its identity while the writing does (articlesOf's cache).
   const flows = articles?.flows;
-  const editable = articles?.editable === true;
+  // Taking elements into the writing is reshaping it: an Editor's (docs/specs/013-workspace/share-roles.md).
+  const reshape = articles?.reshape === true;
   const zoneId = active?.focused ? active.selection.zoneId : null;
   const zoneFlow = active?.handle.flow ?? null;
   const target = useMemo(
     () =>
-      editable && flows
+      reshape && flows
         ? zoneTarget(openByFlow, flows, zoneId, zoneFlow, selectedIds, elements)
         : null,
-    [editable, flows, openByFlow, zoneId, zoneFlow, selectedIds, elements],
+    [reshape, flows, openByFlow, zoneId, zoneFlow, selectedIds, elements],
   );
   const articlePages = useMemo(
     () => row.flatMap((p) => (p.flow && !held.has(p.flow) ? [{ id: p.id, flow: p.flow }] : [])),
@@ -117,10 +118,8 @@ export function ArticleFlows({
   });
   const floating = useMemo(
     () =>
-      editable && flows && !target
-        ? floatingTarget(openByFlow, flows, selectedIds, elements)
-        : null,
-    [editable, flows, target, openByFlow, selectedIds, elements],
+      reshape && flows && !target ? floatingTarget(openByFlow, flows, selectedIds, elements) : null,
+    [reshape, flows, target, openByFlow, selectedIds, elements],
   );
   // A drawing zone cuts off what of its drawing pokes past its edge; what is being moved shows
   // whole until it lands (it may be leaving the zone).
@@ -210,6 +209,7 @@ export function ArticleFlows({
                 atPageLimit={row.length >= MAX_PAGES}
                 doc={doc}
                 editable={writable(flow)}
+                reshape={articles.reshape && writable(flow)}
                 interactive={interactive}
                 zoom={zoom}
                 ink={inkOf(
@@ -239,7 +239,7 @@ export function ArticleFlows({
             );
           })}
         </Suspense>
-        {articles.editable ? (
+        {articles.reshape ? (
           <Suspense fallback={null}>
             <PageToolbar
               accent={view.themeAccent}

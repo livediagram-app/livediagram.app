@@ -183,15 +183,15 @@ page's rectangle, so elements can be placed on it.
 ## Element types
 ${types}
 
-Boxed elements (shape, text, sticky, table, image, annotation) carry:
+Boxed elements (shape, text, sticky, table, image) carry:
   id, type, x, y, width, height, and an optional "label" (string).
   - "shape" is the element for a NODE — a labelled box, the default building
     block of almost every diagram. It also needs "shape": one of
     ${shapeKinds}. The default box / process step is "square" (a rounded
     rectangle that fills its width × height) — there is NO "rectangle" kind.
     Use "diamond" for a decision, "cylinder" for a datastore, "stadium" for a
-    start/end, "circle", "hexagon", "parallelogram" for I/O, and "frame" for a
-    section container. An unknown kind is coerced to "square".
+    start/end, "circle", "hexagon", "parallelogram" for I/O. An unknown kind is
+    coerced to "square".
   - "text" is BARE text with no box, fill, or border. Use it ONLY for a
     free-standing title, caption, legend, or note — NEVER for a node. A node
     that has a label is a "shape" with a "label" (use shape: "square"), not a
@@ -354,7 +354,7 @@ export const readDocumentShape = {
     .optional()
     .describe(
       'How to read the tab. outline (default): one line per element with its ref, label and arrows, ' +
-        'nested by frame. graph: what connects to what. layout: where things sit. comments: open threads ' +
+        'nested by container. graph: what connects to what. layout: where things sit. comments: open threads ' +
         'in full. show: one element in full (needs ref). find: elements holding some text (needs q). ' +
         "pages: a Pages tab's pages with their rectangles, each article as Markdown, and the layouts on offer.",
     ),
@@ -532,13 +532,12 @@ export const updateDocumentShape = {
         'fixes are written in. Operations: add <kind> [id=<id>] key=value… [placement]; set <sel> key=value… ' +
         '[all]; rm <sel> [all] [keep-arrows]; move <sel> <placement>|by=dx,dy; connect <a> -> <b> [label=…] ' +
         '[line=straight|angled|curved]; rewire <arrow> from=<x> to=<y>; insert <kind> key=value… between <a> <b> ' +
-        '(puts a node on the a→b arrow and makes room); wrap <sel…> in frame|lane [label=…] [tidy]; unwrap ' +
-        '<frame>; order <sel> front|back; layout <sel> [style=flow|tree|mindmap] [direction=down|right]. ' +
-        'Selectors: a ref or id, "Label text", type:sticky, shape:diamond, in:<frame>, a->b, from:<x>, to:<x>, ' +
+        '(puts a node on the a→b arrow and makes room); unwrap <stack>; order <sel> front|back; layout <sel> [style=flow|tree|mindmap] [direction=down|right]. ' +
+        'Selectors: a ref or id, "Label text", type:sticky, shape:diamond, in:<stack>, a->b, from:<x>, to:<x>, ' +
         'downstream:<x>. Placement: right-of:<x> left-of:<x> above:<x> below:<x> [gap:<n>], after:<x>, ' +
-        'inside:<frame>, align:<x>, at:x,y; inside:<frame> right-of:<x> places beside x in that frame. A box placed ' +
-        'beside one inside a frame or lane joins it (the container grows); to stay outside, place it against the ' +
-        'frame itself (below:<frame>), with align:<x> to line it up with a member (below:<frame> align:<x>). ' +
+        'inside:<stack>, align:<x>, at:x,y; inside:<stack> right-of:<x> places beside x in that stack. A box placed ' +
+        'beside one inside a stack joins it (the stack grows); to stay outside, place it against the ' +
+        'stack itself (below:<stack>), with align:<x> to line it up with a member (below:<stack> align:<x>). ' +
         'Keys: label= note= shape= fill=theme|red|orange|yellow|green|blue|' +
         'violet (a sticky: classic|lemon|peach|rose|lilac|sky|mint|teal|slate) text=sm|md|lg border=solid|dashed|' +
         'dotted line=…, or any stored field by name. Values with spaces are quoted: label="Sign in". ' +
@@ -552,8 +551,8 @@ export const shareDocumentShape = {
     .enum(['view', 'participate', 'edit'])
     .optional()
     .describe(
-      'What the link grants. "participate" (default): recipients add stickies, write and vote ' +
-        'but cannot reshape it; right for a retro or a workshop. "view": they only look, ' +
+      'What the link grants. "participate" (default): recipients edit text and comment ' +
+        'but cannot add, move or restyle anything; right for a review. "view": they only look, ' +
         'with no comments or votes. "edit": they can change anything. No sign-in is needed to open any.',
     ),
   expiry: z

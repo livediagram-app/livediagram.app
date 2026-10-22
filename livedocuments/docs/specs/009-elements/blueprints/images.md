@@ -6,41 +6,41 @@ engineering precision. Defaults applied where the spec is silent are ledgered in
 
 Scope, by file:
 
-| File                                                 | Role                                                                    |
-| ---------------------------------------------------- | ----------------------------------------------------------------------- |
-| `packages/document/src/element-types.ts`             | `ImageElement`                                                          |
-| `packages/document/src/factories.ts`                 | `createImage`: the 200×150 placeholder, `aspectLocked: true`            |
-| `packages/document/src/validate.ts`                  | Structural check of an image element in a tab body                      |
-| `packages/document/src/svg-render-describe.ts`       | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius   |
-| `packages/document/src/svg-render.ts`                | Image branch: `svgImageShape`, else the dashed placeholder rect         |
-| `packages/document/src/svg-render-image-icon.ts`     | `svgImageShape`: clipped `<image>` over a white backing rect            |
-| `packages/api-schema/src/image-limits.ts`            | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` and their derived copy        |
-| `packages/api-schema/src/image-sniff.ts`             | `sniffImageType`: magic-number table                                    |
-| `packages/api-schema/src/embed-images.ts`            | `embedTabImages`, `tabImageIds`: server-side data-URL inlining          |
-| `packages/api-schema/src/sha256.ts`                  | `sha256Hex`, shared by editor and worker                                |
-| `packages/api-schema/src/index.ts`                   | `ImageSummary`                                                          |
-| `apps/api/migrations/0001_livedocuments_baseline.sql`    | `images` table and its two indexes                                      |
-| `apps/api/src/routes/images.ts`                      | `handleImages`: the five `/api/images*` routes; `parsePositiveCap`      |
-| `apps/api/src/db/images.ts`                          | D1 access; `insertImage` with atomic caps; usage and share read         |
-| `apps/api/src/image-row.ts`                          | `imageRowToSummary`                                                     |
-| `apps/api/src/image-sniff.ts`, `image-strip.ts`      | Upload boundary: sniff re-export, `stripJpegMetadata`                   |
-| `apps/api/src/index.ts`                              | Pre-dispatch size gate, write limiter, `scheduled()` retention hand-off |
-| `apps/api/src/thumbnail.ts`                          | `loadEmbeddedImages` for the preview and live image                     |
-| `apps/api/wrangler.toml`                             | `IMAGES` bucket (production and `[env.staging]`), caps comment          |
-| `apps/api/hosted-vars.json`                          | Hosted livedocuments.app's per-owner caps                                   |
-| `apps/live/lib/api/images.ts`                        | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
-| `apps/live/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
-| `apps/live/hooks/canvas/useEditorImages.ts`          | Picker state, attach, detach, place-from-gallery                        |
-| `apps/live/hooks/canvas/useClipboard.ts`             | `pasteImageFile`: Cmd/Ctrl+V image paste                                |
-| `apps/live/hooks/persistence/useImageBlobUrl.ts`     | Authenticated fetch to a revocable blob URL                             |
-| `apps/live/components/canvas/ImageElementView.tsx`   | Canvas face: placeholder, loading, broken, bitmap                       |
-| `apps/live/components/canvas/ImageEmptyFace.tsx`     | Empty placeholder: empty state + Select Image button                    |
-| `apps/live/components/panels/ImagePicker.tsx`        | Upload / Gallery modal, lazy via `EditorElementDialogs.tsx`             |
-| `apps/live/components/canvas/ImageDropZone.tsx`      | Drop, paste, file-input zone shared with the Explorer gallery           |
-| `apps/live/lib/export-tab-images.ts`                 | `loadTabImages`: client export prefetch                                 |
-| `apps/live/components/palette/palette-tile-defs.tsx` | `tools:image` tile (`needsImage: true`, shortcut `9`)                   |
-| `apps/live/app/document/[id]/useElementCreation.ts`  | `addImage`: arms the draw gesture                                       |
-| `apps/live/hooks/canvas/useShapeDrawing.ts`          | Commit of the draw: telemetry, selects the placeholder (no picker)      |
+| File                                                  | Role                                                                    |
+| ----------------------------------------------------- | ----------------------------------------------------------------------- |
+| `packages/document/src/element-types.ts`              | `ImageElement`                                                          |
+| `packages/document/src/factories.ts`                  | `createImage`: the 200×150 placeholder, `aspectLocked: true`            |
+| `packages/document/src/validate.ts`                   | Structural check of an image element in a tab body                      |
+| `packages/document/src/svg-render-describe.ts`        | `describeBoxedExport`: image `ExportShape` with `href` / fit / radius   |
+| `packages/document/src/svg-render.ts`                 | Image branch: `svgImageShape`, else the dashed placeholder rect         |
+| `packages/document/src/svg-render-image-icon.ts`      | `svgImageShape`: clipped `<image>` over a white backing rect            |
+| `packages/api-schema/src/image-limits.ts`             | `MAX_IMAGE_BYTES`, `ACCEPTED_IMAGE_TYPES` and their derived copy        |
+| `packages/api-schema/src/image-sniff.ts`              | `sniffImageType`: magic-number table                                    |
+| `packages/api-schema/src/embed-images.ts`             | `embedTabImages`, `tabImageIds`: server-side data-URL inlining          |
+| `packages/api-schema/src/sha256.ts`                   | `sha256Hex`, shared by editor and worker                                |
+| `packages/api-schema/src/index.ts`                    | `ImageSummary`                                                          |
+| `apps/api/migrations/0001_livedocuments_baseline.sql` | `images` table and its two indexes                                      |
+| `apps/api/src/routes/images.ts`                       | `handleImages`: the five `/api/images*` routes; `parsePositiveCap`      |
+| `apps/api/src/db/images.ts`                           | D1 access; `insertImage` with atomic caps; usage and share read         |
+| `apps/api/src/image-row.ts`                           | `imageRowToSummary`                                                     |
+| `apps/api/src/image-sniff.ts`, `image-strip.ts`       | Upload boundary: sniff re-export, `stripJpegMetadata`                   |
+| `apps/api/src/index.ts`                               | Pre-dispatch size gate, write limiter, `scheduled()` retention hand-off |
+| `apps/api/src/thumbnail.ts`                           | `loadEmbeddedImages` for the preview and live image                     |
+| `apps/api/wrangler.toml`                              | `IMAGES` bucket (production and `[env.staging]`), caps comment          |
+| `apps/api/hosted-vars.json`                           | Hosted livedocuments.app's per-owner caps                               |
+| `apps/live/lib/api/images.ts`                         | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
+| `apps/live/lib/upload-image.ts`                       | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
+| `apps/live/hooks/canvas/useEditorImages.ts`           | Picker state, attach, detach, place-from-gallery                        |
+| `apps/live/hooks/canvas/useClipboard.ts`              | `pasteImageFile`: Cmd/Ctrl+V image paste                                |
+| `apps/live/hooks/persistence/useImageBlobUrl.ts`      | Authenticated fetch to a revocable blob URL                             |
+| `apps/live/components/canvas/ImageElementView.tsx`    | Canvas face: placeholder, loading, broken, bitmap                       |
+| `apps/live/components/canvas/ImageEmptyFace.tsx`      | Empty placeholder: empty state + Select Image button                    |
+| `apps/live/components/panels/ImagePicker.tsx`         | Upload / Gallery modal, lazy via `EditorElementDialogs.tsx`             |
+| `apps/live/components/canvas/ImageDropZone.tsx`       | Drop, paste, file-input zone shared with the Explorer gallery           |
+| `apps/live/lib/export-tab-images.ts`                  | `loadTabImages`: client export prefetch                                 |
+| `apps/live/components/palette/palette-tile-defs.tsx`  | `tools:image` tile (`needsImage: true`, shortcut `9`)                   |
+| `apps/live/app/document/[id]/useElementCreation.ts`   | `addImage`: arms the draw gesture                                       |
+| `apps/live/hooks/canvas/useShapeDrawing.ts`           | Commit of the draw: telemetry, selects the placeholder (no picker)      |
 
 Out of this blueprint, cited where they touch images: the reference index and the retention sweep
 ([Image reference index](image-reference-index.md)), Offline Mode data-URI embedding
@@ -198,7 +198,7 @@ null or `data:` id references nothing.
 - The editor withholds `onAddImage` when the deployment has no images, which hides every
   `needsImage` tile (`tools:image`, avatar, hero) and the `9` shortcut. It learns this from
   `GET /api/capabilities` through the proposed field `imagesEnabled` `[QB1]`; the endpoint
-  reports only `aiEnabled` and `emailEnabled`.
+  reports only `emailEnabled` and the CLI fields.
 
 ## Interfaces and contracts
 
@@ -477,18 +477,18 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 
 ## Constants and configuration
 
-| Name                        | Value                                  | Provenance / safe range                                    |
-| --------------------------- | -------------------------------------- | ---------------------------------------------------------- |
-| `MAX_IMAGE_BYTES`           | `10 * 1024 * 1024`                     | Spec per-file cap; below the 100 MB Workers body limit     |
-| `MAX_IMAGE_MB`              | `10`                                   | Derived, for copy                                          |
-| `ACCEPTED_IMAGE_TYPES`      | png, jpeg, webp, gif                   | Spec whitelist; SVG must never join                        |
-| `MAX_BODY_BYTES`            | `8 * 1024 * 1024`                      | Non-image write cap in `limits.ts`                         |
-| `IMAGE_MAX_PER_OWNER`       | unset; hosted `"100"`                  | `hosted-vars.json`; positive integer or unset              |
-| `IMAGE_MAX_BYTES_PER_OWNER` | unset; hosted `"104857600"`            | `hosted-vars.json`; positive integer or unset              |
-| `IMAGE_EMBED_BUDGET_BYTES`  | `3 * 1024 * 1024`                      | Spec; 1 to 8 MiB keeps snapshots streamable                |
-| Read `Cache-Control`        | `private, max-age=86400`               | Spec; `private` is load-bearing                            |
-| Sniff window                | first 16 bytes, minimum 12             | Longest signature (WebP) needs 12                          |
-| Gallery placement size      | `240` px on the longer side            | D40; literal `max` in `addImageFromGallery`                |
-| `createImage` size          | 200 × 150                              | D49                                                        |
-| `WRITE_RATE_LIMITER`        | 300 per 60 s                           | `wrangler.toml`, namespace `1001`                          |
+| Name                        | Value                                      | Provenance / safe range                                    |
+| --------------------------- | ------------------------------------------ | ---------------------------------------------------------- |
+| `MAX_IMAGE_BYTES`           | `10 * 1024 * 1024`                         | Spec per-file cap; below the 100 MB Workers body limit     |
+| `MAX_IMAGE_MB`              | `10`                                       | Derived, for copy                                          |
+| `ACCEPTED_IMAGE_TYPES`      | png, jpeg, webp, gif                       | Spec whitelist; SVG must never join                        |
+| `MAX_BODY_BYTES`            | `8 * 1024 * 1024`                          | Non-image write cap in `limits.ts`                         |
+| `IMAGE_MAX_PER_OWNER`       | unset; hosted `"100"`                      | `hosted-vars.json`; positive integer or unset              |
+| `IMAGE_MAX_BYTES_PER_OWNER` | unset; hosted `"104857600"`                | `hosted-vars.json`; positive integer or unset              |
+| `IMAGE_EMBED_BUDGET_BYTES`  | `3 * 1024 * 1024`                          | Spec; 1 to 8 MiB keeps snapshots streamable                |
+| Read `Cache-Control`        | `private, max-age=86400`                   | Spec; `private` is load-bearing                            |
+| Sniff window                | first 16 bytes, minimum 12                 | Longest signature (WebP) needs 12                          |
+| Gallery placement size      | `240` px on the longer side                | D40; literal `max` in `addImageFromGallery`                |
+| `createImage` size          | 200 × 150                                  | D49                                                        |
+| `WRITE_RATE_LIMITER`        | 300 per 60 s                               | `wrangler.toml`, namespace `1001`                          |
 | Buckets                     | `livedocuments-images`, `…-images-staging` | Separate so the staging sweep cannot reap production bytes |

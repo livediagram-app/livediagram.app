@@ -293,7 +293,7 @@ On a selected stack, from `stack-tour-steps.ts`.
 2. **Drag to Reorder** (a stack holding something; rings its first child): drag one past its neighbour and it takes
    that slot, the rest reflowing. An empty stack instead has **Drop Things In** on the stack: what is dropped inside
    takes the next slot, and an empty stack keeps its size as a target.
-3. **Carries What It Holds**: rings the stack; dragging it brings everything inside, as a frame does.
+3. **Carries What It Holds**: rings the stack; dragging it brings everything inside.
 4. **The Stack Menu**: the menu step. Row, Column or Grid (with Columns), Gap, Padding, Align.
 5. **That Is a Stack**: the closing card, with **Stacks Help**.
 

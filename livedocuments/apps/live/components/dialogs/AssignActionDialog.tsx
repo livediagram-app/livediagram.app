@@ -74,9 +74,6 @@ type AssignActionDialogProps = {
   // retry-able error line).
   onMoveToTeam?: (teamId: string) => Promise<boolean>;
   onSubmit: (input: SaveActionInput) => void;
-  // A two-step delete inside the dialog, for an action with no popover of its own to hold one. No caller
-  // passes it today.
-  onDelete?: () => void;
   onClose: () => void;
 };
 
@@ -93,7 +90,6 @@ export function AssignActionDialog({
   documentTeamId,
   emailEnabled,
   onSubmit,
-  onDelete,
   onClose,
 }: AssignActionDialogProps) {
   const [name, setName] = useState('');
@@ -102,7 +98,6 @@ export function AssignActionDialog({
   const [status, setStatus] = useState<ElementActionStatus>('open');
   const [assignee, setAssignee] = useState<PickableMember | null>(null);
   const [notifyEmail, setNotifyEmail] = useState(true);
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
   // The team id mid inline move (docs/specs/012-collaboration/assigned-actions.md §2 personal-document fix), and
   // whether the last attempt failed.
   const [movingToTeamId, setMovingToTeamId] = useState<string | null>(null);
@@ -144,7 +139,6 @@ export function AssignActionDialog({
       seededFor.elementLabel !== elementLabel)
   ) {
     setSeededFor({ existing, elementLabel });
-    setConfirmingDelete(false);
     setName(existing?.name ?? elementLabel ?? '');
     setDescription(existing?.description ?? '');
     setStatus(existing?.status ?? 'open');
@@ -353,17 +347,6 @@ export function AssignActionDialog({
         </div>
 
         <DialogFooter>
-          {onDelete && editing ? (
-            <Button
-              type="button"
-              variant={confirmingDelete ? 'primary' : 'secondary'}
-              onClick={() => (confirmingDelete ? onDelete() : setConfirmingDelete(true))}
-              className="mr-auto"
-            >
-              {confirmingDelete ? 'Confirm Delete' : 'Delete Action'}
-            </Button>
-          ) : null}
-
           <Button type="button" variant="secondary" onClick={onClose}>
             Cancel
           </Button>

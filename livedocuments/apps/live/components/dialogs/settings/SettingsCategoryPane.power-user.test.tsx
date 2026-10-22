@@ -23,7 +23,7 @@ function setViewport() {
 function renderEditor(settings: UserPreferences, onGoToRow = vi.fn()) {
   setViewport();
   const powerUserMode = settings.powerUserMode === true;
-  const editor = visibleCategories(true, {
+  const editor = visibleCategories({
     emailEnabled: false,
     signedIn: false,
     powerUserMode,
@@ -63,7 +63,7 @@ describe('Power User Mode children', () => {
     expect(
       minimal.compareDocumentPosition(readout) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    expect(within(readout).getAllByRole('listitem')).toHaveLength(5);
+    expect(within(readout).getAllByRole('listitem')).toHaveLength(4);
     expect(within(readout).getAllByText('On').length).toBeGreaterThan(0);
   });
 

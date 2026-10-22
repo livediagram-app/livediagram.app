@@ -1,5 +1,5 @@
 // Canvas-category illustrations (docs/specs/018-help/help-app.md): the infinite canvas, placing and
-// selecting elements, grouping, themes, templates, links, and annotations.
+// selecting elements, grouping, themes, templates and links.
 // Composed only from the shared primitives so the house style holds.
 
 import { Scene, Shape, Arrow, SelectionBox, Cursor, Panel, Tabs, Label, Tile } from './primitives';

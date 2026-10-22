@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   createLinkCard,
   activeCommentCount,
-  createAnnotation,
   createArrow,
   createComment,
   createComponent,
@@ -71,17 +70,6 @@ describe('boxed-element factories', () => {
       imageId: null,
       aspectLocked: true,
     });
-  });
-
-  it('createAnnotation is a 44x44 boxed marker with no note yet (docs/specs/009-elements/annotations.md)', () => {
-    const a = createAnnotation(7, 8);
-    expect(a).toMatchObject({ type: 'annotation', x: 7, y: 8, width: 44, height: 44 });
-    // Aspect-locked by default so resizing keeps the marker round.
-    expect(a.aspectLocked).toBe(true);
-    expect(a.note).toBeUndefined();
-    expect(a.id).toMatch(/[0-9a-f-]{36}/);
-    // It must count as boxed so it flows through selection / drag / layering.
-    expect(isBoxed(a)).toBe(true);
   });
 
   it('createLinkCard is a 280x120 boxed bookmark with no link/meta yet (docs/specs/009-elements/link-cards.md)', () => {

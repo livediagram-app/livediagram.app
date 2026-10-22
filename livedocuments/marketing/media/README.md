@@ -12,18 +12,18 @@ captioned with what it shows so copywriters can match it to a claim in
 
 ### Desktop (`desktop/`)
 
-| File                | Shows                                                                                                                                                                                  |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `landing.png`       | The marketing landing page: "A picture tells a thousand words, tell your story" hero, the **Start drawing** CTA, and a mind-map editor preview below.                                  |
-| `explorer.png`      | The Explorer library (`/live/explorer`): folders (Unsorted, Management, Product) with document counts, the Recent / Folders / Image Gallery / Shared sidebar, New diagram/folder.      |
-| `new.png`           | The **Quick Start** new-document modal (`/live/new`): the template grid (Blank, Mind map, Org chart, Retrospective, Flowchart, Kanban, SWOT, Timeline) and the theme picker.           |
-| `share.png`         | The **Share this diagram** dialog: editor vs view-only links, optional password gate, active links with copy, create-new-link.                                                         |
-| `comments.png`      | A comment thread open on an element, the element toolbar, and the Comments panel listing comment-bearing elements.                                                                     |
-| `more.png`          | The element context menu: Duplicate, Edit link, Bring to front / Send to back, Add note, Comment.                                                                                      |
-| `settings.png`      | The Settings dialog with its grouped toggles: Canvas, Interface, AI (AI Assistant), Privacy (anonymous usage events). Stale: it shows the removed Minimal panel layout toggle; retake. |
-| `org-hierarchy.png` | An org-chart diagram (CEO to VPs to leads) in **dark mode**, with theme-coloured tabs.                                                                                                 |
-| `backlog.png`       | A Kanban sprint board (Backlog to Done) in dark mode. Stale: it shows the removed Minimal layout's dock popover; retake.                                                               |
-| `sprint-review.png` | A retrospective / Sprint Review board with per-person image-upload cards. Stale: it shows the removed Tab Activity panel; retake.                                                      |
+| File                | Shows                                                                                                                                                                               |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `landing.png`       | The marketing landing page: "A picture tells a thousand words, tell your story" hero, the **Start drawing** CTA, and a mind-map editor preview below.                               |
+| `explorer.png`      | The Explorer library (`/live/explorer`): folders (Unsorted, Management, Product) with document counts, the Recent / Folders / Image Gallery / Shared sidebar, New diagram/folder.   |
+| `new.png`           | The **Quick Start** new-document modal (`/live/new`): the template grid (Blank, Mind map, Org chart, Retrospective, Flowchart, Kanban, SWOT, Timeline) and the theme picker.        |
+| `share.png`         | The **Share this diagram** dialog: editor vs view-only links, optional password gate, active links with copy, create-new-link.                                                      |
+| `comments.png`      | A comment thread open on an element, the element toolbar, and the Comments panel listing comment-bearing elements.                                                                  |
+| `more.png`          | The element context menu: Duplicate, Edit link, Bring to front / Send to back, Add note, Comment.                                                                                   |
+| `settings.png`      | The Settings dialog with its grouped toggles: Canvas, Interface, Privacy (anonymous usage events). Stale: it shows the removed AI category and Minimal panel layout toggle; retake. |
+| `org-hierarchy.png` | An org-chart diagram (CEO to VPs to leads) in **dark mode**, with theme-coloured tabs.                                                                                              |
+| `backlog.png`       | A Kanban sprint board (Backlog to Done) in dark mode. Stale: it shows the removed Minimal layout's dock popover; retake.                                                            |
+| `sprint-review.png` | A retrospective / Sprint Review board with per-person image-upload cards. Stale: it shows the removed Tab Activity panel; retake.                                                   |
 
 ### Mobile (`mobile/`)
 
@@ -41,10 +41,10 @@ Stale: these predate the phone's Toolbar layout (the palette as one strip across
 
 The Living Prism ([Brand mark](../../docs/specs/004-interface-design/brand-mark.md)), as SVG.
 
-| File                                | What it is                                                                    |
-| ----------------------------------- | ----------------------------------------------------------------------------- |
+| File                                  | What it is                                                                    |
+| ------------------------------------- | ----------------------------------------------------------------------------- |
 | `livedocuments-mark-{light,dark}.svg` | The full mark (inner diagram, sheen, signal pulse) for light or dark grounds. |
-| `livedocuments-logo-{light,dark}.svg` | The horizontal lockup: mark plus `livedocuments` wordmark, `live` accented.     |
+| `livedocuments-logo-{light,dark}.svg` | The horizontal lockup: mark plus `livedocuments` wordmark, `live` accented.   |
 
 The lockup's wordmark is live text in the system UI font; outline it in a design tool before print use.
 
@@ -52,8 +52,8 @@ The lockup's wordmark is live text in the system UI font; outline it in a design
 
 The brand mark as PNGs, drawn in its light palette: the compact drawing below 48px, the full one from 48px.
 
-| File                                   | Background                                                                                 |
-| -------------------------------------- | ------------------------------------------------------------------------------------------ |
+| File                                     | Background                                                                                 |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------ |
 | `livedocuments-icon-{256,512,1024}.png`  | White. For surfaces that show the icon as a tile, such as social previews.                 |
 | `livedocuments-icon-transparent-<n>.png` | Transparent, at 16, 32, 64, 128, 256 and 512. For surfaces that draw their own background. |
 

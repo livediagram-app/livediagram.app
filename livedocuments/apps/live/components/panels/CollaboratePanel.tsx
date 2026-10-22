@@ -58,9 +58,6 @@ export type CommentRow = {
 export type ActionRow = {
   // Element id; click jumps to it and opens the action popover.
   elementId: string;
-  // The action's own id: elementActions reads an element's actions as a
-  // list, so (elementId, actionId) is what names a row.
-  actionId: string;
   // Display label for the element (same fallbacks as comment rows).
   label: string;
   // The action's name, status, and assignee identity.
@@ -86,7 +83,7 @@ type CollaboratePanelProps = {
   onActionRowClick: (elementId: string) => void;
   // Complete (done = true) or reopen an action from its row's check. Absent
   // for a read-only visitor, whose check is a static status disc.
-  onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
+  onToggleActionDone?: (elementId: string, done: boolean) => void;
 } & MovablePanelPlacementProps &
   MovablePanelPopoverProps & { onReset: () => void };
 
@@ -165,14 +162,13 @@ export function CollaboratePanel({
                   {section.rows.map((row) =>
                     row.kind === 'action' ? (
                       <ActionRowItem
-                        key={`a-${row.action.elementId}-${row.action.actionId}`}
+                        key={`a-${row.action.elementId}`}
                         index={index++}
                         row={row.action}
                         onClick={() => onActionRowClick(row.action.elementId)}
                         onToggleDone={
                           onToggleActionDone
-                            ? (done) =>
-                                onToggleActionDone(row.action.elementId, done, row.action.actionId)
+                            ? (done) => onToggleActionDone(row.action.elementId, done)
                             : undefined
                         }
                       />
@@ -221,8 +217,7 @@ export function commentRowsFromElements(elements: BoxedElement[]): CommentRow[] 
 }
 
 // Derive action rows: one per action, open and done (the panel filters
-// between them), read through elementActions so an Action panel card's
-// list and an ordinary element's single action both count. Rows assigned to
+// between them), read through elementActions. Rows assigned to
 // `selfUserId` sort first, then newest-first.
 export function actionRowsFromElements(
   elements: BoxedElement[],
@@ -233,7 +228,6 @@ export function actionRowsFromElements(
     for (const action of elementActions(el)) {
       rows.push({
         elementId: el.id,
-        actionId: action.id,
         label: elementDisplayLabel(el),
         actionName: action.name,
         status: action.status,

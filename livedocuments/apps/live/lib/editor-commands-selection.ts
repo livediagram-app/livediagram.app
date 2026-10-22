@@ -72,7 +72,7 @@ export function selectionCommands(ctx: CommandContext, h: CommandHandlers): Edit
     });
   }
 
-  // Rotation is for a single element that can turn (an annotation marker cannot).
+  // Rotation is for a single element that can turn (a margin note cannot).
   if (isSingle && ctx.singleRotates) {
     for (const deg of [90, 180, 270] as const) {
       out.push({

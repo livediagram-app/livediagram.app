@@ -54,8 +54,6 @@ export type PaletteProps = {
   onAddSticky: () => void;
   // Drop a 3x3 editable table at the viewport centre.
   onAddTable: () => void;
-  // Drop a note marker (annotation) at the viewport centre. See docs/specs/009-elements/annotations.md.
-  onAddAnnotation: () => void;
   // Drop a link-card / bookmark at the viewport centre. See docs/specs/009-elements/link-cards.md.
   onAddLinkCard: () => void;
   onAddVideo: (provider?: EmbedProvider) => void;
@@ -94,7 +92,7 @@ export type PaletteProps = {
   // popover (the Toolbar strip's More) can put it away.
   onTileUsed?: () => void;
   // Active tab theme's element colours, so the palette tiles preview the
-  // theme: shape / device / annotation tiles render filled in the theme's
+  // theme: shape / device tiles render filled in the theme's
   // fill + stroke, line-art tools + icons tint to the stroke. Undefined (the
   // Default theme) leaves the palette in its default slate look. See docs/specs/008-canvas/canvas-and-palette.md.
   themeTint?: PaletteTint;

@@ -5,7 +5,12 @@
 // clock, no randomness beyond `options.makeId`.
 
 import { CHANGESET_MAX_OPERATIONS, type EditRejection } from '@livedocuments/api-schema';
-import { diffToElementOps, invertElementOps, type ElementId, type Tab } from '@livedocuments/document';
+import {
+  diffToElementOps,
+  invertElementOps,
+  type ElementId,
+  type Tab,
+} from '@livedocuments/document';
 import { finalise } from './finalise';
 import { applyAdd } from './operations/add';
 import { applyAddKind } from './operations/add-kind';
@@ -16,7 +21,6 @@ import { applyMove } from './operations/move';
 import { applyOrder } from './operations/order';
 import { applyTest } from './operations/test-fields';
 import { applyUnwrap } from './operations/unwrap';
-import { applyWrap } from './operations/wrap';
 import { applyRm } from './operations/rm';
 import { applySet } from './operations/set';
 import { buildResultLines } from './results';
@@ -57,8 +61,6 @@ function applyOperation(
       return applyTest(state, operation, index);
     case 'layout':
       return applyLayout(state, operation, index);
-    case 'wrap':
-      return applyWrap(state, operation, index);
   }
 }
 

@@ -130,11 +130,11 @@ The selection ring offers **Add Tag** while the card has fewer than six.
 
 ## Share roles
 
-| Role        | May                                                                                                      |
-| ----------- | -------------------------------------------------------------------------------------------------------- |
-| Editor      | Everything above                                                                                         |
-| Participant | Write the body (the label), as on any element; nothing else on someone else's card, and cannot place one |
-| Viewer      | Look                                                                                                     |
+| Role        | May                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| Editor      | Everything above                                                                            |
+| Participant | Write the body (the label), as on any element; nothing else on a card, and cannot place one |
+| Viewer      | Look                                                                                        |
 
 The title, meta line and tags are structure a Participant does not reshape, so they edit only for an Editor; their
 in-place lines render inert for a Participant and a Viewer.

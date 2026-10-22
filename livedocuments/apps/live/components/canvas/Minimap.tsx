@@ -23,7 +23,7 @@ import {
   type Point,
 } from '@livedocuments/document';
 import { pageExportFrame } from '@/lib/export-page';
-import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
+import { containersFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { MovablePanel, type MovablePanelDockProps } from '@/components/primitives/MovablePanel';
@@ -215,11 +215,11 @@ export function Minimap({
     const labels = arrowLabelPass(drawn, {
       fontFamilyOf: (a) => arrowLabelFontStack(a, tabFont, tabFinish),
     });
-    // Boxed first (frames behind their contents), then arrows on top —
+    // Boxed first (containers behind their contents), then arrows on top —
     // matching the canvas z-order.
     // Shapes something sits on keep a solid fill under Sketch, as on the canvas (sketch-backdrop.ts).
     const backdrops = sketchBackdropIds(drawn, tabFinish);
-    for (const el of framesFirst(drawn)) {
+    for (const el of containersFirst(drawn)) {
       if (el.type === 'arrow') continue;
       if (!isBoxed(el)) continue;
       parts.push(

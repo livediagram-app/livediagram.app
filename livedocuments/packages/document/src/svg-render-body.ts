@@ -16,12 +16,10 @@ import {
   isRatingShape,
   isSelfDrawingShape,
 } from './data-shapes';
-import { defaultPadding, PADDING_PX } from './index';
 import { svgBarChart, svgLineChart, svgPieChart } from './svg-render-charts';
 import { svgSankey } from './svg-render-sankey';
 import { isSankeyShape } from './sankey-model';
 import { svgProgressBar, svgProgressRing, svgRating } from './svg-render-data';
-import { svgPageMasthead } from './svg-render-page';
 import { progressTrackColour } from './progress-colours';
 import { svgWebComponent } from './svg-render-web';
 import { isWebComponentShape } from './web-components';
@@ -44,7 +42,6 @@ export function shapeHasBespokeBody(kind: ShapeKind): boolean {
     isChipShape(kind) ||
     kind === 'pointer-note' ||
     isConceptShape(kind) ||
-    kind === 'page' ||
     kind === 'browser' ||
     kind === 'tab-window'
   );
@@ -115,7 +112,5 @@ export function svgElementBody(
       resolveIconArt: o.resolveIconArt,
       tagColours: o.tagColours,
     });
-  if (el.shape === 'page')
-    return svgPageMasthead(el, PADDING_PX[el.padding ?? defaultPadding(el)], fontFamily);
   return '';
 }

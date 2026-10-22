@@ -11,11 +11,7 @@ import type { CanvasTool, PaletteProps } from './palette.types';
 import { buildCanvasToolOptions } from './canvas-tool-options';
 import { paletteCategoryTabs } from './palette-category-tabs';
 import type { PaletteAddHandlers } from './palette-add-handlers';
-import {
-  paletteCategoriesFor,
-  participantPaletteCategories,
-  PARTICIPANT_CANVAS_TOOLS,
-} from './palette-layouts';
+import { paletteCategoriesFor } from './palette-layouts';
 import type { AddShapeOptions } from '@/lib/draw-mode';
 import { useEditorModeState } from '@/components/chrome/editor-mode/editor-mode-context';
 
@@ -32,11 +28,7 @@ type Deps = Pick<
   PaletteProps,
   'canvasTool' | 'onSetCanvasTool' | 'onToggleZen' | 'canvasEmpty' | 'pendingDraw' | 'onTileUsed'
 > &
-  PaletteAddHandlers & {
-    // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, and its selection
-    // modes only.
-    participant?: boolean;
-  };
+  PaletteAddHandlers;
 
 export function usePaletteCatalogue({
   canvasTool,
@@ -50,7 +42,6 @@ export function usePaletteCatalogue({
   onAddText,
   onAddSticky,
   onAddTable,
-  onAddAnnotation,
   onAddLinkCard,
   onAddVideo,
   onAddBanner,
@@ -66,7 +57,6 @@ export function usePaletteCatalogue({
   onBeginPolygon,
   pendingDraw,
   onTileUsed,
-  participant = false,
 }: Deps) {
   // Spotlight (docs/specs/008-canvas/canvas-and-palette.md) is desktop-only: it relies on hover-tracking the
   // cursor and on left/right-click to resize the light, none of which map to
@@ -102,9 +92,6 @@ export function usePaletteCatalogue({
   const addText = armed(onAddText);
   const addSticky = armed(onAddSticky);
   const addTable = armed(onAddTable);
-  // The annotation is the ONE tile that still places instantly (docs/specs/009-elements/annotations.md): a
-  // fixed 44x44 marker has no box to draw.
-  const addAnnotation = armed(onAddAnnotation);
   const addLinkCard = armed(onAddLinkCard);
   const addVideo = (provider?: EmbedProvider) => armed(() => onAddVideo(provider))();
   // Components arm the draw gesture (tap-or-drag) and close a popover
@@ -138,7 +125,6 @@ export function usePaletteCatalogue({
     addSticky,
     addTable,
     addImage,
-    addAnnotation,
     addLinkCard,
     addVideo,
     addSticker,
@@ -186,9 +172,7 @@ export function usePaletteCatalogue({
   // (palette-layouts.ts).
   const paletteKind = usePaletteKind();
   const pages = editorMode === 'pages';
-  const categories = participant
-    ? participantPaletteCategories()
-    : paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {});
+  const categories = paletteCategoriesFor(editorMode, pages ? { pagesKind: paletteKind } : {});
   const tabs = paletteCategoryTabs({
     categories,
     pendingDraw,
@@ -211,14 +195,11 @@ export function usePaletteCatalogue({
   // The canvas-tool picker's options, and its change handler: 'zen' is an
   // action entry, not a tool, so it fires the toggle and keeps the current
   // tool selected (see canvas-tool-options).
-  const allCanvasToolOptions = buildCanvasToolOptions({
+  const canvasToolOptions = buildCanvasToolOptions({
     canvasEmpty,
     isMobile,
     includeZen: !!onToggleZen,
   });
-  const canvasToolOptions = participant
-    ? allCanvasToolOptions.filter((o) => PARTICIPANT_CANVAS_TOOLS.includes(o.id))
-    : allCanvasToolOptions;
   const onCanvasToolChange = (id: string) => {
     if (id === 'zen') onToggleZen?.();
     else onSetCanvasTool(id as CanvasTool);

@@ -35,19 +35,19 @@ Scope, by file:
 
 ## Domain and naming
 
-| Term           | Identifier                                                                            | Meaning                                                      |
-| -------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
-| Web component  | `WebComponentShape`, `isWebComponentShape`                                            | `banner`, `callout`, `stat-row`, `process`, `site-header`    |
-| Component      | `ComponentKind`                                                                       | Palette id: `banner hero header callout stat process avatar` |
-| Accent bar     | `isAccentBarShape`                                                                    | `banner`, `site-header`: a solid bar under white text        |
-| Card component | (the other three)                                                                     | Theme surface fill, ink text, accent emphasis                |
-| Hero           | `ImageElement` with `heroCaption`                                                     | An image with a caption card                                 |
-| Caption card   | `HeroCaption = { title, subtitle }`                                                   | The hero's two lines                                         |
-| Masthead line  | `pageTitle`, `pageSubtitle`                                                           | Single-line heading fields shared with the Page              |
-| Row            | `StatItem`, `processSteps[i]`, `navLinks[i]`                                          | One stat, step or link                                       |
-| Rows patch     | `WebRows`                                                                             | `{ stats?, processSteps?, navLinks? }`                       |
-| Layout         | `bannerLayout`, `statRowLayout`, `processLayout`, `headerLayout`, `heroCaptionLayout` | Pure element-relative rects                                  |
-| Legacy group   | `groupId`, `{ kind: 'pinned-group' }` (stored only)                                   | Traces migrated away on read                                 |
+| Term           | Identifier                                                                            | Meaning                                                       |
+| -------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Web component  | `WebComponentShape`, `isWebComponentShape`                                            | `banner`, `callout`, `stat-row`, `process`, `site-header`     |
+| Component      | `ComponentKind`                                                                       | Palette id: `banner hero header callout stat process avatar`  |
+| Accent bar     | `isAccentBarShape`                                                                    | `banner`, `site-header`: a solid bar under white text         |
+| Card component | (the other three)                                                                     | Theme surface fill, ink text, accent emphasis                 |
+| Hero           | `ImageElement` with `heroCaption`                                                     | An image with a caption card                                  |
+| Caption card   | `HeroCaption = { title, subtitle }`                                                   | The hero's two lines                                          |
+| Masthead line  | `pageTitle`, `pageSubtitle`                                                           | Single-line heading fields shared by banner, callout and card |
+| Row            | `StatItem`, `processSteps[i]`, `navLinks[i]`                                          | One stat, step or link                                        |
+| Rows patch     | `WebRows`                                                                             | `{ stats?, processSteps?, navLinks? }`                        |
+| Layout         | `bannerLayout`, `statRowLayout`, `processLayout`, `headerLayout`, `heroCaptionLayout` | Pure element-relative rects                                   |
+| Legacy group   | `groupId`, `{ kind: 'pinned-group' }` (stored only)                                   | Traces migrated away on read                                  |
 
 Banned synonyms: "widget", "block" (the block-type picker), "group" for anything live, "header"
 for the kind in code (the kind is `site-header`; "Header" is the user-facing name), "hero" as a
@@ -84,7 +84,7 @@ shape kind.
    Step", "Add Link") calls `appendWebRowTo(id)`, offered only while `canAppendWebRow` [QA1] (`D5`).
 5. **Menu.** "Stats" / "Steps" / "Links" section in the Tools flyout: per-row inputs committing on
    blur, ↑ / ↓ reorder, × remove (disabled at the min), Add (disabled at the max) [QA4].
-6. **Masthead.** `setPageHeading(id, field, value)` on `page`, `banner`, `callout`; an empty line
+6. **Masthead.** `setPageHeading(id, field, value)` on `banner`, `callout`, `card`; an empty line
    stores `undefined` (`D11`).
 7. **Hero caption.** Lines via `setHeroCaptionLine` (trimmed, collapsed, sliced to
    `PAGE_HEADING_MAX`); only on an image that has a caption. The "Caption Card" toggle adds
@@ -305,7 +305,7 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 | `STAT_GAP`                                | 16                                                               | Card gap, capped by width [QA3]                     |
 | `HEADER_BRAND_MIN`                        | 90                                                               | Brand room before links drop; 60 to 140             |
 | `ACCENT_BAR_TEXT`                         | `'#ffffff'`                                                      | The text an accent bar carries                      |
-| `PAGE_HEADING_MAX`                        | 200                                                              | Masthead and caption lines (Page spec)              |
+| `PAGE_HEADING_MAX`                        | 200                                                              | Masthead and caption lines                          |
 | `HERO_DEFAULT_CAPTION`                    | "Hero title" / "A short supporting line of text over the image." | Starting copy                                       |
 | Hero size                                 | 520 × 300                                                        | `HERO_WIDTH`, `HERO_HEIGHT`                         |
 | Hero card fallback                        | `'#0f172a'` at 0.82                                              | Tailwind slate-900                                  |

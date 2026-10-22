@@ -32,7 +32,7 @@ describe('elementKindLabel', () => {
     expect(elementKindLabel(freehand({ pen: 'highlighter' }))).toBe('Highlight');
     expect(elementKindLabel(freehand({ straightEdges: true }))).toBe('Polyline');
     expect(elementKindLabel(freehand({ straightEdges: true, closed: true }))).toBe('Polygon');
-    expect(elementKindLabel(ofType('annotation'))).toBe('Annotation');
+    expect(elementKindLabel(ofType('article-note'))).toBe('Margin note');
     expect(elementKindLabel(ofType('link-card'))).toBe('Link');
     expect(elementKindLabel(ofType('arrow'))).toBe('Arrow');
   });

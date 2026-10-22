@@ -1,5 +1,4 @@
 import type {
-  CSSProperties,
   MouseEvent as ReactMouseEvent,
   PointerEvent as ReactPointerEvent,
   ReactNode,
@@ -102,15 +101,12 @@ export function TopCenterRow({
 export function TopCenterBanner({
   tone = 'neutral',
   className = '',
-  style,
   onPointerDown,
   onContextMenu,
   children,
 }: {
   tone?: BannerTone;
   className?: string;
-  // Inline styles for effects a class can't express.
-  style?: CSSProperties;
   onPointerDown?: (e: ReactPointerEvent) => void;
   onContextMenu?: (e: ReactMouseEvent) => void;
   children: ReactNode;
@@ -127,7 +123,6 @@ export function TopCenterBanner({
       data-floating-panel=""
       onPointerDown={onPointerDown}
       onContextMenu={onContextMenu}
-      style={style}
       className={`pointer-events-auto flex animate-fade-in items-center rounded-full border shadow-md ${TONE_CLASS[tone]}${className ? ` ${className}` : ''}`}
     >
       {children}

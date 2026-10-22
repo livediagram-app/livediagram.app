@@ -91,7 +91,7 @@ type ElementItem = {
     | 'freehand'
     | 'path'
     | 'table'
-    | 'annotation'
+    | 'article-note'
     | 'link-card'
     | 'video'
     | 'arrow';

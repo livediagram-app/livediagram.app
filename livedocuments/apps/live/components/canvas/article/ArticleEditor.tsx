@@ -104,6 +104,9 @@ export type ArticleEditorProps = {
   atPageLimit?: boolean;
   doc: ArticleFlow;
   editable: boolean;
+  // Whether the writer may reshape the article too (the slash menu's inserts): an Editor. A Participant writes
+  // only (docs/specs/013-workspace/share-roles.md). Absent: as `editable`.
+  reshape?: boolean;
   // Whether a press on the writing is the writing's (not while a drawing tool is in hand).
   interactive: boolean;
   zoom: number;
@@ -187,7 +190,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     at: { left: number; top: number; bottom: number };
   } | null>(null);
   const [slashIndex, setSlashIndex] = useState(0);
-  const slashItems = slash ? filterSlashItems(slash.query) : [];
+  const slashItems = slash && props.reshape !== false ? filterSlashItems(slash.query) : [];
   const slashLive = useRef({ items: slashItems, index: slashIndex, open: false });
   useLayoutEffect(() => {
     const open = !!slash && slashItems.length > 0;
@@ -638,7 +641,7 @@ export default function ArticleEditor(props: ArticleEditorProps) {
     <>
       {linkCard}
       {cutOff ? <PageLimitNotice page={props.pages[props.pages.length - 1]!} /> : null}
-      {slash && props.editable ? (
+      {slash && props.editable && props.reshape !== false ? (
         <SlashMenu
           at={slash.at}
           items={slashItems}

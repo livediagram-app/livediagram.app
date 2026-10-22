@@ -13,11 +13,10 @@
 // How a part is painted is its ROLE, which both renderers map to the same
 // attributes:
 //   - main:    the element's fill + stroke + border dash, round joins
-//   - outline: the same without round joins (the frame's sharp corners)
 //   - detail:  thin solid chrome (bezels, keys, creases), no fill
 import type { ShapeKind } from './shape-kind';
 
-export type ShapePartRole = 'main' | 'outline' | 'detail';
+export type ShapePartRole = 'main' | 'detail';
 
 export type ShapePart =
   | { tag: 'path'; role: ShapePartRole; d: string }
@@ -121,10 +120,6 @@ const FIXED_GEOMETRY: Partial<Record<ShapeKind, ShapeGeometry>> = {
       'M 8 0 L 92 0 A 8 8 0 0 1 100 8 L 100 92 A 8 8 0 0 1 92 100 L 44 100 L 26 120 L 34 100 L 8 100 A 8 8 0 0 1 0 92 L 0 8 A 8 8 0 0 1 8 0 Z',
     ),
   ),
-  // Section container. Sharp corners (an rx would warp under the stretch),
-  // and it takes the element's fill like every other shape: a frame defaults
-  // to transparent, so the see-through look is the default, not a rule.
-  frame: stretch(rect(1, 1, 98, 98, undefined, 'outline')),
   // Screen on top, trapezoid stand below.
   monitor: stretch(rect(1, 1, 98, 80, 3), path('M 32 88 L 68 88 L 76 99 L 24 99 Z')),
   // Heavy corners are the tell of "phone"; the inset line is the bezel.

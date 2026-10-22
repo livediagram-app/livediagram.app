@@ -213,7 +213,7 @@ export function pageExportFrame(
     ...(device ? { clipPath: device.screen, clipId: `${id}-screen`, overlaySvg: device.over } : {}),
     reaches: (el, elements) => {
       // An article's note marker is the editor's, never part of the page: no export or preview draws it.
-      if (el.type === 'annotation' && el.articleNote) return false;
+      if (el.type === 'article-note') return false;
       const overlaps = (x: number, y: number, rr: number, b: number) =>
         x <= p.x + p.width && rr >= p.x && y <= p.y + p.height && b >= p.y;
       if (el.type !== 'arrow') return overlaps(el.x, el.y, el.x + el.width, el.y + el.height);

@@ -136,8 +136,8 @@
 }
 
 /*
- * Themed palette previews. The filled palette tiles (shapes / devices /
- * annotation on the palette) set `--tile-fill` to the active theme's
+ * Themed palette previews. The filled palette tiles (shapes / devices on
+ * the palette) set `--tile-fill` to the active theme's
  * element fill and carry this class on their glyph wrapper; the rule paints
  * the otherwise-hollow shape outlines (`fill="none"` SVG paths) with that
  * fill so each tile previews the real themed element. `fill` is an inherited
@@ -762,13 +762,6 @@
    says what the next click does (docs/specs/007-editor/start-diagramming.md "Bringing it back"). */
 body:has([data-mode-message]) [data-yields-to-mode] {
   display: none;
-}
-
-/* Frames still settle BELOW the base plane rather than taking their index:
-   a frame is a backdrop its contents sit on, and it is often added after the
-   things inside it, so paint order alone would float it over them. */
-[data-iso] [data-frame] {
-  translate: 0 0 -1px;
 }
 
 /* Arrows get the same treatment in the other direction: an arrow's SVG is

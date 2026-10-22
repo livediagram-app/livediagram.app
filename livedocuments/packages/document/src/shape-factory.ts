@@ -35,9 +35,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   parallelogram: { width: 160, height: 100 },
   hexagon: { width: 140, height: 120 },
   document: { width: 140, height: 110 },
-  // Document (docs/specs/009-elements/page-element.md): 420x594 is the A-series root-2 ratio, at a size that
-  // reads as a page beside a 120px square without swallowing the canvas.
-  page: { width: 420, height: 594 },
   // Stadium / pill — the conventional flowchart "Start / End" terminator
   // shape. Wider than tall by default; the CSS `border-radius: 9999px`
   // render path means the ends stay perfectly semicircular at any
@@ -51,9 +48,6 @@ export const SHAPE_DEFAULT_SIZE: Record<ShapeKind, { width: number; height: numb
   star: { width: 130, height: 130 },
   // Speech bubble: wider than tall, with room for the tail beneath the body.
   'speech-bubble': { width: 180, height: 130 },
-  // Frame / section: a large container drawn around content, so it starts
-  // big. Transparent by default (see defaultFillColor) with a top-left label.
-  frame: { width: 360, height: 260 },
   // UI device frames. Sized to evoke each device's natural aspect
   // ratio at a glance: browser + monitor land on a 4:3-ish landscape
   // (with the monitor a touch taller to leave room for its stand);
@@ -147,31 +141,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
     height,
     textSize: 'md',
   };
-  // Document (docs/specs/009-elements/page-element.md): prose sits TOP-LEFT. Centred body text is the
-  // strongest tell that something is a label pretending to be a document,
-  // and every other shape defaults to centred.
-  if (kind === 'page') {
-    return {
-      ...base,
-      textAlignX: 'left',
-      textAlignY: 'top',
-      // Paper, explicitly, rather than whatever fill the tab theme gives
-      // every other box — a page tinted like the shapes around it stops
-      // reading as a page. Set as ELEMENT colours (not a theme entry), so
-      // they behave like any user-picked colour and can be changed from the
-      // menu; a theme with per-shape overrides can still claim the kind.
-      fillColor: '#ffffff',
-      strokeColor: '#d4d4d8',
-      // A soft lift is the other half of "paper": it sits ON the canvas
-      // rather than being drawn into it (docs/specs/008-canvas/element-shadows.md).
-      shadow: { offsetX: 0, offsetY: 2, blur: 8, opacity: 0.18 },
-      // Body text wants reading size, not the label size a shape defaults to.
-      textSize: 'sm',
-      // A generous margin, like a word processor's — text running to the
-      // edge of a page is the other half of "this isn't paper".
-      padding: 'lg',
-    };
-  }
   // Icons: aspect-locked so the glyph never warps, label sits beneath
   // the glyph (the icon fills the box, text below reads as a caption).
   if (kind === 'icon') {
@@ -183,15 +152,6 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
   // an icon carries would undo the die-cut look.
   if (kind === 'sticker') {
     return { ...base, aspectLocked: true };
-  }
-  // Frame: a container drawn around other elements. Its label sits in the
-  // top-right (like a section title) rather than centred, and the body is
-  // transparent by default (defaultFillColor) so content shows through.
-  if (kind === 'frame') {
-    // Frames start with a "Frame" section title in the top-right, padded in
-    // off the border so it doesn't touch the outline, so they read as a
-    // labelled container the moment they're dropped.
-    return { ...base, label: 'Frame', textAlignY: 'top', textAlignX: 'right', padding: 'lg' };
   }
   // Progress ring is drawn as a donut, so lock the aspect ratio to keep it
   // circular. Both progress kinds start half-filled so the fill is visible the

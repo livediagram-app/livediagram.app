@@ -5,7 +5,7 @@
 
 import type { ArrowElement } from './arrow-types';
 import type {
-  AnnotationElement,
+  ArticleNoteElement,
   FreehandElement,
   ImageElement,
   LinkCardElement,
@@ -150,7 +150,6 @@ export const ELEMENT_FIELD_NAMES = {
     'link',
     'commentThread',
     'action',
-    'actions',
     'note',
     'noteRich',
     'padding',
@@ -159,7 +158,6 @@ export const ELEMENT_FIELD_NAMES = {
   text: fieldsOf<TextElement>()([
     'id',
     'type',
-    'addedBy',
     'layerId',
     'x',
     'y',
@@ -208,7 +206,6 @@ export const ELEMENT_FIELD_NAMES = {
   sticky: fieldsOf<StickyElement>()([
     'id',
     'type',
-    'addedBy',
     'layerId',
     'x',
     'y',
@@ -389,7 +386,7 @@ export const ELEMENT_FIELD_NAMES = {
     'noteRich',
     'padding',
   ]),
-  annotation: fieldsOf<AnnotationElement>()([
+  'article-note': fieldsOf<ArticleNoteElement>()([
     'id',
     'type',
     'layerId',

@@ -118,9 +118,9 @@ describe('run', () => {
         ? Response.json({ document: { id: DOC, name: 'Auth flow' } })
         : undefined;
     const io = signedIn({ routes: [capabilities, share, library, tokens] });
-    expect((await cli(['tab', 'ls', 'https://livedocuments.app/document/shared?s=abc'], io)).code).toBe(
-      0,
-    );
+    expect(
+      (await cli(['tab', 'ls', 'https://livedocuments.app/document/shared?s=abc'], io)).code,
+    ).toBe(0);
     expect(io.requests.at(-1)!.headers.get('X-Share-Code')).toBe('abc');
     expect(io.requests[1]!.headers.get('X-Share-Code')).toBeNull();
   });
@@ -149,7 +149,7 @@ describe('run', () => {
     });
     const guestOnly = fakeIo({
       env: { LIVEDOCUMENTS_TOKEN: TOKEN },
-      routes: [() => Response.json({ aiEnabled: false })],
+      routes: [() => Response.json({})],
     });
     expect(await cli(['document', 'ls'], guestOnly)).toMatchObject({
       code: 4,
@@ -175,15 +175,19 @@ describe('run', () => {
   it("refuses writes below the host's version floor, but not reads", async () => {
     const floor: Route = (_, url) =>
       url.pathname === '/api/capabilities'
-        ? Response.json({ aiEnabled: false, authEnabled: true, cli: { minVersion: '99.0.0' } })
+        ? Response.json({ authEnabled: true, cli: { minVersion: '99.0.0' } })
         : undefined;
     const routes = [floor, library, tokens];
     const io = fakeIo({ env: { LIVEDOCUMENTS_TOKEN: TOKEN }, routes });
     expect((await cli(['api', 'POST', '/documents'], io)).code).toBe(1);
     expect(io.err()).toContain('accepts writes from livedocuments 99.0.0 or later');
     expect(
-      (await cli(['api', 'GET', '/documents'], fakeIo({ env: { LIVEDOCUMENTS_TOKEN: TOKEN }, routes })))
-        .code,
+      (
+        await cli(
+          ['api', 'GET', '/documents'],
+          fakeIo({ env: { LIVEDOCUMENTS_TOKEN: TOKEN }, routes }),
+        )
+      ).code,
     ).toBe(0);
     expect(
       (await cli(['document', 'ls'], fakeIo({ env: { LIVEDOCUMENTS_TOKEN: TOKEN }, routes }))).code,
@@ -219,7 +223,7 @@ describe('a self-hosted profile', () => {
       if (url.origin !== SELF) return undefined;
       const path = url.pathname;
       if (path === '/api/capabilities')
-        return Response.json({ aiEnabled: false, apiBase: `${SELF}/api`, authEnabled: true });
+        return Response.json({ apiBase: `${SELF}/api`, authEnabled: true });
       return (
         library(request, new URL(`https://livedocuments.app${path}${url.search}`)) ??
         tokens(request, url)
@@ -258,7 +262,9 @@ describe('the local verbs', () => {
       renderSkill(),
     );
     expect((await cli(['skill', 'install', '--to', '~/.claude/skills'], io)).code).toBe(0);
-    const other = fakeIo({ files: { './skills/livedocuments/SKILL.md': '---\nname: other\n---\n' } });
+    const other = fakeIo({
+      files: { './skills/livedocuments/SKILL.md': '---\nname: other\n---\n' },
+    });
     expect(await cli(['skill', 'install', '--to', './skills'], other)).toMatchObject({
       code: 1,
       err: expect.stringContaining('holds another skill'),

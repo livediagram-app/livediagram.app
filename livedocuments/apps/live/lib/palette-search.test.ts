@@ -68,7 +68,7 @@ describe('buildPaletteSearchItems', () => {
     // regression that dropped these from the PALETTE_TILES filter still fails
     // rather than agreeing with itself.
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    for (const kind of ['page', 'phone', 'bar-chart', 'tab-window']) {
+    for (const kind of ['phone', 'bar-chart', 'tab-window']) {
       expect(ids.has(`shape:${kind}`)).toBe(true);
     }
   });

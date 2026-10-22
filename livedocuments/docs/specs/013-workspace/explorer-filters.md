@@ -66,14 +66,14 @@ Every document view shows one row of chips under its page header and breadcrumb:
 
 Each dimension is a closed list of values. The interface says what a value means; it never calls an editor mode a "type".
 
-| Dimension | Key        | Chip label  | Values and their labels                                                                                         |
-| --------- | ---------- | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| Text      | (none)     | (the field) | Free words                                                                                                      |
-| Opens in  | `opens-in` | Opens in    | `pages` Pages: the editor mode the document was created to open in                                              |
-| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is the AI assistant or an AI tool through the MCP server (not the CLI) |
-| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year                |
-| People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                                |
-| Space     | `space`    | Space       | `mine` My Documents, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                 |
+| Dimension | Key        | Chip label  | Values and their labels                                                                          |
+| --------- | ---------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| Text      | (none)     | (the field) | Free words                                                                                       |
+| Opens in  | `opens-in` | Opens in    | `pages` Pages: the editor mode the document was created to open in                               |
+| Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the document's `source` is an AI tool through the MCP server (not the CLI)      |
+| Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year |
+| People    | `people`   | People      | `me` Me, `others` Others: the owner of a document; the actor of a Timeline event                 |
+| Space     | `space`    | Space       | `mine` My Documents, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only  |
 
 - **Opens in** reads the creation intent recorded on the document (Default folders: `opensIn` on the document summary), one value per editor mode (`EDITOR_MODES`). A document whose recorded value is unknown (made before the intent was recorded) matches no value; it shows whenever the dimension is not set.
 - **Made by AI is a filter, not a place.** AI-made documents are no bucket of their own: they live at the root of

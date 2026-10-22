@@ -1,4 +1,4 @@
-// Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md) and the
+// Deterministic auto-layout for agent-built diagrams (a graph an MCP or CLI caller hands over) and the
 // editor's Auto Layout / "Tidy up" (docs/specs/008-canvas/layout-cleanup.md).
 //
 // The model is good at deciding WHAT nodes and edges a diagram needs but poor
@@ -63,15 +63,7 @@ export type AutoLayoutOptions = {
   // stay put"): the editor passes its locked elements and everything on a locked layer. A locked
   // box is not a graph node, so arrows to it are not edges, and a locked arrow keeps its anchors.
   lockedIds?: ReadonlySet<ElementId>;
-  // Edges (`from->to`) whose target ranks level with its source and sits just after it across the flow: a
-  // decision's side step (docs/specs/015-api/mcp-server.md §4.7 "Side steps sit level with their decision").
-  // Graph input only; Tidy Up never passes it.
-  flatEdges?: ReadonlySet<string>;
-  // Tree style: parents whose leaf children stack in a column under them (auto-layout-tree.ts). Graph input only.
-  stackedParents?: ReadonlySet<ElementId>;
 };
-
-export const edgeKey = (from: ElementId, to: ElementId) => `${from}->${to}`;
 
 // TB when the model's edges trend more vertical than horizontal, else LR.
 function detectDirection(centers: Map<ElementId, Pt>, edges: Edge[]): LayoutDirection {
@@ -101,11 +93,7 @@ export function flowDirectionOf(elements: readonly Element[]): LayoutDirection {
 // deepest predecessor. Cycles are broken by ignoring back edges (relax only
 // along the topological order; remaining cycle nodes are appended in input
 // order so the result is deterministic).
-export function layerComponent(
-  ids: ElementId[],
-  edges: Edge[],
-  flat?: ReadonlySet<string>,
-): Map<ElementId, number> {
+export function layerComponent(ids: ElementId[], edges: Edge[]): Map<ElementId, number> {
   const idset = new Set(ids);
   const out = new Map<ElementId, ElementId[]>(ids.map((id) => [id, []]));
   const indeg = new Map<ElementId, number>(ids.map((id) => [id, 0]));
@@ -151,10 +139,8 @@ export function layerComponent(
   const layer = new Map<ElementId, number>(ids.map((id) => [id, 0]));
   for (const u of topo) {
     for (const v of out.get(u)!) {
-      if (topoIndex.get(u)! < topoIndex.get(v)!) {
-        const step = flat?.has(edgeKey(u, v)) ? 0 : 1;
-        layer.set(v, Math.max(layer.get(v)!, layer.get(u)! + step));
-      }
+      if (topoIndex.get(u)! < topoIndex.get(v)!)
+        layer.set(v, Math.max(layer.get(v)!, layer.get(u)! + 1));
     }
   }
   return layer;
@@ -174,7 +160,6 @@ function positionComponent(
   centers: Map<ElementId, Pt>,
   dir: LayoutDirection,
   realEdges: Edge[],
-  flat?: ReadonlySet<string>,
   labelOf: (e: Edge) => string | undefined = () => undefined,
 ): PlacedComponent {
   const { ids, edges, layer, lanes } = splitLongEdges(realIds, realEdges, realLayer);
@@ -198,15 +183,6 @@ function positionComponent(
     layer,
   );
   layers.forEach((L, i) => byLayer.set(L, refined[i]!));
-  // A side step sits just after the node that sends it out, on the same rank.
-  if (flat?.size) {
-    for (const e of edges) {
-      if (!flat.has(edgeKey(e.from, e.to)) || layer.get(e.from) !== layer.get(e.to)) continue;
-      const rank = byLayer.get(layer.get(e.from)!)!;
-      rank.splice(rank.indexOf(e.to), 1);
-      rank.splice(rank.indexOf(e.from) + 1, 0, e.to);
-    }
-  }
 
   const mainSize = (id: ElementId) =>
     lanes.has(id) ? 0 : dir === 'TB' ? size.get(id)!.h : size.get(id)!.w;
@@ -374,18 +350,17 @@ export function autoLayoutElements(elements: Element[], opts: AutoLayoutOptions 
   for (const comp of comps) {
     let placed: PlacedComponent;
     if (style === 'tree') {
-      placed = positionTreeComponent(comp, edges, size, centers, opts.stackedParents);
+      placed = positionTreeComponent(comp, edges, size, centers);
     } else if (style === 'mindmap') {
       placed = positionMindmapComponent(comp, edges, size, centers);
     } else {
       placed = positionComponent(
         comp,
-        layerComponent(comp, edges, opts.flatEdges),
+        layerComponent(comp, edges),
         size,
         centers,
         dir,
         edges,
-        opts.flatEdges,
         (e) => labels.get(`${e.from}->${e.to}`),
       );
     }

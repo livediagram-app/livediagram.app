@@ -1,5 +1,5 @@
 // The research's checkout flow (docs/research/agent-cli/editing-models.md §6): one tab, eight steps
-// down a column joined by pinned arrows, a note beside the payment, and a frame `f2` holding the
+// down a column joined by pinned arrows, a note beside the payment, and a stack `f2` holding the
 // address and card steps. Every suite starts from a fresh copy.
 
 import type { ArrowElement, Element, ShapeKind, Tab } from '@livedocuments/document';
@@ -32,7 +32,7 @@ export function checkoutFlow(): Tab {
       {
         id: 'f2',
         type: 'shape',
-        shape: 'frame',
+        shape: 'stack',
         label: 'Payment',
         x: -40,
         y: 280,

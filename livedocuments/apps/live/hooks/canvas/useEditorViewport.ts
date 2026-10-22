@@ -104,10 +104,7 @@ type EditorViewportApi = {
     by: number,
     bw: number,
     bh: number,
-    // `sideMargin` (screen px) widens the side band to clear the floating
-    // panels, for reveals that should land in the open canvas. Capped at a quarter of the
-    // canvas so a narrow window still has a band to reveal into.
-    opts?: { center?: boolean; sideMargin?: number },
+    opts?: { center?: boolean },
   ) => void;
 };
 
@@ -175,18 +172,13 @@ export function useEditorViewport(deps: EditorViewportDeps): EditorViewportApi {
   // scroll below. `center: true` skips the minimal-pan shortcut and
   // always centres the bounds in the band.
   const scrollIntoView = useCallback(
-    (
-      bx: number,
-      by: number,
-      bw: number,
-      bh: number,
-      opts?: { center?: boolean; sideMargin?: number },
-    ) => {
+    (bx: number, by: number, bw: number, bh: number, opts?: { center?: boolean }) => {
       const rect = canvasMainRef.current?.getBoundingClientRect();
       if (!rect) return;
       const z0 = zoomRef.current;
       const off0 = viewportOffsetRef.current;
-      const side = Math.min(opts?.sideMargin ?? VIEW_MARGIN_SIDE, rect.width / 4);
+      // Capped at a quarter of the canvas so a narrow window still has a band to reveal into.
+      const side = Math.min(VIEW_MARGIN_SIDE, rect.width / 4);
       // Visible band (screen px) we keep the element within.
       const visLeft = rect.left + side;
       const visRight = rect.right - side;

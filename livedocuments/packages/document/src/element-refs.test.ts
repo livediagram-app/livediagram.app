@@ -240,7 +240,7 @@ describe('slugIdFor (R7)', () => {
 describe('kindWordOf (R9)', () => {
   it('names a shape by its kind', () => {
     expect(kindWordOf(createShape('cylinder', 0, 0))).toBe('cylinder');
-    expect(kindWordOf(createShape('frame', 0, 0))).toBe('frame');
+    expect(kindWordOf(createShape('stack', 0, 0))).toBe('stack');
   });
 
   it('names an element by its type', () => {

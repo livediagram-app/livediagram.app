@@ -56,12 +56,10 @@ describe('nearestElementTowards', () => {
     }
   });
 
-  it('skips frames and arrows', () => {
-    const frame = box('frame', 0, 150, { shape: 'frame' });
+  it('skips arrows', () => {
     const arrow = { id: 'a1', type: 'arrow', from: {}, to: {} } as unknown as Element;
     const real = box('real', 0, 400);
-    // The frame is nearer, but a section backdrop is not a node.
-    expect(nearestElementTowards([src, frame, arrow, real], src, 's')?.id).toBe('real');
+    expect(nearestElementTowards([src, arrow, real], src, 's')?.id).toBe('real');
   });
 
   it('never returns the source itself', () => {

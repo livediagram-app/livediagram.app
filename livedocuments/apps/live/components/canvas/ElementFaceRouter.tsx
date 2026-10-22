@@ -20,12 +20,10 @@ import {
   type TextAlignY,
   type TextSize,
 } from '@livedocuments/document';
-import { AnnotationGlyph } from '@/components/canvas/AnnotationMarker';
 import { ArticleNoteFace } from '@/components/canvas/article/ArticleNoteFace';
 import { FreehandSvg } from '@/components/canvas/boxed-element-overlays';
 import { ImageElementView } from '@/components/canvas/ImageElementView';
 import { LinkCardView } from '@/components/canvas/LinkCardView';
-import { PageMasthead } from '@/components/canvas/PageMasthead';
 import { ShapeInlineIconLayout } from '@/components/canvas/shape-inline-icon-layout';
 import { InsetContent } from '@/components/canvas/InsetContent';
 import type { ContentInset } from '@/components/canvas/useIndicatorLayout';
@@ -132,12 +130,8 @@ export function ElementFaceRouter({
           // A locked window, or a read-only canvas (presenting, a viewer), keeps its tab: no Choose a Tab.
           canChoose={!readOnly && !isLocked}
         />
-      ) : element.type === 'annotation' && element.articleNote ? (
+      ) : element.type === 'article-note' ? (
         <ArticleNoteFace element={element} />
-      ) : element.type === 'annotation' ? (
-        <AnnotationGlyph
-          stroke={remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)}
-        />
       ) : element.type === 'video' ? (
         <VideoView element={element} />
       ) : element.type === 'link-card' ? (
@@ -268,31 +262,6 @@ export function ElementFaceRouter({
         // Progress / rail / rating / chart elements draw their own content, so
         // they render no standard editable label.
         <></>
-      ) : element.type === 'shape' && element.shape === 'page' ? (
-        // A Page stacks a fixed masthead over its body (docs/specs/009-elements/page-element.md). The body
-        // node positions itself `absolute inset-0`, so it gets a `relative`
-        // region of its own that starts under the rule rather than the whole
-        // box — that is what stops the prose from running up into the title.
-        <div
-          className="absolute inset-0 flex flex-col"
-          style={{ padding: PADDING_PX[element.padding ?? defaultPadding(element)] }}
-        >
-          <PageMasthead
-            element={element}
-            readOnly={isLocked || readOnly}
-            onSetHeading={onSetPageHeading}
-            fontFamily={fontFamily}
-          />
-          {/* The body keeps its own padding, which reads as the gap under the
-              rule; only the horizontal padding would double up, so the label's
-              is left to do the work and this container has none. */}
-          <div
-            className="relative min-h-0 flex-1"
-            style={{ marginInline: -PADDING_PX[element.padding ?? defaultPadding(element)] }}
-          >
-            {labelNode}
-          </div>
-        </div>
       ) : iconCaptionBand ? (
         // Icon caption band (docs/specs/010-palette/technology-icons.md): the label (and the inline editor while
         // typing) fills this positioned container instead of the whole box,

@@ -87,7 +87,7 @@ export function layOut(
 export function lockedAmong(
   state: EditState,
   boxes: readonly BoxedElement[],
-  op: 'layout' | 'wrap',
+  op: 'layout',
   operation: number,
 ): EditRejection | null {
   for (const el of boxes) {

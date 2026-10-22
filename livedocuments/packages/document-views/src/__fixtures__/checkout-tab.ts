@@ -93,9 +93,9 @@ export function checkoutElements(): Element[] {
       width: 520,
       height: 48,
     },
-    shape('frame', ID.edge, 'Edge', [40, 100, 300, 440]),
-    shape('frame', ID.services, 'Services', [400, 100, 580, 440]),
-    shape('frame', ID.data, 'Data', [1040, 100, 280, 440]),
+    shape('stack', ID.edge, 'Edge', [40, 100, 300, 440]),
+    shape('stack', ID.services, 'Services', [400, 100, 580, 440]),
+    shape('stack', ID.data, 'Data', [1040, 100, 280, 440]),
     shape('circle', ID.customer, 'Customer', [150, 140, 80, 110]),
     shape('square', ID.web, 'Web app', [90, 290, 200, 72], { iconId: 'nextjs' }),
     shape('hexagon', ID.gateway, 'API gateway', [90, 420, 200, 72], {

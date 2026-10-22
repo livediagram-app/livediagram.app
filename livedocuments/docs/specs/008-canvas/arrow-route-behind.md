@@ -35,11 +35,11 @@ single answer.
 The exclusions carry the weight here, because the feature is on by default and
 a wrong obstacle **erases a line that should be visible**:
 
-- **`frame` shapes never cut.** A frame is a section backdrop — everything
-  inside it sits on top by design — so treating one as an obstacle would break
-  every arrow drawn within a section. The single worst failure this feature
+- **Stacks never cut.** A stack is a container — everything inside it sits on
+  top by design — so treating one as an obstacle would break every arrow drawn
+  within it. The single worst failure this feature
   could have.
-- **`text` and `annotation` never cut.** They have no fill to hide behind, so
+- **`text` and `article-note` never cut.** They have no fill to hide behind, so
   a gap under a transparent label reads as a bug, not as depth.
 - **Arrows and freehand never cut**: not boxes. A freehand stroke is a boxed
   element in the model, so it is excluded by name; ink hides nothing.

@@ -38,8 +38,8 @@ import { SELECTION_MODES } from './PaletteView';
 //    emitter that can send a type (a card that wants them says `allTypes` or
 //    `typeIn`).
 //  - A card that asks for a specific type counts nothing if the emitter sends
-//    it under another category: "AI Turned On" read UI·Toggled·AiOn while the
-//    Settings row sends AI·Toggled·AiOn. So a typed card must have an emitter
+//    it under another category: a card once read UI·Toggled·X while the
+//    Settings row sent the same type under its own category. So a typed card must have an emitter
 //    that can send exactly that category·action·type.
 //
 // emitter-scan.ts resolves literals, ternaries, lookup tables, forwarding
@@ -116,7 +116,7 @@ describe('the emitter scan', () => {
     expect(
       has('Document', 'Exported', COMPUTED as never) || has('Document', 'Exported', 'PNG'),
     ).toBe(true);
-    expect(has('AI', 'Toggled', 'AiOn')).toBe(true); // Settings catalogue row
+    expect(has('UI', 'Toggled', 'AlignmentGuidesOn')).toBe(true); // Settings catalogue row
     expect(has('Tab', 'Moved', 'Folder')).toBe(true); // ternary action
     expect(has('Tab', 'Removed', 'Folder')).toBe(true);
     expect(has('Document', 'Created', 'Offline')).toBe(true); // ternary type

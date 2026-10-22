@@ -226,9 +226,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
     snapTargets,
   });
 
-  // The palette strip: an editor's (not read-only), or a Participant's (docs/specs/013-workspace/share-roles.md), on
-  // every mode.
-  const paletteShown = !readOnly || !!props.participantPalette;
+  // The palette strip: an editor's (not read-only), on every mode. A Participant adds nothing, so it has none
+  // (docs/specs/013-workspace/share-roles.md).
+  const paletteShown = !readOnly;
   // The strip only renders with the chrome up.
   const stripShown = paletteShown && !chromeHidden;
   // The Explorer menu button: top-left on desktop; on a phone, its own card at
@@ -411,8 +411,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {contentsPopoverEl}
       {paletteShown ? (
         <ToolbarPalette
-          key={readOnly ? 'participant' : 'standard'}
-          participant={readOnly}
           // Hidden, not unmounted, while the chrome is away (zen, welcome),
           // so the chosen category lasts the page load.
           hidden={chromeHidden}
@@ -437,7 +435,6 @@ export function CanvasChrome(props: CanvasChromeProps) {
       ) : (
         <>
           {panelEls.collaborate}
-          {panelEls.ai}
           {panelEls.minimap}
           {panelEls.laser}
           {panelEls.spotlight}
@@ -476,9 +473,9 @@ export function CanvasChrome(props: CanvasChromeProps) {
         {welcomeOpen ? null : (
           <>
             {offscreenContent ? <OffscreenContentHint onBringBack={onFitToScreen} /> : null}
-            {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own changes too
-                (docs/specs/013-workspace/share-roles.md). */}
-            {!zenMode && (!readOnly || !!props.participantPalette) ? (
+            {/* Undo / Redo: see UndoRedoClusterStrip. A Participant undoes its own writing too
+                (docs/specs/013-workspace/share-roles.md); a Viewer has nothing to undo. */}
+            {!zenMode && (!readOnly || !!props.takePart) ? (
               <UndoRedoClusterStrip
                 onUndo={onUndo}
                 onRedo={onRedo}

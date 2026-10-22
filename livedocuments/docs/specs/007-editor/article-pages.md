@@ -283,7 +283,7 @@ laid out with it, holding ordinary canvas elements that move with it.
     after the last block); a tile **dragged** onto a page puts it where it is dropped. On a drawing
     zone it joins that zone at that point. Elsewhere on the writing it starts a new zone at the
     block boundary nearest the drop: a **drawing zone** for drawing elements (shapes,
-    arrows, text, frames), an **object zone** for
+    arrows, text), an **object zone** for
     everything else, a sticky note included (a sticky dropped into a drawing joins it there). The **Text** tile dropped on the writing puts the caret there
     instead.
   - The new zone, and its element, are selected; the zone bar shows.
@@ -396,11 +396,11 @@ ink").
 
 ([Share roles](../013-workspace/share-roles.md))
 
-| Role            | With an article                                                                                                                                          |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Editor**      | Everything on this page: writes, formats, inserts, moves zones, sets the style, puts margin notes on, turns articles into pages.                         |
-| **Participant** | Reads the writing as a Viewer does (writing is reshaping the page, an Editor's). A margin note's marker opens its thread, where it comments and replies. |
-| **Viewer**      | Reads the writing and its margin notes; changes nothing.                                                                                                 |
+| Role            | With an article                                                                                                                                                                                                                                                                                                                                                                                       |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Editor**      | Everything on this page: writes, formats, inserts, moves zones, sets the style, puts margin notes on, turns articles into pages.                                                                                                                                                                                                                                                                      |
+| **Participant** | Writes the text: paragraphs, lists and code, put, changed and removed. Never formats the article's style, inserts, moves zones, adds margin notes or turns articles into pages, and never writes on a locked tab or page. Its writing reaches others block by block like anyone's; the pages it needs are grown by an Editor. A margin note's marker opens its thread, where it comments and replies. |
+| **Viewer**      | Reads the writing and its margin notes; changes nothing.                                                                                                                                                                                                                                                                                                                                              |
 
 ## Collaboration
 
@@ -413,14 +413,15 @@ ink").
   its text, or null when their writing loses the caret), at the cursor's rate, never stored or
   replayed, and it is placed again in your own copy of the writing, so it stays in its block
   whatever either of you typed. Only carets on the tab you are on show; a caret leaves with its
-  writer, and none go out while a hide-cursors vote is open. Collaborators' carets never appear in
+  writer. Collaborators' carets never appear in
   an export or thumbnail.
 - Only the writer of a change writes its consequences (zone moves, pages added or removed), so
   two people's views never fight over them. The writer is whoever changed the article within the
   last 3 s (`WRITER_WINDOW_MS`): typing in it, or a zone, style or page edit of it. Having the
   caret in it is not writing: two people in one article never both add a page for one overflow.
-  The two exceptions, an agent's write and a writer who left before settling, are grown by the
-  first editor to lay the article out ([Pages for agents](../024-agents/pages-for-agents.md#pages-for-the-writing)).
+  The exceptions, an agent's write, a Participant's writing (a Participant never adds pages) and
+  a writer who left before settling, are grown by the first editor to lay the article out
+  ([Pages for agents](../024-agents/pages-for-agents.md#pages-for-the-writing)).
 - **Agents** read an article as Markdown and write it from Markdown
   ([Pages for agents](../024-agents/pages-for-agents.md)); their writing arrives as anyone's.
 

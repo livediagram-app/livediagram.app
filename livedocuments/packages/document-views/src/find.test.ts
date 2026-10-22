@@ -23,7 +23,7 @@ describe('findView (R17, VW35)', () => {
   it('folds case and width, and finds an arrow label under its source', () => {
     const { text, json } = findView(checkout(), 'ｊｗｔ');
     expect(text.split('\n').slice(1)).toEqual([
-      'frame 048c "Edge"',
+      'stack 048c "Edge"',
       '  arrow 9c5e 649c → 202b "JWT"',
       '1 match: 1 edge',
     ]);
@@ -36,8 +36,8 @@ describe('findView (R17, VW35)', () => {
 
   it('searches fields, items, code and comments, reprinting a chain only when it changes', () => {
     const elements = [
-      shapeAt('frame', 'outer', 0, 0, 2000, 2000, { label: 'Outer' }),
-      shapeAt('frame', 'inner', 0, 0, 900, 900, { label: 'Inner' }),
+      shapeAt('stack', 'outer', 0, 0, 2000, 2000, { label: 'Outer' }),
+      shapeAt('stack', 'inner', 0, 0, 900, 900, { label: 'Inner' }),
       { ...createTable(10, 10), id: 'ent', width: 100, height: 50, cells: [['needle_id', 'uuid']] },
       shapeAt('checklist', 'list', 300, 10, 100, 50, {
         checklistItems: [{ text: 'thread the needle', done: false }],
@@ -59,8 +59,8 @@ describe('findView (R17, VW35)', () => {
     const model = buildViewModel({ id: 't', name: 'T', elements });
     const lines = findView(model, 'needle').text.split('\n').slice(1);
     expect(lines.map((l) => /^ *\S+ ?\S*/.exec(l)![0])).toEqual([
-      'frame outer',
-      '  frame inner',
+      'stack outer',
+      '  stack inner',
       '    table ent',
       '    checklist list',
       '  code-block code',
@@ -92,12 +92,12 @@ describe('findView (R17, VW35)', () => {
 describe('find on odd shapes', () => {
   it('reads past malformed rows, prints an unlabelled container, and skips non-matching own-line arrows', () => {
     const elements = [
-      shapeAt('frame', 'box', 0, 0, 900, 900, { label: undefined }),
+      shapeAt('stack', 'box', 0, 0, 900, 900, { label: undefined }),
       { ...shapeAt('square', 't', 10, 10), type: 'table', cells: ['junk', ['a needle']] },
       { ...arrowBetween('free', 't', 't', { label: 'other' }), from: { kind: 'free', x: 0, y: 0 } },
     ] as unknown as Element[];
     const model = buildViewModel({ id: 't', name: 'T', elements });
-    expect(findView(model, 'needle').text.split('\n').slice(1, 2)).toEqual(['frame box']);
+    expect(findView(model, 'needle').text.split('\n').slice(1, 2)).toEqual(['stack box']);
     expect(findView(model, 'needle').json.matches.map((m) => m.field)).toEqual(['cell']);
   });
 

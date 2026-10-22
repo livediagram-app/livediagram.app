@@ -12,7 +12,6 @@ import {
   lucideImage,
   lucideAppWindow,
   lucideMoveRight,
-  lucidePanelTop,
   lucideSquare,
   lucideStickyNote,
   lucideTable,
@@ -97,7 +96,6 @@ type PaletteTileAction =
   | { type: 'sticky' }
   | { type: 'table' }
   | { type: 'image' }
-  | { type: 'annotation' }
   | { type: 'link-card' }
   | { type: 'component'; kind: ComponentKind }
   // Dynamic icon tiles (palette-dynamic-tiles.tsx): a single line-art /
@@ -359,26 +357,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   // --- Tools --------------------------------------------------------------
-  {
-    // Page (docs/specs/009-elements/page-element.md). Sits first in Write: it is the largest writing
-    // surface, and the group reads shortest-to-longest from there. Called
-    // Page, not Document, so the palette and the selection toolbar agree —
-    // and so it never collides with the Shapes tab's flowchart "document".
-    id: 'tools:page',
-    blurb: 'A paper-shaped page for prose',
-    section: 'tools',
-    toolGroup: 'write',
-    label: 'Add Page',
-    caption: 'Page',
-    description: 'A paper-sized surface for rich text. Double-click to write.',
-    action: { type: 'shape', kind: 'page' },
-    icon: (
-      <Glyph size={18} units={18}>
-        <rect x="3.5" y="1.5" width="11" height="15" rx="1.5" />
-        <path d="M6 5.5h6M6 8.5h6M6 11.5h3.5" />
-      </Glyph>
-    ),
-  },
   {
     id: 'tools:text',
     blurb: 'A free-standing text label',
@@ -701,20 +679,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
     ),
   },
   {
-    id: 'tools:frame',
-    blurb: 'A labelled box that groups a section',
-    section: 'build',
-    label: 'Add Frame',
-    description: 'Frame. A titled container you draw around a cluster of elements.',
-    shortcut: 'F',
-    action: { type: 'shape', kind: 'frame' },
-    icon: (
-      <Glyph size={TILE_GLYPH_PX} units={24}>
-        <Prims prims={lucidePanelTop} />
-      </Glyph>
-    ),
-  },
-  {
     // The stack (docs/specs/009-elements/stack.md): a container that arranges what is dropped into it.
     id: 'tools:stack',
     blurb: 'Lines things up with even gaps',
@@ -873,29 +837,6 @@ export const PALETTE_TILES: PaletteTileDef[] = [
         <circle cx="11" cy="12" r="1.8" fill="currentColor" stroke="none" />
         <circle cx="16.5" cy="12" r="1.8" fill="currentColor" stroke="none" />
         <path d="M5.5 9.5V6M11 14.5V18M16.5 9.5V6" />
-      </Glyph>
-    ),
-  },
-  {
-    id: 'tools:annotation',
-    blurb: 'A marker that holds a note',
-    section: 'tools',
-    // Last in Write, and the odd one out in it: an annotation is a MARKER you
-    // drop on the canvas that happens to hold text, not a surface you write
-    // on like Text, a sticky or a Page. It briefly sat in its own Blocks group
-    // for exactly that reason, but docs/specs/010-palette/palette-top-level-categories.md emptied Blocks out and deleted it,
-    // so Write is where it lives — ordered last, after the three surfaces,
-    // which is the distinction the row order now carries.
-    toolGroup: 'write',
-    label: 'Add Annotation',
-    description: 'Annotation. A note marker: hover to read it, double-click to edit.',
-    filled: true,
-    action: { type: 'annotation' },
-    icon: (
-      <Glyph size={18} units={24}>
-        <path d="M4 5.5h16A1.5 1.5 0 0 1 21.5 7v8a1.5 1.5 0 0 1-1.5 1.5H10l-4 3v-3H4A1.5 1.5 0 0 1 2.5 15V7A1.5 1.5 0 0 1 4 5.5Z" />
-        <path d="M6.5 9.75h11" />
-        <path d="M6.5 12.5h7" />
       </Glyph>
     ),
   },

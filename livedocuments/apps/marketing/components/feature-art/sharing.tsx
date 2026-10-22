@@ -78,7 +78,7 @@ export function ShareLinksArt() {
         <Pill x={210} y={12} w={40} label="Copied" tone="green" />
       </g>
       {row(28, 'Editors', 'livedocuments.app/d/9fk2', 'Can edit', 'sky')}
-      {row(48, 'Participants', 'livedocuments.app/d/m3wd', 'Can add', 'amber')}
+      {row(48, 'Participants', 'livedocuments.app/d/m3wd', 'Can write', 'amber')}
       {row(68, 'Viewers', 'livedocuments.app/d/qp7x', 'Can view', 'slate')}
       <Pointer x={232} y={19} color={YOU} className="fa-a-move" style={from(24, 46, 0)} />
     </Scene>

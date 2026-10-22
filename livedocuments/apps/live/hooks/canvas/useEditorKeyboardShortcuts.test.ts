@@ -60,9 +60,8 @@ describe('VIEW_TOOL_KEYS (non-mutating tools)', () => {
 });
 
 describe('EDIT_KEYS (mutating tools / element adds)', () => {
-  it('binds Frame to F, and nothing to P, 6, 7, E or 0', () => {
-    expect(fired(EDIT_KEYS, 'f')).toBe('shape:frame');
-    for (const key of ['p', '6', '7', 'e', '0']) expect(EDIT_KEYS[key]).toBeUndefined();
+  it('binds nothing to F, P, 6, 7, E or 0', () => {
+    for (const key of ['f', 'p', '6', '7', 'e', '0']) expect(EDIT_KEYS[key]).toBeUndefined();
   });
 
   it('maps the flowchart shape letters and their Excalidraw number aliases', () => {

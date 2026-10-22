@@ -8,7 +8,6 @@ import {
   SHAPE_DEFAULT_SIZE,
   SHAPE_KINDS,
   coerceShapeKind,
-  createAnnotation,
   createLinkCard,
   createShape,
   createSticky,
@@ -48,7 +47,6 @@ const FACTORIES: Readonly<Record<string, () => BoxedElement>> = {
   text: () => createText(0, 0),
   sticky: () => createSticky(0, 0),
   table: () => createTable(0, 0),
-  annotation: () => createAnnotation(0, 0),
   'link-card': () => createLinkCard(0, 0),
 };
 
@@ -72,14 +70,13 @@ export function buildKind(kind: string): Built | { refusal: string } {
 }
 
 // The look the tab's boxes of a shape share: their most common text size and their median size; null when the tab
-// has none of that shape (frames never count, they are containers).
+// has none of that shape.
 function peerLook(
   state: EditState,
   shape: string,
 ): { textSize: TextSize; width: number; height: number } | null {
   const peers = [...state.byId.values()].filter(
-    (e): e is Extract<Element, { type: 'shape' }> =>
-      e.type === 'shape' && e.shape === shape && shape !== 'frame',
+    (e): e is Extract<Element, { type: 'shape' }> => e.type === 'shape' && e.shape === shape,
   );
   if (peers.length === 0) return null;
   // A preset or an exact px size, counted as it is stored.
@@ -136,7 +133,7 @@ export function createKind(
     // A new box matches its siblings (docs/specs/024-agents/edit-operations.md "Layout on edit"): the text size most
     // boxes of its shape on the tab wear, and at least their usual size, so a step added to a drawn flow is not a
     // small box whose label wraps mid-word beside the others.
-    // With no sibling of its shape, it takes the template's proportions, as graph input draws a box.
+    // With no sibling of its shape, it takes the template's proportions.
     const peers = peerLook(state, el.shape);
     if (peers && !('textSize' in named) && !('text' in named))
       el = { ...el, textSize: peers.textSize };
@@ -231,7 +228,7 @@ export function applyAddKind(
   return null;
 }
 
-// A box placed beside a member of a frame or stack joins it: the container grows to hold it, as an insertion grows
+// A box placed beside a member of a stack joins it: the container grows to hold it, as an insertion grows
 // one (docs/specs/024-agents/edit-operations.md "Layout on edit"), instead of the new box landing just outside, and
 // what sat past it moves on rather than being taken in (grow-container.ts).
 function growToHold(

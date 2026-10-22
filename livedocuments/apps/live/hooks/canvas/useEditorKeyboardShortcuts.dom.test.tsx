@@ -91,12 +91,13 @@ describe('Delete and Backspace', () => {
     expect(editing.spies.deleteSelected).not.toHaveBeenCalled();
   });
 
-  // docs/specs/013-workspace/share-roles.md: a Participant deletes; the commit guard decides what goes.
-  it("reach a Participant's delete", () => {
+  // docs/specs/013-workspace/share-roles.md: a Participant edits text only, so it deletes nothing.
+  it("never reach a Participant's delete", () => {
     const participant = deps({ isReadOnly: true, participant: true });
     renderHook(() => useEditorKeyboardShortcuts(participant.bag));
     press('Delete');
-    expect(participant.spies.deleteSelected).toHaveBeenCalled();
+    press('Backspace');
+    expect(participant.spies.deleteSelected).not.toHaveBeenCalled();
   });
 });
 
@@ -116,36 +117,31 @@ describe('a canvas chord a role may not run', () => {
   );
 });
 
-// docs/specs/013-workspace/share-roles.md "The Participant palette": each tile works as an Editor's does, its key too.
-describe("a Participant's palette keys", () => {
-  it('add what its tiles add, and nothing an Editor alone adds', () => {
-    const addSticky = vi.fn();
-    const addText = vi.fn();
-    const addShape = vi.fn();
-    const { bag } = deps({
-      selectedId: null,
-      isReadOnly: true,
-      participant: true,
-      addSticky,
-      addText,
-      addShape,
-    });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    expect(press('n').defaultPrevented).toBe(true);
-    press('t');
-    press('r');
-    expect(addSticky).toHaveBeenCalledTimes(1);
-    expect(addText).toHaveBeenCalledTimes(1);
-    expect(addShape).not.toHaveBeenCalled();
-  });
-
-  it("are not a Viewer's", () => {
-    const addSticky = vi.fn();
-    const { bag } = deps({ selectedId: null, isReadOnly: true, addSticky });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    expect(press('n').defaultPrevented).toBe(false);
-    expect(addSticky).not.toHaveBeenCalled();
-  });
+// docs/specs/013-workspace/share-roles.md: a Participant adds nothing, so no add key reaches it.
+describe('the add keys', () => {
+  it.each([{ participant: true }, { participant: false }])(
+    'add nothing for a read-only session (%o)',
+    ({ participant }) => {
+      const addSticky = vi.fn();
+      const addText = vi.fn();
+      const addShape = vi.fn();
+      const { bag } = deps({
+        selectedId: null,
+        isReadOnly: true,
+        participant,
+        addSticky,
+        addText,
+        addShape,
+      });
+      renderHook(() => useEditorKeyboardShortcuts(bag));
+      expect(press('n').defaultPrevented).toBe(false);
+      press('t');
+      press('r');
+      expect(addSticky).not.toHaveBeenCalled();
+      expect(addText).not.toHaveBeenCalled();
+      expect(addShape).not.toHaveBeenCalled();
+    },
+  );
 });
 
 describe('onShortcutUsed', () => {

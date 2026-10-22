@@ -266,7 +266,7 @@ page), logging `[new] restored, back out <target>`.
 The **empty-canvas hint** is a calm **card in the middle of the canvas** (`EmptyCanvasBanner`), shown while the
 active tab has no elements to someone who cannot edit it: an Editor gets the tab's start instead ([Template
 start](start-diagramming.md)). A **Viewer** reads "Nothing here yet. The owner can build it out, and your view
-updates live."; a **Participant** is pointed at a sticky, text or an image. It offers no action of its own, and
+updates live."; a **Participant**, who adds nothing, reads the same line. It offers no action of its own, and
 **Help** on a desktop. It goes once the canvas has content, and a **Close** (×) in its top right corner closes it
 for good on that tab for this person in this browser (a per-browser list of the last 200 closed keys,
 `livedocuments:v2:empty-card-dismissed` in localStorage, shared with the start's own close). It takes presses only on

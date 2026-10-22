@@ -1,5 +1,5 @@
 // A three-tab document (docs/specs/024-agents/blueprints/document-views.md "Testing"): the checkout tab,
-// a 42-element frames tab, and a 24-element sticky tab.
+// a 42-element stacks tab, and a 24-element sticky tab.
 import {
   createComment,
   createPinnedArrow,
@@ -17,12 +17,12 @@ export const CHECKOUT_DOCUMENT = {
   savedAt: FIXED_EPOCH,
 };
 
-// 6 frames of 3 boxes, joined in a ring of 18 arrows.
+// 6 stacks of 3 boxes, joined in a ring of 18 arrows.
 function sequenceTab(): Tab {
   const elements: Element[] = [];
   for (let row = 0; row < 6; row++) {
     elements.push({
-      ...createShape('frame', 0, row * 200),
+      ...createShape('stack', 0, row * 200),
       id: pinnedId('51a0', row),
       label: `Stage ${row + 1}`,
       width: 1200,

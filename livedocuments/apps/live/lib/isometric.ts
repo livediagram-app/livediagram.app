@@ -18,12 +18,8 @@ import { shapePolygonVertices, type BoxedElement, type ShapeKind } from '@livedo
 export function isoExtrudes(el: BoxedElement): boolean {
   if (el.type === 'text') return false;
   // A sticker is a flat thing stuck ON the canvas (docs/specs/010-palette/stickers.md), so it gets no
-  // extruded column — the same reason a glyph and a frame section don't.
-  if (
-    el.type === 'shape' &&
-    (el.shape === 'frame' || el.shape === 'icon' || el.shape === 'sticker')
-  )
-    return false;
+  // extruded column — the same reason a glyph doesn't.
+  if (el.type === 'shape' && (el.shape === 'icon' || el.shape === 'sticker')) return false;
   return true;
 }
 

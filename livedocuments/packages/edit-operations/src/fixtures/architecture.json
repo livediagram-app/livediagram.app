@@ -5,7 +5,7 @@
     {
       "id": "svc",
       "type": "shape",
-      "shape": "frame",
+      "shape": "stack",
       "x": 0,
       "y": 154,
       "width": 499,

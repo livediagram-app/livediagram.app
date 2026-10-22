@@ -169,7 +169,7 @@ export const mcpUpdateDocument = mcpTool('update_document', {
     'auto-laid-out) and paints every element in the tab’s theme, its own colours replaced (a sticky keeps its own); ' +
     'mode "ops" keeps the colours it is given, and applies an ordered list of add/update/remove against ' +
     'existing elements (by id, or the ref read_document prints) and PRESERVES positions (no auto-layout), or ' +
-    'takes "edits": edit operations as text (insert between, wrap in a frame, connect, layout a selection, ' +
+    'takes "edits": edit operations as text (insert between, connect, layout a selection, ' +
     'place beside another element), the form each lint finding\u2019s fix is written in. Returns an inline PNG.',
   inputSchema: updateDocumentShape,
   outputSchema: updateDocumentOutput,
@@ -180,7 +180,7 @@ export const mcpShareDocument = mcpTool('share_document', {
   title: 'Share a document',
   description:
     'Create a shareable link to a document so anyone with the URL can open it — no ' +
-    'sign-in required. Choose "participate" (the default: comment, add stickies and vote), ' +
+    'sign-in required. Choose "participate" (the default: edit text and comment), ' +
     '"view" (read-only) or "edit". Returns the ' +
     'link URL. Use after creating or finding a document to hand it to teammates.',
   inputSchema: shareDocumentShape,

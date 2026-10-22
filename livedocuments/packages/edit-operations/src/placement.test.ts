@@ -117,7 +117,7 @@ describe('inside', () => {
     const tab: Tab = {
       ...empty,
       elements: empty.elements.map((el) =>
-        el.id === 'frame-x' && el.type === 'shape' ? { ...el, shape: 'frame' } : el,
+        el.id === 'frame-x' && el.type === 'shape' ? { ...el, shape: 'stack' } : el,
       ),
     };
     expect(place({ rel: 'inside', ref: 'frame-x' }, tab)).toEqual({
@@ -138,9 +138,7 @@ describe('inside', () => {
   });
 
   it('refuses what is not a container', () => {
-    expect(refusal({ rel: 'inside', ref: 'n3' }).details).toEqual([
-      'inside:n3: n3 is not a frame or stack',
-    ]);
+    expect(refusal({ rel: 'inside', ref: 'n3' }).details).toEqual(['inside:n3: n3 is not a stack']);
   });
 });
 

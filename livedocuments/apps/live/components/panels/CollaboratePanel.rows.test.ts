@@ -34,14 +34,12 @@ const openNames = (els: BoxedElement[]) =>
   );
 
 describe('actionRowsFromElements', () => {
-  it('lists each element’s action, one row each, keyed by action id', () => {
-    const a = mk('First');
-    const b = mk('Second');
-    const rows = actionRowsFromElements([box('one', a), box('two', b)], null);
-    expect(rows.map((r) => [r.elementId, r.actionId])).toEqual(
+  it('lists each element’s action, one row each', () => {
+    const rows = actionRowsFromElements([box('one', mk('First')), box('two', mk('Second'))], null);
+    expect(rows.map((r) => [r.elementId, r.actionName])).toEqual(
       expect.arrayContaining([
-        ['one', a.id],
-        ['two', b.id],
+        ['one', 'First'],
+        ['two', 'Second'],
       ]),
     );
   });

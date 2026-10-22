@@ -2,7 +2,6 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  createAnnotation,
   createComponent,
   createFreehand,
   createImage,
@@ -42,14 +41,12 @@ const KINDS: [string, () => Element][] = [
   ['circle', () => createShape('circle', 0, 0)],
   ['diamond', () => createShape('diamond', 0, 0)],
   ['cylinder', () => createShape('cylinder', 0, 0)],
-  ['frame', () => createShape('frame', 0, 0)],
   ['sticky', () => createSticky(0, 0)],
   ['text', () => createText(0, 0)],
   ['image', () => createImage(0, 0)],
   ['table', () => createTable(0, 0)],
   ['link card', () => createLinkCard(0, 0)],
   ['video', () => createVideo(0, 0)],
-  ['annotation', () => createAnnotation(0, 0)],
   [
     'freehand stroke',
     () =>

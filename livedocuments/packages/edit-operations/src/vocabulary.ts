@@ -9,7 +9,6 @@ export const EDIT_OPERATION_NAMES = [
   'connect',
   'rewire',
   'insert',
-  'wrap',
   'unwrap',
   'order',
   'layout',
@@ -26,7 +25,6 @@ export const OPERATION_MEMBERS: Readonly<Record<EditOperationName, readonly stri
   connect: ['op', 'from', 'to', 'id', 'fields', 'again'],
   rewire: ['op', 'target', 'from', 'to'],
   insert: ['op', 'kind', 'id', 'fields', 'between'],
-  wrap: ['op', 'targets', 'in', 'id', 'fields', 'tidy', 'absorb', 'makeRoom'],
   unwrap: ['op', 'target'],
   order: ['op', 'target', 'to', 'above', 'below'],
   layout: ['op', 'target', 'style', 'direction'],
@@ -61,9 +59,6 @@ export const FLAG_MEMBERS = {
   all: 'all',
   'keep-arrows': 'keepArrows',
   again: 'again',
-  tidy: 'tidy',
-  absorb: 'absorb',
-  'make-room': 'makeRoom',
 } as const;
 export type FlagWord = keyof typeof FLAG_MEMBERS;
 
@@ -72,13 +67,8 @@ export const RESERVED_WORDS: ReadonlySet<string> = new Set([
   'selected',
   'all',
   'again',
-  'tidy',
-  'absorb',
-  'make-room',
   'keep-arrows',
   'between',
-  'in',
-  'frame',
   'front',
   'back',
 ]);
@@ -86,7 +76,6 @@ export const RESERVED_WORDS: ReadonlySet<string> = new Set([
 export const LAYOUT_STYLES = ['flow', 'tree', 'mindmap'] as const;
 export const LAYOUT_DIRECTIONS = ['down', 'right'] as const;
 export const ORDER_ENDS = ['front', 'back'] as const;
-export const WRAP_CONTAINERS = ['frame'] as const;
 
 // Keys no object built from input may carry.
 export const PROTOTYPE_KEYS: ReadonlySet<string> = new Set([

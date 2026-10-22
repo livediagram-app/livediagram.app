@@ -11,20 +11,19 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
 
 ## The vocabulary
 
-| Operation | Line form                                                                   | Does                                                                                          |
-| --------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `add`     | `add <kind> [id=<id>] key=value… [<placement>]`                             | Creates an element, sized for its label by the kind's factory                                 |
-| `set`     | `set <selector> key=value… [all]`                                           | Changes the named fields; `key=` unsets one                                                   |
-| `rm`      | `rm <selector> [all] [keep-arrows]`                                         | Removes; arrows pinned to it go too and are listed, or stay with free ends with `keep-arrows` |
-| `move`    | `move <selector> <placement> \| by=dx,dy [all]`                             | Moves; pinned arrows follow; a frame carries its members; membership changes are reported     |
-| `connect` | `connect <a> -> <b> [id=<id>] [label=…] [line=…] [again]`                   | A pinned arrow, anchors chosen facing each other; a second arrow a→b needs `again`            |
-| `rewire`  | `rewire <arrow> from=<x> [to=<y>]` or `to=<y>`                              | Moves one or both ends of an arrow to other elements                                          |
-| `insert`  | `insert <kind> [id=<id>] key=value… between <a> <b>`                        | Puts a node on the a→b arrow: that arrow becomes a→new, a new arrow new→b copies its style    |
-| `wrap`    | `wrap <selector…> in frame [id=<id>] key=value… [tidy] [absorb\|make-room]` | Draws a frame around the members; `tidy` lays them out compactly first                        |
-| `unwrap`  | `unwrap <frame>`                                                            | Removes the frame and keeps its members where they are                                        |
-| `order`   | `order <selector> front\|back\|above=<x>\|below=<x>`                        | Changes stacking; frames stay behind their contents                                           |
-| `layout`  | `layout <selector> [style=flow\|tree\|mindmap] [direction=down\|right]`     | Lays out only the selection, keeping its top-left corner                                      |
-| `test`    | `test <selector> key=value…`                                                | Fails the changeset unless the element holds these values                                     |
+| Operation | Line form                                                               | Does                                                                                          |
+| --------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `add`     | `add <kind> [id=<id>] key=value… [<placement>]`                         | Creates an element, sized for its label by the kind's factory                                 |
+| `set`     | `set <selector> key=value… [all]`                                       | Changes the named fields; `key=` unsets one                                                   |
+| `rm`      | `rm <selector> [all] [keep-arrows]`                                     | Removes; arrows pinned to it go too and are listed, or stay with free ends with `keep-arrows` |
+| `move`    | `move <selector> <placement> \| by=dx,dy [all]`                         | Moves; pinned arrows follow; a stack carries its members; membership changes are reported     |
+| `connect` | `connect <a> -> <b> [id=<id>] [label=…] [line=…] [again]`               | A pinned arrow, anchors chosen facing each other; a second arrow a→b needs `again`            |
+| `rewire`  | `rewire <arrow> from=<x> [to=<y>]` or `to=<y>`                          | Moves one or both ends of an arrow to other elements                                          |
+| `insert`  | `insert <kind> [id=<id>] key=value… between <a> <b>`                    | Puts a node on the a→b arrow: that arrow becomes a→new, a new arrow new→b copies its style    |
+| `unwrap`  | `unwrap <stack>`                                                        | Removes the stack and keeps its members where they are                                        |
+| `order`   | `order <selector> front\|back\|above=<x>\|below=<x>`                    | Changes stacking; stacks stay behind their contents                                           |
+| `layout`  | `layout <selector> [style=flow\|tree\|mindmap] [direction=down\|right]` | Lays out only the selection, keeping its top-left corner                                      |
+| `test`    | `test <selector> key=value…`                                            | Fails the changeset unless the element holds these values                                     |
 
 - **`replace`** is the other changeset body: a whole tab from `template` or `elements`, exactly
   as the MCP takes them ([MCP server](../015-api/mcp-server.md) §4.3). It is still a changeset: previewed, based,
@@ -72,31 +71,30 @@ filters ([Explorer filters](../013-workspace/explorer-filters.md)), one value a 
 | `146b`, `orders`               | That element (ref, prefix or id)                                          |
 | `"Orders service"`             | The element with that label, ignoring case; `label~orders` is a substring |
 | `type:sticky`, `shape:diamond` | By kind as the outline prints it or element type, or by shape             |
-| `in:c991`                      | Members of a frame                                                        |
+| `in:c991`                      | Members of a stack                                                        |
 | `n3->n4`, `from:n3`, `to:n4`   | Arrows by their ends                                                      |
 | `downstream:n3`, `upstream:n4` | Elements reachable along arrows                                           |
 | `selected`                     | What the agent's owner has selected in an open editor                     |
 
 A selector must match exactly one element unless the operation says `all`. No match is refused with the nearest
-labels; several matches are refused with the candidates. `selected` with nothing selected is refused. `wrap` and
-`layout` act on many by nature: `wrap`'s members are each ref or quoted label given, plus whatever its other tokens
-match together.
+labels; several matches are refused with the candidates. `selected` with nothing selected is refused. `layout`
+acts on many by nature: each ref or quoted label given, plus whatever its other tokens match together.
 
-**Membership** is the smallest frame holding an element's centre, the rule [views](document-views.md) nest
-by; it decides `in:`, what `wrap` would capture, what a moved frame carries and the membership lines of a result.
+**Membership** is the smallest stack holding an element's centre, the rule [views](document-views.md) nest
+by; it decides `in:`, what a moved stack carries and the membership lines of a result.
 The editor's drag carries by the same rule ([Canvas and palette](../008-canvas/canvas-and-palette.md)), so an agent's
 `move` and a person's drag take the same elements along.
 
 ## Placement
 
 `add` and `move` take one of: `right-of:<x>`, `left-of:<x>`, `above:<x>`, `below:<x>` (with `gap:<n>`),
-`after:<x>` (along the flow of x's outgoing arrows), `inside:<frame>` (the next free slot), `align:<x>` (sharing x's
-centre on the axis the element is already nearer it), `at:x,y`. `inside:<frame>` may also go with a side
-(`inside:<frame> right-of:<x>`): beside x, which must be inside that frame (refused, naming the frame,
+`after:<x>` (along the flow of x's outgoing arrows), `inside:<stack>` (the next free slot), `align:<x>` (sharing x's
+centre on the axis the element is already nearer it), `at:x,y`. `inside:<stack>` may also go with a side
+(`inside:<stack> right-of:<x>`): beside x, which must be inside that stack (refused, naming the stack,
 otherwise), the way a model writes "in the group, next to x". A side may also take `align:<x>`
-(`below:<frame> align:<x>`): beside the reference, centred on x across the side, so a box goes under a group, outside
+(`below:<stack> align:<x>`): beside the reference, centred on x across the side, so a box goes under a group, outside
 it, lined up with one of its members. Without one, a new element goes beside the last one added, or right of the
-content. To place beside a group but outside it, place against the frame itself. An occupied spot moves along the placement axis until free. Coordinates shown and
+content. To place beside a group but outside it, place against the stack itself. An occupied spot moves along the placement axis until free. Coordinates shown and
 taken are rounded and relative to the tab's content origin.
 
 ## Layout on edit
@@ -113,7 +111,7 @@ The layout an agent did not ask to change stays put:
   a tab with no box of that shape, it takes the template's proportions
   (180×64 for a square). Either way the label is measured at the box's
   own text size, and a label written over several lines line by line.
-- **A new box placed beside a member joins its frame**: `add` with a placement against an element inside a
+- **A new box placed beside a member joins its stack**: `add` with a placement against an element inside a
   container grows that container (`widened`, `taller`) to hold the new box with its padding, as an insertion does,
   instead of the box landing just outside it. The box lands beside its neighbour, making way only for what the
   container holds, and what sat past the container on the side it grew, within its span, moves on by the growth, never
@@ -124,7 +122,7 @@ The layout an agent did not ask to change stays put:
   angled arrow out of the side that faces the new target (a gateway fanning down to its services), the new arrow
   leaves from that point too and bends in the trunk's channel, into the target's facing side, so a service added
   to the row hangs off the gateway's bar like its siblings rather than running sideways behind them.
-- **A member moved out leaves no hole.** `move` that takes a box out of its frame gives back the room it
+- **A member moved out leaves no hole.** `move` that takes a box out of its stack gives back the room it
   had stretched: on each side but the top (the heading's), where the box reached past what stays, the container
   comes in to what stays with its padding (`narrower`, `shorter`), and what lay past that edge moves back with it,
   as growing moved it on. A container left empty keeps its size.
@@ -133,10 +131,9 @@ The layout an agent did not ask to change stays put:
   re-anchors with one end's box moved and the other not: kept, its old bend ran the line through the moved box.
   An arrow whose two ends moved together moved whole, and keeps its route.
 - `insert` places the node at the midpoint and **makes room**: everything beyond it along the flow, within the same
-  frame, or outside them within b's connected group along arrows, shifts by the node's size and the gap
-  (reported as moves), whatever room there already was. A frame holding shifted members grows with them.
+  stack, or outside them within b's connected group along arrows, shifts by the node's size and the gap
+  (reported as moves), whatever room there already was. A stack holding shifted members grows with them.
   Several a→b arrows are refused as `target_ambiguous`.
-- `wrap` refuses to capture an element that is not a member (`frame_captures`) unless told `absorb` or `make-room`.
 - Only `layout` and `replace` lay out many elements, and only those they name.
 
 ## Results
@@ -184,7 +181,6 @@ nothing was applied
 | `id_taken`           | `id=` collides                                                                                                                                                                                                                                    | A free id                              |
 | `arrow_exists`       | `connect a -> b` when an a→b arrow exists, without `again`                                                                                                                                                                                        | The existing arrow                     |
 | `not_connected`      | `insert between a b` with no a→b arrow                                                                                                                                                                                                            | The arrows touching a and b            |
-| `frame_captures`     | `wrap` would capture a non-member                                                                                                                                                                                                                 | The bystanders                         |
 | `element_locked`     | The tab, a target or its layer is locked                                                                                                                                                                                                          | Each locked element or the tab         |
 | `test_failed`        | A `test` does not hold                                                                                                                                                                                                                            | Expected and actual                    |
 | `changeset_conflict` | A target changed since the base                                                                                                                                                                                                                   | Each element as read and as now        |

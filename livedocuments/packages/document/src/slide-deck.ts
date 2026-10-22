@@ -121,22 +121,13 @@ function endpointsWithin(arrow: Element, ids: Set<string>): boolean {
 }
 
 /**
- * The rectangle a slide should be framed to, or null when it has nothing on it.
- *
- * A single frame element (docs/specs/008-canvas/canvas-and-palette.md) on the slide wins: a frame IS a bounded
- * region somebody drew deliberately, so an author who wants exact framing has
- * a way to say so with an element the product already has. Two or more frames
- * are ambiguous, so they fall back to the content bounds like anything else.
+ * The rectangle a slide should be framed to (the bounds of what is on it), or null when it has
+ * nothing on it.
  */
 export function slideBounds(
   elements: Element[],
 ): { x: number; y: number; w: number; h: number } | null {
   if (elements.length === 0) return null;
-  const frames = elements.filter((el) => el.type === 'shape' && el.shape === 'frame');
-  const only = frames.length === 1 ? frames[0] : undefined;
-  if (only && only.type === 'shape') {
-    return { x: only.x, y: only.y, w: only.width, h: only.height };
-  }
   return contentBounds(elements);
 }
 

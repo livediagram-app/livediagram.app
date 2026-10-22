@@ -135,8 +135,8 @@ describe('buildEditorCommands — selection commands', () => {
     );
   });
 
-  // docs/specs/009-elements/blueprints/annotations.md [QD8]: an annotation marker never rotates.
-  it('offers note and comment but no Rotate for an annotation marker', () => {
+  // A margin note never rotates.
+  it('offers note and comment but no Rotate for an element that does not turn', () => {
     const out = ids({ ...base, selectionCount: 1, singleIsBoxed: true, singleRotates: false });
     expect(out).toEqual(expect.arrayContaining(['note', 'comment']));
     expect(out).not.toContain('rotate-90');

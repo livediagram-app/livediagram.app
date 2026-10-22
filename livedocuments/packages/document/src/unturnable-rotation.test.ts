@@ -6,11 +6,12 @@ import type { Element } from './index';
 // docs/specs/009-elements/pointer-note.md: a pointer note never turns, so a turn written on one (an agent's, an old
 // copy's) is dropped where elements enter, and every reader sees it upright.
 describe('a turn on an element that does not turn', () => {
-  it("is dropped from a pointer note and an annotation marker, and kept on a shape's", () => {
+  it("is dropped from a pointer note and an article's margin note, and kept on a shape's", () => {
     const note = { ...createShape('pointer-note', 0, 0), id: 'n', rotation: 90 } as Element;
     const marker = {
       id: 'm',
-      type: 'annotation',
+      type: 'article-note',
+      articleNote: 'comment',
       x: 0,
       y: 0,
       width: 24,

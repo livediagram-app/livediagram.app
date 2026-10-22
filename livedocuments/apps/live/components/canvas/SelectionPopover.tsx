@@ -28,7 +28,7 @@ type SelectionPopoverProps = {
   // Enter inline text-edit mode on the selected element. Passed for every
   // text-CAPABLE element (see elementSupportsText) — including ones with no
   // label yet, so the button itself teaches that text can be added. Absent
-  // for kinds with no label (tables, images, annotations, data shapes).
+  // for kinds with no label (tables, images, data shapes).
   onEditText?: () => void;
   // True when the element already has text: the button reads "Edit Text";
   // false = "Add Text". Defaults to edit for older callers.
@@ -58,8 +58,8 @@ type SelectionPopoverProps = {
   title?: string;
   // Tighter gap between the popover and the element edge, set whenever
   // the "+" quick-connect button (which sits in this gap) doesn't render:
-  // read-only, or a kind that shows none (a Plan board or card, an
-  // annotation), so the toolbar sits closer without overlapping anything.
+  // read-only, or a kind that shows none (a Plan board or card, a
+  // margin note), so the toolbar sits closer without overlapping anything.
   compact?: boolean;
   // A separate small toolbar to the left of this one (the element tour offer, away from Delete at the right end,
   // docs/specs/007-editor/element-tours.md), placed and nudged with it as one group.

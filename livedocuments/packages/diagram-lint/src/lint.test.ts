@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { computeRefs, type Element } from '@livedocuments/document';
-import { arrow, box, frame, lint, tabOf } from './fixtures/build';
+import { arrow, box, stack, lint, tabOf } from './fixtures/build';
 import { lintTab } from './lint';
 
 const messy = () =>
   tabOf(
-    frame('f', 0, 0, 400, 300),
+    stack('f', 0, 0, 400, 300),
     box('a', 20, 80),
     box('7f3a2c91-0000-4000-8000-000000000001', 100, 100),
     box('b', 600, 80, { label: 'a' }),

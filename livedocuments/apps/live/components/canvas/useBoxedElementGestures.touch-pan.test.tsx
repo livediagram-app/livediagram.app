@@ -47,7 +47,6 @@ function harness({
       wrapperRef: { current: node },
       isEditing: false,
       remotelyLocked: false,
-      isAnnotation: false,
       isMultiSelected: false,
       isSelected,
       isPaintMode,

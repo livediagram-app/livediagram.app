@@ -55,7 +55,7 @@ const MAX_DATA_ARRAY = 5_000;
 const isStrUpTo = (max: number) => (v: unknown) => typeof v === 'string' && v.length <= max;
 // A web component's row text (docs/specs/009-elements/web-components-and-no-groups.md).
 const isBoundedStr = isStrUpTo(WEB_TEXT_MAX);
-// A single-line heading (the page masthead's bound, docs/specs/009-elements/page-element.md).
+// A single-line heading (pageTitle / pageSubtitle).
 const isHeadingStr = isStrUpTo(PAGE_HEADING_MAX);
 const isOptionalStrUpTo = (v: unknown, max: number) => v === undefined || isStrUpTo(max)(v);
 const rowsOf =

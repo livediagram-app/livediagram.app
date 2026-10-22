@@ -38,17 +38,10 @@ export type CanvasProps = {
   // True for a view-only ('view' share role) session: the editing chrome
   // (palette, selection + multi-select toolbars) is suppressed.
   readOnly: boolean;
-  // A Participant (docs/specs/013-workspace/share-roles.md): read-only for every structural control, with a
-  // palette of its own holding only what it may add.
-  participantPalette?: boolean;
   // A read-only session that still takes part (a Participant): it casts dots in a vote (docs/specs/013-workspace/share-roles.md).
   takePart?: boolean;
-  // Which elements a read-only session may still drag (a Participant's stickies and its own adds); absent, none.
-  canMove?: (el: Element) => boolean;
   // Which elements' words a read-only session may still write (a Participant's); absent, none.
   canWriteText?: (el: Element) => boolean;
-  // Which elements a read-only session may still resize (a Participant's); absent, none.
-  canResize?: (el: Element) => boolean;
   documentName: string;
   tabBackgroundPattern: BackgroundPattern;
   tabBackgroundColor: string;
@@ -175,7 +168,6 @@ export type CanvasProps = {
   // Add a Technology (brand) icon as a standalone element (docs/specs/010-palette/technology-icons.md).
   onAddTechIcon: (iconId: string) => void;
   onAddTable: () => void;
-  onAddAnnotation: () => void;
   onAddLinkCard: () => void;
   onAddVideo: (provider?: EmbedProvider) => void;
   // Composite "Components" (docs/specs/008-canvas/canvas-and-palette.md), dropped at the viewport centre. Hero /
@@ -203,7 +195,7 @@ export type CanvasProps = {
   reshapingArrowId?: string | null;
   // The polygon click-to-place tool (docs/specs/008-canvas/polygon-tool.md), armed from its tile.
   onBeginPolygon: () => void;
-  // Draw-to-size mode. Picking any palette element except the annotation
+  // Draw-to-size mode. Picking a palette element
   // (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas then
   // enters a drag-to-define gesture. pointer-up calls onCommitDraw with the start + end
   // canvas-coord points (raw, no axis swap) so the editor can decide
@@ -315,7 +307,7 @@ export type CanvasProps = {
   onOpenActionForElement: (elementId: string) => void;
   // The Collaborate panel row's round check (docs/specs/012-collaboration/assigned-actions.md §5): complete
   // (done) or reopen the action in place. Absent for a read-only visitor.
-  onToggleActionDone?: (elementId: string, done: boolean, actionId: string) => void;
+  onToggleActionDone?: (elementId: string, done: boolean) => void;
   currentDocumentId: string | null;
   onOpenDocument: (id: string, shareCode?: string) => void;
   onNewDocument: () => void;
@@ -392,8 +384,8 @@ export type CanvasProps = {
   onAddTableColumn: () => void;
   // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md). Omitted in read-only.
   onToggleChecklistItem?: (elementId: string, index: number) => void;
-  // The Page masthead (docs/specs/009-elements/page-element.md): its heading and subtitle are their own
-  // fields, so they commit through here rather than the label editor.
+  // The masthead lines of the banner, callout and card (docs/specs/009-elements/web-components-and-no-groups.md):
+  // their own fields, so they commit through here rather than the label editor.
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place, one more row from
   // the quick-connect ring, and a hero's caption line. Omitted in read-only.
@@ -488,19 +480,6 @@ export type CanvasProps = {
   // section (right-hand inspector) houses them next to theme +
   // canvas, where the user is editing the tab anyway. Optional so
   // welcome-flow surfaces with no tab loaded yet can omit them.
-  aiPanel?: {
-    position: { x: number; y: number } | null;
-    onMove: (x: number, y: number) => void;
-    onReset: () => void;
-    contextElements: Element[];
-    onApplyElements: (elements: Element[], mode: 'clean') => void;
-    ownerId: string;
-    // The active tab's ID — the conversation-reset key. The NAME must
-    // not be the key: renaming a tab would wipe the conversation, and
-    // two same-named tabs wouldn't reset on switch (cross-tab history
-    // contamination).
-    tabId: string;
-  };
   // Recent-images list for the Current Tab "Images" accordion (docs/specs/009-elements/images.md).
   // Forwarded through to TabSection unchanged.
   onToggleAspectLock: () => void;

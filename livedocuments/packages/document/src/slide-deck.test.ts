@@ -130,21 +130,9 @@ describe('slideBounds', () => {
     expect(slideBounds([])).toBeNull();
   });
 
-  it('fits the content when there is no frame', () => {
+  it('fits the content', () => {
     const got = slideBounds([shape('a', { x: 0, y: 0 }), shape('b', { x: 200, y: 100 })]);
     expect(got).toEqual({ x: 0, y: 0, w: 300, h: 200 });
-  });
-
-  it('uses a single frame’s own bounds', () => {
-    const frame = shape('f', { shape: 'frame', x: -50, y: -20, width: 800, height: 450 });
-    const got = slideBounds([frame, shape('a', { x: 0, y: 0 })]);
-    expect(got).toEqual({ x: -50, y: -20, w: 800, h: 450 });
-  });
-
-  it('falls back to content bounds when two frames are ambiguous', () => {
-    const f1 = shape('f1', { shape: 'frame', x: 0, y: 0, width: 100, height: 100 });
-    const f2 = shape('f2', { shape: 'frame', x: 400, y: 0, width: 100, height: 100 });
-    expect(slideBounds([f1, f2])).toEqual({ x: 0, y: 0, w: 500, h: 100 });
   });
 });
 

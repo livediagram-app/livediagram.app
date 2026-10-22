@@ -467,7 +467,7 @@ locked`); at `MAX_PAGES` refused with the toast "A tab holds at most 100 pages: 
     process, charts): `strokeColor` as `line` (an arrow's as `text` when labelled with no `textColor`;
     not a chart's), `arrowheadColor` as `line`, `textColor` as `text` (a text element always,
     others when labelled), all against the ground's `tones`.
-  - `box` (`BOX_KINDS` shapes, stat rows, closed paths and sketches, annotations): no drawn fill
+  - `box` (`BOX_KINDS` shapes, stat rows, closed paths and sketches): no drawn fill
     (`boxFill` null) is an outline: `strokeColor` as `line`, label as `text`. A fill of its own is a
     `card` when labelled or holding a later element's anchor (`holdsAny`), else a `mark`; a card is
     measured against the ground's `mean`, a mark against its `tones`; a border (`boxBorder`: not

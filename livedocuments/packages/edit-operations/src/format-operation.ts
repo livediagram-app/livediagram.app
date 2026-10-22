@@ -1,10 +1,7 @@
 // The canonical line form of an operation (docs/specs/024-agents/blueprints/edit-operations.md
 // "Line form"): what a rejection's header prints, and text that parses back to the same operation.
-// An `add` with a whole element has no line form; it prints as its JSON form, which parses too. So does a `wrap`
-// of two or more compound selectors: the line form joins every non-single member word into one selector.
+// An `add` with a whole element has no line form; it prints as its JSON form, which parses too.
 
-import { isSingleWord } from './selectors';
-import { tokeniseLine } from './tokenise';
 import type { EditOperation, FieldValue, Fields, Placement } from './types';
 import { FLAG_MEMBERS } from './vocabulary';
 
@@ -100,15 +97,6 @@ function words(operation: EditOperation): string[] {
         oneWord(operation.between[0]),
         oneWord(operation.between[1]),
       ];
-    case 'wrap':
-      return [
-        'wrap',
-        ...operation.targets,
-        'in',
-        operation.in,
-        ...idText(operation.id),
-        ...fieldsText(operation.fields),
-      ];
     case 'order':
       return [
         'order',
@@ -129,15 +117,7 @@ function words(operation: EditOperation): string[] {
   }
 }
 
-// A selector that is one ref or one quoted label, which `wrap`'s line form keeps as its own target.
-function isOneElement(selector: string): boolean {
-  const read = tokeniseLine(selector);
-  return !('error' in read) && read.words.length === 1 && isSingleWord(read.words[0]!);
-}
-
 export function formatOperation(operation: EditOperation): string {
-  if (operation.op === 'wrap' && operation.targets.filter((t) => !isOneElement(t)).length > 1)
-    return JSON.stringify(operation);
   const head = words(operation);
   if (operation.op === 'add' && 'element' in operation) return head[0]!;
   return [...head, ...flagsText(operation)].join(' ');

@@ -1,4 +1,4 @@
-// Small builders for lint fixtures: boxes, frames, stacks and pinned arrows on a tab, and a quiet lint.
+// Small builders for lint fixtures: boxes, stacks and pinned arrows on a tab, and a quiet lint.
 
 import type { LintCode, LintReport } from '@livedocuments/api-schema';
 import type { Anchor, Element, Tab } from '@livedocuments/document';
@@ -22,14 +22,13 @@ export const box = (
   ...extra,
 });
 
-export const frame = (
+export const stack = (
   id: string,
   x: number,
   y: number,
   width: number,
   height: number,
-  shape = 'frame',
-): Element => ({ id, type: 'shape', shape, x, y, width, height, label: id }) as Element;
+): Element => ({ id, type: 'shape', shape: 'stack', x, y, width, height, label: id });
 
 export const arrow = (
   id: string,

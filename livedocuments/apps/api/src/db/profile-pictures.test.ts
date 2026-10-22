@@ -63,7 +63,6 @@ describe('room ticket account bit', () => {
       tabScope: null,
       shareCode: null,
       workbenchPairing: null,
-      adderKey: null,
     };
     const account = await createWsTicket(env, 'd1', { ...base, account: true, personTag: null });
     const guest = await createWsTicket(env, 'd1', { ...base, account: false, personTag: null });

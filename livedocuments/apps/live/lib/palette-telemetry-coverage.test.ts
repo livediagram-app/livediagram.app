@@ -116,7 +116,6 @@ describe('palette telemetry coverage', () => {
       { type: 'table' },
       { type: 'link-card' },
       { type: 'video' },
-      { type: 'annotation' },
       { type: 'freehand' },
     ];
     const missing = nonShapeElements

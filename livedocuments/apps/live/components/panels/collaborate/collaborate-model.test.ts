@@ -29,7 +29,6 @@ const action = (
   mine = false,
 ): ActionRow => ({
   elementId: id,
-  actionId: `a-${id}`,
   label: id,
   actionName: id,
   status,

@@ -7,8 +7,8 @@ import type { EditRejection } from '@livedocuments/api-schema';
 import {
   ELEMENT_GRID_CELL,
   ELEMENT_GRID_MAX_CELLS,
-  FRAME_PAD,
-  FRAME_TOP,
+  CONTAINER_PAD,
+  CONTAINER_TOP,
   isContainer,
   type Element,
   type Endpoint,
@@ -57,21 +57,21 @@ function occupiers(state: EditState, moving: ReadonlySet<ElementId>): Box[] {
   });
 }
 
-// The boxes a new box beside a framed one makes way for: the frame's own contents, at any depth. What lies outside
-// the frame is moved on when the frame grows to hold it (make room), so the new box sits beside its neighbour
-// rather than being pushed past the frame's surroundings. Null when the box is in no frame, or a locked one, which
+// The boxes a new box beside a contained one makes way for: the container's own contents, at any depth. What lies
+// outside the container is moved on when it grows to hold it (make room), so the new box sits beside its neighbour
+// rather than being pushed past the container's surroundings. Null when the box is in no container, or a locked one, which
 // cannot grow.
-function frameOccupiers(
+function containerOccupiers(
   state: EditState,
   ref: Element,
   moving: ReadonlySet<ElementId>,
 ): Box[] | null {
   const holders = holdersOf(state);
-  const frame = holders.get(ref.id);
-  if (!frame || state.locked.has(frame)) return null;
+  const container = holders.get(ref.id);
+  if (!container || state.locked.has(container)) return null;
   const within = (id: ElementId): boolean => {
     const holder = holders.get(id);
-    return holder === frame || (!!holder && within(holder));
+    return holder === container || (!!holder && within(holder));
   };
   return currentElements(state).flatMap((el) => {
     const box = boxOf(el);
@@ -188,7 +188,7 @@ function sideAfter(state: EditState, ref: Element, refBox: Box): Side {
   return dy >= 0 ? 'below' : 'above';
 }
 
-// `inside:frame`: the first free slot of the interior, in rows top to bottom and left to right in
+// `inside:<container>`: the first free slot of the interior, in rows top to bottom and left to right in
 // steps of the gap; none free: below the lowest member, the container growing to hold it (EO27).
 function insideSlot(
   container: Box,
@@ -196,10 +196,10 @@ function insideSlot(
   taken: readonly Box[],
   gap: number,
 ) {
-  const left = container.x + FRAME_PAD;
-  const right = container.x + container.width - FRAME_PAD;
-  const top = container.y + FRAME_TOP;
-  const bottom = container.y + container.height - FRAME_PAD;
+  const left = container.x + CONTAINER_PAD;
+  const right = container.x + container.width - CONTAINER_PAD;
+  const top = container.y + CONTAINER_TOP;
+  const bottom = container.y + container.height - CONTAINER_PAD;
   const inside = taken.filter((b) => overlaps(b, container));
   for (let y = top; y + size.height <= bottom; y += gap) {
     for (let x = left; x + size.width <= right; x += gap) {
@@ -211,7 +211,7 @@ function insideSlot(
   const y = lowest + gap;
   return {
     box: { x: left, y, width: size.width, height: size.height },
-    height: y + size.height + FRAME_PAD - container.y,
+    height: y + size.height + CONTAINER_PAD - container.y,
   };
 }
 
@@ -266,8 +266,8 @@ export function resolvePlacement(
   moving: ReadonlySet<ElementId>,
   operation: number,
   start?: Box,
-  // An add, which grows a frame to hold what lands beside one of its members (growToHold), so it need only keep
-  // clear of that frame's contents. A move grows nothing, so it keeps clear of everything on the tab.
+  // An add, which grows a container to hold what lands beside one of its members (growToHold), so it need only keep
+  // clear of that container's contents. A move grows nothing, so it keeps clear of everything on the tab.
   { growsFrame = false }: { growsFrame?: boolean } = {},
 ): Placed | { rejection: EditRejection } {
   if (placement === undefined) {
@@ -290,12 +290,12 @@ export function resolvePlacement(
   });
   if (!refBox) return refusal('is an arrow; place against a box');
   if (moving.has(ref.id)) return refusal('moves with it');
-  // `inside:<frame> right-of:<x>`: x must be inside that frame or stack, at any depth.
+  // `inside:<stack> right-of:<x>`: x must be inside that stack, at any depth.
   if (placement.within !== undefined) {
     const holder = resolveOne(state, placement.within, operation);
     if ('rejection' in holder) return holder;
     if (!isContainer(holder.el))
-      return refusal(`is placed inside ${placement.within}, which is not a frame or stack`);
+      return refusal(`is placed inside ${placement.within}, which is not a stack`);
     const holders = holdersOf(state);
     const inside = (id: ElementId): boolean => {
       const h = holders.get(id);
@@ -307,7 +307,7 @@ export function resolvePlacement(
   const taken = occupiers(state, moving);
   switch (placement.rel) {
     case 'inside': {
-      if (!isContainer(ref)) return refusal('is not a frame or stack');
+      if (!isContainer(ref)) return refusal('is not a stack');
       const slot = insideSlot(refBox, size, taken, PLACEMENT_GAP);
       return {
         x: Math.round(slot.box.x),
@@ -325,9 +325,9 @@ export function resolvePlacement(
     default: {
       const side = placement.rel === 'after' ? sideAfter(state, ref, refBox) : placement.rel;
       const among =
-        placement.rel === 'after' || !growsFrame ? null : frameOccupiers(state, ref, moving);
+        placement.rel === 'after' || !growsFrame ? null : containerOccupiers(state, ref, moving);
       let start = beside(refBox, side, size, gap);
-      // `below:<frame> align:<x>`: beside the reference, centred on x across the side.
+      // `below:<stack> align:<x>`: beside the reference, centred on x across the side.
       if (placement.alignTo !== undefined) {
         const to = resolveOne(state, placement.alignTo, operation);
         if ('rejection' in to) return to;

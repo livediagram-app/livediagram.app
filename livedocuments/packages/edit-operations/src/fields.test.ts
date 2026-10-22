@@ -203,7 +203,6 @@ describe('writeFieldsOnto', () => {
 
   it('refuses identity, live and prototype fields, and keys the type lacks', () => {
     expect(refusal(square, { id: 'x' }).details[0]).toBe('id="x": cannot be changed');
-    expect(refusal(square, { addedBy: 'x' }).details[0]).toBe('addedBy="x": cannot be changed');
     expect(refusal(square, { [LIVE_ELEMENT_FIELDS[0]]: [] }).code).toBe('invalid_value');
     // JSON.parse makes `__proto__` an own key, which an object literal cannot.
     const proto = JSON.parse('{"__proto__":1}') as Fields;

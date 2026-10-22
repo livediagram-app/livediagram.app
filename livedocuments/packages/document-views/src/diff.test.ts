@@ -28,7 +28,7 @@ describe('diffView (R17, VW36)', () => {
   // An added id sharing a 4-character prefix lengthens refs (0bcd → 0bcd1): nothing else changed, and the diff
   // compares ids, so it says only what was added.
   it('reports only the added element when its id lengthens other refs', () => {
-    const frame = shapeAt('frame', '0bcd1111-x', 0, 0, 500, 500, { label: 'F' });
+    const frame = shapeAt('stack', '0bcd1111-x', 0, 0, 500, 500, { label: 'F' });
     const inside = shapeAt('square', 'n1', 10, 10, 100, 50, { label: 'In' });
     const target = shapeAt('square', 'n2', 600, 0, 100, 50, { label: 'Out' });
     const arrow = arrowBetween('a1', '0bcd1111-x', 'n2');
@@ -45,7 +45,7 @@ describe('diffView (R17, VW36)', () => {
   });
 
   it('names kind, label, note, container, summary and attribute changes', () => {
-    const frame = shapeAt('frame', 'f', 0, 0, 500, 500, { label: undefined });
+    const frame = shapeAt('stack', 'f', 0, 0, 500, 500, { label: undefined });
     const a = shapeAt('square', 'a', 10, 10, 100, 50, { label: 'A', note: 'n' });
     const b = shapeAt('checklist', 'b', 10, 100, 100, 50, {
       checklistItems: [{ text: 'x', done: false }],
@@ -126,7 +126,7 @@ describe('diffView (R17, VW36)', () => {
   });
 
   it('lists removals in the before order and additions under an unlabelled container', () => {
-    const frame = shapeAt('frame', 'f', 0, 0, 500, 500, { label: undefined });
+    const frame = shapeAt('stack', 'f', 0, 0, 500, 500, { label: undefined });
     const gone = shapeAt('square', 'gone', 600, 0, 100, 50, { label: 'Gone' });
     const odd = { id: 'odd', type: 'hologram' } as unknown as Element;
     expect(

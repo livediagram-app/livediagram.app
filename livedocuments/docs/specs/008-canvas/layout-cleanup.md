@@ -41,7 +41,7 @@ off", not "this diagram has no layout".
   key's rows), stay an even step apart; the step rounds to the grid only when that moves the last
   box no further than the tolerance.
 - **Nothing breaks.** A snap that would make two boxes overlap that did not, or nudge a box part-way
-  out of a lane or frame that held it, is undone for both.
+  out of a lane or stack that held it, is undone for both.
 - **Settled.** Passes repeat (at most 4) until one moves nothing, so running it twice changes
   nothing: the second press finds the tab already tidy.
 - Free arrow endpoints snap to the grid; pinned ones follow their boxes.
@@ -124,7 +124,7 @@ gives each angled arrow two bends through `curvePoints` (down to half height,
 across, down into the child), the shape an org chart is read in; one whose ends
 already line up runs straight rather than drawing a zero-length elbow with a
 sideways head (`arrow-orthogonal.ts`). An arrow with one end on a side across
-the flow and the other along it (a group's edge leaving its frame's side, a
+the flow and the other along it (a group's edge leaving its container's side, a
 decision's exit from its top or bottom in a swimlane) bends once instead: out of
 that side first, then along the flow into the other end, so it meets each end
 square. The bends are ordinary curve points, so the author can drag them like any
@@ -281,6 +281,5 @@ a component's nodes are positioned:
 Force-directed ("organic") layouts, laying shapes out inside their lanes (a lane moves only as a
 rigid block, so lane diagrams are offered Auto-align), routing the plain layout's arrows around
 obstacles, and any LLM
-involvement (the AI "Clean" in [AI Assistance](../007-editor/ai-assistance.md) is the separate,
-key-gated path; Auto Layout is the deterministic, offline-safe one every deployment
-gets). See issue #12 for the fuller rationale and open questions.
+involvement (Auto Layout is deterministic and offline-safe, and every deployment
+gets it). See issue #12 for the fuller rationale and open questions.

@@ -1,7 +1,7 @@
 // Draw-to-size and polygon tooling, lifted out of editor-page.tsx.
 // Two related gestures share the `pendingDraw` state machine:
 //
-// - Draw-to-size: picking anything from the palette except the annotation
+// - Draw-to-size: picking anything from the palette
 //   (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent in `pendingDraw`. The
 //   canvas intercepts the next pointer-down and calls `commitDraw` with the
 //   drag's start + end points, which mint the element sized to the dragged
@@ -16,7 +16,12 @@
 
 import type { Selection } from '@/lib/selection-store';
 import { useRef, useState } from 'react';
-import { createFreehand, type Element, type Tab, withVariantColours } from '@livedocuments/document';
+import {
+  createFreehand,
+  type Element,
+  type Tab,
+  withVariantColours,
+} from '@livedocuments/document';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';
@@ -166,9 +171,9 @@ export function useShapeDrawing(deps: ShapeDrawingDeps) {
       intent.type === 'shape' && dressed.type === 'shape'
         ? withVariantColours(dressed, intent.variant)
         : dressed;
-    // Frames don't need special-casing here: the canvas + exporters
-    // route through `framesFirst`, which keeps every frame painted
-    // behind its contents regardless of array position (docs/specs/008-canvas/canvas-and-palette.md).
+    // Containers don't need special-casing here: the minimap routes through
+    // `containersFirst`, and the canvas paints containers behind their
+    // contents regardless of array position.
     commit((els) => [...els, sized]);
     setSelectedId(sized.id);
     // A freshly added text element drops straight into typing mode

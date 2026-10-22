@@ -28,27 +28,27 @@ Views are what an agent reads by default; JSON is what it asks for. The measurem
 One line per element: its kind, ref, label, attributes, then its outgoing arrows. Indentation is containment.
 
 ```text
-tab 0b34 "Board update" · 24 elements: 9 boxes, 3 frames, 4 arrows · 3 pages: 3 slide (view pages) · threads 1 open/2 · rev 41
-frame 048c "Slide 1"
+tab 0b34 "Board update" · 24 elements: 12 boxes, 4 arrows · 3 pages: 3 slide (view pages) · threads 1 open/2 · rev 41
+stack 048c "Slide 1"
   text b811 "Q3 board update"
   image 649c "Team photo"
-frame c991 "Slide 2"
+stack c991 "Slide 2"
   square 146b "Revenue" icon=chart → e4a8
   square e4a8 "Margin" comments=1 resolved
   table 480a 4x3 Region | Q2 | Q3
-frame d41e "Slide 3"
+stack d41e "Slide 3"
   sticky 0c84 "Check the churn figure before Friday" comments=2 open
 ```
 
 The example is abridged; a real outline prints every element.
 
-- **Header** names the tab, its counts (boxes, frames, arrows), its finish when set (`finish=sketch`), its pages (`4 pages: 3 slide, 1 article (view pages)`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
-- **Kind** is the shape for shapes (`square`, `cylinder`, `frame`), else the element type (`text`, `sticky`, `table`, `arrow`, `image`, `freehand`).
+- **Header** names the tab, its counts (boxes, arrows), its finish when set (`finish=sketch`), its pages (`4 pages: 3 slide, 1 article (view pages)`), elements on hidden layers and elements of unknown kinds, open threads and the revision.
+- **Kind** is the shape for shapes (`square`, `cylinder`, `stack`), else the element type (`text`, `sticky`, `table`, `arrow`, `image`, `freehand`).
 - **Labels and notes** are JSON strings. Labels are cut at 60 characters, notes at 48, both on a word boundary
   with `…`.
-- **Containment** is derived: an element nests under the smallest frame holding its centre
-  (`deriveContainers`). Edit operations report frame
-  membership by the same rule; the editor's frame drag keeps its own.
+- **Containment** is derived: an element nests under the smallest stack holding its centre
+  (`deriveContainers`). Edit operations report stack
+  membership by the same rule, and the editor's drag carries by it too.
 - **Arrows** print on their source line as `→ target "label" ~style`; an arrow with a free end prints on its own
   line. The arrow's own id is in the `graph` view.
 - **Order** within a level is reading order: rows top to bottom, then left to right.
@@ -94,7 +94,7 @@ compares that copy with the current tab. The api serves no diff.
 - The api and the CLI apply no budget unless asked; the MCP's `read_document` applies 8,000 tokens unless its caller
   passes another.
 - A view never truncates silently: it ends with one line naming what it left out and the command that shows it,
-  in the syntax of the door it was read through (`… 12 elements in frame c991 hidden: view --only c991` in the CLI,
+  in the syntax of the door it was read through (`… 12 elements in stack c991 hidden: view --only c991` in the CLI,
   `read_document {"only":"c991"}` in the MCP).
 
 ## Where views are made

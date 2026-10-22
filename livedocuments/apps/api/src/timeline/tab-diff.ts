@@ -34,8 +34,7 @@ function threadsOf(elements: Element[]): { key: string; thread: ThreadView }[] {
   });
 }
 
-// Every action on an element: an Action panel's list, or an ordinary
-// element's one (docs/specs/012-collaboration/assigned-actions.md).
+// An element's action as a list of at most one (docs/specs/012-collaboration/assigned-actions.md).
 function actionsOf(el: Element): ElementAction[] {
   return elementActions(el);
 }

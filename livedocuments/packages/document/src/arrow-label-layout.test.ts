@@ -175,9 +175,9 @@ describe('layoutArrowLabels: obstacles', () => {
     expect(layoutOf([box('b', -50, -50, 700, 100), line()], 'a').center).toEqual({ x: 300, y: 0 });
   });
 
-  it('ignores frames, which are backdrops', () => {
-    const frame = box('f', -50, -50, 700, 100, { shape: 'frame' });
-    expect(layoutOf([frame, line()], 'a').center).toEqual({ x: 300, y: 0 });
+  it('ignores containers, which are backdrops', () => {
+    const stack = box('f', -50, -50, 700, 100, { shape: 'stack' });
+    expect(layoutOf([stack, line()], 'a').center).toEqual({ x: 300, y: 0 });
   });
 
   it('avoids a label placed earlier in document order', () => {

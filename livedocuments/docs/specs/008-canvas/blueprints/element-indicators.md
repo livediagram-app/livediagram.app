@@ -172,7 +172,7 @@ export function contentShift(
 | Content under the cluster, no room to move | pip                                         |
 | Content aligned against the move           | pip                                         |
 | Label runs under the glyphs anyway         | the fill backing masks it (estimate margin) |
-| Transparent fill (frame, text)             | no backing                                  |
+| Transparent fill (text)                    | no backing                                  |
 | Zoom below `ADORNMENT_MIN_ZOOM`            | nothing renders; the inset stays (stable)   |
 | Style Off                                  | nothing renders, no inset                   |
 | Unknown stored style                       | reads as `'top'`                            |

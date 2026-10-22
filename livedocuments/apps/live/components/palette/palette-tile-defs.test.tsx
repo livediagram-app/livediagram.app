@@ -93,8 +93,8 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   // Popular has no tiles of its own: each mode's layout fills it (palette-layouts).
   popular: 0,
   shapes: 13,
-  build: 4,
-  write: 5,
+  build: 3,
+  write: 3,
   draw: 3,
   // A screen's parts (docs/specs/007-editor/wireframe-pages.md "The Elements palette"); the layout
   // adds the Badge, the Card and the Checklist.
@@ -107,8 +107,6 @@ const TILES_PER_CATEGORY: Record<string, number> = {
   components: 11,
   concepts: 8,
   data: 7,
-  // A Participant's category borrows the landing category's sticky and text tiles (participantTiles).
-  participate: 0,
 };
 
 describe('PALETTE_CATEGORIES', () => {

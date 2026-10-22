@@ -46,7 +46,6 @@ export const TELEMETRY_CATEGORIES = [
   // Freeing an element somebody was holding (docs/specs/007-editor/live-app.md lock): 'Changed' with `type`
   // 'Unlocked'. Named for the facilitator baton it once belonged to.
   'Facilitator',
-  'AI',
   'Team',
   // Participant lifecycle (docs/specs/017-telemetry/telemetry.md): 'Participant'/'Created' fires
   // once per fresh browser identity mint, the daily-new-visitors
@@ -65,8 +64,7 @@ export const TELEMETRY_CATEGORIES = [
   'Token',
   // MCP server tool calls (apps/mcp, docs/specs/015-api/mcp-server.md): 'Used' with `type` the tool
   // name (CreateDocument, ReadDocument, ...). Emitted by the MCP worker, the
-  // third app that reports telemetry, so usage shows up distinctly from the
-  // in-editor AI panel.
+  // third app that reports telemetry.
   'Mcp',
   // CLI commands (apps/cli, docs/specs/015-api/cli.md "Telemetry"): 'Used' with `type` the verb (TabView, ElementSet), sent
   // to the active profile's api after a command succeeds, never for help; the CLI's counterpart of `Mcp`.
@@ -310,14 +308,6 @@ export type TelemetryWindow = {
   rows: TelemetryCount[];
 };
 
-// ---------------------------------------------------------------------
-// AI Assistance (docs/specs/007-editor/ai-assistance.md)
-// ---------------------------------------------------------------------
-
-// Two modes (docs/specs/007-editor/ai-assistance.md): 'ask' is read-only Q&A; 'clean' tidies the existing tab.
-// The old 'generate' (Build) + 'review' modes were removed — the calling model
-// in an external AI tool (docs/specs/015-api/mcp-server.md) does generation far better.
-
 // `byMetric` is the per-event version of `byCategory`: one 30-day
 // series per distinct event, keyed by `metricKey(category, action,
 // type)` (= `category|action|type`, empty string for a null type).
@@ -377,9 +367,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Table',
     'Image',
     'Avatar',
-    'Frame',
-    'Annotation',
-    // Pointer note (docs/specs/009-elements/pointer-note.md): a Write element beside Annotation.
+    // Pointer note (docs/specs/009-elements/pointer-note.md): a Write element.
     'PointerNote',
     'LinkCard',
     // Every embed tile (YouTube / Vimeo / Loom / Figma / Google Docs / the
@@ -392,8 +380,7 @@ export const PALETTE_TELEMETRY_TYPES = {
     'Polyline',
     'Timeline-rail',
     'CodeBlock',
-    'Page',
-    // Stack (docs/specs/009-elements/stack.md): a Build container after Frame.
+    // Stack (docs/specs/009-elements/stack.md): a Build container.
     'Stack',
     'Checklist',
     // Tab window (docs/specs/009-elements/tab-window.md).

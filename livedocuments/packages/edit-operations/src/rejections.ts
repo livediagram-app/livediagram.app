@@ -157,7 +157,9 @@ export function invalidResult(
   return {
     code: 'invalid_result',
     details: [`${subject} ${issue.field}: ${issue.rule}`],
-    hint: kind ? `see the format: livedocuments schema ${kind}` : 'see the format: livedocuments schema',
+    hint: kind
+      ? `see the format: livedocuments schema ${kind}`
+      : 'see the format: livedocuments schema',
   };
 }
 
@@ -206,20 +208,6 @@ export function notConnected(
       ...(touching.length ? ['arrows touching them:', ...touching.map((t) => `  ${t}`)] : []),
     ],
     hint: `connect ${a} -> ${b} first, or insert between the ends of one of these`,
-  };
-}
-
-// `wrap` would hold elements that are not its members.
-export function frameCaptures(
-  operation: number,
-  container: string,
-  bystanders: readonly string[],
-): EditRejection {
-  return {
-    code: 'frame_captures',
-    operation,
-    details: [`the ${container} would hold non-members:`, ...bystanders.map((b) => `  ${b}`)],
-    hint: 'add them to the members, or add absorb or make-room',
   };
 }
 

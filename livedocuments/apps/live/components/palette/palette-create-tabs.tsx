@@ -30,14 +30,14 @@ export function PaletteShapesTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteTileGrid tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// The structural elements (docs/specs/010-palette/build-category.md): Frame, Stack, Table, Sankey.
+// The structural elements (docs/specs/010-palette/build-category.md): Stack, Table, Sankey.
 // Rows with a blurb rather than a bare icon grid: these are all "a container
 // that holds other work", so the picture alone doesn't separate them.
 export function PaletteBuildTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }
 
-// The wordy elements (docs/specs/010-palette/palette-top-level-categories.md): Page, Text, Sticky Note, Annotation.
+// The wordy elements (docs/specs/010-palette/palette-top-level-categories.md): Text, Sticky Note, Pointer Note.
 export function PaletteWriteTab({ pendingDraw, actions, tiles }: TabProps) {
   return <PaletteToolRows tiles={tiles} actions={actions} pendingDraw={pendingDraw} />;
 }

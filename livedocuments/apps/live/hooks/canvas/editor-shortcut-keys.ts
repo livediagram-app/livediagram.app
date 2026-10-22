@@ -13,8 +13,7 @@ import { requestToolbarSearch } from '@/lib/toolbar-search-request';
 // flowchart set. The rest of the ShapeKind union (stadium, document,
 // cloud, devices, etc.) has no memorable free letter and stays a click
 // away in the palette.
-type ShortcutShape =
-  'square' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'parallelogram' | 'frame';
+type ShortcutShape = 'square' | 'circle' | 'diamond' | 'cylinder' | 'hexagon' | 'parallelogram';
 
 export type EditorKeyboardShortcutsDeps = {
   // Called once per key the editor acted on: the power user mode offer counts
@@ -43,8 +42,9 @@ export type EditorKeyboardShortcutsDeps = {
   // undo) stay intact and the visitor can't desync state via
   // shortcuts that would otherwise reach the canvas.
   isReadOnly: boolean;
-  // A Participant (docs/specs/013-workspace/share-roles.md): read-only, yet it deletes, types into and
-  // Space-edits elements; what it may touch is decided where each lands (the commit guard, beginEdit).
+  // A Participant (docs/specs/013-workspace/share-roles.md): read-only, yet it types into and Space-edits
+  // elements, and undoes its own writing; what it may touch is decided where each lands (beginEdit, the commit
+  // guard).
   participant?: boolean;
   // Action callbacks that perform the actual mutation. Each one is
   // a fresh closure every render: the hook reads them via a ref so
@@ -172,7 +172,6 @@ export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
 };
 
 export const EDIT_KEYS: Record<string, ShortcutAction> = {
-  f: (l) => l.addShape('frame'),
   r: (l) => l.addShape('square'),
   '2': (l) => l.addShape('square'),
   o: (l) => l.addShape('circle'),
@@ -186,15 +185,6 @@ export const EDIT_KEYS: Record<string, ShortcutAction> = {
   n: (l) => l.addSticky(),
   a: (l) => l.addArrow(),
   '5': (l) => l.addArrow(),
-};
-
-// A Participant's plain keys (docs/specs/013-workspace/share-roles.md "The Participant palette"): what its tiles add, by
-// the keys the tiles show, and nothing else of EDIT_KEYS. The commit guard still decides what lands.
-export const PARTICIPANT_KEYS: Record<string, ShortcutAction> = {
-  n: (l) => l.addSticky(),
-  t: (l) => l.addText(),
-  '8': (l) => l.addText(),
-  '9': (l) => l.onAddImage?.(),
 };
 
 // Cmd / Ctrl modified shortcuts. Returns true when it consumed the event.
@@ -255,7 +245,7 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
   // A Viewer gets the zoom + search chords above and nothing below. Nothing was dispatched, so this is `false`:
   // the caller swallows the key either way.
   if (live.isReadOnly && !live.participant) return false;
-  // Redo: Cmd-Shift-Z, Ctrl-Y, Ctrl-Shift-Z. A Participant undoes and redoes its own changes too
+  // Redo: Cmd-Shift-Z, Ctrl-Y, Ctrl-Shift-Z. A Participant undoes and redoes its own writing too
   // (docs/specs/013-workspace/share-roles.md); the room puts back any part it may not make.
   if (lower === 'y' || (lower === 'z' && e.shiftKey)) {
     e.preventDefault();

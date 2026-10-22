@@ -86,7 +86,6 @@ export function EditorCanvasHost() {
     hideOtherLayersOp,
     layerPreviewId,
     setLayerPreviewId,
-    addAnnotation,
     addArrow,
     addAvatar,
     addBanner,
@@ -108,13 +107,9 @@ export function EditorCanvasHost() {
     addTable,
     addTechIcon,
     addText,
-    aiCapable,
-    aiPanelPosition,
-    aiPanelVisible,
     anyWelcomeOpen,
     appendTableColumnSelected,
     appendTableRowSelected,
-    applyAiElements,
     beginAnchorDrag,
     beginArrowCurveDrag,
     beginArrowCurvePointDrag,
@@ -191,7 +186,6 @@ export function EditorCanvasHost() {
     isPinchingRef,
     isReadOnly,
     can,
-    participating,
     laserTrailRows,
     livePresence,
     lockedByOther,
@@ -218,7 +212,6 @@ export function EditorCanvasHost() {
     selectMarquee,
     confirm,
     selfParticipant,
-    setAiPanelPosition,
     followMe,
     tabs,
     setCanvasTool,
@@ -414,11 +407,8 @@ export function EditorCanvasHost() {
               activeTabLoaded={loadedTabIds.has(activeTab.id)}
               tabLocked={activeTabLocked}
               readOnly={isReadOnly}
-              participantPalette={participating && can.addContent}
               takePart={can.takePart}
-              canMove={can.move}
               canWriteText={can.writeText}
-              canResize={can.resize}
               documentName={documentName}
               tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
               tabBackgroundColor={backdrop.backgroundColor}
@@ -528,7 +518,6 @@ export function EditorCanvasHost() {
               onDropIcon={isReadOnly ? undefined : dropIconOnElement}
               onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
               onAddTable={addTable}
-              onAddAnnotation={addAnnotation}
               onAddLinkCard={addLinkCard}
               onAddVideo={addVideo}
               onAddBanner={addBanner}
@@ -647,8 +636,7 @@ export function EditorCanvasHost() {
               onToggleActionDone={
                 isReadOnly
                   ? undefined
-                  : (id, done, actionId) =>
-                      done ? completeAction(id, actionId) : reopenAction(id, actionId)
+                  : (id, done) => (done ? completeAction(id) : reopenAction(id))
               }
               currentDocumentId={documentId}
               onOpenDocument={openDocument}
@@ -867,19 +855,6 @@ export function EditorCanvasHost() {
               explorerHidden={workbenchMode || landscapePhone}
               workbenchBack={workbenchFrame}
               onToggleZen={embedMode ? undefined : toggleZenMode}
-              aiPanel={
-                aiCapable && userPreferences.aiAssistanceEnabled && aiPanelVisible && !isReadOnly
-                  ? {
-                      position: aiPanelPosition,
-                      onMove: (x, y) => setAiPanelPosition({ x, y }),
-                      onReset: () => setAiPanelPosition(null),
-                      contextElements: activeTab.elements,
-                      onApplyElements: applyAiElements,
-                      ownerId: selfParticipant.id,
-                      tabId: activeTab.id,
-                    }
-                  : undefined
-              }
             />
             {lockedMenu ? (
               <LockedElementMenu

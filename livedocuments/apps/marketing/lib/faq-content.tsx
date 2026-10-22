@@ -371,12 +371,12 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
         q: 'Can I connect my own AI assistant, like Claude?',
         a: (
           <>
-            Yes. livedocuments runs an MCP server at mcp.livedocuments.app. Connect a compatible AI tool
-            and, after a one-time authorisation, it can find, read, create and edit the documents in
-            your account, including writing articles, building slide decks and designing logos. Its
-            changes appear live for anyone on the tab, outlined so you can see them and undo them.{' '}
-            <a href="/ai">Build with AI</a> walks you through connecting Claude, ChatGPT, Cursor and
-            more.
+            Yes. livedocuments runs an MCP server at mcp.livedocuments.app. Connect a compatible AI
+            tool and, after a one-time authorisation, it can find, read, create and edit the
+            documents in your account, including writing articles, building slide decks and
+            designing logos. Its changes appear live for anyone on the tab, outlined so you can see
+            them and undo them. <a href="/ai">Build with AI</a> walks you through connecting Claude,
+            ChatGPT, Cursor and more.
           </>
         ),
         aText:
@@ -504,8 +504,8 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. It is MIT-licensed and the source is on GitHub. Deploy the static frontends and the Cloudflare Workers backend to your own Cloudflare account and you get every feature. See deploying livedocuments.',
       },
       {
-        q: 'Do I need sign-in or an AI key to self-host?',
-        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. AI assistance switches on when you add an AI key, and email once sign-in and its own key are set up.',
+        q: 'Do I need sign-in to self-host?',
+        a: 'No. Without sign-in configured, your copy runs in guest mode with persistence, sharing and real-time collaboration all working. Email switches on once sign-in and its own key are set up.',
       },
     ],
   },

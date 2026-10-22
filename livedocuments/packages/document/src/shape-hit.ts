@@ -44,13 +44,12 @@ const CSS_OUTLINE_KINDS: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
   'circle',
   'stadium',
   'browser',
-  'page',
 ]);
 const DRAWN_KINDS: ReadonlySet<ShapeKind> = new Set(SHAPE_GEOMETRY_KINDS);
 // The corner a CSS-drawn box gets with no radius of its own (element-variant.ts).
 export const CSS_DEFAULT_RADIUS_PX = 8;
 // The parts that take the element's fill (shape-geometry.ts roles).
-export const FILLED_ROLES: ReadonlySet<ShapePartRole> = new Set<ShapePartRole>(['main', 'outline']);
+export const FILLED_ROLES: ReadonlySet<ShapePartRole> = new Set<ShapePartRole>(['main']);
 // No drawn outline reaches further from the centre than this many half
 // diagonals of its box (the speech bubble's tail hangs to 120% of the height),
 // so a brush beyond it is skipped without building the outline.

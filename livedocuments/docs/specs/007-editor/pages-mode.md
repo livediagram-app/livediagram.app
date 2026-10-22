@@ -126,7 +126,7 @@ one category (Popular, a pick from across them, aside).
   ([Wireframe pages](wireframe-pages.md) "The Elements palette").
 - **Logo** (logo pages): **Draw** (Outlines: the Polygon), **Shapes**,
   **Write** (Text for a wordmark, a sticky note for a comment), **Icons** and **Media**
-  (an Image to trace); no charts, blocks, frames, stickers or embeds, and no Logo category
+  (an Image to trace); no charts, blocks, stickers or embeds, and no Logo category
   ([Logo pages](logo-pages.md) "The Logo palette").
 
 The kind changes by itself as someone moves (see "Selecting on a page" for which page they are

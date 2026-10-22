@@ -96,7 +96,7 @@ const FIXTURES: Record<string, Record<string, unknown>> = {
   sticky: { ...MINIMAL_BOX },
   image: { ...MINIMAL_BOX, imageId: 'img_1' },
   freehand: { ...MINIMAL_BOX, closed: false, packedPoints: 'AQAAAAAA' },
-  annotation: { ...MINIMAL_BOX },
+  'article-note': { ...MINIMAL_BOX, articleNote: 'comment' },
   'link-card': { ...MINIMAL_BOX },
   video: { ...MINIMAL_BOX },
   arrow: { from: { kind: 'free', x: 0, y: 0 }, to: { kind: 'free', x: 1, y: 1 } },

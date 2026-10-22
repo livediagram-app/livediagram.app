@@ -75,7 +75,7 @@ type EditorActionsApi = {
   openActionPopover: (elementId: string) => void;
   closeActionPopover: () => void;
   assignActionFor: string | null;
-  // Which of an Action panel's actions the dialog edits; null to add one.
+  // The id of the action the dialog edits; null to add one.
   assignActionId: string | null;
   openAssignActionDialog: (elementId: string, actionId?: string | null) => void;
   closeAssignActionDialog: () => void;
@@ -106,13 +106,7 @@ export function useEditorActions(deps: EditorActionsDeps): EditorActionsApi {
               elements: t.elements.map((el) => {
                 if (el.id !== elementId || !isBoxed(el)) return el;
                 const next = fn(elementActions(el));
-                const {
-                  action: _one,
-                  actions: _many,
-                  ...rest
-                } = el as typeof el & {
-                  actions?: ElementAction[];
-                };
+                const { action: _one, ...rest } = el;
                 return next[0] ? { ...rest, action: next[0] } : rest;
               }),
             },

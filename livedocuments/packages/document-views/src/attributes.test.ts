@@ -80,13 +80,6 @@ describe('attributesOf (VW14)', () => {
     expect(el({ ...action('open'), name: undefined, assignee: { name: ' ' } })).toBe('action=""');
   });
 
-  it('counts an actions list', () => {
-    const el = (list: unknown[]) =>
-      printed({ ...shapeAt('square', 'x', 0, 0), actions: list } as Element);
-    expect(el([action('open'), action('done'), action('open'), 'junk'])).toBe('actions=2 open/3');
-    expect(el([])).toBe('');
-  });
-
   it('prints an open thread', () => {
     const el = {
       ...shapeAt('square', 'x', 0, 0),

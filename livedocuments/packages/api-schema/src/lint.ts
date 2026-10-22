@@ -10,8 +10,6 @@ export const LINT_CODES = [
   'label-collision',
   'label-overflow',
   'node-isolated',
-  'group-escape',
-  'group-split-edges',
   'duplicate-label',
   'flow-backwards',
   // A Pages tab only (its pages' text).
@@ -31,8 +29,6 @@ export const LINT_SEVERITY: Readonly<Record<LintCode, LintSeverity>> = {
   'label-collision': 'warning',
   'label-overflow': 'warning',
   'node-isolated': 'warning',
-  'group-escape': 'warning',
-  'group-split-edges': 'info',
   'duplicate-label': 'info',
   'flow-backwards': 'info',
   'text-overflow': 'warning',

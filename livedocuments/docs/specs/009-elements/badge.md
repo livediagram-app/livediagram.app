@@ -47,7 +47,7 @@ attachAt?: 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom
   element attaches it there, centred on the point.
 - **Detaching.** Dragging an attached badge away from its point (further than 16px) detaches it; dropping it on
   another point re-attaches it there, possibly on another element.
-- **Hosts.** Any boxed element except a badge, a step number and the containers (frame, stack), whose corners are too far from what they hold to read as a mark on them (and a stack reflows under them). Arrows are not
+- **Hosts.** Any boxed element except a badge, a step number and the stack, whose corners are too far from what they hold to read as a mark on them (and a stack reflows under them). Arrows are not
   hosts.
 - **Following the host.** An attached badge moves with its host in a drag, a nudge and every layout (tidy,
   a stack's reflow) and re-settles on its point when the host is resized or rotated. It is **deleted** with its host
@@ -115,9 +115,6 @@ dragging, not from the menu; **Detach** is a row in the section while the badge 
 | Editor      | Everything above                                                                           |
 | Participant | Write a badge's text, as on any element; cannot place, move, attach, detach or restyle one |
 | Viewer      | Look                                                                                       |
-
-A Participant moving a host it may move (its own sticky, say) carries the badges attached to it; that write is the
-host's move, not a badge edit.
 
 ## Agents
 

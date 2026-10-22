@@ -2,8 +2,8 @@
 // tools) and its transcript (what was said). A check states one requirement of the prompt and answers yes or no, so
 // a round's score is a count, never an opinion. Pure: no server, no clock.
 
-// Shapes that hold a node's words; frames, key swatches and the like are containers or decoration.
-const DECOR_SHAPES = new Set(['frame']);
+// Shapes that hold a node's words; stacks and the like are containers or decoration.
+const DECOR_SHAPES = new Set(['stack']);
 
 export const lc = (s) => (s ?? '').toString().toLowerCase();
 
@@ -77,12 +77,12 @@ export function flows(snap, a, b) {
   return linked(snap, a, b, { directed: true });
 }
 
-// Elements of one kind: a shape name ("frame", "icon", "bar-chart") or an element type ("sticky", "arrow").
+// Elements of one kind: a shape name ("stack", "icon", "bar-chart") or an element type ("sticky", "arrow").
 export function shapes(snap, kind) {
   return elementsOf(snap).filter((e) => e.shape === kind || (e.type === kind && !e.shape));
 }
 
-// Something matching `word` sits inside a frame whose words match `group`: by bounds, or by its parent.
+// Something matching `word` sits inside a container whose words match `group`: by bounds, or by its parent.
 export function inside(snap, word, group) {
   const groups = find(snap, group).filter(
     (g) => g.type === 'shape' && (DECOR_SHAPES.has(g.shape) || g.width),
@@ -92,7 +92,6 @@ export function inside(snap, word, group) {
       (g) =>
         g.id !== e.id &&
         (e.parentId === g.id ||
-          e.frameId === g.id ||
           (e.x >= g.x &&
             e.y >= g.y &&
             e.x + (e.width ?? 0) <= g.x + g.width &&
@@ -172,7 +171,7 @@ export function mentionsAll(snap, words) {
   };
 }
 
-// Every word has an element of its own (a box, a sticky, a frame) holding it.
+// Every word has an element of its own (a box, a sticky, a stack) holding it.
 export function elementsFor(snap, words) {
   const missing = words.filter((w) => find(snap, w).length === 0);
   return {

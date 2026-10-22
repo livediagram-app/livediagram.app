@@ -1,13 +1,16 @@
-// A Participant's content, written by the room (docs/specs/013-workspace/share-roles.md "Integrity"; blueprint
-// "Behaviour and state"). A Participant never saves a whole tab: the room applies each element op it sends to the
-// STORED tab through the participant content rule, then compare-and-swaps the row.
+// A Participant's text, written by the room (docs/specs/013-workspace/share-roles.md "Integrity"; blueprint
+// "Behaviour and state"). A Participant never saves a whole tab: the room applies each element op and each article
+// frame it sends to the STORED tab through the participant rules (text only), then compare-and-swaps the row.
 //
 // Called ONLY from the document's room, on its tab write queue, so these writes never race each other. The
 // compare-and-swap is the second line, against an editor's autosave and a linked tab's other room.
 
 import {
+  applyParticipantArticleOps,
   applyParticipantOp,
+  type ArticleOp,
   type ElementOp,
+  type ParticipantArticleResult,
   type ParticipantOpResult,
   type Tab,
 } from '@livedocuments/document';
@@ -22,12 +25,20 @@ export const TAB_CAS_MAX_ATTEMPTS = 8;
 export type ParticipantWriteFailure = { ok: false; status: 404 | 409 | 413 };
 export type ParticipantWriteResult =
   { ok: true; outcome: ParticipantOpResult } | ParticipantWriteFailure;
+export type ParticipantArticleWriteResult =
+  { ok: true; outcome: ParticipantArticleResult } | ParticipantWriteFailure;
 
 type ParticipantOpRequest = {
   documentId: string;
   tabId: string;
   op: ElementOp;
-  adderKey: string | null;
+};
+
+type ParticipantArticleRequest = {
+  documentId: string;
+  tabId: string;
+  flow: string;
+  ops: readonly ArticleOp[];
 };
 
 type StoredTab = Omit<Tab, 'id' | 'name'>;
@@ -72,7 +83,20 @@ export async function writeParticipantOp(
   req: ParticipantOpRequest,
 ): Promise<ParticipantWriteResult> {
   const result = await swapTab(env, req.documentId, req.tabId, (tab) => {
-    const outcome = applyParticipantOp(tab, req.op, req.adderKey);
+    const outcome = applyParticipantOp(tab, req.op);
+    const next = outcome.result === 'applied' && outcome.changed ? outcome.tab : null;
+    return { next, answer: outcome };
+  });
+  if (!result.ok) return result;
+  return { ok: true, outcome: result.answer };
+}
+
+export async function writeParticipantArticle(
+  env: Env,
+  req: ParticipantArticleRequest,
+): Promise<ParticipantArticleWriteResult> {
+  const result = await swapTab(env, req.documentId, req.tabId, (tab) => {
+    const outcome = applyParticipantArticleOps(tab, req.flow, req.ops);
     const next = outcome.result === 'applied' && outcome.changed ? outcome.tab : null;
     return { next, answer: outcome };
   });

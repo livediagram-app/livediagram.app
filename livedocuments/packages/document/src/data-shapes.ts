@@ -118,7 +118,7 @@ export function isCodeBlockShape(kind: ShapeKind): boolean {
 export type ChecklistItem = { text: string; done: boolean };
 export const CHECKLIST_MAX_ITEMS = 30;
 
-// Page masthead (docs/specs/009-elements/page-element.md). A title line, not a paragraph — the renderer
+// A heading line (pageTitle / pageSubtitle). A title line, not a paragraph — the renderer
 // clamps it to one line anyway, so anything longer is a paste accident.
 export const PAGE_HEADING_MAX = 200;
 

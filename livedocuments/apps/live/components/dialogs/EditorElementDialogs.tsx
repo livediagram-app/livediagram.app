@@ -104,13 +104,9 @@ export function EditorElementDialogs() {
         () => setSankeyFlowsOpenForId(null),
         (el) => el.type === 'shape' && el.shape === 'sankey' && canEditSankey(can, el),
       ],
-      [
-        imagePickerOpenFor?.forElementId ?? null,
-        closeImagePicker,
-        () => !isReadOnly || !!can.addContent,
-      ],
+      [imagePickerOpenFor?.forElementId ?? null, closeImagePicker, () => !isReadOnly],
     ],
-    `${isReadOnly}|${can.level}|${!!can.addContent}`,
+    `${isReadOnly}|${can.level}`,
   );
 
   // A video's link IS its content (docs/specs/009-elements/youtube-video.md), so its picker is the URL mode
@@ -261,8 +257,7 @@ export function EditorElementDialogs() {
             );
           })()
         : null}
-      {/* A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md). */}
-      {imagePickerOpenFor && documentId && (!isReadOnly || can.addContent) ? (
+      {imagePickerOpenFor && documentId && !isReadOnly ? (
         <ImagePicker
           ownerId={selfParticipant.id}
           documentId={documentId}

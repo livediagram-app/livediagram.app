@@ -243,7 +243,7 @@ export function useLayersState(opts: {
   // label: the type-to-edit path commits the first keystroke before the
   // user finishes ("Cloudflare" starts as a committed "C"), so a
   // first-label-only guard would always see a non-empty label and never
-  // fire. Creation-seeded labels (tech icons, templates, paste, AI)
+  // fire. Creation-seeded labels (tech icons, templates, paste)
   // can't reach here anyway — they never pass through commitLabel — and
   // once a layer is named, isDefaultLayerName ends adoption for good.
   // Writes via tick, mirroring the tab auto-rename's no-history policy.

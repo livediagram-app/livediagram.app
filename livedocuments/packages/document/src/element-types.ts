@@ -1,5 +1,5 @@
 // Boxed-element type definitions (shape / text / table / sticky / image /
-// freehand / annotation / link-card), split out of index.ts to keep it under
+// freehand / article-note / link-card), split out of index.ts to keep it under
 // the ~1000-line budget. Pure types; re-exported through index.ts so the
 // public `@livedocuments/document` surface is unchanged. ElementLink + the enums
 // stay in index.ts and are imported here (type-only, so no runtime cycle).
@@ -283,17 +283,12 @@ export type ShapeElement = {
   // the card is usually narrower than the code someone pastes into it. Set
   // false to keep long lines on one line (and off the card).
   codeWrap?: boolean;
-  // Page masthead (docs/specs/009-elements/page-element.md): the fixed heading + subtitle above the body.
-  // Meaningful on the 'page' kind, and reused by two web components
-  // (docs/specs/009-elements/web-components-and-no-groups.md) for the same job — a single-line heading beside the
-  // multi-line label: a banner's subtitle (`pageSubtitle`) and a callout's
-  // heading (`pageTitle`). Bounded in validate.ts.
+  // A heading line beside the multi-line label, used by the web components
+  // (docs/specs/009-elements/web-components-and-no-groups.md): a banner's subtitle (`pageSubtitle`), a callout's
+  // and a card's heading (`pageTitle`) and meta line (`pageSubtitle`). Bounded in validate.ts.
   //
-  // Separate fields, not the first two lines of the body: a page's title is
-  // structure, not prose. Keeping them apart means the body can be reordered,
-  // reformatted or emptied without the heading moving or vanishing, and the
-  // masthead can be styled as a masthead rather than as whatever the first
-  // line of the rich text happens to be.
+  // Separate fields, not the first lines of the body: the label can be reordered, reformatted or
+  // emptied without the heading moving or vanishing.
   //
   // Plain strings, not rich runs: a title has one look, set by the element.
   pageTitle?: string;
@@ -366,9 +361,6 @@ export type ShapeElement = {
   // Assigned action (docs/specs/012-collaboration/assigned-actions.md): at most one per element, non-undoable like
   // the comment thread. See element-action.ts.
   action?: ElementAction;
-  // A list of actions, where an ordinary element holds one `action`. Nothing in the editor writes it
-  // today. Read through elementActions.
-  actions?: ElementAction[];
   // Optional note. Distinct from `commentThread`: one note per
   // element, no author / timestamp / multi-message structure, just a
   // small document the user can leave on any shape / text / sticky to
@@ -396,9 +388,6 @@ export type TextSizing = 'fit' | 'wrap';
 export type TextElement = {
   id: ElementId;
   type: 'text';
-  // Who added it, when a Participant did (docs/specs/013-workspace/share-roles.md "What a Participant changes"):
-  // the server-derived adder key the room stamped. Absent on everything an Editor added. Never set by a client.
-  addedBy?: string;
   // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
@@ -641,8 +630,6 @@ export type TableElement = {
 export type StickyElement = {
   id: ElementId;
   type: 'sticky';
-  // Who added it, when a Participant did: see TextElement.addedBy.
-  addedBy?: string;
   // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
@@ -937,40 +924,33 @@ export type FreehandElement = {
   noteRich?: TextRun[];
 };
 
-// --- Annotations -----------------------------------------------------------
+// --- Article margin notes --------------------------------------------------
 
-// See docs/specs/009-elements/annotations.md. A fixed-size themed circle holding a note
-// glyph: hover it to read its `note` floating above the canvas, click it to
-// edit the note. It is a boxed element so it flows through every generic
-// path (selection, drag, layering, lock, group, link, colours, comments,
-// the note feature), but it does NOT resize (no handles) — it stays a tidy
-// marker. There is no inline label; the content lives entirely in `note`.
-// The shared boxed fields are declared (mostly always-undefined here) so the
-// union code paths compile without per-type guards, mirroring ImageElement.
-export type AnnotationElement = {
+// A margin note of an article (docs/specs/007-editor/article-pages.md "Comments and actions"): the
+// marker in a page's margin beside the text its comment thread or action is on, kept beside that
+// text as the writing moves (./article-notes). It is a boxed element so selection, layering, lock,
+// comments and assigned actions treat it like any other; it does NOT resize or turn, and has no
+// inline label. The shared boxed fields are declared (mostly always-undefined here) so the union
+// code paths compile without per-type guards, mirroring ImageElement.
+export type ArticleNoteElement = {
   id: ElementId;
-  type: 'annotation';
+  type: 'article-note';
   // Layer membership (docs/specs/006-document/layers.md) — see ShapeElement.layerId.
   layerId?: string;
   x: number;
   y: number;
   width: number;
   height: number;
-  // The note this marker carries. Edited via NotePopover / useEditorNotes,
-  // previewed on hover. Empty string strips the field on commit.
+  // The element note (docs/specs/009-elements/rich-text-notes.md), as on every boxed element.
   note?: string;
   // Per-range note formatting (docs/specs/009-elements/rich-text-notes.md): runs carrying bold / italic /
   // underline / heading / link deltas. `note` stays the plain-text mirror,
   // always === runsPlainText(noteRich). Absent = an unformatted note, which
   // renders exactly as it always did.
   noteRich?: TextRun[];
-  // A margin note of an article (docs/specs/007-editor/article-pages.md "Comments and actions"):
-  // the marker in a page's margin beside the text its comment thread or action is on, kept beside
-  // that text as the writing moves. Its glyph says which: a speech bubble, or a tick for an action.
-  articleNote?: 'comment' | 'action';
-  // fillColor tints the circle; strokeColor draws the ring + the note glyph.
-  // textColor is unused (no inline label) but declared for the generic
-  // colour code paths.
+  // What the note holds, and so its glyph: a comment thread (a speech bubble) or an action (a tick).
+  articleNote: 'comment' | 'action';
+  // Unused by the marker's fixed chip, but declared for the generic colour code paths.
   fillColor?: string;
   strokeColor?: string;
   textColor?: string;
@@ -981,7 +961,7 @@ export type AnnotationElement = {
   // Separate from `fillColor` because they are separate surfaces: wanting a
   // coloured heading over a plain body is the normal case, not an exotic one.
   headerFill?: string;
-  // An annotation has no editable label; declared always-undefined so the
+  // A margin note has no editable label; declared always-undefined so the
   // generic "boxed element has a label" paths compile (mirrors Table/Image).
   label?: string;
   locked?: boolean;
@@ -992,7 +972,7 @@ export type AnnotationElement = {
   // the comment thread. See element-action.ts.
   action?: ElementAction;
   // Shared boxed-element fields that the generic union code paths (format
-  // painter, geometry, search) read uniformly. An annotation doesn't expose
+  // painter, geometry, search) read uniformly. A margin note doesn't expose
   // UI for these — it's a fixed, non-rotating marker with no inline text —
   // so they stay undefined in practice; declared for parity the same way
   // ImageElement / TableElement declare their always-undefined text fields.
@@ -1025,7 +1005,7 @@ export type AnnotationElement = {
 // the api worker's `/api/unfurl` endpoint and caches it in `meta`. The
 // metadata rides the normal tab sync, so peers + reloads get it for free.
 // Resizable like a shape; carries the shared boxed fields (mostly
-// always-undefined, mirroring AnnotationElement) for the generic code paths.
+// always-undefined, mirroring ArticleNoteElement) for the generic code paths.
 // Only the fields the card actually renders (title / image / favicon).
 // The unfurl endpoint also returns siteName + description, but nothing
 // draws them, so they aren't cached onto the element or persisted.
@@ -1090,7 +1070,7 @@ export type LinkCardElement = {
   // renders exactly as it always did.
   noteRich?: TextRun[];
   // Declared for the generic union code paths (format painter, geometry,
-  // search), unused by the card UI — mirrors AnnotationElement.
+  // search), unused by the card UI — mirrors ArticleNoteElement.
   padding?: Padding;
   textSize?: TextSize;
   textAlignX?: TextAlignX;
@@ -1174,7 +1154,7 @@ export type VideoElement = {
   // renders exactly as it always did.
   noteRich?: TextRun[];
   // Declared for the generic union code paths (format painter, geometry,
-  // search), unused by the card UI — mirrors AnnotationElement.
+  // search), unused by the card UI — mirrors ArticleNoteElement.
   padding?: Padding;
   textSize?: TextSize;
   textAlignX?: TextAlignX;

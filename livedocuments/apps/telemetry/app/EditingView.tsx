@@ -3,7 +3,6 @@
 import type { TelemetrySummary, TelemetryWindowKey } from '@livedocuments/api-schema';
 import { CardColumns } from './CardColumns';
 import {
-  AI_ASSISTANCE,
   ASSIGNED_ACTIONS,
   EDITOR_CHROME,
   EDITOR_SEARCH,
@@ -22,11 +21,10 @@ import { rankTrend, windowLabel } from './windows';
 
 // Editing section of the Features tab (docs/specs/017-telemetry/telemetry.md): the in-editor tools that
 // organise work rather than draw it: notes, assigned actions, folders. Then More editing, the
-// stacks that left the Dashboard in October 2026 so it could lead with the key metrics. The AI
-// opt-in is a setting, so it lives in the Settings section.
+// stacks that left the Dashboard in October 2026 so it could lead with the key metrics.
 //
 // Every metric here was already being emitted, validated, and stored, and none
-// of it was rendered anywhere: `AI·Used` had no card on any tab, and the whole
+// of it was rendered anywhere: the whole
 // `Layer` category (docs/specs/006-document/layers.md), plus Note, Folder and Action, appeared only in
 // the vocabulary labeller the old Raw table used. Data arriving and nobody reading
 // it is the same blind spot as data never sent, one step further along — the
@@ -56,7 +54,6 @@ export const GROUPS: MetricGroup[] = [
       EDITOR_SEARCH,
       EDITOR_CHROME,
       TRASH,
-      AI_ASSISTANCE,
     ],
   },
 ];
@@ -78,7 +75,7 @@ export function EditingView({
         The tools that organise the work rather than draw it, for{' '}
         <span className="font-medium">{windowLabel(active)}</span>: notes, assigned actions, and
         folders, then the rest of the editor&rsquo;s tools, then which formatting controls, export
-        formats and dialogs get used. The AI opt-in is under Settings.
+        formats and dialogs get used.
       </p>
       <MetricGroups groups={GROUPS} summary={summary} active={active} />
       <div className="mt-8">

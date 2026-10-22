@@ -98,7 +98,7 @@ export type ViewHeader = {
   view: ViewName;
   tab: { id: string; ref: string; name: string; kind: TabKind };
   elements: number;
-  counts: { boxes: number; frames: number; arrows: number };
+  counts: { boxes: number; arrows: number };
   hidden: number;
   unknown: number;
   threads: { open: number; total: number };

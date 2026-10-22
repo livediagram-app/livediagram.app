@@ -38,7 +38,6 @@ export function stateAttributeOf(el: Element): ViewAttribute[] {
       // Attached to a node (docs/specs/009-elements/badge.md): it moves, copies and deletes with it.
       return stringField(el, 'attachedTo') ? [flagAttribute('attached')] : [];
     case 'card':
-    case 'page':
       return textState('title', textField(el, 'pageTitle'), (t) => jsonString(t, NOTE_CUT_CHARS));
     default:
       return [];

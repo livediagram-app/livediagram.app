@@ -107,9 +107,8 @@ describe('finishHatches', () => {
   });
 
   // Every box with a body of its own is shaded (docs/specs/008-canvas/finish.md "Fills"): containers and panels too.
-  it('shades containers, cards and panels like any box', () => {
-    for (const kind of ['frame', 'page', 'card'] as const)
-      expect(finishHatches(createShape(kind, 0, 0), '#ffffff'), kind).toBe(true);
+  it('shades cards like any box', () => {
+    expect(finishHatches(createShape('card', 0, 0), '#ffffff')).toBe(true);
   });
 
   it('keeps self-painting kinds, see-through fills and non-shapes solid', () => {
@@ -124,7 +123,7 @@ describe('supportsFinish', () => {
   it('takes shapes, arrows, text, stickies and tables only', () => {
     for (const type of ['shape', 'arrow', 'text', 'sticky', 'table'])
       expect(supportsFinish({ type }), type).toBe(true);
-    for (const type of ['freehand', 'image', 'path', 'annotation', 'link-card'])
+    for (const type of ['freehand', 'image', 'path', 'article-note', 'link-card'])
       expect(supportsFinish({ type }), type).toBe(false);
   });
 });
@@ -161,13 +160,13 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
     for (const kind of ['bar-chart', 'pyramid', 'sankey', 'badge', 'card']) {
       expect(finishSplitsFace(shape(kind)), kind).toBe(true);
     }
-    for (const type of ['table', 'link-card', 'video', 'annotation']) {
+    for (const type of ['table', 'link-card', 'video', 'article-note']) {
       expect(finishSplitsFace({ type }), type).toBe(true);
     }
   });
 
   it('leaves plain boxes, icons, stickers and the sequence diagram to their own drawing', () => {
-    for (const kind of ['square', 'circle', 'frame', 'icon', 'sticker']) {
+    for (const kind of ['square', 'circle', 'icon', 'sticker']) {
       expect(finishSplitsFace(shape(kind)), kind).toBe(false);
     }
     for (const type of ['text', 'sticky', 'freehand', 'image', 'path']) {
@@ -183,7 +182,7 @@ describe('finishSplitsFace (docs/specs/008-canvas/finish.md "Every other face is
   it('names only real shape kinds as drawn by their body', () => {
     // Every kind not split must exist, so a renamed kind cannot quietly drop out of Sketch.
     const unsplit = [...SHAPE_KINDS].filter((k) => !finishSplitsFace(shape(k)));
-    expect(unsplit.length).toBe(22);
+    expect(unsplit.length).toBe(21);
   });
 });
 

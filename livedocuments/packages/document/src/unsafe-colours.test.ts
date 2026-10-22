@@ -98,7 +98,7 @@ describe('dropUnsafeColours', () => {
     const el = {
       id: 'a',
       type: 'shape',
-      shape: 'page',
+      shape: 'square',
       x: 0,
       y: 0,
       width: 10,

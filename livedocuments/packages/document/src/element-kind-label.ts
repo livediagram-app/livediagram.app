@@ -47,8 +47,8 @@ export function elementKindLabel(el: Element): string {
       if (el.pen === 'highlighter') return 'Highlight';
       if (el.straightEdges) return el.closed ? 'Polygon' : 'Polyline';
       return 'Sketch';
-    case 'annotation':
-      return 'Annotation';
+    case 'article-note':
+      return 'Margin note';
     case 'link-card':
       return 'Link';
     case 'video':

@@ -1,7 +1,6 @@
 'use client';
 
 import { pageStep } from '@/lib/page-step';
-import { contentAddBlocked } from '@/lib/editor-capabilities';
 import { tabsWithPageMoved, useDeckFollowsPages } from './useDeckFollowsPages';
 import { useWorkbenchDocumentSession } from '@/components/providers/workbench-session-context';
 import { surfaceFlags, type EditorSurface } from './editor-surface';
@@ -68,7 +67,7 @@ import { useClipboard } from '@/hooks/canvas/useClipboard';
 import { useDocumentActions } from '@/hooks/canvas/useDocumentActions';
 import { useEditorContextMenu } from '@/hooks/canvas/useEditorContextMenu';
 import { useEditorPreferences } from '@/hooks/persistence/useEditorPreferences';
-import { previewAdderKey, useViewPreview } from './useViewPreview';
+import { useViewPreview } from './useViewPreview';
 import { useParticipantSession } from './useParticipantSession';
 import { usePowerUserOffer } from '@/hooks/ui/usePowerUserOffer';
 import { useDocumentHistory } from '@/hooks/canvas/useDocumentHistory';
@@ -120,13 +119,7 @@ import {
 } from '@/components/panels/CollaboratePanel';
 
 import { useEditorActions } from '@/hooks/collab/useEditorActions';
-import {
-  autosaveReadOnly,
-  createTab,
-  deriveTabLoadState,
-  mergeAiElements,
-  patchTab,
-} from './editor-page-helpers';
+import { autosaveReadOnly, createTab, deriveTabLoadState, patchTab } from './editor-page-helpers';
 import { useSyncInPlace } from './useSyncInPlace';
 import { useAutosave } from './useAutosave';
 import { useDocumentTrashed } from './useDocumentTrashed';
@@ -228,7 +221,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     localEditSeqRef.current += 1;
     // Layer stamping (docs/specs/006-document/layers.md): elements APPEARING in this commit without
     // a valid layerId land on the active layer. One choke point, so no
-    // individual creation path (draw, paste, AI, template, Mermaid
+    // individual creation path (draw, paste, template, Mermaid
     // import) carries layer logic. stampNewElementLayers no-ops on tabs
     // that never materialised `layers`, and on undo/remote applies (which
     // bypass commitTabs entirely).
@@ -509,7 +502,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useEditorPreferences({
     ownerId: selfParticipant.id,
     passwordGated: sharePasswordGate !== null,
-    setAiPanelVisible: panelLayout.setAiPanelVisible,
   });
 
   // Hide / show a document in the Explorer panel's Recent list (docs/specs/013-workspace/hide-from-recent.md).
@@ -691,15 +683,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     },
   );
   const isReadOnly = !canEdit;
-  // A Participant's adder key, what it may do, and the guard on its commits (docs/specs/013-workspace/share-roles.md).
-  // `isReadOnly` stays true for a Participant: its content gestures open through `participant.can` alone.
-  // Previewing as a Participant, an Editor has no adder key of its own (a room ticket carries one only for a
-  // participate session), so the preview stamps what it adds with a local one and handles it as a Participant would.
-  const participant = useParticipantSession(
-    workbench?.ended ? 'view' : previewLevel,
-    toast.info,
-    previewLevel === 'participate' && canToggleRole ? previewAdderKey() : null,
-  );
+  // What a Participant may do, and the guard on its commits (docs/specs/013-workspace/share-roles.md): text only.
+  // `isReadOnly` stays true for a Participant: its text gestures open through `participant.can` alone.
+  const participant = useParticipantSession(workbench?.ended ? 'view' : previewLevel, toast.info);
   // The document's structure (tabs, their order and folders, the name, the
   // deck) is read-only for a view link and for any tab-scoped link: a scoped
   // edit link edits its one tab's content, nothing around it
@@ -942,7 +928,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   );
 
   useRoomConnection({
-    onAdderKey: participant.setAdderKey,
     hydrated,
     documentId,
     documentServerStored: realtime.documentServerStored,
@@ -1337,12 +1322,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     }
     fitToBounds(bounds, { maxZoom: 1 });
   });
-  // Server capabilities (docs/specs/007-editor/ai-assistance.md). Fetched once at mount; determines
-  // whether the AI panel option is shown in Settings and rendered.
-  const capabilities = useCapabilities(sharePasswordGate === null);
-  const { emailEnabled } = capabilities;
-  // A workbench offers no AI: the person's agent sits beside it.
-  const aiCapable = capabilities.aiEnabled && !workbenchMode;
+  // Server capabilities (GET /api/capabilities). Fetched once at mount.
+  const { emailEnabled } = useCapabilities(sharePasswordGate === null);
 
   // Pinch-to-zoom on touch screens + trackpad pinch (Ctrl+wheel).
   const { isPinchingRef } = useCanvasPinchZoom({
@@ -1551,7 +1532,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // server content as "user already edited" and (b) re-arms the autosave
   // to PUT the near-empty body over the real row — wiping it. Folding the
   // load state into editsBlocked blocks EVERY commit-based mutator
-  // (keyboard, paste, AI, import, clear) at one chokepoint, not just the
+  // (keyboard, paste, import, clear) at one chokepoint, not just the
   // pointer paths the overlay covers. 'ready' is the only editable state
   // (a loaded tab, a locally-created/peer-delivered tab with content, or
   // a dismissed template picker — see deriveTabLoadState).
@@ -1620,6 +1601,20 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     // drag's landed result or a peer's op queued after the last render is built on,
     // never written back over.
     commitTabs(activeElementsCommit(activeId, mapElements));
+  };
+
+  // A history commit of whole tabs, for a Participant: each tab it changes passes its guard first, or none lands
+  // (docs/specs/013-workspace/share-roles.md). Its article writing commits through here.
+  const guardedCommitTabs = (map: (ts: Tab[]) => Tab[]) => {
+    if (editsBlocked) return;
+    const live = tabsRef.current;
+    const next = map(live);
+    for (const tab of next) {
+      const before = live.find((t) => t.id === tab.id);
+      if (!before || before === tab) continue;
+      if (!participant.guardCommit(before, tab)) return;
+    }
+    commitTabs(map);
   };
 
   // Tab-level history commit scoped to the ACTIVE tab, for mutations
@@ -1691,23 +1686,11 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
 
   // Element creation lands on the active layer, so it's additionally
   // blocked while that layer is hidden or locked (docs/specs/006-document/layers.md).
-  const createBlocked = editsBlocked || activeLayerBlocked;
-  // As structureBlocked, for the hooks that take createBlocked: shut to a Participant.
-  const structureCreateBlocked = createBlocked || isReadOnly;
+  // Shut to a Participant, who adds nothing (docs/specs/013-workspace/share-roles.md).
+  const createBlocked = structureBlocked || activeLayerBlocked;
 
   // A layer turning hidden or locked drops its elements from the live selection (layers.md).
   usePruneInertSelection(layerInertIds, selectionStore);
-
-  // Apply AI-returned elements as a single undo block (docs/specs/007-editor/ai-assistance.md).
-  // Generate handles both modifications and additions in one pass:
-  //   - Elements whose ID matches an existing element → replace in place
-  //   - Elements with a new ID → append; deduplicate if the AI reused a
-  //     short ID (e.g. "ai-001") from a previous generation, remapping
-  //     arrow endpoints to keep connections intact.
-  // Clean always gets the full element list back so it replaces everything.
-  const applyAiElements = (elements: Element[], mode: 'generate' | 'clean') => {
-    commit((existingEls) => mergeAiElements(existingEls, elements, mode));
-  };
 
   // The tour's own square, with no history (TourHost).
   const tourSquare = useTourSquare({ activeId, tickTabs });
@@ -1734,7 +1717,9 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     localEditSeq: localEditSeqRef,
     placeAt: (intent, x, y) => placeIntentAtRef.current?.(intent, x, y),
     canEdit: !isReadOnly,
-    commitTabs,
+    // A Participant writes in an article too (docs/specs/013-workspace/share-roles.md), each commit through its guard.
+    canWrite: participant.participating && participant.can.writeArticle,
+    commitTabs: participant.participating ? guardedCommitTabs : commitTabs,
     tickTabs,
     undo,
     redo,
@@ -1777,24 +1762,16 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // When a boxed element is selected, new elements inherit its size so a
   // user can rapidly build a sequence of similarly-sized nodes.
   // Selection + placement + format helpers. See useElementHelpers.
-  const { addBoxed, addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
+  const { addBoxedAt, currentSelectionIds, selectionPrimary, applyFormatFromSource } =
     useElementHelpers({
       readSelection,
       activeId,
       activeTab,
       // Creation-only helpers: additionally blocked while the active layer
-      // is hidden / locked (docs/specs/006-document/layers.md). Open to a Participant that may add content
-      // (docs/specs/013-workspace/share-roles.md): a sticky, text or image dragged from its palette lands through
-      // addBoxedAt, and every commit it makes still passes participant.guardCommit.
-      editsBlocked: contentAddBlocked({
-        participating: participant.participating,
-        canAddContent: participant.can.addContent,
-        blocked: createBlocked,
-        structureBlocked: structureCreateBlocked,
-      }),
+      // is hidden / locked (docs/specs/006-document/layers.md).
+      editsBlocked: createBlocked,
       formatSourceId,
       formatConfig: formatSettings.config,
-      getViewportCenter,
       commit,
       commitTabs,
       setSelectedId,
@@ -2019,14 +1996,8 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     refreshRecentImages,
     closeImagePicker,
   } = useEditorImages({
-    // A Participant places images and swaps their pictures (docs/specs/013-workspace/share-roles.md).
-    editsBlocked: contentAddBlocked({
-      participating: participant.participating,
-      canAddContent: participant.can.addContent,
-      blocked: editsBlocked,
-      structureBlocked,
-    }),
-    isReadOnly: isReadOnly && !(participant.participating && participant.can.addContent),
+    editsBlocked: structureBlocked,
+    isReadOnly,
     embedMode,
     // Upload only in a workbench: no gallery read.
     galleryHidden: workbenchMode,
@@ -2091,7 +2062,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addSticker,
     addTechIcon,
     addTable,
-    addAnnotation,
     addLinkCard,
     addVideo,
     addImage,
@@ -2120,7 +2090,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     commitTabs,
     setSelectedId,
     setEditingId,
-    addBoxed,
     addBoxedAt,
     beginDraw,
     styleNewElement: styleMemory.styleNewElement,
@@ -2131,14 +2100,19 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   // Inline-icon attach/detach mutators (a shape's single inline icon).
   // Cohesive slice extracted to useInlineIconMutators: editsBlocked, commit and the elements.
   const { dropIconOnElement, removeIconFromElement, dropIconElementOnShape } =
-    useInlineIconMutators({ editsBlocked, commit, tick, elements: activeTab.elements });
+    useInlineIconMutators({
+      editsBlocked: structureBlocked,
+      commit,
+      tick,
+      elements: activeTab.elements,
+    });
 
   // Per-cell table links (docs/specs/008-canvas/canvas-and-palette.md). Which cell's link picker is open +
   // the history-committed write into that cell's style. See
   // useCellLinkPicker; the shared LinkPickerDialog renders against it
   // in EditorView.
   const { cellLinkPickerOpenFor, setCellLinkPickerOpenFor, openCellLinkPicker, applyCellLink } =
-    useCellLinkPicker({ editsBlocked, commit });
+    useCellLinkPicker({ editsBlocked: structureBlocked, commit });
 
   // Structural element operations (delete, marquee commit, lock, and the
   // duplicate family). They change the element set
@@ -2264,7 +2238,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     readSelection,
     activeTab,
     activeId,
-    editsBlocked,
+    editsBlocked: structureBlocked,
     // Every style setter the context menu reaches records into style memory.
     commit: rememberingCommit,
     commitActiveTab,
@@ -2286,7 +2260,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     activeTab,
     theme: activeTheme,
     editsBlocked: structureBlocked,
-    canStyle: participant.participating ? participant.can.recolour : undefined,
     liveElements: liveActiveElements,
     commit,
     memory: styleMemory,
@@ -2365,7 +2338,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     previewInlineIcon,
     commitInlineIcon,
   } = useStylePreview({
-    editsBlocked,
+    editsBlocked: structureBlocked,
     activeId,
     currentSelectionIds,
     tabsRef,
@@ -2505,8 +2478,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     setMultiSelectedIds,
     editingId,
     isReadOnly,
-    canMove: participant.can.move,
-    canResize: participant.can.resize,
     formatSourceId,
     applyFormatFromSource,
     formatToolActive,
@@ -2772,7 +2743,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     addShape,
     addSticky,
     addTable,
-    addAnnotation,
     addLinkCard,
     addVideo,
     addBanner,
@@ -2787,9 +2757,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     getViewportCenter,
     addTab,
     addText,
-    aiCapable,
     anyWelcomeOpen,
-    applyAiElements,
     applyImageToElement,
     autoAlignTab,
     autoLayoutTab,

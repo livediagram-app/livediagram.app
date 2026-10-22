@@ -256,33 +256,17 @@ export function describeVariant(
           : {},
       };
     }
-    case 'annotation': {
+    case 'article-note': {
       // An article's margin note (docs/specs/007-editor/article-pages.md "Comments and actions"): a
       // small rounded chip in its note's colour, matching the tint on its text.
-      if (element.articleNote) {
-        const action = element.articleNote === 'action';
-        return {
-          className: `shadow-sm ${`${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim()}`,
-          style: {
-            borderRadius: 9,
-            backgroundColor: action ? '#f0f9ff' : '#fffbeb',
-            borderColor: remoteBorderColor ?? (action ? '#7dd3fc' : '#fcd34d'),
-            borderWidth: remoteBorderColor ? remoteBorderWidth : 1.5,
-            borderStyle: 'solid',
-          },
-        };
-      }
-      // A themed circle marker (docs/specs/009-elements/annotations.md): fill + ring from the element's
-      // colours, fully round. The note glyph paints as the child content.
-      const ring = `${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim();
+      const action = element.articleNote === 'action';
       return {
-        className: `${finishFaceShadows(finish) ? 'shadow-sm ' : ''}${ring}`,
+        className: `shadow-sm ${`${singleRing('ring-2 ring-brand-200')} ${multiRing}`.trim()}`,
         style: {
-          borderRadius: '50%',
-          backgroundColor: element.fillColor ?? defaultFillColor(element, surface),
-          borderColor:
-            remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface),
-          borderWidth: remoteBorderColor ? remoteBorderWidth : 2,
+          borderRadius: 9,
+          backgroundColor: action ? '#f0f9ff' : '#fffbeb',
+          borderColor: remoteBorderColor ?? (action ? '#7dd3fc' : '#fcd34d'),
+          borderWidth: remoteBorderColor ? remoteBorderWidth : 1.5,
           borderStyle: 'solid',
         },
       };

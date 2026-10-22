@@ -12,11 +12,12 @@ const ARTICLE_FRAME_CHARS = 200_000;
 type ArticlesTab = Pick<Tab, 'id'> & { articles?: unknown };
 
 /** The `article` ops from `before`'s writing to `after`'s. The stored articles are compared by
- *  identity first, so an untouched article costs nothing. `agent` marks an agent's write. */
+ *  identity first, so an untouched article costs nothing. `grow` marks a write whose writer lays
+ *  out no pages (an agent's). */
 export function tabArticleOps(
   before: ArticlesTab,
   after: ArticlesTab,
-  { agent = false }: { agent?: boolean } = {},
+  { grow = false }: { grow?: boolean } = {},
 ): RoomOp[] {
   if (before.articles === after.articles) return [];
   const was = articlesOf(before);
@@ -25,7 +26,7 @@ export function tabArticleOps(
   for (const flow of Object.keys(was)) {
     if (!(flow in now)) ops.push({ kind: 'article', tabId: after.id, flow, removed: true });
   }
-  const marks = agent ? { agent: true as const } : {};
+  const marks = grow ? { grow: true as const } : {};
   for (const [flow, doc] of Object.entries(now)) {
     if (was[flow] === doc) continue;
     // In frames the room will carry (it drops one over 256K characters): ops in order, a frame

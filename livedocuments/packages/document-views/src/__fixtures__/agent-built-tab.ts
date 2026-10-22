@@ -1,4 +1,4 @@
-// The Services frame as an agent built it, kept as data: node ids its own slugs and arrow ids
+// The Services stack as an agent built it, kept as data: node ids its own slugs and arrow ids
 // minted as slugs (docs/specs/024-agents/blueprints/document-views.md "Testing", VW7).
 import { slugIdFor, type Element, type Tab } from '@livedocuments/document';
 import services from './agent-built-services.json';

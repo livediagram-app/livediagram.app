@@ -19,12 +19,12 @@ const RUNS = 5;
 // Sized to time tens of milliseconds a render; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
-// `FRAMES` frames, each holding `perFrame` boxes joined pairwise by arrows.
+// `FRAMES` stacks, each holding `perFrame` boxes joined pairwise by arrows.
 function tabOf(perFrame: number) {
   const elements: Element[] = [];
   for (let frame = 0; frame < FRAMES; frame++) {
     const [fx, fy] = [frame * 100_000, 0];
-    elements.push(shapeAt('frame', `frame-${frame}`, fx, fy, 90_000, 90_000));
+    elements.push(shapeAt('stack', `frame-${frame}`, fx, fy, 90_000, 90_000));
     for (let i = 0; i < perFrame; i++) {
       elements.push(
         shapeAt(
@@ -69,11 +69,11 @@ describe('views as tabs grow', () => {
   );
 });
 
-// `n` frames, each holding one box: n containers for a budget to collapse one by one.
+// `n` stacks, each holding one box: n containers for a budget to collapse one by one.
 function framesOf(n: number) {
   const elements: Element[] = [];
   for (let i = 0; i < n; i++) {
-    elements.push(shapeAt('frame', `fr-${i}`, i * 1000, 0, 500, 500, { label: `Frame ${i}` }));
+    elements.push(shapeAt('stack', `fr-${i}`, i * 1000, 0, 500, 500, { label: `Frame ${i}` }));
     elements.push(shapeAt('square', `bx-${i}`, i * 1000 + 50, 50, 100, 50, { label: `Box ${i}` }));
   }
   return { id: 'frames', name: 'Frames', elements };
@@ -86,7 +86,7 @@ const fastestOf = (work: () => void) => {
 };
 
 describe('views over many containers or a whole selection', () => {
-  // Fitting collapsed containers one by one rebuilt the fit and its elision per step: 1.2 s for 4,000 frames,
+  // Fitting collapsed containers one by one rebuilt the fit and its elision per step: 1.2 s for 4,000 stacks,
   // now about 30 ms (1.3 s and 0.13 s with the model built, at the MCP budget).
   it(
     'fit many containers to a budget about linearly',

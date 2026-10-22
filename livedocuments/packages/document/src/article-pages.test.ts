@@ -182,7 +182,7 @@ describe('a duplicated article keeps its margin notes to itself', () => {
     const r = layOutPages(pages)[0]!.rect;
     const marker = {
       ...box('m1', r.x + r.width - 40, r.y + 120),
-      type: 'annotation',
+      type: 'article-note',
       articleNote: 'comment',
     } as unknown as Element;
     const tab = {

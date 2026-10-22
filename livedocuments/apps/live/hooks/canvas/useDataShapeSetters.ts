@@ -21,7 +21,7 @@ import { useWebComponentSetters } from '@/hooks/canvas/useWebComponentSetters';
 import { makeShapePatcher } from '@/hooks/canvas/shape-patcher';
 
 // The kinds carrying masthead lines (see setPageHeading).
-const MASTHEAD_SHAPES = new Set<string>(['page', 'banner', 'callout', 'card']);
+const MASTHEAD_SHAPES = new Set<string>(['banner', 'callout', 'card']);
 
 type DataShapeSetterDeps = {
   currentSelectionIds: () => Set<string>;
@@ -146,8 +146,7 @@ export function useDataShapeSetters({
     track('Element', 'Changed', 'CodeWrap');
   };
 
-  // The masthead lines (docs/specs/009-elements/page-element.md): a page's heading + subtitle, and the same
-  // two fields on a banner (its subtitle) and a callout (its heading),
+  // The masthead lines: a banner's subtitle, a callout's heading and a card's title and meta line,
   // docs/specs/009-elements/web-components-and-no-groups.md. One setter for both lines rather than two near-identical ones,
   // since the only difference is which field.
   const setPageHeading = (
@@ -158,7 +157,7 @@ export function useDataShapeSetters({
     commit((els) =>
       els.map((el) => {
         if (el.id !== elementId || el.type !== 'shape' || !MASTHEAD_SHAPES.has(el.shape)) return el;
-        // An empty line stores as undefined rather than '', so a page that was
+        // An empty line stores as undefined rather than '', so a heading that was
         // typed into and cleared serialises the same as one never touched.
         return { ...el, [field]: value.trim() ? value : undefined };
       }),

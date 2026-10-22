@@ -106,8 +106,8 @@ export function elementTelemetryType(element: Element): string {
       return 'LinkCard';
     case 'video':
       return 'Video';
-    case 'annotation':
-      return 'Annotation';
+    case 'article-note':
+      return element.articleNote === 'action' ? 'ArticleAction' : 'ArticleComment';
     case 'freehand':
       // Three tools share this element kind and the draw paths report them
       // separately, so a copy must too. `pen` marks the highlighter and

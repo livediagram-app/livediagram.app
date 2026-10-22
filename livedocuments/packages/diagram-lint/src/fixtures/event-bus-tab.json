@@ -5,7 +5,7 @@
     {
       "id": "key-0",
       "type": "shape",
-      "shape": "frame",
+      "shape": "stack",
       "x": 1626,
       "y": 0,
       "width": 250,
@@ -145,7 +145,7 @@
     {
       "id": "clients",
       "type": "shape",
-      "shape": "frame",
+      "shape": "stack",
       "x": 80.79166666666669,
       "y": 0,
       "width": 480,
@@ -160,7 +160,7 @@
     {
       "id": "services",
       "type": "shape",
-      "shape": "frame",
+      "shape": "stack",
       "x": 179.66666666666666,
       "y": 404,
       "width": 1068,
@@ -175,7 +175,7 @@
     {
       "id": "events",
       "type": "shape",
-      "shape": "frame",
+      "shape": "stack",
       "x": 0,
       "y": 656,
       "width": 302,
@@ -190,7 +190,7 @@
     {
       "id": "data",
       "type": "shape",
-      "shape": "frame",
+      "shape": "stack",
       "x": 658,
       "y": 722,
       "width": 896,
@@ -205,7 +205,7 @@
     {
       "id": "external",
       "type": "shape",
-      "shape": "frame",
+      "shape": "stack",
       "x": 358,
       "y": 720,
       "width": 244,

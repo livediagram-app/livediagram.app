@@ -1,4 +1,4 @@
-import { memo, useRef, useState } from 'react';
+import { memo, useRef } from 'react';
 import { useZoneClip, zoneClipPolygon } from '@/lib/article/zone-clip-store';
 import {
   BORDER_DASH_ARRAY,
@@ -32,7 +32,6 @@ import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-par
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
 import { useTextHug } from '@/components/canvas/useTextHug';
-import { PageCornerFold } from '@/components/canvas/PageCornerFold';
 import { isCssNativeBorderStyle } from '@/components/canvas/border-css';
 import { describeVariant } from '@/components/canvas/element-variant';
 import { useElementSurface } from '@/components/canvas/CanvasSurfaceContext';
@@ -50,7 +49,6 @@ import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
 import { ElementIndicators } from '@/components/canvas/ElementIndicators';
 import { indicatorBacking } from '@/components/canvas/indicator-items';
 import { useElementIndicators } from '@/components/canvas/useElementIndicators';
-import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useBoxedElementAnimation } from '@/components/canvas/useBoxedElementAnimation';
 import { useLabelTextAnimation } from '@/components/canvas/useTextAnimation';
@@ -176,18 +174,13 @@ function BoxedElementViewImpl({
       />
     ) : null;
 
-  // Annotation marker (docs/specs/009-elements/annotations.md): a fixed-size note circle. Hovering it
-  // floats its note above everything; clicking it (handled in the drag
-  // engine's click-vs-drag test) opens the editable note popover.
-  const isAnnotation = element.type === 'annotation';
   // An article's margin note (docs/specs/007-editor/article-pages.md "Comments and actions"): a
   // click opens what it carries, its comment thread or its action.
-  const articleNote = element.type === 'annotation' ? element.articleNote : undefined;
+  const articleNote = element.type === 'article-note' ? element.articleNote : undefined;
   const noteDown = useRef<{ x: number; y: number } | null>(null);
   const openArticleNote = articleNote
     ? () => (articleNote === 'action' ? onOpenAction(element.id) : onOpenComments(element.id))
     : undefined;
-  const [hovering, setHovering] = useState(false);
 
   // Right-click selects the element + asks the page to open a
   // context menu at the cursor. The page also keeps showing the
@@ -208,7 +201,6 @@ function BoxedElementViewImpl({
       wrapperRef,
       isEditing,
       remotelyLocked,
-      isAnnotation,
       isMultiSelected,
       isSelected,
       isPaintMode,
@@ -219,7 +211,6 @@ function BoxedElementViewImpl({
       onBeginEdit,
       onEditLink,
       onOpenEditDialog,
-      onOpenNote,
       imageContext,
       onContextSelect,
     });
@@ -346,11 +337,6 @@ function BoxedElementViewImpl({
       // so its buttons stay reachable.
       role={elementRole(element)}
       aria-label={elementAriaLabel(element)}
-      // Frames are tagged so isometric mode can settle them just under the
-      // base plane (globals.css [data-iso] rule): a frame's big surface is
-      // coplanar with its contents under preserve-3d, and coplanar layers
-      // z-fight (flicker) while the camera orbits.
-      data-frame={element.type === 'shape' && element.shape === 'frame' ? '' : undefined}
       // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
       data-face-finish={faceFinish}
       onPointerDown={(e) => {
@@ -379,8 +365,6 @@ function BoxedElementViewImpl({
             }
           : undefined
       }
-      onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
-      onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
       onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
       onDragLeave={acceptsIconDrop ? handleIconDragLeave : undefined}
       onDrop={acceptsIconDrop ? handleIconDrop : undefined}
@@ -486,15 +470,6 @@ function BoxedElementViewImpl({
               radiusPx={cornerPx}
             />
           ) : null}
-          {/* A Page's turned-back bottom-right corner (docs/specs/009-elements/page-element.md). */}
-          {element.type === 'shape' && element.shape === 'page' ? (
-            <PageCornerFold
-              width={element.width}
-              height={element.height}
-              fill={element.fillColor ?? '#ffffff'}
-              stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
-            />
-          ) : null}
           {/* Browser-only HTML chrome overlay. SVG handles only the
           outer frame + divider so the user's border style applies;
           the dots / nav / URL bar render here so their geometry is
@@ -566,8 +541,6 @@ function BoxedElementViewImpl({
 
       {remoteSelectors.length > 0 ? <RemoteSelectorsStrip selectors={remoteSelectors} /> : null}
 
-      {/* The annotation marker IS the note affordance, so it suppresses
-          the generic note badge (it would be redundant). */}
       {/* A margin note shows its count on its own face (ArticleNoteFace). */}
       {indicators.layout ? (
         <ElementIndicators
@@ -591,17 +564,6 @@ function BoxedElementViewImpl({
         showAnchors={showAnchors}
         onBeginDrag={onBeginDrag}
       />
-
-      {/* Hover preview: float this annotation's note above every element
-          (docs/specs/009-elements/annotations.md). Suppressed while selected — the click/edit popover owns
-          that surface then — and only when there's note text to show. */}
-      {isAnnotation && hovering && !isSelected && !isEditing && element.note ? (
-        <AnnotationHoverNote
-          elementId={element.id}
-          note={element.note}
-          noteRich={element.noteRich}
-        />
-      ) : null}
     </div>
   );
 }

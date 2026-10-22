@@ -299,10 +299,9 @@ describe('applyRotationToEl', () => {
     expect(applyRotationToEl(a, 45)).toBe(a);
   });
 
-  // docs/specs/009-elements/blueprints/annotations.md [QD8]: a marker never rotates, even inside a
-  // multi-selection's Rotation pick.
-  it('is a no-op on an annotation marker', () => {
-    const marker = el('annotation');
+  // A margin note never rotates, even inside a multi-selection's Rotation pick.
+  it('is a no-op on a margin note', () => {
+    const marker = el('article-note');
     expect(applyRotationToEl(marker, 90)).toBe(marker);
   });
 });
@@ -365,7 +364,7 @@ describe('applyShadowToEl', () => {
   });
 
   it('no-ops (same reference) on unsupported types', () => {
-    for (const type of ['text', 'freehand', 'annotation', 'table', 'arrow']) {
+    for (const type of ['text', 'freehand', 'article-note', 'table', 'arrow']) {
       const source = el(type);
       expect(applyShadowToEl(source, shadow), type).toBe(source);
     }
@@ -489,7 +488,7 @@ describe('applyFinishToEl (docs/specs/008-canvas/finish.md)', () => {
   });
 
   it('no-ops (same reference) on types without a finish', () => {
-    for (const type of ['freehand', 'image', 'annotation']) {
+    for (const type of ['freehand', 'image', 'article-note']) {
       const source = el(type);
       expect(applyFinishToEl(source, 'sketch'), type).toBe(source);
     }

@@ -69,6 +69,26 @@ describe('relayParticipantChanges', () => {
     expect(ops.map((op) => op.op.kind).sort()).toEqual(['add', 'update']);
   });
 
+  it("sends its writing in an article as the article's block ops", async () => {
+    const sent: RoomOutgoing[] = [];
+    const room: SaveRoom = { send: (m) => void sent.push(m), sequence: async () => true };
+    const para = (text: string) => ({ id: 'p1', type: 'paragraph', runs: [{ text }] });
+    const before = { ...tab([a]), articles: { f1: { blocks: [para('Hi')] } } } as Tab;
+    const after = { ...before, articles: { f1: { blocks: [para('Hello')] } } } as Tab;
+    await relayParticipantChanges(before, after, () => room);
+    expect(sent).toEqual([
+      {
+        kind: 'op',
+        op: {
+          kind: 'article',
+          tabId: 't1',
+          flow: 'f1',
+          ops: [{ kind: 'put', block: para('Hello') }],
+        },
+      },
+    ]);
+  });
+
   it('fails while the room is closed, so the autosave retries', async () => {
     await expect(relayParticipantChanges(tab([a]), tab([b]), () => null)).rejects.toThrow();
   });

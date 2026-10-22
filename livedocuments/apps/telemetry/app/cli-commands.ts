@@ -28,7 +28,6 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
   { type: 'ElementMove', command: 'element move', what: 'moving elements' },
   { type: 'ElementConnect', command: 'element connect', what: 'drawing an arrow' },
   { type: 'ElementInsert', command: 'element insert', what: 'putting an element on an arrow' },
-  { type: 'ElementWrap', command: 'element wrap', what: 'framing elements' },
   { type: 'PageLs', command: 'page ls', what: 'listing a tab’s pages and articles' },
   { type: 'PageSet', command: 'page set', what: 'changing a tab’s pages' },
   { type: 'ArticleGet', command: 'article get', what: 'reading an article as Markdown' },
@@ -75,5 +74,7 @@ export const CLI_COMMANDS: readonly { type: string; command: string; what: strin
 // `Cli·Used·<type>` as a sentence, for the event log.
 export function cliCommandSentence(type: string): string | null {
   const row = CLI_COMMANDS.find((c) => c.type === type);
-  return row ? `Someone ran livedocuments ${row.command} from the command line: ${row.what}.` : null;
+  return row
+    ? `Someone ran livedocuments ${row.command} from the command line: ${row.what}.`
+    : null;
 }

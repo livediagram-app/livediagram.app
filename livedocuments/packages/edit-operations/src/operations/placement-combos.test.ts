@@ -37,7 +37,7 @@ describe('placement combinations', () => {
     const outer: Element = {
       id: 'outer',
       type: 'shape',
-      shape: 'frame',
+      shape: 'stack',
       label: 'Checkout',
       x: -80,
       y: 240,
@@ -49,7 +49,7 @@ describe('placement combinations', () => {
     expect(at(out, 'x').x).toBeGreaterThan(at(out, 'n4').x);
   });
 
-  it('centres a box placed right of a frame on the box it aligns to, across the side', () => {
+  it('centres a box placed right of a stack on the box it aligns to, across the side', () => {
     const { tab } = applied(run('add square id=x label=X right-of:f2 align:n4'));
     const [x, n4] = [at(tab, 'x'), at(tab, 'n4')];
     expect(x.y + x.height / 2).toBe(n4.y + n4.height / 2);

@@ -151,11 +151,7 @@ export function MultiSelectionContextMenu({
         // section reads its display value off the first matching member and
         // writes selection-wide (the setters already are).
         const morphable = boxedSel.filter(
-          (el) =>
-            el.type === 'shape' &&
-            el.shape !== 'icon' &&
-            el.shape !== 'frame' &&
-            !isSelfDrawingShape(el.shape),
+          (el) => el.type === 'shape' && el.shape !== 'icon' && !isSelfDrawingShape(el.shape),
         ) as ShapeElement[];
         const markerSrc = boxedSel.find(
           (el) =>

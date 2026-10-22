@@ -173,10 +173,11 @@ export function useSelectionEditing(opts: {
     const richText = runs ? normalizeRuns(runs) : undefined;
     const keepRich = hasRichFormatting(richText);
     // A text box that fits or wraps hugs its text: the commit sizes it to the committed text in the
-    // same step, and removes it when left empty.
+    // same step, and removes it when left empty. A Participant removes nothing
+    // (docs/specs/013-workspace/share-roles.md): its emptied box stays, empty.
     const measure = measureDrawnText(activeTab.font, activeTab.finish);
     const target = activeTab.elements.find((el) => el.id === elementId);
-    const removesEmpty = !!target && hugsText(target) && label.trim() === '';
+    const removesEmpty = !isReadOnly && !!target && hugsText(target) && label.trim() === '';
     commit((els) =>
       els.flatMap((el): Element[] => {
         if (el.id !== elementId) return [el];
@@ -195,7 +196,8 @@ export function useSelectionEditing(opts: {
             JSON.stringify(_prev ?? null) === JSON.stringify(keepRich ? richText : null);
           if (unchanged) return [next];
           const hugged = hugCommittedText(next, measure);
-          return hugged ? [hugged] : [];
+          if (hugged) return [hugged];
+          return isReadOnly ? [next] : [];
         }
         if (el.type === 'arrow') {
           if (label.length === 0) {
@@ -222,6 +224,8 @@ export function useSelectionEditing(opts: {
     // exists for: paste a paragraph into the welcome rectangle and the whole
     // paragraph used to become the document's name, newlines and all.
     const trimmed = truncateName(label);
+    // A Participant names nothing: the document, its tabs and its layers are an Editor's.
+    if (isReadOnly) return;
     if (isUntitledDocumentName(documentName)) {
       const firstTab = tabs[0];
       const firstEl = firstTab?.elements[0];
@@ -264,7 +268,7 @@ export function useSelectionEditing(opts: {
     const left = opts.editingId
       ? activeTab.elements.find((e) => e.id === opts.editingId)
       : undefined;
-    if (!seed && left && hugsText(left) && (left.label ?? '').trim() === '') {
+    if (!seed && !isReadOnly && left && hugsText(left) && (left.label ?? '').trim() === '') {
       debugLog('[text-hug] removed an empty text box on Escape', left.id);
       commit((els) => els.filter((e) => e.id !== left.id));
       setSelectedId(null);

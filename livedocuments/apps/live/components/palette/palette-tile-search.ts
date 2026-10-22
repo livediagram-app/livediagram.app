@@ -41,7 +41,6 @@ export function tileSignature(tile: PaletteTileDef): string | null {
     case 'text':
     case 'table':
     case 'image':
-    case 'annotation':
     case 'link-card':
       return a.type;
     default:

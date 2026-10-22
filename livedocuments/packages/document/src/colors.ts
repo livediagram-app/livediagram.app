@@ -29,7 +29,7 @@ export function defaultPadding(element: BoxedElement): Padding {
       return 'none';
     case 'table':
       return 'sm';
-    case 'annotation':
+    case 'article-note':
       return 'none';
     case 'link-card':
     case 'video':
@@ -183,10 +183,6 @@ export const DARK_INK = {
   fill: '#141b26',
   stroke: '#64748b',
   text: '#ffffff',
-  // A shade above the shape fill, so a marker still reads as a chip ON a
-  // shape rather than a hole in it (the light set does the same, brand-100
-  // over brand-50).
-  annotationFill: '#1c2533',
 } as const;
 
 export function defaultTextColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
@@ -202,9 +198,9 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
       case 'image':
       case 'freehand':
       case 'table':
-      case 'annotation':
         return DARK_INK.text;
       case 'sticky':
+      case 'article-note':
       case 'link-card':
       case 'video':
         break; // keeps its own ink on any paper
@@ -221,8 +217,8 @@ export function defaultTextColor(element: BoxedElement, surface: CanvasSurface =
       return '#1e293b'; // slate-800 (no inline label today, future-proof)
     case 'table':
       return '#1e293b'; // slate-800
-    case 'annotation':
-      return '#075985'; // brand-800 (no inline label; declared for parity)
+    case 'article-note':
+      return '#1e293b'; // slate-800 (no inline label; declared for parity)
     case 'link-card':
       return '#1e293b'; // slate-800 — card title text
     case 'video':
@@ -263,28 +259,16 @@ export function defaultTextAlign(element: BoxedElement): { x: TextAlignX; y: Tex
 // doesn't override them with explicit `fillColor` / `strokeColor` fields.
 // Hex strings so they can also seed the colour picker UI.
 export function defaultFillColor(element: BoxedElement, surface: CanvasSurface = 'light'): string {
-  // A frame is a section BACKDROP you place elements inside (docs/specs/008-canvas/canvas-and-palette.md), so with
-  // no explicit fill it is see-through on either surface, whatever the shape
-  // default would be. It is still fillable: set `fillColor` and the frame
-  // paints that behind its contents, which is safe because frames sort to the
-  // front of their band and therefore paint below their band-mates (layers.ts).
-  //
-  // This used to be hardcoded as `fill="none"` in the canvas renderer instead,
-  // which had two consequences: a background colour picked in the context menu
-  // did nothing, and the headless renderer (exports, the minimap) never got
-  // the memo and filled every frame with the shape default, so a frame that
-  // was transparent on the canvas exported pale blue.
-  // A stack is a target to drop into, drawn as an outline (docs/specs/009-elements/stack.md).
-  if (element.type === 'shape' && (element.shape === 'frame' || element.shape === 'stack'))
-    return 'transparent';
+  // A stack is a target to drop into, drawn as an outline (docs/specs/009-elements/stack.md): see-through
+  // with no explicit fill, on either surface.
+  if (element.type === 'shape' && element.shape === 'stack') return 'transparent';
   if (surface === 'dark') {
     switch (element.type) {
       case 'shape':
       case 'freehand':
         return DARK_INK.fill;
-      case 'annotation':
-        return DARK_INK.annotationFill;
       case 'text':
+      case 'article-note':
       case 'image':
       case 'table':
       case 'sticky':
@@ -309,8 +293,8 @@ export function defaultFillColor(element: BoxedElement, surface: CanvasSurface =
       return '#f0f9ff';
     case 'table':
       return 'transparent';
-    case 'annotation':
-      return '#e0f2fe'; // brand-100 — a touch deeper than a shape so the marker reads as a chip
+    case 'article-note':
+      return 'transparent'; // the margin note's chip paints its own colours
     case 'link-card':
       return '#ffffff'; // white card surface
     case 'video':
@@ -329,9 +313,9 @@ export function defaultStrokeColor(
       case 'shape':
       case 'freehand':
       case 'table':
-      case 'annotation':
         return DARK_INK.stroke;
       case 'text':
+      case 'article-note':
       case 'image':
       case 'sticky':
       case 'link-card':
@@ -352,8 +336,8 @@ export function defaultStrokeColor(
       return '#0ea5e9'; // brand-500, same accent as shapes
     case 'table':
       return '#94a3b8'; // slate-400 grid lines
-    case 'annotation':
-      return '#0ea5e9'; // brand-500 — ring + note glyph tint
+    case 'article-note':
+      return 'transparent'; // the margin note's chip paints its own border
     case 'link-card':
       return '#e2e8f0'; // slate-200 — card border
     case 'video':
@@ -362,7 +346,7 @@ export function defaultStrokeColor(
 }
 
 // Whether an element exposes a BACKGROUND colour control. Text and images
-// have no fill to expose; everything else does, including a frame, whose fill
+// have no fill to expose; everything else does, including a stack, whose fill
 // merely defaults to transparent.
 //
 // Call sites used to ask `defaultFillColor(el) !== 'transparent'` as a proxy
@@ -407,7 +391,6 @@ export function supportsColours(element: Element): boolean {
     element.type === 'arrow' ||
     element.type === 'freehand' ||
     element.type === 'table' ||
-    element.type === 'annotation' ||
     element.type === 'link-card' ||
     element.type === 'video'
   );
@@ -500,8 +483,8 @@ export function supportsBorderControls(element: Element): boolean {
 // Whether a shape can carry an INLINE icon beside its label — i.e. whether
 // dropping a palette icon on it (or adding one while it's selected) folds
 // the glyph INTO it. Regular shapes only: the dedicated `icon` shape IS a
-// glyph, and a `frame` is a section container you place elements INSIDE,
-// not decorate (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/009-elements/annotations.md). An icon dropped on those becomes a
+// glyph, and a `stack` is a container you place elements INSIDE, not
+// decorate (docs/specs/009-elements/stack.md). An icon dropped on those becomes a
 // standalone `icon` element instead of attaching. One predicate so all
 // three fold paths (palette drag-drop, add-while-selected, drag an
 // existing icon onto a shape) agree.
@@ -539,7 +522,6 @@ export function acceptsInlineIcon(element: Element): element is ShapeElement {
     !drawsNoInlineIcon(element) &&
     element.shape !== 'icon' &&
     element.shape !== 'sticker' &&
-    element.shape !== 'frame' &&
     element.shape !== 'stack' &&
     element.shape !== 'banner' &&
     element.shape !== 'stat-row' &&

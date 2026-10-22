@@ -63,13 +63,12 @@ export function resolveLayerId(layerId: string | undefined, layers: Layer[]): st
 }
 
 // The paint tier of an element within its band, back to front:
-// - frames are backdrops that paint below their band-mates
-//   (docs/specs/008-canvas/canvas-and-palette.md), the larger first;
+// - stacks are backdrops that paint below their band-mates, the larger first;
 // - attached badges and step numbers sit in front of everything else.
 // Array order decides within a tier.
 function paintTier(el: Element): number {
-  // Frames and stacks are backdrops, however they were added, and the larger paints first.
-  if (el.type === 'shape' && (el.shape === 'frame' || el.shape === 'stack')) return 0;
+  // Stacks are backdrops, however they were added, and the larger paints first.
+  if (el.type === 'shape' && el.shape === 'stack') return 0;
   // An attached badge or step number (docs/specs/009-elements/badge.md) sits above everything in its band, so a
   // later element never covers the mark on its host.
   if (
@@ -82,7 +81,7 @@ function paintTier(el: Element): number {
 }
 
 // A stable sort by tier. Returns the SAME array when it is already in tier
-// order, which is every band without frames or badges out of place.
+// order, which is every band without stacks or badges out of place.
 function paintOrderIn(elements: Element[]): Element[] {
   const tiers = elements.map(paintTier);
   // Among the backdrops the larger paints first, so a boundary nested in another is never hidden behind it.

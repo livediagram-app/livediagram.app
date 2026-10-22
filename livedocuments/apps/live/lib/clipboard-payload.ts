@@ -169,7 +169,7 @@ export function parseElementsPayload(text: string | null | undefined): Element[]
 
   // Per-element validation, dropping failures rather than refusing the payload:
   // one unreadable element out of forty should cost you that element, not the
-  // paste. isValidElement is the same guard the api and the AI ingest path use. A payload from an
+  // paste. isValidElement is the same guard the api uses. A payload from an
   // older editor carries former stored shapes, migrated first (docs/specs/006-document/stroke-points.md).
   const elements = migrateIncomingElements(env.elements).filter(isValidElement);
   if (elements.length === 0) return null;

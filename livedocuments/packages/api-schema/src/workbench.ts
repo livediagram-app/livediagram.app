@@ -270,8 +270,8 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
 ];
 
 // The workspace scope: everything the Explorer does, and the editor of every document in it. Never the account
-// (profile, preferences' writes, the guest migration, tokens and pairings, team administration, the account, the AI
-// assistant), and never a route the minting token could not call (Clerk only, WB51).
+// (profile, preferences' writes, the guest migration, tokens and pairings, team administration, the account), and
+// never a route the minting token could not call (Clerk only, WB51).
 const WORKSPACE_ROUTES: readonly RouteShape[] = [
   shape('GET', 'capabilities'),
   shape('GET', 'openapi.json'),

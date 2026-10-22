@@ -39,7 +39,7 @@ Scope, by file:
 | Wordmark accent     | `dark:text-amber-400` on the "live" span                 | The one vivid note in dark chrome                             |
 | Dark canvas         | `DARK_CANVAS_BACKGROUND_COLOR`                           | `#0d121a`                                                     |
 | Dark pattern        | `DARK_CANVAS_PATTERN_COLOR`                              | `#1c2735`, the opaque blend of `#2e4057` at 45 %              |
-| Dark ink            | `DARK_INK` (`fill`, `stroke`, `text`, `annotationFill`)  | Unpainted element colours on dark paper                       |
+| Dark ink            | `DARK_INK` (`fill`, `stroke`, `text`)                    | Unpainted element colours on dark paper                       |
 | Caption colour      | `defaultArrowLabelColor(arrow, surface)`                 | An arrow caption's colour when it carries no `textColor`      |
 | Dark selection ring | `DARK_SELECTION_RING`                                    | Blue ring, glow and transparent offset on a single selection  |
 | Resize handle       | `RESIZE_HANDLE_CLASS`                                    | The corner handle's classes, both appearances                 |
@@ -216,7 +216,6 @@ The Charcoal migration logs as its blueprint states.
 | `DARK_INK.fill`                | `#141b26`                                | Operator decision 1                          | Stroke >= 3:1 on it                |
 | `DARK_INK.stroke`              | `#64748b`                                | slate-500                                    | >= 3:1 on canvas and fill          |
 | `DARK_INK.text`                | `#ffffff`                                | Operator decision 1                          | >= 4.5:1 on fill                   |
-| `DARK_INK.annotationFill`      | `#1c2533`                                | Operator decision 1                          | Lighter than `DARK_INK.fill`       |
 | `DARK_ARROW_LABEL_COLOR`       | `#94a3b8`                                | slate-400                                    | >= 4.5:1 on the canvas             |
 | Surfaces 950 / 900 / 800       | `#0b0f16` / `#131b26` / `#16202e`        | Operator decision 2                          | Dark, ordered                      |
 | Steel ramp                     | spec table                               | Operator decision 3                          | White on 600 >= 4.5:1              |

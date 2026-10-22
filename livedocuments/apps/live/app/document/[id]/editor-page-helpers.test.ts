@@ -1,4 +1,4 @@
-import type { ArrowElement, Element, ShapeElement, Tab } from '@livedocuments/document';
+import type { Tab } from '@livedocuments/document';
 import { describe, expect, it } from 'vitest';
 import {
   mayShareDocument,
@@ -6,7 +6,6 @@ import {
   computeTabSaveDiff,
   createTab,
   deriveTabLoadState,
-  mergeAiElements,
   patchTab,
   placeholdersFromSummaries,
   pruneMapToPresent,
@@ -382,7 +381,7 @@ describe('deriveTabLoadState', () => {
   it('gates editing: only the ready state is editable, loading + error are not', () => {
     // useEditorState folds this into `editsBlocked` (editable iff
     // 'ready'), so EVERY commit-based mutator — keyboard shortcuts, paste,
-    // AI apply, import, clear — is refused while a tab loads or errors.
+    // import, clear — is refused while a tab loads or errors.
     // The pointer-only canvas overlay can't block window keydown / paste,
     // so this derived gate is the real lock; the two must agree.
     const editable = (i: Parameters<typeof deriveTabLoadState>[0]) =>
@@ -391,124 +390,6 @@ describe('deriveTabLoadState', () => {
     expect(editable({ ...base, errored: true })).toBe(false); // error
     expect(editable({ ...base, loaded: true })).toBe(true); // ready
     expect(editable({ ...base, elementsLength: 3 })).toBe(true); // peer content
-  });
-});
-
-describe('mergeAiElements (docs/specs/007-editor/ai-assistance.md AI apply)', () => {
-  // Grid-aligned coords so autoAlignElements is a no-op and assertions
-  // on geometry / structure stay stable.
-  const sq = (id: string, o: Partial<ShapeElement> = {}): ShapeElement => ({
-    id,
-    type: 'shape',
-    shape: 'square',
-    x: 0,
-    y: 0,
-    width: 100,
-    height: 80,
-    ...o,
-  });
-  const pinned = (id: string, fromId: string, toId: string): ArrowElement => ({
-    id,
-    type: 'arrow',
-    from: { kind: 'pinned', elementId: fromId, anchor: 'e' },
-    to: { kind: 'pinned', elementId: toId, anchor: 'w' },
-  });
-  const byId = (els: Element[], id: string) => els.find((e) => e.id === id);
-
-  it('generate: modifies a matching id in place and appends new elements', () => {
-    const existing = [sq('a', { label: 'Old' })];
-    const out = mergeAiElements(
-      existing,
-      [sq('a', { label: 'New' }), sq('b', { x: 200 })],
-      'generate',
-    );
-    expect(out.map((e) => e.id).sort()).toEqual(['a', 'b']);
-    expect(byId(out, 'a')?.label).toBe('New');
-  });
-
-  it('clean: never changes what an element IS, only how it looks', () => {
-    // The destructive path. Clean asks the model to return ALL elements with
-    // the same ids, and the client coerces any shape outside AI_SHAPE_KINDS to
-    // 'square' so a NEW off-vocabulary node still renders. Spread over the
-    // original that rewrote the stored kind, so one Clean flattened every
-    // composite in the tab — checklists, code blocks, charts, lanes, entities,
-    // progress rings, 30 of the 51 ShapeKinds — then autosaved, change-logged
-    // and broadcast the result.
-    const existing = [sq('a', { shape: 'checklist', label: 'Retro' })];
-    const squashed = sq('a', { shape: 'square', label: 'Retro' });
-    const out = mergeAiElements(existing, [squashed], 'clean');
-    const a = byId(out, 'a') as ShapeElement;
-    expect(a.shape).toBe('checklist');
-  });
-
-  it('clean: keeps the element type when the model returns a different one', () => {
-    // Same rule, other half of identity: `type` is not on Clean's list either.
-    const existing = [sq('a', { label: 'Box' })];
-    const retyped = { id: 'a', type: 'text', label: 'Box' } as unknown as Element;
-    const out = mergeAiElements(existing, [retyped], 'clean');
-    expect(byId(out, 'a')?.type).toBe('shape');
-  });
-
-  it('generate: still replaces in place, identity included', () => {
-    // The rule is Clean-specific. Generate owns the elements it produced, so
-    // pinning identity there would stop it correcting its own output.
-    const existing = [sq('a', { shape: 'square' })];
-    const out = mergeAiElements(existing, [sq('a', { shape: 'diamond' })], 'generate');
-    expect((byId(out, 'a') as ShapeElement).shape).toBe('diamond');
-  });
-
-  it('clean: preserves AI-invisible props (e.g. fillColor) by spreading the patch', () => {
-    const existing = [sq('a', { label: 'Box', fillColor: '#abcdef' })];
-    // The AI returns the element WITHOUT fillColor (it never sees colours).
-    const out = mergeAiElements(existing, [sq('a', { label: 'Renamed' })], 'clean');
-    const a = byId(out, 'a') as ShapeElement;
-    expect(a.label).toBe('Renamed'); // patch applied
-    expect(a.fillColor).toBe('#abcdef'); // colour preserved
-  });
-
-  it('appends non-clashing additions with ids intact and preserves an arrow between them', () => {
-    const existing = [sq('keep')];
-    const n1 = sq('new1', { x: 200, label: 'A' });
-    const n2 = sq('new2', { x: 400, label: 'B' });
-    const out = mergeAiElements(existing, [n1, n2, pinned('arr', 'new1', 'new2')], 'generate');
-    expect(out.map((e) => e.id).sort()).toEqual(['arr', 'keep', 'new1', 'new2']);
-    const arrow = out.find((e) => e.type === 'arrow') as ArrowElement;
-    // No id clash → endpoints keep pointing at the additions verbatim.
-    expect(arrow.from.kind === 'pinned' && arrow.from.elementId).toBe('new1');
-    expect(arrow.to.kind === 'pinned' && arrow.to.elementId).toBe('new2');
-  });
-
-  // A clashing addition id is renamed, and EVERY kind of reference follows it
-  // the same way: pinned ends and on-arrow ends. Only pinned ends used to.
-  it('re-points every reference kind at a renamed addition', () => {
-    const onArrow: ArrowElement = {
-      id: 'arr2',
-      type: 'arrow',
-      from: { kind: 'on-arrow', arrowId: 'dup', t: 0.5 },
-      to: { kind: 'free', x: 0, y: 0 },
-    };
-    const out = mergeAiElements(
-      [sq('a')],
-      [sq('dup'), pinned('dup', 'a', 'a'), pinned('arr', 'a', 'dup'), onArrow],
-      'generate',
-    );
-    const renamed = out.find(
-      (e) => e.type === 'arrow' && e.id !== 'dup' && e.id !== 'arr' && e.id !== 'arr2',
-    )!;
-    expect((byId(out, 'arr') as ArrowElement).to).toMatchObject({ elementId: renamed.id });
-    expect((byId(out, 'arr2') as ArrowElement).from).toMatchObject({ arrowId: renamed.id });
-  });
-
-  it('does not drop or duplicate elements (modifications replace, additions append)', () => {
-    const existing = [sq('a'), sq('b', { x: 200 })];
-    // One modification (id 'a') + one genuine addition (id 'c').
-    const out = mergeAiElements(
-      existing,
-      [sq('a', { label: 'mod' }), sq('c', { x: 400 })],
-      'generate',
-    );
-    expect(out.map((e) => e.id).sort()).toEqual(['a', 'b', 'c']);
-    expect((byId(out, 'a') as ShapeElement).label).toBe('mod');
   });
 });
 

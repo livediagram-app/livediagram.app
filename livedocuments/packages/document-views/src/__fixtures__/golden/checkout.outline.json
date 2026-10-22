@@ -9,8 +9,7 @@
     },
     "elements": 30,
     "counts": {
-      "boxes": 16,
-      "frames": 3,
+      "boxes": 19,
       "arrows": 11
     },
     "hidden": 0,
@@ -43,10 +42,10 @@
     {
       "ref": "048c",
       "id": "048c0000-0000-4000-8000-000000000002",
-      "kind": "frame",
+      "kind": "stack",
       "unknown": false,
       "label": "Edge",
-      "summary": null,
+      "summary": "direction=row",
       "attributes": [],
       "edges": [],
       "children": [
@@ -153,10 +152,10 @@
     {
       "ref": "c991",
       "id": "c9910000-0000-4000-8000-000000000003",
-      "kind": "frame",
+      "kind": "stack",
       "unknown": false,
       "label": "Services",
-      "summary": null,
+      "summary": "direction=row",
       "attributes": [],
       "edges": [],
       "children": [
@@ -366,10 +365,10 @@
     {
       "ref": "ca76",
       "id": "ca760000-0000-4000-8000-000000000004",
-      "kind": "frame",
+      "kind": "stack",
       "unknown": false,
       "label": "Data",
-      "summary": null,
+      "summary": "direction=row",
       "attributes": [],
       "edges": [],
       "children": [

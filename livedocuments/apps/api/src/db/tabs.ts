@@ -1,7 +1,7 @@
 // tabs — one row per tab, linked to documents through the
 // document_tabs many-to-many table (the baseline migration / docs/specs/006-document/tab-document-many-to-many.md).
 
-import { capElementActions, drawnCount, type Tab } from '@livedocuments/document';
+import { drawnCount, type Tab } from '@livedocuments/document';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
 
@@ -221,14 +221,11 @@ type TabRevWrite = { advance: true } | { expected: number };
 export function tabWriteStatements(
   env: Env,
   documentId: string,
-  input: Tab,
+  tab: Tab,
   orderIndex: number,
   revision: TabRevWrite,
   now = Date.now(),
 ): D1PreparedStatement[] {
-  // Action panel lists are bounded here, the one place every tab write
-  // meets (docs/specs/012-collaboration/assigned-actions.md).
-  const tab = { ...input, elements: capElementActions(input.elements) };
   const { id, name, ...rest } = tab;
   const data = JSON.stringify(rest);
   assertTabDataFits(id, data, 'upsertTab');
@@ -337,12 +334,11 @@ export async function seedTabs(
 ): Promise<void> {
   if (tabs.length === 0) return;
   const now = Date.now();
-  const capped = tabs.map((t) => ({ ...t, elements: capElementActions(t.elements) }));
   // Every tab measured before any is written: a create seeds all or none.
-  for (const { id, name: _name, ...rest } of capped) {
+  for (const { id, name: _name, ...rest } of tabs) {
     assertTabDataFits(id, JSON.stringify(rest), 'seedTabs');
   }
-  const stmts = capped.flatMap((tab, idx) => {
+  const stmts = tabs.flatMap((tab, idx) => {
     const { id, name, ...rest } = tab;
     const data = JSON.stringify(rest);
     return [
@@ -372,7 +368,7 @@ export async function seedTabs(
   );
   // Index rows for every seeded tab (docs/specs/013-workspace/inbox.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
-  for (const tab of capped) {
+  for (const tab of tabs) {
     stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
     stmts.push(...imageRefReplaceStatements(env, tab.id, imageRefIds(tab.elements, tab.pages)));
     stmts.push(

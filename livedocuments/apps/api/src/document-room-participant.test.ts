@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// A Participant in the room (docs/specs/013-workspace/share-roles.md "Integrity"): content ops go through the
-// participant content rule against what D1 holds and only the rule's result reaches anyone; everything else from a
-// Participant is dropped.
+// A Participant in the room (docs/specs/013-workspace/share-roles.md "Integrity"): it edits text only. Its element
+// ops and article frames go through the participant rules against what D1 holds and only the rules' result reaches
+// anyone; everything else from a Participant is dropped.
 
 const { store } = vi.hoisted(() => {
   const store: { data: string | null; writes: number } = { data: '', writes: 0 };
@@ -21,7 +21,6 @@ vi.mock('./db', async (orig) => ({
 
 import { DocumentRoom } from './document-room';
 
-const ME = 'a'.repeat(32);
 const box = { x: 0, y: 0, width: 100, height: 80 };
 const sticky = (id: string, extra: Record<string, unknown> = {}) => ({
   id,
@@ -65,16 +64,11 @@ function newRoom() {
     waitUntil: () => {},
   };
   const room = new DocumentRoom(state as unknown as DurableObjectState, {} as never);
-  const join = (
-    id: string,
-    role: 'view' | 'participate' | 'edit',
-    adderKey: string | null = null,
-  ) => {
+  const join = (id: string, role: 'view' | 'participate' | 'edit') => {
     const s = socket({
       presenceId: id,
       verifiedRole: role,
       presence: { id, key: `key-${id}`, name: id, color: '#abc', role },
-      adderKey,
       documentId: 'd1',
     });
     sockets.push(s);
@@ -105,7 +99,8 @@ function wsOf(s: Socket): WebSocket {
 
 const frames = (s: Socket) => s.sent.map((f) => JSON.parse(f) as Record<string, unknown>);
 const ops = (s: Socket) => frames(s).filter((f) => f.kind === 'op');
-const storedElements = () => (JSON.parse(store.data!) as { elements: unknown[] }).elements;
+const storedTab = () => JSON.parse(store.data!) as { elements: unknown[]; articles?: unknown };
+const storedElements = () => storedTab().elements;
 const settle = () => new Promise((r) => setTimeout(r, 0));
 
 async function send(room: DocumentRoom, from: Socket, op: unknown, ref?: number) {
@@ -122,34 +117,23 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-describe('DocumentRoom: a Participant adds and writes', () => {
-  it('stores an added sticky stamped with its adder, and everyone takes the stored copy', async () => {
-    const { room, join } = newRoom();
-    const editor = join('E', 'edit');
-    const part = join('P', 'participate', ME);
-    await send(room, part, {
-      kind: 'el',
-      tabId: 't1',
-      op: { kind: 'add', element: sticky('n'), at: 2 },
-    });
-    expect(storedElements()[2]).toMatchObject({ id: 'n', addedBy: ME });
-    for (const s of [editor, part]) {
-      expect(ops(s)).toEqual([
-        expect.objectContaining({
-          from: 'system',
-          op: { kind: 'el', tabId: 't1', op: expect.objectContaining({ kind: 'add', at: 2 }) },
-        }),
-      ]);
-    }
+const paragraph = (text: string) => ({ id: 'b1', type: 'paragraph', runs: [{ text }] });
+const articleTab = (text: string) =>
+  JSON.stringify({
+    elements: [shape('col')],
+    pages: [{ id: 'p1', kind: 'article', orientation: 'portrait', flow: 'f1' }],
+    articles: { f1: { blocks: [paragraph(text)] } },
   });
 
-  it('relays only the fields it changed, from the Participant, and answers its cursor', async () => {
+describe('DocumentRoom: a Participant edits text only', () => {
+  it('relays and persists a change of words, only the fields it changed, and answers its cursor', async () => {
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
-    const part = join('P', 'participate', ME);
+    const part = join('P', 'participate');
     const op = { kind: 'update', element: shape('col', { label: 'Start doing' }) };
     await send(room, part, { kind: 'el', tabId: 't1', op }, 7);
     expect(storedElements()[0]).toMatchObject({ label: 'Start doing' });
+    expect(store.writes).toBe(1);
     expect(ops(editor)).toEqual([
       expect.objectContaining({
         from: 'P',
@@ -169,7 +153,7 @@ describe('DocumentRoom: a Participant adds and writes', () => {
   it('never sends the stored copy over live state: forbidden fields are simply not in the patch', async () => {
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
-    const part = join('P', 'participate', ME);
+    const part = join('P', 'participate');
     const op = { kind: 'update', element: shape('col', { label: 'New', width: 999 }) };
     await send(room, part, { kind: 'el', tabId: 't1', op });
     expect(storedElements()[0]).toMatchObject({ label: 'New', width: 100 });
@@ -180,21 +164,44 @@ describe('DocumentRoom: a Participant adds and writes', () => {
     expect(ops(part)).toEqual([]);
   });
 
-  it('re-hydrates the sender when the element is not saved yet', async () => {
+  it('drops a move and a restyle: nothing written, nothing relayed', async () => {
     const { room, join } = newRoom();
-    const part = join('P', 'participate', ME);
+    const editor = join('E', 'edit');
+    const part = join('P', 'participate');
+    const before = store.data;
+    for (const element of [sticky('ed', { x: 300, y: 40 }), sticky('ed', { fillColor: '#000' })]) {
+      await send(room, part, { kind: 'el', tabId: 't1', op: { kind: 'update', element } });
+    }
+    expect(store.writes).toBe(0);
+    expect(store.data).toBe(before);
+    expect(ops(editor)).toEqual([]);
+  });
+
+  it('drops an add: nothing written, and the sender takes it back off', async () => {
+    const { room, join } = newRoom();
+    const editor = join('E', 'edit');
+    const part = join('P', 'participate');
     await send(room, part, {
       kind: 'el',
       tabId: 't1',
-      op: { kind: 'update', element: sticky('unsaved') },
+      op: { kind: 'add', element: sticky('n'), at: 2 },
     });
-    expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'catchup', resync: true }));
+    expect(store.writes).toBe(0);
+    expect(storedElements()).toHaveLength(2);
+    expect(ops(editor)).toEqual([]);
+    expect(ops(part)).toEqual([
+      {
+        kind: 'op',
+        from: 'system',
+        op: { kind: 'el', tabId: 't1', op: { kind: 'remove', id: 'n' } },
+      },
+    ]);
   });
 
-  it("refuses to delete an Editor's sticky: nothing written, the sender gets it back", async () => {
+  it('drops a delete: nothing written, and the sender gets the element back', async () => {
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
-    const part = join('P', 'participate', ME);
+    const part = join('P', 'participate');
     await send(room, part, { kind: 'el', tabId: 't1', op: { kind: 'remove', id: 'ed' } });
     expect(store.writes).toBe(0);
     expect(ops(editor)).toEqual([]);
@@ -207,25 +214,101 @@ describe('DocumentRoom: a Participant adds and writes', () => {
     ]);
   });
 
-  it('re-hydrates the sender when the tab is gone', async () => {
+  it('re-hydrates the sender when the element is not saved yet', async () => {
     const { room, join } = newRoom();
-    const part = join('P', 'participate', ME);
-    store.data = null;
+    const part = join('P', 'participate');
     await send(room, part, {
       kind: 'el',
       tabId: 't1',
-      op: { kind: 'add', element: sticky('n'), at: 0 },
+      op: { kind: 'update', element: sticky('unsaved') },
     });
     expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'catchup', resync: true }));
   });
 
-  it('drops structure from a Participant: tabs, metadata, ticks, board changes', async () => {
+  it('re-hydrates the sender when the tab is gone', async () => {
+    const { room, join } = newRoom();
+    const part = join('P', 'participate');
+    store.data = null;
+    await send(room, part, {
+      kind: 'el',
+      tabId: 't1',
+      op: { kind: 'update', element: sticky('ed', { label: 'y' }) },
+    });
+    expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'catchup', resync: true }));
+  });
+
+  it('writes in an article: persisted, and relayed marked for an editor to grow its pages', async () => {
+    const { room, join } = newRoom();
+    store.data = articleTab('Hello');
+    const editor = join('E', 'edit');
+    const part = join('P', 'participate');
+    const frame = {
+      kind: 'article',
+      tabId: 't1',
+      flow: 'f1',
+      ops: [{ kind: 'put', block: paragraph('Hello there') }],
+    };
+    await send(room, part, frame, 3);
+    expect(storedTab().articles).toEqual({ f1: { blocks: [paragraph('Hello there')] } });
+    expect(ops(editor)).toEqual([
+      expect.objectContaining({ from: 'P', op: { ...frame, grow: true } }),
+    ]);
+    expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'cursor', ref: 3 }));
+  });
+
+  it("drops an article's restyle, removal or creation, and re-hydrates the sender", async () => {
+    const { room, join } = newRoom();
+    store.data = articleTab('Hello');
+    const editor = join('E', 'edit');
+    const part = join('P', 'participate');
+    await send(room, part, {
+      kind: 'article',
+      tabId: 't1',
+      flow: 'f1',
+      ops: [{ kind: 'style', style: { look: 'bold' } }],
+    });
+    expect(frames(part)).toContainEqual(expect.objectContaining({ kind: 'catchup', resync: true }));
+    await send(room, part, { kind: 'article', tabId: 't1', flow: 'f1', removed: true });
+    await send(room, part, {
+      kind: 'article',
+      tabId: 't1',
+      flow: 'f2',
+      created: true,
+      ops: [{ kind: 'put', block: paragraph('New') }],
+    });
+    expect(store.writes).toBe(0);
+    expect(ops(editor)).toEqual([]);
+  });
+
+  it('drops writing on a tab outside its link', async () => {
+    const { room, join } = newRoom();
+    store.data = articleTab('Hello');
+    const editor = join('E', 'edit');
+    const part = join('P', 'participate');
+    (part.attachment as Record<string, unknown>).tabScope = 't9';
+    await send(room, part, {
+      kind: 'article',
+      tabId: 't1',
+      flow: 'f1',
+      ops: [{ kind: 'put', block: paragraph('Sneaky') }],
+    });
+    await send(room, part, {
+      kind: 'el',
+      tabId: 't1',
+      op: { kind: 'update', element: shape('col', { label: 'Sneaky' }) },
+    });
+    expect(store.writes).toBe(0);
+    expect(ops(editor)).toEqual([]);
+  });
+
+  it('drops structure from a Participant: tabs, metadata, ticks, drag previews', async () => {
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
-    const part = join('P', 'participate', ME);
+    const part = join('P', 'participate');
     for (const op of [
       { kind: 'tab', tabId: 't1', tab: { id: 't1', name: 'x', elements: [] } },
       { kind: 'tab-meta', tabId: 't1', patch: { locked: true } },
+      { kind: 'document-meta', name: 'Renamed', tabs: [] },
       {
         kind: 'el-delta',
         tabId: 't1',
@@ -243,7 +326,7 @@ describe('DocumentRoom: a Participant adds and writes', () => {
   it('lets an Editor relay content as before, with no write by the room', async () => {
     const { room, join } = newRoom();
     const editor = join('E', 'edit');
-    const part = join('P', 'participate', ME);
+    const part = join('P', 'participate');
     const op = { kind: 'el', tabId: 't1', op: { kind: 'remove', id: 'ed' } };
     await send(room, editor, op);
     expect(ops(part)).toEqual([expect.objectContaining({ from: 'E', op })]);
@@ -257,9 +340,14 @@ describe('DocumentRoom: a Participant adds and writes', () => {
     await send(room, viewer, {
       kind: 'el',
       tabId: 't1',
-      op: { kind: 'add', element: sticky('n'), at: 0 },
+      op: { kind: 'update', element: shape('col', { label: 'x' }) },
     });
-    await send(room, viewer, { kind: 'vote', tabId: 't1', elementId: 'ed', voter: 'V', delta: 1 });
+    await send(room, viewer, {
+      kind: 'article',
+      tabId: 't1',
+      flow: 'f1',
+      ops: [{ kind: 'put', block: paragraph('x') }],
+    });
     expect(ops(editor)).toEqual([]);
     expect(store.writes).toBe(0);
   });

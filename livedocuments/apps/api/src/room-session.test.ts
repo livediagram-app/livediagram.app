@@ -14,7 +14,6 @@ describe('verifiedSessionOf', () => {
         'X-Verified-Account': '1',
         'X-Verified-Person': 'p',
         'X-Verified-Workbench-Pairing': 'w',
-        'X-Verified-Adder': 'a',
         'X-Verified-Document': 'd',
       }),
     );
@@ -25,7 +24,6 @@ describe('verifiedSessionOf', () => {
       account: true,
       personTag: 'p',
       workbenchPairing: 'w',
-      adderKey: 'a',
       documentId: 'd',
     });
   });
@@ -45,16 +43,15 @@ describe('newSessionAttachment', () => {
         account: false,
         personTag: long,
         workbenchPairing: long,
-        adderKey: long,
         documentId: long,
       },
       'presence-1',
     );
     expect(a.presenceId).toBe('presence-1');
     expect(a.presence).toBeNull();
-    expect(
-      [a.personTag, a.workbenchPairing, a.adderKey, a.documentId].map((s) => s?.length),
-    ).toEqual([64, 36, 32, 64]);
+    expect([a.personTag, a.workbenchPairing, a.documentId].map((s) => s?.length)).toEqual([
+      64, 36, 64,
+    ]);
   });
 });
 

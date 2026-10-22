@@ -2,13 +2,13 @@
 
 A **Shadow** category in the element style menu: a soft drop shadow behind a
 boxed element, picked from presets or dialled in with sliders. It gives cards,
-frames, and hero shapes depth without faking it with offset duplicate shapes.
+stacks, and hero shapes depth without faking it with offset duplicate shapes.
 
 ## Data model
 
 `shadow?: ElementShadow` on the boxed element types that draw a visible body:
 **shape** (every kind, including icons and the self-drawing data shapes),
-**sticky**, **image**, and **link-card**. Text, freehand, annotation, table,
+**sticky**, **image**, and **link-card**. Text, freehand, margin notes, table,
 and arrows don't carry one (arrows are a possible follow-up; a rectangular
 shadow under a line or a text run reads as a rendering bug, not a style).
 `supportsShadow(el)` in `@livedocuments/document` is the single gate the UI and

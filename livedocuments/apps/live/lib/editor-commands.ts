@@ -37,8 +37,8 @@ export type CommandContext = {
   // True when the single selection is a boxed element (rotation / note /
   // comment / animation all target boxed elements; arrows are excluded).
   singleIsBoxed: boolean;
-  // True when the single selection can be rotated (`supportsRotation`): boxed, minus an
-  // annotation marker (docs/specs/009-elements/blueprints/annotations.md). Gates the Rotate commands.
+  // True when the single selection can be rotated (`supportsRotation`): boxed, minus a
+  // margin note or a pointer note. Gates the Rotate commands.
   singleRotates: boolean;
   // True when the selection has an element on a logo page to reflect (Mirror Copy).
   canMirrorCopy?: boolean;

@@ -24,8 +24,6 @@ import { isSelfDrawingShape } from './data-shapes';
 import { isWebComponentShape } from './web-components';
 import type { ExportLabel, ExportRun } from './svg-render-labels';
 import { PADDING_PX } from './index';
-import { pageBodyTop } from './svg-render-page';
-import { borderOf } from './svg-render-border';
 import { chipColours, chipLookOf, isChipShape } from './chip';
 import type { BoxedElement, TextRun } from './index';
 import { runFontPx } from './label-font';
@@ -283,7 +281,7 @@ export function describeBoxedExport(
     };
   }
   const shape: ExportShape =
-    (el.type === 'shape' && el.shape === 'circle') || el.type === 'annotation'
+    el.type === 'shape' && el.shape === 'circle'
       ? { kind: 'ellipse', fill, stroke }
       : el.type === 'shape' && el.shape === 'diamond'
         ? { kind: 'diamond', fill, stroke }
@@ -317,20 +315,16 @@ export function describeBoxedExport(
     : undefined;
   // Mirror the editor's label layout: alignment defaults per element type
   // (sticky notes are top-left), the padding preset as the inset, and the
-  // vertical anchor following textAlignY — a top-aligned frame label must
-  // export at the frame's top, not float at its vertical centre.
+  // vertical anchor following textAlignY — a top-aligned label must
+  // export at the box's top, not float at its vertical centre.
   const defaults = defaultTextAlign(el);
   const alignX = el.textAlignX ?? defaults.x;
   const alignY = el.textAlignY ?? defaults.y;
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
-  // A page's body starts under its masthead, so its label does too; a cylinder's label sits on its
-  // body, under the lid and over the base (labelBodyInset).
-  const isPage = el.type === 'shape' && el.shape === 'page';
+  // A cylinder's label sits on its body, under the lid and over the base (labelBodyInset).
   const body = labelBodyInset(el);
-  const bodyTop = isPage ? pageBodyTop(el, pad) : el.y + body.top;
+  const bodyTop = el.y + body.top;
   const bodyBottom = el.y + el.height - body.bottom;
-  // ...and inside its border, lining up with the masthead.
-  const bodyInset = isPage ? borderOf(el).width : 0;
   const label: ExportLabel | null = el.label
     ? {
         text: el.label,
@@ -338,7 +332,7 @@ export function describeBoxedExport(
           alignX === 'right'
             ? el.x + el.width - pad
             : alignX === 'left'
-              ? el.x + pad + bodyInset
+              ? el.x + pad
               : el.x + el.width / 2,
         y:
           alignY === 'top'
@@ -389,12 +383,11 @@ export function drawsStandardLabel(el: BoxedElement): boolean {
 }
 
 // The room the ordinary label wraps in: the width it may run to and the height between its padding,
-// exactly as `describeBoxedExport` lays the label out (a page's body starts under its masthead).
+// exactly as `describeBoxedExport` lays the label out.
 export function labelRoom(el: BoxedElement): { width: number; height: number } {
   const pad = PADDING_PX[el.padding ?? defaultPadding(el)];
   const body = labelBodyInset(el);
-  const bodyTop =
-    el.type === 'shape' && el.shape === 'page' ? pageBodyTop(el, pad) : el.y + body.top;
+  const bodyTop = el.y + body.top;
   const bodyBottom = el.y + el.height - body.bottom;
   return { width: labelMaxWidth(el, pad), height: bodyBottom - pad - (bodyTop + pad) };
 }

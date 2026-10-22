@@ -14,22 +14,17 @@ isometric (axonometric, parallel — no perspective) view:
 - The whole content layer tilts onto the isometric plane, so the canvas
   reads as a surface seen from above and to the side.
 - Each **boxed element** (shapes, tables, images, stickies, link
-  cards, annotations) gains **extruded depth** — a solid raised
+  cards) gains **extruded depth** — a solid raised
   block standing off the floor — so the scene looks three-dimensional. The
   block's side walls paint in the **element's own colour** (its accent),
   shaded darker toward the floor, rather than a flat black slab.
-  **Frames are one exception**: a frame is a section backdrop, not a solid
-  block, so it gets no extrusion column and instead settles **just below
-  the base plane** (a -1px translateZ via the `[data-iso] [data-frame]`
-  rule) — its big surface would otherwise be exactly coplanar with the
-  contents drawn over it, and coplanar 3D layers z-fight (flicker) while
-  the camera orbits. **Plain text elements are another**: text draws with
+  **Plain text elements are one exception**: text draws with
   no background on the flat canvas, so an extrusion column would conjure a
   solid slab behind bare words (the wall-colour fallback). Text stays flat
-  on the base plane. **Icon shapes are the third** — line-art glyphs and
+  on the base plane. **Icon shapes are another** — line-art glyphs and
   Technology / infra marks alike read as flat markers, like text: a raised
   slab under a glyph turns every icon into an anonymous block and buries
-  the artwork, so they stay flat too. All three exemptions live in one
+  the artwork, so they stay flat too. The exemptions live in one
   shared predicate (`isoExtrudes`, `lib/isometric.ts`) consumed by the
   on-screen `IsometricDepthLayer` AND both image exporters, so screen and
   export can't drift.

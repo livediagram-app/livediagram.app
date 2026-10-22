@@ -41,11 +41,11 @@ describe('formatLintReport', () => {
         fix: 'drop the groups, or lines: angled',
       },
       {
-        code: 'group-split-edges',
+        code: 'duplicate-label',
         severity: 'info',
-        refs: ['core'],
-        message: 'core: 12 of 13 arrows cross its border',
-        fix: 'group by ownership, or drop the groups',
+        refs: ['orders2', 'orders'],
+        message: 'orders2 says "Orders", as orders does',
+        fix: 'set orders2 label="<text>"',
       },
     ];
     const text = formatLintReport(
@@ -57,9 +57,9 @@ describe('formatLintReport', () => {
     expect(text).toBe(
       [
         '5 crossings · 2 behind · 0 overlaps · 1317×1196 → 2 warnings, 1 info',
-        'W arrow-behind-box   orders→bus passes behind pay            fix: drop the groups, or lines: angled',
-        'W arrow-behind-box   bus→notify passes behind pay            fix: drop the groups, or lines: angled',
-        'I group-split-edges  core: 12 of 13 arrows cross its border  fix: group by ownership, or drop the groups',
+        'W arrow-behind-box   orders→bus passes behind pay           fix: drop the groups, or lines: angled',
+        'W arrow-behind-box   bus→notify passes behind pay           fix: drop the groups, or lines: angled',
+        'I duplicate-label    orders2 says "Orders", as orders does  fix: set orders2 label="<text>"',
       ].join('\n'),
     );
   });

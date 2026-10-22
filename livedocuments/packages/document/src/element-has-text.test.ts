@@ -20,10 +20,10 @@ describe('elementHasText', () => {
     expect(elementHasText(withLabel('   '))).toBe(false);
   });
 
-  it('is false for label-less kinds (table / image / annotation)', () => {
+  it('is false for label-less kinds (table / image / article-note)', () => {
     expect(elementHasText({ type: 'table', cells: [['a']] } as unknown as Element)).toBe(false);
     expect(elementHasText({ type: 'image', alt: 'a photo' } as unknown as Element)).toBe(false);
-    expect(elementHasText({ type: 'annotation', note: 'hi' } as unknown as Element)).toBe(false);
+    expect(elementHasText({ type: 'article-note', note: 'hi' } as unknown as Element)).toBe(false);
   });
 
   it('reads the label on an arrow', () => {
@@ -48,10 +48,10 @@ describe('elementSupportsText', () => {
     expect(elementSupportsText(el({ type: 'shape', shape: 'pie-chart' }))).toBe(false);
   });
 
-  it('is false for label-less kinds (table / image / annotation / link-card)', () => {
+  it('is false for label-less kinds (table / image / article-note / link-card)', () => {
     expect(elementSupportsText(el({ type: 'table' }))).toBe(false);
     expect(elementSupportsText(el({ type: 'image' }))).toBe(false);
-    expect(elementSupportsText(el({ type: 'annotation' }))).toBe(false);
+    expect(elementSupportsText(el({ type: 'article-note' }))).toBe(false);
     // Link-cards render link metadata, never `label`; their double-click
     // opens the link picker, so the text button must not appear.
     expect(elementSupportsText(el({ type: 'link-card' }))).toBe(false);

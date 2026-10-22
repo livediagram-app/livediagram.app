@@ -51,7 +51,7 @@ Or one operation a command; its words are the operation's, and connect needs no 
   livedocuments element set "Auth flow" n3 label="Sign in"
   livedocuments element connect "Auth flow" n3 n7 label=retry
 
-Operations: add set rm move connect rewire insert wrap unwrap order layout test.
+Operations: add set rm move connect rewire insert unwrap order layout test.
 Select by ref (n3), "label", type:sticky, in:f2, n3->n4, downstream:n3.
 Place an add or a move with right-of:n3, left-of:n3, above:n3, below:n3, after:n3 or inside:f2.
 Values with spaces are quoted: label="Sign in". key= unsets a field.
@@ -65,7 +65,7 @@ what changed since a revision you read.`,
 
 A view answers one question about a tab at the lowest token cost:
 
-  outline   what is there, nested by frame, arrows on the line   (default)
+  outline   what is there, nested by stack, arrows on the line   (default)
   graph     what connects to what
   layout    where things sit; --coarse for rows
   comments  open threads; --all adds resolved ones
@@ -107,7 +107,7 @@ A workbench (a coding tool or an editor) shows a document live beside you. When 
 to you about it, the message carries a selection reference:
 
   [livedocuments] "Home screen" \u203a tab "Wireframe" (doc 3h9x2a, tab 0b34, rev 41)
-  selected: button 146b "Play", frame e4a8 "Game grid", sticky 0c84 "Daily streak goes here"
+  selected: button 146b "Play", stack e4a8 "Game grid", sticky 0c84 "Daily streak goes here"
   read: livedocuments tab view 3h9x2a --tab 0b34 --view show --ref 146b
 
 The first line names the document, the tab and the revision the selection was made on.
@@ -119,7 +119,7 @@ Refs are element ids, so they still name the same elements after later edits. Re
 they hold now, starting from the read: line:
 
   livedocuments tab view 3h9x2a --tab 0b34 --view show --ref 146b    one element in full
-  livedocuments tab view 3h9x2a --tab 0b34 --only e4a8               a frame and what is in it
+  livedocuments tab view 3h9x2a --tab 0b34 --only e4a8               a stack and what is in it
   livedocuments tab view 3h9x2a --tab 0b34                           the whole tab, as an outline
 
 More than 20 selected ends the line with "… and 14 more: livedocuments tab view ... --ref selected".

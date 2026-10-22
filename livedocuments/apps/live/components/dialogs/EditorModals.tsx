@@ -30,7 +30,6 @@ export function EditorModals() {
     userPreferences,
     setUserPreferences,
     selfParticipant,
-    aiCapable,
     canvasThemeTab,
     isReadOnly,
     activeTab,
@@ -70,7 +69,6 @@ export function EditorModals() {
           focus={settingsFocus}
           initialCategoryId={settingsCategory}
           initialSectionId={settingsSection}
-          aiCapable={aiCapable}
         />
       ) : null}
       {canvasThemeTab !== null && !isReadOnly ? (

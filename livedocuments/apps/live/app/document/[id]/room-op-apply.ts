@@ -108,8 +108,9 @@ export function applyRoomOpToTabs(tabs: Tab[], op: RoomOp): Tab[] {
             pagesOf(tab).some((p) => p.flow === op.flow);
           if (!known) return tab;
           articles[op.flow] = applyArticleOps(articles[op.flow], ops);
-          // An agent's writing has no writer here to add the pages it needs: the next lay-out may.
-          if (op.agent === true) markArticleGrow(op.tabId, op.flow);
+          // An agent's or a Participant's writing has no writer here to add the pages it needs: the
+          // next lay-out may.
+          if (op.grow === true) markArticleGrow(op.tabId, op.flow);
         }
         if (Object.keys(articles).length > 0) return { ...tab, articles };
         const { articles: _drop, ...rest } = tab;

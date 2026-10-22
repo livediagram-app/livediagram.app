@@ -69,7 +69,7 @@ export function elementFontId(el, tabFont, tabFinish): string | undefined; // fi
 export function finishCurvesNewArrows(finish: Finish): boolean; // finish !== 'professional'
 export function finishNewArrowStyle(finish: Finish): ArrowStyle | undefined; // professional → 'angled'
 export function finishHatchesKind(element: Element): boolean;
-// a shape of a plain box kind or a drawn silhouette; not a frame or self-painting kind
+// a shape of a plain box kind or a drawn silhouette; not a self-painting kind
 export function finishHatches(element: Element, fill: string, backdrop?: boolean): boolean;
 // finishHatchesKind, not a backdrop, fill not transparent
 ```
@@ -242,7 +242,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - Faces (spec "Every other face is drawn by hand too"): `finishSplitsFace(el)` (`finish.ts`) names the elements
   whose face is split: every shape kind outside `SKETCHED_BY_BODY` (the plain boxes whose sketched body is their
   whole drawing, icons and stickers), a plain box with an inline icon, tables, link cards,
-  video and annotations. `BoxedElementView` wraps everything it draws over the body (accent edge to
+  video and article margin notes. `BoxedElementView` wraps everything it draws over the body (accent edge to
   `ElementFaceRouter`) in `components/canvas/SketchFace.tsx` when the resolved finish is Sketch (never Marker) and the predicate
   holds. `SketchFace` renders an empty `[data-sketch-ink]` div (`aria-hidden`, `inert`) then a
   `[data-sketch-words]` div holding the face, both `absolute inset-0`, no z-index. In a layout effect it fills the
@@ -422,7 +422,7 @@ sticky and table.
 ## Security and trust
 
 Cosmetic fields only; no user content reaches the geometry beyond numbers. Participant ops cannot carry `finish`
-(not in `PARTICIPANT_STICKY_FIELDS`), locked by `participant-content.leak.test.ts`.
+(not in `PARTICIPANT_TEXT_FIELDS`), locked by `participant-content.leak.test.ts`.
 
 ## Performance and limits
 

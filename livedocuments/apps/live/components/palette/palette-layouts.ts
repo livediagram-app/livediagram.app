@@ -43,17 +43,6 @@ export const CATALOGUE_CATEGORIES: ReadonlySet<string> = new Set([
   'technology',
 ]);
 
-/** A category's own tile ids, less the named ones: for a layout that drops a tile or two. A dropped tile that ends a
- *  group (`dividerAfter`) leaves its divider after the tile kept before it, so the group still ends there. */
-function tilesExcept(categoryId: string, ...drop: string[]): readonly string[] {
-  const out: string[] = [];
-  for (const tile of tilesForCategory(categoryId)) {
-    if (!drop.includes(tile.id)) out.push(tile.id);
-    else if (tile.dividerAfter && out.length > 0 && out.at(-1) !== DIVIDE) out.push(DIVIDE);
-  }
-  return out;
-}
-
 // The concept graphics, then the Sankey (Pages mode's Concepts).
 const CONCEPTS_WITH_SANKEY = [...tilesForCategory('concepts').map((t) => t.id), 'tools:sankey'];
 
@@ -76,8 +65,8 @@ const PAGES_COMPONENTS = [
   'tools:checklist',
 ];
 
-// The Pages palette's Write: the page is the canvas, so no Page element; and no Annotation, a diagram's marker.
-const PAGES_WRITE = tilesExcept('write', 'tools:page', 'tools:annotation');
+// The Pages palette's Write.
+const PAGES_WRITE = tilesForCategory('write').map((t) => t.id);
 
 // Pages mode: Popular, the mock-up kit, glyphs, stickers, pictures and charts; no pens, tech
 // icons or behaviours.
@@ -325,31 +314,3 @@ export function paletteCategoryOffered(mode: EditorMode, id: string): boolean {
 export function paletteLandingCategory(mode: EditorMode): string {
   return paletteLayoutFor(mode).landing;
 }
-
-// A Participant's palette (docs/specs/013-workspace/share-roles.md "What a Participant changes"): one category,
-// Participate, holding only what it may add, as the full palette's own tiles: the Sticky and Text tiles (whatever a
-// mode's Popular holds), then the Image tile. Mind-map branches grow from a node (Tab, Enter), not from a tile.
-const PARTICIPANT_TILES = ['tools:sticky', 'tools:text'] as const;
-const PARTICIPANT_IMAGE_TILE = 'tools:image';
-
-export function participantTiles(): PaletteTileDef[] {
-  const base = PARTICIPANT_TILES.map(tileById).filter((t): t is PaletteTileDef => t !== undefined);
-  const image = tileById(PARTICIPANT_IMAGE_TILE);
-  return image ? [...base, image] : base;
-}
-
-export function participantPaletteCategories(): ResolvedPaletteCategory[] {
-  const identity = IDENTITY.get('participate')!;
-  return [{ ...identity, tiles: participantTiles() }];
-}
-
-// The selection modes a Participant has: look and point, never an Editor's tools (Eraser, Format
-// Painter, Slide Deck).
-export const PARTICIPANT_CANVAS_TOOLS: readonly string[] = [
-  'select',
-  'pan',
-  'laser',
-  'spotlight',
-  'isometric',
-  'zen',
-];

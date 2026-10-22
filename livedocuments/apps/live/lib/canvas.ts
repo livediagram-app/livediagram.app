@@ -44,17 +44,12 @@ export function pointerToCanvas(
 // boxed element's width / height (so adding elements one after another
 // keeps a consistent size), falling back to the factory default when
 // nothing boxed is selected. Circles + diamonds are forced square — a
-// non-square inherited size would squash them. Shared by the palette
-// tap-to-drop (addBoxed) and the combined add gesture's tap branch
-// (useShapeDrawing.commitDraw) so both paths size new elements the same.
+// non-square inherited size would squash them. Used by the combined add
+// gesture's tap branch (./draw-commit).
 export function inheritedSizeFor(
   base: BoxedElement,
   selected: Element | null | undefined,
 ): { width: number; height: number } {
-  // Annotations are a fixed marker size (docs/specs/009-elements/annotations.md): never inherit the
-  // selection's dimensions, so a marker added while a big shape is selected
-  // doesn't balloon. It stays its intrinsic 44×44.
-  if (base.type === 'annotation') return { width: base.width, height: base.height };
   // A table drops as its 3 x 3 grid at 360 x 150 (docs/specs/008-canvas/canvas-and-palette.md Table): its size is its
   // grid's, not the selection's.
   if (base.type === 'table') return { width: base.width, height: base.height };
@@ -106,13 +101,11 @@ export function inheritedSizeFor(
   return { width, height };
 }
 
-// Stable reorder that puts frames FIRST (lowest paint / z-order): a frame
-// is a section backdrop that must sit behind its contents so they stay
-// visible + clickable (docs/specs/008-canvas/canvas-and-palette.md). Both the on-canvas render layer and the
-// exporters route element lists through this, so frame ordering is one
-// rule in one place and never depends on array position. Returns the input
-// array unchanged when there are no frames (cheap no-op).
-export function framesFirst<T extends Element>(elements: T[]): T[] {
+// Stable reorder that puts containers (stacks) FIRST (lowest paint / z-order):
+// a container is a backdrop that must sit behind its contents so they stay
+// visible + clickable. Returns the input array unchanged when there are no
+// containers (cheap no-op).
+export function containersFirst<T extends Element>(elements: T[]): T[] {
   if (!elements.some(isContainer)) return elements;
   return [...elements.filter(isContainer), ...elements.filter((el) => !isContainer(el))];
 }

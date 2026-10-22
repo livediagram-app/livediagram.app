@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { LINT_CODES } from '@livedocuments/api-schema';
 import type { Element, Tab } from '@livedocuments/document';
 import { applyEditOperations, parseEditOperations } from '@livedocuments/edit-operations';
-import { arrow, box, frame, lint } from './fixtures/build';
+import { arrow, box, lint } from './fixtures/build';
 
 // One drawing per code, each drawing that code's fault.
 const DRAWINGS: Element[][] = [
@@ -30,20 +30,6 @@ const DRAWINGS: Element[][] = [
     }),
   ],
   [box('a', 0, 0), box('b', 300, 0), arrow('x', 'a', 'b'), box('alone', 0, 200)],
-  [frame('f', 0, 0, 200, 200), box('a', 120, 20)],
-  [
-    frame('core', 0, 0, 200, 400),
-    box('a', 40, 40),
-    box('b', 40, 300),
-    box('x', 400, 40),
-    box('y', 400, 300),
-    box('z', 400, 500),
-    arrow('1', 'a', 'x'),
-    arrow('2', 'b', 'y'),
-    arrow('3', 'a', 'z'),
-    // One arrow inside: a frame none of whose arrows run inside is a role group, split by design.
-    arrow('4', 'a', 'b'),
-  ],
   [box('a', 0, 0, { label: 'Same' }), box('b', 300, 0, { label: 'same' })],
   [
     box('a', 0, 0),

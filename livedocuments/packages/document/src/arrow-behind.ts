@@ -40,13 +40,11 @@ export function arrowRoutesBehind(arrow: ArrowElement): boolean {
 // The exclusions matter more than the inclusions here, because the feature
 // is ON by default and a wrong obstacle erases an arrow that should be
 // visible:
-//   - `frame` shapes are section BACKDROPS. Everything inside a frame sits
-//     on top of it by design, so treating one as an obstacle would break
-//     every arrow drawn within a section — the single worst failure this
-//     feature could have.
-//   - `lane` shapes are swimlane backdrops for the same reason: they paint
-//     behind everything, and a hand-off arrow crosses lanes by design.
-//   - `text` and `annotation` have no fill to hide behind. Breaking a line
+//   - containers (stacks) are BACKDROPS. Everything inside one sits on top
+//     of it by design, so treating one as an obstacle would break every
+//     arrow drawn within it — the single worst failure this feature could
+//     have.
+//   - `text` and margin notes have no fill to hide behind. Breaking a line
 //     under a transparent label reads as a rendering fault, not as depth.
 //   - freehand / arrows aren't boxes at all (a freehand IS boxed in the
 //     element model, so it is excluded by name): ink hides nothing.
@@ -54,7 +52,7 @@ export function arrowRoutesBehind(arrow: ArrowElement): boolean {
 //     behind either, like text.
 function isOccluder(el: Element): el is BoxedElement {
   if (!isBoxed(el)) return false;
-  if (el.type === 'text' || el.type === 'annotation' || el.type === 'freehand') return false;
+  if (el.type === 'text' || el.type === 'article-note' || el.type === 'freehand') return false;
   if (el.type === 'shape' && el.fillColor === 'transparent') return false;
   return !(el.type === 'shape' && isContainerKind(el.shape));
 }

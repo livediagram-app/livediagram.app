@@ -246,12 +246,14 @@ describe('floor plan geometry', () => {
     return { x1: b.x, y1: b.y, x2: b.x + b.width, y2: b.y + b.height };
   };
   // Rooms are the opaque square scaffold shapes (the translucent squares
-  // are their zone washes); the frame is the outer wall.
+  // are their zone washes); the unfilled square is the outer wall.
+  const isWall = (el: Element) => el.type === 'shape' && el.fillColor === 'transparent';
   const rooms = elements
     .filter(
       (el) =>
         el.type === 'shape' &&
         el.shape === 'square' &&
+        !isWall(el) &&
         (el as { opacity?: number }).opacity === undefined,
     )
     .map(boxOf);
@@ -261,7 +263,7 @@ describe('floor plan geometry', () => {
 
   it('draws seven rooms inside one outer wall', () => {
     expect(rooms).toHaveLength(7);
-    const wall = boxOf(elements.find((el) => el.type === 'shape' && el.shape === 'frame')!);
+    const wall = boxOf(elements.find(isWall)!);
     for (const room of rooms) {
       expect(room.x1).toBeGreaterThanOrEqual(wall.x1);
       expect(room.y1).toBeGreaterThanOrEqual(wall.y1);

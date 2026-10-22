@@ -65,18 +65,6 @@ export type InsertOperation = {
   between: [Selector, Selector];
 };
 
-// At most one of `absorb` and `makeRoom`.
-export type WrapOperation = {
-  op: 'wrap';
-  targets: Selector[];
-  in: 'frame';
-  id?: string;
-  fields?: Fields;
-  tidy?: true;
-  absorb?: true;
-  makeRoom?: true;
-};
-
 export type UnwrapOperation = { op: 'unwrap'; target: Selector };
 
 export type OrderOperation = { op: 'order'; target: Selector } & (
@@ -100,7 +88,6 @@ export type EditOperation =
   | ConnectOperation
   | RewireOperation
   | InsertOperation
-  | WrapOperation
   | UnwrapOperation
   | OrderOperation
   | LayoutOperation

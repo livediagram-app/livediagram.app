@@ -87,7 +87,6 @@ export const ROOT_TYPES = [
   'TeamInviteDecline',
   'TelemetryEvent',
   'TelemetrySummary',
-  'AiRequest',
   'CapabilitiesResponse',
   'CurrentTokenResponse',
   'DocumentCommentThread',

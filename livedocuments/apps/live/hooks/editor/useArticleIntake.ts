@@ -182,12 +182,7 @@ export function useArticleIntake({
         // Margin notes whose markers were deleted leave their text untinted.
         const goneNotes = new Set(
           was.elements
-            .filter(
-              (e) =>
-                e.type === 'annotation' &&
-                e.articleNote &&
-                !next.elements.some((n) => n.id === e.id),
-            )
+            .filter((e) => e.type === 'article-note' && !next.elements.some((n) => n.id === e.id))
             .map((e) => e.id),
         );
         next = withNoteMarksRemoved(next, goneNotes);

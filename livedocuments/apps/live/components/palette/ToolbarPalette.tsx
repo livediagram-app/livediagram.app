@@ -86,9 +86,6 @@ type Props = Pick<
     leading?: ReactNode;
     // The active tab's elements: Search lists their element types before anything is typed.
     tabElements?: readonly Element[];
-    // A Participant (docs/specs/013-workspace/share-roles.md): the Participate category alone, its selection
-    // modes, and no Search (it would offer every element type).
-    participant?: boolean;
   };
 // The strip's card, and the leading card beside it on a phone.
 const CARD_CLASS = `${TOOLBAR_CARD} ${BAND_TINT} ${BAND_STRIP_FLUSH} ${PHONE_TOOLBAR_ITEMS}`;
@@ -141,7 +138,6 @@ export function ToolbarPalette(props: Props) {
   // The phone's row: the strip at the left gutter, beside the menu card when there is one.
   const phoneRow = leading !== undefined;
   const hidden = props.hidden;
-  const participant = !!props.participant;
   // The strip's two popovers (ToolbarStripPopover): only the popover and its own button count as
   // inside, so pressing anything else on the strip closes it.
   const rootRef = useRef<HTMLDivElement>(null);
@@ -169,17 +165,16 @@ export function ToolbarPalette(props: Props) {
         bar.popover.setOpen(false);
       },
     });
-  // The landing rule (palette-layouts): the mode's Popular. A Participant lands on Participate.
+  // The landing rule (palette-layouts): the mode's Popular.
   // Diagram shows its categories on the strip, each opening a flyout of its tiles, rather than one category's tiles
-  // (docs/specs/007-editor/toolbar-layout.md "The category bar"). Not for a Participant, whose palette is one
-  // category.
-  const categoryBar = CATEGORY_BAR_MODES.has(editorMode) && !participant;
+  // (docs/specs/007-editor/toolbar-layout.md "The category bar").
+  const categoryBar = CATEGORY_BAR_MODES.has(editorMode);
   // In Pages mode with the palette's kind Article, the strip holds the article's formatting in place of the bar.
   const paletteKind = usePaletteKind();
   const articleDock = categoryBar && editorMode === 'pages' && paletteKind === 'article';
   // A change of kind cascades its categories in (usePaletteKindMotion).
   usePaletteKindMotion(editorMode === 'pages' ? paletteKind : editorMode, rootRef);
-  const defaultId = participant ? 'participate' : paletteLandingCategory(editorMode);
+  const defaultId = paletteLandingCategory(editorMode);
   const [categoryId, setCategoryId] = useState(defaultId);
   // Another surface asking for a category (a board's + asks for Widgets).
   useEffect(
@@ -320,9 +315,9 @@ export function ToolbarPalette(props: Props) {
     search.openFrom(button);
   });
   useEffect(() => {
-    if (participant || hidden) return;
+    if (hidden) return;
     return onToolbarSearchRequest(() => openSearchFromKey());
-  }, [participant, hidden]);
+  }, [hidden]);
   const toggleSearch = (button: HTMLElement) => {
     if (search.open) return search.setOpen(false);
     beforeSearch();
@@ -525,14 +520,10 @@ export function ToolbarPalette(props: Props) {
                   last page) adds one there. */}
                   {/* Search, last: any element type, this mode's and the others' (docs/specs/007-editor/toolbar-layout.md
                   "Search: every element type"). */}
-                  {participant ? null : (
-                    <>
-                      <Divider />
-                      <div ref={searchButtonRef} className="flex">
-                        <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
-                      </div>
-                    </>
-                  )}
+                  <Divider />
+                  <div ref={searchButtonRef} className="flex">
+                    <ToolbarSearchButton open={search.open} onToggle={toggleSearch} />
+                  </div>
                 </div>
               </CardWidth>
             </StripRow>
@@ -573,7 +564,7 @@ export function ToolbarPalette(props: Props) {
                 )}
               </StripPopover>
             ) : null}
-            {search.open && !participant ? (
+            {search.open ? (
               <StripPopover
                 right={search.right}
                 isMobile={isMobile}

@@ -234,7 +234,6 @@ export function fakeIo(
 export const capabilities: Route = (_, url) =>
   url.pathname === '/api/capabilities'
     ? Response.json({
-        aiEnabled: false,
         apiBase: 'https://livedocuments.app/api',
         authEnabled: true,
         documentFormat: 2,

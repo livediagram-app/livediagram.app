@@ -18,7 +18,7 @@ describe('showView (R17, VW34)', () => {
     expect(json).toMatchObject({
       ref: '146b',
       kind: 'square',
-      container: { ref: 'c991', kind: 'frame', label: 'Services' },
+      container: { ref: 'c991', kind: 'stack', label: 'Services' },
       fields: { label: 'Orders service', iconId: 'server', x: 720 },
       omitted: [],
     });
@@ -114,7 +114,6 @@ describe('person ids (security)', () => {
     action,
     actions: [action],
     commentThread: { comments: [comment], resolved: false },
-    addedBy: secret,
   } as unknown as Element;
 
   it('never leaves through show, in text or JSON, and names every one omitted', () => {

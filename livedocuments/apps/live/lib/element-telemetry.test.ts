@@ -40,7 +40,9 @@ describe('elementTelemetryType', () => {
     expect(elementTelemetryType(box({ type: 'sticky' }))).toBe('Sticky');
     expect(elementTelemetryType(box({ type: 'image' }))).toBe('Image');
     expect(elementTelemetryType(box({ type: 'table' }))).toBe('Table');
-    expect(elementTelemetryType(box({ type: 'annotation' }))).toBe('Annotation');
+    expect(elementTelemetryType(box({ type: 'article-note', articleNote: 'action' }))).toBe(
+      'ArticleAction',
+    );
     expect(elementTelemetryType(box({ type: 'link-card' }))).toBe('LinkCard');
     expect(elementTelemetryType(box({ type: 'arrow' }))).toBe('Arrow');
   });

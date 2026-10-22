@@ -9,7 +9,6 @@ const EDIT = {
   account: false,
   personTag: null,
   workbenchPairing: null,
-  adderKey: null,
 } as const;
 const VIEW = {
   role: 'view',
@@ -18,7 +17,6 @@ const VIEW = {
   account: false,
   personTag: null,
   workbenchPairing: null,
-  adderKey: null,
 } as const;
 
 // A ws ticket is the only thing standing between "passed the REST access
@@ -43,7 +41,6 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
       0,
       null,
       null,
-      null,
     ]);
   });
 
@@ -58,13 +55,11 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
       account: false,
       personTag: null,
       workbenchPairing: null,
-      adderKey: null,
     });
     expect(db.one('INSERT INTO ws_tickets').bindings.slice(4)).toEqual([
       't2',
       'CODE2345',
       0,
-      null,
       null,
       null,
     ]);
@@ -76,14 +71,14 @@ describe('createWsTicket (docs/specs/007-editor/live-app.md room auth)', () => {
     const db = fakeD1();
     await createWsTicket(db.env, 'diag-1', { ...EDIT, account: true, personTag: 'tag1' });
     expect(db.one('INSERT INTO ws_tickets').sql).toContain('person_tag');
-    expect(db.one('INSERT INTO ws_tickets').bindings.slice(6)).toEqual([1, 'tag1', null, null]);
+    expect(db.one('INSERT INTO ws_tickets').bindings.slice(6)).toEqual([1, 'tag1', null]);
   });
 
   // docs/specs/013-workspace/workbench-embeds.md: a workbench session's ticket carries its pairing to the room.
   it('writes and returns the workbench pairing', async () => {
     const db = fakeD1();
     await createWsTicket(db.env, 'diag-1', { ...EDIT, account: true, workbenchPairing: 'pair-1' });
-    expect(db.one('INSERT INTO ws_tickets').bindings.at(-2)).toBe('pair-1');
+    expect(db.one('INSERT INTO ws_tickets').bindings.at(-1)).toBe('pair-1');
     const read = fakeD1(() => ({ first: { role: 'edit', workbench_pairing: 'pair-1' } }));
     expect((await consumeWsTicket(read.env, 't', 'diag-1', 5))?.workbenchPairing).toBe('pair-1');
   });
@@ -123,7 +118,6 @@ describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => 
       account: true,
       personTag: 'tag1',
       workbenchPairing: null,
-      adderKey: null,
     });
   });
 
@@ -136,7 +130,6 @@ describe('consumeWsTicket (docs/specs/007-editor/live-app.md room auth)', () => 
       account: false,
       personTag: null,
       workbenchPairing: null,
-      adderKey: null,
     });
   });
 

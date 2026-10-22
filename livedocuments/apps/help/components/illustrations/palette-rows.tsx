@@ -16,7 +16,6 @@ const CATEGORY_ROWS: Record<string, Row[]> = {
     { caption: 'Page', blurb: 'A paper-shaped page for prose' },
     { caption: 'Text', blurb: 'A free-standing text label', key: 'T' },
     { caption: 'Note', blurb: 'A coloured note card', key: 'N' },
-    { caption: 'Annotation', blurb: 'A marker that holds a note' },
   ],
   Draw: [
     { caption: 'Freehand', blurb: 'Sketch a stroke, left as drawn', key: 'P' },
@@ -30,7 +29,7 @@ const CATEGORY_ROWS: Record<string, Row[]> = {
     { caption: 'Mind Node', blurb: 'Tab adds a child, Enter a sibling' },
     { caption: 'Table', blurb: 'An editable grid of cells' },
     { caption: 'Lane', blurb: 'A titled band that carries its steps' },
-    { caption: 'Frame', blurb: 'A labelled box that groups a section', key: 'F' },
+    { caption: 'Stack', blurb: 'A box that carries what sits in it' },
     { caption: 'Timeline', blurb: 'A track for sequencing events' },
   ],
   Components: [

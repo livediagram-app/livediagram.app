@@ -22,7 +22,7 @@ describe('accent edge (docs/specs/008-canvas/accent-edge.md)', () => {
   it('is offered on the box shapes only', () => {
     for (const shape of ['square', 'stadium', 'card'])
       expect(supportsAccentEdge({ type: 'shape', shape }), shape).toBe(true);
-    for (const shape of ['circle', 'diamond', 'cylinder', 'frame'])
+    for (const shape of ['circle', 'diamond', 'cylinder', 'stack'])
       expect(supportsAccentEdge({ type: 'shape', shape }), shape).toBe(false);
     expect(supportsAccentEdge({ type: 'sticky' })).toBe(false);
   });

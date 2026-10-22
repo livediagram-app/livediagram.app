@@ -36,7 +36,6 @@ const DRAWING_SHAPES: ReadonlySet<ShapeKind> = new Set<ShapeKind>([
   'trapezoid',
   'star',
   'speech-bubble',
-  'frame',
 ]);
 
 /** Whether an element is drawn with (and so goes into a drawing zone). A sticky note is an object

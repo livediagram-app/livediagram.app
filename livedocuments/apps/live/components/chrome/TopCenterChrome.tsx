@@ -17,7 +17,6 @@ import { formatBannerMessage } from '@/lib/format-page-brush';
 type TopCenterChromeProps = Pick<
   CanvasProps,
   | 'readOnly'
-  | 'participantPalette'
   | 'pendingDraw'
   | 'onCancelDraw'
   | 'onExitFormatTool'
@@ -34,7 +33,6 @@ type TopCenterChromeProps = Pick<
 
 export function TopCenterChrome({
   readOnly,
-  participantPalette = false,
   pendingDraw,
   onCancelDraw,
   onExitFormatTool,
@@ -49,9 +47,9 @@ export function TopCenterChrome({
   const drawBanner = !!pendingDraw;
   const modeBanner = canvasTool === 'format' || drawBanner;
   const strip = usePaletteStripBox(modeBanner);
-  // The strip is on screen for an Editor and for a Participant's own palette (docs/specs/013-workspace/share-roles.md):
-  // either way the stack starts beneath it, or the timer and banners sit on the palette.
-  const stripShown = !readOnly || participantPalette;
+  // The strip is on screen for an Editor only (docs/specs/013-workspace/share-roles.md): the stack starts beneath
+  // it, or the banners sit on the palette.
+  const stripShown = !readOnly;
   const tray = stripShown ? strip : null;
   // A board, view or Sheet covering the canvas: the draw hint moves to the bottom.
   return (

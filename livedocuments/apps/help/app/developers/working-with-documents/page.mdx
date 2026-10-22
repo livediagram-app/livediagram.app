@@ -75,7 +75,7 @@ curl https://livedocuments.app/api/documents/abc123/tabs/tab-1 \
 
 ## Read a tab as text
 
-The element JSON carries every coordinate and colour. When you want what a tab **means**, which is usually what a script or an AI model needs, ask for a **view** instead. The outline gives one line per element, nested by frame, with its arrows on the same line:
+The element JSON carries every coordinate and colour. When you want what a tab **means**, which is usually what a script or an AI model needs, ask for a **view** instead. The outline gives one line per element, nested by stack, with its arrows on the same line:
 
 ```bash
 curl "https://livedocuments.app/api/documents/abc123/tabs/tab-1?view=outline" \
@@ -168,7 +168,7 @@ curl -X POST https://livedocuments.app/api/documents/$DOC/tabs/$TAB/changesets \
   }'
 ```
 
-Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or picked by what they are: `"Orders API"` by label, `type:sticky`, `in:f2` for what a frame holds, `n3->n4` for an arrow. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists every operation, selector, placement and flag. Besides `add`, `set` and `rm` there are `move`, `connect`, `rewire`, `insert` (a step between two connected ones, making room for it), `wrap` and `unwrap` (frames), `order`, `layout`, and `test`, which refuses the changeset unless an element still holds the values you read. New boxes are sized for their label and placed beside what you name, and the answer has one line per element changed:
+Elements are named by the refs a [text view](#read-a-tab-as-text) prints, or picked by what they are: `"Orders API"` by label, `type:sticky`, `in:s2` for what a stack holds, `n3->n4` for an arrow. [Edit Operations Reference](/help/developers/working-with-documents/edit-operations/) lists every operation, selector, placement and flag. Besides `add`, `set` and `rm` there are `move`, `connect`, `rewire`, `insert` (a step between two connected ones, making room for it), `unwrap` (stacks), `order`, `layout`, and `test`, which refuses the changeset unless an element still holds the values you read. New boxes are sized for their label and placed beside what you name, and the answer has one line per element changed:
 
 ```text
 ~ n2  label "API"→"Orders API"

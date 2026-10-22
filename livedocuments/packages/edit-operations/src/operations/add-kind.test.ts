@@ -52,8 +52,8 @@ describe('add <kind>', () => {
     });
   });
 
-  it('makes text, stickies, tables, annotations and link cards from their factories', () => {
-    for (const kind of ['text', 'sticky', 'table', 'annotation', 'link-card']) {
+  it('makes text, stickies, tables and link cards from their factories', () => {
+    for (const kind of ['text', 'sticky', 'table', 'link-card']) {
       expect(added(`add ${kind}`).type).toBe(kind);
     }
     expect(added('add shape')).toMatchObject({ shape: 'square' });
@@ -77,7 +77,7 @@ describe('add <kind>', () => {
     expect(el).toMatchObject({ fillColor: theme.elementFill, strokeColor: theme.elementStroke });
   });
 
-  it('grows the frame of the box it is placed beside, so it joins it instead of landing outside', () => {
+  it('grows the stack of the box it is placed beside, so it joins it instead of landing outside', () => {
     const outcome = run('add square label="Gift wrap" right-of:n4');
     const lineFor = lines(outcome).find((l) => l.startsWith('~ f2'));
     expect(lineFor).toMatch(/widened/);
@@ -116,7 +116,7 @@ describe('add <kind>', () => {
     expect(added('add sticky')).not.toHaveProperty('layerId');
   });
 
-  it('takes inside:<frame> with a side, either order: beside the reference, in that frame', () => {
+  it('takes inside:<stack> with a side, either order: beside the reference, in that stack', () => {
     for (const text of [
       'add square label="Gift wrap" inside:f2 right-of:n4',
       'add square label="Gift wrap" right-of:n4 inside:f2',
@@ -130,13 +130,11 @@ describe('add <kind>', () => {
     });
   });
 
-  it('refuses inside:<frame> with a side whose reference is not in that frame, or a non-frame', () => {
+  it('refuses inside:<stack> with a side whose reference is not in that stack, or a non-stack', () => {
     expect(refused(run('add square inside:f2 right-of:n3')).details?.[0]).toMatch(
       /is not inside f2/,
     );
-    expect(refused(run('add square inside:n1 right-of:n4')).details?.[0]).toMatch(
-      /not a frame or stack/,
-    );
+    expect(refused(run('add square inside:n1 right-of:n4')).details?.[0]).toMatch(/not a stack/);
     const parseError = (text: string) => {
       const out = parseEditOperations(text);
       return 'errors' in out ? out.errors[0]!.details[0] : '';
@@ -145,7 +143,7 @@ describe('add <kind>', () => {
     expect(parseError('add square inside:f2 inside:f2')).toMatch(/one placement/);
   });
 
-  it('places beside a frame, centred on a member with align:, outside the frame', () => {
+  it('places beside a stack, centred on a member with align:, outside the stack', () => {
     const { tab } = applied(run('add square label=Store below:f2 align:n4'));
     const store = tab.elements.find((e) => e.id === 'store') as Element & {
       x: number;
@@ -175,7 +173,7 @@ describe('add <kind>', () => {
     expect(lines(outcome)).toEqual([
       expect.stringMatching(/^\+ retry {2}square "Retry" @/),
       expect.stringMatching(/^~ f2 {2}taller 200→\d+$/),
-      // The steps under the frame move down by the growth rather than being taken in.
+      // The steps under the stack move down by the growth rather than being taken in.
       '» n6 n7 n8 t1  +0,+162 (make room)',
       'f2  +retry',
     ]);
@@ -222,7 +220,7 @@ describe('add <kind>', () => {
     expect(next.elements.find((e) => e.id === 'gift-wrap')).toMatchObject({ textSize: 'sm' });
   });
 
-  it('leaves frames alone when placed by coordinates or beside an arrow', () => {
+  it('leaves stacks alone when placed by coordinates or beside an arrow', () => {
     for (const op of ['add square label=Far x=4000 y=4000', 'add square label=Near below:a3']) {
       const outcome = run(op);
       if ('errors' in outcome) continue;
@@ -230,14 +228,14 @@ describe('add <kind>', () => {
     }
   });
 
-  it('widens a frame without making it taller when the new box fits its height', () => {
+  it('widens a stack without making it taller when the new box fits its height', () => {
     const outcome = run('add square label=Side right-of:n4 height=30');
     const grown = lines(outcome).find((l) => l.startsWith('~ f2'));
     expect(grown).toMatch(/widened/);
     expect(grown).not.toMatch(/taller/);
   });
 
-  it('places a box beside a framed one in the frame, moving what lay past the frame on', () => {
+  it('places a box beside a contained one in the stack, moving what lay past the stack on', () => {
     const outcome = run('add square label=Below below:n5 width=100');
     const { tab } = applied(outcome);
     const n5 = tab.elements.find((e) => e.id === 'n5') as Element & { y: number; height: number };
@@ -258,7 +256,7 @@ describe('add <kind>', () => {
     }
   });
 
-  it('widens a frame across the flow for a box wider than it, placed below a member', () => {
+  it('widens a stack across the flow for a box wider than it, placed below a member', () => {
     const grown = lines(run('add square label=Wide below:n5 width=600')).find((l) =>
       l.startsWith('~ f2'),
     );
@@ -266,7 +264,7 @@ describe('add <kind>', () => {
     expect(grown).toMatch(/taller/);
   });
 
-  it('leaves a frame as it is when the new box already fits inside it', () => {
+  it('leaves a stack as it is when the new box already fits inside it', () => {
     const tab = checkoutFlow();
     const roomy: Tab = {
       ...tab,
@@ -282,7 +280,7 @@ describe('add <kind>', () => {
     const empty: Tab = {
       id: 't',
       name: 'T',
-      elements: [{ ...createShape('frame', 0, 0), id: 'f', width: 200, height: 40 }],
+      elements: [{ ...createShape('stack', 0, 0), id: 'f', width: 200, height: 40 }],
     };
     const f = applied(run('add square label=One inside:f', empty)).tab.elements.find(
       (e) => e.id === 'f',
@@ -290,7 +288,7 @@ describe('add <kind>', () => {
     expect(f.height).toBeGreaterThan(40);
   });
 
-  it('makes a frame taller without widening it when the new box fits its width', () => {
+  it('makes a stack taller without widening it when the new box fits its width', () => {
     const outcome = run('add square label=Below below:n5 width=100');
     const grown = lines(outcome).find((l) => l.startsWith('~ f2'));
     expect(grown).toMatch(/taller/);
@@ -359,8 +357,8 @@ describe('add <kind> beside template-look siblings', () => {
   });
 });
 
-describe('add <kind> beside a framed box with no arrow', () => {
-  it('grows the frame and makes room without failing (a 500 in an eval)', () => {
+describe('add <kind> beside a contained box with no arrow', () => {
+  it('grows the stack and makes room without failing (a 500 in an eval)', () => {
     const outcome = run(
       'add square id=zz label=Zz right-of:n4\nadd square id=yy label=Yy below:zz',
     );
@@ -370,7 +368,7 @@ describe('add <kind> beside a framed box with no arrow', () => {
   });
 });
 
-describe('a frame grown to hold a new box', () => {
+describe('a stack grown to hold a new box', () => {
   it('grows left past a member, moving what lay left of it on', () => {
     const tab = checkoutFlow();
     const west = {
@@ -395,13 +393,13 @@ describe('a frame grown to hold a new box', () => {
     expect(moved.x).toBeLessThan(-260);
   });
 
-  it('grows the frame the grown one sits in, so it still holds it', () => {
+  it('grows the stack the grown one sits in, so it still holds it', () => {
     const tab: Tab = {
       id: 't',
       name: 't',
       elements: [
-        { ...createShape('frame', 0, 0), id: 'outer', width: 400, height: 300, label: '' },
-        { ...createShape('frame', 40, 40), id: 'inner', width: 220, height: 160, label: '' },
+        { ...createShape('stack', 0, 0), id: 'outer', width: 400, height: 300, label: '' },
+        { ...createShape('stack', 40, 40), id: 'inner', width: 220, height: 160, label: '' },
         { ...createShape('square', 60, 80), id: 'm', width: 140, height: 60, label: 'M' },
       ] as Element[],
     };
@@ -422,7 +420,7 @@ describe('a frame grown to hold a new box', () => {
   it('keeps a locked element where it is when what holds it moves on', () => {
     const tab = checkoutFlow();
     const below: Element[] = [
-      { ...createShape('frame', 0, 900), id: 'g', width: 400, height: 200, label: '' },
+      { ...createShape('stack', 0, 900), id: 'g', width: 400, height: 200, label: '' },
       {
         id: 'pinned-note',
         type: 'shape',
@@ -446,7 +444,7 @@ describe('a frame grown to hold a new box', () => {
 });
 
 describe('add <kind> with icon=', () => {
-  it('reads icon as the stored iconId, as graph input names it', () => {
+  it('reads icon as the stored iconId', () => {
     const el = applied(run('add square label=Search icon=search right-of:n8')).tab.elements.find(
       (e) => e.id === 'search',
     );

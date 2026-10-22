@@ -21,7 +21,7 @@ const RUNS = 3;
 // Sized to time tens of milliseconds an apply; coverage on a CI runner makes that seconds.
 const TIMEOUT_MS = 30_000;
 
-// `FRAMES` frames, each holding `perFrame` boxes in a column joined by arrows.
+// `FRAMES` stacks, each holding `perFrame` boxes in a column joined by arrows.
 function tabOf(perFrame: number): Tab {
   const elements: Element[] = [];
   for (let frame = 0; frame < FRAMES; frame++) {
@@ -29,7 +29,7 @@ function tabOf(perFrame: number): Tab {
     elements.push({
       id: `f${frame}`,
       type: 'shape',
-      shape: 'frame',
+      shape: 'stack',
       x: fx,
       y: 0,
       width: 400,
@@ -58,7 +58,7 @@ function tabOf(perFrame: number): Tab {
   return { id: 'growth', name: 'Growth', elements };
 }
 
-// A changeset touching every frame with every kind of operation, `rounds` times over.
+// A changeset touching every stack with every kind of operation, `rounds` times over.
 function changesetOf(rounds: number): EditOperation[] {
   const lines: string[] = [];
   for (let r = 0; r < rounds; r++) {
@@ -104,14 +104,14 @@ function rowOf(count: number): Tab {
   return { id: 'row', name: 'Row', elements };
 }
 
-// One frame holding `count` boxes: a container with every element as its member.
+// One stack holding `count` boxes: a container with every element as its member.
 function frameOf(count: number): Tab {
   const columns = 100;
   const elements: Element[] = [
     {
       id: 'f0',
       type: 'shape',
-      shape: 'frame',
+      shape: 'stack',
       x: 0,
       y: 0,
       width: columns * 200 + 20,

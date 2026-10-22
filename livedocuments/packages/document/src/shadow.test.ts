@@ -107,7 +107,7 @@ describe('supportsShadow', () => {
     for (const type of ['shape', 'sticky', 'image', 'link-card'] as const) {
       expect(supportsShadow({ type }), type).toBe(true);
     }
-    for (const type of ['text', 'freehand', 'annotation', 'table', 'arrow'] as const) {
+    for (const type of ['text', 'freehand', 'article-note', 'table', 'arrow'] as const) {
       expect(supportsShadow({ type }), type).toBe(false);
     }
   });

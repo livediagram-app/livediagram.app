@@ -15,27 +15,19 @@ import {
 // What a COPY regenerates rather than inherits. EVERY copy path must spread this: the set duplication below, and
 // the editor's hand-rolled single / multi duplicate paths.
 //
-// A copy is also nobody's addition (docs/specs/013-workspace/share-roles.md): `addedBy` never rides along, so an
-// Editor's copy of a Participant's sticky is not that Participant's to delete. A Participant's own copy is stamped
-// afresh by the room.
 // What belongs to the original rather than to the shape, so no copy carries it: a comment thread is a conversation
 // about that element, and an assigned action is work handed to a person under its own id (docs/specs/012-collaboration/assigned-actions.md
 // "A copy doesn't carry the action"): a duplicate under the same id is a second action nobody assigned, which the
 // timeline never sees added. A Sheet's cell threads go the same way.
 // The clipboard strips the same list on the way out (stripIdentity in apps/live).
-export const ORIGINAL_ONLY_FIELDS = ['commentThread', 'action', 'actions'] as const;
+export const ORIGINAL_ONLY_FIELDS = ['commentThread', 'action'] as const;
 
 export function freshCopyFields(el: Element): {
   rotation?: number;
-  addedBy?: undefined;
   commentThread?: undefined;
   action?: undefined;
-  actions?: undefined;
 } {
-  const fresh: { addedBy?: undefined } & {
-    [K in (typeof ORIGINAL_ONLY_FIELDS)[number]]?: undefined;
-  } = {};
-  if ('addedBy' in el) fresh.addedBy = undefined;
+  const fresh: { [K in (typeof ORIGINAL_ONLY_FIELDS)[number]]?: undefined } = {};
   for (const field of ORIGINAL_ONLY_FIELDS) if (field in el) fresh[field] = undefined;
   return fresh;
 }

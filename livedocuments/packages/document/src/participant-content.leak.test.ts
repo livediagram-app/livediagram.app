@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { newArticleNote } from './article-notes';
 import { ELEMENT_FIELD_NAMES } from './element-fields';
 import {
-  createAnnotation,
   createArrow,
   createFreehand,
   createImage,
@@ -17,42 +17,34 @@ import { createShape } from './shape-factory';
 import { ELEMENT_TYPES, isValidElement } from './validate';
 
 // The participant content rule never leaks (docs/specs/013-workspace/share-roles.md "What a Participant changes").
-// For one valid element of every type (and the kinds the rule treats apart), every stored field is offered several
-// new values by a Participant who did not add the element. Whatever the room does, no field outside the spec's list
-// for that element may change. The list below IS the spec's table: widening what a Participant may do means editing
-// it here, on purpose, in the same change as the spec.
-
-const ME = 'a'.repeat(32);
-const THEM = 'b'.repeat(32);
+// For one valid element of every type, every stored field is offered several new values by a Participant. Whatever
+// the room does, no field outside the spec's list of text fields for that element may change. The lists below ARE
+// the spec's table: widening what a Participant may do means editing them here, on purpose, in the same change as
+// the spec.
 
 type Bag = Record<string, unknown>;
 type Sample = { name: string; el: Element; allowed: readonly string[] };
 
-const TEXT = ['label', 'richText'];
-const PLACE = ['x', 'y', 'width', 'height'];
-const STICKY_COLOURS = ['fillColor', 'strokeColor', 'textColor', 'penTextColour'];
-const IMAGE = ['imageId', 'naturalWidth', 'naturalHeight', 'alt', 'credit'];
-
-const theirs = (el: Element, id: string): Element => ({ ...el, id, addedBy: THEM }) as Element;
+const at = (el: Element, id: string): Element => ({ ...el, id });
 
 const SAMPLES: Sample[] = [
-  { name: 'shape (square)', el: theirs(createShape('square', 0, 0), 'sq'), allowed: TEXT },
-  { name: 'text', el: theirs(createText(0, 0), 'tx'), allowed: TEXT },
+  {
+    name: 'shape (square)',
+    el: at(createShape('square', 0, 0), 'sq'),
+    allowed: ['label', 'richText', 'code', 'pageTitle', 'pageSubtitle'],
+  },
+  { name: 'text', el: at(createText(0, 0), 'tx'), allowed: ['label', 'richText'] },
   {
     name: 'text (sizes to its words)',
-    el: theirs({ ...createText(0, 0), sizing: 'fit' }, 'tf'),
-    allowed: [...TEXT, 'width', 'height'],
+    el: at({ ...createText(0, 0), sizing: 'fit' }, 'tf'),
+    allowed: ['label', 'richText', 'width', 'height'],
   },
-  { name: 'table', el: theirs(createTable(0, 0), 'tb'), allowed: [...TEXT, 'cells'] },
-  {
-    name: 'sticky',
-    el: theirs(createSticky(0, 0), 'st'),
-    allowed: [...TEXT, ...PLACE, ...STICKY_COLOURS],
-  },
-  { name: 'image', el: theirs(createImage(0, 0), 'im'), allowed: [...TEXT, ...PLACE, ...IMAGE] },
+  { name: 'table', el: at(createTable(0, 0), 'tb'), allowed: ['label', 'cells'] },
+  { name: 'sticky', el: at(createSticky(0, 0), 'st'), allowed: ['label', 'richText'] },
+  { name: 'image', el: at(createImage(0, 0), 'im'), allowed: ['label', 'alt'] },
   {
     name: 'freehand',
-    el: theirs(
+    el: at(
       createFreehand(
         [
           { x: 0, y: 0 },
@@ -62,12 +54,13 @@ const SAMPLES: Sample[] = [
       ),
       'fh',
     ),
-    allowed: TEXT,
+    allowed: ['label'],
   },
-  { name: 'annotation', el: theirs(createAnnotation(0, 0), 'an'), allowed: TEXT },
-  { name: 'link card', el: theirs(createLinkCard(0, 0), 'lc'), allowed: TEXT },
-  { name: 'video', el: theirs(createVideo(0, 0), 'vi'), allowed: TEXT },
-  { name: 'arrow (free)', el: theirs(createArrow(0, 0, 100, 100), 'af'), allowed: TEXT },
+  // A margin note's marker holds no words of its own: its comments are a thread.
+  { name: 'article note', el: newArticleNote('an', 'comment', { x: 0, y: 0 }), allowed: [] },
+  { name: 'link card', el: at(createLinkCard(0, 0), 'lc'), allowed: ['label'] },
+  { name: 'video', el: at(createVideo(0, 0), 'vi'), allowed: ['label'] },
+  { name: 'arrow (free)', el: at(createArrow(0, 0, 100, 100), 'af'), allowed: ['label'] },
 ];
 
 // Values a field is offered: the kind a real client would send for it, and some it would not.
@@ -98,11 +91,11 @@ describe('the participant content rule never leaks', () => {
       const fields = (ELEMENT_FIELD_NAMES as Record<string, readonly string[]>)[sample.el.type]!;
       let landed = 0;
       for (const field of fields) {
-        if (field === 'id' || field === 'type' || field === 'addedBy') continue;
+        if (field === 'id' || field === 'type') continue;
         for (const value of offers(stored[field])) {
           const incoming = { ...stored, [field]: value };
           if (value === undefined) delete incoming[field];
-          const r = applyParticipantOp(tab, { kind: 'update', element: incoming as Element }, ME);
+          const r = applyParticipantOp(tab, { kind: 'update', element: incoming as Element });
           if (r.result !== 'applied') continue;
           const merged = r.tab.elements.find((e) => e.id === sample.el.id) as Bag;
           for (const key of new Set([...Object.keys(stored), ...Object.keys(merged)])) {
@@ -120,25 +113,21 @@ describe('the participant content rule never leaks', () => {
     });
   }
 
-  it('lets no add through but a sticky, text or image', () => {
-    const tab = { id: 't', name: 't', elements: [] } as Tab;
-    const verdict = (el: Element) =>
-      applyParticipantOp(tab, { kind: 'add', element: el, at: 1 }, ME).result;
+  it('lets no add, remove or reorder through', () => {
     for (const s of SAMPLES) {
-      const fresh = { ...(s.el as Bag) };
-      delete fresh.addedBy;
-      fresh.id = `new-${s.el.id}`;
-      const ok = ['sticky', 'text', 'image'].includes(s.el.type);
-      expect(verdict(fresh as Element), s.name).toBe(ok ? 'applied' : 'refused');
-    }
-  });
-
-  it("removes nothing of someone else's", () => {
-    for (const s of SAMPLES) {
+      const fresh = { ...(s.el as Bag), id: `new-${s.el.id}` } as Element;
+      const empty = { id: 't', name: 't', elements: [] } as Tab;
+      expect(applyParticipantOp(empty, { kind: 'add', element: fresh, at: 0 }).result, s.name).toBe(
+        'refused',
+      );
       const tab = tabFor(s);
-      const r = applyParticipantOp(tab, { kind: 'remove', id: s.el.id }, ME);
-      expect(r.result, s.name).toBe('refused');
+      expect(applyParticipantOp(tab, { kind: 'remove', id: s.el.id }).result, s.name).toBe(
+        'refused',
+      );
     }
+    const both = { id: 't', name: 't', elements: SAMPLES.slice(0, 2).map((s) => s.el) } as Tab;
+    const ids = both.elements.map((e) => e.id).reverse();
+    expect(applyParticipantOp(both, { kind: 'reorder', ids }).result).toBe('refused');
   });
 
   it("never changes a tab's own fields", () => {
@@ -149,7 +138,7 @@ describe('the participant content rule never leaks', () => {
       { theme: 'dark' },
       { locked: true },
     ]) {
-      expect(participantTabChange(tab, { ...tab, ...meta }, ME), JSON.stringify(meta)).toBeNull();
+      expect(participantTabChange(tab, { ...tab, ...meta }), JSON.stringify(meta)).toBeNull();
     }
   });
 });

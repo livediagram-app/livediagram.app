@@ -183,7 +183,7 @@ export const categories: Category[] = [
     title: 'Palette',
     description:
       'Your launchpad for everything on a page: every element and palette setting explained.',
-    articleCount: 21,
+    articleCount: 20,
     kind: 'feature',
     groups: ['Everyday Elements', 'Page Blocks', 'Palette Settings'],
   },
@@ -192,7 +192,7 @@ export const categories: Category[] = [
     title: 'Canvas',
     description:
       'Work with what is on your pages: place, select, link, layer, rotate, animate, lock and theme elements, undo changes, and start from templates.',
-    articleCount: 25,
+    articleCount: 24,
     kind: 'feature',
     groups: ['Basics', 'Text and Notes', 'Styling Elements', 'Layers and Locking'],
   },
@@ -216,8 +216,8 @@ export const categories: Category[] = [
     slug: 'tools',
     title: 'Tools',
     description:
-      'Do more with less effort using the editor helpers: AI, zen mode, light and dark mode, Markdown import, and cleanup.',
-    articleCount: 5,
+      'Do more with less effort using the editor helpers: zen mode, light and dark mode, Markdown import, and cleanup.',
+    articleCount: 4,
     kind: 'feature',
   },
   {
@@ -303,7 +303,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go plan email api tokens trash delete profile picture',
+      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go plan email api tokens trash delete profile picture',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -539,7 +539,8 @@ export const articles: Article[] = [
   {
     slug: 'api-tokens',
     title: 'API Tokens',
-    description: 'Create signed-in-only tokens to call the livedocuments API from your own scripts.',
+    description:
+      'Create signed-in-only tokens to call the livedocuments API from your own scripts.',
     keywords: 'token key programmatic rest scripts secret bearer automation',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
@@ -690,8 +691,7 @@ export const articles: Article[] = [
     slug: 'privacy-policy',
     title: 'Privacy Policy',
     description: 'The full privacy policy for the hosted livedocuments service.',
-    keywords:
-      'legal privacy gdpr data protection personal information openai ai retention security',
+    keywords: 'legal privacy gdpr data protection personal information ai retention security',
     category: 'Policies',
     categorySlug: 'policies',
     parentSlug: 'policies',
@@ -792,7 +792,7 @@ export const articles: Article[] = [
     title: 'Configuration and Optional Auth',
     description: 'Environment variables, optional Clerk auth, and guest-only mode.',
     keywords:
-      'env vars environment clerk setup secrets settings configure resend email ai openai mcp telemetry r2',
+      'env vars environment clerk setup secrets settings configure resend email mcp telemetry r2',
     category: 'Self-Hosting',
     categorySlug: 'self-hosting',
     parentSlug: 'self-hosting',
@@ -1065,7 +1065,7 @@ export const articles: Article[] = [
     title: 'Badges and Step Numbers',
     description: "Small marks that attach to a node's corner and travel with it.",
     keywords:
-      'badge badges pill label tag status version new beta count step number numbers numbered disc circle walkthrough order sequence 1 2 3 attach attached corner marker renumber play in order annotate annotation',
+      'badge badges pill label tag status version new beta count step number numbers numbered disc circle walkthrough order sequence 1 2 3 attach attached corner marker renumber play in order annotate',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Page Blocks',
@@ -1148,16 +1148,6 @@ export const articles: Article[] = [
     description: 'Die-cut colour emoji and word badges for reactions and status.',
     keywords:
       'emoji sticker badge label approved blocked wip reaction smiley face thumbs up heart fire celebrate party status flag arrow decorate pretty feelings emotion',
-    category: 'Palette',
-    categorySlug: 'palette',
-    group: 'Everyday Elements',
-  },
-  {
-    slug: 'frames',
-    title: 'Frames',
-    description: 'A labelled section that draws behind its contents and moves them as one.',
-    keywords:
-      'frame section container backdrop labelled box region area cluster move together carries contents behind resize outline f key figjam section export slide framing nest nested centre quick connect plus fill background',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -1430,7 +1420,8 @@ export const articles: Article[] = [
   {
     slug: 'import-tabs',
     title: 'Importing a Tab',
-    description: 'Import a livedocuments JSON tab export into a tab by pasting text or picking a file.',
+    description:
+      'Import a livedocuments JSON tab export into a tab by pasting text or picking a file.',
     keywords:
       'import json file files paste upload load restore backup copy clipboard replace tab export round trip',
     category: 'Tabs',
@@ -1692,15 +1683,6 @@ export const articles: Article[] = [
     categorySlug: 'tools',
   },
   {
-    slug: 'ai',
-    title: 'AI Assistance',
-    description: 'An optional assistant that answers questions about, and tidies, the active tab.',
-    keywords:
-      'assistant ask clean generate artificial intelligence helper suggest question summarise summarize typo llm',
-    category: 'Tools',
-    categorySlug: 'tools',
-  },
-  {
     slug: 'markdown-import',
     title: 'Markdown Import',
     description:
@@ -1869,15 +1851,6 @@ export const articles: Article[] = [
     group: 'Styling Elements',
   },
 
-  {
-    slug: 'annotations',
-    title: 'Annotations',
-    description: 'Drop a marker with a note that readers hover to read.',
-    keywords: 'note marker callout tooltip pin footnote comment hover rich text formatting',
-    category: 'Canvas',
-    categorySlug: 'canvas',
-    group: 'Text and Notes',
-  },
   {
     slug: 'layers',
     title: 'Layers',
@@ -2183,18 +2156,6 @@ export const articles: Article[] = [
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
     parentSlug: 'sharing',
-  },
-
-  // ---- Sub-articles: AI ----
-  {
-    slug: 'ai-tools',
-    title: 'Ask and Clean',
-    description: 'What each AI helper does and when to reach for it.',
-    keywords:
-      'ai assistant helpers question tidy generate review ask clean summarise summarize typo prompt',
-    category: 'Tools',
-    categorySlug: 'tools/ai',
-    parentSlug: 'ai',
   },
 
   // ---- Sub-articles: Session Tools ----

@@ -67,7 +67,7 @@ export function pagesRoomOps(before: Tab, after: Tab): RoomOp[] {
       patch: patch,
       ...(clear.length ? { clear: clear } : {}),
     });
-  ops.push(...tabArticleOps(before, after, { agent: true }));
+  ops.push(...tabArticleOps(before, after, { grow: true }));
   return ops;
 }
 

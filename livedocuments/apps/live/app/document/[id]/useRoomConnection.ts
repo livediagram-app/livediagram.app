@@ -9,7 +9,11 @@ import {
 import { setRemoteBesideTab, syncRemoteBesideTabs } from '@/lib/split-presence';
 import { noteAccessEnded } from '@/lib/access-notice';
 import type { Tab } from '@livedocuments/document';
-import { parseArticleCaret, type AgentPresence, type ChangesetRoomOp } from '@livedocuments/api-schema';
+import {
+  parseArticleCaret,
+  type AgentPresence,
+  type ChangesetRoomOp,
+} from '@livedocuments/api-schema';
 import { nextFreeColor, type Participant } from '@/lib/identity';
 import { usePublishedPicture } from '@/hooks/persistence/usePublishedPicture';
 import { apiCreateRoomTicket, connectRoom, type RoomHandlers } from '@/lib/api-client';
@@ -128,9 +132,6 @@ export function useRoomConnection(opts: {
   // The room has greeted this connection (its first presence list): what was relayed before it
   // joined is caught up through the api (useChangesetFeed's checkSinceLoad).
   onRoomJoined: () => void;
-  // A Participant session's ticket (docs/specs/013-workspace/share-roles.md) carries the adder key the room
-  // stamps on what it adds, and the key comes back for `onAdderKey`.
-  onAdderKey?: (key: string | null) => void;
 }) {
   const {
     hydrated,
@@ -168,7 +169,6 @@ export function useRoomConnection(opts: {
     resyncFromServer,
     receiveChangeset,
     onRoomJoined,
-    onAdderKey,
   } = opts;
 
   // Who we connect as, read when the socket opens: the id is stable for the session, and a name or colour
@@ -189,7 +189,6 @@ export function useRoomConnection(opts: {
     self: selfForRoom(),
     shareCode: sessionShareCode,
   }));
-  const announceAdderKey = useEffectEvent((key: string | null) => onAdderKey?.(key));
   // The switch flipped, or the picture changed: tell the open room, which updates the roster in
   // place (switch off = initials for everyone from this update on).
   const announceSelf = useEffectEvent(() => roomRef.current?.updateSelf(selfForRoom()));
@@ -533,7 +532,6 @@ export function useRoomConnection(opts: {
     // mints its first ticket itself, so it exists while that request runs and keeps what the editor
     // says meanwhile (its selection, its tab) for the room.
     const { self, shareCode } = connectAs();
-    let firstMint = true;
     const openedRoom = connectRoom(documentId, self, handlers, {
       // The api worker resolves the role the mint stored on the ticket and
       // stamps it into the participant row via X-Verified-Role so
@@ -541,10 +539,6 @@ export function useRoomConnection(opts: {
       // own ticket: the upgrade spends the one it admits.
       mintTicket: async () => {
         const minted = await apiCreateRoomTicket(self.id, documentId, shareCode);
-        // A Participant's key comes back with every ticket (the same key, derived per document); the
-        // first answer also says when there is none.
-        if (minted?.adderKey || firstMint) announceAdderKey(minted?.adderKey ?? null);
-        firstMint = false;
         return minted?.ticket ?? null;
       },
       readFollowing: roomReadFollowing,

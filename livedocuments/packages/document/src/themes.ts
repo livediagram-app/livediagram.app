@@ -227,12 +227,8 @@ const THEME_COLOUR_FIELDS: Record<Element['type'], ThemeColourField[]> = {
   arrow: [{ element: 'strokeColor', theme: 'elementStroke' }],
   sticky: [],
   image: [],
-  // Annotation markers theme their circle fill + ring/glyph stroke like a
-  // shape; no themed text (the note is plain). See docs/specs/009-elements/annotations.md.
-  annotation: [
-    { element: 'fillColor', theme: 'elementFill' },
-    { element: 'strokeColor', theme: 'elementStroke' },
-  ],
+  // A margin note's chip keeps its own colours (docs/specs/007-editor/article-pages.md).
+  'article-note': [],
   // Link cards keep their neutral bookmark-card look regardless of theme
   // (like sticky / image); the user can still recolour per-card. See docs/specs/009-elements/link-cards.md.
   'link-card': [],

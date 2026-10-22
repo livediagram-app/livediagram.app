@@ -2,7 +2,6 @@ import type { Selection } from '@/lib/selection-store';
 import { type Dispatch, type SetStateAction } from 'react';
 import {
   acceptsInlineIcon,
-  createAnnotation,
   type EmbedProvider,
   applyShapeVariant,
   withInlineIcon,
@@ -28,9 +27,7 @@ type SetState<T> = Dispatch<SetStateAction<T>>;
 // Palette element-creation handlers, lifted out of editor-page.tsx. Nearly
 // every element arms the combined add gesture (beginDraw, from
 // useShapeDrawing) — the canvas then drops it at default size on a tap or
-// sizes it on a drag. The ANNOTATION alone drops at the viewport centre via
-// addBoxed (from useElementHelpers): a fixed 44x44 marker has no box to size,
-// so there is nothing for the drag to decide (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
+// sizes it on a drag (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
 
 export function useElementCreation(opts: {
   editsBlocked: boolean;
@@ -46,7 +43,6 @@ export function useElementCreation(opts: {
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   setSelectedId: SetState<string | null>;
   setEditingId: SetState<string | null>;
-  addBoxed: <T extends BoxedElement>(make: (x: number, y: number) => T) => void;
   addBoxedAt: <T extends BoxedElement>(
     canvasX: number,
     canvasY: number,
@@ -73,7 +69,6 @@ export function useElementCreation(opts: {
     commitTabs,
     setSelectedId,
     setEditingId,
-    addBoxed,
     addBoxedAt,
     beginDraw,
     styleNewElement,
@@ -105,10 +100,10 @@ export function useElementCreation(opts: {
     // If a regular shape is selected, drop the icon INSIDE it (beside the
     // label) rather than spawning a standalone icon element — the same
     // "operate on the current selection" intent the size-inheritance in
-    // addBoxed already follows. `acceptsInlineIcon` excludes the dedicated
+    // a drop on the selection already follows. `acceptsInlineIcon` excludes the dedicated
     // 'icon' shape (an icon-on-an-icon is meaningless) AND frames (a frame
     // is a container — an icon dropped with a frame selected becomes a
-    // standalone element you place inside it, see docs/specs/009-elements/annotations.md).
+    // standalone element you place inside it).
     const { selectedId } = readSelection();
     const sel = selectedId ? activeTab.elements.find((e) => e.id === selectedId) : null;
     if (sel && acceptsInlineIcon(sel)) {
@@ -171,15 +166,6 @@ export function useElementCreation(opts: {
   const addTable = () => {
     if (editsBlocked) return;
     beginDraw({ type: 'table' });
-  };
-
-  // A note marker (docs/specs/009-elements/annotations.md) dropped at the viewport centre (no
-  // draw-to-size: it's a fixed-size marker, not a box you drag out). The
-  // user clicks it afterwards to add the note text.
-  const addAnnotation = () => {
-    if (editsBlocked) return;
-    addBoxed((x, y) => createAnnotation(x, y));
-    track('Element', 'Added', titleCaseType('annotation'));
   };
 
   // A link-card / bookmark (docs/specs/009-elements/link-cards.md), drawn to size. The card starts empty
@@ -405,7 +391,6 @@ export function useElementCreation(opts: {
     addSticker,
     addTechIcon,
     addTable,
-    addAnnotation,
     addLinkCard,
     addVideo,
     addImage,

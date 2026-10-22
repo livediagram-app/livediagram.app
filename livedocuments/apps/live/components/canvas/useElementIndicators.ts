@@ -32,9 +32,9 @@ export function elementIndicatorItems(
   showComments = true,
 ): IndicatorItem[] {
   // A margin note shows its count and action on its own face.
-  if (element.type === 'annotation' && element.articleNote) return [];
+  if (element.type === 'article-note') return [];
   const { onFollowLink, onOpenComments, onOpenAction, onOpenNote, tabSummaries } = handlers;
-  // A link card IS its link; an annotation's marker is its note. A done action stops showing.
+  // A link card IS its link. A done action stops showing.
   const link =
     element.type !== 'link-card' &&
     element.link &&
@@ -47,10 +47,7 @@ export function elementIndicatorItems(
     link: link
       ? { onFollow: () => onFollowLink(link), destination: describeLink(link, tabSummaries) }
       : undefined,
-    note:
-      element.note && onOpenNote && element.type !== 'annotation'
-        ? () => onOpenNote(element.id)
-        : undefined,
+    note: element.note && onOpenNote ? () => onOpenNote(element.id) : undefined,
     action: assignee
       ? {
           onOpen: () => onOpenAction(element.id),

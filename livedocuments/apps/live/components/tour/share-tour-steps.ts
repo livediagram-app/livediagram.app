@@ -17,7 +17,7 @@ const step = (id: string, title: string, body: string, target: string): ShareTou
 const ROLE = step(
   'role',
   'Choose What They Can Do',
-  'Editors change anything, Participants add stickies and vote, Viewers only look. Pick one now.',
+  'Editors change anything, Participants edit text and comment, Viewers only look. Pick one now.',
   'share-role',
 );
 

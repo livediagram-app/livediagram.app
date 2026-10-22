@@ -15,7 +15,7 @@ describe('RoomParticipantWrites', () => {
       position: () => ({ epoch: 'e', seq: 0 }),
     });
     const ws = {} as WebSocket;
-    const sender = { ws, presenceId: 'P', documentId: 'd1', adderKey: 'k' };
+    const sender = { ws, presenceId: 'P', documentId: 'd1' };
     const frame = { kind: 'el', tabId: 't1', op: { kind: 'remove', id: 'x' } };
     for (let i = 0; i < PARTICIPANT_PENDING_MAX; i++) void writes.applyContentOp(sender, frame);
     expect(sendTo).not.toHaveBeenCalled();
@@ -38,7 +38,7 @@ describe('RoomParticipantWrites', () => {
     });
     const ws = {} as WebSocket;
     await writes.applyContentOp(
-      { ws, presenceId: 'P', documentId: null, adderKey: 'k' },
+      { ws, presenceId: 'P', documentId: null },
       { kind: 'el', tabId: 't1', op: { kind: 'remove', id: 'x' } },
     );
     expect(sendTo).toHaveBeenCalledWith(ws, expect.objectContaining({ resync: true }));

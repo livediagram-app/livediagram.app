@@ -5,7 +5,7 @@
     {
       "id": "services",
       "type": "shape",
-      "shape": "frame",
+      "shape": "stack",
       "x": 0,
       "y": 0,
       "width": 784,

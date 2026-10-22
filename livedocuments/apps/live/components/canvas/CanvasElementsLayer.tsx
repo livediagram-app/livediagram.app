@@ -121,9 +121,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onLinkCell,
     onShiftSelect,
     readOnly,
-    canMove,
     canWriteText,
-    canResize,
     remoteCursors,
     remoteSelectionsByElement,
     shiftDupGhostIds,
@@ -198,8 +196,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     [hasArrows, elements],
   );
   // Paint order (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md): layer bands bottom -> top, keeping
-  // array order within each band with frames hoisted to the front of
-  // THEIR band (a frame is a section backdrop that must sit behind its
+  // array order within each band with stacks hoisted to the front of
+  // THEIR band (a stack is a backdrop that must sit behind its
   // contents so they stay clickable). Hidden layers' elements drop out
   // here entirely — no DOM, so no hit-testing either. Same banding the
   // exporters use. Each element carries its band's opacity so per-layer
@@ -350,9 +348,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             readOnly={readOnly}
             shiftDupGhostIds={shiftDupGhostIds}
             remoteSelectionsByElement={remoteSelectionsByElement}
-            canMove={canMove}
             canWriteText={canWriteText}
-            canResize={canResize}
             tabFont={tabFont}
             tabFinish={tabFinish}
             fontEpoch={fontEpoch}

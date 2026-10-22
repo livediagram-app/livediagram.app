@@ -71,8 +71,8 @@ its own root. Never a wrapper around it: the start's View Transition pictures th
 wrapper has no box to picture.
 
 A **Participant** or **Viewer** never sees a start: they keep the empty-canvas card ([New document
-route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer the owner can build it out and points a
-Participant at what they may add.
+route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer, and a Participant (who adds nothing), that
+the owner can build it out.
 
 A new tab opens on its start (`newTabOpening` in `apps/live/lib/new-tab-seed.ts`).
 

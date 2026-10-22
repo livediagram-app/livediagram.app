@@ -58,7 +58,7 @@ export function MultiPlacementSections({
 }) {
   const morphSrc = morphable[0];
   const morphIds = morphable.map((el) => el.id);
-  // The members that turn: a pointer note or an annotation marker does not (supportsRotation), so a selection of only
+  // The members that turn: a pointer note or a margin note does not (supportsRotation), so a selection of only
   // those offers no Rotation, and the active tile reads a member that turns.
   const turnable = boxedSel.filter(supportsRotation);
   return (

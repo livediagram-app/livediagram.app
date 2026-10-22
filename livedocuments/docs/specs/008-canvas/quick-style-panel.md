@@ -255,9 +255,9 @@ kinds: select three arrows, two rectangles and a circle, press green, and all si
 text element to that selection and a Text colour row appears beside the others, styling only it.
 
 **Any mix works.** A selection may hold every kind at once (a whole pasted page:
-shapes, lines, arrows, polygons, text boxes, stickies, images, frames). Each row
+shapes, lines, arrows, polygons, text boxes, stickies, images, stacks). Each row
 styles the selected elements it is meaningful for and leaves the rest exactly as they are; the
-elements no row fits (stickies, images, frames, tables and the other non-shape kinds) are passed
+elements no row fits (stickies, images, tables and the other non-shape kinds) are passed
 over, never refused, so they never hide the panel from the rest.
 
 - A section shows when **at least one** selected element supports it, and a choice applies only to

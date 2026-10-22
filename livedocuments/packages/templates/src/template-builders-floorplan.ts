@@ -285,16 +285,14 @@ export function buildFloorPlan(cx: number, cy: number): Element[] {
     layerId: TEMPLATE_SCAFFOLD_LAYER_ID,
   });
 
-  // Outer wall: a frame, so its body stays transparent and the rooms
-  // inside show through. Extra-thick reads as the load-bearing shell
-  // against the medium-weight partition walls.
+  // Outer wall: an unfilled box, so the rooms inside show through.
+  // Extra-thick reads as the load-bearing shell against the
+  // medium-weight partition walls.
   elements.push({
-    ...createShape('frame', X(0), Y(0)),
+    ...createShape('square', X(0), Y(0)),
     width: px(FLAT_W),
     height: px(FLAT_H),
-    // A frame ships labelled "Frame" in its top-right corner; a floor
-    // plan's outer wall is a wall, not a captioned section.
-    label: '',
+    fillColor: 'transparent',
     strokeWidth: 'extra-thick',
     borderRadius: 'none',
     layerId: TEMPLATE_SCAFFOLD_LAYER_ID,

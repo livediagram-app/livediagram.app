@@ -13,6 +13,6 @@ export function presentedPages(
     rowPages: view.pages,
     letterbox: true,
     // Presenting is reading: the writing takes no caret.
-    articles: view.articles ? { ...view.articles, editable: false } : view.articles,
+    articles: view.articles ? { ...view.articles, editable: false, reshape: false } : view.articles,
   };
 }

@@ -61,8 +61,7 @@ Scope, by file:
 | Embed group     | `tileGroup: 'embed'`, `PaletteTileGroup title="Embed"` | The Media row that opens in place                               |
 
 Banned synonyms: "video" for the element in user-facing copy (say embed; `video` is the persisted
-kind and the telemetry token only), "iframe element", "frame" for the element (a frame is a shape
-kind), "thumbnail" for the poster, "provider field" (there is only the hint).
+kind and the telemetry token only), "iframe element", "frame" for the element, "thumbnail" for the poster, "provider field" (there is only the hint).
 
 ## Behaviour and state
 
@@ -430,7 +429,7 @@ through `elementTelemetryType`), `Element·Used·Video` on play or load.
 | `TAP_TRAVEL_PX`       | `16`                                                                                      | `draw-commit.ts`; tap versus drag, canvas px             |
 | Poster variant        | `hqdefault.jpg`                                                                           | Exists for every video, unlike `maxresdefault`           |
 | Player query          | `autoplay=1&rel=0`                                                                        | `youtubeEmbedUrl` [QC8]                                  |
-| Figma `embed_host`    | `livedocuments`                                                                               | `embedTargetFor` [QC8]                                   |
+| Figma `embed_host`    | `livedocuments`                                                                           | `embedTargetFor` [QC8]                                   |
 | Website sandbox       | see the iframe contract                                                                   | Never add `allow-top-navigation`                         |
 | Frame radius          | `10px`                                                                                    | `element-variant.ts`                                     |
 

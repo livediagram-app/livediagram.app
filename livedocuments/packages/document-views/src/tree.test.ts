@@ -13,8 +13,8 @@ const outline = (items: ViewItem[]): unknown[] =>
 
 describe('buildViewTree', () => {
   it('nests by derived containment, reading order per level, arrows left out', () => {
-    const frame = shapeAt('frame', 'frame', 0, 0, 500, 300);
-    const inner = shapeAt('frame', 'inner', 0, 150, 500, 150);
+    const frame = shapeAt('stack', 'frame', 0, 0, 500, 300);
+    const inner = shapeAt('stack', 'inner', 0, 150, 500, 150);
     const tree = buildViewTree(
       [
         shapeAt('square', 'far', 900, 0),

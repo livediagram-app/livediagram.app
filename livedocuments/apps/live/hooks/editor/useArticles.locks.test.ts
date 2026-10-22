@@ -59,6 +59,7 @@ function setup(tab: Tab) {
       localEditSeq: { current: 0 },
       placeAt,
       canEdit: true,
+      canWrite: false,
       commitTabs,
       tickTabs,
       undo: vi.fn(),

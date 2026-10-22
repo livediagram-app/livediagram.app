@@ -200,8 +200,8 @@ describe('the writing', () => {
   it('removes margin-note markers whose text is gone', () => {
     const marker = {
       id: 'n1',
-      type: 'annotation',
-      articleNote: true,
+      type: 'article-note',
+      articleNote: 'comment',
       x: 0,
       y: 0,
       width: 32,

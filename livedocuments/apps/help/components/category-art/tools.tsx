@@ -1,17 +1,17 @@
 import { Arrow, Label, Shape } from '@/components/illustrations/primitives';
 import { Card, Sparkle, Stage } from './parts';
 
-// Tools: the editor's helpers. An AI prompt drawing a sign-up flow, the appearance switch set to Dark, and Zen
+// Tools: the editor's helpers. Auto Layout tidying a sign-up flow, the appearance switch set to Dark, and Zen
 // mode tucking the chrome away.
 export function ToolsArt() {
   return (
     <Stage>
-      {/* The AI prompt. */}
+      {/* Auto Layout. */}
       <Card x={22} y={22} w={200} h={78} r={12}>
         <Sparkle cx={38} cy={40} r={7} className="fill-violet-500" />
         <Sparkle cx={47} cy={33} r={3.5} className="fill-violet-300" />
         <Label x={54} y={41} size={10.5} weight={700} tone="strong">
-          Ask AI
+          Auto Layout
         </Label>
         <rect
           x={32}
@@ -23,9 +23,8 @@ export function ToolsArt() {
           strokeWidth={1.4}
         />
         <Label x={42} y={73.5} size={10} tone="body">
-          Draw a sign-up flow
+          Arrange by its arrows
         </Label>
-        <rect x={149} y={65} width={1.5} height={17} className="fill-violet-500" />
         <rect
           x={160}
           y={62}
@@ -35,11 +34,11 @@ export function ToolsArt() {
           className="fill-violet-500 dark:fill-violet-700"
         />
         <Label x={183} y={73.5} anchor="middle" size={9} weight={700} tone="onAccent">
-          Draw
+          Tidy
         </Label>
       </Card>
 
-      {/* The flow it draws. */}
+      {/* The flow it lays out. */}
       <Shape
         x={262}
         y={18}

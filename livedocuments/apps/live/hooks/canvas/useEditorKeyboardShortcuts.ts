@@ -24,7 +24,6 @@ import {
   EDIT_KEYS,
   runModShortcut,
   coveredKeyRole,
-  PARTICIPANT_KEYS,
   VIEW_TOOL_KEYS,
   type EditorKeyboardShortcutsDeps,
 } from './editor-shortcut-keys';
@@ -182,7 +181,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
 
       // --- Delete / Backspace ---
       if (key === 'Delete' || key === 'Backspace') {
-        if (live.isReadOnly && !live.participant) return;
+        // A Viewer or a Participant deletes nothing (docs/specs/013-workspace/share-roles.md).
+        if (live.isReadOnly) return;
         if (inText) return;
         if (live.editingId !== null) return;
         if (multiSelectedIds.size > 0) {
@@ -295,15 +295,8 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
         return;
       }
 
-      if (live.isReadOnly) {
-        // A Participant's tiles show their keys, and each tile works as an Editor's does (share-roles.md).
-        const add = live.participant ? PARTICIPANT_KEYS[lower] : undefined;
-        if (add) {
-          e.preventDefault();
-          add(live);
-        }
-        return;
-      }
+      // A Viewer or a Participant adds nothing (docs/specs/013-workspace/share-roles.md).
+      if (live.isReadOnly) return;
       // Image (`9`): separate from EDIT_KEYS because its callback is
       // nullable on guest deploys without an api worker.
       if (lower === '9' && live.onAddImage) {

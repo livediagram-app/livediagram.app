@@ -36,7 +36,6 @@ import { DIAMOND_POINTS } from './shape-geometry';
 import { svgTableShape } from './svg-render-table';
 // Which body an element draws, and the list of kinds that have one (docs/specs/020-import-export/export-fidelity.md).
 import { shapeHasBespokeBody, svgElementBody } from './svg-render-body';
-import { svgPageFold } from './svg-render-page';
 import { svgHeroCaption } from './svg-render-web';
 import { defaultTextColor, SELF_PAINTING_SHAPES } from './colors';
 // Text/number primitives shared with the per-element emitters — re-exported
@@ -365,13 +364,9 @@ function svgBoxedFace(source: BoxedElement, opts: BoxedExportOptions): string {
             )
           : `<rect x="${r2(el.x)}" y="${r2(el.y)}" width="${r2(el.width)}" height="${r2(el.height)}" rx="${r2(rx)}" fill="${xmlEscape(shape.fill)}" stroke="${xmlEscape(shape.stroke)}" stroke-width="1.5"/>`);
     // What the canvas draws ON the box: a browser frame's chrome strip
-    // (docs/specs/008-canvas/canvas-and-palette.md) and a page's fold.
+    // (docs/specs/008-canvas/canvas-and-palette.md).
     const onBox =
-      el.type === 'shape' && el.shape === 'browser'
-        ? svgBrowserChrome(el, shape.stroke)
-        : el.type === 'shape' && el.shape === 'page'
-          ? svgPageFold(el, shape.fill, shape.stroke, opts.paper ?? '#ffffff')
-          : '';
+      el.type === 'shape' && el.shape === 'browser' ? svgBrowserChrome(el, shape.stroke) : '';
     // An accent edge (docs/specs/008-canvas/accent-edge.md): over the fill, inside the border, under the label.
     const edgeBorder = el.type === 'shape' ? borderOf(el, finish) : null;
     const edge =

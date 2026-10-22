@@ -233,7 +233,7 @@ group:
 ## Share roles
 
 A wireframe page is a page: an **Editor** chooses its device, orientation, frame look and system
-bars, places layouts and edits what is on it; a **Participant** may change what is on it as on any
+bars, places layouts and edits what is on it; a **Participant** may change the text of what is on it as on any
 page and never the device; a **Viewer** sees it, never the Device button, the popover or the
 panel. Every control is gated on the session's `can` (`can.editPages` for the device), as every
 page control is.

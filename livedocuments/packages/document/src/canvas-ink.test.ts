@@ -3,7 +3,6 @@ import { PEN_INK } from './pen-colours';
 import {
   canvasSurface,
   contrastRatio,
-  createAnnotation,
   createArrow,
   createShape,
   createSticky,
@@ -50,10 +49,6 @@ describe('element ink on dark paper', () => {
     expect(defaultFillColor(shape, 'dark')).toBe('#141b26');
     expect(defaultStrokeColor(shape, 'dark')).toBe('#64748b');
     expect(defaultTextColor(shape, 'dark')).toBe('#ffffff');
-  });
-
-  it('lifts an annotation marker a shade above the shape fill', () => {
-    expect(defaultFillColor(createAnnotation(0, 0), 'dark')).toBe('#1c2533');
   });
 
   it('draws text and arrows so they read against it', () => {

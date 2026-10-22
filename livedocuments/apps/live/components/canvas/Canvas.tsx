@@ -447,9 +447,9 @@ function CanvasView(props: CanvasProps) {
                   ? 'pointer-events-none'
                   : ''
               } ${pendingDraw ? '' : cursorClass}`}
-              // Scopes the [data-iso] CSS (globals.css): frames settle just under
-              // the base plane while the camera orbits so they can't z-fight
-              // (flicker) with the coplanar contents above them.
+              // Scopes the [data-iso] CSS (globals.css): arrows lift just off the
+              // base plane while the camera orbits so they can't z-fight
+              // (flicker) with the coplanar boxes they cross.
               data-iso={canvasTool === 'isometric' ? '' : undefined}
               style={{
                 // Translate is in canvas-coords (applied first); scale is centred

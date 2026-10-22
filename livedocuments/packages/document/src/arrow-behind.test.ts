@@ -103,14 +103,14 @@ describe('routeBehindHoles', () => {
     expect(routeBehindHoles(arrow(), from, to, [wellPast])).toEqual([]);
   });
 
-  it('ignores frames — a section backdrop must never break the arrows inside it', () => {
+  it('ignores containers — a backdrop must never break the arrows inside it', () => {
     const holes = routeBehindHoles(arrow(), from, to, [
-      box('section', -100, -100, { shape: 'frame', width: 800, height: 400 }),
+      box('section', -100, -100, { shape: 'stack', width: 800, height: 400 }),
     ]);
     expect(holes).toEqual([]);
   });
 
-  it('ignores text and annotations, which have no fill to hide behind', () => {
+  it('ignores text and margin notes, which have no fill to hide behind', () => {
     const text: Element = {
       id: 't',
       type: 'text',
@@ -120,7 +120,15 @@ describe('routeBehindHoles', () => {
       height: 30,
       label: 'x',
     };
-    const note: Element = { id: 'n', type: 'annotation', x: 300, y: 0, width: 44, height: 44 };
+    const note: Element = {
+      id: 'n',
+      type: 'article-note',
+      articleNote: 'comment',
+      x: 300,
+      y: 0,
+      width: 44,
+      height: 44,
+    };
     expect(routeBehindHoles(arrow(), from, to, [text, note])).toEqual([]);
   });
 

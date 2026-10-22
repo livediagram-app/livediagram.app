@@ -54,7 +54,7 @@ describe('layoutView (R17)', () => {
 
   it('prints rotation, free and on-arrow ends, elements without geometry and loose rows', () => {
     const a = { ...shapeAt('square', 'a', 10, 10), rotation: 44.6 };
-    const frame = shapeAt('frame', 'f', 0, 0, 1000, 1000);
+    const frame = shapeAt('stack', 'f', 0, 0, 1000, 1000);
     const odd = { id: 'odd', type: 'hologram' } as unknown as Element;
     const tab = tabOf([
       frame,

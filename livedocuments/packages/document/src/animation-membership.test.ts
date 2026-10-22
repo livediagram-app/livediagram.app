@@ -27,7 +27,7 @@ describe('bodyAnimationSetOf', () => {
     [createShape('square', 0, 0), 'shape'],
     [createShape('diamond', 0, 0), 'shape'],
     [createShape('sticker', 0, 0), 'shape'],
-    [of('annotation'), 'shape'],
+    [of('article-note'), 'shape'],
     [of('link-card'), 'shape'],
     [createSticky(0, 0), 'sticky'],
     [of('freehand'), 'drawing'],

@@ -80,7 +80,7 @@ describe('stripTilesFor', () => {
     const components = stripTilesFor('components', NONE);
     expect(components.tiles).toHaveLength(tilesForCategory('components').length);
     expect(components.hasMore).toBe(false);
-    expect(stripTilesFor('build', NONE).tiles).toHaveLength(4);
+    expect(stripTilesFor('build', NONE).tiles).toHaveLength(3);
   });
 
   it('gives a divided category one tile less when it overflows, to make room', () => {

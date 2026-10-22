@@ -1,8 +1,8 @@
-tab edge-tab "Edge cases" · 37 elements: 28 boxes, 2 frames, 7 arrows · 1 page: 1 infographic (view pages) · 2 hidden · 3 unknown
+tab edge-tab "Edge cases" · 36 elements: 29 boxes, 7 arrows · 1 page: 1 infographic (view pages) · 2 hidden · 3 unknown
 square huge "Huge"
-frame frame-a "A"
+stack frame-a "A" direction=row
   square both "In both"
-frame frame-b "B"
+stack frame-b "B" direction=row
 square bare → quoted "one", quoted "two" ~dotted ~both
 square quoted "Line one\nsays \"hi\" → there | here" → free
 square tilted → tilted, arrow:par-1
@@ -25,7 +25,6 @@ rating state-rating rating=4/5
 progress-bar state-progress-bar progress=40
 progress-ring state-progress-ring progress=50
 timeline-rail state-timeline-rail rows=Kick-off|First prototype|Beta with customers|Launch milestones=4
-page state-page title="Quarterly review"
 ? hologram nowhere "No geometry"
 arrow free-src free → bare
 arrow rider-src arrow:par-2 → tilted

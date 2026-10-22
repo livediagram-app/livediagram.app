@@ -110,7 +110,7 @@ except the cut tail, which is always reported; repeating a dimension and listing
 
 `documentSubject(summary, viewerId)`: `space` is `team:<teamId>` when the summary has a team, else `mine` (a document in
 this browser included, as the spec decides); `people` is `me` when `ownerId === viewerId`; `madeByAi` is
-`isMadeByAiSource(source)` (`ai` or `mcp`, never `cli`); `opensIn` is the summary's value
+`isMadeByAiSource(source)` (`mcp`, never `cli`); `opensIn` is the summary's value
 when in its list, else `null`. `sharedSubject(item)`:
 `space: 'shared'`, `people: 'others'`, `madeByAi`, and `opensIn` `null`.
 

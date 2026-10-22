@@ -2,7 +2,7 @@ import { fixes } from '../fixes';
 import { describe, expect, it } from 'vitest';
 import type { Element } from '@livedocuments/document';
 import { LINT_MAX_ARROWS } from '../constants';
-import { arrow, box, frame, lint, of, tabOf } from '../fixtures/build';
+import { arrow, box, stack, lint, of, tabOf } from '../fixtures/build';
 import { formatLintReport } from '../format';
 
 // A column of sources on the left, a column of targets on the right, every source joined to the target
@@ -62,15 +62,15 @@ describe('edge-crossings', () => {
     expect(logged).toContain('[lint] crossings skipped');
   });
 
-  it('on a framed tab, reroutes the most-crossed arrow rather than laying out shapes alone', () => {
-    const framed = [frame('f', -20, -20, 260, 440), ...crossed(4)];
-    const [finding] = of(lint(tabOf(...framed)), 'edge-crossings');
+  it('on a tab with a stack, reroutes the most-crossed arrow rather than laying out shapes alone', () => {
+    const contained = [stack('f', -20, -20, 260, 440), ...crossed(4)];
+    const [finding] = of(lint(tabOf(...contained)), 'edge-crossings');
     expect(finding!.fix).toMatch(/^set \S+ line=(angled|curved|straight)$/);
   });
 
   it('suggests only a style that lowers the arrow crossings, else advice, so the fix never oscillates', () => {
-    const framed = [frame('f', -20, -20, 260, 440), ...crossed(4)];
-    const tab = tabOf(...framed);
+    const contained = [stack('f', -20, -20, 260, 440), ...crossed(4)];
+    const tab = tabOf(...contained);
     const [finding] = of(lint(tab), 'edge-crossings');
     const [, selector, style] = /^set (\S+) line=(\S+)$/.exec(finding!.fix)!;
     const id = selector!.includes('->') ? null : selector;

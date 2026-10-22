@@ -245,9 +245,7 @@ export function SelectionChromeLayer({
           transformOrigin: 'center',
         }}
       >
-        {/* Annotations resize too (aspect-locked by default so the marker
-          stays round); they just keep rotation off — a tilted note marker
-          reads as a mistake. Corner handles show even when rotated — the
+        {/* Corner handles show even when rotated — the
           resize math projects the drag into the element's local frame
           (useEditorDrag). */}
         {showHandles ? (

@@ -1,6 +1,6 @@
 // Which elements can be rotated (docs/specs/008-canvas/canvas-and-palette.md, the Rotation category).
-// Every boxed element carries `rotation` except an annotation marker: it is a round numbered pin, so
-// turning it only turns its number (docs/specs/009-elements/blueprints/annotations.md [QD8]); and a
+// Every boxed element carries `rotation` except an article's margin note, a fixed marker beside its
+// text (docs/specs/007-editor/article-pages.md "Comments and actions"); and a
 // pointer note, whose tip is pinned to a point on the board (docs/specs/009-elements/pointer-note.md),
 // so turning the note would swing its leader off that point. One predicate gates the element menu's
 // Rotation category, the Rotate commands and the rotation write, so no surface can offer what another
@@ -11,7 +11,7 @@ import { isBoxed, type BoxedElement, type Element } from './index';
 import { isPointerNote } from './pointer-note';
 
 export function supportsRotation(el: Element): el is BoxedElement {
-  return isBoxed(el) && el.type !== 'annotation' && !isPointerNote(el);
+  return isBoxed(el) && el.type !== 'article-note' && !isPointerNote(el);
 }
 
 /** The turn an element is drawn at: its own when it can rotate, else none. */

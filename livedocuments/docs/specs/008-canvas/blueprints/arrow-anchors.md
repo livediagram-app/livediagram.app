@@ -32,7 +32,6 @@ Scope, by file:
 | `apps/live/hooks/canvas/useBoxedDragHandlers.ts`              | Quick-connect pins `nearestOfferedAnchor`; tap-placed arrow direction from `anchorOutward`         |
 | `apps/live/components/dialogs/settings/settings-catalogue.ts` | Setting copy                                                                                       |
 | `apps/help/app/palette/auto-attach-arrows/page.mdx`           | Help article                                                                                       |
-| `apps/api/src/ai-prompt.ts`                                   | Anchor list for the AI                                                                             |
 | `apps/api/src/openapi/schemas.generated.ts`                   | Regenerated `Anchor` enum and pinned endpoint schema                                               |
 
 ## Domain and naming

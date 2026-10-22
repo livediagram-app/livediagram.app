@@ -104,7 +104,7 @@ export type BoxedElementViewProps = {
   isoDepth: number;
   // Held by a stack and not being dragged: glides to its slot when the stack reflows (docs/specs/009-elements/stack.md).
   stackGlide?: boolean;
-  // The Page masthead (docs/specs/009-elements/page-element.md), and the banner / callout lines (docs/specs/009-elements/web-components-and-no-groups.md).
+  // The banner / callout / card masthead lines (docs/specs/009-elements/web-components-and-no-groups.md).
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
   // The web components' rows and a hero's caption lines, edited in place
   // (docs/specs/009-elements/web-components-and-no-groups.md). Omitted in read-only.

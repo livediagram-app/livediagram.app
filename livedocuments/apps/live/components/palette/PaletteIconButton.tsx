@@ -13,7 +13,7 @@ import type { PaletteTileDef } from './palette-tile-defs';
 // The active tab theme's element colours, made available to every palette
 // tile so the palette previews the theme rather than a fixed slate. `stroke`
 // tints line-art glyphs (all the `stroke="currentColor"` SVGs); `fill` is the
-// shape interior used by the filled tiles (shapes / devices / annotation),
+// shape interior used by the filled tiles (shapes / devices),
 // applied via the `palette-tile-filled` rule in globals.css. Both are
 // undefined for the Default theme, where the palette keeps its default look.
 //
@@ -108,7 +108,7 @@ type IconButtonProps = {
   // Render the glyph as a filled mini-preview of a themed element: the
   // theme's element fill paints the shape interior on top of the stroke
   // tint, so the tile previews what gets dropped. Set on the boxed-shape
-  // tiles (shapes / devices / annotation); line-art tools + icons leave it
+  // tiles (shapes / devices); line-art tools + icons leave it
   // off and just take the stroke tint. No-op under the Default theme.
   filled?: boolean;
   // Opt out of the theme tint entirely — for tiles whose colours are fixed

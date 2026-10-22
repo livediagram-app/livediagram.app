@@ -59,7 +59,6 @@ export const SHORTCUT_SECTIONS: ShortcutSection[] = [
       { keys: ['T'], label: 'Text' },
       { keys: ['N'], label: 'Note (sticky)' },
       { keys: ['A'], label: 'Arrow' },
-      { keys: ['F'], label: 'Frame' },
       { keys: ['9'], label: 'Image' },
       { keys: ['1', '–', '0'], label: 'Number row also picks tools / shapes' },
     ],

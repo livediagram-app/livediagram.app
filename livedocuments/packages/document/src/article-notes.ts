@@ -1,5 +1,5 @@
 // Margin notes (docs/specs/007-editor/article-pages.md "Comments and actions"): a comment thread
-// or an action on a stretch of an article's writing lives on a marker element (an annotation) in
+// or an action on a stretch of an article's writing lives on a marker element (an article-note element) in
 // the page's right margin, level with the first line of that text, and is kept there as the
 // writing moves (the text carries a `note` mark naming the marker). Everything a comment or an
 // action does on an element (threads, mentions, assignees, Activity, email) it does here, because
@@ -8,7 +8,7 @@ import { articleMarginPx } from './article-style';
 import { articlesOf, normaliseRuns } from './article-flow';
 import { withArticleFlow } from './article-pages';
 import { pagesOf, layOutPages, type LaidOutPage } from './page';
-import type { AnnotationElement, Tab } from './index';
+import type { ArticleNoteElement, Tab } from './index';
 
 /** A margin note's marker size, canvas px: small enough for the narrowest margin (48 px). */
 export const ARTICLE_NOTE_SIZE = 32;
@@ -40,10 +40,10 @@ export function newArticleNote(
   id: string,
   kind: ArticleNoteKind,
   corner: { x: number; y: number },
-): AnnotationElement {
+): ArticleNoteElement {
   return {
     id,
-    type: 'annotation',
+    type: 'article-note',
     x: corner.x,
     y: corner.y,
     width: ARTICLE_NOTE_SIZE,
@@ -81,7 +81,7 @@ export function withNotesSettled<T extends NotesTab>(
   }
   let moved = false;
   const elements = tab.elements.map((el) => {
-    if (el.type !== 'annotation' || !el.articleNote) return el;
+    if (el.type !== 'article-note') return el;
     const to = at.get(el.id);
     if (!to || (Math.abs(el.x - to.x) < 0.5 && Math.abs(el.y - to.y) < 0.5)) return el;
     moved = true;
@@ -127,11 +127,9 @@ export function articleNoteIds(
 }
 
 /** The tab without the markers of margin notes whose text is gone from the writing (`ids`): the
- *  comment thread or action on deleted text goes with it. Markers no longer notes stay. */
+ *  comment thread or action on deleted text goes with it. */
 export function withNoteMarkersRemoved<T extends NotesTab>(tab: T, ids: ReadonlySet<string>): T {
   if (ids.size === 0) return tab;
-  const elements = tab.elements.filter(
-    (el) => !(el.type === 'annotation' && el.articleNote && ids.has(el.id)),
-  );
+  const elements = tab.elements.filter((el) => !(el.type === 'article-note' && ids.has(el.id)));
   return elements.length === tab.elements.length ? tab : { ...tab, elements };
 }

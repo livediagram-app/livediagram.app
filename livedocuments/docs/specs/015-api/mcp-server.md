@@ -19,9 +19,8 @@ desktop/web, Claude Code, any MCP client) and, from inside that tool:
 3. **Edit** an existing document — full rework of a tab, or a small adjustment.
 
 **The calling LLM does the thinking; the MCP is only the bridge.** This is the
-load-bearing decision. We are **not** proxying to the first-party `/api/ai`
-endpoint (`apps/api/src/routes/ai.ts`, OpenAI/`gpt-4o`) — that endpoint is weak
-and may be removed. The user already has a capable model in front of them; the
+load-bearing decision. livedocuments runs no model of its own (the in-editor
+AI assistant was removed). The user already has a capable model in front of them; the
 MCP's job is to (a) hand that model the element **schema** so it can emit
 well-formed elements, (b) **validate + lay out** what it produces, and (c)
 **persist** it through the same REST API the web app uses. The MCP carries no
@@ -303,7 +302,7 @@ tweak → `ops`.
 
 **Edits.** `ops` mode takes `edits` instead of `ops` (`mode: "edits"` names the same mode, as agents read it): [edit operations](../024-agents/edit-operations.md) in the line
 form, one a line, sent as the changeset's operations text for the api to parse and apply all or nothing. They reach
-what JSON ops cannot say in one step (`insert … between a b` making room, `wrap … in frame`, `connect a -> b`, `layout`
+what JSON ops cannot say in one step (`insert … between a b` making room, `connect a -> b`, `layout`
 of a selection, placement beside another element), and they are the language each [lint](../024-agents/diagram-lint.md)
 finding's fix is written in, so a finding in a write's result can be applied as printed. The base is the revision the
 model read (else the tab as loaded) and every element's fingerprint as loaded, since the text may name any of them.
@@ -426,7 +425,7 @@ wrongly:
 - **Every element takes the presentation defaults the editor's own factory
   gives a new one of its kind** for the fields it leaves out: `textSize` (`md`
   for shapes, stickies and tables, `sm` for text) and, where the kind sets
-  them, the title alignment and padding (a frame's header). Unset, text scales to
+  them, the title alignment and padding. Unset, text scales to
   fill its box, so a sticky's note filled it edge to edge; a box drawn in the
   editor never arrives that way. On a list of more than 12 labelled
   boxes, a box that gives no `textSize` takes `sm` rather than `md`, so a page of twenty boxes
@@ -603,10 +602,10 @@ Every post (these reports and `Mcp·Used`) is handed to the request's
 The MCP worker reads three bindings and two out-of-band values. Bindings
 (`API` service binding, `OAUTH_KV`) are declared in `wrangler.toml`; the rest:
 
-| Name                  | Where                          | Absent means                                                                                                                                                                   |
-| --------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Name                  | Where                          | Absent means                                                                                                                                                                       |
+| --------------------- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CONSENT_BASE_URL`    | `[vars]` (not secret)          | Defaults to `https://livedocuments.app`, so a self-host's OAuth callers land on the hosted consent screen instead of their own. Also the host of every tool's `url` and share link |
-| `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))        |
+| `INTERNAL_EVENTS_KEY` | worker secret, **also on api** | This worker's telemetry shares the anonymous per-IP rate-limit bucket and throttles itself ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md))            |
 
 `INTERNAL_EVENTS_KEY` exists because §4.12's telemetry posts travel over the
 **service binding**, which carries no `CF-Connecting-IP` — so the api's
@@ -832,11 +831,11 @@ Worker (no DOM, no React).
   family names. The embedded Inter is upright only, so a tab with any text in italic (an element's, a run's, a
   cell's) fetches Inter's italics the same way (`INTER_ITALIC`); resvg drew italic it had no face for upright.
 - **No scaled strokes.** resvg ignores `vector-effect="non-scaling-stroke"`, so
-  the renderer never relies on it: stretched silhouettes (frames, cylinders,
-  device frames) are mapped into the element box point by point
+  the renderer never relies on it: stretched silhouettes (cylinders, device
+  frames) are mapped into the element box point by point
   (`svg-shape-fit.ts`) rather than nested in a scaled `<svg>`. Before that, a
-  frame's border in the preview grew with the frame, several pixels thick on a
-  large group.
+  stretched shape's border in the preview grew with the shape, several pixels
+  thick on a large one.
 - **Image-element embedding.** When a rendered tab has image elements,
   `imageResult` prefetches their bytes (owner-authed via the caller's token,
   `GET /api/images/:id`) and inlines them as base64 data URIs through the
@@ -863,7 +862,7 @@ Worker (no DOM, no React).
   (tracks / headers / zebra / per-cell text, `svg-render-table.ts`), freehand
   sketches as the canvas draws them (the same Catmull-Rom smoothing, straight
   segments for a polygon-tool path), the full shape-silhouette vocabulary (hexagon /
-  cylinder / document / cloud / devices / actor / frame ... —
+  cylinder / document / cloud / devices / actor ... —
   `svg-render-shapes.ts`, drawn from the same geometry table as the editor's
   ShapeSvgOverlay: `shape-geometry.ts`, pinned by a test per kind on each side),
   element rotation, and icon glyphs (above). The PNG/PDF canvas path

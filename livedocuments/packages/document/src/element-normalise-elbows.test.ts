@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { normaliseElements } from './element-normalise';
 import type { ArrowElement, Element } from './index';
 
-// docs/specs/015-api/mcp-server.md "Every element takes the presentation defaults": raw arrows draw as graph input's.
+// docs/specs/015-api/mcp-server.md "Every element takes the presentation defaults": raw arrows draw as elbow lines.
 
 const box = (id: string, x: number, y: number) =>
   ({ id, type: 'shape', shape: 'square', x, y, width: 120, height: 60, label: id }) as Element;
@@ -17,7 +17,7 @@ const arrow = (id: string, from: string, fa: string, to: string, ta: string, ext
 const byId = (els: unknown, id: string) =>
   (els as Element[]).find((e) => e.id === id) as ArrowElement;
 
-describe('raw arrows draw as graph input lines', () => {
+describe('raw arrows draw as elbow lines', () => {
   const boxes = [box('a', 0, 0), box('b', 300, 200), box('c', 0, 200)];
 
   it('angles a pinned arrow that names no style, with two bends that meet both ends square', () => {

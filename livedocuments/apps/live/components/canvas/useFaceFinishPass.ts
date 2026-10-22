@@ -334,7 +334,7 @@ function frameInk(
   if (!bordered && !ring && !own) return null;
   const rx = parseFloat(css.borderTopLeftRadius) || 0;
   const round = isPillRect(w, h, rx);
-  // A round part is a pill (left plain), unless it is the face's own (an annotation's disc, a progress bar's track) or
+  // A round part is a pill (left plain), unless it is the face's own (a progress bar's track) or
   // marked a shape: a marker circle, or a pill.
   if (round && !own) return null;
   const disc = round && Math.abs(w - h) <= 2;

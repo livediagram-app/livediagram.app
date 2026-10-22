@@ -113,7 +113,7 @@ second, explicit approval, never an existing pairing widened in silence.
   cannot probe the owner's gallery, [Images](../009-elements/images.md) "Size cap") and reading its images; reading the person's display identity, preferences and custom
   themes; the catalogues. Everything else is refused `403 workbench_confined`: ownership powers
   (share links, password, move, delete, publish, copy), other documents, the person's library and folders,
-  writing preferences or the profile, the guest migration, tokens, teams, the account and the AI assistant. The
+  writing preferences or the profile, the guest migration, tokens, teams and the account. The
   editor offers none of them in a workbench embed: the person's agent sits beside it.
 - **Revocable.** Revoking the minting token ends its sessions; the page learns it on its next request or the room's
   close and turns read-only.
@@ -128,7 +128,7 @@ The bullets above are the document scope. A **workspace** session is confined di
   trash, restore, and create, rename, move and delete folders, at the person's own access to each.
 - **Never the account.** Refused `403 workbench_confined`, as in the document scope: the profile, preferences'
   writes, the guest migration, API tokens and pairings, team administration (invites, members, roles, plans,
-  billing), the account itself, and the AI assistant (the person's agent sits beside the frame).
+  billing) and the account itself.
 - **Never more than the token.** Each request is capped by the minting token's level and by the person's own access
   now, as in the document scope: a view token gives a frame that browses and reads.
 
@@ -156,8 +156,8 @@ started on a folder shows that folder; its empty state is the Explorer's own, wi
 `window.postMessage` between the page and its workbench, each `{ type, v: 1, ... }`, sent only to the bound origin
 and accepted only from it. Unknown types are ignored, and logged once each.
 
-| Type                  | From      | Carries                                                              |
-| --------------------- | --------- | -------------------------------------------------------------------- |
+| Type                      | From      | Carries                                                              |
+| ------------------------- | --------- | -------------------------------------------------------------------- |
 | `livedocuments:hello`     | page      | Nothing; asks the workbench to answer                                |
 | `livedocuments:hello-ack` | workbench | The workbench's name, shown in copy ("Reconnect in Acme Editor")     |
 | `livedocuments:ready`     | page      | `documentId`, `documentName`, `tabId`, `tabName`, `role`             |

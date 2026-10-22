@@ -61,7 +61,6 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 - **Agent presence** ([Agent presence](../024-agents/agent-presence.md)): an agent shows the people on a tab what it is
   doing and looking at, under its owner's name, and comments, replies, resolves and reopens through the same endpoints
   people use.
-- **AI assistance** (optional): an in-editor panel with two modes: Ask answers questions about the active tab, Clean fixes typos and normalises sizes, positions, and styles. Hidden entirely unless the api worker has a model key set; per-user opt-in via Settings. This is the in-editor panel only; driving documents from an outside assistant is the MCP server. See [AI Assistance](../007-editor/ai-assistance.md).
 - **Anonymous first-party telemetry** + the public `/telemetry` dashboard. The editor emits a closed-vocabulary `{category, action, type}` event for every meaningful interaction (elements added, themes changed, comments posted, etc.) via batched POSTs to `/api/events`; the dashboard renders aggregate counts read from the api worker's D1 summary. No third-party analytics; no identifiers crossing the wire. Off by default for self-hosters (the api's `TELEMETRY_ENABLED` flag + the live build's `NEXT_PUBLIC_TELEMETRY_ENABLED` both need to be on for events to flow end-to-end), and a per-user opt-out ([User preferences](../007-editor/user-preferences.md)) overrides both when off. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
 - **Never stale after a deploy**: pages are never served from a stale cache, a page still running an earlier build reloads once into the current one, and in-app navigation across a deploy loads in full instead of failing ([Stale builds](../016-platform/stale-builds.md)).
 - **A quiet console**: every decision point logs a fingerprinted trace line, shown in production only when the browser's debug flag asks for it; warnings and errors always show ([Console logging](../003-system-architecture/console-logging.md)).
@@ -74,7 +73,7 @@ The editor is real. Every tab is Pages ([Pages mode](../007-editor/pages-mode.md
 - **One-off prompts and counters**: the pending tour, the sign-in prompt and banner dismissals, the power-user offer, the last active day.
 - **The share-password cache**: one entry per share code, so a returning visitor skips the gate ([Share password](../013-workspace/share-password.md#password-cache)).
 
-- **Participant share links** ([Share roles](../013-workspace/share-roles.md)): a third level between Viewer and Editor, for people who add sticky notes, text and images and comment without reshaping the pages; the room applies their changes through one participant content rule.
+- **Participant share links** ([Share roles](../013-workspace/share-roles.md)): a third level between Viewer and Editor, for people who edit text and comment without adding, moving or restyling anything; the room applies their changes through the participant content and writing rules.
 
 ## Next
 

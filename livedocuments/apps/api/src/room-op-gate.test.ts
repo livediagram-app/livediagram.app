@@ -23,12 +23,30 @@ describe('gateClientOp', () => {
     expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('admin'))).toEqual(DROP);
   });
 
-  it("routes a participant's element op through the content rule, and drops its other mutations", () => {
+  it("routes a participant's element op and article frame through the text rules, and drops its other mutations", () => {
     expect(gateClientOp({ kind: 'el', tabId: 't' }, as('participate'))).toEqual({
       kind: 'participant-content',
     });
-    expect(gateClientOp({ kind: 'vote', voter: 'me' }, as('participate'))).toEqual(DROP);
-    expect(gateClientOp({ kind: 'tab', tabId: 't' }, as('participate'))).toEqual(DROP);
+    expect(gateClientOp({ kind: 'article', tabId: 't' }, as('participate'))).toEqual({
+      kind: 'participant-article',
+    });
+    for (const kind of ['tab', 'tab-meta', 'el-delta', 'document-meta']) {
+      expect(gateClientOp({ kind, tabId: 't' }, as('participate')), kind).toEqual(DROP);
+    }
+  });
+
+  it("drops a participant's article frame for a tab outside its link", () => {
+    const scoped = as('participate', { tabScope: 't1' });
+    expect(gateClientOp({ kind: 'article', tabId: 't1' }, scoped)).toEqual({
+      kind: 'participant-article',
+    });
+    expect(gateClientOp({ kind: 'article', tabId: 't2' }, scoped)).toEqual(DROP);
+    expect(gateClientOp({ kind: 'el', tabId: 't2' }, scoped)).toEqual(DROP);
+  });
+
+  it("relays an article frame from an editor as sent, and drops a viewer's", () => {
+    expect(gateClientOp({ kind: 'article', tabId: 't' }, as('edit'))).toEqual(relay(false));
+    expect(gateClientOp({ kind: 'article', tabId: 't' }, as('view'))).toEqual(DROP);
   });
 
   it("shows only an editor's drag preview", () => {

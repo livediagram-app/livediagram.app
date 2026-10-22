@@ -1,7 +1,6 @@
 // One session's state in the room (docs/specs/015-api/api.md, Realtime model): what the room pins on each
 // socket's serialized attachment at the upgrade, read from the headers only the api worker can set.
 import { isAccessLevel, type AccessLevel } from '@livedocuments/api-schema';
-import { ADDER_KEY_LENGTH } from '@livedocuments/document';
 import type { ParticipantPresence } from './types';
 
 // Everything the room knows about one session, persisted in the socket's
@@ -55,11 +54,8 @@ export type SessionAttachment = {
   //   - `workbenchPairing`: the workbench pairing that opened this session (docs/specs/013-workspace/workbench-embeds.md),
   //     from X-Verified-Workbench-Pairing, so unpairing or revoking its token closes exactly its sockets.
   workbenchPairing?: string | null;
-  //   - `adderKey`: a Participant's adder key, from X-Verified-Adder (docs/specs/013-workspace/share-roles.md
-  //     "Integrity"): what the room stamps on the stickies and text it adds. 32 hex characters.
   //   - `documentId`: the document this room serves, from X-Verified-Document, so a Participant's write knows its
   //     row. The room is named after it, so every session carries the same value.
-  adderKey?: string | null;
   documentId?: string | null;
 };
 
@@ -78,7 +74,6 @@ type VerifiedSession = {
   account: boolean;
   personTag: string | null;
   workbenchPairing: string | null;
-  adderKey: string | null;
   documentId: string | null;
 };
 
@@ -98,7 +93,6 @@ export function verifiedSessionOf(request: Request): VerifiedSession {
     account: request.headers.get('X-Verified-Account') === '1',
     personTag: header('X-Verified-Person'),
     workbenchPairing: header('X-Verified-Workbench-Pairing'),
-    adderKey: header('X-Verified-Adder'),
     documentId: header('X-Verified-Document'),
   };
 }
@@ -122,7 +116,6 @@ export function newSessionAttachment(v: VerifiedSession, presenceId: string): Se
     account: v.account,
     personTag: v.personTag?.slice(0, MAX_PERSON_TAG_LEN) ?? null,
     workbenchPairing: v.workbenchPairing?.slice(0, MAX_PAIRING_ID_LEN) ?? null,
-    adderKey: v.adderKey?.slice(0, ADDER_KEY_LENGTH) ?? null,
     documentId: v.documentId?.slice(0, MAX_DOCUMENT_ID_LEN) ?? null,
   };
 }

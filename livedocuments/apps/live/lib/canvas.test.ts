@@ -1,6 +1,5 @@
 import {
   arrowReferencesAny,
-  createAnnotation,
   createShape,
   createTable,
   type ArrowElement,
@@ -9,7 +8,7 @@ import {
 import { describe, expect, it } from 'vitest';
 import {
   cornerOf,
-  framesFirst,
+  containersFirst,
   inheritedSizeFor,
   MIN_SIZE,
   nextBounds,
@@ -181,28 +180,20 @@ describe('inheritedSizeFor', () => {
     const selected = { ...createShape('square', 0, 0), width: 300, height: 90 };
     expect(inheritedSizeFor(newShape, selected)).toEqual({ width: 300, height: 90 });
   });
-
-  it('keeps an annotation at its fixed marker size regardless of selection (docs/specs/009-elements/annotations.md)', () => {
-    const marker = createAnnotation(0, 0);
-    const bigSelected = { ...createShape('square', 0, 0), width: 400, height: 250 };
-    // A marker added while a big shape is selected must NOT balloon.
-    expect(inheritedSizeFor(marker, bigSelected)).toEqual({ width: 44, height: 44 });
-    expect(inheritedSizeFor(marker, null)).toEqual({ width: 44, height: 44 });
-  });
 });
 
-describe('framesFirst', () => {
-  it('moves frames ahead of everything else, preserving relative order', () => {
-    const frameA = createShape('frame', 0, 0);
+describe('containersFirst', () => {
+  it('moves containers ahead of everything else, preserving relative order', () => {
+    const frameA = createShape('stack', 0, 0);
     const box = createShape('square', 0, 0);
-    const frameB = createShape('frame', 9, 9);
-    const ordered = framesFirst([box, frameA, frameB]);
+    const frameB = createShape('stack', 9, 9);
+    const ordered = containersFirst([box, frameA, frameB]);
     expect(ordered.map((e) => e.id)).toEqual([frameA.id, frameB.id, box.id]);
   });
 
-  it('returns the same array reference when there are no frames (no-op)', () => {
+  it('returns the same array reference when there are no containers (no-op)', () => {
     const arr = [createShape('square', 0, 0)];
-    expect(framesFirst(arr)).toBe(arr);
+    expect(containersFirst(arr)).toBe(arr);
   });
 });
 

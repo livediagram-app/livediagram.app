@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  createAnnotation,
   createFreehand,
   createShape,
   createSticky,
@@ -36,7 +35,6 @@ describe('kindLabel', () => {
     expect(kindLabel(arrow())).toBe('Arrow');
     expect(kindLabel(createSticky(0, 0))).toBe('Sticky note');
     expect(kindLabel(createText(0, 0))).toBe('Text');
-    expect(kindLabel(createAnnotation(0, 0))).toBe('Annotation');
   });
 
   it('names freehand variants by what the user drew', () => {

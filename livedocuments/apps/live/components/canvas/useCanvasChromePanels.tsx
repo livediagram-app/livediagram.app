@@ -7,7 +7,6 @@ import type { useCornerDocking } from '@/hooks/ui/useCornerDocking';
 import type { PanelId } from '@/lib/panel-layout';
 import { loadLayersPanel } from '@/lib/editor-deferred-code';
 import { visibleLayerElements } from '@livedocuments/document';
-import { CanvasAiPanel } from './CanvasAiPanel';
 import { LazyExplorer } from '@/components/panels/LazyExplorer';
 import { ViewMinimap } from '@/components/canvas/view-readers';
 import type { CanvasChromeProps } from './CanvasChrome';
@@ -77,7 +76,6 @@ export function useCanvasChromePanels({
   const {
     activeDockAnchor,
     activeDockPanel,
-    aiPanel,
     actionRows,
     commentRows,
     commentsPanelPosition,
@@ -130,7 +128,6 @@ export function useCanvasChromePanels({
     setActiveDockPanel,
     settings,
     sharedDocuments,
-    tabName,
     tabThemeId,
     teamDocuments,
     teamFolders,
@@ -192,7 +189,6 @@ export function useCanvasChromePanels({
     commentsPanelPosition,
     onResetCommentsPanel,
   );
-  const aiWiring = aiPanel ? panelWiringFor('ai', aiPanel.position, aiPanel.onReset) : null;
   // The four tool-config panels (laser / spotlight / format / slide
   // deck), see useCanvasToolPanels. They share one contract: on screen
   // only while their own tool is active.
@@ -299,11 +295,6 @@ export function useCanvasChromePanels({
       />
     ) : null;
 
-  const aiEl =
-    !chromeHidden && aiPanel && aiWiring ? (
-      <CanvasAiPanel aiPanel={aiPanel} wiring={aiWiring} tabName={tabName} settings={settings} />
-    ) : null;
-
   // Layers panel (docs/specs/006-document/layers.md). Edit sessions only (a viewer can't manage
   // layers; visibility / lock still shape what they see via the render
   // path). A popover over its bottom-right cluster button, always mounted so
@@ -381,7 +372,6 @@ export function useCanvasChromePanels({
   const panelEls: Partial<Record<PanelId, ReactNode>> = {
     // Collaborate renders outside the corner layer (collaborateEl, below).
     collaborate: null,
-    ai: aiEl,
     minimap: minimapEl,
     laser: laserEl,
     spotlight: spotlightEl,

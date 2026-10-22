@@ -289,8 +289,8 @@ describe('supportsFillColor', () => {
 
   it('stays on for the shapes that do paint one', () => {
     expect(supportsFillColor(shape('square'))).toBe(true);
-    // A frame's fill defaults to transparent but is real once picked.
-    expect(supportsFillColor(shape('frame'))).toBe(true);
+    // A stack's fill defaults to transparent but is real once picked.
+    expect(supportsFillColor(shape('stack'))).toBe(true);
     // The progress track is drawn FROM fillColor, self-painting or not.
     expect(supportsFillColor(shape('progress-bar'))).toBe(true);
   });

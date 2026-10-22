@@ -37,14 +37,14 @@ describe('content kinds', () => {
   });
 
   it('keeps an alignment the model chose', () => {
-    const frame = normaliseElement({
+    const square = normaliseElement({
       id: 'f',
       type: 'shape',
-      shape: 'frame',
+      shape: 'square',
       ...box,
       textAlignX: 'right',
     });
-    expect(frame).toMatchObject({ textAlignX: 'right' });
+    expect(square).toMatchObject({ textAlignX: 'right' });
   });
 
   it('coerces chart data and fits each series to the categories', () => {

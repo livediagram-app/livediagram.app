@@ -77,7 +77,6 @@ const GROUP_NAMES: Readonly<Record<string, string>> = {
   'shapes:square': 'Basics',
   'shapes:cylinder': 'Flowchart',
   'shapes:cloud': 'More Shapes',
-  'tools:page': 'Text',
   'tools:text': 'Text',
   'tools:sticky': 'Notes',
   'tools:polygon': 'Outlines',

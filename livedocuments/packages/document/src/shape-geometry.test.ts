@@ -85,13 +85,13 @@ describe('the shape geometry table', () => {
   });
 
   it('maps a stretched part into the box, stroke untouched', () => {
-    const frame = shapeGeometry('frame', 1.6)!;
-    const fit = boxFit(frame, { x: 10, y: 20, width: 160, height: 100 });
-    expect(fitShapePart(frame.parts[0]!, fit)).toMatchObject({
+    const monitor = shapeGeometry('monitor', 1.6)!;
+    const fit = boxFit(monitor, { x: 10, y: 20, width: 160, height: 100 });
+    expect(fitShapePart(monitor.parts[0]!, fit)).toMatchObject({
       x: 11.6,
       y: 21,
       width: 156.8,
-      height: 98,
+      height: 80,
     });
     const cylinder = shapeGeometry('cylinder', 2)!;
     const body = fitShapePart(

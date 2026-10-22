@@ -1,5 +1,5 @@
-// `unwrap <frame>` (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO36): the frame or
-// stack goes; what it held stays where it is; arrows pinned to it go with it, as `rm` removes them.
+// `unwrap <stack>` (docs/specs/024-agents/blueprints/edit-operations.md "Operations", EO36): the stack
+// goes; what it held stays where it is; arrows pinned to it go with it, as `rm` removes them.
 
 import type { EditRejection } from '@livedocuments/api-schema';
 import { isContainer } from '@livedocuments/document';
@@ -20,8 +20,8 @@ export function applyUnwrap(
     return {
       code: 'invalid_value',
       operation,
-      details: [`${target}: ${refsOf(state).refOf(el.id)} is not a frame or a stack`],
-      hint: 'unwrap a frame or stack; rm removes anything else',
+      details: [`${target}: ${refsOf(state).refOf(el.id)} is not a stack`],
+      hint: 'unwrap a stack; rm removes anything else',
     };
   return removeOne(state, el, false, operation, { unwrapped: true });
 }

@@ -1,4 +1,4 @@
-import { lucidePenTool, lucideSparkles, lucideVote } from '@livedocuments/icons/lucide';
+import { lucidePenTool, lucideSparkles } from '@livedocuments/icons/lucide';
 import { Glyph } from '../icons/Glyph';
 import { Prims } from '../icons/Prims';
 // The palette category-tab glyphs (docs/specs/008-canvas/canvas-and-palette.md), shared so the editor's
@@ -167,15 +167,6 @@ export function TechTabIcon() {
       <rect x="3" y="4" width="18" height="7" rx="1.5" />
       <rect x="3" y="13" width="18" height="7" rx="1.5" />
       <path d="M7 7.5h.01M7 16.5h.01" />
-    </Glyph>
-  );
-}
-
-// Participate (docs/specs/013-workspace/share-roles.md): a ballot, the Participant level's glyph.
-export function ParticipateTabIcon() {
-  return (
-    <Glyph size={18} units={24}>
-      <Prims prims={lucideVote} />
     </Glyph>
   );
 }

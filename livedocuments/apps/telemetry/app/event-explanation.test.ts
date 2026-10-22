@@ -80,8 +80,8 @@ describe('eventExplanation', () => {
     expect(eventExplanation('Element', 'Changed', 'ArrowStyle')).toBe(
       EXACT['Element|Changed|ArrowStyle'],
     );
-    expect(eventExplanation('Element', 'Added', 'Annotation')).toBe(
-      'Someone added an annotation to the canvas.',
+    expect(eventExplanation('Element', 'Added', 'Table')).toBe(
+      'Someone added a table to the canvas.',
     );
     expect(eventExplanation('Element', 'Changed', 'SomeFutureControl')).toBe(
       BY_ACTION['Element|Changed'],

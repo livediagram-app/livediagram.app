@@ -126,7 +126,6 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
     'chartPalette',
   ],
   checklist: ['checklistItems'],
-  frame: ['headerFill'],
   'progress-bar': ['progress'],
   'progress-ring': ['progress'],
   rating: ['rating'],
@@ -145,7 +144,6 @@ export const SHAPE_KIND_FIELDS: Readonly<Record<string, readonly string[]>> = {
   'stat-row': ['stats'],
   process: ['processSteps'],
   'site-header': ['navLinks'],
-  page: ['pageTitle', 'pageSubtitle'],
   icon: ['iconSize', 'iconWeight'],
   sticker: ['stickerId'],
   // docs/specs/009-elements/tab-window.md: which tab the window shows.

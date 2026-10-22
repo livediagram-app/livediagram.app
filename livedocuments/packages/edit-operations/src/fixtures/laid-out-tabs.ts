@@ -1,5 +1,5 @@
 // Laid-out diagrams kept as data: a gateway fanning out to its services (down and right), the same fan with its
-// services in a frame, and a smaller fan. Their trunks, frame and routed lines are what the operations' tests edit.
+// services in a stack, and a smaller fan. Their trunks, stack and routed lines are what the operations' tests edit.
 import type { Tab } from '@livedocuments/document';
 import architecture from './architecture.json';
 import fan from './fan.json';

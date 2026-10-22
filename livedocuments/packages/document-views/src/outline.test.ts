@@ -23,10 +23,13 @@ describe('outlineView on the checkout tab (R8)', () => {
       'utf8',
     );
     const block = research.split('### 4.1 Rendered\n\n```text\n')[1]!.split('\n```')[0]!;
-    // The research drew an actor and an entity, kinds since retired: the fixture holds a circle and a square there.
+    // The research drew an actor, an entity and frames, kinds since retired: the fixture holds a circle, a square and
+    // stacks there.
     const [header, ...rest] = block
       .replace('actor b811', 'circle b811')
       .replace(/entity cb02 "Order" \{.*\}/, 'square cb02 "Order"')
+      .replace('16 boxes, 3 frames,', '19 boxes,')
+      .replace(/^frame (\w+ "\w+")$/gm, 'stack $1 direction=row')
       .split('\n');
     // The research drew a diagram tab; every tab now has pages, which the header counts before its threads.
     const paged = header!.replace(' · threads', ' · 1 page: 1 infographic (view pages) · threads');
@@ -61,7 +64,7 @@ describe('outlineView on the checkout tab (R8)', () => {
     const subtree = outlineView(checkout(), { only: CHECKOUT_IDS.data }).text.split('\n');
     expect(subtree).toEqual([
       expect.stringContaining('· 30 elements'),
-      'frame ca76 "Data"',
+      'stack ca76 "Data" direction=row',
       '  cylinder d41e "Orders DB" note="Postgres 16, primary + 1 replica."',
       '  cylinder 822f "Inventory DB"',
     ]);
@@ -93,7 +96,7 @@ describe('outline budgets (R20, R21)', () => {
   it('says what it dropped in one closing line, naming the largest collapsed container', () => {
     const { text, json } = outlineView(checkout(), { budget: 210 });
     expect(text.split('\n').at(-1)).toBe(
-      '… notes hidden; attributes hidden; 13 elements in frame c991 hidden: view --only c991',
+      '… notes hidden; attributes hidden; 13 elements in stack c991 hidden: view --only c991',
     );
     expect(json.elision).toMatchObject({
       dropped: ['notes', 'attributes'],
@@ -132,15 +135,15 @@ describe('outline budgets (R20, R21)', () => {
 });
 
 describe('outline budgets over nested containers', () => {
-  // Two equal frames, the first holding a smaller one; each holds strokes and boxes.
+  // Two equal stacks, the first holding a smaller one; each holds strokes and boxes.
   const elements: Element[] = [
-    shapeAt('frame', 'left', 0, 0, 1000, 1000),
-    shapeAt('frame', 'inner', 0, 500, 1000, 400),
+    shapeAt('stack', 'left', 0, 0, 1000, 1000),
+    shapeAt('stack', 'inner', 0, 500, 1000, 400),
     shapeAt('square', 'in-inner-1', 10, 550, 100, 50, { label: 'A long label '.repeat(4) }),
     shapeAt('square', 'in-inner-3', 600, 550, 100, 50, { label: 'Another long label '.repeat(3) }),
     shapeAt('square', 'in-inner-2', 300, 550),
     shapeAt('square', 'in-left', 10, 10),
-    shapeAt('frame', 'right', 2000, 0, 1000, 1000),
+    shapeAt('stack', 'right', 2000, 0, 1000, 1000),
     shapeAt('square', 'r1', 2010, 10),
     shapeAt('square', 'r2', 2300, 10),
     shapeAt('square', 'r3', 2600, 10),
@@ -178,7 +181,7 @@ describe('outline edge cases', () => {
   });
 
   it('prints unknown kinds with ?, counted and contained by geometry, never dropped (R25, E12)', () => {
-    const frame = shapeAt('frame', 'frame', 0, 0, 500, 500);
+    const frame = shapeAt('stack', 'frame', 0, 0, 500, 500);
     const hologram = {
       id: 'holo',
       type: 'hologram',
@@ -193,8 +196,8 @@ describe('outline edge cases', () => {
     const { text, json } = outlineView(model);
     expect(text).toBe(
       [
-        'tab tab-1 "T" · 3 elements: 2 boxes, 1 frame · 1 page: 1 infographic (view pages) · 2 unknown',
-        'frame frame "Frame"',
+        'tab tab-1 "T" · 3 elements: 3 boxes · 1 page: 1 infographic (view pages) · 2 unknown',
+        'stack frame direction=row',
         '  ? hologram holo "Hi"',
         '? blob blob',
       ].join('\n'),

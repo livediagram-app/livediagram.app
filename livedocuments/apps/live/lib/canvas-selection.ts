@@ -156,8 +156,7 @@ export function deriveCanvasSelection(input: {
     // Quick-connect works on a single element. A marquee multi-select stays
     // suppressed: it's a transient selection, not a unit you chain from.
     multiSelectedIds.size === 0 &&
-    // An annotation marker is a note, not a node to chain from. See docs/specs/009-elements/annotations.md
-    // + docs/specs/008-canvas/canvas-and-palette.md. Tables DO show the pluses, with a slimmed table ring (Arrow
+    // A margin note is a note, not a node to chain from (docs/specs/007-editor/article-pages.md). Tables DO show the pluses, with a slimmed table ring (Arrow
     // + Add Row / Add Column, docs/specs/008-canvas/canvas-and-palette.md).
     //
     // Frames used to be excluded too, on the grounds that a backdrop's
@@ -165,7 +164,7 @@ export function deriveCanvasSelection(input: {
     // same shape of thing and always showed theirs, which made the rule look
     // arbitrary rather than considered: both are containers you chain from
     // exactly as often as you chain from a box.
-    selected.type !== 'annotation' &&
+    selected.type !== 'article-note' &&
     // Nor is a badge or step number: it is a mark on a node (docs/specs/009-elements/badge.md).
     !(selected.type === 'shape' && isChipShape(selected.shape)) &&
     editingId !== selected.id &&

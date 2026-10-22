@@ -93,9 +93,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
     animation === 'pulse' ||
     animation === 'trace' ||
     animation === 'gradient';
-  // An ANNOTATION is a drawn pin in a transparent box, the same case again.
-  const isDrawnArt =
-    element.type === 'annotation' || (element.type === 'shape' && element.shape === 'sticker');
+  const isDrawnArt = element.type === 'shape' && element.shape === 'sticker';
   const isTextNativeAnim = (element.type === 'text' || isDrawnArt) && silhouetteAnim;
   // `gradient` is a background clipped to the glyphs, which drawn art has
   // nothing to clip to, so it gets a hue cycle over its own colours instead,
@@ -107,8 +105,8 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
       : `lvd-anim-text-${animation}`;
   // Text wears it on its glyphs; drawn art wears it on the drawing, which the
   // art's own view mounts (StickerView), not on the label under it.
-  // A sticker mounts it on its art (StickerView); an annotation pin and a
-  // timeline rail have no art view to mount it, so it sits on the element itself, where a
+  // A sticker mounts it on its art (StickerView); a
+  // timeline rail has no art view to mount it, so it sits on the element itself, where a
   // drop-shadow follows the drawing's silhouette just the same over its transparent box.
   const hasArtView = element.type === 'shape' && element.shape === 'sticker';
   const labelAnimClass = isDrawnArt ? undefined : silhouetteAnimClass;

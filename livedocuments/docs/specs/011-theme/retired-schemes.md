@@ -16,7 +16,7 @@ On load, a Charcoal tab becomes a Default tab that follows each viewer's appeara
 - `theme` becomes Default (`brand`).
 - Every element colour field that still holds Charcoal's baked value for that field is **removed**, so the element
   takes the canvas's ink (a dark viewer sees the dark ink, a light viewer the light ink). The fields are the ones a
-  scheme writes (fill, stroke and text on shapes; fill and stroke on sketches and annotations; text on text
+  scheme writes (fill, stroke and text on shapes; fill and stroke on sketches; text on text
   elements; stroke and text on tables; stroke on arrows). A table's cell fill baked to Charcoal's backdrop is
   removed too.
 - A colour the user picked (any other value) is **kept**: it was a choice, and a choice outranks a migration.

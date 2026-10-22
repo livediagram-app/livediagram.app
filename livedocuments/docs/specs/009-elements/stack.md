@@ -14,7 +14,7 @@ help once; a stack keeps the arrangement as the content changes.
 
 ## The element
 
-- **What it holds**: the elements whose centre is inside it, the containers' rule, as for a frame: a stack carries them when it is dragged and paints behind them. A stack nested in a frame or another
+- **What it holds**: the elements whose centre is inside it, the containers' rule: a stack carries them when it is dragged and paints behind them. A stack nested in another
   stack works as any nested container.
 - **Order** is position: in a row, left to right by each child's centre; in a column, top to bottom; in a grid,
   reading order (top to bottom in rows, then left to right). Dragging a child past a sibling moves it to that slot.
@@ -44,7 +44,7 @@ stepper), **Gap** and **Padding** as sliders, and **Align** as three tiles.
 
 When a stack reflows, each child glides from where it was to its new slot over 160 ms (CSS, on the canvas only; reduced
 motion jumps straight there). A child being dragged does not glide. The stack itself takes the **Shape** set limited to
-the motions that do not move it, like a frame's.
+the motions that do not move it.
 
 ## Palette
 
@@ -54,11 +54,11 @@ A new stack is a row, 360 × 160, empty, drawn as a faint dashed outline so it r
 
 ## Share roles
 
-| Role        | May                                                                            |
-| ----------- | ------------------------------------------------------------------------------ |
-| Editor      | Everything above                                                               |
-| Participant | Look; a Participant's own sticky dropped in a stack is laid out like any child |
-| Viewer      | Look                                                                           |
+| Role        | May                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------- |
+| Editor      | Everything above                                                                            |
+| Participant | Look, and write the text of what is in it as on any element; never adds to or rearranges it |
+| Viewer      | Look                                                                                        |
 
 ## Agents
 

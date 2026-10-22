@@ -86,7 +86,8 @@ describe('storyboard template', () => {
 describe('floor plan template', () => {
   const els = buildTemplate('floor-plan', 0, 0);
   const squares = shapesOf(els, 'square');
-  const rooms = squares.filter((s) => s.opacity === undefined);
+  // The unfilled square is the outer wall; the opaque ones are the rooms.
+  const rooms = squares.filter((s) => s.opacity === undefined && s.fillColor !== 'transparent');
   const washes = squares.filter((s) => s.opacity !== undefined);
 
   it('says what it draws: two bedrooms and a study', () => {

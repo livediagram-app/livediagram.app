@@ -5,16 +5,11 @@ export const LINT_CROSSINGS_PER_ARROW = 0.25;
 export const LINT_MAX_ARROWS = 300;
 // Touching is not overlapping (LN3).
 export const LINT_OVERLAP_TOLERANCE_PX = 2;
-// A member reaching its frame's border (LN13).
-export const LINT_CONTAIN_TOLERANCE_PX = 2;
 // A font epoch no browser uses, so estimated widths never share the label layout's cache (LN33).
 export const LINT_MEASURE_EPOCH = -1;
 // "Otherwise a graph": at least two connected boxes, at least half of them all (LN11).
 export const LINT_GRAPH_MIN_CONNECTED = 2;
 export const LINT_GRAPH_MIN_SHARE = 0.5;
-// "Most" of a frame's arrows: more than half of at least three (LN12).
-export const LINT_GROUP_SPLIT_SHARE = 0.5;
-export const LINT_GROUP_SPLIT_MIN_ARROWS = 3;
 // A flow is the direction of at least 60% of at least three arrows (LN15).
 export const LINT_FLOW_MIN_ARROWS = 3;
 export const LINT_FLOW_MIN_SHARE = 0.6;

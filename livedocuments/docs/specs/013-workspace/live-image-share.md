@@ -60,14 +60,14 @@ and the worker can't import from an app. So the tab→SVG renderer must move int
 a **new shared, DOM-free package** (`@livedocuments/render`), imported by **both**
 the live editor's export and the api worker. What moves: `renderTabToSvg`,
 `describeBoxedExport`, `contentBounds`, the `svg*` helpers, the label-wrap,
-`arrowHeadRefs`, the iso matrix, `backgroundPatternTile`, and `framesFirst`. The
+`arrowHeadRefs`, the iso matrix, `backgroundPatternTile`, and `containersFirst`. The
 label-measure helper already degrades to a character-width estimate when there's
 no `document`, so it runs in the Worker.
 
 **Label fidelity rules** (the renderer mirrors the editor's DOM layout):
 labels inset by the element's **padding preset** and wrap to the remaining
 width; the wrapped block hangs off the element's **`textAlignY`** anchor (a
-top-aligned frame label exports at the frame's top, a bottom icon caption
+top-aligned label exports at the element's top, a bottom icon caption
 stacks upward INTO the box rather than spilling below it, which the PNG
 rasteriser would clip); alignment **defaults follow the element type** (sticky
 notes top-left); and **rich (per-run) labels wrap too**, each word measured

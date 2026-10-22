@@ -42,10 +42,10 @@ describe('bodyDropAnchor', () => {
   });
 
   it('passes over containers, chips, pictures, drawings and the shape the other end is on', () => {
-    const frame = box('frame', 0, 0, { shape: 'frame', width: 1000, height: 1000 });
+    const frame = box('frame', 0, 0, { shape: 'stack', width: 1000, height: 1000 });
     const inner = box('inner', 400, 400);
     const point = { x: 450, y: 430 };
-    // A frame alone is drawn across, not onto.
+    // A container alone is drawn across, not onto.
     expect(bodyDropAnchor(point, [frame], { x: 0, y: 0 }, null)).toBeNull();
     // A member inside it is still a target.
     expect(bodyDropAnchor(point, [frame, inner], { x: 0, y: 430 }, null)?.elementId).toBe('inner');

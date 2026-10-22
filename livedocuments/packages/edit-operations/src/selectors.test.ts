@@ -64,10 +64,10 @@ describe('selector rows', () => {
     expect(ids('type:stadium')).toEqual(['n1', 'n8']);
     expect(ids('type:text')).toEqual(['t1']);
     expect(ids('type:shape shape:diamond')).toEqual(['n6']);
-    expect(ids('Type:frame')).toEqual(['f2']);
+    expect(ids('Type:stack')).toEqual(['f2']);
   });
 
-  it('in: the members of a frame or stack, never arrows', () => {
+  it('in: the members of a stack, never arrows', () => {
     expect(ids('in:f2')).toEqual(['n4', 'n5']);
     expect(ids('in:"Payment"')).toEqual(['n4', 'n5']);
   });
@@ -145,18 +145,18 @@ describe('selector refusals', () => {
   it('refuses in: on what is not a container, naming the containers', () => {
     expect(refusal('in:n3')).toMatchObject({
       code: 'invalid_value',
-      details: ['in:n3: n3 is not a frame or stack', 'containers: f2'],
+      details: ['in:n3: n3 is not a stack', 'containers: f2'],
     });
     const tab = {
       ...checkoutFlow(),
       elements: checkoutFlow().elements.filter((el) => el.id !== 'f2'),
     };
-    expect(refusal('in:n3', stateOf(tab)).details).toEqual(['in:n3: n3 is not a frame or stack']);
+    expect(refusal('in:n3', stateOf(tab)).details).toEqual(['in:n3: n3 is not a stack']);
   });
 
   it('needs a word inside a term to name one element', () => {
-    expect(refusal('in:type:frame').details[0]).toBe(
-      '"type:frame" must name one element: a ref or a "label"',
+    expect(refusal('in:type:stack').details[0]).toBe(
+      '"type:stack" must name one element: a ref or a "label"',
     );
     expect(refusal('from:nope').code).toBe('target_not_found');
     expect(refusal('to:label~c').code).toBe('target_not_found');

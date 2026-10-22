@@ -162,14 +162,7 @@ export function deriveNewBoxedColours(
   ) {
     return colours;
   }
-  // A page (docs/specs/009-elements/page-element.md) is paper, not a node in the tab's theme.
-  // Tinting it with the backdrop-derived shape colours is what stopped it
-  // reading as a page at all, so it keeps the fill / stroke createShape gave
-  // it. The user can still recolour it from the menu like anything else.
-  if (base.type === 'shape' && base.shape === 'page') return colours;
-  if (base.type === 'shape' || base.type === 'annotation') {
-    // Annotation markers derive fill + stroke from the backdrop like a shape
-    // does (text isn't used — the note is plain). See docs/specs/009-elements/annotations.md.
+  if (base.type === 'shape') {
     const derived = deriveShapeColours(patternColor, bg);
     if (derived) {
       colours.fillColor = derived.fill;
@@ -194,7 +187,7 @@ export function deriveNewBoxedColours(
   const elementFill = shapeOverride?.fill ?? theme.elementFill;
   const elementStroke = shapeOverride?.stroke ?? theme.elementStroke;
   const elementText = shapeOverride?.text ?? theme.elementText;
-  if (base.type === 'shape' || base.type === 'annotation') {
+  if (base.type === 'shape') {
     if (elementFill) colours.fillColor = elementFill;
     if (elementStroke) colours.strokeColor = elementStroke;
     if (elementText) colours.textColor = elementText;

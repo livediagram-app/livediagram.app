@@ -20,7 +20,6 @@ export function useBoxedElementGestures({
   wrapperRef,
   isEditing,
   remotelyLocked,
-  isAnnotation,
   isMultiSelected,
   isSelected,
   isPaintMode,
@@ -31,7 +30,6 @@ export function useBoxedElementGestures({
   onBeginEdit,
   onEditLink,
   onOpenEditDialog,
-  onOpenNote,
   imageContext,
   onContextSelect,
 }: Pick<
@@ -45,7 +43,6 @@ export function useBoxedElementGestures({
   | 'onBeginEdit'
   | 'onEditLink'
   | 'onOpenEditDialog'
-  | 'onOpenNote'
   | 'imageContext'
   | 'onContextSelect'
 > & {
@@ -53,7 +50,6 @@ export function useBoxedElementGestures({
   // Another participant holds this element selected (docs/specs/007-editor/live-app.md): block
   // select / drag / edit outright.
   remotelyLocked: boolean;
-  isAnnotation: boolean;
   isMultiSelected: boolean;
   // Single-selection state, so a shift press on the selected element can
   // start the duplicate drag (docs/specs/008-canvas/shift-drag-duplicate.md) instead of only toggling.
@@ -164,12 +160,8 @@ export function useBoxedElementGestures({
       onEditLink?.(element.id);
       return;
     }
-    // An annotation has no inline label either — double-click opens its note
-    // editor (docs/specs/009-elements/annotations.md). A single click just selects it now.
-    if (isAnnotation) {
-      onOpenNote?.(element.id);
-      return;
-    }
+    // A margin note has no inline label either: a click opens what it carries.
+    if (element.type === 'article-note') return;
     // A code block and a Sankey have no inline label — double-click opens their edit
     // dialog (docs/specs/009-elements/code-block.md, sankey.md), the way a link
     // card opens the link picker.

@@ -22,7 +22,6 @@ export type PaletteTileActions = {
   addSticky: () => void;
   addTable: () => void;
   addImage: () => void;
-  addAnnotation: () => void;
   addLinkCard: () => void;
   addVideo: (provider?: EmbedProvider) => void;
   addSticker: (stickerId: string) => void;
@@ -71,8 +70,6 @@ export function tileHandler(
       return actions.addTable;
     case 'image':
       return actions.addImage;
-    case 'annotation':
-      return actions.addAnnotation;
     case 'link-card':
       return actions.addLinkCard;
     case 'video':
@@ -92,8 +89,7 @@ export function tileHandler(
 }
 
 // Whether this tile is the armed draw-to-size intent (the pressed
-// highlight). Only the annotation drops immediately and never arms, so it is
-// the only kind with no active state (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
+// highlight) (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
 export function tileActive(
   def: PaletteTileDef,
   pendingDraw: PendingDraw | null | undefined,
@@ -122,7 +118,6 @@ export function tileActive(
     // glyph id), but their catalogues are open-ended and the picker tabs
     // render thousands of tiles, so pressed-state matching per glyph buys
     // nothing the mode banner and cursor don't already say.
-    case 'annotation':
     case 'sticker':
     case 'icon':
     case 'tech-icon':

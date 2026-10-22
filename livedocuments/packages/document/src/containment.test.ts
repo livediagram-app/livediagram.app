@@ -45,8 +45,8 @@ describe('smallestHolder', () => {
 });
 
 describe('deriveContainers (R11)', () => {
-  it('nests an element under the smallest frame or stack holding its centre', () => {
-    const outer = box('frame', 'outer', 0, 0, 1000, 1000);
+  it('nests an element under the smallest stack holding its centre', () => {
+    const outer = box('stack', 'outer', 0, 0, 1000, 1000);
     const inner = box('stack', 'inner', 0, 0, 500, 200);
     const node = box('square', 'node', 10, 10, 100, 50);
     const loose = box('square', 'loose', 2000, 0, 100, 50);
@@ -58,9 +58,9 @@ describe('deriveContainers (R11)', () => {
   });
 
   it('never nests an element under a container no larger than it (E5)', () => {
-    const frame = box('frame', 'f', 0, 0, 100, 100);
+    const frame = box('stack', 'f', 0, 0, 100, 100);
     const huge = box('square', 'huge', -100, -100, 300, 300);
-    const twin = box('frame', 'twin', 0, 0, 100, 100);
+    const twin = box('stack', 'twin', 0, 0, 100, 100);
     const map = deriveContainers([frame, huge, twin]);
     expect(map.get('huge')).toBeNull();
     expect(map.get('f')).toBeNull();
@@ -74,7 +74,7 @@ describe('deriveContainers (R11)', () => {
   });
 
   it('goes by the stored box of a rotated element (E6)', () => {
-    const frame = box('frame', 'f', 0, 0, 100, 100);
+    const frame = box('stack', 'f', 0, 0, 100, 100);
     const node = { ...box('square', 'n', 40, 40, 20, 20), rotation: 45 };
     expect(deriveContainers([frame, node]).get('n')).toBe('f');
   });
@@ -86,9 +86,9 @@ describe('deriveContainers (R11)', () => {
   });
 
   it('puts an element without geometry at the root (E13)', () => {
-    const frame = box('frame', 'f', 0, 0, 100, 100);
+    const frame = box('stack', 'f', 0, 0, 100, 100);
     const odd = { id: 'odd', type: 'hologram' } as unknown as Element;
-    const lopsided = { ...box('frame', 'g', 0, 0, 100, 100), width: Number.NaN };
+    const lopsided = { ...box('stack', 'g', 0, 0, 100, 100), width: Number.NaN };
     const map = deriveContainers([frame, odd, lopsided]);
     expect(map.get('odd')).toBeNull();
     expect(map.get('g')).toBeNull();
@@ -109,8 +109,7 @@ describe('contentOrigin', () => {
 });
 
 describe('isContainer', () => {
-  it('is a frame or a stack', () => {
-    expect(isContainer(box('frame', 'f', 0, 0, 10, 10))).toBe(true);
+  it('is a stack', () => {
     expect(isContainer(box('stack', 'l', 0, 0, 10, 10))).toBe(true);
     expect(isContainer(box('square', 's', 0, 0, 10, 10))).toBe(false);
     expect(isContainer({ ...createPinnedArrow('a', 'e', 'b', 'w'), id: 'arr' })).toBe(false);
@@ -118,7 +117,7 @@ describe('isContainer', () => {
 });
 
 describe('containerContents', () => {
-  const frame = box('frame', 'frame', 100, 100, 200, 200);
+  const frame = box('stack', 'frame', 100, 100, 200, 200);
   const inside = box('square', 'inside', 130, 130, 40, 40);
   const outside = box('square', 'outside', 480, 480, 40, 40);
 
@@ -143,15 +142,15 @@ describe('containerContents', () => {
   });
 
   it('carries a nested container with all it holds, never one that only overlaps', () => {
-    const nested = box('frame', 'nested', 120, 120, 100, 100);
+    const nested = box('stack', 'nested', 120, 120, 100, 100);
     const inNested = box('square', 'in-nested', 140, 140, 20, 20);
-    const overlapping = box('frame', 'overlapping', 250, 250, 200, 200);
+    const overlapping = box('stack', 'overlapping', 250, 250, 200, 200);
     const out = containerContents([frame, nested, inNested, overlapping], new Set(['frame']));
     expect([...out].sort()).toEqual(['frame', 'in-nested', 'nested']);
   });
 
   it('gives an element in overlapping containers to the smallest', () => {
-    const big = box('frame', 'big', 0, 0, 400, 400);
+    const big = box('stack', 'big', 0, 0, 400, 400);
     const small = box('stack', 'small', 100, 100, 150, 150);
     const el = box('square', 'el', 150, 150, 20, 20);
     // Dragging the smaller carries it; the bigger carries the smaller and so the element too.
@@ -159,7 +158,7 @@ describe('containerContents', () => {
     expect(containerContents([big, small, el], new Set(['big'])).has('el')).toBe(true);
     // Overlapping, not nested: the stack's centre (150,150) lies outside it, the element (170,170) in both.
     const inner = box('stack', 'inner', 100, 100, 100, 100);
-    const sibling = box('frame', 'sibling', 155, 155, 300, 300);
+    const sibling = box('stack', 'sibling', 155, 155, 300, 300);
     const shared = box('square', 'shared', 160, 160, 20, 20);
     expect(containerContents([sibling, inner, shared], new Set(['sibling'])).has('shared')).toBe(
       false,

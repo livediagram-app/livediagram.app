@@ -9,18 +9,18 @@ document, held apart from editing. The research behind this is in `docs/research
 
 ## Why
 
-Someone gathering feedback on a deck or an infographic has to hand the team an edit link so they can comment, drop
-a sticky beside a slide and fix a typo. An edit link also lets them restyle the pages, move the layout around and
-delete what others made, and in a busy review somebody does. A view link is no answer either: it cannot comment or
-add a sticky. The Participant level is the middle: take part in the document, never reshape it.
+Someone gathering feedback on a deck or an article has to hand the reviewers an edit link so they can comment and
+fix a typo. An edit link also lets them restyle the pages, move the layout around and delete what others made, and
+in a busy review somebody does. A view link is no answer either: it cannot comment or correct a word. The
+Participant level is the middle: edit the text and comment, never reshape the document.
 
 ## The levels
 
-| Level           | Wire name     | May                                                                                                                                                                                                                                                       |
-| --------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, present on their own screen, export. Writes nothing: no comment or reaction.                           |
-| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; react; add, write and arrange stickies and text; place images and swap their pictures; write on any element, a table's cells included (see [What a Participant changes](#what-a-participant-changes)). |
-| **Editor**      | `edit`        | All of Participant; change anything on the pages, its tabs and its tools' configuration.                                                                                                                                                                  |
+| Level           | Wire name     | May                                                                                                                                                                                                                             |
+| --------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Viewer**      | `view`        | Look only: open and read every tab it admits; pan, zoom, point, use the laser and spotlight, follow and be followed, appear in the presence stack, present on their own screen, export. Writes nothing: no comment or reaction. |
+| **Participant** | `participate` | All of Viewer; comment, reply, resolve and reopen; react; edit the text of what is already on the pages and write in an article (see [What a Participant changes](#what-a-participant-changes)).                                |
+| **Editor**      | `edit`        | All of Participant; change anything on the pages, its tabs and its tools' configuration.                                                                                                                                        |
 
 - **The levels are a ladder**: every level holds everything below it.
 - **A Viewer only looks.** A comment and a reaction are both taking
@@ -30,53 +30,49 @@ add a sticky. The Participant level is the middle: take part in the document, ne
 
 ## What a Participant changes
 
-A Participant changes the document's **content**, never its **shape**.
+A Participant edits **text**, and nothing else.
 
-| May                                                                                                 | Never                                                                                                                                                                                                               |
-| --------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Add a sticky, a text element or an image                                                            | Add any other element: shapes, connectors, frames, templates, kits, page layouts                                                                                                                                    |
-| Write on any element: change its text (a sticky's, a shape's label, a table's cells)                | Change any other field of an element it did not add: size, style, rotation, layer, lock                                                                                                                             |
-| Move and resize any sticky or image; recolour any sticky; swap any image's picture                  | Move, resize or restyle anything else, text boxes included; turn (rotate) anything someone else added                                                                                                               |
-| Delete anything it added itself                                                                     | Delete anything someone else added                                                                                                                                                                                  |
-| Change anything about what it added (size, style, text), so long as it stays something it could add | Reorder layers; group; lock                                                                                                                                                                                         |
-| In an article: read it, and comment in a margin note's thread                                       | Write in an article: its text, its zones, its style or its pages ([Article pages](../007-editor/article-pages.md))                                                                                                  |
-| Undo and redo its own changes (the room puts back any part it may not make)                         | Undo or redo anyone else's                                                                                                                                                                                          |
-| Nothing about tabs or pages                                                                         | Add, rename, reorder or delete tabs or pages; change a tab's theme, canvas or finish; change a page's size, background or layout; tidy a page ([Tidy Up](../007-editor/pages-mode.md#tidy-up)); rename the document |
+| May                                                                                                | Never                                                                                                                                                                                                               |
+| -------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Change the words of an element already on the page: a label, a text box, a sticky, a table's cells | Add any element; delete, duplicate or paste one                                                                                                                                                                     |
+| Change an image's description (alt text) and caption                                               | Swap an image's picture                                                                                                                                                                                             |
+| Write in an article already on the tab: add, change and remove its paragraphs, lists and code      | Change an article's style, insert or move its zones, dividers and page breaks, add a margin note, add or remove an article ([Article pages](../007-editor/article-pages.md))                                        |
+| Undo and redo its own writing (the room puts back any part it may not make)                        | Move, resize, rotate, restyle, recolour, lock, group or reorder anything; a table's rows and columns                                                                                                                |
+| Nothing about tabs or pages                                                                        | Add, rename, reorder or delete tabs or pages; change a tab's theme, canvas or finish; change a page's size, background or layout; tidy a page ([Tidy Up](../007-editor/pages-mode.md#tidy-up)); rename the document |
 
-- **"It added"** means the server recorded the Participant as the element's adder when the element was created.
-  An element an Editor added, or one added before this level existed, belongs to nobody a Participant can claim.
-- **Stickies and images are the content**, so a Participant arranges them whoever added them: moves and resizes
-  them. Shapes, frames, connectors and someone else's text boxes (which often carry the layout) stay where
-  their author put them; a text box that sizes to its words still follows them when a Participant writes on it.
-- **Nothing offers what a session cannot do.** A Participant or Viewer sees no Slides button or Slide Deck command,
-  no page panel or page actions. Empty states describe
-  instead of instructing: a comment thread invites only someone who may add. A Viewer's
-  selection toolbar offers **Show Comments** on an element that has comments, to read them, and no comment button
-  on one that has none (a Participant's offers **Add Comment** everywhere).
-- **The server is the rule.** A Participant's content changes travel as element changes the server applies one by
-  one against the stored tab: a permitted change lands, a forbidden field is left as stored, a forbidden add or
-  delete is refused. A stale screen therefore never writes an old copy of a tab over a newer one.
-- **Undo** takes back the Participant's own steps; an undo that would make a forbidden change is refused like any
+- **Text is an allow-list.** Each element kind names the fields that are its words (`PARTICIPANT_TEXT_FIELDS`); any
+  other field, or a kind with none, is an Editor's. A new field is an Editor's until someone decides it is text.
+- **A text box that sizes to its words follows them**: writing on it resizes it, since its size is the words', never
+  a choice. Every other element keeps its size whatever its text.
+- **A table's cells change words, never shape**: the same rows and columns, every cell plain text.
+- **Locked means locked.** Nothing on a locked tab, a locked layer or a locked page, and no locked element, takes a
+  Participant's writing.
+- **A Participant never grows the pages.** When its writing needs another page, an Editor's screen lays the article
+  out and adds it, as it does for an agent's writing.
+- **Nothing offers what a session cannot do.** A Participant or Viewer sees no palette, no Slides button or Slide
+  Deck command, no page panel or page actions, no element or tab menu, and in an article no insert menu, zone bars or
+  page toolbar. Empty states describe instead of instructing: a comment thread invites only someone who may add. A
+  Viewer's selection toolbar offers **Show Comments** on an element that has comments, to read them, and no comment
+  button on one that has none (a Participant's offers **Add Comment** everywhere).
+- **The server is the rule.** A Participant's changes travel as element and article changes the server applies one
+  by one against the stored tab: its words land, every other field stays as stored, and an add, a delete or a
+  reorder is refused. A stale screen therefore never writes an old copy of a tab over a newer one.
+- **Undo** takes back the Participant's own writing; an undo that would make a forbidden change is refused like any
   other.
-- **A chord the role may not run stays the canvas's.** A Viewer's or Participant's Cmd/Ctrl+A, +D, +Shift+L and the
-  z-order chords do nothing rather than reaching the browser, which selected the page's text or opened the bookmark
-  dialog; copy stays the browser's, so text on the page can still be copied.
+- **A key the role may not use stays the canvas's.** Delete, Backspace and the add keys do nothing on a selection;
+  a Viewer's or Participant's Cmd/Ctrl+A, +D, +Shift+L and the z-order chords do nothing rather than reaching the
+  browser, which selected the page's text or opened the bookmark dialog; copy stays the browser's, so text on the
+  page can still be copied.
+- **An emptied text box stays.** An Editor's text box left empty is removed; a Participant's stays, empty, because
+  removing it would be a delete. A Participant's words never rename the document, a tab or a layer.
 
 ## Building a new feature
 
 Every feature a shared document can reach states, in its own spec, what an Editor, a Participant and a Viewer may do
 with it, and is gated and tested to match ([Gate a feature by share role](../../instructions/gate-a-feature-by-share-role.md)).
-The defaults: a Viewer only looks; a Participant takes part and adds content but never reshapes the document or
-changes settings; the rest is an Editor's. The role tests (the participant rule's leak test, the editor
-capabilities, the Participant palette, the room) keep a new feature from widening a role by accident.
-
-## The Participant palette
-
-- **One category, Participate**, holding just what a Participant may add, as the palette's own tiles: Sticky and
-  Text, then Image. No Search, no More. Each tile works as an Editor's does: dragged onto the
-  canvas it lands where it is let go; pressed, it arms a tap to drop or a drag to draw; its key (as the tiles show) arms it the same way, and no other add key runs (`PARTICIPANT_KEYS`).
-- **The selection modes it needs**: Select, Hand, Laser, Spotlight, Isometric and Zen. Format Painter and Slide
-  Deck are an Editor's.
+The defaults: a Viewer only looks; a Participant edits text and comments, but never adds, reshapes or restyles
+anything or changes settings; the rest is an Editor's. The role tests (the participant rule's leak test, the editor
+capabilities, the room) keep a new feature from widening a role by accident.
 
 ## Ownership
 
@@ -88,7 +84,7 @@ and moves stay with the owner and joined team members. No level grants any of th
 ## Share links
 
 - The Share dialog offers three role cards, in this order: **Editor** ("Draws with you in real time."),
-  **Participant** ("Adds stickies, writes and comments. Can't reshape the pages.") and **Viewer** ("Watches, pans
+  **Participant** ("Edits text and comments. Can't add, move or restyle.") and **Viewer** ("Watches, pans
   and zooms. Can't comment or change a thing."). A pass's header band prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
   glyph and a colour that meets WCAG 2.2 AA against its word ([Live app](../007-editor/live-app.md#share-dialog)).
 - `POST /api/documents/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
@@ -108,24 +104,26 @@ and moves stay with the owner and joined team members. No level grants any of th
   page after takes it once (`apps/live/lib/access-notice.ts`, honoured for a minute).
 - The collaborators list badges each person Editor, Participant or Viewer; "Shared with you" chips read Edit,
   Participate or View.
-- **Embeds look only below Editor**: an embed of a Participant link renders as a Viewer, since an embed has no
-  identity screen to put a name on what it adds ([Embeds](embeds.md)).
+- **Embeds look only below Editor**: an embed of a Participant link renders as a Viewer ([Embeds](embeds.md)).
 - The MCP's `share_document` creates a **Participant** link when no level is named.
 
 ## Integrity
 
 - **Participation is its own class of room op**, between presence (anyone) and mutation (editors): every mutation
-  from a Participant's socket is dropped; its content goes through the server (below).
-- **Content goes through the server.** A Participant never saves a whole tab and never relays element changes over
-  its socket: it sends them to the server, which applies the rule, stores the result, and relays what it accepted
-  to everyone.
-- **The adder is stamped by the server**, never read from the request, from the caller's identity on the document.
-  A copy is nobody's addition: duplicating or pasting an element never carries its adder along.
+  from a Participant's socket is dropped but its element changes and its article writing, which go through the
+  server (below).
+- **Content goes through the server.** A Participant never saves a whole tab and its changes are never relayed
+  as sent: the room applies the rule to the stored tab, stores the result, and relays what it accepted to everyone.
+  A refused element change is answered with the change that puts the sender's screen back; refused writing
+  reloads the sender's copy of the tab.
 - **Peers take only what a Participant changed.** The room relays a Participant's update as the fields it changed,
-  never the stored element whole, so an Editor's change that has not been saved yet is never undone by it.
-- **A held-back gesture says so.** When the editor holds back a change a Participant may not make (deleting
-  someone else's sticky, resizing a shape), it shows one short notice for the burst rather than failing silently.
-- A guest who signs in becomes a different adder: stickies added as a guest can no longer be deleted by them.
+  never the stored element whole, so an Editor's change that has not been saved yet is never undone by it. Its
+  article writing is relayed block by block, marked for an Editor's screen to grow the pages.
+- **A held-back gesture says so.** When the editor holds back a change a Participant may not make, it shows one
+  short notice for the burst ("As a participant you can edit text and comment.") rather than failing silently.
+- **A link to one tab stays on it**: writing for any other tab is dropped.
+- **Placing images is an Editor's.** An image someone else owns is granted to a document only when its owner is a
+  team member or an Editor there; a Participant's access places no image.
 
 ## Moving to three levels
 

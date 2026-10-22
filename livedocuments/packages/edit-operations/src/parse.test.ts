@@ -132,24 +132,13 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
     expect(one('rewire a3 to=verify')).toEqual({ op: 'rewire', target: 'a3', to: 'verify' });
   });
 
-  it('reads insert, wrap, unwrap, order, layout and test', () => {
+  it('reads insert, unwrap, order, layout and test', () => {
     expect(one('insert diamond id=valid label=Valid? between n3 n4')).toEqual({
       op: 'insert',
       kind: 'diamond',
       id: 'valid',
       fields: { label: 'Valid?' },
       between: ['n3', 'n4'],
-    });
-    expect(
-      one('wrap n3 "Orders DB" type:sticky in:f2 in frame id=svc label=Services tidy make-room'),
-    ).toEqual({
-      op: 'wrap',
-      targets: ['n3', '"Orders DB"', 'type:sticky in:f2'],
-      in: 'frame',
-      id: 'svc',
-      fields: { label: 'Services' },
-      tidy: true,
-      makeRoom: true,
     });
     expect(one('unwrap f2')).toEqual({ op: 'unwrap', target: 'f2' });
     expect(one('order n3 front')).toEqual({ op: 'order', target: 'n3', to: 'front' });
@@ -164,15 +153,6 @@ describe('parseEditOperations: the line form (the vocabulary)', () => {
       op: 'test',
       target: 'n3',
       fields: { label: 'Login' },
-    });
-  });
-
-  it('keeps members that name one element apart, and takes the rest together', () => {
-    expect(one('wrap n3 n4 in frame')).toEqual({ op: 'wrap', targets: ['n3', 'n4'], in: 'frame' });
-    expect(one('wrap selected label~"to do" in frame')).toEqual({
-      op: 'wrap',
-      targets: ['selected label~"to do"'],
-      in: 'frame',
     });
   });
 
@@ -237,10 +217,10 @@ describe('parseEditOperations: refusals', () => {
   it('names the placements for a word that is not one', () => {
     const [error] = errorsOf('add square label=x right:n3');
     expect(error!.details[0]).toBe(
-      'line 1, column 20: expected a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<frame>',
+      'line 1, column 20: expected a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<stack>',
     );
     expect(error!.hint).toBe(
-      'write a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<frame>',
+      'write a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<stack>',
     );
   });
 
@@ -258,16 +238,12 @@ describe('parseEditOperations: refusals', () => {
         'connect n3 n4',
         'connect -> n4',
         'connect n3 ->',
-        'wrap n3 n4',
-        'wrap in frame',
-        'wrap n3 in frame label=x n4',
         'set',
         'set n3',
         'rm n3 label=x',
         'move n3 by=1',
         'move n3 by=a,1',
         'connect n3 -> n4 tags=[1,',
-        'wrap n3 in frame tags=[1,',
         'set n3 tags=[1,',
       ].map(detail),
     ).toEqual([
@@ -282,15 +258,11 @@ describe('parseEditOperations: refusals', () => {
       'line 1, column 9: expected connect <a> -> <b>',
       'line 1, column 9: expected connect <a> -> <b>',
       'line 1, column 12: expected a selector after ->',
-      'line 1, column 9: expected in frame',
-      'line 1, column 6: expected the members to wrap',
-      'line 1, column 26: expected key=value or tidy, absorb, make-room',
       'line 1, column 4: expected a selector: a ref, a "label" or key:value terms',
       'line 1, column 7: expected key=value',
       'line 1, column 7: expected no key=value on rm',
       'line 1, column 9: expected by=dx,dy with two numbers',
       'line 1, column 9: expected by=dx,dy with two numbers',
-      'line 1, column 18: expected a JSON value after tags=',
       'line 1, column 18: expected a JSON value after tags=',
       'line 1, column 8: expected a JSON value after tags=',
     ]);
@@ -343,7 +315,6 @@ describe('formatOperation round trip', () => {
     'rewire a3 to="Orders DB"',
     'rewire a3 from=n1 to="Orders DB"',
     'insert diamond label=Valid? between n3 "Orders DB"',
-    'wrap n3 type:sticky in frame label=Services absorb',
     'unwrap f2',
     'order n3 back',
     'order n3 above=n4',
@@ -374,7 +345,6 @@ describe('formatOperation round trip', () => {
       'rewire a3 to="Orders DB"',
       'rewire a3 from=n1 to="Orders DB"',
       'insert diamond label=Valid? between n3 "Orders DB"',
-      'wrap n3 type:sticky in frame label=Services absorb',
       'unwrap f2',
       'order n3 back',
       'order n3 above=n4',
@@ -384,17 +354,6 @@ describe('formatOperation round trip', () => {
       'test n3 label=Login',
       '{"op":"add","element":{"id":"x","type":"text","label":"a b"}}',
     ]);
-  });
-
-  it('prints a wrap of two compound selectors as its JSON form, which parses back alike', () => {
-    const wrap: EditOperation = {
-      op: 'wrap',
-      targets: ['n3', 'type:sticky', 'type:square in:f2'],
-      in: 'frame',
-    };
-    const printed = formatOperation(wrap);
-    expect(printed.startsWith('{')).toBe(true);
-    expect(operationsOf(printed)).toEqual([wrap]);
   });
 
   it('refuses gap: with no number rather than reading 0', () => {

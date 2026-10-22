@@ -6,7 +6,6 @@ import {
   THEMES,
   defaultArrowLabelColor,
   defaultArrowStrokeColor,
-  defaultFillColor,
   defaultStrokeColor,
   defaultTextColor,
   unpaintedShapeInk,
@@ -64,9 +63,6 @@ function expectDefaultScheme(
   expect(artProperty(selector, 'art-ink-fill')).toBe(hex(ink.fill));
   expect(artProperty(selector, 'art-ink-stroke')).toBe(hex(ink.stroke));
   expect(artProperty(selector, 'art-ink-text')).toBe(hex(ink.text));
-  expect(artProperty(selector, 'art-ink-shade')).toBe(
-    hex(defaultFillColor(element('annotation'), surface)),
-  );
   expect(artProperty(selector, 'art-text')).toBe(hex(defaultTextColor(element('text'), surface)));
   expect(artProperty(selector, 'art-arrow')).toBe(hex(defaultArrowStrokeColor(surface)));
   expect(artProperty(selector, 'art-arrow-label')).toBe(hex(defaultArrowLabelColor({}, surface)));

@@ -45,9 +45,9 @@ export function imageGrantOwnerChangeStatement(
 
 // For each image a saved body places, in each document holding the tab: grant it
 // when the image's owner is entitled to place it there right now, as a joined
-// member of the document's team, or a collaborator who may add content whose visit's
-// link is still live: an edit collaborator, or a Participant
-// (docs/specs/013-workspace/share-roles.md), who places images too. A revoked or
+// member of the document's team, or an edit collaborator whose visit's link is still
+// live. A Participant edits text only and places no image
+// (docs/specs/013-workspace/share-roles.md). A revoked or
 // expired link earns nothing, so an id pasted after access went cannot be laundered
 // into a grant. The writer's identity is not needed. An image the document's owner
 // owns needs no row.
@@ -73,7 +73,7 @@ export function imageGrantPlacementStatements(
                OR EXISTS (
                   SELECT 1 FROM shared_with s
                    WHERE s.owner_id = i.owner_id AND s.document_id = d.id
-                     AND (s.role = 'edit' OR s.level = 'participate')
+                     AND s.role = 'edit'
                      AND d.shareable = 1 AND ${visitLinkSql('?3')} IS NOT NULL))`,
     ).bind(tabId, JSON.stringify(ids), now),
   ];

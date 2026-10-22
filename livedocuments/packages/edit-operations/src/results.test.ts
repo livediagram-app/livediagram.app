@@ -110,7 +110,7 @@ describe('formatResultLines', () => {
           reason: 'pinned',
           pinnedTo: 'n7',
         },
-        { mark: '-', ref: 'f2', kind: 'frame', label: 'Payment', reason: 'unwrapped' },
+        { mark: '-', ref: 'f2', kind: 'stack', label: 'Payment', reason: 'unwrapped' },
         { mark: '»', refs: ['n5', 'n6'], reason: 'laid out' },
         { mark: '»', refs: ['t1'], delta: [-20, 0], reason: 'carried' },
         { mark: 'container', ref: 'f2', joined: [], left: ['n5'] },
@@ -123,7 +123,7 @@ describe('formatResultLines', () => {
       ]),
     ).toEqual([
       '- a4  arrow n3→n7 (pinned to n7)',
-      '- f2  frame "Payment" (unwrapped)',
+      '- f2  stack "Payment" (unwrapped)',
       '» n5 n6  laid out',
       '» t1  -20,+0 (carried)',
       'f2  -n5',

@@ -22,7 +22,6 @@ const SAMPLES: Readonly<Record<(typeof EDIT_OPERATION_NAMES)[number], string>> =
   connect: 'connect n2 -> n8 label=skip',
   rewire: 'rewire a6 to=n8',
   insert: 'insert square id=verify label="Verify email" between n3 n4',
-  wrap: 'wrap n7 n8 in frame label=Payment',
   unwrap: 'unwrap f2',
   order: 'order f2 front',
   layout: 'layout n5 n6 n7 n8 direction=right',
@@ -73,16 +72,16 @@ describe('invariants', () => {
   });
 
   it.each(samples)('%s: every container behind its members (I6)', (_, text) => {
-    const frame: Element = {
-      id: 'frame',
+    const stack: Element = {
+      id: 'stack',
       type: 'shape',
-      shape: 'frame',
+      shape: 'stack',
       x: -400,
       y: -100,
       width: 2000,
       height: 1200,
     };
-    const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, frame] };
+    const tab = { ...checkoutFlow(), elements: [...checkoutFlow().elements, stack] };
     const { tab: next } = applied(run(text, tab));
     const order = next.elements.map((el) => el.id);
     const byId = new Map(next.elements.map((el) => [el.id, el]));

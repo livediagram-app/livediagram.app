@@ -11,15 +11,15 @@ export const fixes = {
     style: string | null,
     move: { box: string; by: { dx: number; dy: number } },
   ) => (style ? `set ${arrow} line=${style}` : `move ${move.box} by=${move.by.dx},${move.by.dy}`),
-  // `layout` lays out shapes alone, so on a tab with frames it would leave them behind: there the fix
+  // `layout` lays out shapes alone, so on a tab with stacks it would leave them behind: there the fix
   // reroutes the most-crossed arrow instead.
-  // On a framed tab, a line style for one of the most-crossed arrows that strictly lowers its crossings, else advice:
+  // On such a tab, a line style for one of the most-crossed arrows that strictly lowers its crossings, else advice:
   // a style suggested blind added crossings, and the next lint then suggested the style back.
-  edgeCrossings: (framed: { arrow: string; style: string | null } | null) =>
-    framed
-      ? framed.style
-        ? `set ${framed.arrow} line=${framed.style}`
-        : `move a box so ${framed.arrow} crosses fewer lines`
+  edgeCrossings: (contained: { arrow: string; style: string | null } | null) =>
+    contained
+      ? contained.style
+        ? `set ${contained.arrow} line=${contained.style}`
+        : `move a box so ${contained.arrow} crosses fewer lines`
       : 'layout type:shape',
   labelCollision: (arrow: string, fits: number) =>
     `set ${arrow} label="<at most ${fits} characters>"`,
@@ -34,8 +34,6 @@ export const fixes = {
   textOverflowWidth: (a: string, width: number) => `set ${a} width=${width}`,
   textOverlap: (a: string, b: string) => `move ${b} below:${a}`,
   nodeIsolated: (a: string) => `connect <ref> -> ${a}`,
-  groupEscape: (a: string, frame: string) => `move ${a} inside:${frame}`,
-  groupSplitEdges: (frame: string) => `unwrap ${frame}`,
   duplicateLabel: (b: string) => `set ${b} label="<text>"`,
   // Both ends in one rewire: one end at a time would pass through a self-loop, which rewire refuses.
   flowBackwards: (arrow: string, x: string, y: string) => `rewire ${arrow} from=${y} to=${x}`,

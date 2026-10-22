@@ -58,7 +58,6 @@ describe('validateEditOperations', () => {
       { op: 'connect', from: 'n3', to: 'verify', id: 'a9', fields: { label: 'ok' }, again: true },
       { op: 'rewire', target: 'a3', to: 'verify' },
       { op: 'insert', kind: 'diamond', between: ['n3', 'n4'], fields: { label: 'Valid?' } },
-      { op: 'wrap', targets: ['n3', 'type:sticky'], in: 'frame', tidy: true, makeRoom: true },
       { op: 'unwrap', target: 'f2' },
       { op: 'order', target: 'n3', to: 'front' },
       { op: 'order', target: 'n3', below: 'n4' },
@@ -76,7 +75,6 @@ describe('validateEditOperations', () => {
         { op: 'move', target: 'n1' },
         { op: 'rewire', target: 'a1' },
         { op: 'order', target: 'n1', to: 'front', above: 'n2' },
-        { op: 'wrap', targets: ['n1'], in: 'frame', absorb: true, makeRoom: true },
         { op: 'add', element: {}, id: 'x' },
       ]).map((e) => e.details[0]),
     ).toEqual([
@@ -85,7 +83,6 @@ describe('validateEditOperations', () => {
       'move takes exactly one of "place", "by" (in a line: a placement such as below:n3 or right-of:n3, or by=dx,dy)',
       'rewire takes at least one of "from", "to" (in a line: from=<x>, to=<y> or both)',
       'order takes exactly one of "to", "above", "below" (in a line: front, back, above=<x> or below=<x>)',
-      'wrap takes at most one of "absorb", "makeRoom" (in a line: absorb or make-room)',
       'add with "element" takes no "id": the element carries it',
     ]);
   });
@@ -143,8 +140,6 @@ describe('validateEditOperations', () => {
         { op: 'add', element: 'square' },
         { op: 'move', target: 'n1', by: [1] },
         { op: 'insert', kind: 'square', between: ['n1'] },
-        { op: 'wrap', targets: [], in: 'frame' },
-        { op: 'wrap', targets: ['n1'], in: 'box' },
         { op: 'order', target: 'n1', to: 'middle' },
       ]).map((e) => [e.operation, e.details[0]]),
     ).toEqual([
@@ -155,9 +150,7 @@ describe('validateEditOperations', () => {
       [5, 'member "element": expected an object'],
       [6, 'member "by": expected [dx, dy] numbers'],
       [7, 'member "between": expected [a, b] selectors'],
-      [8, 'member "targets": expected a non-empty array of selectors'],
-      [9, 'member "in": expected frame'],
-      [10, 'member "to": expected front or back'],
+      [8, 'member "to": expected front or back'],
     ]);
     expect(
       errorsOf([

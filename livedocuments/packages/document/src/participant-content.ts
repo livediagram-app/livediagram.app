@@ -1,82 +1,58 @@
 // The participant content rule (docs/specs/013-workspace/share-roles.md "What a Participant changes"; blueprint
-// "Behaviour and state"). A Participant changes a board's content, never its shape: it adds stickies, text and
-// images, writes on any element, moves and recolours stickies, swaps an image's picture, and removes what it
-// added. The server applies each of
-// a Participant's element ops to the STORED tab through this one pure function, so a stale screen can never write
-// an old copy of the board back: a permitted field lands, a forbidden field stays as stored, a forbidden add or
-// remove is refused with the op that puts the sender's screen back.
+// "Behaviour and state"). A Participant edits text only: it changes the words of elements already on the tab, and
+// nothing else about them. It never adds, removes, moves, resizes, restyles, locks or reorders an element. The
+// server applies each of a Participant's element ops to the STORED tab through this one pure function, so a stale
+// screen can never write an old copy of the tab back: a text field lands, every other field stays as stored, and an
+// add, a remove or a reorder is refused with the op that puts the sender's screen back.
 
-import { LIVE_ELEMENT_FIELDS } from './comments';
 import { diffToElementOps, type ElementOp, type RoomElementOp } from './element-ops';
 import type { Element, Tab } from './index';
 import { isLayerLocked, resolveLayerId, tabLayers } from './layers';
+import { participantArticlesChange } from './participant-article';
 import { isValidElement } from './validate';
 
-// The element types a Participant may add.
-const PARTICIPANT_ADDABLE_TYPES = ['sticky', 'text', 'image'] as const;
-// The fields a Participant may change on an element someone else added: its words.
-const PARTICIPANT_TEXT_FIELDS = ['label', 'richText'] as const;
-// What else a Participant may change on anyone's sticky: where it sits and its colour.
-const PARTICIPANT_STICKY_FIELDS = [
-  'fillColor',
-  'strokeColor',
-  'textColor',
-  'penTextColour',
-] as const;
-// The elements a Participant may place on anyone's behalf: move and resize, since they are the content itself. A
-// text box is not one: it often labels the board's structure, so it stays where its author put it.
-const PARTICIPANT_PLACE_TYPES = ['sticky', 'image'] as const;
-const PARTICIPANT_PLACE_FIELDS = ['x', 'y', 'width', 'height'] as const;
-// What a Participant may change on anyone's image: the picture it shows.
-const PARTICIPANT_IMAGE_FIELDS = [
-  'imageId',
-  'naturalWidth',
-  'naturalHeight',
-  'alt',
-  'credit',
-] as const;
+type TextFieldsByKind = {
+  readonly [K in Element['type']]?: readonly (keyof Extract<Element, { type: K }> & string)[];
+};
+
+// The fields a Participant may change, by element kind: its words. An allow-list, so a field or a kind nobody
+// listed here is refused: a new field is an Editor's until someone decides it is text. A table's `cells` change
+// words only (its rows and columns stay as stored, see sameCellShape).
+export const PARTICIPANT_TEXT_FIELDS = {
+  shape: ['label', 'richText', 'code', 'pageTitle', 'pageSubtitle'],
+  text: ['label', 'richText'],
+  sticky: ['label', 'richText'],
+  table: ['label', 'cells'],
+  image: ['label', 'alt'],
+  freehand: ['label'],
+  'link-card': ['label'],
+  video: ['label'],
+  arrow: ['label'],
+} as const satisfies TextFieldsByKind;
 
 export type ParticipantRefusal =
   | 'tab-locked'
   | 'not-addable'
-  | 'not-holdable'
-  | 'no-adder'
-  | 'id-taken'
+  | 'not-removable'
   | 'missing'
   | 'type-changed'
   | 'locked'
-  | 'not-own'
   | 'reorder'
   | 'invalid';
 
 export type ParticipantOpResult =
-  // `op` is what actually happened to the stored tab (the merge, for an update); `changed` is false when the
-  // stored tab already said it, so nothing needs writing or relaying.
+  // `op` is what actually happened to the stored tab (the fields it changed, as a patch); `changed` is false when
+  // the stored tab already said it, so nothing needs writing or relaying.
   | { result: 'applied'; tab: Tab; op: RoomElementOp; changed: boolean }
   // `correction` is the op that turns the sender's screen back into the stored tab; null when the stored tab has
-  // nothing to restore (the element is already gone).
+  // nothing to restore (the element is already gone, or the id was someone else's).
   | { result: 'refused'; correction: ElementOp | null; reason: ParticipantRefusal };
 
 type Bag = Record<string, unknown>;
 
-function isParticipantAddable(type: string): boolean {
-  return (PARTICIPANT_ADDABLE_TYPES as readonly string[]).includes(type);
-}
-
-// Whether a Participant may move and resize this element whoever added it (PARTICIPANT_PLACE_TYPES).
-export function isParticipantPlaceable(el: Element): boolean {
-  return (PARTICIPANT_PLACE_TYPES as readonly string[]).includes(el.type);
-}
-
-// Whether a Participant may add this element to the tab, or hold it there as its own after a change: a sticky,
-// text or image anywhere.
-function addableOn(el: Element): boolean {
-  return isParticipantAddable(el.type);
-}
-
-// Whether an element was added by the Participant holding this adder key.
-export function addedByAdder(el: Element, adderKey: string | null): boolean {
-  return adderKey !== null && adderKey !== '' && (el as Bag).addedBy === adderKey;
+/** The text fields a Participant may change on an element of this kind; none for a kind not listed. */
+export function participantTextFields(type: string): readonly string[] {
+  return (PARTICIPANT_TEXT_FIELDS as Record<string, readonly string[] | undefined>)[type] ?? [];
 }
 
 const isPositive = (v: unknown): v is number =>
@@ -94,7 +70,7 @@ function isHeld(tab: Tab, el: Element): boolean {
   return layer !== undefined && isLayerLocked(layer);
 }
 
-// A table's cells may change words, never shape: same row count, every row the same length.
+// A table's cells may change words, never shape: same row count, every row the same length, every cell a string.
 function sameCellShape(stored: unknown, incoming: unknown): boolean {
   if (!Array.isArray(stored) || !Array.isArray(incoming)) return false;
   if (stored.length !== incoming.length) return false;
@@ -113,56 +89,25 @@ function copyField(target: Bag, incoming: Bag, field: string): void {
   else delete target[field];
 }
 
-// Live fields (answers, threads, rounds) travel as deltas, never through an update: always the stored copy's.
-function keepLiveFields(target: Bag, stored: Bag): void {
-  for (const field of LIVE_ELEMENT_FIELDS) {
-    if (field in stored) target[field] = stored[field];
-    else delete target[field];
-  }
-}
-
-// What a Participant's update turns another person's element into: the stored element with the permitted fields
-// copied from incoming.
-function mergeOthers(stored: Element, incoming: Element): Element {
+// What a Participant's update turns an element into: the stored element with its text fields copied from incoming.
+function mergeText(stored: Element, incoming: Element): Element {
   const s = stored as Bag;
   const inc = incoming as Bag;
   const next: Bag = { ...s };
-  for (const field of PARTICIPANT_TEXT_FIELDS) {
+  for (const field of participantTextFields(stored.type)) {
+    if (field === 'cells') {
+      if (sameCellShape(s.cells, inc.cells)) next.cells = inc.cells;
+      continue;
+    }
     if (field in s || field in inc) copyField(next, inc, field);
   }
-  if (stored.type === 'table' && sameCellShape(s.cells, inc.cells)) next.cells = inc.cells;
-  // A text box that sizes to its text (`sizing` set) follows its words: writing on it resizes it.
+  // A text box that sizes to its words (`sizing` set) follows them: writing on it resizes it. Its size is the
+  // words', never a choice, so this is still writing.
   if (stored.type === 'text' && s.sizing !== undefined) {
     for (const field of ['width', 'height'] as const) {
       if (isPositive(inc[field])) next[field] = inc[field];
     }
   }
-  if (isParticipantPlaceable(stored)) {
-    // A malformed place or size keeps the stored one.
-    for (const field of PARTICIPANT_PLACE_FIELDS) {
-      const v = inc[field];
-      const ok = field === 'x' || field === 'y' ? Number.isFinite(v) : isPositive(v);
-      if (ok && typeof v === 'number') next[field] = v;
-    }
-  }
-  if (stored.type === 'sticky') {
-    for (const field of PARTICIPANT_STICKY_FIELDS) copyField(next, inc, field);
-  }
-  if (stored.type === 'image') {
-    for (const field of PARTICIPANT_IMAGE_FIELDS) copyField(next, inc, field);
-  }
-  return next as Element;
-}
-
-// What a Participant's update turns its own element into: everything it sent, with identity, adder, lock and live
-// fields kept from stored (a Participant cannot lock what it added, any more than it can add it locked).
-function mergeOwn(stored: Element, incoming: Element): Element {
-  const next: Bag = { ...(incoming as Bag) };
-  next.id = stored.id;
-  next.type = stored.type;
-  next.addedBy = (stored as Bag).addedBy;
-  copyField(next, stored, 'locked');
-  keepLiveFields(next, stored);
   return next as Element;
 }
 
@@ -181,131 +126,63 @@ function patchBetween(from: Element, to: Element): RoomElementOp {
   return { kind: 'patch', id: to.id, set, ...(clear.length ? { clear } : {}) };
 }
 
-function withElements(tab: Tab, elements: Element[]): Tab {
-  return { ...tab, elements };
-}
-
 function refuse(reason: ParticipantRefusal, correction: ElementOp | null): ParticipantOpResult {
   return { result: 'refused', correction, reason };
 }
 
-export function applyParticipantOp(
-  tab: Tab,
-  op: ElementOp,
-  adderKey: string | null,
-): ParticipantOpResult {
+export function applyParticipantOp(tab: Tab, op: ElementOp): ParticipantOpResult {
   const elements = tab.elements;
   if (op.kind === 'reorder') {
     return refuse('reorder', { kind: 'reorder', ids: elements.map((e) => e.id) });
   }
-  if (op.kind === 'add') return applyAdd(tab, op.element, op.at, adderKey);
+  if (op.kind === 'add') {
+    // Taken back off the sender's screen, unless the id was already someone else's.
+    const taken = elements.some((e) => e.id === op.element.id);
+    return refuse('not-addable', taken ? null : { kind: 'remove', id: op.element.id });
+  }
   const id = op.kind === 'remove' ? op.id : op.element.id;
   const index = elements.findIndex((e) => e.id === id);
   if (index < 0) return refuse('missing', null);
   const stored = elements[index]!;
-  if (tab.locked === true) {
-    return refuse(
-      'tab-locked',
-      op.kind === 'remove'
-        ? { kind: 'add', element: stored, at: index }
-        : { kind: 'update', element: stored },
-    );
-  }
-  if (op.kind === 'remove') {
-    if (isHeld(tab, stored)) return refuse('locked', { kind: 'add', element: stored, at: index });
-    if (!addedByAdder(stored, adderKey))
-      return refuse('not-own', { kind: 'add', element: stored, at: index });
-    return {
-      result: 'applied',
-      tab: withElements(
-        tab,
-        elements.filter((_, i) => i !== index),
-      ),
-      op,
-      changed: true,
-    };
-  }
+  if (op.kind === 'remove')
+    return refuse('not-removable', { kind: 'add', element: stored, at: index });
   const incoming = op.element;
   const restore: ElementOp = { kind: 'update', element: stored };
+  if (tab.locked === true) return refuse('tab-locked', restore);
   if (incoming.type !== stored.type) return refuse('type-changed', restore);
   if (isHeld(tab, stored)) return refuse('locked', restore);
-  const own = addedByAdder(stored, adderKey);
-  const merged = own ? mergeOwn(stored, incoming) : mergeOthers(stored, incoming);
+  const merged = mergeText(stored, incoming);
   if (!isValidElement(merged)) return refuse('invalid', restore);
-  // What it added stays something it could add.
-  if (own && !addableOn(merged)) return refuse('not-holdable', restore);
-  // Its own element moved onto a locked layer would be one it could never touch again.
-  if (isHeld(tab, merged)) return refuse('locked', restore);
   const changed = !sameValue(merged, stored);
   // Peers get only the fields that changed, never the stored copy whole: theirs may hold an Editor's change the
   // saved tab has not caught up with yet.
   return {
     result: 'applied',
-    tab: changed
-      ? withElements(
-          tab,
-          elements.map((e, i) => (i === index ? merged : e)),
-        )
-      : tab,
+    tab: changed ? { ...tab, elements: elements.map((e, i) => (i === index ? merged : e)) } : tab,
     op: patchBetween(stored, merged),
     changed,
   };
 }
 
-function applyAdd(
-  tab: Tab,
-  element: Element,
-  at: number,
-  adderKey: string | null,
-): ParticipantOpResult {
-  const elements = tab.elements;
-  const taken = elements.some((e) => e.id === element.id);
-  // A refused add takes the element back off the sender's screen, unless the id was someone else's.
-  const undo: ElementOp | null = taken ? null : { kind: 'remove', id: element.id };
-  if (taken) return refuse('id-taken', undo);
-  if (tab.locked === true) return refuse('tab-locked', undo);
-  if (!addableOn(element)) return refuse('not-addable', undo);
-  if (adderKey === null || adderKey === '') return refuse('no-adder', undo);
-  const stamped: Bag = { ...(element as Bag), addedBy: adderKey };
-  // A new element carries no answers or threads of its own yet, and a Participant cannot lock what it adds.
-  for (const field of LIVE_ELEMENT_FIELDS) delete stamped[field];
-  delete stamped.locked;
-  const added = stamped as Element;
-  if (isHeld(tab, added)) return refuse('locked', undo);
-  if (!isValidElement(added)) return refuse('invalid', undo);
-  const index = Number.isInteger(at) ? Math.max(0, Math.min(at, elements.length)) : elements.length;
-  return {
-    result: 'applied',
-    tab: withElements(tab, [...elements.slice(0, index), added, ...elements.slice(index)]),
-    op: { kind: 'add', element: added, at: index },
-    changed: true,
-  };
-}
-
 // The editor's side of the rule (blueprint "Editor state"): whether a Participant's local change from `before` to
-// `after` is one the server would take as it is. Answers the change with the adder stamped on what it adds, or
-// null when any part of it would be refused or trimmed, so the editor never shows a change the room will undo.
-// The tab around the elements must not change at all: a Participant never edits a tab's settings.
-export function participantTabChange(before: Tab, after: Tab, adderKey: string | null): Tab | null {
-  const { elements: _b, ...beforeMeta } = before;
-  const { elements: _a, ...afterMeta } = after;
+// `after` is one the server would take as it is. Answers `after`, or null when any part of it would be refused or
+// trimmed, so the editor never shows a change the room will undo. Around the elements, only the tab's articles may
+// change, and only as writing (participant-article.ts): a Participant never edits a tab's settings or pages.
+export function participantTabChange(before: Tab, after: Tab): Tab | null {
+  const { elements: _b, articles: beforeArticles, ...beforeMeta } = before;
+  const { elements: _a, articles: afterArticles, ...afterMeta } = after;
   if (!sameValue(beforeMeta, afterMeta)) return null;
   let tab = before;
-  let elements = after.elements;
   for (const op of diffToElementOps(before.elements, after.elements)) {
-    const outcome = applyParticipantOp(tab, op, adderKey);
+    const outcome = applyParticipantOp(tab, op);
     if (outcome.result === 'refused') return null;
-    if (op.kind === 'add') {
-      // The stamp is the only difference the rule may make to an add.
-      const stamped = (outcome.op as { element: Element }).element;
-      if (!sameValue({ ...(op.element as Bag), addedBy: adderKey }, stamped)) return null;
-      elements = elements.map((e) => (e.id === stamped.id ? stamped : e));
-    } else if (op.kind === 'update') {
-      // The rule took everything the change made, nothing trimmed.
+    // The rule took everything the change made, nothing trimmed.
+    if (op.kind === 'update') {
       const merged = outcome.tab.elements.find((e) => e.id === op.element.id);
       if (!merged || !sameValue(merged, op.element)) return null;
     }
     tab = outcome.tab;
   }
-  return elements === after.elements ? after : { ...after, elements };
+  if (beforeArticles !== afterArticles && !participantArticlesChange(before, after)) return null;
+  return after;
 }

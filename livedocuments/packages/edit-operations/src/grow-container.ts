@@ -1,4 +1,4 @@
-// A frame or stack grown to hold a box placed in it (docs/specs/024-agents/blueprints/edit-operations.md "Growing to
+// A stack grown to hold a box placed in it (docs/specs/024-agents/blueprints/edit-operations.md "Growing to
 // hold"): it takes its new box, and on each side it grew, what lay past its old edge within its span moves on by the
 // growth, carrying what it holds, so the grown container never takes in what sat beside it. Only the container's own
 // scope moves; what sits inside it stays where it was put. A container nested in another grows that one in turn,
@@ -21,10 +21,10 @@ import {
 } from './state';
 
 // How far inside a container's old edge a neighbour may start and still count as lying past it: a box drawn flush
-// against the frame.
+// against the stack.
 const PAST_EDGE_TOLERANCE = 2;
 
-/** Room a frame or stack leaves around what it holds. */
+/** Room a stack leaves around what it holds. */
 export const HOLD_PAD = 32;
 
 type Side = { dx: number; dy: number; past: (box: Box) => boolean };

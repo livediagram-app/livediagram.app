@@ -41,7 +41,7 @@ platforms.
   within the 4 px engage threshold) applies the toggle. So shift-click
   still curates the selection, and shift-drag duplicates it.
 - **What clones**: exactly the dragged set — the selection's members plus
-  any follower arrows the move carried (a frame section's connectors),
+  any follower arrows the move carried (a stack's connectors),
   via the same `duplicateElements` machinery as the toolbar's
   Duplicate: fresh ids, internal references remapped, internal connectors ride along,
   external pins stay pinned to the untouched outside elements.

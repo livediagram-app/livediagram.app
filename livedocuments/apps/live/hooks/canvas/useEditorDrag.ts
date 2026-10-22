@@ -651,8 +651,6 @@ export function useEditorDrag(deps: EditorDragDeps): EditorDragApi {
           }
         }
       }
-      // Annotations open their note on DOUBLE-click now (handled in
-      // BoxedElementView), so a plain click just selects — no note-open here.
       setDrag(null);
       scheduleGuides([]);
       scheduleSnapTargets([]);

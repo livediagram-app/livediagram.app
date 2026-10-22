@@ -72,7 +72,7 @@ export const ROLE_PASS: Record<
   participate: {
     stamp: 'Participant',
     title: 'Participant',
-    blurb: "Adds stickies, writes and votes. Can't reshape the board.",
+    blurb: "Edits text and comments. Can't add, move or restyle.",
     Icon: ParticipatePassIcon,
     // teal-700 under the 10 px bold stamp: 5.47:1 (blueprint "Accessibility").
     solid: 'bg-teal-700 text-white dark:bg-teal-600/60',

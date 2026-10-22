@@ -27,13 +27,13 @@ describe('stateAttributeOf (R14, VW22)', () => {
     );
   });
 
-  it('titles a page, cut like a note', () => {
+  it('titles a card, cut like a note', () => {
     expect(
-      state('page', {
+      state('card', {
         pageTitle: 'Quarterly review of the checkout platform and its many services',
       }),
     ).toBe('title="Quarterly review of the checkout platform and"…');
-    expect(state('page', { pageTitle: ' ' })).toBe('');
+    expect(state('card', { pageTitle: ' ' })).toBe('');
   });
 
   it('titles a card, and flags a badge or step that is attached to a node', () => {

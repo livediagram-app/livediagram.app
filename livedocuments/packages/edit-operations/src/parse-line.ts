@@ -5,7 +5,6 @@
 
 import type { FieldValue } from './types';
 import { arrowParts, hasQuotes, tokeniseLine, unquotedPrefix, type Word } from './tokenise';
-import { isSingleWord } from './selectors';
 import {
   EDIT_OPERATION_NAMES,
   FLAG_MEMBERS,
@@ -24,7 +23,6 @@ const SPECIAL_KEYS: Readonly<Partial<Record<EditOperationName, readonly string[]
   connect: ['id'],
   rewire: ['from', 'to'],
   insert: ['id'],
-  wrap: ['id'],
   order: ['above', 'below'],
   layout: ['style', 'direction'],
 };
@@ -35,7 +33,6 @@ const FLAGS: Readonly<Partial<Record<EditOperationName, readonly FlagWord[]>>> =
   rm: ['all', 'keep-arrows'],
   move: ['all'],
   connect: ['again'],
-  wrap: ['tidy', 'absorb', 'make-room'],
 };
 
 // The special keys whose value is a selector, kept as written.
@@ -45,7 +42,7 @@ const FIELD_KEY = /^([a-zA-Z][a-zA-Z-]*)=/;
 const KEYED = /^([a-zA-Z][a-zA-Z-]*):/;
 // What an `add` placement can be, for a word that reads as one but is not.
 const PLACEMENT_EXPECTED =
-  'a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<frame>';
+  'a placement: right-of:<ref>, left-of:<ref>, above:<ref>, below:<ref>, after:<ref> or inside:<stack>';
 // A whole JSON number, `true` or `false`; `2FA`, `3D` or `1st` are strings (EO19).
 const JSON_LITERAL = /^(-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?|true|false)$/;
 
@@ -102,7 +99,7 @@ const numbers = (text: string): [number, number] | null => {
 
 type PlacementWord = { word: Word; key: string; text: string };
 
-// Several placement words read as one placement: a side or `after` (the main one) with at most one `inside:<frame>`
+// Several placement words read as one placement: a side or `after` (the main one) with at most one `inside:<stack>`
 // (`within`, the reference must be inside it) and one `align:<x>` (`alignTo`, centred on x across the side). `at:`
 // takes no company.
 function combinePlacements(
@@ -120,7 +117,7 @@ function combinePlacements(
   if (insides.length > 1) return refused(insides[1]!);
   if (aligns.length > 1) return refused(aligns[1]!);
   if (!main) {
-    // `inside:` with `align:`: aligned, the reference inside the frame.
+    // `inside:` with `align:`: aligned, the reference inside the stack.
     return { place: { rel: 'align', ref: aligns[0]!.text, within: insides[0]!.text } };
   }
   return {
@@ -294,26 +291,6 @@ export function parseOperationWords(
       op: name,
       from: selectorOf(fromTerms),
       to: selectorOf(c.terms),
-    };
-    if (c.special.id !== undefined) raw.id = c.special.id;
-    return { raw: withOptional(raw, c, ['fields']) };
-  }
-
-  if (name === 'wrap') {
-    const at = rest.findIndex((w) => !hasQuotes(w) && w.value === 'in');
-    const container = at >= 0 ? rest[at + 1] : undefined;
-    if (!container) return fail(rest[at] ?? rest.at(-1), end, 'in frame');
-    const members = rest.slice(0, at);
-    if (!members.length) return fail(rest[0], end, 'the members to wrap');
-    const c = collect(name, rest.slice(at + 2));
-    if ('column' in c) return { error: c };
-    if (c.terms.length) return fail(c.terms[0], end, 'key=value or tidy, absorb, make-room');
-    const single = members.filter(isSingleWord);
-    const together = members.filter((w) => !isSingleWord(w));
-    const raw: Record<string, unknown> = {
-      op: name,
-      targets: [...single.map((w) => w.raw), ...(together.length ? [selectorOf(together)] : [])],
-      in: container.value,
     };
     if (c.special.id !== undefined) raw.id = c.special.id;
     return { raw: withOptional(raw, c, ['fields']) };

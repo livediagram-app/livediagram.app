@@ -13,12 +13,12 @@ import {
 } from '@livedocuments/document';
 import { LINT_OVERLAP_TOLERANCE_PX } from './constants';
 
-const NOT_BOXES: ReadonlySet<string> = new Set(['text', 'annotation', 'freehand', 'path']);
+const NOT_BOXES: ReadonlySet<string> = new Set(['text', 'article-note', 'freehand', 'path']);
 
 const finite = (el: BoxedElement) =>
   [el.x, el.y, el.width, el.height].every((v) => Number.isFinite(v));
 
-// A boxed element that is not a container, text, annotation, stroke or path, with a usable rect (LN2).
+// A boxed element that is not a container, text, margin note, stroke or path, with a usable rect (LN2).
 export function isLintBox(el: Element): el is BoxedElement {
   return isBoxed(el) && !isContainer(el) && !NOT_BOXES.has(el.type) && finite(el);
 }

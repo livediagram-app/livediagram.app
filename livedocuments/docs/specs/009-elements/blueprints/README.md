@@ -23,4 +23,3 @@ Follow the references below only as needed; never upfront.
 - ./tag-colours.md - when implementing or changing tag colours, the tab map or how cards render it
 - ./stack.md - when implementing or changing the stack, its layout or how it settles
 - ./concept-graphics.md - when implementing or changing the layer stack, pyramid / funnel or cycle, their rows, layouts or Concept animations
-- ./annotations.md - when implementing or changing the annotation marker, its hover preview or its note

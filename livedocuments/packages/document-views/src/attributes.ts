@@ -1,16 +1,8 @@
 // The attributes of one element's line, in order (docs/specs/024-agents/blueprints/document-views.md
-// "Attributes", VW14): draft, icon, link, alt, locked, action or actions, note, comments, then style.
+// "Attributes", VW14): draft, icon, link, alt, locked, action, note, comments, then style.
 import type { Element } from '@livedocuments/document';
 import { ACTION_CUT_CHARS, ALT_CUT_CHARS, NOTE_CUT_CHARS } from './constants';
-import {
-  arrayField,
-  flagField,
-  isObject,
-  objectField,
-  stringField,
-  textField,
-  threadOf,
-} from './fields';
+import { flagField, objectField, stringField, textField, threadOf } from './fields';
 import { styleAttributesOf, type StyleBaselines } from './style-attributes';
 import { attrValue, jsonString } from './text';
 import { countAttribute, flagAttribute, type ViewAttribute } from './view-attribute';
@@ -52,18 +44,13 @@ function cutAttribute(key: string, text: string | null, max: number): ViewAttrib
 
 function actionAttributes(el: Element): ViewAttribute[] {
   const action = objectField(el, 'action');
-  if (action !== null) {
-    const name = stringField(action, 'name') ?? '';
-    const assignee = objectField(action, 'assignee');
-    const who = assignee === null ? null : textField(assignee, 'name');
-    const text = `action=${jsonString(name, ACTION_CUT_CHARS)}${who === null ? '' : ` @${attrValue(who)}`}`;
-    const done = stringField(action, 'status') === 'done';
-    return [{ key: 'action', value: name, text }, ...(done ? [flagAttribute('done')] : [])];
-  }
-  const actions = arrayField(el, 'actions').filter(isObject);
-  if (actions.length === 0) return [];
-  const open = actions.filter((a) => stringField(a, 'status') !== 'done').length;
-  return [countAttribute('actions', `${open} open/${actions.length}`)];
+  if (action === null) return [];
+  const name = stringField(action, 'name') ?? '';
+  const assignee = objectField(action, 'assignee');
+  const who = assignee === null ? null : textField(assignee, 'name');
+  const text = `action=${jsonString(name, ACTION_CUT_CHARS)}${who === null ? '' : ` @${attrValue(who)}`}`;
+  const done = stringField(action, 'status') === 'done';
+  return [{ key: 'action', value: name, text }, ...(done ? [flagAttribute('done')] : [])];
 }
 
 function commentsAttribute(el: Element): ViewAttribute[] {

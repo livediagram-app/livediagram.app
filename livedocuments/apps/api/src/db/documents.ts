@@ -30,7 +30,7 @@ type DocumentRow = {
   shareable: number;
   folder_id: string | null;
   team_id: string | null;
-  // Provenance (docs/specs/013-workspace/folders.md): null = user-made; 'ai' / 'mcp' = generated.
+  // Provenance (docs/specs/013-workspace/folders.md): null = user-made; 'mcp' / 'cli' = generated.
   source: string | null;
   // Slide deck (docs/specs/012-collaboration/presentation-mode.md): serialised StoredPresentation, or null for no deck.
   presentation: string | null;

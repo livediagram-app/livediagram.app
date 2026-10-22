@@ -20,7 +20,7 @@ Scope, by file:
 | `packages/api-schema/src/ref-errors.ts`                                 | `TARGET_NOT_FOUND_ERROR`, `TARGET_AMBIGUOUS_ERROR`, `RefCandidate`, `RefErrorBody`                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                           | `TELEMETRY_ACTIONS` gains `Viewed`                                                                                          |
 | `packages/api-schema/src/index.ts`                                      | Re-exports both new files                                                                                                   |
-| `packages/document-views/{package.json,tsconfig.json,oxlint.config.ts}` | The new package `@livedocuments/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`              |
+| `packages/document-views/{package.json,tsconfig.json,oxlint.config.ts}` | The new package `@livedocuments/document-views` (depends on `document`, `api-schema`), shaped like `explorer-lens`          |
 | `packages/document-views/vitest.config.ts`                              | 100% line, branch, function and statement thresholds                                                                        |
 | `packages/document-views/src/index.ts`                                  | The public surface: `renderView`, every view function, the budget                                                           |
 | `packages/document-views/src/constants.ts`                              | The view constants in [Constants and configuration](#constants-and-configuration)                                           |
@@ -47,7 +47,7 @@ Scope, by file:
 | `packages/document-views/src/performance.test.ts`                       | A 10,000-element tab with 100 containers renders and fits within a second                                                   |
 | `packages/document-views/src/__fixtures__/*.ts`                         | The checkout tab, its "after" twin, the three-tab document, the agent-built tab, the 300-element tab, the edge cases        |
 | `packages/document-views/src/__fixtures__/golden/*`                     | One golden file per view (see [Testing](#testing))                                                                          |
-| `apps/api/package.json`                                                 | Depends on `@livedocuments/document-views`                                                                                      |
+| `apps/api/package.json`                                                 | Depends on `@livedocuments/document-views`                                                                                  |
 | `apps/api/src/responses.ts`                                             | `textPlain(body, init)`                                                                                                     |
 | `apps/api/src/routes/document-views-route.ts`                           | `parseViewQuery`, `answerTabView` (+ the selection for `show selected`), `answerOverview`, the `Agent·Viewed` event         |
 | `apps/api/src/room-client.ts`                                           | `readRoomSelections(env, documentId, tabId, personTag, reader)`: the warning names its reader                               |
@@ -63,8 +63,8 @@ Scope, by file:
 | `apps/mcp/src/image-result.ts`                                          | `tabPreview`: the PNG on its own, which `imageResult` and `readDocument` attach                                             |
 | `apps/telemetry/app/catalogue/connections.ts`                           | The `Agent·Viewed` chart, by view                                                                                           |
 | `docs/development/architecture.md`, `README.md`                         | The new package in the layout and the package list                                                                          |
-| `@livedocuments/edit-operations`, `@livedocuments/diagram-lint` (own)           | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livedocuments/document`                        |
-| The cross-tab comments route (agent-presence's blueprint)               | Imports `computeRefs` from `@livedocuments/document`                                                                            |
+| `@livedocuments/edit-operations`, `@livedocuments/diagram-lint` (own)   | Import refs, slug ids, kind words, `deriveContainers` and `contentOrigin` from `@livedocuments/document`                    |
+| The cross-tab comments route (agent-presence's blueprint)               | Imports `computeRefs` from `@livedocuments/document`                                                                        |
 
 The repo layout block in `AGENTS.md` gains the package only with the operator's permission (agent files are not
 edited without it); the change names the gap.
@@ -79,8 +79,8 @@ edited without it); the change names the gap.
 | Slug id         | `isSlugId`, `SLUG_ID_PATTERN`, `slugIdFor`                               | An id matching `^[a-z][a-z0-9_-]{0,23}$`; printed verbatim as its ref          |
 | Resolve         | `resolveRef(input, refs) → RefResolution`                                | Input to one element, or a named refusal                                       |
 | Kind word       | `kindWordOf(el)`                                                         | The first word of a line: the shape, the notation, or the element type         |
-| Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livedocuments/document` does not know              |
-| Container       | `deriveContainers`, `ViewNode.container`                                 | The frame an element nests under                                               |
+| Unknown kind    | `isKnownElement`, `UNKNOWN_KIND_MARK` (`?`)                              | An element type or shape kind `@livedocuments/document` does not know          |
+| Container       | `deriveContainers`, `ViewNode.container`                                 | The stack an element nests under                                               |
 | Reading order   | `readingOrder`, `rowsOf`                                                 | Rows top to bottom, then left to right                                         |
 | Freehand run    | `FreehandRun`, `freehandRuns`                                            | Consecutive bare strokes in one container, printed as one counted line         |
 | Content summary | `contentSummaryOf`                                                       | What a content kind holds, briefly                                             |
@@ -89,7 +89,7 @@ edited without it); the change names the gap.
 | Edge            | `ViewEdge`                                                               | An arrow as printed on its source line                                         |
 | Own-line arrow  | `ViewModel.ownLineArrows`                                                | An arrow without a printed source, on its own line                             |
 | Header line     | `viewHeader`, `headerLine`, `ViewHeader`                                 | The first line of every tab view                                               |
-| Counts          | `ElementCounts { boxes, frames, arrows }`                                | The header's element buckets                                                   |
+| Counts          | `ElementCounts { boxes, arrows }`                                        | The header's element buckets                                                   |
 | Hidden          | `ViewModel.hidden`                                                       | Elements left out because they sit on a hidden layer                           |
 | Budget          | `budget` (tokens), `estimateTokens`, `fitOutline`, `fitLines`            | The token ceiling a view is fitted to                                          |
 | Elision line    | `elisionLine`, `Elision`                                                 | The one closing line naming what was left out and how to see it                |
@@ -99,8 +99,8 @@ edited without it); the change names the gap.
 
 Banned: "handle", "alias", "short id", "short code" (for a ref); "mode", "format", "snapshot", "render" (for a view;
 "render" stays the image preview's verb, and `format` names only `read_document`'s choice between a view and the
-elements); "parent" for a frame (it is the container); "group",
-"cluster" (a frame is a container; a cluster is graph input's word); "query" or "filter" (those are selectors and
+elements); "parent" for a stack (it is the container); "group",
+"cluster" (a stack is a container; a cluster is graph input's word); "query" or "filter" (those are selectors and
 Explorer lenses); "token" for a kind word (a token is an API token); "truncate" in copy ("hidden", "left out").
 
 ## Behaviour and state
@@ -174,7 +174,7 @@ non-empty unique ids. The round-trip tests in [Testing](#testing) hold this.
 | Element                                   | Kind word                                                                     |
 | ----------------------------------------- | ----------------------------------------------------------------------------- |
 | The notation `actor`                      | `es:actor`, so it never reads as the `actor` shape                            |
-| `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `frame`, `cylinder`, …)                                  |
+| `type: 'shape'`, `shape` in `SHAPE_KINDS` | the shape (`square`, `stack`, `cylinder`, …)                                  |
 | `type` in `ELEMENT_TYPES`, not a shape    | the type (`text`, `sticky`, `table`, `image`, `freehand`, `path`, `arrow`, …) |
 | `type: 'shape'`, unknown `shape`          | `? <shape>` (`VW12`); `? shape` when it has none                              |
 | unknown `type`                            | `? <type>`                                                                    |
@@ -186,18 +186,18 @@ An unknown name prints bare when it matches `^[A-Za-z0-9_.:-]+$`, else as a JSON
 ### Containment (`@livedocuments/document`, `containment.ts`)
 
 `deriveContainers(elements) → Map<ElementId, ElementId | null>` assigns each non-arrow element at most one
-container; views, the edit-operations membership reports, the lint and the editor's frame drag (through
+container; views, the edit-operations membership reports, the lint and the editor's container drag (through
 `containerContents`) all read it.
 
-Candidates are `frame` shapes other than the element itself whose stored box
+Candidates are `stack` shapes other than the element itself whose stored box
 holds the element's centre (`boxHoldsPoint`, edges inclusive) and whose area is strictly greater than the
 element's (`VW23`). The smallest candidate by area wins; equal areas go to the earlier in array order.
-`smallestHolder(point, holders)` is that point query alone (smallest frame
+`smallestHolder(point, holders)` is that point query alone (smallest stack
 holding the centre, inclusive, the earlier on a tie); `deriveContainers` passes it only the strictly larger
 candidates, and that guard makes nesting acyclic. Rotation is ignored: centres and boxes are the stored
 axis-aligned ones. 3. Elements without numeric `x`, `y`, `width`, `height` (only unknown kinds can lack them) sit at the root.
 
-Views pass printed elements only, so a hidden frame contains nothing. Containers nest to any depth.
+Views pass printed elements only, so a hidden stack contains nothing. Containers nest to any depth.
 
 `contentOrigin(elements)`: the rounded minimum `x` and `y` over boxed elements, `(0, 0)` when there are none. Views
 pass printed elements; the edit-operations engine reads and writes coordinates against the same origin.
@@ -273,8 +273,8 @@ header      := "tab" SP tabRef SP jsonString(name) " · " total " element" ["s"]
                [" · finish=" finish] [" · " pages " pages: " byKind " (view pages)"]
                [" · " hidden " hidden"] [" · " unknown " unknown"]
                [" · threads " open " open/" threadTotal] [" · rev " rev]
-buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, frames, arrows)
-bucket      := count SP ("box" | "boxes" | "frame" | "frames" | "arrow" | "arrows")
+buckets     := bucket {", " bucket}                       (non-zero only, in the order boxes, arrows)
+bucket      := count SP ("box" | "boxes" | "arrow" | "arrows")
 line        := indent kindWord SP ref [SP label] [SP summary] {SP attribute} [SP "→" SP edge {", " edge}]
 runLine     := indent "freehand ×" count [" (" closed " closed)"]
 ownLine     := "arrow" SP ref SP end SP "→" SP end [SP label] {SP style}
@@ -291,7 +291,7 @@ attribute   := key "=" attrValue | flag
 `threads` only when the tab has a thread; `rev`
 only when the context gives one (`VW8`). A blank label (after trim) prints nothing (`VW17`).
 
-**Buckets** (`VW9`): `frames` are those shapes; `arrows` are arrows; `boxes` is every other printed
+**Buckets** (`VW9`): `arrows` are arrows; `boxes` is every other printed
 element, unknown kinds included. `total` is the printed count; `hidden` and `unknown` are counted apart from it
 (`unknown` is also inside `total`).
 
@@ -349,7 +349,6 @@ Every other kind has no state attribute; `show` has its content.
 | `alt=`           | an `image` with `alt`                                | `alt=` cut at `ALT_CUT_CHARS`                                                               |
 | `locked`         | `locked: true`                                       | flag                                                                                        |
 | `action=`        | one `action` (`VW29`)                                | `action="<name cut at ACTION_CUT_CHARS>" @<assignee name>`, then `done` when done           |
-| `actions=`       | an `actions` list                                    | `actions=<open> open/<total>`                                                               |
 | `note=`          | `note` non-blank                                     | `note=` JSON string cut at `NOTE_CUT_CHARS`                                                 |
 | `comments=`      | a thread                                             | `comments=<count> open` or `comments=<count> resolved`                                      |
 | style attributes | only with `style` (`VW50`)                           | see below                                                                                   |
@@ -370,17 +369,17 @@ dispatches by `request.view`, answering `{ ok: true, view, text, json, fit, elem
 Each tab view is a function of the model (`outlineView(model, options)`, …) answering `{ text, json, fit }`; `fit`
 is the full view's estimate and the step it took (a ladder state, or `lines-dropped`), for the `[views] budget` log.
 
-| View       | Function                                | Served by                | Lines after the header                                                                  |
-| ---------- | --------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------- |
-| `outline`  | `outlineView(model, options)`           | api, CLI offline         | The grammar above, depth-first in reading order, own-line arrows at the end of the root |
-| `graph`    | `graphView`                             | api, CLI offline         | Nodes, a blank line, arrows (below)                                                     |
-| `layout`   | `layoutView`                            | api, CLI offline         | Exact geometry, or coarse rows with `coarse`                                            |
-| `comments` | `commentsView`                          | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
-| `show`     | `showView` (`ref`), `showSelectedView`  | api, CLI offline         | One element in full                                                                     |
-| `find`     | `findView` (`q` required)               | api, CLI offline         | Matches with their container chains                                                     |
-| `lint`     | `@livedocuments/diagram-lint` (not built)   | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
-| `diff`     | `diffView(before, after, context)`      | CLI only, from its cache | Added, removed, changed and moved elements                                              |
-| `overview` | `overviewView(document, tabs, options)` | api, CLI offline         | One line per tab                                                                        |
+| View       | Function                                  | Served by                | Lines after the header                                                                  |
+| ---------- | ----------------------------------------- | ------------------------ | --------------------------------------------------------------------------------------- |
+| `outline`  | `outlineView(model, options)`             | api, CLI offline         | The grammar above, depth-first in reading order, own-line arrows at the end of the root |
+| `graph`    | `graphView`                               | api, CLI offline         | Nodes, a blank line, arrows (below)                                                     |
+| `layout`   | `layoutView`                              | api, CLI offline         | Exact geometry, or coarse rows with `coarse`                                            |
+| `comments` | `commentsView`                            | api, CLI offline         | Open threads, every comment in full; `all` adds resolved ones                           |
+| `show`     | `showView` (`ref`), `showSelectedView`    | api, CLI offline         | One element in full                                                                     |
+| `find`     | `findView` (`q` required)                 | api, CLI offline         | Matches with their container chains                                                     |
+| `lint`     | `@livedocuments/diagram-lint` (not built) | api, CLI offline         | The lint's own output ([Diagram lint](../diagram-lint.md)) under the same header        |
+| `diff`     | `diffView(before, after, context)`        | CLI only, from its cache | Added, removed, changed and moved elements                                              |
+| `overview` | `overviewView(document, tabs, options)`   | api, CLI offline         | One line per tab                                                                        |
 
 `renderView` dispatches `lint` to the diagram-lint package's renderer; this package owns only its header and the
 query plumbing (`VW58`). `diff` has no api door: the CLI keeps the last tab it read per document, tab and `rev` and runs
@@ -524,7 +523,7 @@ type ViewHeader = {
   view: ViewName;
   tab: { id: string; ref: string; name: string; kind: TabKind };
   elements: number;
-  counts: { boxes: number; frames: number; arrows: number };
+  counts: { boxes: number; arrows: number };
   hidden: number;
   unknown: number;
   threads: { open: number; total: number };
@@ -734,7 +733,7 @@ the tab and its `rev`.
 | E2   | Unlabelled element                             | Kind word and ref only                                                                           |
 | E3   | Label with newlines, quotes, `→`, `\|`         | Inside a JSON string; `cellText` in tables and entities                                          |
 | E4   | Overlapping containers                         | Smallest area holding the centre; equal areas, the earlier                                       |
-| E5   | Element larger than a frame it overlaps        | Not nested (strict area)                                                                         |
+| E5   | Element larger than a stack it overlaps        | Not nested (strict area)                                                                         |
 | E6   | Rotated element                                | Centre of the stored box; `layout` prints `r=`                                                   |
 | E7   | Hidden layer                                   | Left out, counted `· n hidden`; arrows to hidden elements counted with them                      |
 | E8   | Free, on-arrow ends                            | `free`, `arrow:<ref>`; a non-pinned source prints on its own line                                |
@@ -788,7 +787,7 @@ the tab and its `rev`.
   containers, measured by the bench below; budget O(n + c log c) on the precomputed cost model.
 - Collapsing containers one at a time keeps the hidden length and the elided totals running and measures the
   elision line from its named containers and the rest's totals, so each step is O(`ELISION_CONTAINERS_NAMED`):
-  4,000 frames at a budget take about 30 ms (1.2 s when each step rebuilt the fit and its elision line). The
+  4,000 stacks at a budget take about 30 ms (1.2 s when each step rebuilt the fit and its elision line). The
   result is byte-equal to the step-by-step rebuild.
 - `show` and `show selected` read the content origin and each element's incoming and outgoing arrows from an
   index built once per model, so a select-all of 8,000 elements takes about 80 ms (3.4 s when each element scanned
@@ -834,7 +833,7 @@ Every rule maps to a deterministic test; the spec's rules are numbered here.
 | R8 One line per element, indentation is containment                  | `packages/document-views/src/outline.test.ts`, golden `checkout.outline.txt`                                                             |
 | R9 Kind words, notations, `es:actor`                                 | `element-refs.test.ts` (kind words)                                                                                                      |
 | R10 JSON strings, cut 60 / 48 on a word boundary                     | `text.test.ts`                                                                                                                           |
-| R11 Smallest frame holding the centre                                | `packages/document/src/containment.test.ts`                                                                                              |
+| R11 Smallest stack holding the centre                                | `packages/document/src/containment.test.ts`                                                                                              |
 | R12 Arrows on the source line; free ends on their own                | `edges.test.ts`                                                                                                                          |
 | R13 Reading order                                                    | `reading-order.test.ts`                                                                                                                  |
 | R14 Content summaries and state attributes                           | `content-summary.test.ts`, `state-attribute.test.ts` (every kind in the table)                                                           |
@@ -861,7 +860,7 @@ Golden files, through `expect(text).toMatchFileSnapshot(path)` (`VW52`), in
 | `checkout-tab.ts`       | The research's 30-element "Checkout platform" tab (below), `rev: 41`                                                                                                                         | `checkout.outline.txt`, `.outline.json`, `.outline-mcp-budget-200.txt`, `.graph.txt`, `.layout.txt`, `.layout-coarse.txt`, `.comments.txt`, `.show-146b.txt`, `.find-pay.txt`, `.style.txt` |
 | `checkout-tab-after.ts` | The checkout tab with six changes: rename e4a8 "Payments", add cylinder "Redis cache" in c991 and an arrow 202b→it, remove arrow 0cee, resolve 0c84's thread, move cb02 by +200,0; `rev: 47` | `checkout.diff.txt`                                                                                                                                                                         |
 | `checkout-document.ts`  | Three tabs: the checkout tab, a 42-element lanes tab, a 24-sticky tab                                                                                                                        | `checkout.overview.txt`, `checkout.overview-scoped.txt`                                                                                                                                     |
-| `agent-built-tab.ts`    | The Services frame built through `graphToElements` with slug node ids                                                                                                                        | `agent-built.outline.txt`                                                                                                                                                                   |
+| `agent-built-tab.ts`    | The Services stack built through `graphToElements` with slug node ids                                                                                                                        | `agent-built.outline.txt`                                                                                                                                                                   |
 | `large-tab.ts`          | Ten copies of the checkout tab offset in x (300 elements)                                                                                                                                    | `large.budget-2000.txt`, `large.budget-200.txt`                                                                                                                                             |
 | `edge-cases-tab.ts`     | E1 to E28 in one tab where they compose, separate tabs where they do not; every state-attribute kind                                                                                         | `edge-cases.outline.txt`                                                                                                                                                                    |
 
@@ -877,35 +876,35 @@ reads the research's §4.1 render and compares it with `· rev 41` on the header
 abbreviates, and holds the outline at or under 400 estimated tokens (chars ÷ 3) and at most a tenth of the pretty
 JSON's estimate.
 
-`performance.test.ts` times growth, not a ceiling: four times the elements in the same ten frames must cost under
+`performance.test.ts` times growth, not a ceiling: four times the elements in the same ten stacks must cost under
 eight times as much (measured 3 to 5, under coverage too; a quadratic step costs 16), the fastest of three renders
 each, within an explicit 30 s timeout (coverage on a CI runner makes tens of milliseconds seconds). An absolute time depends on the machine and on coverage instrumentation, and flaked in CI. Goldens are kept
 out of Prettier (`.prettierignore`).
 
 ## Constants and configuration
 
-| Constant                       | Value                         | Provenance                                                               | Safe range      |
-| ------------------------------ | ----------------------------- | ------------------------------------------------------------------------ | --------------- |
+| Constant                       | Value                         | Provenance                                                                   | Safe range      |
+| ------------------------------ | ----------------------------- | ---------------------------------------------------------------------------- | --------------- |
 | `SLUG_ID_PATTERN`              | `^[a-z][a-z0-9_-]{0,23}$`     | Spec, "Refs" (in `@livedocuments/document`)                                  | fixed           |
-| `SLUG_ID_MAX_LENGTH`           | 24                            | Spec (the pattern's bound)                                               | fixed           |
-| `REF_MIN_LENGTH`               | 4                             | Spec                                                                     | fixed           |
-| `LABEL_CUT_CHARS`              | 60                            | Spec                                                                     | fixed           |
-| `NOTE_CUT_CHARS`               | 48                            | Spec                                                                     | fixed           |
-| `ENTITY_FIELDS_SHOWN`          | 8                             | Spec                                                                     | fixed           |
-| `CHARS_PER_TOKEN`              | 3                             | Spec (measured 3.07 for the outline)                                     | fixed           |
-| `READ_DOCUMENT_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `packages/agent-verbs/src/mcp/schema.ts`)            | 2,000 to 32,000 |
-| `ALT_CUT_CHARS`                | 48                            | As notes (`VW53`)                                                        | 24 to 120       |
-| `ACTION_CUT_CHARS`             | 48                            | As notes (`VW53`)                                                        | 24 to 120       |
-| `ATTR_BARE_PATTERN`            | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)                               | narrower only   |
-| `REF_NEAREST_MAX`              | 5                             | Enough to choose from (`VW53`)                                           | 1 to 20         |
+| `SLUG_ID_MAX_LENGTH`           | 24                            | Spec (the pattern's bound)                                                   | fixed           |
+| `REF_MIN_LENGTH`               | 4                             | Spec                                                                         | fixed           |
+| `LABEL_CUT_CHARS`              | 60                            | Spec                                                                         | fixed           |
+| `NOTE_CUT_CHARS`               | 48                            | Spec                                                                         | fixed           |
+| `ENTITY_FIELDS_SHOWN`          | 8                             | Spec                                                                         | fixed           |
+| `CHARS_PER_TOKEN`              | 3                             | Spec (measured 3.07 for the outline)                                         | fixed           |
+| `READ_DOCUMENT_DEFAULT_BUDGET` | 8,000                         | Spec, "Budgets" (in `packages/agent-verbs/src/mcp/schema.ts`)                | 2,000 to 32,000 |
+| `ALT_CUT_CHARS`                | 48                            | As notes (`VW53`)                                                            | 24 to 120       |
+| `ACTION_CUT_CHARS`             | 48                            | As notes (`VW53`)                                                            | 24 to 120       |
+| `ATTR_BARE_PATTERN`            | `^[A-Za-z0-9._:/#?&=%+@~-]+$` | URL-safe without quotes or spaces (`VW15`)                                   | narrower only   |
+| `REF_NEAREST_MAX`              | 5                             | Enough to choose from (`VW53`)                                               | 1 to 20         |
 | `REF_INPUT_MAX_LENGTH`         | 256                           | Above any stored id in practice (`VW53`); in `@livedocuments/api-schema`     | 64 to 1,024     |
-| `SELECTED_REF`                 | `selected`                    | Spec: the edit operations' selector                                      | fixed           |
+| `SELECTED_REF`                 | `selected`                    | Spec: the edit operations' selector                                          | fixed           |
 | `FIND_QUERY_MAX_LENGTH`        | 200                           | A phrase, not a document (`VW53`); in `@livedocuments/api-schema`            | 50 to 1,000     |
 | `VIEW_BUDGET_MAX`              | 1,000,000                     | Above a full 10,000-element outline (`VW53`); in `@livedocuments/api-schema` | 200,000 and up  |
-| `OVERVIEW_TAB_BATCH`           | 8                             | About 15 MB of bodies at the tab cap (`VW47`)                            | 1 to 16         |
-| `VIEW_SLOW_MS`                 | 100                           | Well above a 1,000-element render (`VW53`)                               | 50 to 1,000     |
-| `ELISION_CONTAINERS_NAMED`     | 3                             | A line that stays short (`VW60`)                                         | 1 to 10         |
-| `PROGRESS_DEFAULT`             | 50                            | Where the editor draws an unset progress                                 | fixed           |
+| `OVERVIEW_TAB_BATCH`           | 8                             | About 15 MB of bodies at the tab cap (`VW47`)                                | 1 to 16         |
+| `VIEW_SLOW_MS`                 | 100                           | Well above a 1,000-element render (`VW53`)                                   | 50 to 1,000     |
+| `ELISION_CONTAINERS_NAMED`     | 3                             | A line that stays short (`VW60`)                                             | 1 to 10         |
+| `PROGRESS_DEFAULT`             | 50                            | Where the editor draws an unset progress                                     | fixed           |
 
 No environment variable or binding; self-hosting needs nothing new.
 

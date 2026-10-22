@@ -10,10 +10,10 @@ import { pointInsideOutline } from './shape-outline';
 // click-to-connect makes. Left free inside, the head hid under the shape and nothing connected.
 //
 // The topmost shape whose outline holds the point, skipping what an end is drawn across rather than onto: a
-// container (frame, lane, boundary, stack), whose members' arrows run inside it; a badge or step chip, which no
+// container (a stack), whose members' arrows run inside it; a badge or step chip, which no
 // arrow ends on; and `skipId`, the shape the other end is already on, so a new arrow drawn out of it does not loop
 // back while it leaves. A picture or a drawing (image, freehand) is skipped too: an arrow released inside one
-// points at something in it, an annotation, as it always has. Null when no shape is under the point.
+// points at something in it, as it always has. Null when no shape is under the point.
 const POINTED_INTO: ReadonlySet<Element['type']> = new Set(['image', 'freehand']);
 
 export function bodyDropAnchor(

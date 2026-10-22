@@ -226,7 +226,6 @@ const SKETCHED_BY_BODY = new Set<string>([
   'trapezoid',
   'star',
   'speech-bubble',
-  'frame',
   'monitor',
   'laptop',
   'phone',
@@ -239,13 +238,13 @@ const SKETCHED_BY_BODY = new Set<string>([
 
 /** The element kinds Sketch draws a face of by hand (docs/specs/008-canvas/finish.md "Every other face is drawn by
  *  hand too"): its ink through the wobble, its words crisp above it. Everything that draws more than a label, a
- *  table's grid, a link card, a video's frame, an annotation marker, and a plain box carrying an inline icon. */
+ *  table's grid, a link card, a video's frame, a margin note's chip, and a plain box carrying an inline icon. */
 export function finishSplitsFace(el: { type: string; shape?: string; iconId?: string }): boolean {
   switch (el.type) {
     case 'table':
     case 'link-card':
     case 'video':
-    case 'annotation':
+    case 'article-note':
       return true;
     case 'shape':
       return !SKETCHED_BY_BODY.has(el.shape ?? '') || (!!el.iconId && !finishWobblesArt(el));
@@ -266,8 +265,8 @@ export function finishNewArrowStyle(finish: Finish): ArrowStyle | undefined {
 }
 
 /** Whether a shape's kind takes Sketch's hatching and Marker's colouring at all, whatever its fill and whatever sits
- *  on it: every box with a body of its own (plain boxes, drawn silhouettes, cards, panels, pages and
- *  frames, docs/specs/008-canvas/finish.md), not a self-painting face, whose own parts are its drawing. The shading is
+ *  on it: every box with a body of its own (plain boxes, drawn silhouettes, cards and panels,
+ *  docs/specs/008-canvas/finish.md), not a self-painting face, whose own parts are its drawing. The shading is
  *  light enough to read words over; what sits on a shape (a backdrop) still keeps it solid. */
 export function finishHatchesKind(element: Element): boolean {
   if (element.type !== 'shape') return false;

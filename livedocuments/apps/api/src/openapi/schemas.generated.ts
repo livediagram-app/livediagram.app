@@ -277,70 +277,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "object"
   },
-  "AiConversationTurn": {
-    "additionalProperties": false,
-    "properties": {
-      "content": {
-        "type": "string"
-      },
-      "role": {
-        "enum": [
-          "user",
-          "assistant"
-        ],
-        "type": "string"
-      }
-    },
-    "required": [
-      "role",
-      "content"
-    ],
-    "type": "object"
-  },
-  "AiMode": {
-    "enum": [
-      "clean",
-      "ask"
-    ],
-    "type": "string"
-  },
-  "AiRequest": {
-    "additionalProperties": false,
-    "properties": {
-      "elements": {
-        "items": {},
-        "type": "array"
-      },
-      "focusIds": {
-        "items": {
-          "type": "string"
-        },
-        "type": "array"
-      },
-      "history": {
-        "items": {
-          "$ref": "#/components/schemas/AiConversationTurn"
-        },
-        "type": "array"
-      },
-      "mode": {
-        "$ref": "#/components/schemas/AiMode"
-      },
-      "prompt": {
-        "type": "string"
-      },
-      "tabName": {
-        "type": "string"
-      }
-    },
-    "required": [
-      "mode",
-      "prompt",
-      "elements",
-      "tabName"
-    ],
-    "type": "object"
-  },
   "Anchor": {
     "enum": [
       "n",
@@ -370,130 +306,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "fast"
     ],
     "type": "string"
-  },
-  "AnnotationElement": {
-    "additionalProperties": false,
-    "properties": {
-      "action": {
-        "$ref": "#/components/schemas/ElementAction"
-      },
-      "animation": {
-        "$ref": "#/components/schemas/ElementAnimation"
-      },
-      "animationRepeat": {
-        "type": "boolean"
-      },
-      "animationSpeed": {
-        "$ref": "#/components/schemas/AnimationSpeed"
-      },
-      "articleNote": {
-        "enum": [
-          "comment",
-          "action"
-        ],
-        "type": "string"
-      },
-      "aspectLocked": {
-        "type": "boolean"
-      },
-      "commentThread": {
-        "$ref": "#/components/schemas/CommentThread"
-      },
-      "fillColor": {
-        "type": "string"
-      },
-      "font": {
-        "type": "string"
-      },
-      "headerFill": {
-        "type": "string"
-      },
-      "height": {
-        "type": "number"
-      },
-      "id": {
-        "$ref": "#/components/schemas/ElementId"
-      },
-      "label": {
-        "type": "string"
-      },
-      "layerId": {
-        "type": "string"
-      },
-      "link": {
-        "$ref": "#/components/schemas/ElementLink"
-      },
-      "locked": {
-        "type": "boolean"
-      },
-      "note": {
-        "type": "string"
-      },
-      "noteRich": {
-        "items": {
-          "$ref": "#/components/schemas/TextRun"
-        },
-        "type": "array"
-      },
-      "opacity": {
-        "type": "number"
-      },
-      "padding": {
-        "$ref": "#/components/schemas/Padding"
-      },
-      "rotation": {
-        "type": "number"
-      },
-      "strokeColor": {
-        "type": "string"
-      },
-      "textAlignX": {
-        "$ref": "#/components/schemas/TextAlignX"
-      },
-      "textAlignY": {
-        "$ref": "#/components/schemas/TextAlignY"
-      },
-      "textBold": {
-        "type": "boolean"
-      },
-      "textColor": {
-        "type": "string"
-      },
-      "textItalic": {
-        "type": "boolean"
-      },
-      "textSize": {
-        "$ref": "#/components/schemas/TextSize"
-      },
-      "textStrikethrough": {
-        "type": "boolean"
-      },
-      "textUnderline": {
-        "type": "boolean"
-      },
-      "type": {
-        "const": "annotation",
-        "type": "string"
-      },
-      "width": {
-        "type": "number"
-      },
-      "x": {
-        "type": "number"
-      },
-      "y": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "id",
-      "type",
-      "x",
-      "y",
-      "width",
-      "height"
-    ],
-    "type": "object"
   },
   "ApiToken": {
     "additionalProperties": false,
@@ -946,6 +758,131 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     ],
     "type": "string"
   },
+  "ArticleNoteElement": {
+    "additionalProperties": false,
+    "properties": {
+      "action": {
+        "$ref": "#/components/schemas/ElementAction"
+      },
+      "animation": {
+        "$ref": "#/components/schemas/ElementAnimation"
+      },
+      "animationRepeat": {
+        "type": "boolean"
+      },
+      "animationSpeed": {
+        "$ref": "#/components/schemas/AnimationSpeed"
+      },
+      "articleNote": {
+        "enum": [
+          "comment",
+          "action"
+        ],
+        "type": "string"
+      },
+      "aspectLocked": {
+        "type": "boolean"
+      },
+      "commentThread": {
+        "$ref": "#/components/schemas/CommentThread"
+      },
+      "fillColor": {
+        "type": "string"
+      },
+      "font": {
+        "type": "string"
+      },
+      "headerFill": {
+        "type": "string"
+      },
+      "height": {
+        "type": "number"
+      },
+      "id": {
+        "$ref": "#/components/schemas/ElementId"
+      },
+      "label": {
+        "type": "string"
+      },
+      "layerId": {
+        "type": "string"
+      },
+      "link": {
+        "$ref": "#/components/schemas/ElementLink"
+      },
+      "locked": {
+        "type": "boolean"
+      },
+      "note": {
+        "type": "string"
+      },
+      "noteRich": {
+        "items": {
+          "$ref": "#/components/schemas/TextRun"
+        },
+        "type": "array"
+      },
+      "opacity": {
+        "type": "number"
+      },
+      "padding": {
+        "$ref": "#/components/schemas/Padding"
+      },
+      "rotation": {
+        "type": "number"
+      },
+      "strokeColor": {
+        "type": "string"
+      },
+      "textAlignX": {
+        "$ref": "#/components/schemas/TextAlignX"
+      },
+      "textAlignY": {
+        "$ref": "#/components/schemas/TextAlignY"
+      },
+      "textBold": {
+        "type": "boolean"
+      },
+      "textColor": {
+        "type": "string"
+      },
+      "textItalic": {
+        "type": "boolean"
+      },
+      "textSize": {
+        "$ref": "#/components/schemas/TextSize"
+      },
+      "textStrikethrough": {
+        "type": "boolean"
+      },
+      "textUnderline": {
+        "type": "boolean"
+      },
+      "type": {
+        "const": "article-note",
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "x": {
+        "type": "number"
+      },
+      "y": {
+        "type": "number"
+      }
+    },
+    "required": [
+      "id",
+      "type",
+      "x",
+      "y",
+      "width",
+      "height",
+      "articleNote"
+    ],
+    "type": "object"
+  },
   "ArticlePageBreakBlock": {
     "additionalProperties": false,
     "properties": {
@@ -1390,7 +1327,7 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "$ref": "#/components/schemas/TableElement"
       },
       {
-        "$ref": "#/components/schemas/AnnotationElement"
+        "$ref": "#/components/schemas/ArticleNoteElement"
       },
       {
         "$ref": "#/components/schemas/LinkCardElement"
@@ -1403,9 +1340,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "CapabilitiesResponse": {
     "additionalProperties": false,
     "properties": {
-      "aiEnabled": {
-        "type": "boolean"
-      },
       "apiBase": {
         "type": "string"
       },
@@ -1434,9 +1368,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       }
     },
-    "required": [
-      "aiEnabled"
-    ],
     "type": "object"
   },
   "CardMedia": {
@@ -2379,21 +2310,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             },
             "type": "object"
           },
-          "frame": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
           "hexagon": {
             "additionalProperties": false,
             "properties": {
@@ -2515,21 +2431,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
             "type": "object"
           },
           "onion": {
-            "additionalProperties": false,
-            "properties": {
-              "fill": {
-                "type": "string"
-              },
-              "stroke": {
-                "type": "string"
-              },
-              "text": {
-                "type": "string"
-              }
-            },
-            "type": "object"
-          },
-          "page": {
             "additionalProperties": false,
             "properties": {
               "fill": {
@@ -3204,7 +3105,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "DocumentSource": {
     "enum": [
-      "ai",
       "mcp",
       "cli"
     ],
@@ -5252,8 +5152,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "label-collision",
       "label-overflow",
       "node-isolated",
-      "group-escape",
-      "group-split-edges",
       "duplicate-label",
       "flow-backwards",
       "text-overflow"
@@ -5558,14 +5456,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               },
               "boxes": {
                 "type": "number"
-              },
-              "frames": {
-                "type": "number"
               }
             },
             "required": [
               "boxes",
-              "frames",
               "arrows"
             ],
             "type": "object"
@@ -7303,12 +7197,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
       },
-      "actions": {
-        "items": {
-          "$ref": "#/components/schemas/ElementAction"
-        },
-        "type": "array"
-      },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
       },
@@ -7758,7 +7646,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "parallelogram",
       "hexagon",
       "document",
-      "page",
       "banner",
       "callout",
       "card",
@@ -7782,7 +7669,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "trapezoid",
       "star",
       "speech-bubble",
-      "frame",
       "browser",
       "monitor",
       "laptop",
@@ -8157,9 +8043,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
-      },
-      "addedBy": {
-        "type": "string"
       },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
@@ -9113,7 +8996,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "Layer",
       "Session",
       "Facilitator",
-      "AI",
       "Team",
       "Participant",
       "Help",
@@ -9404,9 +9286,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
     "properties": {
       "action": {
         "$ref": "#/components/schemas/ElementAction"
-      },
-      "addedBy": {
-        "type": "string"
       },
       "animation": {
         "$ref": "#/components/schemas/ElementAnimation"
@@ -10031,14 +9910,10 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           },
           "boxes": {
             "type": "number"
-          },
-          "frames": {
-            "type": "number"
           }
         },
         "required": [
           "boxes",
-          "frames",
           "arrows"
         ],
         "type": "object"

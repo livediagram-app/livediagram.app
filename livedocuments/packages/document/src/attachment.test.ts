@@ -48,11 +48,10 @@ describe('attachment points (docs/specs/009-elements/badge.md "Attachment")', ()
     expect(p.y).toBeCloseTo(150);
   });
 
-  it('hosts ordinary elements, never a chip, a container or an annotation', () => {
+  it('hosts ordinary elements, never a chip, a container or a margin note', () => {
     expect(canHost(host())).toBe(true);
     expect(canHost(badge())).toBe(false);
-    expect(canHost(host({ shape: 'frame' }))).toBe(false);
-    expect(canHost(host({ shape: 'stack' as never }))).toBe(false);
+    expect(canHost(host({ shape: 'stack' }))).toBe(false);
   });
 });
 

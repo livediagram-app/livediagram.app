@@ -36,7 +36,6 @@ function harness(element: BoxedElement, initial: State) {
       wrapperRef: { current: null },
       isEditing: false,
       remotelyLocked: false,
-      isAnnotation: false,
       isPaintMode: false,
       ...state,
       onBeginDrag,

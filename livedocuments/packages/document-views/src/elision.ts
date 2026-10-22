@@ -71,7 +71,7 @@ export function buildElision(
   };
 }
 
-// `… notes hidden; 12 elements in frame c991 hidden: view --only c991`
+// `… notes hidden; 12 elements in stack c991 hidden: view --only c991`
 // The largest collapsed containers are named; the rest are one total, so the line stays short however
 // many containers a budget folds (VW39).
 export function elisionLine(elision: NonNullable<Elision>): string {

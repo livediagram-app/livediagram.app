@@ -56,7 +56,6 @@ describe('every kind with a body draws one', () => {
     'progress-ring',
     'rating',
     'timeline-rail',
-    'page',
     'browser',
   ];
 

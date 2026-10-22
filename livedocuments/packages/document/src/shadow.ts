@@ -55,7 +55,7 @@ export const SHADOW_PRESETS: { id: ShadowPresetId; label: string; shadow: Elemen
 export const DEFAULT_SHADOW: ElementShadow = SHADOW_PRESETS[1]!.shadow;
 
 // The boxed types that draw a visible body a shadow can sit under
-// (docs/specs/008-canvas/element-shadows.md). Text / freehand / annotation / table / arrows are out: a
+// (docs/specs/008-canvas/element-shadows.md). Text / freehand / margin notes / table / arrows are out: a
 // bounding-box shadow under a text run or a grid reads as a bug.
 export function supportsShadow(
   el: Pick<Element, 'type'>,

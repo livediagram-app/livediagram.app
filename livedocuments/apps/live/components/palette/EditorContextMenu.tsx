@@ -111,13 +111,11 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
     const isIcon = target.type === 'shape' && target.shape === 'icon';
     const hasImage = target.type === 'image' && target.imageId != null;
     const hasLink = target.link != null;
-    // Regular shapes (not the dedicated icon glyph, not a frame container, not
-    // a self-drawing data shape which carries its own data) can morph to
-    // another common kind in place.
+    // Regular shapes (not the dedicated icon glyph, not a self-drawing data
+    // shape which carries its own data) can morph to another common kind in place.
     const morphable =
       target.type === 'shape' &&
       !isIcon &&
-      target.shape !== 'frame' &&
       // Every self-drawing kind carries its own data (progress / rail /
       // rating / charts / code block / checklist), so none of them morph.
       !isSelfDrawingShape(target.shape);
@@ -233,8 +231,8 @@ export function EditorContextMenu(props: EditorContextMenuProps) {
         ) : null}
         {/* Rotation — fixed snap angles. Each tile previews the orientation
             (an upright marker rotated by the angle) so the effect is legible
-            before clicking; 0° resets to upright. Not on an annotation marker
-            (docs/specs/009-elements/blueprints/annotations.md [QD8]). */}
+            before clicking; 0° resets to upright. Not on an element that does not
+            turn (supportsRotation). */}
         {supportsRotation(target) ? (
           <MenuAccordionSection
             title="Rotation"

@@ -62,8 +62,6 @@ export type QuickStyleDeps = {
   activeTab: Tab;
   theme: ThemeDefinition;
   editsBlocked: boolean;
-  // A Participant styles only what it may recolour (docs/specs/013-workspace/share-roles.md); absent for an Editor.
-  canStyle?: (el: Element) => boolean;
   // The live active-tab elements, read at the moment of a choice.
   liveElements: () => Element[];
   commit: (mapElements: (els: Element[]) => Element[]) => void;
@@ -74,14 +72,14 @@ export type QuickStyleDeps = {
 export function useQuickStyle(
   deps: QuickStyleDeps & { selectionIds: ReadonlySet<string> },
 ): QuickStyleApi {
-  const { activeTab, theme, selectionIds, liveElements, commit, memory, canStyle } = deps;
+  const { activeTab, theme, selectionIds, liveElements, commit, memory } = deps;
   const { overrides } = deps.swatchOverrides;
 
   const selected = useMemo(
     () => activeTab.elements.filter((el) => selectionIds.has(el.id)),
     [activeTab.elements, selectionIds],
   );
-  const editsBlocked = deps.editsBlocked || (!!canStyle && selected.some((el) => !canStyle(el)));
+  const editsBlocked = deps.editsBlocked;
   // The stock colours in their version for the canvas the tab paints
   // (docs/specs/008-canvas/canvas-and-palette.md): the viewer's appearance on the Default
   // theme, the theme's own canvas otherwise.

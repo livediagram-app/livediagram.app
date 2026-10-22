@@ -30,7 +30,6 @@ export type {
   RewireOperation,
   TestOperation,
   UnwrapOperation,
-  WrapOperation,
   ApplyOptions,
   ApplyOutcome,
   ApplyRejection,

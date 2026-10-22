@@ -2,8 +2,8 @@ import { shapeKindLabel } from './element-names';
 import type { ArrowEnds, ComponentKind, EmbedProvider, ShapeKind } from '@livedocuments/document';
 import { EMBED_PROVIDER_LABEL } from '@livedocuments/document';
 
-// Draw-to-size intent. Picking any element from the palette except the
-// annotation (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas
+// Draw-to-size intent. Picking any element from the palette
+// (docs/specs/008-canvas/canvas-and-palette.md "Placement on add") stashes the intent here; the canvas
 // then enters a "drag to define" gesture and forwards the resolved
 // start + end points to the editor on pointer-up. Discriminated so
 // the canvas can render the right preview per intent (oval for a
@@ -36,8 +36,6 @@ export type PendingDraw =
   // intent to ride the same gesture. They used to drop at the viewport centre
   // for want of one, which made "draws or drops?" a property of how the
   // element was modelled instead of whether it has a size worth choosing.
-  // Annotation is deliberately absent: a fixed 44x44 marker has no box to
-  // size, so it stays the one instant-drop tile (docs/specs/009-elements/annotations.md).
   | { type: 'table' }
   | { type: 'link-card' }
   // `provider` rides the intent the way `iconId` does above: the

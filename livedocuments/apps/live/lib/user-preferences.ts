@@ -72,17 +72,6 @@ export type UserPreferences = {
   collaboratePanelEnabled?: boolean;
   // Quick style: the selection's style panel. Style memory stays.
   quickStylePanelEnabled?: boolean;
-  // AI Assistance panel (docs/specs/007-editor/ai-assistance.md). When `true`, the AI panel is
-  // rendered in the editor. Defaults to false (opt-in). Only
-  // surfaced in Settings when the api worker reports aiEnabled:true
-  // (i.e. a model key is configured). Missing / undefined / false
-  // === panel hidden.
-  aiAssistanceEnabled?: boolean;
-  // Show the quick suggested-prompt chips in the AI panel (docs/specs/007-editor/ai-assistance.md).
-  // Handy but they take vertical space, so the AI panel's settings
-  // popover can hide them. Missing / undefined / true === shown (the
-  // default); an explicit false hides them.
-  aiSuggestedPrompts?: boolean;
   // Panel opacity (docs/specs/007-editor/user-preferences.md). The opacity (0..1) of EVERY panel at
   // rest (floating, popover, the Map, Quick style, the Toolbar strip), so the
   // canvas shows through; they snap back to fully opaque while hovered /

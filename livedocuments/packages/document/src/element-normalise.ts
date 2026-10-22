@@ -193,9 +193,8 @@ function factoryOf(el: Raw): Raw | undefined {
 }
 
 // The presentation fields the factory sets that raw JSON usually leaves out.
-// Unset, text falls back to 'scale' (filling the box), so a frame's title came
-// out as one giant word across its contents, and one with no title alignment
-// put its title in the wrong place; a box drawn in the editor never arrives that way.
+// Unset, text falls back to 'scale' (filling the box), so a label came out as one giant word
+// across its box; a box drawn in the editor never arrives that way.
 const FACTORY_DEFAULTS = ['textSize', 'textAlignX', 'textAlignY', 'padding'] as const;
 
 function withFactoryDefaults(el: Raw): Raw {
@@ -273,7 +272,6 @@ export function mergeElementUpdate(prev: unknown, patch: unknown): Raw {
 // gives no `textSize` takes `sm` before the factory's `md` fills in, so twenty hand-placed boxes do not wrap their
 // names mid-word.
 const PLAIN_BOX_EXCLUDED = new Set([
-  'frame',
   'code-block',
   'bar-chart',
   'pie-chart',
@@ -296,7 +294,7 @@ function withLookTextSize(elements: unknown[], kept: ReadonlySet<string>): unkno
   );
 }
 
-// A raw arrow pinned at both ends draws as graph input's lines do (docs/specs/015-api/mcp-server.md): angled when it
+// A raw arrow pinned at both ends draws as an elbow line (docs/specs/015-api/mcp-server.md): angled when it
 // names no style, and an angled one with no bends given its two, along the axis its start leaves by, so it meets
 // both ends square; ends that line up run straight.
 function withRawElbows(elements: DocElement[], kept: ReadonlySet<string>): DocElement[] {

@@ -183,7 +183,7 @@ describe('page changes', () => {
 });
 
 describe('an article write', () => {
-  it('starts an article and relays its writing as agent-marked frames', async () => {
+  it('starts an article and relays its writing as grow-marked frames', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db, room } = await setUp();
     const res = await call(db, { article: { markdown: '---\ntitle: Brief\n---\n# Goals\n- One' } });
@@ -196,7 +196,7 @@ describe('an article write', () => {
     expect(Object.values(tab.articles)).toHaveLength(1);
     const kinds = room.bodies.map((b) => b.op.kind);
     expect(kinds).toEqual(['tab-meta', 'article']);
-    expect(room.bodies[1]!.op).toMatchObject({ created: true, agent: true });
+    expect(room.bodies[1]!.op).toMatchObject({ created: true, grow: true });
   });
 
   it('refuses an ambiguous write with 400', async () => {

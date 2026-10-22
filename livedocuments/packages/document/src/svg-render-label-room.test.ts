@@ -7,7 +7,6 @@ import {
   labelMaxWidth,
   labelMeasure,
 } from './svg-render-primitives';
-import { pageBodyTop } from './svg-render-page';
 import { describeBoxedExport } from './svg-render-describe';
 import { defaultPadding } from './colors';
 import { labelBodyInset } from './label-body';
@@ -73,12 +72,6 @@ describe('labelRoom', () => {
     const pad = PADDING_PX[cyl.padding ?? defaultPadding(cyl)];
     const body = labelBodyInset(cyl);
     expect(labelRoom(cyl).height).toBeCloseTo(200 - body.top - body.bottom - 2 * pad, 9);
-  });
-
-  it("starts a page's room under its masthead", () => {
-    const page = { ...createShape('page', 0, 0), width: 300, height: 400 } as BoxedElement;
-    const pad = PADDING_PX[page.padding ?? 'lg'];
-    expect(labelRoom(page).height).toBe(400 - pad - (pageBodyTop(page as never, pad) + pad));
   });
 });
 

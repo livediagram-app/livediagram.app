@@ -36,7 +36,7 @@ import type {
   StickyElement,
   ImageElement,
   FreehandElement,
-  AnnotationElement,
+  ArticleNoteElement,
   LinkCardElement,
   VideoElement,
 } from './element-types';
@@ -57,7 +57,7 @@ export type {
   StickyElement,
   ImageElement,
   FreehandElement,
-  AnnotationElement,
+  ArticleNoteElement,
   LinkCardMeta,
   LinkCardElement,
   VideoElement,
@@ -304,7 +304,7 @@ export type BoxedElement =
   | ImageElement
   | FreehandElement
   | TableElement
-  | AnnotationElement
+  | ArticleNoteElement
   | LinkCardElement
   | VideoElement;
 export type Element = BoxedElement | ArrowElement;
@@ -449,7 +449,6 @@ export * from './article-pages';
 export * from './article-style';
 export * from './article-zones';
 export * from './article-notes';
-export * from './article-to-page';
 export * from './article-intake';
 export * from './article-markdown';
 export * from './article-markdown-io';
@@ -470,7 +469,7 @@ export function isBoxed(element: Element): element is BoxedElement {
     element.type === 'image' ||
     element.type === 'freehand' ||
     element.type === 'table' ||
-    element.type === 'annotation' ||
+    element.type === 'article-note' ||
     element.type === 'link-card' ||
     element.type === 'video'
   );
@@ -480,7 +479,7 @@ export function isBoxed(element: Element): element is BoxedElement {
 // `label` every labelable kind mirrors (shape / text / sticky / freehand /
 // link-card and arrows). Drives the selection toolbar's "Edit Text" button,
 // which only appears once an element actually has text to edit. Tables
-// (per-cell `cells`), images (`alt`), and annotations (`note`) carry no
+// (per-cell `cells`), images (`alt`), and margin notes carry no
 // single `label`, so this reads false for them — matching the inline label
 // editor, which targets `label`-bearing elements only.
 export function elementHasText(element: Element): boolean {
@@ -539,7 +538,7 @@ export * from './face-finish';
 export * from './marker-face';
 export * from './hand-drawn';
 export * from './drawn-outline-finish';
-// Which elements can be rotated (an annotation marker cannot).
+// Which elements can be rotated (a margin note's marker cannot).
 export * from './rotation';
 export * from './shape-marker';
 // Fixed-size elements.
@@ -618,7 +617,7 @@ export * from './savable';
 // Every stored field per element type (docs/specs/024-agents/blueprints/edit-operations.md).
 export * from './element-fields';
 
-// Deterministic auto-layout for AI-generated diagrams (docs/specs/007-editor/ai-assistance.md).
+// Deterministic auto-layout for agent-built diagrams and the editor's Auto Layout.
 export * from './auto-layout';
 // The editor's Tidy Up profile (docs/specs/008-canvas/layout-cleanup.md): whether a style suits a tab.
 export { tidyLayoutElements, tidyMindmapFits } from './auto-layout-tidy';
@@ -626,7 +625,7 @@ export { tidyLayoutElements, tidyMindmapFits } from './auto-layout-tidy';
 // The layout engine's gaps, which edit operations place and make room by.
 export { LAYER_GAP, SIBLING_GAP } from './auto-layout-shared';
 // The nodes a layout leaves loose swept into rows, and the room a container keeps round its members.
-export { FRAME_PAD, FRAME_TOP, sweepEdgelessNodes } from './auto-layout-sweep';
+export { CONTAINER_PAD, CONTAINER_TOP, sweepEdgelessNodes } from './auto-layout-sweep';
 
 // Authoring input shared by the MCP, the api and the CLI (docs/specs/015-api/mcp-server.md §4.7a):
 // raw elements made safe, labels capped and boxes sized to them, and finished tabs built.
@@ -709,7 +708,7 @@ export * from './layer-operations';
 // diff/apply functions the realtime room uses to merge concurrent edits.
 export * from './element-ops';
 export * from './participant-content';
-export * from './adder';
+export * from './participant-article';
 export * from './element-fingerprint';
 
 // Per-element deltas for the fields many participants write at once

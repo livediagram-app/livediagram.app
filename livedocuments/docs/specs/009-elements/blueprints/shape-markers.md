@@ -42,8 +42,8 @@ Banned synonyms: "status dot" in code (say marker), "badge", "tick box" (say che
 1. `BoxedElementView`: `marker = element.type === 'shape' && !isSelfDrawingShape(shape) ?
 element.marker : undefined`.
 2. `ElementFaceRouter` tries the own-face kinds (at rest) and the web components first; any other
-   shape with an inline icon or a marker renders through `ShapeInlineIconLayout`, ahead of the page
-   and icon-caption branches [QE12] [GE16]. The label editor becomes an inline flex child so the
+   shape with an inline icon or a marker renders through `ShapeInlineIconLayout`, ahead of the
+   icon-caption branch [QE12] [GE16]. The label editor becomes an inline flex child so the
    marker stays beside it while typing.
 3. Marker and label form one inline group (`items-center`, gap `max(4, round(markerPx * 0.4))`),
    marker first; with no label the marker is centred alone per the element's alignment. The
@@ -61,7 +61,7 @@ max(16, min(min(w, h) * 0.32, 48))`; fixed buckets from `MARKER_FIXED_PX` (sm 12
 1. Single element: `showMarkers = target.type === 'shape' && !isSelfDrawingShape(target.shape) &&
 hasText`, `hasText` = trimmed label non-empty or the element is being edited. It admits the web
    components that carry a label (banner, callout, header), whose face never draws a marker
-   [GE16], and the page and icon kinds [QE12].
+   [GE16], and the icon kind [QE12].
 2. Placement: the Text flyout, after Typography and Alignment.
 3. `MarkerTiles`: None + `SHAPE_MARKERS` in order; the Size row (Scale / S / M / L) always
    renders, inert and dimmed at 40 % until a marker is set.
@@ -116,7 +116,7 @@ Both apply helpers and `setShapeFieldSelected` write to any shape, self-drawing 
 | E5  | Inline icon present                   | Icon on its side, marker hugging the label                   |
 | E6  | Rich-text label                       | Runs render beside the marker unchanged                      |
 | E7  | Marker on a banner, callout or header | Offered by the menu, never drawn by the face [GE16]          |
-| E8  | Marker on a page or an icon           | Inline layout replaces the masthead / caption band [QE12]    |
+| E8  | Marker on an icon                     | Inline layout replaces the caption band [QE12]               |
 | E9  | Marker on an own-face kind            | Not drawn at rest; drawn beside the label while it is edited |
 
 ## Security and trust

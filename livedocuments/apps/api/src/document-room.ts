@@ -177,7 +177,7 @@ export class DocumentRoom implements DurableObject {
   private tabWriteQueue: Promise<unknown> = Promise.resolve();
   // The surface the api worker's internal endpoints act on (room-internal.ts).
   private readonly internal: InternalRoom;
-  // A Participant's content and answers (docs/specs/013-workspace/share-roles.md), see room-participant.ts.
+  // A Participant's text (docs/specs/013-workspace/share-roles.md), see room-participant.ts.
   private participantWrites: RoomParticipantWrites;
 
   constructor(state: DurableObjectState, env?: Env) {
@@ -261,7 +261,6 @@ export class DocumentRoom implements DurableObject {
       v.account,
       v.personTag,
       v.workbenchPairing,
-      v.adderKey,
       v.documentId,
     );
     // A share session whose link changed while it was joining is told now (room-link-recheck.ts).
@@ -305,7 +304,6 @@ export class DocumentRoom implements DurableObject {
     account = false,
     personTag: string | null = null,
     workbenchPairing: string | null = null,
-    adderKey: string | null = null,
     documentId: string | null = null,
   ): void {
     ws.serializeAttachment(
@@ -317,7 +315,6 @@ export class DocumentRoom implements DurableObject {
           account,
           personTag,
           workbenchPairing,
-          adderKey,
           documentId,
         },
         crypto.randomUUID(),
@@ -574,17 +571,11 @@ export class DocumentRoom implements DurableObject {
         tabScope: session.tabScope ?? null,
       });
       if (gate.kind === 'drop') return;
-      if (gate.kind === 'participant-content') {
-        void this.participantWrites.applyContentOp(
-          {
-            ws,
-            presenceId: sender.id,
-            documentId: session.documentId ?? null,
-            adderKey: session.adderKey ?? null,
-          },
-          msg.op,
-          msg.ref,
-        );
+      if (gate.kind === 'participant-content' || gate.kind === 'participant-article') {
+        const writer = { ws, presenceId: sender.id, documentId: session.documentId ?? null };
+        if (gate.kind === 'participant-content')
+          void this.participantWrites.applyContentOp(writer, msg.op, msg.ref);
+        else void this.participantWrites.applyArticleOp(writer, msg.op, msg.ref);
         return;
       }
       const opKind = (msg.op as { kind?: unknown } | null | undefined)?.kind;

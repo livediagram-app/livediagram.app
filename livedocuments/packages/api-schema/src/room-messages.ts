@@ -269,16 +269,16 @@ export type RoomOp =
   // "Collaboration"): its block ops, applied by block id, or the whole document gone (`removed`).
   // `Tab.articles` never rides a `tab-meta` patch, which would replace every document wholesale.
   // `created`: the article is new (its first frames): a receiver without it takes it, where puts
-  // for an article it no longer has (removed meanwhile) are dropped. `agent`: an agent wrote it (set
-  // by the api relay alone), so an editor that is not its writer still grows its pages
-  // (docs/specs/024-agents/pages-for-agents.md "Pages for the writing").
+  // for an article it no longer has (removed meanwhile) are dropped. `grow`: its writer lays out no
+  // pages (an agent, or a Participant; set by the server alone), so an editor that is not its writer
+  // still grows them (docs/specs/024-agents/pages-for-agents.md "Pages for the writing").
   | {
       kind: 'article';
       tabId: string;
       flow: string;
       ops: ArticleOp[];
       created?: true;
-      agent?: true;
+      grow?: true;
     }
   | { kind: 'article'; tabId: string; flow: string; removed: true }
   // Document-level metadata changed: rename, tab reorder, tab add /

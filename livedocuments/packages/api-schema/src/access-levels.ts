@@ -31,9 +31,8 @@ export function lowerLevel(level: AccessLevel, ceiling?: AccessLevel | null): Ac
   return levelAtLeast(level, ceiling) ? ceiling : level;
 }
 
-// `POST /api/documents/:id/room-ticket`'s answer. A Participant's carries its own adder key, the id the room
-// stamps on what it adds, so its editor knows which stickies are its own.
-export type RoomTicketResponse = { ticket: string; adderKey?: string };
+// `POST /api/documents/:id/room-ticket`'s answer.
+export type RoomTicketResponse = { ticket: string };
 
 // The anonymous-events type each level is counted under (docs/specs/017-telemetry/telemetry.md).
 export const LEVEL_TELEMETRY_TYPE: Record<AccessLevel, 'View' | 'Participate' | 'Edit'> = {

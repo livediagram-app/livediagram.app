@@ -19,10 +19,9 @@ const STATE_KINDS: [ShapeKind, Record<string, unknown>][] = [
   ['progress-bar', { progress: 40 }],
   ['progress-ring', {}],
   ['timeline-rail', {}],
-  ['page', { pageTitle: 'Quarterly review' }],
 ];
 
-// Grid cells below the frames, 8 to a row.
+// Grid cells below the stacks, 8 to a row.
 const cell = (i: number): [number, number] => [(i % 8) * 250, 600 + Math.floor(i / 8) * 200];
 
 export function edgeCasesTab(): Tab {
@@ -78,11 +77,11 @@ export function edgeCasesTab(): Tab {
       { id: 'hidden', name: 'Hidden', visible: false },
     ],
     elements: [
-      // Two frames of equal area overlapping: the earlier holds what sits in both (E4).
-      shapeAt('frame', 'frame-a', 0, 0, 600, 400, { label: 'A' }),
-      shapeAt('frame', 'frame-b', 300, 0, 600, 400, { label: 'B' }),
+      // Two stacks of equal area overlapping: the earlier holds what sits in both (E4).
+      shapeAt('stack', 'frame-a', 0, 0, 600, 400, { label: 'A' }),
+      shapeAt('stack', 'frame-b', 300, 0, 600, 400, { label: 'B' }),
       shapeAt('square', 'both', 400, 175, 100, 50, { label: 'In both' }),
-      // Larger than the frame its centre is in (E5).
+      // Larger than the stack its centre is in (E5).
       shapeAt('square', 'huge', -10, -10, 620, 420, { label: 'Huge' }),
       ...grid,
       { id: 'nowhere', type: 'hologram', label: 'No geometry' } as unknown as Element,

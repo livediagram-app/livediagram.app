@@ -20,7 +20,7 @@ export function kindLabel(el: Element): string {
   if (el.type === 'sticky') return 'Sticky note';
   if (el.type === 'table') return 'Table';
   if (el.type === 'image') return 'Image';
-  if (el.type === 'annotation') return 'Annotation';
+  if (el.type === 'article-note') return 'Margin note';
   if (el.type === 'freehand') {
     // A highlighter stroke and the polygon tool's outline (docs/specs/008-canvas/polygon-tool.md) are both
     // FreehandElements; name them by what was drawn.

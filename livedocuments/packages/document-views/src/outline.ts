@@ -1,7 +1,12 @@
 // The outline (docs/specs/024-agents/document-views.md "The outline"): one line per element, indentation
 // for containment, outgoing arrows on their source's line, fitted to a budget down a fixed ladder
 // (blueprint "Budgets", VW38).
-import type { FreehandRunJson, OutlineNode, OutlineView, ViewDoor } from '@livedocuments/api-schema';
+import type {
+  FreehandRunJson,
+  OutlineNode,
+  OutlineView,
+  ViewDoor,
+} from '@livedocuments/api-schema';
 import { isKnownElement, type Element } from '@livedocuments/document';
 import { attributesOf, isOpenCommentsAttribute } from './attributes';
 import { contentSummaryOf } from './content-summary';
@@ -264,7 +269,7 @@ function fitOutline(
   // Each step adds one collapse and measures in O(ELISION_CONTAINERS_NAMED): the hidden length and the elided
   // totals are kept running, entries inside a collapse are marked once (collapses never nest), and the elision
   // line is measured from its named containers (the first collapsed, being the largest) and the rest's totals.
-  // Rebuilding the fit and its elision per step was quadratic: 1.3 s for 4,000 frames at the MCP budget.
+  // Rebuilding the fit and its elision per step was quadratic: 1.3 s for 4,000 containers at the MCP budget.
   const collapsed: Collapse[] = [];
   const inside = new Uint8Array(entries.length);
   let hiddenLength = 0;

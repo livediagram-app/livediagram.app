@@ -26,7 +26,6 @@ vi.mock('./auth/workbench-session', async (original) => ({
 }));
 
 vi.mock('./routes/account', () => stub('handleAccount'));
-vi.mock('./routes/ai', () => stub('handleAi'));
 vi.mock('./routes/catalogues', () => stub('handleCatalogues'));
 vi.mock('./routes/capabilities', () => stub('handleCapabilities'));
 vi.mock('./routes/custom-themes', () => stub('handleCustomThemes'));
@@ -149,7 +148,6 @@ describe('a workspace session at the front door', () => {
     ['PUT', 'preferences'],
     ['PUT', 'participants/user_1'],
     ['GET', 'participants/user_2'],
-    ['POST', 'ai'],
     ['POST', 'oauth'],
     ['POST', 'teams'],
     ['GET', 'teams/invites'],

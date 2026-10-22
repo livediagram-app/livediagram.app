@@ -388,7 +388,7 @@ export default [
       [
         'grouped into edge, services, data and external',
         ({ snap }) => {
-          const groups = shapes(snap, 'frame');
+          const groups = shapes(snap, 'stack');
           const missing = [/edge/i, /service/i, /data/i, /external|third/i].filter(
             (w) => !groups.some((g) => w.test(g.label ?? '')),
           );

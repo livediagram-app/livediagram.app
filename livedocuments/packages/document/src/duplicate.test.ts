@@ -8,7 +8,6 @@ const carrying = (): Element =>
     id: 'orig',
     commentThread: { comments: [{ id: 'c1', authorId: 'u1', text: 'Hi', createdAt: 1 }] },
     action: { id: 'act-1', assignerId: 'u1', title: 'Do it' },
-    actions: [{ id: 'act-2', assignerId: 'u1', title: 'And this' }],
   }) as unknown as Element;
 
 // docs/specs/012-collaboration/assigned-actions.md "A copy doesn't carry the action"
@@ -18,7 +17,6 @@ describe('freshCopyFields', () => {
     const copy = JSON.parse(JSON.stringify(newElements[0])) as Record<string, unknown>;
     expect(copy.commentThread).toBeUndefined();
     expect(copy.action).toBeUndefined();
-    expect(copy.actions).toBeUndefined();
   });
 
   it('adds no keys an element never had', () => {

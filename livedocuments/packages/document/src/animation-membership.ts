@@ -50,7 +50,7 @@ export function bodyAnimationSetOf(el: Element): BodyAnimationSet | undefined {
       return 'table';
     case 'shape':
       return hasOwnShapeSet(el) || hasOwnBodySet(el) ? undefined : 'shape';
-    case 'annotation':
+    case 'article-note':
     case 'link-card':
       return 'shape';
     default:

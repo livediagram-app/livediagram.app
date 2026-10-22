@@ -4,7 +4,7 @@
 import { pathsCross } from '@livedocuments/document';
 import { arrowName, arrowSelector } from '../arrow-names';
 import { LINT_CROSSINGS_PER_ARROW, LINT_REFS_PER_FINDING_MAX } from '../constants';
-import { framedTab, refOf } from '../context';
+import { containedTab, refOf } from '../context';
 import { fixes } from '../fixes';
 import { restyledRoutes } from '../restyle';
 import type { Check } from './types';
@@ -39,7 +39,7 @@ export const edgeCrossings: Check = (ctx) => {
       code: 'edge-crossings' as const,
       refs: crossed.map((d) => refOf(ctx, d.arrow.id)),
       message: `${named.join(', ')}${more > 0 ? ` +${more}` : ''}: ${crossings.pairs} crossings among ${ctx.drawable.length} arrows, limit ${Math.floor(limit)}`,
-      fix: fixes.edgeCrossings(framedTab(ctx) ? restyle() : null),
+      fix: fixes.edgeCrossings(containedTab(ctx) ? restyle() : null),
       at: crossed[0]!.polyline[0]!,
     },
   ];

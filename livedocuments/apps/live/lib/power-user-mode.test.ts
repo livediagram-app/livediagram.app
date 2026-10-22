@@ -15,12 +15,11 @@ const off = (prefs: UserPreferences) => setPowerUserMode(prefs, false);
 
 describe('setPowerUserMode on', () => {
   it('writes every recommended value and marks the mode on', () => {
-    const next = on({ aiSuggestedPrompts: true, panelOpacity: 0.6 });
+    const next = on({ autoRebindArrows: false, panelOpacity: 0.6 });
     expect(next).toMatchObject({
       powerUserMode: true,
       alignmentGuides: true,
       autoRebindArrows: true,
-      aiSuggestedPrompts: false,
       minimalChrome: true,
     });
   });
@@ -59,7 +58,7 @@ describe('setPowerUserMode off', () => {
   it('restores every setting the user did not touch', () => {
     const before: UserPreferences = {
       alignmentGuides: false,
-      aiSuggestedPrompts: true,
+      autoRebindArrows: false,
     };
     const { prefs, restored, kept } = off(on(before));
     expect(prefs).toEqual(before);
@@ -74,12 +73,12 @@ describe('setPowerUserMode off', () => {
 
   it('keeps a setting the user changed while the mode was on', () => {
     const changed = {
-      ...on({ alignmentGuides: false, aiSuggestedPrompts: true }),
-      aiSuggestedPrompts: true,
+      ...on({ alignmentGuides: false, autoRebindArrows: false }),
+      autoRebindArrows: false,
     };
     const { prefs, kept, restored } = off(changed);
-    expect(prefs.aiSuggestedPrompts).toBe(true);
-    expect(kept).toEqual(['aiSuggestedPrompts']);
+    expect(prefs.autoRebindArrows).toBe(false);
+    expect(kept).toEqual(['autoRebindArrows']);
     // The untouched one still goes back.
     expect(prefs.alignmentGuides).toBe(false);
     expect(restored).toContain('alignmentGuides');
@@ -111,7 +110,7 @@ describe('setPowerUserMode off', () => {
   });
 
   it('survives the JSON round trip the preferences blob takes', () => {
-    const before: UserPreferences = { alignmentGuides: false, aiSuggestedPrompts: true };
+    const before: UserPreferences = { alignmentGuides: false, autoRebindArrows: false };
     const stored = JSON.parse(JSON.stringify(on(before))) as UserPreferences;
     expect(off(stored).prefs).toEqual(before);
   });

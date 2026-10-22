@@ -138,7 +138,7 @@ type CrossRun = { axis: 'TB' | 'LR'; at: number; lo: number; hi: number };
 
 // Where a facing arrow's cross run sits along its flow: half way between its ends when that is clear, else the clear
 // level nearest half way, where clear means off every other box, off every container's border and its heading band
-// (a frame's title, a subnet's CIDR), so the run never strikes text, and off the cross runs placed before it, so two
+// (a container's title), so the run never strikes text, and off the cross runs placed before it, so two
 // never run as one; half way when no level is clear.
 function crossLevel(
   axis: 'TB' | 'LR',

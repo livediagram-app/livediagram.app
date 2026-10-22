@@ -476,17 +476,6 @@ describe('renderElementsToSvg', () => {
       expect(svg).toContain('polygon points="25.5,1 74.5,1 99,40 74.5,79 25.5,79 1,40"');
     });
 
-    it('renders a frame see-through by default, but paints a picked fill like the canvas', () => {
-      // The default fill is transparent, so the contents show through...
-      const bare = renderElementsToSvg(tab([shape('f', { shape: 'frame' })]));
-      expect(bare).toMatch(/<rect x="1" y="0.8" width="98" height="78.4" fill="transparent"/);
-      // ...and a background colour picked in the menu exports, as it paints.
-      const filled = renderElementsToSvg(
-        tab([shape('f', { shape: 'frame', fillColor: '#fef3c7' })]),
-      );
-      expect(filled).toMatch(/<rect x="1" y="0.8" width="98" height="78.4" fill="#fef3c7"/);
-    });
-
     it('applies element rotation about the centre', () => {
       const svg = renderElementsToSvg(tab([shape('r', { rotation: 45 })]));
       expect(svg).toContain('transform="rotate(45 50 40)"');
@@ -495,12 +484,12 @@ describe('renderElementsToSvg', () => {
 
   describe('label fidelity (docs/specs/008-canvas/canvas-and-palette.md)', () => {
     it('anchors a top-aligned label at the element top, not its vertical centre', () => {
-      // A frame-style label (top + right): the text must export at the
-      // frame's top edge — it floated at the vertical centre before.
+      // A top-right label: the text must export at the box's top edge — it
+      // floated at the vertical centre before.
       const svg = renderElementsToSvg(
         tab([
           shape('fr', {
-            shape: 'frame',
+            shape: 'square',
             width: 400,
             height: 300,
             label: 'Change Events',

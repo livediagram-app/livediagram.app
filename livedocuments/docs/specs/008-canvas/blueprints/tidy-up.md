@@ -71,7 +71,7 @@ Nothing new is stored. A preview mutates `tabs` in the present only (`tickTabs`)
 ## Security and trust
 
 The room and the api decide what a session may write; a Participant who forced a tidier would still have its
-element moves refused by `applyParticipantOp`.
+element moves trimmed away by `applyParticipantOp`, which takes text fields only.
 
 ## Performance and limits
 

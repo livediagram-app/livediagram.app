@@ -64,12 +64,9 @@ describe('a margin note goes with its text', () => {
   it('finds the notes the writing carries and drops the markers of the rest', () => {
     expect(articleNoteIds({ f: { blocks } })).toEqual(new Set(['n1']));
     const marker = newArticleNote('n1', 'action', { x: 0, y: 0 });
-    const plainMarker = {
-      ...newArticleNote('n2', 'comment', { x: 0, y: 0 }),
-      articleNote: undefined,
-    };
-    const tab = { elements: [marker, plainMarker] };
-    expect(withNoteMarkersRemoved(tab, new Set(['n1', 'n2'])).elements).toEqual([plainMarker]);
+    const kept = newArticleNote('n2', 'comment', { x: 0, y: 0 });
+    const tab = { elements: [marker, kept] };
+    expect(withNoteMarkersRemoved(tab, new Set(['n1'])).elements).toEqual([kept]);
     expect(withNoteMarkersRemoved(tab, new Set())).toBe(tab);
   });
 });

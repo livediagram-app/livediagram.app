@@ -19,9 +19,6 @@ export type ShapeKind =
   | 'parallelogram'
   | 'hexagon'
   | 'document'
-  // Document element (docs/specs/009-elements/page-element.md). Named 'page' because 'document' above is
-  // the flowchart output symbol.
-  | 'page'
   // The web components (docs/specs/009-elements/web-components-and-no-groups.md): single elements that lay themselves out,
   // replacing the grouped composites the Components palette used to build.
   // Banner: an accent bar, title (the label) over a subtitle line.
@@ -65,9 +62,6 @@ export type ShapeKind =
   | 'star'
   // Speech bubble / callout: a rounded body with a tail at the bottom-left.
   | 'speech-bubble'
-  // Frame / section: a transparent outlined container with its label in the
-  // top-left, drawn around a cluster of elements. See docs/specs/008-canvas/canvas-and-palette.md.
-  | 'frame'
   // UI device frames (wireframing). See docs/specs/008-canvas/canvas-and-palette.md "Devices" accordion.
   | 'browser'
   | 'monitor'

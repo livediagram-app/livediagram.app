@@ -92,7 +92,7 @@ describe('documentServesImage', () => {
     expect(await documentServesImage(db.env, 'D', 'bob-img')).toBe(false);
   });
 
-  it("grants an edit collaborator's and a Participant's image, and not a view-only visitor's", async () => {
+  it("grants an edit collaborator's image, and not a Participant's or a view-only visitor's", async () => {
     const db = sqliteD1();
     liveDoc(db.sql, 'D', { owner: 'alice' });
     db.sql.exec("UPDATE documents SET shareable = 1 WHERE id = 'D'");
@@ -123,7 +123,7 @@ describe('documentServesImage', () => {
     }
     await upsertTab(db.env, 'D', tabWith('t1', 'editor-img', 'participant-img', 'viewer-img'), 0);
     expect(await documentServesImage(db.env, 'D', 'editor-img')).toBe(true);
-    expect(await documentServesImage(db.env, 'D', 'participant-img')).toBe(true);
+    expect(await documentServesImage(db.env, 'D', 'participant-img')).toBe(false);
     expect(await documentServesImage(db.env, 'D', 'viewer-img')).toBe(false);
   });
 

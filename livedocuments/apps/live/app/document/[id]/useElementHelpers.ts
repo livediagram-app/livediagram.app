@@ -7,7 +7,6 @@ import {
   type Tab,
 } from '@livedocuments/document';
 import { deriveNewBoxedColours } from '@/lib/themes';
-import { inheritedSizeFor } from '@/lib/canvas';
 import {
   applyPaint,
   fitPaintToTarget,
@@ -23,8 +22,8 @@ import { selectionIds, type Selection } from '@/lib/selection-store';
 type SetState<T> = Dispatch<SetStateAction<T>>;
 
 // Selection + placement + format helpers, lifted out of editor-page.tsx.
-// These back the element-creation and selection handlers (addBoxed
-// sizes/colours a new element from the selection + backdrop;
+// These back the element-creation and selection handlers (addBoxedAt
+// colours a new element from the backdrop;
 // currentSelectionIds / selectionPrimary resolve the working set;
 // applyFormatFromSource runs the format painter). Returned so the
 // still-inline handlers and the Canvas consume them.
@@ -38,7 +37,6 @@ export function useElementHelpers(opts: {
   // The Format Panel's settings (docs/specs/008-canvas/format-panel.md): which parts of a copied style
   // travel, and whether the brush stays loaded.
   formatConfig: FormatConfig;
-  getViewportCenter: () => { x: number; y: number };
   commit: (updater: (els: Element[]) => Element[]) => void;
   commitTabs: (updater: (tabs: Tab[]) => Tab[]) => void;
   setSelectedId: SetState<string | null>;
@@ -52,7 +50,6 @@ export function useElementHelpers(opts: {
     editsBlocked,
     formatSourceId,
     formatConfig,
-    getViewportCenter,
     commit,
     commitTabs,
     setSelectedId,
@@ -60,13 +57,8 @@ export function useElementHelpers(opts: {
     setFormatSourceId,
   } = opts;
 
-  const addBoxed = <T extends BoxedElement>(make: (x: number, y: number) => T) => {
-    placeBoxed(make, getViewportCenter());
-  };
-
-  // Drag-from-palette drop: same as addBoxed but centred on an explicit
-  // canvas point (the drop position) instead of the viewport centre. Size
-  // inheritance is skipped — a dropped element uses its own default size.
+  // Drag-from-palette drop: an element centred on an explicit canvas point (the drop position).
+  // Size inheritance is skipped — a dropped element uses its own default size.
   // `edit` puts the new element straight into label editing. Dropping a
   // sticky is the start of writing on it, not an end in itself — the drag
   // said WHERE and WHAT, and the only thing left is the words, so making the
@@ -87,7 +79,6 @@ export function useElementHelpers(opts: {
     placeBoxed(
       make,
       { x: canvasX, y: canvasY },
-      /* inheritSize */ false,
       opts?.edit === true,
       opts?.style,
       opts?.select !== false,
@@ -97,23 +88,14 @@ export function useElementHelpers(opts: {
   const placeBoxed = <T extends BoxedElement>(
     make: (x: number, y: number) => T,
     centre: { x: number; y: number },
-    inheritSize = true,
     edit = false,
     style: <E extends BoxedElement>(el: E) => E = (el) => el,
     select = true,
   ) => {
     if (editsBlocked) return;
     const base = make(0, 0);
-    // Inherit the selected element's size (shared with the combined add
-    // gesture's tap branch via inheritedSizeFor); circles + diamonds stay
-    // square so an inherited non-square size doesn't squash them. A
-    // drag-drop (inheritSize=false) keeps the element's own default size.
-    const { selectedId } = readSelection();
-    const sel =
-      inheritSize && selectedId ? activeTab.elements.find((el) => el.id === selectedId) : null;
-    const { width, height } = inheritSize
-      ? inheritedSizeFor(base, sel)
-      : { width: base.width, height: base.height };
+    // A dropped element keeps its own default size.
+    const { width, height } = base;
     // Derive colours from the active tab's backdrop + theme. The
     // two-pass projection (background-derived then theme-override)
     // lives in lib/themes.ts so the rule is testable in isolation
@@ -227,7 +209,6 @@ export function useElementHelpers(opts: {
   };
 
   return {
-    addBoxed,
     addBoxedAt,
     currentSelectionIds,
     selectionPrimary,

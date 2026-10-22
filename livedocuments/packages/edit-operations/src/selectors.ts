@@ -95,7 +95,7 @@ export function isSingleWord(word: Word): boolean {
   return !/[:=~]|->/.test(word.value);
 }
 
-// What an operation that acts on many by nature (`wrap`, `layout`) acts on: each ref or quoted
+// What an operation that acts on many by nature (`layout`) acts on: each ref or quoted
 // label names exactly one element, and the other words of a selector together one or more. In
 // element order, each once.
 export function resolveMembers(
@@ -262,12 +262,12 @@ function applyTerm(
             code: 'invalid_value',
             operation,
             details: [
-              `in:${term.word}: ${refsOf(state).refOf(container.id)} is not a frame or stack`,
+              `in:${term.word}: ${refsOf(state).refOf(container.id)} is not a stack`,
               ...(containers.length
                 ? [`containers: ${containers.map((c) => refsOf(state).refOf(c.id)).join(' ')}`]
                 : []),
             ],
-            hint: 'name a frame or a stack',
+            hint: 'name a stack',
           },
         };
       }

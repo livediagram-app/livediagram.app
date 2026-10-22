@@ -253,7 +253,7 @@ describe('applyRoomOpToTabs: documents', () => {
     expect(applyRoomOpToTabs(tabs, created)[0]!.articles!.f!.blocks).toEqual([P('a')]);
   });
 
-  it('marks an agent’s writing for growing by whoever lays it out next', () => {
+  it('marks writing whose writer lays out no pages for growing by whoever lays it out next', () => {
     const tabs = [tab({ articles: { f: { blocks: [P('a')] } } })];
     const op: RoomOp = {
       kind: 'article',
@@ -263,7 +263,7 @@ describe('applyRoomOpToTabs: documents', () => {
     };
     applyRoomOpToTabs(tabs, op);
     expect(isArticleGrowPending('t1', 'f')).toBe(false);
-    applyRoomOpToTabs(tabs, { ...op, agent: true });
+    applyRoomOpToTabs(tabs, { ...op, grow: true });
     expect(isArticleGrowPending('t1', 'f')).toBe(true);
     clearArticleGrow('t1', 'f');
     expect(isArticleGrowPending('t1', 'f')).toBe(false);

@@ -56,8 +56,11 @@ import type { FlowLayout, FocusRequest } from '@/components/canvas/article/Artic
 export type ArticlesView = {
   // Each article's writing, by its id.
   flows: Readonly<Record<string, ArticleFlow>>;
-  // Whether this person may write (an editor, the tab not locked).
+  // Whether this person may write (an Editor or a Participant, the tab not locked).
   editable: boolean;
+  // Whether this person may reshape the article too: insert, move zones, restyle, add margin notes (an Editor).
+  // A Participant writes and does nothing else (docs/specs/013-workspace/share-roles.md).
+  reshape: boolean;
   // False when the writing is refused (no rights, the tab locked): the editor keeps it local.
   onCommit: (flow: string, blocks: ArticleBlock[]) => boolean;
   onLayout: (layout: FlowLayout) => void;
@@ -158,7 +161,9 @@ export function useArticles(deps: {
     x: number,
     y: number,
   ) => void;
+  // An Editor: everything on the article. A Participant has `canWrite` alone: its writing.
   canEdit: boolean;
+  canWrite: boolean;
   commitTabs: (map: (ts: Tab[]) => Tab[]) => void;
   tickTabs: (map: (ts: Tab[]) => Tab[]) => void;
   undo: () => void;
@@ -171,7 +176,8 @@ export function useArticles(deps: {
 }): ArticlesView | null {
   const { activeTab, on, canEdit } = deps;
   const tabId = activeTab.id;
-  const editable = canEdit && activeTab.locked !== true;
+  const editable = (canEdit || deps.canWrite) && activeTab.locked !== true;
+  const reshape = canEdit && activeTab.locked !== true;
   const latest = useRef(deps);
   useEffect(() => {
     latest.current = deps;
@@ -190,7 +196,7 @@ export function useArticles(deps: {
   const onCommit = useCallback(
     (flow: string, blocks: ArticleBlock[]) => {
       const d = latest.current;
-      if (articleEditRefused(d.canEdit, d.activeTab, flow)) {
+      if (articleEditRefused(d.canEdit || d.canWrite, d.activeTab, flow)) {
         debugLog('[article] writing refused (locked)', { tabId, flow });
         return false;
       }
@@ -288,7 +294,8 @@ export function useArticles(deps: {
   useArticleIntake({
     activeTab,
     on,
-    editable,
+    // The intake takes elements into the writing: reshaping, an Editor's.
+    editable: reshape,
     pages: deps.pages,
     localEditSeq: deps.localEditSeq,
     tickTabs: deps.tickTabs,
@@ -469,6 +476,7 @@ export function useArticles(deps: {
   return {
     flows: articlesOf(activeTab),
     editable,
+    reshape,
     onCommit,
     onLayout,
     undo,

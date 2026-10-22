@@ -114,19 +114,18 @@ describe('elementIndicatorItems', () => {
     expect(kinds(card)).toEqual([]);
   });
 
-  it('gives an annotation no note indicator, and a margin note nothing at all', () => {
-    const annotation = {
+  it('gives a margin note nothing at all', () => {
+    const margin = {
       id: 'n',
-      type: 'annotation',
+      type: 'article-note',
+      articleNote: 'comment',
       x: 0,
       y: 0,
       width: 24,
       height: 24,
-      note: 'Its marker is the note',
+      note: 'A note',
       commentThread: thread(1),
     } as unknown as BoxedElement;
-    expect(kinds(annotation)).toEqual(['comment']);
-    const margin = { ...annotation, articleNote: { flow: 'f' } } as unknown as BoxedElement;
     expect(kinds(margin)).toEqual([]);
   });
 

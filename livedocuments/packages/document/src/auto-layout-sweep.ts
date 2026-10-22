@@ -5,10 +5,10 @@ import { LAYER_GAP, SIBLING_GAP, type Pt } from './auto-layout-shared';
 import { unionRects, type Rect } from './geometry-primitives';
 import { isBoxed, type BoxedElement, type Element } from './index';
 
-// Space between a frame's border and its members: the top band is deeper so
-// the frame's header label doesn't sit on a member node.
-export const FRAME_PAD = 32;
-export const FRAME_TOP = 64;
+// Space between a container's border and its members: the top band is deeper so
+// the container's heading doesn't sit on a member node.
+export const CONTAINER_PAD = 32;
+export const CONTAINER_TOP = 64;
 
 // Every caller passes a non-empty block, so the union is never null.
 const bbox = (els: BoxedElement[]): Rect => unionRects(els)!;

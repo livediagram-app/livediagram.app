@@ -160,7 +160,7 @@ function svgZoneClipped(id: string, svg: string, clips: Map<string, PageRect>): 
 
 // An article's margin-note marker (docs/specs/007-editor/article-pages.md "Comments and actions"):
 // review furniture, like a comment badge, never part of what the page prints.
-const isArticleNoteMarker = (el: Element) => el.type === 'annotation' && !!el.articleNote;
+const isArticleNoteMarker = (el: Element) => el.type === 'article-note';
 
 // The font ids an export declares, with an article page's writing's faces added.
 function withWritingFonts(ids: string[], writing: Pick<PageWriting, 'fonts'> | null): string[] {

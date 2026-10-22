@@ -365,12 +365,9 @@ export async function apiCreateRoomTicket(
       });
       if (res.status >= 400 && res.status < 500 && res.status !== 429) return null;
       if (!res.ok) continue;
-      const { ticket, adderKey } = (await res.json()) as Partial<RoomTicketResponse>;
+      const { ticket } = (await res.json()) as Partial<RoomTicketResponse>;
       if (typeof ticket !== 'string' || ticket.length === 0) return null;
-      // A Participant's own adder key (docs/specs/013-workspace/share-roles.md): which stickies are its own.
-      return typeof adderKey === 'string' && adderKey.length > 0
-        ? { ticket, adderKey }
-        : { ticket };
+      return { ticket };
     } catch {
       // Network error — retry.
     }

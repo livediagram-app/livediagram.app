@@ -26,7 +26,6 @@ export type SettingsIconId =
   | 'panels'
   | 'accessibility'
   | 'tours'
-  | 'ai'
   | 'privacy';
 
 // The sub-categories, nested under a top-level category (Editor, Panels, Account).
@@ -56,7 +55,6 @@ const TILE: Record<SettingsIconId, string> = {
   panels: 'bg-amber-500',
   accessibility: 'bg-indigo-500',
   tours: 'bg-pink-600',
-  ai: 'bg-violet-500',
   privacy: 'bg-emerald-600',
 };
 
@@ -157,14 +155,6 @@ const ToursGlyph = (
   </Svg>
 );
 
-// AI: a spark.
-const AiGlyph = (
-  <Svg>
-    <path d="M8.75 2.5c.6 3.4 1.6 4.4 5 5-3.4.6-4.4 1.6-5 5-.6-3.4-1.6-4.4-5-5 3.4-.6 4.4-1.6 5-5Z" />
-    <path d="M14.25 13.5c.25 1.4.65 1.8 2 2-1.35.25-1.75.65-2 2-.25-1.35-.65-1.75-2-2 1.35-.2 1.75-.6 2-2Z" />
-  </Svg>
-);
-
 // API Tokens: a key, the mark the tokens have always carried.
 export const TokensGlyph = (
   <Svg>
@@ -190,7 +180,6 @@ export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
   panels: PanelsGlyph,
   accessibility: AccessibilityGlyph,
   tours: ToursGlyph,
-  ai: AiGlyph,
   privacy: PrivacyGlyph,
 };
 

@@ -23,11 +23,10 @@ Where things landed, for anything that moved:
 | ------------------------------- | --------------- |
 | Code Block, Checklist, Timeline | **Components**  |
 | Table                           | **Data**        |
-| Frame                           | **Draw**        |
 | Image, Avatar                   | **Media** (new) |
 
 The **Blocks** and **Structure** groups emptied out and were deleted; **Write & Draw** split into **Write** (the wordy
-elements) and **Draw** (the gesture tools plus Frame). The **User / actor** tile was deleted outright — see below.
+elements) and **Draw** (the gesture tools). The **User / actor** tile was deleted outright — see below.
 
 **The category bar has bands**, the way the canvas-tool dropdown got them
 ([Tile grids for the palette dropdowns](../004-interface-design/dropdown-tile-grid.md)):

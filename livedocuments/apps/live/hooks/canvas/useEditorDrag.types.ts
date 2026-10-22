@@ -35,9 +35,6 @@ export type EditorDragDeps = {
   setMultiSelectedIds: (ids: Set<string>) => void;
   editingId: string | null;
   isReadOnly: boolean;
-  // A Participant moves what it may despite isReadOnly (docs/specs/013-workspace/share-roles.md).
-  canMove?: (el: Element) => boolean;
-  canResize?: (el: Element) => boolean;
   // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): every gesture
   // starter treats them as inert — no select, no drag, no new arrow.
   layerInertIds: Set<string>;
@@ -129,8 +126,6 @@ export type EditorDragApi = {
       // Enter a real drag, but remember what a no-movement TAP should do
       // (touch quick-connect, docs/specs/008-canvas/canvas-and-palette.md).
       tapPlaceOutPx?: number;
-      // A field index to start from. No caller passes it and the drag ignores it.
-      field?: number;
     },
   ) => void;
   beginArrowTranslate: (arrowId: string, e: ReactPointerEvent) => void;

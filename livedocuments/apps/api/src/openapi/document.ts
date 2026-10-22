@@ -202,7 +202,6 @@ const TAGS = [
   { name: 'Teams', description: 'Teams, members, invites, and shared libraries.' },
   { name: 'Participants', description: 'Display name and colour for a collaborator.' },
   { name: 'Account', description: 'Account-level data, preferences, and migration.' },
-  { name: 'AI', description: 'Optional AI diagram assistant.' },
   { name: 'Telemetry', description: 'Anonymous first-party usage events and the public summary.' },
   { name: 'Meta', description: 'Capabilities, link unfurl, and this document.' },
 ];
@@ -229,7 +228,9 @@ export function buildOpenApiDocument(): OpenApiDocument {
         'WebSocket protocol is documented in docs/specs/015-api/api.md, not here.',
       license: { name: 'MIT' },
     },
-    servers: [{ url: '/api', description: 'Same-origin API (e.g. https://livedocuments.app/api).' }],
+    servers: [
+      { url: '/api', description: 'Same-origin API (e.g. https://livedocuments.app/api).' },
+    ],
     tags: TAGS,
     paths,
     components: {

@@ -17,7 +17,7 @@ Groups cost more than they give. Every selection, drag, delete, duplicate, lock,
 quick-connect and clipboard path needs a group branch, and the interactions (select the group,
 click again to drill in, no resize, group mode to extend one) are a steady source of "why did
 that happen". What people actually wanted from them is covered by the marquee multi-selection
-(move, align, style, delete many at once) and by frames.
+(move, align, style, delete many at once) and by stacks.
 
 The one real dependency is the palette's Components. A component built as grouped primitives
 comes apart the moment a user drags the wrong piece, resizes as a

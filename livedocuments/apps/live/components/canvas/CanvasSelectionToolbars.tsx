@@ -176,7 +176,7 @@ export function CanvasSelectionToolbars({
                   : undefined
             }
             // Close to the element whenever no "+" sits in the gap: read-only, and boxed kinds that show none (a
-            // Plan board or card, an annotation). An arrow keeps the wide gap: its move
+            // Plan board or card, a margin note). An arrow keeps the wide gap: its move
             // frame sits there, and a toolbar over it would take the press that drags the arrow.
             compact={readOnly || (!showPlus && !!selected && isBoxed(selected))}
             aside={tourOffer ? <ElementTourOffer offer={tourOffer} /> : undefined}

@@ -371,7 +371,7 @@ export const THEMES: ThemeDefinition[] = [
       trapezoid: { fill: '#ecfccb', stroke: '#65a30d', text: '#365314' },
       // System / boundary — sky.
       cloud: { fill: '#e0f2fe', stroke: '#0284c7', text: '#075985' },
-      // Annotation / emphasis — yellow.
+      // Emphasis — yellow.
       star: { fill: '#fef9c3', stroke: '#ca8a04', text: '#713f12' },
     },
     // Not one of the twelve that shipped first. Nothing gates on the flag;

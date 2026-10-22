@@ -36,7 +36,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 | slug                   | title                | kind    |
 | ---------------------- | -------------------- | ------- |
-| `about`                | About livedocuments      | support |
+| `about`                | About livedocuments  | support |
 | `getting-started`      | Getting Started      | support |
 | `tips-and-tricks`      | Tips and Tricks      | support |
 | `account-and-data`     | Account and Data     | support |
@@ -68,7 +68,7 @@ The feature categories group the feature guides by area. **Pages is the first**:
 - **Canvas** — the canvas around the pages, selecting many elements, links and link cards, themes, templates, text and fonts, layers, animations, Undo and Redo.
 - **Tabs** — a document's tabs: Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (Markdown and JSON) and Exporting, one guide per tab-menu action.
 - **Collaboration** — comments, live presence (live cursors, selections, per-tab presence), following a presenter, teams, sharing and embeds.
-- **Tools** — AI assistance, zen mode, appearance (light, dark, system) and Markdown import.
+- **Tools** — zen mode, appearance (light, dark, system) and Markdown import.
 - **Search Panel** — the global search: an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).

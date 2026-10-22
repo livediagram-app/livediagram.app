@@ -121,12 +121,12 @@ describe('a page’s frame', () => {
     const r = a4!.rect;
     const note = {
       id: 'n',
-      type: 'annotation',
+      type: 'article-note',
       x: r.x + 10,
       y: r.y + 10,
       width: 32,
       height: 32,
-      articleNote: { kind: 'comment' },
+      articleNote: 'comment',
     } as unknown as Element;
     expect(pageExportFrame(a4!).reaches(note, [note])).toBe(false);
   });

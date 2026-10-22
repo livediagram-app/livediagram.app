@@ -1,5 +1,10 @@
 import { Fragment, memo } from 'react';
-import { arrowLabelFontStack, exportFontFamily, isBoxed, type Element } from '@livedocuments/document';
+import {
+  arrowLabelFontStack,
+  exportFontFamily,
+  isBoxed,
+  type Element,
+} from '@livedocuments/document';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import type {
   LayerDrawn,
@@ -58,9 +63,7 @@ type CanvasElementListProps = Pick<
   | 'readOnly'
   | 'shiftDupGhostIds'
   | 'remoteSelectionsByElement'
-  | 'canMove'
   | 'canWriteText'
-  | 'canResize'
   | 'tabFont'
   | 'tabFinish'
 > & {
@@ -92,9 +95,7 @@ export const CanvasElementList = memo(function CanvasElementList({
   readOnly,
   shiftDupGhostIds,
   remoteSelectionsByElement,
-  canMove,
   canWriteText,
-  canResize,
   tabFont,
   tabFinish,
   stackedIds,
@@ -194,9 +195,9 @@ export const CanvasElementList = memo(function CanvasElementList({
                 }
                 isEditing={element.id === editingId}
                 editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
-                movable={!readOnly || canMove?.(element) === true}
+                movable={!readOnly}
                 writable={!readOnly || canWriteText?.(element) === true}
-                resizable={!readOnly || canResize?.(element) === true}
+                resizable={!readOnly}
                 // An explicit per-element font outranks the tab default.
                 // Under the Sketch finish, the handwriting font (docs/specs/008-canvas/finish.md).
                 fontFamily={exportFontFamily(element, tabFont, tabFinish)}

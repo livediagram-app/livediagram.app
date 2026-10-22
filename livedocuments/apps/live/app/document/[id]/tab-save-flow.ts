@@ -1,5 +1,5 @@
 import { diffToElementOps, ledgerKey, type ElementOp, type Tab } from '@livedocuments/document';
-import type { RoomOp, RoomOutgoing } from '@livedocuments/api-schema';
+import { tabArticleOps, type RoomOp, type RoomOutgoing } from '@livedocuments/api-schema';
 import { tabBroadcastOps } from './tab-broadcast-ops';
 import { holdOwnWrites, type OwnElementWrites } from './own-element-writes';
 
@@ -87,9 +87,9 @@ function relay(ops: RoomOp[], live: SaveRoom | null, release: (() => void) | nul
 }
 
 // A Participant's save (docs/specs/013-workspace/share-roles.md "Integrity"): no tab PUT, no tab or metadata op,
-// only the element changes since `before`, sent to the room, which applies each through the participant content
-// rule and writes D1 itself. A reorder is never sent: a Participant never restacks. With the room closed the save
-// fails, and the autosave retries it as any failed save.
+// only the element changes since `before` and its writing in the tab's articles, sent to the room, which applies
+// each through the participant rules (text only) and writes D1 itself. A reorder is never sent: a Participant never
+// restacks. With the room closed the save fails, and the autosave retries it as any failed save.
 export function participantElementOps(before: Tab | undefined, tab: Tab): ElementOp[] {
   return diffToElementOps(before?.elements ?? [], tab.elements).filter(
     (op) => op.kind !== 'reorder',
@@ -106,8 +106,10 @@ export async function relayParticipantChanges(
   if (!live) throw new Error('participant save: the room is not open');
   const ops = participantElementOps(before, tab);
   const release = writes ? holdOwnWrites(writes, tab.id, ops) : null;
+  // A tab first seen in this save has no writing of the Participant's in it yet: it never sends a whole article.
+  const writing = before ? tabArticleOps(before, tab) : [];
   relay(
-    ops.map((op) => ({ kind: 'el', tabId: tab.id, op })),
+    [...ops.map((op): RoomOp => ({ kind: 'el', tabId: tab.id, op })), ...writing],
     live,
     release,
   );

@@ -80,7 +80,6 @@ describe('the self-drawing shape family', () => {
     // user-visible cost of a guard that over-claims.
     expect(isSelfDrawingShape('square')).toBe(false);
     expect(isSelfDrawingShape('circle')).toBe(false);
-    expect(isSelfDrawingShape('frame')).toBe(false);
     expect(isSelfDrawingShape('icon')).toBe(false);
     // The web components that DO carry a label keep it (docs/specs/009-elements/web-components-and-no-groups.md).
     expect(isSelfDrawingShape('banner')).toBe(false);

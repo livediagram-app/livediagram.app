@@ -11,9 +11,9 @@ describe('containersBehindMembers', () => {
   it('moves each container directly before its earliest member, the inner ones first (I6)', () => {
     const elements = [
       box('a', 10, 10, 10),
-      box('inner', 0, 0, 50, 'frame'),
+      box('inner', 0, 0, 50, 'stack'),
       box('b', 30, 30, 10),
-      box('outer', -10, -10, 200, 'frame'),
+      box('outer', -10, -10, 200, 'stack'),
     ];
     expect(containersBehindMembers(elements).map((el) => el.id)).toEqual([
       'outer',
@@ -24,7 +24,7 @@ describe('containersBehindMembers', () => {
   });
 
   it('leaves a container already behind its members as it is', () => {
-    const elements = [box('frame', 0, 0, 100, 'frame'), box('a', 10, 10, 10)];
+    const elements = [box('stack', 0, 0, 100, 'stack'), box('a', 10, 10, 10)];
     expect(containersBehindMembers(elements)).toEqual(elements);
   });
 });
