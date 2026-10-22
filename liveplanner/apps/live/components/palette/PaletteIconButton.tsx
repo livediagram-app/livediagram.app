@@ -326,7 +326,7 @@ export function useTileGlyph({
         ...(tintFill ? { '--tile-fill': tintFill } : {}),
       }
     : undefined;
-  const finishClass = finishAction ? paletteFinishClass(tabFinish, finishAction) : '';
+  const finishClass = finishAction ? paletteFinishClass(tabFinish) : '';
   const glyphClass = `${tintFill ? 'palette-tile-filled ' : ''}${finishClass ? `${finishClass} ` : ''}`;
   return { glyphStyle, glyphClass };
 }

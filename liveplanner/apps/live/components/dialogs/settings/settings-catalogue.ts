@@ -12,13 +12,6 @@ import {
 import { isPowerUserMode, setPowerUserMode } from '@/lib/power-user-mode';
 import { PLAN_TOUR_TRACKS, planTrackSeen, type PlanTourTrack } from '@/lib/plan-tour';
 import {
-  ELEMENT_TOUR_KINDS,
-  elementTourSeen,
-  markElementTourSeen,
-  offerElementTourAgain,
-  type ElementTourKind,
-} from '@/lib/element-tours';
-import {
   readElementIndicatorStyle,
   withElementIndicatorStyle,
   type ElementIndicatorStyle,
@@ -276,9 +269,6 @@ export type SettingsCategorySpec = {
   // A line under a section's heading, for what every row in it shares (Documents' Default Folders,
   // the Tours' "offer again"), said once rather than under each row.
   sectionNotes?: Record<string, { note: string; helpArticle?: HelpArticleKey }>;
-  // Sections drawn as a closed accordion, for rows people rarely look for (the Tours' Element Tours): the heading
-  // opens them, and Settings opened on one of their rows opens them itself.
-  collapsedSections?: readonly string[];
   rows: SettingsRowSpec[];
 };
 
@@ -362,26 +352,6 @@ function tourSwitch(
 
 // A tour of several tracks (lib/tour-tracks.ts): on while any track is still owed. Off answers every track; on
 // forgets those answered, so each offers itself again. Its telemetry tokens are its seen flag's, as above.
-// One element tour's switch (docs/specs/007-editor/element-tours.md "Settings"), nested under Element Tours: on while
-// its kind is still offered; on forgets its answer, off answers it.
-function elementTourSwitch(
-  kind: ElementTourKind,
-  row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
-): SettingsToggleRowSpec {
-  return {
-    kind: 'toggle',
-    key: `elementTour-${kind}`,
-    section: ELEMENT_TOURS_SECTION,
-    parent: 'elementToursSeen',
-    ...row,
-    read: (p) => !elementTourSeen(p, kind),
-    write: (p, v) => (v ? offerElementTourAgain(p, kind) : markElementTourSeen(p, kind)),
-  };
-}
-
-// Element tours are called Show Me wherever a person sees them (docs/specs/007-editor/element-tours.md "Naming").
-const ELEMENT_TOURS_SECTION = 'Show Me';
-
 // One track of a tour of several (lib/tour-tracks.ts), as its own row nested under the tour's switch over every track
 // (Plan Tours): the Plan tour's Boards and Sheets
 // (docs/specs/007-editor/user-preferences.md "Tours"). On while the track is owed; off answers it, on forgets its
@@ -414,9 +384,9 @@ function tourTrackSwitch(
 }
 
 function tourTracksSwitch(
-  key: 'planTourSeen' | 'elementToursSeen',
-  tracksKey: 'planTourTracks' | 'elementTourKinds',
-  tracks: readonly string[],
+  key: 'planTourSeen',
+  tracksKey: 'planTourTracks',
+  tracks: readonly PlanTourTrack[],
   owed: (p: UserPreferences) => boolean,
   row: Pick<SettingsToggleRowSpec, 'label' | 'description' | 'helpArticle' | 'keywords' | 'event'>,
   section?: string,
@@ -432,7 +402,7 @@ function tourTracksSwitch(
   };
 }
 
-type TourSeenKey = 'planTourSeen' | 'formTourSeen' | 'elementToursSeen';
+type TourSeenKey = 'planTourSeen' | 'formTourSeen';
 
 export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
   {
@@ -836,11 +806,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     // turns itself off once taken or dismissed.
     id: 'tours',
     label: 'Tours',
-    collapsedSections: [ELEMENT_TOURS_SECTION],
     sectionNotes: {
-      [ELEMENT_TOURS_SECTION]: {
-        note: 'The first time you select a complex element, a small Show Me toolbar beside it offers to show how it works. Switch one back on to be offered it again.',
-      },
       'Offer Again': {
         note: 'Each tour offers itself once. Switch one back on and close Settings to take it again: it starts straight away if you are in its mode, or the next time you are.',
       },
@@ -896,177 +862,6 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'tour walkthrough onboarding tutorial form survey questions responses replay',
         description: 'The first time you open a Form tab.',
         helpArticle: 'planForms',
-      }),
-      // Element tours (docs/specs/007-editor/element-tours.md "Settings"): their own closed section, one switch for
-      // them all over one per toured kind.
-      tourTracksSwitch(
-        'elementToursSeen',
-        'elementTourKinds',
-        ELEMENT_TOUR_KINDS,
-        (p) => ELEMENT_TOUR_KINDS.some((k) => !elementTourSeen(p, k)),
-        {
-          label: 'Show Me on Every Element',
-          event: { category: 'UI', on: 'ElementToursSeenOff', off: 'ElementToursSeenOn' },
-          keywords: 'tour walkthrough tutorial element sankey how to use learn replay',
-          description: 'Every element’s Show Me at once.',
-        },
-        ELEMENT_TOURS_SECTION,
-      ),
-      elementTourSwitch('sankey', {
-        label: 'Sankey Diagram',
-        event: { category: 'UI', on: 'SankeyTourSeenOff', off: 'SankeyTourSeenOn' },
-        keywords: 'tour walkthrough tutorial sankey flows bands nodes leftover replay',
-        description: 'The first time you select a Sankey diagram.',
-        helpArticle: 'sankeyDiagram',
-      }),
-      elementTourSwitch('layer-stack', {
-        label: 'Layer Stack',
-        event: { category: 'UI', on: 'LayerStackTourSeenOff', off: 'LayerStackTourSeenOn' },
-        keywords: 'tour walkthrough tutorial layer stack layers bands concept rows replay',
-        description: 'The first time you select a layer stack.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('pyramid', {
-        label: 'Pyramid',
-        event: { category: 'UI', on: 'PyramidTourSeenOff', off: 'PyramidTourSeenOn' },
-        keywords: 'tour walkthrough tutorial pyramid tiers triangle inverted concept rows replay',
-        description: 'The first time you select a pyramid.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('funnel', {
-        label: 'Funnel',
-        event: { category: 'UI', on: 'FunnelTourSeenOff', off: 'FunnelTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial funnel conversion stages bands values concept rows replay',
-        description: 'The first time you select a funnel.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('cycle', {
-        label: 'Cycle',
-        event: { category: 'UI', on: 'CycleTourSeenOff', off: 'CycleTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial cycle loop ring flywheel pdca steps clockwise flow concept replay',
-        description: 'The first time you select a cycle.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('hub', {
-        label: 'Hub and Spoke',
-        event: { category: 'UI', on: 'HubTourSeenOff', off: 'HubTourSeenOn' },
-        keywords: 'tour walkthrough tutorial hub spoke satellites ecosystem centre concept replay',
-        description: 'The first time you select a hub and spoke.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('onion', {
-        label: 'Onion',
-        event: { category: 'UI', on: 'OnionTourSeenOff', off: 'OnionTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial onion rings concentric core layers architecture concept replay',
-        description: 'The first time you select an onion.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('chevrons', {
-        label: 'Chevrons',
-        event: { category: 'UI', on: 'ChevronsTourSeenOff', off: 'ChevronsTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial chevrons chevron process stages pipeline value chain stage bar concept replay',
-        description: 'The first time you select a chevron process.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('timeline', {
-        label: 'Timeline',
-        event: { category: 'UI', on: 'TimelineTourSeenOff', off: 'TimelineTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial timeline milestones roadmap dates history concept replay',
-        description: 'The first time you select a timeline.',
-        helpArticle: 'conceptGraphics',
-      }),
-      elementTourSwitch('mind-node', {
-        label: 'Mind Map',
-        event: { category: 'UI', on: 'MindMapTourSeenOff', off: 'MindMapTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial mind map node tab enter child sibling branch tidy outline replay',
-        description: 'The first time you select a mind map node.',
-        helpArticle: 'mindMaps',
-      }),
-      elementTourSwitch('flowchart', {
-        label: 'Flowchart',
-        event: { category: 'UI', on: 'FlowchartTourSeenOff', off: 'FlowchartTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial flowchart step tab enter branch decision step type lane swimlane direction replay',
-        description: 'The first time you select a flowchart step.',
-        helpArticle: 'flowcharts',
-      }),
-      elementTourSwitch('org-chart', {
-        label: 'Org Chart',
-        event: { category: 'UI', on: 'OrgChartTourSeenOff', off: 'OrgChartTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial org chart organisation organization person role initials report peer team replay',
-        description: 'The first time you select a person in an org chart.',
-        helpArticle: 'orgCharts',
-      }),
-      elementTourSwitch('sequence', {
-        label: 'Sequence',
-        event: { category: 'UI', on: 'SequenceTourSeenOff', off: 'SequenceTourSeenOn' },
-        keywords:
-          'tour walkthrough tutorial sequence diagram participants messages call reply async lifeline numbered uml replay',
-        description: 'The first time you select a sequence diagram.',
-        helpArticle: 'sequenceDiagram',
-      }),
-      elementTourSwitch('chart', {
-        label: 'Chart',
-        event: { category: 'UI', on: 'ChartTourSeenOff', off: 'ChartTourSeenOn' },
-        keywords: 'chart pie bar column line area scatter doughnut data graph tour',
-        description: 'The first time you select a chart.',
-        helpArticle: 'dataElements',
-      }),
-      elementTourSwitch('stack', {
-        label: 'Stack',
-        event: { category: 'UI', on: 'StackTourSeenOff', off: 'StackTourSeenOn' },
-        keywords: 'stack row column grid layout container reflow tour',
-        description: 'The first time you select a stack.',
-        helpArticle: 'stacks',
-      }),
-      elementTourSwitch('entity', {
-        label: 'Entity',
-        event: { category: 'UI', on: 'EntityTourSeenOff', off: 'EntityTourSeenOn' },
-        keywords: 'entity uml class er table fields record tour',
-        description: 'The first time you select an entity.',
-        helpArticle: 'entities',
-      }),
-      elementTourSwitch('tab-window', {
-        label: 'Tab Window',
-        event: { category: 'UI', on: 'TabWindowTourSeenOff', off: 'TabWindowTourSeenOn' },
-        keywords: 'tab window live slide embed another tab tour',
-        description: 'The first time you select a tab window.',
-        helpArticle: 'tabWindows',
-      }),
-      elementTourSwitch('lane', {
-        label: 'Lane',
-        event: { category: 'UI', on: 'LaneTourSeenOff', off: 'LaneTourSeenOn' },
-        keywords: 'lane swimlane band gutter seam column tour',
-        description: 'The first time you select a lane.',
-        helpArticle: 'lanes',
-      }),
-      elementTourSwitch('boundary', {
-        label: 'Boundary',
-        event: { category: 'UI', on: 'BoundaryTourSeenOff', off: 'BoundaryTourSeenOn' },
-        keywords: 'boundary zone region vpc cluster c4 container tour',
-        description: 'The first time you select a boundary.',
-        helpArticle: 'boundaries',
-      }),
-      elementTourSwitch('diagram-key', {
-        label: 'Diagram Key',
-        event: { category: 'UI', on: 'DiagramKeyTourSeenOff', off: 'DiagramKeyTourSeenOn' },
-        keywords: 'diagram key legend line styles tag colours meanings tour',
-        description: 'The first time you select a diagram key.',
-        helpArticle: 'diagramKeys',
-      }),
-      elementTourSwitch('portal', {
-        label: 'Portal',
-        event: { category: 'UI', on: 'PortalTourSeenOff', off: 'PortalTourSeenOn' },
-        keywords: 'portal link travel teleport avatar shortcut tour',
-        description: 'The first time you select a portal.',
-        helpArticle: 'portals',
       }),
     ],
   },

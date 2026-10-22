@@ -2,23 +2,23 @@
 
 Derived from [Concept graphics](../concept-graphics.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 
-| File                                                                                                 | Role                                                                         |
-| ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `packages/document/src/concept.ts`                                                                   | Kinds, rows, bounds, ramp, the three layouts, variant + anim writes          |
-| `packages/document/src/web-components.ts`                                                            | `conceptRows` in `WebRows`; `withWebRows`, `appendWebRow`, `canAppendWebRow` |
-| `packages/document/src/svg-render-concept.ts`                                                        | `svgConcept`: the headless body (rest frame)                                 |
-| `packages/document/src/concept-timeline.ts`, `svg-render-timeline.ts`                                | The Timeline's `timelineLayout` and its export (`svgTimeline`)               |
-| `apps/live/components/canvas/ConceptTimelineBody.tsx`, `concept-row-layer.tsx`                       | The Timeline's face body; `ConceptRowLayer`, one animated row layer          |
-| `packages/document/src/element-normalise.ts`                                                         | `railToTimeline`: a saved timeline rail's points into milestones             |
-| `packages/document/src/shape-variants.ts`                                                            | `pyramid` + `funnel` / `inverted` variants                                   |
-| `apps/live/components/canvas/ConceptFace.tsx`                                                        | Canvas face: rows, in-place lines, the Cycle's centre label                  |
-| `apps/live/app/canvas-motion.css`                                                                    | `lvd-concept-*` keyframes                                                    |
-| `apps/live/components/palette/ConceptMenuSection.tsx`                                                | Variant tiles, a hub's Spokes; none for a kind with neither                  |
-| `apps/live/components/palette/context-menu-web-editors.tsx`                                          | The Rows editor (label + note); none for chevrons                            |
-| `apps/live/components/canvas/ConceptRowBar.tsx`                                                      | `ChevronStageControls` (hover zones, bars) and `ConceptRowBar`               |
-| `apps/live/hooks/ui/useGraceHover.ts`                                                                | The hovered stage, cleared `HOVER_GRACE_MS` after the pointer leaves         |
-| `apps/live/lib/move-row.ts`                                                                          | `moveRow`, shared by the Rows editor and the stage bar                       |
-| `apps/live/components/palette/palette-categories.tsx`, `palette-tile-defs.tsx`, `palette-layouts.ts` | The Concepts category                                                        |
+| File                                                                                        | Role                                                                         |
+| ------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `packages/document/src/concept.ts`                                                          | Kinds, rows, bounds, ramp, the three layouts, variant + anim writes          |
+| `packages/document/src/web-components.ts`                                                   | `conceptRows` in `WebRows`; `withWebRows`, `appendWebRow`, `canAppendWebRow` |
+| `packages/document/src/svg-render-concept.ts`                                               | `svgConcept`: the headless body (rest frame)                                 |
+| `packages/document/src/concept-timeline.ts`, `svg-render-timeline.ts`                       | The Timeline's `timelineLayout` and its export (`svgTimeline`)               |
+| `apps/live/components/canvas/ConceptTimelineBody.tsx`, `concept-row-layer.tsx`              | The Timeline's face body; `ConceptRowLayer`, one animated row layer          |
+| `packages/document/src/element-normalise.ts`                                                | `railToTimeline`: a saved timeline rail's points into milestones             |
+| `packages/document/src/shape-variants.ts`                                                   | `pyramid` + `funnel` / `inverted` variants                                   |
+| `apps/live/components/canvas/ConceptFace.tsx`                                               | Canvas face: rows, in-place lines, the Cycle's centre label                  |
+| `apps/live/app/canvas-motion.css`                                                           | `lvd-concept-*` keyframes                                                    |
+| `apps/live/components/palette/ConceptMenuSection.tsx`                                       | Variant tiles, a hub's Spokes; none for a kind with neither                  |
+| `apps/live/components/palette/context-menu-web-editors.tsx`                                 | The Rows editor (label + note); none for chevrons                            |
+| `apps/live/components/canvas/ConceptRowBar.tsx`                                             | `ChevronStageControls` (hover zones, bars) and `ConceptRowBar`               |
+| `apps/live/hooks/ui/useGraceHover.ts`                                                       | The hovered stage, cleared `HOVER_GRACE_MS` after the pointer leaves         |
+| `apps/live/lib/move-row.ts`                                                                 | `moveRow`, shared by the Rows editor and the stage bar                       |
+| `apps/live/components/palette/palette-tile-defs.tsx` (liveplanner carries no Concepts tile) | The Concepts category                                                        |
 
 ## Domain and naming
 

@@ -4,6 +4,9 @@ import { join } from 'node:path';
 // When each help page last changed, for the sitemap's <lastmod> (docs/specs/018-help/help-app.md "SEO"). Read from
 // git at build time: one `git log` pass over the app folder, newest commit first, so the first date seen for a page
 // is its latest. Keyed by route (`canvas/themes`, '' for the home), the page.mdx / page.tsx folder under app/.
+// It walks the first-parent line with merges diffed against it: liveplanner lives in the workspace as a git subtree,
+// so a page's history reaches the main line through the merges that brought it in, and a plain log lists no files
+// for a merge.
 //
 // Only an honest date is worth sending: a crawler that sees every page "changed today" stops trusting the field. So
 // a shallow clone (every file would date to its one commit) or no git at all gives an empty map, and the sitemap
@@ -39,7 +42,9 @@ export function parseArticleDates(log: string): Map<string, Date> {
 export function articleDates(git: Git = runGit): Map<string, Date> {
   try {
     if (git(['rev-parse', '--is-shallow-repository']).trim() !== 'false') return new Map();
-    return parseArticleDates(git(['log', '--format=@%cI', '--name-only', '--relative', '--', '.']));
+    return parseArticleDates(
+      git(['log', '--first-parent', '-m', '--format=@%cI', '--name-only', '--relative', '--', '.']),
+    );
   } catch {
     return new Map();
   }

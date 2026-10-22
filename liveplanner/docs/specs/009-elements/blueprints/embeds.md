@@ -31,10 +31,6 @@ Scope, by file:
 | `apps/live/components/dialogs/LinkPickerDialog.tsx`      | `UrlOnlyConfig`: URL mode only, validate as you type and at commit         |
 | `apps/live/lib/url-safety.ts`                            | `normaliseUrl`, `isSafeFollowUrl`                                          |
 | `apps/live/components/palette/palette-tile-defs.tsx`     | Six `media:embed-*` tiles, `tileGroup: 'embed'`                            |
-| `apps/live/components/palette/palette-tile-art.tsx`      | `YouTubeTileArt`, `VimeoTileArt`, `LoomTileArt`, `FigmaTileArt`            |
-| `apps/live/components/palette/palette-create-tabs.tsx`   | `PaletteMediaTab`: the Embed group under Image and Avatar                  |
-| `apps/live/components/palette/PaletteTileGroup.tsx`      | The collapsible group row                                                  |
-| `apps/live/components/palette/palette-group-state.tsx`   | `PaletteGroupProvider`, `usePaletteGroup` [QC11]                           |
 | `apps/live/app/document/[id]/useElementCreation.ts`      | `addVideo(provider?)` arms the draw                                        |
 | `apps/live/lib/draw-mode.ts`                             | `PendingDraw` `video` intent, banner copy, cursor glyph                    |
 | `apps/live/lib/draw-commit.ts`                           | `drawnDragBox` 16:9 fit, `buildDrawnBoxed`                                 |
@@ -211,9 +207,7 @@ export function useFrameBlocked(src: string | undefined): {
   reset: () => void;
 };
 
-// apps/live/components/palette/palette-group-state.tsx
-export function PaletteGroupProvider(props: { children: React.ReactNode }): JSX.Element;
-export function usePaletteGroup(id: string): [boolean, () => void];
+// liveplanner: the palette's Embed group (palette-group-state.tsx) is gone with the strip palette.
 ```
 
 The parser functions never throw; every rejection is `null`. `validate.ts` rejects an element whose
@@ -442,5 +436,5 @@ through `elementTelemetryType`), `Element·Used·Video` on play or load.
 | YouTube player                         | `https://www.youtube-nocookie.com/embed/<id>`                                                        | YouTube API Terms           | On play                      |
 | Vimeo / Loom / Figma / Google players  | provider embed URLs above                                                                            | Each provider's embed terms | On **Load embed**            |
 | Play badge, glyphs, draw cursor        | inline SVG and `Glyph` in `VideoView.tsx`, SVG string in `draw-mode.ts`                              | Repository MIT              | Bundled                      |
-| YouTube, Vimeo, Loom, Figma tile marks | inline SVG in `palette-tile-art.tsx`                                                                 | Repository MIT              | Bundled                      |
+| YouTube, Vimeo, Loom, Figma tile marks | inline SVG (removed with liveplanner's strip palette)                                                | Repository MIT              | Bundled                      |
 | Google Docs, Website tile icons        | `lucideFileText`, `lucideGlobe` in `packages/icons/src/lucide.generated.ts` (`lucide-static` 1.48.0) | ISC (Lucide)                | Bundled                      |

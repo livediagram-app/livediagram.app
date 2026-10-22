@@ -105,66 +105,6 @@ const PLAN_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Sankey tour (docs/specs/007-editor/element-tours.md): its canvas steps, then the Flows dialog's Show Me steps
-// it runs inside the dialog (each `flows-` prefixed), then its closing card.
-const pascal = (id: string) =>
-  id
-    .split('-')
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join('');
-const SANKEY_TOUR_STEP_SOURCE: string[] = [
-  ...[
-    ...read('live/components/tour/sankey-element-tour-steps.ts').matchAll(
-      /canvasStep\(\s*'([a-z-]+)'/g,
-    ),
-  ].map((m) => m[1]!),
-  ...[
-    ...read('live/components/tour/sankey-flows-tour-steps.ts').matchAll(/step\(\s*'([a-z-]+)'/g),
-  ].map((m) => `flows-${m[1]!}`),
-  'outro',
-].map((id) => `SankeyTourStep${pascal(id)}`);
-
-// A concept graphic's tour (docs/specs/007-editor/element-tours.md): its steps file's builders and any step of its own
-// (`id: '…'`), then its closing card.
-const conceptTourSteps = (token: string, file: string): string[] =>
-  [
-    ...[
-      ...read(`live/components/tour/${file}`).matchAll(
-        /(?:(?:onGraphic|addRowStep|inTheMenu|onCanvas|inDialog)\(\s*|menuStep\(\s*\w+,\s*|\bid: )'([a-z-]+)'/g,
-      ),
-    ].map((m) => m[1]!),
-    'outro',
-  ].map((id) => `${token}Step${pascal(id)}`);
-
-// Every element tour (ElementTourHost runs them all): its token, from the registry, and its steps.
-export const ELEMENT_TOUR_TOKENS: string[] = [
-  ...read('live/components/tour/element-tour-defs.ts').matchAll(/token: '(\w+)'/g),
-].map((m) => m[1]!);
-
-export const ELEMENT_TOUR_STEP_SOURCE: string[] = [
-  ...SANKEY_TOUR_STEP_SOURCE,
-  ...conceptTourSteps('LayerStackTour', 'layer-stack-tour-steps.ts'),
-  ...conceptTourSteps('PyramidTour', 'pyramid-tour-steps.ts'),
-  ...conceptTourSteps('FunnelTour', 'funnel-tour-steps.ts'),
-  ...conceptTourSteps('CycleTour', 'cycle-tour-steps.ts'),
-  ...conceptTourSteps('HubTour', 'hub-tour-steps.ts'),
-  ...conceptTourSteps('OnionTour', 'onion-tour-steps.ts'),
-  ...conceptTourSteps('TimelineTour', 'timeline-tour-steps.ts'),
-  ...conceptTourSteps('ChevronsTour', 'chevrons-tour-steps.ts'),
-  ...conceptTourSteps('MindMapTour', 'mind-node-tour-steps.ts'),
-  ...conceptTourSteps('FlowchartTour', 'flowchart-tour-steps.ts'),
-  ...conceptTourSteps('OrgChartTour', 'org-chart-tour-steps.ts'),
-  ...conceptTourSteps('SequenceTour', 'sequence-tour-steps.ts'),
-  ...conceptTourSteps('ChartTour', 'chart-tour-steps.ts'),
-  ...conceptTourSteps('StackTour', 'stack-tour-steps.ts'),
-  ...conceptTourSteps('EntityTour', 'entity-tour-steps.ts'),
-  ...conceptTourSteps('TabWindowTour', 'tab-window-tour-steps.ts'),
-  ...conceptTourSteps('LaneTour', 'lane-tour-steps.ts'),
-  ...conceptTourSteps('BoundaryTour', 'boundary-tour-steps.ts'),
-  ...conceptTourSteps('DiagramKeyTour', 'diagram-key-tour-steps.ts'),
-  ...conceptTourSteps('PortalTour', 'portal-tour-steps.ts'),
-];
-
 // The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
 // docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
 // The welcome card sends no step view.
@@ -425,12 +365,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     values: ['Bold', 'Italic', 'List', 'Heading'],
     open: 'the rich-text command a note applied',
   },
-  'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Searched': {
-    values: ['IconSearch', 'TechSearch', 'StickerSearch'],
-  },
-  'apps/live/components/palette/PaletteCategoryBrowser.tsx UI·Opened': {
-    values: ['IconGroup', 'TechGroup', 'StickerGroup'],
-  },
   'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
   'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
     values: ['Document', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
@@ -472,17 +406,6 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
   'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/ElementTourHost.tsx UI·View': { values: ELEMENT_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Started': { values: ELEMENT_TOUR_TOKENS },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Ended': {
-    values: ELEMENT_TOUR_TOKENS.flatMap((t) => [`${t}Completed`, `${t}Skipped`]),
-  },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Opened': {
-    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
-  },
-  'apps/live/components/tour/ElementTourHost.tsx UI·Closed': {
-    values: ELEMENT_TOUR_TOKENS.map((t) => `${t}Offer`),
-  },
   'apps/live/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },

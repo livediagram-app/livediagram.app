@@ -8,7 +8,6 @@ import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
 import { useEditorContext } from '@/app/document/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
-import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
 import { tileHandler } from '@/components/palette/PaletteTileGrid';
 import { useEditorTileActions } from '@/components/palette/useEditorTileActions';
@@ -40,21 +39,11 @@ export function EditorSearchPanel() {
     setSelectedId,
     isReadOnly,
     addShape,
-    addIcon,
-    addSticker,
-    addTechIcon,
     setSearchOpen,
     openSettingsAt,
   } = useEditorContext();
   const { commandItems, runCommand } = useEditorCommands(searchOpen);
   const tileActions = useEditorTileActions();
-  // The icon catalogues load async (lib/icon-registry.ts); subscribing here
-  // re-renders the panel — and rebuilds the palette items below — the moment
-  // they land, so "Add to canvas" results go from shapes-only to the full
-  // shapes + icons + tech list without a reopen. (In practice the editor page
-  // kicked the load at mount, so by the time anyone opens search the data is
-  // almost always already in.)
-  const cataloguesLoaded = useIconCatalogs();
 
   if (!searchOpen) return null;
 
@@ -96,9 +85,7 @@ export function EditorSearchPanel() {
         setActiveId(tabId);
         setSelectedId(elementId);
       }}
-      paletteItems={
-        isReadOnly ? undefined : buildPaletteSearchItems({ catalogues: cataloguesLoaded })
-      }
+      paletteItems={isReadOnly ? undefined : buildPaletteSearchItems()}
       onAddPaletteItem={
         isReadOnly
           ? undefined
@@ -109,12 +96,10 @@ export function EditorSearchPanel() {
                   plan: add.plan,
                   variant: add.variant,
                 });
-              else if (add.type === 'icon') addIcon(add.iconId);
-              else if (add.type === 'sticker') addSticker(add.stickerId);
-              else if (add.type === 'tile') {
+              else {
                 const def = PALETTE_TILES.find((t) => t.id === add.tileId);
                 if (def) tileHandler(def, tileActions)();
-              } else addTechIcon(add.iconId);
+              }
             }
       }
       commandItems={commandItems}

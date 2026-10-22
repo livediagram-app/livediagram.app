@@ -55,7 +55,7 @@ export async function enableDebugLogs(context: BrowserContext): Promise<void> {
   );
 }
 
-// The Plan, Forms and element tours (-tour.md,
+// The Plan and Forms tours (docs/specs/026-plan/plan-tour.md,
 // docs/specs/030-forms/forms.md) offer themselves 800 ms into their modes and their overlays would take the presses of every spec there; they have
 // their own unit tests. Marked seen for every page of the context.
 async function markModeToursSeen(context: BrowserContext): Promise<void> {
@@ -63,11 +63,7 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
     const key = 'liveplanner:user-preferences:v1';
     try {
       const prefs = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
-      if (
-        prefs.formTourSeen !== true ||
-        prefs.planTourSeen !== true ||
-        !Array.isArray(prefs.elementTourKinds)
-      )
+      if (prefs.formTourSeen !== true || prefs.planTourSeen !== true)
         localStorage.setItem(
           key,
           JSON.stringify({
@@ -76,29 +72,6 @@ async function markModeToursSeen(context: BrowserContext): Promise<void> {
             // The Plan tour is mounted on every tab now that Plan is the one mode.
             planTourSeen: true,
             planTourTracks: ['boards', 'sheets'],
-            // Element tours (docs/specs/007-editor/element-tours.md): the offer beside a Sankey's toolbar.
-            elementTourKinds: [
-              'sankey',
-              'layer-stack',
-              'pyramid',
-              'funnel',
-              'cycle',
-              'hub',
-              'onion',
-              'chevrons',
-              'mind-node',
-              'flowchart',
-              'org-chart',
-              'sequence',
-              'chart',
-              'stack',
-              'entity',
-              'tab-window',
-              'lane',
-              'boundary',
-              'diagram-key',
-              'portal',
-            ],
           }),
         );
     } catch {

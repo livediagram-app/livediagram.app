@@ -9,7 +9,6 @@ const ALL = new Set([
   'autoRebindArrows',
   'planTourSeen',
   'formTourSeen',
-  'elementToursSeen',
   'aiSuggestedPrompts',
 ]);
 
@@ -22,7 +21,6 @@ describe('presetSummaryLines', () => {
       ['Auto-Attach Arrows', 'On', 'Editor'],
       ['Plan Tours', 'Off', 'Tours'],
       ['Forms Tour', 'Off', 'Tours'],
-      ['Show Me on Every Element', 'Off', 'Tours'],
       ['Suggested Prompts', 'Off', 'AI Tools'],
     ]);
     expect(lines.every((l) => !l.changed && l.reachable)).toBe(true);

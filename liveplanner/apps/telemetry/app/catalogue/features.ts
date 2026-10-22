@@ -6,7 +6,6 @@ import { SELECTION_MODES } from '../palette-types';
 import { CUSTOM_THEME_TYPES, NON_PATTERN_CANVAS_TYPES, isNonThemePick } from '../look-feel-types';
 import type { Metric, MetricStack } from '../metric-series';
 import { chart } from './helpers';
-import { elementTourTokens } from '../element-tour-kinds';
 
 export const LAYERS_RENAMED = chart(
   'Layer',
@@ -535,13 +534,6 @@ export const EDITOR_SEARCH: MetricStack = {
 };
 
 // The palette beyond adding elements (Palette tab has the rankings).
-export const PALETTE_SEARCHES = chart(
-  'UI',
-  'Searched',
-  'Palette Searches',
-  'Searches inside the palette, its icons, technology marks and behaviours.',
-);
-
 export const PALETTE_GROUPS_OPENED = chart(
   'UI',
   'Opened',
@@ -568,8 +560,8 @@ export const TOOLBAR_CATEGORY = chart(
 export const PALETTE_USE: MetricStack = {
   stack: true,
   title: 'Palette Use',
-  blurb: 'How the palette gets used beyond adding elements: searches, groups, and the toolbar.',
-  members: [PALETTE_SEARCHES, PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
+  blurb: 'How the palette gets used beyond adding elements: groups and the toolbar.',
+  members: [PALETTE_GROUPS_OPENED, TOOLBAR_CATEGORY],
   seeAlso: { section: 'palette', label: 'See Each Element in Features › Palette' },
 };
 
@@ -708,14 +700,6 @@ export const FORM_TOUR_OFFERED = opened(
   'Forms Tour Offered',
   'The Forms tour offered, the first time an Editor opens a Form tab.',
   (t) => t === 'FormTourOffer',
-);
-
-// The element tours' offers (docs/specs/007-editor/element-tours.md), any `<Kind>TourOffer`; charted in their funnel on
-// the Visitors tab, which names the kinds.
-export const ELEMENT_TOURS_OFFERED = opened(
-  'Element Tours Offered',
-  'An element tour offered beside a selected element, once per kind per visit.',
-  (t) => elementTourTokens('Offer').includes(t ?? ''),
 );
 
 // The power user mode offer (docs/specs/007-editor/power-user-mode.md); charted in its funnel on

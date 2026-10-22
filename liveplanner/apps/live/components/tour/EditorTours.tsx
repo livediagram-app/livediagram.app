@@ -15,12 +15,6 @@ const FormTourHost = dynamic(
   () => import('@/components/tour/FormTourHost').then((m) => m.FormTourHost),
   { ssr: false },
 );
-// Element tours (docs/specs/007-editor/element-tours.md): offered beside the selection toolbar of a toured element
-// kind, so mounted with the editor; its chunk stays out of the first load.
-const ElementTourHost = dynamic(
-  () => import('@/components/tour/ElementTourHost').then((m) => m.ElementTourHost),
-  { ssr: false },
-);
 
 // The editor's tours (docs/specs/007-editor/editor-tour.md): the Plan tour with the editor, the others each mounted the
 // first time their kind is worked in and kept mounted after, so leaving mid-tour still runs its clean-up.
@@ -35,7 +29,6 @@ export function EditorTours() {
       {mountFormTour ? <FormTourHost /> : null}
       {/* A form template's form, started once its tab opens (lib/pending-form-start.ts). */}
       <PendingFormStart />
-      <ElementTourHost />
     </>
   );
 }

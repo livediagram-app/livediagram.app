@@ -7,7 +7,6 @@
 
 import type { Selection } from '@/lib/selection-store';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { requestToolbarSearch } from '@/lib/toolbar-search-request';
 
 // Shape kinds that have a single-key palette shortcut: the common
 // flowchart set. The rest of the ShapeKind union (stadium, document,
@@ -165,11 +164,8 @@ export type ShortcutAction = (live: EditorKeyboardShortcutsDeps) => void;
 
 export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
   v: (l) => l.setCanvasTool('select'),
-  // Opens the Toolbar strip's Search where there is one (docs/specs/007-editor/toolbar-layout.md
-  // "Search: every element type"); elsewhere still the legacy Select alias (pre-`V` standard).
-  s: (l) => {
-    if (!requestToolbarSearch()) l.setCanvasTool('select');
-  },
+  // The legacy Select alias (pre-`V` standard).
+  s: (l) => l.setCanvasTool('select'),
   '1': (l) => l.setCanvasTool('select'),
   h: (l) => l.setCanvasTool('pan'),
   i: (l) => l.setCanvasTool('isometric'), // docs/specs/008-canvas/isometric-view.md: pans like Hand, non-mutating

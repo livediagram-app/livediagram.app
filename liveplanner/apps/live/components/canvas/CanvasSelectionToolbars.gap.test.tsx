@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { render } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { setElementTourOffer } from '@/lib/element-tour-offer';
+import { describe, expect, it, vi } from 'vitest';
 import { createShape, type Element } from '@liveplanner/document';
 import { presetSetup } from '@liveplanner/items';
 import { CanvasSelectionToolbars } from './CanvasSelectionToolbars';
@@ -14,9 +13,9 @@ import { createViewportStore } from '@/lib/viewport-store';
 // docs/specs/008-canvas/canvas-and-palette.md: the selection toolbar keeps a wide gap only to clear the "+"
 // quick-connect button; an element that shows none (a Plan board) gets the close gap.
 
-const seen: { compact?: boolean; aside?: unknown }[] = [];
+const seen: { compact?: boolean }[] = [];
 vi.mock('./SelectionPopover', () => ({
-  SelectionPopover: (p: { compact?: boolean; aside?: unknown }) => {
+  SelectionPopover: (p: { compact?: boolean }) => {
     seen.push(p);
     return null;
   },
@@ -70,20 +69,5 @@ describe('selection toolbar gap', () => {
       to: { kind: 'free', x: 200, y: 0 },
     } as Element;
     expect(compactFor(arrow)).toBe(false);
-  });
-});
-
-// The element tour offer (docs/specs/007-editor/element-tours.md) rides beside the toolbar of the element it is for.
-describe('selection toolbar tour offer', () => {
-  afterEach(() => setElementTourOffer(null));
-
-  it('draws the offer beside the toolbar only for its element', () => {
-    const sankey = createShape('sankey', 0, 0);
-    setElementTourOffer({ elementId: sankey.id, kind: 'sankey', play: vi.fn(), dismiss: vi.fn() });
-    compactFor(sankey);
-    expect(seen.at(-1)?.aside).toBeTruthy();
-    setElementTourOffer({ elementId: 'another', kind: 'sankey', play: vi.fn(), dismiss: vi.fn() });
-    compactFor(sankey);
-    expect(seen.at(-1)?.aside).toBeUndefined();
   });
 });

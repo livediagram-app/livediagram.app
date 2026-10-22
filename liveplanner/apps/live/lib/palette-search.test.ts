@@ -39,47 +39,35 @@ describe('buildPaletteSearchItems', () => {
     expect(missing).toEqual([]);
   });
 
-  it('offers every non-shape palette tile too (text, arrow, table, embeds, ...)', () => {
+  it('offers every non-shape palette tile too (text, sticky)', () => {
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    const missing = PALETTE_TILES.filter(
-      (t) => !['shape', 'icon', 'tech-icon', 'sticker'].includes(t.action.type),
-    )
+    const missing = PALETTE_TILES.filter((t) => t.action.type !== 'shape')
       .map((t) => `tile:${t.id}`)
       .filter((id) => !ids.has(id));
     expect(missing).toEqual([]);
-    for (const id of [
-      'tile:tools:text',
-      'tile:tools:arrow',
-      'tile:tools:table',
-      'tile:tools:sticky',
-    ])
-      expect(ids).toContain(id);
+    for (const id of ['tile:tools:text', 'tile:tools:sticky']) expect(ids).toContain(id);
   });
 
-  it('covers the element types the palette added most recently', () => {
+  it("covers Plan's own elements and the tools beside them", () => {
     // Named explicitly rather than left to the derivation above, so a
     // regression that dropped these from the PALETTE_TILES filter still fails
     // rather than agreeing with itself.
     const ids = new Set(buildPaletteSearchItems().map((i) => i.id));
-    for (const kind of ['lane', 'entity', 'mind-node', 'page', 'phone', 'bar-chart', 'portal']) {
-      expect(ids.has(`shape:${kind}`)).toBe(true);
+    for (const kind of ['plan-board', 'plan-sheet', 'plan-view', 'page', 'temperature']) {
+      expect(
+        [...ids].some((id) => id === `shape:${kind}` || id.startsWith(`shape:${kind}:`)),
+        kind,
+      ).toBe(true);
     }
     // And the split kind, one entry per choice (docs/specs/012-collaboration/session-button.md).
-    for (const id of [
-      'shape:session-button:timer',
-      'shape:session-button:stopwatch',
-      'shape:session-button:vote',
-    ]) {
+    for (const id of ['shape:session-button:timer', 'shape:session-button:stopwatch']) {
       expect(ids.has(id)).toBe(true);
     }
   });
 
   it('names each entry from the tile, not from its id', () => {
-    const lane = buildPaletteSearchItems().find((i) => i.id === 'shape:lane');
-    expect(lane?.name).toBe('Lane');
-    // The tile's description feeds the keywords, so the sentence the palette
-    // already writes about an element is searchable without being restated.
-    expect(lane?.keywords).toContain('swimlane');
+    const page = buildPaletteSearchItems().find((i) => i.id === 'shape:page');
+    expect(page?.name).toBe('Page');
   });
 
   it('emits no duplicate ids', () => {
@@ -104,9 +92,8 @@ describe('buildPaletteSearchItems', () => {
     // The comment pin, done check and reaction pad had all shipped that way.
     // Someone typing "emoji", "tick" or "annotate" found nothing.
     //
-    // Derived from the tiles, not from SHAPE_KINDS: `icon` and `sticker` are
-    // real kinds whose catalogues are enumerated separately, so they have no
-    // shape tile and correctly have no synonyms.
+    // Derived from the tiles, not from SHAPE_KINDS: a kind with no tile has
+    // nothing to find, so it needs no synonyms.
     const missing = buildPaletteSearchItems()
       .filter((i) => i.id.startsWith('shape:'))
       // Strip any creation-time choice suffix back to the kind, which is what
@@ -114,14 +101,5 @@ describe('buildPaletteSearchItems', () => {
       .map((i) => i.id.split(':')[1]!)
       .filter((kind) => !(SHAPE_KEYWORDS as Record<string, string | undefined>)[kind]?.trim());
     expect(missing).toEqual([]);
-  });
-
-  // Before the icon chunk lands the catalogues hold nothing; a caller passes the subscription's value so the
-  // React Compiler rebuilds the list when it does (useIconCatalogs.guard.test.ts).
-  it('lists no catalogue entries until the catalogues have loaded, and every tile either way', () => {
-    const before = buildPaletteSearchItems({ catalogues: false });
-    expect(before.some((i) => /^(icon|sticker|tech):/.test(i.id))).toBe(false);
-    const after = buildPaletteSearchItems();
-    expect(after.filter((i) => /^(shape|tile):/.test(i.id))).toEqual(before);
   });
 });

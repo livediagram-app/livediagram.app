@@ -32,11 +32,6 @@ import { CanvasStyleControls } from '@/components/canvas/CanvasStyleControls';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { BackBar } from '@/components/primitives/BackBar';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
-import {
-  TabStyleShowMeButton,
-  TabStyleTourStage,
-  useTabStyleTour,
-} from '@/components/tour/TabStyleTour';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
 import type { TextSize } from '@liveplanner/document';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
@@ -157,15 +152,7 @@ export function CanvasThemeDialog({
   const panelScale = useUiScale('panels');
   // On a phone it is a bottom sheet, its grab handle dragging it taller or down to close (BottomSheet's).
   const sheet = useSheetDrag(onClose);
-  // Show Me: the tour of the home, run on this dialog (docs/specs/011-theme/canvas-and-theme-dialog.md "Show Me").
-  const tour = useTabStyleTour({
-    showHome: () => (tab === 'looks' ? undefined : go('looks')),
-    showFinish: () => (tab === 'finish' ? undefined : go('finish')),
-    finish: () => resolveFinish(finish, undefined),
-    setFinish: eased(onSetFinish),
-  });
-  // While Show Me runs, Escape is the tour's, never the dialog's.
-  useEscape(onClose, { enabled: !tour.active });
+  useEscape(onClose);
 
   return (
     <Portal>
@@ -229,7 +216,6 @@ export function CanvasThemeDialog({
               {/* Help sits with the close button, where the other editor
                   dialogs keep their window controls, not beside the title. */}
               <div className="flex items-center gap-1">
-                <TabStyleShowMeButton tour={tour} />
                 <HelpArticleLink
                   size="md"
                   article={
@@ -323,7 +309,6 @@ export function CanvasThemeDialog({
           </div>
         </div>
       </div>
-      <TabStyleTourStage tour={tour} />
     </Portal>
   );
 }

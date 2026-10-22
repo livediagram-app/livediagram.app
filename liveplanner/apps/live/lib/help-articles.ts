@@ -31,9 +31,6 @@ export const HELP_ARTICLES = {
   // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
   // articles.
   embedElements: 'palette/embed-elements',
-  mindMaps: 'palette/mind-maps',
-  flowcharts: 'palette/flowcharts',
-  orgCharts: 'palette/org-charts',
   mindMapOutline: 'palette/mind-maps/edit-outline',
   alignmentGuides: 'palette/alignment-guides',
   panelOpacity: 'palette/panel-opacity',
@@ -95,15 +92,8 @@ export const HELP_ARTICLES = {
   dataElements: 'palette/tools/data-elements',
   sankeyDiagram: 'palette/build/sankey-diagram',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
-  stacks: 'palette/stacks',
-  entities: 'palette/entities',
-  tabWindows: 'canvas/tab-windows',
   lanes: 'palette/lanes',
-  boundaries: 'palette/boundaries',
-  diagramKeys: 'palette/diagram-keys',
-  portals: 'palette/tools/portals',
   sequenceDiagram: 'palette/sequence-diagrams',
-  conceptGraphics: 'palette/concept-graphics',
   palette: 'palette',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
@@ -272,18 +262,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
   },
-  orgCharts: {
-    title: 'Learn about org charts',
-    description: 'People and roles in a tree: reports, peers, and the downward flow.',
-  },
-  flowcharts: {
-    title: 'Learn about flowcharts',
-    description: 'Growing a chart a step at a time, step types, swimlanes and direction.',
-  },
-  mindMaps: {
-    title: 'Learn about mind maps',
-    description: 'Growing a map with Tab and Enter, its branching shapes, spacing and Tidy Map.',
-  },
   mindMapOutline: {
     title: 'Learn about editing an outline',
     description: 'Rewrite a mind map as an indented list and save it back in one go.',
@@ -340,38 +318,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Sankey diagrams',
     description: 'Writing flows, reading the bands, and styling nodes and labels.',
   },
-  stacks: {
-    title: 'Learn about stacks',
-    description: 'Rows, columns and grids that lay out what you drop in them.',
-  },
-  entities: {
-    title: 'Learn about entities',
-    description: 'UML classes and ER tables: a title over name and type fields.',
-  },
-  tabWindows: {
-    title: 'Learn about tab windows',
-    description: 'Show another tab live on the canvas, and keep it up to date.',
-  },
   lanes: {
     title: 'Learn about lanes',
     description: 'Swimlanes: title gutters, seams, and columns as well as rows.',
-  },
-  boundaries: {
-    title: 'Learn about boundaries',
-    description: 'Zones that hold what is inside them: regions, VPCs, C4 systems.',
-  },
-  diagramKeys: {
-    title: 'Learn about diagram keys',
-    description: 'A legend that lists the line styles and tag colours you use.',
-  },
-  portals: {
-    title: 'Learn about portals',
-    description: 'Linked rings that take you across the canvas or to another tab.',
-  },
-  conceptGraphics: {
-    title: 'Learn about concept graphics',
-    description:
-      'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons, and editing their rows.',
   },
   sequenceDiagram: {
     title: 'Learn about sequence diagrams',

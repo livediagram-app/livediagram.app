@@ -9,12 +9,10 @@ import {
   EXPLORER_REASONS_OPENED,
   PLAN_TOUR_OFFERED,
   FORM_TOUR_OFFERED,
-  ELEMENT_TOURS_OFFERED,
   POWER_USER_OFFERED,
   NEW_VERSION_OFFERED,
 } from './features';
 import { chart } from './helpers';
-import { ELEMENT_TOUR_KINDS, elementTourTokens } from '../element-tour-kinds';
 
 export const NEW_VISITORS: Metric = {
   category: 'Participant',
@@ -262,71 +260,6 @@ export const FORM_TOUR: MetricStack = {
   headline: FORM_TOURS_STARTED,
 };
 
-// Element tours (docs/specs/007-editor/element-tours.md): a tour of one element type, offered beside a selected one.
-// One stack for them all, as Show Me's: offered, declined, started (and started per element), steps, how they end.
-export const ELEMENT_TOURS_DECLINED = chart(
-  'UI',
-  'Closed',
-  'Element Tours Declined',
-  'An element tour turned down with the cross on its Tour toolbar.',
-  { types: elementTourTokens('Offer'), rising: 'neutral' },
-);
-
-export const ELEMENT_TOURS_STARTED = chart(
-  'UI',
-  'Started',
-  'Element Tours Started',
-  'Play pressed on the Tour toolbar beside a selected element.',
-  { types: elementTourTokens() },
-);
-
-export const ELEMENT_TOURS_BY_KIND: Metric[] = ELEMENT_TOUR_KINDS.map((k) =>
-  chart('UI', 'Started', `${k.title} Tours Started`, `Play pressed beside a selected ${k.title}.`, {
-    types: [k.token],
-  }),
-);
-
-export const ELEMENT_TOUR_STEPS_VIEWED = chart(
-  'UI',
-  'View',
-  'Element Tour Steps Viewed',
-  'A step of an element tour shown.',
-  { typeIn: (t) => ELEMENT_TOUR_KINDS.some((k) => (t ?? '').startsWith(`${k.token}Step`)) },
-);
-
-export const ELEMENT_TOURS_COMPLETED = chart(
-  'UI',
-  'Ended',
-  'Element Tours Completed',
-  'An element tour run to its last card.',
-  { types: elementTourTokens('Completed') },
-);
-
-export const ELEMENT_TOURS_SKIPPED = chart(
-  'UI',
-  'Ended',
-  'Element Tours Skipped',
-  'An element tour closed before its end.',
-  { types: elementTourTokens('Skipped'), rising: 'neutral' },
-);
-
-export const ELEMENT_TOURS: MetricStack = {
-  stack: true,
-  title: 'Element Tours',
-  blurb:
-    'Tours of one element type, offered beside a selected one: offered, declined, started, stepped through, finished or skipped.',
-  members: [
-    ELEMENT_TOURS_OFFERED,
-    ELEMENT_TOURS_DECLINED,
-    ELEMENT_TOURS_STARTED,
-    ...ELEMENT_TOURS_BY_KIND,
-    ELEMENT_TOUR_STEPS_VIEWED,
-    ELEMENT_TOURS_COMPLETED,
-    ELEMENT_TOURS_SKIPPED,
-  ],
-  headline: ELEMENT_TOURS_STARTED,
-};
-
 // Show Me (docs/specs/007-editor/show-me.md): the on-demand tours of one surface each. Never offered, so each starts
 // only when its button is pressed. One stack for all of them: every start, the starts per surface, then how they end.
 const SHOW_ME_SURFACES = [
@@ -334,7 +267,6 @@ const SHOW_ME_SURFACES = [
   { token: 'ShareTour', title: 'Share', where: 'the Share dialog' },
   { token: 'DashboardTour', title: 'Dashboard', where: 'Dashboard Settings' },
   { token: 'SankeyFlowsTour', title: 'Sankey Flows', where: 'a Sankey’s Flows dialog' },
-  { token: 'TabStyleTour', title: 'Tab Style', where: 'the Tab Style dialog' },
 ] as const;
 
 export const SHOW_ME_TOURS_STARTED = chart(
@@ -399,7 +331,7 @@ export const ONBOARDING_TOURS: MetricStack = {
   title: 'Onboarding Tours',
   blurb:
     'Every guided tour started, one line per tour. How far people get through each one is in Pages & Help.',
-  members: [PLAN_TOURS_STARTED, FORM_TOURS_STARTED, ELEMENT_TOURS_STARTED, SHOW_ME_TOURS_STARTED],
+  members: [PLAN_TOURS_STARTED, FORM_TOURS_STARTED, SHOW_ME_TOURS_STARTED],
   seeAlso: { section: 'tours', label: 'See Each Tour in Pages & Help' },
 };
 

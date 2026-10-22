@@ -25,8 +25,7 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Searched', 'PaletteSearch')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'favourites')).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'favourites')).toBe(true);
-    // The palette's other searches, and the Explorer's document favourites, carry on.
-    expect(isRetiredEvent('UI', 'Searched', 'IconSearch')).toBe(false);
+    // The Explorer's document favourites carry on.
     expect(isRetiredEvent('Mcp', 'Used', 'SearchIcons')).toBe(true);
     expect(isRetiredEvent('Cli', 'Used', 'IconSearch')).toBe(true);
     expect(isRetiredEvent('Help', 'View', 'popular')).toBe(false);
@@ -155,8 +154,23 @@ describe('isRetiredEvent', () => {
     expect(isRetiredEvent('UI', 'Opened', 'PlanTourOffer')).toBe(false);
     expect(isRetiredEvent('UI', 'Started', 'PlanTour')).toBe(false);
     expect(isRetiredEvent('UI', 'View', 'PlanTourStepBoard')).toBe(false);
-    expect(isRetiredEvent('UI', 'View', 'SankeyTourStepOutro')).toBe(false);
     expect(isRetiredEvent('UI', 'Toggled', 'PlanTourSeenOff')).toBe(false);
+  });
+
+  // liveplanner's element tours, the Tab Style Show Me and the strip palette's catalogue searches (removed
+  // 2026-10-22, plans/0001-liveplanner-fork.md Phase 4).
+  it('retires the diagram tours and catalogue searches, not the tours Plan keeps', () => {
+    expect(isRetiredEvent('UI', 'Opened', 'SankeyTourOffer')).toBe(true);
+    expect(isRetiredEvent('UI', 'View', 'SankeyTourStepOutro')).toBe(true);
+    expect(isRetiredEvent('UI', 'Ended', 'PyramidTourCompleted')).toBe(true);
+    expect(isRetiredEvent('UI', 'Toggled', 'ElementToursSeenOn')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'TabStyleTour')).toBe(true);
+    expect(isRetiredEvent('UI', 'Searched', 'IconSearch')).toBe(true);
+    expect(isRetiredEvent('UI', 'Opened', 'StickerGroup')).toBe(true);
+    expect(isRetiredEvent('UI', 'Started', 'PlanTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'ShareTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'Started', 'DashboardTour')).toBe(false);
+    expect(isRetiredEvent('UI', 'View', 'FormTourStepQuestions')).toBe(false);
   });
 
   it("retires Workshop mode's facilitation features, not the session tools Plan keeps", () => {

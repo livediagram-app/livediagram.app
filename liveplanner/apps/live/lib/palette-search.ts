@@ -1,8 +1,6 @@
-// Assembles the palette catalogue (shapes + line-art icons + technology icons
-// + stickers) into the flat, keyword-tagged list the global search surfaces as
-// "Add to canvas" results (docs/specs/008-canvas/canvas-and-palette.md). Built here, not in lib/search.ts, so the
-// search matcher stays catalogue-agnostic and the Explorer (which never adds
-// elements) doesn't pull the icon data into its bundle.
+// Assembles the palette catalogue into the flat, keyword-tagged list the global search surfaces as "Add to canvas"
+// results (docs/specs/026-plan/plan-mode.md "The palette"). Built here, not in lib/search.ts, so the search matcher
+// stays catalogue-agnostic and the Explorer (which never adds elements) doesn't pull the tile data into its bundle.
 
 import type { ShapeKind } from '@liveplanner/document';
 
@@ -13,18 +11,11 @@ import {
   tileDisplayName,
   type PaletteTileDef,
 } from '@/components/palette/palette-tile-defs';
-import {
-  getLoadedIconCatalog,
-  getLoadedStickerCatalog,
-  getLoadedTechIconCatalog,
-} from '@/lib/icon-registry';
-import { isLegacyEmojiIconId } from '@liveplanner/icons';
 
 // The shape-placing tiles, in palette order. Derived from the shared
 // catalogue (palette-tile-defs) rather than restated, which is what keeps search from
 // drifting behind the palette again. Icon / sticker / tech tiles are excluded
-// deliberately: those catalogues are enumerated in full below, so including
-// their single "open the picker" tile would add a duplicate result.
+// deliberately: Plan offers no icon or sticker catalogue to add from.
 export const SHAPE_TILES = PALETTE_TILES.filter(
   (t) => t.action.type === 'shape' && t.action.kind !== 'icon' && t.action.kind !== 'sticker',
 );
@@ -75,19 +66,9 @@ export function shapeTileSearchItem(tile: PaletteTileDef) {
   } satisfies PaletteSearchItem;
 }
 
-// Every tile that is NOT a shape: Text, Arrow, Sticky note, Table, Image, the
-// pens, embeds, web components. Search used to offer
-// shapes only, so none of these could be added from it. They are keyed on
-// the tile id and run through the tile's own handler (tileHandler), which is
-// what keeps a search add identical to clicking the tile. Dynamic icon /
-// sticker / tech tiles are left to the catalogue enumeration below.
-const OTHER_TILES = PALETTE_TILES.filter(
-  (t) =>
-    t.action.type !== 'shape' &&
-    t.action.type !== 'icon' &&
-    t.action.type !== 'tech-icon' &&
-    t.action.type !== 'sticker',
-);
+// Every tile that is NOT a shape: Text and the Sticky note. They are keyed on the tile id and run through the tile's
+// own handler (tileHandler), which is what keeps a search add identical to clicking the tile.
+const OTHER_TILES = PALETTE_TILES.filter((t) => t.action.type !== 'shape');
 
 // Every non-shape tile, as a search item.
 function otherTileItems(): PaletteSearchItem[] {
@@ -99,49 +80,7 @@ function otherTileItems(): PaletteSearchItem[] {
   }));
 }
 
-// A function, not a module-load constant: the icon catalogues load as an
-// async chunk (lib/icon-registry.ts), so the list must be rebuilt once they
-// land. The shape entries are always present; icon / tech entries appear as
-// soon as the chunk does. The caller (EditorSearchPanel) subscribes via
-// useIconCatalogs and passes its value as `catalogues`, so it rebuilds this list
-// on load (a re-render alone would not: the React Compiler memoises the call on
-// its arguments); the build is a few hundred tiny objects, cheap enough to run
-// per open-panel render without memoisation.
-export function buildPaletteSearchItems({
-  catalogues = true,
-}: {
-  // Whether the icon catalogues have loaded (useIconCatalogs): a component passes the subscription's value so the
-  // React Compiler re-runs this when they land. Before then they hold nothing to add.
-  catalogues?: boolean;
-} = {}): PaletteSearchItem[] {
-  if (!catalogues) return [...SHAPE_TILES.map(shapeTileSearchItem), ...otherTileItems()];
-  return [
-    ...SHAPE_TILES.map(shapeTileSearchItem),
-    ...otherTileItems(),
-    // Line art only. The catalogue still carries the legacy emoji entries so
-    // elements from before docs/specs/010-palette/stickers.md keep rendering, but offering them here would add
-    // a second way to place something that is a sticker now.
-    ...getLoadedIconCatalog()
-      .filter((i) => !isLegacyEmojiIconId(i.id))
-      .map((i) => ({
-        id: `icon:${i.id}`,
-        name: i.label,
-        keywords: `icon ${i.keywords}`,
-        add: { type: 'icon' as const, iconId: i.id },
-      })),
-    // Stickers (docs/specs/010-palette/stickers.md), added through their own path. A badge also
-    // matches on the word on its pill, so "blocked" finds BLOCKED.
-    ...getLoadedStickerCatalog().map((s) => ({
-      id: `sticker:${s.id}`,
-      name: s.label,
-      keywords: `sticker ${s.kind === 'badge' ? `${s.text.toLowerCase()} badge ` : 'emoji '}${s.keywords}`,
-      add: { type: 'sticker' as const, stickerId: s.id },
-    })),
-    ...getLoadedTechIconCatalog().map((t) => ({
-      id: `tech:${t.id}`,
-      name: t.label,
-      keywords: `technology ${t.keywords}`,
-      add: { type: 'tech' as const, iconId: t.id },
-    })),
-  ];
+// Every tile Plan's palette catalogue holds, as "Add to canvas" search items: its shapes, then the rest.
+export function buildPaletteSearchItems(): PaletteSearchItem[] {
+  return [...SHAPE_TILES.map(shapeTileSearchItem), ...otherTileItems()];
 }

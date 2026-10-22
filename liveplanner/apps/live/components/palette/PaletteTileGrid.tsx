@@ -1,6 +1,4 @@
-import { requestPaletteCategory } from '@/lib/palette-category-request';
-import type { ComponentKind, ShapeKind } from '@liveplanner/document';
-import type { EmbedProvider } from '@liveplanner/document';
+import type { ShapeKind } from '@liveplanner/document';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';
@@ -18,19 +16,7 @@ import { usePlanCardTileDisabled } from '@/hooks/plan/card-types-taken';
 export type PaletteTileActions = {
   addShape: (kind: ShapeKind, opts?: AddShapeOptions) => void;
   addText: () => void;
-  beginPolygon: () => void;
-  addArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
   addSticky: () => void;
-  addTable: () => void;
-  addAnnotation: () => void;
-  addLinkCard: () => void;
-  addVideo: (provider?: EmbedProvider) => void;
-  addSticker: (stickerId: string) => void;
-  addComponent: (kind: ComponentKind) => void;
-  // Dynamic icon tiles (palette-dynamic-tiles, the Toolbar strip): drop a single line-art /
-  // Technology catalogue icon, same handlers the Icons / Technology tabs use.
-  addIcon: (iconId: string) => void;
-  addTechIcon: (iconId: string) => void;
   // Puts the armed tool down (its tile pressed again).
   cancelDraw?: () => void;
 };
@@ -59,38 +45,13 @@ export function tileHandler(
         });
     case 'text':
       return actions.addText;
-    case 'polygon':
-      return actions.beginPolygon;
-    case 'arrow':
-      // The Arrow tile's pointer, or the Line tile's none (canvas-and-palette.md "Arrows and lines").
-      return () => actions.addArrow(a.ends);
     case 'sticky':
       return () => actions.addSticky();
-    case 'table':
-      return actions.addTable;
-    case 'annotation':
-      return actions.addAnnotation;
-    case 'link-card':
-      return actions.addLinkCard;
-    case 'video':
-      return () => actions.addVideo(a.provider);
-    case 'sticker':
-      return () => actions.addSticker(a.stickerId);
-    case 'component':
-      return () => actions.addComponent(a.kind);
-    case 'icon':
-      return () => actions.addIcon(a.iconId);
-    case 'tech-icon':
-      return () => actions.addTechIcon(a.iconId);
-    case 'open':
-      // Off the strip (which opens its popover itself) an opener moves the palette to its category.
-      return () => requestPaletteCategory(a.category);
   }
 }
 
-// Whether this tile is the armed draw-to-size intent (the pressed
-// highlight). Only the annotation drops immediately and never arms, so it is
-// the only kind with no active state (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
+// Whether this tile is the armed draw-to-size intent (the pressed highlight)
+// (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
 export function tileActive(
   def: PaletteTileDef,
   pendingDraw: PendingDraw | null | undefined,
@@ -108,26 +69,10 @@ export function tileActive(
         pendingDraw.plan === a.plan &&
         pendingDraw.variant === a.variant
       );
-    case 'component':
-      return pendingDraw.type === 'component' && pendingDraw.kind === a.kind;
-    // The Media tab has a tile per service and they all arm one `video`
-    // intent, so match on the provider too or picking Loom would light up
-    // Vimeo alongside it (the same trap the shape branch above avoids).
-    case 'video':
-      return pendingDraw.type === 'video' && pendingDraw.provider === a.provider;
     case 'sticky':
       return pendingDraw.type === 'sticky';
-    // Icon / sticker tiles DO arm (they ride the shape intent carrying their
-    // glyph id), but their catalogues are open-ended and the picker tabs
-    // render thousands of tiles, so pressed-state matching per glyph buys
-    // nothing the mode banner and cursor don't already say.
-    case 'annotation':
-    case 'sticker':
-    case 'icon':
-    case 'tech-icon':
-      return false;
-    default:
-      return pendingDraw.type === a.type;
+    case 'text':
+      return pendingDraw.type === 'text';
   }
 }
 
@@ -162,8 +107,8 @@ function TileButton({
 }) {
   const a = def.action;
   const onClick = tileHandler(def, actions, pendingDraw);
-  // Shape tiles drag through IconButton's dragKind (which also picks their theme tint); every other
-  // placeable tile (sticky, icons, sticker) carries the shared payload from tileDragStart.
+  // Shape tiles drag through IconButton's dragKind (which also picks their theme tint); the sticky carries the shared
+  // payload from tileDragStart.
   const otherDrag = a.type === 'shape' ? undefined : tileDragStart(a);
   // Greyed out with a reason: the def's own, or a card tile no board on the tab takes.
   const cardRefusal = usePlanCardTileDisabled(a);

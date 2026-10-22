@@ -322,10 +322,54 @@ const EXPLORER_TIMELINE = new Set([
 ]);
 
 // The agents' icon search (removed 2026-10-22, docs/specs/015-api/mcp-server.md): the MCP's search_icons and the CLI's
-// `icon search`, which found ids for diagram boxes. The palette's own icon search carries on (UI·Searched·IconSearch).
+// `icon search`, which found ids for diagram boxes.
 const AGENT_ICON_SEARCH = new Set(['Mcp|Used|SearchIcons', 'Cli|Used|IconSearch']);
 
+// liveplanner's diagram tours and palette (removed 2026-10-22, plans/0001-liveplanner-fork.md Phase 4): the element
+// tours offered beside a selected diagram element, the Tab Style dialog's Show Me, their Settings switches, and the
+// strip palette's Icons, Stickers and Technology searches and groups. Each tour's events carry its token as the type
+// or its prefix (`SankeyTourOffer`, `PyramidTourStepAddRow`, `ElementToursSeenOn`).
+const RETIRED_TOUR_TOKENS = [
+  'SankeyTour',
+  'LayerStackTour',
+  'PyramidTour',
+  'FunnelTour',
+  'CycleTour',
+  'HubTour',
+  'OnionTour',
+  'ChevronsTour',
+  'TimelineTour',
+  'MindMapTour',
+  'FlowchartTour',
+  'OrgChartTour',
+  'SequenceTour',
+  'ChartTour',
+  'StackTour',
+  'EntityTour',
+  'TabWindowTour',
+  'LaneTour',
+  'BoundaryTour',
+  'DiagramKeyTour',
+  'PortalTour',
+  'TabStyleTour',
+  'ElementTours',
+];
+const DIAGRAM_PALETTE_UI = new Set([
+  'Searched|IconSearch',
+  'Searched|TechSearch',
+  'Searched|StickerSearch',
+  'Opened|IconGroup',
+  'Opened|TechGroup',
+  'Opened|StickerGroup',
+]);
+function isRetiredDiagramTourEvent(category: string, action: string, type: string | null): boolean {
+  if (category !== 'UI' || !type) return false;
+  if (DIAGRAM_PALETTE_UI.has(`${action}|${type}`)) return true;
+  return RETIRED_TOUR_TOKENS.some((token) => type.startsWith(token));
+}
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
+  if (isRetiredDiagramTourEvent(category, action, type)) return true;
   if (AGENT_ICON_SEARCH.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Document' && action === 'Reverted') return true;

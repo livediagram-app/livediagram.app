@@ -21,7 +21,6 @@ export type MapSize = 'short' | 'medium' | 'tall';
 // render would otherwise be undone.
 
 import { upgradeLegacyPreferences } from '@liveplanner/api-schema';
-import type { ElementTourKind } from './element-tours';
 import type { PlanTourTrack } from './plan-tour';
 import type { SwatchOverrideStore } from './swatch-overrides';
 import { USER_PREFERENCES_STORAGE_KEY } from '@liveplanner/telemetry-client';
@@ -192,12 +191,6 @@ export type UserPreferences = {
   // The Forms tour's seen-guard (docs/specs/030-forms/forms.md "The Forms tour"), as `planTourSeen`; Show Me in the
   // form's cog panel reruns it. Missing / undefined === not seen.
   formTourSeen?: boolean;
-  // Element tours (docs/specs/007-editor/element-tours.md): the toured element kinds whose offer has been answered
-  // (Play or Cancel), so each offers itself once ever. Surfaced in Settings as Tours › Show Me, one switch
-  // per kind (inverted). Read through lib/element-tours.
-  elementTourKinds?: ElementTourKind[];
-  // Counts every element tour as answered while Power user mode is on (lib/tour-tracks.ts); written by its preset.
-  elementToursSeen?: boolean;
   // Documents this user has hidden from the Explorer's Recent list
   // (docs/specs/013-workspace/hide-from-recent.md). PER-USER rather than a field on the document: your Recent
   // is your view of your own work, and on a shared document one
