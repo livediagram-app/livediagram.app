@@ -8,6 +8,7 @@ import {
   type CommunityFeaturedResponse,
   type CommunityPost,
   COMMUNITY_HOME_PATH,
+  communityServiceUrl,
   isAbortError,
 } from '@livediagram/api-schema';
 import {
@@ -25,12 +26,17 @@ import { EYEBROW } from '@/components/eyebrow';
 
 // The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page";
 // docs/specs/019-marketing/marketing-site.md): six documents people are proud of, the most liked over the
-// last three months topped up with the best of all time, picked by the api. The page is a static export,
+// last three months topped up with the best of all time, picked by the liveworkspace Community service
+// (liveworkspace/docs/community.md) from this app's posts. The page is a static export,
 // so the six arrive after it loads: placeholder cards hold their space meanwhile (no layout shift), and
 // with nothing to show (an empty Community, the api unreachable) the section invites the first share. While
 // the Community is switched off the section is not shown at all.
 
+// The card images are this app's api's: the document is this app's.
 const API_BASE = '/api';
+const FEATURED_URL = communityServiceUrl('livediagram.app', '/featured', {
+  base: process.env.NEXT_PUBLIC_COMMUNITY_API,
+});
 type State =
   | { status: 'loading' }
   | { status: 'ready'; posts: CommunityPost[] }
@@ -42,7 +48,7 @@ function useFeatured(near: boolean): State {
   useEffect(() => {
     if (!near) return;
     const controller = new AbortController();
-    fetch(`${API_BASE}/community/featured`, { signal: controller.signal })
+    fetch(FEATURED_URL, { signal: controller.signal })
       .then(async (res) => {
         if (res.status === 404) return setState({ status: 'off' });
         const body = (res.ok ? await res.json() : {}) as Partial<CommunityFeaturedResponse>;
