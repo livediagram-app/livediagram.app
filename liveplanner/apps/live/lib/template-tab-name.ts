@@ -1,7 +1,7 @@
 // The name a template gives the tab it fills (docs/specs/007-editor/templates-by-mode.md "The tab's name"), from the
 // Quick Start and /new alike: a Board template's board title, else the template's title, whatever the tab was called
 // before. A blank template gives none, so the tab keeps its name.
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { TEMPLATES, isBlankTemplate, type TemplateKind } from '@liveplanner/templates';
 
 export function templateTabName(

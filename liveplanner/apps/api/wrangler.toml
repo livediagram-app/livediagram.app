@@ -20,35 +20,15 @@ globs = ["**/*.ttf", "**/*.otf"]
 # with `wrangler deploy --var` on liveplanner.app's own repository only, and
 # then verifies on the live worker (docs/specs/016-platform/deployment.md
 # "Hosted profile"). A fork is therefore telemetry-off until it
-# opts in, by declaring the var here. TELEMETRY_ENABLED gates the anonymous,
-# first-party product analytics + the public /telemetry dashboard
-# (docs/specs/017-telemetry/telemetry.md): "true" turns it on; anything else,
-# or absent, keeps it fully off.
+# opts in, by declaring the var here. TELEMETRY_ENABLED gates this worker's
+# anonymous, first-party product events, sent to liveworkspace's central
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md):
+# "true" turns it on; anything else, or absent, keeps it fully off. The
+# service's URL is TELEMETRY_URL, also from the hosted profile (per
+# environment, mirrored into the frontends as NEXT_PUBLIC_TELEMETRY_URL);
+# unset means production's (https://liveworkspace.app/api/telemetry). Locally,
+# `TELEMETRY_URL=http://localhost:8790/api/telemetry` in .dev.vars.
 [vars]
-
-# Origin allow-list for POST /api/ai (docs/specs/007-editor/ai-assistance.md). Stated HERE, not in the
-# Cloudflare dashboard, for the reason docs/specs/016-platform/staging-environment.md calls a known sharp edge: a
-# dashboard-only value is invisible to code review, so the repo read as though
-# this endpoint were locked down while production served it wide open. A probe
-# of production (POST /api/ai with no Origin) answered `400 invalid mode`
-# rather than `403 origin_not_allowed`, which is only possible with this unset —
-# so the key behind `aiEnabled: true` was spendable from any page.
-#
-# BOTH hosts, and `www` is the one that matters: liveplanner.app 301-redirects
-# to www.liveplanner.app, so that is the origin a real browser sends. Listing
-# only the apex — which is what the Env comment in src/types.ts suggested, and
-# what staging does for its own single host — would 403 every genuine AI request
-# in the editor. The apex stays listed so dropping the redirect can't break it.
-#
-# Scope of the protection, honestly: this stops a third-party WEB PAGE spending
-# the key, because a browser sets Origin and cannot forge it. It does NOT stop a
-# non-browser caller, which can send any Origin it likes. Bounding the budget
-# against that needs AI_REQUIRE_CLERK (deliberately NOT set here: the editor
-# offers AI to guests and /api/capabilities reports `aiEnabled` from the key's
-# presence alone, so requiring sign-in would leave guests a visible panel that
-# 401s — see the note in src/routes/capabilities.ts). AI_RATE_LIMITER (20/60s
-# per IP) remains the only other control.
-AI_ALLOWED_ORIGINS = "https://www.liveplanner.app,https://liveplanner.app"
 
 # Guest signature enforcement (docs/specs/015-api/public-api-and-tokens.md §4). Stated here,
 # never only in the dashboard: every `wrangler deploy` replaces the worker's
@@ -78,7 +58,7 @@ GUEST_SIG_ENFORCE_AFTER = ""
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.liveplanner.app"
 
-# D1 database holding documents + participants. The local binding name
+# D1 database holding projects + participants. The local binding name
 # (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
 # is the Cloudflare-side name (must be created via `wrangler d1 create
 # liveplanner` or the dashboard). `database_id` is filled in after the
@@ -92,7 +72,7 @@ database_id = "00000000-0000-4000-8000-000000000001"
 migrations_dir = "migrations"
 
 # R2 bucket caching each project's SVG snapshot (`thumb/<id>`, the Explorer thumbnail and
-# live image) and share card (docs/specs/006-document/document-snapshots.md). The binding
+# live image) and share card (docs/specs/006-project/project-snapshots.md). The binding
 # name `SNAPSHOTS` is what `src/types.ts` reads via the Env type. The bucket must be created
 # out of band via `wrangler r2 bucket create liveplanner-snapshots` (production) or the
 # dashboard. Leaving the binding absent locally only turns the snapshot doors off: they
@@ -117,61 +97,41 @@ type = "ratelimit"
 namespace_id = "1001"
 simple = { limit = 300, period = 60 }
 
-# Per-IP limiter for the anonymous telemetry ingest (POST /api/events,
-# docs/specs/017-telemetry/telemetry.md). Separate namespace from the write limiter so abuse of the
-# public events endpoint can never eat into a user's document-write
-# budget. 120 batches / 60s per IP is generous for a real editor
-# session (which flushes a handful of batches a minute) while bounding
-# how fast one source can flood D1 / inflate the public dashboard.
-# Keyed on CF-Connecting-IP in src/index.ts. Absent binding → the
-# helper allows, so a deployment without it still works.
+# Per-IP limiter for the CLI's telemetry relay (POST /api/events,
+# docs/specs/017-telemetry/telemetry.md "The relay"). Separate namespace from the write limiter so abuse of
+# the public relay can never eat into a user's project-write budget. Keyed on
+# CF-Connecting-IP in src/routes/events.ts. Absent binding → the helper allows.
 [[unsafe.bindings]]
 name = "EVENTS_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 120, period = 60 }
 
-# Durable Object for per-document realtime (presence + broadcast). One
-# instance per document id; clients connect via WebSocket through the
-# `/api/documents/<id>/ws` endpoint.
+# Durable Object for per-project realtime (presence + broadcast). One
+# instance per project id; clients connect via WebSocket through the
+# `/api/projects/<id>/ws` endpoint.
 [[durable_objects.bindings]]
-name = "DOCUMENT_ROOM"
-class_name = "DocumentRoom"
+name = "PROJECT_ROOM"
+class_name = "ProjectRoom"
 
+# liveplanner has never been deployed, so the room starts as ProjectRoom with no rename history.
 [[migrations]]
 tag = "v1"
-new_classes = ["DiagramRoom"]
-
-# The class was DiagramRoom until the container became a document
-# (docs/specs/006-document/document.md). A rename keeps every room's storage.
-[[migrations]]
-tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+new_classes = ["ProjectRoom"]
 
 # Scheduled jobs the worker handles via the `scheduled` export. One
 # entry per cron; each fires the same handler with `event.cron` set
 # to the matching pattern so the body can dispatch.
 #
 # `0 3 * * *`: daily at 03:00 UTC. Fires independent retention sweeps
-# on this trigger, among them:
-#   - events, 60-day floor (docs/specs/017-telemetry/telemetry.md "Retention"). The /telemetry
-#     dashboard surfaces a 30-day max window, so anything past 60
-#     days is dead storage.
-# Plus the docs/specs/014-identity/transactional-email.md email sweeps (lifecycle onboarding + token-expiry
-# warnings), both no-ops when RESEND_API_KEY is unset.
+# on this trigger (telemetry's retention is liveworkspace's, liveworkspace/docs/telemetry.md).
+# Plus the docs/specs/014-identity/transactional-email.md lifecycle onboarding emails, a no-op when
+# RESEND_API_KEY is unset.
+#
+# `*/5 * * * *`: every five minutes, follow liveworkspace's teams change feed into this app's copy
+# and mark tokens revoked on liveworkspace.app (liveworkspace/docs/accounts.md "How an app keeps up").
 [triggers]
-crons = ["0 3 * * *"]
-
-# Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
-# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into document-write
-# or telemetry budgets. 20 requests / 60s per IP is generous for a
-# real user session while bounding runaway OpenAI spend. Absent binding
-# → helper allows, so a deployment without it still works without this feature.
-[[unsafe.bindings]]
-name = "AI_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1003"
-simple = { limit = 20, period = 60 }
+crons = ["0 3 * * *", "*/5 * * * *"]
 
 # Per-IP limiter for share-code resolution (GET /api/share/<code>). That
 # read carries the optional share password and is otherwise unauthed +
@@ -215,7 +175,7 @@ namespace_id = "1008"
 simple = { limit = 60, period = 60 }
 
 # Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
-# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
+# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few projects, never a stream.
 # Separate namespace. Absent binding → allow (a deployment without it).
 [[unsafe.bindings]]
 name = "WORKBENCH_TICKET_RATE_LIMITER"
@@ -243,26 +203,6 @@ type = "ratelimit"
 namespace_id = "1012"
 simple = { limit = 20, period = 60 }
 
-# The AI features (docs/specs/007-editor/ai-assistance.md) talk to ANY OpenAI-compatible chat-completions
-# endpoint, and WHICH provider is inferred from which key is set — a key is
-# provider-specific, so its name says whose it is (see src/ai-provider.ts):
-#
-#   GOOGLE_AI_STUDIO_API_KEY -> Google, at its OpenAI-compatible endpoint
-#   OPENAI_API_KEY           -> OpenAI
-#   AI_API_KEY               -> anything else, with AI_BASE_URL + AI_MODEL
-#
-# All three are SECRETS, provisioned out-of-band:
-#   Local dev: drop one into `apps/api/.dev.vars` (gitignored).
-#   Production: `wrangler secret put <NAME>`.
-#
-# The assistant (/api/ai) takes the first key that is set, OpenAI before Google.
-# AI_BASE_URL / AI_MODEL are plain [vars]; AI_MODEL is the
-# assistant's model (docs/specs/007-editor/ai-assistance.md).
-#
-# With no key the whole surface is hidden: GET /api/capabilities answers
-# { aiEnabled: false }, the editor shows no AI panel, and
-# the AI routes answer 503. That is the unconfigured default.
-
 # RESEND_API_KEY + RESEND_FROM + APP_BASE_URL drive transactional &
 # lifecycle email (docs/specs/014-identity/transactional-email.md). All optional; an absent RESEND_API_KEY makes
 # the whole email feature inert — no sends, and the email_lifecycle table
@@ -277,25 +217,31 @@ simple = { limit = 20, period = 60 }
 #   - APP_BASE_URL: optional [vars] public origin for links in emails.
 #     Defaults to "https://liveplanner.app".
 
-# CLERK_JWKS_URL is provisioned out-of-band so the value never lands
-# in the repo (docs/specs/002-project-scope/secrets-policy.md):
+# Sign-in (docs/specs/014-identity/auth-and-guest-access.md) goes through the
+# liveworkspace accounts Worker. Four values, provisioned out-of-band so none
+# lands in the repo (docs/specs/002-project-scope/secrets-policy.md):
 #
-#   - Local dev: drop `CLERK_JWKS_URL=https://...` into
-#     `apps/api/.dev.vars` (gitignored). Wrangler reads it on the
-#     next `wrangler dev`.
-#   - Production: stored as a Cloudflare Worker secret via
-#     `wrangler secret put CLERK_JWKS_URL`. The deploy workflow
-#     pulls it from the GitHub repo secret `CLERK_JWKS_URL` and
-#     pipes it into `wrangler secret put` on every deploy so the
-#     value can rotate by editing the GitHub secret. Secrets
-#     persist across deploys independently of this file.
+#   ACCOUNTS_URL            the accounts Worker's origin
+#                           (https://liveworkspace.app)
+#   API_RESOURCE            this API's registered resource, the access
+#                           token's audience (https://liveplanner.app/api)
+#   ACCOUNTS_CLIENT_ID      this app's OAuth client id
+#   ACCOUNTS_CLIENT_SECRET  its client secret (the only real secret)
 #
-# When the secret is unset the api worker stays in pure-guest mode
-# and trusts `X-Owner-Id` exclusively (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md). Get the
-# URL from the Clerk dashboard → API Keys → "Show JWKS URL"; format
-# is `https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json`
-# (test tenant) or `https://clerk.<your-domain>/.well-known/jwks.json`
-# (production tenant).
+#   - Local dev: put them in `apps/api/.dev.vars` (gitignored), plus
+#     AUTH_ORIGIN=http://localhost:3100 so the callback comes back
+#     through the router. Wrangler reads it on the next `wrangler dev`.
+#   - Production: Cloudflare Worker secrets. The deploy workflow pulls
+#     each from the GitHub repo secret of the same name and pipes it into
+#     `wrangler secret put` on every deploy, so a value rotates by
+#     editing the GitHub secret. Secrets persist across deploys
+#     independently of this file.
+#
+# With ACCOUNTS_URL or API_RESOURCE unset the api worker stays in
+# pure-guest mode and trusts `X-Owner-Id` exclusively
+# (docs/specs/014-identity/auth-and-guest-access.md + docs/specs/015-api/api.md).
+# The client id and secret come from registering liveplanner with the
+# accounts Worker (liveworkspace/docs/integrating-an-app.md).
 #
 # GUEST_ID_HMAC_SECRET is provisioned the same way (`.dev.vars` locally,
 # `wrangler secret put GUEST_ID_HMAC_SECRET` + a matching GitHub repo
@@ -305,32 +251,19 @@ simple = { limit = 20, period = 60 }
 # (docs/specs/014-identity/auth-and-guest-access.md). Generate with `openssl rand -hex 32`. Unset = legacy unsigned
 # migrate (pure-guest / single-user deployment).
 
-# INTERNAL_EVENTS_KEY marks a POST to /api/events as coming from one of our
-# OWN workers over a service binding, rather than from the open internet
-# (docs/specs/017-telemetry/telemetry.md, issue #36). Provisioned out-of-band like the two above; never in
-# [vars] — it is secret material:
+# TELEMETRY_KEY is liveplanner's Worker key for liveworkspace's central
+# telemetry service (docs/specs/017-telemetry/telemetry.md, liveworkspace/docs/telemetry.md), sent as
+# X-Telemetry-Key: a Worker sends no Origin, so the key is what lets its posts
+# speak for liveplanner.app. Secret material, provisioned out-of-band like the
+# two above; never in [vars]:
 #
-#   - Local dev: `INTERNAL_EVENTS_KEY=...` in `apps/api/.dev.vars`
-#     (gitignored). Rarely needed — local dev doesn't run the MCP worker
-#     over a service binding.
-#   - Production: `wrangler secret put INTERNAL_EVENTS_KEY`, and the SAME
-#     value on the mcp worker (`wrangler secret put INTERNAL_EVENTS_KEY`
-#     from apps/mcp). Generate with `openssl rand -hex 32`.
+#   - Local dev: `TELEMETRY_KEY=dev-liveplanner-key` in `apps/api/.dev.vars`
+#     (gitignored), matching the service's .dev.vars.
+#   - Production: `wrangler secret put TELEMETRY_KEY` here and on the mcp
+#     worker, the SAME value as the service's TELEMETRY_KEY_LIVEPLANNER.
+#     Generate with `openssl rand -hex 32`.
 #
-# Why it exists: a service-binding call carries no CF-Connecting-IP, so
-# `clientIp` fell back to the literal 'anonymous' and every internal caller
-# in the world shared ONE 120/min EVENTS_RATE_LIMITER key, with the overflow
-# dropped as a 204 the caller can't distinguish from success. Since the mcp
-# worker posts one request per tool call, that ceiling was roughly two tool
-# calls per second globally. A matching key exempts those calls from the
-# per-IP limiter, which exists to stop ANONYMOUS abuse of a public endpoint
-# and was never aimed at us.
-#
-# Unset on either side = nobody is exempt, which is the pre-existing
-# behaviour and needs no configuration, so a deployment can ignore this.
-# The two sides MUST match: a mismatch is silent (the caller simply lands
-# back in the shared bucket), so check `wrangler secret list` on both if
-# Mcp·Used counts look flat.
+# Unset = this worker sends no telemetry, so a deployment can ignore it.
 
 
 # ---------------------------------------------------------------------------
@@ -345,7 +278,7 @@ simple = { limit = 20, period = 60 }
 # carry over from the production config above.
 #
 # The values that genuinely differ from production are the D1 database, the
-# R2 snapshot bucket, and the email/AI vars that name the public origin. Everything
+# R2 snapshot bucket, and the email vars that name the public origin. Everything
 # else agreeing with production is the point: staging is a rehearsal.
 # ---------------------------------------------------------------------------
 
@@ -356,19 +289,12 @@ simple = { limit = 20, period = 60 }
 name = "liveplanner-api-staging"
 
 # TELEMETRY_ENABLED comes from `hosted-vars.json`, exactly as
-# for production (see the top of this file). Staging's events land in its own D1,
-# on STAGING's /telemetry dashboard, never in production's published numbers.
+# for production (see the top of this file), and so does TELEMETRY_URL: staging's
+# events go to staging's telemetry service, never into production's published numbers.
 [env.staging.vars]
 # APP_BASE_URL comes from `hosted-vars.json` per environment, so staging's email and workbench links point
 # back at staging (docs/specs/014-identity/transactional-email.md, docs/specs/013-workspace/workbench-embeds.md).
 RESEND_FROM = "liveplanner staging <hello@liveplanner.app>"
-
-# Lock the AI endpoint to the staging origin so the OpenAI key behind it
-# can't be spent from a third-party page (docs/specs/007-editor/ai-assistance.md). Production states the
-# equivalent in the top-level [vars] above, for the same reason: the
-# environment is reproducible from the repo alone — see docs/specs/016-platform/staging-environment.md "Known sharp
-# edge".
-AI_ALLOWED_ORIGINS = "https://staging.liveplanner.app"
 
 # Guest signature enforcement, matching production (see the top-level [vars]).
 # Staging's own database dates from 2026-09-17 and signs with its own secret;
@@ -378,9 +304,6 @@ GUEST_SIG_ENFORCE_AFTER = ""
 
 # The staging MCP worker's OAuth server, for the CLI against staging.
 OAUTH_ISSUER = "https://mcp-staging.liveplanner.app"
-# No AI_REQUIRE_CLERK, matching production: the editor offers AI to guests, so
-# requiring sign-in here made staging refuse what production allows (the photo
-# reader stopped with "sign in required"), which is drift, not a staging test.
 
 # Placeholder id: create the database on the liveplanner Cloudflare account and paste its id.
 # applies the migrations in `migrations/` against it — which is the whole
@@ -412,12 +335,6 @@ name = "EVENTS_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 120, period = 60 }
-
-[[env.staging.unsafe.bindings]]
-name = "AI_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1003"
-simple = { limit = 20, period = 60 }
 
 [[env.staging.unsafe.bindings]]
 name = "SHARE_RATE_LIMITER"
@@ -462,30 +379,26 @@ namespace_id = "1012"
 simple = { limit = 20, period = 60 }
 
 # A different script is a different Durable Object namespace, so staging's
-# DOCUMENT_ROOM instances are separate from production's for free. The class
+# PROJECT_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
 [[env.staging.durable_objects.bindings]]
-name = "DOCUMENT_ROOM"
-class_name = "DocumentRoom"
+name = "PROJECT_ROOM"
+class_name = "ProjectRoom"
 
 [[env.staging.migrations]]
 tag = "v1"
-new_classes = ["DiagramRoom"]
-
-[[env.staging.migrations]]
-tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+new_classes = ["ProjectRoom"]
 
 # The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
 # staging too, against staging's own data. Restated rather than inherited so
 # that reading this block tells you what the staging worker actually does.
 [env.staging.triggers]
-crons = ["0 3 * * *"]
+crons = ["0 3 * * *", "*/5 * * * *"]
 
-# CLERK_JWKS_URL, GUEST_ID_HMAC_SECRET and INTERNAL_EVENTS_KEY come from the
-# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the
-# model keys (OPENAI_API_KEY and/or GOOGLE_AI_STUDIO_API_KEY) are provisioned by
-# hand exactly as they are for production:
+# The four ACCOUNTS_* / API_RESOURCE values, GUEST_ID_HMAC_SECRET and
+# TELEMETRY_KEY come from the
+# `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY is provisioned by
+# hand exactly as it is for production:
 #   cd apps/api && wrangler secret put RESEND_API_KEY --env staging
 # Worker secrets are per-environment, so staging's never collide with
 # production's.

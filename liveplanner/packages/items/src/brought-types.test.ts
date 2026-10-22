@@ -107,7 +107,7 @@ describe('what boards bring', () => {
     ).toEqual(['project']);
   });
 
-  it('adds only those the document lacks, once each, in the boards’ order', () => {
+  it('adds only those the project lacks, once each, in the boards’ order', () => {
     expect(ids(broughtTypesToAdd(['bug', 'task'], ITEM_TYPES))).toEqual(['bug']);
     const withBug: ItemTypeDef[] = [
       ...ITEM_TYPES,
@@ -122,13 +122,13 @@ describe('what boards bring', () => {
     expect(ids(boardTypesToAdd([board(['role']), board(['task'])], ITEM_TYPES))).toEqual(['role']);
   });
 
-  it('adds the default types a document lacks, in their order', () => {
+  it('adds the default types a project lacks, in their order', () => {
     const some = ITEM_TYPES.filter((t) => t.id !== 'note' && t.id !== 'project');
     expect(ids(defaultTypesToAdd(some))).toEqual(['project', 'note']);
     expect(defaultTypesToAdd(ITEM_TYPES)).toEqual([]);
   });
 
-  it('leaves out a type whose name the document already has, and adds no more than fit', () => {
+  it('leaves out a type whose name the project already has, and adds no more than fit', () => {
     const renamed = [{ ...ITEM_TYPES[0], id: 'chore', label: 'task' }];
     expect(ids(defaultTypesToAdd(renamed))).toEqual(['project', 'note', 'idea', 'action']);
     const story = { ...ITEM_TYPES[1], id: 'defect', label: 'Bug' };
@@ -143,7 +143,7 @@ describe('what boards bring', () => {
 });
 
 describe('the catalogue boards leave', () => {
-  it('lets the first boards of a fresh document choose its card types, exactly', () => {
+  it('lets the first boards of a fresh project choose its card types, exactly', () => {
     expect(ids(catalogueWithBoardTypes(null, [preset('kanban')])?.types)).toEqual([
       'task',
       'action',
@@ -153,7 +153,7 @@ describe('the catalogue boards leave', () => {
     ).toEqual(['role', 'candidate']);
   });
 
-  it('leaves a fresh document with no card types for a Blank board, or no board', () => {
+  it('leaves a fresh project with no card types for a Blank board, or no board', () => {
     expect(catalogueWithBoardTypes(null, [board()])).toBeNull();
     expect(catalogueWithBoardTypes(null, [preset('archive')])).toBeNull();
     expect(catalogueWithBoardTypes(null, [])).toBeNull();

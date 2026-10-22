@@ -1,0 +1,39 @@
+{
+  "name": "@livedocuments/agent-verbs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./mcp": "./src/mcp/index.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@livedocuments/api-client": "workspace:*",
+    "@livedocuments/api-schema": "workspace:*",
+    "@livedocuments/diagram-lint": "workspace:*",
+    "@livedocuments/document": "workspace:*",
+    "@livedocuments/document-views": "workspace:*",
+    "@livedocuments/edit-operations": "workspace:*",
+    "@livedocuments/page-background": "workspace:*",
+    "@livedocuments/templates": "workspace:*",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@livedocuments/oxlint-config": "workspace:*",
+    "@livedocuments/vitest-config": "workspace:*",
+    "@vitest/coverage-v8": "^5.0.3",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

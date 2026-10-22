@@ -52,7 +52,7 @@ export function SidebarFolderSubtree({
   const renaming = renamingFolderId === folder.id;
   const menu = useRowMenu({ disabled: renaming });
   const markerWords = useDefaultFolderDescription(folder.id);
-  // Files a dropped document here; resting on the row opens or closes its subfolders.
+  // Files a dropped project here; resting on the row opens or closes its subfolders.
   const drop = useExplorerDropTarget(
     { teamId: null, folderId: folder.id },
     { onLongHover: hasKids ? () => onToggleExpand(folder.id) : undefined },
@@ -87,7 +87,7 @@ export function SidebarFolderSubtree({
       onToggleExpand={() => onToggleExpand(folder.id)}
       renaming={renaming}
       onContextMenu={menu.onContextMenu}
-      // A drop target for documents, and a drag source itself, for the sidebar's Trash.
+      // A drop target for projects, and a drag source itself, for the sidebar's Trash.
       rowProps={renaming ? undefined : { ...drop.handlers, ...folderDragProps(folder, renaming) }}
       highlighted={drop.isDragOver}
       trailing={

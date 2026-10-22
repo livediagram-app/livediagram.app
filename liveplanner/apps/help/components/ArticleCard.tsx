@@ -9,7 +9,7 @@ export function ArticleCard({ article, number }: { article: Article; number?: nu
   // A numbered card (e.g. Getting Started) leads with its step badge; every
   // other support-article card leads with a brand-toned topic icon so no card
   // is a bare title. Bespoke support icon first, then any feature-icon that
-  // shares the slug, then a generic document glyph.
+  // shares the slug, then a generic project glyph.
   const icon =
     number === undefined
       ? (SUPPORT_ARTICLE_ICONS[article.slug] ??

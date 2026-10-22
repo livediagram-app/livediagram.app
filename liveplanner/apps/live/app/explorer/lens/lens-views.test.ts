@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { carriedHref, lensHref, lensViewOf, SEARCH_RESULTS_PATH } from './lens-views';
 
 describe('lensViewOf', () => {
-  it('reads My Documents, its folders, a team and This Browser as scoped', () => {
+  it('reads My Projects, its folders, a team and This Browser as scoped', () => {
     for (const kind of ['all', 'folder', 'team', 'offline'] as const) {
       expect(lensViewOf(kind)).toBe('scoped');
     }
@@ -14,7 +14,7 @@ describe('lensViewOf', () => {
     }
   });
 
-  it('gives the views that list no documents no lens', () => {
+  it('gives the views that list no projects no lens', () => {
     for (const kind of ['inbox', 'themes', 'trash', 'invites'] as const) {
       expect(lensViewOf(kind)).toBeNull();
     }

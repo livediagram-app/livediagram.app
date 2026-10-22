@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@liveplanner/document';
-import { checkoutFlow, fixedIds } from './fixtures/checkout-flow';
+import type { Tab } from '@liveplanner/project';
+import { fixedIds, sprintDashboard } from './fixtures/sprint-dashboard';
 import { applied, refused } from './fixtures/outcomes';
 import { applyReplace } from './replace';
 import type { ReplaceOptions } from './types';
@@ -58,7 +58,7 @@ describe('form replace', () => {
   });
 
   it('refuses a form onto any existing tab, a Form tab included', () => {
-    for (const tab of [checkoutFlow(), formTab()]) {
+    for (const tab of [sprintDashboard(), formTab()]) {
       const out = refused(applyReplace(tab, { form }, options));
       expect(out.details[0]).toContain('a changeset makes a new Form tab');
       expect(out.hint).toContain('change_form');
@@ -71,7 +71,7 @@ describe('a new tab of elements made a Board tab', () => {
     const out = applied(applyReplace(null, { elements: [] }, { ...options, kind: 'board' }));
     expect(out.tab).toMatchObject({ kind: 'board' });
     const kept = applied(
-      applyReplace(checkoutFlow(), { elements: [] }, { ...options, kind: 'board' }),
+      applyReplace(sprintDashboard(), { elements: [] }, { ...options, kind: 'board' }),
     );
     expect(kept.tab.kind).not.toBe('board');
   });

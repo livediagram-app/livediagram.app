@@ -1,9 +1,12 @@
-// The Community routes end to end against a real schema (docs/specs/025-community/blueprints/community.md §13):
-// the owner's publish guards and Edit Listing, the public reads and their caching, likes and reports with the
-// community key, the off switch, and how a community link behaves on the share resolve, the share list, the
-// password route and the copy route.
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+// The Community end to end, this api and the liveworkspace Community service both real (docs/specs/025-community/
+// community.md; liveworkspace/docs/community.md): the owner's publish guards and Edit Listing, My Shares, the sync
+// that keeps the service in step with the documents, the off switch, and how a community link behaves on the share
+// resolve, the share list, the password route and the copy route. The service's own rules (lists, likes, reports,
+// caching) are tested with the service.
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { syncCommunity } from '../community-service';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
+import { communityServiceFor, type TestCommunityService } from '../test-community-service';
 import type { Env } from '../types';
 
 const { thumbnail } = vi.hoisted(() => ({
@@ -26,11 +29,11 @@ import { handleDocuments } from './documents';
 import { handleTabRender } from './tab-render-route';
 
 const KEY = '3f2b8c1e-9a4d-4e7f-8b21-0c5d6e7f8a9b';
-const KEY2 = '4a2b8c1e-9a4d-4e7f-8b21-0c5d6e7f8a9b';
 const AUTHOR = 'user_author';
 
 let db: SqliteD1;
 let env: Env;
+let service: TestCommunityService;
 
 const body = {
   title: 'Payments platform',
@@ -50,22 +53,6 @@ function owner(method: string, path: string, opts: { body?: unknown; clerk?: str
   });
 }
 
-function publicCtx(
-  method: string,
-  path: string,
-  opts: { body?: unknown; key?: string | null; clerk?: string | null; ip?: string } = {},
-) {
-  const headers: Record<string, string> = {};
-  if (opts.key !== null) headers['X-Community-Key'] = opts.key ?? KEY;
-  if (opts.ip) headers['CF-Connecting-IP'] = opts.ip;
-  return makeTestRouteContext(method, path, {
-    env,
-    clerkUserId: opts.clerk ?? null,
-    body: opts.body,
-    headers,
-  });
-}
-
 async function publish(docId = 'd1'): Promise<{ id: string; shareCode: string }> {
   const res = (await handleCommunityOwnerRoutes(
     owner('PUT', `/api/documents/${docId}/community`, { body }),
@@ -75,9 +62,23 @@ async function publish(docId = 'd1'): Promise<{ id: string; shareCode: string }>
   return post;
 }
 
+// What a page sees in the gallery: the ids of the listed posts.
+async function gallery(): Promise<string[]> {
+  const res = await service.read('/posts');
+  const body: { posts: { id: string }[] } = await res.json();
+  return body.posts.map((p) => p.id);
+}
+
+// Reports hide a post on the service; the sync closes its link here.
+async function hideOnService(postId: string) {
+  service.sql.prepare("UPDATE posts SET state = 'hidden', hidden_at = 77 WHERE id = ?").run(postId);
+  await syncCommunity(env);
+}
+
 beforeEach(() => {
   db = sqliteD1();
   env = db.env;
+  service = communityServiceFor(env);
   thumbnail.svg = '<svg/>';
   db.sql
     .prepare(
@@ -93,6 +94,8 @@ beforeEach(() => {
     setFirstTab(id, 1);
   }
 });
+
+afterEach(() => vi.unstubAllGlobals());
 
 // The document's first tab, holding `count` elements (publishing refuses an empty document).
 function setFirstTab(documentId: string, count: number) {
@@ -115,6 +118,7 @@ function setFirstTab(documentId: string, count: number) {
 describe('owner routes', () => {
   it('publishes, reads back, edits the listing and removes', async () => {
     const post = await publish();
+    expect(await gallery()).toEqual([post.id]);
     const read = await (await handleCommunityOwnerRoutes(
       owner('GET', '/api/documents/d1/community'),
     ))!.json();
@@ -124,10 +128,11 @@ describe('owner routes', () => {
         title: 'Payments platform',
         tags: ['aws'],
         state: 'listed',
-        author: { name: 'Ada' },
+        author: { name: 'Ada', color: '#f97316' },
       },
     });
     expect(JSON.stringify(read)).not.toContain(AUTHOR);
+    expect(JSON.stringify(read)).not.toContain('"own"');
 
     const edited = (await handleCommunityOwnerRoutes(
       owner('PUT', '/api/documents/d1/community', { body: { ...body, title: 'Renamed' } }),
@@ -137,21 +142,26 @@ describe('owner routes', () => {
       id: post.id,
       title: 'Renamed',
     });
+    // The link's doors show the new title too.
+    expect(db.sql.prepare('SELECT title FROM community_links').get()).toEqual({ title: 'Renamed' });
 
     expect(
       (await handleCommunityOwnerRoutes(owner('DELETE', '/api/documents/d1/community')))!.status,
     ).toBe(204);
     expect(
       await (await handleCommunityOwnerRoutes(owner('GET', '/api/documents/d1/community')))!.json(),
-    ).toEqual({
-      post: null,
-    });
+    ).toEqual({ post: null });
     expect(
       (await handleCommunityOwnerRoutes(owner('DELETE', '/api/documents/d1/community')))!.status,
     ).toBe(404);
+    expect(await gallery()).toEqual([]);
+    expect(
+      db.sql.prepare("SELECT COUNT(*) AS n FROM share_links WHERE purpose = 'community'").get(),
+    ).toEqual({ n: 0 });
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM community_links').get()).toEqual({ n: 0 });
   });
 
-  it('refuses a guest, a team document, a password, an empty board, bad input and the cap', async () => {
+  it('refuses a guest, a password, bad input and an empty board, leaving no link behind', async () => {
     const guest = makeTestRouteContext('PUT', '/api/documents/d1/community', {
       env,
       owner: AUTHOR,
@@ -178,6 +188,21 @@ describe('owner routes', () => {
       owner('PUT', '/api/documents/d1/community', { body }),
     ))!;
     expect([empty.status, await empty.json()]).toEqual([409, { error: 'empty_document' }]);
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM share_links').get()).toEqual({ n: 0 });
+  });
+
+  it('passes on the per-author cap from the service', async () => {
+    service.sql
+      .exec(`INSERT INTO posts (id, app, document, share_code, owner, author_name, author_color, title,
+      description, category, search_text, published_at, updated_at)
+      SELECT 'p' || value, 'livediagram.app', 'x' || value, 'c' || value, '${AUTHOR}', 'Ada', '#000000', 'T', 'D',
+             'other', 't', 1, 1
+        FROM json_each('[${Array.from({ length: 50 }, (_, i) => i).join(',')}]')`);
+    const res = (await handleCommunityOwnerRoutes(
+      owner('PUT', '/api/documents/d1/community', { body }),
+    ))!;
+    expect([res.status, await res.json()]).toEqual([409, { error: 'post_limit' }]);
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM share_links').get()).toEqual({ n: 0 });
   });
 
   it('is not someone else’s to publish', async () => {
@@ -193,158 +218,131 @@ describe('owner routes', () => {
     ).toBeNull();
     expect(await handleCommunityOwnerRoutes(owner('GET', '/api/documents/d1/share'))).toBeNull();
   });
+
+  it('has no Community without the service key', async () => {
+    env.COMMUNITY_KEY = undefined;
+    expect(
+      (await handleCommunityOwnerRoutes(owner('GET', '/api/documents/d1/community')))!.status,
+    ).toBe(404);
+  });
 });
 
-describe('public routes', () => {
-  it('lists with likes for the caller and caches only anonymous reads', async () => {
-    const post = await publish();
-    await handleCommunity(publicCtx('PUT', `/api/community/posts/${post.id}/like`));
-    const mine = await handleCommunity(publicCtx('GET', '/api/community/posts'));
-    expect(mine.headers.get('Cache-Control')).toBe('private, no-store');
-    expect(await mine.json()).toMatchObject({
-      posts: [{ id: post.id, liked: true, likeCount: 1 }],
-      nextOffset: null,
-    });
-    const anon = await handleCommunity(publicCtx('GET', '/api/community/posts', { key: null }));
-    expect(anon.headers.get('Cache-Control')).toBe('public, max-age=30');
-    expect(await anon.json()).toMatchObject({ posts: [{ liked: false }] });
-    expect(
-      (await handleCommunity(publicCtx('GET', '/api/community/posts?category=nope'))).status,
-    ).toBe(400);
-  });
-
-  it('lists My Shares for the signed-in author only, hidden ones included, with totals', async () => {
+describe('My Shares', () => {
+  it('lists the signed-in author’s posts from the service, hidden ones included, with the browser’s hearts', async () => {
     const shown = await publish('d1');
     const hidden = await publish('d2');
-    await handleCommunity(publicCtx('PUT', `/api/community/posts/${shown.id}/like`));
-    db.sql.prepare("UPDATE community_posts SET state = 'hidden' WHERE id = ?").run(hidden.id);
+    await service.read(`/posts/${shown.id}/like`, {
+      method: 'PUT',
+      headers: { 'X-Community-Key': KEY, Origin: 'https://livediagram.app' },
+    });
+    await hideOnService(hidden.id);
 
-    expect((await handleCommunity(publicCtx('GET', '/api/community/mine'))).status).toBe(401);
-
-    const res = await handleCommunity(publicCtx('GET', '/api/community/mine', { clerk: AUTHOR }));
+    const mine = (clerk: string | null) =>
+      handleCommunity(
+        makeTestRouteContext('GET', '/api/community/mine', {
+          env,
+          clerkUserId: clerk,
+          headers: { 'X-Community-Key': KEY },
+        }),
+      );
+    expect((await mine(null)).status).toBe(401);
+    const res = await mine(AUTHOR);
     expect(res.status).toBe(200);
     expect(res.headers.get('Cache-Control')).toBe('private, no-store');
-    const body = (await res.json()) as {
+    const result = (await res.json()) as {
       posts: { id: string; state: string; documentId: string; liked: boolean }[];
       totals: { posts: number; likes: number; copies: number };
     };
-    expect(body.posts.map((p) => [p.id, p.state, p.documentId]).sort()).toEqual(
+    expect(result.posts.map((p) => [p.id, p.state, p.documentId, p.liked]).sort()).toEqual(
       [
-        [shown.id, 'listed', 'd1'],
-        [hidden.id, 'hidden', 'd2'],
+        [shown.id, 'listed', 'd1', true],
+        [hidden.id, 'hidden', 'd2', false],
       ].sort(),
     );
-    expect(body.totals).toEqual({ posts: 2, likes: 1, copies: 0 });
+    expect(result.totals).toEqual({ posts: 2, likes: 1, copies: 0 });
+    expect(await (await mine('user_x')).json()).toMatchObject({ posts: [] });
+  });
 
-    // Someone else signed in has none; the public list never shows the hidden one.
-    const other = await handleCommunity(
-      publicCtx('GET', '/api/community/mine', { clerk: 'user_x' }),
-    );
-    expect(await other.json()).toMatchObject({
-      posts: [],
-      totals: { posts: 0, likes: 0, copies: 0 },
+  it('is the only Community read this api answers', async () => {
+    for (const path of [
+      '/api/community/posts',
+      '/api/community/featured',
+      '/api/community/facets',
+    ]) {
+      const res = await handleCommunity(makeTestRouteContext('GET', path, { env }));
+      expect(res.status, path).toBe(404);
+    }
+  });
+});
+
+describe('keeping in step', () => {
+  it('takes a trashed document’s post out of the gallery, and puts it back on restore', async () => {
+    const post = await publish();
+    db.sql.prepare("UPDATE documents SET trashed_at = 5 WHERE id = 'd1'").run();
+    await syncCommunity(env, 'd1');
+    expect(await gallery()).toEqual([]);
+    db.sql.prepare("UPDATE documents SET trashed_at = NULL WHERE id = 'd1'").run();
+    await syncCommunity(env);
+    expect(await gallery()).toEqual([post.id]);
+  });
+
+  it('closes a post whose document moved into a team library or took a password, keeping it in My Shares', async () => {
+    const post = await publish();
+    db.sql.prepare("UPDATE documents SET team_id = 'team-1' WHERE id = 'd1'").run();
+    await syncCommunity(env);
+    expect(await gallery()).toEqual([]);
+    expect(service.sql.prepare('SELECT document_state FROM posts').get()).toEqual({
+      document_state: 'closed',
     });
-    const pub = (await (
-      await handleCommunity(publicCtx('GET', '/api/community/posts'))
-    ).json()) as {
-      posts: { id: string }[];
-    };
-    expect(pub.posts.map((p) => p.id)).toEqual([shown.id]);
+    db.sql
+      .prepare("UPDATE documents SET team_id = NULL, share_password = 'pw' WHERE id = 'd1'")
+      .run();
+    await syncCommunity(env);
+    expect(await gallery()).toEqual([]);
+    db.sql.prepare("UPDATE documents SET share_password = NULL WHERE id = 'd1'").run();
+    await syncCommunity(env);
+    expect(await gallery()).toEqual([post.id]);
   });
 
-  it('serves one post with related posts, and facets', async () => {
-    const a = await publish('d1');
-    const b = await publish('d2');
-    const one = (await (
-      await handleCommunity(publicCtx('GET', `/api/community/posts/${a.id}`))
-    ).json()) as {
-      post: { id: string };
-      related: { id: string }[];
-    };
-    expect(one.post.id).toBe(a.id);
-    expect(one.related.map((p) => p.id)).toEqual([b.id]);
-    expect(await (await handleCommunity(publicCtx('GET', '/api/community/facets'))).json()).toEqual(
-      {
-        total: 2,
-        categories: { architecture: 2 },
-        tags: [{ tag: 'aws', count: 2 }],
-      },
-    );
-    expect((await handleCommunity(publicCtx('GET', '/api/community/posts/missing'))).status).toBe(
-      404,
-    );
+  it('deletes the post of a document deleted for good, and forgets its link', async () => {
+    await publish();
+    db.sql.prepare("DELETE FROM documents WHERE id = 'd1'").run();
+    await syncCommunity(env);
+    expect(service.sql.prepare('SELECT COUNT(*) AS n FROM posts').get()).toEqual({ n: 0 });
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM community_links').get()).toEqual({ n: 0 });
   });
 
-  it('lists every public post for the sitemap, newest first, never a hidden one, cached for an hour', async () => {
-    const older = await publish('d1');
-    const newer = await publish('d2');
-    db.sql.prepare('UPDATE community_posts SET published_at = 1000 WHERE id = ?').run(older.id);
-    const sitemap = async () => {
-      const res = await handleCommunity(publicCtx('GET', '/api/community/sitemap', { key: null }));
-      expect(res.headers.get('Cache-Control')).toBe('public, max-age=3600');
-      return (await res.json<{ posts: { id: string; updatedAt: number }[] }>()).posts;
-    };
-    const posts = await sitemap();
-    expect(posts.map((p) => p.id)).toEqual([newer.id, older.id]);
-    expect(posts.every((p) => typeof p.updatedAt === 'number' && p.updatedAt > 0)).toBe(true);
-    db.sql.prepare("UPDATE community_posts SET state = 'hidden' WHERE id = ?").run(newer.id);
-    expect((await sitemap()).map((p) => p.id)).toEqual([older.id]);
+  it('sends nothing when nothing changed', async () => {
+    await publish();
+    const spy = vi.fn(fetch);
+    vi.stubGlobal('fetch', spy);
+    await syncCommunity(env, 'd1');
+    expect(spy).not.toHaveBeenCalled();
   });
 
-  it('likes and unlikes idempotently, and needs a valid key', async () => {
-    const post = await publish();
-    const like = () => handleCommunity(publicCtx('PUT', `/api/community/posts/${post.id}/like`));
-    expect(await (await like()).json()).toEqual({ likeCount: 1, liked: true });
-    expect(await (await like()).json()).toEqual({ likeCount: 1, liked: true });
-    const unlike = await handleCommunity(
-      publicCtx('DELETE', `/api/community/posts/${post.id}/like`),
-    );
-    expect(await unlike.json()).toEqual({ likeCount: 0, liked: false });
-    const noKey = await handleCommunity(
-      publicCtx('PUT', `/api/community/posts/${post.id}/like`, { key: 'owner-id' }),
-    );
-    expect([noKey.status, await noKey.json()]).toEqual([400, { error: 'community_key_required' }]);
-  });
-
-  it('takes reports, validates them, and hides a post after three browsers on three networks', async () => {
-    const post = await publish();
-    const report = (key: string, ip: string, b: unknown = { reason: 'spam' }) =>
-      handleCommunity(
-        publicCtx('POST', `/api/community/posts/${post.id}/report`, { key, ip, body: b }),
-      );
-    expect((await report(KEY, '1.1.1.1', { reason: 'nope' })).status).toBe(400);
-    // A JSON null body is a missing reason (400), never a 500.
-    expect((await report(KEY, '1.1.1.1', null)).status).toBe(400);
-    expect((await report(KEY, '1.1.1.1', { reason: 'spam', note: 'x'.repeat(301) })).status).toBe(
-      400,
-    );
-    expect((await report(KEY, '1.1.1.1')).status).toBe(204);
-    expect((await report(KEY2, '2.2.2.2')).status).toBe(204);
-    expect((await report('5a2b8c1e-9a4d-4e7f-8b21-0c5d6e7f8a9b', '3.3.3.3')).status).toBe(204);
-    expect(
-      (await handleCommunity(publicCtx('GET', `/api/community/posts/${post.id}`))).status,
-    ).toBe(404);
-    // Hidden: no more likes either.
-    expect(
-      (await handleCommunity(publicCtx('PUT', `/api/community/posts/${post.id}/like`))).status,
-    ).toBe(404);
-  });
-
-  it('answers a wrong method with 404', async () => {
-    const post = await publish();
-    expect(
-      (await handleCommunity(publicCtx('GET', `/api/community/posts/${post.id}/like`))).status,
-    ).toBe(404);
+  it('keeps what failed to send for the next run', async () => {
+    await publish();
+    db.sql.prepare("UPDATE documents SET trashed_at = 5 WHERE id = 'd1'").run();
+    const working = fetch;
+    vi.stubGlobal('fetch', async () => new Response('down', { status: 503 }));
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+    await syncCommunity(env);
+    expect(db.sql.prepare('SELECT sent_state FROM community_links').get()).toEqual({
+      sent_state: 'public',
+    });
+    vi.stubGlobal('fetch', working);
+    await syncCommunity(env);
+    expect(await gallery()).toEqual([]);
+    expect(db.sql.prepare('SELECT sent_state FROM community_links').get()).toEqual({
+      sent_state: 'away',
+    });
   });
 });
 
 describe('a hidden post', () => {
-  const hide = () =>
-    db.sql.prepare("UPDATE community_posts SET state = 'hidden', hidden_by = 'reports'").run();
-
   it('is final: its author sees it, but can neither edit nor remove it', async () => {
     const post = await publish();
-    hide();
+    await hideOnService(post.id);
     const read = await handleCommunityOwnerRoutes(owner('GET', '/api/documents/d1/community'));
     expect(await read!.json()).toMatchObject({ post: { id: post.id, state: 'hidden' } });
     const edit = await handleCommunityOwnerRoutes(
@@ -354,34 +352,15 @@ describe('a hidden post', () => {
     expect(await edit!.json()).toEqual({ error: 'post_hidden' });
     const remove = await handleCommunityOwnerRoutes(owner('DELETE', '/api/documents/d1/community'));
     expect(remove!.status).toBe(409);
-    // Still there, still hidden, so the document cannot be published afresh.
-    expect(db.sql.prepare('SELECT state, title FROM community_posts').get()).toEqual({
+    expect(service.sql.prepare('SELECT state, title FROM posts').get()).toEqual({
       state: 'hidden',
       title: 'Payments platform',
     });
   });
-
-  it('has no way back: there are no moderation routes', async () => {
-    const post = await publish();
-    hide();
-    for (const [method, path] of [
-      ['GET', '/api/community/moderation'],
-      ['PUT', `/api/community/posts/${post.id}/moderation`],
-    ] as const) {
-      const res = await handleCommunity(
-        publicCtx(method, path, {
-          clerk: AUTHOR,
-          body: method === 'PUT' ? { state: 'listed' } : undefined,
-        }),
-      );
-      expect(res.status).toBe(404);
-    }
-    expect(db.sql.prepare('SELECT state FROM community_posts').get()).toEqual({ state: 'hidden' });
-  });
 });
 
 describe('the community link', () => {
-  it('resolves read-only with the post, and stops resolving while hidden', async () => {
+  it('resolves read-only with the post, and stops resolving once the sync hears it was hidden', async () => {
     const post = await publish();
     const visit = () =>
       handleShare(
@@ -397,7 +376,7 @@ describe('the community link', () => {
       community: { postId: post.id, author: { name: 'Ada', color: '#f97316', picture: null } },
     });
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM shared_with').get()).toEqual({ n: 0 });
-    db.sql.prepare("UPDATE community_posts SET state = 'hidden'").run();
+    await hideOnService(post.id);
     expect((await visit()).status).toBe(404);
   });
 
@@ -426,11 +405,9 @@ describe('the community link', () => {
       );
     const listed = await image();
     expect(listed.status).toBe(200);
-    // Briefly cacheable, with no stale window to outlive a hiding.
     expect(listed.headers.get('Cache-Control')).toBe('public, max-age=30');
-    db.sql.prepare("UPDATE community_posts SET state = 'hidden'").run();
+    await hideOnService(post.id);
     expect((await image()).status).toBe(404);
-    // Signed in or not, nobody gets it back.
     expect((await image(AUTHOR)).status).toBe(404);
   });
 
@@ -450,31 +427,50 @@ describe('the community link', () => {
     ).toEqual({ n: 1 });
   });
 
-  it('refuses a share password while published', async () => {
-    await publish();
-    const res = (await handleDocumentShareRoutes(
-      owner('PUT', '/api/documents/d1/share-password', { body: { password: 'secret' } }),
-    ))!;
+  it('refuses a share password while published, and allows one once the post is hidden', async () => {
+    const post = await publish();
+    const setPassword = async (password: string | null) =>
+      (await handleDocumentShareRoutes(
+        owner('PUT', '/api/documents/d1/share-password', { body: { password } }),
+      ))!;
+    const res = await setPassword('secret');
     expect([res.status, await res.json()]).toEqual([409, { error: 'community_published' }]);
-    const clear = (await handleDocumentShareRoutes(
-      owner('PUT', '/api/documents/d1/share-password', { body: { password: null } }),
-    ))!;
-    expect(clear.status).toBe(200);
+    expect((await setPassword(null)).status).toBe(200);
+    await hideOnService(post.id);
+    expect((await setPassword('secret')).status).toBe(200);
   });
 
-  it('allows a share password once the post is hidden, since its link is closed for good', async () => {
-    await publish();
-    db.sql.prepare("UPDATE community_posts SET state = 'hidden', hidden_by = 'reports'").run();
-    const res = (await handleDocumentShareRoutes(
-      owner('PUT', '/api/documents/d1/share-password', { body: { password: 'secret' } }),
-    ))!;
-    expect(res.status).toBe(200);
+  it('counts a copy taken through it once per person, and names the copy after the post', async () => {
+    const post = await publish();
+    const copy = () =>
+      handleDocuments(
+        makeTestRouteContext('POST', '/api/documents/d1/copy', {
+          env,
+          owner: 'guest-visitor',
+          body: {},
+          headers: { 'X-Share-Code': post.shareCode },
+          waitUntil: (p: Promise<unknown>) => void p,
+        }),
+      );
+    const first = await copy();
+    expect(first.status).toBe(201);
+    expect((await first.json<{ document: { name: string } }>()).document.name).toBe(
+      'Payments platform',
+    );
+    await copy();
+    await vi.waitFor(() =>
+      expect(service.sql.prepare('SELECT copy_count FROM posts').get()).toEqual({ copy_count: 1 }),
+    );
+    // The service never holds the guest's id, which is its credential.
+    expect(JSON.stringify(service.sql.prepare('SELECT * FROM copies').all())).not.toContain(
+      'guest-visitor',
+    );
   });
 });
 
 // docs/specs/025-community/community.md "Turning the Community off".
 describe('switched off', () => {
-  it('closes every route and link, reports it, and deletes nothing', async () => {
+  it('closes the owner routes and every link, reports it, and deletes nothing', async () => {
     const post = await publish();
     env.COMMUNITY_ENABLED = 'false';
 
@@ -482,41 +478,24 @@ describe('switched off', () => {
       makeTestRouteContext('GET', '/api/capabilities', { env }),
     );
     expect(await capabilities.json()).toMatchObject({ communityEnabled: false });
-    for (const path of [
-      '/api/community/posts',
-      `/api/community/posts/${post.id}`,
-      '/api/community/featured',
-      '/api/community/facets',
-      '/api/community/sitemap',
-    ]) {
-      expect((await handleCommunity(publicCtx('GET', path))).status, path).toBe(404);
-    }
-    expect(
-      (await handleCommunity(publicCtx('PUT', `/api/community/posts/${post.id}/like`))).status,
-    ).toBe(404);
     expect(
       (await handleCommunityOwnerRoutes(owner('GET', '/api/documents/d1/community')))!.status,
     ).toBe(404);
     const share = (path: string) => handleShare(makeTestRouteContext('GET', path, { env }));
     expect((await share(`/api/share/${post.shareCode}`)).status).toBe(404);
     expect((await share(`/api/share/${post.shareCode}/image.svg`)).status).toBe(404);
-    // A listed post no longer blocks a share password.
     const password = (await handleDocumentShareRoutes(
       owner('PUT', '/api/documents/d1/share-password', { body: { password: 'secret' } }),
     ))!;
     expect(password.status).toBe(200);
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM community_posts').get()).toEqual({ n: 1 });
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM community_links').get()).toEqual({ n: 1 });
 
-    // Back on, the post is as it was (once the password it allowed is cleared again).
     env.COMMUNITY_ENABLED = undefined;
     db.sql.prepare("UPDATE documents SET share_password = NULL WHERE id = 'd1'").run();
-    expect(
-      (await handleCommunity(publicCtx('GET', `/api/community/posts/${post.id}`))).status,
-    ).toBe(200);
+    expect((await share(`/api/share/${post.shareCode}`)).status).toBe(200);
   });
 });
 
-// Round-one review fixes (docs/specs/025-community/community.md "Viewing a post's document", "Publishing").
 describe('what a community link reveals', () => {
   const share = (path: string) =>
     handleShare(makeTestRouteContext('GET', path, { env, owner: 'guest-visitor' }));
@@ -529,60 +508,16 @@ describe('what a community link reveals', () => {
       }),
     );
 
-  it('sends exactly the public fields of a post, and nothing of an anonymous author', async () => {
-    for (const id of ['d1', 'd2']) {
-      expect(
-        (await handleCommunityOwnerRoutes(
-          owner('PUT', `/api/documents/${id}/community`, { body: { ...body, anonymous: true } }),
-        ))!.status,
-      ).toBe(201);
-    }
-    const read = async (path: string) => {
-      const res = await handleCommunity(publicCtx('GET', path));
-      expect(res.status).toBe(200);
-      return res.text();
-    };
-    const list = await read('/api/community/posts');
-    const { posts } = JSON.parse(list) as { posts: Record<string, unknown>[] };
-    const one = await read(`/api/community/posts/${posts[0]!.id as string}`);
-    const featured = await read('/api/community/featured');
-    const parsed = JSON.parse(one) as { post: Record<string, unknown>; related: unknown[] };
-    const all = [
-      ...posts,
-      parsed.post,
-      ...(parsed.related as Record<string, unknown>[]),
-      ...(JSON.parse(featured) as { posts: Record<string, unknown>[] }).posts,
-    ];
-    expect(all.length).toBeGreaterThanOrEqual(5);
-    // An allowlist, so a column added to the row later fails here rather than reaching every visitor.
-    for (const post of all) {
-      expect(Object.keys(post).sort()).toEqual(
-        [
-          'anonymous',
-          'author',
-          'category',
-          'copyCount',
-          'description',
-          'id',
-          'likeCount',
-          'liked',
-          'publishedAt',
-          'shareCode',
-          'tags',
-          'title',
-          'updatedAt',
-        ].sort(),
-      );
-      expect(post.author).toEqual({ name: 'Anonymous', color: '#64748b', picture: null });
-    }
-    for (const text of [list, one, featured]) {
-      expect(text).not.toContain(AUTHOR);
-      expect(text).not.toContain('Ada');
-      expect(text).not.toContain('#f97316');
-      expect(text).not.toMatch(
-        /"(documentId|ownerId|authorId|author_id|document_id|networkHash|reportCount|hiddenBy|state)"/,
-      );
-    }
+  it('sends the service nothing of an anonymous author it would show', async () => {
+    const res = (await handleCommunityOwnerRoutes(
+      owner('PUT', '/api/documents/d1/community', { body: { ...body, anonymous: true } }),
+    ))!;
+    expect(res.status).toBe(201);
+    const text = await (await service.read('/posts')).text();
+    expect(text).not.toContain(AUTHOR);
+    expect(text).not.toContain('Ada');
+    expect(text).not.toContain('#f97316');
+    expect(text).not.toContain('"d1"');
   });
 
   it("names nobody: not the owner's name or colour, nor where the document sits", async () => {
@@ -617,7 +552,6 @@ describe('what a community link reveals', () => {
       }),
     ))!;
     expect(res.status).toBe(403);
-    // The same tab draws for its owner, so the refusal is the link's, not the route's.
     const own = (await handleTabRender(owner('GET', '/api/documents/d1/tabs/tab-d1/render.svg')))!;
     expect(own.status).toBe(200);
   });
@@ -631,9 +565,6 @@ describe('what a community link reveals', () => {
       .run();
     expect((await share(`/api/share/${post.shareCode}`)).status).toBe(404);
     expect((await share(`/api/share/${post.shareCode}/image.svg`)).status).toBe(404);
-    expect(
-      (await handleCommunity(publicCtx('GET', `/api/community/posts/${post.id}`))).status,
-    ).toBe(404);
   });
 
   it('counts no comment threads in the overview a Community visitor reads', async () => {
@@ -663,24 +594,21 @@ describe('a document that changes hands', () => {
     const post = await publish();
     db.sql
       .prepare(
-        "INSERT INTO participants (id, name, color, created_at) VALUES ('user_bob', 'Bob', '#000', 1)",
+        "INSERT INTO participants (id, name, color, created_at) VALUES ('user_bob', 'Bob', '#000000', 1)",
       )
       .run();
     db.sql.prepare("UPDATE documents SET owner_id = 'user_bob' WHERE id = 'd1'").run();
+    await syncCommunity(env);
 
     expect(
       (await handleShare(makeTestRouteContext('GET', `/api/share/${post.shareCode}`, { env })))
         .status,
     ).toBe(404);
-    expect((await handleCommunity(publicCtx('GET', '/api/community/posts'))).status).toBe(200);
-    const listed = (await (
-      await handleCommunity(publicCtx('GET', '/api/community/posts'))
-    ).json()) as {
-      posts: unknown[];
-    };
-    expect(listed.posts).toEqual([]);
+    expect(await gallery()).toEqual([]);
     const mine = (await (
-      await handleCommunity(publicCtx('GET', '/api/community/mine', { clerk: AUTHOR }))
+      await handleCommunity(
+        makeTestRouteContext('GET', '/api/community/mine', { env, clerkUserId: AUTHOR }),
+      )
     ).json()) as { posts: unknown[] };
     expect(mine.posts).toEqual([]);
 
@@ -691,8 +619,12 @@ describe('a document that changes hands', () => {
     expect(await (await bob('GET'))!.json()).toEqual({ post: null });
     const published = (await bob('PUT', { body }))!;
     expect(published.status).toBe(201);
-    expect(db.sql.prepare('SELECT author_id FROM community_posts').all()).toEqual([
+    expect(service.sql.prepare('SELECT owner FROM posts').all()).toEqual([{ owner: 'user_bob' }]);
+    expect(db.sql.prepare('SELECT author_id FROM community_links').all()).toEqual([
       { author_id: 'user_bob' },
     ]);
+    expect(
+      db.sql.prepare("SELECT COUNT(*) AS n FROM share_links WHERE purpose = 'community'").get(),
+    ).toEqual({ n: 1 });
   });
 });

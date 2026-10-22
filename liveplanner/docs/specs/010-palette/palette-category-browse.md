@@ -65,7 +65,7 @@ every other host keeps the drill-in grid.
 
 ## One implementation
 
-`components/palette/PaletteCategoryBrowser.tsx` owns the navigation for all
+`PaletteCategoryBrowser` (removed from liveplanner with the strip palette) owned the navigation for all
 three tabs: search box, category grid, breadcrumb, open-category body, empty and
 loading states. Tabs supply their catalogue, their search function and their
 tile rendering; nothing about a glyph, a tool tile or a brand mark leaks into

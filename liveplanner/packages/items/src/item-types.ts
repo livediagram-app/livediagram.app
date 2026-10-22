@@ -1,6 +1,6 @@
 // The built-in item types (docs/specs/026-plan/items.md "Item types"). A type
 // names the fields its item panel offers; any item may still carry others.
-// `glyph` is an id from the Plan glyph set (glyphs.ts). A document may replace this
+// `glyph` is an id from the Plan glyph set (glyphs.ts). A project may replace this
 // catalogue with its own (type-catalogue.ts, docs/specs/026-plan/item-types.md).
 import type { CardField, CardSize } from './board';
 import type { CardSlot } from './card-display';

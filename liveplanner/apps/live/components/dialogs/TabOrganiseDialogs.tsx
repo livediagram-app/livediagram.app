@@ -1,12 +1,12 @@
 'use client';
 
 // The tab bar's two organise pickers as proper centred modals: "Add to
-// Folder" (docs/specs/006-document/tab-folders.md — file the tab into a one-level tab-bar folder) and
-// "Add to Document" (docs/specs/006-document/tab-document-many-to-many.md — link the tab into another document; the tab is
+// Folder" (docs/specs/006-project/tab-folders.md — file the tab into a one-level tab-bar folder) and
+// "Add to Project" (docs/specs/006-project/tab-project-many-to-many.md — link the tab into another project; the tab is
 // shared, not copied). They used to be cramped sub-views squeezed inside the
 // tab portal menu; the modal gives them the same tile-grid language as the
 // shared placement browser (docs/specs/013-workspace/folders.md), with room to breathe and a filter for
-// long document lists. Single-click commits — both are one-shot pickers.
+// long project lists. Single-click commits — both are one-shot pickers.
 
 import { lucideFolderX } from '@liveplanner/icons/lucide';
 import { useState } from 'react';
@@ -16,7 +16,7 @@ import {
   NewFolderTile,
   PlacementCard,
 } from '@/components/placement/PlacementCard';
-import { DocumentThumbnail } from '@/components/panels/DocumentThumbnail';
+import { ProjectThumbnail } from '@/components/panels/ProjectThumbnail';
 import {
   CompactEmptyState,
   DialogCloseButton,
@@ -24,7 +24,7 @@ import {
   lucideGlyph,
   useEscape,
 } from '@liveplanner/ui';
-import { DocumentIcon } from '@/components/primitives/explorer-icons';
+import { ProjectIcon } from '@/components/primitives/explorer-icons';
 import { matches } from '@liveplanner/icons';
 
 // Shared modal frame: header (title + sub + close) over a scrollable body.
@@ -70,7 +70,7 @@ function OrganiseDialogFrame({
 // The No Folder tile: a folder struck out.
 const NoFolderIcon = lucideGlyph(lucideFolderX, 20);
 
-// Add to Folder (docs/specs/006-document/tab-folders.md): a tile per existing tab folder, a No Folder tile
+// Add to Folder (docs/specs/006-project/tab-folders.md): a tile per existing tab folder, a No Folder tile
 // (the loose end of the bar), and the create-in-place New Folder tile.
 // Picking commits immediately and closes — one-level folders need no browse.
 export function AddTabToFolderDialog({
@@ -119,7 +119,7 @@ export function AddTabToFolderDialog({
         <NewFolderTile
           onCreate={(name) => {
             // Typing an existing name just moves the tab into it (same
-            // name = same folder, docs/specs/006-document/tab-folders.md) — exactly what the move does.
+            // name = same folder, docs/specs/006-project/tab-folders.md) — exactly what the move does.
             onMoveToFolder(name);
             onClose();
             return Promise.resolve(true);
@@ -130,18 +130,18 @@ export function AddTabToFolderDialog({
   );
 }
 
-// A destination-document tile: the document's snapshot preview (docs/specs/006-document/document-snapshots.md) over
+// A destination-project tile: the project's snapshot preview (docs/specs/006-project/project-snapshots.md) over
 // its name, so the user picks by recognising the canvas rather than parsing
-// a list of near-identical "Untitled document" names. Styled to match the
+// a list of near-identical "Untitled project" names. Styled to match the
 // PlacementCard tile grid, but its own component: the preview area is a
 // full-width box, not the icon-glyph slot the shared card centres.
-function DocumentPickCard({
+function ProjectPickCard({
   ownerId,
-  document: liveDoc,
+  project: liveDoc,
   onPick,
 }: {
   ownerId: string | null;
-  document: { id: string; name: string; savedAt?: number };
+  project: { id: string; name: string; savedAt?: number };
   onPick: () => void;
 }) {
   return (
@@ -150,50 +150,50 @@ function DocumentPickCard({
       onClick={onPick}
       className="flex flex-col gap-1.5 rounded-lg border border-slate-200 bg-white p-2 text-center transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:border-slate-600 dark:hover:bg-slate-700/60"
     >
-      <DocumentThumbnail
+      <ProjectThumbnail
         ownerId={ownerId}
-        documentId={liveDoc.id}
+        projectId={liveDoc.id}
         version={liveDoc.savedAt ?? 0}
         className="h-16 w-full rounded border border-slate-100 bg-slate-50 dark:border-slate-700 dark:bg-slate-900/40"
       />
       <span className="w-full truncate text-xs font-medium text-slate-700 dark:text-slate-200">
-        {liveDoc.name || 'Untitled document'}
+        {liveDoc.name || 'Untitled project'}
       </span>
     </button>
   );
 }
 
-// Add to Document (docs/specs/006-document/tab-document-many-to-many.md): pick the destination document the tab is LINKED
+// Add to Project (docs/specs/006-project/tab-project-many-to-many.md): pick the destination project the tab is LINKED
 // into (shared, not copied — one tab, live in both). A filter keeps long
 // libraries manageable; picking commits immediately and closes.
-export function AddTabToDocumentDialog({
+export function AddTabToProjectDialog({
   ownerId,
-  otherDocuments,
+  otherProjects,
   onPick,
   onClose,
 }: {
   // Viewer identity for the authenticated thumbnail fetches.
   ownerId: string | null;
-  otherDocuments: { id: string; name: string; savedAt?: number }[];
-  onPick: (targetDocumentId: string) => void;
+  otherProjects: { id: string; name: string; savedAt?: number }[];
+  onPick: (targetProjectId: string) => void;
   onClose: () => void;
 }) {
   const [query, setQuery] = useState('');
-  const visible = otherDocuments.filter(
-    (d) => !query.trim() || matches(query, d.name || 'Untitled document'),
+  const visible = otherProjects.filter(
+    (d) => !query.trim() || matches(query, d.name || 'Untitled project'),
   );
   return (
     <OrganiseDialogFrame
-      title="Add to Document"
-      sub="Link this tab into another document. It stays one live tab: edits show in both places."
+      title="Add to Project"
+      sub="Link this tab into another project. It stays one live tab: edits show in both places."
       onClose={onClose}
     >
       <input
         autoFocus
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Filter documents…"
-        aria-label="Filter documents"
+        placeholder="Filter projects…"
+        aria-label="Filter projects"
         className="mb-3 w-full rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-sm text-slate-800 outline-none placeholder:text-slate-400 focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
       />
       {visible.length === 0 ? (
@@ -201,25 +201,25 @@ export function AddTabToDocumentDialog({
           <NoMatches
             size="regular"
             className="py-8"
-            things="documents"
+            things="projects"
             query={query}
             onClear={() => setQuery('')}
           />
         ) : (
           <CompactEmptyState
             className="py-8"
-            icon={<DocumentIcon />}
-            title="No other documents yet"
-            description="Make another document to add this tab to it."
+            icon={<ProjectIcon />}
+            title="No other projects yet"
+            description="Make another project to add this tab to it."
           />
         )
       ) : (
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           {visible.map((d) => (
-            <DocumentPickCard
+            <ProjectPickCard
               key={d.id}
               ownerId={ownerId}
-              document={d}
+              project={d}
               onPick={() => {
                 onPick(d.id);
                 onClose();

@@ -18,7 +18,7 @@ import {
   LINE_DEFAULT_SERIES,
   legendFontPx,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useChartAnim, chartFrame } from '@/lib/chart';
 import { useChartHover } from '@/hooks/canvas/useChartHover';
 import { ChartReadout } from '@/components/primitives/ChartReadout';

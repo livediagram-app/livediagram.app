@@ -8,7 +8,7 @@ import { TRUSTED_TYPES_CSP } from './trusted-types';
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url));
 const read = (path: string) => readFileSync(`${repo}${path}`, 'utf8');
-const APPS = ['live', 'marketing', 'help', 'telemetry'] as const;
+const APPS = ['live', 'marketing', 'help'] as const;
 
 function sources(dir: string, out: string[] = []): string[] {
   for (const name of readdirSync(dir)) {
@@ -120,7 +120,7 @@ describe.each(APPS)('apps/%s', (app) => {
     // Its own build's scripts, under the prefix next.config.ts serves them from (basePath or assetPrefix).
     const config = read(`apps/${app}/next.config.ts`);
     const prefix = /(?:basePath|assetPrefix): '([^']+)'/.exec(config)?.[1] ?? '';
-    expect(layout).toContain(`const TRUSTED_TYPES_BOOT = trustedTypesBootScript(\n  '${prefix}',`);
+    expect(layout).toContain(`const TRUSTED_TYPES_BOOT = trustedTypesBootScript('${prefix}');`);
   });
 
   it('sends the Trusted Types header on every page', () => {

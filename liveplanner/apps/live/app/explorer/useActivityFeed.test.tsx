@@ -20,8 +20,8 @@ const NO_LOCAL = { actions: [], threads: [], cards: [], cardThreads: [] };
 import { useActivityFeed } from './useActivityFeed';
 
 const place = {
-  documentId: 'd1',
-  documentName: 'Payments',
+  projectId: 'd1',
+  projectName: 'Payments',
   teamId: null,
   via: 'own' as const,
   shareCode: null,
@@ -55,14 +55,14 @@ const thread: ActivityThread = {
   latest: { text: 'hi', authorName: 'A', authorColor: '#a', at: 3 },
   firstAt: 3,
   youCommented: true,
-  onYourDocument: false,
+  onYourProject: false,
   mentionsYou: false,
 };
 
 function card(id: string, updatedAt: number): ActivityCard {
   return {
-    documentId: 'd2',
-    documentName: 'Roadmap',
+    projectId: 'd2',
+    projectName: 'Roadmap',
     teamId: 'tm',
     via: 'team',
     shareCode: null,
@@ -82,7 +82,7 @@ beforeEach(() => {
 });
 
 describe('useActivityFeed', () => {
-  it('splits one read into assigned-to-you / you-assigned / threads, without double-listing a self-assignment', async () => {
+  it('splits one read into assigned-to-you / threads, without double-listing a self-assignment', async () => {
     apiListActivity.mockResolvedValue({
       actions: [
         action('mine', { assignedToMe: true, createdByMe: false }),
@@ -95,7 +95,6 @@ describe('useActivityFeed', () => {
     const { result } = renderHook(() => useActivityFeed('me'));
     await waitFor(() => expect(result.current.loading).toBe(false));
     expect(result.current.assignedToMe.map((a) => a.id)).toEqual(['mine', 'self']);
-    expect(result.current.youAssigned.map((a) => a.id)).toEqual(['theirs']);
     expect(result.current.threads).toHaveLength(1);
     expect(result.current.error).toBe(false);
   });
@@ -139,10 +138,9 @@ describe('useActivityFeed', () => {
       ['action', 'older-action'],
       ['card', 'old-card'],
     ]);
-    expect(result.current.youAssigned.map((a) => a.id)).toEqual(['theirs']);
   });
 
-  // docs/specs/013-workspace/inbox.md §2.6: this browser's documents in This Browser list among the server's rows,
+  // docs/specs/013-workspace/inbox.md §2.6: this browser's projects in This Browser list among the server's rows,
   // in the same order, marked local, and count toward the badge's list.
   it('merges rows in This Browser in among the server rows, marked local', async () => {
     apiListActivity.mockResolvedValue({
@@ -165,7 +163,6 @@ describe('useActivityFeed', () => {
       ['local', true],
       ['cloud', false],
     ]);
-    expect(result.current.youAssigned.map((a) => [a.id, a.local])).toEqual([['handed', true]]);
     expect(result.current.threads.map((t) => t.local)).toEqual([true]);
   });
 

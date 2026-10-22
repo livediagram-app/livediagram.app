@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import { TOAST_NAME_MAX, toastName } from './toast-name';
-import { DOCUMENT_FAILURE, FOLDER_FAILURE } from './write-failure-copy';
+import { PROJECT_FAILURE, FOLDER_FAILURE } from './write-failure-copy';
 import {
-  documentRestoreFailedMessage,
-  documentRestoredMessage,
-  documentDeletedMessage,
-  documentDuplicatedMessage,
-  documentMovedMessage,
-} from './document-toast-copy';
+  projectRestoreFailedMessage,
+  projectRestoredMessage,
+  projectDeletedMessage,
+  projectDuplicatedMessage,
+  projectMovedMessage,
+} from './project-toast-copy';
 
 // docs/specs/004-interface-design/toasts.md "Naming what it acted on".
 describe('toastName', () => {
@@ -39,29 +39,29 @@ describe('toastName', () => {
   });
 });
 
-describe('the toasts that name a document or folder', () => {
+describe('the toasts that name a project or folder', () => {
   const longest = 'W'.repeat(200);
 
   it('fall back to a generic word when the name is unknown', () => {
-    expect(documentDeletedMessage(undefined)).toBe('Document deleted');
-    expect(documentDuplicatedMessage('')).toBe('Document duplicated');
-    expect(documentMovedMessage(null, 'my-documents')).toBe('Document moved to My Documents');
-    expect(documentMovedMessage('Roadmap', { team: '' })).toBe(
+    expect(projectDeletedMessage(undefined)).toBe('Project deleted');
+    expect(projectDuplicatedMessage('')).toBe('Project duplicated');
+    expect(projectMovedMessage(null, 'my-projects')).toBe('Project moved to My Projects');
+    expect(projectMovedMessage('Roadmap', { team: '' })).toBe(
       '“Roadmap” moved to the team library',
     );
-    expect(DOCUMENT_FAILURE.move()).toBe('Could not move the document. Try again.');
+    expect(PROJECT_FAILURE.move()).toBe('Could not move the project. Try again.');
     expect(FOLDER_FAILURE.delete(null)).toBe('Could not delete the folder. Try again.');
   });
 
   it('stay within the 90-character ceiling however long the names are', () => {
     const messages = [
-      documentDeletedMessage(longest),
-      documentRestoredMessage(longest),
-      documentRestoreFailedMessage(longest),
-      documentDuplicatedMessage(longest),
-      documentMovedMessage(longest, { folder: longest }),
-      documentMovedMessage(longest, { team: longest }),
-      ...Object.values(DOCUMENT_FAILURE).map((copy) => copy(longest)),
+      projectDeletedMessage(longest),
+      projectRestoredMessage(longest),
+      projectRestoreFailedMessage(longest),
+      projectDuplicatedMessage(longest),
+      projectMovedMessage(longest, { folder: longest }),
+      projectMovedMessage(longest, { team: longest }),
+      ...Object.values(PROJECT_FAILURE).map((copy) => copy(longest)),
       ...Object.values(FOLDER_FAILURE).map((copy) => copy(longest)),
     ];
     for (const message of messages) expect(Array.from(message).length).toBeLessThanOrEqual(90);

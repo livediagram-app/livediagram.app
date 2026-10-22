@@ -29,7 +29,7 @@ import {
   type BorderStyle,
   type BoxedElement,
   type ElementShadow,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { BorderGlyph, PaletteMenuIcon } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
 import { isTechIconId } from '@/lib/tech-icons';

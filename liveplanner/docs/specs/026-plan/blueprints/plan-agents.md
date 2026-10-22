@@ -9,7 +9,7 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | the plan         | `PlanOutline` (`packages/items/src/plan-outline.ts`), on the wire `PlanResponse`                                                     |
 | board (outline)  | `PlanBoardOutline { tabId, tabName, elementId, title, kind, types, columns }`                                                        |
-| column name      | `PlanColumnOutline.name`; a document's statuses `PlanStatusName { status, name }`                                                    |
+| column name      | `PlanColumnOutline.name`; a project's statuses `PlanStatusName { status, name }`                                                    |
 | naming           | `resolveStatus`, `resolveType`, `resolveItem`, `fieldKeyOf`, `resolveFields`, `personNamed` (`plan-names.ts`)                        |
 | card type change | `CardTypeChange`, `applyCardTypeChanges` (`packages/items/src/type-changes.ts`)                                                      |
 | board request    | `BoardRequest`, `placeBoard` (`packages/items/src/board-place.ts`)                                                                   |
@@ -30,7 +30,7 @@ changing card types and adding boards, for the MCP tools and the CLI verbs.
   stops; answers `applied` lines naming the column (`in To Do`, or `(on no board)`).
 - `applyCardTypeChanges`: changes in order on a working list; `add` starts from `NEW_ITEM_TYPE` (shared with the
   type editor); `delete` names the type for its cards to go to the Trash; `add_default_types` (and its
-  older name `restore_built_ins`) appends `defaultTypesToAdd(types)`, and a document whose card types were not
+  older name `restore_built_ins`) appends `defaultTypesToAdd(types)`, and a project whose card types were not
   chosen, given nothing but those, stays null. The whole result goes through `validateItemTypeCatalogue`.
   `add` and `set` apply `display`, `tabs` and `detailsLabel` last (`withFace`), through
   `packages/items/src/type-change-face.ts`: `displayFrom` maps `DISPLAY_SLOT_NAMES` (minimal beforeTitle/afterTitle →
@@ -50,13 +50,13 @@ one does` to the change's `applied` line (`DEFAULT_STATUS_PENDING`). `set.defaul
 - `listedType(t, statuses)` / `listedTypes`: id, name, color, glyph, built-in fields, custom (with `onCard`), the
   Default State by column name, `display` per size by slot and field name (`namedDisplay` over `typeCardLayout`),
   `tabs` by name (`tabsOf`), `detailsLabel` (`detailsLabelOf`).
-- `bringBoardCardTypes(api, documentId, elements, known?)`: nothing read or written when no Plan board is among the
-  elements; else `catalogueWithBoardTypes(stored, elements, hasCards)` from the document's `itemTypes` and whether it
+- `bringBoardCardTypes(api, projectId, elements, known?)`: nothing read or written when no Plan board is among the
+  elements; else `catalogueWithBoardTypes(stored, elements, hasCards)` from the project's `itemTypes` and whether it
   has any item (`known` when the caller has read them, as `addBoard` has), PUT only when it changes.
 - `changeCardTypes`: PUT the catalogue naming `plan.itemTypesRev` as `expectedRev`, then `set { status: trash,
 trashedFrom }` on each live card of a deleted type, as the editor's `trashItems`. A 409 `item_types_stale`
   (`isCardTypesStale`) reads the plan again and applies the changes again, up to `CARD_TYPES_SAVE_ATTEMPTS` (3), then
-  answers the refusal; `bringBoardCardTypes` does the same with the document's `itemTypesRev` (`KnownCardTypes.rev`).
+  answers the refusal; `bringBoardCardTypes` does the same with the project's `itemTypesRev` (`KnownCardTypes.rev`).
 - `placeBoard`: preset through `freshBoardSetup`; columns by name reuse a status `statusNamed` finds (each status
   once), else `<slug>~<4 chars>`; a preset's `doneColumnId` is dropped with its columns; placed right of the tab's
   elements' bounding box by `PLACED_BOARD_GAP`, tops aligned, origin on an empty tab.
@@ -65,15 +65,15 @@ trashedFrom }` on each live card of a deleted type, as the editor's `trashItems`
 
 ## Interfaces and contracts
 
-- `GET /api/documents/:id/plan` → `PlanResponse { boards, statuses, types }`; read gate as the item list
+- `GET /api/projects/:id/plan` → `PlanResponse { boards, statuses, types }`; read gate as the item list
   (`itemCaller(ctx, id, 'read')`); a tab-scoped grant passes `tabId` and gets that tab's boards; 405 for other
   methods. In the OpenAPI manifest (tag Items) and `gen-openapi-schemas.mjs` roots.
-- MCP (`packages/agent-verbs/src/mcp/plan-schema.ts`): `list_items { documentId, type?, status? }`,
-  `change_items { documentId, changes[1..50] }`, `add_board { documentId, tabId?, preset?, title?, columns?[1..12],
-types? }`, `change_card_types { documentId, changes[1..32] }`; outputs `listItemsOutput`, `changeItemsOutput`,
+- MCP (`packages/agent-verbs/src/mcp/plan-schema.ts`): `list_items { projectId, type?, status? }`,
+  `change_items { projectId, changes[1..50] }`, `add_board { projectId, tabId?, preset?, title?, columns?[1..12],
+types? }`, `change_card_types { projectId, changes[1..32] }`; outputs `listItemsOutput`, `changeItemsOutput`,
   `addBoardOutput`, `changeCardTypesOutput`, every field described.
-- CLI: `item ls|add|set|move|rm` (unchanged arguments; `ls` prints a line per board), `board add <doc> [--tab]
-[--preset] [--title] [--columns a,b] [--types a,b]`, `type ls <doc>`, `type apply <doc> -f <file|->` (a JSON array
+- CLI: `item ls|add|set|move|rm` (unchanged arguments; `ls` prints a line per board), `board add <project> [--tab]
+[--preset] [--title] [--columns a,b] [--types a,b]`, `type ls <project>`, `type apply <project> -f <file|->` (a JSON array
   of `cardTypeChangeSchema`).
 
 ## Errors and edge cases
@@ -103,7 +103,7 @@ types? }`, `change_card_types { documentId, changes[1..32] }`; outputs `listItem
 
 - No new authority: every read and write is an existing route under the caller's token; the plan route uses the
   item list's gate, so a tab-scoped link never sees another tab's boards; the catalogue PUT keeps its
-  whole-document edit gate.
+  whole-project edit gate.
 - Names and titles from people are data: listings say so in the tool descriptions.
 
 ## Performance and limits

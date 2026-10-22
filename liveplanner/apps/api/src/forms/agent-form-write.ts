@@ -3,7 +3,7 @@
 // takes the form's heading as its name. While the form takes responses only its settings may change. A lost race
 // repeats once from the read.
 import type { RoomOp } from '@liveplanner/api-schema';
-import { tabKindOf, type Tab } from '@liveplanner/document';
+import { tabKindOf, type Tab } from '@liveplanner/project';
 import { changesBeyondSettings, readForm } from '@liveplanner/forms';
 import { getLiveFormLink, isTabRevStale, upsertTabAtRev } from '../db';
 import { TabTooLargeError } from '../limits';
@@ -25,7 +25,7 @@ const refused = (status: number, error: string, message: string, extra = {}): Ag
 
 export async function writeAgentForm(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
   body: Record<string, unknown>,
 ): Promise<AgentFormResult> {
@@ -38,9 +38,9 @@ export async function writeAgentForm(
   const rev = body['rev'];
   if (rev !== undefined && !(typeof rev === 'number' && Number.isSafeInteger(rev) && rev >= 0))
     return refused(400, 'invalid_body', '"rev" is the tab revision you read');
-  const where = { documentId, tabId };
+  const where = { projectId, tabId };
   for (let attempt = 1; attempt <= SUBMIT_ATTEMPTS; attempt += 1) {
-    const stored = await readStoredTab(env, documentId, tabId);
+    const stored = await readStoredTab(env, projectId, tabId);
     if (!stored) return refused(404, 'not_found', 'No such tab.');
     if (tabKindOf(stored.tab) !== 'form')
       return refused(400, 'not_a_form_tab', 'That tab holds no form. Add one with add_form.');
@@ -56,7 +56,7 @@ export async function writeAgentForm(
     }
     const before = readForm(stored.tab.form);
     if (!before || changesBeyondSettings(before, form)) {
-      const live = await getLiveFormLink(env, documentId, tabId);
+      const live = await getLiveFormLink(env, projectId, tabId);
       if (live?.open === 1) {
         console.info('[forms] agent.locked', where);
         return refused(409, 'form_locked', FORM_LOCKED_MESSAGE);
@@ -72,7 +72,7 @@ export async function writeAgentForm(
     };
     let written: number;
     try {
-      written = await upsertTabAtRev(env, documentId, next, stored.orderIndex, stored.rev);
+      written = await upsertTabAtRev(env, projectId, next, stored.orderIndex, stored.rev);
     } catch (err) {
       if (err instanceof TabTooLargeError)
         return refused(413, 'too_large', 'That form is too large.');
@@ -87,7 +87,7 @@ export async function writeAgentForm(
       tabId,
       patch: { name, form, ...(typeof theme === 'string' ? { theme } : {}) },
     };
-    await relayRoomOps(env, documentId, [op], '[forms] agent');
+    await relayRoomOps(env, projectId, [op], '[forms] agent');
     console.info('[forms] agent.written', where);
     return { status: 200, body: { tabId, rev: written, name } };
   }

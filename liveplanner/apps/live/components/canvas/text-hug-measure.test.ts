@@ -6,7 +6,7 @@ import {
   createText,
   type ShapeElement,
   type TextElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   labelRuns,
   measureDrawnMindLabel,

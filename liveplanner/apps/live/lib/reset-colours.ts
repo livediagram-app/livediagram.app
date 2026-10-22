@@ -5,7 +5,7 @@
 // with the colours they bound, and so does a whiteboard stock colour stored by name
 // (docs/specs/004-interface-design/colour-picker.md), which would otherwise
 // show again the moment the explicit colour is cleared.
-import type { Element, ThemeDefinition } from '@liveplanner/document';
+import type { Element, ThemeDefinition } from '@liveplanner/project';
 
 export function resetElementColours(el: Element, theme: ThemeDefinition): Element {
   if (el.type === 'shape') {

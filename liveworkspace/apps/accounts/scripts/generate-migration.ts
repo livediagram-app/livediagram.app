@@ -14,11 +14,13 @@ const out = process.argv[2] ?? new URL('../migrations/0001_better_auth.sql', imp
 
 const options = authOptions(
   {
-    baseUrl: 'http://localhost:8787',
+    baseUrl: 'http://localhost:3300',
     secret: 'schema-only-secret-schema-only-secret',
     resources: [],
     turnstileSecretKey: 'unused',
     adminToken: '',
+    // On, so the schema covers everything a deployment with Google sign-in needs.
+    google: { clientId: 'unused', clientSecret: 'unused' },
     sendCode: async () => {},
   },
   new DatabaseSync(':memory:'),

@@ -1,7 +1,7 @@
 // The worked example cards a Plan template opens with (docs/specs/026-plan/plan-templates.md "Example cards"): pure
 // data, one list a template, in the order each column shows them. Every card names its status (a column id of one of
 // the template's boards) and its card type (one the boards take), so it lands on the boards that show it, hand-offs
-// included. Dates are days from the day the document is made (`start`, `due`), so a board never opens stale; people are
+// included. Dates are days from the day the project is made (`start`, `due`), so a board never opens stale; people are
 // the example team below; `ref` names a card another card links to (a Story's project, a Candidate's role).
 // plan-template-seeds.ts resolves this into the creates the item store takes.
 

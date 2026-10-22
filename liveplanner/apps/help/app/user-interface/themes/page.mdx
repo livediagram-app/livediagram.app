@@ -1,0 +1,60 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LookAndFeelTheme } from '@/components/illustrations/canvas-basics';
+
+export const metadata = helpMetadata({
+  title: 'Themes',
+  description:
+    'Restyle a whole tab in one click with a theme: its board, sheet, dashboard or form takes the new colours. Build your own custom themes to reuse.',
+  path: '/help/user-interface/themes/',
+});
+
+<ArticleLayout
+  title="Themes"
+  description="Recolour an entire tab in a single click, browse a catalogue of themes that work in light and dark mode, and save your own to reuse across projects."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+  subArticles={getSubArticles("themes")}
+>
+
+A theme is the fastest way to make a tab look intentional. Instead of colouring things by hand, pick a theme and liveplanner recolours the whole tab at once. The catalogue ships twenty-four themes, and you can save your own too.
+
+## What a Theme Covers
+
+A theme sets the colours a tab is drawn in, so everything on it reads as one coherent style:
+
+- On a [board](/help/plan/boards/), the board's surface, its columns, its cards and their borders and text.
+- On a [Sheet](/help/plan/sheets/), its surface, header and grid.
+- On a [Dashboard](/help/plan/dashboards/), every slot, whose border takes the theme's colour. A board or Sheet shown in a slot is drawn in the Dashboard's theme there, while its own tab keeps its own.
+- On a [Form](/help/plan/forms/), the page the questions sit on.
+
+Text that would not read on a theme's colours is swapped for a readable one, so every theme stays easy to read. Switching themes leaves the tab's font alone.
+
+A theme belongs to one tab, so the tabs of one project can each wear a different one. A new project starts on Default, and a tab you add starts on the theme of the tab you added it from.
+
+## Light and Dark, for Everyone
+
+Every theme has a light half and a dark half. Which half you see is your own [appearance](/help/tools/dark-mode/): on **Default**, light chrome shows the familiar light board and dark chrome a dark one, and every other theme turns the same way, keeping its own hues.
+
+Nothing is saved when the half changes: a colleague in light chrome sees the light half of the very same tab while you work in the dark one. A colour someone picked by hand is drawn as it is for everyone.
+
+## Browsing and Applying
+
+You change a tab's theme from the **Tab Style** dialog: click **Style** in the bottom-right corner of the editor, and it opens on its home. At the top are **Looks**, each setting the theme, the finish, the tab font and the background pattern together in one click, led by a **Mashup** card that rolls a random mix each time you press it. To pick a theme on its own, press **Colours** under **Fine-tune**: every theme sits in one list, nine to a page. Click one to apply it. See [Changing the Theme](/help/user-interface/themes/changing-theme/) for the full walkthrough.
+
+<Figure caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first.">
+  <LookAndFeelTheme />
+</Figure>
+
+## Your Own Themes
+
+When no built-in theme fits, [custom themes](/help/user-interface/themes/custom-themes/) let you author your own palette (brand colours, say), save it, and reuse it across projects.
+
+<Tip>
+  Every control in the Tab Style dialog applies as you click, with no Apply or Cancel, so you can
+  try themes on the tab behind the dialog until one feels right. Undo takes a theme change back if
+  you change your mind later.
+</Tip>
+
+</ArticleLayout>

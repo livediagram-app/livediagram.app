@@ -3,7 +3,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, type RefObject } from 
 // The WAI-ARIA tree keyboard model over every `treeitem` inside one container
 // (docs/specs/013-workspace/explorer-structure.md#keyboard-and-aria). DOM-driven, so it holds
 // however the rows are composed: collapsed children are not rendered, which
-// makes "every treeitem in document order" exactly the visible rows.
+// makes "every treeitem in project order" exactly the visible rows.
 //
 // A row marks its parts with data attributes: `data-tree-row` (the row's own
 // line, as opposed to its child group), inside it `data-tree-toggle` (clicked

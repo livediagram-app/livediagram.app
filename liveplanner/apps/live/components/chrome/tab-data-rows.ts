@@ -3,9 +3,9 @@
 // A Board or Sheet tab's Import CSV… in its tab menu (docs/specs/026-plan/plan-tabs.md "Board tab and Sheet
 // tab"): only what fits the tab's one element. A Sheet tab imports and downloads CSV through its Sheet's own actions
 // (Sheet Settings' registry), a Board tab through its board's (board-csv-registry.ts); any other tab keeps the
-// document's Import dialog. Export opens the Export dialog on every tab, with the formats that suit its kind (CSV
+// project's Import dialog. Export opens the Export dialog on every tab, with the formats that suit its kind (CSV
 // among them on a Board or Sheet tab, lib/export-plan/tab-csv.ts).
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { sheetSettingsEntryOf } from '@/components/sheets/sheet-settings-registry';
 import { boardCsvEntryOf } from '@/components/plan/board-csv-registry';
 

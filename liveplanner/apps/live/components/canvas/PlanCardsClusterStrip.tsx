@@ -9,7 +9,7 @@ import { usePlan } from '@/components/plan/PlanContext';
 
 // Plan mode's buttons in the bottom-right cluster, one strip as Undo and Redo are, where Layers sits in the other
 // modes: the **Trash** on its left (docs/specs/026-plan/items.md "Trash"; given only off a phone, to an editor),
-// then **New Card** (an editor's +, items.md "New Card"), then **Find a Card** (items.md "Finding a card"), the search over every card in the document, then **Card
+// then **New Card** (an editor's +, items.md "New Card"), then **Find a Card** (items.md "Finding a card"), the search over every card in the project, then **Card
 // Types** (docs/specs/026-plan/item-types.md "The Card Types panel"). Each opens its own panel above it. While a
 // card is dragged the Trash steps out of the strip as a wide drop target beside it. With no card types
 // (item-types.md "The type catalogue") New Card and Find a Card would surface nothing, so only Card Types shows, and
@@ -59,7 +59,7 @@ export function PlanCardsClusterStrip({
             divided={trashInStrip || showsNewCard}
             label="Find a Card"
             hoverTitle="Cards"
-            hoverDescription="Every card in this document: search them, find the ones on no board, and open any of them."
+            hoverDescription="Every card in this project: search them, find the ones on no board, and open any of them."
             icon={<SearchIcon size={18} />}
             name="Find"
             popoverOpen={finderOpen}
@@ -70,7 +70,7 @@ export function PlanCardsClusterStrip({
           divided={hasTypes || trashInStrip}
           label="Open Card Types"
           hoverTitle="Card Types"
-          hoverDescription="The kinds of card this document's boards hold, and the fields each one has."
+          hoverDescription="The kinds of card this project's boards hold, and the fields each one has."
           icon={<PlanCardsIcon size={18} />}
           name="Types"
           dataTourId="card-types"

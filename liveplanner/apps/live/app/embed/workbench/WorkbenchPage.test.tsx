@@ -2,7 +2,7 @@
 import { act, render, screen } from '@testing-library/react';
 import { useReducer } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { WorkbenchDocumentSessionResponse } from '@liveplanner/api-schema';
+import type { WorkbenchProjectSessionResponse } from '@liveplanner/api-schema';
 import type { WorkbenchPort } from '@/lib/workbench/workbench-port';
 import { useWorkbenchSession } from '@/components/providers/workbench-session-context';
 import { workbenchTransition, type WorkbenchPhase } from './workbench-machine';
@@ -57,7 +57,7 @@ vi.mock('next/dynamic', () => ({
 // The page prefetches the chunk its scope needs without awaiting it; the real modules would still be loading when the
 // file's environment is torn down. next/dynamic is faked above, so these stand-ins are never drawn.
 vi.mock('./WorkspaceFrame', () => ({ WorkspaceFrame: () => null }));
-vi.mock('../../document/[id]/editor-page', () => ({ default: () => null }));
+vi.mock('../../project/[id]/editor-page', () => ({ default: () => null }));
 vi.mock('@/components/chrome/LoadErrorCard', () => ({
   LoadErrorCard: ({ embed }: { embed: boolean }) => <p>load error {String(embed)}</p>,
 }));
@@ -66,16 +66,16 @@ const { WorkbenchPage } = await import('./WorkbenchPage');
 const { default: Page, metadata } = await import('./page');
 const core = await import('@/lib/api/core');
 
-const SESSION: WorkbenchDocumentSessionResponse = {
+const SESSION: WorkbenchProjectSessionResponse = {
   session: `lvw_${'a'.repeat(43)}`,
-  scope: 'document',
-  documentId: 'doc-1',
+  scope: 'project',
+  projectId: 'doc-1',
   folderId: null,
   tabId: null,
   origin: 'https://127.0.0.1:5175',
   role: 'edit',
   expiresAt: Date.now() + 60_000,
-  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
+  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9' },
 };
 
 function fakePort(): WorkbenchPort {
@@ -102,7 +102,7 @@ afterEach(() => {
 describe('WorkbenchPage', () => {
   it.each([
     { phase: 'reading' },
-    { phase: 'redeeming', ticket: 't', documentId: 'doc-1' },
+    { phase: 'redeeming', ticket: 't', projectId: 'doc-1' },
     { phase: 'binding', session: SESSION },
   ] as WorkbenchPhase[])('says it is opening while $phase', (phase) => {
     harness.initial = phase;
@@ -160,7 +160,7 @@ describe('WorkbenchPage', () => {
     expect(metadata).toEqual({ title: 'Workbench | liveplanner', robots: { index: false } });
   });
 
-  it('ends the page when the editor finds the document trashed', () => {
+  it('ends the page when the editor finds the project trashed', () => {
     harness.initial = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
     harness.port = fakePort();
     render(<WorkbenchPage />);
@@ -194,7 +194,7 @@ describe('WorkbenchPage', () => {
     );
 
     await act(async () => {
-      await core.apiFetch('/api/documents/doc-1', {
+      await core.apiFetch('/api/projects/doc-1', {
         headers: { Authorization: `Bearer ${SESSION.session}` },
       });
     });
@@ -212,7 +212,7 @@ describe('WorkbenchPage', () => {
     );
 
     await act(async () => {
-      await core.apiFetch('/api/documents/doc-1', {
+      await core.apiFetch('/api/projects/doc-1', {
         headers: { Authorization: `Bearer ${SESSION.session}` },
       });
     });
@@ -226,7 +226,7 @@ describe('WorkbenchPage, workspace scope', () => {
   const WORKSPACE = {
     ...SESSION,
     scope: 'workspace' as const,
-    documentId: null,
+    projectId: null,
     folderId: null,
     tabId: null,
   };
@@ -257,7 +257,7 @@ describe('WorkbenchPage, workspace scope', () => {
     expect(screen.getByText('workspace frame as Webber in workspace')).toBeTruthy();
     expect(core.getWorkbenchConfinement()).toEqual({
       scope: 'workspace',
-      documentId: null,
+      projectId: null,
       ownerId: 'user_1',
     });
   });

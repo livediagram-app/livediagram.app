@@ -1,6 +1,7 @@
 import { DOCUMENT_FORMAT } from '@livediagram/api-schema';
 import { aiConfigured } from '../ai-provider';
 import { communityEnabled } from '../community-enabled';
+import { communityServiceConfigured } from '../community-service';
 import { emailEnabled } from '../email/client';
 import { driveMode } from '../drive/config';
 import { json, methodNotAllowed, notFound } from '../responses';
@@ -60,8 +61,9 @@ export function handleCapabilities(ctx: RouteContext): Response {
     // docs/specs/022-drive-mirror/drive-mirror.md: which Drive token path the app takes;
     // 'off' hides the Drive entry.
     driveMode: driveMode(env),
-    // docs/specs/025-community/community.md "Turning the Community off": false hides the Community from every app.
-    communityEnabled: communityEnabled(env),
+    // docs/specs/025-community/community.md "Turning the Community off": false hides the Community from every app. A
+    // deploy without the liveworkspace Community service's key has none to show (a self-host, by default).
+    communityEnabled: communityEnabled(env) && communityServiceConfigured(env),
     ...cliCapabilities(ctx),
   });
 }

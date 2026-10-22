@@ -7,7 +7,7 @@ import {
   type DashboardLayout,
   type Element,
   type PlanViewRef,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { PLAN_TITLE_MAX, PLAN_VIEW_TITLE_MAX } from '@liveplanner/items';
 import { fillTabElementOf } from '@/components/plan/fill-tab';
 

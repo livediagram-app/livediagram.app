@@ -1,35 +1,35 @@
-// Offline Mode conversions (docs/specs/006-document/offline-mode.md): move a document between the browser-only
+// Offline Mode conversions (docs/specs/006-project/offline-mode.md): move a project between the browser-only
 // IndexedDB store and the cloud API, in both directions.
 //
-// Ordering is chosen so a failure never loses the document: the destination is
-// written before the source is removed. Taking a cloud document offline is
+// Ordering is chosen so a failure never loses the project: the destination is
+// written before the source is removed. Taking a cloud project offline is
 // destructive on the server (the whole point — it must leave the account and
 // every other device), so the UI gates it behind a confirmation.
 
 import { fetchItems } from '../api/items';
-import { apiLoadDocument, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
+import { apiLoadProject, apiLoadTab, fetchCloudFavouriteIds } from '@/lib/api-client';
 import { fetchCloudTags } from '@/lib/api/tags';
-import { DOCUMENT_CONVERSION_HEADER } from '@liveplanner/api-schema';
+import { PROJECT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 import { API_BASE, ApiError, apiDelete } from '@/lib/api/core';
 import {
-  offlineCreateDocument,
-  offlineDeleteDocument,
+  offlineCreateProject,
+  offlineDeleteProject,
   offlinePutRecord,
-  type OfflineDocumentRecord,
+  type OfflineProjectRecord,
 } from './offline-store';
 import { fetchAllSheets } from '../api/sheets';
 import {
   OfflineSyncIncompleteError,
-  syncOfflineDocument,
+  syncOfflineProject,
   type OfflineSyncResult,
 } from './offline-sync';
 
-// One conversion per document at a time, in this tab: two overlapping ones (a second menu, or the
+// One conversion per project at a time, in this tab: two overlapping ones (a second menu, or the
 // Share gate beside a menu) would each upload, or each delete, behind the other's back. Kept here
 // rather than in the menu that starts it, which unmounts when it closes and forgets.
 const converting = new Set<string>();
 
-// Thrown by a conversion started while another of the same document runs. Callers stay quiet: the
+// Thrown by a conversion started while another of the same project runs. Callers stay quiet: the
 // first one reports for both.
 export class ConversionInProgressError extends Error {
   constructor() {
@@ -38,49 +38,49 @@ export class ConversionInProgressError extends Error {
   }
 }
 
-export function conversionInProgress(documentId: string): boolean {
-  return converting.has(documentId);
+export function conversionInProgress(projectId: string): boolean {
+  return converting.has(projectId);
 }
 
-async function oneAtATime<T>(documentId: string, run: () => Promise<T>): Promise<T> {
-  if (converting.has(documentId)) throw new ConversionInProgressError();
-  converting.add(documentId);
+async function oneAtATime<T>(projectId: string, run: () => Promise<T>): Promise<T> {
+  if (converting.has(projectId)) throw new ConversionInProgressError();
+  converting.add(projectId);
   try {
     return await run();
   } finally {
-    converting.delete(documentId);
+    converting.delete(projectId);
   }
 }
 
-// Offline → Cloud ("Sync Document"), in ./offline-sync. Returns the (unchanged) document id, for an editor
+// Offline → Cloud ("Sync Project"), in ./offline-sync. Returns the (unchanged) project id, for an editor
 // syncing in place.
 export function saveOfflineToCloud(offlineId: string, ownerId: string): Promise<OfflineSyncResult> {
-  return oneAtATime(offlineId, () => syncOfflineDocument(offlineId, ownerId));
+  return oneAtATime(offlineId, () => syncOfflineProject(offlineId, ownerId));
 }
 
-// Cloud → Offline ("Take offline"). Downloads the whole document, writes it to
+// Cloud → Offline ("Take offline"). Downloads the whole project, writes it to
 // IndexedDB, then DELETES the server record (and thus any share links). The
 // local write happens first so a failed delete leaves a (harmless) duplicate
 // rather than nothing. The server delete goes through the raw `apiDelete` so it
 // isn't re-routed to the local store once the id is registered offline.
 export function takeCloudOffline(
-  documentId: string,
+  projectId: string,
   ownerId: string,
   shareCode: string | null = null,
 ): Promise<void> {
-  return oneAtATime(documentId, () => downloadAndRemoveCloudCopy(documentId, ownerId, shareCode));
+  return oneAtATime(projectId, () => downloadAndRemoveCloudCopy(projectId, ownerId, shareCode));
 }
 
 async function downloadAndRemoveCloudCopy(
-  documentId: string,
+  projectId: string,
   ownerId: string,
   shareCode: string | null,
 ): Promise<void> {
-  const liveDoc = await apiLoadDocument(ownerId, documentId);
-  if (!liveDoc) throw new Error('document not found');
+  const liveDoc = await apiLoadProject(ownerId, projectId);
+  if (!liveDoc) throw new Error('project not found');
   const fetchedTabs = (
     await Promise.all(
-      liveDoc.tabs.map((s) => apiLoadTab(ownerId, documentId, s.id, shareCode).catch(() => null)),
+      liveDoc.tabs.map((s) => apiLoadTab(ownerId, projectId, s.id, shareCode).catch(() => null)),
     )
   ).filter((t): t is NonNullable<typeof t> => t !== null);
   // EVERY tab, or nothing. A tab can come back null from two directions — a
@@ -91,33 +91,33 @@ async function downloadAndRemoveCloudCopy(
   // the tab's elements would exist nowhere, and the user would be told the
   // conversion worked.
   //
-  // The best-effort filter is borrowed from duplicate-document.ts, where it's
+  // The best-effort filter is borrowed from duplicate-project.ts, where it's
   // correct because duplication leaves the source intact. Here the source is
   // destroyed, which inverts the trade: the content would be gone immediately.
   if (fetchedTabs.length !== liveDoc.tabs.length) throw new Error('tab load incomplete');
   // The item store too, all or nothing, for the same reason: the server copy is deleted below
-  // (docs/specs/026-plan/items.md "Offline documents"). A failed fetch throws and aborts.
-  const itemStore = await fetchItems({ ownerId, documentId, shareCode, tabId: null });
-  // And the sheet store, all or nothing (docs/specs/029-sheets/sheet-store.md "Offline documents").
-  const sheets = await fetchAllSheets({ ownerId, documentId, shareCode, tabId: null });
+  // (docs/specs/026-plan/items.md "Offline projects"). A failed fetch throws and aborts.
+  const itemStore = await fetchItems({ ownerId, projectId, shareCode, tabId: null });
+  // And the sheet store, all or nothing (docs/specs/029-sheets/sheet-store.md "Offline projects").
+  const sheets = await fetchAllSheets({ ownerId, projectId, shareCode, tabId: null });
   const tabs = fetchedTabs;
 
-  // The cloud star is a row keyed on the document, so the server delete below
+  // The cloud star is a row keyed on the project, so the server delete below
   // takes it too; carry it onto the offline record (docs/specs/013-workspace/favourites.md). A failed
   // read aborts here, before anything is written: taken as "not starred" it would drop the star.
   const starred = (await fetchCloudFavouriteIds(ownerId)).includes(liveDoc.id);
-  // Its tags too (docs/specs/013-workspace/tags.md "An offline document's tags live in the browser"), read the same
+  // Its tags too (docs/specs/013-workspace/tags.md "An offline project's tags live in the browser"), read the same
   // way: a failed read aborts rather than dropping them with the server row.
   const tagIds = (await fetchCloudTags(ownerId)).links
-    .filter((l) => l.documentId === liveDoc.id)
+    .filter((l) => l.projectId === liveDoc.id)
     .map((l) => l.tagId);
   const now = Date.now();
-  const rec: OfflineDocumentRecord = {
+  const rec: OfflineProjectRecord = {
     id: liveDoc.id,
     name: liveDoc.name,
     // Keep its place: the server row, the only other copy, is
     // deleted below. A team folder isn't a place in the personal tree the
-    // offline record lives in, so a team document lands at the root of My Documents.
+    // offline record lives in, so a team project lands at the root of My Projects.
     folderId: liveDoc.teamId ? null : (liveDoc.folderId ?? null),
     createdAt: liveDoc.createdAt ?? now,
     savedAt: now,
@@ -132,35 +132,35 @@ async function downloadAndRemoveCloudCopy(
   };
   await offlinePutRecord(rec);
   // Raw server delete — the id is now in the offline index, so the dispatching
-  // apiDeleteDocument would target the local store instead of the server.
+  // apiDeleteProject would target the local store instead of the server.
   try {
     // Declare the conversion: this DELETE is indistinguishable from a real
     // delete at the boundary, and undeclared the feed told the owner their
-    // document had been deleted (docs/specs/006-document/offline-mode.md + docs/specs/013-workspace/timeline.md).
-    await apiDelete(`${API_BASE}/documents/${documentId}`, ownerId, {
+    // project had been deleted (docs/specs/006-project/offline-mode.md + docs/specs/013-workspace/timeline.md).
+    await apiDelete(`${API_BASE}/projects/${projectId}`, ownerId, {
       action: 'take offline',
-      extra: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
+      extra: { [PROJECT_CONVERSION_HEADER]: 'offline' },
     });
   } catch (e) {
     // The server copy survived, so ROLL BACK the local copy: leaving both
-    // registered under one id would shadow the live cloud document behind a
+    // registered under one id would shadow the live cloud project behind a
     // stale offline fork (and duplicate the Explorer row). Data-safe: the
     // server still holds everything.
-    await offlineDeleteDocument(rec.id).catch(() => {});
+    await offlineDeleteProject(rec.id).catch(() => {});
     throw e;
   }
 }
 
-// Toast copy for a failed Sync Document, shared by the Explorer menus (via
+// Toast copy for a failed Sync Project, shared by the Explorer menus (via
 // useOfflineConversion) and the Share dialog's offline gate. A 413 is the
 // hard per-tab size cap (usually a large embedded image whose gallery
 // upload failed, leaving the data URI in the tab JSON): retrying won't
 // help, so it must not read as a connection problem.
 // A sync from inside the editor that found this browser's last save still going after
-// SYNC_SAVE_WAIT_MS (app/document/[id]/useSyncInPlace.ts): refused rather than racing it.
+// SYNC_SAVE_WAIT_MS (app/project/[id]/useSyncInPlace.ts): refused rather than racing it.
 export class SyncStillSavingError extends Error {
   constructor() {
-    super('Still saving this document. Try again in a moment.');
+    super('Still saving this project. Try again in a moment.');
     this.name = 'SyncStillSavingError';
   }
 }
@@ -171,13 +171,13 @@ export function syncFailureMessage(e: unknown): string {
   if (e instanceof SyncStillSavingError) return e.message;
   if (e instanceof OfflineSyncIncompleteError)
     return e.reason === 'kept_changing'
-      ? 'This document kept changing while syncing. Your copy is safe: try again soon.'
+      ? 'This project kept changing while syncing. Your copy is safe: try again soon.'
       : 'The cloud copy was missing cards or sheets, so yours was kept. Try again.';
   return e instanceof ApiError && e.status === 413
     ? 'Too large to sync, usually a big image on a tab. Shrink it and try again.'
-    : 'Could not sync this document. Check your connection and try again.';
+    : 'Could not sync this project. Check your connection and try again.';
 }
 
-// Re-exported for callers that only need to create an offline document from
+// Re-exported for callers that only need to create an offline project from
 // scratch (kept here so conversion + creation share one import site).
-export { offlineCreateDocument };
+export { offlineCreateProject };

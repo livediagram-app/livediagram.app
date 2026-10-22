@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { newItemId } from '@liveplanner/items';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import {
@@ -43,12 +43,12 @@ const TOUR_CARD_TITLE = 'Your First Card';
 // "The steps"); the copy after a pick follows the track picked.
 const BOARDS_TOUR_COPY = {
   welcomeEyebrow: 'Boards tour',
-  helpHref: '/help/canvas/plan-mode/',
+  helpHref: '/help/plan/planning-basics/',
 };
 const SHEETS_TOUR_COPY = {
   ...BOARDS_TOUR_COPY,
   welcomeEyebrow: 'Sheets tour',
-  helpHref: '/help/canvas/plan-mode/sheets/',
+  helpHref: '/help/plan/sheets/',
 };
 const TRACK_NAME: Record<BoardSheetTrack, string> = {
   boards: 'Boards tour',
@@ -105,17 +105,17 @@ export function PlanTourHost() {
       if (tourCardRef.current) return tourCardRef.current;
       const setup = boardSetup();
       const column = setup?.columns[0];
-      if (!setup || !column || !ctx.documentId) {
+      if (!setup || !column || !ctx.projectId) {
         debugLog('[plan-tour] card not added', {
           setup: !!setup,
           column: !!column,
-          documentId: !!ctx.documentId,
+          projectId: !!ctx.projectId,
         });
         return null;
       }
       const id = newItemId();
       tourCardRef.current = id;
-      writeLeftover({ documentId: ctx.documentId, elementId: '', itemIds: [id] });
+      writeLeftover({ projectId: ctx.projectId, elementId: '', itemIds: [id] });
       const ok = await ctx.plan.writeQuiet(
         {
           kind: 'create',

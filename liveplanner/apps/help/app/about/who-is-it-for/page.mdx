@@ -1,61 +1,54 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { DiagramTypes } from '@/components/illustrations/about';
 
 export const metadata = helpMetadata({
   title: 'Who is liveplanner For?',
   description:
-    'liveplanner is for teams who think visually and need to do that thinking together: engineering, product, design, and cross-functional groups.',
+    'liveplanner is for teams who plan work together: software, product and project teams, retros and hiring, and anyone tracking work on boards and sheets.',
   path: '/help/about/who-is-it-for/',
 });
 
-<ArticleLayout title="Who is liveplanner For?" description="Teams who think visually and need to do that thinking together, from engineering and product to workshops and retros." categoryTitle="About liveplanner" categorySlug="about">
+<ArticleLayout title="Who is liveplanner For?" description="Teams who plan their work together, from sprints and bug triage to retros, hiring and budgets." categoryTitle="About liveplanner" categorySlug="about">
 
-liveplanner is for teams who think visually and need to do that thinking **together**. A single-player diagramming tool is not the point. The product shines when several people are on the same canvas at once, building one shared diagram in [real time](/help/collaboration/sharing/). That said, it works just as well for one person sketching something out, and the [canvas always works without signing in](/help/getting-started/guest-vs-account/).
+liveplanner is for people who plan work **together**. It shines when a team shares one project and everyone sees the same boards and sheets change in [real time](/help/collaboration/live-presence/). It works just as well for one person keeping track of their own work, and it [always works without signing in](/help/getting-started/guest-vs-account/).
 
 ## The teams it serves
 
 A few groups feel right at home:
 
-- **Engineering teams** sketching architecture, sequence flows, and system designs. Use [shapes](/help/palette/shapes/) and [arrows](/help/palette/arrows/), [technology icons](/help/palette/technology/) for cloud and infrastructure marks, and [tabs](/help/tabs/using-tabs/) to keep related views together.
-- **Product and design teams** mapping user journeys, information architecture, and brainstorms with [shapes](/help/palette/shapes/), [text and fonts](/help/canvas/text-and-fonts/), and [themes](/help/canvas/themes/).
-- **Cross-functional groups** in workshops, planning sessions, and retrospectives, where everyone needs to contribute at once and see each other's input live. [Plan mode](/help/canvas/plan-mode/) turns a tab into a board of cards for sprints, triage and roadmaps, and Workshop mode puts timers and dot votes in front of whoever runs the session.
+- **Software and product teams** running sprints, backlogs, bug triage and roadmaps on [boards](/help/plan/boards/), with [card types](/help/plan/card-types/) for stories, tasks and bugs, and a [Gantt chart](/help/plan/visualisations/) of what's coming.
+- **Project and operations teams** keeping a launch, a content calendar or a weekly plan moving, with [dashboards](/help/plan/dashboards/) that show where the work stands at a glance.
+- **People running sessions** such as retros and planning meetings, where everyone adds cards at once, then votes on what matters with [session tools](/help/collaboration/session-tools/).
+- **Anyone who lives in spreadsheets**: [Sheets](/help/plan/sheets/) handle budgets, timesheets and contact lists, with formulas, beside the boards they relate to.
+- **Anyone collecting requests or feedback**: a [Form](/help/plan/forms/) turns each answer into a card, ready to sort.
 
 ## Ways people use it
 
-The same canvas covers a wide range of work:
-
-<Figure caption="One canvas, many kinds of diagram: flowcharts, mind maps, and wireframes.">
-  <DiagramTypes />
-</Figure>
-
 <FeatureGrid>
-  <Feature slug="shapes" title="Flowcharts and process maps">
-    Boxes, connectors, and labelled arrows for any structured flow.
+  <Feature slug="boards" title="Kanban and sprints">
+    Columns of cards you drag from status to status, with limits on how much is in progress.
   </Feature>
-  <Feature slug="canvas" title="Architecture diagrams">
-    System designs, service maps, and sequence flows.
+  <Feature slug="sheets" title="Budgets and trackers">
+    Spreadsheets with formulas and charts, in the same project as the work.
   </Feature>
-  <Feature slug="mind-maps" title="Brainstorms and mind maps">
-    Quick freehand sketches and fast, keyboard-driven nodes.
+  <Feature slug="forms" title="Requests and feedback">
+    Questions you share with a link, whose answers become cards.
   </Feature>
-  <Feature slug="session-tools" title="Workshops and retros">
-    Switch a tab to Workshop mode to run a shared timer or a live dot-vote while the group works
-    together.
+  <Feature slug="dashboards" title="Status at a glance">
+    Metrics, charts, Gantt charts and calendars drawn from your cards.
   </Feature>
-  <Feature slug="plan-mode" title="Boards and sprints">
-    Columns of cards you drag from status to status, together, in Plan mode.
+  <Feature slug="session-tools" title="Retros and workshops">
+    A shared timer and dot votes while the group works together.
   </Feature>
 </FeatureGrid>
 
 ## Whether you sign in or not
 
-liveplanner is friction-free on purpose. A first-time visitor can build a real diagram as a [guest](/help/getting-started/guest-vs-account/) and only later create an account to sync across devices and join [teams](/help/collaboration/teams/). A signed-in user can still hand a share link to a guest who edits without any account at all.
+liveplanner is friction-free on purpose. A first-time visitor can plan something real as a [guest](/help/getting-started/guest-vs-account/) and only later create an account to sync across devices and join [teams](/help/collaboration/teams/). A signed-in user can still hand a share link to a guest, who joins without any account at all.
 
 <Tip>
-  Not sure where to begin? Start with [Your first
-  diagram](/help/getting-started/your-first-diagram/), it walks you through creating one in a couple
-  of minutes.
+  Not sure where to begin? [Your First Project](/help/getting-started/your-first-project/) walks you
+  through starting one in a couple of minutes.
 </Tip>
 
 </ArticleLayout>

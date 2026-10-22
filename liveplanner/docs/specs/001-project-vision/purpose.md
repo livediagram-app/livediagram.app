@@ -20,7 +20,7 @@ A multiplayer planner in the browser. What a person makes is a **project**
 
 Anyone with access to a project can join, see the others' cursors and edits
 live, and work on it at the same time. The output is a plan a team keeps
-running, not a document one person writes and the rest review.
+running, not a report one person writes and the rest review.
 
 The project is the product. Everything else exists because a team planning
 together is usually doing it **with other people in the room**, and what that
@@ -64,7 +64,7 @@ never arrives.
   ([Linked boards](../026-plan/linked-boards.md)).
 - **Templates** ([Plan templates](../026-plan/plan-templates.md)): projects that start with their boards, card
   types and example cards set up for the job.
-- **Teams** ([Teams](../013-workspace/teams.md), [Team shared documents](../013-workspace/team-shared-documents.md)):
+- **Teams** ([Teams](../013-workspace/teams.md), [Team shared projects](../013-workspace/team-shared-projects.md)):
   a named group with Admin and Member roles and a shared library of projects and folders. A project lives in
   exactly one place: someone's own tree, or one team's library. Personal is the default; a team is opt-in.
 - **Persistence and history**: every change is saved; undo and redo step through your own recent edits, and
@@ -79,10 +79,10 @@ never arrives.
 - **Not a diagram tool or a whiteboard.** liveplanner was forked from livediagram and keeps only its Plan mode;
   shapes, arrows, freehand drawing, pages and workshops are livediagram's, not this product's. The test for a
   new feature is whether it helps a team plan and run work, not whether a canvas could hold it.
-- **Not a document editor or wiki.** A card has a description and a project has comments; long-form prose is
+- **Not a writing tool or wiki.** A card has a description and a project has comments; long-form prose is
   not the goal.
 - **Not a desktop app.** The web, with collaboration, is the product. Offline Mode is a per-project choice, not
-  the default posture ([Offline Mode](../006-document/offline-mode.md)).
+  the default posture ([Offline Mode](../006-project/offline-mode.md)).
 - **Not a paid product, ever.** No tier, no billing, no feature flags gating the planner
   ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
 - **Not open source.** The code is proprietary and private; the product is free to use.
@@ -96,7 +96,7 @@ When a boundary moves, it is recorded here in the same change, with the spec tha
   the core around it (the Explorer, sign-in, collaboration, comments, sharing, teams, the Trash, settings,
   theming, the MCP server and the CLI), and drops the diagram, draw, workshop and pages modes with their
   elements, importers, facilitation tools and community gallery ([Scope](../002-project-scope/product-scope.md)).
-- **"Not an offline-first desktop app"**: narrowed by [Offline Mode](../006-document/offline-mode.md). Still not
+- **"Not an offline-first desktop app"**: narrowed by [Offline Mode](../006-project/offline-mode.md). Still not
   a desktop app, and cloud is still the default, but a project can be kept only in this browser's IndexedDB and
   converted back and forth.
 
@@ -119,7 +119,7 @@ everyone, no paid tier, with no trackers and no ads. See
 ([Build phase](../005-project-roadmap/prototype-scope.md)).
 
 The planner is **always available without signing in**: a visitor can build a
-real plan before being asked to create an account. Auth (Clerk) adds sync,
+real plan before being asked to create an account. Signing in (a liveworkspace account) adds sync,
 teams and per-account history on top of that
 ([Auth + guest access](../014-identity/auth-and-guest-access.md)).
 

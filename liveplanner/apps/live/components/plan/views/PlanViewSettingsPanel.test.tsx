@@ -3,7 +3,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { ITEM_TYPES, type Item } from '@liveplanner/items';
-import type { PlanViewRef } from '@liveplanner/document';
+import type { PlanViewRef } from '@liveplanner/project';
 
 const plan: Record<string, unknown> = {};
 vi.mock('../PlanContext', () => ({ usePlan: () => plan }));

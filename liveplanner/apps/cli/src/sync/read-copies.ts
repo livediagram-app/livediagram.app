@@ -1,7 +1,7 @@
 // The read copies on disk (docs/specs/015-api/blueprints/cli.md "Read copies", CLI76): `<cache>/copies/<key>/<rev>.json`
-// with one index, where the key is the first 16 hex of SHA-256 of profile, document and tab. At most
+// with one index, where the key is the first 16 hex of SHA-256 of profile, project and tab. At most
 // READ_COPY_REVS_PER_TAB revisions a tab and READ_COPY_MAX_BYTES in all, the least recently used out first; files
-// 0600 in 0700 directories, as they hold document content.
+// 0600 in 0700 directories, as they hold project content.
 
 import type { ReadCopies, ReadCopy } from '@liveplanner/agent-verbs';
 import { cacheDir } from '../config/paths';
@@ -15,9 +15,9 @@ export const READ_COPY_MAX_BYTES = 32 * 1024 * 1024;
 type Entry = { key: string; where: string; rev: number; bytes: number; usedAt: number };
 type Index = { version: 1; entries: Entry[] };
 
-async function keyOf(profile: string, documentId: string, tabId: string): Promise<string> {
+async function keyOf(profile: string, projectId: string, tabId: string): Promise<string> {
   // The first 8 bytes of the digest, as 16 hex characters.
-  const hex = await sha256Hex(new TextEncoder().encode(`${profile}|${documentId}|${tabId}`));
+  const hex = await sha256Hex(new TextEncoder().encode(`${profile}|${projectId}|${tabId}`));
   return hex.slice(0, 16);
 }
 
@@ -43,14 +43,14 @@ export function fileReadCopies(io: CliIo, profile: string, log: DebugLog): ReadC
   };
 
   async function find(
-    documentId: string,
+    projectId: string,
     tabId: string,
     pick: (entries: Entry[]) => Entry | undefined,
   ) {
-    const key = await keyOf(profile, documentId, tabId);
+    const key = await keyOf(profile, projectId, tabId);
     const index = await readIndex();
     const entry = pick(index.entries.filter((e) => e.key === key));
-    const where = `${documentId}/${tabId}`;
+    const where = `${projectId}/${tabId}`;
     const text = entry ? await io.files.read(fileOf(entry)) : null;
     if (!entry || text === null) {
       log(`copy miss ${where}`);
@@ -73,23 +73,23 @@ export function fileReadCopies(io: CliIo, profile: string, log: DebugLog): ReadC
   }
 
   return {
-    latest: (documentId, tabId) =>
-      find(documentId, tabId, (entries) => entries.toSorted((a, b) => b.rev - a.rev)[0]),
-    at: (documentId, tabId, rev) =>
-      find(documentId, tabId, (entries) => entries.find((e) => e.rev === rev)),
-    revisions: async (documentId, tabId) => {
-      const key = await keyOf(profile, documentId, tabId);
+    latest: (projectId, tabId) =>
+      find(projectId, tabId, (entries) => entries.toSorted((a, b) => b.rev - a.rev)[0]),
+    at: (projectId, tabId, rev) =>
+      find(projectId, tabId, (entries) => entries.find((e) => e.rev === rev)),
+    revisions: async (projectId, tabId) => {
+      const key = await keyOf(profile, projectId, tabId);
       return (await readIndex()).entries
         .filter((e) => e.key === key)
         .map((e) => e.rev)
         .sort((a, b) => a - b);
     },
-    record: async (documentId, tabId, copy) => {
-      const key = await keyOf(profile, documentId, tabId);
+    record: async (projectId, tabId, copy) => {
+      const key = await keyOf(profile, projectId, tabId);
       const data = JSON.stringify(copy);
       const entry: Entry = {
         key,
-        where: `${documentId}/${tabId}`,
+        where: `${projectId}/${tabId}`,
         rev: copy.rev,
         bytes: data.length,
         usedAt: io.now(),

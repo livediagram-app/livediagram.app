@@ -10,32 +10,30 @@ export const metadata = helpMetadata({
   path: '/help/collaboration/session-tools/',
 });
 
-<ArticleLayout title="Session Tools" description="A timer and dot-voting that turn a shared project into an interactive board." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
+<ArticleLayout title="Session Tools" description="A timer and dot-voting for running a live session, such as a retrospective, on a shared project." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("session-tools")}>
 
-Session tools make a shared project interactive for live sessions. There are two: a **timer** for time-boxing an activity, and **dot-voting** for prioritising as a group. Anyone who can edit the project can run them, and they sync to everyone in real time, so they pair naturally with collaborative boards like retros and planning sessions.
+Session tools make a shared project interactive for live sessions such as a retrospective. There are two: a **timer** for time-boxing an activity, and **dot-voting** for prioritising cards as a group. Anyone who can edit the project can run them, and they sync to everyone in real time.
 
 <Figure caption="A dot vote in progress, with the timer's clock and the lit Vote button in the bottom bar.">
   <SessionTools />
 </Figure>
 
-## Built for running a session live
+## Where to find them
 
-The tools live in the bottom bar: **Timer** and **Vote** sit together in one group, right after Undo and Redo. In [Plan mode](/help/canvas/plan-mode/) they show on a tab with a board made for voting, such as a Retro, whose cards have a **Votes** field (never on a dashboard).
+The tools live in the bottom-right cluster: **Timer** and **Vote** sit together in one strip, right after Undo and Redo and before Trash, New, Find and Types. They show on a tab whose board is made for voting, one that takes a card type with a **Votes** field, such as the Retro board of the **Team Retro** template (its Notes and Ideas), or any board whose card types you have given Votes. See [Card Types](/help/plan/card-types/). They never show on a Dashboard tab, and a timer or vote already running keeps its button so it can be seen and stopped.
 
-Each button opens its tool in a popover above it. While a tool is idle its button is just an icon, and pressing it opens the set-up. Once it is going the button shows what is happening: the **Timer** shows its clock, and the **Vote** button shows how many dots you have left. Visitors on a Participant or Viewer pass see the buttons only while those tools are running.
+Each button opens its tool in a popover above it. While a tool is idle its button is just an icon, and pressing it opens the set-up. Once it is going the button shows what is happening: the **Timer** shows its clock, and the **Vote** button shows how many dots you have left. Visitors on a Participant or Viewer pass see the buttons only while those tools are running. The strip stays in [Zen mode](/help/tools/zen-mode/), so a facilitator can still run the session there.
 
-On a desktop, a running vote's popover stays open while you work on the canvas: only pressing its button again puts it away, and it closes by itself when the vote ends. The timer's popover, and any set-up popover, closes as soon as you click elsewhere: the clock stays on the **Timer** button.
+On a desktop, a running vote's popover stays open while you work on the board: only pressing its button again puts it away, and it closes by itself when the vote ends. The timer's popover, and any set-up popover, closes as soon as you click elsewhere: the clock stays on the **Timer** button.
 
-The timer and the vote are scoped to a single tab, so different tabs can run different activities, and they ride the same live sync as everything else on the canvas. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again.
+The timer and the vote are scoped to a single tab, so different tabs can run different activities, and they ride the same live sync as everything else in the project. That means people who join late or reload simply see what is happening now: a timer mid-countdown, or the votes cast so far, with nothing to set up again.
 
 - **Timer** time-boxes an activity, as a countdown or a stopwatch counting up from zero (one runs at a time), shown on its button in the bottom bar. See [The Timer](/help/collaboration/session-tools/timer/).
-- **Dot-voting** lets each participant spend a budget of dots on the cards or elements they care about, with live tallies and a results reveal. See [Dot Voting](/help/collaboration/session-tools/voting/).
-
-You can also put a timer or a vote **on the canvas** as a [session button](/help/palette/behaviour/session-buttons/), so a board can carry its own running order.
+- **Dot-voting** lets each participant spend a budget of dots on the cards they care about, with live tallies and a results reveal. See [Dot Voting](/help/collaboration/session-tools/voting/).
 
 ## Who can do what
 
-Session tools follow the project's roles automatically. Anyone with an **Editor** pass (and the owner, and team members) can run the controls and take part: starting the timer, casting votes. Visitors on a **Participant** pass take part but never run anything: they cast dots and answer temperature checks, while starting, revealing and clearing stay with editors. Visitors on a **Viewer** pass can still watch, they see the timer ticking and the tallies, but they cannot control the session or cast a dot, and they only get a tool's button in the bottom bar while it is running. Typically whoever runs the session holds an Editor pass, the team shares a Participant pass, and observers follow a Viewer pass.
+Session tools follow the project's roles automatically. Anyone with an **Editor** pass (and the owner, and team members) can run the controls and take part: starting the timer, casting votes. Visitors on a **Participant** pass take part but never run anything: they cast dots, while starting, revealing and clearing stay with editors. Visitors on a **Viewer** pass can still watch, they see the timer ticking and the tallies, but they cannot control the session or cast a dot, and they only get a tool's button in the bottom bar while it is running. Typically whoever runs the session holds an Editor pass, the team shares a Participant pass, and observers follow a Viewer pass.
 
 **A vote is narrower still.** Anyone who can take part (an Editor or a Participant) can cast dots, but only the person who _started_ the vote can end it, reveal the results, clear it, or drive the results walkthrough. Ending a vote can't be undone, so it isn't something a participant should be able to do by accident. See [Dot Voting](/help/collaboration/session-tools/voting/).
 
@@ -43,10 +41,10 @@ What a viewer actually sees during a vote also depends on its privacy settings: 
 
 ## What does and does not get recorded
 
-Neither tool adds to [Undo](/help/canvas/undo/): starting a timer or placing a dot is not the kind of thing you would want to Ctrl+Z. A [project in This Browser](/help/privacy-and-security/offline-mode/) has no live room to share them with.
+Neither tool adds to [Undo](/help/user-interface/undo/): starting a timer or placing a dot is not the kind of thing you would want to Ctrl+Z. When a vote ends, each card keeps the dots it gathered as its **Votes**. A [project in This Browser](/help/privacy-and-security/offline-mode/) has no live room to share them with.
 
 <Tip>
-  Share a Participant pass with everyone who should vote and add stickies, and a Viewer pass with
+  Share a Participant pass with everyone who should vote and add cards, and a Viewer pass with
   anyone who only needs to watch. The roles do the gating for you, with no extra setup.
 </Tip>
 

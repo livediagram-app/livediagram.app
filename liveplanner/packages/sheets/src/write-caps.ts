@@ -2,21 +2,21 @@
 // (docs/specs/029-sheets/sheet-store.md "Agents", "Limits"). The api checks each write on its own, so a large
 // change split into parts could land its first parts and be refused on a later one, leaving half of it stored. An
 // agent checks the whole change here first: the sheet's cells and bytes (SHEET_CELLS_MAX, SHEET_BYTES_MAX), its
-// grid (SHEET_ROWS_MAX, SHEET_COLS_MAX), and the document's cells (DOCUMENT_CELLS_MAX).
-import { DOCUMENT_CELLS_MAX } from './limits';
+// grid (SHEET_ROWS_MAX, SHEET_COLS_MAX), and the project's cells (PROJECT_CELLS_MAX).
+import { PROJECT_CELLS_MAX } from './limits';
 import { NOBODY, type Sheet } from './sheet';
 import { applySheetWrite, type SheetWrite } from './store';
 import { sheetBytes, sheetProblem } from './validate';
 
 type WriteCapsRejection = 'sheet_full' | 'sheet_too_large' | 'sheets_full';
 
-// The cap the writes would cross, applied in order to `sheet`, or null when they fit. `documentCells` is the cells
-// every sheet of the document holds now, this one included. A change that grows nothing is never refused here, so
+// The cap the writes would cross, applied in order to `sheet`, or null when they fit. `projectCells` is the cells
+// every sheet of the project holds now, this one included. A change that grows nothing is never refused here, so
 // an older sheet already past a cap can still be cleared or shrunk.
 export function writesCapsProblem(
   sheet: Sheet,
   writes: readonly SheetWrite[],
-  documentCells: number,
+  projectCells: number,
 ): WriteCapsRejection | null {
   if (writes.length === 0) return null;
   let after = sheet;
@@ -31,12 +31,12 @@ export function writesCapsProblem(
   const problem = sheetProblem(after);
   if (!problem.ok && (problem.error === 'sheet_full' || problem.error === 'sheet_too_large'))
     return problem.error;
-  if (added > 0 && documentCells + added > DOCUMENT_CELLS_MAX) return 'sheets_full';
+  if (added > 0 && projectCells + added > PROJECT_CELLS_MAX) return 'sheets_full';
   return null;
 }
 
-// The cells a document's sheets hold, as the store counts them against DOCUMENT_CELLS_MAX.
-export function documentCellCount(sheets: readonly { cells: readonly unknown[] }[]): number {
+// The cells a project's sheets hold, as the store counts them against PROJECT_CELLS_MAX.
+export function projectCellCount(sheets: readonly { cells: readonly unknown[] }[]): number {
   let n = 0;
   for (const s of sheets) n += s.cells.length;
   return n;

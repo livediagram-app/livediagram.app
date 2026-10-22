@@ -1,6 +1,6 @@
 // What a Plan tab exports to (docs/specs/026-plan/plan-tabs.md "Export"): each kind only the formats that can carry
 // it. Pure.
-import { tabKindOf, type Tab } from '@liveplanner/document';
+import { tabKindOf, type Tab } from '@liveplanner/project';
 
 // The Export dialog's format keys ('file' is the liveplanner .json).
 export type ExportFormatKey = 'markdown' | 'csv' | 'pdf' | 'png' | 'svg' | 'file';

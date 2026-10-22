@@ -1,4 +1,4 @@
-import type { BackgroundPattern } from '@liveplanner/document';
+import type { BackgroundPattern } from '@liveplanner/project';
 import { seasonalPatternTile } from '@/lib/seasonal-patterns';
 
 // Canvas pattern + backdrop builders lifted out of Canvas.tsx. Pure
@@ -34,7 +34,7 @@ const CONFETTI_BG =
   "<circle cx='45' cy='55' r='2' fill='%23f87171'/>" +
   '</svg>")';
 
-// A tab's pattern colour is document data, so another editor (or a copied
+// A tab's pattern colour is project data, so another editor (or a copied
 // board) chooses it, and it is spliced into SVG markup (the export
 // preview renders that as HTML) and into CSS `url(...)` values. Anything
 // outside a plain colour grammar (hex, rgb/hsl functions, a named colour)

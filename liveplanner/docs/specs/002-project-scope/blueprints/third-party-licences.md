@@ -245,8 +245,8 @@ content column `max-w-3xl`.
 - Lead: "liveplanner is built on the work of many third-party projects. These are
   the ones our apps ship, generated from what each app actually bundles every time the site is
   built."
-- Section h2 "In your browser", intro: "Sent to your browser by the editor, this website, the help
-  centre and the telemetry dashboard." Section h2 "On our servers", intro: "Bundled into the API,
+- Section h2 "In your browser", intro: "Sent to your browser by the editor, this website and the help
+  centre." Section h2 "On our servers", intro: "Bundled into the API,
   MCP server and router, which run on Cloudflare rather than on your device."
 - Each section shows its work count: "{n} works".
 - Entry summary: the native disclosure marker (D16), name (medium weight), version, then a row of

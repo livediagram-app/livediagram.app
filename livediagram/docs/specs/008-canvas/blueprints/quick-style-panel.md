@@ -260,7 +260,7 @@ palette)` replaces `stroke` and `textColour` with `boardStroke` / `boardText`
   `clearQuickCorners` removes it, composed into Clear Styles on a whiteboard. `QuickRadioRow`'s
   `columns` sets a button row's count (four here; unset three).
 - `useQuickStyle.setCorners`, token `QuickCorners` (dashboard sentence in
-  `apps/telemetry/app/event-explanations.ts`). The board's style memory records `borderRadius` for
+  liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts). The board's style memory records `borderRadius` for
   shape kinds (`board:shape:*` only), so "Next rectangle" keeps its corners; diagram memory is unchanged.
 - Placed after Stroke style, before Text alignment; a four-option row in the button-row layout.
 

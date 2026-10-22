@@ -4,7 +4,7 @@ import { PLAN_BOARD_PRESET_IDS } from '@liveplanner/items';
 import { PLAN_BOARD_TILES, PLAN_TILES, planCardTile } from './palette-plan-tiles';
 
 // docs/specs/026-plan/item-types.md "Where types show".
-describe('card tiles from the document', () => {
+describe('card tiles from the project', () => {
   it('makes a tile per type that places a card of it', () => {
     const call: ItemTypeDef = {
       id: 'customer-call',

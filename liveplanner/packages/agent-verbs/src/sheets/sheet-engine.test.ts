@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ApiClient } from '@liveplanner/api-client';
 import { PLACED_BOARD_GAP } from '@liveplanner/items';
-import { DOCUMENT_CELLS_MAX, SHEET_WRITE_CELLS_MAX } from '@liveplanner/sheets';
+import { PROJECT_CELLS_MAX, SHEET_WRITE_CELLS_MAX } from '@liveplanner/sheets';
 import { DOC_A, fakeApi, tabsOfA } from '../testing/fake-api';
 import { seeded, sheetJson, sheetServer, type SheetServer } from '../testing/sheets';
 import { addSheet } from './add-sheet';
@@ -46,18 +46,18 @@ function setup(
   const api = fakeApi(
     Object.assign(server.routes, {
       ...tabsOfA,
-      [`/documents/${DOC_A}/tabs/${ONE}`]: {
+      [`/projects/${DOC_A}/tabs/${ONE}`]: {
         tab: { id: ONE, elements: [SHEET_EL], rev: 3 },
       },
-      [`/documents/${DOC_A}/tabs/${TWO}`]: {
+      [`/projects/${DOC_A}/tabs/${TWO}`]: {
         tab: { id: TWO, elements: [], rev: 1 },
       },
-      [`/documents/${DOC_A}/tabs/${TWO}/changesets`]: { changeset: null },
-      [`/documents/${DOC_A}/tabs/${ONE}/changesets`]: async (r: Request) => {
+      [`/projects/${DOC_A}/tabs/${TWO}/changesets`]: { changeset: null },
+      [`/projects/${DOC_A}/tabs/${ONE}/changesets`]: async (r: Request) => {
         sent.push(await r.json());
         return Response.json({ changeset: { id: 'cs', rev: 4 } });
       },
-      [`/documents/${DOC_A}/items`]: {
+      [`/projects/${DOC_A}/items`]: {
         items: [1, 2].map((key) => ({
           id: `item${key}aaaa`,
           type: 'task',
@@ -100,7 +100,7 @@ describe('naming a sheet', () => {
     });
   });
 
-  it('refuses a title two tabs share, an unknown name, and a document with none', () => {
+  it('refuses a title two tabs share, an unknown name, and a project with none', () => {
     expect(resolveSheet(sheets, 'Costs')).toMatchObject({ ok: false, code: 'sheet_ambiguous' });
     const unknown = resolveSheet(sheets, 'Budget') as SheetRefusal;
     expect(unknown.message).toContain('"Notes" (sheet_notes1)');
@@ -145,7 +145,7 @@ describe('listing sheets', () => {
     expect(sheets.map((s) => [s.title, s.filled])).toEqual([['Blank', null]]);
   });
 
-  it('lists a sheet on a tab the document no longer names, its tab unread, ordered as the tabs', async () => {
+  it('lists a sheet on a tab the project no longer names, its tab unread, ordered as the tabs', async () => {
     const { api, server } = setup([
       notes(),
       sheetJson({ id: 'sheet_gone02', tabId: 'tab-gone', title: 'B' }),
@@ -153,7 +153,7 @@ describe('listing sheets', () => {
       sheetJson({ id: 'sheet_gone01', tabId: 'tab-gone', title: 'A' }),
     ]);
     // Only the Sheet element frames a sheet, not the tab's other elements.
-    server.routes[`/documents/${DOC_A}/tabs/${ONE}`] = {
+    server.routes[`/projects/${DOC_A}/tabs/${ONE}`] = {
       tab: {
         id: ONE,
         elements: [{ id: 'el-box', type: 'shape', shape: 'rect' }, SHEET_EL],
@@ -161,8 +161,8 @@ describe('listing sheets', () => {
       },
     };
     // A tab with no order reads as the first.
-    server.routes[`/documents/${DOC_A}`] = {
-      document: {
+    server.routes[`/projects/${DOC_A}`] = {
+      project: {
         id: DOC_A,
         name: 'Auth flow',
         tabs: [
@@ -281,7 +281,7 @@ describe('reading a sheet', () => {
     expect(r).toMatchObject({ merges: ['A3:B3'], filter: 'A1:B2' });
   });
 
-  it('works out card functions from the document’s items', async () => {
+  it('works out card functions from the project’s items', async () => {
     const { api } = setup([
       sheetJson({ id: 'sheet_cards1', tabId: ONE, title: 'Cards' }, [['=CARDCOUNT()']]),
     ]);
@@ -647,8 +647,8 @@ describe('adding a sheet', () => {
 
   it('takes the first tab holding a sheet, tabs with no order kept as listed', async () => {
     const { api, server } = setup();
-    server.routes[`/documents/${DOC_A}`] = {
-      document: {
+    server.routes[`/projects/${DOC_A}`] = {
+      project: {
         id: DOC_A,
         name: 'Auth flow',
         tabs: [
@@ -665,15 +665,15 @@ describe('adding a sheet', () => {
     });
   });
 
-  it('refuses a document with no tabs, and lets an api failure that is not a refusal throw', async () => {
+  it('refuses a project with no tabs, and lets an api failure that is not a refusal throw', async () => {
     const { api, server } = setup();
-    server.routes[`/documents/${DOC_A}`] = { document: { id: DOC_A, name: 'Empty', tabs: [] } };
+    server.routes[`/projects/${DOC_A}`] = { project: { id: DOC_A, name: 'Empty', tabs: [] } };
     expect(await addSheet(api, DOC_A, {}, 'mcp')).toEqual({
       ok: false,
       code: 'tab_not_found',
-      message: 'That document has no tabs.',
+      message: 'That project has no tabs.',
     });
-    server.routes[`/documents/${DOC_A}`] = () => Response.json({ error: 'boom' }, { status: 500 });
+    server.routes[`/projects/${DOC_A}`] = () => Response.json({ error: 'boom' }, { status: 500 });
     await expect(addSheet(api, DOC_A, {}, 'mcp')).rejects.toThrow();
   });
 
@@ -693,10 +693,10 @@ describe('adding a sheet', () => {
     const api = fakeApi(
       Object.assign(server.routes, {
         ...tabsOfA,
-        [`/documents/${DOC_A}/tabs/${ONE}`]: {
+        [`/projects/${DOC_A}/tabs/${ONE}`]: {
           tab: { id: ONE, elements: [], rev: 1 },
         },
-        [`/documents/${DOC_A}/sheets`]: (r: Request) =>
+        [`/projects/${DOC_A}/sheets`]: (r: Request) =>
           r.method === 'POST'
             ? Response.json({ error: 'sheets_full' }, { status: 413 })
             : Response.json({ sheets: [] }),
@@ -705,7 +705,7 @@ describe('adding a sheet', () => {
     expect(await addSheet(api, DOC_A, {}, 'mcp')).toMatchObject({ ok: false, code: 'sheets_full' });
   });
 
-  it('fills a sheet on the tab asked for, counting the document’s cells first', async () => {
+  it('fills a sheet on the tab asked for, counting the project’s cells first', async () => {
     const { api, server } = setup();
     const result = await addSheet(api, DOC_A, { tabId: TWO, rows: [['a', 1]] }, 'cli', seeded(7));
     expect(result).toMatchObject({ ok: true, tabId: TWO, title: 'Sheet 1', filled: 'A1:B1' });
@@ -719,14 +719,14 @@ describe('adding a sheet', () => {
 describe('changes larger than one write', () => {
   const grid = (rows: number, cols: number) =>
     Array.from({ length: rows }, (_, r) => Array.from({ length: cols }, (_, c) => r * cols + c));
-  // A sheet on the other tab holding most of the document's cell budget.
+  // A sheet on the other tab holding most of the project's cell budget.
   const crowded = (cells: number) => ({
     ...notes(),
     cells: Array.from({ length: cells }, (_, i) => ({ r: `r${i}`, c: 'c0' })),
   });
 
-  it('refuses a change that would pass the document’s cells, before writing any part', async () => {
-    const { api, server } = setup([costs(), crowded(DOCUMENT_CELLS_MAX - 10)]);
+  it('refuses a change that would pass the project’s cells, before writing any part', async () => {
+    const { api, server } = setup([costs(), crowded(PROJECT_CELLS_MAX - 10)]);
     const result = await changeSheet(
       api,
       DOC_A,
@@ -759,8 +759,8 @@ describe('changes larger than one write', () => {
     expect(result.rev).toBe(2);
   });
 
-  it('add_sheet refuses first cells past the document’s cells without making a sheet', async () => {
-    const { api, server } = setup([costs(), crowded(DOCUMENT_CELLS_MAX - 10)]);
+  it('add_sheet refuses first cells past the project’s cells without making a sheet', async () => {
+    const { api, server } = setup([costs(), crowded(PROJECT_CELLS_MAX - 10)]);
     expect(await addSheet(api, DOC_A, { tabId: TWO, rows: grid(1, 20) }, 'mcp')).toMatchObject({
       ok: false,
       code: 'sheets_full',
@@ -779,7 +779,7 @@ describe('changes larger than one write', () => {
 
   it('add_sheet deletes the sheet it made when placing it is refused', async () => {
     const { api, server } = setup();
-    server.routes[`/documents/${DOC_A}/tabs/${ONE}/changesets`] = () =>
+    server.routes[`/projects/${DOC_A}/tabs/${ONE}/changesets`] = () =>
       Response.json({ error: 'conflict' }, { status: 409 });
     await expect(addSheet(api, DOC_A, { rows: [['a']] }, 'mcp')).resolves.toMatchObject({
       ok: false,
@@ -789,7 +789,7 @@ describe('changes larger than one write', () => {
 
   it('add_sheet still answers the placing refusal when deleting the sheet it made fails', async () => {
     const { api, server } = setup();
-    server.routes[`/documents/${DOC_A}/tabs/${ONE}/changesets`] = () =>
+    server.routes[`/projects/${DOC_A}/tabs/${ONE}/changesets`] = () =>
       Response.json({ error: 'conflict' }, { status: 409 });
     const offline: ApiClient = {
       ...api,
@@ -808,7 +808,7 @@ describe('changes larger than one write', () => {
 
   it('add_sheet keeps the sheet it made when placing it never answered, since its element may have landed', async () => {
     const { api, server } = setup();
-    server.routes[`/documents/${DOC_A}/tabs/${ONE}/changesets`] = () => {
+    server.routes[`/projects/${DOC_A}/tabs/${ONE}/changesets`] = () => {
       throw new TypeError('network down');
     };
     await expect(addSheet(api, DOC_A, { rows: [['a']] }, 'mcp')).rejects.toThrow('network down');

@@ -1,10 +1,8 @@
 // Palette tiles in the tab's finish (docs/specs/008-canvas/finish.md "Where it shows"): every tile places an element,
 // so every tile draws its glyph in the finish that element will land in, and the whole palette previews the tab.
 // Professional squares and thins a line glyph; Sketch wobbles every glyph through the shared sketch filter
-// (SketchFilterDefs); Marker draws a line glyph bold with round ends, a felt-tip's line. Full-colour art (technology
-// icons, stickers) keeps its weight under Professional and Marker, as on the canvas, and only wobbles under Sketch.
-import type { Finish } from '@liveplanner/document';
-import type { PaletteTileDef } from './palette-tile-defs';
+// (SketchFilterDefs); Marker draws a line glyph bold with round ends, a felt-tip's line.
+import type { Finish } from '@liveplanner/project';
 
 /** The id of the one SVG filter Sketch tiles are drawn through. */
 export const SKETCH_TILE_FILTER_ID = 'lvd-sketch-tile';
@@ -16,19 +14,10 @@ export function tileEnterAnimation(finish: Finish | undefined): string {
   return finish === 'sketch' ? 'animate-fade-in' : 'animate-pop-in';
 }
 
-/** Whether a tile's glyph is full-colour art, which Professional leaves as drawn. */
-function isColourArt(action: PaletteTileDef['action']): boolean {
-  return action.type === 'tech-icon' || action.type === 'sticker';
-}
-
 /** The class a tile's glyph wrapper carries in a finish (globals.css); empty under Flexible. */
-export function paletteFinishClass(
-  finish: Finish | undefined,
-  action?: PaletteTileDef['action'],
-): string {
+export function paletteFinishClass(finish: Finish | undefined): string {
   if (finish === 'sketch') return 'palette-finish-sketch';
-  if (finish === 'marker' && !(action && isColourArt(action))) return 'palette-finish-marker';
-  if (finish === 'professional' && !(action && isColourArt(action)))
-    return 'palette-finish-professional';
+  if (finish === 'marker') return 'palette-finish-marker';
+  if (finish === 'professional') return 'palette-finish-professional';
   return '';
 }

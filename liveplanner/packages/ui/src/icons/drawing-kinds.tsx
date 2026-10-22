@@ -1,5 +1,5 @@
 import { lucideWorkflow } from '@liveplanner/icons/lucide';
-import type { EditorMode } from '@liveplanner/document';
+import type { EditorMode } from '@liveplanner/project';
 import type { ComponentType } from 'react';
 
 import { Glyph, type IconProps } from './Glyph';
@@ -8,7 +8,7 @@ import { lucideGlyph } from './lucide-glyph';
 // The three kinds of drawing a visitor can start (docs/specs/019-marketing/marketing-site.md "Hero"):
 // a marker for freehand drawing, a flowchart for a diagram, a mind map for a brainstorm.
 
-// The whiteboard dock's marker silhouette (docs/specs/006-document/stroke-points.md) on its
+// The whiteboard dock's marker silhouette (docs/specs/006-project/stroke-points.md) on its
 // 24-unit grid, body, nib and the band below, in the text colour and centred in its box.
 export function MarkerIcon({ size = 16, ...rest }: IconProps) {
   return (
@@ -75,7 +75,7 @@ export function PlanCardsIcon({ size = 16, ...rest }: IconProps) {
 }
 
 // The editor mode's mark (docs/specs/026-plan/plan-mode.md "Plan's mark"), keyed by the mode's id: the glyph a
-// general tab's pill, a document's mode and a `mode:` default folder show.
+// general tab's pill, a project's mode and a `mode:` default folder show.
 export const EDITOR_MODE_ICONS: Readonly<Record<EditorMode, ComponentType<IconProps>>> = {
   plan: PlanIcon,
 };

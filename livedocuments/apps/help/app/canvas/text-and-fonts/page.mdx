@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ElementFontMenu } from '@/components/illustrations/canvas-basics';
+
+export const metadata = helpMetadata({
+  title: 'Text and Fonts',
+  description:
+    'Add and edit labels on any element, and set the typeface from a curated set of eleven fonts, per element or as a tab default.',
+  path: '/help/canvas/text-and-fonts/',
+});
+
+<ArticleLayout
+  title="Text and Fonts"
+  description="Label any element on the canvas and choose its typeface from eleven curated fonts, set per element or as a default for the whole tab."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles("text-and-fonts")}
+>
+
+Text is what turns a box into a step and an arrow into a relationship. Almost every element in livedocuments can carry a label, and you can shape how that text reads by choosing its typeface from a curated set of eleven fonts, ranging from crisp sans-serifs to relaxed handwriting faces. Fonts can be set on a single element or as a default for an entire tab.
+
+## Editing Labels
+
+Shapes, text elements, sticky notes, table cells, and arrows can all carry text, so you can annotate a page wherever you need to. There are a few ways in:
+
+- **Double-click** an element to edit its label. Double-click an arrow to edit its caption, or a table cell to edit that cell.
+- With one element selected, press `Space` to start editing its label, or **just start typing**: the first character replaces the existing label.
+- **Double-click empty canvas** to drop a new text element right there and start typing in it. On a touch screen, a double-tap with your finger zooms in instead; use the palette's Text to add text there.
+- Press `T` (or pick Text from the palette) to add a text element, then tap or drag on the canvas to place it.
+
+Labels can run over several lines: `Enter` starts a new line. In an arrow caption `Enter` finishes the edit instead, and `Shift+Enter` starts a new line. Click outside the element or press Escape to finish: either keeps what you typed, and undo takes it back. While you edit, a small toolbar above the element formats the words you select (bold, italic, underline, strikethrough, headings and lists, alignment and colour); see [Formatting Label Text](/help/canvas/text-and-fonts/formatting-label-text/). Edits go through the normal history, so undo and redo cover label changes like any other edit.
+
+## Choosing a Typeface
+
+livedocuments ships eleven Google Fonts, picked to give a page a distinct voice: Inter, Poppins, Nunito, Oswald, Space Grotesk, Lora, Abril Fatface, Roboto Slab, Roboto Mono, Caveat, and Permanent Marker. Together they span crisp, friendly, formal, and hand-drawn looks. See [Choosing Fonts](/help/canvas/text-and-fonts/choosing-fonts/) for where to set them and how the levels interact.
+
+<Figure caption="Right-click a labelled element, open Text, and pick a typeface from the Font tiles.">
+  <ElementFontMenu />
+</Figure>
+
+## Per Element or Per Tab
+
+Fonts work at two levels. You can set a font on a single element so one label stands out (from its right-click menu, under **Text**), or set a default for the whole tab so every label shares the same typeface unless it overrides it (from the **Text** panel of the **Tab Style** dialog). The tab default also covers a default text size for new elements, keeping a fresh canvas tidy. [Choosing Fonts](/help/canvas/text-and-fonts/choosing-fonts/) explains how an element falls back to the tab's font when it has none of its own.
+
+## Text Size
+
+An element's text size lives beside its font, in the right-click menu's **Text** section. Drag the **Text Size** slider to any size from 6 to 48 pixels, with marks at 6, 12, 24, 36 and 48 to guide you, or press the **Scale** icon to the right of it to fit the text to the element instead. The text changes as you drag and settles when you let go, so one drag is one undo. The arrow keys move it a pixel at a time. The same slider sets an arrow's caption, a table cell, a chart's key and the tab's size for new text. New elements take the tab's default size, which starts at Small on a fresh canvas.
+
+## Text Colour
+
+A text element's colour is in its right-click menu under **Style**, then **Colours**, and one click away in the [Quick Style Panel](/help/canvas/quick-style-panel/) while it is selected. **Reset to Theme** puts the theme's text colour back. To colour only some of the words, select them while editing and use the colour swatch on the editing toolbar.
+
+<Tip>
+  Switching the [theme](/help/canvas/themes/) only recolours your page, it never changes your fonts,
+  so the typefaces you pick stay put when you restyle.
+</Tip>
+
+</ArticleLayout>

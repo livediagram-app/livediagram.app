@@ -11,7 +11,7 @@ import {
   PAGE_MOTION_SPEED_MIN,
   type PageColourFill,
   type PageMotion,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { PagedCarousel } from '@/components/primitives/PagedCarousel';
 import { RANGE_SLIDER } from '@/components/primitives/surface-classes';
 import { CheckIcon, Tooltip } from '@liveplanner/ui';

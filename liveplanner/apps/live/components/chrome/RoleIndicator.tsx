@@ -6,7 +6,7 @@ import { lucideVote } from '@liveplanner/icons/lucide';
 import { EyeIcon } from '@/components/panels/layers-panel-icons';
 import type { AccessLevel } from '@liveplanner/api-schema';
 
-// Whether you are editing, participating in or viewing this document
+// Whether you are editing, participating in or viewing this project
 // (docs/specs/013-workspace/share-roles.md), in two shapes
 // (docs/specs/007-editor/live-app.md#role-pill): the title bar's pill, and Minimal chrome's
 // status bar icon (docs/specs/007-editor/power-user-mode.md). Both step the local preview (Editing, Participating,

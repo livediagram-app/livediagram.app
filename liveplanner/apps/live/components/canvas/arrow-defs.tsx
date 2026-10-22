@@ -5,7 +5,7 @@ import {
   type ArrowheadShape,
   type ArrowheadSize,
   type ErShape,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 // The arrowhead marker system (docs/specs/008-canvas/canvas-and-palette.md arrow styles), lifted out of
 // ArrowView: the shared <defs> block Canvas mounts once, the per-shape

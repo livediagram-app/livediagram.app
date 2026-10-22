@@ -22,7 +22,7 @@ import {
   useClickOutside,
   useEscape,
 } from '@liveplanner/ui';
-import { plural } from '@liveplanner/document';
+import { plural } from '@liveplanner/project';
 import { SwitchRow } from '@/components/primitives/SwitchRow';
 import { Portal, Tooltip, lucideGlyph } from '@liveplanner/ui';
 import { lucideBetweenVerticalEnd } from '@liveplanner/icons/lucide';
@@ -58,7 +58,7 @@ import { usePlan } from './PlanContext';
 import { RemoveColumnPopover } from './RemoveColumnPopover';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { noColour, standardGroup } from '@/components/colour/colour-options';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useProjectColours } from '@/hooks/ui/useProjectColours';
 
 const NO_STATUSES: ReadonlyMap<string, string> = new Map();
 
@@ -111,7 +111,7 @@ export function PlanColumnPopover({
   // Every card in the state to the Trash (a removed column's, when asked).
   onTrashCards: (status: string) => void;
   onClose: (restoreFocus: boolean) => void;
-  // Delete Status: the state's columns come off the document's other boards too.
+  // Delete Status: the state's columns come off the project's other boards too.
   onDeleteStatus?: ((status: string) => void) | undefined;
 }) {
   const mobile = useIsMobileViewport();
@@ -124,8 +124,8 @@ export function PlanColumnPopover({
   const [adding, setAdding] = useState(false);
   const addButton = useRef<HTMLButtonElement>(null);
   const plan = usePlan();
-  // Custom colours: the colours picked with + across the document.
-  const yours = useDocumentColours();
+  // Custom colours: the colours picked with + across the project.
+  const yours = useProjectColours();
   // The statuses a column can take: the boards', any a card is in, and the card types' Default States.
   const statusNames = useMemo(
     () =>

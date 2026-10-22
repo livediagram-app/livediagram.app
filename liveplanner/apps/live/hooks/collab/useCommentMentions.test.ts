@@ -22,7 +22,7 @@ beforeEach(() => {
 
 function hook(ownerId: string | null = 'me') {
   return renderHook(() =>
-    useCommentMentions({ ownerId, teams: [team], documentTeamId: 't1', documentId: 'd1' }),
+    useCommentMentions({ ownerId, teams: [team], projectTeamId: 't1', projectId: 'd1' }),
   );
 }
 
@@ -33,7 +33,7 @@ describe('useCommentMentions notify', () => {
     result.current.notifyMentioned('Hi @priya', mentions, 'item-one', 'c1');
     expect(track).toHaveBeenCalledWith('Comment', 'Mentioned');
     expect(api.apiNotifyMention).toHaveBeenCalledWith('me', 't1', {
-      documentId: 'd1',
+      projectId: 'd1',
       commentText: 'Hi @priya',
       mentions: [{ userId: 'u2', memberId: 'm2' }],
       itemId: 'item-one',
@@ -41,7 +41,7 @@ describe('useCommentMentions notify', () => {
     });
     result.current.notifyMentioned('Hi @priya', mentions);
     expect(api.apiNotifyMention).toHaveBeenLastCalledWith('me', 't1', {
-      documentId: 'd1',
+      projectId: 'd1',
       commentText: 'Hi @priya',
       mentions: [{ userId: 'u2', memberId: 'm2' }],
     });

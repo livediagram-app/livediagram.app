@@ -20,7 +20,7 @@ import {
   type Element,
   type ElementId,
   type Rect,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 export type ArrowLabelRender = { layout: ArrowLabelLayout | null; knockouts: Rect[] };
 

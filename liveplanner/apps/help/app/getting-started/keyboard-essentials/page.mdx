@@ -1,60 +1,54 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { KeyboardEssentials } from '@/components/illustrations/getting-started';
 
 export const metadata = helpMetadata({
   title: 'Keyboard Essentials',
   description:
-    'The handful of liveplanner keyboard shortcuts worth learning first: tools, panning, zen mode, and more.',
+    'The handful of liveplanner keyboard shortcuts worth learning first: undo, search, zen mode, and moving cards and cells.',
   path: '/help/getting-started/keyboard-essentials/',
 });
 
-<ArticleLayout title="Keyboard Essentials" description="The small set of shortcuts worth learning first to work quickly on the canvas." categoryTitle="Getting Started" categorySlug="getting-started">
+<ArticleLayout title="Keyboard Essentials" description="The small set of shortcuts worth learning first to work quickly on boards and sheets." categoryTitle="Getting Started" categorySlug="getting-started">
 
-You can do everything in liveplanner with the mouse, but a few keyboard shortcuts make working on the [canvas](/help/canvas/the-canvas/) much faster. This is the short list worth committing to memory. For the complete reference, see [keyboard shortcuts](/help/tips-and-tricks/keyboard-shortcuts/).
+You can do everything in liveplanner with the mouse or a finger, but a few keyboard shortcuts make planning much faster. This is the short list worth committing to memory. For the complete reference, see [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/). On Windows and Linux, read **Cmd** as **Ctrl**.
 
-## Switching tools
+## Everywhere in the editor
 
-The canvas tools each have a single-key shortcut, matching the conventions in tools like Figma and Excalidraw. They work while nothing with a label is selected; with one labelled element selected, a letter key starts typing its label instead.
+- **`Cmd+Z`** undoes, and **`Cmd+Shift+Z`** (or **`Ctrl+Y`**) redoes. A moved card goes back, a trashed card comes back. The same controls sit in the bottom-right corner. See [Undo](/help/user-interface/undo/).
+- **`Cmd+K`** (or **`Cmd+.`**) opens [search](/help/search-panel/), which finds projects, tabs, settings and help articles and also runs commands (to find a card, use **Find** in the bottom-right corner). See [Command Palette](/help/tips-and-tricks/command-palette/).
+- **`Z`** turns [Zen mode](/help/tools/zen-mode/) on and off, hiding the toolbars and panels so you can focus on the work.
+- **`Escape`** closes an open dialog, menu or card.
+- **`F6`** moves focus between the parts of the screen (the header, the bottom-right controls and the tab bar), and **`Shift+F6`** moves back.
 
-<Figure caption="The essential single-key tool shortcuts, plus holding Space to pan from any tool.">
-  <KeyboardEssentials />
-</Figure>
+## On a board
 
-- **`V`**: Select tool (click, shift-click, and marquee-select elements).
-- **`S`**: Search the palette strip for any element to add.
-- **`H`**: Hand tool (drag empty canvas to pan around).
-- **`F`**: Frame (draw a section backdrop that carries its contents).
-- **`Z`**: Zen mode, which hides all the toolbars and panels for distraction-free work. See [Zen mode](/help/tools/zen-mode/).
+Press **Tab** until a card is focused, then:
 
-The number row works too: **`1`** Select, **`2`** Square, **`5`** Arrow, **`8`** Text and more.
+- **Arrow keys** move between cards.
+- **Enter** (or **Space**) opens the card.
+- **Shift+Left** and **Shift+Right** move the card to the previous or next column; **Shift+Up** and **Shift+Down** move it within its column.
+- **N** adds a card to the focused card's column.
+- **Delete** moves the card to the Trash, where you can restore it.
 
-## Moving the view
+More in [Boards](/help/plan/boards/).
 
-You will pan and zoom constantly, and you do not need to leave the Select tool to do it:
+## On a sheet
 
-- **Hold Space and drag** to pan from any tool.
-- **Middle-click and drag** to pan as well (switch this off with **Middle-Mouse Pan** in Settings if you need the button for something else).
-- **`Cmd/Ctrl` + `+`** and **`Cmd/Ctrl` + `-`** zoom in and out, **`Cmd/Ctrl+0`** resets to 100%, and **`Shift+1`** zooms to fit everything on the tab.
-- **Pinch** on a trackpad or touch screen to zoom; the on-screen zoom buttons sit in the bottom-right of the canvas.
+Sheets use the keys you know from other spreadsheets:
 
-## Everyday editing
+- **Arrow keys** move between cells; hold **Shift** to select a range, and **Cmd** to jump to the edge of the data.
+- **Tab** and **Enter** move right and down (with **Shift**, left and up). Start typing to replace a cell, or press **F2** to edit what's in it.
+- **Delete** or **Backspace** clears the selected cells.
+- **`Cmd+C`**, **`Cmd+X`** and **`Cmd+V`** copy, cut and paste, and **`Cmd+Shift+V`** pastes values only.
+- **`Cmd+B`**, **`Cmd+I`** and **`Cmd+U`** set bold, italic and underline.
+- **`Cmd+D`** and **`Cmd+R`** fill down and right, and **`Cmd+F`** finds in the sheet.
 
-A few shortcuts cover the actions you repeat most:
-
-- **`Cmd/Ctrl+Z`** undoes, and **`Cmd/Ctrl+Shift+Z`** (or **`Ctrl+Y`**) redoes. The same controls sit in the bottom-right corner of the canvas.
-- **`Cmd/Ctrl+C`**, **`X`** and **`V`** copy, cut and paste through your system clipboard, and **`Cmd/Ctrl+D`** duplicates the selection. See [Copy and Paste](/help/tips-and-tricks/copy-and-paste/).
-- **`Delete`** or **`Backspace`** removes the selection.
-- **`Cmd/Ctrl+K`** opens [search](/help/search-panel/), which also runs commands.
-- **Double-click** a shape or arrow to edit its text label, or select it and press **Space**, or simply start typing to replace the label.
-- **Tab** (with the canvas focused) selects the next element, **Shift+Tab** the previous, so you can walk the canvas without the mouse, and Tab past the last element moves on out of the canvas. Selection changes are announced to screen readers.
-- **Escape** cancels an in-progress text edit, closes an open dialog, or clears the selection.
-- **Enter** confirms a dialog. In a shape, text or sticky label it starts a new line, and clicking away finishes the edit. On an arrow label **Enter** finishes and **Shift+Enter** starts a new line, and in a mind node's label **Enter** adds the next node while **Shift+Enter** starts a new line.
+More in [Sheets](/help/plan/sheets/).
 
 <Tip>
-  The editor has a built-in shortcut reference: open **Settings** from the gear at the bottom-right
-  and pick **Keyboard** to see the full list any time without leaving the canvas. Holding `Cmd` (or
-  `Ctrl`) also shows each palette tile's shortcut on the tile itself.
+  If you dictate into your browser, or something else needs the keys, you can turn the editor's
+  shortcuts off: open **Settings** at the bottom-right of the tab bar, pick **Keyboard**, and switch
+  off **Keyboard Shortcuts**. It is saved on this device only.
 </Tip>
 
 </ArticleLayout>

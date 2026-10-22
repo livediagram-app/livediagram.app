@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { signInEnabled } from '@/lib/auth-config';
 import { isMinimalChrome } from '@/lib/power-user-mode';
 import { useExplorer } from '../ExplorerContext';
 import { sidebarDivider, sidebarGroups } from './sidebar-structure';
@@ -18,16 +18,16 @@ import { explorerSurfaceFlags, useExplorerSurface } from '../explorer-surface';
 // Minimal chrome. Every navigation goes through `go`, which also closes the
 // drawer.
 export function ExplorerSidebar() {
-  const { teamsEnabled, invites, offlineDocuments, selected, prefs } = useExplorer();
+  const { teamsEnabled, invites, offlineProjects, selected, prefs } = useExplorer();
   const navRef = useRef<HTMLElement>(null);
   const keyboard = useTreeNavigation(navRef);
   const divider = sidebarDivider(isMinimalChrome(prefs));
   const surface = explorerSurfaceFlags(useExplorerSurface());
   const groups = sidebarGroups({
     signedIn: teamsEnabled,
-    signInAvailable: clerkEnabled,
+    signInAvailable: signInEnabled,
     pendingInvites: invites.length,
-    offlineDocuments: offlineDocuments.length,
+    offlineProjects: offlineProjects.length,
     selected: selected.kind,
     administration: surface.administration,
   });

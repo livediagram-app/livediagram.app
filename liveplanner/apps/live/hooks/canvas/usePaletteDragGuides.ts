@@ -2,7 +2,7 @@
 
 import { useLatest } from '@/hooks/ui/useLatest';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import type { AlignmentGuide, DistributionGuide, Element } from '@liveplanner/document';
+import type { AlignmentGuide, DistributionGuide, Element } from '@liveplanner/project';
 import { pointerToCanvas } from '@/lib/canvas';
 import { paletteDragSnapAt } from '@/lib/palette-drag-snap';
 import { setPaletteDragSnap, usePaletteDragPreview } from '@/lib/palette-drag-preview';
@@ -115,6 +115,6 @@ export function usePaletteDragGuides({
   return { guides, distGuides };
 }
 
-// The DOM Element type, aliased so the document package's `Element` (the
+// The DOM Element type, aliased so the project package's `Element` (the
 // domain model) can keep the unqualified name in this file.
 type Element2 = globalThis.Element;

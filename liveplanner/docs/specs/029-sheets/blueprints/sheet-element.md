@@ -1,6 +1,6 @@
 # Sheet element blueprint
 
-Derived from [Sheet](../sheet.md). Implementation contract for the `plan-sheet` element: its document model, the
+Derived from [Sheet](../sheet.md). Implementation contract for the `plan-sheet` element: its project model, the
 Sheet palette category (under the Spreadsheets band), placement, Setup Sheet, the canvas and static renders, the editor components and hooks, maximise,
 presence, CSV, telemetry and help. The model and pure behaviour are the engine's
 ([sheets-engine](sheets-engine.md)); the data is the store's ([sheet-store](sheet-store.md)).
@@ -10,7 +10,7 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
 | Spec term      | Identifier                                                                                               |
 | -------------- | -------------------------------------------------------------------------------------------------------- |
 | Sheet element  | `ShapeElement` with `shape: 'plan-sheet'` and `planSheet: PlanSheetRef`                                  |
-| `PlanSheetRef` | `{ sheetId: string }` (`packages/document/src/element-types.ts`)                                         |
+| `PlanSheetRef` | `{ sheetId: string }` (`packages/project/src/element-types.ts`)                                         |
 | Spreadsheets   | the palette band heading (`group: 5`, `PaletteTabBar.tsx`)                                               |
 | Sheet category | palette category id `plan-sheets`, label `Sheet`                                                         |
 | Sheet tile     | tile id `plan:sheet`, label `Add Sheet`, caption `Sheet`, action `{ type: 'shape', kind: 'plan-sheet' }` |
@@ -21,13 +21,13 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
 | maximised      | `MaximisedKind` `'Sheet'`                                                                                |
 | cell thread    | `cellComments: CellCommentThreads` on the element, keyed `rowId:colId` (`cell-comments.ts`)              |
 
-## Document model (`packages/document`)
+## Project model (`packages/project`)
 
 - `shape-kind.ts`: `ShapeKind` adds `'plan-sheet'`; `validate.ts` known kinds list adds it.
 - `element-types.ts`: `planSheet?: PlanSheetRef` on `ShapeElement`; `PlanSheetRef = { sheetId; copyOf?; fillTab?: true }`
   beside `PlanViewRef`; the kind in `UNTYPED_SHAPES`.
 - `validate-shape.ts`: rule `{ field: 'planSheet', valid: isPlanSheetRef }` (`isPlanSheetRef` in `element-types.ts`:
-  `sheetId` matches `SHEET_ID_PATTERN`, duplicated as a local regex to avoid importing the engine into the document
+  `sheetId` matches `SHEET_ID_PATTERN`, duplicated as a local regex to avoid importing the engine into the project
   package; `copyOf` likewise; `fillTab` absent or `true`; no other keys).
 - `chart-source.ts`: `ChartSource` (a chart element's `chartSource`: the sheet and the range by row and column ids),
   `isChartSource`, `chartFieldsFromTable`, `relinkCopiedCharts` and `copiedSheetId` (a chart copied with its Sheet
@@ -51,7 +51,7 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
 - `data-shapes.ts` `isPlanShape`, `colors.ts` `SELF_PAINTING_SHAPES`, `session.ts` `NON_VOTABLE_SHAPES`,
   `svg-render-describe.ts` label exclusion, `element-kind-label.ts` `SHAPE_LABELS['plan-sheet'] = 'Sheet'`.
 - `packages/edit-operations/src/element-format.ts`: `'plan-sheet': ['planSheet']`.
-- `packages/document-views/src/content-summary.ts`: `case 'plan-sheet'` → `Sheet "<title>"` when a title source is
+- `packages/project-views/src/content-summary.ts`: `case 'plan-sheet'` → `Sheet "<title>"` when a title source is
   given, else `Sheet`.
 - `remint-element-ids` (apps/live, Duplicate Tab and paste): a `planSheet` is reminted to a new sheet id with a
   `copyOf` create queued (sheet-store blueprint "Editor slice").
@@ -182,7 +182,7 @@ components/primitives/NumberStepper.tsx  the − / + number field (the toolbar's
 components/canvas/DataChartView.tsx  a chart drawn from a table (SheetLinkedChart draws through it)
 ```
 
-In packages: `packages/document/src/chart-source.ts` (above), `packages/items/src/card-source.ts` (`builtInFieldOf`,
+In packages: `packages/project/src/chart-source.ts` (above), `packages/items/src/card-source.ts` (`builtInFieldOf`,
 `isCardDateField`: card field names as the card functions read them), `packages/ui/src/SheetBuildAnimation.tsx`
 (the loader's table filling in), `packages/ui/src/build-animation-kit.tsx` (the cursor, easing and loop phase it
 shares with DiagramBuildAnimation) and `packages/ui/src/LoadingSweep.tsx` (the progress sweep).
@@ -300,7 +300,7 @@ non-top-left cell holds an input.
 - Escape order inside the grid: close a menu or the Find bar, else cancel the edit, else (nothing open)
   `restorePlanElement()` when maximised, else blur. The grid handles Escape before the layer's own Escape listener
   (it stops propagation when it consumed it).
-- `apps/telemetry/app/computed-emitters.ts` and `apps/telemetry/app/catalogue/content.ts` add `SheetMaximised` and `SheetRestored`.
+- `../liveworkspace/apps/site/app/telemetry/liveplanner/computed-emitters.ts` and `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/content.ts` add `SheetMaximised` and `SheetRestored`.
 
 ### Fill Tab
 
@@ -380,7 +380,7 @@ interactive)`, a `BoxedElementView` with the layer's `boxedShared` (the props ev
   `pointer-events: none`, no menu.
 - `deriveCanvasSelection` (`lib/canvas-selection.ts`) treats a selected chart in `sheetDrawnChartIds` as covered: no
   popover, plus or multi toolbar floats on the canvas over where it is not drawn.
-- On the canvas, `sheetDrawnChartIds` (packages/document `chart-source.ts`) drops anchored charts whose Sheet is on
+- On the canvas, `sheetDrawnChartIds` (packages/project `chart-source.ts`) drops anchored charts whose Sheet is on
   the tab from `CanvasElementsLayer`'s paint list and, through `useSheetChartInertIds`, from every selection surface;
   `withSheetCharts` always carries an anchored chart with its moved Sheet. Unlink From Sheet clears `sheetAnchor`.
 - `SheetLinkedChart` reads `sheetChartTable` live from the store and draws through `canvas/DataChartView`; the read it
@@ -459,10 +459,10 @@ over `offsetWidth`.
 
 ## Static render (exports, thumbnails, images)
 
-- `packages/document/src/svg-render-plan-sheet.ts`: `svgPlanSheet(el, model: SheetRenderModel | undefined, surface)`
+- `packages/project/src/svg-render-plan-sheet.ts`: `svgPlanSheet(el, model: SheetRenderModel | undefined, surface)`
   draws the header (title), column letters, row numbers, grid lines and each cell's display text with its format
   (bold, italic, colours, alignment, borders, merges), clipped to the element; no model → the header and an empty
-  grid. `SheetRenderModel` is a structural type defined in `packages/document` (the engine's `renderWindow`
+  grid. `SheetRenderModel` is a structural type defined in `packages/project` (the engine's `renderWindow`
   returns it), passed as `opts.sheets: ReadonlyMap<sheetId, SheetRenderModel>`.
 - Callers build the models: live export (`lib/export` dynamically imports the engine and the store's sheets),
   `apps/api/src/thumbnail.ts` and `apps/mcp/src/image-result.ts` (load the tab's sheets and, when a card function
@@ -475,7 +475,7 @@ over `offsetWidth`.
   `SheetBuildAnimation`, **Opening Sheet** and `LoadingSweep` centred in the grid area (`role="status"`); reduced
   motion shows the finished table, still.
 - Error loading: `SheetFace` over skeleton grid lines, "Couldn't load this sheet" with **Try Again**.
-- Not found: `SheetFace` over skeleton grid lines, "This sheet is no longer in this document", **Remove** for
+- Not found: `SheetFace` over skeleton grid lines, "This sheet is no longer in this project", **Remove** for
   editors.
 - Final copy is the spec's; toolbar tooltips are Title Case ("Fewer Decimals", "Merge Cells").
 
@@ -493,7 +493,7 @@ over `offsetWidth`.
 
 ## Web Experience
 
-- LCP: the sheet chunk and engine load only when a Sheet element is drawn (`next/dynamic`), never on a document
+- LCP: the sheet chunk and engine load only when a Sheet element is drawn (`next/dynamic`), never on a project
   without one; the main bundle gains only the bridge and the gate (< 2 KB gzip, measured in the PR).
 - INP: a keystroke in a cell touches only the editor; a save recalculates only dependents (sliced over frames);
   scrolling renders only the window (target: under 4 ms of script per scroll frame at 900 visible cells).
@@ -508,7 +508,7 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 
 | Rule                                                        | Test                                                                                                                                           |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Element validation, factory size, labels; static SVG render | `packages/document/src/plan-sheet.test.ts`                                                                                                     |
+| Element validation, factory size, labels; static SVG render | `packages/project/src/plan-sheet.test.ts`                                                                                                     |
 | Palette category, tile, layout order, keywords              | `apps/live/components/palette/palette-tile-defs.test.tsx`, `palette-layouts.test.ts`                                                           |
 | Placement names a new sheet; placed and copied sheets made  | `apps/live/lib/draw-commit.test.ts`, `lib/sheet-seeds.test.ts`, `components/sheets/useSheetModel.test.tsx`                                     |
 | A CSV dropped in Plan mode places a filled Sheet            | `apps/live/hooks/sheets/useSheetCsvDrop.test.ts`                                                                                               |
@@ -533,7 +533,7 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 | Charts in a Sheet: draw, move, resize, delete, roles        | `apps/live/components/sheets/SheetChartsLayer.test.tsx`                                                                                        |
 | Insert Chart: range, region, placement                      | `apps/live/components/sheets/sheet-charts.test.tsx`                                                                                            |
 | End to end: place, type, formula, stored, maximise, restore | `apps/live/e2e/plan-sheet.spec.ts`                                                                                                             |
-| Cell comments: model, deltas, ledger, validation, copies    | `packages/document/src/cell-comments.test.ts`, `packages/document-views/src/cell-comments.test.ts`                                             |
+| Cell comments: model, deltas, ledger, validation, copies    | `packages/project/src/cell-comments.test.ts`, `packages/project-views/src/cell-comments.test.ts`                                             |
 | Cell comments: markers, preview, menu row, keys, panel      | `components/sheets/SheetCellComments.test.tsx`, `components/panels/collaborate/CollaborateRows.cells.test.tsx`                                 |
 | Cell comments over the api: roles, verbs, listing, trust    | `apps/api/src/routes/comment-routes-cells.test.ts`, `apps/api/src/comments-cells.test.ts`                                                      |
 | Cell comments by agents: `--cell`                           | `packages/agent-verbs/src/verbs/comment-cells.test.ts`                                                                                         |

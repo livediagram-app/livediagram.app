@@ -4,7 +4,7 @@ import {
   parseClipboardTableText,
   pasteIntoTable,
   type TableElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
 
 // The in-cell contentEditable editor (docs/specs/008-canvas/canvas-and-palette.md Table), lifted out of

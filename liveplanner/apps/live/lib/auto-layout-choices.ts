@@ -3,7 +3,7 @@
 // telemetry types. Consumed by the command palette, the Tidy Up popover
 // (docs/specs/008-canvas/layout-cleanup.md "The Tidy Up button") and useTabCanvas so they can't drift.
 
-import type { AutoLayoutOptions } from '@liveplanner/document';
+import type { AutoLayoutOptions } from '@liveplanner/project';
 
 export type AutoLayoutChoice = 'smart' | 'flow-down' | 'flow-right' | 'tree' | 'mindmap';
 

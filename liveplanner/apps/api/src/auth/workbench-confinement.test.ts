@@ -15,8 +15,8 @@ const base = {
 
 const workbench = (over: { level?: WorkbenchContext['level'] } = {}): WorkbenchContext => ({
   ...base,
-  scope: 'document',
-  documentId: 'doc1',
+  scope: 'project',
+  projectId: 'doc1',
   folderId: null,
   ...over,
 });
@@ -24,7 +24,7 @@ const workbench = (over: { level?: WorkbenchContext['level'] } = {}): WorkbenchC
 const workspace = (over: { level?: WorkbenchContext['level'] } = {}): WorkbenchContext => ({
   ...base,
   scope: 'workspace',
-  documentId: null,
+  projectId: null,
   folderId: null,
   ...over,
 });
@@ -54,14 +54,14 @@ describe('workbenchRefusal', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it('lets an allowed route through', () => {
-    expect(refuse('PUT', 'documents/doc1/tabs/t1')).toBeNull();
+    expect(refuse('PUT', 'projects/doc1/tabs/t1')).toBeNull();
     expect(refuse('GET', 'capabilities')).toBeNull();
   });
 
-  it('answers another document as absent', async () => {
+  it('answers another project as absent', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    expect(await body(refuse('GET', 'documents/doc2'))).toEqual({
+    expect(await body(refuse('GET', 'projects/doc2'))).toEqual({
       status: 404,
       body: { error: 'not_found' },
     });
@@ -70,12 +70,12 @@ describe('workbenchRefusal', () => {
   it('confines every other route and logs it by route label', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    expect(await body(refuse('GET', 'documents'))).toEqual({
+    expect(await body(refuse('GET', 'projects'))).toEqual({
       status: 403,
       body: { error: 'workbench_confined' },
     });
     expect(warn).toHaveBeenCalledWith('[workbench] confined', {
-      scope: 'document',
+      scope: 'project',
       method: 'GET',
       route: expect.any(String),
       sessionPrefix: 'abcdef12',
@@ -87,7 +87,7 @@ describe('workbenchRefusal', () => {
     async (header) => {
       vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-      expect(await body(refuse('GET', 'documents/doc1', {}, { [header]: 'x' }))).toEqual({
+      expect(await body(refuse('GET', 'projects/doc1', {}, { [header]: 'x' }))).toEqual({
         status: 403,
         body: { error: 'workbench_confined' },
       });
@@ -98,19 +98,19 @@ describe('workbenchRefusal', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const view = { level: 'view' as const };
 
-    expect(await body(refuse('PUT', 'documents/doc1/tabs/t1', view))).toEqual({
+    expect(await body(refuse('PUT', 'projects/doc1/tabs/t1', view))).toEqual({
       status: 403,
       body: { error: 'workbench_read_only' },
     });
     expect(warn).toHaveBeenCalledWith('[workbench] read-only-refused', {
-      scope: 'document',
+      scope: 'project',
       method: 'PUT',
       route: expect.any(String),
       sessionPrefix: 'abcdef12',
     });
-    expect(refuse('POST', 'documents/doc1/room-ticket', view)).toBeNull();
+    expect(refuse('POST', 'projects/doc1/room-ticket', view)).toBeNull();
     expect(refuse('DELETE', 'workbench/sessions/current', view)).toBeNull();
-    expect(refuse('GET', 'documents/doc1', view)).toBeNull();
+    expect(refuse('GET', 'projects/doc1', view)).toBeNull();
   });
 });
 
@@ -118,10 +118,10 @@ describe('workbenchRefusal, workspace scope', () => {
   afterEach(() => vi.restoreAllMocks());
 
   it.each([
-    ['GET', 'documents'],
-    ['POST', 'documents'],
-    ['PUT', 'documents/any/tabs/t1'],
-    ['DELETE', 'documents/any'],
+    ['GET', 'projects'],
+    ['POST', 'projects'],
+    ['PUT', 'projects/any/tabs/t1'],
+    ['DELETE', 'projects/any'],
     ['POST', 'folders'],
     ['GET', 'home'],
     ['GET', 'teams'],
@@ -148,12 +148,12 @@ describe('workbenchRefusal, workspace scope', () => {
   it('refuses the guest header but lets a share link through', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    expect(await body(refuseInWorkspace('GET', 'documents/d', {}, { 'X-Owner-Id': 'u' }))).toEqual({
+    expect(await body(refuseInWorkspace('GET', 'projects/d', {}, { 'X-Owner-Id': 'u' }))).toEqual({
       status: 403,
       body: { error: 'workbench_confined' },
     });
-    expect(refuseInWorkspace('GET', 'documents/d', {}, { 'X-Share-Code': 'c' })).toBeNull();
-    expect(refuseInWorkspace('GET', 'documents/d', {}, { 'X-Share-Password': 'p' })).toBeNull();
+    expect(refuseInWorkspace('GET', 'projects/d', {}, { 'X-Share-Code': 'c' })).toBeNull();
+    expect(refuseInWorkspace('GET', 'projects/d', {}, { 'X-Share-Password': 'p' })).toBeNull();
   });
 
   it('keeps a view session to browsing and reading, the share-link list included', async () => {
@@ -161,16 +161,16 @@ describe('workbenchRefusal, workspace scope', () => {
     const view = { level: 'view' as const };
 
     for (const [method, path] of [
-      ['POST', 'documents'],
+      ['POST', 'projects'],
       ['DELETE', 'folders/f1'],
-      ['GET', 'documents/d/share'],
+      ['GET', 'projects/d/share'],
     ] as const) {
       expect(await body(refuseInWorkspace(method, path, view))).toEqual({
         status: 403,
         body: { error: 'workbench_read_only' },
       });
     }
-    expect(refuseInWorkspace('GET', 'documents', view)).toBeNull();
-    expect(refuseInWorkspace('POST', 'documents/d/room-ticket', view)).toBeNull();
+    expect(refuseInWorkspace('GET', 'projects', view)).toBeNull();
+    expect(refuseInWorkspace('POST', 'projects/d/room-ticket', view)).toBeNull();
   });
 });

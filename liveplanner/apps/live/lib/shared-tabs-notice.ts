@@ -1,6 +1,6 @@
-// The shared-tab notice (docs/specs/006-document/tab-document-many-to-many.md,
+// The shared-tab notice (docs/specs/006-project/tab-project-many-to-many.md,
 // "Shared-tab notice"): the sentence the Take Offline confirmation
-// adds when some of the document's tabs are also in other documents, so the user
+// adds when some of the project's tabs are also in other projects, so the user
 // knows those tabs stay before they act.
 
 import type { SharedTabsSummary } from '@liveplanner/api-schema';
@@ -13,13 +13,13 @@ type SharedTabsAction = 'delete' | 'offline';
 const SHARED_TABS_NOTICE_TIMEOUT_MS = 1500;
 
 export function sharedTabsNotice(
-  { tabs, documents: liveDocs }: SharedTabsSummary,
+  { tabs, projects: liveDocs }: SharedTabsSummary,
   action: SharedTabsAction,
 ): string | null {
   if (tabs === 0) return null;
   const one = tabs === 1;
   // A non-breaking space keeps the count on the line with its noun.
-  const where = `${tabs}\u00a0of its tabs ${one ? 'is' : 'are'} also used in ${liveDocs} other document${liveDocs === 1 ? '' : 's'}`;
+  const where = `${tabs}\u00a0of its tabs ${one ? 'is' : 'are'} also used in ${liveDocs} other project${liveDocs === 1 ? '' : 's'}`;
   const stays = one ? 'it stays there' : 'they stay there';
   if (action === 'delete') return `${where}; ${stays}.`;
   const parting = one
@@ -29,18 +29,18 @@ export function sharedTabsNotice(
 }
 
 // Read the counts and word them; null when there is nothing to say, the
-// document is offline, or the read failed or ran out of time. A failure is
+// project is offline, or the read failed or ran out of time. A failure is
 // reported by the api client; the confirmation still opens, because the
 // server keeps shared tabs whether or not the notice was shown.
 export async function fetchSharedTabsNotice(
   ownerId: string,
-  documentId: string,
+  projectId: string,
   action: SharedTabsAction,
 ): Promise<string | null> {
   try {
     const summary = await apiSharedTabs(
       ownerId,
-      documentId,
+      projectId,
       AbortSignal.timeout(SHARED_TABS_NOTICE_TIMEOUT_MS),
     );
     return summary ? sharedTabsNotice(summary, action) : null;

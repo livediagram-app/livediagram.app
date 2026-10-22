@@ -18,6 +18,21 @@
 import { isCtaSource } from './cta-sources';
 import { isValidPageViewPath } from './page-views';
 import { isTimingType } from './timing-telemetry';
+import { TELEMETRY_TYPE_PATTERN } from '@liveworkspace/telemetry';
+
+// The wire bound on `type`, the fixed dashboard windows and the summary shapes are the liveworkspace
+// telemetry service's (liveworkspace/docs/telemetry.md), shared by every app: re-exported so callers
+// here keep one import.
+export {
+  metricKey,
+  TELEMETRY_TYPE_PATTERN,
+  TELEMETRY_WINDOW_DAYS,
+  type TelemetryCount,
+  type TelemetryDaily,
+  type TelemetrySummary,
+  type TelemetryWindow,
+  type TelemetryWindowKey,
+} from '@liveworkspace/telemetry';
 
 export const TELEMETRY_CATEGORIES = [
   'Document',
@@ -305,11 +320,6 @@ export type TelemetryEvent = {
   type?: string | null;
 };
 
-// Defence-in-depth bound on `type`: a short token of safe characters,
-// not a fixed enum (so adding a new shape / template / theme doesn't
-// touch this file). Rejects anything that looks like free text / UGC.
-export const TELEMETRY_TYPE_PATTERN = /^[A-Za-z0-9 ._-]{1,40}$/;
-
 // Validate one event against the closed vocabulary. The worker filters
 // the ingest batch through this so only known, safe rows ever land in
 // D1 / the public dashboard.
@@ -332,33 +342,6 @@ export function isValidTelemetryEvent(value: unknown): value is TelemetryEvent {
   return typeof e.type === 'string' && TELEMETRY_TYPE_PATTERN.test(e.type);
 }
 
-// The fixed dashboard windows (docs/specs/017-telemetry/telemetry.md): no custom ranges, so queries
-// stay simple and the summary response is cacheable.
-export type TelemetryWindowKey = 'today' | 'last7' | 'last30';
-
-// How many UTC calendar days each window spans, ending with today (so
-// `last7` is today plus the six days before it, each from UTC midnight).
-// Shared by the api, which counts each window over exactly these days, and
-// the dashboard, which highlights the same span of the 30-day trend line:
-// one definition, so the number on a card and the line under it agree.
-export const TELEMETRY_WINDOW_DAYS: Record<TelemetryWindowKey, number> = {
-  today: 1,
-  last7: 7,
-  last30: 30,
-};
-
-export type TelemetryCount = {
-  category: string;
-  action: string;
-  type: string | null;
-  count: number;
-};
-
-export type TelemetryWindow = {
-  total: number;
-  rows: TelemetryCount[];
-};
-
 // ---------------------------------------------------------------------
 // AI Assistance (docs/specs/007-editor/ai-assistance.md)
 // ---------------------------------------------------------------------
@@ -366,26 +349,6 @@ export type TelemetryWindow = {
 // Two modes (docs/specs/007-editor/ai-assistance.md): 'ask' is read-only Q&A; 'clean' tidies the existing tab.
 // The old 'generate' (Build) + 'review' modes were removed — the calling model
 // in an external AI tool (docs/specs/015-api/mcp-server.md) does generation far better.
-
-// `byMetric` is the per-event version of `byCategory`: one 30-day
-// series per distinct event, keyed by `metricKey(category, action,
-// type)` (= `category|action|type`, empty string for a null type).
-// Drives the Search view's single-metric trend line (docs/specs/017-telemetry/telemetry.md).
-export type TelemetryDaily = {
-  days: number[];
-  totals: number[];
-  byCategory: Record<string, number[]>;
-  byMetric: Record<string, number[]>;
-};
-
-// Stable key for a single (category, action, type) event, used as the
-// `TelemetryDaily.byMetric` map key. Defined here so the api worker
-// that builds the map and the dashboard that reads it can't drift.
-// `type` is null for type-less events; we collapse it to '' so the key
-// is always a 3-part `a|b|c` string.
-export function metricKey(category: string, action: string, type: string | null): string {
-  return `${category}|${action}|${type ?? ''}`;
-}
 
 // The `Element·Added` type tokens that correspond to a PALETTE item, in
 // the buckets the public dashboard ranks them by (docs/specs/017-telemetry/telemetry.md).
@@ -577,20 +540,6 @@ export const SHEET_CHANGE_KINDS = [
   'ConditionalFormat',
 ] as const;
 export type SheetChangeKind = (typeof SHEET_CHANGE_KINDS)[number];
-
-export type TelemetrySummary = {
-  enabled: boolean;
-  generatedAt: number;
-  windows: Record<TelemetryWindowKey, TelemetryWindow>;
-  // Each window's counts over the same number of days just before it (the
-  // day before today, the 7 days before the last 7, the 30 before the last
-  // 30), for the dashboard's trend arrows. Optional so a client talking to an
-  // older api still parses; it falls back to what the daily series can reach.
-  previousWindows?: Record<TelemetryWindowKey, TelemetryWindow>;
-  // Optional so older clients (and the disabled-state response) still
-  // parse. Present whenever `enabled` is true.
-  daily?: TelemetryDaily;
-};
 
 // -----
 // Unfurl (docs/specs/009-elements/link-cards.md) — link-card preview metadata extracted server-side by

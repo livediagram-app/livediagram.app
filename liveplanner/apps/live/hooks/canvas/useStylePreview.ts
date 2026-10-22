@@ -49,7 +49,7 @@ import type {
   TextAlignY,
   TextSize,
   TextSizePreset,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   applyArrowPresetToEl,
   applyBorderRadiusToEl,

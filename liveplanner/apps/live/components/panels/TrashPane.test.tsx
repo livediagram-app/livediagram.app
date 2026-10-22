@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// This Browser's Trash rows carry the This Browser pill (docs/specs/006-document/offline-mode.md#this-browser-pill).
+// This Browser's Trash rows carry the This Browser pill (docs/specs/006-project/offline-mode.md#this-browser-pill).
 
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';

@@ -13,7 +13,7 @@ import {
 } from '@liveplanner/api-schema';
 import { debugLog } from './debug-log';
 import type { Participant } from './identity';
-import { isRecord } from '@liveplanner/document';
+import { isRecord } from '@liveplanner/project';
 
 // The longest id an entry carries: element ids, presence ids and the room's entry ids are all under it.
 const AGENT_ID_MAX = 128;

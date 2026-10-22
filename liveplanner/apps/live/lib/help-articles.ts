@@ -8,8 +8,8 @@
 //
 // Each value is the NESTED slug (the path under /help): usually an
 // article's categorySlug/slug (matching its page.mdx path in apps/help),
-// but it may also be a category LANDING path (e.g. `palette` points at the
-// palette overview page.tsx) when the editor links to a whole section
+// but it may also be a category LANDING path (e.g. `plan` points at the
+// Plan overview page.tsx) when the editor links to a whole section
 // rather than one article. A key pointing at a path that resolves to no
 // help page is a bug, the same way an unregistered help article is - keep
 // these in sync with @liveplanner/help-registry.
@@ -22,7 +22,6 @@ export const HELP_ARTICLES = {
   shareLinkExpiry: 'collaboration/sharing/share-link-expiry',
   sharePasswords: 'collaboration/sharing/share-passwords',
   // Palette behaviour
-  autoAttachArrows: 'palette/auto-attach-arrows',
   // Of the elements added in docs/specs/009-elements/youtube-video.md and docs/specs/009-elements/mind-node.md, docs/specs/009-elements/lane.md, docs/specs/009-elements/entity.md, docs/specs/009-elements/embed-providers.md, only the embed has a
   // surface that links its article (the link picker, when it is restricted to
   // a URL). Lanes and entities had keys here and no placement, so they were
@@ -30,81 +29,67 @@ export const HELP_ARTICLES = {
   // Outline dialog links its own sub-article from its header, and the mind
   // map's, the flowchart's and the org chart's element tours (docs/specs/007-editor/element-tours.md) link their
   // articles.
-  embedElements: 'palette/embed-elements',
-  mindMaps: 'palette/mind-maps',
-  flowcharts: 'palette/flowcharts',
-  orgCharts: 'palette/org-charts',
-  mindMapOutline: 'palette/mind-maps/edit-outline',
-  alignmentGuides: 'palette/alignment-guides',
-  panelOpacity: 'palette/panel-opacity',
-  quickAddOnHover: 'palette/quick-add-on-hover',
-  isometricMode: 'selection-modes/isometric-mode',
+  embedElements: 'tabs/using-tabs',
+  mindMapOutline: 'plan/visualisations',
+  panelOpacity: 'user-interface/settings',
+  isometricMode: 'tabs/export-tabs',
   // One key per tool panel, so every mode's panel can point at the article
   // that explains it (docs/specs/018-help/contextual-help-links.md). Each of these resolves to a real page — a key
   // pointing at nothing is a bug, the same way an unregistered article is.
-  formatPainter: 'selection-modes/format-painter',
+  formatPainter: 'user-interface/themes',
   // AI
-  aiTools: 'tools/ai/ai-tools',
   connectAiTool: 'account-and-data/connect-ai-mcp',
   // Tabs / import-export
-  exportingDiagrams: 'account-and-data/exporting-diagrams',
+  exportingDiagrams: 'tabs/export-tabs',
   apiTokens: 'account-and-data/api-tokens',
   trash: 'account-and-data/trash',
   importTabs: 'tabs/import-tabs',
   tags: 'explorer/tags',
-  linkingTabs: 'tabs/linking-tabs',
+  linkingTabs: 'tabs/using-tabs',
   // Teams
   teamRolesAndInvites: 'collaboration/teams/roles-and-invites',
   // Canvas / themes
-  changingTheBackground: 'canvas/the-canvas/changing-the-background',
-  themes: 'canvas/themes',
-  changingTheme: 'canvas/themes/changing-theme',
-  choosingAFinish: 'canvas/finish',
-  customThemes: 'canvas/themes/custom-themes',
-  choosingFonts: 'canvas/text-and-fonts/choosing-fonts',
+  changingTheBackground: 'user-interface/themes/changing-theme',
+  themes: 'user-interface/themes',
+  changingTheme: 'user-interface/themes/changing-theme',
+  choosingAFinish: 'user-interface/themes/changing-theme',
+  customThemes: 'user-interface/themes/custom-themes',
+  choosingFonts: 'user-interface/themes/changing-theme',
   // Links / activity / comments
   // Plan mode's card types (docs/specs/026-plan/item-types.md).
-  planCardTypes: 'canvas/plan-mode/card-types',
-  planBoards: 'canvas/plan-mode/boards',
-  planCards: 'canvas/plan-mode/cards',
-  planSheets: 'canvas/plan-mode/sheets',
-  planDashboards: 'canvas/plan-mode/dashboards',
-  planForms: 'canvas/plan-mode/forms',
-  planTour: 'canvas/plan-mode/plan-tour',
-  links: 'canvas/links',
+  planCardTypes: 'plan/card-types',
+  planBoards: 'plan/boards',
+  planCards: 'plan/cards',
+  planSheets: 'plan/sheets',
+  planDashboards: 'plan/dashboards',
+  planForms: 'plan/forms',
+  planTour: 'plan/plan-tour',
+  links: 'plan/dashboards',
   comments: 'collaboration/comments',
   livePresence: 'collaboration/live-presence',
-  assignedActions: 'collaboration/assigned-actions',
+  assignedActions: 'plan/cards',
   // Explorer / data
   // Standing panels.
   explorerPanel: 'explorer/explorer-panel',
-  layers: 'canvas/layers',
+  layers: 'user-interface/panel-layout',
   // The Tidy Up popover's tidiers (docs/specs/008-canvas/layout-cleanup.md).
-  layoutCleanup: 'tools/layout-cleanup',
-  minimap: 'user-interface/minimap',
+  minimap: 'user-interface/panel-layout',
   sessionVoting: 'collaboration/session-tools/voting',
   sessionTimer: 'collaboration/session-tools/timer',
   home: 'explorer/home',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
   inbox: 'explorer/activity',
-  recentDocuments: 'explorer/recent',
+  recentProjects: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
   explorerFilters: 'explorer/filters',
-  dataElements: 'palette/tools/data-elements',
-  sankeyDiagram: 'palette/build/sankey-diagram',
+  dataElements: 'plan/visualisations',
+  sankeyDiagram: 'plan/visualisations',
   // The round-two element tours' closing cards (docs/specs/007-editor/element-tours.md).
-  stacks: 'palette/stacks',
-  entities: 'palette/entities',
-  tabWindows: 'canvas/tab-windows',
-  lanes: 'palette/lanes',
-  boundaries: 'palette/boundaries',
-  diagramKeys: 'palette/diagram-keys',
-  portals: 'palette/tools/portals',
-  sequenceDiagram: 'palette/sequence-diagrams',
-  conceptGraphics: 'palette/concept-graphics',
-  palette: 'palette',
+  lanes: 'plan/boards',
+  sequenceDiagram: 'plan/visualisations',
+  palette: 'plan',
   // Settings
   powerUserMode: 'user-interface/power-user-mode',
   whatWeCollect: 'privacy-and-security/what-we-collect',
@@ -113,7 +98,7 @@ export const HELP_ARTICLES = {
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
-  documentNotLoading: 'troubleshooting/document-not-loading',
+  projectNotLoading: 'troubleshooting/project-not-loading',
 } as const;
 
 export type HelpArticleKey = keyof typeof HELP_ARTICLES;
@@ -166,25 +151,13 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about share passwords',
     description: 'How the optional password gate protects every link.',
   },
-  autoAttachArrows: {
-    title: 'Learn about auto-attach arrows',
-    description: 'How arrows re-pin to shapes as they move.',
-  },
   embedElements: {
     title: 'Learn about embeds',
     description: 'Which services can be embedded, and how they load.',
   },
-  alignmentGuides: {
-    title: 'Learn about alignment guides',
-    description: 'How snap lines help you line elements up.',
-  },
   panelOpacity: {
     title: 'Learn about panel opacity',
     description: 'Make the panels translucent so the canvas shows through.',
-  },
-  quickAddOnHover: {
-    title: 'Learn about quick-add on hover',
-    description: 'Open the element + menu by hovering instead of clicking.',
   },
   isometricMode: {
     title: 'Learn about the isometric view',
@@ -194,13 +167,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Format Painter',
     description: "Tips for copying one element's look onto others.",
   },
-  aiTools: {
-    title: 'Learn about the AI tools',
-    description: 'What the Ask and Clean modes do, and how to get the most from them.',
-  },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
-    description: 'Drive your documents from Claude, Cursor, and other AI tools over MCP.',
+    description: 'Drive your projects from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingDiagrams: {
     title: 'Learn about exporting',
@@ -212,7 +181,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   trash: {
     title: 'Learn about the Trash',
-    description: 'How long deleted documents wait, and how to restore one.',
+    description: 'How long deleted projects wait, and how to restore one.',
   },
   importTabs: {
     title: 'Learn about importing tabs',
@@ -237,7 +206,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   customThemes: {
     title: 'Learn about custom themes',
-    description: 'Build your own palette and reuse it across documents.',
+    description: 'Build your own palette and reuse it across projects.',
   },
   choosingAFinish: {
     title: 'Learn about finishes',
@@ -249,11 +218,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   links: {
     title: 'Learn about links',
-    description: 'Linking elements to tabs, documents, and web addresses.',
+    description: 'Linking elements to tabs, projects, and web addresses.',
   },
   comments: {
     title: 'Learn about comments',
-    description: 'Tips and tricks for discussing a document right on the canvas.',
+    description: 'Tips and tricks for discussing a project right on the canvas.',
   },
   assignedActions: {
     title: 'Learn about assigned actions',
@@ -263,26 +232,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Explorer',
     description: 'Tips and tricks to help you get the most out of the Explorer.',
   },
-  layoutCleanup: {
-    title: 'Learn about tidying a layout',
-    description:
-      'Tips for laying a diagram out in one press, and choosing the style that suits it.',
-  },
   layers: {
     title: 'Learn about layers',
     description: 'Tips and tricks for stacking, hiding and locking parts of a tab.',
-  },
-  orgCharts: {
-    title: 'Learn about org charts',
-    description: 'People and roles in a tree: reports, peers, and the downward flow.',
-  },
-  flowcharts: {
-    title: 'Learn about flowcharts',
-    description: 'Growing a chart a step at a time, step types, swimlanes and direction.',
-  },
-  mindMaps: {
-    title: 'Learn about mind maps',
-    description: 'Growing a map with Tab and Enter, its branching shapes, spacing and Tidy Map.',
   },
   mindMapOutline: {
     title: 'Learn about editing an outline',
@@ -308,21 +260,21 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Inbox',
     description: 'Open actions assigned to you or by you, and comment threads you are in.',
   },
-  recentDocuments: {
+  recentProjects: {
     title: 'Learn about Recent',
-    description: 'Your most recently opened documents, personal and team, in one list.',
+    description: 'Your most recently opened projects, personal and team, in one list.',
   },
   tags: {
     title: 'Learn about tags',
-    description: 'Coloured labels that group related documents across folders and teams.',
+    description: 'Coloured labels that group related projects across folders and teams.',
   },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
-    description: 'Documents other people have shared with you, collected here.',
+    description: 'Projects other people have shared with you, collected here.',
   },
   folders: {
     title: 'Learn about folders',
-    description: 'Tips for organising documents into a nestable tree of folders.',
+    description: 'Tips for organising projects into a nestable tree of folders.',
   },
   defaultFolders: {
     title: 'Learn about default folders',
@@ -340,38 +292,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about Sankey diagrams',
     description: 'Writing flows, reading the bands, and styling nodes and labels.',
   },
-  stacks: {
-    title: 'Learn about stacks',
-    description: 'Rows, columns and grids that lay out what you drop in them.',
-  },
-  entities: {
-    title: 'Learn about entities',
-    description: 'UML classes and ER tables: a title over name and type fields.',
-  },
-  tabWindows: {
-    title: 'Learn about tab windows',
-    description: 'Show another tab live on the canvas, and keep it up to date.',
-  },
   lanes: {
     title: 'Learn about lanes',
     description: 'Swimlanes: title gutters, seams, and columns as well as rows.',
-  },
-  boundaries: {
-    title: 'Learn about boundaries',
-    description: 'Zones that hold what is inside them: regions, VPCs, C4 systems.',
-  },
-  diagramKeys: {
-    title: 'Learn about diagram keys',
-    description: 'A legend that lists the line styles and tag colours you use.',
-  },
-  portals: {
-    title: 'Learn about portals',
-    description: 'Linked rings that take you across the canvas or to another tab.',
-  },
-  conceptGraphics: {
-    title: 'Learn about concept graphics',
-    description:
-      'Stacks, pyramids, funnels, cycles, hubs, onions and chevrons, and editing their rows.',
   },
   sequenceDiagram: {
     title: 'Learn about sequence diagrams',
@@ -391,11 +314,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   offlineMode: {
     title: 'Learn about Offline Mode',
-    description: 'Documents saved only in this browser, and how to sync them.',
+    description: 'Projects saved only in this browser, and how to sync them.',
   },
   livePresence: {
     title: 'Learn about live presence',
-    description: 'Who is in the document, where they are, and following them.',
+    description: 'Who is in the project, where they are, and following them.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',
@@ -405,9 +328,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about guest vs account',
     description: 'What changes when you sign in, and what stays the same.',
   },
-  documentNotLoading: {
+  projectNotLoading: {
     title: 'Learn about loading problems',
-    description: 'Steps to try when a document will not open.',
+    description: 'Steps to try when a project will not open.',
   },
 };
 

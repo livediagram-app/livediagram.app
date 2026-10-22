@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape } from '@liveplanner/document';
+import { createShape } from '@liveplanner/project';
 import { canEditSankey } from './sankey-edit';
 import { resolveEditorCapabilities } from './editor-capabilities';
 

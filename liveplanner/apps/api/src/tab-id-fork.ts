@@ -1,12 +1,12 @@
 // Re-minting seeded tab ids a create must not write into
-// (docs/specs/006-document/offline-mode.md, "Shared tabs fork").
+// (docs/specs/006-project/offline-mode.md, "Shared tabs fork").
 //
-// A tab id is global, so a seeded tab whose id another document already holds
+// A tab id is global, so a seeded tab whose id another project already holds
 // would upsert over that tab. The create keeps the content under a fresh id
-// instead, and re-points everything inside the new document that named the old
+// instead, and re-points everything inside the new project that named the old
 // one: tab / element links in its tabs.
 
-import { remapTabLinks, type Tab } from '@liveplanner/document';
+import { remapTabLinks, type Tab } from '@liveplanner/project';
 
 export function forkTakenTabIds(
   tabs: Tab[],

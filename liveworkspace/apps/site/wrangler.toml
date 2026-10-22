@@ -1,0 +1,24 @@
+name = "liveworkspace-site"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+compatibility_date = "2026-05-29"
+# Every page of liveworkspace.app (liveworkspace/docs/site.md "Hosting"). The two APIs have more
+# specific routes, so they win: /api/auth/* (and the two .well-known documents) is the accounts
+# Worker's, /api/telemetry/* the telemetry Worker's.
+routes = [
+  { pattern = "liveworkspace.app/*", zone_name = "liveworkspace.app" },
+  { pattern = "www.liveworkspace.app/*", zone_name = "liveworkspace.app" },
+]
+
+# Static assets only: the Next export in ./out. Headers come from public/_headers.
+[assets]
+directory = "./out"
+not_found_handling = "404-page"
+
+[env.staging]
+name = "liveworkspace-site-staging"
+routes = [{ pattern = "staging.liveworkspace.app/*", zone_name = "liveworkspace.app" }]
+
+[env.staging.assets]
+directory = "./out"
+not_found_handling = "404-page"

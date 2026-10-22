@@ -7,7 +7,7 @@
 // table cells keep their plain editors and don't auto-open a menu.
 
 import { useEffect, useEffectEvent, useRef } from 'react';
-import { isBoxed, type Element } from '@liveplanner/document';
+import { isBoxed, type Element } from '@liveplanner/project';
 import type { EditorContextMenuState } from '@/components/palette/EditorContextMenu';
 import { editMenuAnchor } from '@/lib/context-menu-anchor';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';

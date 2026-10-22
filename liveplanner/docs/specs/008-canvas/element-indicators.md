@@ -63,7 +63,7 @@ from the root's Mind Map menu section. A scale-to-fit label keeps its whole box.
 
 Both styles sit **inside the element's outline**, never across it, on every shape:
 
-- The outline is the shape's drawn outline (`shapeHitOutline`, `packages/document/src/shape-hit.ts`): a circle's ellipse, a diamond's,
+- The outline is the shape's drawn outline (`shapeHitOutline`, `packages/project/src/shape-hit.ts`): a circle's ellipse, a diamond's,
   hexagon's or triangle's polygon, a cloud's curve, a pill's rounded ends, and for an element
   that paints its own face (a mind node, a card, a panel) its box with its own corner radius.
 - The cluster keeps **at least 6px clear of the outline** on every side.
@@ -126,7 +126,7 @@ device or from the keyboard.
 - They are editor chrome: exports, thumbnails, and embeds (view or edit role) never draw them,
   whatever style the person chose (`SuppressElementIndicators` above the canvas reads as **Off**);
   the lock badge hides with them.
-  The share view (`/document/shared`) is the editor reached by a share link, so it draws them like
+  The share view (`/project/shared`) is the editor reached by a share link, so it draws them like
   the editor.
 
 ## Accessibility

@@ -135,10 +135,10 @@ describe('Share Form, published and closed (forms.md "A live form is locked")', 
   });
 });
 
-describe('Share Form on a document in This Browser (forms.md "Publishing and the form link")', () => {
+describe('Share Form on a project in This Browser (forms.md "Publishing and the form link")', () => {
   const offline = () => link({ link: null, status: 'offline' });
 
-  it("offers Sync Document, the Share dialog's move, and syncs nothing by itself", () => {
+  it("offers Sync Project, the Share dialog's move, and syncs nothing by itself", () => {
     const sync = vi.fn(async () => {});
     render(
       <ShareFormDialog
@@ -150,7 +150,7 @@ describe('Share Form on a document in This Browser (forms.md "Publishing and the
         onSyncToCloud={sync}
       />,
     );
-    expect(screen.getByText('This Document Is in This Browser')).toBeTruthy();
+    expect(screen.getByText('This Project Is in This Browser')).toBeTruthy();
     expect(screen.getByText(/this form can’t be published yet/)).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Publish Form' })).toBeNull();
     expect(sync).not.toHaveBeenCalled();
@@ -166,12 +166,12 @@ describe('Share Form on a document in This Browser (forms.md "Publishing and the
       onSyncToCloud: sync,
     };
     const { rerender } = render(<ShareFormDialog {...props} link={offline()} />);
-    fireEvent.click(screen.getByRole('button', { name: 'Sync Document' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sync Project' }));
     await act(async () => {});
     expect(sync).toHaveBeenCalledOnce();
     expect(track).toHaveBeenCalledWith('Form', 'Moved', 'SyncedToShare');
     expect(toast.success).toHaveBeenCalledOnce();
-    // The document is on liveplanner: the link is read first (Publish Form held), then ready.
+    // The project is on liveplanner: the link is read first (Publish Form held), then ready.
     rerender(<ShareFormDialog {...props} link={link({ link: null, status: 'loading' })} />);
     expect(publishButton().disabled).toBe(true);
     const l = link();
@@ -193,7 +193,7 @@ describe('Share Form on a document in This Browser (forms.md "Publishing and the
         syncReady={false}
       />,
     );
-    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Sync Document' });
+    const button = screen.getByRole<HTMLButtonElement>('button', { name: 'Sync Project' });
     expect(button.disabled).toBe(true);
   });
 
@@ -208,6 +208,6 @@ describe('Share Form on a document in This Browser (forms.md "Publishing and the
       />,
     );
     expect(screen.getByText(/kept on this device/)).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Sync Document' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sync Project' })).toBeNull();
   });
 });

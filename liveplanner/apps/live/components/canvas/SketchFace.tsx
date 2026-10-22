@@ -39,7 +39,7 @@ export function inkCopyOf(live: Element): { copy: Element; animated: InkAnimatio
   return { copy, animated: animated.filter((pair) => copy.contains(pair.copy)) };
 }
 
-// Each animation running on the live face, paired with its element in the copy, found by place in document order
+// Each animation running on the live face, paired with its element in the copy, found by place in project order
 // before anything is pruned (a clone keeps that order). A face with nothing animating, the usual case, costs one
 // getAnimations call; jsdom has none, so it costs nothing there.
 function pairAnimatedElements(live: Element, copy: Element): InkAnimationPair[] {

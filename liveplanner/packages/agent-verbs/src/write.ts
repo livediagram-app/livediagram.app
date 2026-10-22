@@ -51,19 +51,19 @@ export type WriteFlags = {
   waitHeld?: number;
 };
 
-type WriteTarget = { documentId: string; tabId: string; tabName: string; doc: string };
+type WriteTarget = { projectId: string; tabId: string; tabName: string; project: string };
 
 async function baseFor(
   ctx: VerbContext,
   target: WriteTarget,
   rev: number | undefined,
 ): Promise<ChangesetBase | undefined> {
-  const { documentId, tabId } = target;
+  const { projectId, tabId } = target;
   if (rev !== undefined) {
-    const copy = await ctx.copies?.at(documentId, tabId, rev);
+    const copy = await ctx.copies?.at(projectId, tabId, rev);
     return copy ? baseFromCopy(copy) : { rev };
   }
-  const latest = await ctx.copies?.latest(documentId, tabId);
+  const latest = await ctx.copies?.latest(projectId, tabId);
   return latest ? baseFromCopy(latest) : undefined;
 }
 
@@ -81,7 +81,7 @@ function refusalOf(err: unknown, target: WriteTarget, base: ChangesetBase | unde
   if (!(err instanceof ApiError)) return err;
   const body = bodyOf(err);
   const since = `since ${base ? `rev ${base.rev}` : 'your read'}${typeof body.rev === 'number' ? ` (now ${body.rev})` : ''}`;
-  const reread = `re-read: liveplanner tab view ${JSON.stringify(target.doc)} --tab ${JSON.stringify(target.tabName)}`;
+  const reread = `re-read: liveplanner tab view ${JSON.stringify(target.project)} --tab ${JSON.stringify(target.tabName)}`;
   if (err.code === 'elements_held') {
     const held = (body.held ?? []) as HeldElement[];
     return new VerbRefusal({
@@ -125,7 +125,7 @@ export async function submitChangeset(
     ...(flags.strict ? { strict: true } : {}),
     ...(flags.summary ? { summary: flags.summary } : {}),
   };
-  const path = `/documents/${encodeURIComponent(target.documentId)}/tabs/${encodeURIComponent(target.tabId)}/changesets${flags.dryRun ? '?dryRun=1' : ''}`;
+  const path = `/projects/${encodeURIComponent(target.projectId)}/tabs/${encodeURIComponent(target.tabId)}/changesets${flags.dryRun ? '?dryRun=1' : ''}`;
   const started = ctx.now();
   let response: ChangesetResponse;
   for (let attempt = 1; ; attempt += 1) {
@@ -149,6 +149,6 @@ export async function submitChangeset(
   }
   for (const warning of response.warnings) ctx.notice(`warning: ${warning}`);
   if (response.changeset && response.changeset.rebasedOver === 0)
-    await recordCopy(ctx, target.documentId, target.tabId);
+    await recordCopy(ctx, target.projectId, target.tabId);
   return response;
 }

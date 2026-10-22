@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { HomeDocument, HomeGroup, HomePerson, HomeVerb } from '@liveplanner/api-schema';
+import type { HomeProject, HomeGroup, HomePerson, HomeVerb } from '@liveplanner/api-schema';
 import {
   actionDetail,
   actionPhrase,
@@ -17,10 +17,9 @@ const person = (name: string | null): HomePerson => ({
   id: name ?? 'x',
   name,
   color: null,
-  pictureUrl: null,
 });
-const doc: HomeDocument = {
-  documentId: 'd1',
+const doc: HomeProject = {
+  projectId: 'd1',
   name: 'Payments architecture',
   via: 'team',
   shareCode: null,
@@ -75,22 +74,22 @@ describe('summarySentence', () => {
       verbs: verbs(...vs),
     }) as HomeGroup;
 
-  it('says who did what in which document', () => {
+  it('says who did what in which project', () => {
     expect(summarySentence(group(['commented', 'edited', 'assigned_you']))).toEqual({
       people: 'Priya, Sam and Lee',
       verbs: 'commented, edited and assigned you an action',
       preposition: 'in',
-      document: 'Payments architecture',
+      project: 'Payments architecture',
     });
   });
 
-  it('drops the preposition when every verb takes the document directly', () => {
+  it('drops the preposition when every verb takes the project directly', () => {
     expect(summarySentence(group(['edited', 'shared'])).preposition).toBeNull();
   });
 });
 
 describe('actionPhrase', () => {
-  it('reads as a sentence before the document', () => {
+  it('reads as a sentence before the project', () => {
     expect(actionPhrase('commented')).toBe('commented on');
     expect(actionPhrase('replied')).toBe('replied on');
     expect(actionPhrase('resolved')).toBe('resolved a thread in');
@@ -134,15 +133,15 @@ describe('locationLabel', () => {
       'Platform team › Architecture',
     );
     expect(locationLabel({ ...doc, via: 'own', teamName: null, folderName: 'Specs' })).toBe(
-      'My Documents › Specs',
+      'My Projects › Specs',
     );
   });
 
-  it('names the team of a team document the person owns', () => {
+  it('names the team of a team project the person owns', () => {
     expect(locationLabel({ ...doc, via: 'own' })).toBe('Platform team');
   });
 
-  it('names the owner of a shared document', () => {
+  it('names the owner of a shared project', () => {
     expect(locationLabel({ ...doc, via: 'shared', teamName: null })).toBe('Shared by Priya');
     expect(locationLabel({ ...doc, via: 'shared', teamName: null, ownerName: null })).toBe(
       'Shared with you',

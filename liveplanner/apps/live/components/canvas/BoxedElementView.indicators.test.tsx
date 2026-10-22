@@ -2,7 +2,7 @@
 import { render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement } from '@liveplanner/document';
+import { createShape, type BoxedElement } from '@liveplanner/project';
 import { BoxedElementView } from '@/components/canvas/BoxedElementView';
 import {
   ElementIndicatorStyleProvider,
@@ -55,7 +55,6 @@ function draw(
       onBeginDrag={vi.fn()}
       onBeginEdit={vi.fn()}
       onCommitLabel={vi.fn()}
-      onCommitTable={vi.fn()}
       onCancelEdit={vi.fn()}
       onFollowLink={vi.fn()}
       onOpenComments={vi.fn()}

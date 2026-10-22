@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { settleChips, type Element } from '@liveplanner/document';
+import { settleChips, type Element } from '@liveplanner/project';
 import { buildTemplate } from './build-template';
 import { TEMPLATES } from './templates';
 

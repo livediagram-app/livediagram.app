@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import { ExplorerPane } from '../ExplorerPane';
-import { viewDocumentTitle } from '../view-titles';
+import { viewProjectTitle } from '../view-titles';
 
-// /explorer/recent — the default landing section: last N owned documents.
+// /explorer/recent — the default landing section: last N owned projects.
 // The layout's ExplorerShell provides the chrome + state; this page
 // only pins the route and the tab title (docs/specs/013-workspace/folders.md, routes.ts).
 export const metadata: Metadata = {
-  title: viewDocumentTitle('recent'),
+  title: viewProjectTitle('recent'),
 };
 
 export default function Page() {

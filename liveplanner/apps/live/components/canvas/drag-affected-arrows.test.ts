@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createArrow, createPinnedArrow, createShape, type Element } from '@liveplanner/document';
+import { createArrow, createPinnedArrow, createShape, type Element } from '@liveplanner/project';
 import { overlayBetween } from '@/lib/drag-preview';
 import { affectedArrows, buildArrowLinks } from './drag-affected-arrows';
 

@@ -6,7 +6,7 @@
 // live from the sheet, as the sheet formats it. Until its source is chosen it offers Choose a Sheet; once chosen, an
 // Editor changes it from Change Source in the slot's cog (SlotSection). Anyone may read it.
 import { useMemo, useRef, useState } from 'react';
-import type { SheetMetricContent } from '@liveplanner/document';
+import type { SheetMetricContent } from '@liveplanner/project';
 import { percentDone } from '@liveplanner/plan-art';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideTable } from '@liveplanner/icons/lucide';

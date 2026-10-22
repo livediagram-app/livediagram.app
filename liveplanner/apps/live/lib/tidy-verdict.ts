@@ -10,7 +10,7 @@ import {
   type BoxedElement,
   type Element,
   type Layer,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { cleanupElements, type CleanupKind } from '@/lib/tab-cleanup';
 import { lockedElementIds } from '@/lib/locked-element-ids';
 

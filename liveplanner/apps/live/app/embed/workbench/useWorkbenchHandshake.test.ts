@@ -3,13 +3,13 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
   WORKBENCH_HANDSHAKE_MS,
-  type WorkbenchDocumentSessionResponse,
+  type WorkbenchProjectSessionResponse,
 } from '@liveplanner/api-schema';
 import type { WorkbenchRedeemOutcome } from '@/lib/api/workbench';
 import type { WorkbenchEvent } from './workbench-machine';
 
 // The handshake (docs/specs/013-workspace/blueprints/workbench-embeds.md "The workbench page" steps 1
-// to 3): read, redeem, check the document, hello, wait for the ack; revoke on every failure after a
+// to 3): read, redeem, check the project, hello, wait for the ack; revoke on every failure after a
 // session exists; nothing but `hello` (and `ended refused`) is sent before the ack (I8).
 
 const { redeem, endSession } = vi.hoisted(() => ({
@@ -25,16 +25,16 @@ const { runWorkbenchHandshake, useWorkbenchHandshake } = await import('./useWork
 
 const ORIGIN = 'https://127.0.0.1:5175';
 const TICKET = 'Ab3_-xYz0123456789abcd';
-const SESSION: WorkbenchDocumentSessionResponse = {
+const SESSION: WorkbenchProjectSessionResponse = {
   session: `lvw_${'a'.repeat(43)}`,
-  scope: 'document',
-  documentId: 'doc-1',
+  scope: 'project',
+  projectId: 'doc-1',
   folderId: null,
   tabId: null,
   origin: ORIGIN,
   role: 'edit',
   expiresAt: 10_000,
-  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
+  person: { id: 'user_1', name: 'Webber', color: '#0ea5e9' },
 };
 
 type Listener = (event: MessageEvent) => void;
@@ -82,7 +82,7 @@ describe('runWorkbenchHandshake', () => {
     expect(await runWorkbenchHandshake(win, dispatch)).toBeNull();
 
     expect(events).toEqual([
-      { type: 'read', ticket: null, scope: 'document', documentId: 'doc-1' },
+      { type: 'read', ticket: null, scope: 'project', projectId: 'doc-1' },
     ]);
     expect(redeem).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith('[workbench] redeem-failed', {
@@ -128,9 +128,9 @@ describe('runWorkbenchHandshake', () => {
     expect(warn).toHaveBeenCalledWith('[workbench] redeem-failed', { status: 0 });
   });
 
-  it('revokes a session for another document and tells its origin it was refused', async () => {
+  it('revokes a session for another project and tells its origin it was refused', async () => {
     const { win, parent } = fakeWindow(ADDRESS);
-    const other = { ...SESSION, documentId: 'doc-2' };
+    const other = { ...SESSION, projectId: 'doc-2' };
     redeem.mockResolvedValue({ kind: 'opened', session: other });
 
     expect(await runWorkbenchHandshake(win, dispatch)).toBeNull();

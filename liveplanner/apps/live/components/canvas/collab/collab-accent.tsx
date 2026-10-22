@@ -6,7 +6,7 @@
 // drift apart.
 
 import type { CSSProperties, ReactNode } from 'react';
-import { canvasSurface, defaultStrokeColor, inkOn, type ShapeElement } from '@liveplanner/document';
+import { canvasSurface, defaultStrokeColor, inkOn, type ShapeElement } from '@liveplanner/project';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { tint } from './collab-chrome';
 

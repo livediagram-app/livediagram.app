@@ -1,7 +1,7 @@
 // A template's Sheets made into sheets (docs/specs/029-sheets/sheet-store.md "Template starts",
 // docs/specs/026-plan/plan-templates.md "Spreadsheet templates"): the one pure step every path that makes a template's
-// tabs runs (the New Document wizard, Quick Start, the MCP's create_document and add_tab, the api's seeded create), so
-// a template's sheet exists the moment its document does. The tabs come back with the mark dropped from each Sheet
+// tabs runs (the New Project wizard, Quick Start, the MCP's create_project and add_tab, the api's seeded create), so
+// a template's sheet exists the moment its project does. The tabs come back with the mark dropped from each Sheet
 // whose sheet was made, and the sheets to create beside them.
 import type { SheetCreateRequest } from '@liveplanner/api-schema';
 import {
@@ -11,7 +11,7 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   isTemplateStart,
   templateSheetWithCharts,

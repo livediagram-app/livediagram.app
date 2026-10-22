@@ -1,5 +1,5 @@
 // The runtime behaviour of the interactive Behaviour elements that act on the SESSION rather than on the
-// document: the Session button (docs/specs/012-collaboration/session-button.md) and the Picker's roll
+// project: the Session button (docs/specs/012-collaboration/session-button.md) and the Picker's roll
 // (docs/specs/012-collaboration/picker.md).
 //
 // They live together because they share a shape — a press resolves what to do
@@ -14,7 +14,7 @@ import {
   type Tab,
   type TabVote,
   type TimerMode,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { Participant } from '@/lib/identity';
 import { pickerCandidates, rollPicker } from '@/lib/picker';
 import { track } from '@/lib/telemetry';

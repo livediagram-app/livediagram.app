@@ -47,7 +47,7 @@ export interface PlanColumn {
 export const COLUMN_WIDTHS = [1, 2, 3] as const;
 export type ColumnWidth = (typeof COLUMN_WIDTHS)[number];
 
-// 'field' groups by `swimlaneField`, any field the document's types offer (docs/specs/026-plan/plan-board.md
+// 'field' groups by `swimlaneField`, any field the project's types offer (docs/specs/026-plan/plan-board.md
 // "Swimlanes by a field").
 export const SWIMLANE_BY = ['none', 'assignee', 'type', 'priority', 'status', 'field'] as const;
 export type SwimlaneBy = (typeof SWIMLANE_BY)[number];
@@ -412,8 +412,8 @@ export function quickFilterMatches(quick: QuickFilter | undefined, item: Item): 
 
 // A status as people read it (docs/specs/026-plan/plan-board.md "All Cards"): the name a column gives it,
 // else the status itself without a new board's suffix, words capitalised.
-// A card's status as the document has it (docs/specs/026-plan/plan-board.md "A state no board names"): one no
-// board in the document names any more (its board or column gone) reads as no status, so the card shows and
+// A card's status as the project has it (docs/specs/026-plan/plan-board.md "A state no board names"): one no
+// board in the project names any more (its board or column gone) reads as no status, so the card shows and
 // groups as No status; the card keeps it, so undoing the board's deletion puts the card straight back. Given no
 // names (a caller that has none), every status stands.
 export function namedStatus(item: Item, names?: ReadonlyMap<string, string>): string | undefined {
@@ -539,7 +539,7 @@ function fieldLaneOrder(field: LaneField, a: unknown, b: unknown): number {
 
 // Items grouped into swimlanes (docs/specs/026-plan/plan-board.md "Swimlanes"), shared by a board and the Gantt
 // chart (plan-views.md "Swimlanes"): the lanes the items fall in, named and ordered as a board orders them, and each
-// item's lane key. A field lane resolves against the document's types; a field no type offers any more is no lanes.
+// item's lane key. A field lane resolves against the project's types; a field no type offers any more is no lanes.
 interface LaneGroups {
   by: SwimlaneBy;
   field: LaneField | undefined;
@@ -628,7 +628,7 @@ export function projectBoard(
   setup: PlanBoardSetup,
   items: ReadonlyMap<string, Item>,
   quick?: QuickFilter,
-  // The document's type catalogue (docs/specs/026-plan/item-types.md): the order and names of type rows.
+  // The project's type catalogue (docs/specs/026-plan/item-types.md): the order and names of type rows.
   types: readonly ItemTypeDef[] = ITEM_TYPES,
   // Status names from the tab's boards' columns, in order: an All Cards board's status rows.
   statusNames?: ReadonlyMap<string, string>,

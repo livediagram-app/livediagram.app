@@ -235,11 +235,11 @@ interface BoardCsvImport {
 export interface BoardCsvImportContext {
   setup: PlanBoardSetup;
   types: readonly ItemTypeDef[];
-  // The names the document's boards give their statuses: an All Cards board's states.
+  // The names the project's boards give their statuses: an All Cards board's states.
   statusNames?: ReadonlyMap<string, string>;
   // Who could be assigned: an Assignee is matched by name among them.
   people: readonly ItemPerson[];
-  // How many cards the document still has room for (ITEMS_MAX less what it holds).
+  // How many cards the project still has room for (ITEMS_MAX less what it holds).
   room: number;
 }
 

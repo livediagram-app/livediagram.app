@@ -6,7 +6,7 @@
 // canvas's, and every popover that finds an element by its `data-element-id` finds it in the Sheet. The Sheet's own
 // frame around it moves, resizes and selects it; this view takes no pointer itself (its indicators still do).
 import { useCallback, type ComponentProps, type ReactNode } from 'react';
-import { resolveFontStack, type ShapeElement } from '@liveplanner/document';
+import { resolveFontStack, type ShapeElement } from '@liveplanner/project';
 import { BoxedElementView } from './BoxedElementView';
 import { ElementIndicatorStyleProvider } from './ElementIndicatorStyleContext';
 
@@ -27,7 +27,6 @@ export type BoxedShared = Omit<
   | 'isEditing'
   | 'editCursorAtEnd'
   | 'movable'
-  | 'writable'
   | 'resizable'
   | 'isVoteFocus'
   | 'commentActions'
@@ -68,7 +67,6 @@ export function useSheetChartRenderer(
           isEditing={false}
           // The Sheet's frame moves and resizes it; nothing types on a chart.
           movable={false}
-          writable={false}
           resizable={false}
           readOnly={shared.readOnly || !interactive}
           fontFamily={resolveFontStack(element.font) ?? tabFontStack}

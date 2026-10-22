@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render } from '@testing-library/react';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import {
   AgentFocusContext,
   AgentFocusOverlay,

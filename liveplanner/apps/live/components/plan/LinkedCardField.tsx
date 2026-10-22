@@ -63,7 +63,7 @@ export function LinkedCardField({
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
   const linkedId = typeof value === 'string' && value ? value : undefined;
-  // The linked card, from the document's cards, else from the candidates (a host that passes only those).
+  // The linked card, from the project's cards, else from the candidates (a host that passes only those).
   const linked = linkedId
     ? (linkedCard(items, linkedId) ?? candidates.find((c) => c.id === linkedId))
     : undefined;

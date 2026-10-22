@@ -2,8 +2,8 @@
 
 A **Form tab** is a Plan tab that holds one form: questions someone builds in place, shared as a **form link**
 that anyone can open and fill in without an account. Each **response** becomes a card on a Board tab of the same
-document, in the status the form names, so collecting answers leads straight into working them on a board. It is
-liveplanner's answer to Google Forms: building a form, sharing it and reading the answers happen in the document
+project, in the status the form names, so collecting answers leads straight into working them on a board. It is
+liveplanner's answer to Google Forms: building a form, sharing it and reading the answers happen in the project
 where the work then happens.
 
 ## Why
@@ -12,7 +12,7 @@ Boards and Sheets are where a team keeps its data, but data often starts with so
 report, a job application, an event RSVP, a feature request. Today that means a separate forms product, then
 copying answers across by hand or through an integration. A Form tab removes the hop: the form is built beside the
 board it feeds, every answer arrives as a card already in the right column, and the people answering never see the
-document.
+project.
 
 ## Domain language
 
@@ -25,7 +25,7 @@ document.
 | **question type**   | What a question takes (Short Answer, Multiple Choice...)                                      | field kind (that is a card's) |
 | **mapping**         | Where a question's answer is kept on the card: Title, Description or one custom field         | binding, link                 |
 | **destination**     | The Board tab, card type and status every response is made in                                 | target, inbox                 |
-| **form link**       | The public address of a published form (`/form/<code>`); it grants nothing on the document    | share link (that is a doc's)  |
+| **form link**       | The public address of a published form (`/form/<code>`); it grants nothing on the project    | share link (that is a doc's)  |
 | **respondent**      | Anyone filling in a form through its form link; always anonymous                              | user, visitor, submitter      |
 | **response**        | One submitted set of answers; it is made into one card                                        | submission, entry, reply      |
 | **response number** | The form's own running count, 1, 2, 3, never reused (`Bug Report #14`)                        | key (that is the card's)      |
@@ -75,7 +75,7 @@ Choosing a starter makes the tab and any new Board tab in one change and one und
 it brings are a card-type change of their own and stay after an undo, as a template's types do:
 
 1. makes the tab a Form tab holding the starter's form;
-2. picks the **destination**: for a board starter, the document's first Board tab whose board takes a card type the
+2. picks the **destination**: for a board starter, the project's first Board tab whose board takes a card type the
    starter suits (a Bug for Bug Report, an Idea for Feature Request), else a new Board tab after the Form tab named
    "<Form> Responses" with three columns (**New**, **In Progress**, **Done**), its status **New**; for a sheet
    starter, a new Sheet tab "<Form> Responses" after the Form tab (in its theme) holding one blank sheet, made at
@@ -83,7 +83,7 @@ it brings are a card-type change of their own and stay after an undo, as a templ
    The sheet's create waits for the new tab's own save (`whenTabSaved`, `apps/live/lib/tab-saved.ts`, noted by
    autosave, at most `TAB_SAVE_WAIT_MS` 8 s), so it never reaches the server ahead of its tab and comes back 404 to
    be retried: a new form leaves the console clean;
-3. picks the **card type**: the starter's ready-made type, the document's own copy first (Bug for Bug Report, Idea
+3. picks the **card type**: the starter's ready-made type, the project's own copy first (Bug for Bug Report, Idea
    for Feature Request, Candidate for Job Application, Request for Contact), else a new type named after the form
    ("Feedback", "Event RSVP") in the starter's colour with the checklist glyph;
 4. adds the custom fields the starter's mappings name to that type (a field of that name and kind already on it is
@@ -98,11 +98,11 @@ than a board.
 Feature Request Form, Event RSVP Form, Job Application Form, Contact Form; `packages/templates/src/form-templates.ts`),
 so a form is made from the template step, the landing page's gallery (its **Forms** category, Blank Form on Blank
 Slate) and a `/new?template=` link as it is from Start Planning. A form template makes an empty Plan tab and the
-editor starts the starter's form on it: from the template step at once, from `/new` once the new document's tab is
+editor starts the starter's form on it: from the template step at once, from `/new` once the new project's tab is
 open (the starter waits in `sessionStorage` under the tab's id, `lib/pending-form-start.ts`). The tab's name, when it
 has one of its own, names the form and its Responses tab. Only the editor can start a form (its card type, its sheet),
 so form templates are `editorOnly`: left out of the agents' catalogue (`list_templates`), and refused where an agent
-names one (`create_document`, `add_tab`, a changeset's `replace`, the CLI's `--template`) with how its form is made
+names one (`create_project`, `add_tab`, a changeset's `replace`, the CLI's `--template`) with how its form is made
 instead: "`contact-form` starts a form, which only the editor makes from a template: make it with add_form (starter
 `contact`)". Built there, it was an empty Plan tab and no form.
 
@@ -125,7 +125,7 @@ previewing), the help link and the form's **cog**.
   behind that name), with its grip a control of its own beside it rather than inside it.
 - **Share Form** is the header's Share button: on a Form tab, for someone who may edit it, the header's **Share** is
   **Share Form** (filled once the form is published), so the page never shows two share buttons. Everyone else keeps
-  the document's Share.
+  the project's Share.
 
 ### The form card, top to bottom
 
@@ -198,12 +198,12 @@ The status bar's **cog** (an Editor's) opens one panel, 320 px wide under it (a 
   Responses Go?", "Choose before you publish: the form can’t take responses until it has somewhere to put them.",
   then two choices side by side (stacked on a phone), each an icon, a name and a line: **Cards on a Board** ("A card
   for each response, to work through. Makes a new board.", Responses Go To's New Board) and **Rows in a Sheet** ("A
-  row for each response, to count and compare. Makes a new sheet.", its New Sheet); and, when the document already
+  row for each response, to count and compare. Makes a new sheet.", its New Sheet); and, when the project already
   has a Board or Sheet tab, **Or use a board or sheet you already have**, which opens the cog on Responses Go To. It
   goes as soon as the form names a board or a sheet that holds, and comes back when that board or sheet is removed
   (its tab deleted, its column or card type gone), its line then the reason ("Its sheet was removed. Choose where
   responses go."). A Participant or Viewer never sees it.
-- **Responses Go To** (the destination): **Board** (the document's Board tabs, its last choice **+ New Board**: a
+- **Responses Go To** (the destination): **Board** (the project's Board tabs, its last choice **+ New Board**: a
   Board tab after this one, "<Form> Responses", New, In Progress, Done), **Card Type** (the types that board takes,
   its last choice **+ New Card Type**: a type named after the form, which a board confining its types also takes),
   **Column** (the board's columns, as chips); a pencil beside Card Type opens that type's editor (its fields), to shape it before mapping answers. A sentence under it reads the result back: "Each response becomes a
@@ -239,9 +239,9 @@ so text contrast never depends on the theme.
 - A custom theme draws as Default, on the page and in the builder alike: the form link's page cannot read its
   owner's themes, and the builder shows what respondents will see.
 - The look dresses the form alone: the builder's status bar and the cog's panel are the editor's and keep its look.
-- **In the Explorer**: a document whose first tab is a Form tab shows the form, drawn on its look, as its snapshot
-  ([Document snapshots](../006-document/document-snapshots.md)), never "Nothing drawn yet"; a tab holding a form is
-  never empty, so the empty-document clean-up keeps it.
+- **In the Explorer**: a project whose first tab is a Form tab shows the form, drawn on its look, as its snapshot
+  ([Project snapshots](../006-project/project-snapshots.md)), never "Nothing drawn yet"; a tab holding a form is
+  never empty, so the empty-project clean-up keeps it.
 
 ### Preview
 
@@ -380,8 +380,8 @@ Tour** stack.
 ## Publishing and the form link
 
 - **Share Form** (the header's Share on a Form tab, an Editor's) opens the **Share Form** dialog, separate from the
-  document's Share dialog:
-  - Its subtitle: "Anyone with the link can fill in this form. They won’t see your document."
+  project's Share dialog:
+  - Its subtitle: "Anyone with the link can fill in this form. They won’t see your project."
   - Not yet published: a line on what publishing does ("Each response becomes a card on your board", or "a row in
     your sheet" for a sheet form) and **Publish Form**, which makes the form link. A form must be connected to a
     working board (its column and card type) or sheet to publish. While it has any problem, Publish Form is held
@@ -399,22 +399,22 @@ Tour** stack.
     read-only field with **Copy Link** (it reads "Copied" for a moment), **Open** (a new
     browser tab), **Accepting Responses** with the count so far, and **Delete Link**, which asks first ("Delete this
     link? People with it will see this form isn’t available. Publishing again makes a new link.").
-  - A document kept on this device only (an offline document) cannot publish until it is synced, so Share Form offers
-    the same move the document's Share dialog does ([Offline mode](../006-document/offline-mode.md#sharing-a-document-in-this-browser)):
-    the shared sync prompt (`SyncDocumentPrompt`, the one `ShareOfflineGate` draws) says **This Document Is in This Browser**,
+  - A project kept on this device only (an offline project) cannot publish until it is synced, so Share Form offers
+    the same move the project's Share dialog does ([Offline mode](../006-project/offline-mode.md#sharing-a-project-in-this-browser)):
+    the shared sync prompt (`SyncProjectPrompt`, the one `ShareOfflineGate` draws) says **This Project Is in This Browser**,
     "It is saved only in this browser, so this form can't be published yet. Sync it to liveplanner to publish it: the
     form link and its responses need it on our servers. You can take it offline again any time.", with **Sync
-    Document**. It syncs the document in place; the toast confirms and the same dialog carries straight on to the
+    Project**. It syncs the project in place; the toast confirms and the same dialog carries straight on to the
     unpublished view (Publish Form, held while the link is first read), so the Editor publishes without reopening
-    anything. Nothing uploads before Sync Document is pressed, nor before the reader is known; a failed sync says
+    anything. Nothing uploads before Sync Project is pressed, nor before the reader is known; a failed sync says
     why and leaves the button to try again. Only an Editor reaches Share Form, so only an Editor can sync from it.
 - The form link is `/form/<code>`: a code of 22 random characters (base 62, about 131 bits), separate from every
-  share link. It grants **nothing** on the document: no read, no room, no images.
+  share link. It grants **nothing** on the project: no read, no room, no images.
 - One live link per Form tab. Its response number carries on across a deleted or suspended link and a new one: a
   deleted link is kept, closed and marked, so its number is remembered and its code never answers again. Two
   responses at once never pass the Response Limit between them.
 - **Open**: the form accepts responses while it is open, its Close On time has not passed, its Response Limit is not
-  reached, and its document is not in the Trash. Otherwise it is **closed**, and the form link shows the closed page.
+  reached, and its project is not in the Trash. Otherwise it is **closed**, and the form link shows the closed page.
   Closing and reopening keep the link and the response number.
 - **Live**: the form link always shows the form as its Form tab holds it now. A question added, reworded or removed
   takes effect for the next person to open the link; a respondent already filling it in submits against what they
@@ -437,9 +437,9 @@ Tour** stack.
   disabled with "Fix this form's problems first: Share Form lists them." (Settings) or "Closed until the problems
   below are fixed." (Share Form), and the api refuses it as it refuses a publish (409 `form_destination_missing` /
   `form_not_ready`). Closing always works.
-- A Form tab deleted deletes its form link in the same request. Its Delete asks first, as an undo brings the form back but not its link: "If this form has a link, the link is deleted with it: undo brings the form back, not its link." (`FORM_TAB_DELETE_WARNING`). A document copied, a tab duplicated or a document
+- A Form tab deleted deletes its form link in the same request. Its Delete asks first, as an undo brings the form back but not its link: "If this form has a link, the link is deleted with it: undo brings the form back, not its link." (`FORM_TAB_DELETE_WARNING`). A project copied, a tab duplicated or a project
   restored from a file copies the form **unpublished**: a copy never answers the original's link.
-- A copy keeps its destination: a duplicated tab's still names the document's board; a copied document's names a tab
+- A copy keeps its destination: a duplicated tab's still names the project's board; a copied project's names a tab
   the copy may not hold, and then reads as needing a choice (below) until one is made.
 - Publishing needs a destination whose Board tab (a live board on it), card type (taken by that board) and column
   still exist; **Publish Form** is held back with the reason otherwise. A published form whose destination breaks
@@ -448,7 +448,7 @@ Tour** stack.
 
 ## Filling in a form
 
-The form link opens a page of its own, outside the editor: no Explorer, no document chrome, no sign-in prompt, and
+The form link opens a page of its own, outside the editor: no Explorer, no project chrome, no sign-in prompt, and
 no editor code loaded (its own small bundle).
 
 - **Look**: the form in its tab's [look](#look) (colour, font, finish and backdrop, each following the respondent's
@@ -485,7 +485,7 @@ no editor code loaded (its own small bundle).
   alone: nobody reviews by hand. Once reports have come
   from three distinct browsers on three distinct networks, the form link is **suspended** for good: it shows the not
   found page, its Form tab says "This form’s link was suspended after reports from respondents", and the owner is
-  emailed. Publishing again makes a new link; a document whose form links have been suspended twice cannot publish
+  emailed. Publishing again makes a new link; a project whose form links have been suspended twice cannot publish
   another.
 - Beside Submit, in small type: "Never submit passwords through liveplanner forms."
 
@@ -501,15 +501,15 @@ On submit the api, in one write:
    leaves out), at the bottom of that column; its Title, Description and custom fields from the mappings; its
    creator the form itself (`createdBy`: the name "<Form> form", the form's colour), so its panel says "Created by
    Bug Report form"; and `fromForm` (`<form tab id>:<response number>`), a plain field no card face draws;
-5. relays the new card to the document's room, so everyone with the board open sees it arrive.
+5. relays the new card to the project's room, so everyone with the board open sees it arrive.
 
 - The card's panel says so at the foot of Details, under Created by: "Form response #14, 15 Oct 2026, 14:02".
 - The answers are checked again on the api, and the card it would make is checked by the item store before a number
   is taken, so a refused response never uses one.
 - A response is only its card. Editing or deleting the card edits or deletes the response; there is no second copy.
-- The document's item store limit ([Items](../026-plan/items.md#limits)) holds: a document at its limit refuses
+- The project's item store limit ([Items](../026-plan/items.md#limits)) holds: a project at its limit refuses
   responses (`form_full`; the page says the form has just closed); the Form tab's status bar says "Responses are
-  paused: this document holds as many cards as it can."
+  paused: this project holds as many cards as it can."
 
 ## Responses to a Sheet
 
@@ -517,7 +517,7 @@ Responses Go To opens on a switch: **Cards on a Board** (above: a card each, ans
 Sheet** (a row each, a column per question, no mapping; `form.sheet`: `{ tabId, sheetId }`). Switching keeps the
 board settings, for switching back.
 
-- **Choosing the sheet**: **Sheet** lists the document's Sheet tabs' sheets by their tab's name ("Budget", "Budget 2"
+- **Choosing the sheet**: **Sheet** lists the project's Sheet tabs' sheets by their tab's name ("Budget", "Budget 2"
   for a second on it), its last choice **+ New Sheet**: a Sheet tab "<Form> Responses" after the Form tab (in its
   theme), a blank sheet on it the destination, made at once so the form stays open. Picking Rows in a Sheet with no sheet
   yet makes one the same way. A sentence reads it back: "Each response becomes a row on **Budget**, a column per
@@ -552,7 +552,7 @@ board settings, for switching back.
 - **On the board**: a card made by a response shows a **New** dot (the brand colour, beside its flag, named "New
   response") until it is opened in this browser, or until a week has passed. What has been opened is kept per browser.
 - **On the Form tab**: the **status bar** over the form: its state (**Not Published**, **Accepting Responses**,
-  **Paused**, **Closed**, **Suspended**, or **Draft** for an offline document; a form switched on but past its Close
+  **Paused**, **Closed**, **Suspended**, or **Draft** for an offline project; a form switched on but past its Close
   On or at its Response Limit reads **Closed**, as its link is, and is not locked), the count ("14 responses · 3 new",
   new to this reader), which opens the destination's tab (its tooltip names it), and, for an Editor while the form has
   any problem, **Problems with this Form** with a warning triangle to the right of the count, which opens Share Form
@@ -571,7 +571,7 @@ board settings, for switching back.
     Settings.
   - **Response Limit reached**: "It reached its Response Limit. Raise it in Settings to take responses again." Opens
     Settings.
-  - **Document full** (as many cards as it can hold): "This document holds as many cards as it can. Remove some to
+  - **Project full** (as many cards as it can hold): "This project holds as many cards as it can. Remove some to
     take responses again." Opens the tab responses go to, when there is one.
     A form never published, a Draft (offline) one and one taking responses show none, and a sheet form is never full
     (its rows are not cards). Its red is `red-700` on white (6.4:1; 5.9:1 on its `red-50` hover) and `red-300` on the
@@ -579,12 +579,12 @@ board settings, for switching back.
     ("Not Taking Responses. Accepting Responses is off, ..."), so the tooltip never holds the only copy of it. Participants and Viewers see
     the state pill (Paused, Closed, Suspended) and no warning: what it opens is an Editor's.
 - **Inbox**: a **Form Responses** section in the Explorer's [Inbox](../013-workspace/inbox.md) lists each live
-  form, in a document the reader owns or reaches through a team, that has responses the reader has not seen: "3 new
-  responses to **Bug Report**", its document's chip, newest response first; a row opens the destination board (the
+  form, in a project the reader owns or reaches through a team, that has responses the reader has not seen: "3 new
+  responses to **Bug Report**", its project's chip, newest response first; a row opens the destination board (the
   Form tab when it has none). Unseen is counted by response number: opening the Form tab marks every response so far
   seen for that reader, and publishing marks them seen for the publisher. The Inbox's own badge still counts only
   what is assigned to the reader.
-- **Email**: the document's owner gets "New response to Bug Report", naming the card's title and its document, with
+- **Email**: the project's owner gets "New response to Bug Report", naming the card's title and its project, with
   **Open the board**. At most one email per form per 15 minutes: the next one sent says "And 4 more responses have
   arrived since the last email." Turned off with **Someone Fills In My Form** in Settings' email notifications;
   never sent where email is not configured (a deployment without it).
@@ -600,7 +600,7 @@ board settings, for switching back.
 | Edit Form on a live form (stops it taking responses)     | ✓                                      |             |        |
 | See the response count, which opens the destination      | ✓                                      | ✓           | ✓      |
 | See Not Taking Responses, which opens its fix            | ✓                                      |             |        |
-| Sync a document in This Browser from Share Form          | ✓                                      |             |        |
+| Sync a project in This Browser from Share Form          | ✓                                      |             |        |
 | Fill in the form through its link                        | anyone with the link, signed in or not |             |        |
 
 A Participant or Viewer sees the form drawn as the form link draws it (working, but sending nothing and making no
@@ -619,9 +619,9 @@ session can add content elsewhere, never to a form.
   learns nothing), counted in telemetry.
 - **Size**: a response body is at most 64 KB; a form holds at most 10 sections and 100 questions.
 - **A form link** reads the form as it stands, never from a cache (`Cache-Control: no-store`): an edit, a close or a
-  delete shows at once. A read is three small rows (the link, the document, the tab), cheap at any rate the limiter
+  delete shows at once. A read is three small rows (the link, the project, the tab), cheap at any rate the limiter
   lets through.
-- Every miss (an unknown, deleted or suspended code, a document in the Trash, a tab gone or no longer a Form tab)
+- Every miss (an unknown, deleted or suspended code, a project in the Trash, a tab gone or no longer a Form tab)
   answers the same `404 form_not_found`.
 - No respondent identity is kept: no address, no account, no cookie. A response's card carries the answers alone.
 
@@ -630,7 +630,7 @@ session can add content elsewhere, never to a form.
 An agent builds, reads, tries and publishes a form as an Editor does, through five MCP tools
 ([MCP server](../015-api/mcp-server.md) §4.9e) and the CLI's `form` commands, one engine for both
 (`packages/agent-verbs/src/forms/`). A form's responses stay what they are everywhere: cards (`list_items`,
-`change_items`, `fromForm` among their fields) or rows (`read_sheet`). `read_document` shows a Form tab as `kind=form`
+`change_items`, `fromForm` among their fields) or rows (`read_sheet`). `read_project` shows a Form tab as `kind=form`
 and names `read_form` for it.
 
 The bar: an agent asked for "an RSVP form for the party, send me the link" makes a form someone would publish as it
@@ -642,18 +642,18 @@ its name in Responses Go To ("Budget", "Budget 2"), and a mapping by the card fi
 with the ones there are. Question types go by their ids (`short`, `paragraph`, `number`, `email`, `link`, `date`,
 `single`, `multi`, `rating`, `checkbox`), each described with the builder's name for it.
 
-- **`read_form`** (read): the Form tab named (or the document's first): its heading and description, its sections
+- **`read_form`** (read): the Form tab named (or the project's first): its heading and description, its sections
   in order (each with its rule as the question's prompt and the answers), each question with every setting it has
   and where its answer goes (**Title**, **Description**, or the field's name; a broken mapping says it fell back),
   where responses go (the board, card type and column, or the sheet, by name; or nowhere, and why), its settings
-  (Close On as an ISO time, the limit, the two messages), its **state** (`draft` for a document kept on a device,
+  (Close On as an ISO time, the limit, the two messages), its **state** (`draft` for a project kept on a device,
   `not_published`, `accepting`, `closed` with why, `paused`, `suspended`), the response count, the **form link**
   (an Editor's only, as the api hands out the code) and its **problems** in Share Form's words. With `image`, a
   picture of the form as respondents see it on its tab's look.
-- **`add_form`** (write): a new Form tab after the document's last tab, from a **starter** (`bug-report`, `feedback`,
+- **`add_form`** (write): a new Form tab after the project's last tab, from a **starter** (`bug-report`, `feedback`,
   `feature-request`, `rsvp`, `job-application`, `contact`; everything Start Planning makes with it) or from
-  **questions** (or **sections** of them), named by `name` (the form's heading and the tab's), in the document's
-  theme unless given one. With no `documentId` it makes a new document named after the form first, its one tab the
+  **questions** (or **sections** of them), named by `name` (the form's heading and the tab's), in the project's
+  theme unless given one. With no `projectId` it makes a new project named after the form first, its one tab the
   Form tab (and a responses tab after it). **Responses go** (`respondsTo`):
   - `{ to: "board" }`: to a new Board tab "<Form> Responses" (New, In Progress, Done) taking the form's card type
     alone, so it shows only responses; with
@@ -663,7 +663,7 @@ with the ones there are. Question types go by their ids (`short`, `paragraph`, `
     given its header row at once (`#`, `Submitted`, each question; bold, frozen), as the first response would write
     it, so it reads as the form's before anyone answers; with `sheet`, an existing one;
   - left out: a starter's own way; for questions, a new board.
-    A board form's card type is the one named (one the document lacks is the ready-made type of that name, brought in,
+    A board form's card type is the one named (one the project lacks is the ready-made type of that name, brought in,
     else a new type of that name), or a new type named after the form (as + New Card Type), which a board confining
     its types also takes. A question's `goesTo` (`title`, `description`, or a field's name) maps its answer: a name
     the card type lacks makes that field, of the kind the question's type makes (New Field), options included; a
@@ -706,13 +706,13 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
 - **Share roles**: reading needs read access to the tab; the link's code only ever reaches an Editor; building and
   publishing are an Editor's, as the api gates them (a Participant's or Viewer's token is refused).
 - **How it is written**: a new Form tab is a changeset whose `replace` names its `form` (the form whole, read by the
-  same sanitiser the editor reads with), so it lists in the document's changes as the agent's. An existing form is
-  replaced through its own route, `POST /api/documents/:id/tabs/:tabId/form` `{ form, rev }`, at the revision the
+  same sanitiser the editor reads with), so it lists in the project's changes as the agent's. An existing form is
+  replaced through its own route, `POST /api/projects/:id/tabs/:tabId/form` `{ form, rev }`, at the revision the
   agent read (409 `form_changed` when someone changed it since), relayed to open editors as an editor's own edit;
   a changeset never replaces an existing form (it writes and relays elements, and a form is none). Card types are
   saved as `change_card_types` saves them, at their revision; a new responses board or sheet is a changeset that
   makes a Board or Sheet tab (`replace` of elements with `kind`), its sheet made under the id the form names. Every
-  check is made before anything is written, so a refusal leaves the document as it was.
+  check is made before anything is written, so a refusal leaves the project as it was.
 - **The CLI**: `form get`, `form add` (`--starter`, or `--from` a JSON file of `add_form` input), `form change` (a
   JSON file of changes, or stdin), `form share` (`publish`, `close`, `delete_link`) and `form try` (a JSON file of
   answers, or stdin).
@@ -730,7 +730,7 @@ showIf? }` (`showIf: null` is Always), `delete_section` (its questions join the 
 | Form     | Shared   | `BoardCopy`                                             | Copy Form Link on a board's Form strip                |
 | Form     | Toggled  | `Open` / `Closed`                                       | Accepting Responses flipped (before the change lands) |
 | Form     | Opened   | `NotTaking` + the reason (`NotTakingSwitchedOff`, ...)  | Not Taking Responses pressed                          |
-| Form     | Moved    | `SyncedToShare`                                         | Sync Document pressed in Share Form                   |
+| Form     | Moved    | `SyncedToShare`                                         | Sync Project pressed in Share Form                   |
 | Form     | Sent     | `Response` / `Dropped` (hidden field)                   | The api accepts or drops a response (server-side)     |
 | Form     | Sent     | `Preview`                                               | An Editor's Preview makes its card                    |
 | Form     | Reported | `Spam` / `Phishing` / `Offensive` / `Other`             | A report is filed (server-side)                       |

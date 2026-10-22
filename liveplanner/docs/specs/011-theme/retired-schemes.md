@@ -1,7 +1,7 @@
 # Retired colour schemes
 
 A colour scheme leaves the catalogue by being **migrated away on load**, not by lingering as a scheme nobody can pick.
-A document saved against a retired scheme is rewritten, the moment it is read, into the scheme that replaced it; the
+A project saved against a retired scheme is rewritten, the moment it is read, into the scheme that replaced it; the
 next save persists the rewrite. There is no list of retired schemes that still resolve.
 
 ## Charcoal
@@ -49,16 +49,16 @@ pattern colour still equal to the retired theme's becomes the new theme's.
 
 ## Where it runs
 
-One pure function in `@liveplanner/document`, `migrateStoredTab`, composes every tab-level migration (this one and the
+One pure function in `@liveplanner/project`, `migrateStoredTab`, composes every tab-level migration (this one and the
 element migrations: retired groups and docks). Every place a stored tab enters a reader runs it:
 
 - the api worker's tab read (`rowToTab`), which every editor, share-link and MCP read goes through;
 - the api worker's thumbnail and live-image render, which parses `tabs.data` directly;
-- the offline store's tab load, for documents kept only in this browser;
+- the offline store's tab load, for projects kept only in this browser;
 - a file import, since an exported file is a stored tab like any other.
 
 It runs at read time rather than as a D1 migration because the rewrite needs the element model (per-kind colour
-fields), which SQL over a JSON blob cannot express safely, and because offline documents and files never reach D1.
+fields), which SQL over a JSON blob cannot express safely, and because offline projects and files never reach D1.
 
 ## Properties
 

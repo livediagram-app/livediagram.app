@@ -4,7 +4,7 @@
 // live, a plan view or a chart from a Sheet at the slot's size (the element keeps its stored size; the slot lends it
 // its own), or a note.
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import { isChartShape, type DashboardContent } from '@liveplanner/document';
+import { isChartShape, type DashboardContent } from '@liveplanner/project';
 import { PlanViewView } from '@/components/plan/views/PlanViewView';
 import { PlanBoardView } from '@/components/plan/PlanBoardView';
 import { PlanSheetView } from '@/components/sheets/PlanSheetView';

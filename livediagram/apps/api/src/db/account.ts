@@ -5,7 +5,6 @@
 import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
 import { deleteCollabIndexForOwner, recordOwnerAlias } from './collab-index';
 import { deleteDocumentOpensForOwner, migrateDocumentOpens } from './document-opens';
-import { COPY_COUNT_SQL } from './community-engagement';
 import { snapshotKeys } from './documents';
 import { documentRemovalStatements } from './document-removal';
 import { purgeRooms } from '../room-purge-client';
@@ -152,27 +151,17 @@ export async function deleteAccount(
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
   // people's documents; those on their own went with the documents. Parts follow by cascade.
   await env.DB.prepare('DELETE FROM agent_changesets WHERE author_id = ?').bind(ownerId).run();
-  // community_copies (docs/specs/025-community/community.md): the copies this person took of other people's posts
-  // name them; the rows go and those posts' copy counts are recounted. Posts on their own documents went with them.
-  // The posts they copied, read first: their counts are recounted (capped per network) once the rows are gone.
-  const copied = await env.DB.prepare('SELECT post_id FROM community_copies WHERE copier_id = ?')
+  // Community posts (docs/specs/025-community/community.md): the links of their own posts went with their
+  // documents; this closes one whose document outlives them (moved to a team), so nothing stays published under a
+  // deleted account. A post whose link is gone is gone: the Community sync tells the service, which deletes it with
+  // its likes, copies and reports. The copies they took of other people's posts are forgotten by the account route
+  // (forgetCommunityCopier), since the service keeps them.
+  await env.DB.prepare(
+    `DELETE FROM share_links WHERE purpose = 'community'
+       AND code IN (SELECT share_code FROM community_links WHERE author_id = ?)`,
+  )
     .bind(ownerId)
-    .all<{ post_id: string }>();
-  await env.DB.batch([
-    env.DB.prepare('DELETE FROM community_copies WHERE copier_id = ?').bind(ownerId),
-    env.DB.prepare(
-      `UPDATE community_posts SET copy_count = ${COPY_COUNT_SQL('community_posts.id')}
-        WHERE id IN (SELECT value FROM json_each(?))`,
-    ).bind(JSON.stringify((copied.results ?? []).map((r) => r.post_id))),
-    // Their own posts went with their documents; this catches one whose document outlives them (moved
-    // to a team), so nothing stays published under a deleted account.
-    // Deleted through its community link, so the link goes too and the post's tags, likes, copies and reports
-    // follow by cascade.
-    env.DB.prepare(
-      `DELETE FROM share_links WHERE purpose = 'community'
-         AND code IN (SELECT share_code FROM community_posts WHERE author_id = ?)`,
-    ).bind(ownerId),
-  ]);
+    .run();
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
@@ -319,26 +308,8 @@ export async function migrateOwnerId(
       fromOwnerId,
     ),
     placementDrop: move('DELETE FROM placement_defaults WHERE owner_id = ?', fromOwnerId),
-    // community_copies (docs/specs/025-community/community.md "Likes"): a post counts each copier
-    // once, so the guest's copies become the account's. The primary key is (post_id, copier_id), so
-    // INSERT OR IGNORE then DELETE: where both identities copied one post it is one copier, and those
-    // posts' counts are recounted to match. (Likes are keyed by the browser's community key, never an
-    // owner id, and a post's author is always signed in, so neither needs moving.)
-    copies: move(
-      `INSERT OR IGNORE INTO community_copies (post_id, copier_id, created_at, network_hash)
-       SELECT post_id, ?, created_at, network_hash
-       FROM community_copies
-       WHERE copier_id = ?`,
-      toOwnerId,
-      fromOwnerId,
-    ),
-    copiesDrop: move('DELETE FROM community_copies WHERE copier_id = ?', fromOwnerId),
-    copyCounts: move(
-      `UPDATE community_posts
-       SET copy_count = ${COPY_COUNT_SQL('community_posts.id')}
-       WHERE id IN (SELECT post_id FROM community_copies WHERE copier_id = ?)`,
-      toOwnerId,
-    ),
+    // Community copies (docs/specs/025-community/community.md "Likes") are the Community service's: the migrate
+    // route moves the guest's to the account there (mergeCommunityCopier).
     // participants: the guest's name and colour. The id IS the owner id, so an
     // account that already has a row keeps it (a signed-in name comes from Clerk
     // anyway). The copy is stamped NOW, never with the source's created_at: a row

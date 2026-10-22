@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ChangesetRequest } from '@liveplanner/api-schema';
-import type { ShapeElement } from '@liveplanner/document';
+import type { ShapeElement } from '@liveplanner/project';
 import { run } from '../main';
 import { parsePullFile, type PullFile } from '../sync/pull-file';
 import { fakeIo, NOW, TOKEN, type FakeIo, type Route } from '../testing/fake-io';
@@ -43,13 +43,13 @@ function host(
       return Response.json({
         apiBase: `${HOST}/api`,
         authEnabled: true,
-        documentFormat: options.format ?? 2,
+        projectFormat: options.format ?? 2,
       });
     if (path === '/api/share/CODE1234')
-      return Response.json({ document: { id: DOC, name: 'Shop: Checkout' } });
-    if (path === `/api/documents/${DOC}`)
+      return Response.json({ project: { id: DOC, name: 'Shop: Checkout' } });
+    if (path === `/api/projects/${DOC}`)
       return Response.json({
-        document: {
+        project: {
           id: DOC,
           name: 'Shop: Checkout',
           tabs: [...tabs].map(([id, t], i) => ({
@@ -60,7 +60,7 @@ function host(
           })),
         },
       });
-    const tab = /^\/api\/documents\/[^/]+\/tabs\/([^/]+)(\/.*)?$/.exec(path);
+    const tab = /^\/api\/projects\/[^/]+\/tabs\/([^/]+)(\/.*)?$/.exec(path);
     if (!tab) return undefined;
     const [, tabId, rest] = tab;
     const stored = tabs.get(tabId!);
@@ -80,7 +80,6 @@ function host(
           results: [],
           text: 'nothing changed',
           warnings: [],
-          lint: null,
         });
       const rev = (stored?.rev ?? 0) + 1;
       if (!dryRun)
@@ -97,7 +96,6 @@ function host(
         results: [],
         text: `~ replaced ${tabId}`,
         warnings: [],
-        lint: null,
       });
     }
     if (!stored) return Response.json({ error: 'not_found' }, { status: 404 });
@@ -137,13 +135,13 @@ const edit = (io: FakeIo, path: string, change: (file: PullFile) => void) => {
 };
 
 describe('pull', () => {
-  it('writes the document with every tab, its folder and revision, and keeps read copies', async () => {
+  it('writes the project with every tab, its folder and revision, and keeps read copies', async () => {
     const h = host();
     const { code, out, io } = await cli(['pull', DOC], h.route);
     expect(code).toBe(0);
     expect(out).toBe('/work/shop-checkout.liveplanner.json\n');
     const file = pulledFile(io);
-    expect(file.document.tabs.map((t) => [t.id, t.folder])).toEqual([
+    expect(file.project.tabs.map((t) => [t.id, t.folder])).toEqual([
       ['main', 'Core'],
       ['flow', undefined],
     ]);
@@ -165,14 +163,14 @@ describe('pull', () => {
     expect(io.fileMap.get('out/shop-checkout.main.svg')!.data).toBe('<svg data-tab="main"/>');
   });
 
-  it('keeps its own file on a repeat pull, and steps aside for another document’s', async () => {
+  it('keeps its own file on a repeat pull, and steps aside for another project’s', async () => {
     const h = host();
     const first = await cli(['pull', DOC], h.route);
     const again = await cli(['pull', DOC], h.route, first.io);
     expect(again.out).toContain('/work/shop-checkout.liveplanner.json');
     const other = {
       ...pulledFile(first.io),
-      document: { ...pulledFile(first.io).document, id: 'other-doc' },
+      project: { ...pulledFile(first.io).project, id: 'other-doc' },
     };
     first.io.fileMap.set('/work/shop-checkout.liveplanner.json', {
       data: JSON.stringify(other),
@@ -183,21 +181,21 @@ describe('pull', () => {
     // The file it stepped aside to is its own from then on: pulled again, and guarded as the plain one is.
     const own = '/work/shop-checkout-aaaa1111.liveplanner.json';
     expect((await cli(['pull', DOC], h.route, first.io)).out).toBe(`${own}\n`);
-    edit(first.io, own, (f) => f.document.tabs[0]!.elements.push(square('api', 'API', 200)));
+    edit(first.io, own, (f) => f.project.tabs[0]!.elements.push(square('api', 'API', 200)));
     expect((await cli(['pull', DOC], h.route, first.io)).err).toContain(
       `error: ${own} changed here and is not pushed; not overwritten`,
     );
-    // A file there that is not this document's pull file holds no edits of its own to keep.
+    // A file there that is not this project's pull file holds no edits of its own to keep.
     first.io.fileMap.set(own, { data: 'not a pull file', mode: 0o644 });
     expect((await cli(['pull', DOC], h.route, first.io)).code).toBe(0);
-    expect(pulledFile(first.io, own).document.id).toBe(DOC);
+    expect(pulledFile(first.io, own).project.id).toBe(DOC);
   });
 
   it('refuses to overwrite changes not yet pushed, unless --force drops them', async () => {
     const h = host();
     const first = await cli(['pull', DOC], h.route);
     const path = '/work/shop-checkout.liveplanner.json';
-    edit(first.io, path, (f) => f.document.tabs[0]!.elements.push(square('api', 'API', 200)));
+    edit(first.io, path, (f) => f.project.tabs[0]!.elements.push(square('api', 'API', 200)));
     const edited = first.io.fileMap.get(path)!.data;
     const refused = await cli(['pull', DOC], h.route, first.io);
     expect(refused.code).toBe(1);
@@ -212,11 +210,11 @@ describe('pull', () => {
   });
 
   it('pulls through a share link, sending its code', async () => {
-    const { code, io } = await cli(['pull', `${HOST}/document/shared?s=CODE1234`], host().route);
+    const { code, io } = await cli(['pull', `${HOST}/project/shared?s=CODE1234`], host().route);
     expect(code).toBe(0);
     expect(
       io.requests
-        .filter((r) => r.url.includes(`/documents/${DOC}`))
+        .filter((r) => r.url.includes(`/projects/${DOC}`))
         .every((r) => r.headers.get('X-Share-Code') === 'CODE1234'),
     ).toBe(true);
   });
@@ -227,10 +225,10 @@ describe('pull', () => {
     expect(err).toContain('the host named no revision for tab "Main"');
   });
 
-  it('refuses a host that stores a newer document format', async () => {
+  it('refuses a host that stores a newer project format', async () => {
     const { code, err } = await cli(['pull', DOC], host({ format: 99 }).route);
     expect(code).toBe(1);
-    expect(err).toContain('stores documents in format 99; this liveplanner reads format 2');
+    expect(err).toContain('stores projects in format 99; this liveplanner reads format 2');
     expect(err).toContain('npm install -g @liveplanner/cli@latest, or npx @liveplanner/cli@latest');
   });
 });
@@ -254,8 +252,8 @@ describe('push', () => {
   it('keeps naming a rename it did not send, push after push', async () => {
     const { h, io, path } = await pulled();
     edit(io, path, (f) => {
-      f.document.tabs[0]!.name = 'Renamed';
-      f.document.tabs[0]!.elements = [];
+      f.project.tabs[0]!.name = 'Renamed';
+      f.project.tabs[0]!.elements = [];
     });
     const first = await cli(['push', path], h.route, io);
     expect(first.err).toContain('not pushed: the name, theme or background of tab "Renamed"');
@@ -268,7 +266,7 @@ describe('push', () => {
 
   it('sends a changed tab against its pulled revision, strictly, and records the new one', async () => {
     const { h, io, path } = await pulled();
-    edit(io, path, (f) => f.document.tabs[0]!.elements.push(square('api', 'API', 200)));
+    edit(io, path, (f) => f.project.tabs[0]!.elements.push(square('api', 'API', 200)));
     const { code, out } = await cli(['push', path, '--summary', 'add api'], h.route, io);
     expect(code).toBe(0);
     expect(out).toBe('tab "Main"\n~ replaced main\n');
@@ -287,13 +285,13 @@ describe('push', () => {
     expect((await cli(['push', path], h.route, io)).out).toBe('nothing to push\n');
   });
 
-  it('creates a tab the document lacks, names what does not travel, and writes nothing on a dry run', async () => {
+  it('creates a tab the project lacks, names what does not travel, and writes nothing on a dry run', async () => {
     const { h, io, path } = await pulled();
     const before = io.fileMap.get(path)!.data;
     edit(io, path, (f) => {
-      f.document.tabs[1] = { ...f.document.tabs[1]!, name: 'Renamed' };
-      f.document.tabs.push({ id: 'fresh', name: 'Fresh', elements: [] });
-      f.document.tabs.shift();
+      f.project.tabs[1] = { ...f.project.tabs[1]!, name: 'Renamed' };
+      f.project.tabs.push({ id: 'fresh', name: 'Fresh', elements: [] });
+      f.project.tabs.shift();
     });
     const edited = io.fileMap.get(path)!.data;
     const { code, err } = await cli(['push', path, '--dry-run'], h.route, io);
@@ -309,7 +307,7 @@ describe('push', () => {
 
   it('records a tab it created, so the next push leaves it alone', async () => {
     const { h, io, path } = await pulled();
-    edit(io, path, (f) => f.document.tabs.push({ id: 'fresh', name: 'Fresh', elements: [] }));
+    edit(io, path, (f) => f.project.tabs.push({ id: 'fresh', name: 'Fresh', elements: [] }));
     expect((await cli(['push', path], h.route, io)).code).toBe(0);
     expect(pulledFile(io, path).liveplannerSync.tabs.fresh).toMatchObject({ rev: 1 });
     expect((await cli(['push', path], h.route, io)).out).toBe('nothing to push\n');
@@ -318,8 +316,8 @@ describe('push', () => {
   it('lands what it can: a stale tab is named, exit 5, and the file records only the tab that landed', async () => {
     const { h, io, path } = await pulled({ stale: ['flow'] });
     edit(io, path, (f) => {
-      f.document.tabs[0]!.elements = [];
-      f.document.tabs[1]!.elements = [square('x', 'X')];
+      f.project.tabs[0]!.elements = [];
+      f.project.tabs[1]!.elements = [square('x', 'X')];
     });
     const { code, out } = await cli(['push', path], h.route, io);
     expect(code).toBe(5);
@@ -334,7 +332,7 @@ describe('push', () => {
 
   it('keeps the pulled revision when the host answers nothing changed, and passes --wait-held on', async () => {
     const { h, io, path } = await pulled({ unchanged: ['main'] });
-    edit(io, path, (f) => (f.document.tabs[0]!.elements = []));
+    edit(io, path, (f) => (f.project.tabs[0]!.elements = []));
     const { code, out } = await cli(['push', path, '--wait-held', '5'], h.route, io);
     expect([code, out]).toEqual([0, 'tab "Main"\nnothing changed\n']);
     expect(pulledFile(io, path).liveplannerSync.tabs.main!.rev).toBe(3);
@@ -343,7 +341,7 @@ describe('push', () => {
 
   it('reports another refusal and carries on, exiting with it', async () => {
     const { h, io, path } = await pulled({ fail: ['main'] });
-    edit(io, path, (f) => (f.document.tabs[0]!.elements = []));
+    edit(io, path, (f) => (f.project.tabs[0]!.elements = []));
     const { code, err } = await cli(['push', path], h.route, io);
     expect(code).toBe(4);
     expect(err).toContain('error:');
@@ -352,8 +350,8 @@ describe('push', () => {
   it('lets a stale tab decide the exit over another refusal', async () => {
     const { h, io, path } = await pulled({ stale: ['main'], fail: ['flow'] });
     edit(io, path, (f) => {
-      f.document.tabs[0]!.elements = [];
-      f.document.tabs[1]!.elements = [square('x', 'X')];
+      f.project.tabs[0]!.elements = [];
+      f.project.tabs[1]!.elements = [square('x', 'X')];
     });
     const { code, err } = await cli(['push', path], h.route, io);
     expect(code).toBe(5);

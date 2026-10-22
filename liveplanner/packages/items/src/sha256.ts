@@ -4,7 +4,7 @@
 // plain-http wiki, a privately hosted instance on a LAN address), and there the hashes the editor computes for
 // itself (a Plan card person, a Q&A voter, an image's content address) threw while a board loaded. This
 // falls back to FIPS 180-4 in plain code, byte for byte the same digest, so both sides of every check agree.
-// Here, in the package with no dependencies, because `@liveplanner/document` and `@liveplanner/api-schema`
+// Here, in the package with no dependencies, because `@liveplanner/project` and `@liveplanner/api-schema`
 // both hash and both already depend on it.
 
 const K = new Uint32Array([

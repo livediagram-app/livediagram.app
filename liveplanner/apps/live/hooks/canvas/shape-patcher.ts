@@ -1,4 +1,4 @@
-import type { Element, ShapeElement, ShapeKind } from '@liveplanner/document';
+import type { Element, ShapeElement, ShapeKind } from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 
 // "Patch this field on every SELECTED shape of one kind, and say so."

@@ -88,7 +88,7 @@ export async function makeSheet(
     ...(opts.otherTitles ?? []).map((t, i) => sheetJson(`other000${i}`, t, 2, 2)),
   ];
   const store = new SheetStore({
-    scope: { documentId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
     self: () => by,
     locale: 'en-GB',
     pushUndo: () => {},

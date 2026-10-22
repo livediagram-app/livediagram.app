@@ -1,0 +1,54 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Undo',
+  description:
+    'Step back your most recent change with Cmd or Ctrl+Z, the Undo button or the search palette. Undo is personal to you and keeps up to 500 steps for the session.',
+  path: '/help/user-interface/undo/',
+});
+
+<ArticleLayout
+  title="Undo"
+  description="Step back your most recent change with a keyboard shortcut or the undo button."
+  categoryTitle="User Interface"
+  categorySlug="user-interface"
+  subArticles={getSubArticles("undo")}
+>
+
+## Stepping back a change
+
+Undo takes back your most recent change. You can:
+
+- Press **Cmd+Z** on a Mac, or **Ctrl+Z** on Windows and Linux.
+- Click the **Undo** button at the left of the buttons in the bottom-right corner of the editor. It is greyed out when there is nothing to undo.
+- Open the search palette (**Cmd+K** or **Cmd+.**, **Ctrl** on Windows and Linux) and type **undo**. It is listed only when there is something to undo.
+
+Undo covers the changes you make to the project: adding, editing, moving and deleting cards, changing a board's columns, typing into a Sheet's cells, building a form or a dashboard, and restyling a tab. A whole drag counts as a single step, so dragging a card to another column is undone in one go. Selecting something or opening a card is not a change, so it never uses up a step.
+
+While you are typing in a field, such as a card's title or a Sheet cell, the shortcut undoes your typing instead. Click away to finish editing, then undo whole changes as usual.
+
+## How far back it goes
+
+Undo keeps up to **500** steps, on desktop and on phones, and you can step back through them one at a time. Past that, the oldest steps are dropped.
+
+Your undo history lives in this browser tab for the current session. It is cleared when you reload the page or open another project, and also the first time a tab you haven't opened yet loads (opening the search palette loads every tab, so it can clear it too). Your project itself is saved as you go, so reloading never loses work.
+
+## Undo with other people
+
+Undo steps back the changes that **you** made in this session: each person editing the project has their own undo history. When you undo, the change is reversed for everyone on the project, just like any other edit.
+
+<Note>
+  A collaborator's edits are folded into your undo history as they arrive, so undoing your own
+  changes never takes away theirs. The one overlap is when you both change the same card or cell:
+  your undo puts it back as you had it, so check it after undoing.
+</Note>
+
+## Who can undo
+
+Viewers can't undo: the buttons are hidden and the shortcuts leave the project alone. Participants undo their own changes with the shortcuts and the buttons, though Undo is not in their search palette. In zen mode the buttons are hidden too, but the shortcuts still work.
+
+When you have gone back too far, use [Redo](/help/user-interface/redo/) to put a change back.
+
+</ArticleLayout>

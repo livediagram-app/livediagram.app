@@ -20,16 +20,15 @@ binding = "API"
 service = "livediagram-api"
 
 [[services]]
-binding = "TELEMETRY"
-service = "livediagram-telemetry"
-
-[[services]]
 binding = "HELP"
 service = "livediagram-help"
 
 [[services]]
 binding = "COMMUNITY"
 service = "livediagram-community"
+
+# /telemetry is not a downstream: it redirects to the liveworkspace telemetry
+# dashboard (docs/specs/017-telemetry/telemetry.md).
 
 # Local dev (`wrangler dev --env local --port 3000`, the workspace `dev`
 # script): service bindings can't reach the local Next dev servers, so this
@@ -42,7 +41,6 @@ DEPLOY_ENV = "local"
 MARKETING_ORIGIN = "http://127.0.0.1:3001"
 LIVE_ORIGIN = "http://127.0.0.1:3002"
 API_ORIGIN = "http://127.0.0.1:8787"
-TELEMETRY_ORIGIN = "http://127.0.0.1:3003"
 HELP_ORIGIN = "http://127.0.0.1:3004"
 COMMUNITY_ORIGIN = "http://127.0.0.1:3005"
 
@@ -53,10 +51,10 @@ COMMUNITY_ORIGIN = "http://127.0.0.1:3005"
 # production).
 #
 # EVERY `service` below carries the `-staging` suffix. Service bindings are
-# non-inheritable, so these six are the staging router's only downstreams,
+# non-inheritable, so these five are the staging router's only downstreams,
 # but a suffix dropped from one of them is the worst failure this repo can
 # produce: a staging frontend writing to the PRODUCTION database, with
-# nothing in the UI to say so. Read them against the six above before
+# nothing in the UI to say so. Read them against the five above before
 # changing anything here; `pnpm staging:check` prints the resolved binding table.
 # ---------------------------------------------------------------------------
 
@@ -77,10 +75,6 @@ service = "livediagram-live-staging"
 [[env.staging.services]]
 binding = "API"
 service = "livediagram-api-staging"
-
-[[env.staging.services]]
-binding = "TELEMETRY"
-service = "livediagram-telemetry-staging"
 
 [[env.staging.services]]
 binding = "HELP"

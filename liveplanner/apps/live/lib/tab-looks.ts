@@ -1,12 +1,7 @@
 // Looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Looks"): shortcuts that set four of a tab's existing
 // settings at once, its theme, finish, tab font and canvas pattern. Not a stored concept: picking one writes those
 // four ordinary fields, and a look reads as selected only while the tab still matches all four.
-import {
-  resolveFinish,
-  type BackgroundPattern,
-  type Finish,
-  type Tab,
-} from '@liveplanner/document';
+import { resolveFinish, type BackgroundPattern, type Finish, type Tab } from '@liveplanner/project';
 import { withThemeApplied } from '@/lib/tab-theme-apply';
 import { SEASONAL_LOOKS, type Season } from '@/lib/seasonal-looks';
 
@@ -55,10 +50,10 @@ export type TabLook = {
   label: string;
   /** One line under the name on its card. */
   description: string;
-  /** A built-in theme id (packages/document/src/themes-data.ts). */
+  /** A built-in theme id (packages/project/src/themes-data.ts). */
   theme: string;
   finish: Finish;
-  /** A font id (packages/document/src/fonts.ts), or undefined for no tab font. */
+  /** A font id (packages/project/src/fonts.ts), or undefined for no tab font. */
   font: string | undefined;
   pattern: BackgroundPattern;
   /** The pattern's strength, the tab's existing backgroundOpacity (1 when omitted): a busy pattern drawn softly. */

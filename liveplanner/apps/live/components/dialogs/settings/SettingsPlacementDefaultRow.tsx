@@ -19,24 +19,24 @@ import {
 import { SETTINGS_ROW_BUTTON, SettingsRowShell } from './SettingsRowShell';
 import type { SettingsPlacementDefaultRowSpec } from './settings-catalogue';
 
-// One row of Settings > Documents > Default Folders
-// (docs/specs/013-workspace/default-folders.md "Settings"): an entry, where its new documents go
-// (a folder, My Documents, or a dangling default and where they go instead), Clear and Change (the
+// One row of Settings > Projects > Default Folders
+// (docs/specs/013-workspace/default-folders.md "Settings"): an entry, where its new projects go
+// (a folder, My Projects, or a dangling default and where they go instead), Clear and Change (the
 // default folder picker). Not a preference: it reads and writes the page's default-folders store.
 
 export type SettingsPlacementLists = ReturnType<typeof usePlacementOptions>;
 
-/** Where new documents of this entry go, in words. */
+/** Where new projects of this entry go, in words. */
 function destinationText(destination: DefaultDestination): string {
   switch (destination.kind) {
     case 'root':
-      return 'My Documents';
+      return 'My Projects';
     case 'folder':
       return destination.teamName
         ? `${destination.folder.name} · ${destination.teamName}`
         : destination.folder.name;
     case 'dangling': {
-      const instead = destination.fallback?.name ?? 'My Documents';
+      const instead = destination.fallback?.name ?? 'My Projects';
       if (destination.name === null) return `A deleted folder, using ${instead}`;
       const why = destination.reason === 'deleted' ? 'deleted' : 'no longer available';
       return `${destination.name} (${why}), using ${instead}`;
@@ -83,7 +83,7 @@ export function SettingsPlacementDefaultRow({
   return (
     <SettingsRowShell
       row={row}
-      // Where its documents go IS the row's description: the shared explanation sits once, under
+      // Where its projects go IS the row's description: the shared explanation sits once, under
       // the section's heading.
       descriptionContent={
         <span
@@ -142,7 +142,7 @@ export function SettingsPlacementDefaultRow({
 }
 
 // A small folder before a chosen folder's name, so a default that is set reads apart from one
-// that is not (My Documents) at a glance.
+// that is not (My Projects) at a glance.
 function FolderMark() {
   return (
     <svg

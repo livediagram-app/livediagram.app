@@ -8,8 +8,10 @@ import {
   ROOM_OP_KINDS,
   SYSTEM_OP_KINDS,
 } from '@livediagram/api-schema';
+import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
 import { DocumentRoom } from './document-room';
 import type { Env } from './types';
+import { captureTelemetry, TELEMETRY_ON } from './test-telemetry';
 
 // PRESENCE_OP_KINDS is a readonly array (it has to be, to derive the type), so
 // membership reads through this rather than `.has`.
@@ -1588,17 +1590,9 @@ describe('DocumentRoom facilitator', () => {
 });
 
 describe('DocumentRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry.md)', () => {
-  // A fake D1 that records every telemetry row the room writes.
-  function envWithRows(): { env: Env; rows: unknown[][] } {
-    const rows: unknown[][] = [];
-    const DB = {
-      prepare: () => ({ bind: (...args: unknown[]) => args }),
-      batch: (stmts: unknown[][]) => {
-        rows.push(...stmts);
-        return Promise.resolve([]);
-      },
-    };
-    return { env: { TELEMETRY_ENABLED: 'true', DB } as unknown as Env, rows };
+  // Telemetry on, with every event the room posts to the telemetry service recorded.
+  function envWithRows(): { env: Env; rows: TelemetryWireEvent[] } {
+    return { env: { ...TELEMETRY_ON } as unknown as Env, rows: captureTelemetry() };
   }
 
   function join(room: DocumentRoom, name: string): FakeSocket {
@@ -1608,8 +1602,10 @@ describe('DocumentRoom multiplayer telemetry (docs/specs/017-telemetry/telemetry
     return ws;
   }
 
-  const multiplayerRows = (rows: unknown[][]) =>
-    rows.filter((r) => r[0] === 'Document' && r[1] === 'Used' && r[2] === 'Multiplayer');
+  const multiplayerRows = (rows: TelemetryWireEvent[]) =>
+    rows.filter(
+      (r) => r.category === 'Document' && r.action === 'Used' && r.type === 'Multiplayer',
+    );
 
   it('counts a five-person session once, not once per participant', async () => {
     const { env, rows } = envWithRows();

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { DashboardLayout, Element, Tab } from '@liveplanner/document';
+import type { DashboardLayout, Element, Tab } from '@liveplanner/project';
 import { dashboardExportTab } from './dashboard-export';
 import { NOW, shape } from './test-fixtures';
 
@@ -14,7 +14,8 @@ const row = (id: string, slots: DashboardLayout['rows'][number]['slots'], extra 
 const board = shape('b1', 'plan-board', { planBoard: { title: 'Roadmap' }, layerId: 'L1' });
 const view = shape('v1', 'plan-view', { planView: { view: 'workload' } });
 const boardTab: Tab = { id: 'bt', name: 'Backlog', kind: 'board', elements: [board] };
-const diagramTab: Tab = {
+// A tab on Start Planning: no kind, but something on it.
+const generalTab: Tab = {
   id: 'dt',
   name: 'Flow',
   elements: [shape('s1', 'square', { width: 100, height: 60 })],
@@ -31,10 +32,8 @@ function exportOf(layout: DashboardLayout, elements: Element[] = [view]) {
   };
   return dashboardExportTab({
     tab,
-    tabs: [boardTab, diagramTab, tab],
+    tabs: [boardTab, generalTab, tab],
     now: NOW,
-    renderDiagram: () =>
-      '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="1 2 3 4"><rect id="drawn"/></svg>',
   });
 }
 
@@ -102,9 +101,8 @@ describe('a Dashboard’s page', () => {
     expect(art).toContain('Empty Slot');
     expect(art).toContain('This Sheet was deleted.');
     expect(art).toContain('This item was removed.');
-    // A Diagram tab's drawing nested in the slot, its own viewBox kept.
-    expect(out.art.get('export-slot-d')).toContain('viewBox="1 2 3 4"');
-    expect(out.art.get('export-slot-d')).toContain('<rect id="drawn"/>');
+    // Only a Board or Sheet tab goes in a slot.
+    expect(out.art.get('export-slot-d')).toContain('This tab is not a Board or Sheet.');
   });
 
   it('says Loading for a Board tab whose board has not arrived', () => {
@@ -120,7 +118,6 @@ describe('a Dashboard’s page', () => {
       },
       tabs: [{ ...boardTab, elements: [] }],
       now: NOW,
-      renderDiagram: () => '',
     });
     expect(out.art.get('export-slot-a')).toContain('Loading Backlog…');
   });

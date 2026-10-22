@@ -41,7 +41,7 @@ import {
   type TextAlignX,
   type TextAlignY,
   type TextSize,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { ContextMenuDivider } from '@/components/palette/ContextMenu';
 import {
   IconCategoryGlyph,

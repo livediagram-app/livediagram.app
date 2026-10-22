@@ -1,0 +1,71 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { TelemetryDashboardOverview } from '@/components/illustrations/telemetry-dashboard';
+
+export const metadata = helpMetadata({
+  title: 'The Public Telemetry Dashboard',
+  description:
+    'Read the public telemetry dashboard at /telemetry: views, Today, 7-day and 30-day windows, timing percentiles and Core Web Vitals from anonymous events.',
+  path: '/help/privacy-and-security/what-we-collect/telemetry-dashboard/',
+});
+
+<ArticleLayout title="The Public Telemetry Dashboard" description="Everything livedocuments measures, published as anonymous counts anyone can read." categoryTitle="Privacy and Security" categorySlug="privacy-and-security" parentArticle={{ title: "What We Collect", slug: "what-we-collect" }} subArticles={getSubArticles("what-we-collect").filter((a) => a.slug !== "telemetry-dashboard")}>
+
+The [telemetry dashboard](/telemetry) is a public page, headed **Telemetry, in the open**, that shows everything livedocuments measures. There is no sign-in and nothing hidden behind it: the page reads the same anonymous counts the project itself uses to decide what to build next. This article walks through what it shows and how to read it. For what an event is and how to switch it off, see [What We Collect](/help/privacy-and-security/what-we-collect/).
+
+## What the numbers are made of
+
+Every number on the dashboard is a count of small events, each made of just three fields: a category, an action and an optional preset type, such as `Element`, `Added`, `Square`. No event carries a user id, an IP address, a document or anything you typed, so the dashboard can only ever show totals, never a person or a path through the product.
+
+Events are deleted automatically after **60 days**. The dashboard's longest window is 30 days, so what you see is recent trend data rather than a permanent archive.
+
+Most events come from browsers that have telemetry switched on. A few are counted by the server itself, because only the server can see them once: a sign-up or sign-in, a share-link visitor's first visit to a document, a document used by several people at once, an email sent, and a server error. They are the same three anonymous fields, and they appear in the same charts.
+
+The counts are refreshed a few minutes at a time, so a brand-new event can take a short while to show.
+
+## Choosing a window
+
+At the top, three cards set the time window for the whole page: **Today**, **Last 7 days** and **Last 30 days**, each with its total number of events. The page opens on **Last 7 days**. Pick a card and every view below counts over that window.
+
+The windows are whole calendar days in UTC: **Today** is since midnight UTC, **Last 7 days** is today and the six days before, and **Last 30 days** is today and the 29 days before. Under the cards, **Daily Volume, Last 30 Days (UTC)** draws one line across the whole month, with the span of the chosen window highlighted, so a card's total always matches its highlighted stretch of the line.
+
+<Figure caption="The window cards over the daily trend line, the view tabs with Dashboard open, and the first cards of the Visitors group.">
+  <TelemetryDashboardOverview />
+</Figure>
+
+## The views
+
+Below the window cards, a row of tabs picks the view. **Dashboard** and **Search** stand on their own at the left; every other view is a closer look at one area, grouped in a bar titled **Detail** that scrolls sideways when it does not fit.
+
+- **Dashboard**: the overview, and where the page opens. Every event the product sends lands in one of its charts, grouped by the question they answer: Visitors, Content, Features, Collaboration, Teams and facilitation, Connections, Health and support, and Email. Each card shows the window's count with a line for the last 30 days, and a stack opens into the cards it combines.
+- **Pages**: which pages get viewed, by the app that serves them. Every document counts as one page, `/document`, because ids never leave the browser.
+- **Palette**: what people add from the creation palette, most to least used, broken out by the palette's own tabs.
+- **Modes**: the canvas modes people switch into and the options they set inside them.
+- **Look & Feel**: which templates, themes and canvas styles get picked, and how much the custom theme builder gets used.
+- **Editing**: the tools that organise work rather than draw it (notes, assigned actions and folders), then the formatting controls, export formats and dialogs people use.
+- **Help**: help centre reads and article feedback, the articles opened from inside the editor, and how far people get through the tour.
+- **Settings**: how often each setting in the editor's Settings dialog is changed, and which Settings categories people open.
+- **Exceptions**: what failed and where, counted only as a short code such as a status and the request or area, never an error message or stack. An empty view here is the goal.
+- **Timings**: how fast things feel (see below).
+- **Search**: find any one metric, by typing (for example "element added") or by clicking through a word cloud of categories, actions and types, and see just that metric charted over 30 days.
+
+## Timings and Core Web Vitals
+
+Browsers never send an exact time, only the range a timing fell in (such as "under one second"). So every number on the **Timings** view is an estimate within its range.
+
+The view opens with **Editor Timings**, one card each for **Document Load**, **Tab Switch**, **Save**, **Live Connect** and **Live Reconnect**. Each card leads with the **p75** (three timings in four were at least this quick), shows the **Median** and **p95** beside it, draws how many timings fell in each range, and plots each day's p75 across the last 30 days. A card with fewer than 20 timings in the window says it has too few to read a percentile, rather than showing a misleading number.
+
+Below that, **Core Web Vitals** gives one card per app (Marketing, Live, Help and Dashboard) with the 75th percentile of three measures, each rated **Good**, **Needs Work** or **Poor** against Google's thresholds:
+
+| Measure | What it tracks                                    |
+| ------- | ------------------------------------------------- |
+| **LCP** | How long the main content took to show            |
+| **INP** | How quickly the page answered a click, tap or key |
+| **CLS** | How much the page jumped around while it loaded   |
+
+## On a self-hosted copy
+
+A self-hosted livedocuments collects nothing unless its operator turns telemetry on. Until then, its dashboard says **Telemetry isn’t enabled here** and shows no numbers. When an operator does turn it on, the dashboard counts only that deployment's own events, from its own database; [Configuration](/help/self-hosting/configuration/) lists the switch.
+
+</ArticleLayout>

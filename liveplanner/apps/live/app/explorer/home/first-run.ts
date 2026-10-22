@@ -2,23 +2,23 @@
 // copy the page speaks with, and where its searches lead. The starts themselves (template picks) are
 // first-run-starts.ts, kept apart so the hero, on every Home, never loads the template catalogue.
 
-/** Nothing yet: once the lists have loaded, no document of their own, shared, in a team or in this browser. A list
+/** Nothing yet: once the lists have loaded, no project of their own, shared, in a team or in this browser. A list
  * that failed to load says nothing, so it is never read as an empty account. */
 export function isFirstRun(input: {
   loading: boolean;
   failed: boolean;
-  documents: number;
+  projects: number;
   shared: number;
-  teamDocuments: number;
-  offlineDocuments: number;
+  teamProjects: number;
+  offlineProjects: number;
 }): boolean {
   return (
     !input.loading &&
     !input.failed &&
-    input.documents === 0 &&
+    input.projects === 0 &&
     input.shared === 0 &&
-    input.teamDocuments === 0 &&
-    input.offlineDocuments === 0
+    input.teamProjects === 0 &&
+    input.offlineProjects === 0
   );
 }
 
@@ -29,7 +29,7 @@ export function welcomeSearchHref(words: string): string {
 }
 
 /** The field's Start Blank: the wizard asks which mode, then opens that mode's blank with its start closed
- *  (new-document-route.md "Start Blank after a mode"). */
+ *  (new-project-route.md "Start Blank after a mode"). */
 export const WELCOME_START_BLANK_HREF = '/new?start=blank';
 
 /** The wizard, for Browse All Templates. */
@@ -50,6 +50,6 @@ export const WELCOME_COPY = {
   allTemplates: 'Browse All Templates',
   haveWorkTitle: 'Already Have Work?',
   signInTitle: 'Nothing here yet? Sign in',
-  signInLine: 'If you have used liveplanner before, sign in and your documents come back with you.',
+  signInLine: 'If you have used liveplanner before, sign in and your projects come back with you.',
   signIn: 'Sign In',
 } as const;

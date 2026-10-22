@@ -4,7 +4,7 @@
 // One router and one prop rather than a branch and callbacks each on BoxedElementView: the faces share a viewer
 // context (who am I, may I write) that would otherwise be passed once a face.
 
-import { isCollabPanelShape, type ShapeElement } from '@liveplanner/document';
+import { isCollabPanelShape, type ShapeElement } from '@liveplanner/project';
 import { TemperatureFace } from './TemperatureFace';
 import { DecisionFace } from './DecisionFace';
 
@@ -14,7 +14,7 @@ import { DecisionFace } from './DecisionFace';
 // temperature check in a PNG should still show what the room said.
 export type CollabApi = {
   // Whose answer is "mine" — our `participantKey`, the id these faces are
-  // recorded under in the document (docs/specs/012-collaboration/participant-responses.md), not our owner id. See the
+  // recorded under in the project (docs/specs/012-collaboration/participant-responses.md), not our owner id. See the
   // note on Participant.key: the owner id is unpublishable and the room's
   // presence id is per-socket, so neither can join a saved answer to a face.
   selfKey: string;

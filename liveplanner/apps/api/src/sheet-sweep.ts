@@ -12,7 +12,7 @@ const SHEET_EXPIRY_BATCH = 25;
 export const SHEET_EXPIRY_BATCH_CELLS = 100_000;
 export const SHEET_EXPIRY_CELLS_MAX = 500_000;
 
-type Expired = { document_id: string; id: string; cell_count: number };
+type Expired = { project_id: string; id: string; cell_count: number };
 
 export async function runSheetExpiry(
   env: Env,
@@ -29,7 +29,7 @@ export async function runSheetExpiry(
     const rows =
       (
         await env.DB.prepare(
-          `SELECT document_id, id, cell_count FROM sheets
+          `SELECT project_id, id, cell_count FROM sheets
             WHERE unreferenced_since < ? ORDER BY unreferenced_since LIMIT ?`,
         )
           .bind(cutoff, SHEET_EXPIRY_BATCH)
@@ -45,8 +45,8 @@ export async function runSheetExpiry(
     }
     await env.DB.batch(
       batch.map((s) =>
-        env.DB.prepare('DELETE FROM sheets WHERE document_id = ? AND id = ?').bind(
-          s.document_id,
+        env.DB.prepare('DELETE FROM sheets WHERE project_id = ? AND id = ?').bind(
+          s.project_id,
           s.id,
         ),
       ),

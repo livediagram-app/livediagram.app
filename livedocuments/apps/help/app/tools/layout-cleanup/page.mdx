@@ -1,0 +1,50 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { SearchCommandPalette } from '@/components/illustrations/search-panel';
+
+export const metadata = helpMetadata({
+  title: 'Layout Cleanup',
+  description:
+    'Tidy a messy tab in one step from the command palette: snap elements to a grid with Auto-Align, or recompute the layout of connected shapes with Auto Layout.',
+  path: '/help/tools/layout-cleanup/',
+});
+
+<ArticleLayout title="Layout Cleanup" description="Two complementary tidiers, one for nudging things into alignment and one for laying connected shapes out from scratch." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("layout-cleanup")}>
+
+When a tab gets messy, you usually want one of two things: either everything is nearly aligned and you just want the drift gone, or the shapes and arrows never really got a layout and you want it computed for you. livedocuments has a tool for each, both in the [command palette](/help/search-panel/the-search-panel/command-palette/)'s **Actions**. They are complementary, not duplicates: one snaps the positions you already have, the other recomputes positions from how your shapes are wired together.
+
+To straighten a single infographic or slide page instead, use the page's own **Tidy** button: see [Working with Pages](/help/pages/working-with-pages/).
+
+## The two tools
+
+- **Auto-align** is a grid snap. It rounds every element's size to a 10 px grid and lines shapes up by the edges and centres they nearly share, so near-aligned shapes become exactly aligned, small drift collapses, and nothing moves far. See [Auto-Align](/help/tools/layout-cleanup/auto-align/).
+- **Auto Layout** ("tidy up" in the command palette) reads the arrow graph and computes brand-new positions, laying out connected shapes into clean layers, or into a style you pick: flowchart (down or right), tree, or mindmap. It can legitimately move an element a long way. See [Auto Layout](/help/tools/layout-cleanup/auto-layout/).
+
+<FeatureGrid>
+  <Feature slug="auto-align" title="Auto-Align">
+    Snap current positions to a tidy grid when things are just a few pixels off.
+  </Feature>
+  <Feature slug="auto-layout" title="Auto Layout">
+    Recompute the layout of connected shapes from the arrows between them.
+  </Feature>
+</FeatureGrid>
+
+## How to run them
+
+Open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K), type **Auto Layout** or **Auto-align**, and pick the tidier you want under **Actions**. Both run on the whole active tab as a single undoable step, so if the result isn't what you hoped, one undo puts everything back exactly as it was.
+
+<Figure caption="Typing layout in the command palette lists Auto Layout and its styles under Actions.">
+  <SearchCommandPalette />
+</Figure>
+
+The tidiers are for editors: they aren't offered to a participant or in a view-only session, and they leave a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first. Inside an unlocked tab, a [locked element](/help/canvas/locking/) stays exactly where it is.
+
+Neither tool will trash your work. Each one is tried before it runs, and one that would change nothing or cover a shape leaves everything where it is, with a short notice saying why. See [When a style isn't offered](/help/tools/layout-cleanup/auto-layout/#when-a-style-isn-t-offered).
+
+<Note>
+  Both tools work entirely offline and deterministically. They never call out to anything, so
+  they're available in every deployment, including a self-hosted one.
+</Note>
+
+</ArticleLayout>

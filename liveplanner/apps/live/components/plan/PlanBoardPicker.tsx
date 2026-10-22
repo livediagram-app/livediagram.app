@@ -21,7 +21,7 @@ import { accentOn, type PlanPalette } from './plan-palette';
 import { BOARD_PREVIEWS } from './board-previews';
 import { StartPlanning } from './start/StartPlanning';
 import type { PlanTemplateKind } from '@liveplanner/templates';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import type { SuggestedDashboard } from '@/lib/suggested-dashboards';
 import type { PlanVisualisation } from '@liveplanner/items';
 
@@ -139,7 +139,7 @@ export function PlanBoardPicker({
   onPick: (preset: string) => void;
   // Makes the tab a Form tab from a starter (Start Planning's Forms, docs/specs/030-forms/forms.md).
   onForm?: (starter: StarterId) => void;
-  // The document's tabs and their fetch, and making a Dashboard built from its work (Start Planning's Dashboards).
+  // The project's tabs and their fetch, and making a Dashboard built from its work (Start Planning's Dashboards).
   tabs?: readonly Tab[];
   loadTabs?: () => Promise<unknown>;
   onSuggestedDashboard?: (s: SuggestedDashboard) => void;

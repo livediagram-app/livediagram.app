@@ -1,0 +1,193 @@
+// @vitest-environment jsdom
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+vi.mock('./api-client', () => ({
+  apiGetPreferences: vi.fn(),
+  apiPutPreferences: vi.fn(),
+}));
+
+import { apiGetPreferences, apiPutPreferences } from './api-client';
+import {
+  __resetPreferencesSync,
+  fitPreferences,
+  PREFERENCES_BODY_MAX,
+  PREFERENCES_UNSYNCED_KEY,
+  preferencesBodyLength,
+  savePreferences,
+} from './preferences-sync';
+import {
+  fetchUserPreferences,
+  RECENT_EXCLUDED_LIMIT,
+  rebaseUserPreferences,
+  STORAGE_KEY,
+  writeUserPreferences,
+  type UserPreferences,
+} from './user-preferences';
+
+// Saving preferences to the server (docs/specs/007-editor/user-preferences.md "Saving to the server").
+
+const mockedGet = vi.mocked(apiGetPreferences);
+const mockedPut = vi.mocked(apiPutPreferences);
+
+const uuid = (i: number) => `00000000-0000-4000-8000-${String(i).padStart(12, '0')}`;
+
+// A full account: 60 hidden documents and the usual flags, with stored older-client colours padding it past the
+// api's cap, after which every save was refused.
+function fullAccount(): UserPreferences {
+  return {
+    recentExcludedIds: Array.from({ length: RECENT_EXCLUDED_LIMIT }, (_, i) => uuid(i)),
+    quickSwatchOverrides: { brand: { fill: ['#112233', null, '#445566'] } } as never,
+    logoGuidesHidden: ['centre', 'keylines', 'safe', 'grid'],
+    powerUserBaseline: {
+      showMinimap: { before: { showMinimap: true }, applied: { showMinimap: false } },
+      notificationsEnabled: { before: {}, applied: { notificationsEnabled: false } },
+    },
+    // Stored by older clients and kept (docs/specs/004-interface-design/colour-picker.md).
+    customSwatches: Array.from({ length: 150 }, (_, i) => `#${String(i).padStart(6, '0')}`),
+    telemetryEnabled: false,
+    alignmentGuides: true,
+    uiScale: 1.1,
+    panelOpacity: 0.85,
+    elementIndicatorStyle: 'footer',
+    drawPattern: 'graph',
+    reduceMotion: true,
+    powerUserMode: true,
+    notifyTips: false,
+    notifyMilestones: false,
+  };
+}
+
+beforeEach(() => {
+  mockedGet.mockReset();
+  mockedPut.mockReset();
+  __resetPreferencesSync();
+  vi.spyOn(console, 'warn').mockImplementation(() => {});
+  vi.spyOn(console, 'info').mockImplementation(() => {});
+});
+afterEach(() => {
+  window.localStorage.clear();
+  vi.restoreAllMocks();
+});
+
+describe('fitPreferences', () => {
+  it('leaves a blob that fits as it is', () => {
+    const prefs = { alignmentGuides: true };
+    expect(fitPreferences(prefs)).toBe(prefs);
+  });
+
+  it('trims the oldest hidden ids until it fits', () => {
+    const prefs = fullAccount();
+    expect(preferencesBodyLength(prefs)).toBeGreaterThan(PREFERENCES_BODY_MAX);
+    const fitted = fitPreferences(prefs);
+    expect(preferencesBodyLength(fitted)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
+    const kept = fitted.recentExcludedIds ?? [];
+    expect(kept.length).toBeGreaterThan(0);
+    expect(kept.length).toBeLessThan(prefs.recentExcludedIds!.length);
+    // The newest stay: what went was the oldest, at the end.
+    expect(kept).toEqual(prefs.recentExcludedIds!.slice(0, kept.length));
+    expect(fitted.customSwatches).toEqual(prefs.customSwatches);
+  });
+
+  it('stays fast on the largest blob it can be handed', () => {
+    const prefs = {
+      ...fullAccount(),
+      customSwatches: Array.from({ length: 280 }, () => '#abcdef'),
+    };
+    const start = performance.now();
+    for (let i = 0; i < 20; i++) fitPreferences(prefs);
+    // Measured ~0.06 ms; a trim that re-serialised per dropped entry took ~6 ms. Generous for CI.
+    expect((performance.now() - start) / 20).toBeLessThan(3);
+  });
+});
+
+describe('writeUserPreferences sends a blob that fits', () => {
+  it('writes the trimmed blob to the cache and the server alike', () => {
+    mockedPut.mockResolvedValue(true);
+    writeUserPreferences(fullAccount(), 'owner-1');
+    const cached = JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? '{}') as UserPreferences;
+    expect(preferencesBodyLength(cached)).toBeLessThanOrEqual(PREFERENCES_BODY_MAX);
+    expect(mockedPut.mock.calls[0]![1]).toEqual(cached);
+  });
+});
+
+describe('savePreferences', () => {
+  it('sends one save at a time, and only the latest of those that waited', async () => {
+    let finish: (ok: boolean) => void = () => {};
+    mockedPut.mockImplementationOnce(
+      () =>
+        new Promise<boolean>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    mockedPut.mockResolvedValue(true);
+    savePreferences('owner-1', { uiScale: 1 });
+    savePreferences('owner-1', { uiScale: 1.05 });
+    savePreferences('owner-1', { uiScale: 1.1 });
+    expect(mockedPut).toHaveBeenCalledTimes(1);
+    finish(true);
+    await vi.waitFor(() => expect(mockedPut).toHaveBeenCalledTimes(2));
+    expect(mockedPut.mock.calls[1]![1]).toEqual({ uiScale: 1.1 });
+    await vi.waitFor(() =>
+      expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBeNull(),
+    );
+  });
+
+  it('keeps the device copy marked when a save is refused', async () => {
+    mockedPut.mockResolvedValue(false);
+    savePreferences('owner-1', { uiScale: 1.2 });
+    await vi.waitFor(() => expect(mockedPut).toHaveBeenCalledTimes(1));
+    await Promise.resolve();
+    expect(window.localStorage.getItem(PREFERENCES_UNSYNCED_KEY)).toBe('owner-1');
+  });
+});
+
+describe('fetchUserPreferences after a save that did not land', () => {
+  it('keeps the device copy over the server and sends it again', async () => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ showMinimap: false, uiScale: 1.2 }));
+    window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'owner-1');
+    mockedGet.mockResolvedValue({ showMinimap: true, uiScale: 1, alignmentGuides: true });
+    mockedPut.mockResolvedValue(true);
+    const merged = await fetchUserPreferences('owner-1');
+    expect(merged).toEqual({ showMinimap: false, uiScale: 1.2, alignmentGuides: true });
+    expect(mockedPut).toHaveBeenCalledWith('owner-1', merged);
+  });
+
+  it("lets the server win when the mark is another owner's", async () => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ showMinimap: false }));
+    window.localStorage.setItem(PREFERENCES_UNSYNCED_KEY, 'someone-else');
+    mockedGet.mockResolvedValue({ showMinimap: true });
+    expect(await fetchUserPreferences('owner-1')).toEqual({ showMinimap: true });
+    expect(mockedPut).not.toHaveBeenCalled();
+  });
+});
+
+describe('rebaseUserPreferences', () => {
+  it("applies only this render's change, keeping another tab's write since", () => {
+    const snapshot: UserPreferences = { showMinimap: true, uiScale: 1 };
+    // Another tab turned reduce motion on after this render.
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ showMinimap: true, uiScale: 1, reduceMotion: true }),
+    );
+    const next = rebaseUserPreferences(snapshot, { ...snapshot, showMinimap: false });
+    expect(next).toEqual({ showMinimap: false, uiScale: 1, reduceMotion: true });
+  });
+
+  it('removes a key the change removed', () => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ uiScale: 1.1, alignmentGuides: true }),
+    );
+    const { uiScale: _gone, ...rest } = { uiScale: 1.1, alignmentGuides: true };
+    expect(rebaseUserPreferences({ uiScale: 1.1, alignmentGuides: true }, rest)).toEqual({
+      alignmentGuides: true,
+    });
+  });
+
+  it('builds on the snapshot when there is no cache yet', () => {
+    expect(rebaseUserPreferences({ uiScale: 1 }, { uiScale: 1, alignmentGuides: true })).toEqual({
+      uiScale: 1,
+      alignmentGuides: true,
+    });
+  });
+});

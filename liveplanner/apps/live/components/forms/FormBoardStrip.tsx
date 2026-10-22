@@ -40,11 +40,11 @@ function FormPill({
   palette: PlanPalette;
 }) {
   const link = useFormLink({
-    documentId: board.documentId,
+    projectId: board.projectId,
     tabId: form.tabId,
     ownerId: board.ownerId,
     share: board.share,
-    enabled: board.online && !!board.documentId,
+    enabled: board.online && !!board.projectId,
     markSeen: false,
   });
   const [copied, setCopied] = useState(false);

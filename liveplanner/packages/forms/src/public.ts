@@ -1,5 +1,5 @@
 // What a form link shows (docs/specs/030-forms/forms.md "Filling in a form", blueprint §8): the form as respondents
-// see it. Never its destination, its mappings or its starter: those are the document's business.
+// see it. Never its destination, its mappings or its starter: those are the project's business.
 import { DEFAULT_CLOSED_MESSAGE, DEFAULT_CONFIRMATION } from './limits';
 import type { FormCover, FormDefinition, FormQuestion, FormSection } from './model';
 

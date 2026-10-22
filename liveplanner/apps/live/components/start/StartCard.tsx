@@ -1,6 +1,6 @@
 'use client';
 
-// A start panel's card (StartPanel, docs/specs/007-editor/start-diagramming.md "The panel"): a picture of what it makes
+// A start panel's card (StartPanel, docs/specs/007-editor/start-panel.md "The panel"): a picture of what it makes
 // over its name and line, larger than it draws elsewhere, in the tab's own colours (the palette), and the grid they sit
 // in. Shared by a start's own groups, its search results and the other modes' matches (StartOtherModes).
 import type { ReactNode } from 'react';

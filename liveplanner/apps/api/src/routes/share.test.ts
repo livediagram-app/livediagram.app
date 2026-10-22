@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Env } from '../types';
 
 // `passwordGate` is the route-side helper that translates a
-// password-protected document + visitor-supplied password into one of
+// password-protected project + visitor-supplied password into one of
 // three outcomes: access allowed (null), `password_required` 401 (no
 // password supplied yet), or `password_invalid` 403 (supplied the
 // wrong one). The live editor's SharePasswordGate component
@@ -13,36 +13,36 @@ import type { Env } from '../types';
 // back to the prompt without an error message. These cases pin the
 // mapping.
 //
-// `getDocumentSharePassword` is the only db helper the gate reaches
+// `getProjectSharePassword` is the only db helper the gate reaches
 // for, so the mock factory below stubs it and the test drives the
 // three branches by setting the stubbed return value per case.
 
 const getSharePasswordMock = vi.fn<(env: Env, id: string) => Promise<string | null>>();
 vi.mock('../db', () => ({
   // Real exports under '../db' that share.ts imports. Only
-  // getDocumentSharePassword is consulted by passwordGate; the rest
+  // getProjectSharePassword is consulted by passwordGate; the rest
   // need stub entries so the share.ts module can finish evaluating
   // its top-level imports.
-  getDocument: vi.fn(),
-  // Trashed documents answer 410 (docs/specs/013-workspace/trash.md); none here.
-  getTrashedDocumentMeta: vi.fn(async () => null),
-  getDocumentSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
+  getProject: vi.fn(),
+  // Trashed projects answer 410 (docs/specs/013-workspace/trash.md); none here.
+  getTrashedProjectMeta: vi.fn(async () => null),
+  getProjectSharePassword: (env: Env, id: string) => getSharePasswordMock(env, id),
   // The first correct entry of a legacy plain-text password stores its hash.
-  upgradeDocumentSharePassword: vi.fn(async () => {}),
+  upgradeProjectSharePassword: vi.fn(async () => {}),
   getShareLink: vi.fn(),
   getParticipant: vi.fn(),
   recordSharedAccess: vi.fn(),
 }));
 
-// The live-image endpoint (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md) delegates the actual
+// The live-image endpoint (docs/specs/013-workspace/live-image-share.md + docs/specs/006-project/project-snapshots.md) delegates the actual
 // render-cache to ./thumbnail; stub it so this suite pins the route's
 // resolve + password-exclusion wiring, not the rendering.
 vi.mock('../email/notifications', () => ({
   // docs/specs/014-identity/profile-and-email-notifications.md's owner email: a seam here, tested for real in email/*.test.ts.
-  notifyDocumentJoin: vi.fn(),
+  notifyProjectJoin: vi.fn(),
 }));
 
-// docs/specs/017-telemetry/telemetry.md's server-side Document·Joined count: a seam, the insert itself is
+// docs/specs/017-telemetry/telemetry.md's server-side Project·Joined count: a seam, the insert itself is
 // the shared server-telemetry helper.
 vi.mock('../server-telemetry', () => ({
   reportServerEvent: vi.fn(async () => {}),
@@ -57,26 +57,26 @@ vi.mock('./share-preview', () => ({
 }));
 
 vi.mock('../thumbnail', () => ({
-  getDocumentThumbnailSvg: vi.fn(),
-  getDocumentTabImageSvg: vi.fn(),
+  getProjectThumbnailSvg: vi.fn(),
+  getProjectTabImageSvg: vi.fn(),
 }));
 
 // Import AFTER the mock so the share.ts module picks up the stubbed
 // db helpers. passwordGate is module-private to share.ts, exported
 // only for this suite (see the comment on the export).
 import { handleShare, passwordGate } from './share';
-import { getDocument, getParticipant, getShareLink, recordSharedAccess } from '../db';
-import { notifyDocumentJoin } from '../email/notifications';
+import { getProject, getParticipant, getShareLink, recordSharedAccess } from '../db';
+import { notifyProjectJoin } from '../email/notifications';
 import { reportServerEvent } from '../server-telemetry';
-import { getDocumentTabImageSvg, getDocumentThumbnailSvg } from '../thumbnail';
+import { getProjectTabImageSvg, getProjectThumbnailSvg } from '../thumbnail';
 import type { RouteContext } from './context';
 
 const FAKE_ENV = {} as Env;
 
-const getDocumentMock = vi.mocked(getDocument);
+const getProjectMock = vi.mocked(getProject);
 const getShareLinkMock = vi.mocked(getShareLink);
-const getThumbnailMock = vi.mocked(getDocumentThumbnailSvg);
-const getTabImageMock = vi.mocked(getDocumentTabImageSvg);
+const getThumbnailMock = vi.mocked(getProjectThumbnailSvg);
+const getTabImageMock = vi.mocked(getProjectTabImageSvg);
 
 function imageCtx(code: string, tab?: string): RouteContext {
   const url = new URL(`https://api.test/api/share/${code}/image.svg`);
@@ -86,17 +86,17 @@ function imageCtx(code: string, tab?: string): RouteContext {
     env: FAKE_ENV,
     url,
     segments: url.pathname.replace(/^\//, '').split('/'),
-    clerkUserId: null,
+    accountUserId: null,
     verifiedUserId: null,
-    clerkEmail: null,
+    accountEmail: null,
     resolveOwner: () => null,
   };
 }
 
-function shareLink(documentId: string) {
+function shareLink(projectId: string) {
   return {
     code: 'C',
-    documentId,
+    projectId,
     role: 'view' as const,
     createdAt: 0,
     expiry: 'never' as const,
@@ -132,13 +132,13 @@ beforeEach(() => {
 });
 
 describe('passwordGate (docs/specs/013-workspace/share-password.md status-code mapping)', () => {
-  it('returns null when the document has no password (gate is a no-op)', async () => {
+  it('returns null when the project has no password (gate is a no-op)', async () => {
     getSharePasswordMock.mockResolvedValue(null);
     const result = await passwordGate(FAKE_ENV, 'diag-1', null);
     expect(result).toBeNull();
   });
 
-  it('returns null when the document has no password and a password is supplied anyway', async () => {
+  it('returns null when the project has no password and a password is supplied anyway', async () => {
     // The owner clears the password while a visitor is mid-session
     // still holding the old one. The gate must not reject them with
     // 403 here; "no password required" wins regardless of what they
@@ -213,9 +213,9 @@ describe('the share router and link previews', () => {
   });
 });
 
-describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md live image)', () => {
+describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-share.md + docs/specs/006-project/project-snapshots.md live image)', () => {
   beforeEach(() => {
-    getDocumentMock.mockReset();
+    getProjectMock.mockReset();
     getShareLinkMock.mockReset();
     getThumbnailMock.mockReset();
     getTabImageMock.mockReset();
@@ -224,7 +224,7 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
 
   it('serves the cached SVG with a public stale-while-revalidate cache', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDocumentMock.mockResolvedValue(liveDoc('d1'));
+    getProjectMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue(null);
     getThumbnailMock.mockResolvedValue('<svg>live</svg>');
 
@@ -236,16 +236,16 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     expect(await res.text()).toBe('<svg>live</svg>');
   });
 
-  it('404s a password-protected document WITHOUT rendering (an <img> cannot supply the password)', async () => {
+  it('404s a password-protected project WITHOUT rendering (an <img> cannot supply the password)', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDocumentMock.mockResolvedValue(liveDoc('d1'));
+    getProjectMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue('hunter2');
 
     const res = await handleShare(imageCtx('C'));
 
     expect(res.status).toBe(404);
     // The security property: we never even reach the renderer for a
-    // gated document, so no bytes can leak past the password gate.
+    // gated project, so no bytes can leak past the password gate.
     expect(getThumbnailMock).not.toHaveBeenCalled();
   });
 
@@ -253,22 +253,22 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     getShareLinkMock.mockResolvedValue(null);
     const res = await handleShare(imageCtx('NOPE'));
     expect(res.status).toBe(404);
-    expect(getDocumentMock).not.toHaveBeenCalled();
+    expect(getProjectMock).not.toHaveBeenCalled();
   });
 
-  it('404s when the link points at a document that no longer exists', async () => {
-    // The link outliving its document is the shape a deleted-then-embedded
+  it('404s when the link points at a project that no longer exists', async () => {
+    // The link outliving its project is the shape a deleted-then-embedded
     // image takes; it must 404 rather than reach the render cache.
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDocumentMock.mockResolvedValue(null);
+    getProjectMock.mockResolvedValue(null);
     const res = await handleShare(imageCtx('C'));
     expect(res.status).toBe(404);
     expect(getThumbnailMock).not.toHaveBeenCalled();
   });
 
-  it('404s an empty document (the render-cache yields no snapshot)', async () => {
+  it('404s an empty project (the render-cache yields no snapshot)', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDocumentMock.mockResolvedValue(liveDoc('d1'));
+    getProjectMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue(null);
     getThumbnailMock.mockResolvedValue(null);
 
@@ -278,7 +278,7 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
 
   it('renders the requested tab (not the cached snapshot) when ?tab= is present (docs/specs/013-workspace/live-image-share.md)', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDocumentMock.mockResolvedValue(liveDoc('d1'));
+    getProjectMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue(null);
     getTabImageMock.mockResolvedValue('<svg>tab2</svg>');
 
@@ -292,11 +292,11 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     expect(getThumbnailMock).not.toHaveBeenCalled();
   });
 
-  it('404s ?tab= with an unknown tab id (no cross-document leak) without falling back to tab one', async () => {
+  it('404s ?tab= with an unknown tab id (no cross-project leak) without falling back to tab one', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDocumentMock.mockResolvedValue(liveDoc('d1'));
+    getProjectMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue(null);
-    getTabImageMock.mockResolvedValue(null); // tab not in this document
+    getTabImageMock.mockResolvedValue(null); // tab not in this project
 
     const res = await handleShare(imageCtx('C', 'other-diagrams-tab'));
 
@@ -310,7 +310,7 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     const scopedLink = () => ({ ...shareLink('d1'), tabId: 'tab-2' });
     beforeEach(() => {
       getShareLinkMock.mockResolvedValue(scopedLink());
-      getDocumentMock.mockResolvedValue(liveDoc('d1'));
+      getProjectMock.mockResolvedValue(liveDoc('d1'));
       getSharePasswordMock.mockResolvedValue(null);
       getTabImageMock.mockResolvedValue('<svg>tab2</svg>');
     });
@@ -333,9 +333,9 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
     });
   });
 
-  it('still 404s a password-protected document for a ?tab= request (gate before render)', async () => {
+  it('still 404s a password-protected project for a ?tab= request (gate before render)', async () => {
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDocumentMock.mockResolvedValue(liveDoc('d1'));
+    getProjectMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue('hunter2');
 
     const res = await handleShare(imageCtx('C', 'tab-2'));
@@ -347,12 +347,12 @@ describe('GET /api/share/<code>/image.svg (docs/specs/013-workspace/live-image-s
 
 // The resolve itself: what a visitor landing on a share link gets back, and
 // what the worker records about them. This is the only unauthenticated read
-// path into a document, so each branch below is either "who may see this" or
+// path into a project, so each branch below is either "who may see this" or
 // "what does the owner learn about who looked".
 describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + docs/specs/014-identity/profile-and-email-notifications.md)', () => {
   const recordSharedAccessMock = vi.mocked(recordSharedAccess);
   const getParticipantMock = vi.mocked(getParticipant);
-  const notifyDocumentJoinMock = vi.mocked(notifyDocumentJoin);
+  const notifyProjectJoinMock = vi.mocked(notifyProjectJoin);
   const reportServerEventMock = vi.mocked(reportServerEvent);
 
   function resolveCtx(
@@ -360,7 +360,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
       code?: string;
       visitor?: string | null;
       password?: string;
-      // The visitor proved their id (a Clerk session or token), not just sent X-Owner-Id.
+      // The visitor proved their id (a signed-in session or token), not just sent X-Owner-Id.
       signedIn?: boolean;
     } = {},
   ): {
@@ -377,9 +377,9 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
         env: FAKE_ENV,
         url,
         segments: url.pathname.replace(/^\//, '').split('/'),
-        clerkUserId: opts.signedIn ? (opts.visitor ?? null) : null,
+        accountUserId: opts.signedIn ? (opts.visitor ?? null) : null,
         verifiedUserId: opts.signedIn ? (opts.visitor ?? null) : null,
-        clerkEmail: null,
+        accountEmail: null,
         resolveOwner: () => opts.visitor ?? null,
         waitUntil: (p: Promise<unknown>) => {
           dispatched.push(p);
@@ -390,55 +390,55 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   }
 
   beforeEach(() => {
-    getDocumentMock.mockReset();
+    getProjectMock.mockReset();
     getShareLinkMock.mockReset();
     getSharePasswordMock.mockReset();
     recordSharedAccessMock.mockReset();
     getParticipantMock.mockReset();
-    notifyDocumentJoinMock.mockReset();
+    notifyProjectJoinMock.mockReset();
     reportServerEventMock.mockClear();
     getShareLinkMock.mockResolvedValue(shareLink('d1'));
-    getDocumentMock.mockResolvedValue(liveDoc('d1'));
+    getProjectMock.mockResolvedValue(liveDoc('d1'));
     getSharePasswordMock.mockResolvedValue(null);
     recordSharedAccessMock.mockResolvedValue(false);
     getParticipantMock.mockResolvedValue(null);
   });
 
-  it('resolves a live code to the document and the link’s own role', async () => {
-    // The role travels with the LINK, not the document: a view code must not
-    // resolve to edit just because the document is shareable.
+  it('resolves a live code to the project and the link’s own role', async () => {
+    // The role travels with the LINK, not the project: a view code must not
+    // resolve to edit just because the project is shareable.
     getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), role: 'view' });
     const { ctx } = resolveCtx();
     const res = await handleShare(ctx);
     expect(res.status).toBe(200);
-    expect(await res.json()).toMatchObject({ role: 'view', document: { id: 'd1' } });
+    expect(await res.json()).toMatchObject({ role: 'view', project: { id: 'd1' } });
   });
 
   it('blanks the owner id for everyone but the owner', async () => {
     // A guest's owner-id is a bearer value: an observer who learns it could
-    // once claim that guest's documents via /api/migrate. A visitor never
+    // once claim that guest's projects via /api/migrate. A visitor never
     // needs it — the client only compares it to decide isOwner.
     const { ctx } = resolveCtx({ visitor: 'someone-else' });
-    const body = (await (await handleShare(ctx)).json()) as { document: { ownerId: string } };
-    expect(body.document.ownerId).toBe('');
+    const body = (await (await handleShare(ctx)).json()) as { project: { ownerId: string } };
+    expect(body.project.ownerId).toBe('');
   });
 
   // The guest header is unproven on this route, so a visitor who presents the
-  // owner's id must still not receive the document's oldest (often edit) code.
+  // owner's id must still not receive the project's oldest (often edit) code.
   it('never returns the primary share code, even to a caller claiming to be the owner', async () => {
     for (const visitor of ['someone-else', 'o1']) {
       const { ctx } = resolveCtx({ visitor });
       const body = (await (await handleShare(ctx)).json()) as {
-        document: { shareCode: string | null };
+        project: { shareCode: string | null };
       };
-      expect(body.document.shareCode, visitor).toBeNull();
+      expect(body.project.shareCode, visitor).toBeNull();
     }
   });
 
   it('shows the owner their own id when they open their own link', async () => {
     const { ctx } = resolveCtx({ visitor: 'o1' });
-    const body = (await (await handleShare(ctx)).json()) as { document: { ownerId: string } };
-    expect(body.document.ownerId).toBe('o1');
+    const body = (await (await handleShare(ctx)).json()) as { project: { ownerId: string } };
+    expect(body.project.ownerId).toBe('o1');
     // ...and an owner opening their own link must not appear in their own
     // "Shared with you" list.
     expect(recordSharedAccessMock).not.toHaveBeenCalled();
@@ -460,20 +460,20 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
   // docs/specs/013-workspace/tab-scoped-share-links.md
   it('hands a tab-scoped visitor their tab, the rest out of scope, and records the scope', async () => {
     getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), tabId: 't2' });
-    getDocumentMock.mockResolvedValue({
+    getProjectMock.mockResolvedValue({
       ...liveDoc('d1'),
       tabs: [
-        { id: 't1', documentId: 'd1', name: 'Pricing', orderIndex: 0, updatedAt: 1 },
-        { id: 't2', documentId: 'd1', name: 'Roadmap', orderIndex: 1, updatedAt: 1 },
+        { id: 't1', projectId: 'd1', name: 'Pricing', orderIndex: 0, updatedAt: 1 },
+        { id: 't2', projectId: 'd1', name: 'Roadmap', orderIndex: 1, updatedAt: 1 },
       ],
     });
     const { ctx } = resolveCtx({ visitor: 'visitor-1' });
     const body = (await (await handleShare(ctx)).json()) as {
       tabId: string | null;
-      document: { tabs: { name: string; outOfScope?: true }[] };
+      project: { tabs: { name: string; outOfScope?: true }[] };
     };
     expect(body.tabId).toBe('t2');
-    expect(body.document.tabs.map((t) => [t.name, t.outOfScope])).toEqual([
+    expect(body.project.tabs.map((t) => [t.name, t.outOfScope])).toEqual([
       ['', true],
       ['Roadmap', undefined],
     ]);
@@ -506,12 +506,11 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
       name: 'Ada',
       color: '#f00',
       createdAt: 0,
-      pictureUrl: null,
     });
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1', signedIn: true });
     await handleShare(ctx);
     await settled();
-    expect(notifyDocumentJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), 'Ada');
+    expect(notifyProjectJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), 'Ada');
   });
 
   it('never emails for a guest visitor, however fresh their id', async () => {
@@ -524,7 +523,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
       await settled();
     }
     expect(recordSharedAccessMock).toHaveBeenCalledTimes(3);
-    expect(notifyDocumentJoinMock).not.toHaveBeenCalled();
+    expect(notifyProjectJoinMock).not.toHaveBeenCalled();
   });
 
   it('stays quiet on a repeat visit', async () => {
@@ -533,20 +532,20 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1', signedIn: true });
     await handleShare(ctx);
     await settled();
-    expect(notifyDocumentJoinMock).not.toHaveBeenCalled();
+    expect(notifyProjectJoinMock).not.toHaveBeenCalled();
   });
 
-  it('counts Document·Joined once, on the first visit, at the link’s role (docs/specs/017-telemetry/telemetry.md)', async () => {
+  it('counts Project·Joined once, on the first visit, at the link’s role (docs/specs/017-telemetry/telemetry.md)', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
     getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), role: 'edit' });
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
     await handleShare(ctx);
     await settled();
     expect(reportServerEventMock).toHaveBeenCalledTimes(1);
-    expect(reportServerEventMock).toHaveBeenCalledWith(FAKE_ENV, 'Document', 'Joined', 'Edit');
+    expect(reportServerEventMock).toHaveBeenCalledWith(FAKE_ENV, 'Project', 'Joined', 'Edit');
   });
 
-  it('does not count Document·Joined on a refresh or return visit (docs/specs/017-telemetry/telemetry.md)', async () => {
+  it('does not count Project·Joined on a refresh or return visit (docs/specs/017-telemetry/telemetry.md)', async () => {
     // The editor used to emit on every open of the share URL; a reload
     // inflated "Collaborators Joined" roughly twofold.
     recordSharedAccessMock.mockResolvedValue(false);
@@ -556,7 +555,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     expect(reportServerEventMock).not.toHaveBeenCalled();
   });
 
-  it('does not count Document·Joined for the owner or an unidentified visitor', async () => {
+  it('does not count Project·Joined for the owner or an unidentified visitor', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
     for (const visitor of ['o1', null]) {
       const { ctx, settled } = resolveCtx({ visitor });
@@ -572,7 +571,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1', signedIn: true });
     await handleShare(ctx);
     await settled();
-    expect(notifyDocumentJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), null);
+    expect(notifyProjectJoinMock).toHaveBeenCalledWith(FAKE_ENV, expect.anything(), null);
   });
 
   it('resolves the code even when the tracking write fails', async () => {
@@ -582,12 +581,12 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1' });
     expect((await handleShare(ctx)).status).toBe(200);
     await settled();
-    expect(notifyDocumentJoinMock).not.toHaveBeenCalled();
+    expect(notifyProjectJoinMock).not.toHaveBeenCalled();
   });
 
   it('swallows a failing notification rather than surfacing it', async () => {
     recordSharedAccessMock.mockResolvedValue(true);
-    notifyDocumentJoinMock.mockRejectedValue(new Error('Resend down'));
+    notifyProjectJoinMock.mockRejectedValue(new Error('Resend down'));
     const { ctx, settled } = resolveCtx({ visitor: 'visitor-1', signedIn: true });
     expect((await handleShare(ctx)).status).toBe(200);
     await expect(settled()).resolves.toBeDefined();
@@ -603,7 +602,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     expect(recordSharedAccessMock).not.toHaveBeenCalled();
   });
 
-  it('403s a wrong password without resolving the document', async () => {
+  it('403s a wrong password without resolving the project', async () => {
     getSharePasswordMock.mockResolvedValue('hunter2');
     const { ctx } = resolveCtx({ visitor: 'visitor-1', password: 'wrong' });
     expect((await handleShare(ctx)).status).toBe(403);
@@ -612,14 +611,14 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
 
   it('404s a code with no live link — expired, revoked or never issued', async () => {
     // There is deliberately no `diagrams.shareable` fallback here: one used to
-    // resolve ANY code on a shareable document at a hardcoded 'edit', which was
+    // resolve ANY code on a shareable project at a hardcoded 'edit', which was
     // both an expiry bypass and a view→edit escalation.
     getShareLinkMock.mockResolvedValue(null);
     expect((await handleShare(resolveCtx().ctx)).status).toBe(404);
   });
 
-  it('404s when the link points at a document that is gone', async () => {
-    getDocumentMock.mockResolvedValue(null);
+  it('404s when the link points at a project that is gone', async () => {
+    getProjectMock.mockResolvedValue(null);
     expect((await handleShare(resolveCtx().ctx)).status).toBe(404);
   });
 
@@ -628,7 +627,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
       ['POST', '/api/share/C'],
       ['GET', '/api/share'],
       ['GET', '/api/share/C/extra'],
-      ['GET', '/api/documents/d1'],
+      ['GET', '/api/projects/d1'],
     ] as const) {
       const url = new URL(`https://api.test${path}`);
       const res = await handleShare({
@@ -636,9 +635,9 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
         env: FAKE_ENV,
         url,
         segments: url.pathname.replace(/^\//, '').split('/'),
-        clerkUserId: null,
+        accountUserId: null,
         verifiedUserId: null,
-        clerkEmail: null,
+        accountEmail: null,
         resolveOwner: () => null,
       });
       expect(res.status, `${method} ${path}`).toBe(404);

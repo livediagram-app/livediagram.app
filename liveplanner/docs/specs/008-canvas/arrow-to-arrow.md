@@ -35,7 +35,7 @@ lifeline moves.
 ## Model
 
 `Endpoint` gains a third kind alongside `free` and `pinned`
-(`@liveplanner/document`, declared in `src/arrow-types.ts`):
+(`@liveplanner/project`, declared in `src/arrow-types.ts`):
 
 ```ts
 | { kind: 'on-arrow'; arrowId: ElementId; t: number }

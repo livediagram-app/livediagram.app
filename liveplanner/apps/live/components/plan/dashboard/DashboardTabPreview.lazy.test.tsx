@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardTabPreview } from './DashboardTabPreview';
 
 // docs/specs/026-plan/plan-tabs.md "Dashboard tab": a Board tab shown in a slot whose content arrives after the
 // Dashboard opens (a reload on the Dashboard: every other tab is a placeholder, with no kind and no elements, until its
-// lazy fetch lands, docs/specs/006-document/per-tab-storage.md). The board must draw once it arrives.
+// lazy fetch lands, docs/specs/006-project/per-tab-storage.md). The board must draw once it arrives.
 afterEach(cleanup);
 
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
@@ -59,7 +59,7 @@ describe('a Board tab whose content arrives after the Dashboard opens', () => {
       </DashboardContext.Provider>,
     );
     expect(screen.getByText('Loading Backlog…')).toBeTruthy();
-    // Waiting as the board the slot was given, never as a Diagram tab's card (its header and drawing).
+    // Waiting as the board the slot was given.
     expect(screen.queryByRole('heading', { name: 'Backlog' })).toBeNull();
     rerender(
       <DashboardContext.Provider value={value(loaded, 'loaded')}>{slot}</DashboardContext.Provider>,
@@ -68,7 +68,7 @@ describe('a Board tab whose content arrives after the Dashboard opens', () => {
   });
 
   it('draws the board even when the slot first showed the tab some other way', () => {
-    // A slot from before `of` was recorded: the placeholder reads as a Diagram tab until it loads.
+    // A slot that names no kind: the placeholder waits as a Board until it loads.
     const old = <DashboardTabPreview slotId="s" tabId="b" />;
     const { rerender } = render(
       <DashboardContext.Provider value={value(placeholder, 'loading')}>

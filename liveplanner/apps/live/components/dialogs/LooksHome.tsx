@@ -12,7 +12,7 @@ import {
   type Finish,
   type TextSize,
   type TextSizePreset,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { Glyph, lucideGlyph } from '@liveplanner/ui';
 import { lucideChevronRight } from '@liveplanner/icons/lucide';
 import { ThemeSwatch } from '@/components/primitives/ThemeSwatch';

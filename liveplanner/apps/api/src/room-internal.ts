@@ -1,8 +1,8 @@
 // The room's internal endpoints (docs/specs/015-api/api.md, Realtime model): calls the api worker makes into the
 // Durable Object after a privileged action. Not exposed publicly: the worker stubs the DO via
-// `env.DOCUMENT_ROOM.get(...).fetch(...)`, which never traverses Cloudflare's edge, so these paths are implicitly
+// `env.PROJECT_ROOM.get(...).fetch(...)`, which never traverses Cloudflare's edge, so these paths are implicitly
 // internal and their bodies trusted. Every other request is a WebSocket upgrade, which the room answers itself.
-import { opForTheWire } from '@liveplanner/document';
+import { opForTheWire } from '@liveplanner/project';
 import { parseAccessCloseMatch, type AccessCloseMatch } from './room-access';
 
 /** The room's surface the internal endpoints act on. */
@@ -23,7 +23,7 @@ export type InternalRoom = {
 
 // The room ops the worker originates through /mutation: a view-role visitor's comment, an agent
 // changeset, a tab rename (docs/specs/024-agents/agent-changesets.md).
-const WORKER_MUTATION_KINDS = new Set(['el-delta', 'changeset', 'tab-meta', 'document-meta']);
+const WORKER_MUTATION_KINDS = new Set(['el-delta', 'changeset', 'tab-meta', 'project-meta']);
 
 /** Answer an internal endpoint, or null when the request is none of them. */
 export async function answerInternal(
@@ -34,7 +34,7 @@ export async function answerInternal(
   // Internal fan-out endpoint, called by the api worker after a
   // privileged action that every connected client should learn
   // about immediately (e.g. share-link revocation). Not exposed
-  // publicly: the worker stubs the DO via `env.DOCUMENT_ROOM.get(...)
+  // publicly: the worker stubs the DO via `env.PROJECT_ROOM.get(...)
   // .fetch(...)`, which never traverses Cloudflare's edge, so the
   // path is implicitly internal. Body is `{ op: RoomOp }` and the
   // op gets broadcast with a synthetic `from: 'system'` so the
@@ -44,7 +44,7 @@ export async function answerInternal(
     const op = body?.op;
     if (!op) return new Response('missing op', { status: 400 });
     // `ordered` asks for a seq + a catch-up log slot: a system op that
-    // changes the document (an item write, docs/specs/026-plan/items.md) must replay to a
+    // changes the project (an item write, docs/specs/026-plan/items.md) must replay to a
     // peer whose socket blipped, the same as a peer's own mutation would.
     if (body.ordered === true) room.broadcastOrderedSystemOp(op);
     else room.broadcastSystemOp(op);
@@ -62,7 +62,7 @@ export async function answerInternal(
     room.closeSessionsForAccessChange(close);
     return new Response(null, { status: 204 });
   }
-  // Internal, like /broadcast: the document was removed for good (a Trash purge, Take Offline, account
+  // Internal, like /broadcast: the project was removed for good (a Trash purge, Take Offline, account
   // deletion), so everything the room kept about it goes too (docs/specs/015-api/api.md "Purging a room").
   if (request.method === 'POST' && url.pathname === '/purge') {
     await room.purge();
@@ -71,12 +71,12 @@ export async function answerInternal(
   if (url.pathname === '/presence' && (request.method === 'PUT' || request.method === 'DELETE')) {
     return room.handleAgentPresence(request, url);
   }
-  // Internal: a document change the WORKER made (docs/specs/012-collaboration/collab-race-hardening.md), relayed into the
+  // Internal: a project change the WORKER made (docs/specs/012-collaboration/collab-race-hardening.md), relayed into the
   // ordered stream like a peer's mutation: sequenced, logged for catch-up,
   // sent to everybody. A view-role visitor's comment is written by the api,
   // not by a client socket (the room refuses view-role mutations), so
   // without this editors never saw it and their next save erased it. An agent
-  // changeset, a tab rename (tab-meta) and a document rename (document-meta) the api applied
+  // changeset, a tab rename (tab-meta) and a project rename (project-meta) the api applied
   // (docs/specs/024-agents/agent-changesets.md)
   // take the same path, one seq and one catch-up slot each whatever their size.
   if (request.method === 'POST' && url.pathname === '/mutation') {

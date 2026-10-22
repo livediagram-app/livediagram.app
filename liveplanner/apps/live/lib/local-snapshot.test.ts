@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 
-// docs/specs/019-marketing/returning-visitor.md: the preview of a document in This Browser is drawn in the browser from
+// docs/specs/019-marketing/returning-visitor.md: the preview of a project in This Browser is drawn in the browser from
 // its first tab in the offline store, by the shared renderer; an empty or missing first tab has none.
 const store = vi.hoisted(() => ({ doc: null as unknown, tab: null as Tab | null }));
 vi.mock('@/lib/offline/offline-store', () => ({
-  offlineLoadDocument: vi.fn(async () => store.doc),
+  offlineLoadProject: vi.fn(async () => store.doc),
   offlineLoadTab: vi.fn(async () => store.tab),
 }));
 vi.mock('@/lib/icon-registry', () => ({
@@ -41,7 +41,7 @@ describe('localSnapshotSvg', () => {
     expect(svg).toMatch(/^<svg[\s\S]*<\/svg>$/);
   });
 
-  it('has no picture for an empty first tab, a tabless document, or none at all', async () => {
+  it('has no picture for an empty first tab, a tabless project, or none at all', async () => {
     store.tab = tab([]);
     expect(await localSnapshotSvg('d1')).toBeNull();
     store.doc = { id: 'd1', tabs: [] };

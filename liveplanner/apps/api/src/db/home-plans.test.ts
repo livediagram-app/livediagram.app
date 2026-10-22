@@ -1,6 +1,6 @@
 // Query-plan guards for the reads behind Home and the Inbox (docs/specs/013-workspace/explorer-home.md,
 // docs/specs/013-workspace/inbox.md), against the real migrations. Each read starts from the reader's
-// own documents; led by a table-wide index instead, it walked rows of every user in the database, so
+// own projects; led by a table-wide index instead, it walked rows of every user in the database, so
 // it slowed as the database grew rather than as the reader's work did.
 
 import { describe, expect, it } from 'vitest';
@@ -19,21 +19,21 @@ function outerLoops(sql: string, ...args: (string | number)[]): string[] {
     .filter((detail) => /^(SCAN|SEARCH)\b/.test(detail));
 }
 
-describe('reads that start from the reader’s documents', () => {
-  it('Inbox threads: the reader’s documents, then their tabs, then those tabs’ threads', () => {
+describe('reads that start from the reader’s projects', () => {
+  it('Inbox threads: the reader’s projects, then their tabs, then those tabs’ threads', () => {
     const loops = outerLoops(THREADS_SQL, 'reader', 1, 50);
     expect(loops[0]).toBe('SCAN vi');
     expect(loops.some((d) => /^SEARCH ct .*\(tab_id=\?\)/.test(d))).toBe(true);
     expect(loops.filter((d) => /collab_threads_open_idx/.test(d))).toEqual([]);
   });
 
-  it('What happened: each document’s own events, by (scope_type, scope_id)', () => {
+  it('What happened: each project’s own events, by (scope_type, scope_id)', () => {
     const loops = outerLoops(WHAT_HAPPENED_SQL, 'reader', 2, 1, 50);
     expect(loops[0]).toBe('SCAN vi');
     expect(loops.some((d) => /^SEARCH sc .*\(scope_type=\? AND scope_id=\?\)/.test(d))).toBe(true);
   });
 
-  it('Jump back in: the reader’s candidates, never a walk of every document', () => {
+  it('Jump back in: the reader’s candidates, never a walk of every project', () => {
     const loops = outerLoops(JUMP_BACK_IN_SQL, 'reader', 2, 1, 3, 6);
     expect(loops[0]).toBe('SCAN c');
     expect(loops.filter((d) => /^SCAN d\b/.test(d))).toEqual([]);

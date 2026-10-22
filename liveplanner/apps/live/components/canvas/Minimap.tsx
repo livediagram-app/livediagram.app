@@ -14,7 +14,7 @@ import {
   svgShadowDefs,
   type Element,
   type Point,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { framesFirst, ZOOM_MAX, ZOOM_MIN } from '@/lib/canvas';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from '@/lib/icon-registry';
 import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
@@ -61,7 +61,7 @@ type MinimapProps = {
   setViewportZoom: (zoom: number) => void;
   // The canvas <main>'s size, measured by the Canvas that owns it. Not observed here: the map renders
   // INSIDE <main>, and a child's layout effect runs before its parent's ref attaches, so a map mounted
-  // in the same commit as the canvas (any document opened with enough elements) would read a null ref,
+  // in the same commit as the canvas (any project opened with enough elements) would read a null ref,
   // never measure, and lose its current-view window.
   mainSize: { width: number; height: number };
   // The tab's resolved paper colour (the backdrop the canvas paints). The map

@@ -1,4 +1,4 @@
-import type { BorderStyle } from '@liveplanner/document';
+import type { BorderStyle } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import { isCssNativeBorderStyle, nearestCssBorderStyle } from './border-css';
 

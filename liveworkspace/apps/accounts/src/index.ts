@@ -2,44 +2,25 @@ import {
   oauthProviderAuthServerMetadata,
   oauthProviderOpenIdConfigMetadata,
 } from '@better-auth/oauth-provider';
+import { ACCOUNT_API_PATH, handleAccountApi } from './account-api.ts';
 import { AUTH_BASE_PATH, SEND_CODE_PATH, SIGN_IN_CODE_PATH } from './auth-options.ts';
 import { getAuth } from './auth.ts';
-import { registerClient } from './clients.ts';
+import { CLIENTS_PATH, registerClient } from './clients.ts';
+import { DELETE_ACCOUNT_PATH, deleteAccount } from './delete-account.ts';
 import type { Env } from './env.ts';
-import { CONSENT_SCRIPT, consentPage, SIGN_IN_SCRIPT, signInPage, STYLES } from './pages.ts';
 import { overCodeLimit } from './rate-limit.ts';
+import { SIGN_IN_OPTIONS_PATH, signInOptions } from './sign-in-options.ts';
 
-const ASSETS: Record<string, { body: string; type: string }> = {
-  '/assets/accounts.css': { body: STYLES, type: 'text/css; charset=utf-8' },
-  '/assets/sign-in.js': { body: SIGN_IN_SCRIPT, type: 'text/javascript; charset=utf-8' },
-  '/assets/consent.js': { body: CONSENT_SCRIPT, type: 'text/javascript; charset=utf-8' },
-};
-
-function asset(path: string): Response | null {
-  const found = ASSETS[path];
-  if (!found) return null;
-  return new Response(found.body, {
-    headers: {
-      'content-type': found.type,
-      // Short: the files are unversioned, and a deploy should reach the page within minutes.
-      'cache-control': 'public, max-age=300',
-      'x-content-type-options': 'nosniff',
-    },
-  });
-}
-
+// The accounts API. Only the paths routed to this Worker reach it (wrangler.toml): /api/auth/*,
+// /api/account/* (teams and API tokens, account-api.ts) and the two discovery documents. Every page, the sign-in pages included, is the static site's
+// (liveworkspace/apps/site), on the same origin.
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const { pathname } = url;
 
     if (request.method === 'GET') {
-      if (pathname === '/') return Response.redirect(new URL('/sign-in', url).toString(), 302);
-      if (pathname === '/sign-in') return signInPage(env.TURNSTILE_SITE_KEY);
-      if (pathname === '/consent') return consentPage();
-      if (pathname === '/health') return new Response('ok');
-      const file = asset(pathname);
-      if (file) return file;
+      if (pathname === `${AUTH_BASE_PATH}${SIGN_IN_OPTIONS_PATH}`) return signInOptions(env);
       // Discovery at the root as well as under the issuer path, for clients that only look
       // at the origin (RFC 8414 §3 and OIDC Discovery §4 disagree on where it lives).
       if (pathname === '/.well-known/openid-configuration') {
@@ -50,8 +31,16 @@ export default {
       }
     }
 
-    if (request.method === 'POST' && pathname === '/internal/clients') {
+    if (pathname === ACCOUNT_API_PATH || pathname.startsWith(`${ACCOUNT_API_PATH}/`)) {
+      return handleAccountApi(request, env, getAuth(env));
+    }
+
+    if (request.method === 'POST' && pathname === CLIENTS_PATH) {
       return registerClient(request, env, getAuth(env));
+    }
+
+    if (request.method === 'POST' && pathname === `${AUTH_BASE_PATH}${DELETE_ACCOUNT_PATH}`) {
+      return deleteAccount(request, getAuth(env), env.AUTH_DB);
     }
 
     if (pathname === AUTH_BASE_PATH || pathname.startsWith(`${AUTH_BASE_PATH}/`)) {

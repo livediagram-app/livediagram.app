@@ -1,10 +1,10 @@
 'use client';
 
 import { useCallback } from 'react';
-import { withCustomColour, type Tab } from '@liveplanner/document';
+import { withCustomColour, type Tab } from '@liveplanner/project';
 
 // Keeps a colour picked with + as the active tab's newest custom colour (docs/specs/004-interface-design/
-// colour-picker.md "Custom colours"), so every picker in the document offers it. Not an undoable step: it
+// colour-picker.md "Custom colours"), so every picker in the project offers it. Not an undoable step: it
 // records a choice, it does not change the board (the pick itself is the undoable edit). Synced with the tab.
 export function useAddCustomColour({
   activeId,

@@ -1,14 +1,14 @@
-import { type TextAlignX, type TextAlignY } from '@liveplanner/document';
+import { type TextAlignX, type TextAlignY } from '@liveplanner/project';
 import { AlignIcon } from '@/components/palette/palette-icons';
 import { onMouseHover } from '@/components/primitives/hover-preview';
 import { useState } from 'react';
 import { HoverCard, Tooltip } from '@liveplanner/ui';
-import type { StandardTone } from '@liveplanner/document';
+import type { StandardTone } from '@liveplanner/project';
 import { ColourPopover } from '@/components/colour/ColourPopover';
 import { SwatchChip } from '@/components/colour/ColourSwatch';
 import { standardGroup, standardOptions } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useProjectColours } from '@/hooks/ui/useProjectColours';
 import { TOOLBAR_CONTROL_REST } from '@/components/chrome/toolbar-surface';
 
 // The theme-tinted palette tile + its tint context moved to
@@ -182,7 +182,7 @@ export function useColourWell({
   // The trigger, held in state (a callback ref) so the popover can anchor to it during render.
   const [anchor, setAnchor] = useState<HTMLElement | null>(null);
   const appearance = useCanvasSurface();
-  const yours = useDocumentColours();
+  const yours = useProjectColours();
   const standard =
     tones.length === 1
       ? [standardGroup(tones[0]!, appearance, 'hex')]

@@ -59,7 +59,7 @@ Scope, by file:
 | `packages/ui/src/timeline/useTimelineGrouping.ts`                       | `formatDay` exported, shared by the day headings                                        |
 | `packages/api-schema/src/telemetry-schema.ts`                           | The `Home` category                                                                     |
 | `apps/telemetry/app/{catalogue/collaboration.ts,event-explanations.ts}` | Home's charts and sentences                                                             |
-| `apps/telemetry/app/event-vocab.ts`                                     | The `Home` category's description and colour                                            |
+| liveworkspace/apps/site/app/telemetry/livediagram/event-vocab.ts        | The `Home` category's description and colour                                            |
 | `apps/help/app/explorer/timeline/page.mdx`, `packages/help-registry`    | The Home article: Home, then the Timeline                                               |
 | `apps/live/e2e/home-seed.ts`                                            | e2e seeding through the api: drawn documents, opens, edits through a link               |
 

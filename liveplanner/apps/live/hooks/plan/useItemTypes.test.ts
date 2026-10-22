@@ -31,7 +31,7 @@ function render(initial: SavedItemTypes) {
     return {
       stored,
       slice: useItemTypes({
-        documentId: 'doc',
+        projectId: 'doc',
         ownerId: 'me',
         shareCode: null,
         stored,

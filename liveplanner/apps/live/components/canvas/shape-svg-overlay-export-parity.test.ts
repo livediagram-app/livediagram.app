@@ -4,16 +4,16 @@ import {
   renderElementsToSvg,
   SHAPE_GEOMETRY_KINDS,
   type Tab,
-} from '@liveplanner/document';
-import type { ShapeKind } from '@liveplanner/document';
+} from '@liveplanner/project';
+import type { ShapeKind } from '@liveplanner/project';
 
 // Canvas and export must agree on which shapes have a real outline.
 //
 // `ShapeSvgOverlay` (this directory) draws the silhouettes the browser sees;
-// `svg-render-shapes.ts` in packages/document redraws them headlessly for the
+// `svg-render-shapes.ts` in packages/project redraws them headlessly for the
 // SVG / PNG / PDF exports, the Explorer thumbnails, the share image and the
 // inline images the MCP server returns. Both now draw from one geometry table
-// (shape-geometry.ts in packages/document), and shape-svg-overlay.test.tsx +
+// (shape-geometry.ts in packages/project), and shape-svg-overlay.test.tsx +
 // the package's shape-geometry.test.ts pin each side to its exact paths.
 //
 // This keeps the coarser, behavioural guard it started as: every kind the

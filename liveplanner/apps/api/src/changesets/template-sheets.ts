@@ -1,11 +1,11 @@
 // A template's Sheets made when a changeset's replace lands a template on a tab (docs/specs/029-sheets/sheet-store.md
 // "Template starts"; the MCP's add_tab, the CLI's replace --template): made before the tab is written, so an agent
-// reading the sheet right after finds it. A sheet that cannot be made (the document's sheet cap) leaves its Sheet
+// reading the sheet right after finds it. A sheet that cannot be made (the project's sheet cap) leaves its Sheet
 // marked, for the editor to try when it is drawn; it never refuses the changeset.
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import {
-  DOCUMENT_CELLS_MAX,
-  DOCUMENT_SHEETS_MAX,
+  PROJECT_CELLS_MAX,
+  PROJECT_SHEETS_MAX,
   sheetFromJson,
   uniqueSheetTitle,
   validateSheetCreate,
@@ -16,7 +16,7 @@ import { hasTemplateSheets } from '@liveplanner/templates';
 import { materialiseTemplateSheets } from '@liveplanner/templates/template-sheets';
 import type { Env } from '../types';
 import {
-  documentSheetTotals,
+  projectSheetTotals,
   insertSheetStatements,
   listSheetHeads,
   readSheetHead,
@@ -25,7 +25,7 @@ import { changesetLog } from './log';
 
 export async function makeTemplateSheets(
   env: Env,
-  documentId: string,
+  projectId: string,
   tab: Tab,
   by: SheetPerson,
 ): Promise<Tab> {
@@ -33,11 +33,11 @@ export async function makeTemplateSheets(
   const now = Date.now();
   const made = materialiseTemplateSheets([tab], now);
   const madeIds = new Set<string>();
-  let totals = await documentSheetTotals(env, documentId);
+  let totals = await projectSheetTotals(env, projectId);
   for (const create of made.sheets) {
     const id = create.id!;
-    if (await readSheetHead(env, documentId, id)) continue;
-    const titles = (await listSheetHeads(env, documentId, create.tabId)).map((h) => h.title);
+    if (await readSheetHead(env, projectId, id)) continue;
+    const titles = (await listSheetHeads(env, projectId, create.tabId)).map((h) => h.title);
     const sheet: SheetJson = {
       id,
       tabId: create.tabId,
@@ -50,17 +50,17 @@ export async function makeTemplateSheets(
       updatedBy: by,
     };
     const full =
-      totals.sheets >= DOCUMENT_SHEETS_MAX ||
-      totals.cells + sheet.cells.length > DOCUMENT_CELLS_MAX;
+      totals.sheets >= PROJECT_SHEETS_MAX ||
+      totals.cells + sheet.cells.length > PROJECT_CELLS_MAX;
     if (full || !validateSheetCreate(sheetFromJson(sheet)).ok) {
-      changesetLog('warn', '[changeset] template sheet skipped', { documentId, full });
+      changesetLog('warn', '[changeset] template sheet skipped', { projectId, full });
       continue;
     }
-    await env.DB.batch(insertSheetStatements(env, documentId, sheet, now));
+    await env.DB.batch(insertSheetStatements(env, projectId, sheet, now));
     totals = { ...totals, sheets: totals.sheets + 1, cells: totals.cells + sheet.cells.length };
     madeIds.add(id);
   }
-  changesetLog('info', '[changeset] template sheets made', { documentId, count: madeIds.size });
+  changesetLog('info', '[changeset] template sheets made', { projectId, count: madeIds.size });
   // Only the Sheets whose sheets were made lose the mark.
   return {
     ...tab,

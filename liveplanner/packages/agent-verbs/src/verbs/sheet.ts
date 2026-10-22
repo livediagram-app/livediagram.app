@@ -1,4 +1,4 @@
-// The sheet verbs (docs/specs/029-sheets/sheet-store.md "Agents"): list a document's sheets, read one's cells by A1,
+// The sheet verbs (docs/specs/029-sheets/sheet-store.md "Agents"): list a project's sheets, read one's cells by A1,
 // set cells (or a CSV from a file or stdin), put a new Sheet on a tab, and insert or delete rows and columns, through
 // the sheet engine the MCP's list_sheets, read_sheet, change_sheet and add_sheet share. Sheets are named by title
 // or id, cells by A1, rows by number and columns by letter.
@@ -10,11 +10,11 @@ import { changeSheet } from '../sheets/change-sheet';
 import { listSheets } from '../sheets/sheet-listing';
 import { readSheet } from '../sheets/read-sheet';
 import type { SheetChange } from '../sheets/sheet-change-build';
-import { columns, documentOf } from './shared';
+import { columns, projectOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or liveplanner URL');
+const projectArg = z.string().describe('A name, id prefix or liveplanner URL');
 const sheetArg = z.string().describe('The sheet, by title or id');
-const LS_HINT = 'list the sheets with: liveplanner sheet ls <doc>';
+const LS_HINT = 'list the sheets with: liveplanner sheet ls <project>';
 
 const refusal = (code: string, message: string) =>
   new VerbRefusal({ status: code === 'sheet_not_found' ? 404 : 400, code, message, hint: LS_HINT });
@@ -29,12 +29,12 @@ const changeOutput = z.object({
 // Changes through the engine, a refusal as the verb's.
 async function changeVia(
   ctx: VerbContext,
-  doc: string,
+  projectRef: string,
   sheet: string,
   changes: SheetChange[],
 ): Promise<z.infer<typeof changeOutput>> {
-  const document = await documentOf(ctx, doc);
-  const result = await changeSheet(ctx.api, document.id, { sheet, changes }, 'cli');
+  const project = await projectOf(ctx, projectRef);
+  const result = await changeSheet(ctx.api, project.id, { sheet, changes }, 'cli');
   // Each verb sends one change, so a refusal means nothing went through.
   if (result.refusal) throw refusal(result.refusal.code, result.refusal.message);
   return { sheetId: result.sheetId, title: result.title, applied: result.applied, rev: result.rev };
@@ -45,11 +45,11 @@ const changeText = ({ title, applied }: z.infer<typeof changeOutput>) =>
 
 export const sheetLs = defineVerb({
   id: 'sheet.ls',
-  summary: "List a document's sheets",
+  summary: "List a project's sheets",
   description:
-    'Lists the sheets on the tabs of a document: title, tab, the range in use and the id, one a line.',
+    'Lists the sheets on the tabs of a project: title, tab, the range in use and the id, one a line.',
   behaviour: 'read',
-  input: z.object({ doc: docArg, tab: z.string().optional().describe('Only this tab id') }),
+  input: z.object({ project: projectArg, tab: z.string().optional().describe('Only this tab id') }),
   output: z.object({
     sheets: z.array(
       z.object({
@@ -65,8 +65,8 @@ export const sheetLs = defineVerb({
     ),
   }),
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
-    return listSheets(ctx.api, document.id, input.tab);
+    const project = await projectOf(ctx, input.project);
+    return listSheets(ctx.api, project.id, input.tab);
   },
   text: ({ sheets }) =>
     sheets.length
@@ -75,7 +75,7 @@ export const sheetLs = defineVerb({
   quiet: ({ sheets }) => sheets.map((s) => s.id),
   listKey: 'sheets',
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     examples: ['liveplanner sheet ls "Budget 2027"', 'liveplanner sheet ls 3f9c --tab tab-one'],
     prints: '<title>  <tab>  <range in use>  <id>, one sheet a line',
   },
@@ -88,7 +88,7 @@ export const sheetGet = defineVerb({
     "Prints a range's non-empty cells (the range in use by default), one a line: the cell, its input as typed and, for a formula, what it works out to.",
   behaviour: 'read',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     sheet: sheetArg,
     range: z.string().optional().describe('A cell or range in A1 form, like A1:D20'),
   }),
@@ -106,8 +106,8 @@ export const sheetGet = defineVerb({
     note: z.string().optional(),
   }),
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
-    const read = await readSheet(ctx.api, document.id, {
+    const project = await projectOf(ctx, input.project);
+    const read = await readSheet(ctx.api, project.id, {
       sheet: input.sheet,
       ...(input.range ? { range: input.range } : {}),
     });
@@ -131,7 +131,7 @@ export const sheetGet = defineVerb({
   quiet: ({ cells }) => cells.map((c) => c.display),
   listKey: 'cells',
   cli: {
-    positionals: ['doc', 'sheet', 'range'],
+    positionals: ['project', 'sheet', 'range'],
     examples: [
       'liveplanner sheet get "Budget 2027" Costs',
       'liveplanner sheet get 3f9c Costs B2:D40',
@@ -147,7 +147,7 @@ export const sheetSet = defineVerb({
     'Writes values across a row from a cell, or the rows of a CSV file (stdin with --csv -) from it, read as typed: a leading = is a formula.',
   behaviour: 'destructive',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     sheet: sheetArg,
     at: z.string().describe('The first cell, in A1 form'),
     values: z.array(z.string()).describe('Values for the row, left to right'),
@@ -164,12 +164,12 @@ export const sheetSet = defineVerb({
         message: 'nothing to write: give values after the cell, or --csv <file>',
         hint: 'for example: liveplanner sheet set Budget Costs B2 1200 =B2*12',
       });
-    return changeVia(ctx, input.doc, input.sheet, [{ op: 'set', at: input.at, rows }]);
+    return changeVia(ctx, input.project, input.sheet, [{ op: 'set', at: input.at, rows }]);
   },
   text: changeText,
   quiet: ({ sheetId }) => [sheetId],
   cli: {
-    positionals: ['doc', 'sheet', 'at', '...values'],
+    positionals: ['project', 'sheet', 'at', '...values'],
     examples: [
       'liveplanner sheet set "Budget 2027" Costs B2 1200 =B2*12',
       'cat costs.csv | liveplanner sheet set 3f9c Costs A1 --csv -',
@@ -185,7 +185,7 @@ export const sheetAdd = defineVerb({
     'Puts a new Sheet beside what a tab holds, titled uniquely on the tab, blank or filled from a CSV file (or stdin) from A1.',
   behaviour: 'write',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     tab: z
       .string()
       .optional()
@@ -201,11 +201,11 @@ export const sheetAdd = defineVerb({
     filled: z.string().nullable(),
   }),
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
+    const project = await projectOf(ctx, input.project);
     const csv = input.csv !== undefined ? await ctx.readInput(input.csv) : undefined;
     const result = await addSheet(
       ctx.api,
-      document.id,
+      project.id,
       {
         ...(input.tab ? { tabId: input.tab } : {}),
         ...(input.title ? { title: input.title } : {}),
@@ -221,7 +221,7 @@ export const sheetAdd = defineVerb({
   text: ({ title, filled }) => [`+ sheet ${JSON.stringify(title)}${filled ? `: ${filled}` : ''}`],
   quiet: ({ sheetId }) => [sheetId],
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     examples: [
       'liveplanner sheet add "Budget 2027" --title Costs',
       'liveplanner sheet add 3f9c --tab tab-one --csv costs.csv',
@@ -246,7 +246,7 @@ function axisVerb(
     description,
     behaviour: inserts ? 'write' : 'destructive',
     input: z.object({
-      doc: docArg,
+      project: projectArg,
       sheet: sheetArg,
       where,
       ...(inserts
@@ -258,7 +258,11 @@ function axisVerb(
     }),
     output: changeOutput,
     run: async (ctx, input) => {
-      const { doc, sheet, ...rest } = input as { doc: string; sheet: string; where: string };
+      const {
+        project: projectRef,
+        sheet,
+        ...rest
+      } = input as { project: string; sheet: string; where: string };
       const count = (rest as { count?: string }).count;
       if (count !== undefined && !/^[1-9][0-9]{0,3}$/.test(count))
         throw new VerbRefusal({
@@ -267,12 +271,12 @@ function axisVerb(
           message: `--count takes 1 to 1000, got ${JSON.stringify(count)}`,
           hint: examples[1],
         });
-      return changeVia(ctx, doc, sheet, [build(rest)]);
+      return changeVia(ctx, projectRef, sheet, [build(rest)]);
     },
     text: changeText,
     quiet: ({ sheetId }) => [sheetId],
     cli: {
-      positionals: ['doc', 'sheet', 'where'],
+      positionals: ['project', 'sheet', 'where'],
       examples,
       prints: '~ sheet "<title>": <what changed>',
     },

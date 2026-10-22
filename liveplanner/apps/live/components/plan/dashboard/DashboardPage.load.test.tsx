@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
-// docs/specs/026-plan/plan-tabs.md "Figures from a Sheet": the document's tabs fetched for a figure from a Sheet record
+// docs/specs/026-plan/plan-tabs.md "Figures from a Sheet": the project's tabs fetched for a figure from a Sheet record
 // their failures, as a shown tab's do, so the figure and the Sheet picker say so (with Retry) rather than waiting.
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { useDashboard } from './dashboard-context';
 import { DashboardPage } from './DashboardPage';
 import type { PlanTabActions } from '@/hooks/plan/usePlanTabActions';

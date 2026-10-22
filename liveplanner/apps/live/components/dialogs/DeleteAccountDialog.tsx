@@ -7,16 +7,13 @@
 //
 // Delete sequence:
 //
-//   1. POST DELETE /api/account — wipes the caller's documents +
-//      folders + participant row on the backend. Returns the change
-//      counts on success.
-//   2. Clerk's `user.delete()` — drops the Clerk account itself.
-//   3. Sign out + redirect to /live/ — by the time the page reloads
-//      the editor lands as a fresh guest.
-//
-// Backend-first because a backend failure leaves the user signed in
-// with data they can recover from; Clerk-first would leave orphan
-// rows behind that the user could no longer reach.
+//   1. DELETE /api/account — wipes the caller's projects + folders +
+//      participant row on the backend, then closes their liveworkspace
+//      account, which signs them in to every liveworkspace app. Returns
+//      the change counts on success.
+//   2. `deleteAccount()` — ends the liveplanner session.
+//   3. Sign out + redirect — by the time the page reloads the editor
+//      lands as a fresh guest.
 
 import { Button, useEscape, useFocusTrap, Portal } from '@liveplanner/ui';
 import { useDeferredAuth } from '@/components/providers/deferred-auth';
@@ -43,10 +40,6 @@ export function DeleteAccountDialog({
   useModalGuard(open);
   const { user, deleteAccount, confirmIdentity } = useDeferredAuth();
   const expectedEmail = user?.email ?? '';
-  // `deleteAccount` wraps Clerk's `user.delete()` in the reverification
-  // flow (step-up auth modal, built inside ClerkBridge where the Clerk
-  // context lives) — destructive actions require fresh verification
-  // even for already-signed-in users.
 
   const [typed, setTyped] = useState('');
   const [phase, setPhase] = useState<Phase>('idle');
@@ -89,15 +82,23 @@ export function DeleteAccountDialog({
     if (!emailsMatch || phase === 'submitting' || !user || !deleteAccount) return;
     setPhase('submitting');
     setErrorMsg('');
-    // Step-up auth first (docs/specs/014-identity/auth-and-guest-access.md "Deleting an account"): Clerk asks for it
-    // before deleting the account, and asked AFTER the server data had gone, a cancelled prompt left an account
-    // with nothing in it. Confirmed here, nothing is deleted until the person has passed it.
+    // Step-up auth first, when the session has one (docs/specs/014-identity/auth-and-guest-access.md "Deleting an
+    // account"): asked AFTER the server data had gone, a cancelled prompt would leave an account with nothing in
+    // it. Confirmed here, nothing is deleted until the person has passed it.
     if (confirmIdentity && !(await confirmIdentity())) {
       setPhase('error');
       setErrorMsg('Identity not confirmed, so nothing was deleted. Try again when you are ready.');
       return;
     }
     const result = await apiDeleteAccount();
+    if (result === 'account_not_closed') {
+      // The data went; the account didn't. The session still works, so asking again finishes it.
+      setPhase('error');
+      setErrorMsg(
+        'Your liveplanner data was deleted, but closing your liveworkspace account failed. Try again.',
+      );
+      return;
+    }
     if (!result) {
       setPhase('error');
       setErrorMsg('Could not delete server-side data. Try again.');
@@ -110,18 +111,10 @@ export function DeleteAccountDialog({
     try {
       await deleteAccount();
     } catch (err) {
-      // Backend data is already gone, so surface Clerk's actual
-      // error rather than swallowing it. With the reverification
-      // wrapper this should usually only fire for harder problems
-      // (self-deletion disabled on the Clerk instance, stale
-      // token, network blip). If it says self-deletion is disabled,
-      // the toggle lives at Clerk Dashboard → User & Authentication
-      // → Personal information → Delete account.
+      // The data is already gone; only ending the session failed (a network blip). Signing out finishes it.
       setPhase('error');
-      const detail = messageOf(err, 'Clerk delete failed');
       setErrorMsg(
-        `Backend data was deleted, but removing the Clerk account failed: ${detail}. ` +
-          'If this says self-deletion is disabled, enable it in your Clerk dashboard → User & Authentication → Personal information → Delete account.',
+        `Your liveplanner data was deleted, but signing you out failed: ${messageOf(err, 'unknown error')}. Sign out to finish.`,
       );
       return;
     }
@@ -150,9 +143,9 @@ export function DeleteAccountDialog({
               Delete Account
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              This permanently removes your documents (including any in the Trash), folders, and
-              participant record from the liveplanner server, then deletes your account. This cannot
-              be undone.
+              This permanently removes your projects (including any in the Trash), folders, and
+              participant record from the liveplanner server, and closes your liveworkspace account,
+              which also signs you in to the other liveworkspace apps. This cannot be undone.
             </p>
           </div>
 

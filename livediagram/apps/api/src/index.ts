@@ -43,10 +43,11 @@ import { handleTokens } from './routes/tokens';
 import { handleOauthExchange } from './routes/oauth';
 import { DocumentRoom } from './document-room';
 import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited } from './responses';
-import { insertTelemetryEvents } from './db/telemetry';
 import { deleteOldDocumentOpens } from './db/document-opens';
+import { reportServerEvent } from './server-telemetry';
 import { clientIp, clientRateKey } from './client-ip';
-import { communityNetwork } from './community-network';
+import { communityNetwork } from '@livediagram/api-schema';
+import { syncCommunity } from './community-service';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
@@ -78,7 +79,6 @@ import { handleShare } from './routes/share';
 import { isSharePreviewPath } from './routes/share-preview';
 import { handleTeams } from './routes/teams';
 import { handleShared } from './routes/shared';
-import { handleTelemetry } from './routes/telemetry';
 import { handleTrash } from './routes/trash';
 import { handleDrive } from './routes/drive';
 import { handleWorkbench } from './routes/workbench';
@@ -280,7 +280,7 @@ async function routeApiRequest(
   // exhaustion. Reads pass through untouched. When neither a
   // Clerk token nor X-Owner-Id resolves the caller, fall back to
   // a literal 'anonymous' key so one unauthenticated client still
-  // can't burn the global quota. Telemetry ingest (/api/events)
+  // can't burn the global quota. The telemetry relay (/api/events)
   // is deliberately exempt: it's anonymous, high-frequency, and
   // must never compete with a user's real document writes for the
   // per-owner write budget (docs/specs/017-telemetry/telemetry.md). Client-side batching keeps
@@ -341,9 +341,6 @@ async function routeApiRequest(
     if (await isWriteRateLimited(env, `room-ticket:${clientRateKey(request)}`))
       return rateLimited();
   }
-  // Community likes and reports (docs/specs/025-community/blueprints/community.md §7) are limited per
-  // network instead: their callers are anonymous, so the owner key would be 'anonymous' for everyone.
-  const isCommunityWrite = isWrite && segments[1] === 'community';
   // A form link's doors (docs/specs/030-forms/forms.md "Abuse and limits"): respondents are anonymous, so reads and
   // responses are limited per network, each on its own key, apart from everyone's document writes.
   const isFormRequest = segments[1] === 'forms';
@@ -362,18 +359,10 @@ async function routeApiRequest(
     });
     if (!ok.success) return rateLimited();
   }
-  if (isCommunityWrite && env.COMMUNITY_RATE_LIMITER) {
-    // Keyed by address range, not address: rotating addresses inside one range buys no extra writes.
-    const ok = await env.COMMUNITY_RATE_LIMITER.limit({
-      key: `community:${communityNetwork(clientIp(request))}`,
-    });
-    if (!ok.success) return rateLimited();
-  }
   if (
     isWrite &&
     url.pathname !== '/api/events' &&
     !isRoomTicketMint &&
-    !isCommunityWrite &&
     !isFormRequest &&
     !isInviteDecline
   ) {
@@ -449,8 +438,6 @@ async function routeApiRequest(
         return notFound();
       case 'events':
         return await handleEvents(ctx);
-      case 'telemetry':
-        return await handleTelemetry(ctx);
       case 'share':
         return await handleShare(ctx);
       case 'community':
@@ -511,22 +498,13 @@ async function routeApiRequest(
     // client — internal error text can leak implementation details (table
     // names, stack hints). Return a generic body instead.
     console.error('api error', err);
-    // Self-report the crash to the events table (docs/specs/017-telemetry/telemetry.md 'Error'
-    // category): the worker owns the D1 binding, so a server-side
-    // exception counts even when no client survives to report it.
-    // Same TELEMETRY_ENABLED gate as the ingest; off the response's
-    // critical path (waitUntil), and its own failure is swallowed —
-    // the 500 must still go out. The type names the endpoint by its
-    // route words only (`Internal.Put.Documents.Tabs`), never an id.
-    if (env.TELEMETRY_ENABLED === 'true') {
-      const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
-      const report = insertTelemetryEvents(
-        env,
-        [{ category: 'Error', action: 'Api', type }],
-        Date.now(),
-      ).catch(() => {});
-      executionCtx?.waitUntil?.(report);
-    }
+    // Self-report the crash (docs/specs/017-telemetry/telemetry.md 'Error' category): the worker
+    // counts a server-side exception even when no client survives to report it. Same
+    // TELEMETRY_ENABLED gate as every emit; off the response's critical path (waitUntil), and its own
+    // failure is swallowed — the 500 must still go out. The type names the endpoint by its route
+    // words only (`Internal.Put.Documents.Tabs`), never an id.
+    const type = errorTypeToken('Internal', apiRouteLabel(request.method, url.pathname));
+    executionCtx?.waitUntil?.(reportServerEvent(env, 'Error', 'Api', type));
     return json({ error: 'internal_error' }, { status: 500 });
   }
 
@@ -543,7 +521,8 @@ const worker = {
   // One worker invocation per `triggers.crons` entry; dispatch on
   // `event.cron` for each pattern. Today's daily 03:00 UTC trigger
   // fires independent retention sweeps:
-  //   - events,     60-day floor (docs/specs/017-telemetry/telemetry.md "Retention").
+  //   - events,     60-day floor: the retired table drains (docs/specs/017-telemetry/telemetry.md
+  //                 "Where events are stored").
   //   - images,     30-day floor, unused only, after the reference-index backfill
   //                 (docs/specs/009-elements/images.md "Retention").
   //   - trash,      30 days after deletion (docs/specs/013-workspace/trash.md).
@@ -662,8 +641,13 @@ const worker = {
           .catch((err) => console.error('workbench sweep failed', err)),
       );
     }
+    // docs/specs/025-community/community.md "Keeping in step": every minute, what changed about published documents
+    // goes to the liveworkspace Community service, and the posts it hid after reports close their links here.
+    if (event.cron === COMMUNITY_SYNC_CRON) ctx.waitUntil(syncCommunity(env));
   },
 } satisfies ExportedHandler<Env>;
+
+const COMMUNITY_SYNC_CRON = '* * * * *';
 
 export default worker;
 
@@ -695,8 +679,6 @@ function scheduleSweep(
 // count (docs/specs/017-telemetry/telemetry.md). Longer than any session Clerk keeps alive by default.
 const AUTH_SESSION_RETENTION_MS = 90 * 24 * 60 * 60 * 1000;
 
-// 60 days in ms. The /telemetry dashboard's longest window is
-// "Last 30 days", so anything past 60 days is dead storage (twice
-// the surfaced window, leaving headroom for a future "Last 60
-// days" view to populate). See docs/specs/017-telemetry/telemetry.md "Retention".
+// 60 days in ms: the retention the retired events table's rows were collected under
+// (docs/specs/017-telemetry/telemetry.md "Retention").
 const EVENTS_RETENTION_MS = 60 * 24 * 60 * 60 * 1000;

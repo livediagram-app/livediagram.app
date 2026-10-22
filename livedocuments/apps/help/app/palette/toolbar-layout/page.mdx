@@ -1,0 +1,89 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { ToolbarCategoryFlyout } from '@/components/illustrations/toolbar-layout';
+
+export const metadata = helpMetadata({
+  title: 'Toolbar Layout',
+  description:
+    'The palette is one strip across the top of the canvas, with a menu button for the Explorer and a search for every element. The other panels dock in the corners.',
+  path: '/help/palette/toolbar-layout/',
+});
+
+<ArticleLayout
+  title="Toolbar Layout"
+  description="The palette in one strip across the top of the canvas, and the Explorer behind a menu button."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("toolbar-layout")}
+>
+
+The editor lays its tools out the same way on every device, a computer, a tablet or a phone: the palette is one strip across the top of the canvas, and the Explorer opens from a menu button in the top-left corner.
+
+## What it does
+
+The palette is a single strip pinned to the top centre of the canvas. From left to right it holds:
+
+- **Selection mode**: Select, Hand, Format, Laser and the rest.
+- **The categories**, by name: on an infographic page **Popular**, **Shapes**, **Write**, **Concepts**, **Components**, **Devices**, **Icons**, **Stickers**, **Media** and **Data**. Rest the pointer on one, or click it, and its elements open in a panel underneath.
+- **Search** (the magnifier, or press **S**), last on the strip, to find any element, icon or sticker by name.
+
+In the top-left corner, in a card of their own, sit the **menu button** and the tab's name. The menu button opens the [Explorer](/help/explorer/explorer-panel/) as a popover under it, and clicking it again closes it.
+
+**Collaborate** opens just above its button in the bottom row, and closes when you click the button again. Every other panel (the AI assistant, the Map and the tool panels) docks in a corner of the canvas, and you can drag it to another (see [Panel Layout](/help/user-interface/panel-layout/)). Undo and Redo stay in the bottom-right corner.
+
+Only one of the strip's menus is open at a time: opening the selection mode, a category, More or Search closes whichever other was open, and a click anywhere outside closes it.
+
+## The categories
+
+Each category on the strip opens a panel of its elements under its name:
+
+- **Rest the pointer on a category** and its panel opens; slide along the strip and the panel follows to each one you point at. Move away from both the strip and the panel and it closes. A click or a tap opens it too.
+- **Its elements come in named groups**, such as **Basics**, **Flowchart** and **More Shapes** in Shapes. Shapes shows them as pictures; the other categories as cards with a line on what each one is for. A tile's keyboard shortcut shows beside its name.
+- **Click an element to add it, or drag it onto the canvas.** The panel closes once you have used one, so the canvas is clear. The strip at the bottom of the panel says what the element under your pointer does.
+- **Card** and **Badge** open their presets in a second panel beside the first, which stays open behind it.
+- **Icons** and **Stickers** list their groups down the left, with the open group's entries on the right and a search box across the top that looks through every group. Each reopens on the group you last had open.
+- With the keyboard: the **Left** and **Right** arrows move along the strip, **Down** or **Enter** opens a category, the arrows move through its elements, and **Escape** closes it.
+
+The names on the strip are one word each. **Write** holds the words (Text, the Sticky Note and the Pointer Note). On a window too narrow for the names, the strip shows the categories' icons alone.
+
+## Each kind of page
+
+The strip offers what the page you are working on is made of:
+
+- **An infographic page** has the categories above.
+- **A slide** puts **Write** first, then **Shapes** and **Media**, with the charts, concept graphics and ready-made blocks after them; its **Components** has no website **Header**.
+- **A wireframe** opens on **Elements**, the parts a screen is built from (buttons, fields, chips, badges, pictures, avatars, cards and lists), beside **Components**; it has no **Concepts** or **Devices**.
+- **A logo page** opens on **Draw**, which holds the **Polygon**, then **Shapes**, **Write** (Text and the Sticky Note), **Icons** and **Media** (an image to trace).
+- **An article page** shows its formatting on the strip instead of the categories. See [Articles](/help/pages/articles/).
+
+<Figure caption="Rest on Shapes and its panel opens under it, its elements in named groups.">
+  <ToolbarCategoryFlyout />
+</Figure>
+
+## Search
+
+**Search** finds an element without knowing which category holds it. Before you type, it shows the kinds of element already on your tab, so the ones you are using are one click away. Type a name, or a word you would use for it ("database" finds the cylinder and a database icon), and matching tiles, icons and stickers appear in one list, the best name matches first. The × at the end of the box clears it. Click one to add it, or press Enter to add the best match.
+
+Search is not there for a Participant, whose strip holds only the Participate tiles. Wherever the strip's Search isn't shown, **S** keeps its old meaning and picks the Select tool.
+
+## The order of the tiles
+
+Each category keeps its own order: adding something never moves it, and its groups of related tiles (such as the desktop and the mobile devices, or the charts and the meters) always come in the same order. A Participant's strip opens on **Participate**.
+
+## What else the strip shows
+
+- **Viewers** who can't edit have no strip, since there is nothing to add; the menu button still shows.
+- **Zen mode** hides the strip and the menu button with the rest of the editor's chrome.
+
+## On a phone
+
+On a phone the strip is narrower:
+
+- The **menu button** sits in a card of its own at the left of the strip.
+- The **categories** show their icons only, a little further apart. Swipe them sideways to reach the rest; the selection mode and Search stay put. A category's panel opens across the width of the screen.
+- **Collaborate** opens above its button in the bottom row, as on a computer. Pinch to zoom; the **Fit** button is there too.
+
+A phone held sideways counts as a phone too.
+
+</ArticleLayout>

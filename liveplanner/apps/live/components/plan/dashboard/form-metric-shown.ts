@@ -1,6 +1,6 @@
 // What a figure from a form shows (docs/specs/026-plan/plan-tabs.md "Form Metrics"), worked out from the form and its
 // link as the Form tab's status bar reads them. Pure: DashboardFormMetric draws it.
-import type { FormMetricKind } from '@liveplanner/document';
+import type { FormMetricKind } from '@liveplanner/project';
 import { closedBySettings, type FormDefinition } from '@liveplanner/forms';
 import type { FormLinkResponse } from '@liveplanner/api-schema';
 
@@ -26,7 +26,7 @@ export function formMetricShown(
   metric: FormMetricKind,
   input: {
     form: Pick<FormDefinition, 'heading' | 'limit' | 'closesAt'>;
-    // The link as read; null while it loads; `offline` for a document with no server.
+    // The link as read; null while it loads; `offline` for a project with no server.
     link: FormLinkResponse | null;
     offline: boolean;
     now: number;

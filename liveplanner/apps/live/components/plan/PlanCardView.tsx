@@ -2,9 +2,9 @@
 
 // The Plan card element's body (docs/specs/026-plan/plan-board.md "The Plan card"): one item's card
 // face at the element's size. A double-click or double-tap, in any mode, opens the item;
-// a card whose item is not in this document's store says so and offers to go.
+// a card whose item is not in this project's store says so and offers to go.
 import { planFontStyle } from '@/lib/plan-font';
-import type { ShapeElement } from '@liveplanner/document';
+import type { ShapeElement } from '@liveplanner/project';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePressWithoutDrag } from '@/hooks/ui/usePressWithoutDrag';
 import { usePlan } from './PlanContext';

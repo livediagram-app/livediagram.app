@@ -1,0 +1,198 @@
+// Programmatic access: API tokens and MCP tool calls (docs/specs/017-telemetry/telemetry.md).
+// Part of the metric catalogue: import from ../metric-catalogue.
+
+import type { Metric, MetricStack } from '../metric-series';
+import { chart } from './helpers';
+
+export const AI_TOOLS_CONNECTED: Metric = {
+  category: 'Token',
+  action: 'Created',
+  type: 'MCP',
+  title: 'AI Tools Connected',
+  blurb: 'AI assistants that connected through the MCP OAuth consent screen.',
+};
+
+export const CLI_SIGN_INS: Metric = {
+  category: 'Token',
+  action: 'Created',
+  type: 'Cli',
+  title: 'CLI Sign-ins',
+  blurb: 'The liveplanner CLI signed in, through the browser or with a code on another device.',
+};
+
+export const WORKBENCHES_PAIRED: Metric = {
+  category: 'Token',
+  action: 'Linked',
+  type: 'Workbench',
+  title: 'Workbenches Paired',
+  blurb: 'A token’s owner allowed a developer tool to open their projects.',
+};
+
+export const API_TOKEN_ACTIVITY: MetricStack = {
+  rising: 'neutral',
+  stack: true,
+  title: 'API Token Activity',
+  blurb:
+    'Every token event liveplanner sees: one made for an AI tool connecting over MCP, for the CLI signing in, and a workbench paired. Tokens are made by hand and revoked on liveworkspace.app.',
+  members: [AI_TOOLS_CONNECTED, CLI_SIGN_INS, WORKBENCHES_PAIRED],
+};
+
+// MCP tool calls, one chart per tool the MCP server registers (apps/mcp
+// tools.ts), by the `Mcp·Used·<Tool>` token it reports on a call that
+// succeeded. Together they are every tool call, so the stack's sum is the
+// total; `metric-series.test` fails if a registered tool has no chart here.
+const mcpTool = (type: string, title: string, blurb: string): Metric => ({
+  category: 'Mcp',
+  action: 'Used',
+  type,
+  title,
+  blurb,
+});
+
+export const MCP_TOOL_METRICS: readonly Metric[] = [
+  mcpTool('FindProjects', 'Find Projects', 'Searching the user’s projects by name.'),
+  mcpTool('ReadProject', 'Read Project', 'Reading one project’s tabs and elements.'),
+  mcpTool('ListTemplates', 'List Templates', 'Listing the templates a project can start from.'),
+  mcpTool('CreateProject', 'Create Project', 'Making a new project.'),
+  mcpTool('AddTab', 'Add Tab', 'Adding a tab to an existing project.'),
+  mcpTool('UpdateProject', 'Update Project', 'Editing a project’s elements.'),
+  mcpTool('ShareProject', 'Share Project', 'Creating a share link for a project.'),
+  mcpTool('RenameProject', 'Rename Project', 'Renaming a project.'),
+  mcpTool('DeleteProject', 'Delete Project', 'Moving a project to the Trash, or deleting one tab.'),
+  mcpTool('ListTrash', 'List Trash', 'Listing the projects in the Trash.'),
+  mcpTool('RestoreProject', 'Restore Project', 'Bringing a project back from the Trash.'),
+  mcpTool(
+    'ListItems',
+    'List Items',
+    'Reading a project’s Plan items: cards, tasks and their fields.',
+  ),
+  mcpTool('ChangeItems', 'Change Items', 'Adding, changing, moving or removing Plan items.'),
+  mcpTool(
+    'AddBoard',
+    'Add Board',
+    'Putting a Plan board on a tab, from a preset or columns by name.',
+  ),
+  mcpTool(
+    'ChangeBoard',
+    'Change Board',
+    'Changing a Plan board’s title, columns or the card types it shows.',
+  ),
+  mcpTool(
+    'ChangeCardTypes',
+    'Change Card Types',
+    'Adding, editing or deleting a project’s card types.',
+  ),
+  mcpTool('ListSheets', 'List Sheets', 'Listing a project’s sheets.'),
+  mcpTool(
+    'ReadSheet',
+    'Read Sheet',
+    'Reading a sheet’s cells by A1, with their worked-out values.',
+  ),
+  mcpTool(
+    'ChangeSheet',
+    'Change Sheet',
+    'Setting, clearing or formatting cells, or changing a sheet’s rows and columns.',
+  ),
+  mcpTool('AddSheet', 'Add Sheet', 'Putting a new Sheet on a tab, blank or from rows or CSV.'),
+  mcpTool(
+    'ReadForm',
+    'Read Form',
+    'Reading a form: its questions, where responses go, its state and link.',
+  ),
+  mcpTool(
+    'AddForm',
+    'Add Form',
+    'Making a form from a starter or questions, its responses to a board or sheet.',
+  ),
+  mcpTool(
+    'ChangeForm',
+    'Change Form',
+    'Changing a form’s questions, sections, look, settings or destination.',
+  ),
+  mcpTool('ShareForm', 'Share Form', 'Publishing, closing or deleting a form’s link.'),
+  mcpTool(
+    'TryForm',
+    'Try Form',
+    'Filling in a form as a preview response, to check it end to end.',
+  ),
+];
+
+export const MCP_TOOL_CALLS: MetricStack = {
+  stack: true,
+  title: 'MCP Tool Calls',
+  blurb:
+    'AI assistants calling the liveplanner MCP server, by tool. Only calls that succeeded count.',
+  members: [...MCP_TOOL_METRICS],
+};
+
+// Agent changesets (docs/specs/024-agents/agent-changesets.md "Observability and telemetry"):
+// how agents change projects, how often they meet a person's work, and how often people undo it.
+export const AGENT_APPLIED = chart(
+  'Agent',
+  'Applied',
+  'Agent Changes Applied',
+  'An agent changed a tab with a changeset, through the MCP server, the CLI or the API.',
+);
+
+export const AGENT_CONFLICTED = chart(
+  'Agent',
+  'Conflicted',
+  'Agent Changes in Conflict',
+  'A changeset refused because something it touched changed since the agent read it.',
+  { rising: 'neutral' },
+);
+
+export const AGENT_HELD = chart(
+  'Agent',
+  'Held',
+  'Agent Changes Held',
+  'A changeset refused because a person had one of its elements selected.',
+  { rising: 'neutral' },
+);
+
+export const AGENT_PRESENT = chart(
+  'Agent',
+  'Present',
+  'Agents Present',
+  'An agent showed itself on a tab, with a status line, for the people there to see.',
+  { rising: 'neutral' },
+);
+
+export const AGENT_REVERTED = chart(
+  'Agent',
+  'Reverted',
+  'Agent Changes Undone',
+  "An agent's changeset reverted, from the editor's Undo or another front door.",
+  { rising: 'bad' },
+);
+
+export const AGENT_TOAST_SHOW = chart(
+  'Agent',
+  'Opened',
+  'Agent Changes Shown',
+  "Somebody pressed Show on an agent's toast to see what it changed.",
+  { types: ['Toast'] },
+);
+
+// Project views (docs/specs/024-agents/project-views.md): which views agents read a project through.
+export const AGENT_VIEWED = chart(
+  'Agent',
+  'Viewed',
+  'Agent Views Read',
+  'A project read as text by an agent or a script: an outline, a graph, a layout and so on.',
+);
+
+export const AGENT_CHANGESETS: MetricStack = {
+  stack: true,
+  title: 'Agent changes',
+  blurb: 'Agents changing projects, meeting people’s work, and being undone.',
+  headline: AGENT_APPLIED,
+  members: [
+    AGENT_APPLIED,
+    AGENT_CONFLICTED,
+    AGENT_HELD,
+    AGENT_REVERTED,
+    AGENT_TOAST_SHOW,
+    AGENT_PRESENT,
+  ],
+};

@@ -26,8 +26,8 @@ import {
   type ResolveTabWindow,
   type SheetRenderModel,
   type Tab,
-} from '@liveplanner/document';
-// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the document package so the
+} from '@liveplanner/project';
+// Shared SVG render helpers (docs/specs/015-api/mcp-server.md §5): moved into the project package so the
 // MCP worker reuses the same element drawing. The canvas / isometric / backdrop
 // orchestration below stays here and imports the per-element drawers + helpers.
 import {
@@ -48,7 +48,7 @@ import {
   svgShadowDefs,
   xmlEscape,
   type ExportShape,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { backgroundPatternTile } from './canvas-backgrounds';
 import { resolveIconArtLoaded, resolveStickerArtLoaded } from './icon-registry';
 import {
@@ -68,7 +68,7 @@ import { exportChartInk } from './export-chart-ink';
 // …); on by default, the user can switch it off in the Export dialog.
 // Image elements export as their empty placeholder (pictures are never uploaded); only an inline picture (a
 // layout tile's sample art, a `data:` id) draws, through inlineImageHref.
-// `hiddenLayers` INCLUDES layers the user has hidden (docs/specs/006-document/layers.md); off by default
+// `hiddenLayers` INCLUDES layers the user has hidden (docs/specs/006-project/layers.md); off by default
 // so the export matches what the canvas shows.
 // An image id that is itself the picture (a `data:` URL) draws as it is; any other id has no bytes to show.
 const inlineImageHref = (id: string): string | undefined =>
@@ -83,7 +83,7 @@ export type ImageExportOpts = {
   // Google stylesheet by @import, which only a browser opening the file
   // directly will honour.
   fontCss?: string;
-  // The document's items, so Plan boards and cards export with their cards
+  // The project's items, so Plan boards and cards export with their cards
   // (docs/specs/026-plan/plan-board.md "Both elements everywhere").
   items?: ReadonlyMap<string, Item>;
   // And its item types (docs/specs/026-plan/item-types.md), so custom types keep their colour.
@@ -181,7 +181,7 @@ export async function renderTabToCanvas(
 ): Promise<HTMLCanvasElement> {
   const chartInk = exportChartInk(tab);
   // Hidden layers drop out of the export (bounds included) unless the
-  // dialog's include-hidden option is on (docs/specs/006-document/layers.md). `ordered` is the
+  // dialog's include-hidden option is on (docs/specs/006-project/layers.md). `ordered` is the
   // paint order — layer bands bottom -> top, frames first per band —
   // with each element carrying its band's opacity factor.
   const els = opts.hiddenLayers ? tab.elements : visibleLayerElements(tab.elements, tab.layers);
@@ -287,7 +287,7 @@ export async function renderTabToCanvas(
     const diag = Math.hypot(el.width, el.height);
     // A shadow sweeps outside the box by its offset + blur (docs/specs/008-canvas/element-shadows.md);
     // grow the raster pad so it isn't clipped, and inline its filter
-    // def (the fragment has no document <defs> to resolve against).
+    // def (the fragment has no project <defs> to resolve against).
     const shadow = supportsShadow(el) && el.shadow ? el.shadow : undefined;
     const shadowPad = shadow
       ? Math.max(Math.abs(shadow.offsetX), Math.abs(shadow.offsetY)) + shadow.blur
@@ -319,7 +319,7 @@ export async function renderTabToCanvas(
       // Fall through to drawBoxed's plain box below.
     }
   }
-  // One pass in the canvas's paint order (docs/specs/006-document/layers.md): arrows and boxes
+  // One pass in the canvas's paint order (docs/specs/006-project/layers.md): arrows and boxes
   // interleave by array order, so an arrow sent behind a box stays behind it.
   // Arrows rasterise from the SAME markup the SVG export emits (heads, fans,
   // wrapped captions, knockouts, route-behind gaps), batched: each run of
@@ -522,7 +522,7 @@ export function renderTabToSvg(tab: Tab, opts: ImageExportOpts = {}): string {
   }
   // Within each band: boxed elements first, then arrows on top (same
   // z-order as the canvas); bands stack bottom -> top with frame
-  // sections behind their band-mates (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
+  // sections behind their band-mates (docs/specs/006-project/layers.md + docs/specs/008-canvas/canvas-and-palette.md).
   for (const band of bands) {
     const inner: string[] = [];
     for (const el of band.elements) {

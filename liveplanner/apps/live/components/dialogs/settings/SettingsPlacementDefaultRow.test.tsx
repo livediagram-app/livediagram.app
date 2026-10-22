@@ -2,8 +2,8 @@
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Settings > Documents > Where New Documents Go (docs/specs/013-workspace/default-folders.md
-// "Settings"): each row says where its new documents go, and changes or clears it.
+// Settings > Projects > Where New Projects Go (docs/specs/013-workspace/default-folders.md
+// "Settings"): each row says where its new projects go, and changes or clears it.
 
 const { api } = vi.hoisted(() => ({
   api: {
@@ -27,7 +27,7 @@ import {
 } from './SettingsPlacementDefaultRow';
 
 const rowFor = (key: string) =>
-  SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.rows.find(
+  SETTINGS_CATEGORIES.find((c) => c.id === 'projects')!.rows.find(
     (r) => r.kind === 'placementDefault' && r.placementKey === key,
   ) as SettingsPlacementDefaultRowSpec;
 
@@ -36,7 +36,6 @@ const lists = (over: Partial<SettingsPlacementLists> = {}): SettingsPlacementLis
   teams: [{ id: 't', name: 'Design' }],
   teamFolders: { t: [{ id: 's', name: 'Sprints', parentId: null }] },
   createPickerFolder: async () => null,
-  createPickerTeam: async () => null,
   ready: true,
   failed: false,
   ...over,
@@ -56,7 +55,7 @@ afterEach(cleanup);
 
 describe('SettingsPlacementDefaultRow', () => {
   it('lists the four entries in title case under Default Folders', () => {
-    const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.rows;
+    const rows = SETTINGS_CATEGORIES.find((c) => c.id === 'projects')!.rows;
     expect(rows.filter((r) => r.kind === 'placementDefault').map((r) => r.label)).toEqual([
       'Projects',
       'Retrospectives',
@@ -67,14 +66,14 @@ describe('SettingsPlacementDefaultRow', () => {
     ).toEqual(new Set(['Default Folders']));
     // What they share is said once, under the heading, with the article.
     expect(
-      SETTINGS_CATEGORIES.find((c) => c.id === 'documents')!.sectionNotes?.['Default Folders'],
+      SETTINGS_CATEGORIES.find((c) => c.id === 'projects')!.sectionNotes?.['Default Folders'],
     ).toMatchObject({ helpArticle: 'defaultFolders' });
   });
 
-  it('says My Documents without a default, and offers no Clear', async () => {
+  it('says My Projects without a default, and offers no Clear', async () => {
     await withDefaults([]);
     render(<SettingsPlacementDefaultRow row={rowFor('template:kanban')} lists={lists()} />);
-    expect(screen.getByText('My Documents')).toBeTruthy();
+    expect(screen.getByText('My Projects')).toBeTruthy();
     expect(
       screen.getByRole('button', { name: 'Change default folder for Kanban boards' }),
     ).toBeTruthy();
@@ -91,10 +90,10 @@ describe('SettingsPlacementDefaultRow', () => {
       );
     });
     expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'template:kanban');
-    expect(screen.getByText('My Documents')).toBeTruthy();
+    expect(screen.getByText('My Projects')).toBeTruthy();
   });
 
-  it('says a deleted default is deleted, by its remembered name, and where documents go instead', async () => {
+  it('says a deleted default is deleted, by its remembered name, and where projects go instead', async () => {
     localStorage.setItem(
       `${DEFAULT_FOLDER_NAMES_PREFIX}owner`,
       JSON.stringify({ gone: { name: 'Old retros', teamId: null } }),
@@ -113,7 +112,7 @@ describe('SettingsPlacementDefaultRow', () => {
   it('says so when it never saw the deleted folder', async () => {
     await withDefaults([{ key: 'template:kanban', folderId: 'gone' }]);
     render(<SettingsPlacementDefaultRow row={rowFor('template:kanban')} lists={lists()} />);
-    expect(screen.getByText('A deleted folder, using My Documents')).toBeTruthy();
+    expect(screen.getByText('A deleted folder, using My Projects')).toBeTruthy();
   });
 
   it('waits for the folders before judging, and says when it cannot read them', async () => {

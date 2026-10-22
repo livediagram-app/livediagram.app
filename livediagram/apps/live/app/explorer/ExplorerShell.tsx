@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { dropSettingsLink } from '@/lib/settings-link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
-import { Brand, ProductNav } from '@livediagram/ui';
+import { Brand, SITE_ID, SiteSwitcher } from '@livediagram/ui';
 import { AuthControls } from '@/components/chrome/AuthControls';
 import { LensField } from './lens/LensField';
 import { LensAnnouncer } from './lens/LensStates';
@@ -183,8 +183,10 @@ function ShellChrome({ children }: { children: ReactNode }) {
       {surface.appHeader ? (
         <header className="sticky top-0 z-[var(--z-chrome)] flex shrink-0 flex-wrap items-center justify-between gap-x-4 border-y border-slate-200 bg-white/85 pl-4 pr-0 backdrop-blur sm:h-14 sm:flex-nowrap lg:grid lg:grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)] dark:border-slate-700 dark:bg-slate-900/85">
           <div className="flex h-14 items-center gap-3 lg:col-start-1">
-            <Brand href="/" size="md" />
-            <ProductNav current="explorer" showOnMobile />
+            {/* Hover the logo for liveworkspace's other sites (liveworkspace/docs/site-switcher.md). */}
+            <SiteSwitcher current={SITE_ID}>
+              <Brand href="/" size="md" />
+            </SiteSwitcher>
           </div>
           {/* While Home shows its hero the field sits there instead (docs/specs/013-workspace/explorer-filters.md "The
               field"). */}

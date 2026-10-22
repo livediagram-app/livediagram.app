@@ -17,10 +17,11 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@liveplanner/document": "workspace:*",
+    "@liveplanner/project": "workspace:*",
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/items": "workspace:*",
-    "@liveplanner/sheets": "workspace:*"
+    "@liveplanner/sheets": "workspace:*",
+    "@liveworkspace/telemetry": "workspace:*"
   },
   "devDependencies": {
     "@liveplanner/oxlint-config": "workspace:*",

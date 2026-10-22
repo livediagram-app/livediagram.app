@@ -8,7 +8,7 @@ import { useTourEngine } from './useTourEngine';
 // Dialogs come first (docs/specs/007-editor/editor-tour.md "Dialogs come first"): a running tour steps aside for a
 // dialog that is not its own, and comes back on the same step once it closes.
 
-// Targets resolve from the document as it is, so a test can put one inside a dialog.
+// Targets resolve from the project as it is, so a test can put one inside a dialog.
 vi.mock('./tour-dom', () => ({
   findTour: () => null,
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),

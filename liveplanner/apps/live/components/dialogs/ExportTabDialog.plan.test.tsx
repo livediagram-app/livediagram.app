@@ -1,11 +1,11 @@
 // @vitest-environment jsdom
 
 // Plan boards export with their cards (docs/specs/026-plan/items.md "Copies and exports"): the image preview,
-// the JSON file and the Markdown outline all read the document's items from the Plan context.
+// the JSON file and the Markdown outline all read the project's items from the Plan context.
 
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement, type Tab } from '@liveplanner/document';
+import { createShape, type BoxedElement, type Tab } from '@liveplanner/project';
 import { ITEM_TYPES, presetSetup, type Item } from '@liveplanner/items';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
 import { ExportTabDialog } from './ExportTabDialog';
@@ -45,7 +45,7 @@ const plan = {
 const open = () =>
   render(
     <PlanProvider value={plan}>
-      <ExportTabDialog tab={tab} documentName="Doc" onClose={vi.fn()} />
+      <ExportTabDialog tab={tab} projectName="Doc" onClose={vi.fn()} />
     </PlanProvider>,
   );
 

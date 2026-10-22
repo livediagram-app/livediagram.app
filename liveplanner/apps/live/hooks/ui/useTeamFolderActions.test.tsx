@@ -19,13 +19,13 @@ vi.mock('@/hooks/ui/useToast', () => ({ useToast: () => toast }));
 
 import { useTeamFolderActions } from './useTeamFolderActions';
 
-// Team-library folder verbs from the Explorer panel (docs/specs/013-workspace/team-shared-documents.md). docs/specs/017-telemetry/telemetry.md's Folder
+// Team-library folder verbs from the Explorer panel (docs/specs/013-workspace/team-shared-projects.md). docs/specs/017-telemetry/telemetry.md's Folder
 // entry types a team folder `Team`; without it these three read as personal
 // Explorer folders on the dashboard.
 function handlers() {
   const { result } = renderHook(() =>
     useTeamFolderActions({
-      clerkUserId: 'user_1',
+      accountUserId: 'user_1',
       viewerId: 'user_1',
       teamFolders: [{ id: 'f1', name: 'Specs' } as never],
       refreshTeamLibraries: () => {},

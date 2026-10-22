@@ -86,7 +86,8 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
   };
 }
 
-// Anonymous telemetry to the api's public `/api/events`: no Authorization, never throws into the caller.
+// Anonymous telemetry to the api's public `/api/events` relay, which passes it on to the liveworkspace
+// telemetry service (docs/specs/017-telemetry/telemetry.md "The relay"): no Authorization, never throws into the caller.
 export async function postEvents(
   baseUrl: string,
   fetch: ApiClientOptions['fetch'],

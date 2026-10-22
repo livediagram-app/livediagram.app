@@ -20,7 +20,7 @@ import {
   lucidePilcrow,
   lucideUnderline,
 } from '@liveplanner/icons/lucide';
-import { toggleFormatInRange, type RunBoolKey, type TextRun } from '@liveplanner/document';
+import { toggleFormatInRange, type RunBoolKey, type TextRun } from '@liveplanner/project';
 import { ArrowDownIcon, ArrowUpIcon, IndentIcon, OutdentIcon, lucideGlyph } from '@liveplanner/ui';
 import {
   domSelectionToOffsets,

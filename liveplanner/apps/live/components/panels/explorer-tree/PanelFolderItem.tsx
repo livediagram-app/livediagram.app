@@ -8,8 +8,8 @@ import { useRowMenu } from '@/components/primitives/useRowMenu';
 import { FolderActionsMenu } from '@/app/explorer/folder-actions-menu';
 import { FolderPreview, PaneCard } from '../explorer-panel/pane-parts';
 import { trackSidebar } from '@/app/explorer/sidebar/sidebar-telemetry';
-import type { PaneDocument } from '@/app/explorer/views';
-import { useDocumentDropTarget } from '../useDocumentDropTarget';
+import type { PaneProject } from '@/app/explorer/views';
+import { useProjectDropTarget } from '../useProjectDropTarget';
 import { usePanelTree } from './PanelTreeContext';
 import { useDefaultFolderDescription } from '@/components/placement/DefaultFolderMarker';
 import { FolderLabel } from '@/app/explorer/sidebar/SidebarFolderSubtree';
@@ -24,15 +24,15 @@ export type PanelFolder = {
   teamId?: string | null;
 };
 
-// One folder's subtree and its documents, indexed by parent (null = the space's root).
+// One folder's subtree and its projects, indexed by parent (null = the space's root).
 export type PanelFolderIndex = {
   foldersByParent: Map<string | null, PanelFolder[]>;
-  documentsByFolder: Map<string | null, PaneDocument[]>;
+  projectsByFolder: Map<string | null, PaneProject[]>;
 };
 
 // A folder row of the editor's Explorer pane, personal or team (docs/specs/013-workspace/explorer-structure.md "The
-// pane"): activating it opens it in the pane (its subfolders, then its documents, under a breadcrumb). It carries the
-// folder menu plus Show in Explorer; a personal folder takes a dragged document, opening on a resting drag; a folder
+// pane"): activating it opens it in the pane (its subfolders, then its projects, under a breadcrumb). It carries the
+// folder menu plus Show in Explorer; a personal folder takes a dragged project, opening on a resting drag; a folder
 // just created opens renaming.
 export function PanelFolderItem({
   folder,
@@ -45,7 +45,7 @@ export function PanelFolderItem({
 }) {
   const tree = usePanelTree();
   const subfolders = index.foldersByParent.get(folder.id) ?? [];
-  const documents = index.documentsByFolder.get(folder.id) ?? [];
+  const projects = index.projectsByFolder.get(folder.id) ?? [];
   const open = () => {
     trackSidebar(personal ? 'Folder' : 'TeamFolder', 'panel');
     tree.onOpenFolder?.(folder.id);
@@ -54,8 +54,8 @@ export function PanelFolderItem({
   const menu = useRowMenu({ disabled: editing });
   const markerWords = useDefaultFolderDescription(folder.id);
   const personal = !team;
-  const fileHere = personal ? tree.onMoveDocumentToFolder : undefined;
-  const drop = useDocumentDropTarget(fileHere ? (id) => fileHere(id, folder.id) : undefined, {
+  const fileHere = personal ? tree.onMoveProjectToFolder : undefined;
+  const drop = useProjectDropTarget(fileHere ? (id) => fileHere(id, folder.id) : undefined, {
     onLongHover: () => tree.onOpenFolder?.(folder.id),
   });
 
@@ -90,7 +90,7 @@ export function PanelFolderItem({
     subfolders.length
       ? `${subfolders.length} ${subfolders.length === 1 ? 'folder' : 'folders'}`
       : '',
-    `${documents.length} ${documents.length === 1 ? 'document' : 'documents'}`,
+    `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`,
   ]
     .filter(Boolean)
     .join(' · ');

@@ -4,7 +4,7 @@ import {
   type Tab,
   TAB_SCHEMA_VERSION,
   type ExportedTabEnvelope,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { defaultCatalogue } from '@liveplanner/items';
 import { parseImportedTab } from './import-tab';
 
@@ -112,7 +112,7 @@ describe('parseImportedTab — malformed elements', () => {
   });
 });
 
-describe('parseImportedTab — stroke points (docs/specs/006-document/stroke-points.md)', () => {
+describe('parseImportedTab — stroke points (docs/specs/006-project/stroke-points.md)', () => {
   it('writes version 2, the first with packed stroke points', () => {
     expect(TAB_SCHEMA_VERSION).toBe(2);
   });

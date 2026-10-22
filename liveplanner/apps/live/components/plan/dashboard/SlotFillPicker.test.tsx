@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import type { ShapeElement, Tab } from '@liveplanner/document';
+import type { ShapeElement, Tab } from '@liveplanner/project';
 import { usePlanTabActions } from '@/hooks/plan/usePlanTabActions';
 import { dashboardTabTiles } from '@/components/palette/palette-dashboard-tiles';
 import { slotFillSections, slotItemOfTile, tooBigLine } from './SlotFillPicker';
@@ -13,7 +13,7 @@ describe('Add to Slot', () => {
       dashboardTabTiles([{ id: 't', name: 'Launch', of: 'board' }]),
     );
     expect(sections.map((s) => s.title)).toEqual([
-      'This Document’s Tabs',
+      'This Project’s Tabs',
       'New Board',
       'New Sheet',
       'Card Metrics',
@@ -30,7 +30,7 @@ describe('Add to Slot', () => {
     for (const s of sections) for (const t of s.tiles) expect(slotItemOfTile(t)).not.toBeNull();
   });
 
-  it('leaves the tabs out while the document has none', () => {
+  it('leaves the tabs out while the project has none', () => {
     expect(slotFillSections([]).sections[0]!.title).toBe('New Board');
   });
 
@@ -191,7 +191,7 @@ describe('starting a Board tab', () => {
 });
 
 describe('a suggested Dashboard made on a tab', () => {
-  // docs/specs/026-plan/plan-mode.md "Starting a board": a Dashboard built from the document's own work.
+  // docs/specs/026-plan/plan-mode.md "Starting a board": a Dashboard built from the project's own work.
   it('makes its views as elements in their slots, shows its tabs, and names a default-named tab', () => {
     let tabs: Tab[] = [{ id: 'a', name: 'Tab 3', elements: [] }];
     const commit = (map: (ts: Tab[]) => Tab[]) => {
@@ -243,8 +243,8 @@ describe('a Visualisation tab', () => {
     expect(view.planView?.view).toBe('gantt');
   });
 
-  // The user's call (2026-10-15): figures from a form, offered only while the document has one.
-  it('offers Form Metrics only when the document has a form', () => {
+  // The user's call (2026-10-15): figures from a form, offered only while the project has one.
+  it('offers Form Metrics only when the project has a form', () => {
     const titles = (hasForms: boolean) =>
       slotFillSections([], null, hasForms).sections.map((s) => s.title);
     expect(titles(false)).not.toContain('Form Metrics');

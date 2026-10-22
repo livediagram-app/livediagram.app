@@ -7,7 +7,7 @@
 //
 // Per-file environment rather than flipping the workspace: the other ~1,645
 // tests are pure logic that runs fine (and faster) under `node`, so jsdom is
-// opted into by the handful of files that need a document.
+// opted into by the handful of files that need a project.
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -40,9 +40,9 @@ function periodCallsFor(scopeId: string) {
 function event(id: string, occurredAt: number, over: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
     id,
-    sourceType: 'document',
+    sourceType: 'project',
     sourceId: `d-${id}`,
-    eventType: 'document_updated',
+    eventType: 'project_updated',
     title: id,
     occurredAt,
     ...over,
@@ -144,7 +144,7 @@ describe('useTimelineFeed failure handling', () => {
   });
 
   it('does not leave the previous owner’s events up when their read fails', async () => {
-    // A guest signing in mid-session re-reads under the Clerk id. If
+    // A guest signing in mid-session re-reads under the account id. If
     // that read fails there is nothing legitimate to show: the events
     // on screen belong to the feed we just left.
     apiListTimeline.mockResolvedValue({ events: [event('guest-era', 10)] });
@@ -233,8 +233,8 @@ describe('useTimelineFeed on return to the tab', () => {
 });
 
 // The reader's own actions (docs/specs/013-workspace/timeline.md §2.4b). The bug this was reported
-// for: delete a document from a card's menu and the feed sat unchanged —
-// no tombstone, the deleted document's cards still up — until a browser
+// for: delete a project from a card's menu and the feed sat unchanged —
+// no tombstone, the deleted project's cards still up — until a browser
 // refresh.
 describe('useTimelineFeed after the readers own write', () => {
   afterEach(() => {
@@ -271,7 +271,7 @@ describe('useTimelineFeed after the readers own write', () => {
     const { result } = renderHook(() => useTimelineFeed('me', true, TEAM_A));
     await waitFor(() => expect(result.current.events).toHaveLength(3));
 
-    act(() => notifyApiWrite({ purge: { sourceType: 'document', sourceId: 'd-b' } }));
+    act(() => notifyApiWrite({ purge: { sourceType: 'project', sourceId: 'd-b' } }));
     expect(result.current.events.map((e) => e.id)).toEqual(['a']);
 
     apiListTimeline.mockResolvedValue({

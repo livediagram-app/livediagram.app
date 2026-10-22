@@ -1,0 +1,169 @@
+// @vitest-environment jsdom
+
+// Production's `Error·Api·Http401.ListCustomThemes`: the Explorer mounts
+// CustomThemeProvider in the same render that makes the signed-in user's
+// account id the owner, and React runs that child's effect (its themes fetch)
+// before the parent's. When the token provider was registered in a passive
+// effect, the fetch went out without a Bearer and put the account id in
+// `X-Owner-Id`, which the worker refuses. The provider must be in place
+// before any child's first fetch.
+
+import { act, render } from '@testing-library/react';
+import { useEffect, type ReactNode } from 'react';
+import { renderToString } from 'react-dom/server';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { apiHeaders, setTokenProvider } from '@/lib/api/core';
+import { resetGuestMigrationForTests } from '@/lib/guest-migration';
+import { setGuestIdentity } from '@/lib/local-identity';
+
+vi.mock('@/lib/auth-config', () => ({ signInEnabled: true, sessionsEnabled: true }));
+const { getToken } = vi.hoisted(() => ({
+  getToken: vi.fn(async (opts?: { skipCache?: boolean }): Promise<string | null> =>
+    opts?.skipCache ? 'jwt-fresh' : 'jwt-1',
+  ),
+}));
+vi.mock('@/components/providers/deferred-auth', () => {
+  return {
+    DEFERRED_AUTH_PENDING: { authLoaded: false },
+    useDeferredAuth: () => ({
+      authLoaded: true,
+      isSignedIn: true,
+      userId: 'user_abc',
+      user: null,
+      getToken,
+      signOut: async () => {},
+      deleteAccount: null,
+    }),
+  };
+});
+
+const MIGRATED = { projects: 1, folders: 0, shared: 0, images: 0 };
+const { apiMigrateGuestData } = vi.hoisted(() => ({ apiMigrateGuestData: vi.fn() }));
+vi.mock('@/lib/api-client', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@/lib/api-client')>()),
+  apiMigrateGuestData,
+}));
+
+const { useAccountBootstrap } = await import('./useAccountBootstrap');
+
+afterEach(() => setTokenProvider(null));
+
+describe('useAccountBootstrap token provider', () => {
+  it("is registered before a child's first-render fetch", async () => {
+    let headers: Promise<HeadersInit> | null = null;
+    function Child() {
+      useEffect(() => {
+        headers = apiHeaders('user_abc');
+      }, []);
+      return null;
+    }
+    function Parent({ children }: { children: ReactNode }) {
+      useAccountBootstrap();
+      return <>{children}</>;
+    }
+    render(
+      <Parent>
+        <Child />
+      </Parent>,
+    );
+    const sent = (await headers!) as Record<string, string>;
+    expect(sent['Authorization']).toBe('Bearer jwt-1');
+    expect(sent['X-Owner-Id']).toBeUndefined();
+  });
+
+  // The session's getToken() can resolve null for a moment on a live session; the
+  // retry must reach the session as a cache bypass, not another cached read.
+  it('passes the cache bypass through to the session', async () => {
+    function Probe() {
+      useAccountBootstrap();
+      return null;
+    }
+    render(<Probe />);
+    getToken.mockResolvedValueOnce(null);
+    const sent = (await apiHeaders('user_abc')) as Record<string, string>;
+    expect(getToken).toHaveBeenLastCalledWith({ skipCache: true });
+    expect(sent['Authorization']).toBe('Bearer jwt-fresh');
+  });
+});
+
+// Issue #67: signing in with a guest project open showed "diagram does not
+// exist", because the editor loaded it as the account before
+// POST /api/migrate had moved it. Owner data waits for the migration.
+describe('useAccountBootstrap guest migration', () => {
+  it('holds authLoaded until the guest data has migrated', async () => {
+    resetGuestMigrationForTests();
+    setGuestIdentity('guest-1', 'sig-1');
+    let finish: (v: typeof MIGRATED) => void = () => {};
+    apiMigrateGuestData.mockReturnValue(new Promise((r) => (finish = r)));
+    const seen: boolean[] = [];
+    function Probe() {
+      seen.push(useAccountBootstrap().authLoaded);
+      return null;
+    }
+
+    render(<Probe />);
+    expect(seen.at(-1)).toBe(false);
+    expect(apiMigrateGuestData).toHaveBeenCalledWith('guest-1', 'sig-1');
+
+    await act(async () => finish(MIGRATED));
+    expect(seen.at(-1)).toBe(true);
+    expect(seen.indexOf(true)).toBeGreaterThan(0);
+  });
+
+  // The static export prerenders without storage: the server snapshot reads
+  // "not migrating", and the client's first render takes over from there.
+  it('prerenders without a pending migration', () => {
+    resetGuestMigrationForTests();
+    setGuestIdentity('guest-1', 'sig-1');
+    function Probe() {
+      return <>{String(useAccountBootstrap().authLoaded)}</>;
+    }
+    expect(renderToString(<Probe />)).toBe('true');
+  });
+
+  it('migrates once however many components mount the hook', async () => {
+    resetGuestMigrationForTests();
+    setGuestIdentity('guest-1', 'sig-1');
+    apiMigrateGuestData.mockResolvedValue(MIGRATED);
+    function Probe() {
+      useAccountBootstrap();
+      return null;
+    }
+
+    await act(async () => {
+      render(
+        <>
+          <Probe />
+          <Probe />
+        </>,
+      );
+    });
+    expect(apiMigrateGuestData).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('useAccountBootstrap with several mounts', () => {
+  // AuthControls, the Settings dialog's rows and the page itself each mount
+  // the hook. One of them
+  // unmounting must not take the Bearer away from the rest.
+  it('keeps the provider while any mount remains', async () => {
+    function Probe() {
+      useAccountBootstrap();
+      return null;
+    }
+    function Page({ extra }: { extra: boolean }) {
+      return (
+        <>
+          <Probe />
+          {extra ? <Probe /> : null}
+        </>
+      );
+    }
+    const view = render(<Page extra />);
+    view.rerender(<Page extra={false} />);
+    const sent = (await apiHeaders('user_abc')) as Record<string, string>;
+    expect(sent['Authorization']).toBe('Bearer jwt-1');
+    view.unmount();
+    await expect(apiHeaders('user_abc')).rejects.toThrow();
+  });
+});

@@ -85,7 +85,7 @@ export function SwimlaneOptions({
   field: string | undefined;
   // The card types the board or chart shows: only what they offer is listed.
   types: readonly ItemTypeDef[];
-  // Every type of the document, to name a field in use that the shown types no longer offer.
+  // Every type of the project, to name a field in use that the shown types no longer offer.
   allTypes?: readonly ItemTypeDef[];
   // Leaves out None (Cards by Field always groups).
   noNone?: boolean;

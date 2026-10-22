@@ -1,7 +1,7 @@
 // A Board or Sheet tab's CSV for the Export dialog (docs/specs/026-plan/plan-tabs.md "Export"): the board's cards or
 // the Sheet's cells as the open tab draws them, read from what each publishes as it renders (board-csv-registry,
 // sheet-settings-registry). Loaded with the Export dialog only, so the CSV writer never rides the editor's first load.
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { boardCsvEntryOf } from '@/components/plan/board-csv-registry';
 import { sheetSettingsEntryOf } from '@/components/sheets/sheet-settings-registry';
 import { sheetCsvText } from '@/components/sheets/sheet-csv';

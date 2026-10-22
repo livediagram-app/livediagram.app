@@ -172,13 +172,16 @@ export async function probeDispatch(
       },
     );
   // Feature gates open, so a handler reaches its own routing instead of
-  // answering "not configured" for every path: telemetry on, a model key set.
+  // answering "not configured" for every path: telemetry on, a model key and a Community key set.
   const env = {
     DB: trap('DB'),
     IMAGES: trap('IMAGES'),
     DOCUMENT_ROOM: trap('DOCUMENT_ROOM'),
     TELEMETRY_ENABLED: 'true',
     OPENAI_API_KEY: 'probe-key',
+    // The Community, which lives in liveworkspace's service (liveworkspace/docs/community.md); never reached.
+    COMMUNITY_URL: 'http://community.invalid/api/community',
+    COMMUNITY_KEY: 'probe-key',
     // The Drive mirror in broker mode (docs/specs/022-drive-mirror/drive-mirror.md).
     GOOGLE_CLIENT_ID: 'probe-client',
     GOOGLE_CLIENT_SECRET: 'probe-secret',

@@ -21,7 +21,7 @@ import {
   renderElementsToSvg,
   type SheetRenderModel,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { planTabKindOf } from '@liveplanner/plan-art';
 // Static-import icon resolver (Worker bundle, size not user-facing) so icon
 // elements render their real glyph in the inline image.
@@ -46,10 +46,10 @@ type TextBlock = { type: 'text'; text: string };
 
 // A Plan board's or card's items (docs/specs/026-plan/plan-board.md), and a Sheet's window of cells
 // (docs/specs/029-sheets/sheet.md "Exports and images"), so a preview draws them; none when the tab has neither, or
-// the document is not named. Each read is best-effort: a preview without it still draws.
+// the project is not named. Each read is best-effort: a preview without it still draws.
 async function planContentFor(
   tab: Tab,
-  auth: { env: Env; token: string; documentId?: string } | undefined,
+  auth: { env: Env; token: string; projectId?: string } | undefined,
   read: SheetsResponse['sheets'] | undefined,
 ): Promise<{
   items?: ReadonlyMap<string, Item>;
@@ -70,8 +70,8 @@ async function planContentFor(
     const source = (el as { chartSource?: { sheetId?: string } }).chartSource;
     return source?.sheetId ? [source.sheetId] : [];
   });
-  if ((!plan && frames.length === 0 && charted.length === 0) || !auth?.documentId) return {};
-  const path = `/documents/${encodeURIComponent(auth.documentId)}`;
+  if ((!plan && frames.length === 0 && charted.length === 0) || !auth?.projectId) return {};
+  const path = `/projects/${encodeURIComponent(auth.projectId)}`;
   const ids = [...new Set([...frames.map((f) => f.sheetId), ...charted])].slice(0, 50);
   const sheets = read
     ? { sheets: read }
@@ -85,20 +85,20 @@ async function planContentFor(
   const sheetCards = !!sheets?.sheets.some((s) =>
     s.cells.some((c) => c.i && 'f' in c.i && c.i.f.t.includes('CARD')),
   );
-  // The items, and the document's item types so custom types keep their colours
+  // The items, and the project's item types so custom types keep their colours
   // (docs/specs/026-plan/item-types.md).
   const [items, doc] =
     plan || sheetCards
       ? await Promise.all([
           apiJson<ItemsResponse>(auth.env, auth.token, `${path}/items`).catch(() => null),
-          apiJson<{ document?: { itemTypes?: ItemTypeCatalogue | null } }>(
+          apiJson<{ project?: { itemTypes?: ItemTypeCatalogue | null } }>(
             auth.env,
             auth.token,
             path,
           ).catch(() => null),
         ])
       : [null, null];
-  const itemTypes = typesOf(readItemTypeCatalogue(doc?.document?.itemTypes ?? null));
+  const itemTypes = typesOf(readItemTypeCatalogue(doc?.project?.itemTypes ?? null));
   return {
     ...(items ? { items: new Map(items.items.map((i) => [i.id, i])) } : {}),
     ...(plan ? { itemTypes } : {}),
@@ -116,15 +116,14 @@ async function planContentFor(
 // A PNG preview of the tab, its icons resolved as the editor draws them.
 export async function tabPreview(
   tab: Tab,
-  auth?: { env: Env; token: string; documentId?: string },
+  auth?: { env: Env; token: string; projectId?: string },
 ): Promise<(TextBlock | ImageBlock)[]> {
   // A Form tab draws as its form, as respondents see it.
   const form = await formPreview(tab);
   if (form) return [form];
   // A Plan tab as the editor exports it: a Dashboard laid out, its pictures drawn from the cards.
   const art = previewResolvers(await previewEmoji(emojiGlyphsOf(tab.elements)));
-  const plain = (shown: Tab) => renderElementsToSvg(shown, art);
-  const laidOut = await planPreviewFor(tab, auth, plain).catch(() => null);
+  const laidOut = await planPreviewFor(tab, auth).catch(() => null);
   const drawn = laidOut?.tab ?? tab;
   const content = await planContentFor(drawn, auth, laidOut?.sheets);
   // A board scrolls on its tab, so its preview grows to every card rather than cutting the rest off ("+2 more", a lane
@@ -179,7 +178,7 @@ function usesItalic(elements: Tab['elements']): boolean {
   );
 }
 
-// `notes` are short text blocks after the structured result, such as the lint summary line.
+// `notes` are short text blocks after the structured result.
 export async function imageResult(
   value: StructuredValue,
   tab: Tab,
@@ -189,14 +188,14 @@ export async function imageResult(
   // The structured result (and its text form) first, then the notes, then the preview.
   const result = textResult(value);
   const texts = notes.map((text) => ({ type: 'text' as const, text }));
-  // The document the preview's items belong to: the result names it as `id` or `documentId`.
-  const named = (value as { id?: unknown; documentId?: unknown }) ?? {};
-  const documentId =
-    typeof named.documentId === 'string'
-      ? named.documentId
+  // The project the preview's items belong to: the result names it as `id` or `projectId`.
+  const named = (value as { id?: unknown; projectId?: unknown }) ?? {};
+  const projectId =
+    typeof named.projectId === 'string'
+      ? named.projectId
       : typeof named.id === 'string'
         ? named.id
         : undefined;
-  const preview = await tabPreview(tab, auth && documentId ? { ...auth, documentId } : auth);
+  const preview = await tabPreview(tab, auth && projectId ? { ...auth, projectId } : auth);
   return { ...result, content: [...result.content, ...texts, ...preview] };
 }

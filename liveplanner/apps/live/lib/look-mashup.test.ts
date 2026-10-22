@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { FINISHES, FONTS, sketchRandom } from '@liveplanner/document';
+import { FINISHES, FONTS, sketchRandom } from '@liveplanner/project';
 import { PATTERNS } from '@/components/palette/palette-patterns';
 import { THEMES } from '@/lib/themes';
 import {

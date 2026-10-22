@@ -7,7 +7,7 @@ import {
   type ArrowElement,
   type ShapeElement,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { paintableArrowFields, paintableBoxedFields } from '@/lib/format-painter';
 import { deriveNewBoxedColours } from '@/lib/themes';
 

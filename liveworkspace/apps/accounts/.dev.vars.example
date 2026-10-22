@@ -1,8 +1,14 @@
 # Copy to .dev.vars for `pnpm dev`. The Turnstile keys are Cloudflare's always-pass test keys.
 ENVIRONMENT=development
-BASE_URL=http://localhost:8787
+# The site's dev server, which serves this Worker's /api/auth beside the sign-in pages, as
+# liveworkspace.app does in production.
+BASE_URL=http://localhost:3300
 BETTER_AUTH_SECRET=change-me-to-32-or-more-random-characters
 TURNSTILE_SITE_KEY=1x00000000000000000000AA
 TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA
 ADMIN_TOKEN=local-admin-token
 EMAIL_FROM=sign-in@liveworkspace.app
+# Optional: an OAuth client from Google Cloud with http://localhost:3300/api/auth/callback/google as
+# an authorised redirect URI. Without both, the pages offer email codes only.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=

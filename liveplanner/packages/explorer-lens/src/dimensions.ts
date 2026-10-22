@@ -2,7 +2,7 @@
 // dimension, its closed values, their British English labels and the closed telemetry types.
 
 import { TEMPLATE_FAMILIES, type TemplateFamily } from '@liveplanner/api-schema';
-import { EDITOR_MODES, type EditorMode } from '@liveplanner/document';
+import { EDITOR_MODES, type EditorMode } from '@liveplanner/project';
 
 /** The dimensions in canonical order: the order tokens are written in and chips are shown in. */
 export const LENS_DIMENSIONS = [
@@ -15,7 +15,7 @@ export const LENS_DIMENSIONS = [
 ] as const;
 export type LensDimension = (typeof LENS_DIMENSIONS)[number];
 
-/** The editor modes a document can be created to open in: the one list of modes. */
+/** The editor modes a project can be created to open in: the one list of modes. */
 export const OPENS_IN_VALUES = EDITOR_MODES;
 export type OpensInValue = EditorMode;
 
@@ -68,7 +68,7 @@ export const VALUE_LABELS = {
     'this-year': 'This year',
   },
   people: { me: 'Me', others: 'Others' },
-  space: { mine: 'My Documents', shared: 'Shared With Me' },
+  space: { mine: 'My Projects', shared: 'Shared With Me' },
 } as const;
 
 /** A dimension or the free text: what `Explorer / Selected / <Facet>` names. */

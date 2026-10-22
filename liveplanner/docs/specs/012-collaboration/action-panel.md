@@ -92,7 +92,7 @@ right-click opens the ordinary element menu.
   grey slashed circle in place of the check (pressing it reopens) and **Won't Do** before the assignee. It counts as
   closed, so the open count and All Done treat it as done. The dialog's **Status** row (Open, Done, Won't Do) sets
   it when editing, saved with the rest.
-- On a document with an **Actions board**, a card holding actions shows a **Board ↗** chip beside its count, which
+- On a project with an **Actions board**, a card holding actions shows a **Board ↗** chip beside its count, which
   opens the board ([Linked boards](../026-plan/linked-boards.md) "On the canvas").
 - **Delete** lives in the dialog: editing a card's action shows a two-step
   **Delete Action** in its footer, the popover's rule ([Assigned actions](assigned-actions.md) §3). Deleting the

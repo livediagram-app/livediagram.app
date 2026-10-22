@@ -1,6 +1,6 @@
 // Workbench pairing (docs/specs/013-workspace/blueprints/workbench-embeds.md "Pairing"): a token asks to pair
 // with an origin and waits; the token's owner answers once in their own signed-in browser; Settings lists and
-// removes pairings. Only a Clerk session answers or unpairs, so no token, workbench session or guest can
+// removes pairings. Only a signed-in session answers or unpairs, so no token, workbench session or guest can
 // approve a pairing for itself.
 
 import {
@@ -36,7 +36,7 @@ import { endWorkbenchAccess } from '../workbench-end';
 import { readBody, type RouteContext } from './context';
 import { pairingUrlOf, workbenchRateLimited } from './workbench-ticket-route';
 
-// POST /api/workbench/pairing-requests: `workbench pair` asks, by token, for one scope (absent: `document`).
+// POST /api/workbench/pairing-requests: `workbench pair` asks, by token, for one scope (absent: `project`).
 export async function openPairing(ctx: RouteContext): Promise<Response> {
   const token = ctx.token;
   const ownerId = ctx.resolveOwner();
@@ -47,7 +47,7 @@ export async function openPairing(ctx: RouteContext): Promise<Response> {
   const parsed = parseWorkbenchOrigin(typeof body.origin === 'string' ? body.origin : '');
   if (!parsed.ok) return json({ error: 'invalid_origin' }, { status: 400 });
   const origin = parsed.origin;
-  const scope = body.scope ?? 'document';
+  const scope = body.scope ?? 'project';
   if (!isWorkbenchScope(scope))
     return json({ error: 'invalid_value', message: 'invalid scope' }, { status: 400 });
 
@@ -93,7 +93,7 @@ export async function pollPairing(ctx: RouteContext, code: string): Promise<Resp
 
 // GET /api/workbench/pairing-requests/:code: the pairing page's view, for the token's owner.
 export async function readPairing(ctx: RouteContext, code: string): Promise<Response> {
-  const userId = ctx.clerkUserId;
+  const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
   const request = await readPairingRequest(ctx.env, code, Date.now());
   if (!request || request.ownerId !== userId) return notFound();
@@ -114,7 +114,7 @@ export async function answerPairing(
   code: string,
   answer: 'approve' | 'decline',
 ): Promise<Response> {
-  const userId = ctx.clerkUserId;
+  const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
   const result = await answerPairingRequest(ctx.env, {
     code,
@@ -145,14 +145,14 @@ export async function answerPairing(
 
 // GET /api/workbench/pairings (WB46): Settings > API tokens.
 export async function listPairings(ctx: RouteContext): Promise<Response> {
-  const userId = ctx.clerkUserId;
+  const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
   return json({ pairings: await listWorkbenchPairings(ctx.env, userId, Date.now()) });
 }
 
 // DELETE /api/workbench/pairings/:id: Unpair, ending that pairing's sessions.
 export async function unpair(ctx: RouteContext, id: string): Promise<Response> {
-  const userId = ctx.clerkUserId;
+  const userId = ctx.accountUserId;
   if (!userId) return signInRequired();
   if ((await workbenchPairingOwner(ctx.env, id)) !== userId) return notFound();
   await endWorkbenchAccess(ctx.env, { pairingId: id }, 'unpaired');

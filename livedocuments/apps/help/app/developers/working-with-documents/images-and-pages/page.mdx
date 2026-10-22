@@ -1,0 +1,111 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Images, Pages and More',
+  description:
+    'livedocuments API examples for image uploads, pages and articles, SVG renders of a tab, copying a document and custom themes.',
+  path: '/help/developers/working-with-documents/images-and-pages/',
+});
+
+<ArticleLayout title="Images, Pages and More" description="Worked examples for the rest of a document: images, pages and articles, pictures of a tab, copies and your themes." categoryTitle="Developers" categorySlug="developers/working-with-documents" parentArticle={{ title: "Working with Documents", slug: "working-with-documents" }} subArticles={getSubArticles("working-with-documents").filter((a) => a.slug !== "images-and-pages")}>
+
+A tab's elements change through [changesets](/help/developers/working-with-documents/edit-operations/), but a document holds more than elements: the images it shows, its pages and its articles. Each has its own endpoints, shown here with `curl`. The examples assume your [API token](/help/developers/authentication/) is in `$TOKEN` and a document id in `$DOC`; paths are relative to `https://livedocuments.app/api`, and `/api/openapi.json` has every field.
+
+Every write here reaches anyone with the document open straight away, credited to you.
+
+## Images
+
+Upload the raw bytes of a PNG, JPEG, WebP or GIF, up to 10 MB, with its pixel size in two headers:
+
+```bash
+curl -X POST https://livedocuments.app/api/images \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: image/png" \
+  -H "X-Image-Width: 1200" -H "X-Image-Height: 800" \
+  -H "X-Image-Original-Name: architecture.png" \
+  --data-binary @architecture.png
+```
+
+```json
+{
+  "image": {
+    "id": "9f2c…",
+    "contentType": "image/png",
+    "byteSize": 48211,
+    "width": 1200,
+    "height": 800,
+    "originalName": "architecture.png",
+    "createdAt": 1760180000000
+  },
+  "deduped": false
+}
+```
+
+Uploading the same bytes again answers the image you already have, with `"deduped": true`. Then put it on a tab with a changeset that adds a whole image element:
+
+```bash
+curl -X POST https://livedocuments.app/api/documents/$DOC/tabs/$TAB/changesets \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{ "operations": [ { "op": "add", "element": { "type": "image", "imageId": "'"$IMAGE"'", "x": 0, "y": 0, "width": 600, "height": 400, "naturalWidth": 1200, "naturalHeight": 800, "alt": "Architecture overview" } } ] }'
+```
+
+`GET /images` lists your uploads, `GET /images/usage` maps each to the documents that use it, `GET /images/{id}` downloads one, and `DELETE /images/{id}` removes it from your gallery. Refusals are `415 unsupported_type`, `413 file_too_large`, and on a host that sets a gallery limit, `403 gallery_full`.
+
+## Pages and Articles
+
+`POST /documents/$DOC/tabs/$TAB/pages` changes a tab's [Pages](/help/pages/working-with-pages/) pages, up to 50 changes as one edit, or writes an article from Markdown. A locked tab is refused.
+
+```bash
+# Add two slides and rename the first page
+curl -X POST https://livedocuments.app/api/documents/$DOC/tabs/$TAB/pages \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{ "pages": [
+    { "op": "add", "kind": "slide", "name": "Roadmap" },
+    { "op": "add", "kind": "slide", "background": { "gradient": ["#1e3a8a", "#7c3aed"] } },
+    { "op": "set", "page": 1, "name": "Cover" }
+  ] }'
+
+# Write an article: the editor flows it onto pages
+curl -X POST https://livedocuments.app/api/documents/$DOC/tabs/$TAB/pages \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{ "article": { "markdown": "# Release notes\n\nWhat changed this month.", "size": "a4" } }'
+```
+
+A page change is `add` (a `kind` of `infographic`, `slide` or `logo`, with an optional `size`, `orientation`, `name`, `background`, `layout` and `at`), `set`, `layout`, `move`, `duplicate` or `delete`; a page is named by its id, its place in the row (from 1) or its name. An article write takes `mode` `replace` (the default) or `append`, and `article` to name an existing one. The answer lists every page with its rectangle on the canvas, which is where a changeset puts elements to land them on that page.
+
+## A Tab as a Picture
+
+```bash
+curl https://livedocuments.app/api/documents/$DOC/tabs/$TAB/render.svg \
+  -H "Authorization: Bearer $TOKEN" -o overview.svg
+```
+
+The tab drawn by the same renderer the CLI's `tab render` and `pull --svg` use, as `image/svg+xml`, with images inlined when the host stores them. It is never cached, so it always shows the tab now. For an image to embed somewhere public, use a [live image](/help/collaboration/sharing/live-image/) instead.
+
+## Copy a Document
+
+```bash
+curl -X POST https://livedocuments.app/api/documents/$DOC/copy \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{ "name": "Service map (2027 draft)" }'
+```
+
+Makes a copy in your own files and answers `201` with the new `document`. Leave out `name` for `Copy of <name>`. Anything you can read can be copied; share links are not copied with it.
+
+## Custom Themes
+
+Your [custom themes](/help/canvas/themes/custom-themes/) belong to you, not to a document.
+
+```bash
+curl -X POST https://livedocuments.app/api/custom-themes \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{ "id": "custom:'"$(uuidgen)"'", "name": "Night shift",
+        "definition": { "backgroundColor": "#0f172a", "backgroundPattern": "grid", "patternColor": "#1e293b",
+          "elementFill": "#1e293b", "elementStroke": "#38bdf8", "elementText": "#f8fafc" } }'
+```
+
+A custom theme's id starts `custom:`, and a tab uses it by that id. `PUT /custom-themes/{id}` changes its name or definition, `DELETE` removes it, and a `palette` you send must not be empty. `GET` on the path lists yours.
+
+</ArticleLayout>

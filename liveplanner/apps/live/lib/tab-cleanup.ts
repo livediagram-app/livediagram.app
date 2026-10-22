@@ -10,7 +10,7 @@
 // handed rather than from a render closure, so a commit taken while a preview
 // is on screen still starts from the real pre-hover state.
 
-import { isBoxed, tidyLayoutElements, type Element, type Layer } from '@liveplanner/document';
+import { isBoxed, tidyLayoutElements, type Element, type Layer } from '@liveplanner/project';
 import { lockedElementIds } from '@/lib/locked-element-ids';
 import { autoAlignElements } from '@/lib/auto-align';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
@@ -25,8 +25,7 @@ export type CleanupKind = 'align' | AutoLayoutChoice;
  * Auto-align only grid-snaps what is already there. Auto Layout recomputes
  * positions from the arrow graph, then pins the laid-out block to the
  * diagram's current top-left so it stays where the author is looking instead of
- * jumping to the origin, and grid-snaps the result (the same final pass the
- * AI-apply path uses). The origin is read from the elements passed in rather
+ * jumping to the origin, and grid-snaps the result. The origin is read from the elements passed in rather
  * than from the tab in state, which is what makes it safe to run against a
  * snapshot.
  */

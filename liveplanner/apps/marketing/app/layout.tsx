@@ -12,7 +12,6 @@ import {
   SITE_URL,
   WebVitalsBoot,
   trustedHtml,
-  trustedScriptOrigins,
   trustedTypesBootScript,
 } from '@liveplanner/ui';
 import { VIEW_TRANSITION_GUARD_SCRIPT } from '../lib/view-transition-guard';
@@ -30,14 +29,8 @@ const TITLE = MARKETING_TITLE;
 const DESCRIPTION = MARKETING_DESCRIPTION;
 
 // Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
-// violation log, this app's own scripts under its asset prefix, and the Clerk origin read from this build's key
-// (Next inlines only the literal expression).
-const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
-  '',
-  trustedScriptOrigins({
-    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
-  }),
-);
+// violation log, and this app's own scripts under its asset prefix.
+const TRUSTED_TYPES_BOOT = trustedTypesBootScript('');
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -134,7 +127,7 @@ const JSON_LD = {
 };
 
 // The cross-page transition opt-in (page-motion.css, docs/specs/019-marketing/marketing-site.md), inline in the
-// <head>. The browser only runs a cross-document view transition if the NEW
+// <head>. The browser only runs a cross-project view transition if the NEW
 // page has opted in by its first paint; from the bundled stylesheet the rule
 // sometimes landed after that, the transition was skipped, and the old page
 // logged "Transition was skipped". Inline, it is parsed before anything draws.

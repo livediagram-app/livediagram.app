@@ -13,7 +13,7 @@ import {
   topAnchor,
   type BoxedElement,
   type IndicatorBox,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useElementIndicatorStyle } from '@/components/canvas/ElementIndicatorStyleContext';
 import type { ElementIndicatorStyle } from '@/lib/element-indicator-style';
 import { clusterSize, type IndicatorForm, type IndicatorItem } from './indicator-items';

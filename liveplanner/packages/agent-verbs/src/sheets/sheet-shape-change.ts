@@ -21,7 +21,7 @@ import {
   type SheetWrite,
   type Workbook,
 } from '@liveplanner/sheets';
-import { plural } from '@liveplanner/document';
+import { plural } from '@liveplanner/project';
 import type { SheetRefusal } from './sheet-state';
 
 export type SheetShapeChange =

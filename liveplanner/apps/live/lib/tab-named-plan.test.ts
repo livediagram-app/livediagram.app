@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, defaultTabName, isDefaultTabName, type Element } from '@liveplanner/document';
+import { createShape, defaultTabName, isDefaultTabName, type Element } from '@liveplanner/project';
 import { presetSetup } from '@liveplanner/items';
 import {
   boardTitleForTab,

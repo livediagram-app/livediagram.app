@@ -1,0 +1,66 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { FollowingScene } from '@/components/illustrations/canvas-links-notes';
+
+export const metadata = helpMetadata({
+  title: 'Following Someone',
+  description:
+    "Pin your view to a collaborator's: their pan, zoom and tab, until you move the canvas yourself.",
+  path: '/help/canvas/follow-along/',
+});
+
+<ArticleLayout
+  title="Following Someone"
+  description="Pin your view to somebody else's until you take the canvas back."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  subArticles={getSubArticles("follow-along")}
+>
+
+"Look at this" is easy to say and hard to act on when you're scrolled somewhere else entirely. **Follow** somebody and your view goes where theirs goes.
+
+## Starting
+
+Click any avatar in the **presence stack** on the tab bar (the little circle of initials beside the tab name) to open **Collaborators**, then press **Follow** beside the person you want to follow. The window closes so you can watch.
+
+Your canvas immediately matches theirs:
+
+- their **pan**, so you're looking at the same part of the canvas,
+- their **zoom**, exactly,
+- their **tab**, so "look at this" works when the this is on tab 3.
+
+A pill appears at the top of the canvas reading **Following** followed by their name, and their avatar gains a ring. The pill shows on every screen size and in Zen mode, so you always know why your view is moving.
+
+<Figure caption="Following Sam: the pill at the top of the canvas with its Stop, and Sam's avatar ringed in the presence stack.">
+  <FollowingScene />
+</Figure>
+
+## Stopping
+
+Three ways, and you'll mostly use the first:
+
+- **Move the canvas.** Pan, zoom, pinch, arrow keys, fit-to-screen, the Map: any of them ends the follow instantly and silently. Grabbing the canvas is how you say you want your own view back.
+- Press **Stop** on the pill.
+- Open **Collaborators** again and press **Stop Following** beside their name.
+
+A follow also ends by itself if the person you're following leaves, with a line to explain why your view suddenly stopped moving.
+
+## Good to Know
+
+- **Anyone can follow anyone**, including on a view-only link: it changes nothing on the canvas. Being in the room is the only permission involved, so nobody has to accept a request.
+- **The zoom is matched exactly, not fitted.** On a smaller screen you see the same zoom level and therefore less of the canvas, centred on the same spot. Matching the zoom rather than the content means "see how small this is" still means something.
+- Following someone who is themselves following a third person just works: you get the view they're getting.
+
+## Which to Reach For
+
+| You want to                                 | Use                    |
+| ------------------------------------------- | ---------------------- |
+| Bring the room to where you are looking     | Ask them to follow you |
+| Point at something on a view you both share | The laser pointer      |
+| Focus attention on one area                 | Spotlight              |
+| Talk through it in a fixed running order    | A slide deck           |
+
+See [Laser](/help/selection-modes/laser/), [Spotlight](/help/selection-modes/spotlight/) and [Presenting](/help/selection-modes/slide-deck/presenting/).
+
+</ArticleLayout>

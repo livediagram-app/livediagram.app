@@ -1,0 +1,140 @@
+{
+  "id": "t",
+  "name": "T",
+  "elements": [
+    {
+      "id": "svc",
+      "type": "shape",
+      "shape": "frame",
+      "x": 0,
+      "y": 154,
+      "width": 499,
+      "height": 160,
+      "label": "Services",
+      "textAlignY": "top",
+      "textAlignX": "left",
+      "textSize": "md",
+      "textBold": true,
+      "padding": "lg"
+    },
+    {
+      "id": "gw",
+      "type": "shape",
+      "shape": "square",
+      "x": 169,
+      "y": 0,
+      "width": 180,
+      "height": 64,
+      "textSize": "md",
+      "label": "Gateway"
+    },
+    {
+      "id": "db",
+      "type": "shape",
+      "shape": "cylinder",
+      "x": 71,
+      "y": 404,
+      "width": 140,
+      "height": 96,
+      "textSize": "md",
+      "label": "A DB"
+    },
+    {
+      "id": "a",
+      "type": "shape",
+      "shape": "square",
+      "x": 51,
+      "y": 218,
+      "width": 180,
+      "height": 64,
+      "textSize": "md",
+      "label": "Service A"
+    },
+    {
+      "id": "b",
+      "type": "shape",
+      "shape": "square",
+      "x": 287,
+      "y": 218,
+      "width": 180,
+      "height": 64,
+      "textSize": "md",
+      "label": "Service B"
+    },
+    {
+      "id": "1fe3cbc9-a430-4e8e-87fb-e02842b1b936",
+      "type": "arrow",
+      "from": {
+        "kind": "pinned",
+        "elementId": "gw",
+        "anchor": "s"
+      },
+      "to": {
+        "kind": "pinned",
+        "elementId": "a",
+        "anchor": "n"
+      },
+      "arrowStyle": "angled",
+      "exactStart": true,
+      "exactEnd": true,
+      "curvePoints": [
+        {
+          "dx": 59,
+          "dy": 0
+        },
+        {
+          "dx": -59,
+          "dy": 0
+        }
+      ]
+    },
+    {
+      "id": "76a6b564-c095-4e09-8240-18ece9ece0cf",
+      "type": "arrow",
+      "from": {
+        "kind": "pinned",
+        "elementId": "gw",
+        "anchor": "s"
+      },
+      "to": {
+        "kind": "pinned",
+        "elementId": "b",
+        "anchor": "n"
+      },
+      "arrowStyle": "angled",
+      "exactStart": true,
+      "exactEnd": true,
+      "curvePoints": [
+        {
+          "dx": -59,
+          "dy": 0
+        },
+        {
+          "dx": 59,
+          "dy": 0
+        }
+      ]
+    },
+    {
+      "id": "e525730d-7b5a-4e9c-a8f9-11b2e2c43b88",
+      "type": "arrow",
+      "from": {
+        "kind": "pinned",
+        "elementId": "a",
+        "anchor": "s"
+      },
+      "to": {
+        "kind": "pinned",
+        "elementId": "db",
+        "anchor": "n"
+      },
+      "arrowStyle": "straight",
+      "exactStart": true,
+      "exactEnd": true
+    }
+  ],
+  "theme": "brand",
+  "backgroundColor": "#fbfaf7",
+  "backgroundPattern": "grid",
+  "patternColor": "#cbd5e1"
+}

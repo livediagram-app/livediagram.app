@@ -4,6 +4,8 @@ import type { Element } from '@livediagram/document';
 import { createShareLink } from '../db/share';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
+import { captureTelemetry, TELEMETRY_ON } from '../test-telemetry';
+import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
 import { getDocument } from '../db/documents';
 import { answerOverview, parseViewQuery, type ParsedView } from './document-views-route';
 import { handleDocuments } from './documents';
@@ -77,8 +79,9 @@ function call(db: SqliteD1, method: string, path: string, body?: unknown, who: W
 }
 
 async function setUp(extraTabs = 0, room?: unknown) {
+  sent = captureTelemetry();
   const db = sqliteD1({
-    TELEMETRY_ENABLED: 'true',
+    ...TELEMETRY_ON,
     ...(room ? { DOCUMENT_ROOM: room } : {}),
   } as unknown as Partial<Env>);
   const tabs = [
@@ -98,11 +101,12 @@ const tabView = (db: SqliteD1, query: string, who: Who = {}) =>
   call(db, 'GET', `/api/documents/D/tabs/t1?${query}`, undefined, who);
 const docView = (db: SqliteD1, query: string, who: Who = {}) =>
   call(db, 'GET', `/api/documents/D?${query}`, undefined, who);
-const viewed = (db: SqliteD1) =>
-  db.sql
-    .prepare("SELECT type FROM events WHERE category = 'Agent' AND action = 'Viewed' ORDER BY type")
-    .all()
-    .map((r) => r.type);
+let sent: TelemetryWireEvent[] = [];
+const viewed = (_db: SqliteD1) =>
+  sent
+    .filter((e) => e.category === 'Agent' && e.action === 'Viewed')
+    .map((e) => e.type)
+    .sort();
 
 let infos: unknown[][] = [];
 afterEach(() => vi.restoreAllMocks());

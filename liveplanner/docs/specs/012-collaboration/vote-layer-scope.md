@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 When starting a dot-vote ([Session tools (timer + voting)](session-tools.md)), the host can pick which **layer**
-([Layers](../006-document/layers.md)) is votable. Only elements on that layer take dots; everything else
+([Layers](../006-project/layers.md)) is votable. Only elements on that layer take dots; everything else
 stays on the canvas but recedes, and the votable set is ringed.
 
 The case it solves: a tab where the ideas being voted on share the canvas with
@@ -55,7 +55,7 @@ votable.
   `pointer-events-none` so it can't intercept the cast). Dimming alone tells
   you what _isn't_ a target; the ring answers "where do I click".
 - **Both only while casting is open.** After **End vote** the canvas returns to
-  normal, so the results walkthrough reads against the full document.
+  normal, so the results walkthrough reads against the full project.
 
 `votableInVote` is resolved **once** in `CanvasElementsLayer`, where the vote
 and the tab's layers are both in scope, and passed down — rather than threading
@@ -66,7 +66,7 @@ dot either, and pretending otherwise would be a lie.
 ## Legacy elements
 
 `isVotableInVote` resolves an element's layer through `resolveLayerId` rather
-than comparing `element.layerId` directly. Everything authored before [Layers](../006-document/layers.md)
+than comparing `element.layerId` directly. Everything authored before [Layers](../006-project/layers.md)
 carries **no** `layerId` and belongs to the base layer — a raw comparison would
 make every one of those elements unvotable the instant a scope was set.
 

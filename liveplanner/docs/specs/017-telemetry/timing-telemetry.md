@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 How long the key moments of the experience take, measured in real browsers and reported as anonymous
-[Telemetry + public transparency dashboard](telemetry.md) events: opening a document, switching to a tab,
+[Telemetry + public transparency dashboard](telemetry.md) events: opening a project, switching to a tab,
 an autosave, the live room connecting and reconnecting, and the three Core Web Vitals (LCP, INP, CLS) of
 every app. The dashboard gets a **Timings** tab that shows each one as a distribution with its median,
 75th and 95th percentile.
@@ -18,13 +18,13 @@ element, dragging, typing).
 
 The existing events say what people do and what fails ([Load recovery](../007-editor/load-recovery.md)
 counts loads that pass 10 seconds or time out), but nothing says how fast the product feels when it
-works. "Did that release make documents open slower?", "how long does a save take for most people?",
+works. "Did that release make projects open slower?", "how long does a save take for most people?",
 "is the landing page's LCP good?" had no answer.
 
 ## The event
 
 A timing is an ordinary telemetry event: **`Timing` · `Measured` · `<Metric>.<Bucket>`**, e.g.
-`Timing·Measured·DocumentLoad.Under1000ms`, `Timing·Measured·Lcp.Marketing.Under2500ms`.
+`Timing·Measured·ProjectLoad.Under1000ms`, `Timing·Measured·Lcp.Marketing.Under2500ms`.
 
 The duration is **bucketed in the browser**; the raw number never leaves it. Carrying it in the `type`
 rather than a new numeric column means it rides the whole existing pipeline unchanged (the buffered
@@ -65,9 +65,9 @@ product. Every timing is also skipped when it ends in failure; failures are alre
 
 ### Editor (`apps/live`)
 
-- **`DocumentLoad`**: opening an existing document, from when the person asked for it to the first frame
+- **`ProjectLoad`**: opening an existing project, from when the person asked for it to the first frame
   painted after the load finished (the load's `done` step, [Load recovery](../007-editor/load-recovery.md)).
-  "Asked for it" is the page's navigation start when the document page is the page the browser loaded
+  "Asked for it" is the page's navigation start when the project page is the page the browser loaded
   (a typed URL, a shared link, a refresh: the number includes downloading the app), or the start of the
   load when the person arrived in-app (from the Explorer). Once per load. Not recorded for a password
   retry, whose time is a person typing. A load that finishes after its watchdog still records
@@ -82,7 +82,7 @@ product. Every timing is also skipped when it ends in failure; failures are alre
 - **`RoomConnect`**: the live room ([Live app](../007-editor/live-app.md)), from the first socket attempt
   to the first roster frame: the moment other people's presence appears. Once per room connection.
 - **`RoomReconnect`**: a live room that dropped by itself (not closed by the editor, not a trashed
-  document or a changed share), from the drop to the first roster frame on the new socket, back-off waits
+  project or a changed share), from the drop to the first roster frame on the new socket, back-off waits
   included: the outage a person felt. Once per drop. A reconnect that never lands records nothing.
 
 ### Every app: Core Web Vitals
@@ -103,7 +103,7 @@ product. Every timing is also skipped when it ends in failure; failures are alre
 
 A **Timings** section on the dashboard's Health tab, after Exceptions.
 
-- **Editor timings**: one card per editor metric (Document Load, Tab Switch, Save, Live Connect, Live
+- **Editor timings**: one card per editor metric (Project Load, Tab Switch, Save, Live Connect, Live
   Reconnect). Each card's big number is the **p75** for the selected window, with the median (p50) and
   p95 beside it, how many timings it is drawn from, and a bar chart of the window's buckets. A card under
   `TIMING_MIN_SAMPLES` (20) timings says so instead of a percentile, because a percentile of a handful of
@@ -122,7 +122,7 @@ A **Timings** section on the dashboard's Health tab, after Exceptions.
 ## Privacy
 
 Unchanged by timings: three fields, a closed vocabulary, no id, no content. A bucket says "this page
-opened in under a second somewhere", never which page instance, which document or whose browser. The
+opened in under a second somewhere", never which page instance, which project or whose browser. The
 per-user opt-out ([User preferences](../007-editor/user-preferences.md)) and the server
 `TELEMETRY_ENABLED` gate stop timings exactly as they stop every other event.
 
@@ -134,7 +134,6 @@ Not built yet; each fits the same `Timing·Measured` event with a new metric on 
 - **Time to first edit**: finishing the `/new` wizard to the first element placed, the clearest
   "how quickly does someone get going" number.
 - **Export**: PNG, SVG and PDF export, from the click to the file handed over, typed by format.
-- **AI Ask answer**: asking the AI panel to the first token of its answer.
 - **Sign-in round trip**: submitting the sign-in or sign-up code to the editor signed in.
-- **Server-side api latency**: the api worker timing its own document reads and writes, reported with
+- **Server-side api latency**: the api worker timing its own project reads and writes, reported with
   `reportServerEvent`, to separate a slow network from a slow worker.

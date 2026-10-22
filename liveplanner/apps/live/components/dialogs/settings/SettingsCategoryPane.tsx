@@ -1,8 +1,6 @@
 'use client';
 
-import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
-import { AccordionSection } from '@/components/primitives/AccordionSection';
-import type { HelpArticleKey } from '@/lib/help-articles';
+import { Fragment, useCallback, useEffect, useRef, type ReactNode } from 'react';
 import { SettingsPresetSummaryRow } from './SettingsPresetSummaryRow';
 import type { SettingsCategoryId } from './settings-icons';
 
@@ -62,15 +60,15 @@ export function SettingsCategoryPane({
   offeredRowKeys?: ReadonlySet<string>;
   // Section to scroll to and focus the heading of (settingsSectionId).
   focusSectionId?: string | null;
-  // Who is reading: the Documents rows list their folders (docs/specs/013-workspace/default-folders.md).
-  owner?: { ownerId: string; clerkUserId: string | null } | null;
+  // Who is reading: the Projects rows list their folders (docs/specs/013-workspace/default-folders.md).
+  owner?: { ownerId: string; accountUserId: string | null } | null;
 }) {
   const isMobile = useIsMobileViewport();
-  // The folders the Documents rows choose from and name, fetched only for a pane that shows them.
+  // The folders the Projects rows choose from and name, fetched only for a pane that shows them.
   const showsDefaults = category.rows.some((r) => r.kind === 'placementDefault');
   const placementLists = usePlacementOptions({
     selfId: owner?.ownerId ?? 'pending',
-    clerkUserId: owner?.clerkUserId ?? null,
+    accountUserId: owner?.accountUserId ?? null,
     skip: useCallback(() => !showsDefaults, [showsDefaults]),
   });
   // Group CONSECUTIVE rows by section, so a category holding several
@@ -94,25 +92,6 @@ export function SettingsCategoryPane({
     <div className="flex flex-col gap-6">
       {groups.map((group, groupIndex) => {
         const note = group.section ? category.sectionNotes?.[group.section] : undefined;
-        if (group.section && category.collapsedSections?.includes(group.section)) {
-          // A section people rarely look for, as a closed accordion: opened by its heading, or on its own when
-          // Settings was opened on one of its rows or on the section.
-          const all = group.rows.flatMap((r) => [r, ...childrenOf(r)]);
-          return (
-            <CollapsedSection
-              key={group.section}
-              name={group.section}
-              note={note}
-              focused={
-                settingsSectionId(group.section) === focusSectionId ||
-                all.some((r) => r.key === focusRowKey)
-              }
-              onCount={onCount(all)}
-            >
-              {renderGroup(group.rows)}
-            </CollapsedSection>
-          );
-        }
         return (
           <section
             key={group.section ?? groupIndex}
@@ -174,17 +153,6 @@ export function SettingsCategoryPane({
         })}
       </SettingsGroup>
     );
-  }
-
-  // How many of a section's switches are on, for a closed section's heading ("1 of 1 On"): its leaf switches, a
-  // parent standing for its children. Null when it holds none.
-  function onCount(rows: SettingsRowSpec[]): string | null {
-    const leaves = rows.filter(
-      (r) => r.kind === 'toggle' && !rows.some((c) => c.parent === r.key),
-    ) as Extract<SettingsRowSpec, { kind: 'toggle' }>[];
-    if (leaves.length === 0) return null;
-    const on = leaves.filter((r) => r.read(settings)).length;
-    return `${on} of ${leaves.length} On`;
   }
 
   // Fire BEFORE the write so an opt-out event still reaches the wire ahead of
@@ -292,80 +260,6 @@ function SectionHeading({ name, focused }: { name: string; focused: boolean }) {
     >
       {name}
     </h3>
-  );
-}
-
-// How long a closed section's body takes to ease open (AccordionSection's duration-short), before it is scrolled to.
-const COLLAPSED_SECTION_OPEN_MS = 200;
-
-// A closed accordion section (SettingsCategorySpec.collapsedSections): its heading is the toggle, with the section's
-// switch count beside the chevron, so it says what it holds while closed.
-function CollapsedSection({
-  name,
-  note,
-  focused,
-  onCount,
-  children,
-}: {
-  name: string;
-  note?: { note: string; helpArticle?: HelpArticleKey };
-  focused: boolean;
-  onCount: string | null;
-  children: ReactNode;
-}) {
-  const [open, setOpen] = useState(focused);
-  const ref = useRef<HTMLElement>(null);
-  // Opened by hand, it brings what it unfolded into view once the body has eased open, rather than leaving it
-  // below the fold of the pane.
-  useEffect(() => {
-    if (!open) return;
-    const timer = window.setTimeout(() => {
-      const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
-      ref.current?.scrollIntoView?.({ block: 'nearest', behavior: reduce ? 'auto' : 'smooth' });
-    }, COLLAPSED_SECTION_OPEN_MS);
-    return () => window.clearTimeout(timer);
-  }, [open]);
-  // Opened on its own when Settings lands on it, adjusted during render so the row is there to be scrolled to.
-  const [wasFocused, setWasFocused] = useState(focused);
-  if (focused !== wasFocused) {
-    setWasFocused(focused);
-    if (focused) setOpen(true);
-  }
-  return (
-    <section
-      ref={ref}
-      className="flex flex-col"
-      data-settings-section={settingsSectionId(name)}
-      id={`settings-section-${settingsSectionId(name)}`}
-    >
-      <AccordionSection
-        title={name}
-        open={open}
-        onToggle={() => setOpen((o) => !o)}
-        trailing={
-          onCount ? (
-            <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">
-              {onCount}
-            </span>
-          ) : undefined
-        }
-        headerClassName="flex w-full items-center justify-between rounded px-1 py-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
-        bodyClassName="flex flex-col gap-2 pt-1"
-      >
-        {note ? (
-          <p className="px-1 text-xs leading-relaxed text-slate-500 dark:text-slate-400">
-            {note.note}
-            {note.helpArticle ? (
-              <>
-                {' '}
-                <HelpArticleLink article={note.helpArticle} variant="text" />
-              </>
-            ) : null}
-          </p>
-        ) : null}
-        {children}
-      </AccordionSection>
-    </section>
   );
 }
 

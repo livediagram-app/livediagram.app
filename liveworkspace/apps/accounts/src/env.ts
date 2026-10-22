@@ -1,6 +1,6 @@
 export interface Env {
   ENVIRONMENT: 'production' | 'staging' | 'development';
-  // This Worker's own origin, e.g. https://accounts.liveworkspace.app
+  // The origin this Worker answers on, e.g. https://liveworkspace.app (it owns only its own paths there)
   BASE_URL: string;
   // An address on a domain onboarded to Cloudflare Email Sending.
   EMAIL_FROM: string;
@@ -9,6 +9,9 @@ export interface Env {
   BETTER_AUTH_SECRET: string;
   TURNSTILE_SECRET_KEY: string;
   ADMIN_TOKEN: string;
+  // Both set turns on "Continue with Google"; either missing leaves email codes only.
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
 
   AUTH_DB: D1Database;
   EMAIL: SendEmail;

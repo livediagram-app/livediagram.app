@@ -14,7 +14,7 @@ import {
 } from './column-settings-request';
 import type { PlanPalette } from './plan-palette';
 import { COLUMN_ATTR } from './column-move-flip';
-import { plural } from '@liveplanner/document';
+import { plural } from '@liveplanner/project';
 
 export function PlanColumnHeader({
   col,

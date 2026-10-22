@@ -2,7 +2,7 @@
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Workbook, cellKey, type Sheet } from '@liveplanner/sheets';
-import type { SheetMetricContent } from '@liveplanner/document';
+import type { SheetMetricContent } from '@liveplanner/project';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardSheetMetric } from './DashboardSheetMetric';
 import type { SheetRead } from './useSheetReader';

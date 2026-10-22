@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { seededRandom } from '@liveplanner/document';
+import { seededRandom } from '@liveplanner/project';
 import { galleryTemplates } from './template-gallery';
 import {
   HERO_FAN_OPENING,

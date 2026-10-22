@@ -3,11 +3,11 @@
 // exit code is one of eight; stdout carries data only.
 
 import { renderSkill, type Verb, type VerbContext } from '@liveplanner/agent-verbs';
-import { DOCUMENT_FORMAT } from '@liveplanner/api-schema';
+import { PROJECT_FORMAT } from '@liveplanner/api-schema';
 import { resolveCredential } from './auth/credentials';
 import { callApi, guideOf, installSkill, login, logout, status } from './commands/local';
 import { exportAll, type ExportInput } from './commands/export';
-import { pullDocument, type PullInput } from './commands/pull';
+import { pullProject, type PullInput } from './commands/pull';
 import { pullFileOf, pullFileView, type ViewInput } from './commands/pull-file-views';
 import { pushFile, type PushInput } from './commands/push';
 import { waitFor, type WaitInput } from './commands/wait';
@@ -75,14 +75,14 @@ async function runOnline(
       code: 'auth',
       message: `${profile.host} has no sign-in, so the CLI cannot act there`,
     });
-  // A verb that works on document files reads and writes them in the bundled format; a host storing a newer one
-  // would hand it documents it cannot keep (step 6).
-  if (verb.files && caps.documentFormat !== undefined && caps.documentFormat > DOCUMENT_FORMAT) {
-    log(`format refused ${caps.documentFormat} > ${DOCUMENT_FORMAT}`);
+  // A verb that works on project files reads and writes them in the bundled format; a host storing a newer one
+  // would hand it projects it cannot keep (step 6).
+  if (verb.files && caps.projectFormat !== undefined && caps.projectFormat > PROJECT_FORMAT) {
+    log(`format refused ${caps.projectFormat} > ${PROJECT_FORMAT}`);
     throw new CliError({
       exit: EXIT.rejected,
       code: 'version',
-      message: `${profile.host} stores documents in format ${caps.documentFormat}; this liveplanner reads format ${DOCUMENT_FORMAT}`,
+      message: `${profile.host} stores projects in format ${caps.projectFormat}; this liveplanner reads format ${PROJECT_FORMAT}`,
       hint: UPGRADE_HINT,
     });
   }
@@ -135,10 +135,10 @@ async function runOnline(
   };
   if (verb.id === 'tab.render') {
     const { renderTab } = await import('./commands/render');
-    return renderTab(io, ctx, input as { doc: string; tab?: string; png?: string; svg?: string });
+    return renderTab(io, ctx, input as { project: string; tab?: string; png?: string; svg?: string });
   }
   if (verb.id === 'export') return exportAll(io, ctx, profile.host, input as ExportInput);
-  if (verb.id === 'pull') return pullDocument(io, ctx, input as PullInput);
+  if (verb.id === 'pull') return pullProject(io, ctx, input as PullInput);
   if (verb.id === 'push') return pushFile(io, ctx, profile.host, input as PushInput);
   if (verb.id === 'wait') return waitFor(io, ctx, caps.apiBase, input as WaitInput);
   if (verb.id === 'watch') return watch(io, ctx, caps.apiBase, input as WatchInput, json);
@@ -191,7 +191,7 @@ export async function run(argv: readonly string[], io: CliIo): Promise<ExitCode>
     verbId = verb.id;
     log(`command ${verb.id}`);
     const input = inputOf(verb, routed.rest, globals);
-    // A pull file named as <doc> is read here, offline (CLI70).
+    // A pull file named as <project> is read here, offline (CLI70).
     const pulled = await pullFileOf(io, input);
     let pending = pulled
       ? Promise.resolve(pullFileView(verb, input as ViewInput, pulled, io.now(), log))

@@ -5,6 +5,8 @@ import { elementFingerprint, type Element } from '@livediagram/document';
 import { createShareLink } from '../db/share';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
+import { captureTelemetry, TELEMETRY_ON } from '../test-telemetry';
+import type { TelemetryWireEvent } from '@liveworkspace/telemetry';
 import { makeTestRouteContext } from './test-route-context';
 import { handleDocuments } from './documents';
 
@@ -71,9 +73,10 @@ async function setUp(
   elements = [box('a'), box('b', 'b', 200)],
 ) {
   const r = room(selections);
+  sent = captureTelemetry();
   const db = sqliteD1({
     DOCUMENT_ROOM: r.binding,
-    TELEMETRY_ENABLED: 'true',
+    ...TELEMETRY_ON,
   } as unknown as Partial<Env>);
   db.sql.exec(
     `INSERT INTO participants (id, name, color, created_at) VALUES ('${OWNER}', 'Webber', '#123456', 1)`,
@@ -97,11 +100,9 @@ const stored = (db: SqliteD1, tab = 't1') =>
   ).elements ?? [];
 const records = (db: SqliteD1) =>
   db.sql.prepare('SELECT * FROM agent_changesets ORDER BY rev').all() as Record<string, unknown>[];
-const events = (db: SqliteD1) =>
-  db.sql
-    .prepare("SELECT action, type FROM events WHERE category = 'Agent'")
-    .all()
-    .map((r) => ({ ...r }));
+let sent: TelemetryWireEvent[] = [];
+const events = (_db: SqliteD1) =>
+  sent.filter((e) => e.category === 'Agent').map((e) => ({ action: e.action, type: e.type }));
 
 afterEach(() => vi.restoreAllMocks());
 const quiet = () => {

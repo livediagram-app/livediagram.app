@@ -17,7 +17,7 @@ const POPOVER_WIDTH = 256;
 // A popover wider than the rest, so its placement keeps all of it on the canvas.
 const POPOVER_WIDTHS: Partial<Record<string, number>> = {
   'plan-trash': 352,
-  // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-document/layers.md).
+  // The Layers popover's `w-[22rem]`: roomy rows (docs/specs/006-project/layers.md).
   layers: 352,
   // CardFinderPanel's `sm:w-[44rem]`: wide enough for each row's state, priority, due date and assignee.
   'plan-cards': 704,

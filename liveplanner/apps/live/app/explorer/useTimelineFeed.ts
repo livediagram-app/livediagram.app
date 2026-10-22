@@ -1,6 +1,6 @@
 'use client';
 
-// A scoped feed's data + control state (docs/specs/013-workspace/timeline.md §3.4): a document's
+// A scoped feed's data + control state (docs/specs/013-workspace/timeline.md §3.4): a project's
 // History or a team's Team Activity (ScopedTimeline), its controls and its cards reading one state.
 //
 // Gated on `enabled` like the Explorer's other section hooks (useTokens, useTeams), so a feed
@@ -46,7 +46,7 @@ export type TimelineFeed = {
 export function useTimelineFeed(
   ownerId: string | null,
   enabled: boolean,
-  // A document's or a team's. A team scope reads that team's whole history, including what happened
+  // A project's or a team's. A team scope reads that team's whole history, including what happened
   // before the reader joined: the per-member scopes only carry events from after they arrived.
   scope: TimelineScopeRef,
 ): TimelineFeed {

@@ -6,7 +6,7 @@ import {
   type Element,
   type ShapeElement,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { getTheme } from '@/lib/themes';
 import { withThemeApplied } from './tab-theme-apply';
 

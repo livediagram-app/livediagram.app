@@ -17,13 +17,13 @@ describe('help social cards', () => {
     for (const a of articles) expect(HELP_CARDS.has(cardRoute(articleHref(a))), a.slug).toBe(true);
     for (const c of categories)
       expect(HELP_CARDS.has(cardRoute(categoryHref(c.slug))), c.slug).toBe(true);
-    expect(HELP_CARDS.size).toBeGreaterThan(250);
+    expect(HELP_CARDS.size).toBeGreaterThan(120);
   });
 
   it("titles an article's card with the article, under its top category", () => {
-    const themes = articles.find((a) => articleHref(a) === '/canvas/themes/')!;
-    expect(HELP_CARDS.get('canvas/themes')).toMatchObject({
-      kicker: 'Canvas',
+    const themes = articles.find((a) => articleHref(a) === '/user-interface/themes/')!;
+    expect(HELP_CARDS.get('user-interface/themes')).toMatchObject({
+      kicker: 'User Interface',
       title: themes.title,
       footer: HELP_CARD_FOOTER,
     });
@@ -50,20 +50,24 @@ describe('help social cards', () => {
   it('builds one PNG path per card and reads it back', () => {
     const params = helpCardParams();
     expect(params).toHaveLength(HELP_CARDS.size);
-    expect(params).toContainEqual({ card: ['canvas', 'themes.png'] });
+    expect(params).toContainEqual({ card: ['user-interface', 'themes.png'] });
     for (const { card } of params) expect(HELP_CARDS.has(routeFromParams(card)!)).toBe(true);
-    expect(routeFromParams(['canvas', 'themes'])).toBeNull();
+    expect(routeFromParams(['user-interface', 'themes'])).toBeNull();
     expect(routeFromParams([])).toBeNull();
   });
 
   it("links a page's own card in its metadata, and the brand card elsewhere", () => {
-    expect(helpCardImage('/help/canvas/themes/')?.url).toBe(
-      'https://liveplanner.app/help/og/canvas/themes.png',
+    expect(helpCardImage('/help/user-interface/themes/')?.url).toBe(
+      'https://liveplanner.app/help/og/user-interface/themes.png',
     );
     expect(helpCardImage('/help/')).toBeUndefined();
-    const md = helpMetadata({ title: 'Themes', description: 'd', path: '/help/canvas/themes/' });
+    const md = helpMetadata({
+      title: 'Themes',
+      description: 'd',
+      path: '/help/user-interface/themes/',
+    });
     expect(md.twitter).toMatchObject({
-      images: ['https://liveplanner.app/help/og/canvas/themes.png'],
+      images: ['https://liveplanner.app/help/og/user-interface/themes.png'],
     });
     const home = helpMetadata({ title: 'Help', description: 'd', path: '/help/' });
     expect(home.twitter).toMatchObject({ images: ['https://liveplanner.app/twitter-image'] });

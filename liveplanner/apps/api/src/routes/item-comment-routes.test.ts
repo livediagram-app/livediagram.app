@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import type { ItemCommentAddResponse, ItemResponse, ItemsResponse } from '@liveplanner/api-schema';
-import type { CommentThread } from '@liveplanner/document';
+import type { CommentThread } from '@liveplanner/project';
 import type { Item } from '@liveplanner/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 
 // A Plan card's comments (docs/specs/026-plan/items.md "Comments", blueprint item-store.md "Comments"): who
 // may add, delete, resolve and reopen; author ids only to their author; the relay; restore; copies.
@@ -29,14 +29,14 @@ async function call<T = unknown>({
   code?: string;
 }) {
   const pending: Promise<unknown>[] = [];
-  const ctx = makeTestRouteContext(method, `/api/documents/d1${path}`, {
+  const ctx = makeTestRouteContext(method, `/api/projects/d1${path}`, {
     env: sql.env,
     owner,
     ...(code ? { headers: { 'X-Share-Code': code } } : {}),
     ...(body === undefined ? {} : { body }),
     waitUntil: (p) => void pending.push(p),
   });
-  const res = await handleDocuments(ctx);
+  const res = await handleProjects(ctx);
   await Promise.all(pending);
   const text = await res.text();
   return { status: res.status, body: (text ? JSON.parse(text) : null) as T };
@@ -51,7 +51,7 @@ const post = (text: string, who: { owner?: string; code?: string } = {}) =>
 beforeEach(async () => {
   sql = sqliteD1();
   relayed = [];
-  (sql.env as unknown as { DOCUMENT_ROOM: unknown }).DOCUMENT_ROOM = {
+  (sql.env as unknown as { PROJECT_ROOM: unknown }).PROJECT_ROOM = {
     idFromName: (n: string) => n,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
@@ -61,12 +61,12 @@ beforeEach(async () => {
     }),
   };
   sql.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
     INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO participants (id, name, color, created_at) VALUES ('visitor', 'Vee', '#16a34a', 1);
-    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
+    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('LOOK', 'd1', 'view', NULL, 1);
   `);
   item = (
     await call<ItemResponse>({ path: '/items', body: { type: 'task', fields: { title: 'A' } } })
@@ -307,7 +307,7 @@ describe('restore and copies', () => {
 
   it('keeps comments in a copy', async () => {
     await post('keep me');
-    await db.copyDocument(sql.env, 'd1', 'd2', 'owner', 'Copy');
+    await db.copyProject(sql.env, 'd1', 'd2', 'owner', 'Copy');
     expect(thread((await db.listItems(sql.env, 'd2'))[0]!)!.comments).toHaveLength(1);
   });
 });

@@ -1,0 +1,134 @@
+import { describe, expect, it } from 'vitest';
+import { arrow, box, frame, lint, of, tabOf } from '../fixtures/build';
+
+const core = () => [frame('core', 0, 0, 200, 400), box('a', 40, 40), box('b', 40, 300)];
+
+describe('group-split-edges', () => {
+  it('fires when most of a frame\x27s arrows cross its border', () => {
+    const outside = [box('x', 400, 40), box('y', 400, 300), box('z', 400, 500)];
+    const report = lint(
+      tabOf(
+        ...core(),
+        ...outside,
+        arrow('1', 'a', 'x'),
+        arrow('2', 'b', 'y'),
+        arrow('3', 'a', 'z'),
+        arrow('4', 'a', 'b'),
+      ),
+    );
+    expect(of(report, 'group-split-edges')).toEqual([
+      {
+        code: 'group-split-edges',
+        severity: 'info',
+        refs: ['core'],
+        message: 'core: 3 of 4 arrows cross its border',
+        fix: 'unwrap core',
+      },
+    ]);
+  });
+
+  it('stays quiet on a stage the flow passes through: in from before it, out to after it', () => {
+    // A pipeline stage: fed from above, drained below, one step inside.
+    const stage = (q: [number, number]) =>
+      lint(
+        tabOf(
+          ...core(),
+          box('p', 40, -200),
+          box('q', q[0], q[1]),
+          arrow('1', 'p', 'a', ['s', 'n']),
+          arrow('2', 'p', 'b', ['s', 'n']),
+          arrow('3', 'a', 'b', ['s', 'n']),
+          arrow('4', 'b', 'q', ['s', 'n']),
+        ),
+      );
+    expect(of(stage([40, 600]), 'group-split-edges')).toEqual([]);
+    // Drained to the side instead: split, not passed through.
+    expect(of(stage([400, 300]), 'group-split-edges')).toHaveLength(1);
+    // An arrow from a member to a loose point has no box beyond the frame: not passed through either.
+    const loose = lint(
+      tabOf(
+        ...core(),
+        box('p', 40, -200),
+        arrow('1', 'p', 'a', ['s', 'n']),
+        arrow('2', 'p', 'b', ['s', 'n']),
+        arrow('3', 'a', 'b', ['s', 'n']),
+        {
+          id: '4',
+          type: 'arrow',
+          from: { kind: 'pinned', elementId: 'b', anchor: 's' },
+          to: { kind: 'free', x: 100, y: 700 },
+        } as never,
+      ),
+    );
+    expect(of(loose, 'group-split-edges')).toHaveLength(1);
+  });
+
+  it('stays quiet under three arrows, when most stay inside, and for a stack', () => {
+    expect(
+      of(
+        lint(tabOf(...core(), box('x', 400, 40), arrow('1', 'a', 'x'), arrow('2', 'b', 'x'))),
+        'group-split-edges',
+      ),
+    ).toEqual([]);
+    const inside = [
+      box('c', 40, 160),
+      arrow('1', 'a', 'b', ['s', 'n']),
+      arrow('2', 'a', 'c', ['s', 'n']),
+      arrow('3', 'c', 'b', ['s', 'n']),
+    ];
+    expect(
+      of(
+        lint(tabOf(...core(), ...inside, box('x', 400, 40), arrow('4', 'a', 'x'))),
+        'group-split-edges',
+      ),
+    ).toEqual([]);
+    const stack = [
+      frame('stack', 0, 0, 200, 400, 'stack'),
+      box('a', 40, 40),
+      box('x', 400, 40),
+      box('y', 400, 300),
+      box('z', 400, 500),
+    ];
+    expect(
+      of(
+        lint(tabOf(...stack, arrow('1', 'a', 'x'), arrow('2', 'a', 'y'), arrow('3', 'a', 'z'))),
+        'group-split-edges',
+      ),
+    ).toEqual([]);
+  });
+
+  it('counts an inner frame\x27s members for the outer frame (N13)', () => {
+    const nested = [
+      frame('outer', 0, 0, 300, 400),
+      frame('inner', 20, 20, 200, 200),
+      box('a', 40, 40),
+      box('c', 40, 120),
+    ];
+    const outside = [box('x', 500, 40), box('y', 500, 300), box('z', 500, 500)];
+    const report = lint(
+      tabOf(
+        ...nested,
+        ...outside,
+        arrow('1', 'a', 'x'),
+        arrow('2', 'a', 'y'),
+        arrow('3', 'a', 'z'),
+        arrow('4', 'a', 'c'),
+      ),
+    );
+    expect(of(report, 'group-split-edges').map((f) => f.refs[0])).toEqual(['outer', 'inner']);
+  });
+
+  it('stays quiet on a role group: none of its arrows runs inside it, so the split is its design', () => {
+    const outside = [box('x', 400, 40), box('y', 400, 300), box('z', 400, 500)];
+    const report = lint(
+      tabOf(
+        ...core(),
+        ...outside,
+        arrow('1', 'a', 'x'),
+        arrow('2', 'b', 'y'),
+        arrow('3', 'a', 'z'),
+      ),
+    );
+    expect(of(report, 'group-split-edges')).toEqual([]);
+  });
+});

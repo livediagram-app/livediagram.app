@@ -81,7 +81,7 @@ export type Env = {
   // feature flag still serve (the check helper returns "allowed"
   // when the binding is absent).
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-IP limiter for the anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md),
+  // Per-IP limiter for the anonymous telemetry relay (docs/specs/017-telemetry/telemetry.md "The relay"),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
   // real document writes. Keyed on CF-Connecting-IP. Optional: absent
   // (self-host) falls through to "allow", same as the write limiter.
@@ -101,10 +101,6 @@ export type Env = {
   // tighter bound than the general write limiter. Keyed on the Clerk user id.
   // Optional: absent (self-host) → "allow".
   DRIVE_TOKEN_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
-  // Per-network limiter for Community likes and reports (docs/specs/025-community/blueprints/community.md §7),
-  // keyed `community:<address range>` (community-network.ts). These callers are anonymous, so the owner-keyed write
-  // limiter would lump them all onto its 'anonymous' key. Optional: absent (self-host) → "allow".
-  COMMUNITY_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-network limiter for a form link's reads and responses (docs/specs/030-forms/forms.md "Abuse and limits").
   FORM_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-network limiter for an invite email's Decline link (docs/specs/013-workspace/teams.md "Declining from the
@@ -114,20 +110,24 @@ export type Env = {
   // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"): false, 0 or off
   // turns it off; unset leaves it on. See community-enabled.ts.
   COMMUNITY_ENABLED?: string;
-  // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Authoritative: gates both
-  // POST /api/events and GET /api/telemetry/summary. A plain
+  // The liveworkspace Community service (liveworkspace/docs/community.md), which keeps every app's posts. Unset means
+  // production's, https://liveworkspace.app/api/community; staging and local development name their own.
+  COMMUNITY_URL?: string;
+  // livediagram's secret on that service, sent as a bearer token on its app routes. A secret (wrangler secret put
+  // COMMUNITY_KEY); unset, this deploy has no Community to publish to.
+  COMMUNITY_KEY?: string;
+  // Telemetry on/off switch (docs/specs/017-telemetry/telemetry.md). Gates every event this worker
+  // sends to the liveworkspace telemetry service, its own and the relay's. A plain
   // wrangler.toml [vars] string; only the literal "true" enables it.
   // Absent/anything-else keeps telemetry fully off — the self-host
-  // default, so OSS forks never ingest or serve analytics unless they
-  // opt in.
+  // default, so OSS forks never send analytics unless they opt in.
   TELEMETRY_ENABLED?: string;
-  // Shared secret proving a /api/events post came from one of our own
-  // workers over a service binding, not the open internet (docs/specs/017-telemetry/telemetry.md, issue
-  // #36). Those calls carry no CF-Connecting-IP, so they all collapsed onto
-  // one 'anonymous' rate-limit key and throttled each other. Optional:
-  // unset means no caller is ever exempt, which is the pre-existing
-  // behaviour and keeps self-hosting working with no configuration.
-  INTERNAL_EVENTS_KEY?: string;
+  // The liveworkspace telemetry service (liveworkspace/docs/telemetry.md). Unset means production's,
+  // https://liveworkspace.app/api/telemetry; staging and local development name their own.
+  TELEMETRY_URL?: string;
+  // livediagram's secret on that service, sent as X-Telemetry-Key: it proves a batch with no Origin
+  // is this app's own. A secret (wrangler secret put TELEMETRY_KEY); unset sends nothing.
+  TELEMETRY_KEY?: string;
   // Resend API key for transactional + lifecycle email (docs/specs/014-identity/transactional-email.md). When absent
   // the whole email feature is inert: no sends, and the email_lifecycle table
   // is never touched. Set via `wrangler secret put RESEND_API_KEY` for prod;

@@ -11,7 +11,7 @@ import {
   SEQ_PARTICIPANTS_MIN,
   SEQ_PARTICIPANT_LABEL_MAX,
   type SequenceElementParticipant,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { lucideGlyph, SOLID_BRAND_DARK, Tooltip } from '@liveplanner/ui';
 import {
   lucideChevronLeft,

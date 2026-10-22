@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement, Tab } from '@liveplanner/document';
+import type { Element, StickyElement, Tab } from '@liveplanner/project';
 import {
   applyOverlay,
   localPreview,
@@ -64,7 +64,7 @@ function harness() {
     setFormatSourceId: vi.fn(),
     connectSourceId: null,
     connectArrowTo: vi.fn(),
-    // A drag writes the document once, on release; its per-frame writes are counted above, on the
+    // A drag writes the project once, on release; its per-frame writes are counted above, on the
     // preview.
 
     tick: (m: (els: Element[]) => Element[]) => {
@@ -80,7 +80,7 @@ function harness() {
     isPinchingRef: { current: false },
   } as unknown as EditorDragDeps;
 
-  // The board as drawn: the document with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).
+  // The board as drawn: the project with the gesture's preview over it (docs/specs/008-canvas/drag-preview.md).
   const shown = () => {
     const o = localPreview();
     return o ? applyOverlay(elements, o) : elements;

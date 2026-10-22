@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { CHANGESET_MERGE_WINDOW_MS } from '@liveplanner/api-schema';
-import { elementFingerprint, type Element, type ElementOp } from '@liveplanner/document';
+import { elementFingerprint, type Element, type ElementOp } from '@liveplanner/project';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import type { ChangesetRecord } from '../db/changesets';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 
 // The editor's whole-tab save (docs/specs/024-agents/blueprints/agent-changesets.md "The tab PUT"):
 // refused to tokens, merged with the changesets the saver had not seen, written at the revision it
@@ -29,11 +29,11 @@ function call(
   path: string,
   opts: { body?: unknown; headers?: Record<string, string>; token?: boolean } = {},
 ) {
-  return handleDocuments(
+  return handleProjects(
     makeTestRouteContext(method, path, {
       env: db.env,
       owner: OWNER,
-      clerkUserId: opts.token ? null : OWNER,
+      accountUserId: opts.token ? null : OWNER,
       verifiedUserId: OWNER,
       body: opts.body,
       headers: opts.headers,
@@ -42,9 +42,9 @@ function call(
   );
 }
 
-async function documentWith(elements: Element[], env: Partial<Env> = {}): Promise<SqliteD1> {
+async function projectWith(elements: Element[], env: Partial<Env> = {}): Promise<SqliteD1> {
   const db = sqliteD1(env);
-  const res = await call(db, 'POST', '/api/documents', {
+  const res = await call(db, 'POST', '/api/projects', {
     body: { id: 'D', name: 'Board', tabs: [{ id: 't1', name: 'Board', elements }] },
   });
   expect(res.status).toBe(201);
@@ -69,7 +69,7 @@ function recordAdd(db: SqliteD1, n: Element, createdAt = Date.now()): number {
     .run(JSON.stringify({ elements }), rev);
   const record: ChangesetRecord = {
     id: `cs_${String(rev).padStart(10, '0')}`,
-    documentId: 'D',
+    projectId: 'D',
     tabId: 't1',
     rev,
     baseRev: null,
@@ -87,7 +87,7 @@ function recordAdd(db: SqliteD1, n: Element, createdAt = Date.now()): number {
   const ops: ElementOp[] = [{ kind: 'add', element: n, at: elements.length - 1 }];
   db.sql
     .prepare(
-      `INSERT INTO agent_changesets (id, document_id, tab_id, rev, author_id, author_name,
+      `INSERT INTO agent_changesets (id, project_id, tab_id, rev, author_id, author_name,
          author_color, token_id, fingerprints, added, changed, removed, created_at)
        VALUES (?, 'D', 't1', ?, ?, 'Webber', '#0ea5e9', 'tok_1', ?, 1, 0, 0, ?)`,
     )
@@ -104,7 +104,7 @@ const save = (
   headers: Record<string, string> = {},
   extra = {},
 ) =>
-  call(db, 'PUT', '/api/documents/D/tabs/t1', {
+  call(db, 'PUT', '/api/projects/D/tabs/t1', {
     body: { id: 't1', name: 'Board', elements, ...extra },
     headers,
   });
@@ -116,7 +116,7 @@ describe('the tab PUT', () => {
   // before it: a step chip's label a number, not text, threw in settleChips and answered 500.
   it('refuses a malformed chip as an invalid tab, not a server error', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const db = await documentWith([box('a')]);
+    const db = await projectWith([box('a')]);
     const step = { ...box('s'), shape: 'step', label: 5 } as unknown as Element;
     const res = await save(db, [box('a'), step]);
     expect(res.status).toBe(400);
@@ -126,8 +126,8 @@ describe('the tab PUT', () => {
 
   it('refuses an API token with use_changesets, naming the route, before reading anything', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
-    const db = await documentWith([box('a')]);
-    const res = await call(db, 'PUT', '/api/documents/D/tabs/t1', {
+    const db = await projectWith([box('a')]);
+    const res = await call(db, 'PUT', '/api/projects/D/tabs/t1', {
       body: { id: 't1', name: 'Board', elements: [] },
       token: true,
     });
@@ -135,11 +135,11 @@ describe('the tab PUT', () => {
     expect(await res.json()).toEqual({
       error: 'use_changesets',
       message:
-        'Agents and scripts write tabs with changesets: POST /api/documents/D/tabs/t1/changesets',
+        'Agents and scripts write tabs with changesets: POST /api/projects/D/tabs/t1/changesets',
     });
     expect(stored(db).map((e) => e.id)).toEqual(['a']);
     expect(info).toHaveBeenCalledWith('[changeset] whole-tab-refused', {
-      documentId: 'D',
+      projectId: 'D',
       tabId: 't1',
       tokenId: 'tok_1',
     });
@@ -148,15 +148,15 @@ describe('the tab PUT', () => {
   // docs/specs/024-agents/agent-changesets.md: a workbench session is a person's editor, not a token, so its
   // whole-tab save goes through as the owner's own.
   it('saves a workbench session tab as a person editor would', async () => {
-    const db = await documentWith([box('a')]);
-    const res = await handleDocuments(
-      makeTestRouteContext('PUT', '/api/documents/D/tabs/t1', {
+    const db = await projectWith([box('a')]);
+    const res = await handleProjects(
+      makeTestRouteContext('PUT', '/api/projects/D/tabs/t1', {
         env: db.env,
         owner: OWNER,
-        clerkUserId: null,
+        accountUserId: null,
         verifiedUserId: OWNER,
         token: null,
-        workbench: { sessionId: 's', ownerId: OWNER, documentId: 'D' } as never,
+        workbench: { sessionId: 's', ownerId: OWNER, projectId: 'D' } as never,
         body: { id: 't1', name: 'Board', elements: [box('a'), box('b')] },
       }),
     );
@@ -166,28 +166,28 @@ describe('the tab PUT', () => {
 
   it('answers the new revision and strips record fields from the body', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
-    const db = await documentWith([box('a')]);
+    const db = await projectWith([box('a')]);
     const res = await save(
       db,
       [box('a', 'b')],
       {},
-      { rev: 99, documentId: 'X', orderIndex: 7, updatedAt: 1 },
+      { rev: 99, projectId: 'X', orderIndex: 7, updatedAt: 1 },
     );
     expect(res.status).toBe(200);
     const { tab } = (await res.json()) as {
-      tab: { rev: number; documentId: string; orderIndex: number };
+      tab: { rev: number; projectId: string; orderIndex: number };
     };
-    expect(tab).toMatchObject({ rev: 2, documentId: 'D', orderIndex: 0 });
+    expect(tab).toMatchObject({ rev: 2, projectId: 'D', orderIndex: 0 });
     const data: unknown = JSON.parse(
       db.sql.prepare("SELECT data FROM tabs WHERE id = 't1'").get()!.data as string,
     );
     expect(data).not.toHaveProperty('rev');
-    expect(data).not.toHaveProperty('documentId');
+    expect(data).not.toHaveProperty('projectId');
   });
 
   it('merges a changeset the saver had not seen, and logs it', async () => {
     const info = vi.spyOn(console, 'info').mockImplementation(() => {});
-    const db = await documentWith([box('a')]);
+    const db = await projectWith([box('a')]);
     const seen = revOf(db);
     recordAdd(db, box('n'));
     const res = await save(db, [box('a', 'edited')], { 'X-Changeset-Seen': String(seen) });
@@ -198,13 +198,13 @@ describe('the tab PUT', () => {
     ]);
     expect(info).toHaveBeenCalledWith(
       '[changeset] merged-on-save',
-      expect.objectContaining({ documentId: 'D', tabId: 't1', elements: 1 }),
+      expect.objectContaining({ projectId: 'D', tabId: 't1', elements: 1 }),
     );
   });
 
   it('merges nothing the saver has already seen', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
-    const db = await documentWith([box('a')]);
+    const db = await projectWith([box('a')]);
     const rev = recordAdd(db, box('n'));
     await save(db, [box('a')], { 'X-Changeset-Seen': String(rev) });
     expect(stored(db).map((e) => e.id)).toEqual(['a']);
@@ -212,7 +212,7 @@ describe('the tab PUT', () => {
 
   it('without the header (an older editor), merges the last 10 minutes only', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
-    const db = await documentWith([box('a')]);
+    const db = await projectWith([box('a')]);
     recordAdd(db, box('old'), Date.now() - CHANGESET_MERGE_WINDOW_MS - 1000);
     recordAdd(db, box('recent'));
     await save(db, [box('a')]);
@@ -222,7 +222,7 @@ describe('the tab PUT', () => {
   it('reads an unparsable header as absent, and logs it', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const db = await documentWith([box('a')]);
+    const db = await projectWith([box('a')]);
     recordAdd(db, box('recent'));
     await save(db, [box('a')], { 'X-Changeset-Seen': 'soon' });
     expect(stored(db).map((e) => e.id)).toEqual(['a', 'recent']);
@@ -235,7 +235,7 @@ describe('the tab PUT', () => {
   it('repeats a lost race once, merging what won, then answers tab_busy', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const db = await documentWith([box('a')]);
+    const db = await projectWith([box('a')]);
     const seen = String(revOf(db));
     // A changeset lands between the save's read and its write, once.
     const batch = db.env.DB.batch.bind(db.env.DB);
@@ -258,19 +258,19 @@ describe('the tab PUT', () => {
 describe('the tab read', () => {
   it('carries the revision in the body and as a weak ETag', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
-    const db = await documentWith([box('a')]);
+    const db = await projectWith([box('a')]);
     await save(db, [box('a', 'b')]);
-    const res = await call(db, 'GET', '/api/documents/D/tabs/t1');
+    const res = await call(db, 'GET', '/api/projects/D/tabs/t1');
     expect(res.headers.get('ETag')).toBe('W/"2"');
     expect((await res.json<{ tab: { rev: number } }>()).tab.rev).toBe(2);
   });
 });
 
-// A save upserts by tab id: an id that names another document's tab is refused, never overwritten or adopted.
-// A share link makes tab ids visible (its document lists them), so this is what keeps a shared board safe.
+// A save upserts by tab id: an id that names another project's tab is refused, never overwritten or adopted.
+// A share link makes tab ids visible (its project lists them), so this is what keeps a shared board safe.
 describe("someone else's tab id", () => {
-  it('is refused, leaving the tab and its document as they were', async () => {
-    const db = await documentWith([box('a', 'Original')]);
+  it('is refused, leaving the tab and its project as they were', async () => {
+    const db = await projectWith([box('a', 'Original')]);
     // A tab at rev 0, as a tab never revised is: the revision trigger alone
     // would let an overwrite through.
     db.sql
@@ -278,26 +278,26 @@ describe("someone else's tab id", () => {
       .run(JSON.stringify({ elements: [box('v', 'Original')] }));
     db.sql
       .prepare(
-        "INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('D', 'old', 1, 1)",
+        "INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('D', 'old', 1, 1)",
       )
       .run();
     const attacker = (method: string, path: string, body?: unknown) =>
-      handleDocuments(
+      handleProjects(
         makeTestRouteContext(method, path, {
           env: db.env,
           owner: 'user_attacker',
-          clerkUserId: 'user_attacker',
+          accountUserId: 'user_attacker',
           verifiedUserId: 'user_attacker',
           body,
         }),
       );
-    const own = await attacker('POST', '/api/documents', {
+    const own = await attacker('POST', '/api/projects', {
       id: 'E',
       name: 'Mine',
       tabs: [{ id: 'e1', name: 'Mine', elements: [] }],
     });
     expect(own.status).toBe(201);
-    const res = await attacker('PUT', '/api/documents/E/tabs/old', {
+    const res = await attacker('PUT', '/api/projects/E/tabs/old', {
       id: 'old',
       name: 'Taken',
       elements: [box('x', 'Overwritten')],
@@ -309,17 +309,17 @@ describe("someone else's tab id", () => {
     ) as { elements: { label?: string }[] };
     expect(oldData.elements.map((e) => e.label)).toEqual(['Original']);
     expect(
-      db.sql.prepare("SELECT document_id FROM document_tabs WHERE tab_id = 'old'").all(),
-    ).toEqual([{ document_id: 'D' }]);
+      db.sql.prepare("SELECT project_id FROM project_tabs WHERE tab_id = 'old'").all(),
+    ).toEqual([{ project_id: 'D' }]);
   });
 
   it('still saves a brand new tab, and the owner keeps saving their own', async () => {
-    const db = await documentWith([box('a')]);
-    const fresh = await call(db, 'PUT', '/api/documents/D/tabs/t2', {
+    const db = await projectWith([box('a')]);
+    const fresh = await call(db, 'PUT', '/api/projects/D/tabs/t2', {
       body: { id: 't2', name: 'Second', elements: [box('b')] },
     });
     expect(fresh.status).toBeLessThan(300);
-    const again = await call(db, 'PUT', '/api/documents/D/tabs/t1', {
+    const again = await call(db, 'PUT', '/api/projects/D/tabs/t1', {
       body: { id: 't1', name: 'Board', elements: [box('a', 'Edited')] },
     });
     expect(again.status).toBeLessThan(300);

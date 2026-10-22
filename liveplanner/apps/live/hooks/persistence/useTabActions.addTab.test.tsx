@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { useTabActions } from './useTabActions';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

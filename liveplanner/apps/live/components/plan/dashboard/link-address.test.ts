@@ -50,6 +50,6 @@ describe('linkDetail', () => {
     );
     expect(linkDetail({ id: '1', label: 'Team', url: 'mailto:a@b.co' })).toBe('a@b.co');
     expect(linkDetail({ id: '1', label: '', url: 'mailto:a@b.co' })).toBe('Email');
-    expect(linkDetail({ id: '1', label: '', tabId: 'a' })).toBe('Tab in this document');
+    expect(linkDetail({ id: '1', label: '', tabId: 'a' })).toBe('Tab in this project');
   });
 });

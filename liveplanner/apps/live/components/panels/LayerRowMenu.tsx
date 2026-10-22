@@ -1,7 +1,7 @@
 'use client';
 
 import { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@liveplanner/document';
+import { isLayerLocked, isLayerVisible, layerOpacityOf, type Layer } from '@liveplanner/project';
 import {
   BringToTopIcon,
   ClearIcon,
@@ -50,7 +50,7 @@ export function layerMenuPosition(
   return { left, top: Math.max(MENU_GAP, top) };
 }
 
-// Right-click menu for a Layers-panel row (docs/specs/006-document/layers.md "Row context menu"):
+// Right-click menu for a Layers-panel row (docs/specs/006-project/layers.md "Row context menu"):
 // a header naming the layer, the opacity slider, then every verb as a plain row, grouped by
 // separators. Nothing hides behind a category: the old accordion menu took two clicks to reach
 // anything. Anchored to the LEFT of the panel so it never covers the rows it acts on. Destructive

@@ -1,13 +1,14 @@
 // The shared browser telemetry engine (docs/specs/017-telemetry/telemetry.md), extracted from the
 // duplicated emitters in apps/live and apps/help: three-field
-// {category, action, type} events buffered and flushed — batched — to
-// POST <apiBase>/events on a short timer and on page-hide (via
-// navigator.sendBeacon). Strictly fire-and-forget: every failure is
+// {category, action, type} events buffered and flushed — batched — to the
+// liveworkspace telemetry service (liveworkspace/docs/telemetry.md), POST
+// <url>/api/events, on a short timer and on page-hide (via
+// navigator.sendBeacon). Each batch names its app, 'livediagram.app'. Strictly fire-and-forget: every failure is
 // swallowed, because telemetry must never affect the host app.
 //
 // Privacy (docs/specs/017-telemetry/telemetry.md): only the closed-vocabulary {category, action,
 // type} ever leaves the browser. NEVER pass user-generated content
-// (names, element text, ids, share codes) as `type` — the api worker
+// (names, element text, ids, share codes) as `type` — the service
 // also rejects anything outside the allowed vocabulary, but the rule
 // starts at the call sites. No identity is sent.
 //
@@ -28,6 +29,12 @@ import {
   type TelemetryCategory,
   type TelemetryEvent,
 } from '@livediagram/api-schema';
+import {
+  TELEMETRY_EVENTS_PATH,
+  TELEMETRY_URL,
+  type TelemetryApp,
+  type TelemetryBatch,
+} from '@liveworkspace/telemetry';
 
 export { onPageHide } from './page-hide';
 export * from './timing';
@@ -86,16 +93,22 @@ export type TelemetryEmitter = {
   track: (category: TelemetryCategory, action: TelemetryAction, type?: string) => void;
 };
 
+// This product's name on the central service.
+export const TELEMETRY_APP: TelemetryApp = 'livediagram.app';
+
 export function createTelemetryEmitter(opts: {
-  // POST target base, e.g. '/api' — events go to `${apiBase}/events`.
-  apiBase: string;
+  // The telemetry service, e.g. 'https://liveworkspace.app/api/telemetry': events go to
+  // `${url}/api/events`.
+  url: string;
+  // Which app the batch counts for on the shared dashboard.
+  app: TelemetryApp;
   // Build-time kill switch: false makes track() a permanent no-op.
   enabled: boolean;
   // Per-user opt-out (docs/specs/007-editor/user-preferences.md), consulted on every track() call. The
   // caller owns caching / invalidation if the read is hot.
   isOptedIn: () => boolean;
 }): TelemetryEmitter {
-  const { apiBase, enabled, isOptedIn } = opts;
+  const { url: serviceUrl, app, enabled, isOptedIn } = opts;
 
   let buffer: TelemetryEvent[] = [];
   // Events from exactly one failed flush, waiting for one more attempt.
@@ -148,8 +161,11 @@ export function createTelemetryEmitter(opts: {
       clearTimeout(flushTimer);
       flushTimer = null;
     }
-    const url = `${apiBase}/events`;
-    const body = JSON.stringify({ events });
+    const url = `${serviceUrl}${TELEMETRY_EVENTS_PATH}`;
+    const batch: TelemetryBatch = { app, events };
+    // text/plain: the service is cross-site, and a plain-text POST without credentials is a CORS
+    // "simple request", so it needs no preflight and carries no cookies.
+    const body = JSON.stringify(batch);
     try {
       if (
         useBeacon &&
@@ -161,10 +177,10 @@ export function createTelemetryEmitter(opts: {
         // keepalive fetch instead, which is the same "outlive the page"
         // guarantee by another route. No requeue on this path either way —
         // we're unloading, so there's no later to retry in.
-        // A beacon that throws (a browser refusing the Blob's type for a cross-origin api) falls
-        // through to the fetch too, rather than losing the batch to the catch below.
+        // A beacon that throws falls through to the fetch too, rather than losing the batch to the
+        // catch below.
         try {
-          if (navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }))) return;
+          if (navigator.sendBeacon(url, new Blob([body], { type: 'text/plain' }))) return;
         } catch {
           // Fall through to the keepalive fetch.
         }
@@ -173,9 +189,10 @@ export function createTelemetryEmitter(opts: {
       // beacon would, for the timer-driven flush path.
       void fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body,
         keepalive: true,
+        credentials: 'omit',
       }).catch(() => {
         // Only on a REJECTION — a network failure, where the request never
         // got a response. A non-2xx is deliberately not retried: the server
@@ -235,7 +252,8 @@ export function createTelemetryEmitter(opts: {
  * that never tracks never builds one.
  */
 export function createLazyTrack(opts: {
-  apiBase: string;
+  url: string;
+  app: TelemetryApp;
   enabled: boolean;
 }): TelemetryEmitter['track'] {
   let emitter: TelemetryEmitter | null = null;
@@ -250,6 +268,11 @@ export function createLazyTrack(opts: {
 // Declared locally because this package doesn't pull in Node's types.
 declare const process: { env: Record<string, string | undefined> };
 
+/** The service this build sends to: NEXT_PUBLIC_TELEMETRY_URL (local development, staging), else production's. */
+export function telemetryServiceUrl(): string {
+  return process.env.NEXT_PUBLIC_TELEMETRY_URL || TELEMETRY_URL;
+}
+
 /**
  * The public sites' one track() (help centre, marketing, the dashboard): a
  * lazy emitter with the shared policy, i.e. the build-time
@@ -258,10 +281,11 @@ declare const process: { env: Record<string, string | undefined> };
  * it, and a module singleton so a page that emits from several places (help's
  * page views, article views and errors) runs one buffer, not several. The
  * editor keeps its own emitter: it caches the opt-out behind its preference
- * events and targets its configured api base.
+ * events.
  */
 export const siteTrack: TelemetryEmitter['track'] = createLazyTrack({
-  apiBase: process.env.NEXT_PUBLIC_API_BASE ?? '/api',
+  url: telemetryServiceUrl(),
+  app: TELEMETRY_APP,
   enabled: process.env.NEXT_PUBLIC_TELEMETRY_ENABLED === 'true',
 });
 

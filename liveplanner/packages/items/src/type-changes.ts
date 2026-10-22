@@ -1,5 +1,5 @@
 // Changing card types by name (docs/specs/026-plan/plan-agents.md "Changing card types"): an agent's add, set,
-// delete and restore changes applied in order to a document's catalogue, the way the type editor makes them. The
+// delete and restore changes applied in order to a project's catalogue, the way the type editor makes them. The
 // whole result is checked by validateItemTypeCatalogue before anything is saved; any refusal saves nothing.
 import { withArticle } from './indefinite-article';
 import { HEX_COLOUR } from './validate';
@@ -109,7 +109,7 @@ export type CardTypeChange =
       excludedStatuses?: readonly string[];
     } & FaceInput)
   | { op: 'delete'; type: string }
-  // Any of the five default types the document lacks, after its types (docs/specs/026-plan/plan-agents.md); its
+  // Any of the five default types the project lacks, after its types (docs/specs/026-plan/plan-agents.md); its
   // older name, `restore_built_ins`, does the same.
   | { op: 'add_default_types' }
   | { op: 'restore_built_ins' };
@@ -120,7 +120,7 @@ type TypeChangeRefusal =
 type TypeChangesResult =
   | {
       ok: true;
-      // The catalogue to store: null leaves the document's card types not chosen (none).
+      // The catalogue to store: null leaves the project's card types not chosen (none).
       catalogue: ItemTypeCatalogue | null;
       // One line per change applied.
       applied: string[];
@@ -477,7 +477,7 @@ export function applyCardTypeChanges(
       code: 'type_change_invalid',
       message: `The card types would break a rule (${checked.reason}); nothing was saved.`,
     };
-  // A document whose card types are not chosen, left with none: nothing to store.
+  // A project whose card types are not chosen, left with none: nothing to store.
   const none = stored == null && types.length === 0;
   return { ok: true, catalogue: none ? null : checked.catalogue, applied, deleted };
 }

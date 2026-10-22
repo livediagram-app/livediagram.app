@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 import type { Item, ItemWrite } from '@liveplanner/items';
 import { readLeftover, writeLeftover } from '@/lib/plan-tour';
 import { LEFTOVER_SHEET_RETRY_MS, usePlanTourLeftovers } from './usePlanTourLeftovers';
 
-// What an older Plan tour cut short left behind, swept on the next visit to that document with no history.
+// What an older Plan tour cut short left behind, swept on the next visit to that project with no history.
 
 const debugLog = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/debug-log', () => ({ debugLog }));
@@ -23,7 +23,7 @@ function setup(over: { status?: 'loading' | 'ready'; attached?: boolean } = {}) 
     return true;
   });
   const props = {
-    documentId: 'doc1' as string | null,
+    projectId: 'doc1' as string | null,
     hydrated: true,
     tickTabs,
     planItems: { items, status: over.status ?? 'ready', writeQuiet },
@@ -37,23 +37,23 @@ beforeEach(() => localStorage.clear());
 afterEach(() => vi.clearAllMocks());
 
 describe('usePlanTourLeftovers', () => {
-  it("sweeps a cut-short tour's board and cards on the next visit to that document", () => {
-    writeLeftover({ documentId: 'doc1', elementId: 'old-board', itemIds: ['gone'] });
+  it("sweeps a cut-short tour's board and cards on the next visit to that project", () => {
+    writeLeftover({ projectId: 'doc1', elementId: 'old-board', itemIds: ['gone'] });
     const t = setup();
     expect(t.tabs()[0]!.elements).toEqual([]);
     expect(readLeftover()).toBeNull();
     expect(debugLog).toHaveBeenCalledWith('[plan-tour] content.swept', { items: 0 });
   });
 
-  it("leaves another document's leftovers alone, and does nothing with none", () => {
-    writeLeftover({ documentId: 'other', elementId: 'b', itemIds: [] });
+  it("leaves another project's leftovers alone, and does nothing with none", () => {
+    writeLeftover({ projectId: 'other', elementId: 'b', itemIds: [] });
     const t = setup();
     expect(t.tickTabs).not.toHaveBeenCalled();
     expect(readLeftover()).not.toBeNull();
   });
 
   it('sweeps the board at once and the cards once the items load', () => {
-    writeLeftover({ documentId: 'doc1', elementId: 'old-board', itemIds: ['old1'] });
+    writeLeftover({ projectId: 'doc1', elementId: 'old-board', itemIds: ['old1'] });
     const t = setup({ status: 'loading' });
     expect(t.tickTabs).toHaveBeenCalledTimes(1);
     expect(readLeftover()).not.toBeNull();
@@ -65,7 +65,7 @@ describe('usePlanTourLeftovers', () => {
   });
 
   it("sweeps a sheet tour's sheet with its element", () => {
-    writeLeftover({ documentId: 'doc1', elementId: 'old-board', sheetId: 's1', itemIds: [] });
+    writeLeftover({ projectId: 'doc1', elementId: 'old-board', sheetId: 's1', itemIds: [] });
     const t = setup();
     expect(t.props.releaseSheets).toHaveBeenCalledWith(['s1']);
     expect(t.tabs()[0]!.elements).toEqual([]);
@@ -76,7 +76,7 @@ describe('usePlanTourLeftovers', () => {
     vi.useFakeTimers();
     try {
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-      writeLeftover({ documentId: 'doc1', elementId: 'old-board', sheetId: 's1', itemIds: [] });
+      writeLeftover({ projectId: 'doc1', elementId: 'old-board', sheetId: 's1', itemIds: [] });
       const t = setup({ attached: false });
       expect(t.props.releaseSheets).toHaveBeenCalledWith(['s1']);
       expect(warn).toHaveBeenCalledWith('[plan-tour] content.failed', { step: 'sheet' });

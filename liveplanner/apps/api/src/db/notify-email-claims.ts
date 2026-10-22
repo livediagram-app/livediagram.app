@@ -6,7 +6,7 @@
 import type { Env } from '../types';
 
 export type NotifyEmailClaim = {
-  // A hash naming the email: its kind, sender, document, recipient and text.
+  // A hash naming the email: its kind, sender, project, recipient and text.
   key: string;
   senderId: string;
   now: number;

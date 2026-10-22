@@ -1,0 +1,80 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { AutoLayoutTidy } from '@/components/illustrations/tools';
+import { SearchCommandPalette } from '@/components/illustrations/search-panel';
+
+export const metadata = helpMetadata({
+  title: 'Auto Layout',
+  description:
+    "Recompute connected shapes' positions from the arrows with Auto Layout, in your choice of style: smart layers, a directed flowchart, a tree, or a mindmap.",
+  path: '/help/tools/layout-cleanup/auto-layout/',
+});
+
+<ArticleLayout title="Auto Layout" description="Let livedocuments compute the layout for you from the connections between shapes." categoryTitle="Tools" categorySlug="tools" parentArticle={{ title: "Layout Cleanup", slug: "layout-cleanup" }} subArticles={getSubArticles("layout-cleanup").filter((a) => a.slug !== "auto-layout")}>
+
+Auto Layout is the structural tidier (the command palette calls it "Auto Layout (tidy up)"). Rather than nudging the positions you already have, it reads the arrow graph, works out how shapes connect, and computes brand-new positions, arranging connected shapes into clean layers. Unlike Auto-Align, it can legitimately move an element a long way to give your shapes a proper layout.
+
+<Figure caption="Auto Layout reads the arrow graph and re-lays tangled shapes into clean, ordered layers.">
+  <AutoLayoutTidy />
+</Figure>
+
+## What it does
+
+- It reads the **arrow graph**, splits it into connected groups, and lays out each group, using a layered arrangement for flow-like groups and breaking cycles where the graph loops back on itself.
+- It keeps connections **readable**: each shape settles beside the shapes it connects to, an arrow that skips a level gets its own lane instead of running through the shape in between, and arrows leave and arrive on the sides facing the flow.
+- It **reads the way you drew it.** The direction comes from your arrows: one that lands on the top of a shape runs down the flow, one that lands on its side runs across. Loops break where your drawing turns back, so a "Try again" arrow climbs back up rather than a step of the main path.
+- It **lays out decisions the flowchart way.** When a decision has one answer drawn straight below it, that answer continues the column and the other answers step out beside the decision, level with it. A decision whose answers both sit below stays a tree, and a decision's answer to one side leaves by that side's point.
+- It works on the **whole active tab**. Shapes that aren't wired to anything (loose stickies, text, or images) pass through with their positions untouched, and spacing respects each element's size.
+- It **keeps your shapes as you drew them**: same sizes, same proportions.
+- It **routes every arrow square and around the shapes**: straight where two shapes line up, otherwise with right-angled bends through the gaps, and a loop runs back up outside the column it returns to. A dashed or dotted arrow is routed too, but it doesn't change where shapes go (a dotted-line report doesn't move anyone).
+- It **keeps things together.** A badge, chip or caption sitting on a shape moves with that shape.
+- It **stays clear of everything else.** The first shape of the flow stays where it is and the layout grows from it, then steps clear of the title and anything else it doesn't move. Arrows route around those too.
+- It leaves **locked elements where they are**: a [locked element](/help/canvas/locking/) is not moved or resized, and the layout keeps clear of it. Unlock it first if you want it included.
+- It lands every shape's **centre on the grid**, so shapes that share a line keep sharing it, and a second press changes nothing.
+
+## Layout styles
+
+One arrangement doesn't fit every set of shapes, so alongside the smart default there is a style for each, each a command in the palette. All of them read the same arrow graph and differ only in the shape of the result:
+
+- **Auto Layout (tidy up)** (the smart default): a layered arrangement with the direction inferred from where your shapes roughly sit now.
+- **Auto Layout: Flowchart (down)** and **Auto Layout: Flowchart (right)**: the same layered arrangement, but with the direction forced top-to-bottom or left-to-right, whatever your current positions suggest.
+- **Auto Layout: Tree**: an org-chart arrangement. Roots sit at the top and every parent is centred over its own children, so hierarchies read cleanly level by level.
+- **Auto Layout: Mindmap**: a radial arrangement. The most-connected shape becomes the hub in the centre and its branches fan out around it, with each level on a wider ring.
+
+If your shapes aren't a perfect tree (a shape with two parents), Tree still works: it lays out the main skeleton and reconnects the extra arrows across it. Mindmap is for ideas that branch out from a centre, so it does nothing when your arrows loop back on themselves.
+
+## When a style isn't offered
+
+Every style is tried before it runs. If it wouldn't help, nothing moves and a short notice says why: it would change nothing because the tab is already tidy, it would cover a shape, or (for Mindmap) your arrows loop rather than branch from a centre.
+
+## Running it
+
+<Step n={1}>
+  Open the [command palette](/help/search-panel/the-search-panel/command-palette/) (⌘K / Ctrl+K) and
+  type **Auto Layout**.
+</Step>
+
+<Step n={2}>Choose **Auto Layout (tidy up)** or one of the styles under **Actions**.</Step>
+
+<Step n={3}>The whole tab is laid out anew in a single undoable step.</Step>
+
+<Figure caption="Typing layout in the command palette lists Auto Layout and its styles under Actions.">
+  <SearchCommandPalette />
+</Figure>
+
+Because it's one undoable operation, you can try a style and undo it in a single step (⌘Z / Ctrl+Z) if you preferred the previous arrangement, so it costs nothing to try two or three and keep the one that reads best.
+
+## When to use it
+
+Reach for Auto Layout when a set of connected shapes has grown organically and lost its shape, or when shapes were placed without much thought and you want the connections to drive the layout. If the tab already looks right and only needs its drift cleaned up, use Auto-Align instead.
+
+Auto Layout needs edit access and leaves a [locked tab](/help/tabs/locking-tabs/) alone, so unlock the tab first.
+
+<Note>
+  Auto Layout is deterministic and works offline, available in every deployment. It is separate from
+  the AI [Clean](/help/tools/ai/ai-tools/) mode, which is optional and only exists where an AI
+  provider is configured.
+</Note>
+
+</ArticleLayout>

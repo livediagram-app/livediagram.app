@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { freshBoardSetup } from '@liveplanner/items';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { placedSheetTitle } from '@/lib/sheet-seeds';
 import { usePlanTabActions, withSlotContent, dashboardOf } from './usePlanTabActions';
 import { newSlotTab, withLookOf } from './slot-elements';

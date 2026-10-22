@@ -1,0 +1,54 @@
+name = "liveworkspace-telemetry"
+# The liveworkspace Cloudflare account, so a deploy can never land on another one.
+account_id = "851be7d244b76a6557bcbe6c4ded80f5"
+main = "src/index.ts"
+compatibility_date = "2026-05-29"
+# Only its API, /api/telemetry, on liveworkspace.app: every page, the dashboard at /telemetry
+# included, is the static site's (apps/site), and /api/auth/* the accounts Worker's.
+routes = [{ pattern = "liveworkspace.app/api/telemetry*", zone_name = "liveworkspace.app" }]
+
+# Secrets (wrangler secret put): each app's Worker key, sent as X-Telemetry-Key.
+#   TELEMETRY_KEY_LIVEDIAGRAM   shared with livediagram's api and mcp Workers as TELEMETRY_KEY
+#   TELEMETRY_KEY_LIVEPLANNER   shared with liveplanner's api and mcp Workers as TELEMETRY_KEY
+[vars]
+ENVIRONMENT = "production"
+TELEMETRY_ENABLED = "true"
+
+# Its own database, apart from accounts and from every app's own data.
+[[d1_databases]]
+binding = "TELEMETRY_DB"
+database_name = "liveworkspace-telemetry"
+database_id = "578223b0-96db-48ef-a509-ae475ef80dc9"
+migrations_dir = "migrations"
+
+# Per-network budget for browser batches: counted at Cloudflare's edge, so it holds across isolates.
+[[ratelimits]]
+name = "EVENTS_RATE_LIMITER"
+namespace_id = "1101"
+simple = { limit = 120, period = 60 }
+
+# Retention: once a day, drop what is older than 60 days.
+[triggers]
+crons = ["17 3 * * *"]
+
+[env.staging]
+name = "liveworkspace-telemetry-staging"
+routes = [{ pattern = "staging.liveworkspace.app/api/telemetry*", zone_name = "liveworkspace.app" }]
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+TELEMETRY_ENABLED = "true"
+
+[[env.staging.d1_databases]]
+binding = "TELEMETRY_DB"
+database_name = "liveworkspace-telemetry-staging"
+database_id = "3c6fef93-5e71-4094-a7ce-bbcf4a692b1d"
+migrations_dir = "migrations"
+
+[[env.staging.ratelimits]]
+name = "EVENTS_RATE_LIMITER"
+namespace_id = "2101"
+simple = { limit = 120, period = 60 }
+
+[env.staging.triggers]
+crons = ["17 3 * * *"]

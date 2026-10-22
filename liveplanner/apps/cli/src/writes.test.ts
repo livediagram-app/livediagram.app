@@ -5,7 +5,7 @@ import { run } from './main';
 import { capabilities, fakeIo, NOW, TOKEN, type Route } from './testing/fake-io';
 
 const DOC = 'aaaa1111-0000-4000-8000-000000000001';
-const TAB = `/api/documents/${DOC}/tabs/main`;
+const TAB = `/api/projects/${DOC}/tabs/main`;
 const tabV = (rev: number, labels: string[]) => ({
   tab: {
     id: 'main',
@@ -24,18 +24,18 @@ const tabV = (rev: number, labels: string[]) => ({
   rev,
 });
 
-// A one-document host whose tab moves on with each write; `refuse` answers the next writes instead.
+// A one-project host whose tab moves on with each write; `refuse` answers the next writes instead.
 function host(options: { refuse?: () => Response | undefined } = {}) {
   const state = { current: tabV(5, ['A']), requests: [] as ChangesetRequest[] };
   const route: Route = async (request, url) => {
-    if (url.pathname === '/api/documents')
+    if (url.pathname === '/api/projects')
       return Response.json({
-        documents: [{ id: DOC, name: 'Auth flow', savedAt: NOW, ownerId: 'u' }],
+        projects: [{ id: DOC, name: 'Auth flow', savedAt: NOW, ownerId: 'u' }],
       });
     if (url.pathname === '/api/teams') return Response.json({ teams: [] });
-    if (url.pathname === `/api/documents/${DOC}`)
+    if (url.pathname === `/api/projects/${DOC}`)
       return Response.json({
-        document: {
+        project: {
           id: DOC,
           name: 'Auth flow',
           tabs: [{ id: 'main', name: 'Main', orderIndex: 0 }],
@@ -67,10 +67,9 @@ function host(options: { refuse?: () => Response | undefined } = {}) {
           : { id: 'cs_1', tabId: 'main', rev: state.current.rev, previousRev, rebasedOver: 0 },
         results: [],
         text: dryRun
-          ? 'dry run · rev 5 · lint clean · nothing written'
-          : `+ n2  square "B"\nrev ${previousRev}→${state.current.rev} · cs_1 · lint clean · revert: liveplanner changeset revert ${DOC} cs_1`,
+          ? 'dry run · rev 5 · nothing written'
+          : `+ n2  square "B"\nrev ${previousRev}→${state.current.rev} · cs_1 · revert: liveplanner changeset revert ${DOC} cs_1`,
         warnings: state.requests.at(-1)!.base ? [] : ['no_base'],
-        lint: null,
       });
     }
     return undefined;
@@ -90,22 +89,22 @@ async function cli(io: ReturnType<typeof fakeIo>, argv: string[]) {
 describe('writing from the CLI', () => {
   it("bases an edit on the tab it last viewed, prints the api's lines, and moves its copy on", async () => {
     const { state, route } = host();
-    const io = session(route, { files: { '/work/ops.txt': 'add square label=B\n' } });
+    const io = session(route, { files: { '/work/ops.txt': 'set n1 label=B\n' } });
     await cli(io, ['tab', 'view', 'Auth flow']);
     const edit = await cli(io, ['edit', 'Auth flow', '-f', 'ops.txt', '--summary', 'Add B']);
     expect(edit).toEqual({
       code: 0,
-      out: `+ n2  square "B"\nrev 5→6 · cs_1 · lint clean · revert: liveplanner changeset revert ${DOC} cs_1\n`,
+      out: `+ n2  square "B"\nrev 5→6 · cs_1 · revert: liveplanner changeset revert ${DOC} cs_1\n`,
       err: '',
     });
     expect(state.requests[0]).toMatchObject({
-      operations: 'add square label=B\n',
+      operations: 'set n1 label=B\n',
       summary: 'Add B',
       base: { rev: 5 },
     });
-    await cli(io, ['element', 'connect', 'Auth flow', 'n1', 'n2', 'label=calls it']);
+    await cli(io, ['element', 'set', 'Auth flow', 'n1', 'n2', 'label=calls it', 'all']);
     expect(state.requests[1]).toMatchObject({
-      operations: 'connect n1 -> n2 label="calls it"',
+      operations: 'set n1 n2 label="calls it" all',
       base: { rev: 6 },
     });
     expect(Object.keys(state.requests[1]!.base!.elements!)).toEqual(['n1', 'n2']);
@@ -116,7 +115,7 @@ describe('writing from the CLI', () => {
     const io = session(route, { stdin: 'rm n1' });
     expect(await cli(io, ['edit', 'Auth flow', '-f', '-', '--dry-run'])).toEqual({
       code: 0,
-      out: 'dry run · rev 5 · lint clean · nothing written\n',
+      out: 'dry run · rev 5 · nothing written\n',
       err: 'warning: no_base\n',
     });
   });
@@ -169,7 +168,7 @@ describe('writing from the CLI', () => {
     const { route } = host();
     const io = session(route);
     await cli(io, ['tab', 'view', 'Auth flow']);
-    await cli(io, ['element', 'add', 'Auth flow', 'square', 'label=B']);
+    await cli(io, ['element', 'set', 'Auth flow', 'n1', 'label=B']);
     const diff = await cli(io, ['tab', 'diff', 'Auth flow', '--since', '5']);
     expect(diff.code).toBe(0);
     expect(diff.out).toContain('"B"');
@@ -177,10 +176,10 @@ describe('writing from the CLI', () => {
 });
 
 describe('creating from the CLI', () => {
-  it("creates a document from a file with a fresh id, as the CLI's", async () => {
+  it("creates a project from a file with a fresh id, as the CLI's", async () => {
     const posted: unknown[] = [];
     const create: Route = async (request, url) => {
-      if (url.pathname !== '/api/documents' || request.method !== 'POST') return undefined;
+      if (url.pathname !== '/api/projects' || request.method !== 'POST') return undefined;
       const body = JSON.parse(await request.text()) as {
         id: string;
         name: string;
@@ -188,12 +187,12 @@ describe('creating from the CLI', () => {
       };
       posted.push(body);
       return Response.json(
-        { document: { id: body.id, name: body.name, tabs: body.tabs } },
+        { project: { id: body.id, name: body.name, tabs: body.tabs } },
         { status: 201 },
       );
     };
     const io = session(create, { files: { '/work/tab.json': '[]' } });
-    const result = await cli(io, ['document', 'create', 'Shop', '-f', 'tab.json']);
+    const result = await cli(io, ['project', 'create', 'Shop', '-f', 'tab.json']);
     expect(result.code).toBe(0);
     const [body] = posted as {
       id: string;
@@ -207,7 +206,7 @@ describe('creating from the CLI', () => {
       tabs: [{ name: 'Shop', elements: [] }],
     });
     expect(result.out).toBe(
-      `+ document ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://liveplanner.app/document/${body!.id}\n`,
+      `+ project ${body!.id.slice(0, 8)} "Shop" · 1 tab · https://liveplanner.app/project/${body!.id}\n`,
     );
   });
 });

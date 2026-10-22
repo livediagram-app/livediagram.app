@@ -44,7 +44,7 @@ sets them.
   the history-traversal cache. The cost is the back/forward cache (bfcache), which restores a whole
   live page instantly:
   - **Chrome** has, since the spring of 2025, kept `no-store` pages in bfcache when that is safe:
-    it evicts them on a cookie change (signing in or out, Clerk's session refresh), on a `no-store`
+    it evicts them on a cookie change (signing in or out, a token refresh rotating the refresh cookie), on a `no-store`
     fetch response, and after three minutes instead of ten. So a Chrome user mostly keeps bfcache.
   - **Firefox and Safari** may still refuse bfcache for a `no-store` page; there, back reloads the
     page from the network (a fresh, current page).
@@ -58,7 +58,7 @@ sets them.
 A small inline script, the first script the editor's layout puts in its `<head>`, for stale HTML
 that still slips through (a bfcache restore, a proxy that ignores `no-store`). The framework hoists
 its own stylesheet and async chunk tags above every inline script, so a build asset can fail before
-the guard runs; it therefore both listens and, once the document is parsed, looks back:
+the guard runs; it therefore both listens and, once the project is parsed, looks back:
 
 - **A build asset that fails to load:** a capture-phase `error` listener on the window sees a
   `<script>` or `<link rel="stylesheet">` under `/_next/static/` fail; at `DOMContentLoaded` it
@@ -91,10 +91,10 @@ two paths cannot drift apart. Storage that cannot be read refuses the reload.
   without one (local development, a preview that sets neither) disables this layer; the safety
   net still works.
 - **The running app learns the live one** from the server release signal it already hears for the
-  document format number ([New version prompt](./new-version-prompt.md)): every api response
+  project format number ([New version prompt](./new-version-prompt.md)): every api response
   carries `X-Liveplanner-Build: <id>` beside `X-Liveplanner-Format`, and the realtime room's
   `format` message carries `build`. No request is made for it and nothing polls.
-- **Stale** means both ids are known and differ. One mechanism, two responses: a newer document
+- **Stale** means both ids are known and differ. One mechanism, two responses: a newer project
   format offers a reload (the prompt); a newer build changes how the app navigates (below), and
   shows nothing.
 - An id is a short token (letters, digits, `.`, `_`, `-`, at most 64 characters); anything else is

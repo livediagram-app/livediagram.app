@@ -3,7 +3,7 @@
 // A cover's Background section (docs/specs/030-forms/forms.md "The form card, top to bottom", Cover).
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { penColourHex, standardColours, type PageColourFill } from '@liveplanner/document';
+import { penColourHex, standardColours, type PageColourFill } from '@liveplanner/project';
 import {
   backgroundCategoryOf,
   customGradientSeed,

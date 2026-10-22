@@ -6,7 +6,7 @@ import {
   isSystemOpKind,
   parseStoredLevel,
 } from '@liveplanner/api-schema';
-import { answersAsSelf } from './document-room-rules';
+import { answersAsSelf } from './project-room-rules';
 import { scopedSenderMayRelay } from './room-scope';
 
 type OpGate =
@@ -31,7 +31,7 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // and mutate nothing, so they relay from ANY connected session —
   // that's how a view-only visitor still shows their cursor, current
   // selection, and which tab they're on to everyone else. Mutation
-  // ops (tab content, document-meta) stay edit-role-only:
+  // ops (tab content, project-meta) stay edit-role-only:
   // a viewer must not be able to inject edits into peers' canvases.
   // The role is the server-verified one (X-Verified-Role, re-stamped
   // in hello), not anything the client claims.
@@ -43,7 +43,7 @@ export function gateClientOp(op: unknown, sender: GateSender): OpGate {
   // and force-redirect every collaborator out of the session.
   if (isSystemOpKind(opKind)) return DROP;
   // A tab-scoped session acts on its own tab only, and never on the
-  // document's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
+  // project's structure (docs/specs/013-workspace/tab-scoped-share-links.md).
   if (!scopedSenderMayRelay(op, sender.tabScope)) return DROP;
   const presence = isPresenceOpKind(opKind);
   // The level ladder (docs/specs/013-workspace/share-roles.md): presence from anyone; a Participant's dots,

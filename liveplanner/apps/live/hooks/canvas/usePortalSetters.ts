@@ -17,7 +17,7 @@ import {
   type SessionButtonConfig,
   type ShapeElement,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 
 // How far to the right of its partner a freshly created portal lands, in canvas

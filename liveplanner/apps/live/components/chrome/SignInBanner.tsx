@@ -3,7 +3,7 @@
 // Explorer sign-in encouragement banner (docs/specs/014-identity/sign-in-encouragement.md). A floating,
 // gradient bottom-of-screen card shown to guest visitors, with a
 // primary Sign in CTA, a Learn more button that opens the reasons
-// modal, and a dismiss control. Visibility (Clerk enabled, not signed
+// modal, and a dismiss control. Visibility (sign-in enabled, not signed
 // in, not dismissed) + the bottom-padding reservation are decided by
 // the host (ExplorerShell); this component just renders the card and
 // owns the modal-open state. The host passes `onDismiss` so the

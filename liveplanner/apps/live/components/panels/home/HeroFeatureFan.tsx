@@ -7,7 +7,7 @@
 // on a theme read or flashes the wrong one.
 
 import type { ReactNode } from 'react';
-import { DASHBOARD_PRESETS, planPalette, type PlanPalette } from '@liveplanner/document';
+import { DASHBOARD_PRESETS, planPalette, type PlanPalette } from '@liveplanner/project';
 import { FORM_STARTER_VIEWBOX, FormStarterArt } from '@liveplanner/template-previews';
 import { BOARD_PREVIEWS } from '@/components/plan/board-previews';
 import { SheetPreview } from '@/components/plan/sheet-previews';

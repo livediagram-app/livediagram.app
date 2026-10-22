@@ -36,7 +36,7 @@ describe('reloadWhenSaved', () => {
     await vi.advanceTimersByTimeAsync(RELOAD_SAVE_WAIT_MS + RELOAD_SAVE_POLL_MS);
     await expect(done).resolves.toBe('unsaved');
     expect(reload).not.toHaveBeenCalled();
-    expect(warn).toHaveBeenCalledWith('[document-format] reload waiting for unsaved changes', {
+    expect(warn).toHaveBeenCalledWith('[project-format] reload waiting for unsaved changes', {
       waitedMs: RELOAD_SAVE_WAIT_MS,
     });
   });

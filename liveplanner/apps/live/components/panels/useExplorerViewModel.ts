@@ -1,88 +1,88 @@
 import { useMemo } from 'react';
 
-import { groupBy, groupDocumentsByFolder, indexFolders } from '@/lib/folder-tree';
+import { groupBy, groupProjectsByFolder, indexFolders } from '@/lib/folder-tree';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import type { ExplorerProps } from './Explorer.types';
 
 type ExplorerViewModelDeps = Pick<
   ExplorerProps,
-  'documents' | 'folders' | 'currentDocumentId' | 'shared' | 'teamFolders' | 'teamDocuments'
+  'projects' | 'folders' | 'currentProjectId' | 'shared' | 'teamFolders' | 'teamProjects'
 > & {
   deletedTeamIds: Set<string>;
 };
 
-// Derives the Explorer panel's view-model from the raw document / folder / team
-// / shared inputs: the current document (resolved across personal, team, and
+// Derives the Explorer panel's view-model from the raw project / folder / team
+// / shared inputs: the current project (resolved across personal, team, and
 // shared sources) and the by-folder / by-team / by-parent groupings the
 // panel's tree renders (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel). Pure memoised derivation, split out of
 // Explorer so the component is left with wiring + render.
 export function useExplorerViewModel({
-  documents: liveDocs,
+  projects: liveDocs,
   folders,
-  currentDocumentId,
+  currentProjectId,
   shared = [],
   teamFolders = [],
-  teamDocuments = [],
+  teamProjects = [],
   deletedTeamIds,
 }: ExplorerViewModelDeps) {
   const current = useMemo(
-    () => (currentDocumentId ? (liveDocs.find((d) => d.id === currentDocumentId) ?? null) : null),
-    [liveDocs, currentDocumentId],
+    () => (currentProjectId ? (liveDocs.find((d) => d.id === currentProjectId) ?? null) : null),
+    [liveDocs, currentProjectId],
   );
   // Team rows minus any the viewer just deleted (see deletedTeamIds).
-  const visibleTeamDocuments = useMemo(
+  const visibleTeamProjects = useMemo(
     () =>
       deletedTeamIds.size === 0
-        ? teamDocuments
-        : teamDocuments.filter((d) => !deletedTeamIds.has(d.id)),
-    [teamDocuments, deletedTeamIds],
+        ? teamProjects
+        : teamProjects.filter((d) => !deletedTeamIds.has(d.id)),
+    [teamProjects, deletedTeamIds],
   );
-  // When the open document lives in a team library it won't be in
-  // `documents` (those are personal only). Fall back to the swept team
-  // documents so the Current Document section renders for team documents.
+  // When the open project lives in a team library it won't be in
+  // `projects` (those are personal only). Fall back to the swept team
+  // projects so the Current Project section renders for team projects.
   const currentTeam = useMemo(
     () =>
-      !current && currentDocumentId
-        ? (visibleTeamDocuments.find((d) => d.id === currentDocumentId) ?? null)
+      !current && currentProjectId
+        ? (visibleTeamProjects.find((d) => d.id === currentProjectId) ?? null)
         : null,
-    [current, visibleTeamDocuments, currentDocumentId],
+    [current, visibleTeamProjects, currentProjectId],
   );
-  // When the open document is shared (not owned / not team), it won't
-  // appear in `documents` either. Fall back to the shared list so the
-  // Current Document section still renders for visitors.
+  // When the open project is shared (not owned / not team), it won't
+  // appear in `projects` either. Fall back to the shared list so the
+  // Current Project section still renders for visitors.
   const currentShared = useMemo(
     () =>
-      !current && !currentTeam && currentDocumentId
-        ? (shared.find((s) => s.id === currentDocumentId) ?? null)
+      !current && !currentTeam && currentProjectId
+        ? (shared.find((s) => s.id === currentProjectId) ?? null)
         : null,
-    [current, currentTeam, shared, currentDocumentId],
+    [current, currentTeam, shared, currentProjectId],
   );
-  // This team's folder rows and documents, indexed by team, for the Teams
-  // accordion, which shows the documents inside each team folder (docs/specs/013-workspace/team-shared-documents.md).
+  // This team's folder rows and projects, indexed by team, for the Teams
+  // accordion, which shows the projects inside each team folder (docs/specs/013-workspace/team-shared-projects.md).
   const foldersByTeam = useMemo(() => groupBy(teamFolders, (f) => f.teamId), [teamFolders]);
-  const documentsByTeam = useMemo(
-    () => groupBy(visibleTeamDocuments, (d) => d.team.id),
-    [visibleTeamDocuments],
+  const projectsByTeam = useMemo(
+    () => groupBy(visibleTeamProjects, (d) => d.team.id),
+    [visibleTeamProjects],
   );
 
   // Folder tree: index folders by parentId so the recursive renderer
   // can ask for children by id without rescanning the full list.
   const foldersByParent = useMemo(() => indexFolders(folders).childrenByParent, [folders]);
 
-  // Offline documents (docs/specs/006-document/offline-mode.md) stay out of the My Documents root: they
+  // Offline projects (docs/specs/006-project/offline-mode.md) stay out of the My Projects root: they
   // render under the panel's This Browser row instead.
-  const documentsByFolder = useMemo(
+  const projectsByFolder = useMemo(
     () =>
-      groupDocumentsByFolder(liveDocs, {
+      groupProjectsByFolder(liveDocs, {
         exclude: (d) => d.folderId === null && d.ownerId === OFFLINE_OWNER_ID,
       }),
     [liveDocs],
   );
 
-  // Offline documents (docs/specs/006-document/offline-mode.md): everything saved only in this browser,
+  // Offline projects (docs/specs/006-project/offline-mode.md): everything saved only in this browser,
   // regardless of any folder placement in the local record, for the panel's
   // This Browser row (mirrors the /explorer route).
-  const offlineDocuments = useMemo(
+  const offlineProjects = useMemo(
     () =>
       liveDocs.filter((d) => d.ownerId === OFFLINE_OWNER_ID).sort((a, b) => b.savedAt - a.savedAt),
     [liveDocs],
@@ -93,9 +93,9 @@ export function useExplorerViewModel({
     currentTeam,
     currentShared,
     foldersByTeam,
-    documentsByTeam,
+    projectsByTeam,
     foldersByParent,
-    documentsByFolder,
-    offlineDocuments,
+    projectsByFolder,
+    offlineProjects,
   };
 }

@@ -7,10 +7,11 @@
 
 import type { Selection } from '@/lib/selection-store';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { requestToolbarSearch } from '@/lib/toolbar-search-request';
+import { isSheetCovering } from '@/hooks/plan/plan-cover-store';
+import { setSheetZoom, stepSheetZoom } from '@/hooks/sheets/sheet-zoom';
 
 // Shape kinds that have a single-key palette shortcut: the common
-// flowchart set. The rest of the ShapeKind union (stadium, document,
+// flowchart set. The rest of the ShapeKind union (stadium, project,
 // cloud, devices, etc.) has no memorable free letter and stays a click
 // away in the palette.
 type ShortcutShape =
@@ -75,7 +76,7 @@ export type EditorKeyboardShortcutsDeps = {
   addShape: (kind: ShortcutShape) => void;
   addText: () => void;
   addSticky: () => void;
-  addArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
+  addArrow: (ends?: import('@liveplanner/project').ArrowEnds) => void;
   // Mind map (docs/specs/009-elements/mind-node.md): whether Tab / Enter should grow from this element,
   // and the grower itself. Asked per keystroke rather than held as a flag so
   // it can't go stale against the selection.
@@ -127,14 +128,14 @@ export type EditorKeyboardShortcutsDeps = {
   // shortcuts still fire there.
   onTypeIntoSelected: (elementId: string, char: string) => boolean;
   // Zoom controls. Allowed for view-role visitors (zooming doesn't
-  // change the document). Ctrl/Cmd + = / + zooms in, - zooms out,
+  // change the project). Ctrl/Cmd + = / + zooms in, - zooms out,
   // 0 resets to 100%. Mirrors the ZoomControls buttons.
   onZoomIn: () => void;
   onZoomOut: () => void;
   onZoomReset: () => void;
   // Zen / focus mode (docs/specs/007-editor/zen-mode.md). `Z` toggles it; `Escape` exits when
   // active. Allowed for view-role too (focusing doesn't change the
-  // document). `zenMode` lets the listener route Escape to exit only
+  // project). `zenMode` lets the listener route Escape to exit only
   // while the mode is on.
   zenMode: boolean;
   onToggleZen: () => void;
@@ -148,57 +149,15 @@ export type EditorKeyboardShortcutsDeps = {
   enabled: boolean;
 };
 
-// Plain-key (no modifier) tool + element shortcuts, as lookup tables so
-// the letter and number aliases share one action each (no if-ladder to
-// keep in sync). Keys are matched lowercased; number aliases mirror the
-// Excalidraw layout. Split at the read-only gate:
-//
-//   VIEW_TOOL_KEYS: non-mutating view tools, allowed for view-role.
-//   EDIT_KEYS:      mutating tools / element adds, editors only.
-//
-// Image (`9`) is handled outside the table because its callback is
-// nullable (guest deploys without an api worker hide it).
-// Exported for the unit test, which asserts the key -> action mapping
-// against a spy `live` (the effect itself needs jsdom, which this
-// workspace's node-env vitest doesn't run; see docs/specs/003-system-architecture/testing.md).
+// Plain-key (no modifier) shortcuts, as a lookup table. liveplanner's tabs are all Boards, Sheets, Dashboards and
+// Forms, whose own key handlers own the letters and digits; the canvas tool and element-add keys (V, H, I, R, the
+// number row...) went with the palette, and on an empty tab they armed a diagram tool. Only Zen is left, and it is
+// non-mutating, so it runs for every role.
+// Exported for the unit test, which asserts the key -> action mapping against a spy `live`.
 export type ShortcutAction = (live: EditorKeyboardShortcutsDeps) => void;
 
 export const VIEW_TOOL_KEYS: Record<string, ShortcutAction> = {
-  v: (l) => l.setCanvasTool('select'),
-  // Opens the Toolbar strip's Search where there is one (docs/specs/007-editor/toolbar-layout.md
-  // "Search: every element type"); elsewhere still the legacy Select alias (pre-`V` standard).
-  s: (l) => {
-    if (!requestToolbarSearch()) l.setCanvasTool('select');
-  },
-  '1': (l) => l.setCanvasTool('select'),
-  h: (l) => l.setCanvasTool('pan'),
-  i: (l) => l.setCanvasTool('isometric'), // docs/specs/008-canvas/isometric-view.md: pans like Hand, non-mutating
   z: (l) => l.onToggleZen(), // docs/specs/007-editor/zen-mode.md focus mode
-};
-
-export const EDIT_KEYS: Record<string, ShortcutAction> = {
-  f: (l) => l.addShape('frame'),
-  r: (l) => l.addShape('square'),
-  '2': (l) => l.addShape('square'),
-  o: (l) => l.addShape('circle'),
-  '4': (l) => l.addShape('circle'),
-  d: (l) => l.addShape('diamond'),
-  '3': (l) => l.addShape('diamond'),
-  c: (l) => l.addShape('cylinder'),
-  g: (l) => l.addShape('parallelogram'),
-  t: (l) => l.addText(),
-  '8': (l) => l.addText(),
-  n: (l) => l.addSticky(),
-  a: (l) => l.addArrow(),
-  '5': (l) => l.addArrow(),
-};
-
-// A Participant's plain keys (docs/specs/013-workspace/share-roles.md "The Participant palette"): what its tiles add, by
-// the keys the tiles show, and nothing else of EDIT_KEYS. The commit guard still decides what lands.
-export const PARTICIPANT_KEYS: Record<string, ShortcutAction> = {
-  n: (l) => l.addSticky(),
-  t: (l) => l.addText(),
-  '8': (l) => l.addText(),
 };
 
 // Cmd / Ctrl modified shortcuts. Returns true when it consumed the event.
@@ -212,7 +171,7 @@ export const PARTICIPANT_KEYS: Record<string, ShortcutAction> = {
 // The caller keeps what only it can know: that a modal isn't open, that the
 // event wasn't already handled, and that focus isn't in a text field. It also
 // keeps swallowing a modified key we do NOT handle, so a stray Cmd+J can't
-// fall through to the plain-key table and drop a shape.
+// fall through to the plain-key table.
 //
 // Cmd+V is intentionally absent. The browser's native `paste` event fires on
 // Cmd/Ctrl+V and carries the system clipboard (text, files, images);
@@ -229,21 +188,26 @@ function hasPageTextSelection(): boolean {
 export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDeps): boolean {
   const key = e.key;
   const lower = key.toLowerCase();
-  // Zoom: allowed for view-role visitors — doesn't change the document.
-  // + / = zoom in (= is the unshifted + key), - zooms out, 0 resets.
+  // Zoom: allowed for view-role visitors — doesn't change the project.
+  // + / = zoom in (= is the unshifted + key), - zooms out, 0 resets. A Sheet covering the canvas takes the zoom
+  // (docs/specs/029-sheets/sheet.md "Zoom"), as the corner zoom controls do: its cells, never the canvas under it.
+  const sheet = isSheetCovering();
   if (key === '=' || key === '+') {
     e.preventDefault();
-    live.onZoomIn();
+    if (sheet) stepSheetZoom(1);
+    else live.onZoomIn();
     return true;
   }
   if (key === '-') {
     e.preventDefault();
-    live.onZoomOut();
+    if (sheet) stepSheetZoom(-1);
+    else live.onZoomOut();
     return true;
   }
   if (key === '0') {
     e.preventDefault();
-    live.onZoomReset();
+    if (sheet) setSheetZoom(1);
+    else live.onZoomReset();
     return true;
   }
   // Cmd/Ctrl+. and Cmd/Ctrl+K: open the global search panel.
@@ -322,25 +286,25 @@ export function runModShortcut(e: KeyboardEvent, live: EditorKeyboardShortcutsDe
 }
 
 // What a key does while a Plan board or view covers the canvas (docs/specs/026-plan/plan-board.md "Nothing under it
-// moves"): `run` leaves the canvas alone (undo, redo, search, zen, Escape) and is handled as usual;
-// `swallow` is a canvas chord the browser would act on in its place (duplicate, select-all, lock, z-order, zoom), so it
-// is prevented and does nothing; `ignore` is every other key, left to the browser and the board (copy and cut of the
-// board's text included), never reaching the canvas.
+// moves"): `run` leaves the canvas alone (undo, redo, search, zen, Escape, and the zoom chords while a Sheet covers it,
+// which zoom the Sheet) and is handled as usual; `swallow` is a canvas chord the browser would act on in its place
+// (duplicate, select-all, lock, z-order, zoom), so it is prevented and does nothing; `ignore` is every other key, left
+// to the browser and the board (copy and cut of the board's text included), never reaching the canvas.
 type CoveredKeyRole = 'run' | 'swallow' | 'ignore';
+const isZoomChordKey = (key: string) => key === '=' || key === '+' || key === '-' || key === '0';
 export function coveredKeyRole(
   e: Pick<KeyboardEvent, 'key' | 'code' | 'metaKey' | 'ctrlKey' | 'shiftKey' | 'altKey'>,
+  sheetCovering: boolean = isSheetCovering(),
 ): CoveredKeyRole {
   const lower = e.key.toLowerCase();
   if (e.metaKey || e.ctrlKey) {
     if (lower === 'z' || lower === 'y' || lower === 'k' || e.key === '.') return 'run';
+    if (sheetCovering && isZoomChordKey(e.key)) return 'run';
     if (
       lower === 'd' ||
       lower === 'a' ||
       (lower === 'l' && e.shiftKey) ||
-      e.key === '=' ||
-      e.key === '+' ||
-      e.key === '-' ||
-      e.key === '0' ||
+      isZoomChordKey(e.key) ||
       (e.shiftKey &&
         (e.code === 'BracketRight' || e.code === 'BracketLeft' || '[]{}'.includes(e.key)))
     )

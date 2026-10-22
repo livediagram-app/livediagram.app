@@ -43,8 +43,8 @@ function readTallies(raw: unknown): ItemTally[] | Response {
   return out;
 }
 
-export async function tally(ctx: RouteContext, documentId: string): Promise<Response> {
-  const caller = await itemCaller(ctx, documentId, 'edit');
+export async function tally(ctx: RouteContext, projectId: string): Promise<Response> {
+  const caller = await itemCaller(ctx, projectId, 'edit');
   if (caller instanceof Response) return caller;
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
@@ -57,7 +57,7 @@ export async function tally(ctx: RouteContext, documentId: string): Promise<Resp
   const result = await writeItemsWithRetry(
     ctx,
     caller,
-    documentId,
+    projectId,
     wanted,
     async (pending, stored) => {
       const nexts = new Map<string, Item>();
@@ -67,7 +67,7 @@ export async function tally(ctx: RouteContext, documentId: string): Promise<Resp
     },
   );
   if (result instanceof Response) return result;
-  console.info('[items] tallied', { documentId, count: result.done.size });
+  console.info('[items] tallied', { projectId, count: result.done.size });
   const answer: ItemsResponse = {
     items: forCaller(caller, [...result.done.values()]),
     rev: result.rev,

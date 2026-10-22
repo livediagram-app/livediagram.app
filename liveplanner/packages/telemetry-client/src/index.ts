@@ -1,8 +1,9 @@
 // The shared browser telemetry engine (docs/specs/017-telemetry/telemetry.md), extracted from the
 // duplicated emitters in apps/live and apps/help: three-field
 // {category, action, type} events buffered and flushed — batched — to
-// POST <apiBase>/events on a short timer and on page-hide (via
-// navigator.sendBeacon). Strictly fire-and-forget: every failure is
+// liveworkspace's central telemetry service (POST <url>/api/events, named
+// 'liveplanner.app'; liveworkspace/docs/telemetry.md) on a short timer and on
+// page-hide (via navigator.sendBeacon). Strictly fire-and-forget: every failure is
 // swallowed, because telemetry must never affect the host app.
 //
 // Privacy (docs/specs/017-telemetry/telemetry.md): only the closed-vocabulary {category, action,
@@ -28,6 +29,7 @@ import {
   type TelemetryCategory,
   type TelemetryEvent,
 } from '@liveplanner/api-schema';
+import { TELEMETRY_EVENTS_PATH, TELEMETRY_URL, type TelemetryApp } from '@liveworkspace/telemetry';
 
 export { onPageHide } from './page-hide';
 export * from './timing';
@@ -87,15 +89,18 @@ export type TelemetryEmitter = {
 };
 
 export function createTelemetryEmitter(opts: {
-  // POST target base, e.g. '/api' — events go to `${apiBase}/events`.
-  apiBase: string;
+  // The central service's URL, e.g. 'https://liveworkspace.app/api/telemetry' — events go to
+  // `${url}/api/events`.
+  url: string;
+  // Which app the events are from: the dashboard's filter.
+  app: TelemetryApp;
   // Build-time kill switch: false makes track() a permanent no-op.
   enabled: boolean;
   // Per-user opt-out (docs/specs/007-editor/user-preferences.md), consulted on every track() call. The
   // caller owns caching / invalidation if the read is hot.
   isOptedIn: () => boolean;
 }): TelemetryEmitter {
-  const { apiBase, enabled, isOptedIn } = opts;
+  const { url: serviceUrl, app, enabled, isOptedIn } = opts;
 
   let buffer: TelemetryEvent[] = [];
   // Events from exactly one failed flush, waiting for one more attempt.
@@ -148,8 +153,8 @@ export function createTelemetryEmitter(opts: {
       clearTimeout(flushTimer);
       flushTimer = null;
     }
-    const url = `${apiBase}/events`;
-    const body = JSON.stringify({ events });
+    const url = `${serviceUrl}${TELEMETRY_EVENTS_PATH}`;
+    const body = JSON.stringify({ app, events });
     try {
       if (
         useBeacon &&
@@ -161,21 +166,23 @@ export function createTelemetryEmitter(opts: {
         // keepalive fetch instead, which is the same "outlive the page"
         // guarantee by another route. No requeue on this path either way —
         // we're unloading, so there's no later to retry in.
-        // A beacon that throws (a browser refusing the Blob's type for a cross-origin api) falls
-        // through to the fetch too, rather than losing the batch to the catch below.
+        // text/plain keeps the cross-site beacon a CORS "simple request": no preflight. A beacon
+        // that throws still falls through to the fetch, rather than losing the batch to the catch below.
         try {
-          if (navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }))) return;
+          if (navigator.sendBeacon(url, new Blob([body], { type: 'text/plain' }))) return;
         } catch {
           // Fall through to the keepalive fetch.
         }
       }
       // `keepalive` lets the POST outlive a navigation the same way a
-      // beacon would, for the timer-driven flush path.
+      // beacon would, for the timer-driven flush path. text/plain and no
+      // credentials: a cross-site simple request with no preflight and no cookies.
       void fetch(url, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body,
         keepalive: true,
+        credentials: 'omit',
       }).catch(() => {
         // Only on a REJECTION — a network failure, where the request never
         // got a response. A non-2xx is deliberately not retried: the server
@@ -235,7 +242,8 @@ export function createTelemetryEmitter(opts: {
  * that never tracks never builds one.
  */
 export function createLazyTrack(opts: {
-  apiBase: string;
+  url: string;
+  app: TelemetryApp;
   enabled: boolean;
 }): TelemetryEmitter['track'] {
   let emitter: TelemetryEmitter | null = null;
@@ -245,10 +253,18 @@ export function createLazyTrack(opts: {
   };
 }
 
+// The app this package's emitters report as.
+export const TELEMETRY_APP: TelemetryApp = 'liveplanner.app';
+
 // Next inlines `process.env.NEXT_PUBLIC_*` into every client bundle at build
 // time, workspace packages included, so the reads below become literals.
 // Declared locally because this package doesn't pull in Node's types.
 declare const process: { env: Record<string, string | undefined> };
+
+/** The central service's URL: the build's NEXT_PUBLIC_TELEMETRY_URL (staging, local dev), else production's. */
+export function telemetryServiceUrl(): string {
+  return process.env.NEXT_PUBLIC_TELEMETRY_URL || TELEMETRY_URL;
+}
 
 /**
  * The public sites' one track() (help centre, marketing, the dashboard): a
@@ -258,10 +274,11 @@ declare const process: { env: Record<string, string | undefined> };
  * it, and a module singleton so a page that emits from several places (help's
  * page views, article views and errors) runs one buffer, not several. The
  * editor keeps its own emitter: it caches the opt-out behind its preference
- * events and targets its configured api base.
+ * events.
  */
 export const siteTrack: TelemetryEmitter['track'] = createLazyTrack({
-  apiBase: process.env.NEXT_PUBLIC_API_BASE ?? '/api',
+  url: telemetryServiceUrl(),
+  app: TELEMETRY_APP,
   enabled: process.env.NEXT_PUBLIC_TELEMETRY_ENABLED === 'true',
 });
 
@@ -271,7 +288,7 @@ export const siteTrack: TelemetryEmitter['track'] = createLazyTrack({
 //
 // Window-level uncaught exceptions + unhandled promise rejections. The
 // type says WHERE and WHAT, from closed vocabularies only:
-// `<Kind>.<Page>.<ErrorName>`, e.g. `Uncaught.Document.TypeError`. The page
+// `<Kind>.<Page>.<ErrorName>`, e.g. `Uncaught.Project.TypeError`. The page
 // is the docs/specs/017-telemetry/page-view-telemetry.md page-view path's first segment (ids already stripped) and
 // the error name comes from a fixed list (`Other` / `NonError` otherwise):
 // never the message, stack, or URL. A stack's function names would say

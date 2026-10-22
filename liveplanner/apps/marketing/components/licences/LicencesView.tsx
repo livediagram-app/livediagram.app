@@ -9,8 +9,7 @@ import { LicenceTexts } from './LicenceTexts';
 const SECTION_COPY: Record<LicencesSection['side'], { title: string; intro: string }> = {
   browser: {
     title: 'In your browser',
-    intro:
-      'Sent to your browser by the editor, this website, the help centre and the telemetry dashboard.',
+    intro: 'Sent to your browser by the editor, this website and the help centre.',
   },
   server: {
     title: 'On our servers',

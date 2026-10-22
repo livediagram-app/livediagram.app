@@ -7,10 +7,10 @@ import { CardTypeShowMeButton, CardTypeTourStage, useCardTypeTour } from './Card
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // The tour wears the active tab's colours (tour-colours.ts); outside an editor, a plain light palette.
 vi.mock('@/components/start/useStartPalette', async () => {
-  const { planPalette } = await import('@liveplanner/document');
+  const { planPalette } = await import('@liveplanner/project');
   return { useStartPalette: () => planPalette('light') };
 });
-// jsdom lays nothing out, so "on screen" is just "in the document" here.
+// jsdom lays nothing out, so "on screen" is just "in the project" here.
 vi.mock('./tour-dom', async (actual) => ({
   ...(await actual<typeof import('./tour-dom')>()),
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),

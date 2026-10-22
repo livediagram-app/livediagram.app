@@ -12,7 +12,8 @@
     "tsconfig.base.json",
     "livediagram/tsconfig.base.json",
     "liveplanner/tsconfig.base.json",
-    "livedesign/tsconfig.base.json"
+    "livedesign/tsconfig.base.json",
+    "livedocuments/tsconfig.base.json"
   ],
   "tasks": {
     "build": {
@@ -32,7 +33,6 @@
         "^build",
         "@livediagram/live#build",
         "@livediagram/help#build",
-        "@livediagram/telemetry#build",
         "@livediagram/community#build",
         "@livediagram/api#build",
         "@livediagram/mcp#build",
@@ -127,7 +127,6 @@
         "^build",
         "@liveplanner/live#build",
         "@liveplanner/help#build",
-        "@liveplanner/telemetry#build",
         "@liveplanner/api#build",
         "@liveplanner/mcp#build",
         "@liveplanner/router#build"
@@ -151,18 +150,10 @@
         "!$TURBO_ROOT$/liveplanner/apps/marketing/generated/**",
         "!$TURBO_ROOT$/liveplanner/apps/marketing/public/licences/**"
       ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "out/**",
-        "generated/**",
-        "public/licences/**"
-      ]
+      "outputs": [".next/**", "!.next/cache/**", "out/**", "generated/**", "public/licences/**"]
     },
     "@liveplanner/help#test": {
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/liveplanner/**",
@@ -179,12 +170,8 @@
       ]
     },
     "@liveplanner/help#test:coverage": {
-      "dependsOn": [
-        "^build"
-      ],
-      "outputs": [
-        "coverage/**"
-      ],
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/liveplanner/**",
@@ -256,6 +243,74 @@
       "inputs": [
         "$TURBO_DEFAULT$",
         "$TURBO_ROOT$/livedesign/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results*/**",
+        "!$TURBO_ROOT$/**/playwright-report*/**",
+        "!$TURBO_ROOT$/.git/**"
+      ]
+    },
+    // livedocuments: the same per-package rules as livediagram above, on its own paths.
+    "@livedocuments/marketing#build": {
+      "dependsOn": [
+        "^build",
+        "@livedocuments/live#build",
+        "@livedocuments/help#build",
+        "@livedocuments/telemetry#build",
+        "@livedocuments/api#build",
+        "@livedocuments/mcp#build",
+        "@livedocuments/router#build"
+      ],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        ".env*",
+        "$TURBO_ROOT$/pnpm-lock.yaml",
+        "$TURBO_ROOT$/livedocuments/apps/**",
+        "$TURBO_ROOT$/livedocuments/packages/**",
+        // Explicit root globs ignore .gitignore: keep build output out.
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results/**",
+        "!$TURBO_ROOT$/**/playwright-report/**",
+        "!$TURBO_ROOT$/**/next-env.d.ts",
+        "!$TURBO_ROOT$/livedocuments/apps/marketing/generated/**",
+        "!$TURBO_ROOT$/livedocuments/apps/marketing/public/licences/**"
+      ],
+      "outputs": [".next/**", "!.next/cache/**", "out/**", "generated/**", "public/licences/**"]
+    },
+    "@livedocuments/help#test": {
+      "dependsOn": ["^build"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/livedocuments/**",
+        "!$TURBO_ROOT$/**/node_modules/**",
+        "!$TURBO_ROOT$/**/.next*/**",
+        "!$TURBO_ROOT$/**/out/**",
+        "!$TURBO_ROOT$/**/dist/**",
+        "!$TURBO_ROOT$/**/coverage/**",
+        "!$TURBO_ROOT$/**/.turbo/**",
+        "!$TURBO_ROOT$/**/.wrangler/**",
+        "!$TURBO_ROOT$/**/test-results*/**",
+        "!$TURBO_ROOT$/**/playwright-report*/**",
+        "!$TURBO_ROOT$/.git/**"
+      ]
+    },
+    "@livedocuments/help#test:coverage": {
+      "dependsOn": ["^build"],
+      "outputs": ["coverage/**"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/livedocuments/**",
         "!$TURBO_ROOT$/**/node_modules/**",
         "!$TURBO_ROOT$/**/.next*/**",
         "!$TURBO_ROOT$/**/out/**",

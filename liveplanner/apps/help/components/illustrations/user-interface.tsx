@@ -6,9 +6,8 @@
 // MultiSelectionToolbar, EditorContextMenu). Composed from the shared
 // primitives so the house style holds.
 
-import type { ReactNode } from 'react';
-import { Scene, Shape, Arrow, SelectionBox, Panel, Label } from './primitives';
-import { MenuCard, Strip } from './toolbar-layout';
+import type {} from 'react';
+import { Scene, Shape, Panel, Label } from './primitives';
 
 // --- Glyphs ------------------------------------------------------------------
 
@@ -62,26 +61,6 @@ function DotsGlyph({ x, y, tone = 'slate' }: { x: number; y: number; tone?: 'sla
       <circle cx={x - 4} cy={y} r={1.3} className={cls} />
       <circle cx={x} cy={y} r={1.3} className={cls} />
       <circle cx={x + 4} cy={y} r={1.3} className={cls} />
-    </g>
-  );
-}
-
-/** A square icon button on a toolbar or in the corner cluster. */
-function IconButton({
-  x,
-  y,
-  size = 24,
-  children,
-}: {
-  x: number;
-  y: number;
-  size?: number;
-  children: ReactNode;
-}) {
-  return (
-    <g>
-      <rect x={x} y={y} width={size} height={size} rx={6} className="fill-slate-50" />
-      <g transform={`translate(${x + size / 2} ${y + size / 2})`}>{children}</g>
     </g>
   );
 }
@@ -157,26 +136,6 @@ function QuickControlsRow({ x, y, labelled = true }: { x: number; y: number; lab
   );
 }
 
-/** The bottom bar: the Tabs label, tab pills, the + button, then the quick
- *  controls at its right-hand end. */
-function BottomBar({ y, w, labelled = false }: { y: number; w: number; labelled?: boolean }) {
-  return (
-    <g>
-      <rect x={0} y={y} width={w} height={30} className="fill-white" />
-      <line x1={0} y1={y} x2={w} y2={y} className="stroke-slate-200" strokeWidth={1.5} />
-      <Label x={10} y={y + 16} size={10} weight={700} tone="muted">
-        TABS
-      </Label>
-      <TabPill x={46} y={y + 5} w={74} label="Overview" active />
-      <TabPill x={124} y={y + 5} w={44} label="Flow" />
-      <Label x={180} y={y + 16} size={14} weight={600} tone="muted" anchor="middle">
-        +
-      </Label>
-      <QuickControlsRow x={labelled ? w - 182 : w - 72} y={y + 15} labelled={labelled} />
-    </g>
-  );
-}
-
 /** The bottom-right corner cluster: Undo / Redo, Layers, the Theme & canvas
  *  paintbrush, then the zoom controls (minus, the level, plus). */
 function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?: string }) {
@@ -219,72 +178,6 @@ function CornerCluster({ x, y, level = '100%' }: { x: number; y: number; level?:
 }
 
 // --- Scenes ------------------------------------------------------------------
-
-/** The whole frame at a glance: the menu button card top-left, the palette strip across the
- *  top, a Vote panel docked top-right under it, the Map bottom-left, the corner cluster
- *  bottom-right, and the bottom bar. */
-export function PanelLayout() {
-  return (
-    <Scene w={420} h={250}>
-      <MenuCard x={12} y={12} />
-      <Strip x={82} y={12} />
-      <Panel x={318} y={56} w={90} h={66} title="AI ASSISTANT">
-        {[0, 1].map((i) => (
-          <rect
-            key={i}
-            x={328}
-            y={88 + i * 14}
-            width={i === 0 ? 62 : 44}
-            height={6}
-            rx={3}
-            className={i === 0 ? 'fill-brand-200' : 'fill-slate-200'}
-          />
-        ))}
-      </Panel>
-      <Shape x={146} y={68} w={74} h={38} label="Start" />
-      <Shape x={146} y={134} w={74} h={38} accent label="Ship" />
-      <Arrow from={[183, 106]} to={[183, 134]} />
-      <Panel x={12} y={150} w={92} h={58} title="MAP">
-        <rect x={36} y={182} width={14} height={8} rx={2} className="fill-slate-300" />
-        <rect x={36} y={194} width={14} height={8} rx={2} className="fill-slate-300" />
-        <rect
-          x={28}
-          y={178}
-          width={46}
-          height={26}
-          rx={3}
-          fill="none"
-          className="stroke-brand-500"
-          strokeWidth={1.4}
-        />
-      </Panel>
-      <CornerCluster x={194} y={182} />
-      <BottomBar y={220} w={420} />
-    </Scene>
-  );
-}
-
-/** The quick controls, close up: Search, Settings and the appearance switch
- *  at the right-hand end of the bottom bar, each named beside its icon. */
-export function QuickControls() {
-  return (
-    <Scene w={420} h={130}>
-      <Shape x={60} y={20} w={80} h={40} label="Idea" />
-      <BottomBar y={86} w={420} labelled />
-      <rect
-        x={232}
-        y={90}
-        width={182}
-        height={22}
-        rx={6}
-        fill="none"
-        className="stroke-brand-400"
-        strokeWidth={1.5}
-        strokeDasharray="4 3"
-      />
-    </Scene>
-  );
-}
 
 /** The bottom bar's tabs: the Tabs label, the active tab with its menu
  *  button and a presence avatar, another tab, a collapsible folder, the +
@@ -393,196 +286,6 @@ export function ZoomControls() {
         </Label>
       </Panel>
       <CornerCluster x={110} y={198} />
-    </Scene>
-  );
-}
-
-/** One selected shape with its toolbar above: the "Selected Square" caption,
- *  then More, Add text, Duplicate, Bring to front, Send to back, Lock and
- *  Delete (an editor's toolbar; Add Comment is in the More menu). */
-export function ContextualToolbar() {
-  const tx = 92;
-  const ty = 40;
-  const buttons: ReactNode[] = [
-    <DotsGlyph key="more" x={0} y={0} />,
-    <path key="text" d="M-5 -5 h10 M0 -5 v10" {...GLYPH} />,
-    <g key="dup">
-      <rect x={-5} y={-5} width={8} height={8} rx={1.5} {...GLYPH} />
-      <rect x={-2} y={-2} width={8} height={8} rx={1.5} {...GLYPH} />
-    </g>,
-    <path key="front" d="M0 5 V-5 M-4 -1 L0 -5 L4 -1" {...GLYPH} />,
-    <path key="back" d="M0 -5 V5 M-4 1 L0 5 L4 1" {...GLYPH} />,
-    <g key="lock">
-      <rect x={-5} y={-1} width={10} height={7} rx={1.5} {...GLYPH} />
-      <path d="M-3 -1 v-2 a3 3 0 0 1 6 0 v2" {...GLYPH} />
-    </g>,
-    <path key="delete" d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} />,
-  ];
-  return (
-    <Scene w={420} h={210}>
-      <Label x={tx + 2} y={ty - 10} size={10} weight={600} tone="muted">
-        Selected Square
-      </Label>
-      <Panel x={tx} y={ty} w={8 + buttons.length * 30} h={34}>
-        {buttons.map((g, i) => (
-          <IconButton key={i} x={tx + 6 + i * 30} y={ty + 5}>
-            {g}
-          </IconButton>
-        ))}
-      </Panel>
-      <Shape x={150} y={108} w={120} h={60} label="Checkout" />
-      <SelectionBox x={150} y={108} w={120} h={60} />
-    </Scene>
-  );
-}
-
-/** A mixed marquee selection (two shapes and an arrow) with the multi-select
- *  toolbar: More, Filter Selection, Duplicate, Export, Lock and Delete. */
-export function MultiSelectToolbar() {
-  const tx = 116;
-  const ty = 34;
-  const buttons: ReactNode[] = [
-    <DotsGlyph key="more" x={0} y={0} />,
-    <path key="filter" d="M-6 -5 h12 l-5 5 v5 l-2 -1 v-4 Z" {...GLYPH} />,
-    <g key="dup">
-      <rect x={-5} y={-5} width={8} height={8} rx={1.5} {...GLYPH} />
-      <rect x={-2} y={-2} width={8} height={8} rx={1.5} {...GLYPH} />
-    </g>,
-    <path key="export" d="M0 3 V-6 M-4 -2 L0 -6 L4 -2 M-6 3 v3 h12 v-3" {...GLYPH} />,
-    <g key="lock">
-      <rect x={-5} y={-1} width={10} height={7} rx={1.5} {...GLYPH} />
-      <path d="M-3 -1 v-2 a3 3 0 0 1 6 0 v2" {...GLYPH} />
-    </g>,
-    <path key="delete" d="M-5 -4 h10 M-3 -4 v9 h6 v-9 M-1.5 -6 h3" {...GLYPH} />,
-  ];
-  return (
-    <Scene w={420} h={220}>
-      <Label x={tx + 2} y={ty - 10} size={10} weight={600} tone="muted">
-        Selected Elements (3)
-      </Label>
-      <Panel x={tx} y={ty} w={8 + buttons.length * 30} h={34}>
-        {buttons.map((g, i) => (
-          <IconButton key={i} x={tx + 6 + i * 30} y={ty + 5}>
-            {g}
-          </IconButton>
-        ))}
-      </Panel>
-      <Shape x={94} y={112} w={90} h={46} label="Cart" />
-      <Shape x={250} y={112} w={90} h={46} accent label="Pay" />
-      <Arrow from={[184, 135]} to={[250, 135]} />
-      <SelectionBox x={86} y={102} w={262} h={66} />
-    </Scene>
-  );
-}
-
-/** The element menu for a shape: collapsible sections, Layer first, then
- *  Size, Shape, Rotation, the Style and Text flyouts, Collaborate and
- *  Resources. */
-export function ElementContextMenu() {
-  const sections: { label: string; flyout?: boolean }[] = [
-    { label: 'Layer' },
-    { label: 'Size' },
-    { label: 'Shape' },
-    { label: 'Rotation' },
-    { label: 'Style', flyout: true },
-    { label: 'Animation', flyout: true },
-    { label: 'Text', flyout: true },
-    { label: 'Collaborate' },
-    { label: 'Resources' },
-  ];
-  const mx = 214;
-  const my = 16;
-  return (
-    <Scene w={420} h={256}>
-      <Shape x={56} y={60} w={112} h={56} accent label="Order" />
-      <SelectionBox x={56} y={60} w={112} h={56} />
-      <Panel x={mx} y={my} w={160} h={8 + sections.length * 25}>
-        {sections.map((sec, i) => {
-          const ry = my + 4 + i * 25;
-          const on = sec.label === 'Style';
-          return (
-            <g key={sec.label}>
-              {on && (
-                <rect x={mx + 4} y={ry} width={152} height={23} rx={5} className="fill-brand-50" />
-              )}
-              <Label
-                x={mx + 14}
-                y={ry + 12}
-                size={11}
-                weight={on ? 600 : 500}
-                tone={on ? 'accent' : 'body'}
-              >
-                {sec.label}
-              </Label>
-              <path
-                d={
-                  sec.flyout
-                    ? `M${mx + 142} ${ry + 8} l4 4 l-4 4`
-                    : `M${mx + 140} ${ry + 10} l4 4 l4 -4`
-                }
-                className="stroke-slate-400"
-                strokeWidth={1.4}
-                fill="none"
-                strokeLinecap="round"
-              />
-            </g>
-          );
-        })}
-      </Panel>
-    </Scene>
-  );
-}
-
-/** The bottom-left Map panel: a zoomed-out wireframe of the canvas, the area
- *  outside your view dimmed, and a brand rectangle marking what you see. */
-export function Minimap() {
-  return (
-    <Scene w={420} h={210}>
-      {/* The canvas the map mirrors. */}
-      <Shape x={196} y={26} w={68} h={38} label="A" />
-      <Shape x={176} y={116} w={62} h={36} accent label="B" />
-      <Shape x={300} y={116} w={62} h={36} kind="circle" label="C" />
-      {/* Elbow connectors down out of A, splitting to B and C, one level arrowhead each. */}
-      <path
-        d="M230 64 V88 H207 V108 M230 88 H331 V108"
-        className="fill-none stroke-brand-400"
-        strokeWidth={2}
-        strokeLinejoin="round"
-      />
-      <Arrow from={[207, 106]} to={[207, 116]} tone="accent" />
-      <Arrow from={[331, 106]} to={[331, 116]} tone="accent" />
-      {/* The Map panel, bottom-left, with the current-view box. */}
-      <Panel x={20} y={110} w={136} h={88} title="MAP">
-        <rect x={26} y={136} width={124} height={56} rx={4} className="fill-slate-100" />
-        <rect x={52} y={146} width={70} height={40} rx={3} className="fill-white" />
-        {/* The miniature in the shapes' own colours, labels left out. */}
-        <rect
-          x={80}
-          y={150}
-          width={20}
-          height={10}
-          rx={2}
-          className="fill-white stroke-brand-300"
-          strokeWidth={1}
-        />
-        <rect x={68} y={172} width={17} height={9} rx={2} className="fill-brand-500" />
-        <circle cx={112} cy={176} r={5} className="fill-white stroke-brand-300" strokeWidth={1} />
-        <path
-          d="M90 160 V166 H76 V172 M90 166 H112 V171"
-          className="fill-none stroke-brand-300"
-          strokeWidth={1}
-        />
-        <rect
-          x={52}
-          y={146}
-          width={70}
-          height={40}
-          rx={3}
-          fill="none"
-          className="stroke-brand-500"
-          strokeWidth={1.6}
-        />
-      </Panel>
     </Scene>
   );
 }

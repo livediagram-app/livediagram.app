@@ -1,6 +1,6 @@
 import type { Browser, Page } from '@playwright/test';
 import { expect, guestSigFor, ownerHeaders, test } from './fixtures';
-import { openDocument } from './home-seed';
+import { openProject } from './home-seed';
 
 // Screens the dark-mode audits (contrast, optical alignment) open: a seeded diagram shaped like a real one,
 // a dark visitor, a share link, and a fresh identity-less visitor.
@@ -24,30 +24,30 @@ export async function darkVisitor(page: Page, owner?: string): Promise<void> {
 
 // A diagram shaped like a real one: an actor, boxes, and solid and dashed labelled arrows, on the
 // Default scheme, so the canvas ink is the palette's own.
-export async function seedDocument(page: Page, owner: string, origin: string): Promise<string> {
-  return (await seedDrawnDocument(page, owner, origin)).id;
+export async function seedProject(page: Page, owner: string, origin: string): Promise<string> {
+  return (await seedDrawnProject(page, owner, origin)).id;
 }
 
 // The seeded diagram as a returning owner left it: opened once, as the editor opens it, so it is
-// in Home's Jump Back In (docs/specs/013-workspace/explorer-home.md: a document made but never
+// in Home's Jump Back In (docs/specs/013-workspace/explorer-home.md: a project made but never
 // opened is not, D133).
-export async function seedOpenedDocument(
+export async function seedOpenedProject(
   page: Page,
   owner: string,
   origin: string,
 ): Promise<string> {
-  const doc = await seedDrawnDocument(page, owner, origin);
-  await openDocument(page.request, owner, doc);
+  const doc = await seedDrawnProject(page, owner, origin);
+  await openProject(page.request, owner, doc);
   return doc.id;
 }
 
-// The opened document's thumbnail in Home's Jump Back In, and its row on a listing view.
+// The opened project's thumbnail in Home's Jump Back In, and its row on a listing view.
 export const jumpBackIn = (page: Page, name: string) =>
   page.getByRole('region', { name: 'Jump Back In' }).getByRole('link', { name });
-export const documentRow = (page: Page, name: string) =>
+export const projectRow = (page: Page, name: string) =>
   page.locator('main section').getByRole('link', { name, exact: true });
 
-async function seedDrawnDocument(
+async function seedDrawnProject(
   page: Page,
   owner: string,
   origin: string,
@@ -90,7 +90,7 @@ async function seedDrawnDocument(
     arrow('x2', 'actor', 's', 'UI'),
     arrow('x3', 'a', 'r', 'Use personal assistant', true),
   ];
-  const res = await page.request.post(`${apiBase}/documents`, {
+  const res = await page.request.post(`${apiBase}/projects`, {
     headers: ownerHeaders(owner, { Origin: origin }),
     data: { id, name: 'Contrast', tabs: [{ id: tabId, name: 'Runa', elements }] },
   });
@@ -104,7 +104,7 @@ export async function shareLink(
   origin: string,
   id: string,
 ): Promise<string> {
-  const res = await page.request.post(`${apiBase}/documents/${id}/share`, {
+  const res = await page.request.post(`${apiBase}/projects/${id}/share`, {
     headers: ownerHeaders(owner, { Origin: origin, 'Content-Type': 'application/json' }),
     data: {},
   });

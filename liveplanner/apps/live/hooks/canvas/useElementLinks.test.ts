@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { createLinkCard, createShape, type Element, type Tab } from '@liveplanner/document';
+import { createLinkCard, createShape, type Element, type Tab } from '@liveplanner/project';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 const api = vi.hoisted(() => ({ apiUnfurl: vi.fn() }));
@@ -23,7 +23,7 @@ function links(selected: string) {
       setSelectedId: () => {},
       setEditingId: () => {},
       setFormatSourceId: () => {},
-      openDocument: () => {},
+      openProject: () => {},
     }),
   ).result.current;
 }

@@ -11,7 +11,7 @@ import type {
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk, expectOkOrNull } from './core';
 
 // How a redemption ended: a session, a refusal the page shows as such (the ticket was used, expired
-// or unknown, or its document is gone), or a failure it shows as a load error.
+// or unknown, or its project is gone), or a failure it shows as a load error.
 export type WorkbenchRedeemOutcome =
   | { kind: 'opened'; session: WorkbenchSessionResponse }
   | { kind: 'refused'; status: number; reason: InvalidTicketReason | null }

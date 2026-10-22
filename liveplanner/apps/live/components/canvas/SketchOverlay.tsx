@@ -12,10 +12,10 @@ import {
   type BoxedElement,
   type Finish,
   type HandDrawnPaint,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 // A sketched element's body on the canvas (docs/specs/008-canvas/finish.md "Sketch"): the hand-drawn outline,
-// solid fill with faint pencil shading over it, and chrome from sketch-element.ts in @liveplanner/document, the same drawing the
+// solid fill with faint pencil shading over it, and chrome from sketch-element.ts in @liveplanner/project, the same drawing the
 // SVG export emits. It stands in for the wrapper's CSS border and background (element-variant.ts drops them
 // under Sketch) and for the shape's SVG overlay (ShapeContentRouter skips it), and sits under the label. Marker's
 // felt-tip body (docs/specs/008-canvas/finish.md "Marker", marker-element.ts) takes the same place, drawn in layers of

@@ -20,7 +20,7 @@
 // happy accident for a dot-vote, and the turnout numbers below answer the
 // question the host actually has ("is everyone done?") without it.
 
-import { itemIdOfVoteKey, votesSpentBy, type Element, type TabVote } from '@liveplanner/document';
+import { itemIdOfVoteKey, votesSpentBy, type Element, type TabVote } from '@liveplanner/project';
 import { itemTitle } from '@liveplanner/items';
 import { usePlan } from '@/components/plan/PlanContext';
 import { describeOne } from '@/lib/element-names';
@@ -64,7 +64,7 @@ export function VotePanel({
   // The active tab's elements, only to resolve a voted id to a label.
   elements: Element[];
   // Everyone in the room right now (remote presence + you). The
-  // denominator for turnout; 1 on a solo document.
+  // denominator for turnout; 1 on a solo project.
   participantCount: number;
   // The ranked results from useVoteReview — the SAME array the
   // walkthrough steps through, so the list and Previous / Next can never
@@ -353,7 +353,7 @@ function VoteResultsList({
   // shared, so a follower clicking a row would move the whole room.
   canControl: boolean;
 }) {
-  // The document's cards, to name a Plan card's row.
+  // The project's cards, to name a Plan card's row.
   const plan = usePlan();
   if (results.length === 0) {
     return (

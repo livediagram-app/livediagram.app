@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { type Element, type Layer } from '@liveplanner/document';
+import { type Element, type Layer } from '@liveplanner/project';
 import { useLayerThumbnails } from '@/hooks/ui/useLayerThumbnails';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { LayerRow } from '@/components/panels/LayerRow';
@@ -25,7 +25,7 @@ export const SINGLE_LAYER_HINT =
 // The popover never moves, so its MovablePanel's move handler has nothing to do.
 const NO_MOVE = () => {};
 
-// The Layers panel (docs/specs/006-document/layers.md "The Layers panel"): a header bar (layer
+// The Layers panel (docs/specs/006-project/layers.md "The Layers panel"): a header bar (layer
 // count + New Layer), one roomy row per layer, TOP layer first (the panel mirrors the paint stack
 // like every design tool; see LayerRow), and a footer acting on the ACTIVE layer (Merge Up / Merge
 // Down / Delete, with an anchored confirm when it still has elements; the last layer can't be
@@ -79,7 +79,7 @@ export function LayersPanel({
   onReorderLayer: (layerId: string, toIndex: number) => void;
   // Merge the ACTIVE layer into its neighbour; the neighbour survives.
   onMergeLayer: (direction: 'above' | 'below') => void;
-  // Row context-menu verbs (docs/specs/006-document/layers.md). Opacity is a live slider (the hook
+  // Row context-menu verbs (docs/specs/006-project/layers.md). Opacity is a live slider (the hook
   // debounces its history step); clear + hide-others are one-shot.
   onSetLayerOpacity: (layerId: string, opacity: number) => void;
   onClearLayer: (layerId: string) => void;
@@ -90,8 +90,8 @@ export function LayersPanel({
   // The hover-solo user preference (docs/specs/007-editor/user-preferences.md) + its setter, surfaced in
   // the header gear alongside Reset position.
   hoverPreviewEnabled: boolean;
-  // Row density (docs/specs/006-document/layers.md): the thumbnail and the element count are each
-  // optional, so a document with many layers reads as a compact list.
+  // Row density (docs/specs/006-project/layers.md): the thumbnail and the element count are each
+  // optional, so a project with many layers reads as a compact list.
   showPreview: boolean;
   showCount: boolean;
 } & Pick<MovablePanelPopoverProps, 'popoverOpen' | 'popoverAnchor' | 'onPopoverClose'>) {
@@ -112,7 +112,7 @@ export function LayersPanel({
   // tiles via useLayerThumbnails.
   const { thumbMarkup, thumbViewBox } = useLayerThumbnails(elements, layers, tabFont);
 
-  // Row context menu (docs/specs/006-document/layers.md): which layer it targets + where to hang
+  // Row context menu (docs/specs/006-project/layers.md): which layer it targets + where to hang
   // it (the panel's left edge at the clicked row).
   const [rowMenu, setRowMenu] = useState<{
     layerId: string;
@@ -199,11 +199,11 @@ export function LayersPanel({
     <MovablePanel
       helpArticle="layers"
       title="Layers"
-      // A popover over its bottom-right cluster button (docs/specs/006-document/layers.md): never placed or dragged.
+      // A popover over its bottom-right cluster button (docs/specs/006-project/layers.md): never placed or dragged.
       position={null}
       defaultCorner="bottom-right"
       width="w-auto sm:w-80"
-      // Roomy rows (docs/specs/006-document/layers.md "The Layers panel"): the default 16rem crushed the
+      // Roomy rows (docs/specs/006-project/layers.md "The Layers panel"): the default 16rem crushed the
       // name between the preview and the row controls.
       popoverWidth="w-[22rem]"
       onMoveTo={NO_MOVE}
@@ -321,7 +321,7 @@ export function LayersPanel({
               aria-label="Delete Layer"
               onClick={(e) => {
                 // Empty layers delete straight away; a populated one
-                // asks first via an anchored popover (docs/specs/006-document/layers.md).
+                // asks first via an anchored popover (docs/specs/006-project/layers.md).
                 if (activeCount === 0) onRemoveLayer(activeLayerId);
                 else setConfirmAnchor(e.currentTarget);
               }}

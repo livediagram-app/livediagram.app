@@ -10,7 +10,7 @@
 const TAB_LESS_DELIVERED = new Set([
   'share-revoked',
   'share-rescoped',
-  'document-trashed',
+  'project-trashed',
   // The type catalogue holds no content and every tab's cards need it
   // (docs/specs/026-plan/item-types.md "Storage and sync").
   'item-types',
@@ -37,7 +37,7 @@ export function opForScope(op: unknown, tabScope: string | null): unknown {
   if (tabScope === null) return op;
   const o = asOp(op);
   if (!o) return null;
-  if (o.kind === 'document-meta') return redactDocumentMeta(o, tabScope);
+  if (o.kind === 'project-meta') return redactProjectMeta(o, tabScope);
   // Item writes may touch items another tab shows: a scoped session hears that the store
   // moved on, without the items, and refetches the ones its tab shows
   // (docs/specs/026-plan/items.md "Who may do what").
@@ -52,14 +52,14 @@ export function opForScope(op: unknown, tabScope: string | null): unknown {
 export function scopedSenderMayRelay(op: unknown, tabScope: string | null): boolean {
   if (tabScope === null) return true;
   const o = asOp(op);
-  if (!o || o.kind === 'document-meta') return false;
+  if (!o || o.kind === 'project-meta') return false;
   return onScope(o, tabScope) === true;
 }
 
-// document-meta carries every tab's name and folder. Other tabs keep their id
-// and position and are marked out of scope, exactly like the REST document
-// (redactDocumentForScope).
-function redactDocumentMeta(o: LooseOp, tabScope: string): unknown {
+// project-meta carries every tab's name and folder. Other tabs keep their id
+// and position and are marked out of scope, exactly like the REST project
+// (redactProjectForScope).
+function redactProjectMeta(o: LooseOp, tabScope: string): unknown {
   if (!Array.isArray(o.tabs)) return null;
   return {
     ...o,

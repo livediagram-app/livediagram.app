@@ -3,14 +3,14 @@
 A **Sheet** is a spreadsheet on the canvas: one tab of a workbook, as a person knows it from Google Sheets or
 Microsoft Excel. It is placed from Plan mode's **Sheet** palette category (under the **Spreadsheets** heading), moved and resized like a
 [Plan board](../026-plan/plan-board.md), and maximised like one. Its cells are not stored on the canvas: the
-element frames one sheet of the document's [sheet store](sheet-store.md), and the [formulas](formulas.md) in its
+element frames one sheet of the project's [sheet store](sheet-store.md), and the [formulas](formulas.md) in its
 cells are worked out in every browser that shows it.
 
 ## Domain language
 
 | Term              | Means                                                                                      | Never called             |
 | ----------------- | ------------------------------------------------------------------------------------------ | ------------------------ |
-| **sheet**         | One grid of cells with a title, in the document's sheet store, framed by one Sheet element | spreadsheet, table, grid |
+| **sheet**         | One grid of cells with a title, in the project's sheet store, framed by one Sheet element | spreadsheet, table, grid |
 | **Sheet element** | The canvas element (`plan-sheet`) that frames a sheet; in the interface, **Sheet**         | sheet widget             |
 | **cell**          | One square of the grid, named by its column letter and row number (`B4`)                   | field, box               |
 | **input**         | What a cell holds as typed: a number, text, a true/false or a formula; stored              | raw value, source        |
@@ -70,7 +70,7 @@ the left beside Cell Size and Freeze Header Row on the right.
 - The list is Start From (Blank, Plan Cards, Import CSV), then the templates under their group headings, **Money**,
   **Work** and **People and Life**, each its own option list (side by side in two columns on a wide screen), a row per
   template with its glyph, name and line. Choosing a template chooses its look too: Style opens on **Banded**.
-- Plan Cards (offered when the document has live cards) adds two steps after Start From: **Cards**, the Cards panel's
+- Plan Cards (offered when the project has live cards) adds two steps after Start From: **Cards**, the Cards panel's
   own search with its filters in the box ([Finding a card](../026-plan/items.md), Card Type always offered) with a
   count ("12 cards"; Next waits for one; when nothing is found, the shared no-match empty state, "No cards match
   “<words>”" or "No cards match these filters" with **Clear Search**, [Empty states](../004-interface-design/empty-states.md)) and, under it, the first 10 cards found by number (each its
@@ -193,10 +193,10 @@ rule under it, gridlines off), **Plain** (no fills, colours or borders; bold and
   element's colours; corners follow Corners (12 px by default).
 - A selected Sheet element has no quick-connect pluses.
 - **Loading**: until its cells arrive, the frame and title show the site's loader in a Sheet's form, the opening
-  screen's look ([New document route](../007-editor/new-document-route.md)): the shared **SheetBuildAnimation** (the
+  screen's look ([New project route](../007-editor/new-project-route.md)): the shared **SheetBuildAnimation** (the
   same "You" cursor and timing as DiagramBuildAnimation, typing numbers into a small table, a bar growing beside each,
   then a total), **Opening Sheet** and the progress sweep. Reduced motion shows the finished table, still. A sheet
-  that cannot load says "Couldn't load this sheet" (**Try Again**); one no longer in the document says so (**Remove**,
+  that cannot load says "Couldn't load this sheet" (**Try Again**); one no longer in the project says so (**Remove**,
   for an editor), both over skeleton grid lines.
 
 ### Header
@@ -430,7 +430,7 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
 ### Clipboard
 
 - **Copy** puts the selection on the clipboard three ways: as the sheet's own cells (inputs and formats), as
-  tab-separated text, and as an HTML table, so pasting into Google Sheets, Excel, a document or an email keeps its
+  tab-separated text, and as an HTML table, so pasting into Google Sheets, Excel, a project or an email keeps its
   rows and columns. **Copy** and **Cut** mark the range with a dashed border, kept while the selection moves,
   until Escape, an edit, or (for a cut) the paste.
 - **Paste** of the sheet's own cells puts the inputs and formats at the active cell, and formulas' relative
@@ -564,7 +564,7 @@ view gets the header and **Copy** alone.
 ### Readable cells
 
 A cell's colours are stored as picked (hex), but drawn for the Sheet they are shown on, so a sheet set up or
-coloured in one theme reads in the other (`@liveplanner/document` `cellColours`):
+coloured in one theme reads in the other (`@liveplanner/project` `cellColours`):
 
 - On a dark Sheet a pale fill (contrast with white under 1.35: a band, a total's tint, an input's yellow, a light
   highlight) is drawn as 16% of itself over the Sheet's surface: its hue, quietly. On a light Sheet a dark grey tint
@@ -671,7 +671,7 @@ whole Sheet.
   element's thread does, and survives undo the same way (`cellComments` is a live field).
 - **Comments panel**: the Collaborate panel lists each cell thread as its own row, named by the Sheet's label and the
   cell (`Budget!B4`) once the Sheet is drawn ("Budget (Deleted Cell)" when its row or column is gone, "Budget" alone
-  before it is drawn), opening the popover on that cell, the cell selected and scrolled into view first. The document's thread listing (`GET /api/documents/:id/comments`) gives each cell thread its
+  before it is drawn), opening the popover on that cell, the cell selected and scrolled into view first. The project's thread listing (`GET /api/projects/:id/comments`) gives each cell thread its
   `cell` and, where the sheet is stored, its A1 (`cellRef`).
 - **Copies**: a Sheet copied and pasted, or duplicated, never carries its cell threads: the copy frames a new sheet,
   and a thread is a conversation about the original's cells (`freshCopyFields`, as a pasted element leaves its own
@@ -839,8 +839,8 @@ A sheet maximises exactly as a board does ([Maximised board](../026-plan/plan-bo
 
 ## Zoom
 
-While a Sheet covers the canvas (maximised, or filling its tab), the canvas cannot zoom, so the bottom-right zoom
-controls zoom the **sheet's cells** instead of standing down as they do for a board or view
+A Sheet is the only tab that zooms. While it covers the canvas (maximised, or filling its tab) the bottom-right zoom
+controls zoom the **sheet's cells**; on any other tab they are not shown
 ([Maximised board](../026-plan/plan-board.md#maximised-board)):
 
 - **Ctrl (or Cmd) and the wheel**, or a trackpad pinch, zoom the sheet's cells too, smoothly within the same range;
@@ -896,15 +896,15 @@ not in Sheet Settings, not anywhere.
 Every tab is in Plan, so a Sheet element goes on any tab, as a board does
 ([Plan tabs](../026-plan/plan-tabs.md#only-in-plan)).
 
-- A Sheet element is never added to another document by a tab's **Add to Document**, as a board's tab is not.
+- A Sheet element is never added to another project by a tab's **Add to Project**, as a board's tab is not.
 
 ## Copying a Sheet element
 
 - Duplicating or copying and pasting a Sheet element makes a **new sheet** with a copy of its cells, formats,
   rows, columns, freeze, merges and filter, titled `Sheet 1 (copy)` (or the next free title on its tab). The two
   are independent from then on.
-- A paste into another document carries the cells on the clipboard; past the clipboard's limit (the sheet store's
-  write limit), the paste is refused ("This sheet is too big to paste into another document; download it as CSV
+- A paste into another project carries the cells on the clipboard; past the clipboard's limit (the sheet store's
+  write limit), the paste is refused ("This sheet is too big to paste into another project; download it as CSV
   instead").
 - References to other sheets in a copied sheet's formulas keep their titles, so they read the sheets of those
   titles on the tab it lands on (or show `#REF!`).
@@ -934,11 +934,11 @@ Every tab is in Plan, so a Sheet element goes on any tab, as a board does
 - Images, thumbnails, PDFs, slides and api or MCP renders draw the Sheet element as in other modes: header, column
   and row headers, and the cells that fit its frame from the top left (after frozen rows and columns), with values
   worked out from the sheet store.
-- Card functions ([Formulas](formulas.md#plan-cards)) in an export read the document's items, as boards do.
+- Card functions ([Formulas](formulas.md#plan-cards)) in an export read the project's items, as boards do.
 
 ## Performance
 
-- Placing, scrolling, editing and recalculating a sheet must cost nothing to a document without one: its code and
+- Placing, scrolling, editing and recalculating a sheet must cost nothing to a project without one: its code and
   the formula engine load the first time a Sheet element is drawn, and its cells are fetched only for sheets on the
   open tab.
 - Scrolling stays smooth at the sheet's limits (only cells in view are drawn); an edit recalculates only the cells

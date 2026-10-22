@@ -4,16 +4,16 @@ Status: shipped
 
 ## What
 
-Measure how the public pages turn visitors into documents: for every call to
+Measure how the public pages turn visitors into projects: for every call to
 action (CTA) that links into the editor, how many people it brought to `/new`,
-and how many of those went on to create a document. Read beside the page views
+and how many of those went on to create a project. Read beside the page views
 [Page view telemetry](../017-telemetry/page-view-telemetry.md) already counts, that gives a three-step funnel per page and per
 button:
 
 1. **Viewed**: the page was viewed (`Page·View·<path>`, [Page view telemetry](../017-telemetry/page-view-telemetry.md)).
 2. **Arrived**: somebody followed one of its CTAs and `/new` opened
    (`Cta·Opened·<source>`).
-3. **Created**: that visit went on to create a document (`Cta·Created·<source>`).
+3. **Created**: that visit went on to create a project (`Cta·Created·<source>`).
 
 The dashboard's **Pages** tab opens with the funnel (see Dashboard below).
 
@@ -21,7 +21,7 @@ The dashboard's **Pages** tab opens with the funnel (see Dashboard below).
 
 Before this the marketing site reported page views and nothing else, so no
 change to the landing page could be judged. "Does the hero convert better
-than the closing CTA?", "do the template gallery's cards create documents?",
+than the closing CTA?", "do the template gallery's cards create projects?",
 "is Start Blank or Choose Template the stronger button?", "does anyone start
 from a comparison page?" had no answer. [Marketing site](marketing-site.md)'s landing page work (a new
 headline, fewer sections, a prompt in the hero) needs a number to move before
@@ -43,7 +43,7 @@ The editor's `/new` page reads it once on arrival and then:
   URL they share.
 - Sends `Cta·Opened·<source>` straight away.
 - Holds the source for the life of the page and sends `Cta·Created·<source>`
-  beside the usual `Document·Created` when the document is committed, whichever
+  beside the usual `Project·Created` when the project is committed, whichever
   path committed it (the wizard's Create, its Skip, or a Start Blank / template
   bypass).
 
@@ -119,8 +119,8 @@ The slots:
 - `Closing`: the shared "Time to start" band (`StartPlanningCta`).
 - `Card`: the Start planning card at the foot of the comparison and FAQ pages.
 
-A link into `/new` from a public page with no source (the apps menu's Editor
-item, a link inside a help article) is deliberately not a CTA and is not
+A link into `/new` from a public page with no source (the Explorer
+footer's Editor link, a link inside a help article) is deliberately not a CTA and is not
 counted. Adding a CTA means adding its slot to `CTA_SOURCES` and building its
 `href` with `ctaHref(href, source)`; `cta-sources.test.ts` pins the table.
 
@@ -141,7 +141,7 @@ The Pages section of the Pages & Help tab ([Page view telemetry](../017-telemetr
 pages, for the selected window:
 
 - **A headline strip** across the whole public site: page views of the
-  surfaces above, arrivals from their CTAs, documents created from them, and
+  surfaces above, arrivals from their CTAs, projects created from them, and
   the two step rates (views → arrivals, arrivals → created) plus the overall
   rate (views → created).
 - **One card per surface**, busiest first: its three counts drawn as a
@@ -149,8 +149,8 @@ pages, for the selected window:
   slot (label, arrivals, created, and the slot's conversion rate) so the
   buttons on one page can be compared directly. Every slot is listed, unused
   ones included, since a button nobody presses is what this is for spotting.
-  When two or more slots created documents, the one that created the most
-  (ties to the better conversion) is tagged **Most documents**. A surface with
+  When two or more slots created projects, the one that created the most
+  (ties to the better conversion) is tagged **Most projects**. A surface with
   no views and no arrivals in the window is left out, with a line naming it.
 - Each headline count carries the dashboard's usual trend arrow against the
   span before the window, and the overall rate shows what it was then.
@@ -166,8 +166,8 @@ The helpers (`cta-funnel.ts`) are pure and tested apart from the view, like
 
 ### The Dashboard tab
 
-A **Calls to Action** chart stack (CTA Arrivals and Documents from CTAs, headed by
-Documents from CTAs) sits beside the funnel in the Pages section; it left the
+A **Calls to Action** chart stack (CTA Arrivals and Projects from CTAs, headed by
+Projects from CTAs) sits beside the funnel in the Pages section; it left the
 Dashboard's Visitors group in October 2026.
 
 ## Out of scope
@@ -178,7 +178,7 @@ Dashboard's Visitors group in October 2026.
   second.
 - **Which template a gallery visit created** beyond `Template·Used`, which
   already names it.
-- **Attribution beyond the first document.** The source lives for one `/new`
+- **Attribution beyond the first project.** The source lives for one `/new`
   page; what that person does next is not linked to it.
 - Referrers, campaigns and UTM parameters from other sites. The vocabulary is
   our own buttons only.

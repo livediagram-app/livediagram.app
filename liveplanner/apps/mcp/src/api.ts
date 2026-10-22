@@ -1,9 +1,15 @@
 // Thin client for the api worker over the service binding (docs/specs/015-api/mcp-server.md §2), over the
-// shared `@liveplanner/api-client`. Every call forwards the caller's Bearer lvd_ token; the api resolves it
+// shared `@liveplanner/api-client`. Every call forwards the caller's Bearer lwt_ token; the api resolves it
 // to the owning account and applies the SAME authorization every route already enforces, so the MCP needs
 // no special privilege and adds no business logic.
-import { ApiError, createApiClient, postEvents, type ApiClient } from '@liveplanner/api-client';
+import { ApiError, createApiClient, type ApiClient } from '@liveplanner/api-client';
 import { errorTypeToken } from '@liveplanner/api-schema';
+import {
+  TELEMETRY_EVENTS_PATH,
+  TELEMETRY_KEY_HEADER,
+  TELEMETRY_URL,
+  type TelemetryBatch,
+} from '@liveworkspace/telemetry';
 import type { Env } from './env';
 import { keepAlive } from './request-scope';
 import { currentTool } from './tool-scope';
@@ -33,22 +39,28 @@ export function apiFetch(
   return clientFor(env, token).fetch(path, init);
 }
 
-// Fire-and-forget anonymous telemetry to the api's public /api/events (docs/specs/017-telemetry/telemetry.md),
+// Fire-and-forget anonymous telemetry to liveworkspace's central service (liveworkspace/docs/telemetry.md),
 // handed to the request's waitUntil (request-scope.ts) so the runtime can't cancel it when the response
-// goes out. The internal key keeps the MCP out of the anonymous per-IP rate-limit bucket (issue #36): a
-// service binding carries no CF-Connecting-IP. Off unless the api has TELEMETRY_ENABLED.
+// goes out. A Worker sends no Origin, so the post carries liveplanner's Worker key; without one there is
+// nothing to send. Whether it is stored is the service's call (its TELEMETRY_ENABLED).
 export function postTelemetry(env: Env, category: string, action: string, type: string): void {
-  const headers: Record<string, string> = env.INTERNAL_EVENTS_KEY
-    ? { 'X-Internal-Events-Key': env.INTERNAL_EVENTS_KEY }
-    : {};
-  keepAlive(
-    postEvents(
-      API_BASE,
-      (request) => env.API.fetch(request),
-      [{ category, action, type }],
-      headers,
-    ),
-  );
+  const key = env.TELEMETRY_KEY;
+  if (!key) return;
+  const batch: TelemetryBatch = { app: 'liveplanner.app', events: [{ category, action, type }] };
+  try {
+    keepAlive(
+      fetch(`${env.TELEMETRY_URL || TELEMETRY_URL}${TELEMETRY_EVENTS_PATH}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', [TELEMETRY_KEY_HEADER]: key },
+        body: JSON.stringify(batch),
+      }).then(
+        () => {},
+        () => {},
+      ),
+    );
+  } catch {
+    // Telemetry never fails a tool.
+  }
 }
 
 // Fetch + parse JSON, throwing ApiError on a non-2xx so tools surface a clear, model-correctable message.
@@ -63,7 +75,7 @@ export function apiJson<T>(
   return clientFor(env, token).json<T>(path, init);
 }
 
-// A text answer (a document view, docs/specs/024-agents/document-views.md) with its ETag, failing exactly
+// A text answer (a project view, docs/specs/024-agents/project-views.md) with its ETag, failing exactly
 // as apiJson does.
 export async function apiText(
   env: Env,
@@ -75,7 +87,7 @@ export async function apiText(
 }
 
 // One MCP-side api failure to the Error category, labelled with the tool that was running
-// (`Http503.UpdateDocument`, `Internal.FindDocuments`; docs/specs/017-telemetry/telemetry.md).
+// (`Http503.UpdateProject`, `Internal.FindProjects`; docs/specs/017-telemetry/telemetry.md).
 export function reportApiFailure(env: Env, kind: string): void {
   postTelemetry(env, 'Error', 'Api', errorTypeToken(kind, currentTool()));
 }

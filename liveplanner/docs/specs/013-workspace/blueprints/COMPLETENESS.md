@@ -17,7 +17,7 @@
 - [x] Constants and configuration
 - [x] Defaults ledger
 
-## document-placement
+## project-placement
 
 - [x] Domain and naming
 - [x] Behaviour and state
@@ -149,7 +149,7 @@
 - [x] Assets and external resources
 - [x] Defaults ledger
 
-## empty-document-cleanup
+## empty-project-cleanup
 
 - [x] Domain and naming
 - [x] Behaviour and state

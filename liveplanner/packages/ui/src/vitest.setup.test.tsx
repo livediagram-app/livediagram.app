@@ -13,7 +13,7 @@ describe('DOM cleanup between tests', () => {
     expect(document.querySelector('[data-testid="leaked"]')).not.toBeNull();
   });
 
-  it('starts the next test with an empty document', () => {
+  it('starts the next test with an empty project', () => {
     expect(document.body.innerHTML).toBe('');
   });
 });

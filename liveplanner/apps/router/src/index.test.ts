@@ -26,16 +26,14 @@ function makeEnv() {
   const marketing = mockFetcher();
   const live = mockFetcher();
   const api = mockFetcher();
-  const telemetry = mockFetcher();
   const help = mockFetcher();
   const env: Env = {
     MARKETING: marketing.fetcher,
     LIVE: live.fetcher,
     API: api.fetcher,
-    TELEMETRY: telemetry.fetcher,
     HELP: help.fetcher,
   };
-  return { env, marketing, live, api, telemetry, help };
+  return { env, marketing, live, api, help };
 }
 
 const dispatch = (path: string, env: Env) =>
@@ -44,8 +42,8 @@ const dispatch = (path: string, env: Env) =>
 describe('production dispatch (service bindings)', () => {
   it('forwards /api/* to the api worker with the prefix KEPT', async () => {
     const { env, api } = makeEnv();
-    await dispatch('/api/documents/abc', env);
-    expect(api.urls).toEqual(['https://liveplanner.app/api/documents/abc']);
+    await dispatch('/api/projects/abc', env);
+    expect(api.urls).toEqual(['https://liveplanner.app/api/projects/abc']);
   });
 
   it('strips /live off the asset-prefix requests for the live worker', async () => {
@@ -54,12 +52,10 @@ describe('production dispatch (service bindings)', () => {
     expect(live.urls).toEqual(['https://liveplanner.app/_next/static/chunk.js']);
   });
 
-  it('strips the basePath for telemetry and help, keeping the query', async () => {
-    const { env, telemetry, help } = makeEnv();
-    await dispatch('/telemetry/data?window=30', env);
-    expect(telemetry.urls).toEqual(['https://liveplanner.app/data?window=30']);
-    await dispatch('/help/canvas/themes/', env);
-    expect(help.urls).toEqual(['https://liveplanner.app/canvas/themes/']);
+  it('strips the basePath for help, keeping the query', async () => {
+    const { env, help } = makeEnv();
+    await dispatch('/help/user-interface/themes/', env);
+    expect(help.urls).toEqual(['https://liveplanner.app/user-interface/themes/']);
   });
 
   it("puts the prefix back on a stripped app's own redirect, keeping its query", async () => {
@@ -83,17 +79,35 @@ describe('production dispatch (service bindings)', () => {
   });
 
   it('a bare stripped prefix forwards as the root path', async () => {
-    const { env, telemetry } = makeEnv();
-    await dispatch('/telemetry', env);
-    expect(telemetry.urls).toEqual(['https://liveplanner.app/']);
+    const { env, help } = makeEnv();
+    await dispatch('/help', env);
+    expect(help.urls).toEqual(['https://liveplanner.app/']);
+  });
+
+  it('sends /telemetry and below to the central dashboard, filtered to liveplanner', async () => {
+    const { env } = makeEnv();
+    for (const path of ['/telemetry', '/telemetry/', '/telemetry/anything?window=30']) {
+      const res = await dispatch(path, env);
+      expect(res.status, path).toBe(301);
+      expect(res.headers.get('Location'), path).toBe(
+        'https://liveworkspace.app/telemetry?app=liveplanner.app',
+      );
+    }
+    const staging = await dispatch('/telemetry', {
+      ...env,
+      TELEMETRY_DASHBOARD_URL: 'https://staging.liveworkspace.app/telemetry',
+    });
+    expect(staging.headers.get('Location')).toBe(
+      'https://staging.liveworkspace.app/telemetry?app=liveplanner.app',
+    );
   });
 
   it('forwards the clean live page routes UNstripped', async () => {
     const { env, live } = makeEnv();
-    await dispatch('/document/abc123', env);
+    await dispatch('/project/abc123', env);
     await dispatch('/new?blank=1', env);
     expect(live.urls).toEqual([
-      'https://liveplanner.app/document/abc123',
+      'https://liveplanner.app/project/abc123',
       'https://liveplanner.app/new?blank=1',
     ]);
   });
@@ -130,10 +144,10 @@ describe('local-dev dispatch (origin proxy)', () => {
     const fetchMock = vi.fn((_req: Request) => Promise.resolve(new Response('ok')));
     vi.stubGlobal('fetch', fetchMock);
     try {
-      await dispatch('/telemetry/data', { TELEMETRY_ORIGIN: 'http://localhost:3103' });
+      await dispatch('/help/data', { HELP_ORIGIN: 'http://localhost:3104' });
       const req = fetchMock.mock.calls[0]![0];
       // Dev servers serve their own basePath, so no strip on this path.
-      expect(req.url).toBe('http://localhost:3103/telemetry/data');
+      expect(req.url).toBe('http://localhost:3104/help/data');
     } finally {
       vi.unstubAllGlobals();
     }
@@ -234,7 +248,7 @@ describe('staging noindex header', () => {
   });
 
   it('marks the api and the editor too, not just the indexable pages', async () => {
-    for (const path of ['/api/documents/abc', '/document/xyz', '/help/canvas/shadows/']) {
+    for (const path of ['/api/projects/abc', '/project/xyz', '/help/canvas/shadows/']) {
       const { env } = makeEnv();
       const res = await dispatch(path, staging(env));
       expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
@@ -243,7 +257,7 @@ describe('staging noindex header', () => {
 
   it('marks the 308 redirect for a prefix-less help article', async () => {
     const { env } = makeEnv();
-    const res = await dispatch('/canvas/shadows/', staging(env));
+    const res = await dispatch('/plan/boards/', staging(env));
     expect(res.status).toBe(308);
     expect(res.headers.get('X-Robots-Tag')).toBe('noindex, nofollow');
   });
@@ -272,7 +286,7 @@ describe('staging noindex header', () => {
       API: { fetch: () => Promise.resolve(upgrade) } as unknown as Fetcher,
       DEPLOY_ENV: 'staging',
     };
-    const res = await dispatch('/api/documents/abc/ws', env);
+    const res = await dispatch('/api/projects/abc/ws', env);
     expect(res).toBe(upgrade);
     expect(res.webSocket).toBe(socket);
   });
@@ -289,9 +303,8 @@ describe('the caching rules', () => {
       MARKETING: answering('<html></html>', html),
       LIVE: answering('<html></html>', html),
       HELP: answering('<html></html>', html),
-      TELEMETRY: answering('<html></html>', html),
     };
-    for (const page of ['/', '/explorer/unsorted', '/help/canvas/', '/telemetry']) {
+    for (const page of ['/', '/explorer/unsorted', '/help/canvas/']) {
       expect((await dispatch(page, env)).headers.get('Cache-Control'), page).toBe('no-store');
     }
     const assets: Env = {

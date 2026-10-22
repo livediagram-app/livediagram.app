@@ -119,34 +119,25 @@ describe('a canvas chord a role may not run', () => {
 });
 
 // docs/specs/013-workspace/share-roles.md "The Participant palette": each tile works as an Editor's does, its key too.
-describe("a Participant's palette keys", () => {
-  it('add what its tiles add, and nothing an Editor alone adds', () => {
-    const addSticky = vi.fn();
-    const addText = vi.fn();
-    const addShape = vi.fn();
-    const { bag } = deps({
-      selectedId: null,
-      isReadOnly: true,
-      participant: true,
-      addSticky,
-      addText,
-      addShape,
-    });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    expect(press('n').defaultPrevented).toBe(true);
-    press('t');
-    press('r');
-    expect(addSticky).toHaveBeenCalledTimes(1);
-    expect(addText).toHaveBeenCalledTimes(1);
-    expect(addShape).not.toHaveBeenCalled();
-  });
-
-  it("are not a Viewer's", () => {
-    const addSticky = vi.fn();
-    const { bag } = deps({ selectedId: null, isReadOnly: true, addSticky });
-    renderHook(() => useEditorKeyboardShortcuts(bag));
-    expect(press('n').defaultPrevented).toBe(false);
-    expect(addSticky).not.toHaveBeenCalled();
+describe('plain letter and digit keys', () => {
+  it('add nothing for any role: the canvas tool and element-add keys went with the palette', () => {
+    for (const role of [
+      { isReadOnly: false, participant: false },
+      { isReadOnly: true, participant: true },
+      { isReadOnly: true, participant: false },
+    ]) {
+      const addSticky = vi.fn();
+      const addText = vi.fn();
+      const addShape = vi.fn();
+      const { bag } = deps({ selectedId: null, ...role, addSticky, addText, addShape });
+      const { unmount } = renderHook(() => useEditorKeyboardShortcuts(bag));
+      for (const key of ['n', 't', 'r', '2', 'v', 'h', 'i'])
+        expect(press(key).defaultPrevented, key).toBe(false);
+      expect(addSticky).not.toHaveBeenCalled();
+      expect(addText).not.toHaveBeenCalled();
+      expect(addShape).not.toHaveBeenCalled();
+      unmount();
+    }
   });
 });
 
@@ -155,7 +146,7 @@ describe('onShortcutUsed', () => {
     const { bag, spies } = deps();
     renderHook(() => useEditorKeyboardShortcuts(bag));
     press('Delete');
-    press('v');
+    press('z');
     expect(spies.onShortcutUsed).toHaveBeenCalledTimes(2);
   });
 
@@ -163,7 +154,7 @@ describe('onShortcutUsed', () => {
     const { bag, spies } = deps({ selectedId: null });
     renderHook(() => useEditorKeyboardShortcuts(bag));
     press('Delete');
-    const claimed = new KeyboardEvent('keydown', { key: 'v', bubbles: true, cancelable: true });
+    const claimed = new KeyboardEvent('keydown', { key: 'z', bubbles: true, cancelable: true });
     claimed.preventDefault();
     window.dispatchEvent(claimed);
     expect(spies.onShortcutUsed).not.toHaveBeenCalled();
@@ -327,7 +318,7 @@ describe('Escape on a just-grown mind node (docs/specs/009-elements/mind-node.md
   });
 });
 
-// docs/specs/007-editor/start-diagramming.md "Undo and redo reach the editor through an empty search".
+// docs/specs/007-editor/start-panel.md "Undo and redo reach the editor through an empty search".
 describe('undo and redo from the start search', () => {
   function pressIn(input: HTMLInputElement, key: string, init: KeyboardEventInit = {}) {
     const e = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init });

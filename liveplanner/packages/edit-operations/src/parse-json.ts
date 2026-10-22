@@ -9,16 +9,10 @@ import type { EditOperation, ParseOutcome } from './types';
 import {
   EDIT_MAX_ERRORS,
   EDIT_OPERATION_NAMES,
-  LAYOUT_DIRECTIONS,
-  LAYOUT_STYLES,
   OPERATION_MEMBERS,
-  ORDER_ENDS,
-  PLACEMENT_GAP_MAX,
-  PLACEMENT_RELATIONS,
-  WRAP_CONTAINERS,
   type EditOperationName,
 } from './vocabulary';
-import { isRecord } from '@liveplanner/document';
+import { isRecord } from '@liveplanner/project';
 
 type Raw = Record<string, unknown>;
 
@@ -26,138 +20,28 @@ const isOneOf = <T extends string>(names: readonly T[], word: unknown): word is 
   typeof word === 'string' && names.some((name) => name === word);
 
 const isText = (v: unknown): v is string => typeof v === 'string' && v !== '';
-const isFiniteNumber = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
-
 const expected = (member: string, what: string) => `member "${member}": expected ${what}`;
 
-// The rule a placement breaks, or null.
-export function placementIssue(value: unknown): string | null {
-  const what = `{ "rel", "ref" } or { "rel": "at", "x", "y" }`;
-  if (!isRecord(value)) return expected('place', what);
-  if (value.rel === 'at') {
-    const extra = Object.keys(value).find((key) => !['rel', 'x', 'y'].includes(key));
-    if (extra !== undefined) return expected('place', `no "${extra}" with "at"`);
-    return isFiniteNumber(value.x) && isFiniteNumber(value.y)
-      ? null
-      : expected('place', '"x" and "y" numbers with "at"');
-  }
-  if (!isOneOf(PLACEMENT_RELATIONS, value.rel))
-    return expected('place', `"rel" one of ${[...PLACEMENT_RELATIONS, 'at'].join(', ')}`);
-  const extra = Object.keys(value).find(
-    (key) => !['rel', 'ref', 'gap', 'within', 'alignTo'].includes(key),
-  );
-  if (extra !== undefined) return expected('place', `no "${extra}" with "${value.rel}"`);
-  if (!isText(value.ref)) return expected('place', '"ref" a non-empty selector');
-  if (value.within !== undefined) {
-    if (value.rel === 'inside') return expected('place', 'no "within" with "inside"');
-    if (!isText(value.within)) return expected('place', '"within" a non-empty selector');
-  }
-  if (value.alignTo !== undefined) {
-    if (value.rel === 'inside' || value.rel === 'align')
-      return expected('place', `no "alignTo" with "${value.rel}"`);
-    if (!isText(value.alignTo)) return expected('place', '"alignTo" a non-empty selector');
-  }
-  const gap = value.gap;
-  if (
-    gap !== undefined &&
-    !(Number.isInteger(gap) && Number(gap) >= 0 && Number(gap) <= PLACEMENT_GAP_MAX)
-  )
-    return expected('place', `"gap" a whole number from 0 to ${PLACEMENT_GAP_MAX}`);
-  return null;
-}
-
-// The rule one member breaks, or null. `to` is an end in `order` and a selector elsewhere.
-function memberIssue(name: EditOperationName, raw: Raw, member: string): string | null {
+// The rule one member breaks, or null.
+function memberIssue(raw: Raw, member: string): string | null {
   const value = raw[member];
   switch (member) {
     case 'target':
-    case 'from':
-    case 'above':
-    case 'below':
-    case 'kind':
-    case 'id':
-      return isText(value) ? null : expected(member, 'a non-empty string');
-    case 'to':
-      if (name === 'order')
-        return isOneOf(ORDER_ENDS, value) ? null : expected(member, ORDER_ENDS.join(' or '));
       return isText(value) ? null : expected(member, 'a non-empty string');
     case 'fields':
     case 'element':
       return isRecord(value) ? null : expected(member, 'an object');
-    case 'place':
-      return placementIssue(value);
-    case 'by':
-      return Array.isArray(value) && value.length === 2 && value.every(isFiniteNumber)
-        ? null
-        : expected(member, '[dx, dy] numbers');
-    case 'between':
-      return Array.isArray(value) && value.length === 2 && value.every(isText)
-        ? null
-        : expected(member, '[a, b] selectors');
-    case 'targets':
-      return Array.isArray(value) && value.length > 0 && value.every(isText)
-        ? null
-        : expected(member, 'a non-empty array of selectors');
-    case 'in':
-      return isOneOf(WRAP_CONTAINERS, value) ? null : expected(member, 'frame or lane');
-    case 'style':
-      return isOneOf(LAYOUT_STYLES, value) ? null : expected(member, LAYOUT_STYLES.join(', '));
-    case 'direction':
-      return isOneOf(LAYOUT_DIRECTIONS, value)
-        ? null
-        : expected(member, LAYOUT_DIRECTIONS.join(' or '));
     default:
       return typeof value === 'boolean' ? null : expected(member, 'true or false');
   }
 }
 
 const REQUIRED: Readonly<Record<EditOperationName, readonly string[]>> = {
-  add: [],
+  add: ['element'],
   set: ['target', 'fields'],
   rm: ['target'],
-  move: ['target'],
-  connect: ['from', 'to'],
-  rewire: ['target'],
-  insert: ['kind', 'between'],
-  wrap: ['targets', 'in'],
-  unwrap: ['target'],
-  order: ['target'],
-  layout: ['target'],
   test: ['target', 'fields'],
 };
-
-// Members of which exactly one, at most one (`atMostOne`) or at least one (`atLeastOne`) is given,
-// and how the line form says them.
-const CHOICES: Readonly<
-  Partial<
-    Record<
-      EditOperationName,
-      { members: readonly string[]; atMostOne?: true; atLeastOne?: true; inLines: string }
-    >
-  >
-> = {
-  add: { members: ['kind', 'element'], inLines: 'add <kind> key=value…' },
-  move: {
-    members: ['place', 'by'],
-    inLines: 'a placement such as below:n3 or right-of:n3, or by=dx,dy',
-  },
-  rewire: { members: ['from', 'to'], atLeastOne: true, inLines: 'from=<x>, to=<y> or both' },
-  order: { members: ['to', 'above', 'below'], inLines: 'front, back, above=<x> or below=<x>' },
-  wrap: { members: ['absorb', 'makeRoom'], atMostOne: true, inLines: 'absorb or make-room' },
-};
-
-function choiceIssue(name: EditOperationName, raw: Raw): string | null {
-  const choice = CHOICES[name];
-  if (!choice) return null;
-  const given = choice.members.filter(
-    (member) => raw[member] !== undefined && raw[member] !== false,
-  );
-  if (given.length === 1 || (given.length === 0 && choice.atMostOne)) return null;
-  if (given.length > 1 && choice.atLeastOne) return null;
-  const quoted = choice.members.map((member) => `"${member}"`).join(', ');
-  const which = choice.atMostOne ? 'at most' : choice.atLeastOne ? 'at least' : 'exactly';
-  return `${which} one of ${quoted} (in a line: ${choice.inLines})`;
-}
 
 // Booleans present only when `true`, so `false` reads as absent.
 function withoutFalse(raw: Raw): Raw {
@@ -182,18 +66,8 @@ export function validateEditOperation(
     );
   for (const member of members.slice(1)) {
     if (!REQUIRED[name].includes(member) && raw[member] === undefined) continue;
-    const issue = memberIssue(name, raw, member);
+    const issue = memberIssue(raw, member);
     if (issue) return parseError(operation, issue);
-  }
-  const choice = choiceIssue(name, raw);
-  if (choice) return parseError(operation, `${name} takes ${choice}`);
-  if (name === 'add' && raw.element !== undefined) {
-    const extra = ['kind', 'id', 'fields', 'place'].find((member) => raw[member] !== undefined);
-    if (extra !== undefined)
-      return parseError(
-        operation,
-        `add with "element" takes no "${extra}": the element carries it`,
-      );
   }
   // Every member was checked against its operation's shape above.
   return withoutFalse(raw) as EditOperation;

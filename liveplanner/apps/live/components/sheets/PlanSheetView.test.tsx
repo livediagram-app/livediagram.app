@@ -6,7 +6,7 @@
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { emptyLayout, type SheetJson } from '@liveplanner/sheets';
-import type { Element, ShapeElement } from '@liveplanner/document';
+import type { Element, ShapeElement } from '@liveplanner/project';
 import * as api from '@/lib/api/sheets';
 import { CanvasSurfaceProvider } from '@/components/canvas/CanvasSurfaceContext';
 import { PlanProvider, type PlanContextValue } from '@/components/plan/PlanContext';
@@ -66,7 +66,7 @@ const element = (planSheet: { sheetId: string; copyOf?: string }): ShapeElement 
 
 function bridge(over: Partial<SheetsBridge> = {}) {
   const b = {
-    scope: { documentId: `docV${docSeq++}`, ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: `docV${docSeq++}`, ownerId: 'o', shareCode: null, tabId: null },
     activeTabId: 't1',
     self: by,
     canEdit: true,
@@ -165,10 +165,10 @@ describe('the faces', () => {
     expect(fetchSheets).toHaveBeenCalledTimes(2);
   });
 
-  it('offers an editor Remove for a sheet no longer in the document', async () => {
+  it('offers an editor Remove for a sheet no longer in the project', async () => {
     const b = bridge();
     draw(element({ sheetId: 'goneAAAA1' }), b);
-    await screen.findByText('This sheet is no longer in this document');
+    await screen.findByText('This sheet is no longer in this project');
     fireEvent.click(screen.getByRole('button', { name: 'Remove' }));
     const map = vi.mocked(b.commitElements).mock.calls[0]![0] as (els: Element[]) => Element[];
     const els = [{ id: 'el1' }, { id: 'el2' }] as Element[];
@@ -177,7 +177,7 @@ describe('the faces', () => {
 
   it('offers no Remove to someone who cannot edit', async () => {
     draw(element({ sheetId: 'goneAAAA1' }), bridge({ canEdit: false }));
-    await screen.findByText('This sheet is no longer in this document');
+    await screen.findByText('This sheet is no longer in this project');
     expect(screen.queryByRole('button', { name: 'Remove' })).toBeNull();
   });
 

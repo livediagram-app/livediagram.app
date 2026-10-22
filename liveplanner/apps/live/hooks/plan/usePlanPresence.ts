@@ -22,7 +22,7 @@ export function usePlanPresence(opts: {
   // Read at send time, so the publisher keeps one identity across renders.
   const send = useLatest(opts.send);
   // Whether the last thing said held an item: a release is only worth sending after a hold, so a
-  // document that never opens or drags a card sends nothing at all.
+  // project that never opens or drags a card sends nothing at all.
   const holding = useRef(false);
   const [holds, setHolds] = useState<ReadonlyMap<string, Hold>>(new Map());
   const lastSent = useRef<string>('');

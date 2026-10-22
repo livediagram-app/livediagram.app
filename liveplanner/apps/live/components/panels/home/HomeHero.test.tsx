@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Home's hero (docs/specs/013-workspace/explorer-home.md "The hero"): the status pills open their views, the
-// greeting is the page's heading, New Document starts one, the lens field is drawn large with New Document inside
+// greeting is the page's heading, New Project starts one, the lens field is drawn large with New Project inside
 // it, the previews are a Board, a Sheet, a Dashboard and a Form for everyone, and the menu button opens the drawer.
 
 const { track, lensField, commitUserPreferences } = vi.hoisted(() => ({
@@ -17,9 +17,9 @@ vi.mock('@/lib/user-preferences', async (orig) => ({
   ...(await orig<typeof import('@/lib/user-preferences')>()),
   commitUserPreferences,
 }));
-vi.mock('@/components/panels/DocumentThumbnail', () => ({
-  DocumentThumbnail: () => {
-    throw new Error('the hero draws no document thumbnails');
+vi.mock('@/components/panels/ProjectThumbnail', () => ({
+  ProjectThumbnail: () => {
+    throw new Error('the hero draws no project thumbnails');
   },
 }));
 vi.mock('@/app/explorer/lens/LensField', () => ({
@@ -55,7 +55,7 @@ const setMobileNavOpen = vi.fn();
 function renderHero(over: Partial<ExplorerStateValue> = {}, active = true) {
   const value = {
     ownerId: 'me',
-    documents: [
+    projects: [
       { id: 'a', name: 'A', savedAt: 1 },
       { id: 'b', name: 'B', savedAt: 3 },
       { id: 'c', name: 'C', savedAt: 2 },
@@ -63,10 +63,10 @@ function renderHero(over: Partial<ExplorerStateValue> = {}, active = true) {
     ],
     loading: false,
     shared: [],
-    teamDocuments: [],
-    offlineDocuments: [],
-    clerkUserId: null,
-    failedReads: { documents: false, shared: false },
+    teamProjects: [],
+    offlineProjects: [],
+    accountUserId: null,
+    failedReads: { projects: false, shared: false },
     activity: { assignedToMe: [{}, {}], loading: false, error: false },
     go,
     setMobileNavOpen,
@@ -109,13 +109,13 @@ describe('HomeHero', () => {
     expect(screen.getByRole('region', { name: heading.textContent })).toBeTruthy();
   });
 
-  it('counts the documents and the Inbox in pills that open their views', () => {
+  it('counts the projects and the Inbox in pills that open their views', () => {
     renderHero();
-    const docs = screen.getByRole('link', { name: '4 documents' });
+    const docs = screen.getByRole('link', { name: '4 projects' });
     expect(docs.getAttribute('href')).toBe('/explorer/all');
     fireEvent.click(docs);
     expect(go).toHaveBeenLastCalledWith({ kind: 'all' });
-    expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.Documents');
+    expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.Projects');
     fireEvent.click(screen.getByRole('link', { name: '2 open in your Inbox' }));
     expect(go).toHaveBeenLastCalledWith({ kind: 'inbox' });
     expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.Inbox');
@@ -126,25 +126,25 @@ describe('HomeHero', () => {
       loading: true,
       activity: { assignedToMe: [], loading: true, error: false },
     } as unknown as Partial<ExplorerStateValue>);
-    expect(screen.queryByRole('link', { name: /documents?$/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /projects?$/ })).toBeNull();
     expect(screen.queryByRole('link', { name: /Inbox/ })).toBeNull();
   });
 
-  it('draws no documents pill when the list failed to load, never "0 documents"', () => {
+  it('draws no projects pill when the list failed to load, never "0 projects"', () => {
     renderHero({
-      documents: [],
-      failedReads: { documents: true, shared: false },
+      projects: [],
+      failedReads: { projects: true, shared: false },
     });
-    expect(screen.queryByRole('link', { name: /documents?$/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /projects?$/ })).toBeNull();
   });
 
-  it('draws the lens field large with New Document inside it', () => {
+  it('draws the lens field large with New Project inside it', () => {
     renderHero();
     const lens = screen.getByTestId('lens');
     expect(lens.dataset.size).toBe('hero');
-    fireEvent.click(within(lens).getByRole('button', { name: 'New Document' }));
+    fireEvent.click(within(lens).getByRole('button', { name: 'New Project' }));
     expect(assign).toHaveBeenCalledWith('/new');
-    expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.NewDocument');
+    expect(track).toHaveBeenLastCalledWith('Home', 'Selected', 'Hero.NewProject');
   });
 
   it('draws its field still while it folds away, so the page holds one live field', () => {
@@ -155,7 +155,7 @@ describe('HomeHero', () => {
   });
 
   // The previews are static: the same four for everyone, labelled for assistive technology, and nothing fetched.
-  it('fans a Board, a Sheet, a Dashboard and a Form, labelled, whatever the documents', async () => {
+  it('fans a Board, a Sheet, a Dashboard and a Form, labelled, whatever the projects', async () => {
     const fetchSpy = vi.spyOn(globalThis, 'fetch');
     renderHero();
     const group = await screen.findByRole('group', { name: 'What a project can hold' });
@@ -169,11 +169,11 @@ describe('HomeHero', () => {
   });
 
   it('welcomes a person with nothing yet: plain pills, the template search, the same previews', async () => {
-    renderHero({ documents: [] });
+    renderHero({ projects: [] });
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
       'Welcome to liveplanner. What are you making first?',
     );
-    expect(screen.queryByRole('link', { name: /documents?$/ })).toBeNull();
+    expect(screen.queryByRole('link', { name: /projects?$/ })).toBeNull();
     expect(screen.getByText('Free, no trackers')).toBeTruthy();
     expect(screen.getByText('No sign-up to start')).toBeTruthy();
     expect(screen.getByRole('searchbox', { name: 'Search templates' })).toBeTruthy();
@@ -182,7 +182,7 @@ describe('HomeHero', () => {
   });
 
   it('tells a signed-in newcomer their work is saved to their account', () => {
-    renderHero({ documents: [], clerkUserId: 'user_1' });
+    renderHero({ projects: [], accountUserId: 'user_1' });
     expect(screen.getByText('Saved to your account')).toBeTruthy();
   });
 

@@ -6,7 +6,7 @@ import {
   parseColourBackground,
   sameFill,
   type PageColourFill,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { backgroundCategoryOf, isCustomGradient } from './page-paint';
 import {
   colouringOf,

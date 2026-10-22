@@ -9,7 +9,7 @@ graph. Both are editor-only (they mutate) and run a single undoable operation.
 ## Locked elements stay put
 
 Neither tidier moves or resizes a **locked element** or anything on a **locked layer**
-([Layers](../006-document/layers.md)): a lock means "protected from moves and resizes",
+([Layers](../006-project/layers.md)): a lock means "protected from moves and resizes",
 and a cleanup is a bulk move. `cleanupElements` (`lib/tab-cleanup.ts`) collects those ids
 (`lockedElementIds`) and hands them to both passes. Auto-align leaves them unsnapped.
 Auto Layout treats a locked box as scenery rather than a graph node, so arrows to it are
@@ -48,7 +48,7 @@ off", not "this diagram has no layout".
 
 ## Auto Layout (Tidy up)
 
-`autoLayoutElements` (`packages/document/src/auto-layout.ts`, a pure transform over the
+`autoLayoutElements` (`packages/project/src/auto-layout.ts`, a pure transform over the
 element model so importers and the editor share it — see GitHub issue #12). A
 **structural layout**: it reads the arrow graph, splits it into connected components,
 and computes brand-new positions — a layered (Sugiyama-style) layout for DAG-ish
@@ -120,7 +120,7 @@ pick by angle (`reanchorArrow`'s `axis`).
 
 An angled arrow on its own is an L: from a parent's bottom to a child's top it
 runs down to the child's level and meets the child's top edge sideways. Laid-out
-graph input (the graph layout in `packages/document`)
+graph input (the graph layout in `packages/project`)
 gives each angled arrow two bends through `curvePoints` (down to half height,
 across, down into the child), the shape an org chart is read in; one whose ends
 already line up runs straight rather than drawing a zero-length elbow with a
@@ -376,6 +376,4 @@ Opening the popover sends `UI` / `Opened` / `TidyUp`. A press sends the tidier's
 Force-directed ("organic") layouts, laying shapes out inside their lanes (a lane moves only as a
 rigid block, so lane diagrams are offered Auto-align), routing graph input's arrows around
 obstacles (the editor's Tidy Up does), and any LLM
-involvement (the AI "Clean" in [AI Assistance](../007-editor/ai-assistance.md) is the separate,
-key-gated path; Auto Layout is the deterministic, offline-safe one every deployment
-gets). See issue #12 for the fuller rationale and open questions.
+involvement (Auto Layout is deterministic and offline-safe). See issue #12 for the fuller rationale and open questions.

@@ -82,7 +82,7 @@ describe('helpArticleHref / helpArticleTelemetryId', () => {
 
   it('returns a slash-free telemetry id', () => {
     expect(helpArticleTelemetryId('shareLinkExpiry')).toBe('share-link-expiry');
-    expect(helpArticleTelemetryId('palette')).toBe('palette'); // single-segment value
+    expect(helpArticleTelemetryId('palette')).toBe('plan'); // single-segment value
     for (const key of Object.keys(HELP_ARTICLES) as HelpArticleKey[]) {
       expect(helpArticleTelemetryId(key)).toMatch(/^[a-z0-9-]{1,40}$/);
     }

@@ -5,7 +5,7 @@
 // lib/canvas.ts (which re-exports everything here, so importers keep
 // resolving) as one cohesive, DOM-free unit.
 
-import type { Rect } from '@liveplanner/document';
+import type { Rect } from '@liveplanner/project';
 import type { DragMode } from './canvas';
 
 // Floor for any single side of a boxed element during a resize. Below

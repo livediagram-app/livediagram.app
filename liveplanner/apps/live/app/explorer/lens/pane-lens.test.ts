@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { emptyLens, parseLens, type LensContext } from '@liveplanner/explorer-lens';
 import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
 import { indexFolders } from '@/lib/folder-tree';
-import { isLensSet, lensSubjectOf, narrowRows, scopeDocuments } from './pane-lens';
+import { isLensSet, lensSubjectOf, narrowRows, scopeProjects } from './pane-lens';
 
 const NOW = Date.UTC(2026, 5, 15, 12);
 const context: LensContext = { view: 'aggregate', teams: [{ id: 'T1', name: 'Acme' }] };
@@ -21,10 +21,10 @@ function doc(id: string, over: Record<string, unknown> = {}) {
 }
 
 describe('lensSubjectOf', () => {
-  it('reads one of my own documents as mine, by me, with its recorded intent', () => {
+  it('reads one of my own projects as mine, by me, with its recorded intent', () => {
     expect(
       lensSubjectOf(
-        doc('a', { source: 'mcp', opensIn: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }),
+        doc('a', { source: 'mcp', opensIn: 'plan', tabKind: 'board', templateFamily: 'kanban' }),
         'me',
       ),
     ).toMatchObject({
@@ -45,7 +45,7 @@ describe('lensSubjectOf', () => {
     expect(lensSubjectOf(doc('t', { teamId: 'T1' }), 'me').space).toBe('team:T1');
   });
 
-  it('reads a document in this browser as mine and made by me', () => {
+  it('reads a project in this browser as mine and made by me', () => {
     const row = doc('o', { ownerId: OFFLINE_OWNER_ID });
     expect(lensSubjectOf(row, 'me')).toMatchObject({ space: 'mine', people: 'me' });
   });
@@ -67,7 +67,7 @@ describe('lensSubjectOf', () => {
   });
 });
 
-describe('scopeDocuments', () => {
+describe('scopeProjects', () => {
   const { childrenByParent } = indexFolders([
     { id: 'f1', name: 'Projects', parentId: null },
     { id: 'f2', name: 'Acme', parentId: 'f1' },
@@ -81,14 +81,14 @@ describe('scopeDocuments', () => {
   ]);
 
   it('reaches every subfolder of a folder, newest first', () => {
-    expect(scopeDocuments('f1', childrenByParent, byFolder).map((d) => d.id)).toEqual([
+    expect(scopeProjects('f1', childrenByParent, byFolder).map((d) => d.id)).toEqual([
       'in-projects',
       'in-acme',
     ]);
   });
 
   it('reaches the whole tree from the root', () => {
-    expect(scopeDocuments(null, childrenByParent, byFolder).map((d) => d.id)).toEqual([
+    expect(scopeProjects(null, childrenByParent, byFolder).map((d) => d.id)).toEqual([
       'in-archive',
       'in-projects',
       'in-acme',
@@ -100,7 +100,7 @@ describe('scopeDocuments', () => {
 describe('narrowRows', () => {
   const rows = [
     doc('Roadmap', { source: 'mcp' }),
-    doc('Retro notes', { templateFamily: 'retrospective', opensIn: 'diagram', tabKind: 'diagram' }),
+    doc('Retro notes', { templateFamily: 'retrospective', opensIn: 'diagram', tabKind: 'board' }),
   ];
 
   it('keeps the rows the lens matches', () => {

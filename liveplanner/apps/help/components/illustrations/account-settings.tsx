@@ -11,13 +11,13 @@ import { Switch } from './settings-dialog';
 export function TrashView() {
   const rows: [string, string][] = [
     ['Service map', 'Deleted 2 Oct · 25 days left'],
-    ['Untitled document', 'Moved here 1 Oct because it was empty · 24 days left'],
+    ['Untitled project', 'Moved here 1 Oct because it was empty · 24 days left'],
   ];
   return (
     <Scene w={420} h={230} bg="plain">
       <Panel x={14} y={14} w={392} h={128}>
         <Label x={30} y={36} size={11} weight={700} tone="strong">
-          Your documents
+          Your projects
         </Label>
         <Label x={392} y={36} anchor="end" size={10} weight={600} tone="muted">
           Empty Trash
@@ -60,80 +60,6 @@ export function TrashView() {
 
 /** The API Tokens category of Settings: the slot meter, then a token card with
  *  its badge, dates, the last-used dot, the Revoke bin and the lifetime bar with its status. */
-export function ApiTokensList() {
-  return (
-    <Scene w={420} h={220} bg="plain">
-      <Panel x={30} y={14} w={360} h={192}>
-        <Label x={48} y={40} size={13} weight={700} tone="strong">
-          API Tokens
-        </Label>
-        <Button x={312} y={27} w={60} h={24} label="New" />
-        {/* Slot meter: 2 of 10 in use */}
-        {Array.from({ length: 10 }, (_, i) => (
-          <rect
-            key={i}
-            x={48 + i * 26}
-            y={60}
-            width={22}
-            height={6}
-            rx={3}
-            className={i < 2 ? 'fill-brand-500' : 'fill-slate-200'}
-          />
-        ))}
-        {/* The count to the right of the pips. */}
-        <Label x={372} y={64} anchor="end" size={10} weight={600} tone="muted">
-          2 of 10
-        </Label>
-        {/* One token card */}
-        <rect
-          x={48}
-          y={82}
-          width={324}
-          height={104}
-          rx={9}
-          className="fill-white stroke-slate-200"
-          strokeWidth={1.5}
-        />
-        <Label x={64} y={104} size={12} weight={600} tone="strong">
-          Claude
-        </Label>
-        <rect x={116} y={95} width={70} height={18} rx={9} className="fill-slate-100" />
-        <Label x={151} y={105} anchor="middle" size={10} weight={600} tone="body">
-          Read-only
-        </Label>
-        {/* Revoke bin */}
-        <g transform="translate(350 104)">
-          <path
-            d="M-6 -4 H6 M-4 -4 V7 H4 V-4 M-2 -7 H2"
-            className="fill-none stroke-slate-400"
-            strokeWidth={1.6}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </g>
-        <Label x={64} y={128} size={10} tone="muted">
-          Created 7 Oct 2026 ·
-        </Label>
-        <circle cx={176} cy={128} r={3} className="fill-emerald-500" />
-        <Label x={184} y={128} size={10} tone="muted">
-          Used 2 hours ago
-        </Label>
-        {/* Lifetime bar */}
-        <rect x={64} y={146} width={292} height={6} rx={3} className="fill-slate-100" />
-        <rect x={64} y={146} width={36} height={6} rx={3} className="fill-emerald-500" />
-        <Label x={64} y={170} size={10} weight={600} className="fill-emerald-600">
-          Active
-        </Label>
-        <Label x={356} y={170} anchor="end" size={10} tone="muted">
-          Expires in 5 months
-        </Label>
-      </Panel>
-    </Scene>
-  );
-}
-
-/** The consent card an OAuth client opens (an MCP client, the CLI): Connect <client>, what it
- *  asks for, the Read-only access switch, where access will be sent, and Connect / Cancel. */
 export function ConsentCard({
   title,
   intro,
@@ -190,7 +116,7 @@ export function McpConsent() {
     <ConsentCard
       title="Connect Claude"
       intro={[
-        'Claude wants to access your liveplanner documents',
+        'Claude wants to access your liveplanner projects',
         'on your behalf. Approving creates an API token.',
       ]}
       sentTo="claude.ai"
@@ -202,8 +128,8 @@ export function McpConsent() {
  *  switches a signed-in account gets, one whole-row toggle each. */
 export function NotificationSettings() {
   const rows: [string, boolean][] = [
-    ['Someone Joins My Document', true],
-    ['Someone Comments on My Document', true],
+    ['Someone Joins My Project', true],
+    ['Someone Comments on My Project', true],
     ['Someone Mentions Me in a Comment', true],
     ['Tips and Check-Ins', false],
   ];

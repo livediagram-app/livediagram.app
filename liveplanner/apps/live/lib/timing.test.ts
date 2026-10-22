@@ -2,8 +2,8 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  documentLoadOrigin,
-  noteDocumentLoadEnded,
+  projectLoadOrigin,
+  noteProjectLoadEnded,
   resetTimingForTests,
   sampleSaveTiming,
   setTimingTrack,
@@ -21,7 +21,7 @@ const navigationTo = (url: string) =>
 
 beforeEach(() => {
   resetTimingForTests();
-  window.history.replaceState(null, '', '/document/abc');
+  window.history.replaceState(null, '', '/project/abc');
 });
 afterEach(() => {
   vi.restoreAllMocks();
@@ -41,28 +41,28 @@ describe('startEditorTiming', () => {
   });
 });
 
-describe('documentLoadOrigin', () => {
-  it('is the navigation start when the page opened on this document', () => {
-    navigationTo(`${window.location.origin}/document/abc?s=x`);
-    expect(documentLoadOrigin()).toBe(0);
+describe('projectLoadOrigin', () => {
+  it('is the navigation start when the page opened on this project', () => {
+    navigationTo(`${window.location.origin}/project/abc?s=x`);
+    expect(projectLoadOrigin()).toBe(0);
   });
 
   it('is now for an in-app arrival', () => {
     navigationTo(`${window.location.origin}/explorer`);
-    expect(documentLoadOrigin()).toBeUndefined();
+    expect(projectLoadOrigin()).toBeUndefined();
   });
 
   it("is now once the page's first load has ended, even back on the same address", () => {
-    navigationTo(`${window.location.origin}/document/abc`);
-    noteDocumentLoadEnded();
-    expect(documentLoadOrigin()).toBeUndefined();
+    navigationTo(`${window.location.origin}/project/abc`);
+    noteProjectLoadEnded();
+    expect(projectLoadOrigin()).toBeUndefined();
   });
 
   it('is now where there is no navigation timing', () => {
     vi.spyOn(performance, 'getEntriesByType').mockImplementation(() => {
       throw new Error('unsupported');
     });
-    expect(documentLoadOrigin()).toBeUndefined();
+    expect(projectLoadOrigin()).toBeUndefined();
   });
 });
 

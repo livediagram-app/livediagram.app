@@ -1,8 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
-import { authorizeUrl, createPkcePair, exchangeCode, randomState, refreshTokens } from './oauth';
+import {
+  authorizeUrl,
+  closeAccount,
+  createPkcePair,
+  exchangeCode,
+  randomState,
+  refreshTokens,
+} from './oauth';
 
 const credentials = {
-  accountsUrl: 'https://accounts.liveworkspace.app',
+  accountsUrl: 'https://liveworkspace.app',
   clientId: 'client-1',
   clientSecret: 's3cret',
 };
@@ -39,9 +46,7 @@ describe('authorizeUrl', () => {
         resource: 'https://livediagram.app/api',
       }),
     );
-    expect(url.origin + url.pathname).toBe(
-      'https://accounts.liveworkspace.app/api/auth/oauth2/authorize',
-    );
+    expect(url.origin + url.pathname).toBe('https://liveworkspace.app/api/auth/oauth2/authorize');
     expect(Object.fromEntries(url.searchParams)).toEqual({
       response_type: 'code',
       client_id: 'client-1',
@@ -52,6 +57,21 @@ describe('authorizeUrl', () => {
       code_challenge_method: 'S256',
       resource: 'https://livediagram.app/api',
     });
+  });
+
+  it('asks for the registration page with prompt=create', () => {
+    const url = new URL(
+      authorizeUrl({
+        accountsUrl: credentials.accountsUrl,
+        clientId: 'client-1',
+        redirectUri: 'https://livediagram.app/auth/callback',
+        state: 'st',
+        codeChallenge: 'ch',
+        resource: 'https://livediagram.app/api',
+        prompt: 'create',
+      }),
+    );
+    expect(url.searchParams.get('prompt')).toBe('create');
   });
 });
 
@@ -83,7 +103,7 @@ describe('exchangeCode', () => {
       scope: 'openid email',
     });
     const [url, init] = fetchImpl.mock.calls[0]!;
-    expect(String(url)).toBe('https://accounts.liveworkspace.app/api/auth/oauth2/token');
+    expect(String(url)).toBe('https://liveworkspace.app/api/auth/oauth2/token');
     expect(new Headers(init?.headers).get('authorization')).toBe(
       `Basic ${btoa('client-1:s3cret')}`,
     );
@@ -140,5 +160,25 @@ describe('refreshTokens', () => {
     const body = new URLSearchParams(String(fetchImpl.mock.calls[0]![1]?.body));
     expect(body.get('grant_type')).toBe('refresh_token');
     expect(body.get('refresh_token')).toBe('rt');
+  });
+});
+
+describe('closeAccount', () => {
+  it('sends the access token with basic client auth', async () => {
+    const fetchImpl = tokenResponse({ deleted: true });
+    await closeAccount(credentials, 'at', fetchImpl);
+    const [url, init] = fetchImpl.mock.calls[0]!;
+    expect(String(url)).toBe('https://liveworkspace.app/api/auth/delete-account');
+    expect(init?.method).toBe('POST');
+    expect(new Headers(init?.headers).get('authorization')).toBe(
+      `Basic ${btoa('client-1:s3cret')}`,
+    );
+    expect(JSON.parse(String(init?.body))).toEqual({ token: 'at' });
+  });
+
+  it('throws when the account was not closed', async () => {
+    await expect(
+      closeAccount(credentials, 'at', tokenResponse({ error: 'invalid_token' }, 401)),
+    ).rejects.toThrow('closing the account failed (401)');
   });
 });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildTemplateTabs } from '@liveplanner/templates';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { planPreviewFor } from './plan-preview';
 
 // A Plan tab's preview as the editor exports it (docs/specs/015-api/mcp-server.md §5).

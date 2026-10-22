@@ -11,13 +11,13 @@ import {
   unpaintedShapeInk,
   type BoxedElement,
   type CanvasSurface,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 
 // Every mock-up's canvas is drawn as the editor draws it on the Default theme
 // (docs/specs/004-interface-design/appearance.md, docs/specs/019-marketing/marketing-site.md).
 // The art keeps those colours as CSS custom properties (app/hero-animations.css), so these hold
-// each one to what packages/document itself returns rather than letting a copy drift.
+// each one to what packages/project itself returns rather than letting a copy drift.
 
 const APP = fileURLToPath(new URL('..', import.meta.url));
 const read = (path: string) => readFileSync(`${APP}${path}`, 'utf8');

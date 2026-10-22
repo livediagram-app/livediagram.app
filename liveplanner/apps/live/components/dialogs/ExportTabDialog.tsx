@@ -14,14 +14,13 @@ import {
   tabToJsonText,
   tabToMarkdownText,
   type TabPlanData,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { downloadBlob, exportTabAsPng, exportTabAsSvg, renderTabToSvg } from '@/lib/export-tab';
 import { exportTabAsPdf } from '@/lib/export-tab-pdf';
 import { sanitizeFilename } from '@/lib/sanitize-filename';
 import { ensureIconCatalogs } from '@/lib/icon-registry';
 import { track } from '@/lib/telemetry';
 import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
-import { useTabWindowExport } from './useTabWindowExport';
 import { usePlanImageExport } from './usePlanImageExport';
 import type { ExportFormatKey } from '@liveplanner/plan-art';
 
@@ -37,12 +36,12 @@ const EXPORT_LABEL: Record<Format, string> = {
 };
 
 // A text format taken (downloaded or copied): CSV counts as its board's or Sheet's own CSV download, as the tab menu's
-// Download CSV did; every other format as the document's export.
+// Download CSV did; every other format as the project's export.
 function trackTextExport(format: TextFormat, tab: Pick<Tab, 'kind'>): void {
   // Literal pairs, so the telemetry coverage test finds both.
   if (format === 'csv' && tab.kind === 'sheet') track('Sheet', 'Exported', 'Csv');
   else if (format === 'csv') track('Plan', 'Exported', 'Csv');
-  else track('Document', 'Exported', EXPORT_LABEL[format]);
+  else track('Project', 'Exported', EXPORT_LABEL[format]);
 }
 
 // A Board, Sheet or Dashboard tab's image: flat, no backdrop pattern, every element it draws.
@@ -50,7 +49,7 @@ const PLAIN_IMAGE = { isometric: false, pattern: false, hiddenLayers: true } as 
 
 type ExportTabDialogProps = {
   tab: Tab;
-  documentName: string;
+  projectName: string;
   onClose: () => void;
   // 'tab' (default) exports the whole active tab; 'selection' exports a
   // derived tab whose `elements` are just the multi-selection. The caller
@@ -62,14 +61,9 @@ type ExportTabDialogProps = {
   // image options then leave out "Hidden layers", and hidden layers stay out
   // of the export as they stay off the canvas.
   offerHiddenLayers?: boolean;
-  // The document's tabs, for a Dashboard's slots that show one (docs/specs/026-plan/plan-tabs.md "Export") and for
-  // the tabs a tab window shows (docs/specs/009-elements/tab-window.md "Exports").
-  documentTabs?: readonly Tab[];
-  // Fetch tabs' content (a tab window's tab, which arrives only when opened or fetched); resolves to the failures.
-  loadTabs?: (only: readonly string[]) => Promise<string[]>;
+  // The project's tabs, for a Dashboard's slots that show one (docs/specs/026-plan/plan-tabs.md "Export").
+  projectTabs?: readonly Tab[];
 };
-
-const NO_DOCUMENT_TABS: readonly Tab[] = [];
 
 // The format keys (plan-export-formats.ts).
 export type Format = ExportFormatKey;
@@ -91,7 +85,8 @@ const CARDS: { kind: Format; title: string; description: string }[] = [
   {
     kind: 'markdown',
     title: 'Markdown',
-    description: "A text outline of this tab's elements and connections. Copy it or save a .md.",
+    description:
+      "A text outline of this tab, such as a board's columns and cards. Copy it or save a .md.",
   },
   {
     kind: 'csv',
@@ -161,16 +156,15 @@ const TEXT_PANELS: Record<
 // options bleed onto it.
 export function ExportTabDialog({
   tab,
-  documentName,
+  projectName,
   onClose,
   scope = 'tab',
   offerHiddenLayers = true,
-  documentTabs,
-  loadTabs,
+  projectTabs,
 }: ExportTabDialogProps) {
   // A Board, Sheet or Dashboard tab offers only its formats and exports as laid out; a plan view anywhere draws as its
   // chart (docs/specs/026-plan/plan-tabs.md "Export").
-  const planImage = usePlanImageExport(tab, documentTabs, scope);
+  const planImage = usePlanImageExport(tab, projectTabs, scope);
   const imageTab = planImage.imageTab;
   // Plan boards and cards export with their items (docs/specs/026-plan/plan-board.md).
   const plan = usePlan();
@@ -205,9 +199,7 @@ export function ExportTabDialog({
 
   const isSelection = scope === 'selection';
   const suffix = isSelection ? ' - selection' : '';
-  const baseName = sanitizeFilename(
-    `${documentName || 'document'} - ${tab.name || 'tab'}${suffix}`,
-  );
+  const baseName = sanitizeFilename(`${projectName || 'project'} - ${tab.name || 'tab'}${suffix}`);
 
   // A new load (format picked, tab changed) is not ready until it lands;
   // adjusted during render so the panel never shows the previous load as ready.
@@ -244,34 +236,14 @@ export function ExportTabDialog({
   // three. Stable across renders so the panel can memoise on the toggles.
   const plain = planImage.plain;
   const planExtras = planImage.opts;
-  // Each tab window's tab, fetched and drawn once an image format is picked (docs/specs/009-elements/tab-window.md
-  // "Exports").
-  const windows = useTabWindowExport({
-    tab: imageTab,
-    tabs: documentTabs ?? NO_DOCUMENT_TABS,
-    loadTabs,
-    active: !!active && !isTextFormat(active),
-    items: planOpts,
-  });
-  const windowOpts = useMemo(
-    () =>
-      windows.resolveTabWindow
-        ? {
-            resolveTabWindow: windows.resolveTabWindow,
-            tabWindowFontIds: windows.tabWindowFontIds ?? [],
-          }
-        : {},
-    [windows],
-  );
   const renderPreview = useCallback(
     (opts: { isometric: boolean; pattern: boolean; hiddenLayers: boolean }) =>
       renderTabToSvg(imageTab, {
         ...(plain ? PLAIN_IMAGE : opts),
         ...planOpts,
         ...planExtras,
-        ...windowOpts,
       }),
-    [imageTab, plain, planOpts, planExtras, windowOpts],
+    [imageTab, plain, planOpts, planExtras],
   );
 
   // Render + download an image format with the chosen options (docs/specs/010-palette/style-presets.md).
@@ -289,7 +261,6 @@ export function ExportTabDialog({
         ...(plain ? PLAIN_IMAGE : opts),
         ...planOpts,
         ...planExtras,
-        ...windowOpts,
       };
       if (format === 'png') {
         downloadBlob(await exportTabAsPng(imageTab, renderOpts), `${baseName}.png`);
@@ -298,7 +269,7 @@ export function ExportTabDialog({
       } else {
         downloadBlob(await exportTabAsPdf(imageTab, renderOpts), `${baseName}.pdf`);
       }
-      track('Document', 'Exported', EXPORT_LABEL[format]);
+      track('Project', 'Exported', EXPORT_LABEL[format]);
       onClose();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Export failed.');
@@ -348,13 +319,13 @@ export function ExportTabDialog({
             // A Plan tab as laid out: no canvas to tilt or pattern.
             pageExport={plain}
             // Held until each tab window's tab is drawn, so a download never misses one.
-            busy={busy || !windows.ready}
+            busy={busy}
             error={error}
             hasHiddenLayers={
               !plain && offerHiddenLayers && tabLayers(tab.layers).some((l) => !isLayerVisible(l))
             }
             renderPreview={renderPreview}
-            previewReady={previewReady && planImage.ready && windows.ready}
+            previewReady={previewReady && planImage.ready}
             onExport={(opts) => void runImageExport(active, opts)}
             onBack={() => {
               setError(null);

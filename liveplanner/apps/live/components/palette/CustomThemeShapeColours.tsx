@@ -7,7 +7,7 @@
 // under its Per-shape colours ExpandRow slot.
 
 import type { CSSProperties } from 'react';
-import { elementKindLabel, type ShapeKind } from '@liveplanner/document';
+import { elementKindLabel, type ShapeKind } from '@liveplanner/project';
 import type { CustomThemeDefinition } from '@liveplanner/api-schema';
 import {
   ColorDot,

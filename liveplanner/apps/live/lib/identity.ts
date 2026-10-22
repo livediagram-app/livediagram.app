@@ -3,7 +3,7 @@
 // random colour from a curated palette. This module is the single source
 // for that name/colour generation plus presence-status semantics.
 
-import { fnv1aString } from '@liveplanner/document';
+import { fnv1aString } from '@liveplanner/project';
 import { randomPick } from './random';
 import type { AccessLevel } from '@liveplanner/api-schema';
 
@@ -20,7 +20,7 @@ export const OFFLINE_AFTER_MS = 60 * 60 * 1000;
 
 export type Participant = {
   id: string;
-  // The id this person writes into the DOCUMENT for anything recorded
+  // The id this person writes into the PROJECT for anything recorded
   // per participant — a temperature reading or a dot
   // (docs/specs/012-collaboration/participant-responses.md). Separate from `id` because `id` cannot do that job: for
   // ourselves it is the owner id, which must never be published, and for
@@ -44,16 +44,12 @@ export type Participant = {
   // legacy callers that don't track it can still construct a
   // Participant; treated as "now" when omitted.
   lastActiveAt?: number;
-  // Server-verified share-code role inside this document. Set by the
+  // Server-verified share-code role inside this project. Set by the
   // api worker at WS upgrade time; clients can't forge it. Optional
-  // because guest / private-document sessions don't have a role. The
+  // because guest / private-project sessions don't have a role. The
   // hover card uses it to tag a peer as 'Editor' / 'Viewer' alongside
   // their name.
   role?: AccessLevel;
-  // Their published profile picture (docs/specs/014-identity/profile-picture.md §5), as the room
-  // relayed it; absent for guests, for anyone who turned it off, and on an anonymous viewer's
-  // screen. Our own entry carries our picture whatever the switch says.
-  picture?: string;
   // What their agent is doing on this tab (docs/specs/024-agents/agent-presence.md "In the editor"): the status
   // line an agent set, shown in the hover card, the Collaborators row and the accessible name.
   statusLine?: string;
@@ -61,7 +57,7 @@ export type Participant = {
   agent?: true;
 };
 
-// How this participant is recorded in the document (docs/specs/012-collaboration/participant-responses.md). Falls back
+// How this participant is recorded in the project (docs/specs/012-collaboration/participant-responses.md). Falls back
 // to `id` for a peer whose client is too old to publish a key: they then
 // match no saved answer, which is no worse than before the key existed and
 // is a great deal better than crashing the join on an undefined.
@@ -213,8 +209,8 @@ export function nextFreeColor(taken: Set<string>, preferred?: string): string {
 }
 
 // Up to two characters for the avatar: shared with the headless export, so
-// it lives in @liveplanner/document (names.ts).
-export { initialsOf } from '@liveplanner/document';
+// it lives in @liveplanner/project (names.ts).
+export { initialsOf } from '@liveplanner/project';
 
 // Status ring colour for the header avatar. Greens / oranges / reds are
 // the conventional presence vocabulary.

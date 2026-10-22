@@ -5,7 +5,7 @@ import {
   isAnimatedPattern,
   isSeasonalPattern,
   SEASONAL_BACKGROUND_PATTERNS,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { resolveTheme } from '@/lib/themes';
 import { patternLabel } from '@/components/palette/palette-patterns';
 import {
@@ -17,7 +17,7 @@ import {
   type Season,
 } from './seasonal-looks';
 import { TAB_LOOKS, activeLookId, tabLookById, withLookApplied } from './tab-looks';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 
 // Seasonal looks (docs/specs/011-theme/canvas-and-theme-dialog.md "Seasonal looks").
 const day = (y: number, m: number, d: number) => new Date(y, m - 1, d);

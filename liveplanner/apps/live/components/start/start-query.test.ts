@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import { handStartQuery, takeStartQuery } from './start-query';
 
-// docs/specs/007-editor/new-document-route.md "Choosing a mode"
+// docs/specs/007-editor/new-project-route.md "Choosing a mode"
 describe('start query', () => {
   it('hands a search to the next start panel, once', () => {
     handStartQuery('mind map');

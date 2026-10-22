@@ -1,5 +1,5 @@
-import { planPalette, type PlanPalette } from '@liveplanner/document';
-import { useOptionalEditorContext } from '@/app/document/[id]/EditorContext';
+import { planPalette, type PlanPalette } from '@liveplanner/project';
+import { useOptionalEditorContext } from '@/app/project/[id]/EditorContext';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { getTheme, resolveTabBackdrop } from '@/lib/themes';
 import { startPanelColours } from './start-palette';

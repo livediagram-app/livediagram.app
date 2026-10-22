@@ -8,15 +8,15 @@ Scope, by file:
 
 | File                                                      | Role                                                                         |
 | --------------------------------------------------------- | ---------------------------------------------------------------------------- |
-| `packages/document/src/shape-kind.ts`                     | `'progress-bar'` and `'progress-ring'` in the `ShapeKind` union              |
-| `packages/document/src/element-types.ts`                  | `progress`, `progressAnim`, `progressAnimSpeed`, `progressAnimRepeat` fields |
-| `packages/document/src/animation.ts`                      | `ProgressAnim`, `PROGRESS_ANIMS`, `PROGRESS_LOOPING_ANIMS`, `animLoops`      |
-| `packages/document/src/data-shapes.ts`                    | `isProgressShape`, `clampPercent`, membership of `isSelfDrawingShape`        |
-| `packages/document/src/shape-factory.ts`                  | `SHAPE_DEFAULT_SIZE` rows and the `createShape` seeds                        |
-| `packages/document/src/colors.ts`                         | `SELF_PAINTING_SHAPES` membership (no wrapper border, no Border controls)    |
-| `packages/document/src/svg-render-data.ts`                | `svgProgressBar`, `svgProgressRing`, `PROGRESS_LABEL_PX`: the export body    |
-| `packages/document/src/svg-render-body.ts`                | `svgElementBody`: the export dispatch, its track from `progressTrackColour`  |
-| `packages/document/src/progress-colours.ts`               | `PROGRESS_TRACK_DEFAULT`, `progressTrackColour`, `progressLabelInks`         |
+| `packages/project/src/shape-kind.ts`                     | `'progress-bar'` and `'progress-ring'` in the `ShapeKind` union              |
+| `packages/project/src/element-types.ts`                  | `progress`, `progressAnim`, `progressAnimSpeed`, `progressAnimRepeat` fields |
+| `packages/project/src/animation.ts`                      | `ProgressAnim`, `PROGRESS_ANIMS`, `PROGRESS_LOOPING_ANIMS`, `animLoops`      |
+| `packages/project/src/data-shapes.ts`                    | `isProgressShape`, `clampPercent`, membership of `isSelfDrawingShape`        |
+| `packages/project/src/shape-factory.ts`                  | `SHAPE_DEFAULT_SIZE` rows and the `createShape` seeds                        |
+| `packages/project/src/colors.ts`                         | `SELF_PAINTING_SHAPES` membership (no wrapper border, no Border controls)    |
+| `packages/project/src/svg-render-data.ts`                | `svgProgressBar`, `svgProgressRing`, `PROGRESS_LABEL_PX`: the export body    |
+| `packages/project/src/svg-render-body.ts`                | `svgElementBody`: the export dispatch, its track from `progressTrackColour`  |
+| `packages/project/src/progress-colours.ts`               | `PROGRESS_TRACK_DEFAULT`, `progressTrackColour`, `progressLabelInks`         |
 | `apps/live/components/canvas/ProgressView.tsx`            | Canvas bar and ring, the `lvd-prog-*` class choice                           |
 | `apps/live/components/canvas/ShapeContentRouter.tsx`      | Routes the two kinds to `ProgressView` ahead of `ShapeSvgOverlay`            |
 | `apps/live/app/canvas-motion.css`                         | The `lvd-prog-*` keyframes and their reduced-motion override                 |
@@ -225,14 +225,14 @@ No log fingerprints: rendering is pure and the setters report through telemetry 
 
 | Rule                                              | Test                                                                                                       | File                                                |
 | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
-| `isProgressShape` is exactly the two kinds        | progress covers both the bar and the ring                                                                  | `packages/document/src/data-shapes.test.ts`         |
-| Self-drawing: no editable label                   | is false for the self-drawing data shapes                                                                  | `packages/document/src/element-has-text.test.ts`    |
-| No Border controls                                | offers no border controls for any shape that draws its own body                                            | `packages/document/src/border.test.ts`              |
-| Export draws the body, rasterised in PNG          | draws more than a box and a label for each of them; rasterises every kind whose body the SVG emitter draws | `packages/document/src/export-consistency.test.ts`  |
-| Export on dark paper paints no light track        | paints no element kind on a light base unless the element stores that fill                                 | `packages/document/src/svg-render-surface.test.ts`  |
-| Track follows the paper; label AA on both parts   | `progressTrackColour`, `progressLabelInks`, `svgProgressBar label` cases                                   | `packages/document/src/progress-colours.test.ts`    |
+| `isProgressShape` is exactly the two kinds        | progress covers both the bar and the ring                                                                  | `packages/project/src/data-shapes.test.ts`         |
+| Self-drawing: no editable label                   | is false for the self-drawing data shapes                                                                  | `packages/project/src/element-has-text.test.ts`    |
+| No Border controls                                | offers no border controls for any shape that draws its own body                                            | `packages/project/src/border.test.ts`              |
+| Export draws the body, rasterised in PNG          | draws more than a box and a label for each of them; rasterises every kind whose body the SVG emitter draws | `packages/project/src/export-consistency.test.ts`  |
+| Export on dark paper paints no light track        | paints no element kind on a light base unless the element stores that fill                                 | `packages/project/src/svg-render-surface.test.ts`  |
+| Track follows the paper; label AA on both parts   | `progressTrackColour`, `progressLabelInks`, `svgProgressBar label` cases                                   | `packages/project/src/progress-colours.test.ts`    |
 | Canvas splits the label per part, clips grow      | `ProgressView bar label` cases                                                                             | `apps/live/components/canvas/ProgressView.test.tsx` |
-| Fill colour supported                             | stays on for the shapes that do paint one                                                                  | `packages/document/src/colors.test.ts`              |
+| Fill colour supported                             | stays on for the shapes that do paint one                                                                  | `packages/project/src/colors.test.ts`              |
 | Setter patches only its kind, empty = no trace    | `makeShapePatcher` cases (rating fixture)                                                                  | `apps/live/hooks/canvas/shape-patcher.test.ts`      |
 | Seeds `progress: 50`, `progressAnim: 'fill'`      | none [GE11]                                                                                                |                                                     |
 | `clampPercent` rounds and clamps                  | none [GE11]                                                                                                |                                                     |

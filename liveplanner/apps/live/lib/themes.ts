@@ -1,5 +1,5 @@
 // The shared theme ENGINE (catalogue, types, recolour / switch / reset / preset
-// transforms) now lives in @liveplanner/document so the MCP worker (docs/specs/015-api/mcp-server.md)
+// transforms) now lives in @liveplanner/project so the MCP worker (docs/specs/015-api/mcp-server.md)
 // themes tabs identically to the editor. This file re-exports it and adds
 // the LIVE-ONLY layer: custom-theme (per-owner, docs/specs/011-theme/custom-themes.md) resolution and the
 // new-element colour derivation that depends on it. The ~120 `@/lib/themes`
@@ -22,7 +22,7 @@ import {
   type BoxedElement,
   type Tab,
   type ThemeDefinition,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { getResolvedAppearance } from '@liveplanner/ui';
 import { lookupCustomTheme } from './custom-theme-registry';
 
@@ -42,8 +42,8 @@ export {
   rederiveColorPresetForTheme,
   themePresetColors,
   themeChartPalette,
-} from '@liveplanner/document';
-export type { ThemeId, ThemeDefinition, ShapeColorPreset } from '@liveplanner/document';
+} from '@liveplanner/project';
+export type { ThemeId, ThemeDefinition, ShapeColorPreset } from '@liveplanner/project';
 
 // Resolve an id to its real ThemeDefinition, or `undefined` when the id names
 // nothing we know — a deleted custom theme (docs/specs/011-theme/custom-themes.md), or a custom id whose owner
@@ -83,7 +83,7 @@ export function themeViewMap(
 // into the module registry, so a `custom:<uuid>` id resolves here synchronously
 // like any built-in. Falls through to the catalogue (and ultimately the default)
 // when the id isn't a registered custom theme — including a deleted one, so a
-// document never breaks. The MCP worker, which has no registry, uses
+// project never breaks. The MCP worker, which has no registry, uses
 // getBuiltInTheme directly instead.
 // `appearance` defaults to the CURRENT VIEWER's (the module-level appearance
 // store, no React needed), so every one of the ~120 existing callers gets the
@@ -103,7 +103,7 @@ export function getTheme(
 // (docs/specs/011-theme/light-and-dark.md). It is the same in both editor modes
 // (docs/specs/007-editor/editor-modes.md "One look"); a viewer's Draw pattern is laid over it by
 // resolveViewBackdrop. Nothing is written back —
-// the document keeps whichever half was current when the scheme was applied,
+// the project keeps whichever half was current when the scheme was applied,
 // and every other viewer resolves it to their own.
 //
 // Only the two COLOURS swap. The pattern, its opacity and its scale are layout
@@ -155,7 +155,7 @@ export function deriveNewBoxedColours(
   // its whole trick is that an element carries no colour, so it can read as
   // dark ink to one viewer and light ink to another (docs/specs/007-editor/live-app.md). Deriving from
   // the dark half's canvas here would bake one viewer's chrome into the
-  // document for everybody. A canvas the USER coloured still derives normally —
+  // project for everybody. A canvas the USER coloured still derives normally —
   // that is their choice, and it is stored.
   if (
     (tab.theme === undefined || tab.theme === DEFAULT_SCHEME_ID) &&

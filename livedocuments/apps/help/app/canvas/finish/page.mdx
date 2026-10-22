@@ -1,0 +1,53 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Choosing a Finish',
+  description:
+    'Draw a tab or one element Flexible, Professional, Sketch or Marker: crisp print-ready lines, a pencil-sketched whiteboard look, or bold felt-tip marker.',
+  path: '/help/canvas/finish/',
+});
+
+<ArticleLayout
+  title="Choosing a Finish"
+  description="Change how lines, corners and lettering are drawn, from crisp and print-ready to sketched or drawn in marker by hand."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+>
+
+A **finish** is how a tab's elements are drawn, apart from their colours. Every tab has one, and any shape, arrow, text, sticky note or table can carry its own. Polygons and paths you draw yourself follow their tab's finish too. Switching a finish never changes an element's size, colour or text, so switching back puts everything exactly as it was.
+
+## The four finishes
+
+- **Flexible** is the everyday look: soft rounded corners, medium lines, a gentle shadow under boxes and a paper peel under sticky notes. New tabs start here.
+- **Professional** is crisp and print-ready: square corners, thin lines (line icons included, unless you gave one a weight of its own), clean Inter lettering, no default shadows, and arrows you draw become right-angled connectors. Everything inside an element goes square and flat too: a panel's buttons and chips, a concept graphic's bands, a sticker's plate. Circles and true pills, such as avatars and status dots, keep their shape.
+- **Sketch** looks drawn by hand on a whiteboard: wobbly double-stroked outlines, coloured fills shaded over with pencil lines, a handwriting font (unless the tab or the element has a font of its own), arrowheads drawn as two loose strokes, and icons, stickers, charts and every other element's drawing given a hand-drawn wobble.
+- **Marker** looks drawn quickly with felt-tip markers on a flip chart: one bold stroke per edge that runs a little past its corners, ink that pools darker wherever two strokes cross, fills coloured in with broad marker strokes, chunky arrowheads, bold line icons and Permanent Marker lettering (unless the tab or the element has a font of its own). Inside an element, cards and panels are outlined in marker, and bands, bars, rings and chart slices are coloured in; small chips, inputs and buttons keep their plain look so their words stay easy to read. Sticky notes stay paper, coloured in and written on in marker, and a sticker keeps its emoji with its plate outlined in marker.
+
+Whatever you set on an element yourself wins in every finish. A corner, border width, shadow, arrow thickness or font you picked is drawn as you picked it; a finish only changes what you left unset.
+
+## Setting a tab's finish
+
+Open **Tab Style** (the **Theme & canvas** button in the bottom-right corner) and press **Finish** under **Fine-tune**. Click **Flexible**, **Professional**, **Sketch** or **Marker**, and the whole tab redraws in it straight away: any element that carried a finish of its own follows the tab again. The **Preview** under the options shows a small sample diagram in the chosen finish, on your tab's background.
+
+## Setting one element's finish
+
+Right-click an element, open **Style**, then **Finish**. The five options are **Follow Tab**, **Flexible**, **Professional**, **Sketch** and **Marker**. With a mouse, hovering a tile previews it; clicking commits it as one undo step. **Follow Tab** removes the element's own finish so it follows the tab again. Select several elements and the multi-selection menu's **Style** has the same category, which sets every selected element that can take a finish.
+
+## Good to know
+
+- **The hand-drawn look is the same everywhere.** In Sketch and Marker, each element's wobble is worked out from the element itself, so it looks identical on every screen, after a reload and in exports, and only changes when you resize it.
+- **Selecting and connecting ignore the wobble.** Arrows attach, guides snap and clicks land on an element's true outline.
+- **Everything is drawn by hand in Sketch, and the words stay sharp.** Charts, concept graphics, checklists, progress bars, panels, buttons, a table's grid and every other element draw their lines and fills by hand, while their words and numbers sit crisply on top in the handwriting font, so small figures stay easy to read. Pen, pencil and highlighter strokes (already hand-drawn) and photos stay as they are, though a photo gets a hand-drawn edge round it. Circle and diamond arrowheads keep their shapes because they carry meaning.
+- **Every box is shaded the same way.** In Sketch and Marker every filled box, from a plain shape to a card or a panel, gets pencil shading or marker colouring over its own colour, so labels stay readable on a light or a dark canvas. A pale border too faint to read once drawn by hand is drawn in a stronger shade of the same colour.
+- **The palette follows the tab.** Shape, text, sticky note, arrow and table tiles show the tab's finish, so you can see how a new element will look before you add it.
+- **Exports match the canvas.** PNG, SVG and PDF exports draw the same finish you see.
+- **Only Editors change finishes.** Participants and Viewers see every element in its finish but can't change it.
+
+<Tip>
+  Sketch and Marker are great for early ideas and workshops: they tell people the picture is still
+  open to change. Marker reads well from the back of a room, on a projector or a shared screen. When
+  it's settled, switch the tab to Professional for the version you share.
+</Tip>
+
+</ArticleLayout>

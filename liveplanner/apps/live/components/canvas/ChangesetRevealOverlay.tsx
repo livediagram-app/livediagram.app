@@ -7,7 +7,7 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   elementBounds,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useCanvasSurface } from './CanvasSurfaceContext';
 import type { ChangesetReveal, RevealStore } from '@/lib/changeset-reveals';
 

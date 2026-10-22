@@ -30,7 +30,7 @@ import {
   tabStatsOfData,
   tabStatsStatement,
 } from './tab-stats';
-import { PUBLIC_POST } from './community';
+import { PUBLIC_LINK } from './community-links';
 import type { RecordedIntent } from '@livediagram/api-schema';
 import { readRecordedIntent, type RecordedIntentRow } from '../document-intent-row';
 
@@ -126,12 +126,13 @@ const SHARE_CODE_EXPR =
 const INTENT_COLS = 'opens_in, tab_kind, template_family';
 // The document's Community post state, for the owner's header badge and the Explorer's Public badge
 // (docs/specs/025-community/community.md). 'listed' only while the post is public by the rule every public read
-// uses (PUBLIC_POST): a listed post whose document moved into a team library, changed owner or took a password reads
-// as no post, so its badge falls back to Team, Shared or Private. community_posts.document_id is UNIQUE and d is
-// the same row by its primary key: two index lookups a row.
-const COMMUNITY_STATE_EXPR = `(SELECT CASE WHEN cp.state <> 'listed' THEN cp.state WHEN ${PUBLIC_POST} THEN 'listed' END
-  FROM community_posts cp JOIN documents d ON d.id = cp.document_id
-  WHERE cp.document_id = documents.id) AS community_state`;
+// uses (PUBLIC_LINK): a listed post whose document moved into a team library, changed owner or took a password reads
+// as no post, so its badge falls back to Team, Shared or Private. Read from this api's own community links
+// (db/community-links.ts), never the Community service: community_links.document_id is UNIQUE and d is the same row
+// by its primary key, so two index lookups a row.
+const COMMUNITY_STATE_EXPR = `(SELECT CASE WHEN cl.hidden_at IS NOT NULL THEN 'hidden' WHEN ${PUBLIC_LINK} THEN 'listed' END
+  FROM community_links cl JOIN documents d ON d.id = cl.document_id
+  WHERE cl.document_id = documents.id) AS community_state`;
 const DOCUMENT_COLS = `id, owner_id, name, shareable, folder_id, team_id, source, ${INTENT_COLS}, presentation, item_types, item_types_rev, saved_at, created_at, ${SHARE_CODE_EXPR}, ${COMMUNITY_STATE_EXPR}`;
 // The list projection deliberately omits `presentation`: listing 100 documents
 // has no use for 100 decks, and a deck is the one metadata field whose size

@@ -15,7 +15,7 @@ export const metadata = helpMetadata({
   categorySlug="developers"
 >
 
-Comments are how people and agents talk on the canvas when nobody is chatting. An agent holding an [API token](/help/account-and-data/api-tokens/) reads, adds to, resolves and reopens comment threads through the same endpoints the editor uses, and can show the people on a tab what it is doing while it works. Everything it writes appears under the name and colour of the person who owns the token, never as a new person.
+Comments are how people and agents talk in a project when nobody is chatting. An agent holding an [API token](/help/account-and-data/api-tokens/) reads, adds to, resolves and reopens comment threads through the same endpoints the editor uses, and can show the people on a tab what it is doing while it works. Everything it writes appears under the name and colour of the person who owns the token, never as a new person.
 
 The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative to `https://liveplanner.app/api`, and the `curl` examples assume your token is in `$TOKEN`.
 
@@ -23,7 +23,7 @@ The examples use the [CLI](/help/developers/cli/) and `curl`. Paths are relative
 
 What an agent may do follows its token, through the same gates as a share link:
 
-- A **full-access token** on a document you can comment on adds, replies, resolves, reopens and shows presence. Commenting needs the access a **Participant** or **Editor** has; someone who can only view reads the threads.
+- A **full-access token** on a project you can comment on adds, replies, resolves, reopens and shows presence. Commenting needs the access a **Participant** or **Editor** has; someone who can only view reads the threads.
 - A **read-only token** lists threads but writes nothing: no comments and no presence.
 - Presence is for API tokens only. A signed-in browser session already shows itself in the editor, so the presence endpoints answer it `403 presence_requires_token`.
 
@@ -34,31 +34,31 @@ A comment an agent writes records the token's id for the audit trail, and the pe
 Read the whole conversation without reading a tab:
 
 ```bash
-liveplanner comment ls "Shop"                  # open threads (the default)
-liveplanner comment ls "Shop" --status all     # resolved ones too
+liveplanner comment ls "Budget 2027"                  # open threads (the default)
+liveplanner comment ls "Budget 2027" --status all     # resolved ones too
 ```
 
 ```bash
-curl "https://liveplanner.app/api/documents/$DOC/comments?status=open" \
+curl "https://liveplanner.app/api/projects/$DOC/comments?status=open" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-`status` is `open` (the default), `resolved` or `all`; anything else is `400 invalid_status`. The answer lists every thread across the document's tabs, in tab order and then outline order, with the element's **ref** and label so you can act on it straight away:
+`status` is `open` (the default), `resolved` or `all`; anything else is `400 invalid_status`. The answer lists every thread across the project's tabs, in tab order and then outline order, with the element's **ref** and label so you can act on it straight away. A thread is on an element (a board, a sheet) or, on a Sheet, on one of its cells:
 
 ```json
 {
   "threads": [
     {
-      "tabId": "tab-1",
-      "tabName": "Overview",
-      "elementId": "n2",
-      "ref": "n2",
-      "label": "Orders API",
+      "tabId": "449e1b37-…",
+      "tabName": "Costs",
+      "elementId": "1e17c0d2-…",
+      "ref": "1e17",
+      "label": "Costs",
       "resolved": false,
       "comments": [
         {
           "id": "c1f0…",
-          "text": "Should this be idempotent?",
+          "text": "Is hosting monthly or yearly?",
           "createdAt": 1760180000000,
           "authorName": "Priya",
           "authorColor": "#7c3aed"
@@ -69,88 +69,89 @@ curl "https://liveplanner.app/api/documents/$DOC/comments?status=open" \
 }
 ```
 
-To read one tab's threads as text, ask for its comments view: `GET /documents/$DOC/tabs/$TAB?view=comments` (add `all=1` for resolved ones).
+To read one tab's threads as text, ask for its comments view: `GET /projects/$DOC/tabs/$TAB?view=comments` (add `all=1` for resolved ones).
 
 ## Reply, Resolve and Reopen
 
-In the CLI, a thread is named by its element's ref, from any [view](/help/developers/working-with-documents/#read-a-tab-as-text):
+In the CLI, a thread is named by its element's ref, from any [view](/help/developers/working-with-projects/#read-a-tab-as-text):
 
 ```bash
-liveplanner comment add "Shop" n2 "Should this be idempotent?"   # starts a thread, or adds to one
-liveplanner comment reply "Shop" n2 "Yes, keyed by order id"
-liveplanner comment resolve "Shop" n2
-liveplanner comment reopen "Shop" n2
+liveplanner comment add "Budget 2027" 1e17 --cell B4 "Is hosting monthly or yearly?"   # a cell's thread
+liveplanner comment add "Budget 2027" 1e17 "Totals look right to me"                  # the sheet's own thread
+liveplanner comment reply "Budget 2027" 1e17 "Yearly, so divide by twelve"
+liveplanner comment resolve "Budget 2027" 1e17
+liveplanner comment reopen "Budget 2027" 1e17
 ```
 
-Add `--tab Flow` when the element is not on the first tab. `reply`, `resolve` and `reopen` on an element with no thread are refused, with the `comment add` command to start one.
+Add `--tab Costs` when the element is not on the first tab. `reply`, `resolve` and `reopen` on an element with no thread are refused, with the `comment add` command to start one.
 
 Over the API, a thread is named by **any comment in it**, so take a comment id from the listing:
 
 ```bash
 # Start a thread on an element (or add to its thread)
-curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/comments \
+curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$TAB/comments \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "elementId": "n2", "text": "Should this be idempotent?" }'
+  -d '{ "elementId": "1e17c0d2-…", "text": "Is hosting monthly or yearly?" }'
 
 # Reply on the thread that holds comment c1f0…
-curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reply \
+curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$TAB/comments/$COMMENT/reply \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "text": "Yes, keyed by order id" }'
+  -d '{ "text": "Yearly, so divide by twelve" }'
 
 # Resolve it, or reopen it
-curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
+curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$TAB/comments/$COMMENT/resolve \
   -H "Authorization: Bearer $TOKEN"
-curl -X POST https://liveplanner.app/api/documents/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
+curl -X POST https://liveplanner.app/api/projects/$DOC/tabs/$TAB/comments/$COMMENT/reopen \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 - Adding and replying answer `201` with the new `comment`. A comment is at most 2,000 characters, and a reply to a resolved thread reopens it, as it does in the editor.
 - Resolving and reopening answer `204`. Resolving a resolved thread, or reopening an open one, changes nothing.
 - `DELETE …/comments/$COMMENT` deletes a comment you wrote. Removing someone else's is left to the editor.
-- Arrows cannot carry a thread; every boxed element can.
+- A Sheet cell's thread takes `"cell"` beside `elementId`, the cell's key as `<rowId>:<colId>` (the row and column ids a [sheet read](/help/developers/working-with-projects/plan-sheets-images/#sheets) returns). The CLI's `--cell B4` works this out for you.
 
-Everyone with the document open sees each change arrive at once, exactly as if you had typed it. See [Comments](/help/collaboration/comments/) for how threads look in the editor.
+Everyone with the project open sees each change arrive at once, exactly as if you had typed it. See [Comments](/help/collaboration/comments/) for how threads look in the editor.
 
 ## Comments on Plan Cards
 
-A Plan card (an **item**) has one thread of its own, so its endpoints name the item rather than a comment. Take the item's id from `GET /documents/$DOC/items`:
+A Plan card (an **item**) has one thread of its own, so its endpoints name the item rather than a comment. Take the item's id from `GET /projects/$DOC/items`:
 
 ```bash
 # Add to the card's thread (a resolved thread reopens)
-curl -X POST https://liveplanner.app/api/documents/$DOC/items/$ITEM/comments \
+curl -X POST https://liveplanner.app/api/projects/$DOC/items/$ITEM/comments \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
   -d '{ "text": "Blocked on the payments review" }'
 
-curl -X POST https://liveplanner.app/api/documents/$DOC/items/$ITEM/comments/resolve \
+curl -X POST https://liveplanner.app/api/projects/$DOC/items/$ITEM/comments/resolve \
   -H "Authorization: Bearer $TOKEN"
-curl -X POST https://liveplanner.app/api/documents/$DOC/items/$ITEM/comments/reopen \
+curl -X POST https://liveplanner.app/api/projects/$DOC/items/$ITEM/comments/reopen \
   -H "Authorization: Bearer $TOKEN"
 ```
 
-Each answers with the card as stored and the item store's new revision (`{ "item": …, "rev": 42 }`); adding a comment also returns its `commentId`. Resolving a resolved thread, or reopening an open one, answers `204`. A card holds up to 200 comments; past that, adding answers `413 comments_full`. `DELETE …/items/$ITEM/comments/$COMMENT` deletes your own comment, and someone with edit access can delete any. See [Cards](/help/canvas/plan-mode/cards/) for the card's comment panel, and [Plan Items, Sheets and Pages](/help/developers/working-with-documents/plan-sheets-images/) for the rest of the item API.
+Each answers with the card as stored and the item store's new revision (`{ "item": …, "rev": 42 }`); adding a comment also returns its `commentId`. Resolving a resolved thread, or reopening an open one, answers `204`. A card holds up to 200 comments; past that, adding answers `413 comments_full`. `DELETE …/items/$ITEM/comments/$COMMENT` deletes your own comment, and someone with edit access can delete any. See [Cards](/help/plan/cards/) for the card's comment panel, and [Plan Items, Sheets and More](/help/developers/working-with-projects/plan-sheets-images/) for the rest of the item API.
 
 ## Show What Your Agent Is Doing
 
-An agent at work can appear on a tab with a short **status line** ("Adding the payment flow") and a **focus**: the elements it is looking at.
+An agent at work can appear on a tab with a short **status line** ("Triaging new requests") and a **focus**: the elements it is looking at, such as a board or a sheet.
 
 ```bash
-liveplanner presence set "Shop" --status "Adding the payment flow" --focus api,db
-liveplanner presence set "Shop" --tab Flow --status "Reviewing" --ttl 120
-liveplanner presence clear "Shop"
+liveplanner presence set "Sprint 14" --status "Triaging new requests" --focus 0933
+liveplanner presence set "Sprint 14" --tab Flow --status "Reviewing the dashboard" --ttl 120
+liveplanner presence clear "Sprint 14"
 ```
 
 ```bash
-curl -X PUT https://liveplanner.app/api/documents/$DOC/tabs/$TAB/presence \
+curl -X PUT https://liveplanner.app/api/projects/$DOC/tabs/$TAB/presence \
   -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
-  -d '{ "status": "Adding the payment flow", "focus": ["api", "db"], "ttl": 60000 }'
+  -d '{ "status": "Triaging new requests", "focus": ["0933"], "ttl": 60000 }'
 ```
 
 ```json
 {
   "presence": {
-    "tabId": "tab-1",
-    "status": "Adding the payment flow",
-    "focus": ["api", "db"],
+    "tabId": "8bf83102-…",
+    "status": "Triaging new requests",
+    "focus": ["0933dace-0d37-4520-84bd-104bb636764c"],
     "expiresAt": 1760180060000
   }
 }
@@ -166,7 +167,7 @@ Setting presence again replaces both the status and the focus. `DELETE` on the s
 
 **You rarely need to keep it alive yourself.** Every changeset your token applies or reverts on a tab keeps its presence there for 30 seconds, so an agent that is busy editing stays visible and one that stops leaves on its own within two minutes at most. A dry run or a refused changeset refreshes nothing.
 
-Refusals name what was wrong: `400` with `status_too_long`, `invalid_status`, `too_many_focus`, `invalid_focus`, `ttl_out_of_range`, `focus_not_found` (listing the refs) or `focus_ambiguous` (listing the candidates); `409 agent_presence_full` when a document already shows 32 agents; and `503 room_unavailable` when the live room could not be reached, which is worth one retry.
+Refusals name what was wrong: `400` with `status_too_long`, `invalid_status`, `too_many_focus`, `invalid_focus`, `ttl_out_of_range`, `focus_not_found` (listing the refs) or `focus_ambiguous` (listing the candidates); `409 agent_presence_full` when a project already shows 32 agents; and `503 room_unavailable` when the live room could not be reached, which is worth one retry.
 
 ## What People See
 
@@ -175,7 +176,7 @@ Presence shows in the editor as its owner, never as a new person:
 - **The status line** appears in the hover card on the owner's avatar, on their row in Collaborators, and in what a screen reader announces. It never shows as text in the tab bar. When the owner is not on that tab, the agent gets an avatar in their name and colour there.
 - **The focus** is outlined with a thin ring in the owner's colour. It never locks anything: people keep working on those elements.
 - An agent is listed in Collaborators under its tab, but it is not counted as a person or in a session's head count.
-- Two of your tokens on one tab show as one avatar, with the status set last. A private document's presence stack, otherwise hidden, shows while your agent is on it.
+- Two of your tokens on one tab show as one avatar, with the status set last. A private project's presence stack, otherwise hidden, shows while your agent is on it.
 
 [Live Presence](/help/collaboration/live-presence/#agents-at-work) has what this looks like for the people working beside your agent.
 
@@ -184,7 +185,7 @@ Presence shows in the editor as its owner, never as a new person:
 To answer comments as they arrive, let the CLI wait for the next one rather than polling:
 
 ```bash
-liveplanner wait "Shop" --for comment --timeout 600
+liveplanner wait "Sprint 14" --for comment --timeout 600
 ```
 
 It prints the comment and exits, so an agent can read it, reply and wait again. Agents cannot be @mentioned; they read new comments as they arrive or on their next read.

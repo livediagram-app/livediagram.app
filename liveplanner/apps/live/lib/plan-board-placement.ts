@@ -1,7 +1,7 @@
 // A board placed new (docs/specs/026-plan/plan-board.md): its preset, empty, named after its tab (boardTitleForTab), at
 // least as wide as its columns need, and taller while it has no columns yet (planBoardHeightFor). Shared by the
 // palette's add and a Dashboard slot's new Board tab (docs/specs/026-plan/plan-tabs.md).
-import { SHAPE_DEFAULT_SIZE } from '@liveplanner/document';
+import { SHAPE_DEFAULT_SIZE } from '@liveplanner/project';
 import { freshBoardSetup, planBoardHeightFor, planBoardWidthFor } from '@liveplanner/items';
 import { boardTitleForTab } from '@/lib/tab-named-plan';
 

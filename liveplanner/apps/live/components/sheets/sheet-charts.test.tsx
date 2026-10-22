@@ -4,7 +4,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { emptyLayout, Workbook, type SheetJson } from '@liveplanner/sheets';
-import type { Element, ShapeElement } from '@liveplanner/document';
+import type { Element, ShapeElement } from '@liveplanner/project';
 import * as api from '@/lib/api/sheets';
 import { SheetsBridgeContext, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { forgetSheetStores, sheetStoreFor } from './sheet-store-client';
@@ -62,7 +62,7 @@ const range = { r1: R[0]!, c1: C[0]!, r2: R[2]!, c2: C[1]! };
 let docSeq = 0;
 function bridge(over: Partial<SheetsBridge> = {}): SheetsBridge & { elements: Element[] } {
   const b = {
-    scope: { documentId: `charts${docSeq++}`, ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: `charts${docSeq++}`, ownerId: 'o', shareCode: null, tabId: null },
     activeTabId: 't1',
     self: by,
     canEdit: true,
@@ -116,7 +116,7 @@ describe('the range a chart reads', () => {
   const wb = () => {
     const w = new Workbook({ sheets: [], locale: 'en-GB' });
     const store = sheetStoreFor({
-      scope: { documentId: 'range', ownerId: 'o', shareCode: null, tabId: null },
+      scope: { projectId: 'range', ownerId: 'o', shareCode: null, tabId: null },
       self: () => by,
       locale: 'en-GB',
       pushUndo: vi.fn(),
@@ -220,7 +220,7 @@ describe('placing a chart', () => {
 
   it('anchors it right of the range, level with its top row, inside the cells in view', async () => {
     const store = sheetStoreFor({
-      scope: { documentId: 'anchor', ownerId: 'o', shareCode: null, tabId: null },
+      scope: { projectId: 'anchor', ownerId: 'o', shareCode: null, tabId: null },
       self: () => by,
       locale: 'en-GB',
       pushUndo: vi.fn(),

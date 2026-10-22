@@ -6,7 +6,7 @@
 // (the card size; what a card shows is its type's Display). A column's own settings sit on the column, behind its
 // cog. Each change is one element edit, through PlanContext.
 import { useState, type ComponentProps, type ReactNode } from 'react';
-import type { ShapeElement } from '@liveplanner/document';
+import type { ShapeElement } from '@liveplanner/project';
 import { boardAddTypes, normaliseBoardSetup, type PlanBoardSetup } from '@liveplanner/items';
 import {
   Button,
@@ -107,7 +107,7 @@ function PlanBoardSetupSection(props: {
   return <PlanBoardSettings {...props} />;
 }
 
-// The Swimlanes section: built in, then any field the document's types offer (docs/specs/026-plan/plan-board.md
+// The Swimlanes section: built in, then any field the project's types offer (docs/specs/026-plan/plan-board.md
 // "Swimlanes by a field"), in one grid: a board has one grouping.
 export function PlanSwimlaneSettings({ element }: { element: ShapeElement }) {
   const board = useBoard(element);

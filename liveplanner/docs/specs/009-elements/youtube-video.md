@@ -20,7 +20,7 @@ existing `LinkPickerDialog` and `applyElementLink` commits it: no second URL
 editor, no new dialog.
 
 The picker opens **restricted**, though. A link card can legitimately point at
-a tab or another document; a video cannot, because its link is not a
+a tab or another project; a video cannot, because its link is not a
 destination, it is the content: a video pointed at a tab has nothing to play.
 So `LinkPickerDialog` has a `urlOnly` config (caller-supplied copy plus a
 validator) which hides the mode switcher entirely and validates as you type:
@@ -30,7 +30,7 @@ message the user has not read. It runs on the **normalised** URL, so a bare
 `youtu.be/...` is judged as the `https://youtu.be/...` that would be stored.
 
 The video id is **parsed at render time** from that link by a pure helper
-(`youtubeVideoId` in `packages/document/src/youtube.ts`), never stored. Link
+(`youtubeVideoId` in `packages/project/src/youtube.ts`), never stored. Link
 cards cache their preview in `meta` because unfurling costs a network round
 trip; parsing an id costs nothing, so caching it would only create a second
 copy of the truth that can drift from the link.
@@ -86,7 +86,7 @@ Why not just embed the iframe:
   its rectangle, so a video you could not drag, select, or marquee over would
   be a hole in the canvas.
 - **Privacy.** `youtube-nocookie.com` sets no cookie until playback starts, so
-  simply opening a document that contains a video is not a tracked visit. This
+  simply opening a project that contains a video is not a tracked visit. This
   matters more here than usual: liveplanner promises no trackers
   ([Business model + licence](../002-project-scope/business-model-and-licence.md)), so it should not be silently shipping its users to
   Google on page load.

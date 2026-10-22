@@ -11,7 +11,7 @@ import {
   commentResolve,
 } from './verbs/comment';
 import { presenceClear, presenceSet } from './verbs/presence';
-import { documentLs, documentView } from './verbs/document';
+import { projectLs, projectView } from './verbs/project';
 import {
   apiCall,
   authLogin,
@@ -32,16 +32,16 @@ import {
 import { schemaView, templateLs, templateView } from './verbs/catalogues';
 import { changesetApply, elementVerbs, tabDiff } from './verbs/edit';
 import {
-  documentCreate,
-  documentRename,
-  documentRestore,
-  documentRm,
-  documentShare,
+  projectCreate,
+  projectRename,
+  projectRestore,
+  projectRm,
+  projectShare,
   tabAdd,
   tabRename,
   tabRm,
 } from './verbs/lifecycle';
-import { tabLint, tabLs, tabView } from './verbs/tab';
+import { tabLs, tabView } from './verbs/tab';
 import { itemVerbs } from './verbs/item';
 import { boardVerbs } from './verbs/board';
 import { cardTypeVerbs } from './verbs/card-type';
@@ -51,16 +51,15 @@ import { workbenchOpen, workbenchPair } from './verbs/workbench';
 import { folderCreate, folderLs } from './verbs/folder';
 
 export const VERBS: readonly Verb[] = [
-  documentLs,
-  documentView,
-  documentCreate,
-  documentRename,
-  documentShare,
-  documentRm,
-  documentRestore,
+  projectLs,
+  projectView,
+  projectCreate,
+  projectRename,
+  projectShare,
+  projectRm,
+  projectRestore,
   tabLs,
   tabView,
-  tabLint,
   tabRender,
   tabDiff,
   tabAdd,
@@ -108,12 +107,11 @@ export const VERBS: readonly Verb[] = [
 
 export const RESOURCES: readonly { name: string; alias?: string; summary: string }[] = [
   {
-    name: 'document',
-    alias: 'doc',
-    summary: 'Documents: find, read, create, rename, share and remove them',
+    name: 'project',
+    summary: 'Projects: find, read, create, rename, share and remove them',
   },
   { name: 'folder', summary: 'Folders: their paths and ids, and a new one' },
-  { name: 'tab', summary: 'Tabs: their views, their lint, and what changed' },
+  { name: 'tab', summary: 'Tabs: their views and what changed' },
   { name: 'element', alias: 'el', summary: 'Elements: one edit operation a call' },
   { name: 'item', summary: 'Items: the work Plan boards show' },
   { name: 'board', summary: 'Plan boards: add one' },
@@ -125,7 +123,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'presence', summary: 'What the agent is doing, shown on a tab' },
   {
     name: 'workbench',
-    summary: 'Workbenches: open a document in a developer tool, pair one',
+    summary: 'Workbenches: open a project in a developer tool, pair one',
   },
   { name: 'template', summary: 'Templates: the library, and one as an outline' },
   { name: 'skill', summary: 'The agent skill file' },
@@ -137,7 +135,6 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
 export const TOP_LEVEL = ['guide', 'api', 'wait', 'watch', 'pull', 'push', 'export'] as const;
 
 export const RESOURCE_ALIASES: Readonly<Record<string, string>> = {
-  doc: 'document',
   el: 'element',
 };
 

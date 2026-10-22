@@ -186,7 +186,7 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
-- **Project** is what a person makes: a named set of Board, Sheet, Dashboard and Form tabs, with its items, sharing and history. Copy, help, email and agent descriptions say project, never "document", "file" or "board" (code identifiers, tables and routes still say document until their rename lands).
+- **Project** is what a person makes: a named set of Board, Sheet, Dashboard and Form tabs, with its items, sharing and history. Copy, help, email and agent descriptions say project, never "document", "file" or "board", and so do code identifiers, tables and routes.
 - **Mode** is how a tab is worked on; there is one, **Plan**, shared by everyone on the tab and never a type of project or tab.
 - **Kind** is what a tab is: a Board, Sheet, Dashboard or Form tab (a fresh tab is the general kind until Start Planning sets one).
 - **Template** is what a project was made from; a template family (Retrospectives, Kanban) is never a kind.
@@ -198,7 +198,6 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 apps/
   marketing/    # static marketing site (Next.js, /)
   live/         # the planner app: Explorer and the project editor (Next.js, clean routes)
-  telemetry/    # public anonymous-events dashboard (Next.js, /telemetry)
   help/         # help centre (Next.js export + MDX, /help)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
   mcp/          # Cloudflare Worker MCP server for AI tools (OAuth + tools, mcp.liveplanner.app)
@@ -206,7 +205,7 @@ apps/
   cli/          # the liveplanner command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
-  document/       # project data model (Tab, Element types + element helpers)
+  project/       # project data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
@@ -217,12 +216,11 @@ packages/
   plan-art/       # Plan tab images (Board, Sheet, Dashboard as laid out) for editor exports + MCP previews (pure)
   items/          # items, item types, fields, ranks, writes and the Plan board projection (pure)
   sheets/         # the Sheet engine: A1 addressing, formulas, recalculation, writes, CSV (pure)
-  document-views/ # read-only text views of a tab (outline, layout, ...) for agents and scripts
+  project-views/ # read-only text views of a tab (outline, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   api-client/     # the api client the MCP server and the CLI share (fetch, timeouts, ApiError)
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
   edit-operations/ # the engine agent changesets run on: edit operations and replace, into element ops (pure)
-  diagram-lint/   # checks how a tab is drawn (overlaps, crossings, arrows behind boxes), with a fix each
   render-png/     # SVG to PNG with resvg (wasm) + Inter, for MCP previews, share cards and the CLI's renders
   telemetry-client/ # shared browser telemetry emitter (buffer/flush/beacon engine)
   licences/     # build-time generator of the /licences page from what each app bundles
@@ -251,7 +249,7 @@ See [Business model + licence](docs/specs/002-project-scope/business-model-and-l
 - The codebase is **proprietary** (all rights reserved, every `package.json` is `UNLICENSED`) and its source is **not public**. Never add open-source, contributing, forking or self-hosting wording, or links to the repository, to anything users see.
 - liveplanner is free to use. **No paid tier and no plan to introduce one.** No trackers, no ads.
 - liveplanner is **not deployed yet**: Cloudflare ids in the wrangler configs are placeholders and the deploy, CLI publish and MCP registry workflows are manual-only. Never deploy, publish or touch a remote Cloudflare resource from an agent session.
-- Optional integrations degrade, never break: Clerk auth is optional, and when unset the api worker and live frontend degrade to pure-guest mode.
+- Optional integrations degrade, never break: sign-in (the liveworkspace accounts Worker) is optional, and when unset the api worker and live frontend degrade to pure-guest mode.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
 ## Secrets policy
@@ -259,8 +257,8 @@ See [Business model + licence](docs/specs/002-project-scope/business-model-and-l
 See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **No secrets in source. Ever.**
 
 - All secrets via env vars: `.env.local` (gitignored) for dev, `wrangler secret put` for Workers, dashboard env vars for Pages.
-- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. Clerk publishable key).
-- Server-only secrets (Clerk secret key, Resend, D1 access) never appear in client code.
+- Client bundles only carry values explicitly prefixed `NEXT_PUBLIC_*` and only when documented as publishable (e.g. `NEXT_PUBLIC_SIGN_IN_ENABLED`).
+- Server-only secrets (the accounts client secret, Resend, D1 access) never appear in client code.
 - Each app/worker that needs env vars ships a `.env.example` documenting what's required.
 
 ## Auth model
@@ -270,10 +268,10 @@ See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 - **The planner always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
   - **Guest path**: a per-browser participant id (`liveplanner:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
-  - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`, verified via `CLERK_JWKS_URL`.
+  - **Authed path**: an account access token in `Authorization: Bearer <token>`, verified against the accounts Worker's published keys (`ACCOUNTS_URL`) and this API's audience (`API_RESOURCE`).
   - The api worker uses the `sub` claim as the owner id.
 - The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
-- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (custom UI; email-code or Google OAuth). On sign-up, a guest's projects migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
+- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (both hand off to the liveworkspace accounts site; email code). On sign-up, a guest's projects migrate from the localStorage id to the account id via `POST /api/migrate`.
 
 ## Core principle: reuse over duplication
 

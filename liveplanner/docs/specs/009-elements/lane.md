@@ -3,7 +3,7 @@
 ## What
 
 A **Lane**: a horizontal band with a titled gutter down its left edge, for
-swimlane documents: a role, a team, or a system per band, with the steps laid
+swimlane projects: a role, a team, or a system per band, with the steps laid
 inside it.
 
 Dragging a lane carries everything inside it, exactly as a frame does.
@@ -29,7 +29,7 @@ users doing.
 ## It reuses the frame, deliberately
 
 `shape: 'lane'`, and one predicate change. `containerContents`
-(the shared containment helper in `@liveplanner/document`) answers "which elements travel with this
+(the shared containment helper in `@liveplanner/project`) answers "which elements travel with this
 container" for frames and lanes alike, by the one membership rule: an element
 belongs to the smallest frame or lane holding its centre, so a box straddling
 the edge travels when its centre is inside, and an element overlapped by two
@@ -79,7 +79,7 @@ What differs from a frame is presentation only:
 ## Aligning the title re-orients the lane
 
 The gutter is the title's backdrop, so it runs along whichever **edge the
-title is pinned to** (`laneGutterEdge` in `packages/document/src/lane-gutter.ts`, drawn by `LaneGutter.tsx`):
+title is pinned to** (`laneGutterEdge` in `packages/project/src/lane-gutter.ts`, drawn by `LaneGutter.tsx`):
 
 | Title alignment           | Gutter                                          |
 | ------------------------- | ----------------------------------------------- |

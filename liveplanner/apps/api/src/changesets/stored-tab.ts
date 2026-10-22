@@ -1,4 +1,4 @@
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { getTab } from '../db';
 import type { Env } from '../types';
 
@@ -8,12 +8,12 @@ export type StoredTab = { tab: Tab; rev: number; orderIndex: number };
 
 export async function readStoredTab(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
 ): Promise<StoredTab | null> {
-  const record = await getTab(env, documentId, tabId);
+  const record = await getTab(env, projectId, tabId);
   if (!record) return null;
-  const { rev, orderIndex, documentId: _doc, updatedAt: _at, folder: _folder, ...tab } = record;
+  const { rev, orderIndex, projectId: _doc, updatedAt: _at, folder: _folder, ...tab } = record;
   return { tab, rev, orderIndex };
 }
 

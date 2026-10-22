@@ -1,6 +1,6 @@
 import type { Selection } from '@/lib/selection-store';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { Anchor, Element, IconPosition, Tab, FrameHandle } from '@liveplanner/document';
+import type { Anchor, Element, IconPosition, Tab, FrameHandle } from '@liveplanner/project';
 import type { ArrowEnd, DragMode, DragState } from '@/lib/canvas';
 import type { SnapGuideStore } from './useSnapGuideState';
 
@@ -31,7 +31,7 @@ export type EditorDragDeps = {
   // A Participant moves what it may despite isReadOnly (docs/specs/013-workspace/share-roles.md).
   canMove?: (el: Element) => boolean;
   canResize?: (el: Element) => boolean;
-  // Elements on a hidden or locked layer (docs/specs/006-document/layers.md): every gesture
+  // Elements on a hidden or locked layer (docs/specs/006-project/layers.md): every gesture
   // starter treats them as inert — no select, no drag, no new arrow.
   layerInertIds: Set<string>;
   // Modal interaction state. When format-painter is active, a click

@@ -1,0 +1,42 @@
+name: Deploy Production
+
+# Production deploy. Manual only. Trigger from the Actions tab (or `gh
+# workflow run deploy.yml`) once CI on `main` is green and you're ready to
+# ship.
+# It is intentionally NOT chained to CI — a green build no longer deploys on
+# its own. Staging is the one that deploys automatically (docs/specs/016-platform/staging-environment.md).
+#
+# The steps live in `deploy-reusable.yml`, which staging calls too, so the two
+# environments cannot drift apart. This file is only the trigger and the
+# production-shaped inputs.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-main
+  # Never cancel a half-finished production deploy: some workers would hold
+  # the new code and some the old. Queue behind the one in flight instead.
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Production
+    uses: ./.github/workflows/deploy-reusable.yml
+    with:
+      # Empty: the top-level wrangler.toml config, unsuffixed worker names,
+      # the production D1 / R2 / KV.
+      wrangler_env: ''
+      environment_name: production
+      environment_url: https://livedocuments.app
+      # Empty: the live app's own default, https://mcp.livedocuments.app.
+      mcp_origin: ''
+    secrets:
+      CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+      CLERK_JWKS_URL: ${{ secrets.CLERK_JWKS_URL }}
+      GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
+      INTERNAL_EVENTS_KEY: ${{ secrets.INTERNAL_EVENTS_KEY }}

@@ -1,68 +1,68 @@
 import { ArticleLayout } from '@/components/ArticleLayout';
 import { helpMetadata } from '@/lib/seo';
-import { MyDocumentsTree } from '@/components/illustrations/explorer';
+import { MyProjectsTree } from '@/components/illustrations/explorer';
 
 export const metadata = helpMetadata({
-  title: 'My Documents and Folders',
+  title: 'My Projects and Folders',
   description:
-    'Organise My Documents, your own library: unfiled documents sit at its root beside nested folders you create to group work by project, customer or topic.',
+    'Organise My Projects, your own library: unfiled projects sit at its root beside nested folders you create to group work by project, customer or topic.',
   path: '/help/explorer/personal-space/',
 });
 
 <ArticleLayout
-  title="My Documents and Folders"
-  description="Your own library: folders you can nest as deep as you like, and the documents you have not filed at its root. Every document has an obvious home."
+  title="My Projects and Folders"
+  description="Your own library: folders you can nest as deep as you like, and the projects you have not filed at its root. Every project has an obvious home."
   categoryTitle="Explorer"
   categorySlug="explorer"
 >
 
-**My Documents** is your own library: the [documents](/explorer/all) you have created, organised however suits you. It is the first row under **Spaces** in the Explorer sidebar, a top-level folder with everything of yours beneath it. Each team you belong to sits beside it as a space of its own ([Team spaces](/help/explorer/team-spaces/)).
+**My Projects** is your own library: the [projects](/explorer/all) you have created, organised however suits you. It is the first row under **Spaces** in the Explorer sidebar, a top-level folder with everything of yours beneath it. Each team you belong to sits beside it as a space of its own ([Team spaces](/help/explorer/team-spaces/)).
 
-A document lives in exactly one place: My Documents, a team, or this browser. Moving it changes where it lives. Everything else in the sidebar, Home, Inbox and Shared With Me, is a view that gathers documents from wherever they live.
+A project lives in exactly one place: My Projects, a team, or this browser. Moving it changes where it lives. Everything else in the sidebar, Home, Inbox and Shared With Me, is a view that gathers projects from wherever they live.
 
-## The root of My Documents
+## The root of My Projects
 
-Opening **My Documents** lists its folders first, then every document you have not filed into a folder, newest first. A freshly created document lands there, unless you chose a place for it or set a default folder, so it always has an obvious home without you deciding anything first.
+Opening **My Projects** lists its folders first, then every project you have not filed into a folder, newest first. A freshly created project lands there, unless you chose a place for it or set a default folder, so it always has an obvious home without you deciding anything first.
 
-Documents an AI tool made for you sit there too, like any other, and carry a **Made by AI** badge. To see only those, wherever they are filed, use the **Made by AI** filter ([Search and filter documents](/help/explorer/filters/)).
+Projects an AI tool made for you sit there too, like any other, and carry a **Made by AI** badge. To see only those, wherever they are filed, use the **Made by AI** filter ([Search and filter projects](/help/explorer/filters/)).
 
-Filing a document into a folder of your own moves it out of the root; moving it back to **My Documents** puts it there again.
+Filing a project into a folder of your own moves it out of the root; moving it back to **My Projects** puts it there again.
 
-Documents saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)) are yours too, but they live in this browser rather than in My Documents: they collect under **This Browser**, in the sidebar's **More** group, which shows while there is at least one (one you file into one of your folders is listed there too). Wherever one is listed, a **This Browser** pill marks it, because clearing this browser's site data deletes it.
+Projects saved only in this browser ([Offline Mode](/help/privacy-and-security/offline-mode/)) are yours too, but they live in this browser rather than in My Projects: they collect under **This Browser**, in the sidebar's **More** group, which shows while there is at least one (one you file into one of your folders is listed there too). Wherever one is listed, a **This Browser** pill marks it, because clearing this browser's site data deletes it.
 
 ### Favourites
 
-Choose **Favourite** in the menu of any document of yours or your team's to star it. It's the answer to a busy team library: a shared folder fills up with documents that aren't all yours to care about, and starring the handful that are marks them with an amber star wherever they are listed. The same menu reads **Unfavourite** to take it back off. Your starred documents are gathered at [/explorer/favourites](/explorer/favourites), from your own folders and every team you're in, each row showing where the document actually lives. Favourites has no sidebar row, so bookmark that address if you use it often.
+Choose **Favourite** in the menu of any project of yours or your team's to star it. It's the answer to a busy team library: a shared folder fills up with projects that aren't all yours to care about, and starring the handful that are marks them with an amber star wherever they are listed. The same menu reads **Unfavourite** to take it back off. Your starred projects are gathered at [/explorer/favourites](/explorer/favourites), from your own folders and every team you're in, each row showing where the project actually lives. Favourites has no sidebar row, so bookmark that address if you use it often.
 
-**Starring is yours alone.** Favouriting a document in a team folder doesn't favourite it for your teammates, and there's no limit on how many you keep.
+**Starring is yours alone.** Favouriting a project in a team folder doesn't favourite it for your teammates, and there's no limit on how many you keep.
 
 ## Folders
 
-Folders give your library structure without forcing it. Every document is in exactly one folder, or none, and folders can nest, so you can build something like "Projects / Customer / Engagement" when you want that depth, or keep everything flat at the root when you do not.
+Folders give your library structure without forcing it. Every project is in exactly one folder, or none, and folders can nest, so you can build something like "Projects / Customer / Engagement" when you want that depth, or keep everything flat at the root when you do not.
 
-<Figure caption="My Documents: the folders you create, nested as deep as a project needs, then the documents at its root.">
-  <MyDocumentsTree />
+<Figure caption="My Projects: the folders you create, nested as deep as a project needs, then the projects at its root.">
+  <MyProjectsTree />
 </Figure>
 
 <Step n={1}>
-  Create a folder with **Create**, then **New Folder**, at the top of the page (on My Documents it
+  Create a folder with **Create**, then **New Folder**, at the top of the page (on My Projects it
   adds one at the top level). Each folder's own menu offers **New Subfolder** for deeper levels.
 </Step>
 <Step n={2}>
-  Move a document with its **Change Folder** menu item, which opens a browser of your folders and
-  teams. You can also drag a document straight onto a folder, on the Explorer page or in the
-  editor's Explorer panel.
+  Move a project with its **Change Folder** menu item, which opens a browser of your folders and
+  teams. You can also drag a project straight onto a folder, on the Explorer page or in the editor's
+  Explorer panel.
 </Step>
 <Step n={3}>Rename, move (**Change Folder**) or delete a folder from its menu.</Step>
 
-Deleting a folder is safe for its contents (you confirm first): the documents and subfolders inside move up into the folder it sat in (or to the root of My Documents for a top-level folder), so nothing is ever lost when you tidy up. You can also make a folder the [default](/help/explorer/folders/default-folders/) for new whiteboards, retrospectives and more. See [Folders](/help/explorer/folders/) for the details.
+Deleting a folder is safe for its contents (you confirm first): the projects and subfolders inside move up into the folder it sat in (or to the root of My Projects for a top-level folder), so nothing is ever lost when you tidy up. You can also make a folder the [default](/help/explorer/folders/default-folders/) for new whiteboards, retrospectives and more. See [Folders](/help/explorer/folders/) for the details.
 
 ## Two places to browse
 
-You will meet My Documents in two forms: the **[full-page Explorer](/help/explorer/explorer-page/)**, modelled on a desktop file browser, and the compact **[Explorer panel](/help/explorer/explorer-panel/)** behind the editor's menu button for finding a document mid-task, where **My Documents** opens in place to its folders and documents. Both work whether or not you are signed in: a guest sees the documents and folders their own browser owns, and can sign in later to carry that work into an account.
+You will meet My Projects in two forms: the **[full-page Explorer](/help/explorer/explorer-page/)**, modelled on a desktop file browser, and the compact **[Explorer panel](/help/explorer/explorer-panel/)** behind the editor's menu button for finding a project mid-task, where **My Projects** opens in place to its folders and projects. Both work whether or not you are signed in: a guest sees the projects and folders their own browser owns, and can sign in later to carry that work into an account.
 
 <Tip>
-  Do not over-organise on day one. Start at the root, and pull documents into folders once a real
+  Do not over-organise on day one. Start at the root, and pull projects into folders once a real
   grouping emerges. Folders are easy to add and rearrange whenever you need them.
 </Tip>
 

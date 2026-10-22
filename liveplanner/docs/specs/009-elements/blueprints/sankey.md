@@ -5,35 +5,34 @@ Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS
 
 Scope, by file:
 
-| File                                                                            | Role                                                                                                            |
-| ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/sankey-model.ts`                                         | Types, option lists, bounds, `SANKEY_DEFAULT_FLOWS`, `sankeyGraph`, name/number formatting, node-style edits    |
-| `packages/document/src/sankey-layout.ts`                                        | `sankeyLayout`: columns, scale, relaxation, band stacking, `sankeyBandPath`, `sankeyCentrePath`                 |
-| `packages/document/src/sankey-frame.ts`                                         | `sankeyFrame`: colours, band paint, labels and their collisions, summary, readouts                              |
-| `packages/document/src/sankey-text.ts`                                          | `parseSankeyText`, `sankeyFlowsToText`, `readSankeyNumber`                                                      |
-| `packages/document/src/svg-render-sankey.ts`                                    | `svgSankey`: the export                                                                                         |
-| `packages/document/src/shape-kind.ts`, `validate.ts`                            | `'sankey'` in `ShapeKind` and `SHAPE_KINDS`                                                                     |
-| `packages/document/src/validate-shape.ts`                                       | Field checks                                                                                                    |
-| `packages/document/src/element-normalise.ts`                                    | `normaliseSankey`: agent input                                                                                  |
-| `packages/document/src/shape-factory.ts`                                        | Default size and starter flows                                                                                  |
-| `packages/document/src/data-shapes.ts`                                          | `isSelfDrawingShape` membership, `takesChartPalette`                                                            |
-| `packages/document/src/colors.ts`                                               | `SELF_PAINTING_SHAPES` member                                                                                   |
-| `apps/live/components/canvas/SankeyView.tsx`                                    | Canvas view (lazy chunk), hover, animations                                                                     |
-| `apps/live/components/palette/SankeyMenuSection.tsx`                            | The Sankey flyout: Flows, Bands, Layout, Labels, Leftovers, Text sections                                       |
-| `apps/live/components/dialogs/SankeyFlowsDialog.tsx`                            | Flows dialog shell, tabs, preview, import                                                                       |
-| `apps/live/components/dialogs/SankeyFlowsTable.tsx`                             | Table tab: steps, node groups, Add a Flow area, leftover switches                                               |
-| `apps/live/components/dialogs/SankeyFlowRow.tsx`                                | One row: → To, Amount, Send On, remove (a loose row adds its From)                                              |
-| `apps/live/lib/sankey-flow-levels.ts`                                           | `flowLevels` (rows into steps and node groups), `flowTotals`, `flowNodeColors`                                  |
-| `apps/live/components/palette/sankey-menu-glyphs.tsx`                           | The Display option glyphs (on the raw-SVG art allowlist)                                                        |
-| `apps/live/components/dialogs/SankeyNodeStrip.tsx`                              | Node chips and rename                                                                                           |
-| `apps/live/components/tour/SankeyFlowsTour.tsx`, `sankey-flows-tour-steps.ts`   | Show Me on the Flows dialog: button, stage, steps fixed at the press                                            |
-| `apps/live/components/tour/sankey-element-tour-steps.ts`, `ElementTourHost.tsx` | The Sankey element tour ([Element tours](../../007-editor/element-tours.md)): steps, the parts lifted, the host |
-| `apps/live/lib/sankey-tour-focus.ts`, `sankey-flows-dialog-handle.ts`           | The band or node a tour step lifts (`data-sankey-band` / `data-sankey-node`); the open dialog's tab switches    |
-| `apps/live/lib/sankey-flow-rows.ts`                                             | Draft rows, reasons copy, balance notes, paste, `rowFrom`, `withTrailingBlank`                                  |
-| `apps/live/lib/sankey-edit.ts`                                                  | `canEditSankey`                                                                                                 |
-| `apps/live/hooks/canvas/useSankeySetters.ts`                                    | `setSankeyFlows`, `setSankeyNodeColorSelected`, `setSankeyOptionSelected`                                       |
-| `apps/live/app/canvas-motion.css`                                               | `lvd-sankey-grow`, `-flow`, `-cascade`, `-pulse`, `-rise`                                                       |
-| `apps/live/components/palette/palette-tile-defs.tsx`                            | Tile `tools:sankey`, section `build`                                                                            |
+| File                                                                          | Role                                                                                                         |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `packages/project/src/sankey-model.ts`                                       | Types, option lists, bounds, `SANKEY_DEFAULT_FLOWS`, `sankeyGraph`, name/number formatting, node-style edits |
+| `packages/project/src/sankey-layout.ts`                                      | `sankeyLayout`: columns, scale, relaxation, band stacking, `sankeyBandPath`, `sankeyCentrePath`              |
+| `packages/project/src/sankey-frame.ts`                                       | `sankeyFrame`: colours, band paint, labels and their collisions, summary, readouts                           |
+| `packages/project/src/sankey-text.ts`                                        | `parseSankeyText`, `sankeyFlowsToText`, `readSankeyNumber`                                                   |
+| `packages/project/src/svg-render-sankey.ts`                                  | `svgSankey`: the export                                                                                      |
+| `packages/project/src/shape-kind.ts`, `validate.ts`                          | `'sankey'` in `ShapeKind` and `SHAPE_KINDS`                                                                  |
+| `packages/project/src/validate-shape.ts`                                     | Field checks                                                                                                 |
+| `packages/project/src/element-normalise.ts`                                  | `normaliseSankey`: agent input                                                                               |
+| `packages/project/src/shape-factory.ts`                                      | Default size and starter flows                                                                               |
+| `packages/project/src/data-shapes.ts`                                        | `isSelfDrawingShape` membership, `takesChartPalette`                                                         |
+| `packages/project/src/colors.ts`                                             | `SELF_PAINTING_SHAPES` member                                                                                |
+| `apps/live/components/canvas/SankeyView.tsx`                                  | Canvas view (lazy chunk), hover, animations                                                                  |
+| `apps/live/components/palette/SankeyMenuSection.tsx`                          | The Sankey flyout: Flows, Bands, Layout, Labels, Leftovers, Text sections                                    |
+| `apps/live/components/dialogs/SankeyFlowsDialog.tsx`                          | Flows dialog shell, tabs, preview, import                                                                    |
+| `apps/live/components/dialogs/SankeyFlowsTable.tsx`                           | Table tab: steps, node groups, Add a Flow area, leftover switches                                            |
+| `apps/live/components/dialogs/SankeyFlowRow.tsx`                              | One row: → To, Amount, Send On, remove (a loose row adds its From)                                           |
+| `apps/live/lib/sankey-flow-levels.ts`                                         | `flowLevels` (rows into steps and node groups), `flowTotals`, `flowNodeColors`                               |
+| `apps/live/components/palette/sankey-menu-glyphs.tsx`                         | The Display option glyphs (on the raw-SVG art allowlist)                                                     |
+| `apps/live/components/dialogs/SankeyNodeStrip.tsx`                            | Node chips and rename                                                                                        |
+| `apps/live/components/tour/SankeyFlowsTour.tsx`, `sankey-flows-tour-steps.ts` | Show Me on the Flows dialog: button, stage, steps fixed at the press                                         |
+| `apps/live/lib/sankey-tour-focus.ts`, `sankey-flows-dialog-handle.ts`         | The band or node a tour step lifts (`data-sankey-band` / `data-sankey-node`); the open dialog's tab switches |
+| `apps/live/lib/sankey-flow-rows.ts`                                           | Draft rows, reasons copy, balance notes, paste, `rowFrom`, `withTrailingBlank`                               |
+| `apps/live/lib/sankey-edit.ts`                                                | `canEditSankey`                                                                                              |
+| `apps/live/hooks/canvas/useSankeySetters.ts`                                  | `setSankeyFlows`, `setSankeyNodeColorSelected`, `setSankeyOptionSelected`                                    |
+| `apps/live/app/canvas-motion.css`                                             | `lvd-sankey-grow`, `-flow`, `-cascade`, `-pulse`, `-rise`                                                    |
+| `apps/live/components/palette/palette-tile-defs.tsx`                          | Tile `tools:sankey`, section `build`                                                                         |
 
 ## Domain and naming
 
@@ -195,27 +194,26 @@ on the page (CLS).
 
 `track('Element', 'Added', 'Sankey')` on create; `Changed` with `SankeyFlows`, `SankeyStyle`, `SankeyAnim` on
 edits; Show Me sends `UI` `Started` `SankeyFlowsTour` and `UI` `Ended` `SankeyFlowsTourCompleted` /
-`SankeyFlowsTourSkipped` (all explained in `apps/telemetry/app/event-explanations.ts`). A refused write surfaces through the api's
+`SankeyFlowsTourSkipped` (all explained in `../liveworkspace/apps/site/app/telemetry/liveplanner/event-explanations.ts`). A refused write surfaces through the api's
 generic `invalid tab` path.
 
 ## Testing
 
-| Rule                                                              | Test                                                                                                             |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Graph, set-aside reasons, caps, loops                             | `packages/document/src/sankey.test.ts`                                                                           |
-| Columns, scale, stacking, no crossing, worst-case budget          | `sankey.test.ts`                                                                                                 |
-| Text formats, round trip                                          | `sankey.test.ts`                                                                                                 |
-| Labels, collisions, colours, readouts, summary                    | `packages/document/src/sankey-render.test.ts`                                                                    |
-| Export, validation, agent input, node edits                       | `sankey-render.test.ts`                                                                                          |
-| Every kind renders / validates / sizes                            | `svg-render-coverage`, `shape-factory`, `export-consistency` tests                                               |
-| Draft rows, reasons, balance, paste                               | `apps/live/lib/sankey-flow-rows.test.ts`                                                                         |
-| Steps, groups, `rowFrom`, colours, budget                         | `apps/live/lib/sankey-flow-levels.test.ts`                                                                       |
-| Table: steps, Send On, Add a Flow, Enter, paste, leftover switch  | `apps/live/components/dialogs/SankeyFlowsTable.test.tsx`                                                         |
-| Leftovers: drawn flows, paint, readout, merge, export, validation | `packages/document/src/sankey-render.test.ts`                                                                    |
-| Staggered animations by column                                    | `apps/live/components/canvas/SankeyView.test.tsx`                                                                |
-| Editor gate                                                       | `apps/live/lib/sankey-edit.test.ts`                                                                              |
-| Show Me steps, frozen count, Escape, telemetry                    | `apps/live/components/tour/SankeyFlowsTour.test.tsx`                                                             |
-| Element tour: offer, steps, lift, dialog hand-off                 | `apps/live/components/tour/ElementTourHost.test.tsx`, `sankey-element-tour-steps.test.ts`, `SankeyView.test.tsx` |
+| Rule                                                              | Test                                                               |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Graph, set-aside reasons, caps, loops                             | `packages/project/src/sankey.test.ts`                             |
+| Columns, scale, stacking, no crossing, worst-case budget          | `sankey.test.ts`                                                   |
+| Text formats, round trip                                          | `sankey.test.ts`                                                   |
+| Labels, collisions, colours, readouts, summary                    | `packages/project/src/sankey-render.test.ts`                      |
+| Export, validation, agent input, node edits                       | `sankey-render.test.ts`                                            |
+| Every kind renders / validates / sizes                            | `svg-render-coverage`, `shape-factory`, `export-consistency` tests |
+| Draft rows, reasons, balance, paste                               | `apps/live/lib/sankey-flow-rows.test.ts`                           |
+| Steps, groups, `rowFrom`, colours, budget                         | `apps/live/lib/sankey-flow-levels.test.ts`                         |
+| Table: steps, Send On, Add a Flow, Enter, paste, leftover switch  | `apps/live/components/dialogs/SankeyFlowsTable.test.tsx`           |
+| Leftovers: drawn flows, paint, readout, merge, export, validation | `packages/project/src/sankey-render.test.ts`                      |
+| Staggered animations by column                                    | `apps/live/components/canvas/SankeyView.test.tsx`                  |
+| Editor gate                                                       | `apps/live/lib/sankey-edit.test.ts`                                |
+| Show Me steps, frozen count, Escape, telemetry                    | `apps/live/components/tour/SankeyFlowsTour.test.tsx`               |
 
 ## Constants and configuration
 

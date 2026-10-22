@@ -1,8 +1,8 @@
 'use client';
 
 // The example cards notice (docs/specs/026-plan/plan-templates.md "Example cards"): a one-line strip under a board's
-// header while the document holds example cards the board shows. Clear Example Cards sends every example card of the
-// document to the Trash; Keep Them takes the flag off every one. Either is one write and one undo step, and either
+// header while the project holds example cards the board shows. Clear Example Cards sends every example card of the
+// project to the Trash; Keep Them takes the flag off every one. Either is one write and one undo step, and either
 // leaves no example card, so the strip goes for everyone. An Editor's alone: a Participant may not trash or reshape
 // others' cards (docs/specs/013-workspace/share-roles.md), and a Viewer only looks.
 import { lucideInfo } from '@liveplanner/icons/lucide';
@@ -20,7 +20,7 @@ import type { PlanContextValue } from './PlanContext';
 
 const InfoIcon = lucideGlyph(lucideInfo, 14);
 
-// The document's example cards still on a board (not in the Trash).
+// The project's example cards still on a board (not in the Trash).
 export function exampleCardIds(items: Iterable<Item>): string[] {
   const ids: string[] = [];
   for (const item of items) if (isExampleItem(item) && !isTrashed(item)) ids.push(item.id);

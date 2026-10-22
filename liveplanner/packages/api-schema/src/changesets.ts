@@ -4,8 +4,7 @@
 // rejections of the edit-operations engine travel inside a changeset's answer, so their wire
 // shapes live here too and the engine re-exports them.
 
-import type { Element, ElementOp, Finish, Tab } from '@liveplanner/document';
-import type { LintReport } from './lint';
+import type { Element, ElementOp, Finish, Tab } from '@liveplanner/project';
 import { MAX_TAB_BYTES } from './tab-size';
 import { TRASH_RETENTION_DAYS } from './trash';
 
@@ -13,7 +12,7 @@ import { TRASH_RETENTION_DAYS } from './trash';
 // Limits
 // ---------------------------------------------------------------------
 
-// A full tab rebuild of a large diagram fits; a runaway loop does not.
+// A full rebuild of a busy Dashboard fits; a runaway loop does not.
 export const CHANGESET_MAX_OPERATIONS = 500;
 // Under the room's 256 KiB frame cap with room for the op's metadata.
 export const CHANGESET_RELAY_MAX_BYTES = 192 * 1024;
@@ -92,9 +91,6 @@ export const EDIT_REJECTION_CODES = [
   'unknown_field',
   'invalid_value',
   'id_taken',
-  'arrow_exists',
-  'not_connected',
-  'frame_captures',
   'element_locked',
   'test_failed',
   'changeset_conflict',
@@ -104,14 +100,8 @@ export const EDIT_REJECTION_CODES = [
 ] as const;
 export type EditRejectionCode = (typeof EDIT_REJECTION_CODES)[number];
 
-const EDIT_WARNING_CODES = [
-  'no_base',
-  'shape_coerced',
-  'value_coerced',
-  'label_capped',
-  'colour_overrides_theme',
-  'arrows_freed',
-] as const;
+// `no_base`: the changeset was sent without the revision it was read at.
+const EDIT_WARNING_CODES = ['no_base'] as const;
 export type EditWarningCode = (typeof EDIT_WARNING_CODES)[number];
 
 // A named refusal. `operation` is 1-based among the operations (comments and blank lines not
@@ -132,8 +122,7 @@ export type EditWarning = { code: EditWarningCode; ref?: string; message: string
 export type JsonValue =
   string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 
-// One change on a `~` line. Positions use the key `at` with `[x, y]`, arrow ends `from` / `to`
-// with a ref or `[x, y]` for a free end, fit to label `widened` / `taller` with the sizes.
+// One change on a `~` line. A position uses the key `at` with `[x, y]`.
 export type FieldChange = { key: string; from?: JsonValue; to?: JsonValue };
 
 export type ResultLine =
@@ -144,28 +133,9 @@ export type ResultLine =
       label?: string;
       at?: [number, number];
       size?: [number, number];
-      ends?: [string, string];
-      styleOf?: string;
     }
   | { mark: '~'; ref: string; changes: FieldChange[] }
-  | {
-      mark: '-';
-      ref: string;
-      kind: string;
-      label?: string;
-      ends?: [string, string];
-      reason?: 'pinned' | 'unwrapped';
-      pinnedTo?: string;
-    }
-  | {
-      mark: '»';
-      refs: string[];
-      delta?: [number, number];
-      reason: 'make room' | 'carried' | 'laid out';
-      // How `layout` laid them out; a direction only for the flow style.
-      layout?: { style: 'flow' | 'tree' | 'mindmap'; direction?: 'down' | 'right' };
-    }
-  | { mark: 'container'; ref: string; joined: string[]; left: string[] }
+  | { mark: '-'; ref: string; kind: string; label?: string }
   | { mark: '!'; warning: EditWarning };
 
 // ---------------------------------------------------------------------
@@ -175,8 +145,8 @@ export type ResultLine =
 // The revision the agent read and the fingerprint of each element it targets, as read.
 export type ChangesetBase = { rev: number; elements?: Record<string, string> };
 
-// The whole-tab body: exactly one source; `layout` for elements, `theme` and `name` for a tab it
-// creates (a `name` on an existing tab is ignored).
+// The whole-tab body: exactly one source; `theme` and `name` for a tab it creates (a `name` on an existing tab is
+// ignored).
 export type ChangesetReplaceBody = {
   template?: string;
   // A new Dashboard tab (docs/specs/026-plan/plan-agents.md "Making a dashboard").
@@ -186,7 +156,6 @@ export type ChangesetReplaceBody = {
   // A new tab of elements made a Board or Sheet tab (a form's responses).
   kind?: 'board' | 'sheet';
   elements?: unknown[];
-  layout?: 'auto' | 'preserve';
   theme?: string;
   // The new tab's finish (docs/specs/008-canvas/finish.md).
   finish?: Finish;
@@ -224,9 +193,6 @@ export type ChangesetResponse = {
   // The result lines and the footer as text: the same for a dry run and a write.
   text: string;
   warnings: string[];
-  // The diagram lint's report of the result tab (docs/specs/024-agents/diagram-lint.md); null when nothing was
-  // written or the lint failed.
-  lint: LintReport | null;
 };
 
 export type ChangesetConflict = {
@@ -262,7 +228,6 @@ export type RevertResponse = {
   changeset: ChangesetWritten | null;
   reverted: number;
   kept: RevertKept[];
-  lint: LintReport | null;
 };
 
 // The route's refusal codes beside the engine's.
@@ -284,7 +249,7 @@ export const CHANGESET_ERROR_CODES = [
 // The room op
 // ---------------------------------------------------------------------
 
-// One changeset, sequenced by the document's room in one log slot. `elementOps` is absent and
+// One changeset, sequenced by the project's room in one log slot. `elementOps` is absent and
 // `refetch` set when they exceed CHANGESET_RELAY_MAX_BYTES; `touched` then names every id. `tab`
 // carries a created tab's non-element fields (CS23). `agentKey` is a one-way digest of the token
 // id, present only for an agent's changeset (CS22). `prevRev` is the tab's previous changeset

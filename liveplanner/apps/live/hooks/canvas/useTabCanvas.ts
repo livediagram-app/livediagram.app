@@ -13,7 +13,7 @@ import {
   type Element,
   type Tab,
   type TextSize,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { AUTO_LAYOUT_CHOICES, type AutoLayoutChoice } from '@/lib/auto-layout-choices';
 import type { CleanupKind } from '@/lib/tab-cleanup';

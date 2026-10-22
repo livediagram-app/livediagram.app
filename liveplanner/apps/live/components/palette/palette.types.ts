@@ -1,5 +1,5 @@
-import type { EmbedProvider } from '@liveplanner/document';
-import type { ShapeKind } from '@liveplanner/document';
+import type { EmbedProvider } from '@liveplanner/project';
+import type { ShapeKind } from '@liveplanner/project';
 import type { PendingDraw } from '@/lib/draw-mode';
 import type { PaletteTint } from '@/components/palette/palette-controls';
 
@@ -24,7 +24,7 @@ export type PaletteProps = {
   onAddShape: (
     kind: ShapeKind,
     opts?: {
-      session?: import('@liveplanner/document').SessionTool;
+      session?: import('@liveplanner/project').SessionTool;
       plan?: string;
       variant?: string;
     },
@@ -62,7 +62,7 @@ export type PaletteProps = {
   // on either end by default (i.e. a plain line). Users can flip the
   // arrowEnds afterwards via the Pointer accordion.
   // `ends`: the Arrow tool's pointer at its end by default, `'none'` for the Line tool.
-  onAddArrow: (ends?: import('@liveplanner/document').ArrowEnds) => void;
+  onAddArrow: (ends?: import('@liveplanner/project').ArrowEnds) => void;
   // Disarm the armed tool: its tile pressed again (docs/specs/008-canvas/canvas-and-palette.md "Placement on add").
   onCancelDraw?: () => void;
   // Polygon tool (docs/specs/008-canvas/polygon-tool.md): arms the click-to-place-vertices mode.

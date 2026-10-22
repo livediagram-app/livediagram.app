@@ -9,7 +9,7 @@ import {
   type AlignmentGuide,
   type ArrowElement,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { ALIGN_SNAP_THRESHOLD } from '@/lib/canvas';
 
 // The arrow control-handle frame resolvers (docs/specs/008-canvas/canvas-and-palette.md arrows), lifted out

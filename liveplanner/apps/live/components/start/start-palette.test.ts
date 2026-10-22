@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { startPanelColours } from './start-palette';
 
-// docs/specs/007-editor/start-diagramming.md "Look"
+// docs/specs/007-editor/start-panel.md "Look"
 describe('startPanelColours', () => {
   const theme = {
     backgroundColor: '#fdf2f8',

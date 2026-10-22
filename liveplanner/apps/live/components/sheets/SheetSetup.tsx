@@ -6,7 +6,7 @@
 // CSV end setup without a style.
 import { useEffect, useMemo, useState } from 'react';
 import { Button, CheckIcon, ChevronLeftIcon } from '@liveplanner/ui';
-import { chartTypeOf } from '@liveplanner/document';
+import { chartTypeOf } from '@liveplanner/project';
 import { cardSourceOf, findCards, type BoardStatusTypes } from '@liveplanner/items';
 import {
   cardsStarter,

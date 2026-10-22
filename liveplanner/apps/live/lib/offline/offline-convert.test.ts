@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { DOCUMENT_CONVERSION_HEADER } from '@liveplanner/api-schema';
+import { PROJECT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 
-// Offline Mode conversions (docs/specs/006-document/offline-mode.md). "Take offline" DELETES the server copy,
+// Offline Mode conversions (docs/specs/006-project/offline-mode.md). "Take offline" DELETES the server copy,
 // so the ordering here is the difference between a failed conversion and a lost
-// document. The module's header states the rules; nothing checked them.
+// project. The module's header states the rules; nothing checked them.
 //
 // These mock the collaborators on purpose. The assertions are about SEQUENCE
 // and ROLLBACK — did the destination get written before the source was removed,
@@ -13,10 +13,10 @@ import { DOCUMENT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 const calls: string[] = [];
 
 vi.mock('@/lib/api-client', () => ({
-  apiCreateDocument: vi.fn(async () => {
-    calls.push('apiCreateDocument');
+  apiCreateProject: vi.fn(async () => {
+    calls.push('apiCreateProject');
   }),
-  apiLoadDocument: vi.fn(async () => ({ id: 'd1', name: 'Roadmap', tabs: [{ id: 't1' }] })),
+  apiLoadProject: vi.fn(async () => ({ id: 'd1', name: 'Roadmap', tabs: [{ id: 't1' }] })),
   apiLoadTab: vi.fn(async () => ({ id: 't1', name: 'Tab 1', elements: [] })),
   fetchCloudFavouriteIds: vi.fn(async () => [] as string[]),
   apiSetFavourite: vi.fn(async () => {
@@ -26,8 +26,8 @@ vi.mock('@/lib/api-client', () => ({
 
 vi.mock('@/lib/api/tags', () => ({
   fetchCloudTags: vi.fn(async () => ({ tags: [], links: [] })),
-  apiSetDocumentTag: vi.fn(async () => {
-    calls.push('apiSetDocumentTag');
+  apiSetProjectTag: vi.fn(async () => {
+    calls.push('apiSetProjectTag');
   }),
 }));
 
@@ -67,17 +67,17 @@ vi.mock('../api/sheets', () => ({
 const states: unknown[] = [];
 
 vi.mock('./offline-store', () => ({
-  offlineCreateDocument: vi.fn(),
+  offlineCreateProject: vi.fn(),
   offlineDeleteIfUnchanged: vi.fn(async (_id: string, unchanged: (r: unknown) => boolean) => {
     const rec: unknown = states.length
       ? states.shift()
       : await vi.mocked(store.offlineGetRecord).mock.results.at(-1)?.value;
     if (!unchanged(rec)) return { outcome: 'changed', rec };
-    calls.push('offlineDeleteDocument');
+    calls.push('offlineDeleteProject');
     return { outcome: 'deleted', rec };
   }),
-  offlineDeleteDocument: vi.fn(async () => {
-    calls.push('offlineDeleteDocument');
+  offlineDeleteProject: vi.fn(async () => {
+    calls.push('offlineDeleteProject');
   }),
   offlineGetRecord: vi.fn(async () => ({ id: 'd1', name: 'Roadmap', tabs: [] })),
   offlinePutRecord: vi.fn(async () => {
@@ -107,15 +107,15 @@ beforeEach(() => {
 
 describe('saveOfflineToCloud (offline -> cloud)', () => {
   it('creates the cloud copy before removing the local one', () => {
-    // A network failure part-way must leave the offline document intact, so the
+    // A network failure part-way must leave the offline project intact, so the
     // destination has to exist before the source goes.
     return saveOfflineToCloud('d1', 'owner').then(() => {
-      expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument']);
+      expect(calls).toEqual(['apiCreateProject', 'offlineDeleteProject']);
     });
   });
 
   it('keeps the local copy when the cloud write fails', async () => {
-    vi.mocked(apiClient.apiCreateDocument).mockRejectedValueOnce(new Error('offline'));
+    vi.mocked(apiClient.apiCreateProject).mockRejectedValueOnce(new Error('offline'));
     await expect(saveOfflineToCloud('d1', 'owner')).rejects.toThrow();
     expect(store.offlineDeleteIfUnchanged).not.toHaveBeenCalled();
   });
@@ -129,7 +129,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       favourite: true,
     } as never);
     await saveOfflineToCloud('d1', 'owner');
-    expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument', 'apiSetFavourite']);
+    expect(calls).toEqual(['apiCreateProject', 'offlineDeleteProject', 'apiSetFavourite']);
     expect(apiClient.apiSetFavourite).toHaveBeenCalledWith('owner', 'd1', true);
   });
 
@@ -140,12 +140,12 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       tabs: [],
       tagIds: ['a', 'b'],
     } as never);
-    vi.mocked(tagsApi.apiSetDocumentTag).mockRejectedValueOnce(new Error('tag gone'));
+    vi.mocked(tagsApi.apiSetProjectTag).mockRejectedValueOnce(new Error('tag gone'));
     await saveOfflineToCloud('d1', 'owner');
     // One refused (a tag deleted meanwhile) leaves the sync done all the same.
-    expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument', 'apiSetDocumentTag']);
-    expect(tagsApi.apiSetDocumentTag).toHaveBeenCalledWith('owner', 'a', 'd1', true);
-    expect(tagsApi.apiSetDocumentTag).toHaveBeenCalledWith('owner', 'b', 'd1', true);
+    expect(calls).toEqual(['apiCreateProject', 'offlineDeleteProject', 'apiSetProjectTag']);
+    expect(tagsApi.apiSetProjectTag).toHaveBeenCalledWith('owner', 'a', 'd1', true);
+    expect(tagsApi.apiSetProjectTag).toHaveBeenCalledWith('owner', 'b', 'd1', true);
   });
 
   it('carries the folder and created date, not just the tabs', async () => {
@@ -159,34 +159,34 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       createdAt: 123,
     } as never);
     await saveOfflineToCloud('d1', 'owner');
-    expect(vi.mocked(apiClient.apiCreateDocument).mock.calls[0]![1]).toMatchObject({
+    expect(vi.mocked(apiClient.apiCreateProject).mock.calls[0]![1]).toMatchObject({
       folderId: 'f1',
       createdAt: 123,
     });
   });
 
   it.each(['folder_not_found', 'folder_scope_mismatch'])(
-    'files the document at the root, saying so, when the server refuses its folder: %s',
+    'files the project at the root, saying so, when the server refuses its folder: %s',
     async (code) => {
-      // docs/specs/006-document/offline-mode.md: the server refuses by name; the sync decides.
+      // docs/specs/006-project/offline-mode.md: the server refuses by name; the sync decides.
       vi.mocked(store.offlineGetRecord).mockResolvedValueOnce({
         id: 'd1',
         name: 'Roadmap',
         tabs: [],
         folderId: 'deleted-since',
       } as never);
-      vi.mocked(apiClient.apiCreateDocument).mockRejectedValueOnce(
-        new core.ApiError('create document', 404, code),
+      vi.mocked(apiClient.apiCreateProject).mockRejectedValueOnce(
+        new core.ApiError('create project', 404, code),
       );
       const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
       await saveOfflineToCloud('d1', 'owner');
-      const creates = vi.mocked(apiClient.apiCreateDocument).mock.calls;
+      const creates = vi.mocked(apiClient.apiCreateProject).mock.calls;
       expect(creates).toHaveLength(2);
       expect(creates[1]![1]).toMatchObject({ folderId: null });
       expect(warn).toHaveBeenCalledWith(
         `[offline-sync] placement refused reason=${code}, filed at root`,
       );
-      expect(calls).toEqual(['apiCreateDocument', 'offlineDeleteDocument']);
+      expect(calls).toEqual(['apiCreateProject', 'offlineDeleteProject']);
       warn.mockRestore();
     },
   );
@@ -198,44 +198,44 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       tabs: [],
       folderId: 'f1',
     } as never);
-    vi.mocked(apiClient.apiCreateDocument).mockRejectedValueOnce(
-      new core.ApiError('create document', 413, 'payload_too_large'),
+    vi.mocked(apiClient.apiCreateProject).mockRejectedValueOnce(
+      new core.ApiError('create project', 413, 'payload_too_large'),
     );
     await expect(saveOfflineToCloud('d1', 'owner')).rejects.toThrow();
-    expect(apiClient.apiCreateDocument).toHaveBeenCalledTimes(1);
+    expect(apiClient.apiCreateProject).toHaveBeenCalledTimes(1);
     expect(store.offlineDeleteIfUnchanged).not.toHaveBeenCalled();
   });
 
-  it('stars nothing for an unstarred document', async () => {
+  it('stars nothing for an unstarred project', async () => {
     await saveOfflineToCloud('d1', 'owner');
     expect(apiClient.apiSetFavourite).not.toHaveBeenCalled();
   });
 
-  it('uploads again when the document changed during the upload, removing the local copy only then', async () => {
-    // docs/specs/006-document/offline-mode.md "Save to server": an edit made while the upload ran
+  it('uploads again when the project changed during the upload, removing the local copy only then', async () => {
+    // docs/specs/006-project/offline-mode.md "Save to server": an edit made while the upload ran
     // would be deleted with the local copy, yet missing from the cloud one.
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const edited = { id: 'd1', name: 'Roadmap', tabs: [], savedAt: 2 };
     states.push(edited, edited);
     await saveOfflineToCloud('d1', 'owner');
-    const creates = vi.mocked(apiClient.apiCreateDocument).mock.calls;
+    const creates = vi.mocked(apiClient.apiCreateProject).mock.calls;
     expect(creates).toHaveLength(2);
     // The first cloud copy is taken back (declared a move, so it skips the Trash) before the second.
     expect(calls).toEqual([
-      'apiCreateDocument',
+      'apiCreateProject',
       'apiDelete',
-      'apiCreateDocument',
-      'offlineDeleteDocument',
+      'apiCreateProject',
+      'offlineDeleteProject',
     ]);
     const [, , opts] = vi.mocked(core.apiDelete).mock.calls[0]!;
     expect((opts as { extra?: Record<string, string> }).extra).toEqual({
-      [DOCUMENT_CONVERSION_HEADER]: 'offline',
+      [PROJECT_CONVERSION_HEADER]: 'offline',
     });
     expect(warn).toHaveBeenCalledWith('[offline-sync] changed-during-upload attempt=1');
     warn.mockRestore();
   });
 
-  it('gives up, keeping the local copy, when the document changes during every upload', async () => {
+  it('gives up, keeping the local copy, when the project changes during every upload', async () => {
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     const at = (savedAt: number) => ({ id: 'd1', name: 'Roadmap', tabs: [], savedAt });
     states.push(at(2), at(3), at(4));
@@ -243,8 +243,8 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       name: 'OfflineSyncIncompleteError',
       reason: 'kept_changing',
     });
-    expect(apiClient.apiCreateDocument).toHaveBeenCalledTimes(3);
-    expect(calls).not.toContain('offlineDeleteDocument');
+    expect(apiClient.apiCreateProject).toHaveBeenCalledTimes(3);
+    expect(calls).not.toContain('offlineDeleteProject');
     expect(calls.at(-1)).toBe('apiDelete');
   });
 
@@ -262,7 +262,7 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
       reason: 'stores_short',
     });
     expect(store.offlineDeleteIfUnchanged).not.toHaveBeenCalled();
-    expect(calls).toEqual(['apiCreateDocument', 'apiDelete']);
+    expect(calls).toEqual(['apiCreateProject', 'apiDelete']);
   });
 
   it('checks the cloud stores only for a record that has some', async () => {
@@ -271,16 +271,16 @@ describe('saveOfflineToCloud (offline -> cloud)', () => {
     expect(sheets.fetchCloudSheets).not.toHaveBeenCalled();
   });
 
-  it('refuses a document that is not in the local store', async () => {
+  it('refuses a project that is not in the local store', async () => {
     vi.mocked(store.offlineGetRecord).mockResolvedValueOnce(undefined as never);
     await expect(saveOfflineToCloud('missing', 'owner')).rejects.toThrow(/not found/i);
-    expect(apiClient.apiCreateDocument).not.toHaveBeenCalled();
+    expect(apiClient.apiCreateProject).not.toHaveBeenCalled();
   });
 });
 
 describe('takeCloudOffline (cloud -> offline)', () => {
   it('keeps the personal folder on the offline record', async () => {
-    vi.mocked(apiClient.apiLoadDocument).mockResolvedValueOnce({
+    vi.mocked(apiClient.apiLoadProject).mockResolvedValueOnce({
       id: 'd1',
       name: 'Roadmap',
       tabs: [{ id: 't1' }],
@@ -293,20 +293,20 @@ describe('takeCloudOffline (cloud -> offline)', () => {
     });
   });
 
-  it('keeps a starred document starred on the offline record', async () => {
+  it('keeps a starred project starred on the offline record', async () => {
     vi.mocked(apiClient.fetchCloudFavouriteIds).mockResolvedValueOnce(['d1']);
     await takeCloudOffline('d1', 'owner');
     expect(vi.mocked(store.offlinePutRecord).mock.calls[0]![0]).toMatchObject({ favourite: true });
   });
 
-  // docs/specs/013-workspace/tags.md "An offline document's tags live in the browser".
-  it('carries the document tags onto the offline record, and only its own', async () => {
+  // docs/specs/013-workspace/tags.md "An offline project's tags live in the browser".
+  it('carries the project tags onto the offline record, and only its own', async () => {
     vi.mocked(tagsApi.fetchCloudTags).mockResolvedValueOnce({
       tags: [],
       links: [
-        { tagId: 'a', documentId: 'd1' },
-        { tagId: 'b', documentId: 'other' },
-        { tagId: 'c', documentId: 'd1' },
+        { tagId: 'a', projectId: 'd1' },
+        { tagId: 'b', projectId: 'other' },
+        { tagId: 'c', projectId: 'd1' },
       ],
     });
     await takeCloudOffline('d1', 'owner');
@@ -334,30 +334,30 @@ describe('takeCloudOffline (cloud -> offline)', () => {
   });
 
   it('rolls the local copy back when the server delete fails', async () => {
-    // Both copies registered under one id would shadow the live cloud document
+    // Both copies registered under one id would shadow the live cloud project
     // behind a stale offline fork. Data-safe: the server still holds it all.
     vi.mocked(core.apiDelete).mockRejectedValueOnce(new Error('500'));
     await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow();
-    expect(store.offlineDeleteDocument).toHaveBeenCalledWith('d1');
+    expect(store.offlineDeleteProject).toHaveBeenCalledWith('d1');
   });
 
   it('still surfaces the delete failure even if the rollback also fails', async () => {
     // The rollback is best-effort; the caller must not be told the conversion
     // succeeded because the cleanup threw on the way out.
     vi.mocked(core.apiDelete).mockRejectedValueOnce(new Error('500'));
-    vi.mocked(store.offlineDeleteDocument).mockRejectedValueOnce(new Error('idb gone'));
+    vi.mocked(store.offlineDeleteProject).mockRejectedValueOnce(new Error('idb gone'));
     await expect(takeCloudOffline('d1', 'owner')).rejects.toThrow('500');
   });
 
-  it('refuses a document the server does not have', async () => {
-    vi.mocked(apiClient.apiLoadDocument).mockResolvedValueOnce(null);
+  it('refuses a project the server does not have', async () => {
+    vi.mocked(apiClient.apiLoadProject).mockResolvedValueOnce(null);
     await expect(takeCloudOffline('nope', 'owner')).rejects.toThrow(/not found/i);
     expect(store.offlinePutRecord).not.toHaveBeenCalled();
   });
 
   it('aborts when a tab fails to load, leaving the server copy intact', async () => {
     // This used to assert the opposite — that the conversion carried on and
-    // deleted the server document — under the name "keeps going … rather than
+    // deleted the server project — under the name "keeps going … rather than
     // losing the rest". Carrying on is what loses: the offline record is
     // written from the tabs that survived, the server copy is deleted, and the
     // failed tab's elements exist nowhere. Nothing is recoverable and the user
@@ -382,29 +382,29 @@ describe('conversions declare themselves to the worker', () => {
   // Both conversions reuse ordinary endpoints, so the worker cannot tell them
   // from a real delete / a real create unless the request says so — and
   // undeclared it recorded exactly that, telling the owner in danger red that a
-  // document they had just moved into this browser was deleted (docs/specs/006-document/offline-mode.md +
+  // project they had just moved into this browser was deleted (docs/specs/006-project/offline-mode.md +
   // docs/specs/013-workspace/timeline.md §4.2).
   it('marks the take-offline DELETE as an offline conversion', async () => {
     await takeCloudOffline('d1', 'owner');
     const [, , opts] = vi.mocked(core.apiDelete).mock.calls[0]!;
     expect((opts as { extra?: Record<string, string> }).extra).toEqual({
-      [DOCUMENT_CONVERSION_HEADER]: 'offline',
+      [PROJECT_CONVERSION_HEADER]: 'offline',
     });
   });
 
   it('marks the sync POST as a sync conversion', async () => {
     await saveOfflineToCloud('off-1', 'owner');
-    const call = vi.mocked(apiClient.apiCreateDocument).mock.calls[0]!;
+    const call = vi.mocked(apiClient.apiCreateProject).mock.calls[0]!;
     expect(call[2]).toEqual({ conversion: 'sync' });
   });
 });
 
-describe('one conversion per document at a time', () => {
+describe('one conversion per project at a time', () => {
   // The menu that starts a conversion unmounts when it closes, so its own guard went with it and a
-  // second menu could start an overlapping conversion of the same document.
-  it('refuses a second conversion of a document while the first runs, then allows the next', async () => {
+  // second menu could start an overlapping conversion of the same project.
+  it('refuses a second conversion of a project while the first runs, then allows the next', async () => {
     let land: () => void = () => {};
-    vi.mocked(apiClient.apiCreateDocument).mockImplementationOnce(
+    vi.mocked(apiClient.apiCreateProject).mockImplementationOnce(
       () =>
         new Promise((resolve) => {
           land = () => resolve(undefined as never);
@@ -419,12 +419,12 @@ describe('one conversion per document at a time', () => {
     land();
     await first;
     expect(conversionInProgress('d1')).toBe(false);
-    expect(apiClient.apiCreateDocument).toHaveBeenCalledTimes(1);
+    expect(apiClient.apiCreateProject).toHaveBeenCalledTimes(1);
     await expect(saveOfflineToCloud('d1', 'owner')).resolves.toMatchObject({ id: 'd1' });
   });
 
   it('lets a failed conversion be tried again', async () => {
-    vi.mocked(apiClient.apiCreateDocument).mockRejectedValueOnce(new Error('offline'));
+    vi.mocked(apiClient.apiCreateProject).mockRejectedValueOnce(new Error('offline'));
     await expect(saveOfflineToCloud('d1', 'owner')).rejects.toThrow('offline');
     expect(conversionInProgress('d1')).toBe(false);
   });

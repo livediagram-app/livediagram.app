@@ -1,9 +1,9 @@
 // Plan card comment threads on the Inbox (docs/specs/013-workspace/inbox.md §2.5, §4), against the
-// real migrations: who a card's thread lists for (mentioned, commented, the document's owner), what drops it
-// (resolved, archived, the Trash, a document the reader cannot open, a tab-scoped share whose boards miss it),
+// real migrations: who a card's thread lists for (mentioned, commented, the project's owner), what drops it
+// (resolved, archived, the Trash, a project the reader cannot open, a tab-scoped share whose boards miss it),
 // and that author ids never leave the worker.
 
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import type { DatabaseSync } from 'node:sqlite';
 import { describe, expect, it } from 'vitest';
 import { sqliteD1 } from '../test-sqlite-d1';
@@ -64,7 +64,7 @@ async function setUp(opts: { team?: string | null; owner?: string } = {}) {
       created_at: T0,
       updated_at: T0,
     });
-  insert(db.sql, 'documents', {
+  insert(db.sql, 'projects', {
     id: 'D',
     owner_id: opts.owner ?? 'owner',
     name: 'Roadmap',
@@ -91,7 +91,7 @@ async function setUp(opts: { team?: string | null; owner?: string } = {}) {
   let key = 1;
   const card = (id: string, fields: Record<string, unknown>) =>
     insert(db.sql, 'items', {
-      document_id: 'D',
+      project_id: 'D',
       id,
       type: 'task',
       item_key: key++,
@@ -126,8 +126,8 @@ describe('Activity: Plan card comment threads', () => {
     const rows = await read();
     expect(rows).toEqual([
       {
-        documentId: 'D',
-        documentName: 'Roadmap',
+        projectId: 'D',
+        projectName: 'Roadmap',
         teamId: 'tm',
         via: 'team',
         shareCode: null,
@@ -145,7 +145,7 @@ describe('Activity: Plan card comment threads', () => {
         },
         firstAt: T0 + 1,
         youCommented: false,
-        onYourDocument: false,
+        onYourProject: false,
         mentionsYou: true,
       },
     ]);
@@ -167,10 +167,10 @@ describe('Activity: Plan card comment threads', () => {
     ]);
   });
 
-  it('lists every open card thread on a document the reader owns', async () => {
+  it('lists every open card thread on a project the reader owns', async () => {
     const { card, read } = await setUp({ owner: 'reader' });
     card('c1', thread([comment('a', T0 + 1)]));
-    expect((await read()).map((r) => [r.id, r.onYourDocument])).toEqual([['c1', true]]);
+    expect((await read()).map((r) => [r.id, r.onYourProject])).toEqual([['c1', true]]);
   });
 
   it('leaves out resolved threads, empty threads, archived cards and cards in the Trash', async () => {
@@ -183,7 +183,7 @@ describe('Activity: Plan card comment threads', () => {
     expect(await read()).toEqual([]);
   });
 
-  it('never surfaces a document the reader cannot open', async () => {
+  it('never surfaces a project the reader cannot open', async () => {
     const { card, read } = await setUp({ team: null });
     card('c1', thread([comment('a', T0, { mentions: [{ userId: 'reader' }] })]));
     expect(await read()).toEqual([]);
@@ -194,9 +194,9 @@ describe('Activity: Plan card comment threads', () => {
     const mention = [comment('a', T0, { mentions: [{ userId: 'reader' }] })];
     card('on-plan', { status: 'todo', ...thread(mention) });
     card('stray', { status: 'blocked', ...thread(mention) });
-    sql.exec(`INSERT INTO share_links (code, document_id, role, tab_id, created_at)
+    sql.exec(`INSERT INTO share_links (code, project_id, role, tab_id, created_at)
               VALUES ('code-plan', 'D', 'edit', 't-plan', 1)`);
-    sql.exec(`INSERT INTO shared_with (owner_id, document_id, role, tab_id, last_seen)
+    sql.exec(`INSERT INTO shared_with (owner_id, project_id, role, tab_id, last_seen)
               VALUES ('reader', 'D', 'edit', 't-plan', 1)`);
     expect((await read()).map((r) => [r.id, r.via, r.shareCode])).toEqual([
       ['on-plan', 'shared', 'code-plan'],
@@ -204,8 +204,8 @@ describe('Activity: Plan card comment threads', () => {
   });
 
   // docs/specs/013-workspace/inbox.md §2.5: the scope comes first, so the item store is only ever read
-  // per visible document (its primary key), never scanned whole.
-  it('reads items per visible document, never scanning the store', async () => {
+  // per visible project (its primary key), never scanned whole.
+  it('reads items per visible project, never scanning the store', async () => {
     const { sql } = await setUp();
     const plan = sql
       .prepare(`EXPLAIN QUERY PLAN ${CARD_THREADS_SQL}`)

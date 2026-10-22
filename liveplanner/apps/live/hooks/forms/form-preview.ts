@@ -36,7 +36,7 @@ export async function sendPreview({
 }): Promise<SubmitOutcome> {
   const checked = checkResponse(form, state);
   if (!checked.ok) return { kind: 'invalid', errors: checked.errors };
-  // A Sheet no longer in the document takes no row: say so rather than send it nowhere.
+  // A Sheet no longer in the project takes no row: say so rather than send it nowhere.
   if (form.sheet && problem) {
     debugLog('[forms] form.preview.no_sheet', { problem });
     return { kind: 'failed', message: PREVIEW_NO_SHEET };

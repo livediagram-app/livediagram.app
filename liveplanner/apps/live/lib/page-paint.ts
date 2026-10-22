@@ -19,7 +19,7 @@ import {
   type ColourBackground,
   type PageColourFill,
   type PagePattern,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { CSSProperties } from 'react';
 
 type GradientPreset = { id: string; label: string; from: string; to: string };

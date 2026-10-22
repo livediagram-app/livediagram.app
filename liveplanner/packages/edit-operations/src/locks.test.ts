@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@liveplanner/document';
-import { checkoutFlow } from './fixtures/checkout-flow';
+import type { Tab } from '@liveplanner/project';
+import { sprintDashboard } from './fixtures/sprint-dashboard';
 import { layerLockOf, lockedIds } from './locks';
 
 const layered = (): Tab => {
-  const tab = checkoutFlow();
+  const tab = sprintDashboard();
   return {
     ...tab,
     layers: [
@@ -12,7 +12,7 @@ const layered = (): Tab => {
       { id: 'top', name: 'Top' },
     ],
     elements: tab.elements.map((el) =>
-      el.id === 'n1' ? { ...el, layerId: 'top', locked: true } : { ...el, layerId: 'top' },
+      el.id === 'm1' ? { ...el, layerId: 'top', locked: true } : { ...el, layerId: 'top' },
     ),
   };
 };
@@ -20,17 +20,17 @@ const layered = (): Tab => {
 describe('lockedIds', () => {
   it('names locked elements and elements on locked layers, the element lock first', () => {
     const tab = layered();
-    tab.elements[2] = { ...tab.elements[2]!, layerId: 'base', locked: true };
-    tab.elements[3] = { ...tab.elements[3]!, layerId: 'base' };
+    tab.elements[1] = { ...tab.elements[1]!, layerId: 'base', locked: true };
+    tab.elements[2] = { ...tab.elements[2]!, layerId: 'base' };
     expect([...lockedIds(tab)]).toEqual([
-      ['n1', { scope: 'element' }],
-      ['n2', { scope: 'element' }],
-      ['n3', { scope: 'layer', layer: 'Base' }],
+      ['m1', { scope: 'element' }],
+      ['m2', { scope: 'element' }],
+      ['m3', { scope: 'layer', layer: 'Base' }],
     ]);
   });
 
   it('finds nothing locked on an ordinary tab', () => {
-    expect(lockedIds(checkoutFlow()).size).toBe(0);
+    expect(lockedIds(sprintDashboard()).size).toBe(0);
   });
 });
 

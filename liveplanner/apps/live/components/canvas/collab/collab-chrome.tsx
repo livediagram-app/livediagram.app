@@ -6,7 +6,7 @@
 // class strings and they drift the first time one is tweaked.
 
 import { createContext, useContext } from 'react';
-import { SHAPE_DEFAULT_SIZE, type ShapeElement } from '@liveplanner/document';
+import { SHAPE_DEFAULT_SIZE, type ShapeElement } from '@liveplanner/project';
 import { tint } from '@/lib/element-tint';
 // Re-exported: every collab face already reaches for it through this module,
 // and the kit it now also feeds lives one level up (see lib/element-tint.ts).

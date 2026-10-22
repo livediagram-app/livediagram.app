@@ -4,13 +4,17 @@
 //
 //   /post/        the post shell, its <head> filled in with the post named by `?id=` (./post-head.ts), or answered
 //                 404 when there is no such public post, so a dead post link never indexes as a page;
-//   /sitemap.xml  every public post, from the api's /api/community/sitemap.
+//   /sitemap.xml  every public post, from the Community service's /sitemap.
 //
-// The api is reached through the API service binding. Without it (a self-host that leaves it out), or when the api
-// is slow or failing, the shell is served exactly as built: the page still works, it just names no post until its
-// script runs.
+// The posts are the liveworkspace Community service's (liveworkspace/docs/community.md), asked over HTTPS for this
+// app's posts only: production's, or the one COMMUNITY_URL names. When it is slow or failing, the shell is served
+// exactly as built: the page still works, it just names no post until its script runs.
 
-import type { CommunityPostResponse, CommunitySitemapResponse } from '@livediagram/api-schema';
+import {
+  communityServiceUrl,
+  type CommunityPostResponse,
+  type CommunitySitemapResponse,
+} from '@livediagram/api-schema';
 import {
   API_TIMEOUT_MS,
   escapeHtml,
@@ -39,20 +43,16 @@ declare const HTMLRewriter: new () => Rewriter;
 
 export interface Env {
   ASSETS: Fetcher;
-  API?: Fetcher;
+  // The Community service's API; unset means production's.
+  COMMUNITY_URL?: string;
 }
-
-// The origin the api binding is addressed through; a service binding ignores the host, only the path matters.
-const API_ORIGIN = 'https://livediagram.app';
 
 type ApiResult<T> = { status: 'ok'; body: T } | { status: 'missing' } | { status: 'unavailable' };
 
 async function api<T>(env: Env, path: string): Promise<ApiResult<T>> {
-  if (!env.API) return { status: 'unavailable' };
   try {
-    const res = await env.API.fetch(`${API_ORIGIN}/api${path}`, {
-      signal: AbortSignal.timeout(API_TIMEOUT_MS),
-    });
+    const url = communityServiceUrl('livediagram.app', path, { base: env.COMMUNITY_URL });
+    const res = await fetch(url, { signal: AbortSignal.timeout(API_TIMEOUT_MS) });
     if (res.status === 404) return { status: 'missing' };
     if (!res.ok) {
       console.warn('[community-worker] api answered', res.status, path);
@@ -96,7 +96,7 @@ async function postPage(request: Request, env: Env, url: URL): Promise<Response>
   const shell = await env.ASSETS.fetch(request);
   const id = url.searchParams.get('id');
   if (!id || !shell.ok || request.method !== 'GET') return shell;
-  const post = await api<CommunityPostResponse>(env, `/community/posts/${encodeURIComponent(id)}`);
+  const post = await api<CommunityPostResponse>(env, `/posts/${encodeURIComponent(id)}`);
   if (post.status === 'unavailable') return shell;
   if (post.status === 'missing') {
     // The shell still renders its friendly not-found; the status tells crawlers there is no page here.
@@ -106,7 +106,7 @@ async function postPage(request: Request, env: Env, url: URL): Promise<Response>
 }
 
 async function sitemap(env: Env): Promise<Response> {
-  const result = await api<CommunitySitemapResponse>(env, '/community/sitemap');
+  const result = await api<CommunitySitemapResponse>(env, '/sitemap');
   // Switched off, or nothing to list: an empty sitemap is still a valid one.
   if (result.status === 'unavailable') {
     return new Response('Sitemap unavailable', { status: 503, headers: { 'Retry-After': '3600' } });

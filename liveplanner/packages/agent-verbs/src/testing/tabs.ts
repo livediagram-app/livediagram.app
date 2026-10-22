@@ -1,6 +1,6 @@
 // Plain tabs for the write and diff suites.
 
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 
 export const box = (id: string, label: string, x = 0): Element => ({
   id,

@@ -1250,7 +1250,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
       properties: { post: { anyOf: [ref('CommunityOwnPost'), { type: 'null' }] } },
       required: ['post'],
     },
-    statuses: [200, 400, 401, 403, 404, 410],
+    statuses: [200, 400, 401, 403, 404, 410, 502],
   },
   {
     method: 'PUT',
@@ -1262,7 +1262,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     requestSchema: ref('CommunityPostInput'),
     responseSchema: wrap('post', 'CommunityOwnPost'),
-    statuses: [200, 201, 400, 401, 403, 404, 409, 410],
+    statuses: [200, 201, 400, 401, 403, 404, 409, 410, 502],
   },
   {
     method: 'DELETE',
@@ -1271,7 +1271,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     tag: 'Community',
     summary: 'Remove the document from Community (owner only).',
     auth: 'guest-or-clerk',
-    statuses: [204, 400, 401, 403, 404, 409, 410],
+    statuses: [204, 400, 401, 403, 404, 409, 410, 502],
   },
   {
     method: 'GET',
@@ -1658,17 +1658,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     requestSchema: ref('FormReportBody'),
     statuses: [201, 400, 404, 429],
   },
-  {
-    method: 'GET',
-    path: '/community/posts',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'List Community posts. Send X-Community-Key to learn which you like.',
-    auth: 'public',
-    query: [...COMMUNITY_QUERY],
-    responseSchema: ref('CommunityListResponse'),
-    statuses: [200, 400, 404],
-  },
+  // Every other Community read, and likes and reports, are the liveworkspace Community service's
+  // (liveworkspace/docs/community.md), which the Community pages call directly.
   {
     method: 'GET',
     path: '/community/mine',
@@ -1679,79 +1670,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     auth: 'clerk',
     query: [...COMMUNITY_QUERY],
     responseSchema: ref('CommunityMineResponse'),
-    statuses: [200, 400, 401, 404],
-  },
-  {
-    method: 'GET',
-    path: '/community/featured',
-    segment: 'community',
-    tag: 'Community',
-    summary:
-      'The six posts the home page features: most liked in the last 3 months, topped up with the best of all time.',
-    auth: 'public',
-    responseSchema: ref('CommunityFeaturedResponse'),
-    statuses: [200, 404],
-  },
-  {
-    method: 'GET',
-    path: '/community/sitemap',
-    segment: 'community',
-    tag: 'Community',
-    summary:
-      'Every public post, newest first (up to 5,000), with when it last changed: the sitemap source.',
-    auth: 'public',
-    responseSchema: ref('CommunitySitemapResponse'),
-    statuses: [200, 404],
-  },
-  {
-    method: 'GET',
-    path: '/community/facets',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'Post counts per category and the most used tags.',
-    auth: 'public',
-    responseSchema: ref('CommunityFacetsResponse'),
-    statuses: [200, 404],
-  },
-  {
-    method: 'GET',
-    path: '/community/posts/{id}',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'One Community post with More Like This.',
-    auth: 'public',
-    responseSchema: ref('CommunityPostResponse'),
-    statuses: [200, 404],
-  },
-  {
-    method: 'PUT',
-    path: '/community/posts/{id}/like',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'Like a post (needs X-Community-Key).',
-    auth: 'public',
-    responseSchema: ref('CommunityLikeResponse'),
-    statuses: [200, 400, 404, 429],
-  },
-  {
-    method: 'DELETE',
-    path: '/community/posts/{id}/like',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'Unlike a post (needs X-Community-Key).',
-    auth: 'public',
-    responseSchema: ref('CommunityLikeResponse'),
-    statuses: [200, 400, 404, 429],
-  },
-  {
-    method: 'POST',
-    path: '/community/posts/{id}/report',
-    segment: 'community',
-    tag: 'Community',
-    summary: 'Report a post (needs X-Community-Key).',
-    auth: 'public',
-    requestSchema: ref('CommunityReportInput'),
-    statuses: [204, 400, 404, 429],
+    statuses: [200, 400, 401, 404, 502],
   },
   {
     method: 'GET',
@@ -2775,28 +2694,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/events',
     segment: 'events',
     tag: 'Telemetry',
-    summary: 'Ingest a batch of anonymous first-party telemetry events.',
-    // The route also honours an `X-Internal-Events-Key` header that exempts
-    // our own workers from the per-IP rate limiter (docs/specs/017-telemetry/telemetry.md). Deliberately
-    // NOT documented here: the public spec describes what a public caller
-    // can use, and advertising the bypass header would only invite guessing
-    // at the secret. Its absence is a choice, not an oversight.
+    summary:
+      'Pass a batch of anonymous first-party telemetry events on to the liveworkspace telemetry service, for clients that cannot post there themselves (the CLI).',
     auth: 'public',
     requestSchema: {
       type: 'object',
       properties: { events: { type: 'array', items: ref('TelemetryEvent') } },
     },
     statuses: [204],
-  },
-  {
-    method: 'GET',
-    path: '/telemetry/summary',
-    segment: 'telemetry',
-    tag: 'Telemetry',
-    summary: 'Public usage summary that powers the /telemetry dashboard.',
-    auth: 'public',
-    responseSchema: 'TelemetrySummary',
-    statuses: [200],
   },
 
   // ---- Workbench (docs/specs/013-workspace/workbench-embeds.md) ----

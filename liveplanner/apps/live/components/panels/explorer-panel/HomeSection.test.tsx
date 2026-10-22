@@ -3,10 +3,10 @@ import { render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { JumpBackInItem } from '@/app/explorer/home/home-model';
 
-const item = (documentId: string, name: string): JumpBackInItem => ({
-  documentId,
+const item = (projectId: string, name: string): JumpBackInItem => ({
+  projectId,
   name,
-  href: `/document/${documentId}`,
+  href: `/project/${projectId}`,
   savedAt: 1,
   empty: false,
   shareCode: null,
@@ -26,34 +26,34 @@ vi.mock('@/app/explorer/home/useHome', () => ({
     retry: () => {},
   }),
 }));
-vi.mock('@/components/panels/DocumentThumbnail', () => ({ DocumentThumbnail: () => <span /> }));
+vi.mock('@/components/panels/ProjectThumbnail', () => ({ ProjectThumbnail: () => <span /> }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-// The cards read the Explorer's tree for each document's row; this suite needs none.
+// The cards read the Explorer's tree for each project's row; this suite needs none.
 vi.mock('../explorer-tree/PanelTreeContext', () => ({ usePanelTree: () => ({}) }));
 
 import { HomeSection } from './PanelViews';
 
 const show = (current: string | null) =>
-  render(<HomeSection ownerId="me" currentDocumentId={current} onOpenDocument={() => {}} />);
+  render(<HomeSection ownerId="me" currentProjectId={current} onOpenProject={() => {}} />);
 
-// docs/specs/013-workspace/explorer-structure.md "Home": never the open document, and never "No documents yet"
-// to someone whose only document is the open one.
+// docs/specs/013-workspace/explorer-structure.md "Home": never the open project, and never "No projects yet"
+// to someone whose only project is the open one.
 describe('HomeSection Jump Back In', () => {
-  it('says nothing else is there yet when the open document is the only one', () => {
+  it('says nothing else is there yet when the open project is the only one', () => {
     home.current = { mostUsed: [item('d1', 'Roadmap')], recent: [] };
     show('d1');
     expect(screen.getByText('Nothing else yet')).toBeTruthy();
-    expect(screen.queryByText('No documents yet')).toBeNull();
+    expect(screen.queryByText('No projects yet')).toBeNull();
     expect(screen.queryByText('Roadmap')).toBeNull();
   });
 
-  it('says there are no documents when there are none', () => {
+  it('says there are no projects when there are none', () => {
     home.current = { mostUsed: [], recent: [] };
     show('d1');
-    expect(screen.getByText('No documents yet')).toBeTruthy();
+    expect(screen.getByText('No projects yet')).toBeTruthy();
   });
 
-  it('lists the other documents', () => {
+  it('lists the other projects', () => {
     home.current = { mostUsed: [item('d1', 'Roadmap')], recent: [item('d2', 'Budget')] };
     show('d1');
     expect(screen.getByText('Budget')).toBeTruthy();

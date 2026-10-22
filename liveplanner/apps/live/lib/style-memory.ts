@@ -10,7 +10,7 @@ import {
   rederiveQuickSwatches,
   type Element,
   type ThemeDefinition,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { safeJson } from './local-storage-safe';
 import { isQuickStyleTarget } from './quick-style';
 
@@ -61,7 +61,7 @@ const THEME_VALUE_OF: Readonly<Record<string, 'elementFill' | 'elementStroke' | 
 };
 
 const STORAGE_PREFIX = 'liveplanner:v2:style-memory:';
-export const styleMemoryKey = (documentId: string): string => `${STORAGE_PREFIX}${documentId}`;
+export const styleMemoryKey = (projectId: string): string => `${STORAGE_PREFIX}${projectId}`;
 
 export function styleKindOf(el: Element): StyleKindKey | null {
   return el.type === 'arrow'

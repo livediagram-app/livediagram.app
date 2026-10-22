@@ -11,7 +11,7 @@ vi.mock('./image-result', () => ({
 
 import { connectTestClient } from './mcp-test-client';
 
-// The name cap end to end through the real MCP SDK (docs/specs/006-document/name-length.md):
+// The name cap end to end through the real MCP SDK (docs/specs/006-project/name-length.md):
 // a client lists the tools and calls them over a transport, so the SDK's own
 // input validation runs the schema's truncateName before a tool body sees the
 // name, and the api receives the stored form.
@@ -39,7 +39,6 @@ async function connect() {
         results: [],
         text: '',
         warnings: [],
-        lint: null,
       });
     }
     if (path.endsWith('/name')) {
@@ -47,43 +46,43 @@ async function connect() {
         tab: { id: 't1', name: (JSON.parse(text) as { name: string }).name },
       });
     }
-    return Response.json({ document: { id: 'd1', name: CAPPED, tabs: [{ id: 't1' }] } });
+    return Response.json({ project: { id: 'd1', name: CAPPED, tabs: [{ id: 't1' }] } });
   });
   return { client, sent };
 }
 
-describe('document and tab names through the MCP SDK', () => {
+describe('project and tab names through the MCP SDK', () => {
   it('advertises the cap on every name argument', async () => {
     const { client } = await connect();
     const { tools } = await client.listTools();
-    for (const name of ['create_document', 'add_tab', 'rename_document']) {
+    for (const name of ['create_project', 'add_tab', 'rename_project']) {
       const tool = tools.find((t) => t.name === name)!;
       const prop = (tool.inputSchema.properties as Record<string, { description?: string }>).name;
       expect(prop?.description).toContain('at most 60 characters');
     }
   });
 
-  it('create_document sends the api the shortened document and tab names', async () => {
+  it('create_project sends the api the shortened project and tab names', async () => {
     const { client, sent } = await connect();
     await client.callTool({
-      name: 'create_document',
+      name: 'create_project',
       arguments: { name: LONG, tabs: [{ name: LONG, elements: [] }] },
     });
-    const create = sent.find((s) => s.method === 'POST' && s.path === '/documents')!;
+    const create = sent.find((s) => s.method === 'POST' && s.path === '/projects')!;
     expect(create.body?.name).toBe(CAPPED);
     expect((create.body?.tabs as { name: string }[] | undefined)?.[0]?.name).toBe(CAPPED);
   });
 
-  it('create_document takes a single tab alias, checked and capped as tabs are, and names what is wrong', async () => {
+  it('create_project takes a single tab alias, checked and capped as tabs are, and names what is wrong', async () => {
     const { client, sent } = await connect();
     await client.callTool({
-      name: 'create_document',
+      name: 'create_project',
       arguments: { name: 'Doc', tab: { name: LONG, elements: [] } },
     });
-    const create = sent.find((s) => s.method === 'POST' && s.path === '/documents')!;
+    const create = sent.find((s) => s.method === 'POST' && s.path === '/projects')!;
     expect((create.body?.tabs as { name: string }[] | undefined)?.[0]?.name).toBe(CAPPED);
     const bad = await client.callTool({
-      name: 'create_document',
+      name: 'create_project',
       arguments: { name: 'Doc', tab: { name: 'One', elements: 'none' } },
     });
     expect(bad.isError).toBe(true);
@@ -94,28 +93,28 @@ describe('document and tab names through the MCP SDK', () => {
     const { client, sent } = await connect();
     await client.callTool({
       name: 'add_tab',
-      arguments: { documentId: 'd1', name: LONG, elements: [], theme: 'brand' },
+      arguments: { projectId: 'd1', name: LONG, elements: [], theme: 'brand' },
     });
     // The tab arrives as a changeset that creates it (docs/specs/024-agents/agent-changesets.md).
     const created = sent.find((s) => s.method === 'POST' && s.path.endsWith('/changesets'))!;
     expect((created.body?.replace as { name: string } | undefined)?.name).toBe(CAPPED);
 
     const result = await client.callTool({
-      name: 'rename_document',
-      arguments: { documentId: 'd1', tabId: 't1', name: LONG },
+      name: 'rename_project',
+      arguments: { projectId: 'd1', tabId: 't1', name: LONG },
     });
     const renamed = sent.filter(
-      (s) => s.method === 'PUT' && s.path === '/documents/d1/tabs/t1/name',
+      (s) => s.method === 'PUT' && s.path === '/projects/d1/tabs/t1/name',
     );
     expect(renamed.at(-1)?.body?.name).toBe(CAPPED);
     const text = (result.content as { type: string; text: string }[])[0]!.text;
     expect(JSON.parse(text)).toHaveProperty('name', CAPPED);
   });
 
-  it('rename_document sends the shortened document name', async () => {
+  it('rename_project sends the shortened project name', async () => {
     const { client, sent } = await connect();
-    await client.callTool({ name: 'rename_document', arguments: { documentId: 'd1', name: LONG } });
-    const put = sent.find((s) => s.method === 'PUT' && s.path === '/documents/d1')!;
+    await client.callTool({ name: 'rename_project', arguments: { projectId: 'd1', name: LONG } });
+    const put = sent.find((s) => s.method === 'PUT' && s.path === '/projects/d1')!;
     expect(put.body).toEqual({ name: CAPPED });
   });
 });

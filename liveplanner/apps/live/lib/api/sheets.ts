@@ -1,6 +1,6 @@
 // The sheet store's client (docs/specs/029-sheets/sheet-store.md, blueprint sheet-store.md "Editor slice"). Each
-// call sends an offline document to its local store (../offline/offline-sheets, loaded only then: it carries the
-// engine) and a cloud document to the api. A session on a tab-scoped link names its tab on every call. Types only
+// call sends an offline project to its local store (../offline/offline-sheets, loaded only then: it carries the
+// engine) and a cloud project to the api. A session on a tab-scoped link names its tab on every call. Types only
 // from the engine, so this module costs the main bundle nothing.
 
 import type {
@@ -16,9 +16,9 @@ import { API_BASE, apiFetch, apiHeaders, expectOk, expectOkVoid } from './core';
 
 export type SheetsScope = {
   ownerId: string;
-  documentId: string;
+  projectId: string;
   shareCode: string | null;
-  // The tab a tab-scoped link confines this session to; null for the whole document.
+  // The tab a tab-scoped link confines this session to; null for the whole project.
   tabId: string | null;
 };
 
@@ -27,7 +27,7 @@ function sheetsUrl(scope: SheetsScope, rest = '', query: Record<string, string> 
     ...(scope.tabId ? { tabId: scope.tabId } : {}),
     ...query,
   }).toString();
-  return `${API_BASE}/documents/${encodeURIComponent(scope.documentId)}/sheets${rest}${q ? `?${q}` : ''}`;
+  return `${API_BASE}/projects/${encodeURIComponent(scope.projectId)}/sheets${rest}${q ? `?${q}` : ''}`;
 }
 
 const offline = () => import('../offline/offline-sheets');
@@ -37,8 +37,8 @@ export async function fetchSheets(
   scope: SheetsScope,
   which: { tabId: string } | { ids: readonly string[] },
 ): Promise<SheetJson[]> {
-  if (await isOfflineId(scope.documentId))
-    return (await offline()).offlineFetchSheets(scope.documentId, which);
+  if (await isOfflineId(scope.projectId))
+    return (await offline()).offlineFetchSheets(scope.projectId, which);
   if ('ids' in which) {
     const out: SheetJson[] = [];
     for (let i = 0; i < which.ids.length; i += 50) {
@@ -58,15 +58,15 @@ export async function fetchSheets(
   return (await expectOk<SheetsResponse>(res, 'sheets')).sheets;
 }
 
-// Every sheet of a document (Take offline, Duplicate, the Drive file).
+// Every sheet of a project (Take offline, Duplicate, the Drive file).
 export async function fetchAllSheets(scope: SheetsScope): Promise<SheetJson[]> {
-  if (await isOfflineId(scope.documentId))
-    return (await offline()).offlineFetchSheets(scope.documentId, null);
+  if (await isOfflineId(scope.projectId))
+    return (await offline()).offlineFetchSheets(scope.projectId, null);
   return fetchCloudSheets(scope);
 }
 
-// The server's sheets, even while the id is still registered offline (Sync Document's check that
-// the cloud copy holds every sheet, docs/specs/006-document/offline-mode.md).
+// The server's sheets, even while the id is still registered offline (Sync Project's check that
+// the cloud copy holds every sheet, docs/specs/006-project/offline-mode.md).
 export async function fetchCloudSheets(scope: SheetsScope): Promise<SheetJson[]> {
   const res = await apiFetch(sheetsUrl(scope), {
     headers: await apiHeaders(scope.ownerId, { share: scope.shareCode }),
@@ -92,8 +92,8 @@ export async function createSheet(
   // The create will be retried if its tab is not saved yet: that refusal is no error to report.
   { tabMayBeUnsaved = false }: { tabMayBeUnsaved?: boolean } = {},
 ): Promise<SheetJson> {
-  if (await isOfflineId(scope.documentId))
-    return (await offline()).offlineCreateSheet(scope.documentId, create, by);
+  if (await isOfflineId(scope.projectId))
+    return (await offline()).offlineCreateSheet(scope.projectId, create, by);
   const res = await apiFetch(sheetsUrl(scope), {
     method: 'POST',
     headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
@@ -114,8 +114,8 @@ export async function writeSheet(
   request: SheetWriteRequest,
   by: SheetPerson,
 ): Promise<SheetWriteResponse> {
-  if (await isOfflineId(scope.documentId))
-    return (await offline()).offlineWriteSheet(scope.documentId, sheetId, request, by);
+  if (await isOfflineId(scope.projectId))
+    return (await offline()).offlineWriteSheet(scope.projectId, sheetId, request, by);
   const res = await apiFetch(sheetsUrl(scope, `/${encodeURIComponent(sheetId)}/writes`), {
     method: 'POST',
     headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),
@@ -125,14 +125,14 @@ export async function writeSheet(
 }
 
 // `whenUnreferenced`: the editor deleting a Sheet with its element; the api deletes the sheet once nothing in the
-// document references it (sheet-store.md "Deleting a sheet").
+// project references it (sheet-store.md "Deleting a sheet").
 export async function deleteSheet(
   scope: SheetsScope,
   sheetId: string,
   opts: { whenUnreferenced?: boolean } = {},
 ): Promise<void> {
-  if (await isOfflineId(scope.documentId))
-    return (await offline()).offlineDeleteSheet(scope.documentId, sheetId);
+  if (await isOfflineId(scope.projectId))
+    return (await offline()).offlineDeleteSheet(scope.projectId, sheetId);
   const query: Record<string, string> = opts.whenUnreferenced ? { whenUnreferenced: 'true' } : {};
   const res = await apiFetch(sheetsUrl(scope, `/${encodeURIComponent(sheetId)}`, query), {
     method: 'DELETE',

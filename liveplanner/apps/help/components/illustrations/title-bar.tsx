@@ -1,6 +1,6 @@
 // The editor's title bar for the User Interface › The Title Bar article (docs/specs/018-help/help-app.md).
 // Drawn from the live header (apps/live/components/chrome/EditorHeader.tsx): the logo and section menu,
-// the document name, the visibility pill (SharedBadge), the role pill (RoleIndicator), Share and the
+// the project name, the visibility pill (SharedBadge), the role pill (RoleIndicator), Share and the
 // account button; and the visibility pill's legend (VisibilityLegend). Labels are the real UI strings,
 // in capitals where the editor prints them in capitals.
 
@@ -129,8 +129,8 @@ function Callout({
   );
 }
 
-/** The title bar as the owner of a shared document sees it: logo and section menu, the
- *  document name, the SHARED visibility pill, the EDITING role pill, a solid Share button and
+/** The title bar as the owner of a shared project sees it: logo and section menu, the
+ *  project name, the SHARED visibility pill, the EDITING role pill, a solid Share button and
  *  the account button. */
 export function TitleBarParts() {
   const y = 14;
@@ -146,7 +146,7 @@ export function TitleBarParts() {
         className="stroke-slate-200"
         strokeWidth={1.2}
       />
-      {/* Logo and the section menu (ProductNav), which reads "Editor" here. */}
+      {/* The logo, with the chevron of its site switcher (liveworkspace/docs/site-switcher.md). */}
       <rect x={10} y={y + 10} width={20} height={20} rx={5} className="fill-brand-500" />
       <path
         d={`M15 ${y + 23} l4 -6 l3 4 l3 -3`}
@@ -157,16 +157,16 @@ export function TitleBarParts() {
         strokeLinejoin="round"
       />
       <Label x={40} y={y + 21} size={10} weight={600} tone="body">
-        Editor
+        liveplanner
       </Label>
       <path
-        d={`M76 ${y + 19} l3 3 l3 -3`}
+        d={`M102 ${y + 19} l3 3 l3 -3`}
         className="stroke-slate-400"
         fill="none"
         strokeWidth={1.3}
         strokeLinecap="round"
       />
-      {/* The document name: click to rename. */}
+      {/* The project name: click to rename. */}
       <Label x={118} y={y + 21} size={11} tone="body">
         Checkout Flow
       </Label>
@@ -202,17 +202,17 @@ export function TitleBarParts() {
       >
         EDITING
       </Label>
-      {/* Share: full height, solid once the document has a live link. */}
+      {/* Share: full height, solid once the project has a live link. */}
       <rect x={336} y={y} width={58} height={40} className="fill-brand-700" />
       <ShareGlyph x={348} y={y + 20} />
       <Label x={358} y={y + 21} size={11} weight={600} tone="onAccent">
         Share
       </Label>
-      {/* The account button: your initial or profile picture. */}
+      {/* The account button: your initial. */}
       <Avatar cx={407} cy={y + 20} r={9} initial="S" />
 
       <Callout x={40} row={2} text="Logo and menu" />
-      <Callout x={157} row={1} text="Document name" />
+      <Callout x={157} row={1} text="Project name" />
       <Callout x={230} row={2} text="Visibility pill" />
       <Callout x={291} row={1} text="Role pill" />
       <Callout x={365} row={2} text="Share" />
@@ -230,7 +230,7 @@ const STOPS = [
   { word: 'Everyone', Icon: GlobeGlyph },
 ] as const;
 
-/** The legend that opens under the visibility pill, for a Shared document: the hero with its
+/** The legend that opens under the visibility pill, for a Shared project: the hero with its
  *  reach rings, the four audiences from Just you to Everyone with Link filled to, This Browser
  *  apart beneath them, and Change Who Can See This for the owner. */
 export function VisibilityLegendFigure() {
@@ -244,7 +244,7 @@ export function VisibilityLegendFigure() {
   const stopXs = [117, 179, 241, 303];
   return (
     <Scene w={420} h={300}>
-      {/* The pill the legend hangs from, beside the document name. */}
+      {/* The pill the legend hangs from, beside the project name. */}
       <Label x={176} y={21} size={11} tone="body" anchor="end">
         Checkout Flow
       </Label>

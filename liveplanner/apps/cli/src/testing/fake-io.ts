@@ -237,8 +237,8 @@ export const capabilities: Route = (_, url) =>
         aiEnabled: false,
         apiBase: 'https://liveplanner.app/api',
         authEnabled: true,
-        documentFormat: 2,
+        projectFormat: 2,
       })
     : undefined;
 
-export const TOKEN = `lvd_${'a'.repeat(43)}`;
+export const TOKEN = `lwt_${'a'.repeat(43)}`;

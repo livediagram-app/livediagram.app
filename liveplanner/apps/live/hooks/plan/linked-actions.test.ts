@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
-import type { ElementAction, Element, Tab } from '@liveplanner/document';
+import type { ElementAction, Element, Tab } from '@liveplanner/project';
 import type { PlanBoardSetup } from '@liveplanner/items';
 import {
   actionsBoardIn,
@@ -180,9 +180,9 @@ describe('goneActionIds', () => {
 });
 
 // docs/specs/026-plan/blueprints/linked-boards.md "Performance and limits": the walks run on every tabs change, so a
-// big document (40 tabs of 500 elements, 40 full Action panels) stays well inside a frame.
+// big project (40 tabs of 500 elements, 40 full Action panels) stays well inside a frame.
 describe('budget', () => {
-  it('finds every action and the board in a big document within budget', () => {
+  it('finds every action and the board in a big project within budget', () => {
     const tabs = Array.from({ length: 40 }, (_, t) =>
       tab(`t${t}`, [
         ...Array.from({ length: 499 }, (_, i) => shape(`s${t}-${i}`)),

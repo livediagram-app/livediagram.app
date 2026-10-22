@@ -1,8 +1,8 @@
 'use client';
 
-// The Cards panel (docs/specs/026-plan/items.md "Finding a card"): every live card in the document, of every card
+// The Cards panel (docs/specs/026-plan/items.md "Finding a card"): every live card in the project, of every card
 // type (custom ones included), newest change first, searched by number, title, description or type name; **Not on
-// a Board** narrows it to the cards no board in the document shows (no column holds the status, or every board
+// a Board** narrows it to the cards no board in the project shows (no column holds the status, or every board
 // naming it leaves the card's type out), so strays can be found and put
 // somewhere, and the field filters (Card Type among them) narrow it further. Choosing one opens it. A popover above its button in
 // Plan mode's bottom-right cluster, like Card Types and the Trash.
@@ -232,7 +232,7 @@ export function emptyCopy(
       title: 'No cards yet',
       description: canAdd
         ? 'Add one from a board, or drag one in from the palette.'
-        : 'Cards added to this document will show here.',
+        : 'Cards added to this project will show here.',
     };
   if (query.trim())
     return {

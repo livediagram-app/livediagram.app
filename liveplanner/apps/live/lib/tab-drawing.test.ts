@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 import { blankQuestion, type FormDefinition } from '@liveplanner/forms';
 import { renderTabToSvg } from './export-tab';
 import { renderTabDrawingSvg, tabDrawingFontIdsOf } from './tab-drawing';

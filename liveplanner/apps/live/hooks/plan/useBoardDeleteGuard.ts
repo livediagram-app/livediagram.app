@@ -5,7 +5,7 @@
 // on an unloaded tab could still show those types.
 import { useCallback } from 'react';
 import { isTrashed, type Item, type ItemTypeDef } from '@liveplanner/items';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { typesOrphanedBy } from '@/lib/board-delete';
 import { track } from '@/lib/telemetry';
 import type { SheetDeleteGuard } from '@/hooks/sheets/useSheetDeleteGuard';

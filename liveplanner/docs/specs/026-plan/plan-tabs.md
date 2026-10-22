@@ -1,6 +1,6 @@
 # Plan tabs
 
-Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab** (one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the document's Board and Sheet tabs, plan views, charts and notes). Boards and Sheets are never small elements free on a canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form, whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md). Each kind is a tab **Kind** ([Domain language](../003-system-architecture/domain-language.md)), and it brings its own behaviour.
+Planning happens on tabs of three **kinds**: a **Board tab** (one board, always filling the tab), a **Sheet tab** (one Sheet, always filling the tab) and a **Dashboard tab** (rows of slots holding compact, live versions of the project's Board and Sheet tabs, plan views, charts and notes). Boards and Sheets are never small elements free on a canvas any more; a Dashboard is where they are seen side by side. A fourth Plan kind, the **Form tab** (one form, whose responses become cards on a Board tab), has its own spec: [Forms](../030-forms/forms.md). Each kind is a tab **Kind** ([Domain language](../003-system-architecture/domain-language.md)), and it brings its own behaviour.
 
 ## Domain language
 
@@ -41,7 +41,7 @@ Planning happens on tabs of three **kinds**: a **Board tab** (one board, always 
   ([Sheet](../029-sheets/sheet.md#sheet-tab)).
 - Anything else added to a Board or Sheet tab (a paste, an agent) is hidden under the element, as for Fill Tab.
 - **Import and Export** in a Board or Sheet tab's tab menu are only what fits its element, in place of the
-  document's Import dialog: **Import CSV…** and **Export** (the Export dialog, with only the formats that suit the
+  project's Import dialog: **Import CSV…** and **Export** (the Export dialog, with only the formats that suit the
   kind, its CSV among them: [Export](#export)), in that order. There is no separate Download CSV row: CSV is one of
   the Export dialog's formats.
   - A **Sheet tab**: **Import CSV…** (the Sheet's own file picker and import, for someone who may shape it; dimmed
@@ -63,7 +63,7 @@ A Board tab and its board, and a Sheet tab and its sheet, share **one name**:
 - **Board renamed** (its header, Board Setup): the tab takes the title in the same step, so one undo takes both back.
 - **Sheet renamed** (its header, Sheet Settings, a collaborator, an agent, an undo): while the Sheet is drawn, the
   tab takes the new title, quietly (the sheet's own undo holds the rename), set by someone who may shape the Sheet.
-  Opening a document never renames a tab whose name already differs.
+  Opening a project never renames a tab whose name already differs.
 - **A Visualisation tab and its chart** share one name too: renaming the tab gives the chart its own title (`planView
 .title`, up to 80 characters, in place of the view's name: "Launch Plan", or "Launch Plan · Oct 2026" on a Due
   Calendar), and an Editor renames the chart with a click on its name in the menu box (Enter or leaving saves,
@@ -108,7 +108,7 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
 - **Editing** (an Editor): an item in a slot has **one menu, its cog**; there is no ⋯ beside it. The slot's own
   settings are its **Slot** section, a collapsible section like every cog's: what the slot shows with a cog of its own
   (a board's **Board Settings**, a Sheet's **Sheet Settings**, a chart's **Chart Settings**) holds it last, after its
-  own sections, one open at a time; anything else (a metric, a utility, an empty slot, a Diagram tab, a chart for
+  own sections, one open at a time; anything else (a metric, a utility, an empty slot, a chart for
   someone who may not change it) has the slot's own cog, **Slot Settings**, opening on the Slot section. The Slot
   section holds **Add a Slot**, the slot drawn small (a tinted "This Slot" box) with a dashed button on each of its
   four sides, each an arrow pointing its way and its name: **Left** and **Right** (**Add Slot to the Left**, **Add
@@ -137,7 +137,7 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
   shown all the time as a quiet marker (the grip at 70%, a divider's and a handle's bar at full length and 50%, fully
   shown while it is dragged), with a finger's reach round it (the grip's 44 px tap area; a divider 24 px wide and 64 px
   tall, a row handle 64 px wide and 24 px tall, each centred on the gap, so the slots' own edges stay theirs), and a
-  finger on any of them carries or resizes rather than scrolling the page. Nothing is drawn round a slot's edges. Where the slot shows something with a header of its own (a board, a Sheet, a visualisation, a Diagram tab), its cog
+  finger on any of them carries or resizes rather than scrolling the page. Nothing is drawn round a slot's edges. Where the slot shows something with a header of its own (a board, a Sheet, a visualisation, a Board or Sheet tab), its cog
   sits last among that header's controls; otherwise (a metric, a note, an empty slot) the Slot Settings cog floats at
   the slot's top right on hover.
   Each change is one undo step.
@@ -162,16 +162,16 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
     one is two weeks out. No date: "No date set."
   - **Links**: a heading ("Links") over labelled links, each to a site (opened in a new browser tab, `noopener`; only
     http, https or mailto, "https://" added to a bare host, anything else refused as "Enter a web address, an email
-    (mailto:) or a tab’s name") or to one of this document's tabs (opened here). Each link is a row: its kind's icon in
+    (mailto:) or a tab’s name") or to one of this project's tabs (opened here). Each link is a row: its kind's icon in
     a small well (a globe for a site, an envelope for an email, the tab's own tab-bar icon for a tab), its label and,
     muted under it, the site's host and path, the email's address ("Email" when that is the label), or "Tab in this
-    document". A link with no label shows its site's host, its email's address or its tab's name. A row tints on hover;
+    project". A link with no label shows its site's host, its email's address or its tab's name. A row tints on hover;
     a site's row shows an external-link mark and an Editor's × on hover or focus only (always on a screen without
     hover). Up to 12 links. Empty: "No links yet."
   - **Add Link** (an Editor): opens a form straight under the links (never anywhere else in the card), with Label
     focused: **Label** (optional) and **Address** ("example.com or a tab"), the shared text fields, then Cancel and
     **Add Link**. In a card under 448 px wide (a container query on the card) Label sits over Address; wider, they
-    share a row, Label a third. Address is a combobox listing the document's tabs, each with its tab-bar icon and name,
+    share a row, Label a third. Address is a combobox listing the project's tabs, each with its tab-bar icon and name,
     narrowed as you type (names starting with the text first); ArrowDown and ArrowUp move through it, Enter or a click
     picks a tab, Enter with nothing highlighted adds the link, and Escape closes the list, then cancels the form. The
     list is drawn over the page (never clipped by a short slot). Everything under the heading scrolls when the slot is
@@ -226,14 +226,14 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
   a Sheet tab for it, as Start Planning makes one (its kind, opening in Plan, a board drawing its cards Detailed, a
   board bringing its preset's card types), named as Start Planning names it (the board's title, such as "Kanban"; the
   Sheet's, "Sheet" or its template's name), looking like the dashboard's tab, and placed straight after the dashboard
-  in the tab bar. The slot shows that tab (as picking it under This Document’s Tabs does), and the new tab, the slot
+  in the tab bar. The slot shows that tab (as picking it under This Project’s Tabs does), and the new tab, the slot
   filled and the card types are one undo step. The Sheet is made on its own tab even though it is first drawn in the
   slot. The dashboard stays the open tab. Telemetry: `Plan · Created · BoardTab` or `SheetTab` with the slot's
   `Plan · Changed · DashboardContent`; no new values.
 - **Add to Slot browses in two levels**, as the palette's Tools do. Its heading, **Add to Slot**, sits over both
   with one short line, "What fits here, as it will look.". It opens on its **categories**, only those with something
   that fits the slot: a grid of two columns of cards, each a small picture of what it holds (the slot pictures below,
-  at three quarters: a diagram for This Document’s Tabs, a board, a sheet, a Completion tile for Metrics, a Gantt for
+  at three quarters: a Sprint board for This Project’s Tabs, a Kanban board for New Board, a sheet, a Completion tile for Metrics, a Gantt for
   Visualisations, a Trend for From a Sheet, a stack of cards for Utilities), its own glyph in a brand well, its name,
   how many choices it holds (the shared CountBadge) and a line of what is inside, in full, wrapping (never cut off).
   A card lifts on hover with a brand-tinted edge, shows a focus ring, and the cards cascade in when the picker
@@ -261,8 +261,8 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
 - An **empty slot** shows the site's empty state at slot size: a gradient badge and **Empty Slot**, with no
   description, over an **Add to Slot** button (the dashed add row Add New Card Type wears, kept to 224 px in a wide
   slot) for an Editor; anyone else sees the badge and title alone. **Add to Slot** opens a picker of what a slot
-  takes, by category: **This Document’s Tabs** (every tab but a Dashboard, see Showing a tab), **New Board** (each preset), **New
-  Sheet**, **Card Metrics**, **Form Metrics** (only while the document has a Form tab), **Visualisations**, **From a Sheet** (Sheet Figure, Column Summary, Trend, Sheet Chart) and **Utilities** (Note, Title, Status, Checklist, Key Date, Links); picking
+  takes, by category: **This Project’s Tabs** (every tab but a Dashboard, see Showing a tab), **New Board** (each preset), **New
+  Sheet**, **Card Metrics**, **Form Metrics** (only while the project has a Form tab), **Visualisations**, **From a Sheet** (Sheet Figure, Column Summary, Trend, Sheet Chart) and **Utilities** (Note, Title, Status, Checklist, Key Date, Links); picking
   one fills that slot. Each fill is one undo step, replacing what the slot held (an element it held leaves the tab
   with it).
 - **Its name in the menu box**: as a maximised or tab-filling board's or Sheet's name rides there
@@ -282,11 +282,12 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
     Slot section, and Clear Slot removes it. Nothing makes one any more: a new board or Sheet is a tab (Filling a slot).
   - **Tab**: an existing Board or Sheet tab, from the Tabs category, shown live in the slot; **Open Tab** in its menu goes to it
     (a double-click stays the content's own, a card's open). Until the tab's content arrives the slot says **Loading <name>…**, waiting as the Board or Sheet it was given (a tab not
-    fetched yet has no kind of its own, so it is never shown as a Diagram tab meanwhile) and drawing it once it lands; if
+    fetched yet has no kind of its own; a slot that records none waits as a Board) and drawing it once it lands; if
     its fetch fails, **Couldn’t load <name>.** with **Retry** (Loading again until that fetch settles); loaded with
     nothing on it, **Nothing on <name> yet.** Each slot judges its own tab, so one slow tab never holds the others. A
     slot whose tab is gone says **This Board was deleted.** (or **This Sheet was
-    deleted.**; the slot records which it was given) and offers Clear Slot.
+    deleted.**; the slot records which it was given) and offers Clear Slot. A slot naming a tab that is neither (a
+    forged layout) says **This tab is not a Board or Sheet.** and offers Clear Slot.
   - **Visualisation** or **Metric**: a plan view ([Plan views](plan-views.md)) of the tile's view kind, an element on
     the dashboard tab drawn in the slot at the slot's size.
   - **Note**: a heading and short text, typed in place (each field one step when left).
@@ -309,7 +310,7 @@ and an agent's `add_board` / `add_sheet` onto such a tab answered `tab_not_plan`
 - Anything else is refused in the dialog, the dashboard left as it was: text that is not JSON (**File isn't valid
   JSON.**), JSON that is not a liveplanner tab, and a tab that is not a Dashboard (**This file isn't a Dashboard.
   Export a Dashboard tab as JSON, then import that.**).
-- A slot showing another tab keeps naming it by id: in another document it reads as deleted until cleared.
+- A slot showing another tab keeps naming it by id: in another project it reads as deleted until cleared.
 - Import is an Editor's, as the tab menu is (a Viewer or Participant has no tab menu); a locked tab refuses it.
 
 ## Export
@@ -333,7 +334,7 @@ its canvas is empty: every picture and outline of it came out blank, and only th
 offered.
 
 - **Images** (PNG, SVG, PDF) of a **Board tab** draw its board alone (header, columns, counts and card faces, from the
-  document's items) at the board's size, in the viewer's appearance; of a **Sheet tab**, its Sheet alone with its
+  project's items) at the board's size, in the viewer's appearance; of a **Sheet tab**, its Sheet alone with its
   charts at their anchors in its grid (as the Sheet shows them, not at their own canvas places), the Sheet grown to
   take in its charts (growing up to 4000 px a side; a Sheet already larger keeps its size), and the cells that fit
   worked out from the sheet store (as [Sheet](../029-sheets/sheet.md#exports-and-images) says). Anything else hidden under the board or Sheet stays out.
@@ -341,7 +342,8 @@ offered.
   own 32 px margin round 1376 px of rows, 12 px between rows and slots, each row its own height; a row that fills the
   page is **720 px** tall), each slot a card in the page's look (white at 72%, slate 900 at 60% in dark, 16 px
   corners, a hairline edge) holding a picture of what it holds:
-  - a Board or Sheet (its own, or a tab's) drawn as above at the slot's size; a Diagram tab's drawing fitted inside;
+  - a Board or Sheet (its own, or a tab's) drawn as above at the slot's size; a slot naming any other tab says **This
+    tab is not a Board or Sheet.**;
   - a plan view drawn as a chart, not a labelled box: a metric's figure, its line and its bars; Cards by Field's
     bars; Priority by Status's grid of counts; Status Breakdown's bar; a Gantt's bars over its weeks; a Calendar's
     month with the cards on their days; Card Search's list of cards. The same pictures stand for a plan view on any
@@ -357,12 +359,12 @@ offered.
   drawn on a canvas); Hidden layers neither.
 - **Markdown** of a Board tab is its board's outline (each column and its cards); **JSON** of a Dashboard tab is the
   file its Import reads back.
-- Telemetry: the formats' existing `Document · Exported · <Format>`; no new values.
+- Telemetry: the formats' existing `Project · Exported · <Format>`; no new values.
 
 ## Form Metrics
 
-A slot can show a figure from one of the document's forms ([Forms](../030-forms/forms.md)): Add to Slot's **Form
-Metrics**, offered only while the document has a Form tab. Six figures (`form-metric` content: `metric`, `formTabId`):
+A slot can show a figure from one of the project's forms ([Forms](../030-forms/forms.md)): Add to Slot's **Form
+Metrics**, offered only while the project has a Form tab. Six figures (`form-metric` content: `metric`, `formTabId`):
 
 | Figure             | Shows                                                                                                                                                            |
 | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -373,8 +375,8 @@ Metrics**, offered only while the document has a Form tab. Six figures (`form-me
 | **Closes**         | Days until it closes ("3 days", **Today**), its date beneath; **Closed** once past; **No date** without one                                                      |
 | **Form Link**      | The link to copy (**Copy**, an Editor's) once published; "Not published yet." before                                                                             |
 
-Placed, it reads the document's first Form tab; an Editor changes the form from the select at the card's foot while
-the document has more than one (the form's name shows there otherwise). Its figures are read live from the form's link
+Placed, it reads the project's first Form tab; an Editor changes the form from the select at the card's foot while
+the project has more than one (the form's name shows there otherwise). Its figures are read live from the form's link
 as the board's Form strip reads it, never marking responses seen, and the clock is read again each minute. A slot whose
 form was deleted says "This form was deleted." with **Clear Slot**. An image export names the figure (the link is not
 read for an export). Anyone may read it; only an Editor changes its form or copies its link.
@@ -382,7 +384,7 @@ read for an export). Anyone may read it; only an Editor changes its form or copi
 ## Figures from a Sheet
 
 Add to Slot's **From a Sheet** fills a slot with a figure (or a chart: [Sheet Chart](#sheet-chart)) read live from one
-of the document's Sheets: the same value
+of the project's Sheets: the same value
 the Sheet shows, in its own number format, following every edit (a collaborator's too), and following its cells as
 rows and columns are inserted, deleted or moved (they are named by stable row and column ids, `@liveplanner/sheets`
 `sheet-metrics.ts`). Each fits any slot.
@@ -403,18 +405,18 @@ rows and columns are inserted, deleted or moved (they are named by stable row an
   share: "▲ 120 (12%)", green up, red down, muted when unchanged or with one value) and a sparkline of the column.
 - **Choosing the source**: a new one shows **Choose a Sheet** (an Editor's; "Waiting for its sheet." to anyone else)
   which opens its source picker, as does **Change Source** once set (an Editor's tile in the slot cog's Slot section,
-  never a hover button, one menu per item): the document's Sheets
-  (each its title and its tab's name; "No sheets in this document yet." when there are none), then, for a figure, the
+  never a hover button, one menu per item): the project's Sheets
+  (each its title and its tab's name; "No sheets in this project yet." when there are none), then, for a figure, the
   sheet's labelled numbers (numbers with text to their left, and ranges named for one cell; the foot of the sheet
   first, at most 12) or any cell typed as A1, and an optional target the same way; for a summary or a trend, the
   columns holding numbers (each its header and how many numbers) and, for a summary, the stat. Each choice is one
-  step. The document's tabs are fetched as the picker opens, so every Sheet is offered.
+  step. The project's tabs are fetched as the picker opens, so every Sheet is offered.
 - **Missing**: a sheet deleted says "This sheet was deleted." with Clear Slot; a cell or column whose row or column
   was deleted says "The cell it read was deleted." with Choose a Sheet; while the sheet loads, "Loading <Sheet>…".
   When its fetch fails (or, for a sheet no arrived tab places, the other tabs' fetches settle with some failed) it
   says **Couldn’t load <name>.** with **Retry**, which fetches again; a picker says the same of the sheet it shows,
-  and with no Sheets found while a tab failed, **Couldn’t load this document’s sheets.** with Retry in place of
-  "Finding this document’s sheets…". The tabs a Dashboard fetches for its Sheets record their failures as a shown
+  and with no Sheets found while a tab failed, **Couldn’t load this project’s sheets.** with Retry in place of
+  "Finding this project’s sheets…". The tabs a Dashboard fetches for its Sheets record their failures as a shown
   tab's do.
 - **Share roles**: an Editor chooses and changes the source; a Participant and a Viewer read the figure.
 
@@ -424,10 +426,10 @@ From a Sheet's fourth choice, **Sheet Chart**, fills a slot with a bar, line or 
 cells ([Charts](../029-sheets/sheet.md#charts)). It needs a chart's room (300 by 220 px, What fits), so Add to Slot
 leaves it out of a smaller slot and names charts in its line.
 
-- **Choosing the chart**: picked, Add to Slot gives way to **Choose a Chart**, anchored where it was: the document's
-  Sheets (as a figure's picker lists them, each its title and its tab's name; "No sheets in this document yet."),
+- **Choosing the chart**: picked, Add to Slot gives way to **Choose a Chart**, anchored where it was: the project's
+  Sheets (as a figure's picker lists them, each its title and its tab's name; "No sheets in this project yet."),
   then, for the Sheet picked:
-  - **Its Charts**: the charts drawn from that Sheet on the document's other tabs (in the Sheet, or floating on a
+  - **Its Charts**: the charts drawn from that Sheet on the project's other tabs (in the Sheet, or floating on a
     tab), each its type and range ("Column Chart · A1:C6"); "No charts from this sheet yet." when it has none. Picking
     one puts a copy of it in the slot: the same type, range, columns, style, legend and palette, reading the same
     cells.
@@ -472,7 +474,7 @@ compact action buttons with their icon left of their label, picture choices), it
   Stacked, Report) as a tile in a two-column grid, its rows drawn small above its name. Picked, its empty rows replace
   the dashboard's, the background kept, and the popover closes; when any slot holds something it asks first, beside
   the tile, "Start over as Focus? Current slots are removed." (**Start Over**, **Cancel**), and the
-  slots' elements leave the tab with them (a Sheet's cells stay in the document).
+  slots' elements leave the tab with them (a Sheet's cells stay in the project).
 
 Each change is one undo step. A Participant and a Viewer have no cog (the dashboard is an Editor's to change).
 
@@ -525,19 +527,12 @@ stack, and where the swap would squeeze either slot below what its content needs
 Nothing waits for a hover on a touch screen: a slot's floating cog and a link's × are always shown there, and the slot's
 cog, Add to Slot (which offers everything, as the stacked slot takes the height its content needs) and the Dashboard
 Settings cog in the top row all work by tap. A view's header gives way in a narrow slot: its own controls (a Gantt's
-Today, steps and scale) scroll sideways while Maximise and the cog stay in reach. The canvas's zoom cluster, which
-has nothing to offer a dashboard (zoom is off), is not shown on a touch screen, a tablet's as a phone's.
+Today, steps and scale) scroll sideways while Maximise and the cog stay in reach. The canvas's zoom buttons, which
+have nothing to offer a dashboard, are not shown (only a Sheet zooms).
 
 ## Showing a tab
 
-Add to Slot's **This Document’s Tabs** offers each of the document's tabs but a Dashboard, in tab-bar order, as a card named for the tab: a **Board** or **Sheet** tab, worked on in place in the slot, and any other tab as a **Diagram**. Picked, it shows that tab in the slot. The list follows the tab bar live (a tab added, renamed or deleted) and is left out while the document has no other tab. A tab may show in several slots and on several dashboards.
-
-A **Diagram** slot is a card with the tab's icon and name over its drawing, live (each edit, a collaborator's
-too, at a deferred priority) and still: drawn as the split view's other pane draws a tab, in this person's
-appearance, fitted to the slot, as one image (it never scrolls or zooms the page, and runs nothing). Pressing it opens
-the tab (**Open <name>**). It needs 320 by 220 px (What fits). Before the tab's content arrives it says "Loading
-<name>…" (or offers Retry); a tab with nothing to draw (no elements, and neither in Pages nor a Form tab with its form)
-says "Nothing on <name> yet."; a deleted one "This Diagram was deleted." The renderer loads only once a Diagram slot is shown.
+Add to Slot's **This Project’s Tabs** offers each of the project's **Board** and **Sheet** tabs, in tab-bar order, as a card named for the tab, drawn as a board or a sheet; picked, it shows that tab in the slot, worked on in place. No other tab goes in a slot: a Dashboard, a Form (a page of its own) and a tab still on Start Planning are not offered, and a slot's tab kind is only ever `board` or `sheet`. The list follows the tab bar live (a tab added, renamed or deleted) and is left out while the project has no other tab. A tab may show in several slots and on several dashboards.
 
 ## Moving a slot
 
@@ -572,9 +567,9 @@ asks first, in place:
 
 - A slot showing a **Board or Sheet tab**: "Delete the <name> tab too? Kept, it stays in the tab bar." with **Keep
   the Tab** and **Delete the Tab Too** (the tab's own delete, a step of its own).
-- A slot holding a **Sheet**: "Delete this sheet’s cells too? Kept, they stay in this document." with **Keep Its
+- A slot holding a **Sheet**: "Delete this sheet’s cells too? Kept, they stay in this project." with **Keep Its
   Cells** and **Delete the Sheet Too** (its sheet released from the store, as deleting a Sheet does).
-- Anything else (a board, a view, a note) clears at once: a board's cards are the document's and stay.
+- Anything else (a board, a view, a note) clears at once: a board's cards are the project's and stay.
 
 Closing the menu asks nothing and changes nothing.
 
@@ -626,7 +621,7 @@ The Plan templates ([Plan templates](plan-templates.md)) make their tabs in thes
 When someone who may edit opens a tab of the general kind that holds only Plan elements (boards,
 Sheets and plan views), it becomes the new model, in one change and one undo step, with a toast saying so (**This tab
 was updated to the new Plan layout.**). An undo keeps the old tab for the rest of the session; it converts again the
-next time the document is opened:
+next time the project is opened:
 
 - One board (or Sheet) and nothing else: the tab becomes a Board (or Sheet) tab, Fill Tab on.
 - Anything more: each board and Sheet moves to a new Board or Sheet tab of its own, named after its title, placed
@@ -650,7 +645,7 @@ never on `isReadOnly`.
 A **locked tab** refuses every change, as every edit there is: an Editor sees its Dashboard as a Viewer does (no cog,
 grip, edges or editing in a card), and the Dashboard's writes (a layout change, a slot's content, a new kind from Start
 Planning) are refused even when something asks (`usePlanTabActions`). A board's cards and a Sheet's cells are the
-document's, not the tab's, so a lock leaves them as the board or Sheet offers.
+project's, not the tab's, so a lock leaves them as the board or Sheet offers.
 
 ## Telemetry
 

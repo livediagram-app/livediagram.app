@@ -2,7 +2,7 @@
 
 // Where a workspace frame is, told to its workbench (docs/specs/013-workspace/workbench-embeds.md "Workbench
 // messages", blueprint "Workspace messages", WB63): `liveplanner:place` after every move and whenever a field of the
-// place changes, never twice with the same fields. The Explorer reports its views, the editor its document; this is
+// place changes, never twice with the same fields. The Explorer reports its views, the editor its project; this is
 // the one sender. Logged by view only, never a name.
 import { useCallback, useRef } from 'react';
 import type { PlaceMessage } from '@liveplanner/api-schema';
@@ -26,18 +26,18 @@ export function useWorkspacePlaceMessages(port: WorkbenchPort): (fields: PlaceFi
   );
 }
 
-// An Explorer view's place: the folder shown and its own documents, null elsewhere.
+// An Explorer view's place: the folder shown and its own projects, null elsewhere.
 export function explorerPlaceFields(input: {
   view: string;
   folderId: string | null;
   folderName: string | null;
-  documentCount: number | null;
+  projectCount: number | null;
   role: PlaceFields['role'];
 }): PlaceFields {
   return {
     ...input,
-    documentId: null,
-    documentName: null,
+    projectId: null,
+    projectName: null,
     tabId: null,
     tabName: null,
   };

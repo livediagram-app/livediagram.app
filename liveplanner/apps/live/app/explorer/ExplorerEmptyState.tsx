@@ -8,7 +8,7 @@
 // and pauses under prefers-reduced-motion.
 import {
   ClockIcon,
-  DocumentIcon,
+  ProjectIcon,
   FolderSolidIcon,
   ThisBrowserIcon,
   PlusIcon,
@@ -28,40 +28,40 @@ const CONTENT: Record<
 > = {
   recent: {
     icon: <ClockIcon />,
-    title: 'No recent documents',
-    description: 'Documents show up here as they change, newest first. Make your first one.',
-    cta: 'New Document',
+    title: 'No recent projects',
+    description: 'Projects show up here as they change, newest first. Make your first one.',
+    cta: 'New Project',
   },
   shared: {
     icon: <ShareIcon />,
     title: 'Nothing shared with you yet',
-    description: 'Open a share link someone sends you and the document lands here.',
+    description: 'Open a share link someone sends you and the project lands here.',
   },
   favourites: {
     icon: <StarIcon />,
     title: 'No favourites yet',
-    // No CTA: a new document doesn't land here, starring an existing one
-    // does — so the generic "New Document" button would be a dead end
+    // No CTA: a new project doesn't land here, starring an existing one
+    // does — so the generic "New Project" button would be a dead end
     // (docs/specs/013-workspace/favourites.md). Same reason Shared With Me carries none.
-    description: 'Mark a document as a favourite to show it here.',
+    description: 'Mark a project as a favourite to show it here.',
   },
   offline: {
     icon: <ThisBrowserIcon />,
     title: 'Nothing in this browser',
-    description: 'Take Offline on any of your documents to keep it here instead.',
-    cta: 'New Document',
+    description: 'Take Offline on any of your projects to keep it here instead.',
+    cta: 'New Project',
   },
   folder: {
     icon: <FolderSolidIcon open />,
     title: 'This folder is empty',
-    description: 'Add a document or a subfolder to organise your work.',
-    cta: 'New Document',
+    description: 'Add a project or a subfolder to organise your work.',
+    cta: 'New Project',
   },
   default: {
-    icon: <DocumentIcon />,
-    title: 'No documents yet',
-    description: 'Create your first document and it will appear here.',
-    cta: 'New Document',
+    icon: <ProjectIcon />,
+    title: 'No projects yet',
+    description: 'Create your first project and it will appear here.',
+    cta: 'New Project',
   },
 };
 

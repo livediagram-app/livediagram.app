@@ -48,7 +48,7 @@ Top to bottom:
 
 1. **Hero.** The canvas wash; two pills (the guide count, "Search them from inside the editor too"); the display
    heading "How can we help?"; one line of lede; the large search box; and a row of **popular topics**, chips that
-   link straight to the articles most readers come for (Your First Diagram, Sharing Your Document, Keyboard
+   link straight to the articles most readers come for (Your First Diagram, Sharing Your Project, Keyboard
    Shortcuts, Templates, Exporting Diagrams, Plan Mode). The list is `POPULAR_TOPICS` in `lib/home-sections.ts`
    and a test checks every entry names a real article.
 2. **Start here.** A full-width card, the Getting Started scene beside the first four Getting Started guides as
@@ -117,5 +117,5 @@ figures, cutting off Media and Search, so the strip is spaced to fit beside the 
 
 ## Share roles
 
-The help centre is public static content with no document in it; there is nothing an Editor, Participant or
+The help centre is public static content with no project in it; there is nothing an Editor, Participant or
 Viewer could do differently, so no role gates apply.

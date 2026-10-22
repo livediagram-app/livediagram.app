@@ -1,10 +1,10 @@
 // A change checked whole against the store's caps before any of its parts is sent
 // (docs/specs/029-sheets/sheet-store.md "Agents", "Limits").
 import { describe, expect, it } from 'vitest';
-import { DOCUMENT_CELLS_MAX, SHEET_CELLS_MAX } from './limits';
+import { PROJECT_CELLS_MAX, SHEET_CELLS_MAX } from './limits';
 import { emptyLayout, emptySheet, type Sheet } from './sheet';
 import type { SheetWrite } from './store';
-import { documentCellCount, writesCapsProblem } from './write-caps';
+import { projectCellCount, writesCapsProblem } from './write-caps';
 
 function seeded(seed = 7): () => number {
   let s = seed;
@@ -32,13 +32,13 @@ describe('writesCapsProblem', () => {
   it('lets a change that fits through', () => {
     const s = sheet();
     expect(writesCapsProblem(s, [fill(s, 10)], 0)).toBeNull();
-    expect(writesCapsProblem(s, [], DOCUMENT_CELLS_MAX)).toBeNull();
+    expect(writesCapsProblem(s, [], PROJECT_CELLS_MAX)).toBeNull();
   });
 
-  it('refuses a change that would pass the document’s cells, counting every part', () => {
+  it('refuses a change that would pass the project’s cells, counting every part', () => {
     const s = sheet();
-    expect(writesCapsProblem(s, [fill(s, 10)], DOCUMENT_CELLS_MAX - 10)).toBeNull();
-    expect(writesCapsProblem(s, [fill(s, 11)], DOCUMENT_CELLS_MAX - 10)).toBe('sheets_full');
+    expect(writesCapsProblem(s, [fill(s, 10)], PROJECT_CELLS_MAX - 10)).toBeNull();
+    expect(writesCapsProblem(s, [fill(s, 11)], PROJECT_CELLS_MAX - 10)).toBe('sheets_full');
   });
 
   it('refuses a change that would pass the sheet’s cells', () => {
@@ -46,18 +46,18 @@ describe('writesCapsProblem', () => {
     expect(writesCapsProblem(s, [fill(s, SHEET_CELLS_MAX + 1)], 0)).toBe('sheet_full');
   });
 
-  it('never refuses a change that grows nothing, so a full document can still be cleared', () => {
+  it('never refuses a change that grows nothing, so a full project can still be cleared', () => {
     const s = sheet();
     const cleared = {
       kind: 'cells',
       cells: [{ r: s.layout.rows[0]!, c: s.layout.cols[0]!, i: null }],
     } as SheetWrite;
-    expect(writesCapsProblem(s, [cleared], DOCUMENT_CELLS_MAX + 5)).toBeNull();
+    expect(writesCapsProblem(s, [cleared], PROJECT_CELLS_MAX + 5)).toBeNull();
   });
 });
 
-describe('documentCellCount', () => {
+describe('projectCellCount', () => {
   it('adds up every sheet’s cells', () => {
-    expect(documentCellCount([{ cells: [1, 2] }, { cells: [] }, { cells: [3] }])).toBe(3);
+    expect(projectCellCount([{ cells: [1, 2] }, { cells: [] }, { cells: [3] }])).toBe(3);
   });
 });

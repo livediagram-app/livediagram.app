@@ -22,15 +22,10 @@ export function SettingsRowShell({
   control,
   leading,
   children,
-  // Which half of the row's illustration is in force, so the drawing rings
-  // the current state. Toggle rows pass their checked state.
-  illustrationActive = false,
-  // Choice rows: the option in force, which their drawing rings instead.
+  // Choice rows: the option in force, which their drawing rings.
   illustrationValue,
-  // Clicking a state of the drawing sets it, the way clicking the picture of
-  // what you want is the obvious move: a toggle row's half, a choice row's
-  // option (minus the ones it can't pick right now).
-  onIllustrationToggle,
+  // Clicking an option of the drawing picks it, the way clicking the picture
+  // of what you want is the obvious move (minus the ones it can't pick right now).
   onIllustrationChoose,
   illustrationDisabled,
   // A short info line for a row whose options are limited right now (a desktop-only row on a
@@ -55,9 +50,7 @@ export function SettingsRowShell({
   leading?: ReactNode;
   // Below the label line, inside the cell.
   children?: ReactNode;
-  illustrationActive?: boolean;
   illustrationValue?: string;
-  onIllustrationToggle?: (on: boolean) => void;
   onIllustrationChoose?: (value: string) => void;
   illustrationDisabled?: readonly string[];
   notice?: ReactNode;
@@ -113,9 +106,7 @@ export function SettingsRowShell({
         <div className={`relative z-[1] ${dimmed ? 'opacity-50' : ''}`}>
           <SettingsIllustration
             id={row.illustration}
-            active={illustrationActive}
             value={illustrationValue}
-            onToggle={onIllustrationToggle}
             onChoose={onIllustrationChoose}
             disabledValues={illustrationDisabled}
           />

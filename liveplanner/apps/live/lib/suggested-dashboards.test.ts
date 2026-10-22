@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { presetSetup } from '@liveplanner/items';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { suggestedDashboards } from './suggested-dashboards';
 
-// docs/specs/026-plan/plan-mode.md "Starting a board": Dashboards built from the document's own work.
+// docs/specs/026-plan/plan-mode.md "Starting a board": Dashboards built from the project's own work.
 const boardTab = (id: string, name: string, preset: Parameters<typeof presetSetup>[0]) =>
   ({
     id,
@@ -39,7 +39,7 @@ describe('suggested Dashboards', () => {
     expect(ids).toEqual(expect.arrayContaining(['sprint:s', 'triage:b', 'retro:t', 'team']));
   });
 
-  it('offers a board beside a sheet, and nothing for a document with no boards', () => {
+  it('offers a board beside a sheet, and nothing for a project with no boards', () => {
     const ids = suggestedDashboards([
       boardTab('k', 'Kanban', 'kanban'),
       sheetTab('x', 'Budget'),

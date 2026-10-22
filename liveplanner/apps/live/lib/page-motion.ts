@@ -14,7 +14,7 @@ import {
   type PageColourFill,
   type PageMotion,
   type ThemeDefinition,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 type PageMotionEntry = {
   id: PageMotion;

@@ -1,10 +1,10 @@
 // The Details view's columns and their sort (docs/specs/013-workspace/explorer-details-view.md
 // "Columns", "Sorting"). Pure: the table and its header read these, the tests pin them.
 import type { AccessLevel } from '@liveplanner/api-schema';
-import { editorModeLabel } from '@liveplanner/document';
+import { editorModeLabel } from '@liveplanner/project';
 import type { Folder } from '@/lib/api-client';
-import { readerAccessOf } from '@/lib/document-space';
-import type { PaneDocument } from '../views';
+import { readerAccessOf } from '@/lib/project-space';
+import type { PaneProject } from '../views';
 
 export type DetailsColumnId =
   'name' | 'type' | 'comments' | 'access' | 'size' | 'created' | 'updated';
@@ -100,7 +100,7 @@ const ACCESS_RANK: Record<AccessLevel, number> = { view: 1, participate: 2, edit
 // always sorts last.
 type Key = number | string | undefined;
 
-function documentKey(d: PaneDocument, column: DetailsColumnId): Key {
+function projectKey(d: PaneProject, column: DetailsColumnId): Key {
   switch (column) {
     case 'name':
       return d.name;
@@ -153,18 +153,18 @@ function byNameThenId(a: { name: string; id: string }, b: { name: string; id: st
   return collator.compare(a.name, b.name) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
 }
 
-// Folders first, then documents, each sorted by the column; ties by name, then id.
+// Folders first, then projects, each sorted by the column; ties by name, then id.
 export function sortDetailsEntries({
   folders,
-  documents,
+  projects,
   sort,
   itemCount,
 }: {
   folders: readonly Folder[];
-  documents: readonly PaneDocument[];
+  projects: readonly PaneProject[];
   sort: DetailsSort;
   itemCount: (folderId: string) => number;
-}): { folders: Folder[]; documents: PaneDocument[] } {
+}): { folders: Folder[]; projects: PaneProject[] } {
   const { column, direction } = sort;
   const sortedFolders = [...folders].sort((a, b) => {
     const ka = folderKey(a, column, itemCount(a.id));
@@ -172,9 +172,9 @@ export function sortDetailsEntries({
     if (ka === null || kb === null) return byNameThenId(a, b);
     return compareKeys(ka, kb, direction) || byNameThenId(a, b);
   });
-  const sortedDocuments = [...documents].sort(
+  const sortedProjects = [...projects].sort(
     (a, b) =>
-      compareKeys(documentKey(a, column), documentKey(b, column), direction) || byNameThenId(a, b),
+      compareKeys(projectKey(a, column), projectKey(b, column), direction) || byNameThenId(a, b),
   );
-  return { folders: sortedFolders, documents: sortedDocuments };
+  return { folders: sortedFolders, projects: sortedProjects };
 }

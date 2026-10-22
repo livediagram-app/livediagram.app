@@ -1,7 +1,7 @@
 # Items
 
-An **item** is a unit of tracked work or thought that belongs to a document: a task, a bug, a retro note, an
-idea. Items are stored apart from the canvas, in the document's **item store**, and the canvas only frames them:
+An **item** is a unit of tracked work or thought that belongs to a project: a task, a bug, a retro note, an
+idea. Items are stored apart from the canvas, in the project's **item store**, and the canvas only frames them:
 a [Plan board](plan-board.md) shows many items arranged by their fields, and a Plan card shows one. The same item
 can sit on several boards at once (a sprint board and a roadmap), and editing it anywhere changes it everywhere.
 
@@ -12,25 +12,25 @@ fields people usually want, and any item may carry other fields. The store never
 
 | Term           | Means                                                                                             | Never called                     |
 | -------------- | ------------------------------------------------------------------------------------------------- | -------------------------------- |
-| **item**       | One record in a document's item store: `id`, `type`, `fields`, `rank`, `key`                      | ticket, task, issue, card, entry |
+| **item**       | One record in a project's item store: `id`, `type`, `fields`, `rank`, `key`                      | ticket, task, issue, card, entry |
 | **item type**  | What an item is (Task, Bug, Note...): a name, a glyph, a colour and the fields it offers          | kind (that is a tab's), category |
 | **field**      | One named value in an item's `fields` bag (`title`, `status`, `assignee`...)                      | column, property, attribute      |
-| **item store** | Every item of one document                                                                        | backlog, database, table         |
-| **item key**   | The short number people say out loud, `#12`: assigned once, per document, never reused            | id (the id is internal)          |
+| **item store** | Every item of one project                                                                        | backlog, database, table         |
+| **item key**   | The short number people say out loud, `#12`: assigned once, per project, never reused            | id (the id is internal)          |
 | **rank**       | The ordering key that places an item among others in a column                                     | position, index, order           |
 | **status**     | The `status` field: the value a board's columns are made of                                       | state, column, stage             |
 | **card**       | How an item is drawn: on a board, or alone as a Plan card. A card is a view; the item is the data | item (the data is the item)      |
 
 ## What an item is
 
-- **`id`**: a short random id, unique within its document. A document's items and their ids travel together, so a
-  copied document keeps every id and every card on its tabs still points at the right item.
+- **`id`**: a short random id, unique within its project. A project's items and their ids travel together, so a
+  copied project keeps every id and every card on its tabs still points at the right item.
 - **`type`**: an item type id (`task`, `bug`, ...). An unknown type is kept and drawn as a plain item, so a type
   added later, or by an agent, never breaks a board.
 - **`fields`**: a JSON object of field values. Known fields are validated by kind; other keys are kept as long as
   their values are JSON scalars, or arrays of them, within the size bounds.
 - **`rank`**: a fractional ordering key. Moving one item writes one item; nothing else is renumbered.
-- **`key`**: the item's number in its document, assigned by the store when the item is made (1, 2, 3...).
+- **`key`**: the item's number in its project, assigned by the store when the item is made (1, 2, 3...).
 - **Who and when**: `createdBy` and `updatedBy` (the display identity of the person or agent), `createdAt` and
   `updatedAt`. A person's id on an item is a one-way hash of their identity, never the identity itself: a guest's
   id is their credential, so items never carry it.
@@ -83,10 +83,10 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   can add it in the type editor. See [Colour](#colour).
 - **Parent** (a Card field linking to Projects, item-types.md "Card fields") sits right under Status and Assignee
   on a Task: what a piece of work belongs to is read alongside who has it.
-- Every ready-made type also offers **comments**, last, in its Overview tab ([Comments](#comments)). A document whose
+- Every ready-made type also offers **comments**, last, in its Overview tab ([Comments](#comments)). A project whose
   own catalogue predates it adds it in the type editor, like any built-in field.
 - A bug is a card of the Bug type a Sprint or Bug Triage board brings.
-- A document can change these and add its own, with custom fields: see [Item types](item-types.md).
+- A project can change these and add its own, with custom fields: see [Item types](item-types.md).
 
 ## Colour
 
@@ -110,7 +110,7 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   - **Swimlanes by Project**: each project row's header shows the project's dot.
   - **Gantt Chart**: a project's bar and diamond are drawn in its colour, else the Project type colour; the
     row's name carries its dot ([Gantt Chart](plan-views.md#gantt-chart)).
-- A document whose own catalogue predates it keeps its Project type as saved; Colour is added in the type editor
+- A project whose own catalogue predates it keeps its Project type as saved; Colour is added in the type editor
   like any built-in field.
 
 ## Changing items
@@ -125,7 +125,7 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   voted on through the tab's session vote ([Session tools](../012-collaboration/session-tools.md) "Voting on Plan
   cards"), which keeps its own budget and privacy.
 - **Delete**: removes the item. Its key is not reused.
-- **Restore** (an undo of a delete, or an offline document's sync): a create may name the item's old id and key
+- **Restore** (an undo of a delete, or an offline project's sync): a create may name the item's old id and key
   and carry its votes and its comment thread; the key is honoured while it is free.
 - **Comment**: add a comment, delete one, resolve or reopen the thread ([Comments](#comments)). Comments are
   written only this way, so two people commenting at once never lose a comment.
@@ -222,7 +222,7 @@ author redaction, and the same thread list, composer and resolve control the com
   - Once there is a comment, a quiet header row says how many (**1 comment**, **3 comments**) with **Resolve** (a
     check icon and the word) at its end. While resolved, the header shows a green **Resolved** badge with
     **Reopen** beside it, and the composer is hidden.
-  - Each comment is a row: the author's avatar (28 px, their picture where the canvas has one, else initials on
+  - Each comment is a row: the author's avatar (28 px, initials on
     their colour), their name in medium weight, the relative time muted ("2m ago"; the full date and time in a
     tooltip), and the text below at 13 px with relaxed line height, line breaks kept and @-mentions as chips.
     Rows sit a hairline apart. Delete is a quiet trash icon (with a tooltip) that shows on the row's hover or
@@ -241,7 +241,7 @@ author redaction, and the same thread list, composer and resolve control the com
   api to the item as stored, so concurrent comments, deletes and resolves all land. A comment's author name,
   colour and id are stamped by the server from the caller, never taken from the request. Adding to a resolved
   thread reopens it, as on the canvas. A comment change counts as a change to the item (its `rev`, **Edited by**).
-- **Who may**: anyone who may comment on the document (participate access) may add a comment and resolve or
+- **Who may**: anyone who may comment on the project (participate access) may add a comment and resolve or
   reopen the thread; they may delete their own comments, and someone with edit access may delete any.
 - **Author ids**: a comment's author id never leaves the api except to its own author (as on the canvas): every
   read and every write's answer leaves it out of other people's comments, and the room's `items` op leaves it out
@@ -254,12 +254,12 @@ author redaction, and the same thread list, composer and resolve control the com
 - **Not undoable**: comments, deletes and resolves are outside Undo, as on the canvas.
 - **Mentions** show as chips and are kept on the comment, and reach people the way a canvas mention does
   ([Comment mentions](../012-collaboration/comment-mentions.md)): the card's thread lists on the mentioned person's
-  Inbox (with the thread's other readers: whoever commented in it, and the document's owner), and the
+  Inbox (with the thread's other readers: whoever commented in it, and the project's owner), and the
   author's editor asks the api to email them, the email's button opening the card. `Comment · Mentioned` counts
   each mentioning comment, as on the canvas.
-- **Timeline and email**: a new comment records on the document's timeline and emails the owner (when email is
+- **Timeline and email**: a new comment records on the project's timeline and emails the owner (when email is
   on and the commenter is not the owner), exactly as a canvas comment does; resolving records too.
-- **Offline documents** comment locally, the same rules minus the room; the thread syncs with the item.
+- **Offline projects** comment locally, the same rules minus the room; the thread syncs with the item.
 - Telemetry: the canvas's own comment events with the type `Item`: `Comment · Added · Item`,
   `Comment · Deleted · Item`, `Comment · Resolved · Item` and `Comment · Unresolved · Item` (existing pairs).
 
@@ -267,7 +267,7 @@ author redaction, and the same thread list, composer and resolve control the com
 
 - Plan mode's bottom-right strip holds, for someone who may edit, a **+** (**New Card**, with a hover card) between
   the Trash and Find a Card. It opens the **New Card** panel above it, pointing at it as the strip's other panels
-  do: a tile per card type of the document (no Add New Card Type here). A pick makes a card of that type, off any
+  do: a tile per card type of the project (no Add New Card Type here). A pick makes a card of that type, off any
   board, in its type's starting status (its Default State, else the first status the type
   uses), titled as the type names a new card ("New task"), and opens it in the card panel with its title selected.
 - Telemetry: `Plan` · `Added` · the type, as any new card.
@@ -276,14 +276,14 @@ author redaction, and the same thread list, composer and resolve control the com
 
 - **Cards** is a button in Plan mode's bottom-right cluster, after the Trash in one strip with Card Types
   (buttons in one frame, as Undo and Redo are, each opening its own panel); it opens a popover of every card
-  in the document that is neither archived nor in the Trash, 44 rem wide on desktop (the screen less a margin on
+  in the project that is neither archived nor in the Trash, 44 rem wide on desktop (the screen less a margin on
   a phone) with a list 32 rem tall (less on a short screen) whatever it holds, so the panel keeps its size as a search
   narrows it, of every card type the catalogue has (custom types
   included, each drawn with its own glyph and colour) and of a type it has lost (drawn as the fallback "Item"),
   newest change first.
 - A search field (focused on open with a mouse, not on a phone) matches a card's number (`12` or `#12`), title,
   description or card type name ("person" finds every Person card), ignoring case.
-- **All Cards** (the wider: all the room **Not on a Board**, on one line at its own width, leaves) and **Not on a Board** switch between every card and the cards no board in the document shows,
+- **All Cards** (the wider: all the room **Not on a Board**, on one line at its own width, leaves) and **Not on a Board** switch between every card and the cards no board in the project shows,
   on any tab: those with no status, those whose status no column holds (the strays a renamed or removed column
   left behind), and those whose status is a column only on boards whose Card Types leave the card's type out. A
   card is on a board when some board (not an All Cards or Archive board) names its status as a column and shows
@@ -310,23 +310,23 @@ author redaction, and the same thread list, composer and resolve control the com
 
 ## Who may do what
 
-Items follow the document's access ([Auth and guest access](../014-identity/auth-and-guest-access.md)):
+Items follow the project's access ([Auth and guest access](../014-identity/auth-and-guest-access.md)):
 
-- **Read** with any access to the document. A visitor on a **tab-scoped** link sees only the items that tab shows:
+- **Read** with any access to the project. A visitor on a **tab-scoped** link sees only the items that tab shows:
   the items its boards show and its Plan cards point at.
 - **Create, update, move, delete** with edit access.
 - **Who a card can be assigned to**: you and the joined members of the teams you are part of (by their profile
-  name, else their invite address's local part), fetched once a document has Plan content. A guest, who has no
+  name, else their invite address's local part), fetched once a project has Plan content. A guest, who has no
   teams, can assign only themselves, and the editor never asks for a guest's teams (the request could only fail). A card already assigned to someone outside that list keeps them, shown in its
   picker.
 - **Finding your cards**: an open card assigned to you lists under **Assigned to You** on the Explorer's
-  [Inbox](../013-workspace/inbox.md) (§2.4 there), in every document you can open; a row opens the card on its board.
+  [Inbox](../013-workspace/inbox.md) (§2.4 there), in every project you can open; a row opens the card on its board.
 - **Comment** with participate access; delete your own comments, or any with edit access ([Comments](#comments)).
 - An agent token acts as its person, and a read-only token reads only.
 
 ## Live for everyone
 
-- Every write is pushed to everyone in the document's room at once, in order, with the store's revision.
+- Every write is pushed to everyone in the project's room at once, in order, with the store's revision.
 - A session on a tab-scoped link hears only that the store moved on, and fetches the items its tab shows.
 - A client that sees a gap in revisions, or reconnects, fetches the whole store again.
 - Nothing a browser sends over the room changes an item: items change only through the api.
@@ -342,30 +342,30 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
 - An undo writes the old value back, even over a later change someone else made to that field, as canvas undo
   does.
 
-## Offline documents
+## Offline projects
 
-- An [offline document](../006-document/offline-mode.md) keeps its item store inside its own record, as an
+- An [offline project](../006-project/offline-mode.md) keeps its item store inside its own record, as an
   `items` array beside its tabs. Every rule above holds, minus the room.
 - Its writes pass the api's own checks (fields, places, what a move may set, a status the card's type leaves out,
   the size bounds) and are refused by the same names, so the record never holds what **Sync to cloud** would refuse.
-- **Sync to cloud** sends the items with the document; **Take offline** fetches every item first, all or nothing.
+- **Sync to cloud** sends the items with the project; **Take offline** fetches every item first, all or nothing.
 
 ## Copies and exports
 
-- **Duplicate** copies the item store with the document (same ids, same keys). A copied tab linked into another
-  document finds its items only if that document has them; a Plan card whose item is not in the store says so.
-- Images, thumbnails and api or MCP renders draw boards and cards from the document's items. The Export dialog's
+- **Duplicate** copies the item store with the project (same ids, same keys). A copied tab linked into another
+  project finds its items only if that project has them; a Plan card whose item is not in the store says so.
+- Images, thumbnails and api or MCP renders draw boards and cards from the project's items. The Export dialog's
   preview draws them too, so it shows what the download holds.
 - **A tab's JSON export** (the `liveplanner.tab` file) carries the items the tab shows (`itemIdsShownOnTab`, the
-  Trash left out) as `items`, and the document's stored type catalogue as `itemTypes` when it has one. Each item
+  Trash left out) as `items`, and the project's stored type catalogue as `itemTypes` when it has one. Each item
   keeps its id, type, key, fields and rank, without its votes or comments: the file travels, and those name people.
   Both fields are additive and absent when the tab shows no items, so the file keeps its schema version.
-- **Importing that file** into a tab adds its items to the document. Every item whose id the document does not
-  already have is created in status and rank order, numbered afresh by the document; first, the file's types those
-  items use and the document lacks are added (by id, the catalogue's cap holding). An item the document already has
-  is left as it is, so importing a tab's export back into its own document never doubles the cards. The tab's
+- **Importing that file** into a tab adds its items to the project. Every item whose id the project does not
+  already have is created in status and rank order, numbered afresh by the project; first, the file's types those
+  items use and the project lacks are added (by id, the catalogue's cap holding). An item the project already has
+  is left as it is, so importing a tab's export back into its own project never doubles the cards. The tab's
   content, the added types and the new cards are separate undo steps, newest first: undo takes the cards away, then
-  the types, then restores the tab. The import waits for the document's item store to load (a document with no Plan content
+  the types, then restores the tab. The import waits for the project's item store to load (a project with no Plan content
   starts loading it once the imported board lands; blueprint DEFAULTS D43). When the store never loads, or refuses the
   cards (the 2,000 cap), none are added, the tab stays imported, and the import's report says how many cards could
   not be added.
@@ -380,12 +380,12 @@ Items follow the document's access ([Auth and guest access](../014-identity/auth
   by the api) is not kept: the field goes back to the saved value, and a toast names why ("That title is too
   long: a card title holds up to 500 characters", "That value is too long or isn't one this field takes").
 
-- Up to 2,000 items per document; a create past it is refused with `items_full`.
+- Up to 2,000 items per project; a create past it is refused with `items_full`.
 - Up to 16 KB of fields per item, 64 field keys, keys of letters, digits, `_` and `-`, up to 40 characters. A
   card's comment thread sits outside that budget: up to 200 comments and 128 KB per card; a comment past either is
   refused with `comments_full`.
 - Item writes count against the write rate limit.
 
-## Deleting a document
+## Deleting a project
 
-Deleting a document for good deletes its items with it. Trash keeps them until then.
+Deleting a project for good deletes its items with it. Trash keeps them until then.

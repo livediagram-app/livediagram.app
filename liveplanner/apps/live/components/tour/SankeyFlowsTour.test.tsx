@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type ShapeElement } from '@liveplanner/document';
+import { createShape, type ShapeElement } from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 import { SankeyFlowsDialog } from '@/components/dialogs/SankeyFlowsDialog';
 import { sankeyFlowsTourSteps } from './sankey-flows-tour-steps';
@@ -9,7 +9,7 @@ import { sankeyFlowsDialog } from '@/lib/sankey-flows-dialog-handle';
 import { setActiveTour } from '@/lib/tour-active';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-// jsdom lays nothing out, so "on screen" is just "in the document" here, and there is nothing to scroll.
+// jsdom lays nothing out, so "on screen" is just "in the project" here, and there is nothing to scroll.
 vi.mock('./tour-dom', async (actual) => ({
   ...(await actual<typeof import('./tour-dom')>()),
   waitForSelector: async (selector: string) => document.querySelector<HTMLElement>(selector),

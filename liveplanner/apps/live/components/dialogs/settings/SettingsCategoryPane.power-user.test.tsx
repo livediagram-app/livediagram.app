@@ -23,7 +23,7 @@ function setViewport() {
 function renderEditor(settings: UserPreferences, onGoToRow = vi.fn()) {
   setViewport();
   const powerUserMode = settings.powerUserMode === true;
-  const editor = visibleCategories(true, {
+  const editor = visibleCategories({
     emailEnabled: false,
     signedIn: false,
     powerUserMode,
@@ -63,13 +63,13 @@ describe('Power User Mode children', () => {
     expect(
       minimal.compareDocumentPosition(readout) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    expect(within(readout).getAllByRole('listitem')).toHaveLength(6);
-    expect(within(readout).getAllByText('On').length).toBeGreaterThan(0);
+    expect(within(readout).getAllByRole('listitem')).toHaveLength(2);
+    expect(within(readout).getAllByText('Off').length).toBeGreaterThan(0);
   });
 
   it('goes to a preset setting in its own row', () => {
     const onGoToRow = renderEditor(setPowerUserMode({}, true).prefs);
-    fireEvent.click(screen.getByRole('button', { name: 'Change Alignment Guides in Editor' }));
-    expect(onGoToRow).toHaveBeenCalledWith('editor', 'alignmentGuides');
+    fireEvent.click(screen.getByRole('button', { name: 'Change Forms Tour in Tours' }));
+    expect(onGoToRow).toHaveBeenCalledWith('tours', 'formTourSeen');
   });
 });

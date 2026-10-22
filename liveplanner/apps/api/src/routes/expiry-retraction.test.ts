@@ -19,18 +19,18 @@ const { db } = vi.hoisted(() => ({
     // tokens.ts
     listApiTokensByOwner: vi.fn(),
     mintApiToken: vi.fn(),
-    revokeApiToken: vi.fn(),
-    // document-share-routes.ts
+    revokePresentedToken: vi.fn(),
+    // project-share-routes.ts
     createShareLink: vi.fn(),
     deleteShareLink: vi.fn(),
     extendShareLink: vi.fn(),
     generateShareCode: vi.fn(() => 'code_new'),
-    getDocument: vi.fn(),
-    getDocumentSharePassword: vi.fn(),
+    getProject: vi.fn(),
+    getProjectSharePassword: vi.fn(),
     getShareLinkIncludingExpired: vi.fn(),
     listShareLinks: vi.fn(),
-    setDocumentShare: vi.fn(),
-    setDocumentSharePassword: vi.fn(),
+    setProjectShare: vi.fn(),
+    setProjectSharePassword: vi.fn(),
     // the subject of this suite
     retractTimelineWarning: vi.fn(),
   },
@@ -48,7 +48,7 @@ vi.mock('../workbench-end', () => ({ endWorkbenchAccess: vi.fn(async () => {}) }
 
 import { makeTestRouteContext } from './test-route-context';
 import { handleTokens } from './tokens';
-import { handleDocumentShareRoutes } from './document-share-routes';
+import { handleProjectShareRoutes } from './project-share-routes';
 
 // Collects the promises handed to ctx.waitUntil so the assertions can await
 // the fire-and-forget work. Without a waitUntil the optional call short-
@@ -65,25 +65,29 @@ function deferred() {
 beforeEach(() => {
   for (const fn of Object.values(db)) if (typeof fn === 'function') fn.mockReset();
   db.retractTimelineWarning.mockResolvedValue(undefined);
-  db.revokeApiToken.mockResolvedValue(true);
+  db.revokePresentedToken.mockResolvedValue(undefined);
   db.listApiTokensByOwner.mockResolvedValue([{ id: 'tok_1', name: 'CI' }]);
-  db.getDocument.mockResolvedValue({ id: 'd_1', ownerId: 'user_1', tabs: [] });
+  db.getProject.mockResolvedValue({ id: 'd_1', ownerId: 'user_1', tabs: [] });
   db.listShareLinks.mockResolvedValue([{ code: 'c1' }, { code: 'c2' }]);
-  db.setDocumentShare.mockResolvedValue(undefined);
+  db.setProjectShare.mockResolvedValue(undefined);
   db.deleteShareLink.mockResolvedValue(undefined);
-  db.getShareLinkIncludingExpired.mockResolvedValue({ code: 'c1', documentId: 'd_1' });
+  db.getShareLinkIncludingExpired.mockResolvedValue({ code: 'c1', projectId: 'd_1' });
   db.extendShareLink.mockResolvedValue({ code: 'c1', expiresAt: 9_999 });
 });
 
-describe('token revoke retracts its expiry warning', () => {
-  it('retracts token_expiring for the revoked token id', async () => {
-    const { waitUntil, settle } = deferred();
-    const ctx = makeTestRouteContext('DELETE', '/api/tokens/tok_1', {
-      clerkUserId: 'user_1',
+describe('a token revoking itself retracts its expiry warning', () => {
+  const selfRevoke = (waitUntil: (p: Promise<unknown>) => void) =>
+    makeTestRouteContext('DELETE', '/api/tokens/current', {
+      accountUserId: null,
       owner: 'user_1',
+      token: { id: 'tok_1', readOnly: false },
+      headers: { Authorization: 'Bearer lwt_secret' },
       waitUntil,
     });
-    const res = await handleTokens(ctx);
+
+  it('retracts token_expiring for the revoked token id', async () => {
+    const { waitUntil, settle } = deferred();
+    const res = await handleTokens(selfRevoke(waitUntil));
     expect(res.status).toBe(204);
     await settle();
     expect(db.retractTimelineWarning).toHaveBeenCalledWith(
@@ -94,28 +98,22 @@ describe('token revoke retracts its expiry warning', () => {
     );
   });
 
-  it('leaves the timeline alone when nothing was revoked', async () => {
-    db.revokeApiToken.mockResolvedValue(false);
+  it('leaves the timeline alone when the token was already gone', async () => {
+    db.listApiTokensByOwner.mockResolvedValue([]);
     const { waitUntil, settle } = deferred();
-    const res = await handleTokens(
-      makeTestRouteContext('DELETE', '/api/tokens/tok_1', {
-        clerkUserId: 'user_1',
-        owner: 'user_1',
-        waitUntil,
-      }),
-    );
+    const res = await handleTokens(selfRevoke(waitUntil));
     expect(res.status).toBe(404);
     await settle();
     expect(db.retractTimelineWarning).not.toHaveBeenCalled();
   });
 });
 
-describe('share-link changes retract the document expiry warning', () => {
-  // The single-code revoke also broadcasts 'share-revoked' into the document's
+describe('share-link changes retract the project expiry warning', () => {
+  // The single-code revoke also broadcasts 'share-revoked' into the project's
   // Durable Object room so hydrated visitors hard-redirect; that is UX, not the
   // subject here, so the binding is a no-op stub.
   const roomEnv = {
-    DOCUMENT_ROOM: {
+    PROJECT_ROOM: {
       idFromName: () => 'id',
       get: () => ({ fetch: async () => new Response(null, { status: 204 }) }),
     },
@@ -123,7 +121,7 @@ describe('share-link changes retract the document expiry warning', () => {
 
   const shareCtx = (method: string, path: string) =>
     makeTestRouteContext(method, path, {
-      clerkUserId: 'user_1',
+      accountUserId: 'user_1',
       owner: 'user_1',
       env: roomEnv,
     });
@@ -131,26 +129,26 @@ describe('share-link changes retract the document expiry warning', () => {
   const expectRetracted = () =>
     expect(db.retractTimelineWarning).toHaveBeenCalledWith(
       expect.anything(),
-      'document',
+      'project',
       'd_1',
       'share_link_expiring',
     );
 
   it('bulk revoke retracts', async () => {
-    const res = await handleDocumentShareRoutes(shareCtx('DELETE', '/api/documents/d_1/share'));
+    const res = await handleProjectShareRoutes(shareCtx('DELETE', '/api/projects/d_1/share'));
     expect(res?.status).toBe(200);
     expectRetracted();
   });
 
   it('single-code revoke retracts', async () => {
-    const res = await handleDocumentShareRoutes(shareCtx('DELETE', '/api/documents/d_1/share/c1'));
+    const res = await handleProjectShareRoutes(shareCtx('DELETE', '/api/projects/d_1/share/c1'));
     expect(res?.status).toBe(204);
     expectRetracted();
   });
 
   it('extend retracts, because the deadline it quoted has moved', async () => {
-    const res = await handleDocumentShareRoutes(
-      shareCtx('POST', '/api/documents/d_1/share/c1/extend'),
+    const res = await handleProjectShareRoutes(
+      shareCtx('POST', '/api/projects/d_1/share/c1/extend'),
     );
     expect(res?.status).toBe(200);
     expectRetracted();
@@ -158,16 +156,16 @@ describe('share-link changes retract the document expiry warning', () => {
 
   it('a rejected extend (link never expires) retracts nothing', async () => {
     db.extendShareLink.mockResolvedValue(null);
-    const res = await handleDocumentShareRoutes(
-      shareCtx('POST', '/api/documents/d_1/share/c1/extend'),
+    const res = await handleProjectShareRoutes(
+      shareCtx('POST', '/api/projects/d_1/share/c1/extend'),
     );
     expect(res?.status).toBe(400);
     expect(db.retractTimelineWarning).not.toHaveBeenCalled();
   });
 
   it('a non-owner caller gets 403 and retracts nothing', async () => {
-    db.getDocument.mockResolvedValue({ id: 'd_1', ownerId: 'someone_else', tabs: [] });
-    const res = await handleDocumentShareRoutes(shareCtx('DELETE', '/api/documents/d_1/share/c1'));
+    db.getProject.mockResolvedValue({ id: 'd_1', ownerId: 'someone_else', tabs: [] });
+    const res = await handleProjectShareRoutes(shareCtx('DELETE', '/api/projects/d_1/share/c1'));
     expect(res?.status).toBe(403);
     expect(db.retractTimelineWarning).not.toHaveBeenCalled();
   });

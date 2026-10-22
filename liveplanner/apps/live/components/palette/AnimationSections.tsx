@@ -17,7 +17,7 @@ import {
   type ConceptShape,
   type Element,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { AnimationMenuGlyph } from '@/components/palette/context-menu-icons';

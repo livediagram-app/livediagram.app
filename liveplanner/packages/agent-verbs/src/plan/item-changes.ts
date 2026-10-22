@@ -88,12 +88,12 @@ function line(prefix: string, item: Item, state: PlanState, notes: readonly stri
   return `${prefix} ${itemSummary(item)}${placeOf(item, state)}${notes.map((n) => `; ${n}`).join('')}`;
 }
 
-// A note for an assignee given by a name nobody on the document has: a name only, not linked to an account.
+// A note for an assignee given by a name nobody on the project has: a name only, not linked to an account.
 function personNote(fields: Readonly<Record<string, unknown>>, items: readonly Item[]): string[] {
   const p = fields['assignee'];
   if (!isItemPerson(p) || !p.id.startsWith('n-')) return [];
   if (assignedPeople(items).some((x) => x.id === p.id)) return [];
-  return [`${p.name} is a new name on this document, not linked to anyone's account`];
+  return [`${p.name} is a new name on this project, not linked to anyone's account`];
 }
 
 // The most of a value a set line repeats.
@@ -138,11 +138,11 @@ function setNote(
 
 export async function applyItemChanges(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   changes: readonly ItemChange[],
   state: PlanState,
 ): Promise<ItemChangesResult> {
-  const base = itemsPath(documentId);
+  const base = itemsPath(projectId);
   const types = state.plan.types;
   let items = [...state.items];
   const applied: string[] = [];

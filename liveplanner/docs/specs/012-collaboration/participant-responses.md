@@ -34,7 +34,7 @@ and the id of who cast it (see below — it is NOT the owner id).
   `pieSlices`, so it bounds in `validate.ts` with the same array clamp as the
   rest and round-trips through JSON export with no key-order surprise.
 
-Helpers live in `packages/document/src/responses.ts` — a leaf module (types
+Helpers live in `packages/project/src/responses.ts` — a leaf module (types
 only), for the same module-cycle reason `data-shapes.ts` is one.
 
 ## `participantId` is the COLLAB KEY, not the owner id
@@ -52,18 +52,18 @@ here:
 | **Collab key**                                                                        | yes                       | yes              |
 
 The owner id is a credential: for a guest it is exactly what authenticates
-their API calls, so writing it into a shared document hands it to every
+their API calls, so writing it into a shared project hands it to every
 co-viewer. The presence id is deliberately a fresh server-minted random per
 socket, so peers never read an owner id off a roster — which also means it
 matches nothing that was ever saved, and changes on every reconnect.
 
-So the document gets a third id: **`liveplanner:v2:collab-key`**, a per-browser
+So the project gets a third id: **`liveplanner:v2:collab-key`**, a per-browser
 random the client mints and keeps (`ensureCollabKey`). Stable like the owner
 id, worthless like the presence id. It rides the roster as
 `ParticipantPresence.key`, the **one claimed field** on it — relayed verbatim
 rather than server-stamped, because it has to survive a reconnect to do its
 job, and because it grants nothing (any edit-role peer can already write any id
-straight into the document, so leaving it claimable adds no reach).
+straight into the project, so leaving it claimable adds no reach).
 
 Both sides of the join go through **`participantKey(participant)`**, which
 falls back to `id` for a peer on a client too old to publish a key: they render

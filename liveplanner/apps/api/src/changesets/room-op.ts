@@ -5,7 +5,7 @@ import {
   type ChangesetCounts,
   type ChangesetRoomOp,
 } from '@liveplanner/api-schema';
-import type { ElementOp, Tab } from '@liveplanner/document';
+import type { ElementOp, Tab } from '@liveplanner/project';
 
 // The relay payload of one changeset (docs/specs/024-agents/agent-changesets.md "What the room
 // does"). Its element ops ride along when their UTF-8 JSON fits CHANGESET_RELAY_MAX_BYTES; past

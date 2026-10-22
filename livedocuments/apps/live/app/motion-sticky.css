@@ -1,0 +1,309 @@
+/*
+ * The Sticky animation set (docs/specs/028-animation/element-animations.md "Sticky"). Classes sit on
+ * the note's wrapper (useBoxedElementAnimation) and drive the independent translate / rotate /
+ * scale properties, so a hand-placed tilt is kept. The note's paper and peel shadow are its own
+ * pseudo-elements, so the fold, lift shadow and slap shadow ride the child .lvd-anim-layer. Pulse,
+ * Glow and Highlight are the Shape set's (motion-shape.css): a note is a rectangle.
+ *
+ * Variables (set inline): --lvd-anim-speed, --lvd-anim-iter, --lvd-anim-size, --lvd-anim-bg (the
+ * paper colour, for the fold).
+ *
+ * The reveals (Drop, Slap) bring the note in over the first 45% of their cycle, hold, fade out and
+ * are whole again at 100%, so a last-frame jump (the app's Reduce Motion) shows the note; with
+ * Repeat off (.lvd-once) they play the reveal once and stay.
+ */
+
+/* Flutter: the bottom edge lifts toward you and ripples, as in a breeze; then the note rests. */
+@keyframes lvd-note-flutter {
+  0%,
+  70%,
+  100% {
+    scale: 1;
+    rotate: 0deg;
+  }
+  12% {
+    scale: 1.01 0.93;
+    rotate: -1deg;
+  }
+  26% {
+    scale: 1 0.98;
+    rotate: 0.6deg;
+  }
+  40% {
+    scale: 1.005 0.95;
+    rotate: -0.4deg;
+  }
+  55% {
+    scale: 1 0.99;
+    rotate: 0.2deg;
+  }
+}
+.lvd-note-flutter {
+  transform-origin: top center;
+  animation: lvd-note-flutter calc(2.4s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Sway: swings gently from a pin at its top centre, continuously. */
+@keyframes lvd-note-sway {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  25% {
+    rotate: 2.5deg;
+  }
+  75% {
+    rotate: -2.5deg;
+  }
+}
+.lvd-note-sway {
+  transform-origin: top center;
+  animation: lvd-note-sway calc(3.2s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Peel: the bottom-right corner curls up into a fold, then smooths flat, then rests. The fold is a
+ * triangle of the paper's own colour, shaded, growing from the corner. */
+@keyframes lvd-note-peel {
+  0%,
+  60%,
+  100% {
+    opacity: 0;
+    scale: 0.2;
+  }
+  20%,
+  40% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+.lvd-note-peel > .lvd-anim-layer {
+  inset: auto 0 0 auto;
+  width: calc(min(var(--lvd-anim-size, 100) * 0.22, 48) * 1px);
+  aspect-ratio: 1;
+  border-radius: 0 0 0 0;
+  transform-origin: 100% 100%;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--lvd-anim-bg, #fde68a) 70%, white) 0% 48%,
+    color-mix(in srgb, var(--lvd-anim-bg, #fde68a) 82%, black) 50%,
+    color-mix(in srgb, var(--lvd-anim-bg, #fde68a) 94%, black) 70%,
+    transparent 71%
+  );
+  filter: drop-shadow(-2px -2px 2px rgb(15 23 42 / 0.18));
+  animation: lvd-note-peel calc(3s * var(--lvd-anim-speed, 1)) cubic-bezier(0.3, 0.7, 0.4, 1)
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Lift: the note rises off the board as its shadow grows, then settles back. */
+@keyframes lvd-note-lift {
+  0%,
+  100% {
+    translate: 0 0;
+    scale: 1;
+  }
+  45%,
+  60% {
+    translate: 0 calc(min(var(--lvd-anim-size, 100) * 0.04, 6) * -1px);
+    scale: 1.02;
+  }
+}
+@keyframes lvd-note-lift-shadow {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  45%,
+  60% {
+    opacity: 1;
+  }
+}
+.lvd-note-lift {
+  animation: lvd-note-lift calc(2.8s * var(--lvd-anim-speed, 1)) cubic-bezier(0.37, 0, 0.63, 1)
+    var(--lvd-anim-iter, infinite);
+}
+.lvd-note-lift > .lvd-anim-layer {
+  box-shadow: 0 calc(min(var(--lvd-anim-size, 100) * 0.08, 14) * 1px)
+    calc(min(var(--lvd-anim-size, 100) * 0.12, 22) * 1px) rgb(15 23 42 / 0.22);
+  animation: lvd-note-lift-shadow calc(2.8s * var(--lvd-anim-speed, 1))
+    cubic-bezier(0.37, 0, 0.63, 1) var(--lvd-anim-iter, infinite);
+}
+
+/* Wiggle: a quick "look at me" wiggle, then a long rest. */
+@keyframes lvd-note-wiggle {
+  0%,
+  26%,
+  100% {
+    rotate: 0deg;
+  }
+  4% {
+    rotate: -3deg;
+  }
+  9% {
+    rotate: 3deg;
+  }
+  14% {
+    rotate: -2deg;
+  }
+  19% {
+    rotate: 2deg;
+  }
+  23% {
+    rotate: -0.5deg;
+  }
+}
+.lvd-note-wiggle {
+  animation: lvd-note-wiggle calc(2s * var(--lvd-anim-speed, 1)) ease-in-out
+    var(--lvd-anim-iter, infinite);
+}
+
+/* Drop (reveal): the note falls onto the board, squashes and settles; holds; fades; again. */
+@keyframes lvd-note-drop {
+  0% {
+    opacity: 0;
+    translate: 0 calc(min(var(--lvd-anim-size, 100) * 0.4, 80) * -1px);
+    scale: 1.06;
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.45);
+  }
+  22% {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1.04 0.94;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  32% {
+    scale: 0.99 1.01;
+  }
+  40%,
+  86% {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+  93%,
+  99.9% {
+    opacity: 0;
+    translate: 0 0;
+    scale: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes lvd-note-drop-once {
+  0% {
+    opacity: 0;
+    translate: 0 calc(min(var(--lvd-anim-size, 100) * 0.4, 80) * -1px);
+    scale: 1.06;
+    animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.45);
+  }
+  50% {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1.04 0.94;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  72% {
+    scale: 0.99 1.01;
+  }
+  100% {
+    opacity: 1;
+    translate: 0 0;
+    scale: 1;
+  }
+}
+.lvd-note-drop {
+  animation: lvd-note-drop calc(4s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite)
+    both;
+}
+.lvd-note-drop.lvd-once {
+  animation: lvd-note-drop-once calc(1.8s * var(--lvd-anim-speed, 1)) linear 1 both;
+}
+
+/* Slap (reveal): the note is slapped down, landing from slightly larger as its shadow tightens. */
+@keyframes lvd-note-slap {
+  0% {
+    opacity: 0;
+    scale: 1.14;
+    animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5);
+  }
+  14% {
+    opacity: 1;
+    scale: 0.97;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  24%,
+  86% {
+    opacity: 1;
+    scale: 1;
+  }
+  93%,
+  99.9% {
+    opacity: 0;
+    scale: 1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes lvd-note-slap-once {
+  0% {
+    opacity: 0;
+    scale: 1.14;
+    animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.5);
+  }
+  55% {
+    opacity: 1;
+    scale: 0.97;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+@keyframes lvd-note-slap-shadow {
+  0% {
+    opacity: 1;
+    scale: 1.1;
+  }
+  14%,
+  100% {
+    opacity: 0;
+    scale: 1;
+  }
+}
+.lvd-note-slap {
+  animation: lvd-note-slap calc(4s * var(--lvd-anim-speed, 1)) linear var(--lvd-anim-iter, infinite)
+    both;
+}
+.lvd-note-slap.lvd-once {
+  animation: lvd-note-slap-once calc(1.2s * var(--lvd-anim-speed, 1)) linear 1 both;
+}
+.lvd-note-slap > .lvd-anim-layer {
+  box-shadow: 0 calc(min(var(--lvd-anim-size, 100) * 0.1, 18) * 1px)
+    calc(min(var(--lvd-anim-size, 100) * 0.16, 28) * 1px) rgb(15 23 42 / 0.3);
+  animation: lvd-note-slap-shadow calc(4s * var(--lvd-anim-speed, 1)) linear
+    var(--lvd-anim-iter, infinite);
+}
+.lvd-note-slap.lvd-once > .lvd-anim-layer {
+  animation-duration: calc(1.2s * var(--lvd-anim-speed, 1));
+  animation-iteration-count: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lvd-note-flutter,
+  .lvd-note-sway,
+  .lvd-note-peel > .lvd-anim-layer,
+  .lvd-note-lift,
+  .lvd-note-lift > .lvd-anim-layer,
+  .lvd-note-wiggle,
+  .lvd-note-drop,
+  .lvd-note-drop.lvd-once,
+  .lvd-note-slap,
+  .lvd-note-slap.lvd-once,
+  .lvd-note-slap > .lvd-anim-layer {
+    animation: none;
+  }
+}

@@ -1,19 +1,19 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardTabPreview } from './DashboardTabPreview';
 
 // docs/specs/026-plan/plan-tabs.md "Slot content": a shown tab with nothing to draw yet.
 afterEach(cleanup);
 
-// The drawing itself (the export renderer) is not drawn here.
+// Nothing lazily loaded is drawn here.
 vi.mock('next/dynamic', () => ({ default: () => () => null }));
 
 function showTab(
   tab: Tab | null,
-  of: 'board' | 'sheet' | 'diagram',
+  of: 'board' | 'sheet',
   status: 'loaded' | 'failed' | 'loading' = 'loaded',
 ) {
   const value = {
@@ -89,35 +89,19 @@ describe('a slot’s tab before it draws', () => {
   });
 });
 
-describe('a Diagram tab in a slot', () => {
-  // docs/specs/026-plan/plan-tabs.md "Dashboard tab": its drawing, live; pressing it opens the tab.
-  it('shows the tab’s name over its drawing, opening the tab when pressed', () => {
-    const v = showTab(
-      { id: 'd', name: 'Architecture', elements: [{ id: 'e1' }] } as unknown as Tab,
-      'diagram',
-    );
-    expect(screen.getByRole('heading', { name: 'Architecture' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'Open Architecture' }));
-    expect(v.openTab).toHaveBeenCalledWith('d');
-  });
-
-  it('says it is loading while its content is on its way, and names a deleted one', () => {
-    showTab({ id: 'd', name: 'Architecture', elements: [] }, 'diagram', 'loading');
-    expect(screen.getByText('Loading Architecture…')).toBeTruthy();
-    cleanup();
-    showTab(null, 'diagram');
-    expect(screen.getByText('This Diagram was deleted.')).toBeTruthy();
-  });
-
-  // docs/specs/026-plan/plan-tabs.md "Showing a tab": a Form tab's form is drawn, though it holds no element.
-  it('draws an empty Form tab', () => {
+describe('a slot naming a tab that is not a Board or Sheet', () => {
+  // docs/specs/026-plan/plan-tabs.md "Showing a tab": only a Board or Sheet tab goes in a slot.
+  it('says so, and offers to clear the slot', () => {
     showTab(
       { id: 'f', name: 'Survey', kind: 'form', form: {}, elements: [] } as unknown as Tab,
-      'diagram',
+      'board',
     );
-    expect(screen.getByRole('button', { name: 'Open Survey' })).toBeTruthy();
-    cleanup();
-    showTab({ id: 'd', name: 'Blank', elements: [] }, 'diagram');
-    expect(screen.getByText('Nothing on Blank yet.')).toBeTruthy();
+    expect(screen.getByText('This tab is not a Board or Sheet.')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Clear Slot' })).toBeTruthy();
+  });
+
+  it('waits as the Board it was given while a tab’s content is on its way', () => {
+    showTab({ id: 'b', name: 'Backlog', elements: [] }, 'board', 'loading');
+    expect(screen.getByText('Loading Backlog…')).toBeTruthy();
   });
 });

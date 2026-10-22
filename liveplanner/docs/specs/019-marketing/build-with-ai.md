@@ -6,7 +6,7 @@ Status: shipped
 
 ## Entry points
 
-- **The site header's Build with AI link** (`BuildWithAiLink` in `packages/ui`, shown by `SiteHeader` when a surface passes `buildWithAi`). Every marketing page's header (`components/Header.tsx`) shows it, to the left of Start Blank. It is a quiet ghost link with a sparkles glyph, so the CTA pair stays the loudest thing in the bar. Desktop only (from `lg`): below that the bar is already full with Brand, the apps menu and the CTA pair. On `/ai` itself it carries `aria-current="page"` and a brand tint. The help centre and telemetry headers do not show it.
+- **The site header's Build with AI link** (`BuildWithAiLink` in `packages/ui`, shown by `SiteHeader` when a surface passes `buildWithAi`). Every marketing page's header (`components/Header.tsx`) shows it, to the left of Start Blank. It is a quiet ghost link with a sparkles glyph, so the CTA pair stays the loudest thing in the bar. Desktop only (from `lg`): below that the bar is already full with Brand, its site switcher and the CTA pair. On `/ai` itself it carries `aria-current="page"` and a brand tint. The help centre and telemetry headers do not show it.
 - **The footer's AI & MCP link** (`SiteFooter`) opens `/ai`.
 - **The FAQ's** "Can I connect my own AI assistant" answer links to `/ai` for setup. (Feature cards stay links to their help article, as every feature card is.)
 
@@ -34,7 +34,7 @@ Status: shipped
 | `cursor`      | Cursor      | Editors       | One-click **Add to Cursor** (`cursor://anysphere.cursor-deeplink/mcp/install?name=liveplanner&config=<base64 {"url": <url>}>`), or the `~/.cursor/mcp.json` entry; then sign in from Cursor's MCP settings.      |
 | `vscode`      | VS Code     | Editors       | One-click **Add to VS Code** (`vscode:mcp/install?<encoded {"name","type":"http","url"}>`), or `.vscode/mcp.json` (`servers`, `type: "http"`); start it and allow the sign-in; use it from Copilot's agent mode. |
 | `windsurf`    | Windsurf    | Editors       | Cascade's MCP settings › raw config (`mcp_config.json`), an entry with `serverUrl`; refresh, then sign in.                                                                                                       |
-| `other`       | Any client  | Anything else | Add a remote (Streamable HTTP) server with the address; OAuth is discovered, no client id or secret. Without OAuth: an API token as `Authorization: Bearer lvd_…`.                                               |
+| `other`       | Any client  | Anything else | Add a remote (Streamable HTTP) server with the address; OAuth is discovered, no client id or secret. Without OAuth: an API token as `Authorization: Bearer lwt_…`.                                               |
 
 Third-party menu names drift, so a client whose menus are known to move (ChatGPT) says where to look if a label has moved, and the page never shows third-party logos: each tab wears a generic glyph for its group (a chat bubble, a code square, an app window, a link).
 

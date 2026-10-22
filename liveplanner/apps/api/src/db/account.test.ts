@@ -3,13 +3,13 @@ import { deleteAccount } from './account';
 import type { Env } from '../types';
 
 // deleteAccount wipes an owner's D1 rows AND the R2 objects the cascade
-// can't reach: document SVG snapshots and share cards
-// (docs/specs/006-document/document-snapshots.md, keyed thumb/<documentId>). A bulk `DELETE FROM documents` drops
+// can't reach: project SVG snapshots and share cards
+// (docs/specs/006-project/project-snapshots.md, keyed thumb/<projectId>). A bulk `DELETE FROM projects` drops
 // the ids, so the snapshot keys must be enumerated + deleted first or
 // they orphan in R2. These pin that cleanup with a fake D1 + R2.
 
 function fakeEnv(opts: {
-  documentIds?: string[];
+  projectIds?: string[];
   snapshots?: { delete: (keys: string[]) => Promise<void> };
   sqlLog?: string[];
 }): Env {
@@ -18,8 +18,8 @@ function fakeEnv(opts: {
     return {
       bind: () => ({
         all: async () => {
-          if (sql.includes('FROM documents')) {
-            return { results: (opts.documentIds ?? []).map((id) => ({ id })) };
+          if (sql.includes('FROM projects')) {
+            return { results: (opts.projectIds ?? []).map((id) => ({ id })) };
           }
           return { results: [] };
         },
@@ -33,10 +33,10 @@ function fakeEnv(opts: {
   return { DB: { prepare, batch }, SNAPSHOTS: opts.snapshots } as unknown as Env;
 }
 
-describe('deleteAccount snapshot cleanup (docs/specs/006-document/document-snapshots.md)', () => {
-  it("bulk-deletes each document's snapshots from R2", async () => {
+describe('deleteAccount snapshot cleanup (docs/specs/006-project/project-snapshots.md)', () => {
+  it("bulk-deletes each project's snapshots from R2", async () => {
     const del = vi.fn().mockResolvedValue(undefined);
-    const env = fakeEnv({ documentIds: ['d1', 'd2'], snapshots: { delete: del } });
+    const env = fakeEnv({ projectIds: ['d1', 'd2'], snapshots: { delete: del } });
 
     await deleteAccount(env, 'owner-1');
 
@@ -45,15 +45,15 @@ describe('deleteAccount snapshot cleanup (docs/specs/006-document/document-snaps
   });
 
   it('skips R2 cleanup when no bucket is bound (a deployment without it) without throwing', async () => {
-    const env = fakeEnv({ documentIds: ['d1'], snapshots: undefined });
+    const env = fakeEnv({ projectIds: ['d1'], snapshots: undefined });
     await expect(deleteAccount(env, 'owner-1')).resolves.toMatchObject({
-      documents: expect.any(Number),
+      projects: expect.any(Number),
     });
   });
 
-  it('makes no snapshot delete when the owner has no documents', async () => {
+  it('makes no snapshot delete when the owner has no projects', async () => {
     const del = vi.fn().mockResolvedValue(undefined);
-    const env = fakeEnv({ documentIds: [], snapshots: { delete: del } });
+    const env = fakeEnv({ projectIds: [], snapshots: { delete: del } });
 
     await deleteAccount(env, 'owner-1');
 
@@ -61,9 +61,9 @@ describe('deleteAccount snapshot cleanup (docs/specs/006-document/document-snaps
   });
 });
 
-describe('deleteAccount leaves team folders to the team (docs/specs/013-workspace/team-shared-documents.md)', () => {
+describe('deleteAccount leaves team folders to the team (docs/specs/013-workspace/team-shared-projects.md)', () => {
   it('deletes only personal folders', async () => {
-    // A team folder carries its creator's owner_id, but teammates' documents
+    // A team folder carries its creator's owner_id, but teammates' projects
     // live in it; wiping it on the creator's account delete dropped them out
     // of the team library.
     const sqlLog: string[] = [];

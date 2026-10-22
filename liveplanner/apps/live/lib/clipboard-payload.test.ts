@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { Element, FreehandElement, ShapeElement } from '@liveplanner/document';
+import type { Element, FreehandElement, ShapeElement } from '@liveplanner/project';
 
 import {
   CLIPBOARD_KIND,
@@ -42,7 +42,7 @@ describe('serialiseElements', () => {
     });
   });
 
-  // A copy can travel to another document, another account, another person.
+  // A copy can travel to another project, another account, another person.
   // Nothing that says WHO does anything should ride along.
   it('strips comment threads and per-participant responses', () => {
     const withIdentity = shape('a', {
@@ -197,7 +197,7 @@ describe('clipboardWriteFor', () => {
   });
 });
 
-describe('stroke points (docs/specs/006-document/stroke-points.md)', () => {
+describe('stroke points (docs/specs/006-project/stroke-points.md)', () => {
   it('writes version 2, the first with packed stroke points', () => {
     expect(CLIPBOARD_SCHEMA_VERSION).toBe(2);
   });

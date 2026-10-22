@@ -168,7 +168,7 @@ or **Plain Text** (the value alone; the arrow shows on the active cell only).
 
 ## Copies, sort and the clipboard
 
-- A copied sheet (duplicate, paste into another document, Duplicate Tab) keeps its rules, as it keeps its merges.
+- A copied sheet (duplicate, paste into another project, Duplicate Tab) keeps its rules, as it keeps its merges.
 - Sort moves values, never rules: a rule stays on its cells' rows by id, so sorting the rows inside a rule's range
   leaves it where it was. (A rule whose corner row is sorted elsewhere follows that corner, as a named range does.)
 - Copy and paste carry inputs and formats, never rules; the fill handle fills values, checked by the rules of the

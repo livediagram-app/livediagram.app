@@ -8,7 +8,7 @@
 // /live/new imports it statically since it's the template-creation
 // page by definition.
 
-import { type Tab } from '@liveplanner/document';
+import { type Tab } from '@liveplanner/project';
 import {
   templateCanvasOverrides,
   templateTabs,
@@ -19,7 +19,7 @@ import { getTheme, recolourElementsForTheme } from './themes';
 
 export {
   buildTemplate,
-  isDefaultDocumentName,
+  isDefaultProjectName,
   templateCanvasOverrides,
   templateTabs,
   untitledNameForTemplate,
@@ -75,8 +75,7 @@ function themedTab(
     patternColor: theme.patternColor,
     ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
     templateChosen: true,
-    // A companion Sheet takes the theme only; the template's canvas is its drawing's (template-companions.ts).
-    ...(def.ownCanvas ? {} : templateCanvasOverrides(kind)),
+    ...templateCanvasOverrides(kind),
     ...def.tab?.(ids),
   };
 }

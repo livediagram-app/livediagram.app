@@ -13,3 +13,6 @@ packages:
   - 'livedesign'
   - 'livedesign/apps/*'
   - 'livedesign/packages/*'
+  - 'livedocuments'
+  - 'livedocuments/apps/*'
+  - 'livedocuments/packages/*'

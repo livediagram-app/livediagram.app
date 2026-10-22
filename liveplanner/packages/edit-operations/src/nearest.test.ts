@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@liveplanner/document';
-import { checkoutFlow } from './fixtures/checkout-flow';
+import type { Element } from '@liveplanner/project';
+import { sprintDashboard } from './fixtures/sprint-dashboard';
 import { editDistanceWithin, nearestElements, nearestName } from './nearest';
 
 describe('editDistanceWithin', () => {
@@ -27,19 +27,19 @@ describe('nearestName', () => {
 });
 
 describe('nearestElements', () => {
-  const elements = checkoutFlow().elements;
+  const elements = sprintDashboard().elements;
 
   it('finds elements by a near id, nearest first', () => {
-    expect(nearestElements('n33', elements).map((el) => el.id)[0]).toBe('n3');
+    expect(nearestElements('m33', elements).map((el) => el.id)[0]).toBe('m3');
   });
 
   it('finds elements by a near label, ignoring case', () => {
-    expect(nearestElements('CARD DETAIL', elements).map((el) => el.id)).toEqual(['n5']);
+    expect(nearestElements('WORKLOD', elements).map((el) => el.id)).toEqual(['w1']);
   });
 
   it('keeps at most five, in element order on a tie', () => {
-    const near = nearestElements('n', elements).map((el) => el.id);
-    expect(near).toEqual(['n1', 'n2', 'n3', 'n4', 'n5']);
+    const near = nearestElements('x', elements).map((el) => el.id);
+    expect(near).toEqual(['m1', 'm2', 'm3', 'm4', 'w1']);
   });
 
   it('finds nothing far from every id and label', () => {
@@ -47,7 +47,7 @@ describe('nearestElements', () => {
   });
 
   it('reads an element without a label by its id alone', () => {
-    const bare = [{ id: 'x1', type: 'arrow' }] as unknown as Element[];
+    const bare = [{ id: 'x1', type: 'shape', shape: 'plan-view' }] as unknown as Element[];
     expect(nearestElements('x2', bare).map((el) => el.id)).toEqual(['x1']);
   });
 });

@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { COMPONENT_SCHEMAS } from './schemas.generated';
 import { ROUTE_MANIFEST } from './manifest';
-import { buildOpenApiDocument } from './document';
+import { buildOpenApiProject } from './project';
 import type { JsonSchema } from './types';
 
 // Drift guards for the OpenAPI surface (docs/specs/015-api/api-documentation.md). The worker dispatch is
@@ -50,7 +50,7 @@ function handledMethodsBySegment(): Map<string, Set<string>> {
     const file = handlerFile.get(m[2]!);
     const source = file ? read(file) : null;
     if (!source) continue;
-    // A handler may delegate to sibling route modules (the document routes are
+    // A handler may delegate to sibling route modules (the project routes are
     // split across several); follow those too or their verbs go unseen.
     const sources = [source];
     for (const rel of source.matchAll(/from '\.\/([\w-]+)'/g)) {
@@ -67,7 +67,7 @@ function handledMethodsBySegment(): Map<string, Set<string>> {
 }
 
 describe('OpenAPI manifest ↔ dispatch parity', () => {
-  it('documents exactly the segments the worker dispatches', () => {
+  it('projects exactly the segments the worker dispatches', () => {
     const dispatched = dispatchedSegments();
     const documented = new Set(ROUTE_MANIFEST.map((r) => r.segment));
 
@@ -83,17 +83,17 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
     expect(phantom, `in the manifest but not dispatched: ${phantom.join(', ')}`).toEqual([]);
   });
 
-  it('documents every HTTP method a dispatched segment handles', () => {
+  it('projects every HTTP method a dispatched segment handles', () => {
     // The check above is per SEGMENT, so it stays green when an existing
-    // segment grows a verb: adding PATCH to /documents passes, because
-    // 'documents' is already documented. The published description is what
+    // segment grows a verb: adding PATCH to /projects passes, because
+    // 'projects' is already documented. The published description is what
     // external callers build against (docs/specs/015-api/api-documentation.md, docs/specs/015-api/public-api-and-tokens.md), and an endpoint
     // missing from it is one nobody can discover.
     //
     // Route handlers spell the check two ways: `method === 'PUT'` to select a
     // branch, and `method !== 'POST'` as a single-verb guard clause. Both are
     // read, and the walk follows each handler's sibling route modules so the
-    // split document routes are not missed.
+    // split project routes are not missed.
     const handled = handledMethodsBySegment();
     const documented = new Map<string, Set<string>>();
     for (const route of ROUTE_MANIFEST) {
@@ -138,21 +138,21 @@ describe('OpenAPI manifest ↔ dispatch parity', () => {
 
 describe('rate-limited operations declare 429', () => {
   // index.ts throttles before dispatch, so no manifest entry declares 429 and
-  // document.ts derives it. That derivation mirrors a rule living in another
+  // project.ts derives it. That derivation mirrors a rule living in another
   // file, which is exactly the kind of pair that drifts: these pin the shape
   // of the answer rather than a count that would need editing per route.
-  const doc = buildOpenApiDocument() as {
+  const doc = buildOpenApiProject() as {
     paths: Record<string, Record<string, { responses?: Record<string, unknown> }>>;
   };
   const responsesFor = (route: (typeof ROUTE_MANIFEST)[number]) =>
     // Paths are keyed unprefixed; `/api` lives on the servers entry.
     doc.paths[route.path]?.[route.method.toLowerCase()]?.responses ?? {};
 
-  it('covers every write except the telemetry ingest and the room-ticket mint', () => {
+  it('covers every write except the telemetry relay and the room-ticket mint', () => {
     const writes = ROUTE_MANIFEST.filter((r) => r.method !== 'GET');
     expect(writes.length).toBeGreaterThan(40);
     for (const route of writes) {
-      const expected = route.path !== '/events' && route.path !== '/documents/{id}/room-ticket';
+      const expected = route.path !== '/events' && route.path !== '/projects/{id}/room-ticket';
       expect(Boolean(responsesFor(route)['429']), `${route.method} ${route.path}`).toBe(expected);
     }
   });
@@ -207,12 +207,12 @@ describe('OpenAPI schema references', () => {
     expect(missing, `referenced but not generated: ${missing.join(', ')}`).toEqual([]);
   });
 
-  it('the assembled document references only known schemas', () => {
-    const doc = buildOpenApiDocument();
+  it('the assembled project references only known schemas', () => {
+    const doc = buildOpenApiProject();
     const refs = new Set<string>();
     refsIn(doc.paths, refs);
     const missing = [...refs].filter((r) => !known.has(r));
-    expect(missing, `document refs missing from components: ${missing.join(', ')}`).toEqual([]);
+    expect(missing, `project refs missing from components: ${missing.join(', ')}`).toEqual([]);
   });
 });
 
@@ -237,38 +237,38 @@ describe('generated component schemas are up to date', () => {
   }, 120_000);
 });
 
-describe('buildOpenApiDocument', () => {
-  it('assembles a well-formed document for every manifest entry', () => {
-    const doc = buildOpenApiDocument();
+describe('buildOpenApiProject', () => {
+  it('assembles a well-formed project for every manifest entry', () => {
+    const doc = buildOpenApiProject();
     expect(doc.openapi).toBe('3.1.0');
     for (const route of ROUTE_MANIFEST) {
       const op = doc.paths[route.path]?.[route.method.toLowerCase()];
-      expect(op, `${route.method} ${route.path} missing from document`).toBeDefined();
+      expect(op, `${route.method} ${route.path} missing from project`).toBeDefined();
     }
     // Error envelope is always present for handlers to reference.
     expect(doc.components.schemas.Error).toBeDefined();
   });
 
   it('advertises the SVG endpoints (snapshots and the tab render) as image/svg+xml, the rest as JSON', () => {
-    const doc = buildOpenApiDocument() as {
+    const doc = buildOpenApiProject() as {
       paths: Record<string, Record<string, { responses: Record<string, { content?: object }> }>>;
     };
     const svg = ROUTE_MANIFEST.filter((r) => r.responseMediaType === 'image/svg+xml');
     expect(svg.map((r) => r.path).sort()).toEqual([
-      '/documents/{id}/tabs/{tabId}/render.svg',
-      '/documents/{id}/thumbnail',
+      '/projects/{id}/tabs/{tabId}/render.svg',
+      '/projects/{id}/thumbnail',
       '/share/{code}/image.svg',
     ]);
     for (const route of svg) {
       const ok = doc.paths[route.path]![route.method.toLowerCase()]!.responses['200']!;
       expect(Object.keys(ok.content ?? {})).toEqual(['image/svg+xml']);
     }
-    const json = doc.paths['/documents']!.get!.responses['200']!;
+    const json = doc.paths['/projects']!.get!.responses['200']!;
     expect(Object.keys(json.content ?? {})).toEqual(['application/json']);
   });
 
-  it('offers text beside JSON exactly where a document view can answer, with the view query', () => {
-    const doc = buildOpenApiDocument() as {
+  it('offers text beside JSON exactly where a project view can answer, with the view query', () => {
+    const doc = buildOpenApiProject() as {
       paths: Record<
         string,
         Record<
@@ -278,8 +278,8 @@ describe('buildOpenApiDocument', () => {
       >;
     };
     const text = ROUTE_MANIFEST.filter((r) => r.textResponse).map((r) => `${r.method} ${r.path}`);
-    expect(text.sort()).toEqual(['GET /documents/{id}', 'GET /documents/{id}/tabs/{tabId}']);
-    for (const path of ['/documents/{id}', '/documents/{id}/tabs/{tabId}']) {
+    expect(text.sort()).toEqual(['GET /projects/{id}', 'GET /projects/{id}/tabs/{tabId}']);
+    for (const path of ['/projects/{id}', '/projects/{id}/tabs/{tabId}']) {
       const get = doc.paths[path]!.get!;
       expect(Object.keys(get.responses['200']!.content ?? {})).toEqual([
         'application/json',
@@ -289,16 +289,14 @@ describe('buildOpenApiDocument', () => {
         expect.arrayContaining(['view', 'json', 'budget', 'door']),
       );
     }
-    const tabQuery = doc.paths['/documents/{id}/tabs/{tabId}']!.get!.parameters.map((p) => p.name);
-    expect(tabQuery).toEqual(
-      expect.arrayContaining(['only', 'coarse', 'style', 'ref', 'q', 'all']),
-    );
+    const tabQuery = doc.paths['/projects/{id}/tabs/{tabId}']!.get!.parameters.map((p) => p.name);
+    expect(tabQuery).toEqual(expect.arrayContaining(['only', 'style', 'ref', 'q', 'all']));
   });
 });
 
-// The document name cap (docs/specs/006-document/name-length.md) is part of the
+// The project name cap (docs/specs/006-project/name-length.md) is part of the
 // public contract: a token caller reads it from the reference, not by trial.
-describe('document name fields', () => {
+describe('project name fields', () => {
   const nameOf = (method: string, path: string) => {
     const route = ROUTE_MANIFEST.find((r) => r.method === method && r.path === path);
     const schema = route?.requestSchema as JsonSchema | undefined;
@@ -306,9 +304,9 @@ describe('document name fields', () => {
   };
 
   it.each([
-    ['POST', '/documents'],
-    ['PUT', '/documents/{id}'],
-    ['POST', '/documents/{id}/copy'],
+    ['POST', '/projects'],
+    ['PUT', '/projects/{id}'],
+    ['POST', '/projects/{id}/copy'],
   ])('%s %s states the cap on its name', (method, path) => {
     expect(nameOf(method, path)?.description).toMatch(/At most 60 characters/);
   });

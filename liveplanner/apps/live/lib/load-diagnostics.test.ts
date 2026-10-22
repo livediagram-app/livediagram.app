@@ -16,9 +16,9 @@ const checks = {
 const base: DiagnosticsInput = {
   ownerId: '6f1c2d3e-aaaa-bbbb-cccc-123456789abc',
   now: new Date('2026-10-06T12:00:10.000Z'),
-  location: { pathname: '/document/doc-1', search: '' },
+  location: { pathname: '/project/doc-1', search: '' },
   progress: {
-    step: 'document',
+    step: 'project',
     startedAt: new Date('2026-10-06T12:00:00.000Z').getTime(),
     timedOut: true,
     healing: false,
@@ -36,9 +36,9 @@ const base: DiagnosticsInput = {
 describe('formatDiagnostics', () => {
   it('reports the load, the build and the browser checks', () => {
     const text = formatDiagnostics(base);
-    expect(text).toContain('Page: /document/doc-1');
+    expect(text).toContain('Page: /project/doc-1');
     expect(text).toContain('Build: abc123');
-    expect(text).toContain('Load step: document');
+    expect(text).toContain('Load step: project');
     expect(text).toContain('Load running for: 10.0s');
     expect(text).toContain('Load timed out: yes');
     expect(text).toContain('IndexedDB: TIMEOUT');
@@ -52,18 +52,18 @@ describe('formatDiagnostics', () => {
     expect(text).not.toContain('123456789abc');
   });
 
-  it('names a signed-in account, and flags guest documents not yet moved to it', () => {
+  it('names a signed-in account, and flags guest projects not yet moved to it', () => {
     const text = formatDiagnostics({ ...base, ownerId: 'user_2abcDEF' });
     expect(text).toContain('Signed in: yes (user_2abcDEF)');
-    expect(text).toContain('Guest documents moved to the account: NOT YET');
+    expect(text).toContain('Guest projects moved to the account: NOT YET');
   });
 
   it('never carries a share code', () => {
     const text = formatDiagnostics({
       ...base,
-      location: { pathname: '/document/doc-1', search: '?s=SECRETCODE' },
+      location: { pathname: '/project/doc-1', search: '?s=SECRETCODE' },
     });
-    expect(text).toContain('Page: /document/doc-1 (share link: yes)');
+    expect(text).toContain('Page: /project/doc-1 (share link: yes)');
     expect(text).not.toContain('SECRETCODE');
   });
 

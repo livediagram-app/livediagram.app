@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ArrowElement } from '@liveplanner/document';
+import type { ArrowElement } from '@liveplanner/project';
 import { repinnedArrow } from './arrow-repin';
 
 const imported: ArrowElement = {

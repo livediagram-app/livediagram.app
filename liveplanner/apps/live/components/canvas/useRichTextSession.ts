@@ -6,15 +6,15 @@
 // what this returns.
 //
 // The generic runs ⇄ contentEditable machine (paint, read-back, selection
-// restore, active format, format commands) lives in useRichTextDocument,
+// restore, active format, format commands) lives in useRichTextProject,
 // shared with the note editor (docs/specs/009-elements/rich-text-notes.md).
 
 import { useEffect, useEffectEvent, useLayoutEffect, useRef, useState } from 'react';
-import { runsFromPlainText, runsPlainText, type TextRun } from '@liveplanner/document';
+import { runsFromPlainText, runsPlainText, type TextRun } from '@liveplanner/project';
 import { fitMultilineFontPx } from '@/lib/fit-multiline-text';
 import { effectiveRunStyle, elementRunDefaults, labelBasePx, labelRunPx } from './label-style';
 import { offsetsToDomRange, selectRange } from '@/components/rich-text/rich-text-dom';
-import { useRichTextDocument } from '@/components/rich-text/useRichTextDocument';
+import { useRichTextProject } from '@/components/rich-text/useRichTextProject';
 import { useCommitOnLeave } from '@/hooks/ui/useCommitOnLeave';
 import { track } from '@/lib/telemetry';
 import type { RichTextEditorProps } from './RichTextEditor.types';
@@ -64,7 +64,7 @@ export function useRichTextSession({
   const runSizePx = labelRunPx(multiline, textScale);
   const staticBasePx = labelBasePx(multiline, textSize) * textScale;
 
-  const doc = useRichTextDocument({
+  const doc = useRichTextProject({
     initialRuns: initialRuns && initialRuns.length ? initialRuns : runsFromPlainText(initialLabel),
     runStyle: (run: TextRun) => effectiveRunStyle(run, element, runSizePx),
     defaults: elementRunDefaults(element),
@@ -176,7 +176,7 @@ export function useRichTextSession({
     // session (docs/specs/008-canvas/canvas-and-palette.md): preventDefault on mousedown inside the element
     // context menu (or one of its side flyouts) so clicking a menu control
     // never blurs the editor or drops the live text selection — the same
-    // trick as the toolbar's noFocusSteal, applied at the document capture
+    // trick as the toolbar's noFocusSteal, applied at the project capture
     // phase because the menu is portalled outside the editor's tree. Form
     // controls are exempt (the colour input needs focus for its OS picker,
     // the opacity slider needs the native drag); the editor's onBlur

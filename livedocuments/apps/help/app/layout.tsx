@@ -1,0 +1,88 @@
+import { ErrorTelemetryBoot } from '@/components/ErrorTelemetryBoot';
+import type { Metadata, Viewport } from 'next';
+import type { ReactNode } from 'react';
+import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
+import { BackToTop } from '@/components/BackToTop';
+import { webSiteJsonLd } from '@/lib/structured-data';
+import './globals.css';
+import {
+  APPEARANCE_BOOT_SCRIPT,
+  DARK_READER_LOCK,
+  JsonLd,
+  PageViewBoot,
+  PUBLIC_VIEWPORT,
+  SITE_URL,
+  WebVitalsBoot,
+  trustedHtml,
+  trustedScriptOrigins,
+  trustedTypesBootScript,
+} from '@livedocuments/ui';
+
+// The livedocuments help centre (docs/specs/018-help/help-app.md). Indexable static site served
+// under /help by the router. No third-party scripts, it stays
+// self-host-clean (docs/specs/002-project-scope/open-source-and-business-model.md).
+// Trusted Types before anything else (docs/specs/016-platform/trusted-types.md): the default policy and the
+// violation log, this app's own scripts under its asset prefix, and the Clerk origin read from this build's key
+// (Next inlines only the literal expression).
+const TRUSTED_TYPES_BOOT = trustedTypesBootScript(
+  '/help',
+  trustedScriptOrigins({
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY,
+  }),
+);
+
+export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  // Consistent document titles across the help centre: every page reads
+  // "<Page Title> | livedocuments" (the template reaches every child segment;
+  // the root index spells the suffix out itself). Link previews carry the
+  // bare title, per the shared pageMetadata rule (docs/specs/018-help/help-app.md "SEO").
+  title: {
+    default: 'Help | livedocuments',
+    template: '%s | livedocuments',
+  },
+  description:
+    'Guides, tutorials, and answers for livedocuments. Browse feature documentation, getting-started guides, and troubleshooting.',
+  alternates: { canonical: '/help' },
+  openGraph: {
+    type: 'website',
+    siteName: 'livedocuments Help',
+    locale: 'en_GB',
+  },
+  twitter: {
+    card: 'summary_large_image',
+  },
+  robots: { index: true, follow: true },
+  other: DARK_READER_LOCK,
+  // Favicon is served BY this app: `app/icon.svg` with `app/icon.png` as its fallback (Next auto-injects both,
+  // basePath-aware at /help/icon.svg) so the help centre owns its icon
+  // instead of relying on the router forwarding a bare /icon.svg to another
+  // worker (which 404s in standalone dev).
+};
+
+export const viewport: Viewport = PUBLIC_VIEWPORT;
+
+export default function RootLayout({ children }: { children: ReactNode }) {
+  return (
+    // suppressHydrationWarning: the pre-paint script may add `dark` to <html>.
+    <html lang="en-GB" suppressHydrationWarning>
+      <head>
+        {/* Trusted Types first (docs/specs/016-platform/trusted-types.md). */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(TRUSTED_TYPES_BOOT) }} />
+      </head>
+      <body className="flex min-h-screen flex-col bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-200">
+        {/* Appearance before first paint (docs/specs/004-interface-design/appearance.md). */}
+        <script dangerouslySetInnerHTML={{ __html: trustedHtml(APPEARANCE_BOOT_SCRIPT) }} />
+        <JsonLd data={webSiteJsonLd()} />
+        <ErrorTelemetryBoot />
+        <PageViewBoot />
+        <WebVitalsBoot />
+        <Header />
+        <main className="flex-1 pb-16">{children}</main>
+        <Footer />
+        <BackToTop />
+      </body>
+    </html>
+  );
+}

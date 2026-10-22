@@ -1,79 +1,62 @@
 'use client';
 
-import { PencilIcon, PlusIcon, TrashIcon } from '@/components/primitives/explorer-icons';
 import { useCallback, useEffect, useState, type ComponentProps } from 'react';
 import { Button, CircleXIcon } from '@liveplanner/ui';
-import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { apiGetTeam } from '@/lib/api-client';
 import type { TeamDetailResponse } from '@/lib/api/teams';
-import { SignInIcon } from '@/components/chrome/AuthControls';
-import { PortalMenu } from '@/components/primitives/PortalMenu';
-import { MenuTile } from '@/components/primitives/MenuTiles';
-import { LinkIcon, TeamMemberRow } from './team-pane-parts';
-import { useTeamPaneActions } from './useTeamPaneActions';
-import { lastAdminPinner } from './team-last-admin';
-import { TeamFormModal } from '@/components/dialogs/TeamFormModal';
-import { TeamInviteLinkDialog } from '@/components/dialogs/TeamInviteLinkDialog';
-import { TeamSharedDocuments } from '@/components/panels/TeamSharedDocuments';
+import { manageTeamsUrl } from '@/lib/auth-config';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import { TeamMemberRow } from './team-pane-parts';
+import { TeamSharedProjects } from '@/components/panels/TeamSharedProjects';
 import { TeamTimeline } from './ScopedTimeline';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { LIST_CARD } from '@/components/primitives/surface-classes';
 import { explorerSurfaceFlags, useExplorerSurface } from '@/app/explorer/explorer-surface';
 
-// Right-pane team view for the Explorer (docs/specs/013-workspace/teams.md): one calm card —
-// header (organisation + member count + an overflow menu for the
-// rare actions), the member list with avatars and real names, and a
-// slim invite footer for admins. The last-admin rules are baked into
-// the affordances: the only Admin sees no Leave item, no remove
-// button on their row, and a pinned Admin pill instead of a role
-// select — the server's 409 guard stays as backstop, not as UX.
+// Right-pane team view for the Explorer (docs/specs/013-workspace/teams.md): one calm card — header
+// (member count, and where to manage the team) and the member list with avatars and real names —
+// then the team's shared projects and history. The team itself is run on liveworkspace.app
+// (liveworkspace/docs/accounts.md "Teams"), the same team in every app, so inviting, roles, renaming,
+// leaving and deleting happen there.
 
 export function TeamPane({
   ownerId,
   teamId,
-  clerkUserId,
-  clerkDisplayName,
-  onTeamsChanged,
+  accountUserId,
+  accountDisplayName,
   onLeftTeam,
   onLoadResult,
   moveDests,
-  onMoveDocumentTo,
+  onMoveProjectTo,
   lens,
   onLibraryChange,
 }: {
   ownerId: string;
   teamId: string;
-  clerkUserId: string | null;
+  accountUserId: string | null;
   // The signed-in user's display name, so their own row reads as a
   // person ("Thomas") rather than a placeholder ("You").
-  clerkDisplayName: string | null;
-  // The sidebar list needs a refetch (rename, member count change).
-  onTeamsChanged: () => void;
-  // The caller is no longer a member (left or deleted the team) —
-  // the page bounces selection off the now-dead team node.
+  accountDisplayName: string | null;
+  // The team isn't there for the caller (gone, or they left on liveworkspace.app) — the page bounces
+  // selection off the dead team node.
   onLeftTeam: () => void;
   // Whether the team loaded (true) or 404'd (false). The pane header
   // uses this to drop the team title on a 404 — there's no team to name.
   onLoadResult?: (found: boolean) => void;
-  // Full move destinations + cross-scope router for the shared-documents
-  // move picker (docs/specs/013-workspace/team-shared-documents.md): passed straight through to TeamSharedDocuments
-  // so a team document can be re-homed to My Documents / another team.
-  moveDests?: ComponentProps<typeof TeamSharedDocuments>['moveDests'];
-  onMoveDocumentTo?: ComponentProps<typeof TeamSharedDocuments>['onMoveDocumentTo'];
+  // Full move destinations + cross-scope router for the shared-projects
+  // move picker (docs/specs/013-workspace/team-shared-projects.md): passed straight through to TeamSharedProjects
+  // so a team project can be re-homed to My Projects / another team.
+  moveDests?: ComponentProps<typeof TeamSharedProjects>['moveDests'];
+  onMoveProjectTo?: ComponentProps<typeof TeamSharedProjects>['onMoveProjectTo'];
   // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md), passed straight through.
-  lens?: ComponentProps<typeof TeamSharedDocuments>['lens'];
+  lens?: ComponentProps<typeof TeamSharedProjects>['lens'];
   // Passed straight through: a library this page changed, for the Explorer's own lists.
-  onLibraryChange?: ComponentProps<typeof TeamSharedDocuments>['onLibraryChange'];
+  onLibraryChange?: ComponentProps<typeof TeamSharedProjects>['onLibraryChange'];
 }) {
   const surface = useExplorerSurface();
   const [detail, setDetail] = useState<TeamDetailResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [failed, setFailed] = useState(false);
-  const [editOpen, setEditOpen] = useState(false);
-  const [linkOpen, setLinkOpen] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
-  // The overflow button, held in state so its menu anchors on its first render.
-  const [menuButton, setMenuButton] = useState<HTMLButtonElement | null>(null);
   // Read at its newest when a load lands: callers pass it inline, and it must not make refresh (and
   // with it the load below) change identity on every caller render.
   const onLoadResultRef = useLatest(onLoadResult);
@@ -99,23 +82,6 @@ export function TeamPane({
       ),
     [ownerId, teamId, onLoadResultRef],
   );
-  const refresh = useCallback(() => load(), [load]);
-
-  // Mutation handlers + the notice / invite-form state they own — see
-  // useTeamPaneActions.
-  const {
-    inviteEmail,
-    setInviteEmail,
-    inviteBusy,
-    notice,
-    setNotice,
-    submitEdit,
-    deleteTeam,
-    invite,
-    changeRole,
-    removeMember,
-  } = useTeamPaneActions({ ownerId, teamId, detail, refresh, onTeamsChanged, onLeftTeam });
-
   // A different team (or viewer) starts over from the skeleton, reset during render; the load itself
   // is the effect.
   const [loadedFor, setLoadedFor] = useState({ ownerId, teamId });
@@ -124,8 +90,6 @@ export function TeamPane({
     setDetail(null);
     setLoading(true);
     setFailed(false);
-    setNotice(null);
-    setInviteEmail('');
   }
   useEffect(() => {
     let current = true;
@@ -169,10 +133,10 @@ export function TeamPane({
           </h1>
           <p className="mt-2 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
             This team doesn&apos;t exist, or you&apos;re not a member of it. Ask an admin for an
-            invite, or head back to your own documents.
+            invite, or head back to your own projects.
           </p>
           <Button size="md" onClick={onLeftTeam} className="mt-6 shadow-sm">
-            Back to your documents
+            Back to your projects
           </Button>
         </div>
       </div>
@@ -180,24 +144,13 @@ export function TeamPane({
   }
 
   const { team, members, myRole } = detail;
-  // A workspace frame reaches no team administration (WB62): the team's documents only.
+  // A workspace frame reaches no team administration (WB62): the team's projects only.
   const administration = explorerSurfaceFlags(surface).administration;
-  const isAdmin = myRole === 'admin' && administration;
-  const selfRow = members.find((m) => m.userId !== null && m.userId === clerkUserId) ?? null;
-  // The one rule the whole surface bends around: a team always keeps
-  // at least one Admin (docs/specs/013-workspace/teams.md). When that's you, leaving, removing
-  // your row, and demoting yourself all disappear as options. Only JOINED admins count, as on the
-  // server (team-last-admin.ts).
-  const isLastAdmin = lastAdminPinner(members);
-  const canLeave = administration && selfRow !== null && !isLastAdmin(selfRow);
 
   const joinedCount = members.filter((m) => m.status === 'joined').length;
-  // Pending only: a rejected row is a record of an answer, not an invitation still out.
-  const invitedCount = members.filter((m) => m.status === 'invited').length;
   const headline = [
-    team.organisation,
     `${joinedCount} ${joinedCount === 1 ? 'member' : 'members'}`,
-    invitedCount > 0 ? `${invitedCount} invited` : null,
+    myRole === 'admin' ? 'You’re an admin' : null,
   ]
     .filter(Boolean)
     .join(' · ');
@@ -205,86 +158,19 @@ export function TeamPane({
   return (
     <div className="flex flex-col gap-4">
       <div className={LIST_CARD}>
-        {/* ---------- Header: context line + overflow menu ---------- */}
+        {/* ---------- Header: context line + where the team is run ---------- */}
         <div className="flex items-center justify-between gap-3 border-b border-slate-200 bg-slate-50/70 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-900/40">
           <p className="min-w-0 truncate text-xs text-slate-500 dark:text-slate-400">{headline}</p>
-          <div className="flex shrink-0 items-center gap-1">
-            {isAdmin ? (
-              <button
-                type="button"
-                onClick={() => setLinkOpen(true)}
-                aria-label="Invite by Link"
-                // Its glyph alone on a phone, 23px tall: padded to 44px on a touch screen, upward and downward only,
-                // so the Team actions ⋯ beside it keeps its own taps.
-                className="relative touch-target-y inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
+          {administration ? (
+            <div className="flex shrink-0 items-center gap-1">
+              <a
+                href={manageTeamsUrl}
+                className="relative touch-target-y inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-brand-700 transition hover:bg-brand-50 dark:text-brand-300 dark:hover:bg-brand-500/10"
               >
-                <LinkIcon />
-                <span className="hidden sm:inline">Invite by Link</span>
-              </button>
-            ) : null}
-            {isAdmin || canLeave ? (
-              <EllipsisTriggerButton
-                ref={setMenuButton}
-                label="Team actions"
-                expanded={menuOpen}
-                onClick={() => setMenuOpen((o) => !o)}
-              />
-            ) : null}
-          </div>
-          {menuOpen ? (
-            <PortalMenu anchor={menuButton} placement="below" onClose={() => setMenuOpen(false)}>
-              {/* Icon-over-label tiles; columns track the role-gated items
-                  (admin sees Edit + Delete, a leavable member sees Leave) so
-                  a shorter menu never renders a fractional-width tile. */}
-              <div
-                className={`grid gap-1 px-2 py-1.5 ${
-                  isAdmin && canLeave ? 'grid-cols-3' : isAdmin ? 'grid-cols-2' : 'grid-cols-1'
-                }`}
-              >
-                {isAdmin ? (
-                  <MenuTile
-                    icon={
-                      <span className="[&_svg]:h-5 [&_svg]:w-5">
-                        <PencilIcon />
-                      </span>
-                    }
-                    label="Edit Team"
-                    onClick={() => {
-                      setEditOpen(true);
-                      setMenuOpen(false);
-                    }}
-                  />
-                ) : null}
-                {canLeave ? (
-                  <MenuTile
-                    icon={
-                      <span className="[&_svg]:h-5 [&_svg]:w-5">
-                        <SignInIcon />
-                      </span>
-                    }
-                    label="Leave Team"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      if (selfRow) void removeMember(selfRow, true);
-                    }}
-                  />
-                ) : null}
-                {isAdmin ? (
-                  <MenuTile
-                    icon={
-                      <span className="[&_svg]:h-5 [&_svg]:w-5">
-                        <TrashIcon />
-                      </span>
-                    }
-                    label="Delete Team"
-                    onClick={() => {
-                      setMenuOpen(false);
-                      void deleteTeam();
-                    }}
-                  />
-                ) : null}
-              </div>
-            </PortalMenu>
+                Manage on liveworkspace.app
+              </a>
+              <HelpArticleLink article="teamRolesAndInvites" variant="icon" />
+            </div>
           ) : null}
         </div>
 
@@ -294,79 +180,27 @@ export function TeamPane({
             <TeamMemberRow
               key={m.id}
               m={m}
-              clerkUserId={clerkUserId}
-              clerkDisplayName={clerkDisplayName}
-              isAdmin={isAdmin}
-              pinnedAdmin={isLastAdmin(m)}
-              onChangeRole={(member, role) => void changeRole(member, role)}
-              onRemove={(member) => void removeMember(member, false)}
+              accountUserId={accountUserId}
+              accountDisplayName={accountDisplayName}
             />
           ))}
         </ul>
-
-        {/* ---------- Notice + invite footer ---------- */}
-        {notice ? (
-          <p className="border-t border-amber-100 bg-amber-50 px-4 py-2 text-xs text-amber-800 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-200">
-            {notice}
-          </p>
-        ) : null}
-        {isAdmin ? (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              void invite();
-            }}
-            className="flex items-center gap-2 border-t border-slate-200 bg-slate-50/40 px-4 py-2.5 dark:border-slate-700 dark:bg-slate-900/30"
-          >
-            <span className="shrink-0 text-slate-300 dark:text-slate-600">
-              <PlusIcon />
-            </span>
-            <input
-              type="email"
-              value={inviteEmail}
-              onChange={(e) => setInviteEmail(e.target.value)}
-              placeholder="Add your team by email address, they will receive an invite."
-              aria-label="Invite by email address"
-              className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
-            />
-            <Button
-              type="submit"
-              size="xs"
-              disabled={!inviteEmail.trim() || inviteBusy}
-              className="shrink-0 py-1 shadow-sm"
-            >
-              Invite
-            </Button>
-          </form>
-        ) : null}
       </div>
 
-      {/* ---------- Shared documents (docs/specs/013-workspace/team-shared-documents.md): the team's folder
-          tree + documents, managed by every joined member. ---------- */}
+      {/* ---------- Shared projects (docs/specs/013-workspace/team-shared-projects.md): the team's folder
+          tree + projects, managed by every joined member. ---------- */}
       {/* key on teamId so switching teams remounts the library and
           resets its open-folder `spot` — otherwise a subfolder open in
           team A leaks into team B as a stale, empty folder view. */}
-      <TeamSharedDocuments
+      <TeamSharedProjects
         key={`library-${teamId}`}
         ownerId={ownerId}
         teamId={teamId}
         teamName={team.name}
         moveDests={moveDests}
-        onMoveDocumentTo={onMoveDocumentTo}
+        onMoveProjectTo={onMoveProjectTo}
         lens={lens}
         onLibraryChange={onLibraryChange}
-      />
-
-      <TeamFormModal
-        open={editOpen}
-        title="Edit Team"
-        submitLabel="Save"
-        initial={{ name: team.name, organisation: team.organisation }}
-        onSubmit={(values) => {
-          setEditOpen(false);
-          void submitEdit(values);
-        }}
-        onCancel={() => setEditOpen(false)}
       />
 
       {/* The team's own history (docs/specs/013-workspace/timeline.md §3.4). Distinct from each
@@ -382,15 +216,6 @@ export function TeamPane({
           differs from the library's: they are siblings, and React needs
           sibling keys to be unique. */}
       <TeamTimeline key={`timeline-${teamId}`} ownerId={ownerId} teamId={teamId} />
-
-      <TeamInviteLinkDialog
-        open={linkOpen}
-        onClose={() => setLinkOpen(false)}
-        ownerId={ownerId}
-        teamId={teamId}
-        inviteLink={detail.inviteLink}
-        onInviteLinkChange={(link) => setDetail((d) => (d ? { ...d, inviteLink: link } : d))}
-      />
     </div>
   );
 }

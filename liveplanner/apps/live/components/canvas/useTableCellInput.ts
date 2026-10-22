@@ -5,7 +5,7 @@ import {
   pasteIntoTable,
   setTableCell,
   type TableElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { composedWithAlt } from '@/lib/composed-key';
 
 // The selected-cell INPUT layer for TableView (docs/specs/008-canvas/canvas-and-palette.md Table): the
@@ -132,7 +132,7 @@ export function useTableCellInput({
   // Paste into the SELECTED cell without entering the editor: spreadsheet /
   // TSV text fills + grows the grid from that cell, a single value replaces
   // the cell's text. Registered in the CAPTURE phase so it wins over the
-  // editor's document-level paste (which would drop copied elements /
+  // editor's project-level paste (which would drop copied elements /
   // images on the canvas instead).
   useEffect(() => {
     if (!selectedCell || editing || readOnly || element.locked) return;

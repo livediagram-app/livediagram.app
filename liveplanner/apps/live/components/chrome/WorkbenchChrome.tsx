@@ -2,9 +2,9 @@
 
 // The chrome of the editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md
 // "Presentation and UX", WB34, WB59): an **Open in liveplanner** link at the tab bar's right end, beside
-// Search and Settings, where no docked panel can cover it, that opens the document (or, in a workspace frame's
+// Search and Settings, where no docked panel can cover it, that opens the project (or, in a workspace frame's
 // Explorer, the view) in a full tab; a workspace frame's **Back** at the tab bar's left end, to where the
-// document was opened from; and, once the session has ended unrenewed or revoked, the line at the top centre that
+// project was opened from; and, once the session has ended unrenewed or revoked, the line at the top centre that
 // says how to edit again.
 import type { WorkbenchEndReason } from '@liveplanner/api-schema';
 import { lucideArrowLeft } from '@liveplanner/icons/lucide';
@@ -19,11 +19,11 @@ function reconnectLine(workbenchName: string): string {
 // The tab bar's last control; labelled like its neighbours from `sm` up, an icon on a phone.
 const BackGlyph = lucideGlyph(lucideArrowLeft, 14);
 
-// `href`: the app's own address for what the frame shows (`/document/<id>`, or an Explorer view's).
+// `href`: the app's own address for what the frame shows (`/project/<id>`, or an Explorer view's).
 export function WorkbenchOpenLink({
   href,
   labelled,
-  description = 'Opens this document in a full tab.',
+  description = 'Opens this project in a full tab.',
 }: {
   href: string;
   labelled: boolean;

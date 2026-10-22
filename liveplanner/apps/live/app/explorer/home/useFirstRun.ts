@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { clerkEnabled } from '@/lib/clerk-config';
+import { signInEnabled } from '@/lib/auth-config';
 import { useOptionalExplorer } from '../ExplorerContext';
 import { isFirstRun } from './first-run';
 
@@ -13,12 +13,12 @@ import { isFirstRun } from './first-run';
 // saw for this person (`heroFirstRun`) until the lists land: no flash of the wrong greeting. A person this browser has
 // never seen is taken as new, which a newcomer is. The body waits for the real answer (`firstRun`).
 
-const SEEN_KEY = 'liveplanner:v2:home-has-documents';
+const SEEN_KEY = 'liveplanner:v2:home-has-projects';
 
 // The answer this browser last saw. A guest's id resolves a beat after the Explorer mounts; until it does, the
 // browser's last answer stands for whoever is here (it is almost always the same person), so a returning guest
 // never flashes the welcome nor fetches its previews.
-function rememberedHasDocuments(ownerId: string | null): boolean | undefined {
+function rememberedHasProjects(ownerId: string | null): boolean | undefined {
   try {
     const raw = localStorage.getItem(SEEN_KEY);
     if (!raw) return undefined;
@@ -39,15 +39,15 @@ export function useFirstRun(): {
   const explorer = useOptionalExplorer();
   const ownerId = explorer?.ownerId ?? null;
   const loading = explorer?.loading ?? true;
-  const failed = Boolean(explorer?.failedReads.documents || explorer?.failedReads.shared);
+  const failed = Boolean(explorer?.failedReads.projects || explorer?.failedReads.shared);
   const firstRun = explorer
     ? isFirstRun({
         loading: explorer.loading,
         failed,
-        documents: explorer.documents.length,
+        projects: explorer.projects.length,
         shared: explorer.shared.length,
-        teamDocuments: explorer.teamDocuments.length,
-        offlineDocuments: explorer.offlineDocuments.length,
+        teamProjects: explorer.teamProjects.length,
+        offlineProjects: explorer.offlineProjects.length,
       })
     : false;
 
@@ -65,9 +65,9 @@ export function useFirstRun(): {
   if (!explorer)
     return { firstRun: false, heroFirstRun: false, signedIn: false, offerSignIn: false };
   // Until the lists land: new unless this browser last saw them hold something.
-  const heroFirstRun = loading ? rememberedHasDocuments(ownerId) !== true : firstRun;
+  const heroFirstRun = loading ? rememberedHasProjects(ownerId) !== true : firstRun;
   // A guest on a deployment with sign-in may simply have been signed out.
-  const signedIn = Boolean(explorer.clerkUserId);
-  const offerSignIn = clerkEnabled && !signedIn;
+  const signedIn = Boolean(explorer.accountUserId);
+  const offerSignIn = signInEnabled && !signedIn;
   return { firstRun, heroFirstRun, signedIn, offerSignIn };
 }

@@ -1,9 +1,9 @@
 // Sheets riding the clipboard (docs/specs/029-sheets/sheet.md "Copying a Sheet element"): a copied Sheet element
-// carries its sheet's cells on the clipboard, so a paste into another document, which cannot copy a sheet it does
+// carries its sheet's cells on the clipboard, so a paste into another project, which cannot copy a sheet it does
 // not have, still makes the copy. The sheet chunk registers what it can read; a paste stashes what arrived; the
 // pasted Sheet takes its seed when it first draws. Main bundle, and tiny: from the engine, types and the template
 // catalogue's ids and names only.
-import { isDefaultTabName, newPlanSheetId } from '@liveplanner/document';
+import { isDefaultTabName, newPlanSheetId } from '@liveplanner/project';
 import {
   SHEET_TEMPLATE_IDS,
   SHEET_TEMPLATES,
@@ -12,7 +12,7 @@ import {
 } from '@liveplanner/sheets';
 
 // The clipboard's limit for one sheet (the sheet store's write limit): a larger one pastes only within its
-// document, where the copy is made on the server.
+// project, where the copy is made on the server.
 export const CLIPBOARD_SHEET_CELLS_MAX = 5_000;
 
 let source: ((sheetId: string) => SheetJson | undefined) | null = null;

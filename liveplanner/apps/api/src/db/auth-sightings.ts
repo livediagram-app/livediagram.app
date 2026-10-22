@@ -1,21 +1,9 @@
-// auth_sessions + auth_accounts: first sightings of a Clerk
-// session and of a Clerk account, which is how the api worker counts
-// Session·SignedIn / SignedUp exactly once each (docs/specs/017-telemetry/telemetry.md). Both writes are
+// auth_accounts: the first sighting of each account, which is how the api
+// worker tells a sign-up from a sign-in (docs/specs/017-telemetry/telemetry.md).
 // INSERT OR IGNORE keyed on the id, so "was this the first time?" is answered
-// atomically by the row count: two concurrent requests carrying the same new
-// session can't both claim it.
+// atomically by the row count.
 
 import type { Env } from '../types';
-
-// True only when this call created the row: the session had never been seen.
-export async function recordSessionSighting(env: Env, sessionId: string): Promise<boolean> {
-  const res = await env.DB.prepare(
-    'INSERT OR IGNORE INTO auth_sessions (session_id, first_seen_at) VALUES (?, ?)',
-  )
-    .bind(sessionId, Date.now())
-    .run();
-  return res.meta.changes === 1;
-}
 
 // True only when this call created the row: the account had never been seen.
 export async function recordAccountSighting(env: Env, ownerId: string): Promise<boolean> {
@@ -25,15 +13,4 @@ export async function recordAccountSighting(env: Env, ownerId: string): Promise<
     .bind(ownerId, Date.now())
     .run();
   return res.meta.changes === 1;
-}
-
-// Daily retention sweep. A session id carries no owner, so this is a storage
-// bound rather than a privacy one; a session still alive past the floor would
-// be re-seen, and its long-verified first factor keeps it from counting again
-// (see auth/session-telemetry.ts).
-export async function deleteOldSessionSightings(env: Env, cutoffMs: number): Promise<number> {
-  const res = await env.DB.prepare('DELETE FROM auth_sessions WHERE first_seen_at < ?')
-    .bind(cutoffMs)
-    .run();
-  return res.meta.changes ?? 0;
 }

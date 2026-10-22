@@ -12,7 +12,7 @@
 //
 // Mutations run through `tickTabs` (NO history push), the same carve-out
 // comments use: Cmd+Z must never silently unassign someone's work. The
-// live-state graft in @liveplanner/document carries `action` across
+// live-state graft in @liveplanner/project carries `action` across
 // undo/redo restores for the same reason.
 //
 // An Action panel holds a LIST (docs/specs/012-collaboration/action-panel.md "The data"), so every mutation
@@ -29,8 +29,8 @@ import {
   type ElementAction,
   type ElementActionAssignee,
   type ElementActionStatus,
-} from '@liveplanner/document';
-import type { Tab } from '@liveplanner/document';
+} from '@liveplanner/project';
+import type { Tab } from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 

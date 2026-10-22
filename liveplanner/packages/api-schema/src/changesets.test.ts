@@ -61,7 +61,7 @@ describe('limits', () => {
     expect(CHANGESET_RELAY_MAX_BYTES).toBeLessThan(256 * 1024);
   });
 
-  it('retains changesets as long as the Trash keeps a document, and caps the summary at 80', () => {
+  it('retains changesets as long as the Trash keeps a project, and caps the summary at 80', () => {
     expect(CHANGESET_RETENTION_DAYS).toBe(TRASH_RETENTION_DAYS);
     expect(CHANGESET_SUMMARY_MAX).toBe(80);
   });

@@ -6,14 +6,14 @@
 // a lingering image so the next paste didn't re-drop it. That works inside one
 // editor instance, and only there — the buffer is component state, so elements
 // could not cross a browser tab, a second window, or a reload, which is exactly
-// where "copy this and put it in that document" happens.
+// where "copy this and put it in that project" happens.
 //
 // So the real elements go on the clipboard now, as text. Text rather than a
 // custom MIME type because `navigator.clipboard.writeText` is the one write
 // that works from a keydown handler in every browser we support; the richer
 // `ClipboardItem` API is gated differently per browser and buys nothing here.
 //
-// The envelope mirrors the tab export's (`export-tab-text.ts` in `@liveplanner/document`): a `kind`
+// The envelope mirrors the tab export's (`export-tab-text.ts` in `@liveplanner/project`): a `kind`
 // discriminator so we never try to paste somebody else's JSON, and a numeric
 // `schemaVersion` so a future breaking change can be refused with a clear
 // message instead of pasting nonsense.
@@ -23,11 +23,11 @@ import {
   migrateIncomingElements,
   ORIGINAL_ONLY_FIELDS,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { SheetJson } from '@liveplanner/sheets';
 import { sheetsForClipboard, stashSheetSeeds } from './sheet-seeds';
 
-// 2: freehand points are packed (docs/specs/006-document/stroke-points.md); an older editor
+// 2: freehand points are packed (docs/specs/006-project/stroke-points.md); an older editor
 // refuses a version 2 payload rather than pasting strokes it cannot draw.
 export const CLIPBOARD_SCHEMA_VERSION = 2;
 export const CLIPBOARD_KIND = 'liveplanner.elements';
@@ -58,11 +58,11 @@ type ClipboardEnvelope = {
 
 // Fields that carry WHO did something rather than WHAT the element is. They are
 // stripped on the way out, so a copy handed to another person (or pasted into a
-// document with a different participant set) never arrives carrying somebody
+// project with a different participant set) never arrives carrying somebody
 // else's name against a comment or their answer against a poll.
 //
 // Comments go entirely rather than being anonymised: a thread is a conversation
-// about the original element, and re-attaching it to a copy in another document
+// about the original element, and re-attaching it to a copy in another project
 // misrepresents it whether or not the names survive. `responses` (docs/specs/012-collaboration/participant-responses.md) go
 // for the same reason — a vote is cast in a session, not a property of a shape.
 // An assigned `action` (docs/specs/012-collaboration/assigned-actions.md) is work handed to a person, and carries its own
@@ -94,7 +94,7 @@ export function serialiseElements(elements: Element[]): string {
     ...(sheets.length ? { sheets } : {}),
   };
   const text = JSON.stringify(envelope);
-  // Sheets past the clipboard's size travel without their cells (the copy is then made only within the document).
+  // Sheets past the clipboard's size travel without their cells (the copy is then made only within the project).
   return text.length > MAX_CLIPBOARD_BYTES && sheets.length
     ? JSON.stringify({ ...envelope, sheets: undefined })
     : text;
@@ -198,7 +198,7 @@ export function parseElementsPayload(text: string | null | undefined): Element[]
   // Per-element validation, dropping failures rather than refusing the payload:
   // one unreadable element out of forty should cost you that element, not the
   // paste. isValidElement is the same guard the api and the AI ingest path use. A payload from an
-  // older editor carries former stored shapes, migrated first (docs/specs/006-document/stroke-points.md).
+  // older editor carries former stored shapes, migrated first (docs/specs/006-project/stroke-points.md).
   const elements = migrateIncomingElements(env.elements).filter(isValidElement);
   if (elements.length === 0) return null;
 

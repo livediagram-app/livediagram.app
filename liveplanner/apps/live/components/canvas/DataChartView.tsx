@@ -2,7 +2,7 @@
 
 // The pie, bar or line chart view for a chart element (docs/specs/009-elements/pie-chart.md): the one a chart drawn
 // from a sheet range draws its live data through (docs/specs/029-sheets/sheet.md "Charts").
-import { isBarShape, isPieShape, type ShapeElement } from '@liveplanner/document';
+import { isBarShape, isPieShape, type ShapeElement } from '@liveplanner/project';
 import { PieChartView } from './PieChartView';
 import { BarChartView } from './BarChartView';
 import { LineChartView } from './LineChartView';

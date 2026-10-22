@@ -12,7 +12,7 @@ import {
   type DashboardTabOf,
   type ShapeElement,
   type SheetMetricKind,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { fitsSlot } from './slot-fit';
 
 export type DashboardItem =
@@ -24,7 +24,7 @@ export type DashboardItem =
   | { kind: 'card'; card: DashboardCardKind }
   // A figure from a Sheet (Add to Slot's From a Sheet), its source chosen once placed.
   | { kind: 'sheet-metric'; metric: SheetMetricKind }
-  // A figure from a form (Add to Slot's Form Metrics), the document's form chosen as it is placed.
+  // A figure from a form (Add to Slot's Form Metrics), the project's form chosen as it is placed.
   | { kind: 'form-metric'; metric: FormMetricKind }
   // A chart from a Sheet (Add to Slot's Sheet Chart): `chart` once chosen (SheetChartSource), the element it places.
   | { kind: 'sheet-chart'; chart?: ShapeElement | undefined }
@@ -77,9 +77,7 @@ function tabItemOf(rest: string): DashboardItem | null {
   const at = rest.indexOf(':');
   const of = rest.slice(0, at);
   const tabId = rest.slice(at + 1);
-  return at > 0 && tabId && (of === 'board' || of === 'sheet' || of === 'diagram')
-    ? { kind: 'tab', tabId, of }
-    : null;
+  return at > 0 && tabId && (of === 'board' || of === 'sheet') ? { kind: 'tab', tabId, of } : null;
 }
 
 // The cards a slot takes that are written on the page, and a Cards tile's choice (`card:<kind>`).

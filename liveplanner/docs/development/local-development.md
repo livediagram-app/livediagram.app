@@ -44,12 +44,11 @@ Turbo spins up all eight dev servers in parallel:
 | `apps/router`    | `http://localhost:3100` — **everything on one port**, stitched like production                     |
 | `apps/marketing` | `http://localhost:3101`                                                                            |
 | `apps/live`      | `http://localhost:3102` (clean routes: /new, /explorer, ...)                                       |
-| `apps/telemetry` | `http://localhost:3103/telemetry`                                                                  |
 | `apps/help`      | `http://localhost:3104/help`                                                                       |
 | `apps/api`       | `http://localhost:8887/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8888` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
 
-The `router` dev server (`wrangler dev --env local`, port 3100) gives you the production URL shape locally: `/` is marketing, `/new` and `/document/*` are the editor, plus `/telemetry`, `/help` and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
+The `router` dev server (`wrangler dev --env local`, port 3100) gives you the production URL shape locally: `/` is marketing, `/new` and `/project/*` are the editor, plus `/telemetry`, `/help` and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 
 **Use port 3100 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api` — correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3102` cannot reach the api worker until you tell it where the worker is:
 
@@ -60,11 +59,11 @@ NEXT_PUBLIC_API_BASE=http://localhost:8887/api
 
 A remote api works too, and there are now two of them: `https://staging.liveplanner.app/api`
 reaches [staging](../specs/016-platform/staging-environment.md), which has its own database and is
-the one to reach for; the production api reads and writes real people's documents.
+the one to reach for; the production api reads and writes real people's projects.
 
-Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry` and `apps/help` read the same variable: the dashboard needs it to show anything on `:3103`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.liveplanner.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
+Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the project”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/help` reads the same variable. Telemetry is liveworkspace's (liveworkspace/docs/telemetry.md): to see local events, run its service (`wrangler dev` in liveworkspace/apps/telemetry, port 8788) and point the frontends at it with `NEXT_PUBLIC_TELEMETRY_URL=http://localhost:8790/api/telemetry`, and the api and mcp workers with `TELEMETRY_URL` and `TELEMETRY_KEY` in their `.dev.vars`.
 
-The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3100/new`. Documents persist to the local D1 file the api worker creates on first start. (On `http://localhost:3102/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
+The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3100/new`. Projects persist to the local D1 file the api worker creates on first start. (On `http://localhost:3102/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
 
 ## Scoping commands to one workspace
 
@@ -80,88 +79,79 @@ Workspace names follow the pattern `@liveplanner/<app-or-package-folder-name>`.
 
 Run from the repo root:
 
-| Command                                                         | What it does                                                                                                                                                                                                                                                                                                                                                                          |
-| --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `pnpm install`                                                  | Install all workspace deps.                                                                                                                                                                                                                                                                                                                                                           |
-| `pnpm dev`                                                      | Start all dev servers in parallel (`turbo run dev`).                                                                                                                                                                                                                                                                                                                                  |
-| `pnpm build`                                                    | Production build across the repo (`turbo run build`).                                                                                                                                                                                                                                                                                                                                 |
-| `pnpm lint`                                                     | oxlint across the repo (`turbo run lint`).                                                                                                                                                                                                                                                                                                                                            |
-| `pnpm typecheck`                                                | `tsc --noEmit` across every workspace (`turbo run typecheck`).                                                                                                                                                                                                                                                                                                                        |
-| `pnpm test`                                                     | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                                                                                                                                                      |
-| `pnpm --filter @liveplanner/live perf:canvas`                   | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/live/test-results/perf/`. Needs a fresh `next build`; set `E2E_LIVE_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev`. Reports, never fails on a miss. |
-| `pnpm --filter @liveplanner/live test:e2e`                      | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                          |
-| `pnpm --filter @liveplanner/live test:e2e:clerk-stub`           | The signed-in specs (`apps/live/e2e/clerk-stub/`) against `.next/out-clerk-stub/`; run `pnpm --filter @liveplanner/live build:clerk-stub` first. Boots its own stack on `:3115` / `:8888` / `:3116`.                                                                                                                                                                                  |
-| `pnpm --filter @liveplanner/live test:e2e:armed`                | The armed guest-signature specs (`apps/live/e2e/armed/`) with guest signature enforcement on, against the guest-mode `out/`. Boots its own stack on `:3017` / `:8789` / `:3018`.                                                                                                                                                                                                      |
-| `pnpm --filter @liveplanner/cli build`                          | Bundle the CLI into `apps/cli/dist/liveplanner.mjs` (see [Running the CLI from source](#running-the-cli-from-source-optional)).                                                                                                                                                                                                                                                       |
-| `pnpm format`                                                   | Prettier write across the repo.                                                                                                                                                                                                                                                                                                                                                       |
-| `pnpm format:check`                                             | Prettier check (this is what CI runs).                                                                                                                                                                                                                                                                                                                                                |
-| `pnpm staging:check`                                            | Dry-run the `[env.staging]` wrangler configs and print the resolved bindings (CI runs it).                                                                                                                                                                                                                                                                                            |
-| `pnpm licences`                                                 | Regenerate the `/licences` page data (`apps/marketing/generated/`, `public/licences/`) from what every app bundles ([Third-party licences](../specs/002-project-scope/third-party-licences.md)); the marketing build runs it itself.                                                                                                                                                  |
-| `pnpm icons:vendor`                                             | Regenerate the vendored Lucide glyphs from `packages/icons/lucide-manifest.json` ([Iconography](../specs/004-interface-design/iconography.md)).                                                                                                                                                                                                                                       |
-| `pnpm icons:sheet`                                              | Render every editor icon at 1x and 4x into HTML + PNG contact sheets (`$ICON_SHEET_DIR`, default `/tmp/icon-sheet`) for review.                                                                                                                                                                                                                                                       |
-| `pnpm bench:stroke-points`                                      | Measure packed stroke points against the former `{ nx, ny }` shape on a synthesised board: tab bytes, allocations, parse and draw time, accuracy ([Stroke points](../specs/006-document/stroke-points.md)).                                                                                                                                                                           |
-| `pnpm --filter @liveplanner/document stroke-points <file.json>` | Print a stored tab or document file with every freehand's `packedPoints` expanded into readable `{ nx, ny, p }` points (`-` reads stdin).                                                                                                                                                                                                                                             |
+| Command                                                        | What it does                                                                                                                                                                                                                                                                                                                                                                          |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm install`                                                 | Install all workspace deps.                                                                                                                                                                                                                                                                                                                                                           |
+| `pnpm dev`                                                     | Start all dev servers in parallel (`turbo run dev`).                                                                                                                                                                                                                                                                                                                                  |
+| `pnpm build`                                                   | Production build across the repo (`turbo run build`).                                                                                                                                                                                                                                                                                                                                 |
+| `pnpm lint`                                                    | oxlint across the repo (`turbo run lint`).                                                                                                                                                                                                                                                                                                                                            |
+| `pnpm typecheck`                                               | `tsc --noEmit` across every workspace (`turbo run typecheck`).                                                                                                                                                                                                                                                                                                                        |
+| `pnpm test`                                                    | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                                                                                                                                                      |
+| `pnpm --filter @liveplanner/live perf:canvas`                  | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/live/test-results/perf/`. Needs a fresh `next build`; set `E2E_LIVE_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev`. Reports, never fails on a miss. |
+| `pnpm --filter @liveplanner/live test:e2e`                     | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                          |
+| `pnpm --filter @liveplanner/live test:e2e:signed-in`           | The signed-in specs (`apps/live/e2e/signed-in/`) against `.next/out-signed-in/`; run `pnpm --filter @liveplanner/live build:signed-in` first. Boots its own stack on `:3115` / `:8888` / `:3116`.                                                                                                                                                                                     |
+| `pnpm --filter @liveplanner/live test:e2e:armed`               | The armed guest-signature specs (`apps/live/e2e/armed/`) with guest signature enforcement on, against the guest-mode `out/`. Boots its own stack on `:3017` / `:8789` / `:3018`.                                                                                                                                                                                                      |
+| `pnpm --filter @liveplanner/cli build`                         | Bundle the CLI into `apps/cli/dist/liveplanner.mjs` (see [Running the CLI from source](#running-the-cli-from-source-optional)).                                                                                                                                                                                                                                                       |
+| `pnpm format`                                                  | Prettier write across the repo.                                                                                                                                                                                                                                                                                                                                                       |
+| `pnpm format:check`                                            | Prettier check (this is what CI runs).                                                                                                                                                                                                                                                                                                                                                |
+| `pnpm staging:check`                                           | Dry-run the `[env.staging]` wrangler configs and print the resolved bindings (CI runs it).                                                                                                                                                                                                                                                                                            |
+| `pnpm licences`                                                | Regenerate the `/licences` page data (`apps/marketing/generated/`, `public/licences/`) from what every app bundles ([Third-party licences](../specs/002-project-scope/third-party-licences.md)); the marketing build runs it itself.                                                                                                                                                  |
+| `pnpm icons:vendor`                                            | Regenerate the vendored Lucide glyphs from `packages/icons/lucide-manifest.json` ([Iconography](../specs/004-interface-design/iconography.md)).                                                                                                                                                                                                                                       |
+| `pnpm icons:sheet`                                             | Render every editor icon at 1x and 4x into HTML + PNG contact sheets (`$ICON_SHEET_DIR`, default `/tmp/icon-sheet`) for review.                                                                                                                                                                                                                                                       |
+| `pnpm bench:stroke-points`                                     | Measure packed stroke points against the former `{ nx, ny }` shape on a synthesised board: tab bytes, allocations, parse and draw time, accuracy ([Stroke points](../specs/006-project/stroke-points.md)).                                                                                                                                                                            |
+| `pnpm --filter @liveplanner/project stroke-points <file.json>` | Print a stored tab or project file with every freehand's `packedPoints` expanded into readable `{ nx, ny, p }` points (`-` reads stdin).                                                                                                                                                                                                                                              |
 
 Turbo caches results, so re-running with no changes is a no-op.
 
-## Enabling Clerk auth locally (optional)
+## Enabling sign-in locally (optional)
 
-The editor works without Clerk. To exercise the signed-in code paths:
+The editor works without sign-in. To exercise the signed-in code paths, run liveworkspace beside it and register liveplanner with its accounts API:
 
-1. Create a Clerk application in the [Clerk dashboard](https://dashboard.clerk.com).
-2. Copy the **publishable key** and the **JWKS URL**.
-3. Drop them into the two env files:
+1. Start liveworkspace (first-time setup is in `liveworkspace/README.md`, "Local development"): `pnpm dev:workspace` from the repo root runs the site, with the sign-in pages, on `http://localhost:3300`, and the accounts and telemetry Workers behind it, as liveworkspace.app has them. Locally the accounts Worker prints each sign-in code in its own output instead of emailing it.
+2. Register liveplanner once against it. `http://localhost/api` is the one resource a development accounts Worker issues tokens for (`RESOURCES` in liveworkspace/apps/accounts/src/resources.ts). The secret is printed once:
+
+   ```sh
+   ADMIN_TOKEN=local-admin-token node liveworkspace/apps/accounts/scripts/register-client.ts \
+     --accounts http://localhost:3300 \
+     --name liveplanner-dev \
+     --redirect http://localhost:3100/api/auth/callback \
+     --resource http://localhost/api
+   ```
+
+3. Drop the values into the two env files:
 
    ```sh
    # apps/live/.env.local (gitignored)
-   NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
+   NEXT_PUBLIC_SIGN_IN_ENABLED=true
 
    # apps/api/.dev.vars (gitignored)
-   CLERK_JWKS_URL=https://<your-instance>.clerk.accounts.dev/.well-known/jwks.json
+   ACCOUNTS_URL=http://localhost:3300
+   API_RESOURCE=http://localhost/api
+   ACCOUNTS_CLIENT_ID=...
+   ACCOUNTS_CLIENT_SECRET=...
+   AUTH_ORIGIN=http://localhost:3100
    ```
 
-4. Restart `pnpm dev`.
+4. Restart `pnpm dev` and open the app through the router (`http://localhost:3100`), so the sign-in cookies and the callback share one origin.
 
-To also show the **"Continue with Google"** button on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (dev instances can use Clerk's shared Google credentials with no Google Cloud setup) and add to `apps/live/.env.local`:
+With these set, `/sign-in` hands off to the accounts site and comes back signed in. The api worker verifies the access token and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
 
-```sh
-NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true
-```
-
-It only takes effect when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is also set, and like any `NEXT_PUBLIC_*` change it needs a `pnpm dev` restart to bake in. Leave it unset to keep just the email-code flow.
-
-With these set the editor's sign-in flow at `/sign-in` becomes functional. The api worker verifies the Bearer JWT and derives the owner id from the `sub` claim instead of falling back to the `X-Owner-Id` header.
-
-Without these set: the api worker silently treats every request as a guest (the `X-Owner-Id` header path), and the live frontend's ClerkProvider becomes a pass-through that renders the editor without any auth UI. This is the default for any deployment without Clerk configured. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
+Without these set: the api worker silently treats every request as a guest (the `X-Owner-Id` header path), and the live frontend mounts no session bridge, so it renders the editor without any auth UI. This is the default for any deployment without sign-in configured. See [Auth + guest access](../specs/014-identity/auth-and-guest-access.md) for the full hybrid model.
 
 ## Running the CLI from source (optional)
 
-The [CLI](../specs/015-api/cli.md) acts only with an API token, so it needs a host with sign-in: enable Clerk as
+The [CLI](../specs/015-api/cli.md) acts only with an API token, so it needs a host with sign-in: enable sign-in as
 above, sign in, and create a token in Settings › API Tokens. Then build the bundle and point it at the local api:
 
 ```bash
 pnpm --filter @liveplanner/cli build
-export LIVEPLANNER_HOST=http://localhost:8887 LIVEPLANNER_TOKEN=lvd_...
-apps/cli/dist/liveplanner.mjs document ls
+export LIVEPLANNER_HOST=http://localhost:8887 LIVEPLANNER_TOKEN=lwt_...
+apps/cli/dist/liveplanner.mjs project ls
 ```
 
 `LIVEPLANNER_DEBUG=1` prints each decision and request as a `[cli]` line on stderr. The CLI keeps its files under
 `$XDG_CONFIG_HOME/liveplanner` and `$XDG_CACHE_HOME/liveplanner` (`~/.config` and `~/.cache` by default); point
 both at a scratch directory to keep a test run apart from your own sign-in.
-
-## Enabling AI assistance locally (optional)
-
-The AI panel ([AI Assistance](../specs/007-editor/ai-assistance.md)) is hidden entirely unless the api worker has a model key. To turn it on locally:
-
-```sh
-# apps/api/.dev.vars (gitignored).
-OPENAI_API_KEY=...             # or GOOGLE_AI_STUDIO_API_KEY=...
-# AI_API_KEY=...               # any other OpenAI-compatible provider, used only when
-# AI_BASE_URL=http://127.0.0.1:8080/v1  # neither named key is set; needs both of these
-# AI_MODEL=gpt-4o              # the assistant's model; optional for the named keys
-```
-
-Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: true }`, the Settings dialog grows an "AI Assistant" toggle, and the editor surfaces the panel once the user opts in. The two spend-DoS knobs `AI_ALLOWED_ORIGINS` and `AI_REQUIRE_CLERK` are hosted-only; leave them unset locally so the guest path keeps working. Production declares `AI_ALLOWED_ORIGINS` in `apps/api/wrangler.toml` `[vars]`, which `wrangler dev` also reads, so the api's `dev` script (and the e2e stack) blank it with `--var AI_ALLOWED_ORIGINS:`; without that, every AI request from a localhost editor answers 403 `origin_not_allowed`. See `apps/api/.env.example` for the full set of vars the worker reads.
 
 ## Running tests
 
@@ -173,28 +163,27 @@ pnpm --filter @liveplanner/live exec vitest   # watch mode while developing
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@liveplanner/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
-Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @liveplanner/live test:e2e:workbench`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as Clerk (as under `E2E_CLERK_JWKS`, minting session tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3021`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/live/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/document/**`) the stack serves from that one page, as the live worker does.
+Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @liveplanner/live test:e2e:workbench`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3021`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/live/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/project/**`) the stack serves from that one page, as the live worker does.
 
-## Trying the editor without an AI key
+## Serving the editor beside a running stack
 
 The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second
-time, beside a running stack, as a deployment WITHOUT an AI key runs it:
+time, beside a running stack:
 
 ```bash
-E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 E2E_NO_AI=1 node scripts/e2e-stack.mjs
+E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 node scripts/e2e-stack.mjs
 ```
 
 `E2E_LIVE_ONLY=1` serves the static editor only, proxying to the api already
-on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
-`aiEnabled: false`.
+on `E2E_API_PORT`.
 
 `E2E_LIVE_OUT=<dir>` serves another export of the live app (the signed-in specs use
-`.next/out-clerk-stub`), and `E2E_CLERK_JWKS=1` makes the stack stand in for Clerk: the api
-verifies session tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
+`.next/out-signed-in`), and `E2E_ACCOUNTS_STUB=1` makes the stack stand in for the accounts Worker:
+the api verifies access tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
 
 ## Four gotchas
 
-- **All four Next.js dev servers (`marketing`, `live`, `telemetry`, `help`) run through `scripts/next-dev.mjs`.** It frees the port and points dev at an isolated `.next-dev/` cache, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures). The cache is kept between starts: Turbopack's file-system cache reuses the last session's compilation (a warm start serves its first page in about a second) and reconciles a route restructure by itself, and `turbopackGc` keeps it from growing stale ([Next.js](../specs/016-platform/nextjs.md) "The Turbopack cache"). A cache that goes wrong is a bug to fix, not something to wipe away. All four run on Turbopack, which is also what `next build` uses under Next 16, so dev compiles the same way the deployed bundle does. Every app's settings come from `@liveplanner/next-config` (`liveplannerNextConfig`), so a change to them lands in all four at once.
+- **All three Next.js dev servers (`marketing`, `live`, `help`) run through `scripts/next-dev.mjs`.** It frees the port and points dev at an isolated `.next-dev/` cache, so a `next build` running in the same checkout can't corrupt the dev server (the recurring "unstyled help page" / `Cannot find module './NNNN.js'` failures). The cache is kept between starts: Turbopack's file-system cache reuses the last session's compilation (a warm start serves its first page in about a second) and reconciles a route restructure by itself, and `turbopackGc` keeps it from growing stale ([Next.js](../specs/016-platform/nextjs.md) "The Turbopack cache"). A cache that goes wrong is a bug to fix, not something to wipe away. All four run on Turbopack, which is also what `next build` uses under Next 16, so dev compiles the same way the deployed bundle does. Every app's settings come from `@liveplanner/next-config` (`liveplannerNextConfig`), so a change to them lands in all four at once.
 
   `help` was pinned to webpack until the Next 16 upgrade, because Turbopack's Rust MDX pipeline ignores remark/rehype plugins handed over as imported JS functions and its pipe tables rendered as literal text. `apps/help/next.config.ts` now names `remark-gfm` as a string (`remarkPlugins: [['remark-gfm', {}]]`), which Turbopack resolves itself, so the tables survive. Keep that string form: importing the plugin back fails the build outright under Turbopack with "does not have serializable options".
 

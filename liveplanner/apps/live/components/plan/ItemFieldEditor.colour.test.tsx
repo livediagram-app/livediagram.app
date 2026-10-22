@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { penColourHex } from '@liveplanner/document';
+import { penColourHex } from '@liveplanner/project';
 import { ITEM_TYPES, type Item } from '@liveplanner/items';
 import { ItemFieldEditor, type ItemFieldContext } from './ItemFieldEditor';
 
@@ -74,7 +74,7 @@ describe('the item panel Colour field', () => {
 
   it('opens with an arrow on the picked swatch; Escape closes it only and returns to the field', async () => {
     const c = ctx(make({ title: 'P', color: VIOLET }));
-    // The card panel's own Escape, on the document: it must not hear the popover's Escape.
+    // The card panel's own Escape, on the project: it must not hear the popover's Escape.
     const panelEscape = vi.fn((e: KeyboardEvent) => e.key === 'Escape');
     const panelEscapes = () => panelEscape.mock.results.filter((r) => r.value).length;
     document.addEventListener('keydown', panelEscape);

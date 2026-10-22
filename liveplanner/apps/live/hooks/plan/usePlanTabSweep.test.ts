@@ -3,9 +3,9 @@ import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { PLAN_SWEEP_MAX_TABS, shouldSweepPlanTabs, usePlanTabSweep } from './usePlanTabSweep';
 
-// docs/specs/026-plan/plan-templates.md "Hand-offs": a Plan document's other tabs load once, bounded.
+// docs/specs/026-plan/plan-templates.md "Hand-offs": a Plan project's other tabs load once, bounded.
 describe('usePlanTabSweep', () => {
-  it('sweeps a Plan document of a few tabs, never one tab or past the bound', () => {
+  it('sweeps a Plan project of a few tabs, never one tab or past the bound', () => {
     expect(shouldSweepPlanTabs(true, 4)).toBe(true);
     expect(shouldSweepPlanTabs(false, 4)).toBe(false);
     expect(shouldSweepPlanTabs(true, 1)).toBe(false);

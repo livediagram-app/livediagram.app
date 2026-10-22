@@ -7,8 +7,8 @@ import { cardDeepLinkHref, collabDeepLinkHref, parseCollabDeepLink } from './col
 // parameter names cannot drift. The round trip is the contract.
 
 const place: ActivityPlace = {
-  documentId: 'd 1',
-  documentName: 'Payments',
+  projectId: 'd 1',
+  projectName: 'Payments',
   teamId: null,
   via: 'own',
   shareCode: null,
@@ -19,19 +19,19 @@ const place: ActivityPlace = {
 };
 
 describe('collabDeepLinkHref', () => {
-  it('builds the owned-document form with an encoded fragment', () => {
+  it('builds the owned-project form with an encoded fragment', () => {
     expect(collabDeepLinkHref(place, 'action')).toBe(
-      '/document/d%201#t=tab%2F1&el=el%261&open=action',
+      '/project/d%201#t=tab%2F1&el=el%261&open=action',
     );
   });
 
-  it('uses the visitor URL for a document shared with the reader', () => {
+  it('uses the visitor URL for a project shared with the reader', () => {
     expect(collabDeepLinkHref({ ...place, via: 'shared', shareCode: 'c/1' }, 'comments')).toBe(
-      '/document/d%201?s=c%2F1#t=tab%2F1&el=el%261&open=comments',
+      '/project/d%201?s=c%2F1#t=tab%2F1&el=el%261&open=comments',
     );
   });
 
-  it('never appends a share code to an owned or team document', () => {
+  it('never appends a share code to an owned or team project', () => {
     expect(
       collabDeepLinkHref({ ...place, via: 'team', shareCode: 'leak' }, 'action'),
     ).not.toContain('?s=');
@@ -50,8 +50,8 @@ describe('collabDeepLinkHref', () => {
 
 describe('cardDeepLinkHref', () => {
   const card: ActivityCard = {
-    documentId: 'd1',
-    documentName: 'Roadmap',
+    projectId: 'd1',
+    projectName: 'Roadmap',
     teamId: null,
     via: 'own',
     shareCode: null,
@@ -66,7 +66,7 @@ describe('cardDeepLinkHref', () => {
 
   it('lands on the card’s board and names the card, round-tripping', () => {
     const href = cardDeepLinkHref(card);
-    expect(href).toBe('/document/d1#t=tab%2F1&el=b1&item=it%261');
+    expect(href).toBe('/project/d1#t=tab%2F1&el=b1&item=it%261');
     expect(parseCollabDeepLink(href.slice(href.indexOf('#')))).toEqual({
       at: { tabId: 'tab/1', elementId: 'b1' },
       open: null,
@@ -76,7 +76,7 @@ describe('cardDeepLinkHref', () => {
 
   it('names only the card when no board shows it, through the visitor URL when shared', () => {
     const href = cardDeepLinkHref({ ...card, board: null, via: 'shared', shareCode: 'c1' });
-    expect(href).toBe('/document/d1?s=c1#item=it%261');
+    expect(href).toBe('/project/d1?s=c1#item=it%261');
     expect(parseCollabDeepLink(href.slice(href.indexOf('#')))).toEqual({
       at: null,
       open: null,

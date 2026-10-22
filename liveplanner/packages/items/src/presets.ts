@@ -224,7 +224,7 @@ export function presetSetupOrBlank(id: unknown): PlanBoardSetup {
 }
 
 // A board placed on the canvas (docs/specs/026-plan/plan-mode.md "The palette"): a column whose name a status the
-// document already has (`existing`: status id to name) takes that status, so one name is always one status and the
+// project already has (`existing`: status id to name) takes that status, so one name is always one status and the
 // cards in it show here too; any other column gets a status of its own (`todo~k3f9`), so it starts empty. An
 // Archive or All Cards board shows cards by what they are, not by status, so it keeps its columns as they are.
 export function freshBoardSetup(
@@ -235,7 +235,7 @@ export function freshBoardSetup(
   return freshSetup(presetSetupOrBlank(id), random, existing);
 }
 
-// A set-up's columns given the document's states of the same name, else new ones of their own
+// A set-up's columns given the project's states of the same name, else new ones of their own
 // (docs/specs/026-plan/plan-board.md "One name, one state"): what every board placed fresh starts from.
 export function freshSetup(
   setup: PlanBoardSetup,

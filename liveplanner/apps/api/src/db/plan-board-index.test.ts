@@ -8,15 +8,15 @@ import { cardsFromRows, readerPersonIds, type CardRow } from './plan-board-index
 // fields hold no title or status.
 
 const row = (over: Partial<CardRow> = {}): CardRow => ({
-  document_id: 'd1',
+  project_id: 'd1',
   id: 'it1',
   item_key: 7,
   type: 'task',
   updated_at: 5,
   title: 'Ship it',
   status: 'todo',
-  document_name: 'Roadmap',
-  document_team_id: null,
+  project_name: 'Roadmap',
+  project_team_id: null,
   via: 'shared',
   share_code: 'c1',
   board: null,
@@ -28,8 +28,8 @@ describe('cardsFromRows', () => {
     const board = { tabId: 't1', tabName: 'Plan', elementId: 'b1', title: 'Sprint' };
     expect(cardsFromRows([row({ board: JSON.stringify(board) })])).toEqual([
       {
-        documentId: 'd1',
-        documentName: 'Roadmap',
+        projectId: 'd1',
+        projectName: 'Roadmap',
         teamId: null,
         via: 'shared',
         shareCode: 'c1',

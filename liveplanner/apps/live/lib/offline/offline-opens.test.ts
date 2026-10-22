@@ -3,9 +3,9 @@ import { __setOfflineBackend, offlineGetRecord, offlinePutRecord } from './offli
 import { localOpensOf, nextLocalOpens, offlineListOpens, offlineRecordOpen } from './offline-opens';
 import { memBackend, testRecord as rec } from './offline-test-utils';
 
-// This browser's own opens of the documents stored only here
+// This browser's own opens of the projects stored only here
 // (docs/specs/013-workspace/blueprints/explorer-home-view.md "Local opens"): the UTC days with an
-// open, inside the 90-day use window, and the last open, kept on the document's record.
+// open, inside the 90-day use window, and the last open, kept on the project's record.
 
 const DAY = 24 * 60 * 60 * 1000;
 const T0 = Date.UTC(2026, 8, 30, 10, 0, 0);
@@ -149,12 +149,12 @@ describe('offlineListOpens', () => {
       }),
     );
     const listed = await offlineListOpens();
-    expect(listed.map((l) => l.document.id).sort()).toEqual(['earlier', 'opened']);
-    expect(listed.find((l) => l.document.id === 'opened')!.opens).toEqual(opens);
-    expect(listed.find((l) => l.document.id === 'earlier')!.opens).toEqual({
+    expect(listed.map((l) => l.project.id).sort()).toEqual(['earlier', 'opened']);
+    expect(listed.find((l) => l.project.id === 'opened')!.opens).toEqual(opens);
+    expect(listed.find((l) => l.project.id === 'earlier')!.opens).toEqual({
       days: ['2026-09-29'],
       lastOpenedAt: T0,
     });
-    expect(listed[0]!.document).toMatchObject({ ownerId: 'offline' });
+    expect(listed[0]!.project).toMatchObject({ ownerId: 'offline' });
   });
 });

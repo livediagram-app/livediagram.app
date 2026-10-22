@@ -2,10 +2,14 @@
 // rather than open dynamic registration: the only clients are our own apps, and each is
 // registered once per environment with scripts/register-client.ts.
 import { makeSignature } from 'better-auth/crypto';
+import { AUTH_BASE_PATH } from './auth-options.ts';
 import type { Auth } from './auth.ts';
 import type { Env } from './env.ts';
 import { RESOURCES } from './resources.ts';
 import { ADMIN_HEADER, sameSecret } from './secrets.ts';
+
+// Under the accounts API, like every liveworkspace API.
+export const CLIENTS_PATH = `${AUTH_BASE_PATH}/internal/clients`;
 
 // Better Auth only registers clients on behalf of a signed-in account. This one stands in
 // for "liveworkspace itself": it is created on first use, and since `.invalid` can never

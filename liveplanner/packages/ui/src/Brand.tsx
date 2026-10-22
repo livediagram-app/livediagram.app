@@ -189,7 +189,7 @@ export function BrandMark({
   tone?: 'colour' | 'mono';
   spinning?: boolean;
 }) {
-  // Gradient ids are document-global, so each instance prefixes its own.
+  // Gradient ids are project-global, so each instance prefixes its own.
   const uid = `ldm${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   const light = useMemo(() => prismPalette('light', accentColor), [accentColor]);
   const dark = useMemo(() => prismPalette('dark', accentColor), [accentColor]);

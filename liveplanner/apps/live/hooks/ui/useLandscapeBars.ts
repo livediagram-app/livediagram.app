@@ -10,7 +10,7 @@ import { useActiveTour } from '@/lib/tour-active';
 // flag changes nothing on screen.
 //
 // - `shown` starts false (folded) for each load and is never saved or synced.
-// - A change in any of `revealKeys` (the Rename Document / Rename Tab nonces) shows the bars first, in
+// - A change in any of `revealKeys` (the Rename Project / Rename Tab nonces) shows the bars first, in
 //   the same render, so the rename field is on screen when it takes the focus.
 // - A tour on screen keeps them shown: the Diagram tour's Tabs step points at the tab bar.
 export function useLandscapeBars(revealKeys: readonly (string | number)[]): {

@@ -20,7 +20,7 @@ import {
   IDENTITY_FILL,
   identityVars,
 } from '@liveplanner/ui';
-import type { BoxedElement } from '@liveplanner/document';
+import type { BoxedElement } from '@liveplanner/project';
 import { badgeCornerInset } from '@/lib/badge-anchor';
 import { useCanvasZoom } from '@/components/canvas/CanvasZoomContext';
 import { ADORNMENT_MIN_ZOOM } from '@/components/canvas/element-badges';

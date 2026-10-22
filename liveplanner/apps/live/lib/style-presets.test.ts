@@ -5,7 +5,7 @@ import {
   freehandPressures,
   type Element,
   type FreehandElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import type { ShapeColorPreset } from './themes';
 import {

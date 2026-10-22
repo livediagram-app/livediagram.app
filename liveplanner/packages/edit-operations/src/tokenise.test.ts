@@ -60,12 +60,12 @@ describe('tokeniseLine', () => {
 });
 
 describe('word helpers', () => {
-  const [plain, quoted, mixed] = words('label~pay "Pay" right-of:"Orders service"');
+  const [plain, quoted, mixed] = words('label~pay "Pay" label="Sprint board"');
 
   it('find the unquoted prefix', () => {
     expect(unquotedPrefix(plain!)).toBe('label~pay');
     expect(unquotedPrefix(quoted!)).toBe('');
-    expect(unquotedPrefix(mixed!)).toBe('right-of:');
+    expect(unquotedPrefix(mixed!)).toBe('label=');
   });
 
   it('tell a quoted label from a word with quotes', () => {

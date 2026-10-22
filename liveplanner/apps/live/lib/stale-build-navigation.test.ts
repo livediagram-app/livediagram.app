@@ -155,7 +155,7 @@ describe('a chunk that fails to load', () => {
     Object.assign(new Error('Loading chunk 9 failed.'), { name: 'ChunkLoadError' });
 
   it('loads the page being navigated to in full, once, and counts it', async () => {
-    window.history.replaceState({}, '', '/document/abc');
+    window.history.replaceState({}, '', '/project/abc');
     const deps = setup({ isStale: () => false });
     link('/explorer/unsorted').click();
     window.dispatchEvent(new ErrorEvent('error', { error: chunkError() }));

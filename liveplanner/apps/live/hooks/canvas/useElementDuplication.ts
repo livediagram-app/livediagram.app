@@ -16,7 +16,7 @@ import {
   type Element,
   type Tab,
   detachChip,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { trackDuplicated } from '@/lib/element-telemetry';
 import { PASTE_OFFSET } from '@/lib/paste-placement';
 

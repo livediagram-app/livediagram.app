@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import {
   getPaletteDragSnap,
   setPaletteDragPreview,

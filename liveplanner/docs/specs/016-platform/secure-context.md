@@ -8,7 +8,7 @@ plain-http wiki and a development instance on a LAN address both open.
 
 ## Why
 
-The editor mints ids (documents, tabs, elements, the guest's own participant id) with `crypto.randomUUID()`, more
+The editor mints ids (projects, tabs, elements, the guest's own participant id) with `crypto.randomUUID()`, more
 than a hundred call sites across `apps/live` and the shared packages. `randomUUID` is secure-context only. On
 liveplanner.app the editor itself is always HTTPS, but an [embed](../013-workspace/embeds.md) on an `http://` page is
 not secure (its ancestor is not), and neither is a development instance reached as `http://192.168.1.20`. There the
@@ -25,7 +25,7 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
   has `randomUUID` keeps its own. Call sites keep calling `crypto.randomUUID()`: one shim, no second id helper.
 - **Hashes work everywhere.** Every SHA-256 the code computes (a Plan card person's id,
   an image's content address, the CLI's PKCE challenge) goes through `sha256` in `@liveplanner/items`
-  (`packages/items/src/sha256.ts`, the dependency-free package both `@liveplanner/document` and
+  (`packages/items/src/sha256.ts`, the dependency-free package both `@liveplanner/project` and
   `@liveplanner/api-schema` already use). It calls `crypto.subtle.digest` wherever the context has it and
   otherwise computes the same FIPS 180-4 digest in plain code (about 24 ms per MB, measured on Node 22, so a 5 MB
   image costs about 120 ms, and only outside a secure context). The two must match byte for byte: the server

@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { penColourHex } from '@liveplanner/document';
+import { penColourHex } from '@liveplanner/project';
 import { presetSetup, statusColumn } from '@liveplanner/items';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { EditorContext } from '@/app/project/[id]/EditorContext';
 import type { ComponentProps } from 'react';
 import { PlanColumnPopover } from './PlanColumnPopover';
 
@@ -23,7 +23,7 @@ function open(color?: string, onClose: (focus: boolean) => void = () => {}) {
     ],
   };
   const onChange = vi.fn<ComponentProps<typeof PlanColumnPopover>['onChange']>();
-  // Inside an editor with an empty document: no custom colours picked yet.
+  // Inside an editor with an empty project: no custom colours picked yet.
   render(
     <EditorContext.Provider value={{ tabs: [] } as never}>
       <PlanColumnPopover

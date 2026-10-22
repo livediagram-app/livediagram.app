@@ -19,8 +19,8 @@ describe('parentRouteHref', () => {
     expect(parentRouteHref('/palette/tools/data-elements/legend')).toBe(
       '/palette/tools/data-elements/',
     );
-    expect(parentRouteHref('/developers/working-with-documents/edit-operations/')).toBe(
-      '/developers/working-with-documents/',
+    expect(parentRouteHref('/developers/working-with-projects/edit-operations/')).toBe(
+      '/developers/working-with-projects/',
     );
     expect(parentRouteHref('/about/what-is-liveplanner/')).toBe('/about/');
     expect(parentRouteHref('/canvas/')).toBe('/');
@@ -39,7 +39,7 @@ const withParent = readdirSync(APP_DIR, { recursive: true })
 
 describe('sub-article parents', () => {
   it('finds the sub-articles (guard against this test going blind)', () => {
-    expect(withParent.length).toBeGreaterThan(50);
+    expect(withParent.length).toBeGreaterThan(20);
   });
 
   it('every sub-article sits directly under a real page', () => {

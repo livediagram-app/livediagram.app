@@ -13,7 +13,7 @@ interface SeoInput {
   description: string;
   /** Absolute path on the help centre, including the `/help/` prefix and
    *  trailing slash, and matching the page's real route: an article sits at
-   *  `/help/<categorySlug>/<slug>/`, e.g. `/help/canvas/themes/`. A path that
+   *  `/help/<categorySlug>/<slug>/`, e.g. `/help/user-interface/themes/`. A path that
    *  disagrees with the route points the canonical and the OG url at a
    *  different page, which nothing at runtime notices.
    *  (`seo-canonical.test.ts` checks every article page.) */
@@ -22,7 +22,7 @@ interface SeoInput {
 
 /** Per-page metadata with a complete Open Graph block, so each help page
  *  carries its own canonical + OG title/url rather than inheriting the
- *  layout's. The document <title> still reads "<Title> | liveplanner": the
+ *  layout's. The project <title> still reads "<Title> | liveplanner": the
  *  root layout's title template adds the suffix, so link previews get the
  *  bare title and the siteName beside it. */
 export function helpMetadata({ title, description, path }: SeoInput): Metadata {

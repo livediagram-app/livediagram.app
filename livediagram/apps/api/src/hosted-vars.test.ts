@@ -109,12 +109,23 @@ describe('hosted-vars script', () => {
       'NEXT_PUBLIC_TELEMETRY_ENABLED=true',
     ]);
     expect(buildEnv({ IMAGE_MAX_PER_OWNER: '1' })).toEqual([]);
+    // The frontends send to the same telemetry service as the api.
+    expect(buildEnv({ TELEMETRY_URL: 'https://staging.liveworkspace.app/api/telemetry' })).toEqual([
+      'NEXT_PUBLIC_TELEMETRY_URL=https://staging.liveworkspace.app/api/telemetry',
+    ]);
   });
 
   it('hands the Google client id to the frontends (docs/specs/022-drive-mirror/drive-mirror.md)', async () => {
     const { buildEnv } = await load();
     expect(buildEnv({ GOOGLE_CLIENT_ID: '123-abc.apps.googleusercontent.com' })).toEqual([
       'NEXT_PUBLIC_GOOGLE_CLIENT_ID=123-abc.apps.googleusercontent.com',
+    ]);
+  });
+
+  it('points the Community pages at the same Community service as the api', async () => {
+    const { buildEnv } = await load();
+    expect(buildEnv({ COMMUNITY_URL: 'https://staging.liveworkspace.app/api/community' })).toEqual([
+      'NEXT_PUBLIC_COMMUNITY_API=https://staging.liveworkspace.app/api/community',
     ]);
   });
 

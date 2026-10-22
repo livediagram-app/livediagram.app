@@ -1,5 +1,5 @@
 // Narrowing a list by a lens (docs/specs/013-workspace/explorer-filters.md "Dimensions", "Matching").
-// Rows are first reduced to subjects, so one rule serves documents, shared rows and, later, events.
+// Rows are first reduced to subjects, so one rule serves projects, shared rows and, later, events.
 
 import { isMadeByAiSource } from '@liveplanner/api-schema';
 import {
@@ -13,10 +13,10 @@ import type { Lens, LensSubject } from './types';
 
 const DAY_MS = 86_400_000;
 
-/** The fields of a document summary the lens reads. `opensIn` and `templateFamily` are
- *  the recorded creation intent; absent, null or retired values read as unknown. A document in
+/** The fields of a project summary the lens reads. `opensIn` and `templateFamily` are
+ *  the recorded creation intent; absent, null or retired values read as unknown. A project in
  *  this browser (Offline Mode) has no team, so it reads as `mine`. */
-type LensDocumentSummary = {
+type LensProjectSummary = {
   name: string;
   savedAt: number;
   ownerId: string;
@@ -30,8 +30,8 @@ function known<T extends string>(values: readonly T[], value: string | null | un
   return values.find((candidate) => candidate === value) ?? null;
 }
 
-/** A personal, team or this-browser document as the reader sees it. */
-export function documentSubject(summary: LensDocumentSummary, viewerId: string): LensSubject {
+/** A personal, team or this-browser project as the reader sees it. */
+export function projectSubject(summary: LensProjectSummary, viewerId: string): LensSubject {
   return {
     name: summary.name,
     savedAt: summary.savedAt,

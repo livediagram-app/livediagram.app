@@ -1,0 +1,105 @@
+/* A face's own parts in its element's finish (docs/specs/008-canvas/finish.md "Faces"). The element's wrapper (and a
+ * Plan body drawn over the canvas, MaximisedPlanLayer's OverFace) carries `data-face-finish` when its face follows a
+ * finish (faceFinishOf in @livedocuments/document); everything a face draws for itself is restyled from here, so a new
+ * face follows the finish with no code of its own. Parts that draw a look inline where these rules cannot reach it
+ * read useFaceFinish(). The export does the same to its markup (svg-render-face-finish.ts). */
+
+/* Professional: every rectangle square. Circles and true pills keep their shape: `rounded-full`, a 50% or
+ * pill-sized inline radius, an SVG rectangle with round ends (marked by useFaceFinishPass), or a part marked
+ * `data-finish-keep`. */
+[data-face-finish='professional']
+  :not(
+    .rounded-full,
+    .rounded-\[50\%\],
+    [style*='border-radius: 50%'],
+    [style*='border-radius: 9999px'],
+    [style*='border-radius: 999px'],
+    [data-finish-keep],
+    [data-finish-keep] *
+  ) {
+  border-radius: 0 !important;
+}
+[data-face-finish='professional']
+  rect:not([data-finish-keep], [data-finish-keep] *, [data-finish-pill]) {
+  rx: 0;
+  ry: 0;
+}
+
+/* No shadows: the utilities' shadow layers are emptied, so a ring (a focus or presence ring, drawn in the same
+ * box-shadow) still shows. Inline shadows are dropped by their parts (finishFaceShadows). */
+[data-face-finish='professional'],
+[data-face-finish='professional'] *,
+[data-face-finish='marker'],
+[data-face-finish='marker'] * {
+  --tw-shadow: 0 0 #0000 !important;
+  --tw-inset-shadow: 0 0 #0000 !important;
+}
+
+/* No hover lift: a part that rises under the pointer stays put. */
+[data-face-finish='professional']
+  :is([class*='hover:-translate-y'], [class*='hover:translate-y']):hover,
+[data-face-finish='professional']
+  :is(.group:hover, .group\/card:hover, .group\/el:hover)
+  [class*='group-hover:-translate-y'],
+[data-face-finish='marker'] :is([class*='hover:-translate-y'], [class*='hover:translate-y']):hover {
+  --tw-translate-y: 0 !important;
+}
+
+/* Thin lines: a 2 px border or SVG line draws at 1 px. */
+[data-face-finish='professional'] :is(.border-2, [style*='border-width: 2px']) {
+  border-width: 1px !important;
+}
+[data-face-finish='professional'] :is(.border-t-2) {
+  border-top-width: 1px !important;
+}
+[data-face-finish='professional'] :is(.border-b-2) {
+  border-bottom-width: 1px !important;
+}
+[data-face-finish='professional'] :is(.border-l-2) {
+  border-left-width: 1px !important;
+}
+[data-face-finish='professional'] :is(.border-r-2) {
+  border-right-width: 1px !important;
+}
+[data-face-finish='professional']
+  :is(rect, circle, ellipse, path, line, polyline, polygon)[stroke-width='2'] {
+  stroke-width: 1px;
+}
+
+/* Marker: a frame's or a shape's own line gives way to the marker ink drawn beside it (useMarkerFace, which sets
+ * the mark); a shape keeps its solid fill under its colouring, and a line is all ink. */
+[data-face-finish='marker'] [data-marker-drawn='frame'],
+[data-face-finish='marker'][data-marker-drawn='frame'] {
+  border-color: transparent !important;
+}
+[data-face-finish='marker'] [data-marker-drawn='shape'],
+[data-face-finish='marker'][data-marker-drawn='shape'] {
+  stroke: transparent !important;
+  border-color: transparent !important;
+}
+[data-face-finish='marker'] [data-marker-drawn='line'] {
+  opacity: 0 !important;
+}
+[data-face-finish='marker'] [data-marker-rules~='r'] {
+  border-right-color: transparent !important;
+}
+[data-face-finish='marker'] [data-marker-rules~='b'] {
+  border-bottom-color: transparent !important;
+}
+[data-face-finish='marker'] [data-marker-drawn='ring'],
+[data-face-finish='marker'][data-marker-drawn='ring'] {
+  box-shadow: none !important;
+}
+
+/* A sticker's shadow (sticker-markup.ts): a flat or a marker drawing casts none. */
+:is([data-face-finish='professional'], [data-face-finish='marker']) [data-sticker-shadow] {
+  display: none;
+}
+
+/* A tab window's content inside its hand-drawn frame (docs/specs/009-elements/tab-window.md "The drawing"): the
+ * body's line wobbles up to about 5 px into the box, under the face, so a drawing that reached the box's edge (an
+ * article's page, fitted top to bottom) covered the line and poked out past it. 6 px is MARKER_FACE_BODY_SLACK_PX,
+ * how far inside its box a hand-drawn body may sit; the band between is the window's own fill, the tab's paper. */
+:is([data-face-finish='marker'], [data-face-finish='sketch']) [data-tab-window] {
+  inset: 6px;
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element, type Tab } from '@liveplanner/document';
+import { createShape, type Element, type Tab } from '@liveplanner/project';
 import { formStarter } from '@liveplanner/forms';
 import { ITEM_TYPES, presetSetup, type ItemTypeDef } from '@liveplanner/items';
 import {
@@ -155,7 +155,7 @@ describe('planFormStart', () => {
 });
 
 describe('the pieces', () => {
-  it('reuses a document’s own New status by name', () => {
+  it('reuses a project’s own New status by name', () => {
     const setup = responsesBoardSetup(
       formStarter('contact'),
       'Contact Responses',

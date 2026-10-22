@@ -24,10 +24,10 @@ hides it everywhere.
 
 Common gate (all must hold):
 
-- Clerk is configured for the deployment (`clerkEnabled`). A
-  deployment without Clerk ([Business model + licence](../002-project-scope/business-model-and-licence.md) + [Auth + guest access](auth-and-guest-access.md)) has no working
+- Sign-in is configured for the deployment (`signInEnabled`). A
+  deployment without sign-in ([Business model + licence](../002-project-scope/business-model-and-licence.md) + [Auth + guest access](auth-and-guest-access.md)) has no working
   sign-in, so the banner never renders there.
-- The visitor is **not** signed in (no `clerkUserId`; a guest owner id
+- The visitor is **not** signed in (no `accountUserId`; a guest owner id
   doesn't count).
 - The visitor hasn't dismissed it (see Dismissal).
 
@@ -38,11 +38,11 @@ never hides behind it.
 
 **Toasts stand on it.** While the banner shows, in the Explorer or the editor, its card is part of the bottom chrome
 the toast stack clears ([Toasts](../004-interface-design/toasts.md) "Placement"): the stack sits 8px above the card's
-top instead of landing on its words, as a "Document deleted · Undo" once did.
+top instead of landing on its words, as a "Project deleted · Undo" once did.
 
-**Editor** (`app/document/[id]/EditorView.tsx`): shown only **after a
+**Editor** (`app/project/[id]/EditorView.tsx`): shown only **after a
 ~5 minute delay** into the session (`SIGNIN_BANNER_DELAY_MS`), so it
-never greets someone the instant they open a document. It **stands on the
+never greets someone the instant they open a project. It **stands on the
 bottom chrome**, 8px above the tab bar, the bottom-right cluster (Undo / Redo, the
 Session strip's Timer, Vote and Poll, Layers, Zoom), measured as
 the toast stack measures its floor (`useChromeFloor`, `BOTTOM_CHROME_SELECTOR`), so it never
@@ -51,7 +51,7 @@ dismiss it to reach the timer or the vote. It is drawn over the canvas, and is a
 
 - in **embed** mode (the read-only `/embed` iframe, [Read-only embeds (`/embed`)](../013-workspace/embeds.md)), and
 - in **zen** mode ([Zen mode](../007-editor/zen-mode.md)), but entering/leaving zen does **not**
-  restart the delay; the timer runs on the stable gate (Clerk / signed
+  restart the delay; the timer runs on the stable gate (sign-in enabled / signed
   in / embed / dismissed) and zen only hides the card at render, and
 - while a **tour's offer or last card** is up ([Editor tour](../007-editor/editor-tour.md)): they take the same place
   at the bottom, so the banner steps aside until the card goes (`data-tour-card-open` on the body), and
@@ -60,7 +60,7 @@ dismiss it to reach the timer or the vote. It is drawn over the canvas, and is a
   panel closes (a `[data-dock-button]` control with `aria-expanded="true"`).
 
 The delay is per editor session (per page load); it isn't persisted
-across reloads. Opening document after document in quick succession
+across reloads. Opening project after project in quick succession
 never triggers it; staying in one for 5+ minutes does.
 
 ## Banner
@@ -74,7 +74,7 @@ never triggers it; staying in one for 5+ minutes does.
   reasons modal's header wears the same gradient.
 - Contents: a small icon/illustration, a headline ("Sign in to access
   Teams & AI"), one line of supporting copy saying what those give and
-  that documents sync ("Share with your team, build with AI, sync across
+  that projects sync ("Share with your team, build with AI, sync across
   devices."), a primary **Sign in**
   button (→ `/sign-in/`), a secondary **Learn more** button (opens the
   reasons modal), and a dismiss (×) control.
@@ -88,15 +88,15 @@ never triggers it; staying in one for 5+ minutes does.
 Reuses the app's portal-based modal pattern (Escape + backdrop close).
 Lists the benefits, each with an icon, headline, and a sentence:
 
-1. **Keep your documents safe.** Guest documents live under a
+1. **Keep your projects safe.** Guest projects live under a
    per-browser id; clearing your browser cache or cookies can lose
    access to them. Signing in ties them to your account so they
    survive a cache clear or browser restart.
 2. **Open them anywhere.** Your work syncs to your account, so the
-   same documents are there on your laptop, desktop, and phone.
+   same projects are there on your laptop, desktop, and phone.
 3. **Work as a team.** Create teams, invite teammates by email, and
-   share a team library everyone can manage ([Teams](../013-workspace/teams.md), [Team shared documents](../013-workspace/team-shared-documents.md)).
-4. **Use your real name.** Shared documents and live cursors show your
+   share a team library everyone can manage ([Teams](../013-workspace/teams.md), [Team shared projects](../013-workspace/team-shared-projects.md)).
+4. **Use your real name.** Shared projects and live cursors show your
    account name instead of a random guest identity, so collaborators
    know who did what.
 5. **Your shares, organised.** Manage every share link and expiry from

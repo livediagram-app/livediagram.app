@@ -35,18 +35,19 @@ It applies every SQL file in `apps/api/migrations/` to the local SQLite file Wra
 pnpm dev
 ```
 
-Turbo spins up all eight dev servers in parallel:
+Turbo spins up all seven dev servers in parallel:
 
 | App              | Dev URL                                                                                            |
 | ---------------- | -------------------------------------------------------------------------------------------------- |
 | `apps/router`    | `http://localhost:3000` — **everything on one port**, stitched like production                     |
 | `apps/marketing` | `http://localhost:3001`                                                                            |
 | `apps/live`      | `http://localhost:3002` (clean routes: /new, /explorer, ...)                                       |
-| `apps/telemetry` | `http://localhost:3003/telemetry`                                                                  |
 | `apps/help`      | `http://localhost:3004/help`                                                                       |
 | `apps/community` | `http://localhost:3005/community`                                                                  |
 | `apps/api`       | `http://localhost:8787/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8788` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
+
+The telemetry dashboard is not one of them: it is liveworkspace's (`liveworkspace/apps/telemetry`, [Telemetry](../specs/017-telemetry/telemetry.md)), and `localhost:3000/telemetry` redirects to the local service. To see events locally, run that service and set `NEXT_PUBLIC_TELEMETRY_URL`, `TELEMETRY_URL` and `TELEMETRY_KEY` as the `.env.example` files describe.
 
 The `router` dev server (`wrangler dev --env local`, port 3000) gives you the production URL shape locally: `/` is marketing, `/new` and `/document/*` are the editor, plus `/telemetry`, `/help`, `/community`, and `/api` — no per-app port to remember. It has no service bindings in dev; the `[env.local]` environment in `apps/router/wrangler.toml` points it at the localhost origins above and it proxies plain HTTP (see [Router app](../specs/016-platform/router-app.md)).
 
@@ -61,9 +62,26 @@ A remote api works too, and there are now two of them: `https://staging.livediag
 reaches [staging](../specs/016-platform/staging-environment.md), which has its own database and is
 the one to reach for; the production api reads and writes real people's documents.
 
-Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry`, `apps/help` and `apps/community` read the same variable: the dashboard needs it to show anything on `:3003`, the Community needs it to list any posts on `:3005`, and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.livediagram.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
+Without it the editor loads, the canvas works, and the first save fails with **“Couldn’t create the document”** — which reads like a broken api worker rather than a missing variable, so it is worth setting up front. `apps/telemetry`, `apps/help` and `apps/community` read the same variable: the dashboard needs it to show anything on `:3003`, the Community needs it for My Shares on `:3005` (its gallery reads liveworkspace's Community service: see below), and the help centre only loses its telemetry posts without it. To work on the dashboard against real numbers without seeding a local database, point it at production's summary instead: `NEXT_PUBLIC_API_BASE=https://www.livediagram.app/api` in `apps/telemetry/.env.local`. `GET /api/telemetry/summary` is public, read-only and allows any origin, and the dashboard only sends events itself when `NEXT_PUBLIC_TELEMETRY_ENABLED=true`, which local builds leave unset.
 
 The editor works in pure-guest mode without any auth setup: `pnpm dev` and open `http://localhost:3000/new`. Documents persist to the local D1 file the api worker creates on first start. (On `http://localhost:3002/new` instead, set `NEXT_PUBLIC_API_BASE` first — see the note above.)
+
+## The Community locally
+
+The Community's listings live in liveworkspace's Community service, not this api
+([liveworkspace/docs/community.md](../../../liveworkspace/docs/community.md)). Run it with
+`corepack pnpm dev:community` from the monorepo root (`:8791`, after its `db:migrate:local`), then:
+
+```sh
+# apps/api/.dev.vars
+COMMUNITY_URL=http://localhost:8791/api/community
+COMMUNITY_KEY=dev-livediagram-community-key
+
+# apps/community/.env.local, apps/live/.env.local and apps/marketing/.env.local
+NEXT_PUBLIC_COMMUNITY_API=http://localhost:8791/api/community
+```
+
+Without `COMMUNITY_KEY` the api reports the Community off and Share to Community doesn't show.
 
 ## Scoping commands to one workspace
 

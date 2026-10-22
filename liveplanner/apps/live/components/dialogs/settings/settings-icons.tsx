@@ -9,28 +9,25 @@
 // sized for a 28px tile and stroked to read at that size.
 
 import type { ReactNode } from 'react';
-import { Glyph, lucideGlyph, MarkerIcon, PagesIcon } from '@liveplanner/ui';
-import { lucideLayers, lucideMap, lucidePalette } from '@liveplanner/icons/lucide';
+import { Glyph } from '@liveplanner/ui';
 import { CollaborateGlyph } from '@/components/panels/collaborate/CollaborateGlyph';
 
 // The categories that carry a tile: every top-level one. A sub-category
-// (one per panel under Panels, one per mode under Editor, Notifications and
-// API Tokens under Account) draws none of its own.
+// (Collaborate under Panels, Notifications and API Tokens under Account)
+// draws none of its own.
 export type SettingsIconId =
   | 'account'
-  | 'documents'
+  | 'projects'
   | 'editor'
   | 'appearance'
   | 'keyboard'
   | 'panels'
   | 'accessibility'
   | 'tours'
-  | 'ai'
   | 'privacy';
 
-// The sub-categories, nested under a top-level category (Editor, Panels, Account).
-export type SettingsSubcategoryId =
-  'draw' | 'pages' | 'layers' | 'map' | 'collaborate' | 'quickStyle' | 'notifications' | 'tokens';
+// The sub-categories, nested under a top-level category (Panels, Account).
+export type SettingsSubcategoryId = 'collaborate' | 'notifications' | 'tokens';
 
 // Every category, top-level and sub-category alike: each opens its own pane.
 export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
@@ -41,14 +38,13 @@ export type SettingsCategoryId = SettingsIconId | SettingsSubcategoryId;
 // glyphs differ too, the colour is a second channel, never the only one.
 const TILE: Record<SettingsIconId, string> = {
   account: 'bg-teal-600',
-  documents: 'bg-lime-700',
+  projects: 'bg-lime-700',
   editor: 'bg-blue-500',
   appearance: 'bg-sky-600',
   keyboard: 'bg-orange-500',
   panels: 'bg-amber-500',
   accessibility: 'bg-indigo-500',
   tours: 'bg-pink-600',
-  ai: 'bg-violet-500',
   privacy: 'bg-emerald-600',
 };
 
@@ -72,8 +68,7 @@ function Svg({ children }: { children: ReactNode }) {
   );
 }
 
-// Editor: a frame with a docked side panel, the chrome the group's settings
-// (panels, minimap) dress.
+// Editor: a frame with a docked side panel, the editor chrome.
 const EditorGlyph = (
   <Svg>
     <rect x="2.5" y="3.5" width="15" height="13" rx="2" />
@@ -90,8 +85,8 @@ const KeyboardGlyph = (
   </Svg>
 );
 
-// Documents: a folder, where new documents go (docs/specs/013-workspace/default-folders.md).
-const DocumentsGlyph = (
+// Projects: a folder, where new projects go (docs/specs/013-workspace/default-folders.md).
+const ProjectsGlyph = (
   <Svg>
     <path d="M3 6.5a1.5 1.5 0 0 1 1.5-1.5h3.2l1.6 1.8h6.2A1.5 1.5 0 0 1 17 8.3v6.2a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 3 14.5Z" />
   </Svg>
@@ -149,14 +144,6 @@ const ToursGlyph = (
   </Svg>
 );
 
-// AI: a spark.
-const AiGlyph = (
-  <Svg>
-    <path d="M8.75 2.5c.6 3.4 1.6 4.4 5 5-3.4.6-4.4 1.6-5 5-.6-3.4-1.6-4.4-5-5 3.4-.6 4.4-1.6 5-5Z" />
-    <path d="M14.25 13.5c.25 1.4.65 1.8 2 2-1.35.25-1.75.65-2 2-.25-1.35-.65-1.75-2-2 1.35-.2 1.75-.6 2-2Z" />
-  </Svg>
-);
-
 // API Tokens: a key, the mark the tokens have always carried.
 export const TokensGlyph = (
   <Svg>
@@ -175,39 +162,24 @@ const PrivacyGlyph = (
 
 export const CATEGORY_GLYPHS: Record<SettingsIconId, ReactNode> = {
   account: AccountGlyph,
-  documents: DocumentsGlyph,
+  projects: ProjectsGlyph,
   editor: EditorGlyph,
   appearance: AppearanceGlyph,
   keyboard: KeyboardGlyph,
   panels: PanelsGlyph,
   accessibility: AccessibilityGlyph,
   tours: ToursGlyph,
-  ai: AiGlyph,
   privacy: PrivacyGlyph,
 };
 
 // A sub-category's glyph: the same mark its panel carries in the editor, so
-// the row is recognisable as that panel's settings. Layers and Collaborate
-// are the toolbar's own (Lucide layers, as LayersStackIcon; the Collaborate
-// button's glyph), at 16px. The Map and Quick Style
-// have no toolbar button, so they take Lucide's map and palette from the
-// same family. Draw is the marker the editor mode switch shows for Draw
-// mode, so the row reads as that mode's settings. Notifications and API
-// Tokens keep the bell and key they carried as top-level tiles. Plain and untinted, not a tile: the tile belongs to
-// the top-level category above, and a second column of tiles would read as
-// more top-level categories.
-const LayersSubGlyph = lucideGlyph(lucideLayers, 16);
-const MapSubGlyph = lucideGlyph(lucideMap, 16);
-const QuickStyleSubGlyph = lucideGlyph(lucidePalette, 16);
-const DrawSubGlyph = MarkerIcon;
-const PagesSubGlyph = PagesIcon;
+// the row is recognisable as that panel's settings. Collaborate is the
+// Collaborate button's own glyph, at 16px. Notifications and API Tokens keep
+// the bell and key they carried as top-level tiles. Plain and untinted, not a
+// tile: the tile belongs to the top-level category above, and a second column
+// of tiles would read as more top-level categories.
 const SUBCATEGORY_GLYPHS: Record<SettingsSubcategoryId, () => ReactNode> = {
-  draw: () => <DrawSubGlyph size={16} />,
-  pages: () => <PagesSubGlyph size={16} />,
-  layers: () => <LayersSubGlyph />,
-  map: () => <MapSubGlyph />,
   collaborate: () => <CollaborateGlyph size={16} />,
-  quickStyle: () => <QuickStyleSubGlyph />,
   notifications: () => NotificationsGlyph,
   tokens: () => TokensGlyph,
 };

@@ -7,7 +7,7 @@ import {
   PIE_ANIMS,
   PROGRESS_ANIMS,
   RATING_ANIMS,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   ArrowFlowPreview,
   IconAnimationPreview,

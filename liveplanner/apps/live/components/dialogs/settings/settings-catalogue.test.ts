@@ -4,7 +4,7 @@ import { HELP_ARTICLES } from '@/lib/help-articles';
 import { SETTINGS_CATEGORIES, settingsCategoryPath, visibleCategories } from './settings-catalogue';
 import { TELEMETRY_TYPE_PATTERN } from '@liveplanner/api-schema';
 import type { SettingsRowSpec } from './settings-catalogue';
-import { autoRebindArrowsEnabled, type UserPreferences } from '@/lib/user-preferences';
+import type { UserPreferences } from '@/lib/user-preferences';
 
 const ALL_ROWS = SETTINGS_CATEGORIES.flatMap((c) => c.rows);
 const TOGGLES = ALL_ROWS.filter((r) => r.kind === 'toggle');
@@ -29,15 +29,6 @@ function tokensOf(row: SettingsRowSpec): string[] {
 }
 
 describe('settings catalogue', () => {
-  it('shows Auto-Attach Arrows in the state the editor actually runs', () => {
-    // A fresh profile has the feature OFF; the switch has to say so, or the
-    // first click flips a switch that looked on to the off it already was.
-    const row = TOGGLES.find((r) => r.key === 'autoRebindArrows')!;
-    for (const prefs of [{}, { autoRebindArrows: true }, { autoRebindArrows: false }]) {
-      expect(row.read(prefs as UserPreferences)).toBe(autoRebindArrowsEnabled(prefs));
-    }
-  });
-
   it('round-trips every toggle through read/write in both directions', () => {
     // The catalogue is the only place that knows how a setting maps onto
     // UserPreferences, so a row whose write does not land where its read
@@ -101,30 +92,6 @@ describe('settings catalogue', () => {
       ['planTourSeen-sheets', 'toggle', 'Sheets Tour', 'planTour'],
       ['planTourSeen-dashboards', 'toggle', 'Dashboards Tour', 'planDashboards'],
       ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
-      // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
-      // linking that element's article.
-      ['elementToursSeen', 'toggle', 'Show Me on Every Element', undefined],
-      ['elementTour-sankey', 'toggle', 'Sankey Diagram', 'sankeyDiagram'],
-      ['elementTour-layer-stack', 'toggle', 'Layer Stack', 'conceptGraphics'],
-      ['elementTour-pyramid', 'toggle', 'Pyramid', 'conceptGraphics'],
-      ['elementTour-funnel', 'toggle', 'Funnel', 'conceptGraphics'],
-      ['elementTour-cycle', 'toggle', 'Cycle', 'conceptGraphics'],
-      ['elementTour-hub', 'toggle', 'Hub and Spoke', 'conceptGraphics'],
-      ['elementTour-onion', 'toggle', 'Onion', 'conceptGraphics'],
-      ['elementTour-chevrons', 'toggle', 'Chevrons', 'conceptGraphics'],
-      ['elementTour-timeline', 'toggle', 'Timeline', 'conceptGraphics'],
-      ['elementTour-mind-node', 'toggle', 'Mind Map', 'mindMaps'],
-      ['elementTour-flowchart', 'toggle', 'Flowchart', 'flowcharts'],
-      ['elementTour-org-chart', 'toggle', 'Org Chart', 'orgCharts'],
-      ['elementTour-sequence', 'toggle', 'Sequence', 'sequenceDiagram'],
-      ['elementTour-chart', 'toggle', 'Chart', 'dataElements'],
-      ['elementTour-stack', 'toggle', 'Stack', 'stacks'],
-      ['elementTour-entity', 'toggle', 'Entity', 'entities'],
-      ['elementTour-tab-window', 'toggle', 'Tab Window', 'tabWindows'],
-      ['elementTour-lane', 'toggle', 'Lane', 'lanes'],
-      ['elementTour-boundary', 'toggle', 'Boundary', 'boundaries'],
-      ['elementTour-diagram-key', 'toggle', 'Diagram Key', 'diagramKeys'],
-      ['elementTour-portal', 'toggle', 'Portal', 'portals'],
     ]);
     // One shared explanation under the section heading, not one per row.
     expect(tours.sectionNotes?.['Offer Again']?.note).toMatch(/close Settings/);
@@ -141,39 +108,8 @@ describe('settings catalogue', () => {
         ['SheetsTourSeenOff', 'SheetsTourSeenOn'],
         ['DashboardsTourSeenOff', 'DashboardsTourSeenOn'],
         ['FormTourSeenOff', 'FormTourSeenOn'],
-        ['ElementToursSeenOff', 'ElementToursSeenOn'],
-        ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
-        ['LayerStackTourSeenOff', 'LayerStackTourSeenOn'],
-        ['PyramidTourSeenOff', 'PyramidTourSeenOn'],
-        ['FunnelTourSeenOff', 'FunnelTourSeenOn'],
-        ['CycleTourSeenOff', 'CycleTourSeenOn'],
-        ['HubTourSeenOff', 'HubTourSeenOn'],
-        ['OnionTourSeenOff', 'OnionTourSeenOn'],
-        ['ChevronsTourSeenOff', 'ChevronsTourSeenOn'],
-        ['TimelineTourSeenOff', 'TimelineTourSeenOn'],
-        ['MindMapTourSeenOff', 'MindMapTourSeenOn'],
-        ['FlowchartTourSeenOff', 'FlowchartTourSeenOn'],
-        ['OrgChartTourSeenOff', 'OrgChartTourSeenOn'],
-        ['SequenceTourSeenOff', 'SequenceTourSeenOn'],
-        ['ChartTourSeenOff', 'ChartTourSeenOn'],
-        ['StackTourSeenOff', 'StackTourSeenOn'],
-        ['EntityTourSeenOff', 'EntityTourSeenOn'],
-        ['TabWindowTourSeenOff', 'TabWindowTourSeenOn'],
-        ['LaneTourSeenOff', 'LaneTourSeenOn'],
-        ['BoundaryTourSeenOff', 'BoundaryTourSeenOn'],
-        ['DiagramKeyTourSeenOff', 'DiagramKeyTourSeenOn'],
-        ['PortalTourSeenOff', 'PortalTourSeenOn'],
       ],
     );
-  });
-
-  // A phone has no hover and no middle button: the Mouse section's rows are inert there, as the Map's are.
-  it('makes the Mouse section desktop only', () => {
-    const rows = SETTINGS_CATEGORIES.flatMap((c) => c.rows).filter(
-      (r) => 'section' in r && r.section === 'Mouse',
-    );
-    expect(rows.map((r) => r.key)).toEqual(['quickAddOnHover', 'middleMousePan']);
-    for (const row of rows) expect(row.desktopOnly).toMatch(/A mouse setting/);
   });
 
   it('offers Button Labels in Appearance, on by default and desktop only', () => {
@@ -204,7 +140,7 @@ describe('settings catalogue', () => {
   });
 
   it('writes only its own key, so one switch never moves another', () => {
-    const before: UserPreferences = { alignmentGuides: false, telemetryEnabled: false };
+    const before: UserPreferences = { homeBanner: false, telemetryEnabled: false };
     // A tour of several tracks also writes its answered list (lib/tour-tracks.ts).
     const own: Record<string, string[]> = {
       // A tour track's row writes the answered list and clears the tour's single flag (lib/tour-tracks.ts).
@@ -212,29 +148,6 @@ describe('settings catalogue', () => {
       'planTourSeen-boards': ['planTourSeen', 'planTourTracks'],
       'planTourSeen-sheets': ['planTourSeen', 'planTourTracks'],
       'planTourSeen-dashboards': ['planTourSeen', 'planTourTracks'],
-      elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
-      // One element's tour writes the answered list alone (lib/element-tours.ts).
-      'elementTour-sankey': ['elementTourKinds'],
-      'elementTour-layer-stack': ['elementTourKinds'],
-      'elementTour-pyramid': ['elementTourKinds'],
-      'elementTour-funnel': ['elementTourKinds'],
-      'elementTour-cycle': ['elementTourKinds'],
-      'elementTour-hub': ['elementTourKinds'],
-      'elementTour-onion': ['elementTourKinds'],
-      'elementTour-timeline': ['elementTourKinds'],
-      'elementTour-chevrons': ['elementTourKinds'],
-      'elementTour-mind-node': ['elementTourKinds'],
-      'elementTour-flowchart': ['elementTourKinds'],
-      'elementTour-org-chart': ['elementTourKinds'],
-      'elementTour-sequence': ['elementTourKinds'],
-      'elementTour-chart': ['elementTourKinds'],
-      'elementTour-stack': ['elementTourKinds'],
-      'elementTour-entity': ['elementTourKinds'],
-      'elementTour-tab-window': ['elementTourKinds'],
-      'elementTour-lane': ['elementTourKinds'],
-      'elementTour-boundary': ['elementTourKinds'],
-      'elementTour-diagram-key': ['elementTourKinds'],
-      'elementTour-portal': ['elementTourKinds'],
     };
     // Power user mode is a PRESET by design (docs/specs/007-editor/power-user-mode.md): it moves
     // exactly the preset's settings, pinned by its own test below.
@@ -285,27 +198,29 @@ describe('settings catalogue', () => {
     }
   });
 
-  it('hides the AI category until the worker advertises the capability', () => {
-    const ctx = { emailEnabled: true, signedIn: true };
-    expect(visibleCategories(false, ctx).map((c) => c.id)).not.toContain('ai');
-    expect(visibleCategories(true, ctx).map((c) => c.id)).toContain('ai');
+  // Plan has no AI assistant and no diagram canvas: their categories are gone for good.
+  it('offers no AI, Layers, Map or Quick Style category', () => {
+    const ids = visibleCategories({ emailEnabled: true, signedIn: true, authEnabled: true }).map(
+      (c) => c.id,
+    );
+    for (const gone of ['ai', 'layers', 'map', 'quickStyle']) expect(ids).not.toContain(gone);
   });
 
   // The editor in a workbench (docs/specs/013-workspace/blueprints/workbench-embeds.md, Surface table).
-  it('leaves the account, documents, AI and tokens, and the Appearance choice, out of a workbench', () => {
+  it('leaves the account, projects and tokens, and the Appearance choice, out of a workbench', () => {
     const ctx = { emailEnabled: true, signedIn: true, authEnabled: true, workbench: true };
-    const categories = visibleCategories(true, ctx);
+    const categories = visibleCategories(ctx);
     const ids = categories.map((c) => c.id);
 
-    for (const hidden of ['ai', 'documents', 'account', 'notifications', 'tokens']) {
+    for (const hidden of ['projects', 'account', 'notifications', 'tokens']) {
       expect(ids).not.toContain(hidden);
     }
     expect(ids).toContain('editor');
     const appearance = categories.find((c) => c.id === 'appearance')!;
     expect(appearance.rows.some((r) => r.kind === 'appearance')).toBe(false);
     expect(appearance.rows.length).toBeGreaterThan(0);
-    const app = visibleCategories(true, { ...ctx, workbench: false }).map((c) => c.id);
-    expect(app).toEqual(expect.arrayContaining(['ai', 'documents', 'account', 'tokens']));
+    const app = visibleCategories({ ...ctx, workbench: false }).map((c) => c.id);
+    expect(app).toEqual(expect.arrayContaining(['projects', 'account', 'tokens']));
   });
 
   it('nests Notifications and API Tokens under Account, directly after it', () => {
@@ -318,21 +233,13 @@ describe('settings catalogue', () => {
     expect(topLevel.slice(-2)).toEqual(['account', 'privacy']);
   });
 
-  it('offers API Tokens, and the AI link to it, only where sign-in exists', () => {
+  it('offers API Tokens only where sign-in exists', () => {
     const ids = (authEnabled: boolean) =>
-      visibleCategories(true, { emailEnabled: false, signedIn: false, authEnabled }).map(
-        (c) => c.id,
-      );
-    const aiRows = (authEnabled: boolean) =>
-      visibleCategories(true, { emailEnabled: false, signedIn: true, authEnabled })
-        .find((c) => c.id === 'ai')!
-        .rows.map((r) => r.key);
+      visibleCategories({ emailEnabled: false, signedIn: false, authEnabled }).map((c) => c.id);
     // A guest on a deployment WITH sign-in still sees the category: its row
     // says why it is empty and links to sign in.
     expect(ids(true)).toContain('tokens');
     expect(ids(false)).not.toContain('tokens');
-    expect(aiRows(true)).toContain('apiTokensLink');
-    expect(aiRows(false)).not.toContain('apiTokensLink');
   });
 
   it('points every link row at a category that exists', () => {
@@ -343,9 +250,9 @@ describe('settings catalogue', () => {
   });
 
   it('drops the email rows unless mail can be sent AND someone is signed in', () => {
-    const withEmail = visibleCategories(true, { emailEnabled: true, signedIn: true });
-    const without = visibleCategories(true, { emailEnabled: false, signedIn: true });
-    const guest = visibleCategories(true, { emailEnabled: true, signedIn: false });
+    const withEmail = visibleCategories({ emailEnabled: true, signedIn: true });
+    const without = visibleCategories({ emailEnabled: false, signedIn: true });
+    const guest = visibleCategories({ emailEnabled: true, signedIn: false });
     const guestRows = guest.find((c) => c.id === 'notifications')!.rows;
     expect(guestRows.map((r) => r.key)).not.toContain('notifyComments');
     // ...but the section still says the settings exist, the same way the API
@@ -353,7 +260,7 @@ describe('settings catalogue', () => {
     expect(guestRows.map((r) => r.key)).toContain('emailSignIn');
     expect(withEmailRows()).not.toContain('emailSignIn');
     function withEmailRows() {
-      return visibleCategories(true, { emailEnabled: true, signedIn: true })
+      return visibleCategories({ emailEnabled: true, signedIn: true })
         .find((c) => c.id === 'notifications')!
         .rows.map((r) => r.key);
     }
@@ -364,11 +271,13 @@ describe('settings catalogue', () => {
     // The category survives either way: in-editor notifications are not
     // gated on email, so Notifications never becomes a dead end.
     expect(notifyRows(without)).toContain('notificationsEnabled');
+    // Nothing in Plan assigns an action, so there is no email for one.
+    expect(notifyRows(withEmail)).not.toContain('notifyActionAssigned');
   });
 
   it('offers Minimal chrome only while power user mode is on', () => {
     const editorRows = (powerUserMode: boolean) =>
-      visibleCategories(true, { emailEnabled: false, signedIn: false, powerUserMode })
+      visibleCategories({ emailEnabled: false, signedIn: false, powerUserMode })
         .find((c) => c.id === 'editor')!
         .rows.map((r) => r.key);
     expect(editorRows(false)).toContain('powerUserMode');
@@ -378,12 +287,12 @@ describe('settings catalogue', () => {
 
   it('switches power user mode through the preset, not a bare flag', () => {
     const row = TOGGLES.find((r) => r.key === 'powerUserMode')!;
-    const on = row.write({ alignmentGuides: false }, true);
-    expect(on.alignmentGuides).toBe(true);
+    const on = row.write({ formTourSeen: false }, true);
+    expect(on.formTourSeen).toBe(true);
     expect(on.minimalChrome).toBe(true);
     expect(row.read(on)).toBe(true);
     const off = row.write(on, false);
-    expect(off).toEqual({ alignmentGuides: false });
+    expect(off).toEqual({ formTourSeen: false });
     expect(row.event).toEqual({ category: 'UI', on: 'PowerUserModeOn', off: 'PowerUserModeOff' });
   });
 
@@ -395,10 +304,8 @@ describe('settings catalogue', () => {
   it('never offers a category with no rows', () => {
     // An empty category is a dead end: a row that pushes a blank pane.
     for (const ctx of BOTH_CONTEXTS) {
-      for (const aiCapable of [true, false]) {
-        for (const category of visibleCategories(aiCapable, ctx)) {
-          expect(category.rows.length, category.id).toBeGreaterThan(0);
-        }
+      for (const category of visibleCategories(ctx)) {
+        expect(category.rows.length, category.id).toBeGreaterThan(0);
       }
     }
   });
@@ -410,42 +317,29 @@ describe('settings sub-categories', () => {
     expect(SETTINGS_CATEGORIES.filter((c) => c.parent === 'editor')).toEqual([]);
   });
 
-  it('keeps every setting that acts in both modes on Editor itself', () => {
+  // Plan has no free canvas: no guides, arrows, element indicators or mouse rows.
+  it('keeps only Power User Mode and its children on Editor', () => {
     const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'editor')!.rows.map((r) => r.key);
-    expect(keys).toEqual([
-      'alignmentGuides',
-      'autoRebindArrows',
-      'elementIndicatorStyle',
-      'quickAddOnHover',
-      'middleMousePan',
-      'powerUserMode',
-      'minimalChrome',
-      'powerUserPreset',
-    ]);
+    expect(keys).toEqual(['powerUserMode', 'minimalChrome', 'powerUserPreset']);
   });
 
   it('nests one sub-category per panel under Panels, directly after it and in order', () => {
     const ids = SETTINGS_CATEGORIES.map((c) => c.id);
     const children = SETTINGS_CATEGORIES.filter((c) => c.parent === 'panels').map((c) => c.id);
-    expect(children).toEqual(['layers', 'map', 'collaborate', 'quickStyle']);
+    expect(children).toEqual(['collaborate']);
     const at = ids.indexOf('panels');
     expect(ids.slice(at + 1, at + 1 + children.length)).toEqual(children);
   });
 
-  it('keeps Panel Opacity on Panels itself, and Enable Map under Map', () => {
-    const keys = (id: string) =>
-      SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows.map((r) => r.key);
-    expect(keys('panels')).toEqual(['panelOpacity']);
-    expect(keys('map')[0]).toBe('showMinimap');
+  it('keeps Panel Opacity on Panels itself', () => {
+    const keys = SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!.rows.map((r) => r.key);
+    expect(keys).toEqual(['panelOpacity']);
   });
 
   it('opens every panel sub-category with its Enable switch, on by default', () => {
     const first = (id: string) => SETTINGS_CATEGORIES.find((c) => c.id === id)!.rows[0]!;
     const switches: Record<string, [string, string]> = {
-      layers: ['layersPanelEnabled', 'Enable Layers Panel'],
-      map: ['showMinimap', 'Enable Map'],
       collaborate: ['collaboratePanelEnabled', 'Enable Collaborate Panel'],
-      quickStyle: ['quickStylePanelEnabled', 'Enable Quick Style Panel'],
     };
     for (const [id, [key, label]] of Object.entries(switches)) {
       const row = first(id);
@@ -456,25 +350,27 @@ describe('settings sub-categories', () => {
     }
   });
 
-  it("offers a panel's other rows only while its Enable switch is on", () => {
-    const rows = (id: string, preferences: UserPreferences) =>
-      visibleCategories(false, { emailEnabled: false, signedIn: false, preferences })
-        .find((c) => c.id === id)!
+  it('offers nested rows only while their parent switch is on', () => {
+    const rows = (preferences: UserPreferences) =>
+      visibleCategories({ emailEnabled: false, signedIn: false, preferences })
+        .find((c) => c.id === 'tours')!
         .rows.map((r) => r.key);
-    expect(rows('layers', {})).toEqual([
-      'layersPanelEnabled',
-      'layersShowPreview',
-      'layersShowCount',
-      'layerHoverPreview',
+    expect(rows({})).toEqual([
+      'planTourSeen',
+      'planTourSeen-boards',
+      'planTourSeen-sheets',
+      'planTourSeen-dashboards',
+      'formTourSeen',
     ]);
-    expect(rows('layers', { layersPanelEnabled: false })).toEqual(['layersPanelEnabled']);
-    expect(rows('map', { showMinimap: false })).toEqual(['showMinimap']);
-    expect(rows('map', {})).toEqual(['showMinimap', 'mapDimOutside', 'mapSize']);
+    expect(rows({ planTourTracks: ['boards', 'sheets', 'dashboards'] })).toEqual([
+      'planTourSeen',
+      'formTourSeen',
+    ]);
   });
 
   it('names a sub-category by its path', () => {
-    const map = SETTINGS_CATEGORIES.find((c) => c.id === 'map')!;
-    expect(settingsCategoryPath(map)).toBe('Panels › Map');
+    const collaborate = SETTINGS_CATEGORIES.find((c) => c.id === 'collaborate')!;
+    expect(settingsCategoryPath(collaborate)).toBe('Panels › Collaborate');
     expect(settingsCategoryPath(SETTINGS_CATEGORIES.find((c) => c.id === 'panels')!)).toBe(
       'Panels',
     );

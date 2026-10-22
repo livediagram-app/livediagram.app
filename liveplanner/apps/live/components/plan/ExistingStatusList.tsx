@@ -1,7 +1,7 @@
 'use client';
 
 // The column picker's Existing Statuses (docs/specs/026-plan/plan-board.md "The column picker"): a listbox of the
-// statuses the document has that this board lacks, each a row with its colour swatch, its name, the boards that use
+// statuses the project has that this board lacks, each a row with its colour swatch, its name, the boards that use
 // it and how many of its cards this board would show. Driven from the picker's field (a combobox): the field keeps
 // focus and the highlighted row is its active descendant, so arrows move through the rows, Enter adds the
 // highlighted one, and a press on a row adds it.

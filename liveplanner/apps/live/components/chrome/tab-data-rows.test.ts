@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from 'vitest';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 
 const entry = {
   controller: { canShape: true, workbook: { id: 'wb' }, sheet: { id: 'sh' } },
@@ -39,7 +39,7 @@ describe('a tab menu’s Import CSV…', () => {
     published = entry;
   });
 
-  it('keeps the document’s dialogs on any other tab', () => {
+  it('keeps the project’s dialogs on any other tab', () => {
     expect(tabDataRows({ kind: undefined, elements: [] })).toBeUndefined();
     expect(tabDataRows({ kind: 'sheet', elements: [] })).toBeUndefined();
   });
@@ -64,7 +64,7 @@ describe('a tab menu’s Import CSV…', () => {
     boardPublished = board;
   });
 
-  it('keeps the document’s dialogs on a Board tab without its board', () => {
+  it('keeps the project’s dialogs on a Board tab without its board', () => {
     expect(tabDataRows({ kind: 'board', elements: [] })).toBeUndefined();
   });
 });

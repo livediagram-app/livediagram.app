@@ -4,7 +4,7 @@ import {
   mintTicket,
   newPerson,
   received,
-  seedDocumentAndToken,
+  seedProjectAndToken,
   serveFakeWorkbench,
   signIn,
   ticketOf,
@@ -14,7 +14,7 @@ import {
 // The workbench embed end to end (docs/specs/013-workspace/blueprints/workbench-embeds.md, "Testing"):
 // a fake workbench on http://127.0.0.1:<port> frames the live app on http://localhost:<port>. Opt-in
 // (E2E_WORKBENCH=1, `pnpm test:e2e:workbench`): it needs the NEXT_PUBLIC_E2E_AUTH build and the stack
-// acting as Clerk for the signed-in pairing page.
+// acting as the accounts Worker for the signed-in pairing page.
 
 let workbench: FakeWorkbench;
 let elsewhere: FakeWorkbench;
@@ -38,7 +38,7 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
   test.setTimeout(120_000);
   const person = await newPerson(request, 'Webber');
   await signIn(context, person, new URL(baseURL!).origin);
-  const seeded = await seedDocumentAndToken(request, person);
+  const seeded = await seedProjectAndToken(request, person);
 
   // Unpaired: the mint asks for a pairing, and the person allows it in their own browser.
   const unpaired = await mintTicket(request, seeded, workbench.origin);
@@ -73,8 +73,8 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
     .toEqual(expect.arrayContaining(['liveplanner:hello', 'liveplanner:ready']));
   const ready = (await received(page)).find((m) => m.type === 'liveplanner:ready');
   expect(ready).toMatchObject({
-    documentId: seeded.documentId,
-    documentName: 'Home screen',
+    projectId: seeded.projectId,
+    projectName: 'Home screen',
     role: 'edit',
   });
 
@@ -94,7 +94,7 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
         const tab = await apiJson<{ tab: { elements: unknown[] } }>(
           request,
           'GET',
-          `/documents/${seeded.documentId}/tabs/${seeded.tabId}`,
+          `/projects/${seeded.projectId}/tabs/${seeded.tabId}`,
           person.jwt,
         );
         return tab.body.tab.elements.length;
@@ -115,9 +115,11 @@ test('a paired workbench frames the editor, hears the selection, renews, and end
   await frame.locator('[data-element-id="el-play"]').first().click();
   await expect.poll(() => selectionOf('Play')).toBeTruthy();
   const selection = (await selectionOf('Play'))!;
-  expect(selection.reference).toMatch(/^\[liveplanner\] "Home screen" › tab "Wireframe" \(doc /);
+  expect(selection.reference).toMatch(
+    /^\[liveplanner\] "Home screen" › tab "Wireframe" \(project /,
+  );
   expect(selection.reference).toContain('"Play"');
-  expect(selection.reference).toContain(`read: liveplanner tab view ${seeded.documentId}`);
+  expect(selection.reference).toContain(`read: liveplanner tab view ${seeded.projectId}`);
 
   // Reveal outlines the element; the theme follows the workbench.
   await page.evaluate(() =>
@@ -187,7 +189,7 @@ test('a page of another origin framing the URL mounts nothing', async ({
   test.setTimeout(60_000);
   const person = await newPerson(request, 'Webber');
   await signIn(context, person, new URL(baseURL!).origin);
-  const seeded = await seedDocumentAndToken(request, person);
+  const seeded = await seedProjectAndToken(request, person);
   const unpaired = await mintTicket(request, seeded, workbench.origin);
   await page.goto(unpaired.body.pairingUrl!);
   await page.getByRole('button', { name: 'Allow', exact: true }).click();

@@ -1,6 +1,5 @@
 // Trusted Types (docs/specs/016-platform/trusted-types.md): the enforced header, our policies, and the rule
 // the `default` policy applies to script URLs. Nothing else of ours creates a policy.
-import { clerkPublishableKeyOrNull } from './clerk-key';
 
 import { MARKUP_POLICY } from './trusted-types-csp';
 
@@ -66,35 +65,6 @@ export function isAllowedScriptUrl(
 }
 
 /**
- * Where Clerk's bot protection loads Cloudflare Turnstile from (`/turnstile/v0/api.js`) when the instance asks for a
- * CAPTCHA on sign-up; refused, sign-up stops at "The CAPTCHA failed to load".
- */
-const CLERK_CAPTCHA_ORIGIN = 'https://challenges.cloudflare.com';
-
-/**
- * The Clerk frontend API's origin, read from the publishable key (`pk_<env>_<base64 of "<host>$">`), and the origin
- * of the CAPTCHA its sign-up loads; none without a key.
- */
-export function trustedScriptOrigins(env: {
-  NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?: string;
-}): string[] {
-  return clerkScriptOrigins(env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY);
-}
-
-function clerkScriptOrigins(publishableKey: string | undefined): string[] {
-  // The key's shape is clerkPublishableKeyOrNull's; its body names the frontend API's host.
-  const key = clerkPublishableKeyOrNull(publishableKey);
-  const match = key ? /^pk_(?:test|live)_([A-Za-z0-9+/=]+)$/.exec(key) : null;
-  if (!match) return [];
-  try {
-    const host = atob(match[1]!).replace(/\$$/, '');
-    return /^[a-z0-9.-]+$/i.test(host) ? [`https://${host}`, CLERK_CAPTCHA_ORIGIN] : [];
-  } catch {
-    return [];
-  }
-}
-
-/**
  * The inline script first in every layout's <head>: the `default` policy (script URLs by `isAllowedScriptUrl`, and
  * React DOM's empty `<script></script>` alone as HTML), and the log line for every Trusted Types violation. Asked
  * for HTML by hand rather than by a sink, the default policy throws, so it is never a pass-through for anyone.
@@ -106,7 +76,10 @@ const SCRIPT_ORIGIN = /^https:\/\/[A-Za-z0-9.-]+(:[0-9]+)?$/;
 // JSON for an inline script: no raw "<", so nothing in it can close the script element.
 const inlineJson = (value: unknown) => JSON.stringify(value).replace(/</g, '\\u003c');
 
-export function trustedTypesBootScript(assetPrefix: string, origins: readonly string[]): string {
+export function trustedTypesBootScript(
+  assetPrefix: string,
+  origins: readonly string[] = [],
+): string {
   if (!ASSET_PREFIX.test(assetPrefix))
     throw new Error(`[trusted-types] not an asset prefix: ${assetPrefix}`);
   for (const origin of origins)

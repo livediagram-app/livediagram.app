@@ -9,11 +9,11 @@ export const TAB_SAVE_WAIT_MS = 8_000;
 
 const saved = new Set<string>();
 const waiting = new Map<string, Set<() => void>>();
-const key = (documentId: string, tabId: string) => `${documentId}\u0000${tabId}`;
+const key = (projectId: string, tabId: string) => `${projectId}\u0000${tabId}`;
 
 /** A tab's save reached the server (autosave, after its PUT). */
-export function noteTabSaved(documentId: string, tabId: string): void {
-  const k = key(documentId, tabId);
+export function noteTabSaved(projectId: string, tabId: string): void {
+  const k = key(projectId, tabId);
   saved.add(k);
   const wake = waiting.get(k);
   if (!wake) return;
@@ -23,11 +23,11 @@ export function noteTabSaved(documentId: string, tabId: string): void {
 
 /** Resolves true once the tab is saved (at once if it already was), false when `timeoutMs` passes first. */
 export function whenTabSaved(
-  documentId: string,
+  projectId: string,
   tabId: string,
   timeoutMs = TAB_SAVE_WAIT_MS,
 ): Promise<boolean> {
-  const k = key(documentId, tabId);
+  const k = key(projectId, tabId);
   if (saved.has(k)) return Promise.resolve(true);
   return new Promise((resolve) => {
     const done = () => {

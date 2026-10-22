@@ -6,7 +6,7 @@ import {
   sequenceDrawing,
   type SequenceLook,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useElementFinish } from '@/components/canvas/CanvasFinishContext';
 
 /** Seconds of the Play wipe per message at Normal speed (docs/specs/009-elements/sequence-diagram.md "Animation"). */

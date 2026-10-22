@@ -1,21 +1,17 @@
 // Binds the contextual command catalogue (lib/editor-commands.ts) to the live
 // editor so the SearchPanel can surface a power-user action palette (docs/specs/008-canvas/canvas-and-palette.md
-// "Search panel"). Reads the selection + the editor's existing action
-// handlers off EditorContext, returns the searchable `commandItems` the
+// "Search panel"). Reads the editor's existing action handlers off
+// EditorContext, returns the searchable `commandItems` the
 // panel matches against plus a `runCommand` dispatcher.
 //
 // Each handler delegates to the SAME editor action the context menu / toolbar
 // / header uses (so behaviour + telemetry can't drift); view-only sessions
-// get the view-safe subset only (zen / fit / export, docs/specs/007-editor/command-palette.md), with every
+// get the view-safe subset only (zen / export / collaborators, docs/specs/007-editor/command-palette.md), with every
 // mutating command withheld inside the pure builder.
 
-import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
-import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, renumberSteps, supportsRotation, takesAttachments } from '@liveplanner/document';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import type { CanvasTool } from '@/components/palette/palette.types';
-import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
+import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import {
   buildEditorCommands,
   type CommandContext,
@@ -29,74 +25,38 @@ import { useLatest } from '@/hooks/ui/useLatest';
 // alone, never on the handlers, so the searchable list needs none.
 const noop = () => {};
 const INERT_HANDLERS: CommandHandlers = {
-  deleteSelection: noop,
-  duplicateSelection: noop,
-  toggleLockSelection: noop,
-  bringToFront: noop,
-  sendToBack: noop,
-  rotate: noop,
-  clearAnimation: noop,
-  renumberSteps: noop,
-  setMarker: noop,
-  addComment: noop,
-  editNote: noop,
   createTab: noop,
-  renameDocument: noop,
-  deleteDocument: noop,
+  renameProject: noop,
+  deleteProject: noop,
   renameTab: noop,
   openTheme: noop,
-  openCanvasOptions: noop,
   openShare: noop,
   openCollaborators: noop,
   undo: noop,
   redo: noop,
   toggleZen: noop,
-  fitToScreen: noop,
-  autoLayout: noop,
-  autoAlign: noop,
   openExport: noop,
   openImport: noop,
   openSettings: noop,
   openShortcuts: noop,
-  setTool: noop,
 };
 
-// `open`: the search is showing. Only then does the catalogue follow the selection, so a closed search
-// never renders for a selection change (docs/specs/008-canvas/blueprints/selection-store.md).
-export function useEditorCommands(open: boolean): {
+export function useEditorCommands(): {
   // Undefined (not []) when there are no commands, so the SearchPanel can omit
   // the prop the same way it omits palette items for read-only sessions.
   commandItems: CommandSearchItem[] | undefined;
   runCommand: (id: string) => void;
 } {
   const ctx = useEditorContext();
-  const { selectedId, multiSelectedIds } = useSelectionOf(
-    useCallback((s: Selection) => (open ? s : EMPTY_SELECTION), [open]),
-  );
   const {
     isReadOnly,
-    canShareDocument,
-    documentId,
-    activeTab,
-    deleteSelected,
-    deleteMultiSelected,
-    duplicateSelected,
-    duplicateMultiSelected,
-    toggleLockSelected,
-    toggleLockMultiSelected,
-    sendSelectedToBack,
-    bringSelectedToFront,
-    setRotationSelected,
-    commitElements,
-    setArrowFlowSelected,
-    setMarkerSelected,
-    openComments,
-    openNote,
+    canShareProject,
+    projectId,
     addTab,
-    deleteDocument,
+    deleteProject,
     setShareDialogOpen,
     setCanvasThemeTab,
-    requestRenameDocument,
+    requestRenameProject,
     requestRenameTab,
     undo,
     redo,
@@ -104,117 +64,41 @@ export function useEditorCommands(open: boolean): {
     canRedo,
     zenMode,
     toggleZenMode,
-    fitToScreen,
-    autoLayoutTab,
-    autoAlignTab,
     setExportOpen,
     setExportScope,
     setImportOpen,
     setSettingsOpen,
     openSettingsOn,
-    canvasTool,
-    setCanvasTool,
     workbenchMode,
   } = ctx;
 
-  // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
+  // Offline projects (docs/specs/006-project/offline-mode.md) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
-  const isOffline = useIsOfflineDocument(documentId);
-
-  const isMulti = multiSelectedIds.size > 0;
-  const selectionCount = isMulti ? multiSelectedIds.size : selectedId ? 1 : 0;
-  // The single selection's element (null for a multi- or empty selection), so
-  // boxed-only / shape-only / animated gating can read its type + fields.
-  const single =
-    !isMulti && selectedId ? (activeTab.elements.find((e) => e.id === selectedId) ?? null) : null;
-  const singleIsBoxed = single ? isBoxed(single) : false;
-  const singleTakesAttachments = single ? takesAttachments(single) : true;
-  const singleIsShape = single?.type === 'shape';
-  const singleRotates = single ? supportsRotation(single) : false;
-  const marker = single?.type === 'shape' ? (single.marker ?? null) : null;
-  const hasAnimation = single?.type === 'arrow' && !!single.flow;
+  const isOffline = useIsOfflineProject(projectId);
 
   // Read-only gating happens inside the pure builder (docs/specs/007-editor/command-palette.md): view-only
   // visitors keep the view-safe subset, editors get the full catalogue.
-  const canvasEmpty = activeTab.elements.length === 0;
-  const tabHasSteps = activeTab.elements.some((el) => el.type === 'shape' && el.shape === 'step');
-  const tabLocked = activeTab.locked === true;
   const cmdCtx = useMemo<CommandContext>(
     () => ({
       isReadOnly,
       canUndo,
       canRedo,
       zenMode,
-      selectionCount,
-      singleIsBoxed,
-      singleTakesAttachments,
-      singleRotates,
-      singleIsShape,
-      hasAnimation,
-      tabHasSteps,
-      marker,
-      canShare: canShareDocument,
+      canShare: canShareProject,
       isOffline,
       workbench: workbenchMode,
-      canvasTool,
-      // Same emptiness test the palette's tool dropdown uses to disable the
-      // content-dependent tools, so search can never offer a tool the palette
-      // has greyed out.
-      canvasEmpty,
-      tabLocked,
     }),
-    [
-      isReadOnly,
-      canUndo,
-      canRedo,
-      zenMode,
-      selectionCount,
-      singleIsBoxed,
-      singleTakesAttachments,
-      singleRotates,
-      singleIsShape,
-      hasAnimation,
-      tabHasSteps,
-      marker,
-      canShareDocument,
-      isOffline,
-      workbenchMode,
-      canvasTool,
-      canvasEmpty,
-      tabLocked,
-    ],
+    [isReadOnly, canUndo, canRedo, zenMode, canShareProject, isOffline, workbenchMode],
   );
 
   // Each handler is the editor's own action for that verb, as it is at the moment a command runs.
   const handlers: CommandHandlers = {
-    deleteSelection: () => (isMulti ? deleteMultiSelected() : deleteSelected()),
-    duplicateSelection: () => (isMulti ? duplicateMultiSelected() : duplicateSelected()),
-    toggleLockSelection: () => (isMulti ? toggleLockMultiSelected() : toggleLockSelected()),
-    // Layer-order handlers already act on the whole selection (single +
-    // multi), so they need no per-mode branch.
-    bringToFront: bringSelectedToFront,
-    sendToBack: sendSelectedToBack,
-    rotate: setRotationSelected,
-    clearAnimation: () => setArrowFlowSelected(null),
-    setMarker: setMarkerSelected,
-    // The step menu's own write (ChipMenuSection), one history step over the tab, with its telemetry.
-    renumberSteps: () => {
-      commitElements(renumberSteps);
-      track('Element', 'Changed', 'RenumberSteps');
-    },
-    // Never on a Plan item (docs/specs/026-plan/plan-mode.md "Nothing attached to Plan items").
-    addComment: () => {
-      if (selectedId && singleTakesAttachments) openComments(selectedId);
-    },
-    editNote: () => {
-      if (selectedId && singleTakesAttachments) openNote(selectedId);
-    },
     createTab: addTab,
-    renameDocument: requestRenameDocument,
-    // deleteDocument confirms internally and (for the current document)
-    // redirects to /explorer; it needs the document's own id.
-    deleteDocument: () => {
-      if (documentId) void deleteDocument(documentId);
+    renameProject: requestRenameProject,
+    // deleteProject confirms internally and (for the current project)
+    // redirects to /explorer; it needs the project's own id.
+    deleteProject: () => {
+      if (projectId) void deleteProject(projectId);
     },
     renameTab: requestRenameTab,
     // Replicate the telemetry the menu/header entry points fire, since the
@@ -222,10 +106,6 @@ export function useEditorCommands(open: boolean): {
     openTheme: () => {
       setCanvasThemeTab('theme');
       track('UI', 'Opened', 'ThemePicker');
-    },
-    openCanvasOptions: () => {
-      setCanvasThemeTab('canvas');
-      track('UI', 'Opened', 'CanvasStyle');
     },
     openShare: () => {
       setShareDialogOpen(true);
@@ -235,15 +115,11 @@ export function useEditorCommands(open: boolean): {
     // which is what the presence-stack entry point passes. The opener tracks
     // its own UI·Opened·Collaborators, so this adds none.
     openCollaborators: () => ctx.openCollaborators(null),
-    // The remaining handlers track internally (undo/redo, zen, fit,
-    // auto layout/align) or have untracked entry points everywhere
-    // (export / import / templates), so no extra telemetry here.
+    // The remaining handlers track internally (undo/redo, zen) or have untracked entry points everywhere
+    // (export / import), so no extra telemetry here.
     undo,
     redo,
     toggleZen: toggleZenMode,
-    fitToScreen,
-    autoLayout: autoLayoutTab,
-    autoAlign: autoAlignTab,
     openExport: () => {
       setExportScope('tab');
       setExportOpen(true);
@@ -257,9 +133,6 @@ export function useEditorCommands(open: boolean): {
       openSettingsOn('keyboard');
       track('UI', 'Opened', 'Shortcuts');
     },
-    // The context's setter, not the raw one: it carries the pressed-state
-    // and telemetry the dropdown's onChange relies on.
-    setTool: (tool) => setCanvasTool(tool as CanvasTool),
   };
 
   // The searchable catalogue changes only with the gating inputs.

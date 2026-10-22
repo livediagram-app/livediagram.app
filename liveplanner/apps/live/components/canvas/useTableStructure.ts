@@ -9,7 +9,7 @@ import {
   setCellStyle,
   type TableCellStyle,
   type TableElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 
 type TableMenu = { axis: 'col' | 'row'; index: number; x: number; y: number } | null;

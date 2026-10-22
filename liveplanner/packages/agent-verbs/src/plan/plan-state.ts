@@ -6,9 +6,9 @@ import { ApiError } from '@liveplanner/api-client';
 import type { Item } from '@liveplanner/items';
 import { itemsPath } from '../verbs/shared';
 
-export const planPath = (documentId: string) => `/documents/${encodeURIComponent(documentId)}/plan`;
-export const itemTypesPath = (documentId: string) =>
-  `/documents/${encodeURIComponent(documentId)}/item-types`;
+export const planPath = (projectId: string) => `/projects/${encodeURIComponent(projectId)}/plan`;
+export const itemTypesPath = (projectId: string) =>
+  `/projects/${encodeURIComponent(projectId)}/item-types`;
 
 // How many times a change of card types is made again when another change landed first (409 `item_types_stale`,
 // docs/specs/026-plan/item-types.md "Storage and sync"): each attempt reads the card types afresh.
@@ -23,10 +23,10 @@ export interface PlanState {
   plan: PlanResponse;
 }
 
-export async function readPlanState(api: ApiClient, documentId: string): Promise<PlanState> {
+export async function readPlanState(api: ApiClient, projectId: string): Promise<PlanState> {
   const [{ items }, plan] = await Promise.all([
-    api.json<ItemsResponse>(itemsPath(documentId)),
-    api.json<PlanResponse>(planPath(documentId)),
+    api.json<ItemsResponse>(itemsPath(projectId)),
+    api.json<PlanResponse>(planPath(projectId)),
   ]);
   return { items, plan };
 }

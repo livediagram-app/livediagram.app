@@ -2,7 +2,7 @@
 // draw with the in-article illustration kit (components/illustrations/primitives.tsx) for anything the editor
 // shows: shapes, arrows, cursors, avatars, panels. This file adds only what a category scene needs on top: the
 // stage it stands on, the floating window most scenes frame their moment in, and a handful of small motifs
-// (chips, keycaps, ticks, sparkles, document thumbnails) that recur across the set.
+// (chips, keycaps, ticks, sparkles, project thumbnails) that recur across the set.
 //
 // Colours follow the kit's house style: Tailwind fill/stroke classes in the light ramp, retargeted for dark by
 // app/help-art.css because the stage carries `help-art`.
@@ -315,7 +315,7 @@ export function Sparkle({
   );
 }
 
-/** A document thumbnail: a page with a folded corner, a title bar and a tiny diagram or text lines. */
+/** A project thumbnail: a page with a folded corner, a title bar and a tiny diagram or text lines. */
 export function DocThumb({
   x,
   y,

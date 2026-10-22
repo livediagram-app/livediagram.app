@@ -19,14 +19,14 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
 - **Contrast.** Both halves meet WCAG 2.2 AA: text on its fill at 4.5:1 or more, outlines and arrows against the canvas
   at 3:1 or more. Where a derived (or a native) colour falls short, its lightness is moved away from what it sits on
   until it passes, keeping its hue.
-  `packages/document/src/theme-halves-contrast.test.ts` checks every theme in both halves, and
+  `packages/project/src/theme-halves-contrast.test.ts` checks every theme in both halves, and
   `apps/live/lib/tab-looks-contrast.test.ts` every look as a light- and a dark-mode viewer sees it (box text, outline
   and arrow).
 - **Style presets meet the same floor.** Every shape preset's label reads on its fill at 4.5:1 or more in both halves
   of every theme, and every table preset's header title on its band. Bold stays white text, so its fill darkens until
   white reads on it; any other short label (Solid's white on a mid accent, the Border tier's accent on white) is walked
   away from its fill. A preset that already read is unchanged. The shared walk lives in
-  `packages/document/src/readable-colour.ts`; `packages/document/src/theme-presets.test.ts` checks every preset.
+  `packages/project/src/readable-colour.ts`; `packages/project/src/theme-presets.test.ts` checks every preset.
 - **Custom themes** derive their other half the same way. A viewer who cannot resolve someone else's custom theme
   ([Custom themes](custom-themes.md)) sees it as stored.
 
@@ -38,7 +38,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
 - **A box's text and fill are drawn as a pair.** Each colour is redrawn on its own, so a box whose fill is one of the
   theme's colours but whose text is someone's choice (a template's white box with slate text) would get the half's
   fill under the stored text. Where that would put the text on its fill below 4.5:1, and read worse than the stored
-  pair does, the box keeps its stored fill and text instead (its outline still follows the half). `packages/document/src/theme-halves.test.ts` covers the rule, and
+  pair does, the box keeps its stored fill and text instead (its outline still follows the half). `packages/project/src/theme-halves.test.ts` covers the rule, and
   `apps/live/lib/template-theme-contrast.test.ts` every template under every theme, for a light- and a dark-mode
   viewer.
 - **A label reads against what is drawn behind it.** A template opened on the Default scheme keeps every label at
@@ -46,14 +46,13 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   translucent wash mixed over what is under it), else the canvas. A label with no colour of its own takes the viewer's
   ink, light on the dark canvas, so words on a panel whose fill the template fixes (a pale key, a pastel lane) carry a
   dark ink (`PAPER_INK`), and coloured words straight on the canvas take a tone that reads on both halves'
-  (`CANVAS_TONES`), both in `packages/templates/src/template-inks.ts`. `apps/live/lib/template-overlay-contrast.test.ts`
-  checks every template but the Pages ones, whose words sit on pages with their own paper.
+  (`CANVAS_TONES`). `apps/live/lib/template-overlay-contrast.test.ts` checks every template.
 - **A theme never sinks a label into what is behind it.** Picking a theme or a look, or drawing a tab in the other
   half, repaints each colour on its own, so it can move a label's backdrop (a panel the theme paints, the canvas)
   without its ink, or the ink without the backdrop: a template's dark `PAPER_INK` on a panel a dark theme repaints
   deep brown, or its slate caption on a canvas that turned dark. Wherever that leaves a label under 3:1 against what is
   behind it (the same backdrop as above) and reading worse than before, the label's ink is walked in lightness, its
-  hue and chroma kept, until it reaches 3:1 (`withReadableLabelInks`, `packages/document/src/label-backdrop.ts`, on
+  hue and chroma kept, until it reaches 3:1 (`withReadableLabelInks`, `packages/project/src/label-backdrop.ts`, on
   `reachContrast`). A pick stores the walked ink, as it stores the rest of the theme; a view only draws it. A label no
   theme touched keeps its ink however low it reads, since that is someone's choice. `apps/live/lib/template-overlay-contrast.test.ts` holds every
   template's labels at 3:1 under every theme, picked in either half and seen in either

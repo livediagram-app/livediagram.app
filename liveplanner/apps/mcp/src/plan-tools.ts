@@ -26,48 +26,48 @@ import { deepLink, errorResult, requireToken, stopped, textResult } from './tool
 export function registerPlanTools(server: McpServer, env: Env): void {
   registerTool(server, env, mcpListItems, async (args, extra) => {
     const api = clientFor(env, requireToken(extra));
-    const state = await readPlanState(api, args.documentId);
+    const state = await readPlanState(api, args.projectId);
     // A column or card type named as change_items names them; an unknown one is refused with the names there are.
     const filter = resolveListingFilter(state, args);
     if (!filter.ok) return errorResult(filter.message);
-    return textResult({ ...planListing(state, filter), url: deepLink(env, args.documentId) });
+    return textResult({ ...planListing(state, filter), url: deepLink(env, args.projectId) });
   });
 
   registerTool(server, env, mcpChangeItems, async (args, extra) => {
     const api = clientFor(env, requireToken(extra));
-    const state = await readPlanState(api, args.documentId);
-    const result = await applyItemChanges(api, args.documentId, args.changes, state);
+    const state = await readPlanState(api, args.projectId);
+    const result = await applyItemChanges(api, args.projectId, args.changes, state);
     if (result.refusal) return stopped(result.refusal.message, result.applied);
-    return textResult({ applied: result.applied, url: deepLink(env, args.documentId) });
+    return textResult({ applied: result.applied, url: deepLink(env, args.projectId) });
   });
 
   registerTool(server, env, mcpAddBoard, async (args, extra) => {
     const api = clientFor(env, requireToken(extra));
-    const { documentId, ...input } = args;
-    const result = await addBoard(api, documentId, input, 'mcp');
+    const { projectId, ...input } = args;
+    const result = await addBoard(api, projectId, input, 'mcp');
     if (!result.ok) return errorResult(result.message);
     const { ok: _ok, ...board } = result;
-    return textResult({ ...board, url: deepLink(env, documentId) });
+    return textResult({ ...board, url: deepLink(env, projectId) });
   });
 
   registerTool(server, env, mcpChangeBoard, async (args, extra) => {
     const api = clientFor(env, requireToken(extra));
-    const { documentId, ...input } = args;
-    const result = await changeBoard(api, documentId, input, 'mcp');
+    const { projectId, ...input } = args;
+    const result = await changeBoard(api, projectId, input, 'mcp');
     if (!result.ok) return errorResult(result.message);
     const { ok: _ok, ...board } = result;
-    return textResult({ ...board, url: deepLink(env, documentId) });
+    return textResult({ ...board, url: deepLink(env, projectId) });
   });
 
   registerTool(server, env, mcpChangeCardTypes, async (args, extra) => {
     const api = clientFor(env, requireToken(extra));
-    const result = await changeCardTypes(api, args.documentId, args.changes);
+    const result = await changeCardTypes(api, args.projectId, args.changes);
     if (result.refusal) return stopped(result.refusal.message, result.applied);
     return textResult({
       applied: result.applied,
       trashed: result.trashed,
       types: result.types,
-      url: deepLink(env, args.documentId),
+      url: deepLink(env, args.projectId),
     });
   });
 }

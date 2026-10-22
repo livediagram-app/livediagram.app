@@ -12,7 +12,7 @@ import {
   type ChartSource,
   type ShapeElement,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   formatRange,
   idRangeOf,
@@ -26,7 +26,7 @@ export const NOT_A_RANGE = 'Not a range on this sheet';
 const isSheetChart = (el: Tab['elements'][number]): el is ShapeElement =>
   el.type === 'shape' && isChartShape(el.shape) && !!el.chartSource;
 
-// The charts drawn from `sheetId` on the document's tabs (a Dashboard's own slot charts left out), in tab order.
+// The charts drawn from `sheetId` on the project's tabs (a Dashboard's own slot charts left out), in tab order.
 export function sheetChartsOf(tabs: readonly Tab[], sheetId: string): ShapeElement[] {
   return tabs.flatMap((t) =>
     tabKindOf(t) === 'dashboard'

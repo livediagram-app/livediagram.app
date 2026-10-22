@@ -15,13 +15,11 @@ const off = (prefs: UserPreferences) => setPowerUserMode(prefs, false);
 
 describe('setPowerUserMode on', () => {
   it('writes every recommended value and marks the mode on', () => {
-    const next = on({ aiSuggestedPrompts: true, panelOpacity: 0.6 });
+    const next = on({ formTourSeen: false, panelOpacity: 0.6 });
     expect(next).toMatchObject({
       powerUserMode: true,
-      alignmentGuides: true,
-      autoRebindArrows: true,
       planTourSeen: true,
-      aiSuggestedPrompts: false,
+      formTourSeen: true,
       minimalChrome: true,
     });
   });
@@ -34,10 +32,10 @@ describe('setPowerUserMode on', () => {
   });
 
   it('records the values before and after, per preset setting', () => {
-    const next = on({ alignmentGuides: false });
-    expect(next.powerUserBaseline?.alignmentGuides).toEqual({
-      before: { alignmentGuides: false },
-      applied: { alignmentGuides: true },
+    const next = on({ formTourSeen: false });
+    expect(next.powerUserBaseline?.formTourSeen).toEqual({
+      before: { formTourSeen: false },
+      applied: { formTourSeen: true },
     });
     // An absent key stays absent in `before`, so restoring can delete it.
     expect(next.powerUserBaseline?.planTourSeen).toEqual({
@@ -50,8 +48,8 @@ describe('setPowerUserMode on', () => {
   });
 
   it('does nothing when the mode is already on', () => {
-    const once = on({ alignmentGuides: false });
-    const changed = { ...once, alignmentGuides: false };
+    const once = on({ formTourSeen: false });
+    const changed = { ...once, formTourSeen: false };
     expect(setPowerUserMode(changed, true).prefs).toBe(changed);
   });
 });
@@ -59,8 +57,8 @@ describe('setPowerUserMode on', () => {
 describe('setPowerUserMode off', () => {
   it('restores every setting the user did not touch', () => {
     const before: UserPreferences = {
-      alignmentGuides: false,
-      aiSuggestedPrompts: true,
+      formTourSeen: false,
+      minimalChrome: false,
       planTourSeen: false,
     };
     const { prefs, restored, kept } = off(on(before));
@@ -76,21 +74,21 @@ describe('setPowerUserMode off', () => {
 
   it('keeps a setting the user changed while the mode was on', () => {
     const changed = {
-      ...on({ alignmentGuides: false, aiSuggestedPrompts: true }),
-      aiSuggestedPrompts: true,
+      ...on({ formTourSeen: false, planTourSeen: false }),
+      planTourSeen: false,
     };
     const { prefs, kept, restored } = off(changed);
-    expect(prefs.aiSuggestedPrompts).toBe(true);
-    expect(kept).toEqual(['aiSuggestedPrompts']);
+    expect(prefs.planTourSeen).toBe(false);
+    expect(kept).toEqual(['planTourSeen']);
     // The untouched one still goes back.
-    expect(prefs.alignmentGuides).toBe(false);
-    expect(restored).toContain('alignmentGuides');
+    expect(prefs.formTourSeen).toBe(false);
+    expect(restored).toContain('formTourSeen');
   });
 
   it('treats a setting changed and changed back as untouched', () => {
-    const roundTrip = { ...on({ alignmentGuides: false }), alignmentGuides: false };
-    const back = { ...roundTrip, alignmentGuides: true };
-    expect(off(back).prefs.alignmentGuides).toBe(false);
+    const roundTrip = { ...on({ formTourSeen: false }), formTourSeen: false };
+    const back = { ...roundTrip, formTourSeen: true };
+    expect(off(back).prefs.formTourSeen).toBe(false);
   });
 
   it('clears the mode and its baseline', () => {
@@ -101,19 +99,19 @@ describe('setPowerUserMode off', () => {
   });
 
   it('only clears the flag when there is no baseline', () => {
-    const { prefs, restored, kept } = off({ powerUserMode: true, alignmentGuides: true });
-    expect(prefs).toEqual({ alignmentGuides: true });
+    const { prefs, restored, kept } = off({ powerUserMode: true, formTourSeen: true });
+    expect(prefs).toEqual({ formTourSeen: true });
     expect(restored).toEqual([]);
     expect(kept).toEqual([]);
   });
 
   it('does nothing when the mode is already off', () => {
-    const prefs: UserPreferences = { alignmentGuides: false };
+    const prefs: UserPreferences = { formTourSeen: false };
     expect(off(prefs).prefs).toBe(prefs);
   });
 
   it('survives the JSON round trip the preferences blob takes', () => {
-    const before: UserPreferences = { alignmentGuides: false, aiSuggestedPrompts: true };
+    const before: UserPreferences = { formTourSeen: false, minimalChrome: false };
     const stored = JSON.parse(JSON.stringify(on(before))) as UserPreferences;
     expect(off(stored).prefs).toEqual(before);
   });
@@ -122,9 +120,9 @@ describe('setPowerUserMode off', () => {
     const prefs: UserPreferences = {
       powerUserMode: true,
       powerUserBaseline: {
-        futureSetting: { before: {}, applied: { quickAddOnHover: true } },
+        futureSetting: { before: {}, applied: { homeBanner: false } },
       },
-      quickAddOnHover: true,
+      homeBanner: false,
     };
     expect(off(prefs).prefs).toEqual({});
   });

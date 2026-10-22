@@ -17,7 +17,7 @@ const step = (id: string, title: string, body: string, target: string): ShareTou
 const ROLE = step(
   'role',
   'Choose What They Can Do',
-  'Editors change anything, Participants add stickies and vote, Viewers only look. Pick one now.',
+  'Editors change anything, Participants work cards and cells and vote, Viewers only look. Pick one now.',
   'share-role',
 );
 
@@ -63,7 +63,7 @@ const OUTRO: ShareTourStep = {
   body: 'Open Share any time to make, change or revoke a link.',
 };
 
-// The steps for this document: Opens only where there is more than one tab to choose from.
+// The steps for this project: Opens only where there is more than one tab to choose from.
 export function shareTourSteps(multiTab: boolean): ShareTourStep[] {
   return [ROLE, ...(multiTab ? [SCOPE] : []), VALID, CREATE, PASSES, PASSWORD, OUTRO];
 }

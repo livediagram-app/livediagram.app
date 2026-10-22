@@ -1,4 +1,4 @@
-import type { CommentMention } from '@liveplanner/document';
+import type { CommentMention } from '@liveplanner/project';
 import { apiAddComment, apiDeleteComment, apiSetThreadResolved } from '@/lib/api-client';
 
 // How a comment change is kept (docs/specs/012-collaboration/comment-pin.md, docs/specs/013-workspace/share-roles.md):
@@ -8,7 +8,7 @@ import { apiAddComment, apiDeleteComment, apiSetThreadResolved } from '@/lib/api
 // Participant's panel comment stayed on their own screen, unsaved and unseen by anyone else.
 export type CommentSession = {
   readOnly: boolean;
-  documentId: string | null;
+  projectId: string | null;
   tabId: string;
   selfId: string;
   shareCode: string | null;
@@ -17,8 +17,8 @@ export type CommentSession = {
 type Thread = { comments: readonly { id: string }[] } | undefined;
 
 export function commentPersisters(session: CommentSession) {
-  const { readOnly, documentId, tabId, selfId, shareCode } = session;
-  const endpoint = readOnly && documentId !== null ? documentId : null;
+  const { readOnly, projectId, tabId, selfId, shareCode } = session;
+  const endpoint = readOnly && projectId !== null ? projectId : null;
   return {
     add: (elementId: string, text: string, mentions?: CommentMention[], cell?: string) =>
       endpoint === null

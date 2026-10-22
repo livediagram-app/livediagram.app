@@ -7,7 +7,7 @@ import {
   withReadableLabelInks,
   type Appearance,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { getResolvedAppearance } from '@liveplanner/ui';
 import {
   getTheme,
@@ -38,7 +38,7 @@ export function withThemeApplied(
   // reads as "stuck on the deleted theme". Hard-reset to the new
   // theme instead so picking a theme always visibly applies.
   //
-  // A tab whose theme was simply NEVER SET (a fresh document, an
+  // A tab whose theme was simply NEVER SET (a fresh project, an
   // added tab, the Blank template) is NOT that case: its baseline
   // is the default theme, and the preserve-customs walk against it
   // works — hard-resetting here wiped a user's hand-picked colours

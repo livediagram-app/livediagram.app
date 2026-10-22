@@ -7,7 +7,7 @@
 import { useState } from 'react';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideLayoutGrid, lucidePencil } from '@liveplanner/icons/lucide';
-import type { DashboardSlot } from '@liveplanner/document';
+import type { DashboardSlot } from '@liveplanner/project';
 import { BoardSettingsSection } from '@/components/palette/PlanBoardMenuSection';
 import { SettingsActionTile, SettingsBody } from '../settings-panel-parts';
 import { useDashboard } from './dashboard-context';

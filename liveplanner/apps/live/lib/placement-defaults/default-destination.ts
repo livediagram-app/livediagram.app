@@ -1,4 +1,4 @@
-// Where a person's new documents go, read on the client (docs/specs/013-workspace/default-folders.md
+// Where a person's new projects go, read on the client (docs/specs/013-workspace/default-folders.md
 // "Surfaces"; blueprint "Behaviour and state (surfaces)"). Pure: the defaults and the folders the
 // surface has loaded go in, and the server's precedence comes out, skipping a default whose folder
 // is not among them exactly as the server skips a dangling one.
@@ -84,13 +84,13 @@ export function resolveDefaultFor(
   return { resolved: null, skipped };
 }
 
-/** What a new document of this entry is made as, in Plan. */
+/** What a new project of this entry is made as, in Plan. */
 export function representativeIntent(key: PlacementDefaultKey): CreationIntent {
   const [dimension, value] = key.split(':') as [string, string];
-  if (dimension === 'mode') return { mode: 'plan', tabKind: 'diagram' };
+  if (dimension === 'mode') return { mode: 'plan', tabKind: 'empty' };
   return {
     mode: 'plan',
-    tabKind: 'diagram',
+    tabKind: 'board',
     templateFamily: value as 'retrospective' | 'kanban',
   };
 }
@@ -106,11 +106,11 @@ export type DefaultDestination =
       /** From this browser's memory; null when it never saw the folder. */
       name: string | null;
       reason: 'deleted' | 'unavailable';
-      /** Where these documents go instead; null = My Documents. */
+      /** Where these projects go instead; null = My Projects. */
       fallback: IndexedFolder | null;
     };
 
-/** Where new documents of this entry go now, as Settings shows it. */
+/** Where new projects of this entry go now, as Settings shows it. */
 export function destinationOf(
   key: PlacementDefaultKey,
   defaults: PlacementDefaults,

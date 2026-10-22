@@ -6,7 +6,7 @@ Live **session tools** that make a shared board interactive: a per-tab **timer**
 ## Why they need no new infrastructure
 
 Both tools store their state as optional **`Tab` fields** — `tab.timer` and
-`tab.vote` (`packages/document/src/index.ts`, helpers in `session.ts`). That
+`tab.vote` (`packages/project/src/index.ts`, helpers in `session.ts`). That
 means they ride the **existing tab-sync pipeline** with zero realtime / API
 changes: a control mutates the tab via `commitTabs` → autosave (`useAutosave`,
 600 ms debounce) `PUT`s the tab to D1 → the `{kind:'tab'}` RoomOp broadcasts it
@@ -152,7 +152,7 @@ spendable, and a stale snapshot restoring a retracted dot took one away.
 
 The fix carries the **change**, not the state, so concurrent dots commute: every
 peer applies both in whatever order they land and converges on the same map
-(`applyVoteDelta`, `packages/document/src/session.ts`). It is the same move
+(`applyVoteDelta`, `packages/project/src/session.ts`). It is the same move
 [Realtime conflict resolution](realtime-conflict-resolution.md) made for elements, on the one
 field where concurrent writers are the whole point rather than the exception.
 

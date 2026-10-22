@@ -1,4 +1,4 @@
-import type { CommunityPost } from './community';
+import type { CommunityPost } from '@liveworkspace/community';
 
 // Test-only fixtures (`@livediagram/api-schema/testing`), shared by every suite that draws a Community post, so
 // each test states only the fields it relies on. Never imported by app code.

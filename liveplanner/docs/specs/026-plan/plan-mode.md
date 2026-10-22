@@ -4,7 +4,7 @@
 Plan, for running work on boards: Kanban boards, sprint boards, triage boards, retros, roadmaps, and the Sheets,
 Dashboards and Forms beside them. It makes [Plan boards](plan-board.md) work like a planning tool (pick up a card,
 drop it in a column) instead of a drawing. It never decides what the tab is: a tab's kind does
-([Plan tabs](plan-tabs.md)), and the work on its boards is [items](items.md) in the document's item store.
+([Plan tabs](plan-tabs.md)), and the work on its boards is [items](items.md) in the project's item store.
 
 ## Domain language
 
@@ -39,9 +39,9 @@ general tab's pill leads with it; a Board, Sheet, Dashboard or Form tab shows it
 
 ## Cost
 
-Every Project is a Plan document, so what Plan reads is read from the first load:
+Every Project is a Plan project, so what Plan reads is read from the first load:
 
-- **Items load with the document**: a document fetches its items once it has hydrated, so its Cards and Trash panels
+- **Items load with the project**: a project fetches its items once it has hydrated, so its Cards and Trash panels
   list strays before it has a board. A room join or resync refetches only items already loaded.
 - **Plan's UI loads when drawn**: boards, cards, the item panel, the type editor, the Card Types panel, the board
   menu, the Cards category and card slides are separate chunks, fetched the first time one appears. The
@@ -50,18 +50,18 @@ Every Project is a Plan document, so what Plan reads is read from the first load
 - **Dashboards, Start Planning and the Sheet templates load when drawn too**: a Dashboard tab's page loads only for a
   Dashboard tab, Start Planning with the board picker, the Sheet templates' designs only when one is set up or drawn
   in a preview (the catalogue a menu names them from carries names and lines alone), and the tab menu's CSV writer
-  at the press. Measured on the document page's first load (gzipped JS, the static export): 1,463 KiB on main before
+  at the press. Measured on the project page's first load (gzipped JS, the static export): 1,463 KiB on main before
   Dashboards and the new templates, 1,860 KiB with them loaded up front, 1,485 KiB once lazy (+22 KiB).
   `plan-lazy-load.test.ts` keeps them out of the first load.
 - **No re-render churn**: the Plan context keeps its identity across editor renders that change nothing Plan
   holds, so boards and cards re-render only when items, types, presence or the board change.
-- **Other tabs load once**: statuses are the document's ([Plan templates](plan-templates.md#hand-offs)), so a
-  document of 2 to 12 tabs loads its other tabs once a session in the background, as the search panel
+- **Other tabs load once**: statuses are the project's ([Plan templates](plan-templates.md#hand-offs)), so a
+  project of 2 to 12 tabs loads its other tabs once a session in the background, as the search panel
   does; a larger one reads each tab's boards as it is opened.
 - **No presence chatter**: a card held (opened or dragged) is said to the room, and its release; nothing is sent
   by a person who never holds one. A holder says it once more when someone new joins, and when their own
   connection rejoins, so a late joiner sees it too (Collaboration, below).
-- **Server**: a tab-scoped list reads the store once and the revision without a count; a document copy carries
+- **Server**: a tab-scoped list reads the store once and the revision without a count; a project copy carries
   its items in the same batch as its tabs.
 
 ## Starting a board
@@ -88,7 +88,7 @@ Every Project is a Plan document, so what Plan reads is read from the first load
       Blank first, All Cards last, the Archive board left out.
     - **Spreadsheets** ("Cells, formulas and charts, beside your boards."): **Empty Sheet** ("A blank grid, ready to
       type into.": a blank grid at once, with no Setup Sheet), **Card Table** ("Your cards of a type as rows, linked
-      both ways. Pick which next.", only while the document has cards; Setup Sheet opens on its Cards step, Plan Cards
+      both ways. Pick which next.", only while the project has cards; Setup Sheet opens on its Cards step, Plan Cards
       chosen, to filter by Card Type), then every [sheet template](../029-sheets/sheet.md#sheet-templates) in the
       catalogue's order (Budget, Tracker, Timesheet, Contacts, Invoice, Expense Report, Sales Pipeline, Inventory,
       Guest List, Grade Book, Habit Tracker, Loan Calculator), each with its line and a picture of how it looks (its
@@ -102,8 +102,8 @@ Every Project is a Plan document, so what Plan reads is read from the first load
       default name ([Plan tabs](plan-tabs.md#a-row-that-fills-the-page)).
     - **Dashboards** ("Your boards, sheets and charts side by side, in rows of slots."): the preset layouts (Two by
       Two, Overview, Focus, Three Columns, Stacked, Report), each drawn to scale.
-      Ahead of them come Dashboards **built from the document's own work** (`suggested-dashboards.ts`; the
-      document's tabs are fetched as the panel opens so every board is read), each badged **For You** (in place of its kind badge), its
+      Ahead of them come Dashboards **built from the project's own work** (`suggested-dashboards.ts`; the
+      project's tabs are fetched as the panel opens so every board is read), each badged **For You** (in place of its kind badge), its
       chips saying what it holds, made at once with its slots filled:
       - a board whose cards have start and due dates: **<Board> Timeline** (Completion, Due Soon, Item Count and
         Unassigned; a Gantt chart; the board);
@@ -137,7 +137,7 @@ Every Project is a Plan document, so what Plan reads is read from the first load
     it is for and other names for it, a Sprint found by "scrum", Hiring Pipeline by "recruiting", Budget by
     "expenses"; every word typed must match, case ignored), across every category, the results
     grouped under **Boards**, **Spreadsheets**, **Dashboards** and **Inspiration**, after a **Best Match** of the choices whose name begins
-    with what was typed ([Template starts → A title match leads](../007-editor/start-diagramming.md#the-panel)); the rail shows no choice while a search is typed, and
+    with what was typed ([Start panel → A title match leads](../007-editor/start-panel.md#the-panel)); the rail shows no choice while a search is typed, and
     Escape clears it. It finds Plan's own choices only, never a template of a retired mode. Nothing
     found: the shared empty state, "No boards, sheets or layouts match “<text>”" ("Try another word.").
   - The keyboard reaches everything in reading order; Enter or Space chooses. It is gone once the tab has anything on
@@ -148,14 +148,14 @@ Every Project is a Plan document, so what Plan reads is read from the first load
 - There is no empty-canvas card: Start Planning is every empty tab's start, and it cannot be closed.
 - **A new tab opens on Start Planning**: adding a tab (the tab bar's **+**, the command palette's **Create New Tab**)
   makes a general tab carrying the active tab's look, straight to **Start Planning**. A new Project opens the same way
-  ([New document route](../007-editor/new-document-route.md)).
+  ([New project route](../007-editor/new-project-route.md)).
 
-## Old documents
+## Old projects
 
 - **A tab a retired mode made** opens in Plan like any other ([Editor mode](../007-editor/editor-modes.md#retired-modes)):
   its shapes, ink and arrows stay on it, worked as canvas elements; boards and Sheets on it work as on any tab.
-- A tab with Plan content is never added to another document: the tab menu's **Add to Document** is off for it,
-  as its cards are this document's items.
+- A tab with Plan content is never added to another project: the tab menu's **Add to Project** is off for it,
+  as its cards are this project's items.
 
 ## Tools
 
@@ -190,11 +190,11 @@ name, and any other column a status of its own, so it starts empty
   Tasks, Actions and Notes. Blank asks in Setup Board; Archive and All Cards show cards by what they are.
 - **A preset brings its card types**, all of them [ready-made types](plan-templates.md#ready-made-card-types)
   (Bug: red, the bug glyph; Story: violet, the story glyph); a Blank board brings none. Placing the board adds
-  each type it brings that the document lacks (by id), as one change, so in a fresh document (which starts with no
-  card types) the first board chooses them: a Kanban board's document has Task and Action only
+  each type it brings that the project lacks (by id), as one change, so in a fresh project (which starts with no
+  card types) the first board chooses them: a Kanban board's project has Task and Action only
   ([Item types](item-types.md#the-type-catalogue)). Only a board
-  that appears while the document is open adds them (placed by this person, a template or a collaborator); the
-  boards a document opens with never do, so a type someone deleted stays deleted. A template's tabs bring theirs
+  that appears while the project is open adds them (placed by this person, a template or a collaborator); the
+  boards a project opens with never do, so a type someone deleted stays deleted. A template's tabs bring theirs
   as they are made, on every path ([Plan templates](plan-templates.md#card-types-a-template-uses)), and an agent's
   `add_board` brings its preset's.
 
@@ -226,7 +226,7 @@ board, so it opens on **Start Planning**.
 
 ### Nothing attached to Plan items
 
-A Plan item (a board, a Plan card element, a visualisation or a Sheet; `takesAttachments` in `@liveplanner/document`)
+A Plan item (a board, a Plan card element, a visualisation or a Sheet; `takesAttachments` in `@liveplanner/project`)
 takes **no comment, action, link or note** of its own: the conversation lives on its cards, each with its comments
 and fields. So, for everyone whatever their share role:
 
@@ -237,7 +237,7 @@ and fields. So, for everyone whatever their share role:
 - a Viewer's selection toolbar has no **Add Comment** button for one;
 - a Dashboard slot's cog offers none either (its Slot section only arranges the slot).
 
-A comment thread, action, link or note left on a Plan item from before stays in the document untouched (nothing is
+A comment thread, action, link or note left on a Plan item from before stays in the project untouched (nothing is
 deleted or migrated), but its indicators are not drawn, so nothing invites adding to it.
 
 ## Agents
@@ -245,7 +245,7 @@ deleted or migrated), but its indicators are not drawn, so nothing invites addin
 - Agents read and write items through the api, the CLI and MCP ([Agents](../024-agents/README.md)): the CLI's
   `item ls|add|set|move|rm`, and the MCP's `list_items` and `change_items`. Items are named by number (`#12`) or
   id prefix.
-- A document made from a Plan template by an agent (the CLI's `--template`, the MCP's `create_document`) gets the
+- A project made from a Plan template by an agent (the CLI's `--template`, the MCP's `create_project`) gets the
   same tabs and boards, with no cards, as one made in the editor ([Plan templates](plan-templates.md)).
 - How agents read the plan, name columns, card types and fields, and change card types: [Plan for agents](plan-agents.md).
 

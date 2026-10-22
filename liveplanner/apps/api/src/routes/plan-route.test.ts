@@ -3,7 +3,7 @@ import type { PlanResponse } from '@liveplanner/api-schema';
 import { presetSetup } from '@liveplanner/items';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 import { PLAN_TAB_BATCH } from './plan-route';
 
 // The plan route (docs/specs/026-plan/plan-agents.md "Reading the plan"): boards in tab then canvas order, each
@@ -12,12 +12,12 @@ import { PLAN_TAB_BATCH } from './plan-route';
 let sql: SqliteD1;
 
 async function get(path = '/plan', { owner = 'owner', code = '' } = {}) {
-  const ctx = makeTestRouteContext('GET', `/api/documents/d1${path}`, {
+  const ctx = makeTestRouteContext('GET', `/api/projects/d1${path}`, {
     env: sql.env,
     owner,
     ...(code ? { headers: { 'X-Share-Code': code } } : {}),
   });
-  const res = await handleDocuments(ctx);
+  const res = await handleProjects(ctx);
   const text = await res.text();
   return { status: res.status, body: (text ? JSON.parse(text) : null) as PlanResponse };
 }
@@ -39,7 +39,7 @@ function addTab(id: string, order: number, elements: unknown[]) {
     .run(id, `Tab ${id}`, JSON.stringify({ elements }));
   sql.sql
     .prepare(
-      `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
+      `INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
     )
     .run(id, order);
 }
@@ -47,16 +47,16 @@ function addTab(id: string, order: number, elements: unknown[]) {
 beforeEach(() => {
   sql = sqliteD1();
   sql.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
       VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 't2', 1);
+    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'view', 't2', 1);
   `);
   addTab('t1', 0, [board('b1', presetSetup('kanban'))]);
   addTab('t2', 1, [{ id: 'x', type: 'text' }, board('b2', presetSetup('bug-triage'))]);
 });
 
-describe('GET /documents/:id/plan', () => {
+describe('GET /projects/:id/plan', () => {
   it('answers boards in tab order, each status once and no types until chosen', async () => {
     const res = await get();
     expect(res.status).toBe(200);
@@ -84,11 +84,11 @@ describe('GET /documents/:id/plan', () => {
 
   it('refuses a stranger and any method but GET', async () => {
     expect((await get('/plan', { owner: 'stranger' })).status).toBe(403);
-    const ctx = makeTestRouteContext('POST', '/api/documents/d1/plan', {
+    const ctx = makeTestRouteContext('POST', '/api/projects/d1/plan', {
       env: sql.env,
       owner: 'owner',
     });
-    expect((await handleDocuments(ctx)).status).toBe(405);
+    expect((await handleProjects(ctx)).status).toBe(405);
   });
 
   it('reads every tab past one batch', async () => {
@@ -111,7 +111,7 @@ describe('the plan’s tabs (docs/specs/026-plan/plan-agents.md "Reading the pla
       .run(id, `Tab ${id}`, JSON.stringify({ kind, elements, ...(theme ? { theme } : {}) }));
     sql.sql
       .prepare(
-        `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
+        `INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', ?, ?, 1)`,
       )
       .run(id, order);
   }

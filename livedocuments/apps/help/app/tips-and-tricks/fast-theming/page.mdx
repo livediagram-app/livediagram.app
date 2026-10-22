@@ -1,0 +1,43 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { LookAndFeelTheme } from '@/components/illustrations/canvas-basics';
+
+export const metadata = helpMetadata({
+  title: 'Restyle a Document Fast',
+  description:
+    'Combine themes and one-click style presets to make your pages look polished in seconds.',
+  path: '/help/tips-and-tricks/fast-theming/',
+});
+
+<ArticleLayout title="Restyle a Document Fast" description="Set the overall look with a theme, then add emphasis to key elements with one-click style presets." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
+
+A clean, consistent look does not have to mean fiddling with colours one element at a time. Pair a [theme](/help/canvas/themes/) for the whole tab with [style presets](/help/palette/shapes/style-presets/) on the elements that matter, and a rough page becomes a polished one in seconds.
+
+## Start with a theme
+
+A theme sets the look of the whole tab at once. Open it from the **Theme & canvas** button in the bottom-right corner of the editor, which opens the **Tab Style** dialog. For the quickest result, pick one of its twenty-nine **Looks**, which sets the theme, finish, tab font and canvas pattern in one click (or press **Mashup**, the first card, for a random mix of the four, again and again until one clicks); to choose a theme on its own, press **Colours** under **Fine-tune**. Picking a theme writes its colours, background, and pattern onto the tab, and from then on new elements inherit the theme's fill, border, and text colours, so everything you add stays on-brand automatically.
+
+The catalogue ships with twenty-four themes in one browser, nine to a page, each working in light and dark mode. Themes you save yourself sit beside them. See [Themes](/help/canvas/themes/) and [Custom Themes](/help/canvas/themes/custom-themes/).
+
+Switching theme respects deliberate choices. Elements still on the old theme's colours take the new theme's; a shape or text you coloured by hand keeps its colour, and a canvas colour or pattern you hand-picked survives too. Arrows are the exception: every arrow takes the new theme's line colour, so connectors always match. Sticky notes and images are never recoloured by a theme. To bring a hand-coloured shape back in line, use **Reset to Default** in its presets (below).
+
+<Figure caption="The Colours panel of the Tab Style dialog: every theme in one list, nine to a page, Default first.">
+  <LookAndFeelTheme />
+</Figure>
+
+## Add emphasis with presets
+
+Once the overall look is set, **style presets** let you make individual elements stand out without dialling each field by hand. Right-click a shape (or a selection holding several), open **Style**, and expand **Presets**.
+
+For shapes you get one grid of looks derived from the active theme, in four tiers, each running quiet to loud: the **theme** accent at rising strength (plus a card per branch colour on a multi-colour theme), **neutral** greys, **border** treatments (hairline, outline, dotted and so on), and the semantic **status** colours (info, success, warning, danger, highlight). That is twenty looks on a single-colour theme. Each pairs a colour with a matching border weight and pattern, with the label colour auto-contrasted so text stays readable; your corner radius is left alone.
+
+A preset follows the theme: switch theme later and a shape on the Bold preset becomes the new theme's Bold, rather than keeping the old colours. Change one of its colours by hand and it leaves the preset, keeping your colour from then on.
+
+Arrows get their own twelve presets: solid weights, dashed and dotted patterns, and animated flows. Sticky notes, tables and charts have preset grids of their own too. Most grids end with **Reset to Default**, which returns the element to its theme look in one click. On a computer, hovering a preset previews it before you commit. See [Style Presets](/help/palette/shapes/style-presets/).
+
+<Tip>
+  Theme the tab first so new elements arrive on-brand, then use presets to lift just the handful of
+  elements you want the reader's eye to land on.
+</Tip>
+
+</ArticleLayout>

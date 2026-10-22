@@ -6,13 +6,13 @@ describe('isWorkspaceFramePath', () => {
     '/embed/workbench/explorer/folder/f1',
     '/embed/workbench/explorer/recent',
     '/embed/workbench/explorer/',
-    '/embed/workbench/document/doc-1',
-    '/embed/workbench/document',
+    '/embed/workbench/project/doc-1',
+    '/embed/workbench/project',
   ])('serves %s from the frame page', (path) => {
     expect(isWorkspaceFramePath(path)).toBe(true);
   });
 
-  it.each([WORKSPACE_FRAME_PAGE, '/embed/workbench', '/embed', '/explorer/recent', '/document/d1'])(
+  it.each([WORKSPACE_FRAME_PAGE, '/embed/workbench', '/embed', '/explorer/recent', '/project/d1'])(
     'leaves %s to its own file',
     (path) => {
       expect(isWorkspaceFramePath(path)).toBe(false);

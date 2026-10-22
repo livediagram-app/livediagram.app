@@ -5,7 +5,7 @@ import {
   type BoxedElement,
   type CanvasSurface,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import {
   isoDepthLayers,

@@ -91,7 +91,7 @@ export function folderDescendants(
 
 // Rows split by a key, each bucket keeping the input order. The by-team
 // splits (the sidebar's and panel's Teams sections) and the by-folder
-// document buckets below all start here.
+// project buckets below all start here.
 export function groupBy<R, K>(rows: readonly R[], keyOf: (r: R) => K): Map<K, R[]> {
   const map = new Map<K, R[]>();
   for (const r of rows) {
@@ -103,11 +103,11 @@ export function groupBy<R, K>(rows: readonly R[], keyOf: (r: R) => K): Map<K, R[
   return map;
 }
 
-// Documents per folder id (null = the root), newest first
+// Projects per folder id (null = the root), newest first
 // in every bucket: the order every Explorer list shows a folder's contents
 // in. `exclude` drops rows before bucketing, for the panel, which keeps
-// offline documents off the root because This Browser lists them.
-export function groupDocumentsByFolder<D extends { folderId: string | null; savedAt: number }>(
+// offline projects off the root because This Browser lists them.
+export function groupProjectsByFolder<D extends { folderId: string | null; savedAt: number }>(
   liveDocs: readonly D[],
   opts: { exclude?: (d: D) => boolean } = {},
 ): Map<string | null, D[]> {

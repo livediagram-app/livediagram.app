@@ -4,7 +4,7 @@ import {
   type Element,
   type ElementOp,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { RevertKept } from '@liveplanner/api-schema';
 import type { ChangesetFingerprints } from '../db/changesets';
 

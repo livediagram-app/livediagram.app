@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { LegendCard } from '@/components/illustrations/palette-data';
+
+export const metadata = helpMetadata({
+  title: 'Legend',
+  description:
+    'Add a legend to the canvas: a key of colour-coded rows that says what each colour on your diagram means, with the colours and labels editable from its menu.',
+  path: '/help/palette/tools/data-elements/legend/',
+});
+
+<ArticleLayout title="Legend" description="A key of colour-coded rows, for saying what the colours on your diagram actually mean." categoryTitle="Palette" categorySlug="palette" parentArticle={{ title: "Data and Chart Elements", slug: "data-elements" }} subArticles={getSubArticles("data-elements").filter((a) => a.slug !== "legend")}>
+
+A legend is a small card of rows, each one a coloured dot and a label. It's the piece that turns a colour-coded diagram into one somebody else can read: which colour is which team, which status, which environment.
+
+<Figure caption="A legend card with a coloured dot and a label on each row.">
+  <LegendCard />
+</Figure>
+
+## Adding one
+
+<Step n={1}>
+  Open the **Data** category on the palette strip. On a logo page, which has no Data, type "legend"
+  into the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) instead.
+</Step>
+
+<Step n={2}>
+  Pick **Legend**, then tap the canvas to drop it, or drag to draw it at a size. It starts with
+  three rows, "First", "Second" and "Third".
+</Step>
+
+<Step n={3}>
+  Move, resize, recolour, or lock it like any other element. Its background and text colours come
+  from **Colours** under **Style**, the same as every other card.
+</Step>
+
+## Editing the colours and labels
+
+Right-click the legend, open **Tools**, then **Legend**. Each row gives you:
+
+- A round **colour chip**: click it to pick that row's colour.
+- A **label** field: type what the colour means.
+- A **×** to remove the row.
+
+**Add Row** puts another row on the end (up to 40). A new row takes the next colour from the built-in palette automatically, so you only need to set a colour when you want a specific one. Nothing on the legend itself is clickable: all its editing happens here.
+
+Under the rows, the **Text Size** slider (6 to 48 pixels) sets how big the labels are. It's the same scale a chart's own key uses, so a legend beside a chart can match it.
+
+## Matching a chart
+
+A row you never colour takes the next colour from the built-in **Vivid** palette, in order. A chart uses your theme's colours by default, so to line a legend up with a chart, set the chart's palette to **Vivid** or colour the legend rows by hand. A legend's **Presets** under **Style** restyle its card, not its dots.
+
+<Tip>
+  A legend is a key, not a chart: it holds colours and words, and no values. If you want the numbers
+  as well, hovering a slice or bar on the chart itself shows its value.
+</Tip>
+
+</ArticleLayout>

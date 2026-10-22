@@ -4,7 +4,7 @@ A focused modal for changing how the active tab looks (its **theme**, **finish**
 
 ## Why
 
-The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid sit inside narrow side-panel accordions. They work, but they're cramped (a 3-wide theme grid, a flat list) and easy to miss. Right-clicking the canvas already offered **Change Canvas** / **Change Theme**, but those merely popped the matching accordion open in the side panel. This spec turns those two menu items into a proper modal so the controls get the room they deserve, and the theme picker can use the same browser as the [New-document](../007-editor/new-document-route.md) screen.
+The pattern grid, canvas/pattern colour pickers, opacity slider, and theme grid sit inside narrow side-panel accordions. They work, but they're cramped (a 3-wide theme grid, a flat list) and easy to miss. Right-clicking the canvas already offered **Change Canvas** / **Change Theme**, but those merely popped the matching accordion open in the side panel. This spec turns those two menu items into a proper modal so the controls get the room they deserve, and the theme picker can use the same browser as the [New-project](../007-editor/new-project-route.md) screen.
 
 ## Behaviour
 
@@ -232,7 +232,7 @@ The canvas-style controls, shared with the palette's **Canvas** accordion (`Canv
 ### Colours panel
 
 Every theme in **one flat list**, nine to a carousel page (`ThemeBrowser`, shared with the palette accordion and
-the [New-document](../007-editor/new-document-route.md) picker so they stay identical), the owner's saved themes
+the [New-project](../007-editor/new-project-route.md) picker so they stay identical), the owner's saved themes
 ([Custom themes](custom-themes.md)) among them. No categories, no shuffle. Each card previews the theme in the
 viewer's half ([Light and dark halves](light-and-dark.md)).
 
@@ -297,7 +297,7 @@ the underlying setters keep their existing `Canvas` / `Theme` / `Tab` events (th
 ## Reuse notes
 
 - `CanvasStyleControls` — pattern grid + colour swatches + opacity slider. Rendered by both the palette's Canvas accordion and the dialog's Canvas panel.
-- `ThemeBrowser` — the flat, paged theme list. Rendered by the palette accordion, the New-document picker and the dialog's Colours panel.
+- `ThemeBrowser` — the flat, paged theme list. Rendered by the palette accordion, the New-project picker and the dialog's Colours panel.
 - `PagedCarousel` — the carousel (arrows, page dots, nine or six to a page) the looks, themes, typefaces and patterns share.
 - On a screen wider than a phone (640 px and up), the dialog is a **popover flying out of the Theme & canvas button**: its
   bottom-right corner sits 8 px above the button, its right edge on the bottom-right cluster's (the right of the zoom

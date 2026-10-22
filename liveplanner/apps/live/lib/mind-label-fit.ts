@@ -2,7 +2,7 @@
 // its label"). The geometry around a measured block of text: the size the label is laid out at,
 // the padding around it, and the height the node needs. The measuring is the DOM's
 // (components/canvas/text-hug-measure.ts), handed in as a function, as for a hugging text box;
-// growing the node and keeping its map tidy is the document package's (fitMindNodeHeight).
+// growing the node and keeping its map tidy is the project package's (fitMindNodeHeight).
 
 import {
   labelFontPx,
@@ -13,7 +13,7 @@ import {
   type Element,
   type ElementId,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { MeasureTextBlock } from '@/lib/text-hug';
 
 // The px a mind node's label is laid out at: its size preset's fixed px. Auto ('scale') draws

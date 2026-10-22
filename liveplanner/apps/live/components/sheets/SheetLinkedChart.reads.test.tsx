@@ -6,7 +6,7 @@ import { act, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as sheets from '@liveplanner/sheets';
 import { emptyLayout, type SheetJson } from '@liveplanner/sheets';
-import type { Element, ShapeElement } from '@liveplanner/document';
+import type { Element, ShapeElement } from '@liveplanner/project';
 import * as api from '@/lib/api/sheets';
 import { SheetsBridgeContext, type SheetsBridge } from '@/hooks/sheets/useSheetsBridge';
 import { forgetSheetStores } from './sheet-store-client';
@@ -68,7 +68,7 @@ const chart: ShapeElement = {
 let docSeq = 0;
 function bridge(): SheetsBridge {
   const b = {
-    scope: { documentId: `reads${docSeq++}`, ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: `reads${docSeq++}`, ownerId: 'o', shareCode: null, tabId: null },
     activeTabId: 't1',
     self: by,
     canEdit: false,

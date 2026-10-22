@@ -1,36 +1,34 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@liveplanner/document';
-import { checkoutFlow } from './fixtures/checkout-flow';
-import { describeElement, endRef, kindOf, labelOf, quoteCut } from './element-text';
+import { sprintDashboard } from './fixtures/sprint-dashboard';
+import { describeElement, kindOf, labelOf, quoteCut } from './element-text';
 
-const byId = (id: string) => checkoutFlow().elements.find((el) => el.id === id)!;
+const byId = (id: string) => sprintDashboard().elements.find((el) => el.id === id)!;
 
 describe('kindOf', () => {
-  it('reads a shape by its kind and anything else by its type', () => {
-    expect(kindOf(byId('n6'))).toBe('diamond');
-    expect(kindOf(byId('t1'))).toBe('text');
-    expect(kindOf(byId('a1'))).toBe('arrow');
+  it('reads a Plan element by its kind', () => {
+    expect(kindOf(byId('w1'))).toBe('plan-view');
+    expect(kindOf(byId('b1'))).toBe('bar-chart');
   });
 });
 
 describe('labelOf', () => {
   it('reads the label, or nothing', () => {
-    expect(labelOf(byId('n2'))).toBe('Cart');
-    expect(labelOf(byId('a1'))).toBeUndefined();
+    expect(labelOf(byId('w1'))).toBe('Workload');
+    expect(labelOf(byId('m3'))).toBeUndefined();
   });
 });
 
 describe('quoteCut', () => {
   it('quotes a short string whole', () => {
-    expect(quoteCut('Sign in', 60)).toBe('"Sign in"');
+    expect(quoteCut('Sprint board', 60)).toBe('"Sprint board"');
   });
 
   it('cuts at the last space in the slice, the ellipsis after the quote', () => {
-    expect(quoteCut('Orders service which creates orders', 18)).toBe('"Orders service"…');
+    expect(quoteCut('Sprint board for the launch team', 18)).toBe('"Sprint board for"…');
   });
 
   it('keeps a word that ends exactly at the cut', () => {
-    expect(quoteCut('Orders service which', 14)).toBe('"Orders service"…');
+    expect(quoteCut('Sprint board which', 12)).toBe('"Sprint board"…');
   });
 
   it('cuts hard when the slice has no space', () => {
@@ -42,24 +40,12 @@ describe('quoteCut', () => {
   });
 });
 
-describe('endRef', () => {
-  it('names a pinned end by its element and a free end by its point', () => {
-    expect(endRef({ kind: 'pinned', elementId: 'n3', anchor: 's' })).toBe('n3');
-    expect(endRef({ kind: 'free', x: 10.4, y: -3.6 })).toBe('@10,-4');
-    expect(endRef({ kind: 'on-arrow', arrowId: 'a2', t: 0.5 })).toBe('a2');
-  });
-});
-
 describe('describeElement', () => {
-  it('prints a box as its id, kind and label', () => {
-    expect(describeElement(byId('n7'))).toBe('n7  square "Charge card"');
-  });
-
-  it('prints an arrow with its ends and label', () => {
-    expect(describeElement(byId('a6'))).toBe('a6  arrow n6→n7 "yes"');
+  it('prints an element as its id, kind and label', () => {
+    expect(describeElement(byId('w1'))).toBe('w1  plan-view "Workload"');
   });
 
   it('prints an unlabelled element without a label', () => {
-    expect(describeElement({ id: 'x', type: 'sticky' } as Element)).toBe('x  sticky');
+    expect(describeElement(byId('m3'))).toBe('m3  plan-view');
   });
 });

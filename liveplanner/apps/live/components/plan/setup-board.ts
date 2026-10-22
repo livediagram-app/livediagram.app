@@ -16,7 +16,7 @@ export type SetupColumn = ({ kind: 'existing' } & StatusPick) | { kind: 'new'; n
 export const setupColumnKey = (c: SetupColumn) =>
   c.kind === 'existing' ? `s:${c.status}` : `n:${c.name.trim().toLowerCase()}`;
 
-// What a typed name adds: the existing status of that name (case, spacing and punctuation aside) when the document
+// What a typed name adds: the existing status of that name (case, spacing and punctuation aside) when the project
 // has one, else a new column; null when it is empty or already chosen.
 export function columnFromName(
   name: string,

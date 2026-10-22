@@ -34,7 +34,7 @@ import {
   type Tab,
   TAB_SCHEMA_VERSION,
   type ExportedTabEnvelope,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 // The Plan items a tab export carries (docs/specs/026-plan/items.md "Copies and exports"), and its stored type
 // catalogue (null: the default types).
@@ -79,7 +79,7 @@ export function parseImportedTab(text: string): ImportResult {
   if (typeof tab.id !== 'string' || typeof tab.name !== 'string' || !Array.isArray(tab.elements)) {
     return { ok: false, error: 'Tab payload is missing required fields (id, name, elements).' };
   }
-  // Every older version (v1: freehand points as `{ nx, ny }`, docs/specs/006-document/stroke-points.md)
+  // Every older version (v1: freehand points as `{ nx, ny }`, docs/specs/006-project/stroke-points.md)
   // migrates through the stored-element migrations, which leave current elements alone.
   //
   // Each element through the same guard clipboard paste uses. An array check
@@ -87,7 +87,7 @@ export function parseImportedTab(text: string): ImportResult {
   // threw in the id re-mint (leaving the Import dialog stuck on busy), the
   // others landed on the canvas as junk.
   const elements = migrateIncomingElements(tab.elements).filter(isValidElement);
-  // Items that do not look like items are left behind, as the document envelope does; the store validates the rest.
+  // Items that do not look like items are left behind, as the project envelope does; the store validates the rest.
   const items = Array.isArray(env.items) ? env.items.filter(isItemLike) : [];
   if (items.length === 0) return { ok: true, tab: { ...tab, elements } };
   return {

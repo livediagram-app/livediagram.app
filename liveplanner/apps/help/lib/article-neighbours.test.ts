@@ -19,12 +19,12 @@ describe('article neighbours', () => {
   });
 
   it('follows the order the category page shows, groups included', () => {
-    const shown = getCategoryGroups('canvas').flatMap((g) => g.articles);
+    const shown = getCategoryGroups('plan').flatMap((g) => g.articles);
     expect(articleNeighbours(shown[0]!).prev).toBeUndefined();
     expect(articleNeighbours(shown[0]!).next).toBe(shown[1]);
     expect(articleNeighbours(shown.at(-1)!).next).toBeUndefined();
     // Crossing from one group into the next.
-    const groups = getCategoryGroups('canvas');
+    const groups = getCategoryGroups('plan');
     const lastOfFirst = groups[0]!.articles.at(-1)!;
     expect(articleNeighbours(lastOfFirst).next).toBe(groups[1]!.articles[0]);
   });

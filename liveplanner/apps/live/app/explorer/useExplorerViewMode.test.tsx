@@ -21,7 +21,7 @@ function stubPhone(isPhone: boolean) {
   }));
 }
 
-// List, card or details layout (docs/specs/006-document/document-snapshots.md).
+// List, card or details layout (docs/specs/006-project/project-snapshots.md).
 describe('useExplorerViewMode', () => {
   it('shows cards to somebody who never chose, and ignores a junk value', () => {
     expect(renderHook(() => useExplorerViewMode()).result.current[0]).toBe('card');

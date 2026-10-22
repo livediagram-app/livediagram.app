@@ -10,7 +10,7 @@ import {
   keepOwnCommentAuthors,
   type CommentMention,
   type ItemCommentChange,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   EMPTY_ITEM_STORE,
   ITEM_TITLE_MAX,
@@ -67,8 +67,8 @@ export type PlanItems = {
   ownerId: string;
 };
 
-// The document's item store in the editor (docs/specs/026-plan/items.md, blueprint item-store.md
-// "Editor slice"): loaded once the document is, written optimistically through the same pure
+// The project's item store in the editor (docs/specs/026-plan/items.md, blueprint item-store.md
+// "Editor slice"): loaded once the project is, written optimistically through the same pure
 // transitions the api applies, kept live by the room's `items` op, and refetched on a revision gap,
 // a reconnect or a resync. Every write but a vote is undoable through `pushUndo`.
 // What a refused change says, by its reason (the store's or the api's), so a too-long field is named, not a
@@ -93,8 +93,8 @@ export function refusalMessage(code: string): string {
 }
 
 export function usePlanItems(opts: {
-  documentId: string | null;
-  // Loads once the document has hydrated.
+  projectId: string | null;
+  // Loads once the project has hydrated.
   ready: boolean;
   ownerId: string;
   name: string;
@@ -115,7 +115,7 @@ export function usePlanItems(opts: {
   // A person's own undoable write, with the store it applies to (docs/specs/026-plan/linked-boards.md "The link").
   onOwnWrite?: (write: ItemWrite, before: ItemStoreState) => void;
 }): PlanItems {
-  const { documentId, ready, ownerId, name, color, shareCode, tabScope } = opts;
+  const { projectId, ready, ownerId, name, color, shareCode, tabScope } = opts;
   // Handed over fresh each render: read at call time, so `send` and `write` keep their identity.
   const callbacks = useLatest({
     pushUndo: opts.pushUndo,
@@ -151,8 +151,8 @@ export function usePlanItems(opts: {
   const selfRef = useLatest(self);
 
   const scope = useMemo<ItemsScope | null>(
-    () => (documentId ? { ownerId, documentId, shareCode, tabId: tabScope } : null),
-    [ownerId, documentId, shareCode, tabScope],
+    () => (projectId ? { ownerId, projectId, shareCode, tabId: tabScope } : null),
+    [ownerId, projectId, shareCode, tabScope],
   );
   const scopeRef = useLatest(scope);
 
@@ -182,7 +182,7 @@ export function usePlanItems(opts: {
   }, [ready, scope, load]);
 
   const refetch = useCallback(() => {
-    // Never loaded (a document without Plan content): there is nothing to bring up to date.
+    // Never loaded (a project without Plan content): there is nothing to bring up to date.
     if (!loadedRef.current) return;
     if (refetchTimerRef.current) clearTimeout(refetchTimerRef.current);
     refetchTimerRef.current = setTimeout(() => {
@@ -198,12 +198,12 @@ export function usePlanItems(opts: {
     [],
   );
 
-  // The document synced to the server in place (docs/specs/006-document/offline-mode.md "Syncing in
+  // The project synced to the server in place (docs/specs/006-project/offline-mode.md "Syncing in
   // place"): the server's store, and its revision, replace the local one the board was reading.
   useEffect(
     () =>
       subscribeOfflineIds((id) => {
-        if (loadedRef.current && id === scopeRef.current?.documentId) void load();
+        if (loadedRef.current && id === scopeRef.current?.projectId) void load();
       }),
     [load, scopeRef],
   );
@@ -270,7 +270,7 @@ export function usePlanItems(opts: {
         if (!silent)
           callbacks.current.onError(
             code === 'items_full'
-              ? 'This document already holds the most items it can'
+              ? 'This project already holds the most items it can'
               : code
                 ? refusalMessage(code)
                 : "Couldn't save that change",

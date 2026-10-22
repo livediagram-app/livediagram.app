@@ -3,7 +3,7 @@ import { Card, Chip, DocThumb, Stage } from './parts';
 
 const FORMATS = ['PNG', 'SVG', 'PDF', 'JSON'];
 
-// Account and Data: who you are and what is yours. A signed-in profile, your documents synced to it, and every
+// Account and Data: who you are and what is yours. A signed-in profile, your projects synced to it, and every
 // way to take them with you.
 export function AccountAndDataArt() {
   return (
@@ -23,7 +23,7 @@ export function AccountAndDataArt() {
         <rect x={36} y={170} width={118} height={6} rx={3} className="fill-slate-100" />
       </Card>
 
-      {/* Synced documents. */}
+      {/* Synced projects. */}
       <Arrow from={[178, 104]} to={[214, 104]} dashed tone="muted" width={2} />
       <DocThumb x={226} y={28} w={56} h={68} accent="violet" />
       <DocThumb x={294} y={28} w={56} h={68} lines />
