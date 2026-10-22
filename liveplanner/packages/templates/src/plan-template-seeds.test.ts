@@ -120,6 +120,5 @@ describe('Plan template example cards', () => {
   it('make nothing for templates with no boards', () => {
     expect(planTemplateSeedItems('blank-plan', TODAY)).toEqual([]);
     expect(planTemplateSeedItems('invoice', TODAY)).toEqual([]);
-    expect(planTemplateSeedItems('flowchart', TODAY)).toEqual([]);
   });
 });

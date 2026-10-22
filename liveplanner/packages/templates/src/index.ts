@@ -10,7 +10,6 @@ export { templateKeywords } from './template-keywords';
 export { templateMatchesQuery, templateQueryWords } from './template-search';
 export { POPULAR_TEMPLATE_KINDS } from './popular';
 export { isUntitledDocumentName, UNTITLED_DOCUMENT_NAME } from './legacy-untitled';
-export * from './template-layers';
 export { buildTemplate, templateTabs, type TemplateTabDef } from './build-template';
 export { templateFamilyOf } from './template-families';
 export {

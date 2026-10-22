@@ -48,11 +48,9 @@ async function pick(kind: TemplateKind, documentName: string, onTab = 't1') {
 
 describe('chooseTemplate names the document', () => {
   it('after the template, while its name is still a default one', async () => {
-    expect(await pick('flowchart', 'Untitled document')).toHaveBeenCalledWith('Untitled Flowchart');
+    expect(await pick('kanban', 'Untitled document')).toHaveBeenCalledWith('Untitled Kanban Board');
     // A mode's blank made by /new ("Untitled Plan") is a default name too.
-    expect(await pick('sailboat', 'Untitled Plan')).toHaveBeenCalledWith(
-      'Untitled Sailboat Retrospective',
-    );
+    expect(await pick('team-retro', 'Untitled Plan')).toHaveBeenCalledWith('Untitled Team Retro');
   });
 
   it('for a form template too', async () => {
@@ -62,14 +60,14 @@ describe('chooseTemplate names the document', () => {
   });
 
   it('keeps a name someone gave it', async () => {
-    expect(await pick('flowchart', 'Q3 roadmap')).not.toHaveBeenCalled();
+    expect(await pick('kanban', 'Q3 roadmap')).not.toHaveBeenCalled();
   });
 
   it("leaves the document's name to its first tab", async () => {
-    expect(await pick('flowchart', 'Untitled document', 't2')).not.toHaveBeenCalled();
+    expect(await pick('kanban', 'Untitled document', 't2')).not.toHaveBeenCalled();
   });
 
   it('does nothing when the name would not change', async () => {
-    expect(await pick('flowchart', 'Untitled Flowchart')).not.toHaveBeenCalled();
+    expect(await pick('kanban', 'Untitled Kanban Board')).not.toHaveBeenCalled();
   });
 });

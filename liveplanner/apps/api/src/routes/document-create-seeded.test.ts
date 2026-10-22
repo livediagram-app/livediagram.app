@@ -41,9 +41,7 @@ describe('seeded tabs compiled on create', () => {
   });
 
   it('builds a template tab and derives the intent from it when none is given, a retro opening in Plan', async () => {
-    expect(
-      (await create([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }])).status,
-    ).toBe(201);
+    expect((await create([{ id: 't1', name: 'Retro', template: 'team-retro' }])).status).toBe(201);
     expect((await getTab(db.env, 'd1', 't1'))?.elements.length).toBeGreaterThan(0);
     const summary = (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
     expect(summary).toMatchObject({
@@ -121,8 +119,8 @@ describe('seeded tabs compiled on create', () => {
         ...asUser('user_alice'),
         body: {
           id: 'd2',
-          name: 'Retro',
-          tabs: [{ id: 't9', name: 'Retro', template: 'start-stop-continue' }],
+          name: 'Budget',
+          tabs: [{ id: 't9', name: 'Budget', template: 'blank-spreadsheet' }],
         },
       }),
     );
@@ -130,7 +128,7 @@ describe('seeded tabs compiled on create', () => {
   });
 
   it('keeps an intent the create gives', async () => {
-    await create([{ id: 't1', name: 'Retro', template: 'start-stop-continue' }], {
+    await create([{ id: 't1', name: 'Budget', template: 'blank-spreadsheet' }], {
       intent: { mode: 'plan' },
     });
     const summary = (await listDocumentsByOwner(db.env, 'user_alice')).find((d) => d.id === 'd1');
@@ -171,7 +169,7 @@ describe('compileSeededTabs', () => {
       [
         {
           id: 't1',
-          template: 'swot',
+          template: 'blank-spreadsheet',
           theme: 'ocean',
           background: 'dots',
         },

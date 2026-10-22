@@ -1,6 +1,5 @@
-// Plan's templates (docs/specs/026-plan/plan-templates.md "Plan's templates"): the boards, Sheets and forms Start
-// Planning, /new and the Explorer offer to start from. Every other template in the catalogue is still made by name (an
-// agent's add_tab), but never offered, and no start's search finds it.
+// Plan's templates (docs/specs/026-plan/plan-templates.md): the boards, Sheets and forms Start Planning, /new and the
+// Explorer offer to start from. The catalogue's one other template, Blank, is an empty tab an agent makes by name.
 import type { TemplateKind } from './templates';
 
 const PLAN_TEMPLATES: ReadonlySet<TemplateKind> = new Set<TemplateKind>([
@@ -51,7 +50,6 @@ export const BLANK_TEMPLATES: readonly TemplateKind[] = [
   'blank-spreadsheet',
   'blank-form',
   'blank',
-  'whiteboard',
 ];
 
 /** True for the blanks. Quick-picks on Popular, never on a category shelf or tile. */

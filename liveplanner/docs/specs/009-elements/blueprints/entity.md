@@ -40,8 +40,6 @@ Scope, by file:
 | `apps/live/hooks/canvas/useDataShapeSetters.ts`                        | `setEntityFieldsSelected` (the menu)                                    |
 | `apps/live/components/palette/EntityFieldsEditor.tsx`                  | The Fields menu section                                                 |
 | `apps/live/components/palette/palette-tile-defs.tsx`                   | Tile `tools:entity`, section `components`                               |
-| `packages/templates/src/template-builders-uml.ts`                      | UML class template built from entities                                  |
-| `packages/templates/src/template-builders-er.ts`                       | Database schema template: keys and ER ends                              |
 | `packages/document-views/src/content-summary.ts`                       | A field's key in the text views                                         |
 
 ## Domain and naming
@@ -269,7 +267,6 @@ None in code today [GA1]; telemetry: `Element·Changed·Entity`, `Added·EntityF
 | In-place edit, ports (B6, B7)                      | EntityFieldControls                               | `apps/live/components/canvas/entity/EntityFieldControls.test.tsx` |
 | Menu key button and remove remap                   | EntityFieldsEditor                                | `apps/live/components/palette/EntityFieldsEditor.test.tsx`        |
 | Mermaid keys                                       | parseMermaid: ER diagrams                         | `packages/document/src/mermaid-er.test.ts`                        |
-| Schema template keys and ER ends                   | database schema (er-diagram)                      | `apps/live/lib/template-technical.test.ts`                        |
 | Class template uses entities, fields as rows       | class diagram drops four entity classes           | `apps/live/lib/templates.test.ts`                                 |
 
 ## Constants and configuration

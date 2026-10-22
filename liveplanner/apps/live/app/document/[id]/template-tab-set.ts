@@ -12,9 +12,6 @@ type TemplateTabContent = {
   elements: Tab['elements'];
   // The template's own fields for the tab (a Plan template's kind and Dashboard), over the overrides.
   fields?: Partial<Tab>;
-  // A companion Sheet (docs/specs/026-plan/plan-templates.md "How a template with tabs is made"): the theme's backdrop
-  // rather than the template's canvas overrides, which are its drawing's.
-  ownCanvas?: Partial<Tab>;
 };
 
 // The template's later tabs, each looking like `landed` (the tab the first template tab landed on).
@@ -23,13 +20,13 @@ export function templateFollowerTabs(
   contents: readonly TemplateTabContent[],
   overrides: Partial<Tab>,
 ): Tab[] {
-  return contents.map(({ id, name, elements, fields, ownCanvas }) => ({
+  return contents.map(({ id, name, elements, fields }) => ({
     ...newTabSeed(landed),
     id,
     name,
     elements,
     templateChosen: true,
-    ...(ownCanvas ?? overrides),
+    ...overrides,
     ...fields,
   }));
 }

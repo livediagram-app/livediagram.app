@@ -78,10 +78,9 @@ describe('create_document intent', () => {
   });
 
   it.each([
-    ['retrospective', { mode: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' }],
-    ['four-ls', { mode: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' }],
+    ['team-retro', { mode: 'plan', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
-    ['flowchart', { mode: 'plan', tabKind: 'diagram' }],
+    ['blank-spreadsheet', { mode: 'plan', tabKind: 'diagram' }],
   ])('sends the intent of a %s template tab', async (template, intent) => {
     const { run, posted } = harness(undefined);
     await run([{ name: 'Tab', template }]);
@@ -112,7 +111,7 @@ describe('create_document intent', () => {
 
   it('sends no catalogue for a document with no Plan board', async () => {
     const { run, posted } = harness(undefined);
-    await run([elements, { name: 'Retro', template: 'start-stop-continue' }]);
+    await run([elements, { name: 'Budget', template: 'blank-spreadsheet' }]);
     expect(posted[0]).not.toHaveProperty('itemTypes');
   });
 

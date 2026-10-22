@@ -173,14 +173,6 @@ export const AI_ASSISTANCE: MetricStack = {
   headline: AI_REQUESTS,
 };
 
-// Draw mode (docs/specs/007-editor/editor-modes.md): Whiteboard tabs made.
-export const WHITEBOARDS_CREATED = chart(
-  'Draw',
-  'Created',
-  'Whiteboards Created',
-  'A whiteboard tab made, from the New Document wizard or as a new tab.',
-);
-
 // The mode a tab opens in, set from the tab menu's Opens in (docs/specs/007-editor/editor-modes.md).
 export const TAB_OPENS_IN = chart(
   'Tab',
@@ -221,15 +213,9 @@ export const PAGE_FIT_TO_CONTENT = chart(
 export const WHITEBOARDS: MetricStack = {
   stack: true,
   title: 'Draw Mode',
-  blurb: 'Whiteboard tabs made and mode switches.',
-  members: [
-    WHITEBOARDS_CREATED,
-    TAB_OPENS_IN,
-    ANIMATED_BACKGROUNDS,
-    PAGE_FIT_TO_CONTENT,
-    TAB_WINDOW_USE,
-  ],
-  headline: WHITEBOARDS_CREATED,
+  blurb: 'Mode switches.',
+  members: [TAB_OPENS_IN, ANIMATED_BACKGROUNDS, PAGE_FIT_TO_CONTENT, TAB_WINDOW_USE],
+  headline: TAB_OPENS_IN,
 };
 
 // Layers (docs/specs/006-document/layers.md): made, used, and looked at.

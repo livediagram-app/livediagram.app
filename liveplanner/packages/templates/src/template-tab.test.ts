@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidTab, parseStrokePoints } from '@liveplanner/document';
+import { isValidTab } from '@liveplanner/document';
 import {
   buildTemplateTab,
   buildTemplateTabs,
@@ -14,29 +14,12 @@ import { templateTabs } from './build-template';
 import { TEMPLATES } from './templates';
 import { templateCatalogue } from './template-catalogue';
 
-// Templates drawn from sketches (the sailboat scene) carry freehand strokes: what the MCP writes
-// from a template must be a tab the api accepts, its strokes packed
-// (docs/specs/006-document/stroke-points.md).
+// What the MCP writes from a template must be a tab the api accepts.
 describe('buildTemplateTab', () => {
-  it('builds every template as a valid tab, with packed strokes', () => {
-    let strokes = 0;
+  it('builds every template as a valid tab', () => {
     for (const { kind } of TEMPLATES) {
-      const tab = buildTemplateTab(`tab-${kind}`, kind, kind);
-      expect(isValidTab(tab), kind).toBe(true);
-      for (const el of tab.elements) {
-        if (el.type !== 'freehand') continue;
-        strokes++;
-        expect(parseStrokePoints(el.packedPoints).ok, kind).toBe(true);
-      }
+      expect(isValidTab(buildTemplateTab(`tab-${kind}`, kind, kind)), kind).toBe(true);
     }
-    expect(strokes).toBeGreaterThan(0);
-  });
-});
-
-// The Whiteboard template makes a general tab; there is no whiteboard kind.
-describe('buildTemplateTab: the Whiteboard template', () => {
-  it('makes a general tab', () => {
-    expect(buildTemplateTab('tab-wb', 'Whiteboard', 'whiteboard').kind).toBe('diagram');
   });
 });
 
@@ -90,8 +73,8 @@ describe('buildTemplateTabs', () => {
       ...tab,
       elements: tab.elements.map(({ id: _id, ...rest }) => rest.type),
     });
-    const tabs = buildTemplateTabs({ id: 's', name: 'SWOT' }, 'swot', newId);
-    expect(tabs.map(shape)).toEqual([shape(buildTemplateTab('s', 'SWOT', 'swot'))]);
+    const tabs = buildTemplateTabs({ id: 's', name: 'Plan' }, 'blank-plan', newId);
+    expect(tabs.map(shape)).toEqual([shape(buildTemplateTab('s', 'Plan', 'blank-plan'))]);
   });
 });
 
@@ -106,23 +89,16 @@ describe('templateTabName', () => {
   it('takes the template’s own first name, else Tab 1, when none is given', () => {
     expect(templateTabName(undefined, 'hiring-pipeline')).toBe(names[0]);
     expect(templateTabName('  ', 'hiring-pipeline')).toBe(names[0]);
-    expect(templateTabName(undefined, 'flowchart')).toBe('Tab 1');
+    expect(templateTabName(undefined, 'blank')).toBe('Tab 1');
   });
 });
 
 // docs/specs/015-api/mcp-server.md §4.5: an unknown kind is refused with the ones it most likely meant.
 describe('closestTemplateKinds', () => {
   it('offers the kinds with a word starting with a word of it', () => {
-    expect(closestTemplateKinds('retro')).toEqual([
-      'retrospective',
-      'team-retro',
-      'four-ls',
-      'sailboat',
-    ]);
+    expect(closestTemplateKinds('retro')).toEqual(['team-retro']);
     expect(closestTemplateKinds('Kanban Board')).toContain('kanban');
-    expect(closestTemplatesHint('retro')).toBe(
-      'Closest: retrospective, team-retro, four-ls, sailboat. ',
-    );
+    expect(closestTemplatesHint('retro')).toBe('Closest: team-retro. ');
   });
 
   it('offers nothing for a word under 3 letters or one no template has', () => {
@@ -132,6 +108,6 @@ describe('closestTemplateKinds', () => {
   });
 
   it('offers at most CLOSEST_TEMPLATES_MAX', () => {
-    expect(closestTemplateKinds('map')).toHaveLength(CLOSEST_TEMPLATES_MAX);
+    expect(closestTemplateKinds('planner board tracker')).toHaveLength(CLOSEST_TEMPLATES_MAX);
   });
 });

@@ -35,32 +35,6 @@ describe('templateFollowerTabs', () => {
     // Only the look carries over, never the tab's own state.
     expect(follower).not.toHaveProperty('locked');
   });
-
-  // docs/specs/026-plan/plan-templates.md "How a template with tabs is made": a companion Sheet keeps the theme but
-  // none of the drawing's canvas overrides (its graph paper, layers, mode).
-  it('gives a companion Sheet its own canvas instead of the template’s overrides', () => {
-    const landed = tab('a', { theme: 'ocean', backgroundPattern: 'graph', backgroundOpacity: 0.4 });
-    const [follower] = templateFollowerTabs(
-      landed,
-      [
-        {
-          id: 'b',
-          name: 'Threat Register',
-          elements: [],
-          fields: { kind: 'sheet' },
-          ownCanvas: { backgroundPattern: 'grid', backgroundOpacity: 1 },
-        },
-      ],
-      { backgroundPattern: 'graph', layers: [{ id: 'l', name: 'Model' }] },
-    );
-    expect(follower).toMatchObject({
-      theme: 'ocean',
-      backgroundPattern: 'grid',
-      backgroundOpacity: 1,
-      kind: 'sheet',
-    });
-    expect(follower).not.toHaveProperty('layers');
-  });
 });
 
 describe('insertTabsAfter', () => {

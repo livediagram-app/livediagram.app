@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { TEMPLATE_CATEGORIES, TEMPLATES } from '@liveplanner/templates';
 
-// The Templates article lists the catalogue by category. A list of forty-odd
+// The Templates article lists the catalogue by category. A list of thirty-odd
 // names is exactly the kind of prose that rots: adding a template is a change
 // in packages/templates, and nothing about that change makes anyone open the
 // help centre. So the catalogue is pinned to the article here.
@@ -19,7 +19,7 @@ describe('the Templates article lists the real catalogue', () => {
 
   it('reads a real catalogue (guard against this test going blind)', () => {
     expect(TEMPLATES.length).toBeGreaterThan(30);
-    expect(TEMPLATE_CATEGORIES.length).toBeGreaterThan(5);
+    expect(TEMPLATE_CATEGORIES.length).toBeGreaterThanOrEqual(5);
   });
 
   it('names every template', () => {

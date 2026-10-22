@@ -107,7 +107,7 @@ describe('applyReplace on an existing tab', () => {
   });
 
   it('builds a template with the tab theme', () => {
-    const { tab } = applied(applyReplace(themed('ocean'), { template: 'swot' }, options));
+    const { tab } = applied(applyReplace(themed('ocean'), { template: 'kanban' }, options));
     expect(tab.elements.length).toBeGreaterThan(0);
     expect(tab.name).toBe('Checkout flow');
   });
@@ -130,8 +130,7 @@ describe('applyReplace on an existing tab', () => {
   it('refuses a locked tab', () => {
     const { calls, log } = recording();
     expect(
-      refused(applyReplace({ ...checkoutFlow(), locked: true }, simple, { ...options, log }))
-        .code,
+      refused(applyReplace({ ...checkoutFlow(), locked: true }, simple, { ...options, log })).code,
     ).toBe('element_locked');
     expect(calls[0]).toEqual(['[edit-ops] locked', { operation: 0, op: 'replace', scope: 'tab' }]);
   });
@@ -139,9 +138,9 @@ describe('applyReplace on an existing tab', () => {
 
 describe('applyReplace for a new tab', () => {
   it('gives the new tab the finish asked for (docs/specs/008-canvas/finish.md)', () => {
-    expect(
-      applied(applyReplace(null, simple, { ...options, finish: 'sketch' })).tab.finish,
-    ).toBe('sketch');
+    expect(applied(applyReplace(null, simple, { ...options, finish: 'sketch' })).tab.finish).toBe(
+      'sketch',
+    );
     expect(applied(applyReplace(null, simple, options)).tab.finish).toBeUndefined();
   });
 
@@ -176,15 +175,11 @@ describe('applyReplace for a new tab', () => {
 
   it('logs the source and the element count, and a custom theme it could not paint', () => {
     const { calls, log } = recording();
-    applyReplace(
-      null,
-      simple,
-      {
-        ...options,
-        log,
-        theme: { ...getBuiltInTheme('ocean'), id: 'mine' } as unknown as ThemeDefinition,
-      },
-    );
+    applyReplace(null, simple, {
+      ...options,
+      log,
+      theme: { ...getBuiltInTheme('ocean'), id: 'mine' } as unknown as ThemeDefinition,
+    });
     expect(calls).toEqual([
       ['[edit-ops] theme-fallback', {}],
       ['[edit-ops] replace', { source: 'elements', elements: 3 }],
@@ -199,7 +194,7 @@ describe('applyReplace refusals', () => {
     expect(refusal({}).details).toEqual([
       'replace takes exactly one of template, dashboard, form, elements',
     ]);
-    expect(refusal({ ...simple, template: 'swot' }).code).toBe('invalid_value');
+    expect(refusal({ ...simple, template: 'kanban' }).code).toBe('invalid_value');
   });
 
   it('names the templates for an unknown one', () => {

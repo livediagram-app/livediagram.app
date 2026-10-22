@@ -183,28 +183,27 @@ t)[i]`), tries `STROKE_FIT_START_TOLERANCE_PX` doubling up to `STROKE_FIT_MAX_PA
 Every site that read or wrote `FreehandElement.points` / `pressures`, found by removing both
 fields from the type and compiling every workspace, plus the untyped entry points.
 
-| Area             | Site                                                                                 | Change                                                                              |
-| ---------------- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
-| Element model    | `packages/document/src/element-types.ts`                                             | `packedPoints: string` replaces both fields                                         |
-| Validation       | `packages/document/src/validate.ts`                                                  | `parseStrokePoints`; `MAX_FREEHAND_POINTS` moves to the codec                       |
-| OpenAPI          | `apps/api/src/openapi/schemas.generated.ts`                                          | regenerated from the type                                                           |
-| Factories        | `packages/document/src/factories.ts`                                                 | `createFreehand` packs; geometry stays unpacked                                     |
-| Pen outline      | `packages/document/src/pen-stroke.ts`                                                | `freehandPenStroke` / `penStrokeSvg` decode                                         |
-| SVG export       | `packages/document/src/svg-render-shapes.ts`                                         | decode                                                                              |
-| Stored migration | `packages/document/src/stored-elements.ts`                                           | adds `migrateLegacyStrokePoints`                                                    |
-| Canvas view      | `apps/live/components/canvas/boxed-element-overlays.tsx`                             | decode                                                                              |
-| Style presets    | `apps/live/lib/style-presets.ts`                                                     | re-pack without pressures                                                           |
-| Realtime         | `apps/live/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts`             | `migrateRoomOp` on receipt                                                          |
-| Clipboard        | `apps/live/lib/clipboard-payload.ts`                                                 | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
-| Tab file import  | `apps/live/lib/import-tab.ts`, `export-tab-text.ts`                                  | migrate; `TAB_SCHEMA_VERSION` 2                                                     |
-| Api writes       | `apps/api/src/routes/documents.ts`, `document-subresource-routes.ts`                 | `migrateStoredTab` before `isValidTab`                                              |
-| Api reads        | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                            | unchanged (already migrate)                                                         |
-| Offline store    | `apps/live/lib/offline/offline-store.ts`                                             | unchanged (already migrates)                                                        |
-| MCP server       | `packages/document/src/element-normalise.ts`, `tools.ts`                             | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
-| Templates        | `packages/templates/src/template-builders-sailboat.ts`, `template-sailboat-scene.ts` | unchanged: `createFreehand`                                                         |
-| Polygon tool     | `useCanvasPolygonGesture.ts`                                                         | unchanged: `createFreehand`                                                         |
-| AI features      | `apps/api/src/ai-prompt.ts`, `apps/live/lib/api/ai.ts`                               | unchanged: AI never generates freehand                                              |
-| Undo             | `useEditorHistory.ts`                                                                | unchanged: element snapshots by reference                                           |
+| Area             | Site                                                                     | Change                                                                              |
+| ---------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------- |
+| Element model    | `packages/document/src/element-types.ts`                                 | `packedPoints: string` replaces both fields                                         |
+| Validation       | `packages/document/src/validate.ts`                                      | `parseStrokePoints`; `MAX_FREEHAND_POINTS` moves to the codec                       |
+| OpenAPI          | `apps/api/src/openapi/schemas.generated.ts`                              | regenerated from the type                                                           |
+| Factories        | `packages/document/src/factories.ts`                                     | `createFreehand` packs; geometry stays unpacked                                     |
+| Pen outline      | `packages/document/src/pen-stroke.ts`                                    | `freehandPenStroke` / `penStrokeSvg` decode                                         |
+| SVG export       | `packages/document/src/svg-render-shapes.ts`                             | decode                                                                              |
+| Stored migration | `packages/document/src/stored-elements.ts`                               | adds `migrateLegacyStrokePoints`                                                    |
+| Canvas view      | `apps/live/components/canvas/boxed-element-overlays.tsx`                 | decode                                                                              |
+| Style presets    | `apps/live/lib/style-presets.ts`                                         | re-pack without pressures                                                           |
+| Realtime         | `apps/live/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts` | `migrateRoomOp` on receipt                                                          |
+| Clipboard        | `apps/live/lib/clipboard-payload.ts`                                     | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
+| Tab file import  | `apps/live/lib/import-tab.ts`, `export-tab-text.ts`                      | migrate; `TAB_SCHEMA_VERSION` 2                                                     |
+| Api writes       | `apps/api/src/routes/documents.ts`, `document-subresource-routes.ts`     | `migrateStoredTab` before `isValidTab`                                              |
+| Api reads        | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                | unchanged (already migrate)                                                         |
+| Offline store    | `apps/live/lib/offline/offline-store.ts`                                 | unchanged (already migrates)                                                        |
+| MCP server       | `packages/document/src/element-normalise.ts`, `tools.ts`                 | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
+| Polygon tool     | `useCanvasPolygonGesture.ts`                                             | unchanged: `createFreehand`                                                         |
+| AI features      | `apps/api/src/ai-prompt.ts`, `apps/live/lib/api/ai.ts`                   | unchanged: AI never generates freehand                                              |
+| Undo             | `useEditorHistory.ts`                                                    | unchanged: element snapshots by reference                                           |
 
 ## Data and persistence
 

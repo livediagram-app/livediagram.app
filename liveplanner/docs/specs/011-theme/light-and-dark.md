@@ -46,8 +46,7 @@ does too, so the editor never asks anyone to switch mode to suit a tab.
   translucent wash mixed over what is under it), else the canvas. A label with no colour of its own takes the viewer's
   ink, light on the dark canvas, so words on a panel whose fill the template fixes (a pale key, a pastel lane) carry a
   dark ink (`PAPER_INK`), and coloured words straight on the canvas take a tone that reads on both halves'
-  (`CANVAS_TONES`), both in `packages/templates/src/template-inks.ts`. `apps/live/lib/template-overlay-contrast.test.ts`
-  checks every template but the Pages ones, whose words sit on pages with their own paper.
+  (`CANVAS_TONES`). `apps/live/lib/template-overlay-contrast.test.ts` checks every template.
 - **A theme never sinks a label into what is behind it.** Picking a theme or a look, or drawing a tab in the other
   half, repaints each colour on its own, so it can move a label's backdrop (a panel the theme paints, the canvas)
   without its ink, or the ink without the backdrop: a template's dark `PAPER_INK` on a panel a dark theme repaints

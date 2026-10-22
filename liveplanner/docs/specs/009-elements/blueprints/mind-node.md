@@ -56,7 +56,6 @@ Scope, by file:
 | `apps/live/hooks/canvas/useBoxedDragHandlers.ts`             | A drag carries the subtree (`withMindSubtrees`)                                                                                    |
 | `apps/live/components/canvas/element-variant.ts`             | The canvas corner radius                                                                                                           |
 | `apps/live/hooks/canvas/useEditorViewport.ts`                | `scrollIntoView` with a side margin                                                                                                |
-| `packages/templates/src/template-builders-mindmaps.ts`       | The three live mind-map templates                                                                                                  |
 
 ## Domain and naming
 
@@ -659,7 +658,6 @@ Abandon, the canvas key guards and `makeRoom` emit nothing [GA1].
 | Spacing scales the gaps; Comfortable is the original  | layoutMindTree: spacing (three cases); mind spacing (three cases)                                        | `packages/document/src/mind-layout.test.ts`; `packages/document/src/mind-flow.test.ts`                                                                         |
 | Spacing pick stores on the root and re-lays out       | Spacing                                                                                                  | `apps/live/hooks/canvas/useMindMapSetters.test.ts`                                                                                                             |
 | Mind Map menu: Outline, Branching, Spacing            | MindMapMenuSections (six cases)                                                                          | `apps/live/components/palette/MindMapMenuSections.test.tsx`                                                                                                    |
-| Sitemap is a live downward map                        | sitemap template (seven cases)                                                                           | `apps/live/lib/template-hierarchies.test.ts`                                                                                                                   |
 | Templates are tidy, live maps                         | none [GA14]                                                                                              |                                                                                                                                                                |
 
 ## Constants and configuration

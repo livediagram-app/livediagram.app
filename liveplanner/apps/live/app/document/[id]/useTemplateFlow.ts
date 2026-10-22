@@ -90,8 +90,6 @@ export function useTemplateFlow(opts: {
     if ((tabs.find((t) => t.id === activeId)?.elements.length ?? 0) > 0) return;
     // Telemetry (docs/specs/017-telemetry/telemetry.md): a template was applied; `type` is the kind.
     track('Template', 'Used', titleCaseType(kind));
-    // A start on a tab is the new-tab entry (docs/specs/007-editor/editor-modes.md).
-    if (kind === 'whiteboard') track('Draw', 'Created', 'NewTab');
     confirmName();
     // Dynamic-import the heavy builders module only when the user
     // actually picks a template. The ~1700 lines of build* code stays
@@ -136,18 +134,6 @@ export function useTemplateFlow(opts: {
         name: def.name ?? '',
         elements: recolourElementsForTheme(raw, theme),
         ...(def.tab ? { fields: def.tab(ids) } : {}),
-        // A companion Sheet wears the theme's backdrop, not the drawing's pattern (template-companions.ts).
-        ...(def.ownCanvas
-          ? {
-              ownCanvas: {
-                backgroundPattern: theme.backgroundPattern,
-                patternColor: theme.patternColor,
-                ...(theme.backgroundOpacity != null
-                  ? { backgroundOpacity: theme.backgroundOpacity }
-                  : {}),
-              },
-            }
-          : {}),
       };
     });
     // A Plan template's boards bring their card types, every tab's (docs/specs/026-plan/plan-templates.md "Card

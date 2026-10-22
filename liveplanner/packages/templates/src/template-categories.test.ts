@@ -15,20 +15,12 @@ import { TEMPLATES, type TemplateKind } from './templates';
 describe('template categories', () => {
   const ids = TEMPLATE_CATEGORIES.map((c) => c.id);
 
-  it('are the thirteen job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
+  it('are the five job-based categories, alphabetical by label, Title Case, with even descriptions', () => {
     expect(TEMPLATE_CATEGORIES.map((c) => c.label)).toEqual([
-      'Brainstorm',
-      'Design',
       'Finance',
-      'Flowcharts',
       'Forms',
-      'Org Charts',
       'Planning',
-      'Presentations',
       'Spreadsheets',
-      'Strategy',
-      'Technical',
-      'Timelines',
       'Workshops',
     ]);
     const labels = TEMPLATE_CATEGORIES.map((c) => c.label);
@@ -61,15 +53,7 @@ describe('template categories', () => {
       finance: 6,
       spreadsheets: 5,
       forms: 6,
-      meetings: 10,
-      mindmaps: 8,
-      timelines: 7,
-      flowcharts: 5,
-      strategy: 14,
-      hierarchies: 7,
-      design: 7,
-      presentations: 1,
-      technical: 9,
+      meetings: 2,
     });
   });
 
@@ -83,10 +67,8 @@ describe('template categories', () => {
       expect(new Set(also).size, kind).toBe(also.length);
     }
     expect(isInTemplateCategory('invoice', 'spreadsheets')).toBe(true);
-    expect(isInTemplateCategory('funnel', 'finance')).toBe(true);
     expect(isInTemplateCategory('team-retro', 'planning')).toBe(true);
-    expect(isInTemplateCategory('doodle-warmup', 'meetings')).toBe(true);
-    expect(isInTemplateCategory('blank', 'flowcharts')).toBe(false);
+    expect(isInTemplateCategory('blank', 'planning')).toBe(false);
   });
 });
 
@@ -109,15 +91,10 @@ describe('template search words', () => {
     expect(find('invoice')).toContain('invoice');
     expect(find('crm')).toEqual(expect.arrayContaining(['contact-list', 'sales-pipeline']));
     expect(find('kpi')).toContain('okrs');
-    expect(find('retro')).toEqual(
-      expect.arrayContaining(['retrospective', 'team-retro', 'sailboat']),
-    );
-    expect(find('persona')).toContain('user-persona');
-    expect(find('erd')).toContain('er-diagram');
-    expect(find('org')).toContain('orgchart');
+    expect(find('retro')).toContain('team-retro');
     // A category label finds what is cross-listed in it; every word must match.
-    expect(find('finance funnel')).toContain('funnel');
-    expect(find('finance funnel')).not.toContain('swot');
+    expect(find('spreadsheets invoice')).toContain('invoice');
+    expect(find('spreadsheets invoice')).not.toContain('kanban');
     expect(find('kanban zebra')).toEqual([]);
     expect(find('')).toHaveLength(TEMPLATES.length);
   });
@@ -127,8 +104,8 @@ describe('template search words', () => {
       TEMPLATES.filter((t) => templateMatchesQuery(t, q)).map((t) => t.kind);
     expect(find('to-do')).toContain('task-tracker');
     expect(find('todo')).toContain('task-tracker');
-    // Run together, a hyphenated name is found too ("er diagram" from the kind er-diagram).
-    expect(find('erdiagram')).toContain('er-diagram');
+    // Run together, a hyphenated name is found too ("task tracker" from the kind task-tracker).
+    expect(find('tasktracker')).toContain('task-tracker');
     // A query of punctuation alone is no query.
     expect(find(' - ')).toHaveLength(TEMPLATES.length);
   });
