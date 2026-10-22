@@ -25,6 +25,9 @@ liveworkspace also runs every app's anonymous telemetry, its API at liveworkspac
 and its dashboard at liveworkspace.app/telemetry: see
 [docs/telemetry.md](docs/telemetry.md).
 
+It holds every app's Community listings too, its API at liveworkspace.app/api/community; each app
+hosts its own Community pages, which read it. See [docs/community.md](docs/community.md).
+
 ## How signing in works
 
 The apps live on different sites (`livediagram.app`, `liveplanner.app`), so they can't share a
@@ -94,8 +97,8 @@ cd ../..
 corepack pnpm dev:workspace           # http://localhost:3300/sign-in
 ```
 
-`dev:workspace` runs the site on 3300 with the accounts Worker (8787) and the telemetry Worker
-(8790) behind it: the site's dev server forwards `/api/auth/*` and `/.well-known/*` to the
+`dev:workspace` runs the site on 3300 with the accounts Worker (8787), the telemetry Worker
+(8790) and the Community Worker (8791) behind it: the site's dev server forwards `/api/auth/*` and `/.well-known/*` to the
 accounts Worker, so the pages and the API share one origin, as on liveworkspace.app. That origin,
 `http://localhost:3300`, is the Worker's `BASE_URL` and the issuer apps check locally.
 
