@@ -5,7 +5,7 @@ route at `/new`. The editor route is editor-only; `/new` handles "I
 want to create a document" end-to-end.
 
 > **Routing note (later change, [Router app](../016-platform/router-app.md)):** the `/live` URL prefix was
-> removed — the live app serves at clean routes. So today the editor is
+> removed — the editor app serves at clean routes. So today the editor is
 > `/document/<id>` (not `/live/document/<id>`), `/new` is `/new`, and
 > there is no bare `/live` entry point (`/` is the marketing home). The
 > historical `/live...` URLs below describe the pre-cleanup scheme; map
@@ -80,7 +80,7 @@ Editor URLs use a path segment rather than a query string. `output:
    via `generateStaticParams = [{ id: 'placeholder' }]` on the
    dynamic-segment server page. The page wraps a client `EditorPage`
    component that owns the editor logic.
-2. The live worker (`apps/live/src/worker.ts`) wraps the static-assets
+2. The editor worker (`apps/editor/src/worker.ts`) wraps the static-assets
    binding and rewrites any `/document/<anything>` request to
    `/document/placeholder/`. The browser URL stays `/document/<id>`.
 3. Client code reads `window.location.pathname` to extract the real
@@ -108,7 +108,7 @@ up: Next.js's static export bakes the framework default 404 into
 the `notFound` slot of the layout's flight payload and the client
 router reaches it before any of those interventions can finish.
 
-Working approach: **embrace the trigger**. `apps/live/app/not-found.tsx`
+Working approach: **embrace the trigger**. `apps/editor/app/not-found.tsx`
 exports `<EditorPage />` directly. When the client router fires
 `notFound()` for an unrecognised id, the layout swaps from
 `children` to the `notFound` slot — which is now the editor. The
@@ -288,11 +288,11 @@ reports `UI` · `Closed` · `NewDocument` ([Telemetry](../017-telemetry/telemetr
 
 ## Responsive layout
 
-The New Document wizard (`apps/live/components/palette/NewDocumentWizard.tsx`) on `/new` and the visitor name prompt (`apps/live/components/palette/IdentityPrompt.tsx`) over the editor are two cards of one build. On `sm:` and up each renders as a centred floating card (max 44rem for the wizard, 26rem for the name prompt), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (the name prompt's Join and Cancel) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
+The New Document wizard (`apps/editor/components/palette/NewDocumentWizard.tsx`) on `/new` and the visitor name prompt (`apps/editor/components/palette/IdentityPrompt.tsx`) over the editor are two cards of one build. On `sm:` and up each renders as a centred floating card (max 44rem for the wizard, 26rem for the name prompt), with rounded corners + shadow over the canvas. On mobile (below `sm`) it fills the viewport edge-to-edge: full width, full dynamic-viewport height, no border / radius / shadow, so the user can read every row and click through without zoom. The footer's Create button (the name prompt's Join and Cancel) stays reachable because the body scrolls inside the card while the header + footer remain pinned (mobile and desktop alike).
 
 The card has no backdrop, so the editor header stays live beside it. It stacks on the `canvas-modal` rung: above every canvas surface, beneath the header, so the header's menus (the logo's site switcher, the account menu) open in front of the card rather than behind it.
 
-This is the only welcome surface so it sets the mobile floor for the rest of the editor's panel chrome (Palette / Context / Explorer, see [07-live-app](live-app.md)). Those are addressed separately.
+This is the only welcome surface so it sets the mobile floor for the rest of the editor's panel chrome (Palette / Context / Explorer, see [07-live-app](editor-app.md)). Those are addressed separately.
 
 ## Jump Back In (recent documents card)
 
@@ -307,7 +307,7 @@ deliberately separate from the create flow, and hidden entirely for someone
 with no documents yet, of their own or their teams' (best-effort fetch — a failure just means no shortcut).
 A footer link **"Open Explorer"** goes to `/explorer/recent`, the same list
 uncapped, so users with more history than the card shows have a way into the
-full library. Component: `apps/live/app/new/RecentDocumentsCard.tsx`.
+full library. Component: `apps/editor/app/new/RecentDocumentsCard.tsx`.
 
 ## Choosing a mode
 
@@ -475,7 +475,7 @@ default document name) without walking the wizard:
   ignored and the plain wizard shows (the pre-hydration guard can't
   validate a kind, so the layout effect lifts it), so a stale link never
   strands anyone. Both params are read by one helper,
-  `wizardBypassKind` in `apps/live/lib/new-document-params.ts`, so the
+  `wizardBypassKind` in `apps/editor/lib/new-document-params.ts`, so the
   page, its restore cleanup and the guard agree on what counts. This is
   the URL the marketing site's template gallery links every card to
   ([Marketing site](../019-marketing/marketing-site.md)); it fires `UI / Used / TemplateLink`.
@@ -487,7 +487,7 @@ default document name) without walking the wizard:
   An unknown mode, or an empty `q`, is ignored. The static page's HTML is the unselected step, so a
   pre-paint guard (`data-wizard-preset`, like the bypass's) hides the wizard card (`visibility`, so
   nothing moves) until React has rendered the preset. Read by
-  `wizardPresetMode` and `wizardPresetQuery` in `apps/live/lib/new-document-params.ts`. The
+  `wizardPresetMode` and `wizardPresetQuery` in `apps/editor/lib/new-document-params.ts`. The
   marketing hero's **Build yours** buttons link here ([Marketing site](../019-marketing/marketing-site.md)).
 - **`?welcome=1`** is no longer read. It marked the marketing hero's launch window, which grew
   into a blank canvas the editor then held through its load; the launch window and that quiet
@@ -541,7 +541,7 @@ it cannot tell the difference from a direct visit.
   until it is.
 - **The opening screen is the editor's outermost Suspense fallback, so no lazy
   piece inside the editor may suspend up to it.** Every `next/dynamic` import
-  in the live app passes `ssr: false` (or a `loading` component), which gives
+  in the editor app passes `ssr: false` (or a `loading` component), which gives
   it a boundary of its own; without one, the first open of Settings or Search
   swapped the whole editor for the opening screen until the dialog's chunk
   landed. `lib/dynamic-has-boundary.test.ts` guards it.
@@ -564,7 +564,7 @@ document"**; everything else stays put.
 - **Surface:** headerless and full height, on the canvas colour
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
   edges and two slowly drifting, blurred brand-tinted glows behind the
-  centre. Dark-aware like every screen ([Live app](live-app.md)).
+  centre. Dark-aware like every screen ([Editor app](editor-app.md)).
 - **Centrepiece:** the shared `DiagramBuildAnimation`, a small live diagram
   being drawn by a collaborator cursor labelled "You": the cursor places a
   card, drags a connector that draws under it to the next card, and so on

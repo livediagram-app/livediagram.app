@@ -72,7 +72,7 @@ research) or **recalled** (from general knowledge; treat as indicative, check be
 4. **No agent identity.** A comment posted with a token is credited to the token owner's
    participant record (`getParticipant(owner)`), so Claude's comment reads as Webber's. Created
    documents carry `source: 'mcp'` (the Made by AI filter); elements and edits carry nothing.
-5. **Lock-blind.** The concurrent-selection lock is client-only (`docs/specs/007-editor/live-app.md`),
+5. **Lock-blind.** The concurrent-selection lock is client-only (`docs/specs/007-editor/editor-app.md`),
    the room relays `select` ops without remembering them, and REST writers never see it.
 6. **No unit to undo.** Undo is a local snapshot stack of one's own changes (locked decision 1 in
    `realtime-conflict-resolution.md`). A remote change is not on it, and nothing groups an agent's
@@ -322,7 +322,7 @@ mention rev=e1f3:431 tab=main el-9 "Payments" Webber: "@Claude should this be as
 | Tab PUT merge re-applies changesets after the saver's cursor                               | `room-client.ts` `mergeRoomLedger`                             | small  |
 | Room remembers each session's selection                                                    | `document-room.ts` attachment                                  | small  |
 | REST presence with ttl; `agent` flag on `ParticipantPresence`; alarm expiry                | `document-room.ts`, `api-schema`                               | medium |
-| Editor: agent avatar badge, focus rings, reveal outline, changeset toast with Undo         | `apps/live`                                                    | medium |
+| Editor: agent avatar badge, focus rings, reveal outline, changeset toast with Undo         | `apps/editor`                                                    | medium |
 | Room for every document, personal ones included                                            | `useRoomConnection.ts`, `roomStubFor`                          | small  |
 | Comments: resolve/reopen endpoint, agent author fields, agent mentions                     | comment routes, `comments.ts`, `comment-mentions.md`           | medium |
 | `wait` / `watch` over a ticketed socket with `--since`                                     | CLI; room `sync` already exists                                | small  |
@@ -377,10 +377,10 @@ Webber decided these four forks; specs should record them when this work is spec
 
 - livediagram: `docs/specs/012-collaboration/realtime-conflict-resolution.md`,
   `collab-race-hardening.md`, `resync-without-reload.md`, `comment-mentions.md`,
-  `comment-pin.md`; `docs/specs/007-editor/live-app.md` (concurrent-selection lock);
+  `comment-pin.md`; `docs/specs/007-editor/editor-app.md` (concurrent-selection lock);
   `docs/specs/015-api/mcp-server.md`, `public-api-and-tokens.md`;
   `apps/api/src/document-room.ts`, `room-client.ts`, `routes/document-room-routes.ts`,
-  `routes/document-subresource-routes.ts`; `apps/live/app/document/[id]/useRoomConnection.ts`;
+  `routes/document-subresource-routes.ts`; `apps/editor/app/document/[id]/useRoomConnection.ts`;
   `packages/document/src/element-ops.ts`, `element-deltas.ts`, `comments.ts`;
   `packages/api-schema/src/room-messages.ts`, `index.ts` (`ParticipantPresence`).
 - Liveblocks (verified): <https://liveblocks.io/docs/products/sync/agentic-editing>,

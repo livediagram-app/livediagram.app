@@ -23,7 +23,7 @@ global Help icon and the inline helper text.
 
 ### One reusable affordance
 
-A single component, `HelpArticleLink` (`apps/live/components/primitives/HelpArticleLink.tsx`),
+A single component, `HelpArticleLink` (`apps/editor/components/primitives/HelpArticleLink.tsx`),
 is the only way the editor links to a help article. It:
 
 - takes an `article` key (see the registry below), not a raw URL;
@@ -43,7 +43,7 @@ is the only way the editor links to a help article. It:
   `rel="noreferrer noopener"`), matching the existing header Help link;
 - wraps the trigger in the shared `HoverCard` (never a native `title`; see
   [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)). The hover card's copy comes
-  from `HELP_LINK_COPY` in `apps/live/lib/help-articles.ts`, one entry per
+  from `HELP_LINK_COPY` in `apps/editor/lib/help-articles.ts`, one entry per
   article key: a **"Learn about …"** title naming the thing the reader is
   looking at ("Learn about the Explorer") and one line saying what the
   article does for them ("Tips and tricks to help you get the most out of
@@ -65,9 +65,9 @@ surface links the same way, and no surface hand-rolls an `<a href="/help/...">`.
 
 ### One source for slugs
 
-`apps/live/lib/help-articles.ts` exports a frozen `HELP_ARTICLES` map of
+`apps/editor/lib/help-articles.ts` exports a frozen `HELP_ARTICLES` map of
 named keys -> nested article slug (the path under `/help`, e.g.
-`collaboration/sharing/share-link-expiry`). This map is the live app's single
+`collaboration/sharing/share-link-expiry`). This map is the editor app's single
 source for help slugs on surfaces that deep-link ONE article, and keys are
 referenced symbolically so a slug change is a one-line edit. (Search is
 different: the SearchPanel's Help group derives from the full

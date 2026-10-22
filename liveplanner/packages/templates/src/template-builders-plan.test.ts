@@ -20,7 +20,7 @@ import { planTemplateTabCount } from './plan-template-catalogue';
 
 // The Plan templates (docs/specs/026-plan/plan-templates.md): ways of working across tabs, no cards.
 
-// apps/live PlanBoardView: PLAN_COLUMN_MIN_PX, the grid's gap-3 and the body's px-3.
+// apps/editor PlanBoardView: PLAN_COLUMN_MIN_PX, the grid's gap-3 and the body's px-3.
 const COLUMN_MIN_PX = 220;
 const GAP_PX = 12;
 const SIDE_PADDING_PX = 12;

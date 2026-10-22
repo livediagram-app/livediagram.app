@@ -26,12 +26,12 @@ export function cornerRadiusPx(
 
 | File                                                                       | Fallback px                               |
 | -------------------------------------------------------------------------- | ----------------------------------------- |
-| `apps/live/components/canvas/element-variant.ts`                           | 8 (`DEFAULT_BOX_RADIUS_PX`), 12 mind node |
-| `apps/live/components/canvas/BoxedElementView.tsx` (dashed-border overlay) | 8, 12 mind node                           |
-| `apps/live/components/canvas/ImageElementView.tsx`                         | 4                                         |
-| `apps/live/components/canvas/web/BannerFace.tsx`                           | `lg`'s px (24)                            |
-| `apps/live/components/canvas/web/SiteHeaderFace.tsx`                       | `md`'s px (12)                            |
-| `apps/live/components/canvas/web/StatRowFace.tsx`                          | `md`'s px (12)                            |
+| `apps/editor/components/canvas/element-variant.ts`                           | 8 (`DEFAULT_BOX_RADIUS_PX`), 12 mind node |
+| `apps/editor/components/canvas/BoxedElementView.tsx` (dashed-border overlay) | 8, 12 mind node                           |
+| `apps/editor/components/canvas/ImageElementView.tsx`                         | 4                                         |
+| `apps/editor/components/canvas/web/BannerFace.tsx`                           | `lg`'s px (24)                            |
+| `apps/editor/components/canvas/web/SiteHeaderFace.tsx`                       | `md`'s px (12)                            |
+| `apps/editor/components/canvas/web/StatRowFace.tsx`                          | `md`'s px (12)                            |
 | `packages/document/src/svg-render-border.ts` (`borderOf`)                  | `DEFAULT_BOX_RADIUS_PX`                   |
 | `packages/document/src/svg-render-describe.ts`                             | 4 (images)                                |
 | `packages/document/src/svg-render-web.ts`                                  | the caller's fallback                     |
@@ -48,7 +48,7 @@ See the quick style blueprint's "Corners row".
 ## Excalidraw
 
 - Import: `roundness` set (any type) → scene `rounded: true` → `borderRadius: ROUNDED_CORNER_PRESET`
-  (`'lg'`, `apps/live/lib/board-scene/land-boxes.ts`) on both landing profiles (`land-boxes.ts`,
+  (`'lg'`, `apps/editor/lib/board-scene/land-boxes.ts`) on both landing profiles (`land-boxes.ts`,
   `land-diagram.ts`).
 - Export: unchanged rule, `borderRadius !== 'none'` → `roundness: { type: 3 }`.
 
@@ -59,8 +59,8 @@ See the quick style blueprint's "Corners row".
 | Quarter cap, presets, fallback, Full exempt, None 0, broken sides                                                                                | `packages/document/src/corner-radius.test.ts`                                 |
 | Shorter side at least 4x the preset: unchanged, every preset                                                                                     | same                                                                          |
 | SVG export and hit outline use the rule (small rounded square)                                                                                   | `packages/document/src/corner-radius-renderers.test.ts`, `svg-render.test.ts` |
-| Canvas variant uses the rule (presets, kind defaults, Full, mind node)                                                                           | `apps/live/components/canvas/element-variant.test.ts`                         |
-| Excalidraw 13.9 x 14.6 type 3 lands `lg` on both profiles, draws about 3.5 px; types 1 and 2 too; matches Excalidraw up to 96 px; exports type 3 | `apps/live/lib/excalidraw-import.test.ts` "rounded corners"                   |
+| Canvas variant uses the rule (presets, kind defaults, Full, mind node)                                                                           | `apps/editor/components/canvas/element-variant.test.ts`                         |
+| Excalidraw 13.9 x 14.6 type 3 lands `lg` on both profiles, draws about 3.5 px; types 1 and 2 too; matches Excalidraw up to 96 px; exports type 3 | `apps/editor/lib/excalidraw-import.test.ts` "rounded corners"                   |
 
 ## Constants and configuration
 

@@ -100,27 +100,27 @@ The bar isn't 100% line coverage; it's "the next regression on this code path fa
 
 ### End-to-end tests
 
-A [Playwright](https://playwright.dev) suite (`apps/live/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It runs on **every pull request** as required checks (the `E2E Smoke` workflow's jobs, `.github/workflows/e2e.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), on push to `main`, and on demand: `gh workflow run e2e.yml --ref <branch>`.
+A [Playwright](https://playwright.dev) suite (`apps/editor/e2e`, [`docs/specs/003-system-architecture/e2e-smoke.md`](../specs/003-system-architecture/e2e-smoke.md)) drives the real editor build + api worker in a headless Chromium — the layer the Vitest unit tests can't reach. It runs on **every pull request** as required checks (the `E2E Smoke` workflow's jobs, `.github/workflows/e2e.yml`: six **Smoke shard** jobs, **Sites audit** and **Signed-in specs**), on push to `main`, and on demand: `gh workflow run e2e.yml --ref <branch>`.
 
 Run it locally against a running `pnpm dev` stack (it reuses the servers on `:3002` / `:8787`):
 
 ```sh
-pnpm --filter @livediagram/live test:e2e
+pnpm --filter @livediagram/editor test:e2e
 ```
 
-Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/live/out`, which it never rebuilds: run `pnpm --filter @livediagram/live build` first, or it exits naming the missing build.
+Without a dev stack, it boots its own (`scripts/e2e-stack.mjs`) over the existing `apps/editor/out`, which it never rebuilds: run `pnpm --filter @livediagram/editor build` first, or it exits naming the missing build.
 
-The signed-in specs (`apps/live/e2e/clerk-stub/`) need Clerk switched on, so they have their own build and run, on their own ports:
+The signed-in specs (`apps/editor/e2e/clerk-stub/`) need Clerk switched on, so they have their own build and run, on their own ports:
 
 ```sh
-pnpm --filter @livediagram/live build:clerk-stub
-pnpm --filter @livediagram/live test:e2e:clerk-stub
+pnpm --filter @livediagram/editor build:clerk-stub
+pnpm --filter @livediagram/editor test:e2e:clerk-stub
 ```
 
-The armed guest-signature specs (`apps/live/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3017`):
+The armed guest-signature specs (`apps/editor/e2e/armed/`) run against the usual build, on their own stack with guest signature enforcement on (`:3017`):
 
 ```sh
-pnpm --filter @livediagram/live test:e2e:armed
+pnpm --filter @livediagram/editor test:e2e:armed
 ```
 
 Those ports are defaults, not fixtures. Three environment variables move them, which is what you want when `:3002` is already taken (a second checkout, a worktree):
@@ -128,11 +128,11 @@ Those ports are defaults, not fixtures. Three environment variables move them, w
 | Variable             | Default                 | What it moves                                                         |
 | -------------------- | ----------------------- | --------------------------------------------------------------------- |
 | `E2E_BASE_URL`       | `http://localhost:3002` | Where Playwright points, and the URL it waits on before starting      |
-| `E2E_LIVE_PORT`      | `3002`                  | The port `e2e-stack.mjs` serves the built live app on                 |
+| `E2E_EDITOR_PORT`      | `3002`                  | The port `e2e-stack.mjs` serves the built editor app on                 |
 | `E2E_API_PORT`       | `8787`                  | The api worker's port, and the target its `/api/*` proxy forwards to  |
 | `E2E_MARKETING_PORT` | `3013`                  | The port the stack serves the built marketing site on (optical audit) |
 
-`E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. The other two are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_LIVE_PORT`, so moving the live app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
+`E2E_API_PORT` is self-contained: it sets the worker's port and the proxy that reaches it together. The other two are **not**. Playwright waits on `E2E_BASE_URL` while the stack binds `E2E_EDITOR_PORT`, so moving the editor app means setting both. Set only one and the run hangs until the 180-second `webServer` timeout, with nothing said about why.
 
 The optical audit also opens the help centre, the Community and the marketing site: build them (`pnpm --filter @livediagram/help --filter @livediagram/community --filter @livediagram/marketing build`), or point `E2E_HELP_URL`, `E2E_COMMUNITY_URL` and `E2E_MARKETING_URL` at their dev servers.
 

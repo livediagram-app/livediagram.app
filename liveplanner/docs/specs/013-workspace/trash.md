@@ -17,7 +17,7 @@ library): it only moves the project to the Trash, so a question would guard noth
 
 - **“Roadmap” deleted** shows once the delete has landed, naming the project
   ([Toasts](../004-interface-design/toasts.md#naming-what-it-acted-on); "Project deleted" when it has no name), with
-  **Undo** (`apps/live/lib/project-delete-undo.ts`, `offerDeleteUndo`). Undo restores it from the Trash exactly as
+  **Undo** (`apps/editor/lib/project-delete-undo.ts`, `offerDeleteUndo`). Undo restores it from the Trash exactly as
   Restore does (`Trash·Restored`, typed by the Trash it was in), closes the toast and says **“Roadmap” restored**; a
   restore that fails says "Could not restore “Roadmap”. It is in the Trash, in Settings." The toast stays up for the
   answer time (10 seconds, paused while hovered or focused) and then goes, leaving the Trash; the "Show

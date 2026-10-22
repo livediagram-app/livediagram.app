@@ -1,6 +1,6 @@
 // Scenes for the Shapes articles (Shapes, Shape Markers, Style Presets): the right-click menu's
 // Shape morph grid, the Text flyout's Markers section, and the Style flyout's Presets grid.
-// Drawn from apps/live: COMMON_SHAPES (components/palette/context-menu-constants.ts), MARKER_LABELS
+// Drawn from apps/editor: COMMON_SHAPES (components/palette/context-menu-constants.ts), MARKER_LABELS
 // (components/canvas/ShapeMarker.tsx) and the preset tiers (docs/specs/010-palette/style-presets.md).
 
 import { Label, Scene, SelectionBox, Shape } from './primitives';

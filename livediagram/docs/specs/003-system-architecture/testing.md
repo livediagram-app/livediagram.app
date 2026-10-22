@@ -129,9 +129,9 @@ Watch mode while developing: `pnpm --filter @livediagram/<name> exec vitest`.
 Coverage uses the built-in **v8** provider. Reports are written to a
 gitignored `coverage/` directory per workspace (`text` summary in the
 terminal, plus `html` + `lcov` for tooling). The `lcov` report names each file
-from the repository root (`apps/live/lib/...`), so reports from different
+from the repository root (`apps/editor/lib/...`), so reports from different
 workspaces never collide. Only first-party TypeScript source under `src/` and
-`lib/` is counted; the editor (`apps/live`) also counts `app/`, `components/`
+`lib/` is counted; the editor (`apps/editor`) also counts `app/`, `components/`
 and `hooks/`, where most of its source lives. Fixtures beside the code
 (`.drawio`, goldens, model weights) are never parsed as source. Test files and type-only `.d.ts` are
 excluded. `index.ts` is intentionally **not** excluded — in this repo a
@@ -168,7 +168,7 @@ CI runs parallel jobs (`.github/workflows/ci.yml`): **Checks** runs lint →
 format → typecheck; **Tests** runs **test** → **coverage thresholds**, each
 suite exactly once (a workspace with `test:coverage` runs only that), for every
 workspace but the editor; **Editor unit tests i/3** run the editor's suite
-(`apps/live`, most of the repository's tests) under coverage, a third of its
+(`apps/editor`, most of the repository's tests) under coverage, a third of its
 files each (`vitest run --shard=i/3`); **Build** runs the build and the staging
 config check. No CI change is needed to start running
 tests; adding a `test` script to a workspace is enough for Turborepo to pick
@@ -265,7 +265,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     deltas, sessions (Q&A, polls, quizzes), slide decks, tab kinds and the
     event-storming lanes + photo placement, names, themes, element shadows,
     the headless SVG renderer's fidelity and coverage, validation.
-  - `apps/live`: the lib layer's helpers (api client + Offline Mode store,
+  - `apps/editor`: the lib layer's helpers (api client + Offline Mode store,
     auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,
     placement, help deep links, the photo-model worker's plumbing), the pure
@@ -311,7 +311,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     weight, cap-band and ink centring, and the vendored Lucide set.
   - `packages/template-previews`: preview SVGs, their bounds and motion. The
     template builders themselves (`packages/templates`, which has no suite of
-    its own) are covered from their callers: `apps/live`'s template and
+    its own) are covered from their callers: `apps/editor`'s template and
     builder tests, `apps/marketing`'s gallery, and `apps/help`'s article guard.
   - `packages/tailwind-config`: the theme's budgets, motion and optical
     utilities, scrollbars.
@@ -329,7 +329,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     and the api service-binding client.
   - `apps/router`: the dispatch table (prefix strips, clean live
     routes, origin fallback, 503) plus the drift guard that every top-level
-    `apps/live/app` segment routes to the live worker rather than falling
+    `apps/editor/app` segment routes to the editor worker rather than falling
     through to marketing's 404.
   - `apps/marketing`: the content registries (alternatives, landing beats,
     template gallery, feature anchors), brand and category icons, dark art.
@@ -350,7 +350,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     pure helpers (query state, the community key, telemetry); and the app's
     optical-guard and motion-budget tests.
 
-- **Hooks and components** in `apps/live` and `packages/ui` render in tests, and the
+- **Hooks and components** in `apps/editor` and `packages/ui` render in tests, and the
   environment is opted into **per file** rather than per workspace. A test
   that needs a document opens with a docblock:
 
@@ -386,7 +386,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   the next test) still call `cleanup()` themselves: after-hooks run in
   reverse registration order, so the setup's copy runs last.
 
-  One resolver note, in `apps/live/vitest.config.ts`: `resolve.dedupe` lists
+  One resolver note, in `apps/editor/vitest.config.ts`: `resolve.dedupe` lists
   `react` and `react-dom`. `packages/ui` peers React but carries its own copy
   for its own tests, so a hook test that renders a `@livediagram/ui` hook
   otherwise loads TWO Reacts and every `useState` throws "Cannot read

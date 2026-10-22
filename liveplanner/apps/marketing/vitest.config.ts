@@ -3,7 +3,7 @@ import { defineProject } from '@liveplanner/vitest-config';
 
 // resolve.alias mirrors tsconfig.json's `"@/*": ["./*"]` so test files can
 // import lib modules whose own import chain reaches a `@/components/...`
-// module (e.g. landing-content -> FeatureArt). Mirrors apps/live's config.
+// module (e.g. landing-content -> FeatureArt). Mirrors apps/editor's config.
 //
 // oxc's automatic JSX runtime lets a lib module that evaluates JSX at load
 // time (landing-content's section data embeds feature-art elements) import

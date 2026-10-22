@@ -40,7 +40,7 @@ again.
 
 A welcome card, four steps, then an outro card. The bookend cards sit outside the step count. Three steps ring one
 of the dock's groups by its `data-tour-id` (`dock-drawing`, `dock-shapes`, `dock-settings`, carried by every dock
-group as `dock-<group>`); one rings the [Quick style panel](../008-canvas/quick-style-panel.md) (`quick-style`). The exact strings live in `apps/live/components/tour/draw-tour-steps.ts`.
+group as `dock-<group>`); one rings the [Quick style panel](../008-canvas/quick-style-panel.md) (`quick-style`). The exact strings live in `apps/editor/components/tour/draw-tour-steps.ts`.
 
 0. **Getting started with Draw?** (the offer): centred card with its own illustration (a whiteboard where a marker
    scribble draws itself on over a highlighter swipe and a star is circled), offering a quick tour of the pens,

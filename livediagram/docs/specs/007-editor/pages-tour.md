@@ -37,7 +37,7 @@ same engine. Where this spec is silent, the Draw tour's rules hold.
   Each never offers itself again, on any device; a page of another kind still offers its own.
   `pagesTourSeen` true counts every kind as toured only while [Power user mode](power-user-mode.md) is on: an
   answer given before the tour offered each kind once named no kind, so each kind is offered once more
-  (`apps/live/lib/tour-tracks.ts`, shared with the [Plan tour](../026-plan/plan-tour.md)).
+  (`apps/editor/lib/tour-tracks.ts`, shared with the [Plan tour](../026-plan/plan-tour.md)).
 - **Replayable from Settings**: in Settings' **Tours** category, **Pages Tours** switches every kind at once (on
   while any is owed; off answers them all, on forgets every answer), and one switch per kind sits nested beneath
   it, named for its kind (**Slides Tour**, **Infographic Tour**, **Article Tour**, **Logo Tour**). On means that kind
@@ -67,7 +67,7 @@ tour** or **Logo tour**, over an illustration of that kind (`components/tour/art
 slide whose words and picture trade sides as layouts are picked beside it, with a Present button; an infographic
 page whose band, headline, bars and ring chart fill in; an article page written line by line, its next page
 behind; a logo's two shapes meeting on the page's guides, its wordmark appearing.
-The exact strings live in `apps/live/components/tour/<kind>-tour-steps.ts`.
+The exact strings live in `apps/editor/components/tour/<kind>-tour-steps.ts`.
 
 **A step that opens a popover** (Layout, Background, the Slide Deck) opens it once on entering, by pressing its
 real button, and rings it. The popover stays open while the person presses the tour's card. Picking from it closes
@@ -173,4 +173,4 @@ is on) alongside the Diagram, Plan, Workshop and Draw tours.
   its controls; `page-tour-steps.ts` picks a track's steps for a kind, loaded at the offer or the press so the
   copy stays out of the editor's first load.
 - `PagesTourHost.tsx`: the offer, the tour page and the seen-guard. `PageTour.tsx`: the page panel's Show Me.
-- `apps/live/lib/page-panel-request.ts`: how a tour opens or closes a page's panel on a tab from outside `CanvasPages`.
+- `apps/editor/lib/page-panel-request.ts`: how a tour opens or closes a page's panel on a tab from outside `CanvasPages`.

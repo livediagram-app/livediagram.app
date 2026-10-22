@@ -50,7 +50,7 @@ gave nobody a reason to tell them apart or click.
 
 ## The share page's head
 
-The live app's worker fills in the shell's `<head>` for `/project/shared?s=<code>` before it is sent: the
+The editor app's worker fills in the shell's `<head>` for `/project/shared?s=<code>` before it is sent: the
 `<title>`, `description`, `og:title`, `og:description`, `og:image` (with its size and alt text), `twitter:title`,
 `twitter:description` and `twitter:image`. It asks the api for the link's preview with
 `GET /api/share/<code>/card`, which answers `{ name }` for a link whose preview names its project and 404 for every
@@ -73,7 +73,7 @@ of that link sees, so it needs no gate beyond the link's own.
   apart from the share resolve's, so an office opening a link together in a meeting never spends the editor's own
   budget on previews. Both doors answer only what the live image already answers for the same code, so the bucket
   adds no way to learn more from a guessed code.
-- The live worker forwards the visitor's `CF-Connecting-IP` to the api, so the limit applies per visitor, not to
-  the live worker as one caller.
+- The editor worker forwards the visitor's `CF-Connecting-IP` to the api, so the limit applies per visitor, not to
+  the editor worker as one caller.
 - The card is drawn at most once per save per project (its first tab), and the PNG's longer side is never
   more than 1200 px, so a vast board cannot exhaust a Worker's memory.

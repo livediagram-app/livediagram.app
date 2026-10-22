@@ -18,7 +18,7 @@ arrows, images and frames. See [Draw mode](../023-draw-mode/draw-mode.md)
 
 ## Where it lives
 
-`apps/live/lib/board-scene/`, a folder of small pure modules (no DOM, no
+`apps/editor/lib/board-scene/`, a folder of small pure modules (no DOM, no
 React), consumed only by the live editor:
 
 - `scene.ts`: the scene's types, the contract every parser codes against.

@@ -455,7 +455,7 @@ nor sent:
   ("Cursors hidden", "Counts hidden"), phase-aware: cursors come back the
   moment voting closes, counts once the results show.
 - **Presence stays**: the tab avatar stack, the "who's on this tab" dots and
-  the per-element **selection badges + selection lock** ([Live app](../007-editor/live-app.md)) are
+  the per-element **selection badges + selection lock** ([Editor app](../007-editor/editor-app.md)) are
   untouched. You can still see who is in the room, and an element someone
   else holds still names them — silently locking an element with no
   explanation would read as a bug, and the lock is a correctness mechanism

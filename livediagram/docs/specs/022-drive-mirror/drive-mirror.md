@@ -135,7 +135,7 @@ this spec does not restate it.
   it with `DRIVE_TOKEN_KEY`, binding the user, the redirect URI and a
   10-minute expiry, so a code can only be redeemed by the user who asked for
   it, and only against the redirect URI it was issued for.
-- **Exchange:** Google redirects back to the live app at `/drive/connected` with a code and the
+- **Exchange:** Google redirects back to the editor app at `/drive/connected` with a code and the
   `state` value the app set; the app posts both to the api, which checks
   `state`, exchanges the code with the client secret, encrypts the refresh
   token and stores it. The browser never sees the refresh token.
@@ -498,7 +498,7 @@ What decides it:
 
 ## Open with
 
-- The live app serves `/drive/open`, the Drive UI integration's Open URL.
+- The editor app serves `/drive/open`, the Drive UI integration's Open URL.
   Google passes `state={"ids":[...],"action":"open",...}`.
 - The browser reads the file's `appProperties`:
   - **The user can open the document** in livediagram, and the file is the one
@@ -593,7 +593,7 @@ D1, owned by the api worker:
 ## Self-hosting
 
 - Env on the api worker: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
-  `DRIVE_TOKEN_KEY`; the live app reads the client id as
+  `DRIVE_TOKEN_KEY`; the editor app reads the client id as
   `NEXT_PUBLIC_GOOGLE_CLIENT_ID`, and the Google Picker's browser key as
   `NEXT_PUBLIC_GOOGLE_API_KEY`. Documented in each `.env.example`. The api's
   `GOOGLE_CLIENT_ID` switches the feature on at all; without it every Drive
@@ -624,7 +624,7 @@ Picker key and Drive UI integration:
 Within an environment the api worker and the live build always carry the
 **same** client id: both come from that environment's entry in the hosted
 profile, and every deploy proves it (the worker's live vars, and the built
-live app, checked against the entry). While an entry is empty the Drive mirror
+editor app, checked against the entry). While an entry is empty the Drive mirror
 is off in that environment (no Drive entry, every route `503`). Each
 environment's Picker key is its own secret: `NEXT_PUBLIC_GOOGLE_API_KEY` for
 production, `NEXT_PUBLIC_GOOGLE_API_KEY_STAGING` for staging; the client secret

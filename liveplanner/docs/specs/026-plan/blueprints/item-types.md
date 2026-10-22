@@ -98,7 +98,7 @@ linkType: 'project' }`) in item-types.ts; Task and the brought Bug and Story car
 - Card fields: `card-links.ts` (packages/items) is the one reading of links: `linkFieldsOfType(type)`, `linkCandidates(items, linkType, selfId)` (live, not archived, number
   order, never self), `linkText` ("Missing card"), and `linkedCardsOf(target, items, types)`: groups
   `{ fieldId, label, fromTypes, cards }`, one per Card field whose `linkType` is the target's type (Parent for a
-  Project), trashed cards left out. `LinkedCardField` (apps/live) is the shared control for every Card field
+  Project), trashed cards left out. `LinkedCardField` (apps/editor) is the shared control for every Card field
   (`ItemFieldEditor`), an in-place listbox (inside the panel's focus trap) with a filter past
   `LINK_FILTER_FROM` (8), Escape taken in the capture phase. `PlanSheetsHost` passes the groups as `linkedGroups`
   (`LinkedCardGroup` in LinkedCards.tsx, `New {Type}` via `addItem` with the link
@@ -217,22 +217,22 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 | --------------------------------------------------------- | --------------------------------------------------------- |
 | Catalogue checks, ids, read-back, glyphs                  | `packages/items/src/type-catalogue.test.ts`               |
 | Glyph categories, keywords, old ids kept, search          | `packages/items/src/glyphs.test.ts`                       |
-| Glyph picker filters, empty state, picks                  | `apps/live/components/plan/GlyphPicker.test.tsx`          |
+| Glyph picker filters, empty state, picks                  | `apps/editor/components/plan/GlyphPicker.test.tsx`          |
 | Route: store, relay, null, refusals, gates, copy, create  | `apps/api/src/routes/item-routes.test.ts`                 |
 | Route: a stale revision refused with what is stored       | `apps/api/src/routes/item-routes.test.ts`                 |
 | A change rebased onto another editor's catalogue          | `packages/items/src/type-catalogue-change.test.ts`        |
-| Editor: stale resend, failure drops one, undo keeps later | `apps/live/hooks/plan/useItemTypes.test.ts`               |
+| Editor: stale resend, failure drops one, undo keeps later | `apps/editor/hooks/plan/useItemTypes.test.ts`               |
 | Agents: a stale save read again and applied again         | `packages/agent-verbs/src/plan/plan-engine.test.ts`       |
 | Scoped sessions hear the op                               | `apps/api/src/room-scope.test.ts`                         |
-| Card tiles follow the catalogue                           | `apps/live/components/palette/palette-plan-tiles.test.ts` |
-| Custom values on a card                                   | `apps/live/components/plan/custom-field-text.test.ts`     |
+| Card tiles follow the catalogue                           | `apps/editor/components/palette/palette-plan-tiles.test.ts` |
+| Custom values on a card                                   | `apps/editor/components/plan/custom-field-text.test.ts`     |
 | Left-out statuses: read, refuse, allow                    | `packages/items/src/type-catalogue.test.ts`               |
 | Left-out statuses: api refuses moves, patches, makes      | `apps/api/src/routes/item-routes.test.ts`                 |
 | Left-out statuses: agent refusal message                  | `packages/agent-verbs/src/verbs/item.test.ts`             |
-| Statuses chips, panel Status options                      | `apps/live/components/plan/ItemTypeStatuses.test.tsx`     |
-| Editor tabs, Configuration sections, flags, arrow keys    | `apps/live/components/plan/ItemTypeEditor.tabs.test.tsx`  |
-| Show Me steps open Configuration, scroll to Fields        | `apps/live/components/tour/CardTypeTour.test.tsx`         |
-| Palette card refused in a left-out column                 | `apps/live/hooks/plan/plan-card-drop.test.ts`             |
+| Statuses chips, panel Status options                      | `apps/editor/components/plan/ItemTypeStatuses.test.tsx`     |
+| Editor tabs, Configuration sections, flags, arrow keys    | `apps/editor/components/plan/ItemTypeEditor.tabs.test.tsx`  |
+| Show Me steps open Configuration, scroll to Fields        | `apps/editor/components/tour/CardTypeTour.test.tsx`         |
+| Palette card refused in a left-out column                 | `apps/editor/hooks/plan/plan-card-drop.test.ts`             |
 | Panel, editor, card face, palette in a browser            | checked by hand against the dev stack (screenshots)       |
 
 ## Constants and configuration
@@ -286,5 +286,5 @@ The item panel's Parent lists Projects.
   `PLAN_GLYPH_KEYWORDS`: a few lower-case words per glyph. `planGlyphLabel(id)` title-cases the id, hyphens to
   spaces ("user-plus" is "User Plus"). `glyphMatches(id, query)` is true when every word of the trimmed,
   lower-cased query starts a word of the label or keywords.
-- `GlyphPicker` (apps/live/components/plan/GlyphPicker.tsx) draws the search (`aria-label` "Search glyphs") over
+- `GlyphPicker` (apps/editor/components/plan/GlyphPicker.tsx) draws the search (`aria-label` "Search glyphs") over
   one `role="radiogroup"` named "Glyph", a heading per non-empty category, tiles named "{label} glyph".

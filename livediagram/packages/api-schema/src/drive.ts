@@ -1,5 +1,5 @@
 // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): the wire
-// types the api worker's /api/drive routes emit and the live app's sync engine
+// types the api worker's /api/drive routes emit and the editor app's sync engine
 // consumes, plus the constants both sides must agree on.
 
 // How a deployment gets Google access tokens: not at all, in the browser only

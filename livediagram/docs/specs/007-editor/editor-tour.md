@@ -33,7 +33,7 @@ proved the better introduction.
   there; the offer stays owed and comes the first time the person works on a Diagram tab in that browser tab.
   There is no wizard toggle; the offer IS the opt-in, and declining must be one obvious, equal-weight click.
   The count is the one from **before** the create: a cloud create waits for it (up to
-  `DOCUMENT_COUNT_WAIT_MS`, 3 s, after identity settles, `apps/live/app/new/useDocumentCount.ts`), so a pick
+  `DOCUMENT_COUNT_WAIT_MS`, 3 s, after identity settles, `apps/editor/app/new/useDocumentCount.ts`), so a pick
   made before the list fetch lands still offers the tour; only the first count reported is kept, since a
   re-read after the create already includes the new document. A This Browser create opens at once and takes the
   count only if it is already in.
@@ -110,7 +110,7 @@ A welcome offer card, then six steps in palette → canvas → tabs → theme or
 theme-canvas step is skipped; four on an **event-storming board**, which hides the strip's pickers, and so drops
 the two dropdown steps; three when it is both), and a closing "you're ready" card. The bookend cards sit outside the step count. Copy is one or two
 short sentences per step about diagramming ("concise" is the spec constraint; the exact strings live in
-`apps/live/components/tour/tour-steps.ts`). A step that names a hover, a click or a right-click carries its touch
+`apps/editor/components/tour/tour-steps.ts`). A step that names a hover, a click or a right-click carries its touch
 words too (`touchBody`), which a touch screen (a coarse pointer) reads instead: a tap, a long-press:
 
 0. **Getting started with Diagrams?** (the offer): the banner at the bottom, eyebrow **Diagram tour**, "A quick look

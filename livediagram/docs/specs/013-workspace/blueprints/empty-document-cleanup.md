@@ -16,9 +16,9 @@ Scope, by file:
 | `apps/api/src/index.ts`                                                   | The 03:00 cron calls the sweep beside the purge                                                              |
 | `apps/api/src/openapi/schemas.generated.ts`                               | Regenerated: `TrashedDocument.reason`                                                                        |
 | `apps/mcp/src/{tools,output-schema}.ts`                                   | `list_trash` rows carry `reason`                                                                             |
-| `apps/live/lib/offline/offline-trash.ts`                                  | Local rows are `reason: 'deleted'`                                                                           |
-| `apps/live/lib/trash-groups.ts`                                           | `trashedOnLabel(row)`, `trashedCardHeading(row)`, `trashedCardLead(row, now)`: the reason copy, in one place |
-| `apps/live/components/{panels/TrashPane,chrome/DocumentTrashedCard}.tsx`  | The row and the deleted card copy                                                                            |
+| `apps/editor/lib/offline/offline-trash.ts`                                  | Local rows are `reason: 'deleted'`                                                                           |
+| `apps/editor/lib/trash-groups.ts`                                           | `trashedOnLabel(row)`, `trashedCardHeading(row)`, `trashedCardLead(row, now)`: the reason copy, in one place |
+| `apps/editor/components/{panels/TrashPane,chrome/DocumentTrashedCard}.tsx`  | The row and the deleted card copy                                                                            |
 | `apps/help/app/account-and-data/trash/page.mdx`, `packages/help-registry` | The help article's section and keywords                                                                      |
 
 ## Domain and naming
@@ -189,8 +189,8 @@ limits; the cap bounds the writes at 2,000 per run, the same order as the Trash 
 | Reason on the list; restore clears it and restarts stale     | `apps/api/src/db/empty-document-sweep.test.ts` |
 | Cron: moves, logs, never purges what it moved (C1)           | `apps/api/src/scheduled-trash.test.ts`         |
 | MCP `list_trash` carries `reason`                            | `apps/mcp/src/tools.test.ts`                   |
-| Local rows are `deleted`                                     | `apps/live/lib/offline/offline-trash.test.ts`  |
-| Row lead and card lead copy                                  | `apps/live/lib/trash-groups.test.ts`           |
+| Local rows are `deleted`                                     | `apps/editor/lib/offline/offline-trash.test.ts`  |
+| Row lead and card lead copy                                  | `apps/editor/lib/trash-groups.test.ts`           |
 | OpenAPI parity                                               | `apps/api/src/openapi/*.test.ts`               |
 | Help registry keywords                                       | `apps/help` registry tests                     |
 

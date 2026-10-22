@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 Some guards read the repo's own TypeScript rather than run it: the light and dark palette tests
-(`apps/live/app/*-palette.test.ts`), the telemetry emitter scan (`../liveworkspace/apps/site/app/telemetry/liveplanner/emitter-scan.ts`)
+(`apps/editor/app/*-palette.test.ts`), the telemetry emitter scan (`../liveworkspace/apps/site/app/telemetry/liveplanner/emitter-scan.ts`)
 and the optical guard (`packages/tailwind-config/src/optical-guard.ts`). They parse source files into
 TypeScript syntax trees and walk them.
 

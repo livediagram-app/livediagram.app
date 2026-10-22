@@ -63,7 +63,7 @@ sleeping laptop): the browser throttles hidden pages, so the number would measur
 product. Every timing is also skipped when it ends in failure; failures are already counted by
 [the `Error` category](telemetry.md).
 
-### Editor (`apps/live`)
+### Editor (`apps/editor`)
 
 - **`ProjectLoad`**: opening an existing project, from when the person asked for it to the first frame
   painted after the load finished (the load's `done` step, [Load recovery](../007-editor/load-recovery.md)).
@@ -79,7 +79,7 @@ product. Every timing is also skipped when it ends in failure; failures are alre
   The 600 ms debounce before it is not included. **Sampled**: at most one save timing per page every
   60 seconds (`SAVE_TIMING_INTERVAL_MS`), so a long editing session sends a steady trickle rather than one
   event per save; the first save of a page is always eligible.
-- **`RoomConnect`**: the live room ([Live app](../007-editor/live-app.md)), from the first socket attempt
+- **`RoomConnect`**: the live room ([Editor app](../007-editor/editor-app.md)), from the first socket attempt
   to the first roster frame: the moment other people's presence appears. Once per room connection.
 - **`RoomReconnect`**: a live room that dropped by itself (not closed by the editor, not a trashed
   project or a changed share), from the drop to the first roster frame on the new socket, back-off waits

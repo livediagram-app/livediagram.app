@@ -59,7 +59,7 @@ Prose follows the context:
 The container was called a diagram until the domain language settled on document. Everything
 that named it moved in one change:
 
-- **Code:** identifiers, files and packages (`@livediagram/document`, `apps/live/app/document/[id]`).
+- **Code:** identifiers, files and packages (`@livediagram/document`, `apps/editor/app/document/[id]`).
 - **Database:** migration `0055_documents.sql` renames `diagrams` → `documents`, `diagram_tabs` →
   `document_tabs` and every `diagram_id` → `document_id`, keeps every foreign key and index, and
   rewrites the stored values that named the container: timeline source, scope and event types,

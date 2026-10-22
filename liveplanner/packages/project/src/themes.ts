@@ -1,8 +1,8 @@
 // The shared theme ENGINE (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme data, types, and the
 // pure element/backdrop transforms that take a resolved ThemeDefinition. Lives
-// in the package so both the editor (apps/live) and the MCP worker (apps/mcp,
+// in the package so both the editor (apps/editor) and the MCP worker (apps/mcp,
 // docs/specs/015-api/mcp-server.md) theme tabs identically. Custom-theme (per-owner) resolution +
-// deriveNewBoxedColours stay in apps/live/lib/themes.ts, which re-exports this.
+// deriveNewBoxedColours stay in apps/editor/lib/themes.ts, which re-exports this.
 import { themeHalf } from './theme-halves';
 import {
   deriveTextColorForBg,
@@ -128,7 +128,7 @@ export type ThemeDefinition = {
   seasonal?: true;
 };
 
-// Which chrome a viewer is looking at (docs/specs/007-editor/live-app.md). Every scheme reads it: each viewer sees a
+// Which chrome a viewer is looking at (docs/specs/007-editor/editor-app.md). Every scheme reads it: each viewer sees a
 // tab in the half of its scheme that matches their appearance (docs/specs/011-theme/light-and-dark.md).
 export type Appearance = 'light' | 'dark';
 
@@ -176,8 +176,8 @@ function backdropVariants(scheme: ThemeDefinition): ThemeDefinition[] {
 // `appearance` only ever changes the answer for Default, which has a light and
 // a dark half; it defaults to light so pure callers with no viewer to ask
 // (exports, the MCP worker, tests) land somewhere predictable. Custom
-// (per-owner) themes are NOT resolved here — that needs the live app's
-// registry; apps/live/lib/themes.ts wraps this as `getTheme`, which also
+// (per-owner) themes are NOT resolved here — that needs the editor app's
+// registry; apps/editor/lib/themes.ts wraps this as `getTheme`, which also
 // supplies the current viewer's appearance.
 export function getBuiltInTheme(
   id: string | undefined,

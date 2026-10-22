@@ -1,5 +1,5 @@
 // /api/oauth/exchange — the single api change for the MCP OAuth flow
-// (docs/specs/015-api/mcp-server.md §3.4). The apps/live consent page (signed-in) calls this when a
+// (docs/specs/015-api/mcp-server.md §3.4). The apps/editor consent page (signed-in) calls this when a
 // user approves an MCP client. It asks liveworkspace for an account token (liveworkspace/docs/
 // accounts.md "API tokens"), named for the connecting client, vouching for the person with the
 // access token they signed in with, and returns the secret ONCE. The MCP worker binds it to the

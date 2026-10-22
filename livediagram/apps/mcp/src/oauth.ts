@@ -1,7 +1,7 @@
 // OAuth 2.1 + PKCE (S256) + dynamic client registration for the MCP (docs/specs/015-api/mcp-server.md
 // §3). The flow mints an ordinary lvd_ token under the hood (via the api
 // worker's /api/oauth/exchange, called by the Clerk-authed consent page in
-// apps/live) and hands it to the client through the standard code+PKCE exchange.
+// apps/editor) and hands it to the client through the standard code+PKCE exchange.
 // All transient state lives in OAUTH_KV with short TTLs; no parallel credential
 // model — the heavy lifting (verify, revoke, caps, expiry) is the token's.
 import { appBase } from './tool-helpers';

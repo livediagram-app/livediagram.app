@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 // The device's safe-area insets (the notch, the rounded corners, the home indicator), so edge chrome
-// clears them (docs/specs/007-editor/live-app.md "Mobile / responsive"). They are 0 wherever the
+// clears them (docs/specs/007-editor/editor-app.md "Mobile / responsive"). They are 0 wherever the
 // browser draws the page inside the safe area already (no `viewport-fit=cover`), so every rule here
 // is a no-op today and keeps the chrome clear once the editor goes edge to edge. Inline styles, not
 // Tailwind arbitrary values: an `env()` in a class name was once generated as a broken rule

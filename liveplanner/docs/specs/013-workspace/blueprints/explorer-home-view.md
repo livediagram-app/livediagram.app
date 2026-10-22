@@ -14,53 +14,53 @@ Scope, by file:
 | --------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | `packages/api-schema/src/within-reach.ts`                                                                 | `withinReach`, `utcDay`: the allocation shared with the api and the Shapes flyout         |
 | `packages/api-schema/src/home.ts`                                                                         | `HOME_WITHIN_REACH_PER_ROW`, `WITHIN_REACH_USE_WINDOW_DAYS`, `windowStartOf`              |
-| `apps/live/lib/offline/offline-opens.ts`                                                                  | `LocalOpens`, `nextLocalOpens`, `localOpensOf`, `offlineRecordOpen`, `offlineListOpens`   |
-| `apps/live/lib/offline/offline-store.ts`                                                                  | `OfflineProjectRecord.opens`; `offlineCreateProject(..., { markUsed })` starts them       |
-| `apps/live/lib/api/tabs.ts`                                                                               | A marked load of a local project records a local open                                     |
-| `apps/live/app/explorer/home/page.tsx`                                                                    | The `/explorer/home` route stub and its title                                             |
-| `apps/live/app/explorer/home/home-model.ts`                                                               | Pure: Jump Back In's set, the phone order, hrefs, What Happened's days, the fade          |
-| `apps/live/app/explorer/home/home-copy.ts`                                                                | Pure: every sentence, label and state copy                                                |
-| `apps/live/app/explorer/home/useHome.ts`                                                                  | The read, the local merge, retry, the unread clear                                        |
-| `apps/live/app/explorer/entry-path.ts`                                                                    | `ENTRY_PATH`, `ARRIVED_ON_HOME`: where the page load began                                |
-| `apps/live/lib/explorer-landing.ts`                                                                       | `EXPLORER_LANDING_PATH`, the one landing path                                             |
-| `apps/live/components/panels/home/HomePane.tsx`                                                           | One column of two sections; the error state; the landing telemetry                        |
-| `apps/live/components/panels/home/HomeHero.tsx`                                                           | The hero: menu button, Help, pills, greeting, lead, the large lens field, fanned previews |
-| `apps/live/components/panels/home/useHeroPresence.ts`                                                     | The hero's fold: mounted and open as Home comes and goes, over the `long` token           |
-| `apps/live/app/explorer/home/first-run.ts`                                                                | Pure: `isFirstRun`, the welcome's copy, its search and blank hrefs                        |
-| `apps/live/app/explorer/home/first-run-starts.ts`                                                         | The welcome's picks from the template catalogue (lazy readers only)                       |
-| `apps/live/app/explorer/home/useFirstRun.ts`                                                              | First run from the Explorer's lists; the hero's remembered answer while they load         |
-| `apps/live/components/panels/home/HomeWelcome.tsx`                                                        | The first run's sections: Start Blank, Popular Templates, Already Have Work? (lazy)       |
-| `apps/live/components/panels/home/WelcomeSearch.tsx`                                                      | The first run's hero field: search templates in the wizard, Start Blank                   |
-| `apps/live/components/panels/home/HeroFeatureFan.tsx`                                                     | The fanned Board, Sheet, Dashboard and Form previews, static (lazy chunk)                 |
-| `apps/live/app/explorer/home/hero-model.ts`                                                               | Pure: the greeting by hour, the pills' copy, the fanned previews' features                |
-| `apps/live/app/explorer/lens/lens-focus-handoff.ts`                                                       | The hero field asks the header field to take the focus on Search results                  |
-| `apps/live/components/panels/home/JumpBackIn.tsx`                                                         | The section: heading row, See More, the grid or the strip, the empty state                |
-| `apps/live/components/panels/home/JumpBackInStrip.tsx`                                                    | The phone's strip, its fade and its See More tile                                         |
-| `apps/live/components/panels/home/JumpBackInTile.tsx`                                                     | One project's tile (the strip) and the See More tile                                      |
-| `apps/live/components/panels/home/JumpBackInCard.tsx`                                                     | One project's card on a desktop or tablet: large (most used) or compact (recent)          |
-| `apps/live/components/panels/home/JumpBackInMenu.tsx`                                                     | A card's or tile's ⋯: the Explorer's ProjectEntryMenu, right-click, in-place rename       |
-| `apps/live/app/explorer/useProjectEntryFor.ts`                                                            | A project id to its Explorer menu props, and whether it has left the Explorer's lists     |
-| `apps/live/components/panels/home/HomeSection.tsx`                                                        | `HomeSection` (wrapper, display heading row, quiet link) and `InAppLink`                  |
-| `apps/live/components/panels/home/WhatHappened.tsx`                                                       | The section: day headings, the entries                                                    |
-| `apps/live/components/panels/home/WhatHappenedEntry.tsx`                                                  | `ActionEntry` (one person) and `SummaryEntry` (the disclosure)                            |
-| `apps/live/components/panels/home/HomeAvatar.tsx`                                                         | `HomeAvatar`, `AvatarStack`: people without presence rings                                |
-| `apps/live/components/panels/home/home-icons.tsx`                                                         | The verb icons and the empty states' glyphs                                               |
-| `apps/live/components/panels/home/HomeSkeletons.tsx`                                                      | The skeletons, sized as what replaces them                                                |
-| `apps/live/components/panels/home/home-styles.ts`                                                         | The shared classes                                                                        |
-| `apps/live/components/panels/home/home-test-utils.ts`                                                     | Test fixtures: a project, a person, an action, a group, a Jump Back In item               |
-| `apps/live/app/explorer/{views.tsx,routes.ts,view-titles.ts}`                                             | `{ kind: 'home' }`, `/explorer/home`, the default, the titles                             |
-| `apps/live/app/explorer/{useExplorerPane.ts,ExplorerPane.tsx}`                                            | Crumbs (`Home › Recent`), the dispatch, the header                                        |
-| `apps/live/app/explorer/page.tsx`, `apps/live/src/worker.ts`                                              | The landing goes to `EXPLORER_LANDING_PATH`                                               |
+| `apps/editor/lib/offline/offline-opens.ts`                                                                  | `LocalOpens`, `nextLocalOpens`, `localOpensOf`, `offlineRecordOpen`, `offlineListOpens`   |
+| `apps/editor/lib/offline/offline-store.ts`                                                                  | `OfflineProjectRecord.opens`; `offlineCreateProject(..., { markUsed })` starts them       |
+| `apps/editor/lib/api/tabs.ts`                                                                               | A marked load of a local project records a local open                                     |
+| `apps/editor/app/explorer/home/page.tsx`                                                                    | The `/explorer/home` route stub and its title                                             |
+| `apps/editor/app/explorer/home/home-model.ts`                                                               | Pure: Jump Back In's set, the phone order, hrefs, What Happened's days, the fade          |
+| `apps/editor/app/explorer/home/home-copy.ts`                                                                | Pure: every sentence, label and state copy                                                |
+| `apps/editor/app/explorer/home/useHome.ts`                                                                  | The read, the local merge, retry, the unread clear                                        |
+| `apps/editor/app/explorer/entry-path.ts`                                                                    | `ENTRY_PATH`, `ARRIVED_ON_HOME`: where the page load began                                |
+| `apps/editor/lib/explorer-landing.ts`                                                                       | `EXPLORER_LANDING_PATH`, the one landing path                                             |
+| `apps/editor/components/panels/home/HomePane.tsx`                                                           | One column of two sections; the error state; the landing telemetry                        |
+| `apps/editor/components/panels/home/HomeHero.tsx`                                                           | The hero: menu button, Help, pills, greeting, lead, the large lens field, fanned previews |
+| `apps/editor/components/panels/home/useHeroPresence.ts`                                                     | The hero's fold: mounted and open as Home comes and goes, over the `long` token           |
+| `apps/editor/app/explorer/home/first-run.ts`                                                                | Pure: `isFirstRun`, the welcome's copy, its search and blank hrefs                        |
+| `apps/editor/app/explorer/home/first-run-starts.ts`                                                         | The welcome's picks from the template catalogue (lazy readers only)                       |
+| `apps/editor/app/explorer/home/useFirstRun.ts`                                                              | First run from the Explorer's lists; the hero's remembered answer while they load         |
+| `apps/editor/components/panels/home/HomeWelcome.tsx`                                                        | The first run's sections: Start Blank, Popular Templates, Already Have Work? (lazy)       |
+| `apps/editor/components/panels/home/WelcomeSearch.tsx`                                                      | The first run's hero field: search templates in the wizard, Start Blank                   |
+| `apps/editor/components/panels/home/HeroFeatureFan.tsx`                                                     | The fanned Board, Sheet, Dashboard and Form previews, static (lazy chunk)                 |
+| `apps/editor/app/explorer/home/hero-model.ts`                                                               | Pure: the greeting by hour, the pills' copy, the fanned previews' features                |
+| `apps/editor/app/explorer/lens/lens-focus-handoff.ts`                                                       | The hero field asks the header field to take the focus on Search results                  |
+| `apps/editor/components/panels/home/JumpBackIn.tsx`                                                         | The section: heading row, See More, the grid or the strip, the empty state                |
+| `apps/editor/components/panels/home/JumpBackInStrip.tsx`                                                    | The phone's strip, its fade and its See More tile                                         |
+| `apps/editor/components/panels/home/JumpBackInTile.tsx`                                                     | One project's tile (the strip) and the See More tile                                      |
+| `apps/editor/components/panels/home/JumpBackInCard.tsx`                                                     | One project's card on a desktop or tablet: large (most used) or compact (recent)          |
+| `apps/editor/components/panels/home/JumpBackInMenu.tsx`                                                     | A card's or tile's ⋯: the Explorer's ProjectEntryMenu, right-click, in-place rename       |
+| `apps/editor/app/explorer/useProjectEntryFor.ts`                                                            | A project id to its Explorer menu props, and whether it has left the Explorer's lists     |
+| `apps/editor/components/panels/home/HomeSection.tsx`                                                        | `HomeSection` (wrapper, display heading row, quiet link) and `InAppLink`                  |
+| `apps/editor/components/panels/home/WhatHappened.tsx`                                                       | The section: day headings, the entries                                                    |
+| `apps/editor/components/panels/home/WhatHappenedEntry.tsx`                                                  | `ActionEntry` (one person) and `SummaryEntry` (the disclosure)                            |
+| `apps/editor/components/panels/home/HomeAvatar.tsx`                                                         | `HomeAvatar`, `AvatarStack`: people without presence rings                                |
+| `apps/editor/components/panels/home/home-icons.tsx`                                                         | The verb icons and the empty states' glyphs                                               |
+| `apps/editor/components/panels/home/HomeSkeletons.tsx`                                                      | The skeletons, sized as what replaces them                                                |
+| `apps/editor/components/panels/home/home-styles.ts`                                                         | The shared classes                                                                        |
+| `apps/editor/components/panels/home/home-test-utils.ts`                                                     | Test fixtures: a project, a person, an action, a group, a Jump Back In item               |
+| `apps/editor/app/explorer/{views.tsx,routes.ts,view-titles.ts}`                                             | `{ kind: 'home' }`, `/explorer/home`, the default, the titles                             |
+| `apps/editor/app/explorer/{useExplorerPane.ts,ExplorerPane.tsx}`                                            | Crumbs (`Home › Recent`), the dispatch, the header                                        |
+| `apps/editor/app/explorer/page.tsx`, `apps/editor/src/worker.ts`                                              | The landing goes to `EXPLORER_LANDING_PATH`                                               |
 | `scripts/e2e-stack.mjs`                                                                                   | The e2e stack's `/explorer` redirect reads the same constant                              |
-| `apps/live/app/explorer/sidebar/OverviewGroup.tsx`                                                        | The Home row selects and opens Home                                                       |
-| `apps/live/components/panels/explorer-panel/PanelViews.tsx`                                               | The panel's Home section shows `HomePane`                                                 |
-| `apps/live/app/explorer/useTimelineUnread.ts`                                                             | A clear outlives a count still in flight                                                  |
+| `apps/editor/app/explorer/sidebar/OverviewGroup.tsx`                                                        | The Home row selects and opens Home                                                       |
+| `apps/editor/components/panels/explorer-panel/PanelViews.tsx`                                               | The panel's Home section shows `HomePane`                                                 |
+| `apps/editor/app/explorer/useTimelineUnread.ts`                                                             | A clear outlives a count still in flight                                                  |
 | `packages/ui/src/timeline/useTimelineGrouping.ts`                                                         | `formatDay` exported, shared by the day headings                                          |
 | `packages/api-schema/src/telemetry-schema.ts`                                                             | The `Home` category                                                                       |
 | `../liveworkspace/apps/site/app/telemetry/liveplanner/{catalogue/collaboration.ts,event-explanations.ts}` | Home's charts and sentences                                                               |
 | `../liveworkspace/apps/site/app/telemetry/liveplanner/event-vocab.ts`                                     | The `Home` category's description and colour                                              |
 | `apps/help/app/explorer/home/page.mdx`, `packages/help-registry`                                          | The Home article (`home`): Home, then the histories                                       |
-| `apps/live/e2e/home-seed.ts`                                                                              | e2e seeding through the api: drawn projects, opens, edits through a link                  |
+| `apps/editor/e2e/home-seed.ts`                                                                              | e2e seeding through the api: drawn projects, opens, edits through a link                  |
 
 ## Domain and naming
 
@@ -223,7 +223,7 @@ export const HOME_WITHIN_REACH_PER_ROW = 4;
 export const WITHIN_REACH_USE_WINDOW_DAYS = 90;
 export function windowStartOf(now: number): number; // UTC midnight, 89 days before today
 
-// apps/live/app/explorer/home/home-model.ts
+// apps/editor/app/explorer/home/home-model.ts
 export type JumpBackInGroup = 'mostUsed' | 'recent';
 export type JumpBackInItem = {
   projectId: string;
@@ -256,7 +256,7 @@ export function stripFade(box: {
   scrollWidth: number;
 }): boolean;
 
-// apps/live/app/explorer/home/home-copy.ts
+// apps/editor/app/explorer/home/home-copy.ts
 export const HOME_COPY: {
   jumpBackIn: 'Jump Back In';
   whatHappened: 'What Happened';
@@ -464,25 +464,25 @@ tracking-[0.08em] text-slate-500 pt-3`), entries in a `ul` with 4 px between.
 | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
 | The allocation                                                                                        | `packages/api-schema/src/within-reach.test.ts`                                                 |
 | The use window                                                                                        | `packages/api-schema/src/home.test.ts`                                                         |
-| Local opens: first, same day, next day, window, legacy shape, trashed, failure                        | `apps/live/lib/offline/offline-opens.test.ts`                                                  |
-| A local making starts the record; one with `markUsed: false` has none                                 | `apps/live/lib/offline/offline-store.test.ts`                                                  |
-| A marked local load records; an unmarked one does not                                                 | `apps/live/lib/api/tabs-local-open.test.ts`                                                    |
-| Set: merge, dedupe, local measures, ties; phone order; hrefs; days; fade                              | `apps/live/app/explorer/home/home-model.test.ts`                                               |
-| Sentences, people, verbs, updates, location                                                           | `apps/live/app/explorer/home/home-copy.test.ts`                                                |
-| Read, error, retry, stale owner, unread clear, mark kept                                              | `apps/live/app/explorer/home/useHome.test.tsx`                                                 |
-| A clear outlives an unread count still in flight                                                      | `apps/live/app/explorer/useTimelineUnread.test.tsx`                                            |
-| Grid and strip: group labels, quiet lines, cards, pill, fade, See More, telemetry                     | `apps/live/components/panels/home/JumpBackIn.test.tsx`                                         |
-| ⋯ menu: button beside the link, right-click, rename in place, gone, unloaded, strip                   | `apps/live/components/panels/home/JumpBackInMenu.test.tsx`                                     |
-| Menu props by id: lists, bound actions, shared dismiss, history, gone                                 | `apps/live/app/explorer/useProjectEntryFor.test.tsx`                                           |
-| Display headings: the heading row and its link, per section, no rule                                  | `apps/live/components/panels/home/HomePane.test.tsx`                                           |
-| Greeting by hour, pills' copy, the previews' features                                                 | `apps/live/app/explorer/home/hero-model.test.ts`                                               |
-| Hero: pills open their views, New Project, Help, the four labelled previews, no fetch, one lens field | `apps/live/components/panels/home/HomeHero.test.tsx`                                           |
-| The hero field hands the focus to the header field on Search results                                  | `apps/live/app/explorer/lens/lens-focus-handoff.test.ts`                                       |
-| Entries: one-person links, summary disclosure, telemetry, no heading link                             | `apps/live/components/panels/home/WhatHappened.test.tsx`                                       |
-| One column, two sections, no Timeline, the error state                                                | `apps/live/components/panels/home/HomePane.test.tsx`                                           |
-| Routes, titles, crumbs (Recent under Home), the landing 302                                           | `routes.test.ts`, `view-titles.test.ts`, `apps/live/src/worker.test.ts`                        |
+| Local opens: first, same day, next day, window, legacy shape, trashed, failure                        | `apps/editor/lib/offline/offline-opens.test.ts`                                                  |
+| A local making starts the record; one with `markUsed: false` has none                                 | `apps/editor/lib/offline/offline-store.test.ts`                                                  |
+| A marked local load records; an unmarked one does not                                                 | `apps/editor/lib/api/tabs-local-open.test.ts`                                                    |
+| Set: merge, dedupe, local measures, ties; phone order; hrefs; days; fade                              | `apps/editor/app/explorer/home/home-model.test.ts`                                               |
+| Sentences, people, verbs, updates, location                                                           | `apps/editor/app/explorer/home/home-copy.test.ts`                                                |
+| Read, error, retry, stale owner, unread clear, mark kept                                              | `apps/editor/app/explorer/home/useHome.test.tsx`                                                 |
+| A clear outlives an unread count still in flight                                                      | `apps/editor/app/explorer/useTimelineUnread.test.tsx`                                            |
+| Grid and strip: group labels, quiet lines, cards, pill, fade, See More, telemetry                     | `apps/editor/components/panels/home/JumpBackIn.test.tsx`                                         |
+| ⋯ menu: button beside the link, right-click, rename in place, gone, unloaded, strip                   | `apps/editor/components/panels/home/JumpBackInMenu.test.tsx`                                     |
+| Menu props by id: lists, bound actions, shared dismiss, history, gone                                 | `apps/editor/app/explorer/useProjectEntryFor.test.tsx`                                           |
+| Display headings: the heading row and its link, per section, no rule                                  | `apps/editor/components/panels/home/HomePane.test.tsx`                                           |
+| Greeting by hour, pills' copy, the previews' features                                                 | `apps/editor/app/explorer/home/hero-model.test.ts`                                               |
+| Hero: pills open their views, New Project, Help, the four labelled previews, no fetch, one lens field | `apps/editor/components/panels/home/HomeHero.test.tsx`                                           |
+| The hero field hands the focus to the header field on Search results                                  | `apps/editor/app/explorer/lens/lens-focus-handoff.test.ts`                                       |
+| Entries: one-person links, summary disclosure, telemetry, no heading link                             | `apps/editor/components/panels/home/WhatHappened.test.tsx`                                       |
+| One column, two sections, no Timeline, the error state                                                | `apps/editor/components/panels/home/HomePane.test.tsx`                                           |
+| Routes, titles, crumbs (Recent under Home), the landing 302                                           | `routes.test.ts`, `view-titles.test.ts`, `apps/editor/src/worker.test.ts`                        |
 | Telemetry charted and explained                                                                       | `liveworkspace/apps/site/app/telemetry` `metric-emitters.test.ts`, `event-explanation.test.ts` |
-| Real browser: guest and signed in, desktop and phone, dark                                            | `apps/live/e2e/explorer-home.spec.ts`, `apps/live/e2e/signed-in/explorer-home.spec.ts`         |
+| Real browser: guest and signed in, desktop and phone, dark                                            | `apps/editor/e2e/explorer-home.spec.ts`, `apps/editor/e2e/signed-in/explorer-home.spec.ts`         |
 
 ## Constants and configuration
 

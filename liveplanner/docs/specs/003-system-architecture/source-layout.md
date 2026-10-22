@@ -1,21 +1,21 @@
-# Source layout: group `apps/live` components + hooks by domain
+# Source layout: group `apps/editor` components + hooks by domain
 
-Status: **done** — both `apps/live/hooks/` and `apps/live/components/` have
+Status: **done** — both `apps/editor/hooks/` and `apps/editor/components/` have
 been reorganised into the buckets below.
 
 ## Problem
 
-`apps/live` has grown two flat grab-bag directories:
+`apps/editor` has grown two flat grab-bag directories:
 
-- `apps/live/components/` — ~157 files, alphabetical, mixing 3-line leaves
+- `apps/editor/components/` — ~157 files, alphabetical, mixing 3-line leaves
   (`ChartReadout.tsx`, `CloseIcon.tsx`) with 1,000+ line screens
   (`Canvas.tsx`, `EditorContextMenu.tsx`, `BoxedElementView.tsx`).
-- `apps/live/hooks/` — ~66 files, canvas state machines
+- `apps/editor/hooks/` — ~66 files, canvas state machines
   (`useEditorDrag.ts`, `useElementStyle.ts`) sitting next to UI-only hooks
   (`useConfirm.tsx`, `useToast.tsx`) and persistence hooks
   (`useFolders.ts`, `useTeams.ts`).
 
-The blessed counter-example already in the tree is `apps/live/lib/api/*`,
+The blessed counter-example already in the tree is `apps/editor/lib/api/*`,
 which is split by domain (`projects.ts`, `tabs.ts`, `share.ts`, …). A new
 engineer can find the persistence boundary instantly; finding "the
 canvas components" means scrolling 157 alphabetised entries. This is the
@@ -27,7 +27,7 @@ the no-god-files rule in `AGENTS.md` (cohesion over line count).
 Group by domain, not by type. Target subdirectories (indicative, not
 exhaustive — each file lands in the bucket that owns its concern):
 
-`apps/live/components/`
+`apps/editor/components/`
 
 - `canvas/` — `Canvas*`, element views (`BoxedElementView`, `ArrowView`,
   `LinkCardView`, …), overlays, marquee, layers.
@@ -41,7 +41,7 @@ exhaustive — each file lands in the bucket that owns its concern):
 - `primitives/` — local leaves (`CloseIcon`, `Portal`, chart leaves) not
   promoted to `@liveplanner/ui`.
 
-`apps/live/hooks/`
+`apps/editor/hooks/`
 
 - `canvas/` — drag, marquee, element style, keyboard shortcuts.
 - `persistence/` — folders, teams, capabilities, custom themes, share links.

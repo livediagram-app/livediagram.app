@@ -94,7 +94,7 @@ function pattern(category: string, action: string, type: string): string | null 
 
 // `Http403.SaveTab.Forbidden`, `Network.SendEmail`, `Internal.Put.Projects.Tabs`,
 // `Internal.FindProjects`, `Auth.NoSessionToken`, `SaveFailed.TypeError`: the
-// error-telemetry shapes (packages/api-schema, apps/live/lib/api/error-report.ts).
+// error-telemetry shapes (packages/api-schema, apps/editor/lib/api/error-report.ts).
 function apiError(type: string): string | null {
   const [kind = '', ...rest] = type.split('.');
   const operation = (op: string | undefined) =>

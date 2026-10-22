@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // E2E stack (docs/specs/003-system-architecture/e2e-smoke.md): the two-process stack the Playwright smoke suite
-// runs against — the real static `apps/live/out` build served with the
+// runs against — the real static `apps/editor/out` build served with the
 // production router/worker rewrites, plus the api worker on a local D1.
 // Dependency-free (node builtins) so it adds nothing to install cost.
 //
@@ -43,19 +43,19 @@ import {
   cacheRule,
   isBuildAsset,
 } from '../apps/router/src/cache-policy.ts';
-import { EXPLORER_LANDING_PATH } from '../apps/live/lib/explorer-landing.ts';
+import { EXPLORER_LANDING_PATH } from '../apps/editor/lib/explorer-landing.ts';
 import {
   isWorkspaceFramePath,
   WORKSPACE_FRAME_PAGE,
-} from '../apps/live/lib/workbench/workbench-frame-path.ts';
+} from '../apps/editor/lib/workbench/workbench-frame-path.ts';
 // Every page enforces Trusted Types in production (docs/specs/016-platform/trusted-types.md), so the suite runs
 // against the same header: a violation throws in the page, and the pageErrors fixture fails the spec on it.
 import { TRUSTED_TYPES_CSP } from '../packages/ui/src/trusted-types-csp.ts';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-// E2E_LIVE_OUT serves another export of the live app, e.g. the Clerk-enabled `.next/out-clerk-stub`
-// the signed-in specs run against (apps/live/scripts/build-clerk-stub.mjs).
-const OUT_DIR = path.join(ROOT, 'apps', 'live', process.env.E2E_LIVE_OUT ?? 'out');
+// E2E_EDITOR_OUT serves another export of the editor app, e.g. the Clerk-enabled `.next/out-clerk-stub`
+// the signed-in specs run against (apps/editor/scripts/build-clerk-stub.mjs).
+const OUT_DIR = path.join(ROOT, 'apps', 'editor', process.env.E2E_EDITOR_OUT ?? 'out');
 // The builds a simulated deploy (POST /__e2e/deploy) made: copies whose chunk files carry new
 // names, as a real deploy's do. Deploy n is served from deployDirs[n - 1].
 const deployDirs = [];
@@ -90,7 +90,7 @@ function assetsOutOfCacheFor(req) {
   return cookiesOf(req).get(OUT_OF_CACHE_COOKIE) === '1';
 }
 
-const LIVE_PORT = Number(process.env.E2E_LIVE_PORT ?? 3002);
+const EDITOR_PORT = Number(process.env.E2E_EDITOR_PORT ?? 3002);
 const API_PORT = Number(process.env.E2E_API_PORT ?? 8787);
 // The other sites, for the audits that open them (docs/specs/004-interface-design/blueprints/
 // optical-alignment.md, "Ink audit"). Help and the Community sit under their basePath on the
@@ -103,7 +103,7 @@ const MARKETING_DIR = path.join(ROOT, 'apps', 'marketing', 'out');
 const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
 // Two switches for trying the editor as a DIFFERENT deployment would run it,
 // beside a stack that is already up:
-//   E2E_LIVE_ONLY=1  serve the static editor only, proxying to the api
+//   E2E_EDITOR_ONLY=1  serve the static editor only, proxying to the api
 //                    already listening on E2E_API_PORT (no second worker).
 //   E2E_NO_AI=1      answer /api/capabilities with aiEnabled: false, as a
 //                    deployment with no AI key does — so the photo import
@@ -111,7 +111,7 @@ const MARKETING_PORT = Number(process.env.E2E_MARKETING_PORT ?? 3013);
 //   E2E_AI_BUDGET_SPENT=1  answer /api/ai/read-notes with 429 `ai_quota`, as a
 //                    hosted reader whose free budget is spent does — so the
 //                    photo import fails over to the in-browser model.
-const LIVE_ONLY = process.env.E2E_LIVE_ONLY === '1';
+const EDITOR_ONLY = process.env.E2E_EDITOR_ONLY === '1';
 const NO_AI = process.env.E2E_NO_AI === '1';
 const AI_BUDGET_SPENT = process.env.E2E_AI_BUDGET_SPENT === '1';
 //   E2E_DRIVE=1      the Google Drive mirror e2e (docs/specs/022-drive-mirror/blueprints/
@@ -398,18 +398,18 @@ function simulateDeploy(from) {
   return n;
 }
 
-// Resolve a request path to a file in out/, mirroring the live worker
-// (apps/live/src/worker.ts) + the static export's file layout.
+// Resolve a request path to a file in out/, mirroring the editor worker
+// (apps/editor/src/worker.ts) + the static export's file layout.
 function resolveStatic(pathname, out) {
   // The build references assets as `/live/_next/*` (assetPrefix); the
   // files live at out/_next/*.
   let p = pathname.startsWith('/live/') ? pathname.slice('/live'.length) : pathname;
   // /document and everything under it share one placeholder HTML.
   if (p === '/document' || p.startsWith('/document/')) p = '/document/placeholder';
-  // So does every form link, /form/<code> (apps/live/lib/form-path.ts, as the live worker rewrites it): without this
+  // So does every form link, /form/<code> (apps/editor/lib/form-path.ts, as the editor worker rewrites it): without this
   // the stack answered a published form's link with the 404 page, so no spec could open one.
   if (p === '/form' || p.startsWith('/form/')) p = '/form/placeholder';
-  // So does every place inside a workspace frame, as the live worker serves them (lib/workbench/workbench-frame-path.ts).
+  // So does every place inside a workspace frame, as the editor worker serves them (lib/workbench/workbench-frame-path.ts).
   if (isWorkspaceFramePath(p)) p = WORKSPACE_FRAME_PAGE;
   if (p === '/') p = '/index';
   const candidates = [
@@ -590,7 +590,7 @@ function startLiveServer() {
     serveNotFound(req, res, pathname, path.join(liveOut, '404.html'));
   });
   server.on('upgrade', proxyApiUpgrade);
-  server.listen(LIVE_PORT, () => console.log(`[e2e] live static server on :${LIVE_PORT}`));
+  server.listen(EDITOR_PORT, () => console.log(`[e2e] live static server on :${EDITOR_PORT}`));
   startMarketingServer();
 }
 
@@ -615,10 +615,10 @@ function startMarketingServer() {
 // --- Boot ---------------------------------------------------------------
 async function main() {
   if (!existsSync(OUT_DIR)) {
-    console.error(`[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livediagram/live build\` first`);
+    console.error(`[e2e] ${OUT_DIR} missing — run \`pnpm --filter @livediagram/editor build\` first`);
     process.exit(1);
   }
-  if (LIVE_ONLY) {
+  if (EDITOR_ONLY) {
     console.log(
       `[e2e] static editor only, proxying to the api on :${API_PORT}${NO_AI ? ', AI reported off' : ''}${AI_BUDGET_SPENT ? ', AI budget spent' : ''}`,
     );
@@ -665,9 +665,9 @@ async function main() {
       // Verify session tokens against the stack's own key (E2E_CLERK_JWKS above), never a real
       // Clerk instance a developer's .dev.vars may name.
       ...(CLERK_JWKS
-        ? ['--var', `CLERK_JWKS_URL:http://127.0.0.1:${LIVE_PORT}/e2e/jwks.json`]
+        ? ['--var', `CLERK_JWKS_URL:http://127.0.0.1:${EDITOR_PORT}/e2e/jwks.json`]
         : []),
-      ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${LIVE_PORT}`] : []),
+      ...(WORKBENCH ? ['--var', `APP_BASE_URL:http://localhost:${EDITOR_PORT}`] : []),
     ],
     {
       cwd: ROOT,

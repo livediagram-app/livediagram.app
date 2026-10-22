@@ -153,7 +153,7 @@ switch lists every mode unlocked, and Shift+D steps through all five. The first 
   follows. A tab asked for in a mode (**New <Mode> Tab**, "Plan stands apart") opens in that mode instead. A new tab
   opens empty on its mode's own start (Start Diagramming, Start Drawing, Start a
   Workshop, Start Making Pages, Start Planning: [Template starts](start-diagramming.md), [Plan
-  mode](../026-plan/plan-mode.md#starting-a-board); `newTabOpening` in `apps/live/lib/new-tab-seed.ts`), whose
+  mode](../026-plan/plan-mode.md#starting-a-board); `newTabOpening` in `apps/editor/lib/new-tab-seed.ts`), whose
   search also finds every other mode's templates. Only the template chosen for it changes that:
   every template opens in its own mode ([Templates by mode](templates-by-mode.md)), the **Whiteboard** in Draw,
   Blank in Diagram, and an **Event Storming** board is always Diagram. **Duplicate** is not a new tab: the copy
@@ -274,7 +274,7 @@ element in the same colour.
 ## The palette per mode
 
 Each mode has its own **palette layout**
-(`apps/live/components/palette/palette-layouts.ts`): the categories its
+(`apps/editor/components/palette/palette-layouts.ts`): the categories its
 palette offers, in order, what each is called there, and which tiles each
 holds.
 
@@ -446,8 +446,8 @@ actions, snapping, export, putting content onto a page, page slides) is
   press on one is a press on the empty canvas). Thumbnails see the tab's own
   backdrop and the elements whole; the Export dialog in Pages mode exports
   the pages ([Pages](pages-mode.md) "Export").
-- The sheets are `apps/live/components/canvas/CanvasPages.tsx`; the pages'
-  edits and the centring are `apps/live/hooks/editor/usePagesMode.ts`.
+- The sheets are `apps/editor/components/canvas/CanvasPages.tsx`; the pages'
+  edits and the centring are `apps/editor/hooks/editor/usePagesMode.ts`.
 
 ## Leaving Pages
 

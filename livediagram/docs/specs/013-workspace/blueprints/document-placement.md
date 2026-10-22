@@ -19,12 +19,12 @@ Scope, by file:
 | `apps/api/src/routes/documents.ts`                      | `POST /api/documents` parses, resolves, writes                           |
 | `apps/api/src/db/documents.ts`                          | `upsertDocumentMeta` inserts `team_id` beside `folder_id`                |
 | `apps/api/src/openapi/manifest.ts`                      | The create body's placement fields, 404 status                           |
-| `apps/live/lib/api/documents.ts`                        | `apiCreateDocument` sends `teamId` / `folderId`                          |
-| `apps/live/app/new/page.tsx`, `create-failure.ts`       | One create; the failure card's copy and action                           |
-| `apps/live/components/chrome/ApiErrorPage.tsx`          | `eyebrow` prop                                                           |
-| `apps/live/lib/new-document-params.ts`                  | `choosePlacementAgainUrl`                                                |
-| `apps/live/lib/duplicate-document.ts`, `useTeamLibrary` | A team Duplicate is one create into the team                             |
-| `apps/live/lib/offline/offline-convert.ts`              | The sync's explicit refile at the root on a refused folder               |
+| `apps/editor/lib/api/documents.ts`                        | `apiCreateDocument` sends `teamId` / `folderId`                          |
+| `apps/editor/app/new/page.tsx`, `create-failure.ts`       | One create; the failure card's copy and action                           |
+| `apps/editor/components/chrome/ApiErrorPage.tsx`          | `eyebrow` prop                                                           |
+| `apps/editor/lib/new-document-params.ts`                  | `choosePlacementAgainUrl`                                                |
+| `apps/editor/lib/duplicate-document.ts`, `useTeamLibrary` | A team Duplicate is one create into the team                             |
+| `apps/editor/lib/offline/offline-convert.ts`              | The sync's explicit refile at the root on a refused folder               |
 
 ## Domain and naming
 
@@ -140,13 +140,13 @@ No new request on the happy path (one fewer: the follow-up PUT is gone); no layo
 | Parse, team and folder judgements, step order                   | `apps/api/src/placement/resolve-placement.test.ts`                    |
 | Every path end to end in the route, one insert, no write on 4xx | `apps/api/src/routes/document-create-placement.test.ts` (real SQLite) |
 | Rejection tokens                                                | `packages/api-schema/src/placement.test.ts`                           |
-| Body carries placement                                          | `apps/live/lib/api-client.test.ts`                                    |
-| Card copy and action                                            | `apps/live/app/new/create-failure.test.ts`                            |
-| Choose-again URL                                                | `apps/live/lib/new-document-params.test.ts`                           |
-| Team duplicate is one create                                    | `apps/live/lib/duplicate-document.test.ts`                            |
-| Sync refile                                                     | `apps/live/lib/offline/offline-convert.test.ts`                       |
+| Body carries placement                                          | `apps/editor/lib/api-client.test.ts`                                    |
+| Card copy and action                                            | `apps/editor/app/new/create-failure.test.ts`                            |
+| Choose-again URL                                                | `apps/editor/lib/new-document-params.test.ts`                           |
+| Team duplicate is one create                                    | `apps/editor/lib/duplicate-document.test.ts`                            |
+| Sync refile                                                     | `apps/editor/lib/offline/offline-convert.test.ts`                       |
 | OpenAPI parity                                                  | `apps/api/src/openapi/*.test.ts`                                      |
-| Signed-in /new into a team folder; the refusal card             | `apps/live/e2e/clerk-stub/create-placement.spec.ts`                   |
+| Signed-in /new into a team folder; the refusal card             | `apps/editor/e2e/clerk-stub/create-placement.spec.ts`                   |
 
 ## Constants and configuration
 

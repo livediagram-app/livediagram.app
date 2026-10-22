@@ -5,7 +5,7 @@
 // it and neither owns it. The editor picks a costume and publishes it on the
 // presence channel (AvatarPresence below); a peer receives the packet and
 // draws the same character. Written out twice — once as named types in
-// apps/live, once inline in the presence message — the two sets could drift,
+// apps/editor, once inline in the presence message — the two sets could drift,
 // and adding a sixteenth jumper to one of them would quietly mean peers never
 // see it.
 //

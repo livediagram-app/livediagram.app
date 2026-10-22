@@ -16,7 +16,7 @@ import { describe, expect, it } from 'vitest';
 // is a control. Only bold text inside the body is treated as a claim about the
 // UI.
 //
-// It reads apps/live from apps/help on purpose, the same way the deep-link
+// It reads apps/editor from apps/help on purpose, the same way the deep-link
 // test does: the article's correctness genuinely depends on the editor's
 // strings, so the coupling is real and worth failing on.
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
@@ -52,7 +52,7 @@ function uiLabels(): Map<string, Set<string>> {
       }
     }
   };
-  walk(`${ROOT}/apps/live`);
+  walk(`${ROOT}/apps/editor`);
   return byLower;
 }
 
@@ -84,7 +84,7 @@ function editorSource(): string {
       else if (/\.tsx?$/.test(entry)) all += readFileSync(full, 'utf8');
     }
   };
-  for (const root of ['apps/live', 'apps/mcp', 'packages']) walk(`${ROOT}/${root}`);
+  for (const root of ['apps/editor', 'apps/mcp', 'packages']) walk(`${ROOT}/${root}`);
   return all.toLowerCase();
 }
 

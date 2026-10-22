@@ -65,7 +65,7 @@ const APPEARANCE_LABELS = tokensAfter(
 // The Explorer sidebar row kinds: `Sidebar.<Row>` on the page and `ExplorerPanel.<Row>` in the
 // editor's panel, per SidebarTelemetryRow member.
 const SIDEBAR_ROW_KINDS = tokensAfter(
-  read('live/app/explorer/sidebar/sidebar-telemetry.ts'),
+  read('editor/app/explorer/sidebar/sidebar-telemetry.ts'),
   'export type SidebarTelemetryRow',
   ';',
 );
@@ -82,16 +82,16 @@ const LENS_FACETS = tokensAfter(
 ).filter((token) => /^[A-Z]/.test(token));
 
 // The Trash a Trash action happened in: TrashGroup's `telemetryType`.
-const TRASH_TYPES = tokensAfter(read('live/lib/trash-groups.ts'), 'telemetryType:', ';');
+const TRASH_TYPES = tokensAfter(read('editor/lib/trash-groups.ts'), 'telemetryType:', ';');
 
 // One closed value per default folder key (placementDefaultTelemetryType).
 const DEFAULT_FOLDER_TYPES = PLACEMENT_DEFAULT_KEYS.map(placementDefaultTelemetryType);
 
-// The Plan tour's steps, as planTourStepTelemetryType makes them (apps/live plan-tour-steps.ts,
+// The Plan tour's steps, as planTourStepTelemetryType makes them (apps/editor plan-tour-steps.ts,
 // docs/specs/026-plan/plan-tour.md), both tracks; the two outros share one id. The welcome card sends no step view.
 const PLAN_TOUR_STEP_SOURCE: string[] = [
   ...new Set(
-    [...read('live/components/tour/plan-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm)].map(
+    [...read('editor/components/tour/plan-tour-steps.ts').matchAll(/^ {4}id: '([a-z-]+)',/gm)].map(
       (m) => m[1]!,
     ),
   ),
@@ -105,11 +105,11 @@ const PLAN_TOUR_STEP_SOURCE: string[] = [
         .join('')}`,
   );
 
-// The Forms tour's steps, as formTourStepTelemetryType makes them (apps/live form-tour-steps.ts,
+// The Forms tour's steps, as formTourStepTelemetryType makes them (apps/editor form-tour-steps.ts,
 // docs/specs/030-forms/forms.md "The Forms tour"). Its steps are top-level consts, so their ids sit two spaces in.
 // The welcome card sends no step view.
 const FORM_TOUR_STEP_SOURCE: string[] = [
-  ...read('live/components/tour/form-tour-steps.ts').matchAll(/^ {2}id: '([a-z-]+)',/gm),
+  ...read('editor/components/tour/form-tour-steps.ts').matchAll(/^ {2}id: '([a-z-]+)',/gm),
 ]
   .map((m) => m[1]!)
   .filter((id) => id !== 'welcome')
@@ -225,15 +225,15 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
 
   // The editor.
-  'apps/live/app/project/[id]/useElementCreation.ts Element·Added': {
+  'apps/editor/app/project/[id]/useElementCreation.ts Element·Added': {
     values: ELEMENT_KINDS,
     open: ELEMENT_WHY,
   },
-  'apps/live/app/project/[id]/useTemplateFlow.ts Template·Used': {
+  'apps/editor/app/project/[id]/useTemplateFlow.ts Template·Used': {
     values: TEMPLATES,
     open: TEMPLATE_WHY,
   },
-  'apps/live/app/explorer/useTimelineFeed.ts Timeline·Selected': {
+  'apps/editor/app/explorer/useTimelineFeed.ts Timeline·Selected': {
     values: [
       'comments',
       'new',
@@ -250,25 +250,25 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
   },
   // Which Trash (docs/specs/013-workspace/trash.md): lib/trash-groups.ts's
   // telemetryType, the one closed set every site sends.
-  'apps/live/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
-  'apps/live/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
-  'apps/live/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
-  'apps/live/app/project/[id]/useProjectTrashed.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/editor/hooks/persistence/useTrash.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/editor/hooks/persistence/useTrash.ts Trash·Deleted': { values: TRASH_TYPES },
+  'apps/editor/hooks/persistence/useTrash.ts Trash·Cleared': { values: TRASH_TYPES },
+  'apps/editor/app/project/[id]/useProjectTrashed.ts Trash·Restored': { values: TRASH_TYPES },
   // A delete toast's Undo (lib/project-delete-undo.ts DeletedTrash, the same three).
-  'apps/live/lib/project-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
-  'apps/live/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
+  'apps/editor/lib/project-delete-undo.ts Trash·Restored': { values: TRASH_TYPES },
+  'apps/editor/app/explorer/sidebar/sidebar-telemetry.ts UI·Selected': { values: SIDEBAR_ROWS },
   // Plan mode (docs/specs/026-plan/plan-mode.md "Telemetry"): an item type, or a set-up part.
-  'apps/live/hooks/plan/usePlanSlice.ts Plan·Added': {
+  'apps/editor/hooks/plan/usePlanSlice.ts Plan·Added': {
     values: PLAN_ITEM_TYPES,
     open: PLAN_TYPE_WHY,
   },
-  'apps/live/hooks/plan/usePlanSlice.ts Plan·Deleted': {
+  'apps/editor/hooks/plan/usePlanSlice.ts Plan·Deleted': {
     values: PLAN_ITEM_TYPES,
     open: PLAN_TYPE_WHY,
   },
-  'apps/live/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
+  'apps/editor/components/plan/track-board-setup.ts Plan·Changed': { values: PLAN_SETUP_PARTS },
   // A Dashboard tab's layout change names its kind (usePlanTabActions.ts DashboardChange).
-  'apps/live/hooks/plan/usePlanTabActions.ts Plan·Changed': {
+  'apps/editor/hooks/plan/usePlanTabActions.ts Plan·Changed': {
     values: [
       'DashboardRow',
       'DashboardSlot',
@@ -278,7 +278,7 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     ],
   },
   // A board or a view maximised from its header, or restored (maximised-plan.ts MaximisedKind).
-  'apps/live/hooks/plan/maximised-plan.ts Plan·Toggled': {
+  'apps/editor/hooks/plan/maximised-plan.ts Plan·Toggled': {
     values: [
       'BoardMaximised',
       'ViewMaximised',
@@ -289,14 +289,14 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     ],
   },
   // A form started names its starter, a question added its type (docs/specs/030-forms/forms.md "Telemetry").
-  'apps/live/hooks/forms/useFormActions.ts Form·Created': {
+  'apps/editor/hooks/forms/useFormActions.ts Form·Created': {
     values: FORM_STARTERS.map((s) => s.telemetry),
   },
-  'apps/live/components/forms/builder/FormAddBar.tsx Form·Added': {
+  'apps/editor/components/forms/builder/FormAddBar.tsx Form·Added': {
     values: Object.values(QUESTION_TYPE_TELEMETRY),
   },
-  // Not Taking Responses pressed names its reason (apps/live/components/forms/form-not-taking.ts FORM_NOT_TAKING).
-  'apps/live/components/forms/FormNotTakingWarning.tsx Form·Opened': {
+  // Not Taking Responses pressed names its reason (apps/editor/components/forms/form-not-taking.ts FORM_NOT_TAKING).
+  'apps/editor/components/forms/FormNotTakingWarning.tsx Form·Opened': {
     values: [
       'NotTakingSuspended',
       'NotTakingPaused',
@@ -307,11 +307,11 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
     ],
   },
   // A Sheet change names its kind (api-schema SHEET_CHANGE_KINDS); a formula's first use of a function, its name.
-  'apps/live/components/sheets/sheet-controller.tsx Sheet·Changed': {
+  'apps/editor/components/sheets/sheet-controller.tsx Sheet·Changed': {
     values: [...SHEET_CHANGE_KINDS],
   },
   // A Sheet set up from Setup Sheet names how it started (SheetSetup.tsx TELEMETRY).
-  'apps/live/components/sheets/SheetSetup.tsx Sheet·Created': {
+  'apps/editor/components/sheets/SheetSetup.tsx Sheet·Created': {
     values: [
       'Blank',
       'Budget',
@@ -333,53 +333,53 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'Csv',
     ],
   },
-  'apps/live/components/sheets/useSheetActions.ts Sheet·Used': {
+  'apps/editor/components/sheets/useSheetActions.ts Sheet·Used': {
     values: ['SUM', 'AVERAGE', 'IF', 'VLOOKUP', 'CARDCOUNT'],
     open: "a function's name, from the Sheet's closed function list (packages/sheets FUNCTION_NAMES)",
   },
   // An item opened: `Item` from a board or a list, or how the item panel moved to it (item-trail.ts ItemOpenVia).
-  'apps/live/hooks/plan/usePlanSlice.ts Plan·Opened': {
+  'apps/editor/hooks/plan/usePlanSlice.ts Plan·Opened': {
     values: ['Item', 'Parent', 'ChildCard', 'Breadcrumb'],
   },
   // Default folders (docs/specs/013-workspace/default-folders.md "Telemetry"): one value per key.
-  'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
+  'apps/editor/lib/placement-defaults/placement-defaults-store.ts Folder·Changed': {
     values: DEFAULT_FOLDER_TYPES,
   },
-  'apps/live/lib/placement-defaults/placement-defaults-store.ts Folder·Cleared': {
+  'apps/editor/lib/placement-defaults/placement-defaults-store.ts Folder·Cleared': {
     values: DEFAULT_FOLDER_TYPES,
   },
-  'apps/live/app/explorer/lens/lens-telemetry.ts Explorer·Selected': { values: LENS_FACETS },
-  'apps/live/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
-  'apps/live/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
+  'apps/editor/app/explorer/lens/lens-telemetry.ts Explorer·Selected': { values: LENS_FACETS },
+  'apps/editor/app/new/page.tsx Theme·Changed': { values: THEMES, open: THEME_WHY },
+  'apps/editor/app/new/page.tsx Template·Used': { values: TEMPLATES, open: TEMPLATE_WHY },
   // The landing funnel (docs/specs/019-marketing/landing-funnel.md): the CTA a /new visit came from.
-  'apps/live/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
-  'apps/live/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
-  'apps/live/components/dialogs/SettingsDialog.tsx UI·Opened': {
+  'apps/editor/app/new/useCtaAttribution.ts Cta·Opened': { values: ALL_CTA_SOURCES },
+  'apps/editor/app/new/useCtaAttribution.ts Cta·Created': { values: ALL_CTA_SOURCES },
+  'apps/editor/components/dialogs/SettingsDialog.tsx UI·Opened': {
     values: ['SettingsAppearance', 'SettingsEditor', 'SettingsAccount', 'SettingsPrivacy'],
     open: 'Settings<Category>, one per Settings category',
   },
-  'apps/live/components/dialogs/ShareCopyMenu.tsx UI·Copied': {
+  'apps/editor/components/dialogs/ShareCopyMenu.tsx UI·Copied': {
     values: ['EmbedCode', 'LiveImage'],
   },
-  'apps/live/components/notes/useNoteRichTextSession.ts Note·Used': {
+  'apps/editor/components/notes/useNoteRichTextSession.ts Note·Used': {
     values: ['Bold', 'Italic', 'List', 'Heading'],
     open: 'the rich-text command a note applied',
   },
-  'apps/live/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
-  'apps/live/components/panels/SearchPanel.tsx Search·Selected': {
+  'apps/editor/components/panels/SearchPanel.tsx UI·Opened': { values: SLUGS, open: SLUG_WHY },
+  'apps/editor/components/panels/SearchPanel.tsx Search·Selected': {
     values: ['Project', 'Shared', 'Folder', 'Team', 'Tab', 'Element', 'Palette', 'Command'],
   },
-  'apps/live/components/primitives/AreaErrorBoundary.tsx Error·Client': {
+  'apps/editor/components/primitives/AreaErrorBoundary.tsx Error·Client': {
     values: ['Render.Canvas.TypeError', 'Render.Header.Error'],
     open: 'Render.<Area>.<ErrorName>',
   },
-  'apps/live/components/primitives/HelpArticleLink.tsx UI·Opened': {
+  'apps/editor/components/primitives/HelpArticleLink.tsx UI·Opened': {
     values: SLUGS,
     open: SLUG_WHY,
   },
   // Load recovery (docs/specs/007-editor/load-recovery.md): the watchdog's warnings, and a throw in
   // the load named by its error.
-  'apps/live/app/project/[id]/useIdentityBootstrap.ts Error·Warning': {
+  'apps/editor/app/project/[id]/useIdentityBootstrap.ts Error·Warning': {
     values: [
       'ProjectLoad.TimedOut.Identity',
       'ProjectLoad.TimedOut.Participant',
@@ -390,52 +390,52 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'ProjectLoad.Late',
     ],
   },
-  'apps/live/app/project/[id]/useIdentityBootstrap.ts Error·Client': {
+  'apps/editor/app/project/[id]/useIdentityBootstrap.ts Error·Client': {
     values: ['ProjectLoad.TypeError', 'ProjectLoad.Error'],
     open: 'ProjectLoad.<ErrorName>',
   },
-  'apps/live/components/providers/ErrorTelemetryBoot.tsx Error·Warning': {
+  'apps/editor/components/providers/ErrorTelemetryBoot.tsx Error·Warning': {
     values: ['OfflineStore.Unavailable', 'SessionToken.TimedOut'],
   },
-  'apps/live/components/providers/ErrorTelemetryBoot.tsx Error·Api': {
+  'apps/editor/components/providers/ErrorTelemetryBoot.tsx Error·Api': {
     values: API_ERRORS,
     open: API_ERROR_WHY,
   },
-  'apps/live/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
-  'apps/live/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
-  'apps/live/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
+  'apps/editor/components/tour/PlanTourHost.tsx UI·View': { values: PLAN_TOUR_STEP_SOURCE },
+  'apps/editor/components/tour/FormTourHost.tsx UI·View': { values: FORM_TOUR_STEP_SOURCE },
+  'apps/editor/hooks/canvas/useDebouncedCanvasTelemetry.ts Canvas·Changed': {
     values: Object.keys(CANVAS_CONTROLS),
   },
-  'apps/live/hooks/canvas/useShapeDrawing.ts Element·Added': {
+  'apps/editor/hooks/canvas/useShapeDrawing.ts Element·Added': {
     values: ['Banner', 'Callout', 'Image', 'Video', 'LinkCard'],
     open: 'a drawn component or media kind',
   },
-  'apps/live/hooks/canvas/useTabCanvas.ts Tab·Aligned': {
+  'apps/editor/hooks/canvas/useTabCanvas.ts Tab·Aligned': {
     values: ['Smart', 'FlowchartDown', 'FlowchartRight', 'Tree', 'Mindmap'],
   },
-  'apps/live/hooks/canvas/useTabCanvas.ts Canvas·Changed': {
+  'apps/editor/hooks/canvas/useTabCanvas.ts Canvas·Changed': {
     values: ['Blank', 'Grid', 'Dots', 'Graph'],
     open: 'titleCaseType(pattern): a background pattern',
   },
-  'apps/live/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
-  // The Sequence dialog's writes (apps/live/hooks/canvas/useSequenceSetters.ts): which part of it changed.
-  'apps/live/hooks/canvas/useSequenceSetters.ts Element·Changed': {
+  'apps/editor/hooks/canvas/useTabTheme.ts Theme·Changed': { values: THEMES, open: THEME_WHY },
+  // The Sequence dialog's writes (apps/editor/hooks/canvas/useSequenceSetters.ts): which part of it changed.
+  'apps/editor/hooks/canvas/useSequenceSetters.ts Element·Changed': {
     values: ['SequenceParticipants', 'SequenceMessages', 'SequenceText'],
   },
-  // The element menu's whole-tab writes (apps/live/lib/element-style-ops.ts `commitTab`).
-  'apps/live/components/palette/EditorContextMenuHost.tsx Element·Changed': {
+  // The element menu's whole-tab writes (apps/editor/lib/element-style-ops.ts `commitTab`).
+  'apps/editor/components/palette/EditorContextMenuHost.tsx Element·Changed': {
     values: ['RenumberSteps'],
   },
-  'apps/live/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
+  'apps/editor/hooks/canvas/useTextStyleSetters.ts Element·Toggled': {
     values: ['Bold', 'Italic', 'Underline', 'Strikethrough'],
   },
-  'apps/live/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
+  'apps/editor/hooks/canvas/useWebComponentSetters.ts Element·Changed': {
     values: ['Banner', 'Callout', 'StatRow'],
     open: 'elementTelemetryType of the web component a row was added to',
   },
-  'apps/live/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
+  'apps/editor/hooks/ui/useAppearance.ts UI·Toggled': { values: APPEARANCE_LABELS },
   // A new link's level (LEVEL_TELEMETRY_TYPE) and its expiry, the file's two computed sites.
-  'apps/live/hooks/persistence/useShareLinks.ts Project·Shared': {
+  'apps/editor/hooks/persistence/useShareLinks.ts Project·Shared': {
     values: [
       ...Object.values(LEVEL_TELEMETRY_TYPE),
       'ExpiryWeek',
@@ -443,8 +443,8 @@ export const COMPUTED_EMITTERS: Record<string, ComputedValues> = {
       'ExpirySixMonths',
     ],
   },
-  'apps/live/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
-  'apps/live/lib/element-telemetry.ts Element·Added': { values: ELEMENT_KINDS, open: ELEMENT_WHY },
+  'apps/editor/lib/element-telemetry.ts Element·Duplicated': { values: [null, 'ShiftDrag'] },
+  'apps/editor/lib/element-telemetry.ts Element·Added': { values: ELEMENT_KINDS, open: ELEMENT_WHY },
   // Timings (docs/specs/017-telemetry/timing-telemetry.md): every editor timing and every app's Web
   // Vitals go through the one reportTiming, so this one site sends every metric in every bucket.
   'packages/telemetry-client/src/timing.ts Timing·Measured': { values: ALL_TIMING_TYPES },

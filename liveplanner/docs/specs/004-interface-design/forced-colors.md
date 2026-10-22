@@ -47,8 +47,8 @@ gradient or a shadow says nothing. Before this spec, in a dark contrast theme:
 - `packages/tailwind-config/theme.css`, `@media (forced-colors: active)`, unlayered so it outranks the utilities that
   paint a control's chosen state: the ARIA-state Highlight rule and the switch rule.
 - `packages/template-previews/src/preview-art-tile.css`: the tile and its veil keep their colours.
-- `apps/live/components/colour/ColourSwatch.tsx` (`SwatchChip`), `CustomColourEditor.tsx`: `forced-color-adjust-none` on the colour itself.
-- `apps/live/components/tour/TourBanner.tsx`, `apps/live/components/chrome/SignInBanner.tsx`: a solid background
+- `apps/editor/components/colour/ColourSwatch.tsx` (`SwatchChip`), `CustomColourEditor.tsx`: `forced-color-adjust-none` on the colour itself.
+- `apps/editor/components/tour/TourBanner.tsx`, `apps/editor/components/chrome/SignInBanner.tsx`: a solid background
   under the gradient.
 
 ## Testing

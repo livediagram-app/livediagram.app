@@ -19,7 +19,7 @@ items in [02-prototype-scope](../005-project-roadmap/prototype-scope.md) (team w
 transactional email, CRDT / conflict-free editing) must not appear, even
 softened. When the editor gains or loses a feature, update the affected copy in
 the same change. Counts (currently 147 templates, 24 themes, ten core shapes)
-must match their source of truth, as pinned by the live app's tests.
+must match their source of truth, as pinned by the editor app's tests.
 
 ## Layout
 

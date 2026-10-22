@@ -5,7 +5,7 @@ walls: light, noise, paper texture. Group M ([m-editor-model.md](m-editor-model.
 found that it reads a FLAT, textureless note as background, so the hybrid's
 drop rule (J3, [j-hybrid.md](j-hybrid.md)) removes a note the colour found. A
 screenshot of a digital board, or a wall drawn in a test, would lose notes.
-Pinned by `apps/live/e2e/photo-model.spec.ts` ("a flat drawn note survives
+Pinned by `apps/editor/e2e/photo-model.spec.ts` ("a flat drawn note survives
 the hybrid", `test.fail`). Plan:
 plans/0006-event-storming-photo-95-experiments.md
 (round 6, O).
@@ -149,7 +149,7 @@ neighbouring pixel pairs with exactly equal RGB, flat at 0.6 or more.
 Any threshold from 0.31 to 0.95 splits the two real sets alike; 0.6 sits in
 the middle of that plateau, above the densest synthetic flat walls' floor.
 
-The editor (`apps/live/lib/photo-detect.ts`) checks it first: a flat image
+The editor (`apps/editor/lib/photo-detect.ts`) checks it first: a flat image
 logs `[photo-detect] classical (flat-image)`, the review marks the overlay
 `classical`, telemetry counts `PhotoDetectClassicalFlatImage`. The Node sweep
 and the editor sweep's Node side ask the same question.

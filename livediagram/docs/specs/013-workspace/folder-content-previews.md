@@ -66,10 +66,10 @@ than the card claims to describe.
 
 ## Where it lives
 
-- `apps/live/app/explorer/folder-preview-tiles.ts` — the pure "which tiles,
+- `apps/editor/app/explorer/folder-preview-tiles.ts` — the pure "which tiles,
   in what order, and how many are hidden" selection. Its own module so the
   rule is unit-tested without rendering.
-- `apps/live/app/explorer/FolderPreview.tsx` — the mosaic component
+- `apps/editor/app/explorer/FolderPreview.tsx` — the mosaic component
   (`FolderPreview`), including the subfolder and `+N` tiles.
 - `FolderCard` (`explorer-folder-cards.tsx`) takes a ready-made `preview`
   node and falls back to the folder glyph when it's absent, so it stays

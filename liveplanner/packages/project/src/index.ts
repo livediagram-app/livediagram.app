@@ -1,4 +1,4 @@
-// Shared domain types for projects. Consumed by the live app's canvas today,
+// Shared domain types for projects. Consumed by the editor app's canvas today,
 // and (later) by the persistence store, API workers, and any other code that
 // handles project data. See docs/specs/006-project/project-structure.md and
 // docs/specs/008-canvas/canvas-and-palette.md.
@@ -351,7 +351,7 @@ export type Tab = {
   // keyframes; ignored by the static patterns. The canvas Speed slider
   // (shown only while an animated pattern is active) writes it.
   backgroundAnimationSpeed?: number;
-  // Selected preset theme name (see apps/live/lib/themes.ts). Setting
+  // Selected preset theme name (see apps/editor/lib/themes.ts). Setting
   // a theme via the palette repaints every existing element on the tab
   // to match (sticky notes keep their amber palette). Newly added
   // elements inherit the same theme colours by default. Unset = brand
@@ -683,7 +683,7 @@ export {
 
 // Theme engine (docs/specs/011-theme/multicolour-themes.md, /42, /44, /48): theme catalogue + types + the pure
 // recolour / switch / reset / preset transforms, shared by the editor and the
-// MCP worker (docs/specs/015-api/mcp-server.md). Custom-theme resolution stays in apps/live/lib/themes.ts.
+// MCP worker (docs/specs/015-api/mcp-server.md). Custom-theme resolution stays in apps/editor/lib/themes.ts.
 export * from './theme-graph';
 export * from './themes';
 export * from './theme-halves';
@@ -772,7 +772,7 @@ export * from './session';
 
 // The curated typefaces (docs/specs/004-interface-design/fonts.md): the catalogue, the id -> CSS stack
 // resolver, and the Google Fonts stylesheet href. Lives here rather than in
-// apps/live because the EXPORTS need it too — the SVG / PNG renderers have
+// apps/editor because the EXPORTS need it too — the SVG / PNG renderers have
 // to paint a label in the face the canvas painted it in, and they run in the
 // mcp worker as well as the browser.
 export * from './fonts';

@@ -12,7 +12,7 @@ import { describe, expect, it } from 'vitest';
 // against the same tables for a while (shortcut-sections.test.ts) and stayed
 // complete throughout, which is the argument for this one existing.
 //
-// Reading apps/live from apps/help is the same coupling ui-labels-in-articles
+// Reading apps/editor from apps/help is the same coupling ui-labels-in-articles
 // and repo-paths-in-docs already take on: the article's correctness genuinely
 // depends on the editor's source, so it is worth failing on.
 //
@@ -23,7 +23,7 @@ import { describe, expect, it } from 'vitest';
 // writes `A` as an example letter would fail a reverse check. A guard that
 // fails a correct edit is a guard people delete.
 const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
-const SECTIONS_SRC = `${ROOT}/apps/live/components/dialogs/shortcut-sections.ts`;
+const SECTIONS_SRC = `${ROOT}/apps/editor/components/dialogs/shortcut-sections.ts`;
 const ARTICLE = `${ROOT}/apps/help/app/tips-and-tricks/keyboard-shortcuts/page.mdx`;
 
 // The plain keys a Plan tab answers, as the Shortcuts dialog lists them: rows whose one key is a single letter or

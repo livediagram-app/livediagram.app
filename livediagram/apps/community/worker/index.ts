@@ -27,7 +27,7 @@ import {
 // The entry module exports only the handler: the runtime reads every named value export as an entrypoint and
 // refuses to start on anything else, so constants live in ./post-head.ts.
 
-// The few runtime types used here, written out as the live app's worker does (apps/live/src/worker.ts) so the app's
+// The few runtime types used here, written out as the editor app's worker does (apps/editor/src/worker.ts) so the app's
 // one DOM-lib typecheck covers this file too.
 type Fetcher = { fetch: (input: Request | string, init?: RequestInit) => Promise<Response> };
 type RewriterElement = {

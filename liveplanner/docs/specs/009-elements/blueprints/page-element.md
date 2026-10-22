@@ -21,15 +21,15 @@ Scope, by file:
 | `packages/project/src/svg-render-describe.ts`        | Export body label starts at `pageBodyTop`                           |
 | `packages/project/src/themes.ts`                     | `themeColourFields`: page exempt from theme applies [QD15]          |
 | `packages/project/src/colors.ts`                     | `defaultTextColor`: a page's body ink when it stores none [QD17]    |
-| `apps/live/lib/themes.ts`                            | `deriveNewBoxedColours` returns a page's own colours                |
-| `apps/live/components/canvas/shape-svg-overlay.tsx`  | `isSvgRenderedShape('page')` is false: CSS box path                 |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`  | Stacks `PageMasthead` over the body region                          |
-| `apps/live/components/canvas/PageMasthead.tsx`       | The masthead: two `InlineTextLine`s over a hairline rule            |
-| `apps/live/components/canvas/InlineTextLine.tsx`     | One plain line edited in place                                      |
-| `apps/live/components/canvas/PageCornerFold.tsx`     | The turned-back corner                                              |
-| `apps/live/components/canvas/BoxedElementView.tsx`   | Mounts the fold                                                     |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`      | `setPageHeading`, `MASTHEAD_SHAPES`                                 |
-| `apps/live/components/palette/palette-tile-defs.tsx` | Tile `tools:page`, `toolGroup: 'write'`                             |
+| `apps/editor/lib/themes.ts`                            | `deriveNewBoxedColours` returns a page's own colours                |
+| `apps/editor/components/canvas/shape-svg-overlay.tsx`  | `isSvgRenderedShape('page')` is false: CSS box path                 |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`  | Stacks `PageMasthead` over the body region                          |
+| `apps/editor/components/canvas/PageMasthead.tsx`       | The masthead: two `InlineTextLine`s over a hairline rule            |
+| `apps/editor/components/canvas/InlineTextLine.tsx`     | One plain line edited in place                                      |
+| `apps/editor/components/canvas/PageCornerFold.tsx`     | The turned-back corner                                              |
+| `apps/editor/components/canvas/BoxedElementView.tsx`   | Mounts the fold                                                     |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`      | `setPageHeading`, `MASTHEAD_SHAPES`                                 |
+| `apps/editor/components/palette/palette-tile-defs.tsx` | Tile `tools:page`, `toolGroup: 'write'`                             |
 | `packages/project/src/export-tab-text.ts`            | Markdown outline [QD13]                                             |
 
 ## Domain and naming
@@ -123,10 +123,10 @@ export function pageBodyTop(el: Page, padding: number): number;
 export function svgPageMasthead(el: Page, padding: number, fontFamily?: string): string;
 export function svgPageFold(el: Page, fill: string, stroke: string, paper: string): string;
 
-// apps/live/hooks/canvas/useDataShapeSetters.ts
+// apps/editor/hooks/canvas/useDataShapeSetters.ts
 setPageHeading(elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string): void;
 
-// apps/live/components/canvas/InlineTextLine.tsx
+// apps/editor/components/canvas/InlineTextLine.tsx
 export function InlineTextLine(props: {
   value: string;
   placeholder: string;

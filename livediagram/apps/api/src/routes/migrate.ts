@@ -14,7 +14,7 @@ const ZERO = { documents: 0, folders: 0, shared: 0, images: 0 };
 // Moves every `owner_id` row (documents, folders, prefs, images, shared
 // list) from a source owner to a target owner. Two flows:
 //
-//  1. Sign-up (guest → Clerk): the live app calls this once Clerk reports
+//  1. Sign-up (guest → Clerk): the editor app calls this once Clerk reports
 //     a session, to bind the caller's guest data to their account. The
 //     SOURCE guest id must prove possession via its HMAC signature
 //     (`guestSignature`) when signing is configured — otherwise anyone who
@@ -23,7 +23,7 @@ const ZERO = { documents: 0, folders: 0, shared: 0, images: 0 };
 //
 //  2. Legacy upgrade (unsigned guest → freshly-minted signed guest): an
 //     existing guest created before signing shipped has an unsigned id and
-//     so can't satisfy flow 1. The live app mints a signed id (POST
+//     so can't satisfy flow 1. The editor app mints a signed id (POST
 //     /api/guest-id) and calls this with no Clerk token to move the old
 //     data onto the new id. The SOURCE here is the caller's current
 //     `X-Owner-Id` (the same bearer credential every guest request uses);

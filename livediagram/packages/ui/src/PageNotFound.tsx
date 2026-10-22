@@ -1,6 +1,6 @@
 // The not-found page of the static sites (marketing, help centre, Community; docs/specs/016-platform/router-app.md
 // "Not found"): an address that names no page gets the site's own chrome around one calm card with the ways on, not
-// a bare "404 | This page could not be found." with no way home. The editor keeps its own card (apps/live NotFound),
+// a bare "404 | This page could not be found." with no way home. The editor keeps its own card (apps/editor NotFound),
 // which offers the Explorer and a new document.
 import { buttonClassName } from './Button';
 import { EmptyState } from './EmptyState';

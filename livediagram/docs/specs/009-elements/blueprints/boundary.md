@@ -6,13 +6,13 @@ Derived from [The boundary](../boundary.md). Defaults in [DEFAULTS.md](DEFAULTS.
 | -------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
 | `packages/document/src/boundary.ts`                                                    | `BoundaryStyle`, `boundaryLayout`, `BOUNDARY_TINT`, writes   |
 | `packages/document/src/containment.ts`                                                 | `CONTAINER_KINDS`, `isContainerKind`: frame, lane, boundary  |
-| `graph-look.ts`, `arrow-behind.ts`, `arrow-label-layout.ts`, `apps/live/lib/canvas.ts` | Their frame-or-lane checks read `isContainerKind`            |
+| `graph-look.ts`, `arrow-behind.ts`, `arrow-label-layout.ts`, `apps/editor/lib/canvas.ts` | Their frame-or-lane checks read `isContainerKind`            |
 | `packages/document/src/layers.ts`                                                      | Containers paint first (tier 0), the larger first among them |
 | `packages/document/src/colors.ts`                                                      | `defaultFillColor` transparent (the face paints the tint)    |
 | `packages/document/src/svg-render-boundary.ts`                                         | `svgBoundary`: tint, tab or title, icon, meta                |
-| `apps/live/components/canvas/BoundaryFace.tsx`                                         | The canvas face                                              |
-| `apps/live/components/canvas/shape-svg-overlay.tsx`                                    | `boundary` on the CSS box path (its border is the wrapper's) |
-| `apps/live/components/palette/BoundaryMenuSection.tsx`                                 | Style tiles                                                  |
+| `apps/editor/components/canvas/BoundaryFace.tsx`                                         | The canvas face                                              |
+| `apps/editor/components/canvas/shape-svg-overlay.tsx`                                    | `boundary` on the CSS box path (its border is the wrapper's) |
+| `apps/editor/components/palette/BoundaryMenuSection.tsx`                                 | Style tiles                                                  |
 
 ## Domain and naming
 
@@ -118,8 +118,8 @@ Tiles named "Tab Style", "Inset Style", "C4 Style"; the meta line is `role="text
 | Containment and carry include boundary | `packages/document/src/containment.test.ts`                 |
 | Paint order larger-first               | `packages/document/src/layers.test.ts`                      |
 | Export draws tab, title, stacked tint  | `packages/document/src/boundary.test.ts`                    |
-| Face                                   | `apps/live/components/canvas/BoundaryFace.test.tsx`         |
-| Menu section (meta line, styles)       | `apps/live/components/palette/BoundaryMenuSection.test.tsx` |
+| Face                                   | `apps/editor/components/canvas/BoundaryFace.test.tsx`         |
+| Menu section (meta line, styles)       | `apps/editor/components/palette/BoundaryMenuSection.test.tsx` |
 
 ## Constants and configuration
 

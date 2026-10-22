@@ -82,7 +82,7 @@ Two consequences worth stating:
 ### Who counts
 
 A card that counts the room ("n/m answered") counts one entry per person who can answer
-(`answeringKeys` in `apps/live/lib/identity.ts`): presence rows are deduped by
+(`answeringKeys` in `apps/editor/lib/identity.ts`): presence rows are deduped by
 collab key, so your own second tab (same key, another socket) is one person,
 and view-link guests (role `view`, who can't cast) and agent rows are left out.
 Before this, a viewer or a second tab counted as somebody yet to answer.

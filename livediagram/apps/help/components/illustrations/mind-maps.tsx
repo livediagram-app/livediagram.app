@@ -1,7 +1,7 @@
 // Scenes for the Mind Maps articles (docs/specs/009-elements/mind-node.md): growing a branch from
 // the keyboard, the Mind Map menu section's flows, and the Edit Outline dialog. Labels are the
 // editor's: MIND_FLOW_LABEL (packages/document/src/mind-flow.ts), the outline toolbar
-// (apps/live/components/dialogs/MindOutlineRows.tsx) and the dialog's own copy.
+// (apps/editor/components/dialogs/MindOutlineRows.tsx) and the dialog's own copy.
 
 import type { ReactNode } from 'react';
 import { Arrow, Label, Scene, Shape } from './primitives';

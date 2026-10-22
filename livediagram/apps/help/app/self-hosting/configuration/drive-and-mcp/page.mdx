@@ -99,7 +99,7 @@ The bundled deploy workflow builds every app, then deploys the Workers. Two thin
 
 - **It always deploys the mcp Worker.** If you are not running the MCP server, remove that job from `.github/workflows/deploy-reusable.yml`, or create the KV namespace first so the deploy succeeds.
 - **It does not read most `NEXT_PUBLIC_*` values from repository secrets.** These are baked into the live build, so they must be in the build step's environment:
-  - `NEXT_PUBLIC_MCP_ORIGIN` comes from the `mcp_origin` input in `.github/workflows/deploy.yml`. Left empty, the live app falls back to `https://mcp.livediagram.app`, which is not yours, so set it to your MCP origin.
+  - `NEXT_PUBLIC_MCP_ORIGIN` comes from the `mcp_origin` input in `.github/workflows/deploy.yml`. Left empty, the editor app falls back to `https://mcp.livediagram.app`, which is not yours, so set it to your MCP origin.
   - `NEXT_PUBLIC_GOOGLE_CLIENT_ID` is only added for livediagram.app's own repository. Add it to the **Build all apps** step yourself.
   - `NEXT_PUBLIC_GOOGLE_API_KEY` is the exception: the workflow passes a repository secret of that name through to the build.
 
@@ -107,7 +107,7 @@ The `wrangler.toml` values and Worker secrets are read at runtime, so they do no
 
 <Tip>
   The repository's `docs/operations/self-hosting.md`, and the `.env.example` file in `apps/api`,
-  `apps/live` and `apps/mcp`, list every variable these features read, for local development as well
+  `apps/editor` and `apps/mcp`, list every variable these features read, for local development as well
   as production.
 </Tip>
 

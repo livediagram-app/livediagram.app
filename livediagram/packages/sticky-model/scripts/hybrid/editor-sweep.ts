@@ -22,7 +22,7 @@ import { mergedFloorOf, realMergedOf, table, type Row } from '../report';
 // nothing is written anywhere but the console.
 
 const repoRoot = resolve(import.meta.dirname, '../../../..');
-const shipped = `${repoRoot}/apps/live/lib/photo-model/weights`;
+const shipped = `${repoRoot}/apps/editor/lib/photo-model/weights`;
 // The Node side scores the weights the editor ships, not the float originals.
 process.env.STICKY_MODEL_WEIGHTS ??= shipped;
 const { loadHybridWalls } = await import('./walls');

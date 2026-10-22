@@ -16,7 +16,7 @@ import { SHAPE_KINDS } from './validate';
 import type { ShapeKind, Tab } from './index';
 
 // The geometry table is the one copy of every drawn silhouette (the canvas
-// overlays read it in apps/live, the headless render reads it here). These
+// overlays read it in apps/editor, the headless render reads it here). These
 // pin the export side to it, so a path edited in one renderer instead of the
 // table shows up as a failure rather than as a quiet drift.
 

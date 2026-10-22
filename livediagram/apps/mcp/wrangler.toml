@@ -22,7 +22,7 @@ type = "Data"
 globs = ["**/*.ttf", "**/*.otf"]
 
 [vars]
-# Where the OAuth consent page lives (apps/live). Self-hosters set their own
+# Where the OAuth consent page lives (apps/editor). Self-hosters set their own
 # live origin; the authorize endpoint redirects the signed-in user here.
 CONSENT_BASE_URL = "https://livediagram.app"
 
@@ -41,7 +41,7 @@ CONSENT_BASE_URL = "https://livediagram.app"
 # CF_API_TOKEN is scoped to upload worker scripts, not manage zone routes / DNS.
 # Attach the custom domain once under Workers → livediagram-mcp → Domains &
 # Routes. Self-hosters do the same with their own host, then point
-# CONSENT_BASE_URL + the live app's NEXT_PUBLIC_MCP_ORIGIN at it.
+# CONSENT_BASE_URL + the editor app's NEXT_PUBLIC_MCP_ORIGIN at it.
 
 # Reach the api worker over a service binding (not public DNS). Every tool
 # forwards to /api/* carrying the caller's `Authorization: Bearer lvd_…`
@@ -72,7 +72,7 @@ id = "b6f3814b4a4e4e51b8b88412915d8d84"
 name = "livediagram-mcp-staging"
 
 [env.staging.vars]
-# The consent page lives in the STAGING live app — a staging OAuth flow must
+# The consent page lives in the STAGING editor app — a staging OAuth flow must
 # never bounce the user through production's sign-in.
 CONSENT_BASE_URL = "https://staging.livediagram.app"
 # Staging's events go to the staging telemetry service, never into production's numbers.

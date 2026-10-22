@@ -627,7 +627,7 @@ describe('ProjectRoom op-role enforcement', () => {
   // presence kinds would only prove the restatement agrees. What catches it is
   // the editor's own vocabulary: every op kind it sends or handles must appear
   // in one of the three schema lists, checked in
-  // apps/live/app/project/[id]/room-op-vocabulary.test.ts. What this file can
+  // apps/editor/app/project/[id]/room-op-vocabulary.test.ts. What this file can
   // still pin is that the gate reads the schema's list at all.
   it('classifies every op kind in the shared vocabulary, and only those', () => {
     const classified = [...PRESENCE_OP_KINDS, ...MUTATION_OP_KINDS, ...SYSTEM_OP_KINDS];

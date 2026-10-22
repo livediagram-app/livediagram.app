@@ -11,9 +11,9 @@ Scope, by file:
 | `packages/tailwind-config/src/motion.ts`                                | The same tokens as numbers, and `cascadeDelayMs`, for code that needs milliseconds |
 | `packages/tailwind-config/src/motion-budget.ts`                         | The static guard: the duration bound calculator and the file scanners              |
 | `apps/*/motion-budget.test.ts`, `packages/ui/src/motion-budget.test.ts` | One guard run per workspace, over that workspace's own source                      |
-| `apps/live/app/globals.css`                                             | Editor chrome motion only                                                          |
-| `apps/live/app/canvas-motion.css`                                       | Editor canvas motion, moved out of `globals.css` unchanged                         |
-| `apps/live/e2e/motion-budget.spec.ts`                                   | The runtime guard                                                                  |
+| `apps/editor/app/globals.css`                                             | Editor chrome motion only                                                          |
+| `apps/editor/app/canvas-motion.css`                                       | Editor canvas motion, moved out of `globals.css` unchanged                         |
+| `apps/editor/e2e/motion-budget.spec.ts`                                   | The runtime guard                                                                  |
 
 ## Domain and naming
 
@@ -102,7 +102,7 @@ Timers of every other kind are not touched. That covers `GRACE_MS`, `CLOSE_DELAY
 `RING_CLOSE_DELAY_MS`, `LONG_PRESS_MS`, `REVEAL_DELAY_MS`, debounces, `AUTO_DISMISS_MS`,
 `IDLE_MS` and the `useElementPopIn` 400ms canvas timeout.
 
-### Chrome keyframe tokens (`apps/live/app/globals.css`)
+### Chrome keyframe tokens (`apps/editor/app/globals.css`)
 
 | Token                       | Before | After   | Surface                                      |
 | --------------------------- | ------ | ------- | -------------------------------------------- |
@@ -144,7 +144,7 @@ arrival").
 
 Every chrome `duration-<n>` becomes a token. Hover-driven ones become `duration-micro`.
 
-- **`apps/live`**
+- **`apps/editor`**
   - `micro`: `BackBar`, `ChevronIcon`, `PanelSnapSlot`,
     `TimelineLanesOverlay`, and the `MovablePanel` fade.
   - `short`: `ToolbarStripRail`, `AccordionSection`,
@@ -343,11 +343,11 @@ logging, because motion isn't a decision point.
 | Each workspace is within budget              | `motion-budget.test.ts` in live, help, marketing, telemetry, ui and template-previews       |
 | Timeline cascades use the shared cap         | `packages/ui/src/timeline/ExpandedStack.test.tsx`                                           |
 | Exit holds equal their tokens                | `ToolbarStripRail.test.tsx`, `TabPresenceStack.test.tsx`                                    |
-| Reduced motion creates no transitions        | `apps/live/app/reduced-motion.test.ts`                                                      |
-| Canvas entry keeps 360ms                     | `apps/live/app/canvas-motion.test.ts`, `apps/live/components/canvas/canvas-motion.test.tsx` |
-| Chrome animations settle in 250ms at runtime | `apps/live/e2e/motion-budget.spec.ts`                                                       |
-| The root takes no View Transition part       | `apps/live/app/view-transitions.test.ts`                                                    |
-| View Transition classes stay in their files  | `apps/live/app/view-transitions.test.ts`                                                    |
+| Reduced motion creates no transitions        | `apps/editor/app/reduced-motion.test.ts`                                                      |
+| Canvas entry keeps 360ms                     | `apps/editor/app/canvas-motion.test.ts`, `apps/editor/components/canvas/canvas-motion.test.tsx` |
+| Chrome animations settle in 250ms at runtime | `apps/editor/e2e/motion-budget.spec.ts`                                                       |
+| The root takes no View Transition part       | `apps/editor/app/view-transitions.test.ts`                                                    |
+| View Transition classes stay in their files  | `apps/editor/app/view-transitions.test.ts`                                                    |
 
 ### The runtime guard
 

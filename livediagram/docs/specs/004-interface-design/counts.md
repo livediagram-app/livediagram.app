@@ -19,5 +19,5 @@ up from label to label, and matches the Explorer's folder counts.
   (2)") is the option's name, and an accessible label spells its count out in
   words for a screen reader.
 
-A guard test (`apps/live/count-badges.test.ts`) fails on a UI string that puts
+A guard test (`apps/editor/count-badges.test.ts`) fails on a UI string that puts
 a count's `.length`, `count` or `total` in brackets.

@@ -838,7 +838,7 @@ then just two notes: the board keeps no relation between them.
 **Where it lives.** The catalogue and the geometry are
 `packages/document/src/event-storming-next.ts` (`ES_NEXT_NOTES`,
 `nextNoteSides`, `nextNoteKind`, `nextNoteBounds`); the placement decision is
-`apps/live/lib/next-note-add.ts`; the act is `hooks/canvas/useNoteActions.ts`;
+`apps/editor/lib/next-note-add.ts`; the act is `hooks/canvas/useNoteActions.ts`;
 the tabs and their preview are `components/canvas/NextNoteButtons.tsx`.
 
 **Rulings:**
@@ -1214,7 +1214,7 @@ Decisions from the operator:
   IS the detection: the paper colour under it decides the kind, and a blank note
   is the fallback. It is not a re-run of the detector.
 - **The reader is PLUGGABLE, and the import needs no key either way.** Two
-  readers behind one interface (`apps/live/lib/reading/`), chosen by what the
+  readers behind one interface (`apps/editor/lib/reading/`), chosen by what the
   deployment HAS rather than by what the author asks for: a model configured on
   the api reads the crops (`POST /api/ai/read-notes`), and when there is none an
   in-browser model reads them (`browser-reader.ts`, SmolVLM-256M through
@@ -1352,7 +1352,7 @@ Decisions from the operator:
   cues the hybrid reads in `cues.ts`) is what the editor imports, while the
   synthetic wall generator, the U-Net and its training and scoring scripts
   stay in the package and never ship. The editor runs the network itself in
-  `apps/live/lib/photo-model/boundary.worker.ts` and hands the cues to
+  `apps/editor/lib/photo-model/boundary.worker.ts` and hands the cues to
   `sticky-vision`'s hybrid rules. Opening the photo picker starts a Web Worker loading TensorFlow.js
   and ONE backend (WebGPU where the browser has an adapter, else WASM on one
   thread) and the 83 KB weights, all served by the app itself; none of it is in

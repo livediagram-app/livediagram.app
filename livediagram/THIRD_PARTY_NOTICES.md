@@ -86,7 +86,7 @@ SOFTWARE.
 
 - Source: <https://github.com/jgraph/drawio> (v31.7.0)
 - Used for: draw.io's view geometry (edge routers, perimeters, label points), ported to TypeScript
-  and changed in `apps/live/lib/drawio/route/`, so imported draw.io diagrams keep their routes.
+  and changed in `apps/editor/lib/drawio/route/`, so imported draw.io diagrams keep their routes.
 - Licence: Apache License 2.0, full text in
   [`packages/licences/texts/drawio-31.7.0-LICENSE.txt`](./packages/licences/texts/drawio-31.7.0-LICENSE.txt).
 

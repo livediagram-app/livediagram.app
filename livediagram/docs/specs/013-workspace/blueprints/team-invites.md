@@ -14,7 +14,7 @@ Derived from [Teams](../teams.md) ("Invites, connect-on-sign-in, and accept/decl
 | Decline answer | `TeamInviteDecline` `{ teamName, status }`                             | api-schema                                          |
 | Reminder stage | `InviteReminderStage` `1 \| 2 \| 3`; kinds `TeamInviteReminder1..3`    | `db/team-invite-reminders.ts`, `templates.ts`       |
 | Sweep          | `runTeamInviteSweep(env, now)`                                         | `apps/api/src/email/team-invite-reminders.ts`       |
-| Landing        | `/join/decline?token=`, `TeamInviteDecline` component, `useUrlToken`   | `apps/live/app/join/decline/`, `components/panels/` |
+| Landing        | `/join/decline?token=`, `TeamInviteDecline` component, `useUrlToken`   | `apps/editor/app/join/decline/`, `components/panels/` |
 
 No synonyms: "rejected" is the UI word for both closed states; code always names the state (`declined`, `expired`). Never "revoked" or "cancelled" for these.
 
@@ -143,11 +143,11 @@ declined | expired --re-invite--> (row gone) + new invited row
 | In-app decline marks declined; rejected remove / role change                                    | `apps/api/src/routes/teams.test.ts`                                                     |
 | Rate limit keyed per network, apart from writes                                                 | `apps/api/src/index.test.ts`                                                            |
 | Email links and reminder copy                                                                   | `apps/api/src/email/templates.test.ts`                                                  |
-| Landing states, button-only decline                                                             | `apps/live/components/panels/TeamInviteDecline.test.tsx`                                |
-| Client calls                                                                                    | `apps/live/lib/api/team-invite-decline.test.ts`                                         |
-| Rejected row rendering                                                                          | `apps/live/components/panels/TeamPane.test.tsx`                                         |
-| Removal kind, copy, telemetry type                                                              | `apps/live/components/panels/team-removal.test.ts`                                      |
-| Pickers leave rejected rows out                                                                 | `apps/live/hooks/collab/team-member-rows.test.ts`                                       |
+| Landing states, button-only decline                                                             | `apps/editor/components/panels/TeamInviteDecline.test.tsx`                                |
+| Client calls                                                                                    | `apps/editor/lib/api/team-invite-decline.test.ts`                                         |
+| Rejected row rendering                                                                          | `apps/editor/components/panels/TeamPane.test.tsx`                                         |
+| Removal kind, copy, telemetry type                                                              | `apps/editor/components/panels/team-removal.test.ts`                                      |
+| Pickers leave rejected rows out                                                                 | `apps/editor/hooks/collab/team-member-rows.test.ts`                                       |
 
 ## Constants and configuration
 

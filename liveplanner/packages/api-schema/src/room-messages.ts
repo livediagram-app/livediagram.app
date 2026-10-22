@@ -285,7 +285,7 @@ export type RoomOp =
   // `tabId` scopes the selection to the tab it lives on: element ids
   // are only unique per tab in older projects (tab duplication used to
   // copy ids verbatim), so an unscoped selection rendered — and, via
-  // the docs/specs/007-editor/live-app.md concurrent-selection lock, LOCKED — the same-id element
+  // the docs/specs/007-editor/editor-app.md concurrent-selection lock, LOCKED — the same-id element
   // on every other tab too. Optional for wire compatibility: a frame
   // without it is treated as tab-unknown and shown everywhere (the old
   // behaviour).

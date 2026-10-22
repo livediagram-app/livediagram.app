@@ -97,7 +97,7 @@ and moves stay with the owner and joined team members. No level grants any of th
 - The Share dialog offers three role cards, in this order: **Editor** ("Plans with you in real time."),
   **Participant** ("Works cards and cells, comments and votes. Can't reshape a board.") and **Viewer** ("Watches, pans and
   zooms. Can't comment, vote or change a thing."). A pass's header band prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
-  glyph and a colour that meets WCAG 2.2 AA against its word ([Live app](../007-editor/live-app.md#share-dialog)).
+  glyph and a colour that meets WCAG 2.2 AA against its word ([Editor app](../007-editor/editor-app.md#share-dialog)).
 - `POST /api/projects/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
 - The editor's role pill reads Editing, Participating or Viewing.
 - **A visit is through one link.** Opening a project through a share link records that link with the visit
@@ -112,7 +112,7 @@ and moves stay with the owner and joined team members. No level grants any of th
   sessions they affect") reloads into the access check, and a refusal then reads **No Longer Shared With You** ("Your
   access to this project was removed while you had it open. Ask its owner to share it with you again.") instead of
   "doesn't exist or isn't yours". The editor notes the reason in `sessionStorage` just before it goes and the first
-  page after takes it once (`apps/live/lib/access-notice.ts`, honoured for a minute).
+  page after takes it once (`apps/editor/lib/access-notice.ts`, honoured for a minute).
 - The collaborators list badges each person Editor, Participant or Viewer; "Shared with you" chips read Edit,
   Participate or View.
 - **Embeds look only below Editor**: an embed of a Participant link renders as a Viewer, since an embed has no

@@ -55,7 +55,7 @@ The router already forwards `/api/*` to the api worker, so no router change.
 
 ## Renderer sharing (the build's main work)
 
-The SVG renderer currently lives in `apps/live/lib/export-tab.ts` (client-only)
+The SVG renderer currently lives in `apps/editor/lib/export-tab.ts` (client-only)
 and the worker can't import from an app. So the tab→SVG renderer must move into
 a **new shared, DOM-free package** (`@livediagram/render`), imported by **both**
 the live editor's export and the api worker. What moves: `renderTabToSvg`,

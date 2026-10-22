@@ -16,10 +16,10 @@ and the rows menu, and only what differs is written here.
 | `packages/document/src/svg-render-card.ts`                                 | `svgCard`: the headless body                                                                                  |
 | `packages/document/src/stored-elements.ts`                                 | `migrateLegacyCallouts` joins `migrateStoredElements`                                                         |
 | `packages/document/src/element-normalise.ts`                               | An agent's `callout` becomes a card on write                                                                  |
-| `apps/live/components/canvas/web/CardFace.tsx`                             | The canvas face (`card`, and `callout` before migration)                                                      |
-| `apps/live/components/palette/CardMenuSection.tsx`                         | Header Band, Media tiles, Tags rows                                                                           |
-| `apps/live/components/palette/palette-tile-defs.tsx`, `palette-layouts.ts` | Card tile, Callout tile → card preset                                                                         |
-| `apps/live/lib/element-telemetry.ts`                                       | `Card` tokens                                                                                                 |
+| `apps/editor/components/canvas/web/CardFace.tsx`                             | The canvas face (`card`, and `callout` before migration)                                                      |
+| `apps/editor/components/palette/CardMenuSection.tsx`                         | Header Band, Media tiles, Tags rows                                                                           |
+| `apps/editor/components/palette/palette-tile-defs.tsx`, `palette-layouts.ts` | Card tile, Callout tile → card preset                                                                         |
+| `apps/editor/lib/element-telemetry.ts`                                       | `Card` tokens                                                                                                 |
 
 ## Domain and naming
 
@@ -190,9 +190,9 @@ Telemetry only: `Element·Added·Card` on create, `Element·Changed·CardSlots` 
 | Callout migration (I2), idempotent, untouched array     | same + `stored-elements.test.ts`                          |
 | Validation bounds                                       | same                                                      |
 | Export draws each slot (I3)                             | same (`svgCard`)                                          |
-| Face: slots render, lines inert until selected, commits | `apps/live/components/canvas/web/CardFace.test.tsx`       |
-| Menu section writes                                     | `apps/live/components/palette/CardMenuSection.test.tsx`   |
-| Callout tile places a card                              | `apps/live/components/palette/palette-tile-defs.test.tsx` |
+| Face: slots render, lines inert until selected, commits | `apps/editor/components/canvas/web/CardFace.test.tsx`       |
+| Menu section writes                                     | `apps/editor/components/palette/CardMenuSection.test.tsx`   |
+| Callout tile places a card                              | `apps/editor/components/palette/palette-tile-defs.test.tsx` |
 
 ## Constants and configuration
 

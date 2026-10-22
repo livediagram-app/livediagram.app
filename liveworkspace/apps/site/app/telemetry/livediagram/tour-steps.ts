@@ -4,7 +4,7 @@ import { typeLabel } from './event-vocab';
 // The Diagram tour's steps (docs/specs/007-editor/editor-tour.md), in the order the tour shows them, as
 // the `UI·View·TourStep<Step>` tokens each sends when it comes on screen. The
 // welcome card itself sends none (its decision is Tours Started / Declined).
-// The editor derives these from its step ids (apps/live tour-steps.ts,
+// The editor derives these from its step ids (apps/editor tour-steps.ts,
 // tourStepTelemetryType); metric-emitters.test reads that file and fails if
 // this list drifts from it.
 export const TOUR_STEP_TYPES: readonly string[] = [

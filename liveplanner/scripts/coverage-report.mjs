@@ -14,7 +14,7 @@ import { fileURLToPath } from 'node:url';
 
 /** Areas of the repo, one row each; a file belongs to the first area whose path prefixes it. */
 export const AREAS = [
-  { name: 'Editor', paths: ['apps/live'] },
+  { name: 'Editor', paths: ['apps/editor'] },
   { name: 'API', paths: ['apps/api'] },
   { name: 'MCP', paths: ['apps/mcp'] },
   { name: 'Help and marketing', paths: ['apps/help', 'apps/marketing'] },

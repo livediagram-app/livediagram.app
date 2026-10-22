@@ -16,7 +16,7 @@ Five mechanisms, layered. Every cell below comes from one of them.
 | Session-only routes   | `routes/tokens.ts`, `routes/oauth.ts`, `routes/account.ts`, `routes/migrate.ts`, `routes/teams.ts` (non-GET)                      | Need `ctx.accountUserId` (a Clerk session), so neither a guest nor any API token can reach them.                                                                                                                                               |
 | Room op gate          | `apps/api/src/project-room.ts` `webSocketMessage`; op classes in `packages/api-schema/src/room-messages.ts`                       | `if (sender.role !== 'edit' && !isPresenceOp) return;` A view session may send only `PRESENCE_OP_KINDS`; `MUTATION_OP_KINDS` need edit; `SYSTEM_OP_KINDS` never come from a socket.                                                            |
 
-The editor mirrors this with two flags: `sessionRole` (`apps/live/app/project/[id]/editor-page-helpers.ts`
+The editor mirrors this with two flags: `sessionRole` (`apps/editor/app/project/[id]/editor-page-helpers.ts`
 `resolveProjectSession`, owner or link role) and `isReadOnly = !canEdit` (`useEditorState.ts`, from
 `useViewPreview`). Almost every control keys off `isReadOnly`; session verbs also key off `runBlocked` (the
 facilitator baton, `facilitator.sessionToolsBlocked`).
@@ -198,7 +198,7 @@ Team roles are `admin` and `member`. Neither changes what a member can do to a p
 
 ### Embeds in short
 
-An embed carries its link's role exactly (`docs/specs/013-workspace/embeds.md`, `apps/live/lib/embed.ts`). It
+An embed carries its link's role exactly (`docs/specs/013-workspace/embeds.md`, `apps/editor/lib/embed.ts`). It
 differs from the plain link only in what the chrome withholds: no identity screen (comments and Q&A notes carry
 the default guest identity, so `getParticipant` often yields "Anonymous"), no palette, panels, tab bar, theme
 dialog or Make a copy button, and the
@@ -248,7 +248,7 @@ dialog or Make a copy button, and the
 8. **No owner override on team projects.** `X-Verified-Owner` is set only for a personal-project `?o=` upgrade,
    so a stuck baton on a team project can be cleared only by the grace timer.
 9. **Read-only tokens cannot join the room or comment**, and Settings cannot mint them at all: only the MCP consent
-   screen offers the toggle (`apps/live/app/oauth/consent/page.tsx`); `tokens.ts` ignores any `readOnly` field.
+   screen offers the toggle (`apps/editor/app/oauth/consent/page.tsx`); `tokens.ts` ignores any `readOnly` field.
 10. **A link's role is immutable.** There is no route to change it; scope can change (`PUT /share/:code`), role
     cannot.
 11. **Setting a password does not end live sessions.** The password route broadcasts nothing (unlike revoke and

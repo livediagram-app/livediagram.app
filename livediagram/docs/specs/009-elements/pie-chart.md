@@ -147,13 +147,13 @@ groups all three (they're all in `isSelfDrawingShape` too).
   `isChartShape` live in `@livediagram/document` (`src/data-shapes.ts`).
 - Rendered by `PieChartView` / `BarChartView` / `LineChartView`: SVG marks in the
   default palette or a per-mark colour, with a `ChartLegend`; the mark group
-  carries the `lvd-pie-*` animation (CSS in `apps/live/app/canvas-motion.css`,
+  carries the `lvd-pie-*` animation (CSS in `apps/editor/app/canvas-motion.css`,
   reduced-motion-safe), the axes / labels stay still. `element-variant.ts` gives
   them a borderless wrapper. The shared layout `chartFrame` lives in
-  `packages/document/src/chart-frame.ts` (re-exported from `apps/live/lib/chart.ts`,
+  `packages/document/src/chart-frame.ts` (re-exported from `apps/editor/lib/chart.ts`,
   which holds `chartAnim`); the frame, readout and legend are drawn by
   `ChartSurface`; hover wiring in `useChartHover` + `ChartReadout`.
-- CSV import (line): `parseCsvLineData` in `apps/live/lib/csv.ts` (quoted-field
+- CSV import (line): `parseCsvLineData` in `apps/editor/lib/csv.ts` (quoted-field
   aware) turns a pasted/uploaded CSV into categories + series.
 - Setters in `useChartSetters.ts`, exposed through `useElementStyle.ts`: `setPieDataSelected(slices)` (pie / bar),
   `setLineDataSelected(categories, series)` (line), + `setChartLegendSelected` /

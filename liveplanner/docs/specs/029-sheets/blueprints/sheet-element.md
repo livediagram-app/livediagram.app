@@ -53,10 +53,10 @@ presence, CSV, telemetry and help. The model and pure behaviour are the engine's
 - `packages/edit-operations/src/element-format.ts`: `'plan-sheet': ['planSheet']`.
 - `packages/project-views/src/content-summary.ts`: `case 'plan-sheet'` → `Sheet "<title>"` when a title source is
   given, else `Sheet`.
-- `remint-element-ids` (apps/live, Duplicate Tab and paste): a `planSheet` is reminted to a new sheet id with a
+- `remint-element-ids` (apps/editor, Duplicate Tab and paste): a `planSheet` is reminted to a new sheet id with a
   `copyOf` create queued (sheet-store blueprint "Editor slice").
 
-## Palette (`apps/live`)
+## Palette (`apps/editor`)
 
 - `palette-tile-defs.tsx`: category union adds `'plan-sheets'`; `palette-categories.tsx` entry `{ id: 'plan-sheets',
 label: 'Sheet', group: 5 (the band headed "Spreadsheets" in `PaletteTabBar.tsx`), description: 'A spreadsheet tab: cells, formulas, formatting, sort and filter,
@@ -83,7 +83,7 @@ csv`.
 - `shape-svg-overlay.tsx` box overlay exclusion, `canvas-selection.ts` no quick-connect, `ElementDataSections.tsx`
   no data section (Sheet Settings holds it).
 
-## Editor components (`apps/live/components/sheets/`, the lazy chunk)
+## Editor components (`apps/editor/components/sheets/`, the lazy chunk)
 
 ```
 PlanSheetView.tsx        the element body: model, controller, MaximisableSlot, faces,
@@ -357,7 +357,7 @@ non-top-left cell holds an input.
 - `sheet-charts-context.ts`: `SheetChartsContext` `{ elements, chartPalette, editable, renderChart? }`, provided by
   `CanvasElementsLayer` (the open tab, editable) and by `DashboardTabPreview` (another tab's elements, not editable:
   Insert Chart toasts `OPEN_TAB_TO_CHART`; it passes the outer `renderChart` on).
-- `apps/live/components/canvas/sheet-chart-renderer.tsx`: `useSheetChartRenderer(boxedShared, tabFontStack)` returns `renderChart(element,
+- `apps/editor/components/canvas/sheet-chart-renderer.tsx`: `useSheetChartRenderer(boxedShared, tabFontStack)` returns `renderChart(element,
 interactive)`, a `BoxedElementView` with the layer's `boxedShared` (the props every boxed view on the canvas takes,
   built once in `CanvasElementsLayer` and spread into each `SelectableBoxedView` too) and `sheetChartElement` (x and
   y 0, no `rotation`), never selected, editing, movable, writable or resizable. Not `interactive` (a Dashboard slot):
@@ -446,7 +446,7 @@ element.cellComments }`.
 
 ## Zoom
 
-([Spec](../sheet.md#zoom).) `apps/live/hooks/sheets/sheet-zoom.ts`: a module store (`setSheetZoom` clamps to
+([Spec](../sheet.md#zoom).) `apps/editor/hooks/sheets/sheet-zoom.ts`: a module store (`setSheetZoom` clamps to
 `SHEET_ZOOM_MIN` 0.5 and `SHEET_ZOOM_MAX` 2 and rounds to whole percents; `stepSheetZoom(±1)` by `SHEET_ZOOM_STEP`
 0.1; `useSheetZoom`). `plan-cover-store` `isSheetCovering` / `useSheetCovering` (maximised kind `Sheet` or
 `fillTabKind` `Sheet`). `ViewZoomControls`: while a Sheet covers, `ZoomControls` gets the sheet zoom, the store's steps,
@@ -509,30 +509,30 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 | Rule                                                        | Test                                                                                                                                           |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
 | Element validation, factory size, labels; static SVG render | `packages/project/src/plan-sheet.test.ts`                                                                                                     |
-| Palette category, tile, layout order, keywords              | `apps/live/components/palette/palette-tile-defs.test.tsx`, `palette-layouts.test.ts`                                                           |
-| Placement names a new sheet; placed and copied sheets made  | `apps/live/lib/draw-commit.test.ts`, `lib/sheet-seeds.test.ts`, `components/sheets/useSheetModel.test.tsx`                                     |
-| A CSV dropped in Plan mode places a filled Sheet            | `apps/live/hooks/sheets/useSheetCsvDrop.test.ts`                                                                                               |
-| Geometry: offsets, frozen, hidden, merges, hit testing      | `apps/live/components/sheets/sheet-geometry.test.ts`                                                                                           |
-| Keyboard map: every row of the spec's table                 | `apps/live/components/sheets/sheet-keys.test.ts`, `SheetGrid.test.tsx`                                                                         |
-| Pointer: select, drag, fill, resize, move, freeze, pointing | `apps/live/components/sheets/useSheetPointer.test.tsx`, `sheet-pointing.test.ts`                                                               |
-| Cells drawn with formats, overflow, fit, pending, errors    | `apps/live/components/sheets/SheetCells.test.tsx`, `SheetHeaders.test.tsx`, `SheetSelectionLayer.test.tsx`                                     |
-| Editing: Enter/Tab/Escape/Alt+Enter/Ctrl+Enter, F4, assist  | `apps/live/components/sheets/SheetCellEditor.test.tsx`, `useFormulaInput.test.tsx`, `formula-assist.test.ts`                                   |
-| Commands on the live selection; Tab runs                    | `apps/live/components/sheets/useSheetActions.test.tsx`, `sheet-controller.test.tsx`                                                            |
-| Edits and selections follow rows others move                | `apps/live/components/sheets/useFollowLayout.test.tsx`                                                                                         |
-| Toolbar acts on the selection; overflow; menus              | `apps/live/components/sheets/SheetToolbar.test.tsx`, `SheetMenus.test.tsx`, `SheetHeader.test.tsx`                                             |
+| Palette category, tile, layout order, keywords              | `apps/editor/components/palette/palette-tile-defs.test.tsx`, `palette-layouts.test.ts`                                                           |
+| Placement names a new sheet; placed and copied sheets made  | `apps/editor/lib/draw-commit.test.ts`, `lib/sheet-seeds.test.ts`, `components/sheets/useSheetModel.test.tsx`                                     |
+| A CSV dropped in Plan mode places a filled Sheet            | `apps/editor/hooks/sheets/useSheetCsvDrop.test.ts`                                                                                               |
+| Geometry: offsets, frozen, hidden, merges, hit testing      | `apps/editor/components/sheets/sheet-geometry.test.ts`                                                                                           |
+| Keyboard map: every row of the spec's table                 | `apps/editor/components/sheets/sheet-keys.test.ts`, `SheetGrid.test.tsx`                                                                         |
+| Pointer: select, drag, fill, resize, move, freeze, pointing | `apps/editor/components/sheets/useSheetPointer.test.tsx`, `sheet-pointing.test.ts`                                                               |
+| Cells drawn with formats, overflow, fit, pending, errors    | `apps/editor/components/sheets/SheetCells.test.tsx`, `SheetHeaders.test.tsx`, `SheetSelectionLayer.test.tsx`                                     |
+| Editing: Enter/Tab/Escape/Alt+Enter/Ctrl+Enter, F4, assist  | `apps/editor/components/sheets/SheetCellEditor.test.tsx`, `useFormulaInput.test.tsx`, `formula-assist.test.ts`                                   |
+| Commands on the live selection; Tab runs                    | `apps/editor/components/sheets/useSheetActions.test.tsx`, `sheet-controller.test.tsx`                                                            |
+| Edits and selections follow rows others move                | `apps/editor/components/sheets/useFollowLayout.test.tsx`                                                                                         |
+| Toolbar acts on the selection; overflow; menus              | `apps/editor/components/sheets/SheetToolbar.test.tsx`, `SheetMenus.test.tsx`, `SheetHeader.test.tsx`                                             |
 | Formula bar, Find and Replace, status bar, Add Rows         | `SheetFormulaBar.test.tsx`, `SheetFindBar.test.tsx`, `SheetStatusBar.test.ts`, `SheetAddRows.test.tsx`                                         |
-| Clipboard events write the three forms; paste reads them    | `apps/live/components/sheets/useSheetClipboard.test.tsx`                                                                                       |
-| Faces, mode gating, Import CSV, maximise                    | `apps/live/components/sheets/PlanSheetView.test.tsx`, `SheetFace.test.tsx`                                                                     |
-| Escape order with menus and Sheet owners; maximise kinds    | `apps/live/hooks/plan/maximised-plan.test.ts`                                                                                                  |
-| CSV out and in                                              | `apps/live/components/sheets/sheet-csv.test.ts`                                                                                                |
-| The bridge                                                  | `apps/live/hooks/sheets/useSheetsBridge.test.tsx`                                                                                              |
-| Setup Sheet: steps, starts, looks, Plan Cards, Create Sheet | `apps/live/components/sheets/SheetSetup.test.tsx`                                                                                              |
-| Fill Tab on a Sheet: confirm, delete the rest, On Canvas    | `apps/live/components/sheets/SheetFillTab.test.tsx`                                                                                            |
+| Clipboard events write the three forms; paste reads them    | `apps/editor/components/sheets/useSheetClipboard.test.tsx`                                                                                       |
+| Faces, mode gating, Import CSV, maximise                    | `apps/editor/components/sheets/PlanSheetView.test.tsx`, `SheetFace.test.tsx`                                                                     |
+| Escape order with menus and Sheet owners; maximise kinds    | `apps/editor/hooks/plan/maximised-plan.test.ts`                                                                                                  |
+| CSV out and in                                              | `apps/editor/components/sheets/sheet-csv.test.ts`                                                                                                |
+| The bridge                                                  | `apps/editor/hooks/sheets/useSheetsBridge.test.tsx`                                                                                              |
+| Setup Sheet: steps, starts, looks, Plan Cards, Create Sheet | `apps/editor/components/sheets/SheetSetup.test.tsx`                                                                                              |
+| Fill Tab on a Sheet: confirm, delete the rest, On Canvas    | `apps/editor/components/sheets/SheetFillTab.test.tsx`                                                                                            |
 | Card tables: pull, push, kept fields, drafts, Controls      | `card-table-sync.test.ts`, `useCardTableSync.test.tsx`, `SheetCardRows.test.tsx`, `card-controls-column.test.ts`, `card-field-options.test.ts` |
 | Enter / Tab cycle only a selection larger than its merge    | `packages/sheets/src/selection.test.ts` (`selectsSeveral`)                                                                                     |
-| Charts in a Sheet: draw, move, resize, delete, roles        | `apps/live/components/sheets/SheetChartsLayer.test.tsx`                                                                                        |
-| Insert Chart: range, region, placement                      | `apps/live/components/sheets/sheet-charts.test.tsx`                                                                                            |
-| End to end: place, type, formula, stored, maximise, restore | `apps/live/e2e/plan-sheet.spec.ts`                                                                                                             |
+| Charts in a Sheet: draw, move, resize, delete, roles        | `apps/editor/components/sheets/SheetChartsLayer.test.tsx`                                                                                        |
+| Insert Chart: range, region, placement                      | `apps/editor/components/sheets/sheet-charts.test.tsx`                                                                                            |
+| End to end: place, type, formula, stored, maximise, restore | `apps/editor/e2e/plan-sheet.spec.ts`                                                                                                             |
 | Cell comments: model, deltas, ledger, validation, copies    | `packages/project/src/cell-comments.test.ts`, `packages/project-views/src/cell-comments.test.ts`                                             |
 | Cell comments: markers, preview, menu row, keys, panel      | `components/sheets/SheetCellComments.test.tsx`, `components/panels/collaborate/CollaborateRows.cells.test.tsx`                                 |
 | Cell comments over the api: roles, verbs, listing, trust    | `apps/api/src/routes/comment-routes-cells.test.ts`, `apps/api/src/comments-cells.test.ts`                                                      |
@@ -542,7 +542,7 @@ Editor logs (`[sheets]`): `sheets.load.failed`, `sheets.write.failed <error>`, `
 
 - `SheetArt` and the toolbar glyphs (borders, merge, wrap, freeze, decimals, sort, filter,
   functions) are vendored Lucide glyphs where the set has one, else hand-drawn on the same 24-unit grid, in
-  `apps/live/components/sheets/sheet-icons.tsx` (the palette tile's art in `sheet-art.tsx`), drawn through the
+  `apps/editor/components/sheets/sheet-icons.tsx` (the palette tile's art in `sheet-art.tsx`), drawn through the
   shared `Glyph` with `currentColor`; the repo's MIT licence (Lucide's ISC); no external files or fonts.
 - No third-party libraries: the engine, CSV and clipboard parsing are the package's own.
 

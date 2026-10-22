@@ -26,7 +26,7 @@ export const baseConfig = defineConfig({
     env: process.argv.includes('--coverage') ? { [UNDER_COVERAGE_ENV]: '1' } : {},
     coverage: {
       provider: 'v8',
-      // lcov names each file from the repo root (`apps/live/lib/x.ts`, not `lib/x.ts`), so Codecov
+      // lcov names each file from the repo root (`apps/editor/lib/x.ts`, not `lib/x.ts`), so Codecov
       // places every workspace's report without guessing between their many `src/index.ts`.
       reporter: ['text', 'html', ['lcov', { projectRoot: REPO_ROOT }]],
       reportsDirectory: './coverage',

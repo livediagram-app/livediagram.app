@@ -232,5 +232,5 @@ After the re-evaluation, two pinned ends on the **same side of the same shape** 
 - Fan: `arrow-endpoint-spread.ts`.
 - Auto-rebind: `rebindArrowAnchorsAfterMove` in `arrow-rebind.ts`, with the path tests in
   `arrow-path-hits.ts` and the swap in `arrow-rebind-swap.ts`; called from the drag and nudge hooks
-  in `apps/live/hooks/canvas/`.
+  in `apps/editor/hooks/canvas/`.
 - Blueprint: [blueprints/arrow-anchors.md](blueprints/arrow-anchors.md).

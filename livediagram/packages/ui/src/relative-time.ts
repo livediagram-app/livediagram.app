@@ -1,4 +1,4 @@
-// Relative-time wording shared by the editor's lists (apps/live/lib/relative-time.ts, which adds the
+// Relative-time wording shared by the editor's lists (apps/editor/lib/relative-time.ts, which adds the
 // compact formats and the shared clock) and the landing page's Welcome back tiles
 // (docs/specs/019-marketing/returning-visitor.md), so "2 hours ago" reads the same everywhere.
 

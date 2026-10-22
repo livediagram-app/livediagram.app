@@ -373,7 +373,7 @@ A finger has no hover and no right button, and its drag pans the cells, so selec
 - **Alt+Enter** (⌥ Enter) adds a line break inside the cell.
 - A character the keyboard composes with Alt types like any other: a Mac's Option (⌥3 is `£` on a UK layout, ⌥⇧2
   is `€`) and AltGr on Windows and Linux (`€` is AltGr+E on a German layout, reported as Ctrl+Alt) start typing over
-  the cell, never a shortcut. A bare Alt+letter still types nothing (`apps/live/lib/composed-key.ts`).
+  the cell, never a shortcut. A bare Alt+letter still types nothing (`apps/editor/lib/composed-key.ts`).
 - **Ctrl+Enter** saves the input into every cell of the selection.
 - What is typed is read the way a spreadsheet reads it ([Formulas](formulas.md#what-a-typed-input-becomes)): `12`
   is a number, `12%` a percent, `£12` currency, `8/10/2026` a date (day and month in the person's locale order),

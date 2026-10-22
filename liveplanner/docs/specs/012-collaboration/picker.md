@@ -30,7 +30,7 @@ It belongs on the canvas rather than in a menu for the same reason the other Beh
 
 - **Only an Editor can spin it.** Choosing who goes next runs the session, so a Participant and a Viewer see the result land but have no spin button ([Share roles](../013-workspace/share-roles.md), decided 2026-10-10).
 - **Participants** are read from live presence at press time, so it can only pick someone who is actually here. With nobody else in the room it picks you, because a picker that refuses to choose is a broken picker. Candidates are keyed by participant id: you appear once even though you arrive from both local identity and presence, and two people who happen to share a name are still two candidates.
-- Randomness comes from `apps/live/lib/random.ts` (`crypto.getRandomValues`), like every other roll in the editor.
+- Randomness comes from `apps/editor/lib/random.ts` (`crypto.getRandomValues`), like every other roll in the editor.
 - **Dragging it does not roll it** (`usePressWithoutDrag`).
 
 ## Configuring it

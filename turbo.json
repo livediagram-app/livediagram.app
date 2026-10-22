@@ -31,7 +31,7 @@
     "@livediagram/marketing#build": {
       "dependsOn": [
         "^build",
-        "@livediagram/live#build",
+        "@livediagram/editor#build",
         "@livediagram/help#build",
         "@livediagram/community#build",
         "@livediagram/api#build",
@@ -125,7 +125,7 @@
     "@liveplanner/marketing#build": {
       "dependsOn": [
         "^build",
-        "@liveplanner/live#build",
+        "@liveplanner/editor#build",
         "@liveplanner/help#build",
         "@liveplanner/api#build",
         "@liveplanner/mcp#build",

@@ -1,5 +1,5 @@
 // The Avatar sprite's colour palette (docs/specs/008-canvas/avatar-mode.md "The character"). The editor's sprite
-// (apps/live avatar-sprite*.tsx) draws the character from it, and the Avatar Pad (docs/specs/009-elements/avatar-pad.md)
+// (apps/editor avatar-sprite*.tsx) draws the character from it, and the Avatar Pad (docs/specs/009-elements/avatar-pad.md)
 // is built from the same tones on the canvas and in an export, so the pad the characters stand on is visibly theirs.
 // One table in the document package so the two cannot drift apart. Pure data.
 export const AVATAR_PALETTE = {

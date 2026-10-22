@@ -14,7 +14,7 @@ export const PREVIEW_OPEN_DELAY_MS = 600;
 export const PREVIEW_WARMUP_MS = 500;
 // Time the pointer has to cross the gap from the control onto the hint.
 export const HINT_CLOSE_GRACE_MS = 100;
-// Matches the editor's long press (apps/live/hooks/ui/useLongPress.ts).
+// Matches the editor's long press (apps/editor/hooks/ui/useLongPress.ts).
 export const HINT_LONG_PRESS_MS = 500;
 export const HINT_LONG_PRESS_SLOP_PX = 10;
 // How long a long-pressed hint stays up after the finger lifts.

@@ -2,7 +2,7 @@
 
 Derived from [Data validation](../data-validation.md), [Conditional formatting](../conditional-formatting.md) and the
 [Sheet](../sheet.md) spec's **Paint Format** and **Custom** number format. Engine parts live in
-`packages/sheets/src/rules/`; editor parts in `apps/live/components/sheets/rules/`.
+`packages/sheets/src/rules/`; editor parts in `apps/editor/components/sheets/rules/`.
 
 ## Domain and naming
 
@@ -128,28 +128,28 @@ ranges)` (the Space and press write; `null` when no checkbox cell is selected).
   text left); `formatCodeReads(code)` reports whether a code reads (balanced quotes and brackets, at most four `;`
   sections, at most `FORMAT_CODE_MAX` characters).
 
-## Editor (`apps/live/components/sheets/`)
+## Editor (`apps/editor/components/sheets/`)
 
-- `apps/live/components/sheets/rules/sheet-rule-draw.tsx`: `ruleCellDraw` (a cell's chip, arrow, checkbox box and
+- `apps/editor/components/sheets/rules/sheet-rule-draw.tsx`: `ruleCellDraw` (a cell's chip, arrow, checkbox box and
   invalid triangle, as nodes for `SheetCells`, which asks `validationRuleAt` per visible cell only when
   `layout.rules` is set), `chipBox`, `checkboxBox`, `ruleTargetAt` and `ruleHitAt` (what a press hits, for
   `useSheetPointer`).
-- `apps/live/components/sheets/rules/SheetRuleLayer.tsx`: over the cells, a Plain Text dropdown's arrow on the
+- `apps/editor/components/sheets/rules/SheetRuleLayer.tsx`: over the cells, a Plain Text dropdown's arrow on the
   active cell, the open option list, the active cell's anchor for panels opened from a menu, and the panels (lazy).
-- `apps/live/components/sheets/rules/SheetDropdownList.tsx`: the option list popover (AnchoredPopover,
+- `apps/editor/components/sheets/rules/SheetDropdownList.tsx`: the option list popover (AnchoredPopover,
   `OptionRows`, the search field over `DROPDOWN_SEARCH_FROM` options, **Clear**).
-- `apps/live/components/sheets/rules/SheetValidationEditor.tsx`: the rule editor popover (`settingsOf` turns its
+- `apps/editor/components/sheets/rules/SheetValidationEditor.tsx`: the rule editor popover (`settingsOf` turns its
   draft into a rule's settings, or why not; new options take `OPTION_COLOURS`, the soft Standard Colours less ink
-  and grey); `apps/live/components/sheets/rules/SheetFormatRules.tsx`: the Conditional Formatting popover (list and
-  form, the preview through `rules.setFormatPreview`); `apps/live/components/sheets/rules/SheetRuleSettings.tsx`:
+  and grey); `apps/editor/components/sheets/rules/SheetFormatRules.tsx`: the Conditional Formatting popover (list and
+  form, the preview through `rules.setFormatPreview`); `apps/editor/components/sheets/rules/SheetRuleSettings.tsx`:
   the two Sheet Settings sections.
-- `apps/live/components/sheets/rules/SheetCustomFormat.tsx`: the Custom Number Format popover.
-- `apps/live/components/sheets/rules/useSheetRulesState.ts`: the controller's `rules` slice (`dropdown`, `panel`,
-  `formatPreview`, `paint`) and `previewFormatRules`; `apps/live/components/sheets/rules/sheet-rule-actions.ts`:
+- `apps/editor/components/sheets/rules/SheetCustomFormat.tsx`: the Custom Number Format popover.
+- `apps/editor/components/sheets/rules/useSheetRulesState.ts`: the controller's `rules` slice (`dropdown`, `panel`,
+  `formatPreview`, `paint`) and `previewFormatRules`; `apps/editor/components/sheets/rules/sheet-rule-actions.ts`:
   the rule actions spread into `useSheetActions` (`toggleCheckboxes`, `openDropdown`, `pickOption`, `addCheckbox`,
   `setValidation`, `removeValidation`, `removeValidationRule`, `openValidation`, `openFormatRules`,
   `newFormatRuleId`, `setFormatRule`, `removeFormatRule`, `moveFormatRule`, `rangeIds`, `openCustomFormat`,
-  `paintStart(keep)`, `paintApply(range)`, `paintStop()`); `apps/live/components/sheets/rules/sheet-rule-hover.ts`:
+  `paintStart(keep)`, `paintApply(range)`, `paintStop()`); `apps/editor/components/sheets/rules/sheet-rule-hover.ts`:
   `invalidWhy`, the hover line.
 - `useSheetActions`: `commitEdit` checks the edit against the cell's rule first (`ruleRefusal`: `validateWrite` on
   `writeForRules`) and answers `{ ok: false, message: line, at: 0 }`; `customFormat(code)` sets `nf: 'custom'` and
@@ -171,7 +171,7 @@ rangeValues }` to `validateWrite` (checked unless an undo, `unchecked`, or a qui
 
 - `readWrite` keeps `unchecked: true`; `validateWrite(light, write, { checkRules: !body.undo && !body.unchecked })`.
   A `value_invalid` refusal answers 400 with `at` and `line`. The light sheet holds the layout, so rules are known
-  without reading cells. The offline store (`apps/live/lib/offline/offline-sheets.ts`) checks the same way.
+  without reading cells. The offline store (`apps/editor/lib/offline/offline-sheets.ts`) checks the same way.
 
 ## Agents (`packages/agent-verbs/src/sheets/`)
 

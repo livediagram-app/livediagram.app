@@ -1,0 +1,208 @@
+'use client';
+
+import { useCallback, useEffect, useState } from 'react';
+import {
+  apiCreateFolder,
+  apiDeleteFolder,
+  apiListFolders,
+  apiUpdateFolder,
+  type Folder,
+} from '@/lib/api-client';
+import { track } from '@/lib/telemetry';
+import { useAfterDriveChange } from '@/hooks/persistence/useAfterDriveChange';
+import { useToast } from '@/hooks/ui/useToast';
+import { FOLDER_FAILURE } from '@/lib/write-failure-copy';
+
+// Folder state + the three mutation handlers (create / rename /
+// delete). Three pages used to inline this triplet by hand:
+//
+//   - apps/editor/app/document/[id]/editor-page.tsx
+//   - apps/editor/app/new/page.tsx
+//   - apps/editor/app/explorer/page.tsx
+//
+// Pulling the shape into a hook avoids the drift that creeps in
+// every time a fourth surface adds folder UI (the editor view
+// re-parents children on delete; the original /explorer version
+// just dropped them, etc.). The hook is the single source of
+// truth — callers that need a separate effect (e.g. re-bucketing
+// documents whose folder vanished) chain their own state update
+// before delegating to `deleteFolder`.
+//
+// `ownerId` may be `null` while auth bootstraps. The hook treats a
+// null owner as "not ready" — auto-fetch is suppressed and the
+// mutation handlers no-op. Once the id arrives the caller can
+// `refresh()` (or pass `autoLoad: true` for the common case where
+// you want the list fetched as soon as ownership is known).
+
+type UseFoldersResult = {
+  folders: Folder[];
+  setFolders: React.Dispatch<React.SetStateAction<Folder[]>>;
+  // True while the initial folders fetch is in flight. Distinct
+  // from "no folders yet" so the caller can skeleton on the right
+  // signal.
+  loading: boolean;
+  // Optimistic create: a freshly-minted Folder lands in local
+  // state before the API call returns. On API failure the stub
+  // gets rolled back. Returns the persisted folder (with
+  // server-side timestamps) on success, undefined on rollback.
+  createFolder: (input: { name?: string; parentId?: string | null }) => Promise<Folder | undefined>;
+  renameFolder: (id: string, name: string) => void;
+  // Re-parents any direct children to the folder's parent before
+  // delegating to the API call (the same as the server-side cascade) so
+  // the local tree doesn't flash an out-of-date shape between the
+  // click and the next list refresh. A refused delete is rolled back;
+  // resolves whether the server deleted it.
+  deleteFolder: (id: string) => Promise<boolean>;
+  // Force a re-fetch from the server. Useful after a different
+  // code path mutated folders out-of-band (e.g. a guest → authed
+  // migration).
+  refresh: () => Promise<void>;
+};
+
+export function useFolders(
+  ownerId: string | null,
+  opts: { autoLoad?: boolean } = {},
+): UseFoldersResult {
+  const { autoLoad = true } = opts;
+  const toast = useToast();
+  const [folders, setFolders] = useState<Folder[]>([]);
+  const [loading, setLoading] = useState(autoLoad);
+
+  // Settles `loading` from the response callbacks, never synchronously, so
+  // the auto-load effect below only starts the request.
+  const load = useCallback(
+    (owner: string) =>
+      apiListFolders(owner)
+        .then(setFolders, () => {
+          // Silent failure: a transient hiccup shouldn't wipe whatever
+          // we've already loaded. The next refresh will retry.
+        })
+        .finally(() => setLoading(false)),
+    [],
+  );
+
+  const refresh = useCallback(async () => {
+    if (!ownerId) return;
+    setLoading(true);
+    await load(ownerId);
+  }, [ownerId, load]);
+
+  // A newly auto-loading owner is loading from its first render.
+  const autoLoadOwner = autoLoad ? ownerId : null;
+  const [loadingFor, setLoadingFor] = useState(autoLoadOwner);
+  if (autoLoadOwner !== loadingFor) {
+    setLoadingFor(autoLoadOwner);
+    if (autoLoadOwner) setLoading(true);
+  }
+
+  useEffect(() => {
+    if (autoLoadOwner) void load(autoLoadOwner);
+  }, [autoLoadOwner, load]);
+  // Folders made, renamed or moved in Google Drive (docs/specs/022-drive-mirror/drive-mirror.md,
+  // "Other views follow").
+  useAfterDriveChange(() => {
+    if (ownerId) void load(ownerId);
+  }, !!ownerId);
+
+  const createFolder = useCallback(
+    async (input: { name?: string; parentId?: string | null }) => {
+      if (!ownerId) return undefined;
+      const id = crypto.randomUUID();
+      const name = input.name?.trim() || 'New folder';
+      try {
+        const folder = await apiCreateFolder(ownerId, {
+          id,
+          name,
+          parentId: input.parentId ?? null,
+        });
+        setFolders((prev) => [...prev, folder]);
+        track('Folder', 'Created');
+        return folder;
+      } catch (err) {
+        console.warn('[folders] create failed', { message: (err as Error).message });
+        toast.error(FOLDER_FAILURE.create(name));
+        return undefined;
+      }
+    },
+    [ownerId, toast],
+  );
+
+  const renameFolder = useCallback(
+    (id: string, name: string) => {
+      if (!ownerId) return;
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      // Read previous name from closure state (`folders`) BEFORE
+      // calling setFolders so the comparison doesn't sit inside the
+      // updater, where React strict mode in dev would double-fire
+      // the telemetry emit. There's no rapid-race risk: rename is a
+      // user blur / Enter on a text input.
+      const prev = folders.find((f) => f.id === id);
+      const prevName = prev?.name.trim() ?? '';
+      setFolders((fs) => fs.map((f) => (f.id === id ? { ...f, name: trimmed } : f)));
+      void apiUpdateFolder(ownerId, id, { name: trimmed })
+        .then(() => {
+          if (prevName !== trimmed) track('Folder', 'Renamed');
+        })
+        .catch((err: unknown) => {
+          // Roll the optimistic rename back to the stored name so the tree doesn't drift from the server on a
+          // failed write, and say so: a name that silently snapped back reads as the edit not taking.
+          console.warn('[folders] rename failed', { folder: id, message: (err as Error).message });
+          if (prev)
+            setFolders((fs) => fs.map((f) => (f.id === id ? { ...f, name: prev.name } : f)));
+          toast.error(FOLDER_FAILURE.rename(prev?.name));
+        });
+    },
+    [folders, ownerId, toast],
+  );
+
+  const deleteFolder = useCallback(
+    async (id: string): Promise<boolean> => {
+      if (!ownerId) return false;
+      // Its subfolders move up to its parent, as the api moves them
+      // (docs/specs/013-workspace/folders.md "Deleting a folder"). What the optimistic update
+      // changes is read first (from `folders`, as renameFolder reads its previous name), so a
+      // refused delete can put the tree back.
+      const index = folders.findIndex((f) => f.id === id);
+      const target = index < 0 ? null : folders[index]!;
+      const children = new Set(folders.filter((f) => f.parentId === id).map((f) => f.id));
+      setFolders((prev) => {
+        const parentId = prev.find((f) => f.id === id)?.parentId ?? null;
+        return prev
+          .filter((f) => f.id !== id)
+          .map((f) => (f.parentId === id ? { ...f, parentId } : f));
+      });
+      try {
+        await apiDeleteFolder(ownerId, id);
+        track('Folder', 'Deleted');
+        return true;
+      } catch {
+        // The server kept the folder: put it back where it was, with the subfolders that moved
+        // up for it (unless something else moved them since), so the tree stays truthful.
+        if (target) {
+          setFolders((fs) => {
+            const back = fs.some((f) => f.id === id)
+              ? fs
+              : [...fs.slice(0, index), target, ...fs.slice(index)];
+            return back.map((f) =>
+              children.has(f.id) && f.parentId === target.parentId ? { ...f, parentId: id } : f,
+            );
+          });
+        }
+        return false;
+      }
+    },
+    [folders, ownerId],
+  );
+
+  // Nothing loads without an owner, so there is nothing to wait for.
+  return {
+    folders,
+    setFolders,
+    loading: ownerId ? loading : false,
+    createFolder,
+    renameFolder,
+    deleteFolder,
+    refresh,
+  };
+}

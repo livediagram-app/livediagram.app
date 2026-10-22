@@ -127,7 +127,7 @@ would multiply every comment by twelve.
 ## 2. What the user sees
 
 The feed, as a project's History dialog and a team's Team Activity card
-draw it (`ScopedTimeline` in `apps/live/components/panels/ScopedTimeline.tsx`),
+draw it (`ScopedTimeline` in `apps/editor/components/panels/ScopedTimeline.tsx`),
 each with its own header row holding the controls (§2.3).
 
 ```
@@ -231,7 +231,7 @@ deletion. Every card of the same tone gets the _same_ tint — no
 alternating stripe, which reads as "different kinds" and is the
 opposite of what the colour is doing. The rules live in
 `packages/ui/src/timeline/eventTone.ts`; the palette is a product
-decision and lives in the live app's `globals.css`, light and dark.
+decision and lives in the editor app's `globals.css`, light and dark.
 
 **Classification is enforced by the compiler, not by a list.** That
 neutral fallback is right for an event type this build has never heard
@@ -1287,7 +1287,7 @@ Removed with the backfill (§5): a read seeds nothing.
 convention that every DTO the worker emits and the editor consumes
 lives there.
 
-Client wrappers go in `apps/live/lib/api/timeline.ts` and are
+Client wrappers go in `apps/editor/lib/api/timeline.ts` and are
 re-exported from the `lib/api-client.ts` barrel, matching every other
 domain. **Offline mode is a no-op here**: `isOfflineId` doesn't apply
 (the scope is an owner, not a project), and an offline-only browser has
@@ -1331,7 +1331,7 @@ types.ts                 TimelineEvent, renderer contracts
 The **renderers** — the functions that turn a `TimelineEvent` into a
 card's parts (`subject`, `label`, `meta`, `preview`, `onClick`), and that know a project event links to `/project/<id>` and a
 team event to `/explorer/team?id=<id>` — live in
-**`apps/live/app/explorer/timeline/renderers.tsx`** (a folder that is no
+**`apps/editor/app/explorer/timeline/renderers.tsx`** (a folder that is no
 longer a route), keyed by `sourceType`. The package takes a registry prop;
 it never imports a route.
 
@@ -1340,8 +1340,8 @@ components without inheriting any one host's copy.
 
 **Colour.** Each tone gets a CSS variable pair
 (`--ld-timeline-<tone>` and `--ld-timeline-<tone>-soft`) defined in the
-live app's `globals.css` with **both light and dark values** —
-liveplanner has a class-based dark mode ([Live app](../007-editor/live-app.md)), unlike Manager
+editor app's `globals.css` with **both light and dark values** —
+liveplanner has a class-based dark mode ([Editor app](../007-editor/editor-app.md)), unlike Manager
 Toolkit which is dark-only, so every tint needs two, and dark mode
 lifts the bold value (a 600-weight hue goes muddy on slate-900) while
 dropping the soft one (an alpha tint over a dark surface reads far
@@ -1362,13 +1362,13 @@ feed vanishing and coming back.
 
 The Explorer lands on **Home** ([Explorer Home](explorer-home.md)). A static export has no single
 entry point, so the landing is applied in several places, all reading one constant, `EXPLORER_LANDING_PATH`
-(`apps/live/lib/explorer-landing.ts`):
+(`apps/editor/lib/explorer-landing.ts`):
 
-1. `apps/live/src/worker.ts`: the `/explorer` 302.
-2. `apps/live/app/explorer/page.tsx`: the client `router.replace` fallback for the dev server and direct asset hits.
+1. `apps/editor/src/worker.ts`: the `/explorer` 302.
+2. `apps/editor/app/explorer/page.tsx`: the client `router.replace` fallback for the dev server and direct asset hits.
 3. `scripts/e2e-stack.mjs`: the end-to-end stack's stand-in for the worker.
 
-`apps/live/app/explorer/routes.ts`'s `selectedFromRoute` `default:` case, which catches mangled URLs (an old
+`apps/editor/app/explorer/routes.ts`'s `selectedFromRoute` `default:` case, which catches mangled URLs (an old
 `/explorer/timeline` link among them) and id-less `folder`/`team` links, returns `{ kind: 'home' }`; its test holds
 the route table to the constant.
 
@@ -1391,7 +1391,7 @@ Overview
 
 Adding an Explorer section touches the same files every section does:
 `views.tsx` (the `SelectedNode` union), `routes.ts` (both directions),
-`apps/live/app/explorer/<section>/page.tsx` (the route stub),
+`apps/editor/app/explorer/<section>/page.tsx` (the route stub),
 the sidebar group that holds its row, if it has one (`app/explorer/sidebar/`, [Explorer structure](explorer-structure.md)),
 `components/primitives/explorer-icons.tsx`, `view-titles.ts` and `useExplorerPane.ts` (pane content, title, crumbs),
 `ExplorerPane.tsx` (dispatch), `ExplorerEmptyState.tsx`, and `routes.test.ts`'s `STATIC_NODES`. Removing one

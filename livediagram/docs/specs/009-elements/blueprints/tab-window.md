@@ -9,11 +9,11 @@ Derived from [The tab window](../tab-window.md). Implementation detail only; the
 | Tab window                                              | `ShapeElement` with `shape: 'tab-window'` (`ShapeKind`, `packages/document/src/shape-kind.ts`)                                                                 |
 | The tab it shows                                        | `ShapeElement.windowTabId` (a tab id of the same document)                                                                                                     |
 | A tab a window may show                                 | `tabWindowMayShow(tab, ownTabId)`, `tabWindowOffers(tabs, ownTabId)` (`packages/document/src/tab-window.ts`)                                                   |
-| The menu reaches Shows (Tools offered for a tab window) | `apps/live/components/palette/ElementDataSections.tab-window.test.tsx`                                                                                         |
+| The menu reaches Shows (Tools offered for a tab window) | `apps/editor/components/palette/ElementDataSections.tab-window.test.tsx`                                                                                         |
 | Something to draw                                       | `tabHasDrawing(tab)` (`tab-has-drawing.ts`)                                                                                                                    |
-| The tab drawn                                           | `renderTabDrawingSvg`, `pageElements`, `tabDrawingFontIdsOf` (`apps/live/lib/tab-drawing.ts`); `ImageExportOpts.estimatedWriting`                              |
+| The tab drawn                                           | `renderTabDrawingSvg`, `pageElements`, `tabDrawingFontIdsOf` (`apps/editor/lib/tab-drawing.ts`); `ImageExportOpts.estimatedWriting`                              |
 | A drawing in an export                                  | `TabWindowDrawing`, `TabWindowArt`, `ResolveTabWindow`, `svgTabWindow`, `prefixSvgIds` (`tab-window.ts`)                                                       |
-| The window's state                                      | `TabWindowState`, `tabWindowState` (`apps/live/components/canvas/tab-window/TabWindowFace.tsx`)                                                                |
+| The window's state                                      | `TabWindowState`, `tabWindowState` (`apps/editor/components/canvas/tab-window/TabWindowFace.tsx`)                                                                |
 | The windows' context                                    | `TabWindowContext`, `TabWindowContextValue`, `useTabWindows`, `useTabWindowContextValue` (`tab-window-context.ts`)                                             |
 | The canvas face                                         | `TabWindowFace`, `TabWindowDrawing`, `TabWindowPicker`, `TabWindowTabList` (`components/canvas/tab-window/`)                                                   |
 | The menu section                                        | `TabWindowMenuSection` (`components/palette/TabWindowMenuSection.tsx`), in `ElementDataSections`' Tools flyout (`showTools`)                                   |
@@ -153,12 +153,12 @@ pattern: false, images, resolveTabWindow: names, resolvePlanArt: plan.art, items
 | Rule                                                                      | Test                                                                                              |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | May show, offers, ids prefixed, export frame and fill                     | `packages/document/src/tab-has-drawing.test.ts`                                                   |
-| States, Choose a Tab, Open, Retry, unavailable                            | `apps/live/components/canvas/tab-window/TabWindowFace.test.tsx`                                   |
-| Status, one fetch per tab, retry, choose, open, gate                      | `apps/live/components/canvas/tab-window/tab-window-context.test.tsx`                              |
-| Export targets, arts, nesting, drawing in the tab SVG; Pages, Form, Board | `apps/live/components/dialogs/useTabWindowExport.test.ts`                                         |
-| Pages as laid out, Form as its form, estimated writing, page elements     | `apps/live/lib/tab-drawing.test.ts`                                                               |
+| States, Choose a Tab, Open, Retry, unavailable                            | `apps/editor/components/canvas/tab-window/TabWindowFace.test.tsx`                                   |
+| Status, one fetch per tab, retry, choose, open, gate                      | `apps/editor/components/canvas/tab-window/tab-window-context.test.tsx`                              |
+| Export targets, arts, nesting, drawing in the tab SVG; Pages, Form, Board | `apps/editor/components/dialogs/useTabWindowExport.test.ts`                                         |
+| Pages as laid out, Form as its form, estimated writing, page elements     | `apps/editor/lib/tab-drawing.test.ts`                                                               |
 | Something to draw                                                         | `packages/document/src/tab-window.test.ts`                                                        |
-| What plays in a window, its classes and style, stills elsewhere           | `apps/live/components/canvas/tab-window/tab-window-motion.test.ts`                                |
+| What plays in a window, its classes and style, stills elsewhere           | `apps/editor/components/canvas/tab-window/tab-window-motion.test.ts`                                |
 | Palette tile in Pages mode's Media only, not a whiteboard shape           | `palette-tile-defs.test.tsx`, `toolbar-strip-tiles.test.ts`, `whiteboard-shape-catalogue.test.ts` |
 
 ## Constants and configuration

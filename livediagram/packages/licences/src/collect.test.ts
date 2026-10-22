@@ -129,7 +129,7 @@ const collect = (sources: string[], assets: string[] = [], ctx = context()) =>
 
 describe('collectWorks: packages', () => {
   it('publishes a package with its licence files, licence id and homepage', () => {
-    const { works } = collect([`${SVGPATH}/lib/path.js`, 'apps/live/app/page.tsx']);
+    const { works } = collect([`${SVGPATH}/lib/path.js`, 'apps/editor/app/page.tsx']);
     expect(works).toEqual([
       {
         key: 'package:svgpath@2.6.0',

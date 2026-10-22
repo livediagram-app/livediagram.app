@@ -8,7 +8,7 @@ import { DEFAULT_SCHEME_ID, getBuiltInTheme, THEMES } from './themes';
 // then left that pick baked into the project for every other viewer.
 //
 // Now the same scheme answers both: the viewer's Appearance decides which half
-// they see (docs/specs/007-editor/live-app.md). Neither half paints an element — the Default scheme is
+// they see (docs/specs/007-editor/editor-app.md). Neither half paints an element — the Default scheme is
 // still the un-themed default, so element ink comes from the canvas underneath
 // rather than from stored colours, which is what lets one tab look right to a
 // light viewer and a dark one at the same time.

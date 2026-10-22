@@ -6,7 +6,7 @@ Status: shipped
 
 Every workspace is linted by **oxlint** with one shared config, `@livediagram/oxlint-config`
 (`packages/oxlint-config`). `pnpm lint` runs `turbo run lint`, and each workspace's `lint` script is
-`oxlint`: it reads the workspace's `oxlint.config.ts`, which re-exports the shared config (`apps/live`
+`oxlint`: it reads the workspace's `oxlint.config.ts`, which re-exports the shared config (`apps/editor`
 adds one override for its Playwright suite). Every rule is an **error**; there are no warnings.
 
 ## Why
@@ -84,7 +84,7 @@ is the whole of what the repo enforces.
   built on typescript-go: the same TypeScript 7 the repo type-checks with, so no second compiler is
   involved.
 - A file is typed through the nearest `tsconfig.json` that includes it. Every source file, script
-  and test is in one, so what the lint reads is what `pnpm typecheck` checks: `apps/live`'s `.mts`
+  and test is in one, so what the lint reads is what `pnpm typecheck` checks: `apps/editor`'s `.mts`
   scripts and marketing's `.well-known` route are named in their app's tsconfig, and a folder of
   Node scripts beside browser code has its own, which adds Node's types
   (`packages/sticky-vision/scripts/tsconfig.json`). A file no tsconfig includes is typed on its own,

@@ -7,8 +7,8 @@ Derived from [The org chart](../org-chart.md). Defaults in [DEFAULTS.md](DEFAULT
 | `packages/document/src/person-node.ts`            | `mindLook`, initials, the face's layout, the org connector |
 | `packages/document/src/svg-render-person-node.ts` | Headless face                                              |
 | `packages/document/src/shape-variants.ts`         | The `org-chart` variant on a mind node                     |
-| `apps/live/lib/mind-dress.ts`                     | A grown node takes its map's look; elbow connectors        |
-| `apps/live/components/canvas/PersonNodeFace.tsx`  | Canvas face                                                |
+| `apps/editor/lib/mind-dress.ts`                     | A grown node takes its map's look; elbow connectors        |
+| `apps/editor/components/canvas/PersonNodeFace.tsx`  | Canvas face                                                |
 
 ## Domain and naming
 
@@ -95,8 +95,8 @@ The role line is a `role="textbox"` named "Role".
 | Rule                      | Test file                                             |
 | ------------------------- | ----------------------------------------------------- |
 | Initials, layout, variant | `packages/document/src/person-node.test.ts`           |
-| Growing (I1), connector   | `apps/live/lib/mind-dress.test.ts`                    |
-| Face and role edit (I2)   | `apps/live/components/canvas/PersonNodeFace.test.tsx` |
+| Growing (I1), connector   | `apps/editor/lib/mind-dress.test.ts`                    |
+| Face and role edit (I2)   | `apps/editor/components/canvas/PersonNodeFace.test.tsx` |
 
 ## Constants and configuration
 

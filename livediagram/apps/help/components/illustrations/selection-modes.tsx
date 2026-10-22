@@ -6,7 +6,7 @@
 // top, so every selection-mode article shows the same picker with its own tool
 // chosen.
 //
-// Labels are lifted from apps/live: canvas-tool-options.tsx (tool names,
+// Labels are lifted from apps/editor: canvas-tool-options.tsx (tool names,
 // shortcuts, bands), the *-config.ts catalogues (panel rows and values), and
 // TopCenterChrome.tsx (the Format banner).
 

@@ -9,19 +9,19 @@ who re-renders when it changes.
 
 | File                                                       | Role                                                                     |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `apps/live/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION` |
-| `apps/live/hooks/canvas/useSelectionStore.tsx`             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`          |
-| `apps/live/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable         |
-| `apps/live/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props            |
-| `apps/live/app/project/[id]/editor-ui-state.ts`           | Creates the store; `selectedId` / setters come from it                   |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`         | Provides the store; passes the canvas stable event props                 |
-| `apps/live/components/canvas/Canvas.tsx`                   | `memo`; no `selectedId` / `multiSelectedIds` props                       |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`      | No selection props; each view reads its own flags                        |
-| `apps/live/components/canvas/CanvasSelectionToolbars.tsx`  | Subscribes; runs `deriveCanvasSelection` itself                          |
-| `apps/live/components/canvas/selection-aware-views.tsx`    | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`           |
-| `apps/live/components/canvas/LayerSelectionChrome.tsx`     | Quick-connect pluses, union resize box                                   |
-| `apps/live/hooks/canvas/useCanvasSelectionView.ts`         | `useCanvasSelectionView`, `CanvasSelectionInput`                         |
-| `apps/live/lib/canvas-selection.ts`                        | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added         |
+| `apps/editor/lib/selection-store.ts`                         | `createSelectionStore`, `Selection`, `SelectionStore`, `EMPTY_SELECTION` |
+| `apps/editor/hooks/canvas/useSelectionStore.tsx`             | `SelectionStoreProvider`, `useSelectionStore`, `useSelectionOf`          |
+| `apps/editor/hooks/ui/useStableEventProps.ts`                | `useStableEventProps`: every `on*` function prop identity-stable         |
+| `apps/editor/components/primitives/withStableEventProps.tsx` | `withStableEventProps(Inner)`: `memo` plus stable `on…` props            |
+| `apps/editor/app/project/[id]/editor-ui-state.ts`           | Creates the store; `selectedId` / setters come from it                   |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`         | Provides the store; passes the canvas stable event props                 |
+| `apps/editor/components/canvas/Canvas.tsx`                   | `memo`; no `selectedId` / `multiSelectedIds` props                       |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx`      | No selection props; each view reads its own flags                        |
+| `apps/editor/components/canvas/CanvasSelectionToolbars.tsx`  | Subscribes; runs `deriveCanvasSelection` itself                          |
+| `apps/editor/components/canvas/selection-aware-views.tsx`    | `SelectableBoxedView`, `SelectableArrowView`, `FreeArrowFrame`           |
+| `apps/editor/components/canvas/LayerSelectionChrome.tsx`     | Quick-connect pluses, union resize box                                   |
+| `apps/editor/hooks/canvas/useCanvasSelectionView.ts`         | `useCanvasSelectionView`, `CanvasSelectionInput`                         |
+| `apps/editor/lib/canvas-selection.ts`                        | `deriveCanvasSelection` unchanged; `elementSelectionFlags` added         |
 
 ## Domain and naming
 
@@ -131,7 +131,7 @@ Selection` instead and reads it where it acts. By kind:
 ## Interfaces and contracts
 
 ```ts
-// apps/live/lib/selection-store.ts
+// apps/editor/lib/selection-store.ts
 export type Selection = {
   readonly selectedId: string | null;
   readonly multiSelectedIds: ReadonlySet<string>;
@@ -151,18 +151,18 @@ export function sameFlags(a: ElementSelectionFlags, b: ElementSelectionFlags): b
 export function sameMembers(a: ReadonlySet<string>, b: ReadonlySet<string>): boolean;
 export function selectionIds(selectedId: string | null, multi: ReadonlySet<string>): Set<string>;
 
-// apps/live/lib/canvas-selection.ts
+// apps/editor/lib/canvas-selection.ts
 export function elementGrips(
   el: Element,
   single: boolean,
   ctx: GripContext,
 ): { handles: boolean; anchors: boolean };
 
-// apps/live/hooks/canvas/useCanvasSelectionView.ts
+// apps/editor/hooks/canvas/useCanvasSelectionView.ts
 export type CanvasSelectionInput = Omit<DeriveInput, 'selectedId' | 'multiSelectedIds'>;
 export function useCanvasSelectionView(input: CanvasSelectionInput): CanvasSelection;
 
-// apps/live/hooks/canvas/useSelectionStore.tsx
+// apps/editor/hooks/canvas/useSelectionStore.tsx
 export function SelectionStoreProvider(props: {
   store: SelectionStore;
   children: ReactNode;
@@ -170,10 +170,10 @@ export function SelectionStoreProvider(props: {
 export function useSelectionStore(): SelectionStore; // throws outside a provider
 export function useSelectionOf<T>(select: (s: Selection) => T, equal?: (a: T, b: T) => boolean): T;
 
-// apps/live/hooks/ui/useStableEventProps.ts
+// apps/editor/hooks/ui/useStableEventProps.ts
 export function useStableEventProps<T extends object>(props: T): T;
 
-// apps/live/components/primitives/withStableEventProps.tsx
+// apps/editor/components/primitives/withStableEventProps.tsx
 export function withStableEventProps<P extends object>(Inner: ComponentType<P>): ComponentType<P>;
 ```
 

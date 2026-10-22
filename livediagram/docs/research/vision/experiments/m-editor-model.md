@@ -45,7 +45,7 @@ photo chosen ──► detectAndCrop
   the U-Net's stride of 16, the crop back). The Node inference frames the
   photo through the same `stride.ts`, so the two cannot drift.
 - `sticky-vision`'s `index.ts` exports `hybrid.ts` and `model-cues.ts`.
-- `apps/live/lib/photo-model/`: `protocol.ts` (the closed backend and failure
+- `apps/editor/lib/photo-model/`: `protocol.ts` (the closed backend and failure
   vocabularies, the messages), `client.ts` (one worker per page; every failure
   resolves to a reason, a runtime that could not load stays failed for the
   page), `boundary.worker.ts`, `runtime.ts` (backend choice, weights),
@@ -89,7 +89,7 @@ aborted) the editor logs `classical (load-failed)` and scores TOTAL 94.1 /
 
 ## M4: the e2e proof (kept)
 
-`apps/live/e2e/photo-model.spec.ts`, on a wall the test draws:
+`apps/editor/e2e/photo-model.spec.ts`, on a wall the test draws:
 
 - the import runs the hybrid: the weights are fetched, the model reports its
   cores from the worker, the overlay says `hybrid`;

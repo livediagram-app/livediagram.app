@@ -28,26 +28,26 @@ Scope, by file:
 | `apps/api/src/thumbnail.ts`                          | `loadEmbeddedImages` for the preview and live image                     |
 | `apps/api/wrangler.toml`                             | `IMAGES` bucket (production and `[env.staging]`), caps comment          |
 | `apps/api/hosted-vars.json`                          | Hosted livediagram.app's per-owner caps                                 |
-| `apps/live/lib/api/images.ts`                        | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
-| `apps/live/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
-| `apps/live/hooks/canvas/useEditorImages.ts`          | Picker state, attach, detach, place-from-gallery                        |
-| `apps/live/hooks/canvas/useClipboard.ts`             | `pasteImageFile`: Cmd/Ctrl+V image paste                                |
-| `apps/live/hooks/persistence/useImageBlobUrl.ts`     | Authenticated fetch to a revocable blob URL                             |
-| `apps/live/components/canvas/ImageElementView.tsx`   | Canvas face: placeholder, loading, broken, bitmap                       |
-| `apps/live/components/canvas/ImageEmptyFace.tsx`     | Empty placeholder: empty state + Select Image button                    |
-| `apps/live/components/panels/ImagePicker.tsx`        | Upload / Gallery modal, lazy via `EditorElementDialogs.tsx`             |
-| `apps/live/components/canvas/ImageDropZone.tsx`      | Drop, paste, file-input zone shared with the Explorer gallery           |
-| `apps/live/lib/export-tab-images.ts`                 | `loadTabImages`: client export prefetch                                 |
-| `apps/live/components/palette/palette-tile-defs.tsx` | `tools:image` tile (`needsImage: true`, shortcut `9`)                   |
-| `apps/live/app/document/[id]/useElementCreation.ts`  | `addImage`: arms the draw gesture                                       |
-| `apps/live/hooks/canvas/useShapeDrawing.ts`          | Commit of the draw: telemetry, selects the placeholder (no picker)      |
+| `apps/editor/lib/api/images.ts`                        | `apiListImages`, `apiUploadImage`, `apiDeleteImage`, `apiImageUsage`, … |
+| `apps/editor/lib/upload-image.ts`                      | `uploadImageFile`, `addImageFileForDocument`, `ImageUploadError`        |
+| `apps/editor/hooks/canvas/useEditorImages.ts`          | Picker state, attach, detach, place-from-gallery                        |
+| `apps/editor/hooks/canvas/useClipboard.ts`             | `pasteImageFile`: Cmd/Ctrl+V image paste                                |
+| `apps/editor/hooks/persistence/useImageBlobUrl.ts`     | Authenticated fetch to a revocable blob URL                             |
+| `apps/editor/components/canvas/ImageElementView.tsx`   | Canvas face: placeholder, loading, broken, bitmap                       |
+| `apps/editor/components/canvas/ImageEmptyFace.tsx`     | Empty placeholder: empty state + Select Image button                    |
+| `apps/editor/components/panels/ImagePicker.tsx`        | Upload / Gallery modal, lazy via `EditorElementDialogs.tsx`             |
+| `apps/editor/components/canvas/ImageDropZone.tsx`      | Drop, paste, file-input zone shared with the Explorer gallery           |
+| `apps/editor/lib/export-tab-images.ts`                 | `loadTabImages`: client export prefetch                                 |
+| `apps/editor/components/palette/palette-tile-defs.tsx` | `tools:image` tile (`needsImage: true`, shortcut `9`)                   |
+| `apps/editor/app/document/[id]/useElementCreation.ts`  | `addImage`: arms the draw gesture                                       |
+| `apps/editor/hooks/canvas/useShapeDrawing.ts`          | Commit of the draw: telemetry, selects the placeholder (no picker)      |
 
 Out of this blueprint, cited where they touch images: the reference index and the retention sweep
 ([Image reference index](image-reference-index.md)), Offline Mode data-URI embedding
-(`apps/live/lib/offline/offline-images.ts`, [Offline Mode](../../006-document/offline-mode.md)), the
-import pipeline (`apps/live/lib/import-images/`,
+(`apps/editor/lib/offline/offline-images.ts`, [Offline Mode](../../006-document/offline-mode.md)), the
+import pipeline (`apps/editor/lib/import-images/`,
 [Import image pipeline](../../020-import-export/import-image-pipeline.md)), the Explorer gallery
-(`apps/live/components/panels/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
+(`apps/editor/components/panels/GalleryPane.tsx`, [Folders](../../013-workspace/folders.md)),
 account deletion and guest migration (`apps/api/src/db/account.ts`,
 [Owner-keyed data](../../015-api/api.md#owner-keyed-data)), the Trash
 ([Trash](../../013-workspace/trash.md)), and the mcp embedder (`apps/mcp/src/image-result.ts`).
@@ -274,7 +274,7 @@ export function documentReferencesImage(
 // apps/api/src/routes/images.ts: null for unset, blank, non-numeric or <= 0
 export function parsePositiveCap(raw: string | undefined): number | null;
 
-// apps/live/lib/upload-image.ts
+// apps/editor/lib/upload-image.ts
 export function uploadImageFile(ownerId: string, file: File): Promise<UploadResult>;
 export function addImageFileForDocument(
   ownerId: string,
@@ -464,11 +464,11 @@ backfill fingerprints live in [Image reference index](image-reference-index.md#o
 | Snapshot embeds, missing keeps placeholder           | two `getDocumentThumbnailSvg` tests                       | `apps/api/src/thumbnail.test.ts`               |
 | Embed budget in document order                       | `spends a total budget in document order…`                | `packages/api-schema/src/embed-images.test.ts` |
 | Export embeds `<image>`, placeholder without href    | `image elements` suite                                    | `packages/document/src/svg-render.test.ts`     |
-| Client gate: type, size, empty, error mapping        | `uploadImageFile` suites                                  | `apps/live/lib/upload-image.test.ts`           |
-| Upload headers, 503 → null                           | `apiUploadImage`, `apiListImages` suites                  | `apps/live/lib/api-client.test.ts`             |
+| Client gate: type, size, empty, error mapping        | `uploadImageFile` suites                                  | `apps/editor/lib/upload-image.test.ts`           |
+| Upload headers, 503 → null                           | `apiUploadImage`, `apiListImages` suites                  | `apps/editor/lib/api-client.test.ts`             |
 | Placeholder factory, aspect lock on                  | `createImage drops a 200x150 placeholder…`                | `packages/document/src/factories.test.ts`      |
 | No colour controls                                   | `supportsColours covers … freehand; not image`            | `packages/document/src/geometry.test.ts`       |
-| Offline data-URI rewrite                             | `offline-images` suites                                   | `apps/live/lib/offline/offline-images.test.ts` |
+| Offline data-URI rewrite                             | `offline-images` suites                                   | `apps/editor/lib/offline/offline-images.test.ts` |
 | Palette hides without R2 `[QB1]`                     | none                                                      |                                                |
 | Set / Cleared image log `[QB4]` (retired)            | n/a                                                       |                                                |
 | Picker, placeholder states, paste, export in browser | none (GB8)                                                |                                                |

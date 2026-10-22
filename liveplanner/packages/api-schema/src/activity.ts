@@ -5,7 +5,7 @@
 //
 // The api worker builds these from the collaboration index
 // (`collab_actions` / `collab_threads`, a projection of the element
-// JSON that stays the source of truth, docs/specs/012-collaboration/assigned-actions.md §1); the live app's
+// JSON that stays the source of truth, docs/specs/012-collaboration/assigned-actions.md §1); the editor app's
 // Activity pane renders them. Present-tense by design: the Timeline
 // (docs/specs/013-workspace/timeline.md) records that an action WAS assigned, this says whether it
 // is still open.

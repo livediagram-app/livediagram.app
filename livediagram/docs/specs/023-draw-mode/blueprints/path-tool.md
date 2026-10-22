@@ -21,36 +21,36 @@ Scope, by file:
 | `packages/document/src/svg-render*.ts`                                  | `svgPathElementShape`: the export twin of the canvas path                                                                         |
 | `apps/api/src/openapi/schemas.generated.ts`                             | Regenerated: `PathElement` in `BoxedElement`                                                                                      |
 | `packages/api-schema/src/telemetry-schema.ts`                           | (no change: `Whiteboard`, `Element`, `Selected`, `Added`, `Changed` exist)                                                        |
-| `apps/live/lib/path-draw.ts`                                            | Pure drawing state machine                                                                                                        |
-| `apps/live/lib/path-edit.ts`                                            | Pure edit-mode operations, hit test, node types, open / close, cursors, `toLocal` / `toWorld`                                     |
-| `apps/live/lib/path-edit-keys.ts`                                       | `pathEditKey`: what one key does in edit mode                                                                                     |
-| `apps/live/lib/whiteboard-erase.ts`                                     | `pathsTouched`: the eraser takes a path whole                                                                                     |
-| `apps/live/lib/export-as-seen.ts`                                       | `tabAsSeen`: an export draws stock colours for its canvas                                                                         |
-| `apps/live/lib/draw-mode.ts`                                            | `PendingDraw` `{ type: 'path' }`, banner, cursor                                                                                  |
-| `apps/live/lib/whiteboard-tool.ts`                                      | `WhiteboardTool` gains `path`                                                                                                     |
-| `apps/live/lib/quick-style.ts`, `quick-style-tool.ts`                   | A path is a quick-style target; "Next path" phantom                                                                               |
-| `apps/live/lib/style-memory.ts`                                         | Style kind `path` (`board:path` on a whiteboard)                                                                                  |
-| `apps/live/lib/element-names.ts`                                        | "Path, N points" / "Closed path, N points"                                                                                        |
-| `apps/live/lib/excalidraw-export.ts`                                    | A path as a sampled `line`                                                                                                        |
-| `apps/live/components/canvas/path/PathSvg.tsx`                          | The canvas renderer, shared by committed and draft paths                                                                          |
-| `apps/live/components/canvas/path/usePathDrawGesture.ts`                | Drawing: presses, drags, keys, commit                                                                                             |
-| `apps/live/components/canvas/path/usePathEditGesture.ts`                | Edit mode: presses, drags, keys, commit                                                                                           |
-| `apps/live/components/canvas/path/usePathTool.ts`                       | Composes both for `Canvas`: press intercept, displayed elements, layers                                                           |
-| `apps/live/components/canvas/path/PathDraftLayer.tsx`                   | The path being drawn, rubber band, rings                                                                                          |
-| `apps/live/components/canvas/path/PathEditLayer.tsx`                    | Nodes, handles, box, snap guides                                                                                                  |
-| `apps/live/components/canvas/path/PathEditToolbar.tsx`                  | The edit toolbar: node type, Delete point, Close / Open path, Done                                                                |
-| `apps/live/components/canvas/path/path-markers.tsx`                     | Node and handle markers, `PATH_OVERLAY_Z`                                                                                         |
-| `apps/live/components/canvas/SelectionPopover.tsx`                      | Edit points on a selected path                                                                                                    |
-| `apps/live/components/canvas/useBoxedElementGestures.ts`                | A double press (a double-tap) opens a path's edit mode                                                                            |
-| `apps/live/components/canvas/element-variant.ts`                        | `editingLook`: a path in its edit mode takes no text cursor and no lift                                                           |
-| `apps/live/hooks/canvas/useEditModeContextMenu.ts`                      | No element menu beside a path in its edit mode                                                                                    |
-| `apps/live/app/globals.css`                                             | `[data-path-cursor]`: descendants inherit the edit cursor                                                                         |
-| `apps/live/components/dialogs/EditorTabDialogs.tsx`                     | Exports `tabAsSeen`                                                                                                               |
-| `apps/live/hooks/canvas/usePathCommits.ts`                              | Editor side: `commitPath`, `commitPathEdit`, telemetry                                                                            |
-| `apps/live/hooks/canvas/useWhiteboard.ts`                               | `pickPath`, `pathEditing`, `leavePathEdit`                                                                                        |
-| `apps/live/hooks/canvas/editor-shortcut-keys.ts`                        | `P` on a whiteboard; `WHITEBOARD_TOOL_KEYS.path`                                                                                  |
-| `apps/live/components/canvas/whiteboard/WhiteboardDock.tsx`             | The Path tool button (`ShapePenIcon`); Select's edit-mode glyph (`EditPointsIcon`)                                                |
-| `apps/live/components/palette/palette-icons.tsx`                        | `ShapePenIcon` (the Shape Pen tile's icon, shared with the dock), `EditPointsIcon`                                                |
+| `apps/editor/lib/path-draw.ts`                                            | Pure drawing state machine                                                                                                        |
+| `apps/editor/lib/path-edit.ts`                                            | Pure edit-mode operations, hit test, node types, open / close, cursors, `toLocal` / `toWorld`                                     |
+| `apps/editor/lib/path-edit-keys.ts`                                       | `pathEditKey`: what one key does in edit mode                                                                                     |
+| `apps/editor/lib/whiteboard-erase.ts`                                     | `pathsTouched`: the eraser takes a path whole                                                                                     |
+| `apps/editor/lib/export-as-seen.ts`                                       | `tabAsSeen`: an export draws stock colours for its canvas                                                                         |
+| `apps/editor/lib/draw-mode.ts`                                            | `PendingDraw` `{ type: 'path' }`, banner, cursor                                                                                  |
+| `apps/editor/lib/whiteboard-tool.ts`                                      | `WhiteboardTool` gains `path`                                                                                                     |
+| `apps/editor/lib/quick-style.ts`, `quick-style-tool.ts`                   | A path is a quick-style target; "Next path" phantom                                                                               |
+| `apps/editor/lib/style-memory.ts`                                         | Style kind `path` (`board:path` on a whiteboard)                                                                                  |
+| `apps/editor/lib/element-names.ts`                                        | "Path, N points" / "Closed path, N points"                                                                                        |
+| `apps/editor/lib/excalidraw-export.ts`                                    | A path as a sampled `line`                                                                                                        |
+| `apps/editor/components/canvas/path/PathSvg.tsx`                          | The canvas renderer, shared by committed and draft paths                                                                          |
+| `apps/editor/components/canvas/path/usePathDrawGesture.ts`                | Drawing: presses, drags, keys, commit                                                                                             |
+| `apps/editor/components/canvas/path/usePathEditGesture.ts`                | Edit mode: presses, drags, keys, commit                                                                                           |
+| `apps/editor/components/canvas/path/usePathTool.ts`                       | Composes both for `Canvas`: press intercept, displayed elements, layers                                                           |
+| `apps/editor/components/canvas/path/PathDraftLayer.tsx`                   | The path being drawn, rubber band, rings                                                                                          |
+| `apps/editor/components/canvas/path/PathEditLayer.tsx`                    | Nodes, handles, box, snap guides                                                                                                  |
+| `apps/editor/components/canvas/path/PathEditToolbar.tsx`                  | The edit toolbar: node type, Delete point, Close / Open path, Done                                                                |
+| `apps/editor/components/canvas/path/path-markers.tsx`                     | Node and handle markers, `PATH_OVERLAY_Z`                                                                                         |
+| `apps/editor/components/canvas/SelectionPopover.tsx`                      | Edit points on a selected path                                                                                                    |
+| `apps/editor/components/canvas/useBoxedElementGestures.ts`                | A double press (a double-tap) opens a path's edit mode                                                                            |
+| `apps/editor/components/canvas/element-variant.ts`                        | `editingLook`: a path in its edit mode takes no text cursor and no lift                                                           |
+| `apps/editor/hooks/canvas/useEditModeContextMenu.ts`                      | No element menu beside a path in its edit mode                                                                                    |
+| `apps/editor/app/globals.css`                                             | `[data-path-cursor]`: descendants inherit the edit cursor                                                                         |
+| `apps/editor/components/dialogs/EditorTabDialogs.tsx`                     | Exports `tabAsSeen`                                                                                                               |
+| `apps/editor/hooks/canvas/usePathCommits.ts`                              | Editor side: `commitPath`, `commitPathEdit`, telemetry                                                                            |
+| `apps/editor/hooks/canvas/useWhiteboard.ts`                               | `pickPath`, `pathEditing`, `leavePathEdit`                                                                                        |
+| `apps/editor/hooks/canvas/editor-shortcut-keys.ts`                        | `P` on a whiteboard; `WHITEBOARD_TOOL_KEYS.path`                                                                                  |
+| `apps/editor/components/canvas/whiteboard/WhiteboardDock.tsx`             | The Path tool button (`ShapePenIcon`); Select's edit-mode glyph (`EditPointsIcon`)                                                |
+| `apps/editor/components/palette/palette-icons.tsx`                        | `ShapePenIcon` (the Shape Pen tile's icon, shared with the dock), `EditPointsIcon`                                                |
 | liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts | Sentences for the four events                                                                                                     |
 | `apps/help/app/canvas/draw-mode/page.mdx`                               | The Path tool section                                                                                                             |
 
@@ -386,7 +386,7 @@ export function continuedPath(el: PathElement, anchors: readonly PathAnchor[], c
 export function reversePath(anchors: readonly PathAnchor[]): PathAnchor[];
 export function pathTouchesBrush(el: PathElement, a: Point, b: Point, r: number): boolean;
 
-// apps/live
+// apps/editor
 export type PendingDraw = … | { type: 'path' };
 export type WhiteboardTool = 'select' | 'pen' | 'path' | 'eraser' | 'sticky' | 'text' | 'shape';
 export function classifyPathPress(draft: PathDraft | null, p: Point, opts: { zoom: number; now: number; ends: readonly PathEnd[]; radiusPx?: number }): PathPress;
@@ -504,28 +504,28 @@ numbers only).
 | Validation                                                                                      | `packages/document/src/validate.test.ts`                                                                        |
 | Export twin                                                                                     | `packages/document/src/svg-render-shapes.test.ts`                                                               |
 | Ink projection                                                                                  | `packages/document/src/whiteboard.test.ts`                                                                      |
-| Drawing state machine                                                                           | `apps/live/lib/path-draw.test.ts`                                                                               |
-| Edit operations and hit test                                                                    | `apps/live/lib/path-edit.test.ts`                                                                               |
-| Draw gesture: press, drag, keys, commit, undo and redo while drawing                            | `apps/live/components/canvas/path/usePathDrawGesture.test.tsx`                                                  |
-| Edit gesture: select, drag, keys, one commit                                                    | `apps/live/components/canvas/path/usePathEditGesture.test.tsx`                                                  |
-| Commit: new, continued, edit, delete, telemetry                                                 | `apps/live/hooks/canvas/usePathCommits.test.tsx`                                                                |
-| Tool derivation                                                                                 | `apps/live/lib/whiteboard-tool.test.ts`                                                                         |
-| Dock button, key, edit glyph                                                                    | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`                                                |
-| `pickPath`                                                                                      | `apps/live/hooks/canvas/useWhiteboard.test.tsx`                                                                 |
-| Quick style and memory                                                                          | `apps/live/lib/quick-style.test.ts`, `style-memory.test.ts`                                                     |
-| Accessible name                                                                                 | `apps/live/lib/element-names.test.ts`                                                                           |
-| Excalidraw line                                                                                 | `apps/live/lib/excalidraw-export.test.ts`                                                                       |
-| Telemetry vocabulary and sentences                                                              | `apps/live/lib/telemetry-coverage.test.ts`, `apps/telemetry`                                                    |
-| Edit keys, Tab on into the toolbar                                                              | `apps/live/lib/path-edit-keys.test.ts`                                                                          |
-| Node types, open, cursors, `toWorld`, `dragNodes`                                               | `apps/live/lib/path-edit.test.ts`                                                                               |
-| Edit toolbar: radios, keys, disabled states                                                     | `apps/live/components/canvas/path/PathEditToolbar.test.tsx`                                                     |
-| Corner squares, smooth circles; overlays on top                                                 | `apps/live/components/canvas/path/PathEditLayer.test.tsx`                                                       |
-| Edit points                                                                                     | `apps/live/components/canvas/SelectionPopover.test.tsx`                                                         |
-| A double-tap opens edit mode                                                                    | `apps/live/components/canvas/useBoxedElementGestures.path.test.tsx`                                             |
-| No text cursor, no lift, no menu in edit mode                                                   | `apps/live/components/canvas/element-variant.test.ts`, `apps/live/hooks/canvas/useEditModeContextMenu.test.tsx` |
-| The eraser takes a path whole                                                                   | `packages/document/src/whiteboard-stroke.test.ts`, `apps/live/lib/whiteboard-erase.test.ts`                     |
-| Export in the board's ink                                                                       | `apps/live/lib/export-as-seen.test.ts`                                                                          |
-| The Shape Pen icon, one component                                                               | `apps/live/components/canvas/whiteboard/WhiteboardDock.test.tsx`                                                |
+| Drawing state machine                                                                           | `apps/editor/lib/path-draw.test.ts`                                                                               |
+| Edit operations and hit test                                                                    | `apps/editor/lib/path-edit.test.ts`                                                                               |
+| Draw gesture: press, drag, keys, commit, undo and redo while drawing                            | `apps/editor/components/canvas/path/usePathDrawGesture.test.tsx`                                                  |
+| Edit gesture: select, drag, keys, one commit                                                    | `apps/editor/components/canvas/path/usePathEditGesture.test.tsx`                                                  |
+| Commit: new, continued, edit, delete, telemetry                                                 | `apps/editor/hooks/canvas/usePathCommits.test.tsx`                                                                |
+| Tool derivation                                                                                 | `apps/editor/lib/whiteboard-tool.test.ts`                                                                         |
+| Dock button, key, edit glyph                                                                    | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`                                                |
+| `pickPath`                                                                                      | `apps/editor/hooks/canvas/useWhiteboard.test.tsx`                                                                 |
+| Quick style and memory                                                                          | `apps/editor/lib/quick-style.test.ts`, `style-memory.test.ts`                                                     |
+| Accessible name                                                                                 | `apps/editor/lib/element-names.test.ts`                                                                           |
+| Excalidraw line                                                                                 | `apps/editor/lib/excalidraw-export.test.ts`                                                                       |
+| Telemetry vocabulary and sentences                                                              | `apps/editor/lib/telemetry-coverage.test.ts`, `apps/telemetry`                                                    |
+| Edit keys, Tab on into the toolbar                                                              | `apps/editor/lib/path-edit-keys.test.ts`                                                                          |
+| Node types, open, cursors, `toWorld`, `dragNodes`                                               | `apps/editor/lib/path-edit.test.ts`                                                                               |
+| Edit toolbar: radios, keys, disabled states                                                     | `apps/editor/components/canvas/path/PathEditToolbar.test.tsx`                                                     |
+| Corner squares, smooth circles; overlays on top                                                 | `apps/editor/components/canvas/path/PathEditLayer.test.tsx`                                                       |
+| Edit points                                                                                     | `apps/editor/components/canvas/SelectionPopover.test.tsx`                                                         |
+| A double-tap opens edit mode                                                                    | `apps/editor/components/canvas/useBoxedElementGestures.path.test.tsx`                                             |
+| No text cursor, no lift, no menu in edit mode                                                   | `apps/editor/components/canvas/element-variant.test.ts`, `apps/editor/hooks/canvas/useEditModeContextMenu.test.tsx` |
+| The eraser takes a path whole                                                                   | `packages/document/src/whiteboard-stroke.test.ts`, `apps/editor/lib/whiteboard-erase.test.ts`                     |
+| Export in the board's ink                                                                       | `apps/editor/lib/export-as-seen.test.ts`                                                                          |
+| The Shape Pen icon, one component                                                               | `apps/editor/components/canvas/whiteboard/WhiteboardDock.test.tsx`                                                |
 | End to end (every drawing and editing gesture, touch, cursors, overlay order, SVG / PNG export) | Playwright, Chromium and WebKit, dark and light, on the shared stack                                            |
 
 ## Constants and configuration

@@ -63,7 +63,7 @@ function galleryFull(
 
 // Per-owner gallery + dedup'd upload + auth-gated byte read.
 // When the R2 binding is absent (self-host without R2), every
-// endpoint returns 503 so the live app can hide the feature
+// endpoint returns 503 so the editor app can hide the feature
 // without falling through to a generic 500.
 export async function handleImages(ctx: RouteContext): Promise<Response> {
   const { request, env, url, segments, resolveOwner } = ctx;

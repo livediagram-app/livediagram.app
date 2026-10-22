@@ -4,7 +4,7 @@ Derived from [draw.io import](../drawio-import.md). The spec decides; this file 
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and
 cited as `Dn`.
 
-Scope, by file (all under `apps/live/` unless stated):
+Scope, by file (all under `apps/editor/` unless stated):
 
 | File                                            | Role                                                                                                                             |
 | ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -1005,7 +1005,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 | `DRAWIO_MAX_FILE_BYTES`                         | 50 MiB                                                                                                                                                      | Spec; 10 to 200 MiB                                                                                                                           |
 | `DRAWIO_MAX_INFLATED_BYTES`                     | 100 MiB                                                                                                                                                     | Spec; at least the file limit                                                                                                                 |
 | `DRAWIO_MAX_PAGES`                              | 100                                                                                                                                                         | Spec; 1 to 500                                                                                                                                |
-| `IMPORT_COORD_MAX`                              | 1e7 px either side of zero, `apps/live/lib/import-coords.ts`; a geometry number past it reads as 0                                                          | Shared with the board scene landing; 1e6 to 1e12. A finite 1e308 plus a parent offset overflowed to Infinity                                  |
+| `IMPORT_COORD_MAX`                              | 1e7 px either side of zero, `apps/editor/lib/import-coords.ts`; a geometry number past it reads as 0                                                          | Shared with the board scene landing; 1e6 to 1e12. A finite 1e308 plus a parent offset overflowed to Infinity                                  |
 | `MAX_ELEMENTS_PER_TAB`                          | 10 000                                                                                                                                                      | `@livediagram/document` validate.ts                                                                                                           |
 | `DRAWIO_DEFAULT_ARC_SIZE`                       | 10 (%)                                                                                                                                                      | draw.io's `mxConstants.RECTANGLE_ROUNDING_FACTOR`                                                                                             |
 | `DRAWIO_SHADOW`                                 | `{2, 3, 3, 0.25}`                                                                                                                                           | draw.io's shadow offset (2, 3) and opacity, D22                                                                                               |
@@ -1048,7 +1048,7 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
 
 ## Assets and external resources
 
-- Fixtures in `apps/live/lib/drawio/__fixtures__/`, authored for this repo (MIT, like the codebase):
+- Fixtures in `apps/editor/lib/drawio/__fixtures__/`, authored for this repo (MIT, like the codebase):
   hand-written uncompressed sources using draw.io's own library style strings, plus the forms a
   generator derives from them (compressed `.drawio`, `.drawio.svg`, `.drawio.png` with `tEXt` and
   `zTXt`, a `stress` page). `generate.ts` rebuilds them deterministically
@@ -1059,13 +1059,13 @@ End to end: `e2e/drawio-import.spec.ts` on the production build (`scripts/e2e-st
   `mxEdgeStyle`, `mxPerimeter`, `mxUtils`, `mxShape.getWaypoints`, parts of Graph.js and
   Shapes.js; Apache-2.0). Each file opens with draw.io's copyright and a change notice, and each
   ported function names its source; the licences package lists it as an embedded work
-  (`drawio-mxgraph`, triggered by each ported file under `apps/live/lib/drawio/route/`) with
+  (`drawio-mxgraph`, triggered by each ported file under `apps/editor/lib/drawio/route/`) with
   draw.io's `LICENSE` committed as `packages/licences/texts/drawio-31.7.0-LICENSE.txt`, and
   `THIRD_PARTY_NOTICES.md` names it.
 - `lib/drawio/__fixtures__/routes.drawio` (hand-written, MIT) holds the route cases (trunks,
   floating ends, waypoints and routers, curves, edges on edges); `__fixtures__/routes/*.json` are
   draw.io's own paths for every fixture edge, regenerated with
-  `pnpm --filter @livediagram/live exec tsx scripts/drawio-route-goldens.mts --drawio <bin>` (draw.io
+  `pnpm --filter @livediagram/editor exec tsx scripts/drawio-route-goldens.mts --drawio <bin>` (draw.io
   desktop's CLI under `xvfb-run`).
 - New Technology icons for vendor stencils met in real diagrams (`aws-lake-formation`, `aws-msk`) are
   authored in-repo as the catalogue's tile + white glyph (Technology icons spec), not copied.

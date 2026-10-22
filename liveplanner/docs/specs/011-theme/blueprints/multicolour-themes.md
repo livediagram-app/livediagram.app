@@ -13,7 +13,7 @@ Scope, by file:
 | `packages/project/src/themes-data.ts`            | The five built-in multi-colour themes                             |
 | `packages/project/src/colors.ts`                 | `contrastRatio`, the WCAG contrast helper (D3)                    |
 | `apps/api/src/routes/custom-themes.ts`            | The empty-palette rejection                                       |
-| `apps/live/components/primitives/ThemeSwatch.tsx` | The card preview                                                  |
+| `apps/editor/components/primitives/ThemeSwatch.tsx` | The card preview                                                  |
 
 ## Domain and naming
 
@@ -91,7 +91,7 @@ single-colour theme they fall through to the per-element helpers.
 `switchThemeElements` builds one map and shares it when both `prev` and `next` are palette themes
 (D6). The map depends only on `elements`, so sharing it is exact.
 
-New elements: `deriveNewBoxedColours` (in `apps/live/lib/themes.ts`) gives a palette theme's new
+New elements: `deriveNewBoxedColours` (in `apps/editor/lib/themes.ts`) gives a palette theme's new
 element the trunk colour, and never runs the walk.
 
 ## Interfaces and contracts
@@ -244,8 +244,8 @@ Each spec rule maps to one test, and every test is deterministic.
 | `contrastRatio`                                          | black/white = 21; equal = 1; order-independent; malformed = NaN | `colors.test.ts`                            |
 | Built-in contrast ≥ 4.5                                  | every palette entry + `rootColor` of every built-in             | `themes-data.test.ts` (new)                 |
 | api rejects empty palette (E6) + O3                      | POST and PUT, 400, no write                                     | `apps/api/src/routes/custom-themes.test.ts` |
-| Five built-ins, 26 total                                 | counts                                                          | `apps/live/lib/themes.test.ts` (exists)     |
-| Colours reach the canvas + O1 in the browser             | Rainbow on a mind map: ≥ 3 palette hues, switch log             | `apps/live/e2e/multicolour-theme.spec.ts`   |
+| Five built-ins, 26 total                                 | counts                                                          | `apps/editor/lib/themes.test.ts` (exists)     |
+| Colours reach the canvas + O1 in the browser             | Rainbow on a mind map: ≥ 3 palette hues, switch log             | `apps/editor/e2e/multicolour-theme.spec.ts`   |
 
 ## Constants and configuration
 

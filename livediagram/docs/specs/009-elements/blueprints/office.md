@@ -13,17 +13,17 @@ Derived from [Office](../office.md).
 | `packages/document/src/colors.ts`                      | Skins (floor and rug fills), the room's `md` padding                                      |
 | `packages/document/src/svg-render-faces.ts`            | Export: `furnitureArt` for the pieces, `roomSvg` for a room                               |
 | `packages/api-schema/src/room-messages.ts`             | `AvatarPresence.holding`                                                                  |
-| `apps/live/components/canvas/collab/FurnitureView.tsx` | Canvas drawing of every piece but the room; `MachineAnswer`                               |
-| `apps/live/components/canvas/collab/RoomView.tsx`      | Canvas drawing of a room at its own size                                                  |
-| `apps/live/lib/avatar-fence.ts`                        | `fenceSegments`: fences, room walls and footprints                                        |
-| `apps/live/lib/avatar-walk.ts`                         | `elementUnderFeet` skips floor and scenery                                                |
-| `apps/live/hooks/canvas/useAvatarWalk.ts`              | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                        |
-| `apps/live/components/canvas/avatar-sprite.tsx`        | `HeldCup`                                                                                 |
-| `apps/live/components/canvas/useCanvasAvatar.tsx`      | Drink on arrival, the machine's answer, a table seat's facing                             |
-| `apps/live/app/document/[id]/useElementHelpers.ts`     | A room or rug goes in at the back                                                         |
-| `apps/live/components/palette/CollabMenuSections.tsx`  | `RoomMenuSection`                                                                         |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`        | `setRoomDoorSelected`                                                                     |
-| `apps/live/components/palette/palette-tile-defs.tsx`   | Seven Navigate tiles                                                                      |
+| `apps/editor/components/canvas/collab/FurnitureView.tsx` | Canvas drawing of every piece but the room; `MachineAnswer`                               |
+| `apps/editor/components/canvas/collab/RoomView.tsx`      | Canvas drawing of a room at its own size                                                  |
+| `apps/editor/lib/avatar-fence.ts`                        | `fenceSegments`: fences, room walls and footprints                                        |
+| `apps/editor/lib/avatar-walk.ts`                         | `elementUnderFeet` skips floor and scenery                                                |
+| `apps/editor/hooks/canvas/useAvatarWalk.ts`              | `giveDrink`, the held drink, `onWalkIntoDrink`, presence `holding`                        |
+| `apps/editor/components/canvas/avatar-sprite.tsx`        | `HeldCup`                                                                                 |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`      | Drink on arrival, the machine's answer, a table seat's facing                             |
+| `apps/editor/app/document/[id]/useElementHelpers.ts`     | A room or rug goes in at the back                                                         |
+| `apps/editor/components/palette/CollabMenuSections.tsx`  | `RoomMenuSection`                                                                         |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setRoomDoorSelected`                                                                     |
+| `apps/editor/components/palette/palette-tile-defs.tsx`   | Seven Navigate tiles                                                                      |
 
 ## Domain and naming
 
@@ -131,10 +131,10 @@ Element add / change telemetry as every element; `Canvas · Used · WaterCooler 
 | Kinds, sizes, room defaults, doorway values | `packages/document/src/office.test.ts`                     |
 | Walls, doorway span, room drawing           | same                                                       |
 | Footprints, table seats and facings         | same                                                       |
-| Walls and footprints block; doorway passes  | `apps/live/lib/avatar-fence.test.ts`                       |
-| Floor and scenery never rung                | `apps/live/lib/avatar-walk.test.ts`                        |
-| Drink held, refreshed, put down; on arrival | `apps/live/hooks/canvas/useAvatarWalk.test.tsx`            |
-| Views draw; plant stays green; table pill   | `apps/live/components/canvas/collab/office-views.test.tsx` |
+| Walls and footprints block; doorway passes  | `apps/editor/lib/avatar-fence.test.ts`                       |
+| Floor and scenery never rung                | `apps/editor/lib/avatar-walk.test.ts`                        |
+| Drink held, refreshed, put down; on arrival | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`            |
+| Views draw; plant stays green; table pill   | `apps/editor/components/canvas/collab/office-views.test.tsx` |
 
 ## Constants and configuration
 

@@ -298,15 +298,15 @@ its R2 `customMetadata.renderedAt >= savedAt`;
 document a community grant reads. `communityNetwork` (packages/community/src/network.ts) maps an address to its
 IPv4 /24 or IPv6 /56 for the limiter, report and count hashes.
 
-Editor (`apps/live`):
+Editor (`apps/editor`):
 
-- `apps/live/lib/api/community.ts`: `apiGetCommunityPost`, `apiPublishCommunityPost`, `apiRemoveCommunityPost`;
-  error codes map to copy in `apps/live/lib/community-errors.ts`.
-- `apps/live/hooks/persistence/useCommunityPost.ts`: loads the owner's post when the Share dialog opens; exposes
+- `apps/editor/lib/api/community.ts`: `apiGetCommunityPost`, `apiPublishCommunityPost`, `apiRemoveCommunityPost`;
+  error codes map to copy in `apps/editor/lib/community-errors.ts`.
+- `apps/editor/hooks/persistence/useCommunityPost.ts`: loads the owner's post when the Share dialog opens; exposes
   `{ post, loading, error, publish(input), remove() }`.
-- `apps/live/components/dialogs/community/`: `ShareDialogWithCommunity.tsx` composes the Share dialog with
+- `apps/editor/components/dialogs/community/`: `ShareDialogWithCommunity.tsx` composes the Share dialog with
   `CommunitySection.tsx` (its state chosen by the pure `community-section-state.ts`); `CommunityPublishDialog.tsx`
-  (title, description with counter, `CategoryPicker.tsx`, `TagInput.tsx` (the shared `apps/live/components/primitives/ChipField.tsx` with Community's rules) over the pure `tag-draft.ts`,
+  (title, description with counter, `CategoryPicker.tsx`, `TagInput.tsx` (the shared `apps/editor/components/primitives/ChipField.tsx` with Community's rules) over the pure `tag-draft.ts`,
   `CommunityCardPreview.tsx`, the consequences list) replaces the Share dialog while open, its draft and submit in
   `usePublishForm.ts`, per-field error copy in the pure `publish-field-errors.ts` drawn by `FieldError.tsx`; a first
   publish ends on `CommunityPublishedConfirmation.tsx`. `CommunityCardPreview` is the shared `CommunityPostTile` as a
@@ -317,17 +317,17 @@ Editor (`apps/live`):
   `tabs[0].id === activeTab.id && activeTab.elements.length === 0`, the same count the server's `empty_document`
   check reads) it disables the button beside `communityCodeMessage('empty_document')`. A hidden post's card says **Hidden after reports.** and offers no Edit Listing or
   Remove.
-- Public badge: `apps/live/lib/community-state-store.ts` (an external store, seeded from the document fetch and
+- Public badge: `apps/editor/lib/community-state-store.ts` (an external store, seeded from the document fetch and
   updated by the Community section on publish or remove) feeds `SharedBadge`'s `community` state, labelled **Public**,
   which wins over Private, Shared and Team (only This Browser beats it).
-- `resolveDocumentSession` (`apps/live/app/document/[id]/editor-page-helpers.ts`) takes `community`: a community
+- `resolveDocumentSession` (`apps/editor/app/document/[id]/editor-page-helpers.ts`) takes `community`: a community
   link resolves to a non-owner view session for everyone, the author included, so neither the post page's embed nor
   Open Document can edit the document; `CommunitySession.ownDocumentId` gives the author Edit Your Document in the bar.
 - Share-view mode: `useIdentityBootstrap` stores `sessionCommunity` (in `editor-realtime.ts`) from the share resolve;
   when set, `useRoomConnection` gets `enabled: false`, the identity prompt is not opened, the visit is not recorded,
-  and `apps/live/components/chrome/CommunityBar.tsx` renders under the header with the author
+  and `apps/editor/components/chrome/CommunityBar.tsx` renders under the header with the author
   (the shared `CommunityAuthorBadge`).
-- `?copy=1` on `/document/shared` (`apps/live/hooks/canvas/useAutoCopyParam.ts`): once the document hydrates with a
+- `?copy=1` on `/document/shared` (`apps/editor/hooks/canvas/useAutoCopyParam.ts`): once the document hydrates with a
   session share code, `makeCopy` runs once and the param is stripped.
 - There is no moderation page and no operator route.
 
@@ -530,15 +530,15 @@ app's api errors read `[community] api <status> <code>`. Telemetry per the spec.
 | Community grant                            | `apps/api/src/auth/document-access.test.ts`                                                                                                    |
 | Switched off: routes, links, capabilities  | `apps/api/src/community-enabled.test.ts`, `apps/api/src/routes/community-routes.test.ts`                                                       |
 | Switched off: footer links, fetch          | `packages/ui/src/community/useCommunityEnabled.test.tsx`                                                                                       |
-| Hidden is final (Share dialog)             | `apps/live/components/dialogs/community/CommunitySection.test.tsx`                                                                             |
+| Hidden is final (Share dialog)             | `apps/editor/components/dialogs/community/CommunitySection.test.tsx`                                                                             |
 | Copy counting                              | liveworkspace/apps/community/src/posts.test.ts, `apps/api/src/routes/community-routes.test.ts`                                                 |
 | Query state round trip                     | `apps/community/lib/query-state.test.ts`                                                                                                       |
 | Community key fallback                     | `apps/community/lib/community-key.test.ts`                                                                                                     |
 | Router forwards `/community`               | `apps/router/src/index.test.ts`                                                                                                                |
 | Optimistic like and rollback               | `apps/community/components/shared/LikeButton.test.tsx`                                                                                         |
-| Copy once from `?copy=1`                   | `apps/live/hooks/canvas/useAutoCopyParam.test.tsx`                                                                                             |
-| Community section state, tag input         | `apps/live/components/dialogs/community/*.test.ts(x)`                                                                                          |
-| Editor api client and error copy           | `apps/live/lib/api/community.test.ts`                                                                                                          |
+| Copy once from `?copy=1`                   | `apps/editor/hooks/canvas/useAutoCopyParam.test.tsx`                                                                                             |
+| Community section state, tag input         | `apps/editor/components/dialogs/community/*.test.ts(x)`                                                                                          |
+| Editor api client and error copy           | `apps/editor/lib/api/community.test.ts`                                                                                                          |
 | Network ranges (IPv4 /24, IPv6 /56)        | packages/community/src/network.test.ts                                                                                                         |
 | Redaction for strangers                    | `apps/api/src/community-redact.test.ts`                                                                                                        |
 | Community snapshot cache                   | `apps/api/src/thumbnail.test.ts`                                                                                                               |
@@ -546,12 +546,12 @@ app's api errors read `[community] api <status> <code>`. Telemetry per the spec.
 | Community links, sync state                | `apps/api/src/db/community-links.test.ts`                                                                                                      |
 | Service routes, keys, CORS                 | liveworkspace/apps/community/src/index.test.ts                                                                                                 |
 | Tab id guard (`tab_id_taken`)              | `apps/api/src/routes/tab-put-route.test.ts`                                                                                                    |
-| Public badge                               | `apps/live/components/chrome/SharedBadge.test.tsx`                                                                                             |
-| Community bar                              | `apps/live/components/chrome/CommunityBar.test.tsx`                                                                                            |
-| Share dialog with Community, switched off  | `apps/live/components/dialogs/community/ShareDialogWithCommunity.test.tsx`                                                                     |
-| Community section, focus follows           | `apps/live/components/dialogs/community/CommunitySection.test.tsx`                                                                             |
-| Publish dialog pieces                      | `apps/live/components/dialogs/community/publish-pieces.test.tsx`                                                                               |
-| Owner post hook                            | `apps/live/hooks/persistence/useCommunityPost.test.tsx`                                                                                        |
+| Public badge                               | `apps/editor/components/chrome/SharedBadge.test.tsx`                                                                                             |
+| Community bar                              | `apps/editor/components/chrome/CommunityBar.test.tsx`                                                                                            |
+| Share dialog with Community, switched off  | `apps/editor/components/dialogs/community/ShareDialogWithCommunity.test.tsx`                                                                     |
+| Community section, focus follows           | `apps/editor/components/dialogs/community/CommunitySection.test.tsx`                                                                             |
+| Publish dialog pieces                      | `apps/editor/components/dialogs/community/publish-pieces.test.tsx`                                                                               |
+| Owner post hook                            | `apps/editor/hooks/persistence/useCommunityPost.test.tsx`                                                                                        |
 | Gallery states, My Shares, sign-in wait    | `apps/community/components/gallery/GalleryView.test.tsx`                                                                                       |
 | Post page, canonical                       | `apps/community/components/post/PostView.test.tsx`                                                                                             |
 | Sign-in session and switched-off gate      | `apps/community/components/auth-and-gate.test.tsx`                                                                                             |

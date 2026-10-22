@@ -18,15 +18,15 @@ Scope, by file:
 | `packages/document/src/svg-render-faces.ts`               | The export chair                                                         |
 | `packages/document/src/svg-render.ts`                     | Keeps the generic label for `chair` (bottom-aligned under the seat)      |
 | `packages/api-schema/src/room-messages.ts`                | `AvatarPresence.seatedOn`                                                |
-| `apps/live/components/canvas/BoxedElementView.tsx`        | Mounts `FurnitureView`; the ordinary label under it                      |
-| `apps/live/components/palette/palette-tile-defs.tsx`      | `tools:chair` in the **Navigate** accordion (`tileGroup: 'move'`)        |
-| `apps/live/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                     |
-| `apps/live/components/canvas/useCanvasAvatar.tsx`         | `onWalkIntoChair` → `sitOn`; `chairSitters` from presence                |
-| `apps/live/hooks/canvas/useAvatarWalk.ts`                 | `sitOn`, `standUp`, seated guards, arrival hook, presence packet         |
-| `apps/live/hooks/canvas/useCanvasSurfaceGestures.ts`      | Double-click stands up                                                   |
-| `apps/live/components/canvas/AvatarWalker.tsx`            | Seated pose and the **Stand** press                                      |
-| `apps/live/components/palette/CollabMenuSections.tsx`     | `ChairMenuSection` (facing tiles)                                        |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`           | `setChairFacingSelected` (`Element·Changed·Chair`)                       |
+| `apps/editor/components/canvas/BoxedElementView.tsx`        | Mounts `FurnitureView`; the ordinary label under it                      |
+| `apps/editor/components/palette/palette-tile-defs.tsx`      | `tools:chair` in the **Navigate** accordion (`tileGroup: 'move'`)        |
+| `apps/editor/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                     |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`         | `onWalkIntoChair` → `sitOn`; `chairSitters` from presence                |
+| `apps/editor/hooks/canvas/useAvatarWalk.ts`                 | `sitOn`, `standUp`, seated guards, arrival hook, presence packet         |
+| `apps/editor/hooks/canvas/useCanvasSurfaceGestures.ts`      | Double-click stands up                                                   |
+| `apps/editor/components/canvas/AvatarWalker.tsx`            | Seated pose and the **Stand** press                                      |
+| `apps/editor/components/palette/CollabMenuSections.tsx`     | `ChairMenuSection` (facing tiles)                                        |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`           | `setChairFacingSelected` (`Element·Changed·Chair`)                       |
 
 Desk and sofa (spec "Desk and sofa") add:
 
@@ -34,9 +34,9 @@ Desk and sofa (spec "Desk and sofa") add:
 | ------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `packages/document/src/seating.ts`                     | `isSeatingShape`, `DEFAULT_SEATING_FACING`, `CHAIR_ART`, `DESK_ART`, `SOFA_ART`, `FURNITURE_ART`, `facingView`, `furnitureFrame`, `seatPoints`, `nearestSeat`, `turnedSeatingBox` |
 | `packages/document/src/shape-factory.ts`               | desk 120x112, sofa 152x85, facing, `aspectLocked`, label bottom                                                                                                                   |
-| `apps/live/components/canvas/collab/FurnitureView.tsx` | The canvas desk and sofa, occupied ring, sitter names                                                                                                                             |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`        | `setChairFacingSelected` for all three; quarter turns swap the box                                                                                                                |
-| `apps/live/components/palette/palette-tile-defs.tsx`   | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                                                                    |
+| `apps/editor/components/canvas/collab/FurnitureView.tsx` | The canvas desk and sofa, occupied ring, sitter names                                                                                                                             |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`        | `setChairFacingSelected` for all three; quarter turns swap the box                                                                                                                |
+| `apps/editor/components/palette/palette-tile-defs.tsx`   | `tools:desk`, `tools:sofa` after `tools:chair`                                                                                                                                    |
 
 ## Domain and naming
 
@@ -123,7 +123,7 @@ export function chairSeatFill(fillColor: string | undefined, stroke: string): st
 // AvatarPresence (room-messages.ts)
 seatedOn?: string | null;   // absent parses as standing
 
-// apps/live
+// apps/editor
 export type ChairSitter = { name: string; color: string };
 export function FurnitureView(props: { element: ShapeElement; stroke: string; sitters: ChairSitter[];
   animClass?: string }): JSX.Element | null;
@@ -229,13 +229,13 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | No shared `…`                                  | "is on every Behaviours card except the chair …"    | `packages/document/src/collab-shapes.test.ts`            |
 | Export draws the table chair, washed seat      | "the export draws the table chair …"                | `packages/document/src/shape-geometry.test.ts`           |
 | Export draws its facing, mirrors right         | "draws the export for its facing, never rotated …"  | `packages/document/src/shape-geometry.test.ts`           |
-| Canvas draws the same table, upright           | "FurnitureView draws the table chair, upright …"    | `apps/live/components/canvas/shape-svg-overlay.test.tsx` |
+| Canvas draws the same table, upright           | "FurnitureView draws the table chair, upright …"    | `apps/editor/components/canvas/shape-svg-overlay.test.tsx` |
 | Export draws a body                            | "draws more than a box and a label"                 | `packages/document/src/export-consistency.test.ts`       |
-| Frontmost element under the feet               | `elementUnderFeet` block                            | `apps/live/lib/avatar-walk.test.ts`                      |
+| Frontmost element under the feet               | `elementUnderFeet` block                            | `apps/editor/lib/avatar-walk.test.ts`                      |
 | Sit once on arrival; seated ignores walks (I4) | none                                                | (gap)                                                    |
 | Arrow, double-click, Stand all stand up        | none                                                | (gap)                                                    |
-| Leaving the mode vacates the chair             | "vacates the chair, stands still and tells peers"   | `apps/live/hooks/canvas/useAvatarWalk.test.tsx`          |
-| Re-entering the mode starts unseated           | "comes back unseated"                               | `apps/live/hooks/canvas/useAvatarWalk.test.tsx`          |
+| Leaving the mode vacates the chair             | "vacates the chair, stands still and tells peers"   | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`          |
+| Re-entering the mode starts unseated           | "comes back unseated"                               | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx`          |
 | Created with no stored colour; stamp is unset  | "are created with no stored colour", "treat the …"  | `packages/document/src/behaviour-skin.test.ts`           |
 | Occupancy from presence only (I1, I2)          | none                                                | (gap)                                                    |
 | Label survives export                          | "prints a chair label under the seat"               | `packages/document/src/svg-render-fidelity.test.ts`      |

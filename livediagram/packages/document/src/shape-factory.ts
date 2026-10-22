@@ -318,7 +318,7 @@ export function createShape(kind: ShapeKind, x: number, y: number): ShapeElement
       // Deliberately UNLABELLED: an unnamed portal is named positionally
       // ("Portal 1", "Portal 2") wherever it's shown, so a canvas full of them
       // is navigable without anyone typing a name. A label the author types
-      // wins over the number. See portalName in apps/live/lib/portals.ts.
+      // wins over the number. See portalName in apps/editor/lib/portals.ts.
       fillColor: 'transparent',
       strokeColor: '#38bdf8',
       textColor: '#ffffff',

@@ -92,7 +92,7 @@ stored | null)` writes one. The password a request carries travels as a
 `SharePasswordAttempt` (`{ value, rateKey }`, from `sharePasswordOf(request)`),
 so the check can spend the caller's guessing budget.
 
-## Client (apps/live)
+## Client (apps/editor)
 
 - `api-client.ts` holds a module-level **session share password**
   (`setSessionSharePassword(pw | null)`), mirroring how the account token provider
@@ -133,7 +133,7 @@ text (`readCachedSharePassword` / `writeCachedSharePassword` in
 - In an **embed**, browsers partition third-party iframe storage, so the cache
   is per embedding site ([Read-only embeds (`/embed`)](embeds.md)).
 
-## Editor flow (apps/live, viewer)
+## Editor flow (apps/editor, viewer)
 
 When a visitor opens `/project/shared?s=<code>` and `apiLoadShared` reports
 `passwordRequired`, the editor shows a **password gate** (`SharePasswordGate`, a
@@ -167,7 +167,7 @@ moving piece while it is up.
 ## Share dialog (owner)
 
 The "Share This Project" dialog carries a **Password Protection** switch
-beneath the passes (see [Live app → Share dialog](../007-editor/live-app.md#share-dialog);
+beneath the passes (see [Editor app → Share dialog](../007-editor/editor-app.md#share-dialog);
 it applies to all links), hinting that everyone opening a pass must enter it,
 embeds included ([Read-only embeds (`/embed`)](embeds.md)). Switched on with no
 password yet, it reveals a `type="text"` input (the owner sees what they type)

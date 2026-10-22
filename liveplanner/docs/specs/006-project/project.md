@@ -46,7 +46,7 @@ dashboard, a form) for what is on it. liveplanner is a planner, not a diagram to
 The container was called a diagram until the domain language settled on project. Everything
 that named it moved in one change:
 
-- **Code:** identifiers, files and packages (`@liveplanner/project`, `apps/live/app/project/[id]`).
+- **Code:** identifiers, files and packages (`@liveplanner/project`, `apps/editor/app/project/[id]`).
 - **Database:** the tables are `projects` and `project_tabs`, every foreign key is
   `project_id`, and the stored values that name the container (timeline source, scope and event
   types, titles and snapshot keys, the `notifyProjectJoin` preference, telemetry types) use

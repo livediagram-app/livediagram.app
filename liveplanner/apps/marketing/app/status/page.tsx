@@ -34,7 +34,7 @@ const COMPONENTS: Component[] = [
       'The public landing site at https://liveplanner.app/. Static assets served by a Cloudflare Worker.',
   },
   {
-    name: 'Editor (live app)',
+    name: 'Editor (editor app)',
     description:
       'The planner at https://liveplanner.app/new. Static export served by a Cloudflare Worker.',
   },

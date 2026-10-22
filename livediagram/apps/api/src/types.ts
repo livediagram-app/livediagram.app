@@ -73,7 +73,7 @@ export type Env = {
   // R2 bucket holding image-element bytes (docs/specs/009-elements/images.md). Optional so
   // self-hosters who haven't provisioned R2 can still deploy the
   // api worker: when unbound, the image endpoints all return 503
-  // and the live app hides the Image palette entry.
+  // and the editor app hides the Image palette entry.
   IMAGES?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
   // writes (POST / PUT / DELETE) at the configured limit/period in

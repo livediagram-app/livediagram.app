@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readVisualViewportBand } from './useVisualViewportBand';
 
-// The visible band (docs/specs/007-editor/live-app.md "A dialog stays above the on-screen keyboard").
+// The visible band (docs/specs/007-editor/editor-app.md "A dialog stays above the on-screen keyboard").
 
 afterEach(() => vi.unstubAllGlobals());
 

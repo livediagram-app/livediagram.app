@@ -7,7 +7,7 @@ next save persists the rewrite. There is no list of retired schemes that still r
 ## Charcoal
 
 Charcoal was the neutral dark scheme until it merged into **Default** as Default's dark half
-([Live app](../007-editor/live-app.md#appearance-light--dark--system)). Its tabs stored `theme: 'charcoal'`, the
+([Editor app](../007-editor/editor-app.md#appearance-light--dark--system)). Its tabs stored `theme: 'charcoal'`, the
 backdrop `#2b2b33` with a `#636373` grid, and baked colours on their elements: fill `#2c2c33`, stroke `#a1a1aa`, text
 `#e4e4e7` (arrows: stroke `#a1a1aa`).
 

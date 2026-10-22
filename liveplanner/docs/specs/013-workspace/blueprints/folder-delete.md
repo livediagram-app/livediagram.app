@@ -7,10 +7,10 @@ file adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS
 | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | `apps/api/src/db/folders.ts`                                                                       | `deleteFolder(env, id)`: one batch, contents to the parent |
 | `apps/api/src/routes/folders.ts`                                                                   | `DELETE /api/folders/:id`: authorise, delete, log          |
-| `apps/live/lib/folder-delete-confirmation.ts`                                                      | The confirmation's words                                   |
-| `apps/live/hooks/persistence/useFolders.ts`                                                        | Optimistic: subfolders to the parent                       |
-| `apps/live/hooks/persistence/useProjectListActions.ts`                                             | Confirm; optimistic: projects to the parent                |
-| `apps/live/hooks/ui/useTeamFolderActions.ts`, `apps/live/components/panels/TeamSharedProjects.tsx` | Team folders: the same confirmation                        |
+| `apps/editor/lib/folder-delete-confirmation.ts`                                                      | The confirmation's words                                   |
+| `apps/editor/hooks/persistence/useFolders.ts`                                                        | Optimistic: subfolders to the parent                       |
+| `apps/editor/hooks/persistence/useProjectListActions.ts`                                             | Confirm; optimistic: projects to the parent                |
+| `apps/editor/hooks/ui/useTeamFolderActions.ts`, `apps/editor/components/panels/TeamSharedProjects.tsx` | Team folders: the same confirmation                        |
 
 ## Domain and naming
 
@@ -81,6 +81,6 @@ default-folder line when the folder is one of the reader's defaults; confirm lab
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Contents move to the parent; root for top level; trashed too; one batch | `apps/api/src/db/folders.test.ts`, `apps/api/src/db/trash.test.ts` |
 | The delete logs where the contents went                                 | `apps/api/src/routes/folders.test.ts`                              |
-| Confirmation wording                                                    | `apps/live/lib/folder-delete-confirmation.test.ts`                 |
-| Optimistic move-up                                                      | `apps/live/hooks/persistence/useFolders.test.tsx`                  |
-| End to end                                                              | `apps/live/e2e/default-folders.spec.ts`                            |
+| Confirmation wording                                                    | `apps/editor/lib/folder-delete-confirmation.test.ts`                 |
+| Optimistic move-up                                                      | `apps/editor/hooks/persistence/useFolders.test.tsx`                  |
+| End to end                                                              | `apps/editor/e2e/default-folders.spec.ts`                            |

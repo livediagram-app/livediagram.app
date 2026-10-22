@@ -3,7 +3,7 @@ import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { SHEET_FULL_HEIGHT, sheetRelease, useSheetDrag } from './useSheetDrag';
 
-// docs/specs/007-editor/live-app.md "Mobile chrome": a sheet's handle fills the screen, returns or closes it.
+// docs/specs/007-editor/editor-app.md "Mobile chrome": a sheet's handle fills the screen, returns or closes it.
 describe('sheetRelease', () => {
   it('from rest: up fills, far down closes, a little springs back', () => {
     expect(sheetRelease(false, -60, 0.1)).toBe('expand');

@@ -1,6 +1,6 @@
 // Account-and-data surfaces drawn for the support articles (docs/specs/018-help/help-app.md): the
 // Trash view, the API Tokens category of Settings, the MCP connection consent card, and the
-// Notifications category. Labels are the real ones from apps/live. Composed only from the shared
+// Notifications category. Labels are the real ones from apps/editor. Composed only from the shared
 // primitives so the house style holds.
 
 import { Scene, Panel, Dialog, Button, Label } from './primitives';

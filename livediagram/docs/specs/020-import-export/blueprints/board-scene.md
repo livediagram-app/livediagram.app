@@ -9,35 +9,35 @@ Scope, by file:
 
 | File                                                                      | Role                                                                                              |
 | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| `apps/live/lib/board-scene/scene.ts`                                      | The contract: scene types only                                                                    |
-| `apps/live/lib/board-scene/colour.ts`                                     | `createColourResolver`, fields per role, `resolveFill`, `resolveStickyFill`, the colour constants |
-| `apps/live/lib/board-scene/context.ts`                                    | `LandContext`: the memoised resolver and the landing's own rules (`LANDING_RULES`)                |
-| `apps/live/lib/board-scene/common.ts`                                     | rotation, lock, safe link, opacity; `limitPoints`, `turnPoints`, `endsMeet`                       |
-| `apps/live/lib/board-scene/test-scenes.ts`                                | Typed scene builders for tests (synthesised content)                                              |
-| `apps/live/lib/board-scene/width.ts`                                      | `markerWidthPx`, `borderStrokeOf`, `arrowWidthPx`                                                 |
-| `apps/live/lib/board-scene/text.ts`                                       | `textBoxFields`, `labelFields`, the font table                                                    |
-| `apps/live/lib/board-scene/land-marks.ts`                                 | ink, polyline (whiteboard profile)                                                                |
-| `apps/live/lib/board-scene/land-boxes.ts`                                 | shape, text, sticky, image, frame (whiteboard profile)                                            |
-| `apps/live/lib/board-scene/land-connectors.ts`                            | connector and headed polyline to an arrow (both profiles)                                         |
-| `apps/live/lib/board-scene/land-diagram.ts`                               | the diagram profile's per-kind mapping                                                            |
-| `apps/live/lib/board-scene/placement.ts`                                  | `sceneBounds`, `placementOffset`                                                                  |
-| `apps/live/lib/board-scene/report.ts`                                     | `BoardSceneReport`, `mergeNotes`, the copy per landed kind                                        |
-| `apps/live/lib/board-scene/land.ts`                                       | `landBoardScene`: validation, limits, ordering, ids, tab patch, logging                           |
-| `apps/live/lib/board-scene/attach.ts`                                     | `sceneImageSource`: a `SceneAsset` as an `ImportImageSource`                                      |
-| `apps/live/hooks/canvas/useBoardSceneInsert.ts`                           | Paste / drop: land at a point, images, one commit, select, notice state                           |
-| `apps/live/lib/board-scene-import.ts`                                     | `importBoardsAsDocuments`, `finishLanding`: the new-document target, editor-free                  |
-| `apps/live/hooks/persistence/useBoardSceneImport.ts`                      | Import commit paths: replace-tab, new-document                                                    |
-| `apps/live/lib/board-scene-hug.ts`                                        | `hugLandedText`, `landedTextFonts`: re-hugs landed text boxes                                     |
-| `apps/live/lib/board-scene-browser.ts`                                    | The browser seams: `browserImageSession`, `browserHugText` (fonts loaded first)                   |
-| `apps/live/components/dialogs/ImportImageReport.tsx`                      | The dialog's result view: scene report, board failures, images                                    |
-| `apps/live/lib/quick-style-applicability.ts`                              | `quickStyleApplicability`, `quickStyleCaption`                                                    |
-| `apps/live/lib/reset-colours.ts`                                          | "Reset to Theme" per element, named colours included                                              |
-| `apps/live/components/canvas/BoardSceneNotice.tsx`                        | The paste notice                                                                                  |
-| `apps/live/components/dialogs/BoardSceneReportList.tsx`                   | The report's rows, shared by the notice and the Import dialog                                     |
+| `apps/editor/lib/board-scene/scene.ts`                                      | The contract: scene types only                                                                    |
+| `apps/editor/lib/board-scene/colour.ts`                                     | `createColourResolver`, fields per role, `resolveFill`, `resolveStickyFill`, the colour constants |
+| `apps/editor/lib/board-scene/context.ts`                                    | `LandContext`: the memoised resolver and the landing's own rules (`LANDING_RULES`)                |
+| `apps/editor/lib/board-scene/common.ts`                                     | rotation, lock, safe link, opacity; `limitPoints`, `turnPoints`, `endsMeet`                       |
+| `apps/editor/lib/board-scene/test-scenes.ts`                                | Typed scene builders for tests (synthesised content)                                              |
+| `apps/editor/lib/board-scene/width.ts`                                      | `markerWidthPx`, `borderStrokeOf`, `arrowWidthPx`                                                 |
+| `apps/editor/lib/board-scene/text.ts`                                       | `textBoxFields`, `labelFields`, the font table                                                    |
+| `apps/editor/lib/board-scene/land-marks.ts`                                 | ink, polyline (whiteboard profile)                                                                |
+| `apps/editor/lib/board-scene/land-boxes.ts`                                 | shape, text, sticky, image, frame (whiteboard profile)                                            |
+| `apps/editor/lib/board-scene/land-connectors.ts`                            | connector and headed polyline to an arrow (both profiles)                                         |
+| `apps/editor/lib/board-scene/land-diagram.ts`                               | the diagram profile's per-kind mapping                                                            |
+| `apps/editor/lib/board-scene/placement.ts`                                  | `sceneBounds`, `placementOffset`                                                                  |
+| `apps/editor/lib/board-scene/report.ts`                                     | `BoardSceneReport`, `mergeNotes`, the copy per landed kind                                        |
+| `apps/editor/lib/board-scene/land.ts`                                       | `landBoardScene`: validation, limits, ordering, ids, tab patch, logging                           |
+| `apps/editor/lib/board-scene/attach.ts`                                     | `sceneImageSource`: a `SceneAsset` as an `ImportImageSource`                                      |
+| `apps/editor/hooks/canvas/useBoardSceneInsert.ts`                           | Paste / drop: land at a point, images, one commit, select, notice state                           |
+| `apps/editor/lib/board-scene-import.ts`                                     | `importBoardsAsDocuments`, `finishLanding`: the new-document target, editor-free                  |
+| `apps/editor/hooks/persistence/useBoardSceneImport.ts`                      | Import commit paths: replace-tab, new-document                                                    |
+| `apps/editor/lib/board-scene-hug.ts`                                        | `hugLandedText`, `landedTextFonts`: re-hugs landed text boxes                                     |
+| `apps/editor/lib/board-scene-browser.ts`                                    | The browser seams: `browserImageSession`, `browserHugText` (fonts loaded first)                   |
+| `apps/editor/components/dialogs/ImportImageReport.tsx`                      | The dialog's result view: scene report, board failures, images                                    |
+| `apps/editor/lib/quick-style-applicability.ts`                              | `quickStyleApplicability`, `quickStyleCaption`                                                    |
+| `apps/editor/lib/reset-colours.ts`                                          | "Reset to Theme" per element, named colours included                                              |
+| `apps/editor/components/canvas/BoardSceneNotice.tsx`                        | The paste notice                                                                                  |
+| `apps/editor/components/dialogs/BoardSceneReportList.tsx`                   | The report's rows, shared by the notice and the Import dialog                                     |
 | `packages/document/src/element-types.ts`, `arrow-types.ts`, `validate.ts` | `penTextColour` on text, shape, sticky and arrow; `penColour` on path                             |
 | `packages/document/src/pen-colours.ts`                                    | `hexOklch` for the colour rules                                                                   |
 | `packages/document/src/stock-colours.ts`                                  | `resolveStockColours` draws `penTextColour`                                                       |
-| `apps/live/lib/quick-style-pen.ts`                                        | `tabCustomColours` reads text, path and arrow colours too                                         |
+| `apps/editor/lib/quick-style-pen.ts`                                        | `tabCustomColours` reads text, path and arrow colours too                                         |
 
 ## Domain and naming
 
@@ -123,7 +123,7 @@ order, counts summed per rule.
 | `TEXT_SCALE_EPSILON`      | `0.005`                                                     | 0.001 to 0.02       | A scale this close to 1 is omitted (no visible difference at 64 px)                                                         |
 | `CLOSED_END_EPSILON_PX`   | `1`                                                         | 0.5 to 2            | The Excalidraw importer's closure test: ends within 1 px coincide                                                           |
 | `SCENE_FONTS`             | hand `caveat`, mono `roboto-mono`, serif `lora`, sans unset | n/a                 | `fonts.ts` catalogue; Excalifont / Virgil / Whiteboard ink fonts read as hand                                               |
-| Marker widths             | `WHITEBOARD_PEN_WIDTHS`                                     | as defined          | `apps/live/lib/whiteboard-prefs.ts` (1, 1.5, 2.5, 4, 6, 9 px)                                                               |
+| Marker widths             | `WHITEBOARD_PEN_WIDTHS`                                     | as defined          | `apps/editor/lib/whiteboard-prefs.ts` (1, 1.5, 2.5, 4, 6, 9 px)                                                               |
 | Border widths             | `BORDER_STROKE_PX`                                          | as defined          | `nearestBorderStroke` in `packages/document/src/whiteboard.ts`                                                              |
 | Text presets              | `LABEL_FONT_PX` sm/md/lg                                    | as defined          | 14 / 22 / 32 px                                                                                                             |
 | Text scale limits         | `TEXT_SCALE_MIN..MAX`                                       | as defined          | 0.1 to 40, `validate.ts`                                                                                                    |
@@ -287,7 +287,7 @@ hold." }` (the number is `MAX_ELEMENTS_PER_TAB`), logged `[board-scene] rejected
 2. Drop unusable items into the skipped rule "Elements without a size were skipped": a non-finite
    coordinate anywhere, a point item with no points (a connector or polyline with fewer than two),
    a boxed item with width or height `<= 0`. Then drop the rest that fail `withinImportReach`
-   (`apps/live/lib/import-coords.ts`: every point, or x, y, width and height, within
+   (`apps/editor/lib/import-coords.ts`: every point, or x, y, width and height, within
    `IMPORT_COORD_MAX` of zero) into the skipped rule "Elements too far off the board were skipped".
 3. Placement offset; land per profile; merge notes (parser notes then landing notes, by rule and
    kind); count `landed` per scene kind of the items that produced an element.
@@ -334,7 +334,7 @@ Returns `{ insertScene(scene, at?), notice, dismissNotice }`; composed in `useEd
 - `importScenesAsNewDocuments(scenes, onProgress)`: `importBoardsAsDocuments` with the open
   document deciding `offline` (`isOfflineId`).
 - `importBoardsAsDocuments(scenes, { ownerId, offline, folderId?, onProgress?, onDocumentsCreated?,
-createDocument?, createImageSession?, hugText? })` (`apps/live/lib/board-scene-import.ts`, no editor
+createDocument?, createImageSession?, hugText? })` (`apps/editor/lib/board-scene-import.ts`, no editor
   state, so the Explorer page calls it directly): per scene, `boardDocumentDates(scene, now)` and
   `boardDocumentName(scene, createdAt)` (`lib/board-scene/board-document.ts`), the landing
   (`whiteboard` / `origin`), `finishLanding` (images through a session made with `{ ownerId,
@@ -477,21 +477,21 @@ heading per the spec, `BoardSceneReportList` rows, the image placeholder sentenc
 | diagram profile reproduces the Excalidraw file mapping                             | `land-diagram.test.ts`                                                                                                                         |
 | element limit at the boundary                                                      | `land.test.ts`                                                                                                                                 |
 | `penTextColour` / path `penColour` validation                                      | `packages/document/src/validate.test.ts`                                                                                                       |
-| projection of named text colours                                                   | `packages/document/src/whiteboard.test.ts`, `apps/live/lib/export-as-seen.test.ts` (SVG export)                                                |
+| projection of named text colours                                                   | `packages/document/src/whiteboard.test.ts`, `apps/editor/lib/export-as-seen.test.ts` (SVG export)                                                |
 | `hexOklch`                                                                         | `packages/document/src/pen-colours.test.ts`                                                                                                    |
-| reset to theme drops named colours                                                 | `apps/live/lib/reset-colours.test.ts`                                                                                                          |
+| reset to theme drops named colours                                                 | `apps/editor/lib/reset-colours.test.ts`                                                                                                          |
 | rotation, links, point helpers                                                     | `common.test.ts`                                                                                                                               |
-| text hug of landed boxes                                                           | `apps/live/lib/board-scene-hug.test.ts`                                                                                                        |
-| quick style on a mixed whiteboard selection, dark mode                             | `apps/live/e2e/quick-style-mixed.spec.ts`                                                                                                      |
-| insert: one commit, selection, images, notice, point                               | `apps/live/hooks/canvas/useBoardSceneInsert.test.ts` (fakes)                                                                                   |
-| board document name and dates                                                      | `apps/live/lib/board-scene/board-document.test.ts`                                                                                             |
+| text hug of landed boxes                                                           | `apps/editor/lib/board-scene-hug.test.ts`                                                                                                        |
+| quick style on a mixed whiteboard selection, dark mode                             | `apps/editor/e2e/quick-style-mixed.spec.ts`                                                                                                      |
+| insert: one commit, selection, images, notice, point                               | `apps/editor/hooks/canvas/useBoardSceneInsert.test.ts` (fakes)                                                                                   |
+| board document name and dates                                                      | `apps/editor/lib/board-scene/board-document.test.ts`                                                                                             |
 | document dates rule; the worker's create with dates (real schema)                  | `packages/api-schema/src/document-dates.test.ts`, `apps/api/src/routes/document-create-dates.test.ts`, `apps/api/src/routes/documents.test.ts` |
-| result view lists new documents and failures                                       | `apps/live/components/dialogs/ImportImageReport.test.tsx`                                                                                      |
+| result view lists new documents and failures                                       | `apps/editor/components/dialogs/ImportImageReport.test.tsx`                                                                                      |
 | landed ink within the codec's guarantee, points and pressures                      | `land-marks.test.ts` "landed ink precision"                                                                                                    |
-| compact output: boxes, arrow ends and bends, a stroke left as packed               | `apps/live/lib/board-scene/compact.test.ts`                                                                                                    |
-| a large synthetic board lands packed, under 8 bytes a point                        | `apps/live/lib/board-scene/land.test.ts` "a large board"                                                                                       |
-| a 413 on create is "This board is too big for one document", logged, the rest land | `apps/live/lib/board-scene-import.test.ts`                                                                                                     |
-| new documents outside the editor: folder, offline, own maker                       | `apps/live/lib/board-scene-import.test.ts`                                                                                                     |
-| import: replace-tab, new documents (cloud and offline), failures                   | `apps/live/hooks/persistence/useBoardSceneImport.test.ts` (fakes)                                                                              |
-| notice slot above the dock at every width                                          | `apps/live/lib/board-scene-notice-slot.test.ts`                                                                                                |
-| notice copy and role                                                               | `apps/live/components/canvas/BoardSceneNotice.test.tsx`                                                                                        |
+| compact output: boxes, arrow ends and bends, a stroke left as packed               | `apps/editor/lib/board-scene/compact.test.ts`                                                                                                    |
+| a large synthetic board lands packed, under 8 bytes a point                        | `apps/editor/lib/board-scene/land.test.ts` "a large board"                                                                                       |
+| a 413 on create is "This board is too big for one document", logged, the rest land | `apps/editor/lib/board-scene-import.test.ts`                                                                                                     |
+| new documents outside the editor: folder, offline, own maker                       | `apps/editor/lib/board-scene-import.test.ts`                                                                                                     |
+| import: replace-tab, new documents (cloud and offline), failures                   | `apps/editor/hooks/persistence/useBoardSceneImport.test.ts` (fakes)                                                                              |
+| notice slot above the dock at every width                                          | `apps/editor/lib/board-scene-notice-slot.test.ts`                                                                                                |
+| notice copy and role                                                               | `apps/editor/components/canvas/BoardSceneNotice.test.tsx`                                                                                        |

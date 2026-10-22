@@ -18,7 +18,7 @@ So if A moved element X and B moved element Y on the same tab within the sync
 window, whichever op landed last overwrote the other's whole element set. One
 edit silently vanished.
 
-The **selection lock** ([Live app](../007-editor/live-app.md)) already soft-locks an element for peers while
+The **selection lock** ([Editor app](../007-editor/editor-app.md)) already soft-locks an element for peers while
 someone has it selected, heading off most _same-element_ collisions. The gap was
 _same-tab, different-element_ edits — the common case — plus messy recovery when
 a socket dropped.
@@ -116,7 +116,7 @@ that let `viewport` through.
   every wake, so hibernation does not strand a reconnecting client. The op log
   lives in memory only: a client that fell behind across a wake finds the log
   empty and re-fetches, which is the safe path and never loses data.
-- The client (`apps/live/lib/api/room.ts`) gained auto-reconnect with capped
+- The client (`apps/editor/lib/api/room.ts`) gained auto-reconnect with capped
   backoff + seq/epoch tracking. The backoff's six attempts span about 30
   seconds; once they are used up the client waits for the browser to come back
   online or the tab to be shown again and starts a fresh round then, so an
@@ -173,7 +173,7 @@ A socket can die without a close event: a laptop asleep, a NAT or proxy that dro
 connection. It then reads as open while nothing arrives, so collaborators' changes stop reaching
 the editor until a reload, and nothing says so. The client therefore checks its socket:
 
-- After 20 seconds with nothing heard (`ROOM_KEEPALIVE_IDLE_MS`, `apps/live/lib/api/room.ts`) it
+- After 20 seconds with nothing heard (`ROOM_KEEPALIVE_IDLE_MS`, `apps/editor/lib/api/room.ts`) it
   sends the bare text `ping` (`ROOM_PING` in `room-messages.ts`). Any traffic resets the clock, so
   a busy room sends none.
 - The room answers `pong` through the runtime's `setWebSocketAutoResponse`, which never wakes a
@@ -197,7 +197,7 @@ the editor until a reload, and nothing says so. The client therefore checks its 
    state (epoch + seq, the op log, the collaboration ledger, the live poll, the
    facilitator baton), never a copy of the document. REST reads, exports, and
    offline durability read D1.
-3. **The selection lock stays advisory.** The [Live app](../007-editor/live-app.md) lock soft-locks a
+3. **The selection lock stays advisory.** The [Editor app](../007-editor/editor-app.md) lock soft-locks a
    selected element for peers on the client. It makes same-element concurrent
    editing rare, not impossible: the room does not enforce it between people.
    Such collisions stay last-writer-wins over the whole element, which is the
@@ -254,13 +254,13 @@ verified end-to-end and turned on properly, not carried as dormant code.
 - `apps/api/src/room-client.ts` — the worker's calls into the room: the ledger
   merge on a tab PUT (`fetchRoomLedger` + `applyRoomLedger`, driven by `X-Room-Cursor`), the
   view-role comment relay (`relayElementDelta`) and share-link broadcasts.
-- `apps/live` — `tab-broadcast-ops.ts` (emit), `tab-save-flow.ts` (a save's
+- `apps/editor` — `tab-broadcast-ops.ts` (emit), `tab-save-flow.ts` (a save's
   ledger deltas sequenced before its PUT, its element ops after) + the room
   `onOp` handler (apply); `lib/api/room.ts` (auto-reconnect, seq/epoch
   tracking, the outbox, `sequence` and its `ref`);
   `useRoomConnection` (`onResync` → `useRoomResync`, an in-place re-fetch, +
   telemetry).
 
-See also [Live app](../007-editor/live-app.md) (selection lock),
+See also [Editor app](../007-editor/editor-app.md) (selection lock),
 [API app](../015-api/api.md) (api + room), [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md) (events),
 [Auth + guest access](../014-identity/auth-and-guest-access.md) (guest access).

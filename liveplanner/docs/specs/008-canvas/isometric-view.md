@@ -97,7 +97,7 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
 - `isometric` joins the `CanvasTool` union (`'pan' | 'select' | 'format' | 'isometric'`). It's a mutually-exclusive cursor
   mode, so it belongs **inside** the tool group, unlike Zen mode which is an
   orthogonal visibility flag.
-- The projection math lives in its own helper (`apps/live/lib/isometric.ts`):
+- The projection math lives in its own helper (`apps/editor/lib/isometric.ts`):
   the camera transform builder, elevation clamp, and per-element extrusion
   metrics, kept out of `Canvas.tsx` so the geometry is unit-testable and the
   canvas just consumes it. The orbit-able angle lives in its own hook
@@ -146,7 +146,7 @@ Like Pan / Select, repeated re-selection isn't re-tracked.
 
 ## Isometric export
 
-The Export dialog ([Live app](../007-editor/live-app.md) `ExportTabDialog`) carries an **Isometric view**
+The Export dialog ([Editor app](../007-editor/editor-app.md) `ExportTabDialog`) carries an **Isometric view**
 iOS-style toggle, **off by default**. When on, the image exports (PNG / SVG /
 PDF) tilt the rendered scene into the same isometric projection as the on-canvas
 view; JSON / Markdown ignore it. The export applies the projection's 2D affine

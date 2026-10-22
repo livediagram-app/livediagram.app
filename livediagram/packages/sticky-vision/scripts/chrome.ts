@@ -6,7 +6,7 @@ import { workingSizeOf } from '../src/working-size';
 // product would give it, so that image is made the product's way: the photo
 // decoded by a real Chromium (`createImageBitmap`, EXIF orientation applied)
 // and drawn at the working size with `imageSmoothingQuality = 'high'` —
-// exactly `drawTo` in apps/live/lib/photo-detect.ts. ImageMagick's resize is a
+// exactly `drawTo` in apps/editor/lib/photo-detect.ts. ImageMagick's resize is a
 // different filter, and on small notes the difference moved whole boxes: the
 // same detector scored 91.4 on ImageMagick's pixels and 90.7 on Chromium's,
 // and a different wall passed.

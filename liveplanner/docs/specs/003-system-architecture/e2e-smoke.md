@@ -36,7 +36,7 @@ The browser suite is its own workflow, `e2e.yml` (named **E2E Smoke**), triggere
 A new run on the same ref cancels the one in flight (`concurrency`), so pushing again to a
 pull request never queues two runs of the suite.
 
-It runs **every** spec file in `apps/live/e2e/` (bar the opt-in Drive, perf and WebKit projects),
+It runs **every** spec file in `apps/editor/e2e/` (bar the opt-in Drive, perf and WebKit projects),
 spread over parallel jobs so the wall time is the slowest job, not the sum:
 
 | Job                 | Builds                                   | Runs                                                                    |
@@ -70,7 +70,7 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
   `GUEST_SIG_ENFORCE_AFTER=1` in `scripts/e2e-stack.mjs`), as
   production runs once armed ([Public API and API tokens](../015-api/public-api-and-tokens.md) §4).
   A spec seeds through a signed guest: `mintSignedGuest` + `ownerHeaders` for Playwright
-  requests, `pageOwnerHeaders` for calls made inside the page (`apps/live/e2e/fixtures.ts`). A
+  requests, `pageOwnerHeaders` for calls made inside the page (`apps/editor/e2e/fixtures.ts`). A
   hand-made `crypto.randomUUID()` owner is refused (401), and so is any entry path that sends an
   unsigned id. The api cannot make a legacy guest under enforcement, so the stack writes one:
   `POST /__e2e/legacy-guest` puts a participant row dated before `GUEST_SIGNING_LIVE_AT` (1000 on
@@ -114,11 +114,11 @@ Cost controls, all in `e2e.yml` and `playwright.config.ts`:
 
 ## The stack under test
 
-The suite runs against the **real production build**, the live app's
+The suite runs against the **real production build**, the editor app's
 `output: 'export'` static bundle plus the real api worker on local D1,
 so it exercises exactly what ships, not a dev-only code path.
-The stack serves whatever `apps/live/out` holds and never rebuilds it, so locally run
-`pnpm --filter @liveplanner/live build` first; an old `out/` fails audits for code that has since changed.
+The stack serves whatever `apps/editor/out` holds and never rebuilds it, so locally run
+`pnpm --filter @liveplanner/editor build` first; an old `out/` fails audits for code that has since changed.
 
 `scripts/e2e-stack.mjs` boots the stack Playwright's `webServer` waits on:
 
@@ -126,9 +126,9 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
    `db:migrate:local` applied to a fresh local D1 so persistence works.
    `TELEMETRY_ENABLED` unset (the suite asserts on the app, not the
    events pipe).
-2. **live**: the static `apps/live/out` served by a minimal Node
+2. **live**: the static `apps/editor/out` served by a minimal Node
    server that reproduces the three things the production router +
-   live worker do (so clean routes and the project placeholder resolve
+   editor worker do (so clean routes and the project placeholder resolve
    identically to prod):
    - strip the `/live` `assetPrefix` so `/live/_next/*` resolves to
      `out/_next/*`;
@@ -153,27 +153,27 @@ The stack serves whatever `apps/live/out` holds and never rebuilds it, so locall
 3. **marketing**: `apps/marketing/out` on its own port (`E2E_MARKETING_PORT`, default `3013`),
    since marketing owns `/` in production.
 
-The stack also runs the editor alone beside a running one (`E2E_LIVE_ONLY`,
-`E2E_LIVE_PORT`, `E2E_API_PORT`); see
+The stack also runs the editor alone beside a running one (`E2E_EDITOR_ONLY`,
+`E2E_EDITOR_PORT`, `E2E_API_PORT`); see
 [Local development](../../development/local-development.md).
 
 Locally the same `playwright.config.ts` sets `reuseExistingServer`, so a
 developer with `pnpm dev` already running (live :3102 + api :8887) runs
-`pnpm --filter @liveplanner/live test:e2e` against that stack with no
+`pnpm --filter @liveplanner/editor test:e2e` against that stack with no
 extra boot.
 
 ## Signed-in specs
 
 Sign-in is a build-time switch ([Auth + guest access](../014-identity/auth-and-guest-access.md)), so the
-guest-mode `out/` can never show a signed-in user. The specs in `apps/live/e2e/signed-in/` run
-against a second export, `apps/live/.next/out-signed-in/` (inside `.next/`, so every ignore and
+guest-mode `out/` can never show a signed-in user. The specs in `apps/editor/e2e/signed-in/` run
+against a second export, `apps/editor/.next/out-signed-in/` (inside `.next/`, so every ignore and
 source scanner already skips it), built by `pnpm build:signed-in` with sign-in on and
 `NEXT_PUBLIC_E2E_AUTH=1`, which swaps the accounts bridge for the test-only `E2EAuthBridge`. Each
 spec puts a session in `localStorage` (`installSession` in `e2e/signed-in/session.ts`) before the
 page loads, so a chosen user (name, email) is signed in with no accounts Worker, secret or network.
 
-`pnpm --filter @liveplanner/live test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
-`signed-in` project and boots the stack with `E2E_LIVE_OUT=.next/out-signed-in` on its own ports
+`pnpm --filter @liveplanner/editor test:e2e:signed-in` sets `E2E_SIGNED_IN=1`, which adds the
+`signed-in` project and boots the stack with `E2E_EDITOR_OUT=.next/out-signed-in` on its own ports
 (live `:3115`, api `:8888`, marketing `:3116`), so a guest stack already up on `:3102` is never
 reused for it. The stack also stands in for the accounts Worker (`E2E_ACCOUNTS_STUB=1`): it makes a
 signing key at boot, serves its JWKS on the issuer's own path (`/e2e/accounts/api/auth/jwks`),
@@ -189,9 +189,9 @@ tests (`apps/api/src/routes/auth.test.ts`), not here.
 ## Armed guest signatures
 
 Every stack enforces guest signatures (above), so every spec runs as production does once armed.
-The specs in `apps/live/e2e/armed/` focus on the entry paths: a first-time guest who arrives on `/` or `/new`, or opens the
+The specs in `apps/editor/e2e/armed/` focus on the entry paths: a first-time guest who arrives on `/` or `/new`, or opens the
 Explorer first, gets a signed id before any owner-scoped call, creates a project (`201`) and sees
-the canvas, and no api response is `401`. `pnpm --filter @liveplanner/live test:e2e:armed` sets
+the canvas, and no api response is `401`. `pnpm --filter @liveplanner/editor test:e2e:armed` sets
 `E2E_GUEST_SIG_ENFORCE=1`, which adds the `armed` project and boots the stack on its own ports
 (live `:3017`, api `:8789`, marketing `:3018`). It
 reuses the guest-mode export, so `e2e.yml` runs it as a second step of the Sites audit job, which
@@ -204,7 +204,7 @@ exception, unhandled rejection or `console.error`** on the page, the class the
 pan-loop bug was in. The per-test UI checks are the vehicle that drives the
 code paths; this is the alarm.
 
-`apps/live/e2e/fixtures.ts` exports a `test` extended with a **`pageErrors`**
+`apps/editor/e2e/fixtures.ts` exports a `test` extended with a **`pageErrors`**
 fixture, which collects every `pageerror` and `console.error` the page raises,
 minus known benign noise (a favicon or manifest 404, dev-server Fast Refresh
 chatter, Chromium's generic "Failed to load resource" line, and the blocked
@@ -238,7 +238,7 @@ One spec file per feature, each linking the spec it proves:
 | `palette-drag.spec.ts`          | a tile in a category's More popover on the Toolbar strip drags onto the canvas, whatever its catalogue: a shape, and a line icon and a sticker found by their own catalogue's search                                                                                                                                                                                                          | [Palette drag ghost](../010-palette/palette-drag-ghost.md), [Toolbar layout](../007-editor/toolbar-layout.md) |
 | `quick-style-panel.spec.ts`     | one-click styles, the left-edge placement, swatch targets, and custom swatch overrides                                                                                                                                                                                                                                                                                                        | [Quick style panel](../008-canvas/quick-style-panel.md)                                                       |
 | `multicolour-theme.spec.ts`     | Rainbow gives each limb of a mind map its own palette colour                                                                                                                                                                                                                                                                                                                                  | [Multi-colour themes](../011-theme/multicolour-themes.md)                                                     |
-| `appearance.spec.ts`            | the appearance opens on the device setting and cycles, never writes to the project, tells Dark Reader to stand down, and is remembered before first paint                                                                                                                                                                                                                                     | [Live app](../007-editor/live-app.md)                                                                         |
+| `appearance.spec.ts`            | the appearance opens on the device setting and cycles, never writes to the project, tells Dark Reader to stand down, and is remembered before first paint                                                                                                                                                                                                                                     | [Editor app](../007-editor/editor-app.md)                                                                         |
 | `power-user-mode.spec.ts`       | the role pill toggles a read-only preview; Minimal chrome hides words; switching off restores untouched settings                                                                                                                                                                                                                                                                              | [Power user mode](../007-editor/power-user-mode.md)                                                           |
 | `settings-memory.spec.ts`       | Settings reopens on the last category and row, across a resize and deep inside a tall row                                                                                                                                                                                                                                                                                                     | [User preferences](../007-editor/user-preferences.md)                                                         |
 | `hints.spec.ts`                 | a palette tile's tooltip after a 500 ms hover, at once on focus, Escape, pointer onto it; hover cards                                                                                                                                                                                                                                                                                         | [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md)                |
@@ -257,23 +257,23 @@ tests where it's cheap.
 
 ## Layout
 
-- `apps/live/playwright.config.ts`: the `chromium` and `sites` projects (plus the opt-in ones),
+- `apps/editor/playwright.config.ts`: the `chromium` and `sites` projects (plus the opt-in ones),
   `webServer` → `scripts/e2e-stack.mjs`, `reuseExistingServer` locally.
-- `apps/live/e2e/*.spec.ts`: the spec files above. Playwright collects only `.spec.ts` (`testMatch`); a
+- `apps/editor/e2e/*.spec.ts`: the spec files above. Playwright collects only `.spec.ts` (`testMatch`); a
   `.test.ts` beside them is a Vitest unit test of a pure helper (`optical-snap.test.ts`, `perf/*.test.ts`),
   which `vitest.config.ts` runs and Playwright never loads.
-- `apps/live/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
+- `apps/editor/e2e/fixtures.ts`: the `test` with its `pageErrors` fixture, `expectNoPageErrors`, and the
   shared flows (`startBlankProject`, `startTemplateProject`, `seedTab`, `dismissQuickTour`, `openJustDraw`).
   `startTemplateProject` exists because the blank helper skips the wizard's category step and so never
   exercises template creation.
-- `apps/live/e2e/fixtures/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
+- `apps/editor/e2e/fixtures/`: `audit-screens.ts`, `contrast.ts`, `optical.ts` and `optical-discover.ts`: the screens and measurements the dark-mode audits share.
 - `scripts/e2e-stack.mjs`: the stack boot + static serve (live, help, telemetry, marketing).
 - `.github/workflows/e2e.yml`: the sharded workflow, run on every pull request;
   `.github/actions/e2e-setup/`: the setup its jobs share (pnpm, Node, install, image check).
-- `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/live/package.json`; `build:signed-in`
-  (`apps/live/scripts/build-signed-in.mjs`) builds the export the latter runs against.
-- `apps/live/e2e/signed-in/`: the session helper and the signed-in specs.
+- `test:e2e`, `test:e2e:smoke`, `test:e2e:sites` and `test:e2e:signed-in` scripts in `apps/editor/package.json`; `build:signed-in`
+  (`apps/editor/scripts/build-signed-in.mjs`) builds the export the latter runs against.
+- `apps/editor/e2e/signed-in/`: the session helper and the signed-in specs.
 
-Playwright is an `apps/live` dev dependency; it is **not** wired into
+Playwright is an `apps/editor` dev dependency; it is **not** wired into
 `pnpm test` / `turbo run test` (that stays the fast unit gate), so
 `e2e.yml` is the only thing that runs it in CI.

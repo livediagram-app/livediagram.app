@@ -201,7 +201,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   until past its right edge; a later element's centre inside its box makes it a backdrop. O(n log n + hits). A
   backdrop draws `solid`, never `hatch`.
 
-### Canvas (`apps/live`)
+### Canvas (`apps/editor`)
 
 - `components/canvas/CanvasFinishContext.tsx`: `CanvasFinishProvider` (the active tab's finish, re-provided by each
   `Canvas` for its own tab), `useTabFinish()` and `useElementFinish(own): Finish`, a context like
@@ -485,14 +485,14 @@ per command letter.
 | determinism, seeds differ, outlines, hatching bounds/caps    | `packages/project/src/sketch.test.ts`                                                                   |
 | budgets                                                      | `packages/project/src/sketch.perf.test.ts`                                                              |
 | export draws sketch strokes / hatching / Professional radius | `packages/project/src/svg-render-finish.test.ts`                                                        |
-| variant drops shadow / peel / border per finish              | `apps/live/components/canvas/element-variant.test.ts`                                                    |
-| menu rows commit, preview, Follow Tab clears                 | `apps/live/components/palette/FinishSection.test.tsx`                                                    |
+| variant drops shadow / peel / border per finish              | `apps/editor/components/canvas/element-variant.test.ts`                                                    |
+| menu rows commit, preview, Follow Tab clears                 | `apps/editor/components/palette/FinishSection.test.tsx`                                                    |
 | backdrops: what sits on a shape, order, finish, speed        | `packages/project/src/sketch-backdrop.test.ts`                                                          |
-| Professional new arrows angled; avoidance per finish         | `apps/live/hooks/canvas/arrow-avoidance-apply.test.ts`                                                   |
-| which palette tiles take the finish                          | `apps/live/components/palette/palette-tile-finish.test.ts`                                               |
-| applyFinishToEl                                              | `apps/live/lib/style-presets.test.ts`                                                                    |
-| preview draws each finish, stable, in the tab's font         | `apps/live/lib/finish-preview.test.ts`                                                                   |
-| dialog tab sets, previews, Apply to All clears               | `apps/live/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/live/hooks/canvas/useTabCanvas.test.ts` |
+| Professional new arrows angled; avoidance per finish         | `apps/editor/hooks/canvas/arrow-avoidance-apply.test.ts`                                                   |
+| which palette tiles take the finish                          | `apps/editor/components/palette/palette-tile-finish.test.ts`                                               |
+| applyFinishToEl                                              | `apps/editor/lib/style-presets.test.ts`                                                                    |
+| preview draws each finish, stable, in the tab's font         | `apps/editor/lib/finish-preview.test.ts`                                                                   |
+| dialog tab sets, previews, Apply to All clears               | `apps/editor/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/editor/hooks/canvas/useTabCanvas.test.ts` |
 | Participant cannot write `finish`                            | `packages/project/src/participant-content.leak.test.ts`                                                 |
 | which elements split their face                              | `packages/project/src/finish.test.ts`                                                                   |
 | Marker: finish rules, font, widths, icon weight, sticky      | `packages/project/src/finish.test.ts`                                                                   |
@@ -500,8 +500,8 @@ per command letter.
 | Marker: budgets                                              | `packages/project/src/marker.perf.test.ts`                                                              |
 | one door to both pens; Marker in the export; backdrops       | `packages/project/src/hand-drawn.test.ts`                                                               |
 | export split, body placement, tab window frame, defs, fonts  | `packages/project/src/svg-render-sketch.test.ts`                                                        |
-| ink copy, settle and longest wait, single render             | `apps/live/components/canvas/SketchFace.test.tsx`                                                        |
-| WebKit is told by `GestureEvent`                             | `apps/live/lib/live-filter-cost.test.ts`                                                                 |
+| ink copy, settle and longest wait, single render             | `apps/editor/components/canvas/SketchFace.test.tsx`                                                        |
+| WebKit is told by `GestureEvent`                             | `apps/editor/lib/live-filter-cost.test.ts`                                                                 |
 
 ## Constants and configuration
 

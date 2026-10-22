@@ -9,7 +9,7 @@ touch? Results and verdicts:
 
 The editor imports only `src/index.ts`, the browser-safe part (cues, decode,
 mask, `stride.ts`, `flatness.ts`): no TensorFlow.js, no Node. It runs the network itself, in a
-Web Worker (`apps/live/lib/photo-model/`), on the uint8 weights shipped there
+Web Worker (`apps/editor/lib/photo-model/`), on the uint8 weights shipped there
 (`scripts/hybrid/quantise.ts --min-elements 0` over the synthetic-only
 `synth-v1` model), and hands the cues to `sticky-vision`'s hybrid rules
 ([docs/research/vision/experiments/m-editor-model.md](../../docs/research/vision/experiments/m-editor-model.md)).

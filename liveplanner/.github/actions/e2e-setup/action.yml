@@ -30,7 +30,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        locked="$(pnpm --filter @liveplanner/live exec playwright --version | awk '{print $2}')"
+        locked="$(pnpm --filter @liveplanner/editor exec playwright --version | awk '{print $2}')"
         expected="mcr.microsoft.com/playwright:v${locked}-noble"
         echo "Playwright ${locked}, expecting ${expected}"
         stale="$(grep -o 'mcr.microsoft.com/playwright:v[0-9.]*-noble' .github/workflows/e2e.yml | grep -vxF "${expected}" || true)"

@@ -19,11 +19,11 @@ Two promises shape the design:
 
 ## Where it lives
 
-- `apps/live/lib/drawio/`: the importer, a folder of small modules (decode, style, cells, shapes,
+- `apps/editor/lib/drawio/`: the importer, a folder of small modules (decode, style, cells, shapes,
   labels, edges, convert), entry point `importDrawio(input, options)`. Sibling of the
   Excalidraw importer (`excalidraw-read.ts`); lazy-loaded by `useTabImport` so none of it lands in the editor's first
   load. It never throws on bad input: it returns `{ ok: false, error }` with a human-readable message.
-- `apps/live/lib/drawio/report.ts`: draw.io's notes turned into the one import report every
+- `apps/editor/lib/drawio/report.ts`: draw.io's notes turned into the one import report every
   importer shares ([Board scene](board-scene.md) "The report"): what landed, counted by kind, and
   each change as a rule with its count.
 - In the same folder: `json-export.ts` (the JSON export, below), `library.ts` (shape libraries,

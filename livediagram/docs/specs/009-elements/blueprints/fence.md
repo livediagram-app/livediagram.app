@@ -18,15 +18,15 @@ Scope, by file:
 | `packages/document/src/validate.ts`                       | Accepts the kind                                                      |
 | `packages/document/src/svg-render-faces.ts`               | `fenceArt`: the export fence                                          |
 | `packages/document/src/animation-membership.ts`           | Wordless                                                              |
-| `apps/live/components/canvas/collab/FenceView.tsx`        | The canvas fence                                                      |
-| `apps/live/components/canvas/BoxedElementView.tsx`        | Mounts `FenceView` with the resolved stroke                           |
-| `apps/live/components/canvas/shape-svg-overlay.tsx`       | Not an SVG-overlay shape (box path, transparent)                      |
-| `apps/live/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                  |
-| `apps/live/lib/avatar-fence.ts`                           | `fenceSegments`, `fenceRefuses`, `fenceStep`, `FENCE_REACH`           |
-| `apps/live/lib/avatar-walk.ts`                            | `elementUnderFeet` skips fences                                       |
-| `apps/live/hooks/canvas/useAvatarWalk.ts`                 | Memoised segments; every walk step goes through `fenceStep`           |
-| `apps/live/components/palette/palette-tile-defs.tsx`      | `tools:fence` in **Navigate** (`tileGroup: 'move'`)                   |
-| `apps/live/components/palette/palette-icons.tsx`          | `FenceIcon`                                                           |
+| `apps/editor/components/canvas/collab/FenceView.tsx`        | The canvas fence                                                      |
+| `apps/editor/components/canvas/BoxedElementView.tsx`        | Mounts `FenceView` with the resolved stroke                           |
+| `apps/editor/components/canvas/shape-svg-overlay.tsx`       | Not an SVG-overlay shape (box path, transparent)                      |
+| `apps/editor/components/canvas/useBoxedElementAnimation.ts` | Silhouette animations on the drawing                                  |
+| `apps/editor/lib/avatar-fence.ts`                           | `fenceSegments`, `fenceRefuses`, `fenceStep`, `FENCE_REACH`           |
+| `apps/editor/lib/avatar-walk.ts`                            | `elementUnderFeet` skips fences                                       |
+| `apps/editor/hooks/canvas/useAvatarWalk.ts`                 | Memoised segments; every walk step goes through `fenceStep`           |
+| `apps/editor/components/palette/palette-tile-defs.tsx`      | `tools:fence` in **Navigate** (`tileGroup: 'move'`)                   |
+| `apps/editor/components/palette/palette-icons.tsx`          | `FenceIcon`                                                           |
 | `packages/api-schema/src/telemetry-schema.ts`             | `Fence` element type token                                            |
 
 ## Domain and naming
@@ -108,7 +108,7 @@ export function fenceLine(box: {
   rotation?: number;
 }): { a: FencePoint; b: FencePoint };
 
-// apps/live/lib/avatar-fence.ts
+// apps/editor/lib/avatar-fence.ts
 export const FENCE_REACH = 12;
 export const FENCE_STALL = 0.25;
 export type FenceSegment = { a: FencePoint; b: FencePoint };
@@ -210,15 +210,15 @@ click-walk stops against a fence.
 | End posts inset; even spacing               | `fencePostCentres` block                         | `packages/document/src/fence.test.ts`           |
 | Rails full length; corner posts coincide    | `fenceParts` block                               | `packages/document/src/fence.test.ts`           |
 | Fence line, rotated                         | `fenceLine` block                                | `packages/document/src/fence.test.ts`           |
-| Refused from either side; open past the end | `fenceRefuses` block                             | `apps/live/lib/avatar-fence.test.ts`            |
-| Escape but not cross from inside (I3)       | "lets a character inside the reach step away …"  | `apps/live/lib/avatar-fence.test.ts`            |
-| No tunnelling (I2)                          | "cannot tunnel through with one long step"       | `apps/live/lib/avatar-fence.test.ts`            |
-| Slide                                       | "slides along a fence walked into at an angle"   | `apps/live/lib/avatar-fence.test.ts`            |
-| Enclosure keeps people out, outside open    | "walks all the way round the outside …"          | `apps/live/lib/avatar-fence.test.ts`            |
-| Narrow gaps sealed, wide gaps open          | "seals a gap …", "leaves a gap …"                | `apps/live/lib/avatar-fence.test.ts`            |
-| Worst-case budget                           | "keeps a frame within budget …"                  | `apps/live/lib/avatar-fence.test.ts`            |
+| Refused from either side; open past the end | `fenceRefuses` block                             | `apps/editor/lib/avatar-fence.test.ts`            |
+| Escape but not cross from inside (I3)       | "lets a character inside the reach step away …"  | `apps/editor/lib/avatar-fence.test.ts`            |
+| No tunnelling (I2)                          | "cannot tunnel through with one long step"       | `apps/editor/lib/avatar-fence.test.ts`            |
+| Slide                                       | "slides along a fence walked into at an angle"   | `apps/editor/lib/avatar-fence.test.ts`            |
+| Enclosure keeps people out, outside open    | "walks all the way round the outside …"          | `apps/editor/lib/avatar-fence.test.ts`            |
+| Narrow gaps sealed, wide gaps open          | "seals a gap …", "leaves a gap …"                | `apps/editor/lib/avatar-fence.test.ts`            |
+| Worst-case budget                           | "keeps a frame within budget …"                  | `apps/editor/lib/avatar-fence.test.ts`            |
 | Self-drawing (no label)                     | "claims exactly the kinds its members claim …"   | `packages/document/src/data-shapes.test.ts`     |
-| Walk loop stops a click-walk at a fence     | "stops a click-walk at a fence"                  | `apps/live/hooks/canvas/useAvatarWalk.test.tsx` |
+| Walk loop stops a click-walk at a fence     | "stops a click-walk at a fence"                  | `apps/editor/hooks/canvas/useAvatarWalk.test.tsx` |
 
 ## Constants and configuration
 

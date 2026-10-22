@@ -1,6 +1,6 @@
 // Timeline wire format (docs/specs/013-workspace/timeline.md) — the Explorer's landing feed.
 //
-// The api worker emits these; the live app's Timeline pane consumes
+// The api worker emits these; the editor app's Timeline pane consumes
 // them. Kept in its own module rather than piled into index.ts: the
 // timeline has a scope model + an event vocabulary of its own, and
 // both want room to grow without the barrel becoming a catalogue.

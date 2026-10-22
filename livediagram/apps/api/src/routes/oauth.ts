@@ -1,5 +1,5 @@
 // /api/oauth/exchange — the single api change for the MCP OAuth flow
-// (docs/specs/015-api/mcp-server.md §3.4). The apps/live consent page (Clerk-authed) calls this when a
+// (docs/specs/015-api/mcp-server.md §3.4). The apps/editor consent page (Clerk-authed) calls this when a
 // user approves an MCP client. It mints an ordinary lvd_ API token (docs/specs/015-api/public-api-and-tokens.md)
 // owned by that Clerk user, named for the connecting client, and returns the
 // secret ONCE. The MCP worker binds it to the PKCE flow in its own KV; the

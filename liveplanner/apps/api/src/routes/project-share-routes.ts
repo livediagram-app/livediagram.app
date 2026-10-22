@@ -93,7 +93,7 @@ export async function handleProjectShareRoutes(ctx: RouteContext): Promise<Respo
     }
     if (request.method === 'DELETE') {
       // Bulk-revoke: drop every link AND flip legacy shareable
-      // off so the live app stops opening the room.
+      // off so the editor app stops opening the room.
       const links = await listShareLinks(env, id);
       for (const link of links) await deleteShareLink(env, link.code);
       await setProjectShare(env, id, false);

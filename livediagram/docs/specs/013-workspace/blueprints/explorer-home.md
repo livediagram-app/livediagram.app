@@ -40,12 +40,12 @@ Scope, by file:
 | `apps/api/wrangler.toml`                                                       | `HOME_RATE_LIMITER` in the default and `[env.staging]` blocks                                  |
 | `apps/api/src/openapi/manifest.ts`, `apps/api/scripts/gen-openapi-schemas.mjs` | The route; the `HomeResponse` schema; the create body's `markUsed`                             |
 | `packages/agent-verbs/src/mcp/schema.ts`, `apps/mcp/src/tools.ts`              | `create_document`'s optional `markUsed`, passed through to the create                          |
-| `apps/live/lib/api/documents.ts`                                               | `apiCreateDocument(..., { markUsed })` sends `markUsed: false` only                            |
-| `apps/live/lib/board-scene-import.ts`                                          | `importDocuments` marks by the number of documents it sets out to make                         |
-| `apps/live/lib/api/home.ts`                                                    | `apiReadHome`                                                                                  |
-| `apps/live/lib/api/tabs.ts`                                                    | `apiLoadTab(..., { open })` sends the marker                                                   |
-| `apps/live/app/document/[id]/seed-fetched-document.ts`                         | The editor's first-tab read is the marked one, unless embedded                                 |
-| `apps/live/app/document/[id]/{useIdentityBootstrap,useEditorState}.ts`         | `embed` reaches the seed                                                                       |
+| `apps/editor/lib/api/documents.ts`                                               | `apiCreateDocument(..., { markUsed })` sends `markUsed: false` only                            |
+| `apps/editor/lib/board-scene-import.ts`                                          | `importDocuments` marks by the number of documents it sets out to make                         |
+| `apps/editor/lib/api/home.ts`                                                    | `apiReadHome`                                                                                  |
+| `apps/editor/lib/api/tabs.ts`                                                    | `apiLoadTab(..., { open })` sends the marker                                                   |
+| `apps/editor/app/document/[id]/seed-fetched-document.ts`                         | The editor's first-tab read is the marked one, unless embedded                                 |
+| `apps/editor/app/document/[id]/{useIdentityBootstrap,useEditorState}.ts`         | `embed` reaches the seed                                                                       |
 
 ## Domain and naming
 
@@ -466,10 +466,10 @@ stay on their own lazy route.
 | Jump Back In: use days in the window, edit days, dedupe, the split, access, ties        | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
 | A making counts once, an opted-out or bulk one does not, a sync or re-commit never      | `apps/api/src/routes/document-create-use.test.ts` (real SQLite)                           |
 | `readMarkUsed`, `importMarksUse`                                                        | `packages/api-schema/src/creation-use.test.ts`                                            |
-| The client sends `markUsed: false` only; a bulk import sends it, a single one does not  | `apps/live/lib/api-client.test.ts`, `apps/live/lib/board-scene-import.test.ts`            |
+| The client sends `markUsed: false` only; a bulk import sends it, a single one does not  | `apps/editor/lib/api-client.test.ts`, `apps/editor/lib/board-scene-import.test.ts`            |
 | `create_document` passes `markUsed` through only when given                             | `apps/mcp/src/create-document-placement.test.ts`                                          |
-| An imported board is in Jump Back In unopened; a two-board import is not (guest, phone) | `apps/live/e2e/creation-use.spec.ts`                                                      |
-| Signed in: the same, and an API create with `markUsed: false` stays out                 | `apps/live/e2e/clerk-stub/creation-use.spec.ts`                                           |
+| An imported board is in Jump Back In unopened; a two-board import is not (guest, phone) | `apps/editor/e2e/creation-use.spec.ts`                                                      |
+| Signed in: the same, and an API create with `markUsed: false` stays out                 | `apps/editor/e2e/clerk-stub/creation-use.spec.ts`                                           |
 | Reads: others only, opens private, rejections, rate limit, the unread mark, no timeline | `apps/api/src/routes/home.test.ts` (real SQLite)                                          |
 | The backfill marks its edit, never marks a real one; migration 0063 marks legacy rows   | `apps/api/src/home/real-edits.test.ts` (real SQLite)                                      |
 | The feed and the unread count leave opens out                                           | `apps/api/src/db/timeline-opens.test.ts` (real SQLite)                                    |
@@ -479,8 +479,8 @@ stay on their own lazy route.
 | The Inbox unchanged on the shared visibility                                            | `apps/api/src/db/activity-mentions.test.ts`, `apps/api/src/db/trash-surfaces.test.ts`     |
 | OpenAPI parity and schemas                                                              | `apps/api/src/openapi/*.test.ts`                                                          |
 | Route labels know `home`                                                                | `apps/api/src/route-resources.test.ts`, `packages/api-schema/src/error-telemetry.test.ts` |
-| Client wrapper: null on failure; the marker header and its dedupe key                   | `apps/live/lib/api/home.test.ts`, `apps/live/lib/api-client.test.ts`                      |
-| The seed marks the first-tab read unless embedded                                       | `apps/live/app/document/[id]/seed-fetched-document.test.ts`                               |
+| Client wrapper: null on failure; the marker header and its dedupe key                   | `apps/editor/lib/api/home.test.ts`, `apps/editor/lib/api-client.test.ts`                      |
+| The seed marks the first-tab read unless embedded                                       | `apps/editor/app/document/[id]/seed-fetched-document.test.ts`                               |
 
 ## Constants and configuration
 

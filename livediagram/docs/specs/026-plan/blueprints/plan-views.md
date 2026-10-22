@@ -25,13 +25,13 @@ packages/items/src/plan-view-charts.ts  calendarModel, workloadModel, statusMixM
                                         priorityMatrixModel
 packages/items/src/calendar-move.ts     CalendarField, calendarFieldOf, calendarMove
 packages/document/src/svg-render-plan.ts svgPlanView (a labelled box)
-apps/live/hooks/plan/usePlanStatusNames.ts usePlanStatusPhases -> PlanContext.statusPhases
-apps/live/components/plan/views/        PlanViewView (router), view-frame (ViewFrame, openProps, viewState,
+apps/editor/hooks/plan/usePlanStatusNames.ts usePlanStatusPhases -> PlanContext.statusPhases
+apps/editor/components/plan/views/        PlanViewView (router), view-frame (ViewFrame, openProps, viewState,
                                         PhaseLegend, PHASE_COLOURS), MetricView, GanttView, CalendarView,
                                         WorkloadView, StatusMixView, PriorityMatrixView; calendar-day
                                         (DayCell, CalendarEntryFace), useCalendarDrag (calendarDayAt)
-apps/live/components/plan/plan-view-art.tsx           PlanViewArt (one Glyph per visualisation)
-apps/live/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread through PLAN_TILES
+apps/editor/components/plan/plan-view-art.tsx           PlanViewArt (one Glyph per visualisation)
+apps/editor/components/palette/palette-plan-view-tiles.tsx PLAN_VIEW_TILES, spread through PLAN_TILES
 ```
 
 ## Element model
@@ -193,14 +193,14 @@ rowIds, laneIds, id, toIndex)` returns the next full order: `id` taken out of th
 | Gantt rows, marks, axis, ticks, drags, scales  | packages/items/src/plan-view-gantt.test.ts                |
 | Calendar, workload, status, priority models    | packages/items/src/plan-view-charts.test.ts               |
 | Calendar moves, Start Calendar model           | packages/items/src/calendar-move.test.ts                  |
-| Calendar drag, keyboard move, roles, Start Cal | apps/live/components/plan/views/CalendarView.test.tsx     |
+| Calendar drag, keyboard move, roles, Start Cal | apps/editor/components/plan/views/CalendarView.test.tsx     |
 | Element seed, validation, export box           | packages/document/src/plan-shapes.test.ts                 |
-| Rendering, empty and loading, opening, metrics | apps/live/components/plan/views/PlanViewView.test.tsx     |
-| Gantt window pin, pan, slop, cleanup           | apps/live/components/plan/views/useGanttWindow.test.ts    |
-| Gantt View flyout (card types, swimlanes)      | apps/live/components/palette/PlanViewMenuSection.test.tsx |
+| Rendering, empty and loading, opening, metrics | apps/editor/components/plan/views/PlanViewView.test.tsx     |
+| Gantt window pin, pan, slop, cleanup           | apps/editor/components/plan/views/useGanttWindow.test.ts    |
+| Gantt View flyout (card types, swimlanes)      | apps/editor/components/palette/PlanViewMenuSection.test.tsx |
 | Gantt row order (apply, reorder, validation)   | packages/items/src/gantt-row-order.test.ts                |
-| Gantt row drag, keyboard move, lanes           | apps/live/components/plan/views/GanttRowOrder.test.tsx    |
-| Palette categories and tiles                   | apps/live/components/palette/palette-*.test.ts(x)         |
+| Gantt row drag, keyboard move, lanes           | apps/editor/components/plan/views/GanttRowOrder.test.tsx    |
+| Palette categories and tiles                   | apps/editor/components/palette/palette-*.test.ts(x)         |
 
 ## Constants and configuration
 

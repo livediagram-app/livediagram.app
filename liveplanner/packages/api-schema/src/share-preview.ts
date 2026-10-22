@@ -1,4 +1,4 @@
-// Share-link previews (docs/specs/013-workspace/share-link-previews.md): what the api tells the live app's worker
+// Share-link previews (docs/specs/013-workspace/share-link-previews.md): what the api tells the editor app's worker
 // about a share link, so a link pasted into a chat previews with the project's name and picture, and the paths both
 // sides build. Shared so the worker and the api cannot drift on the URL shape.
 

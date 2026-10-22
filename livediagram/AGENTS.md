@@ -195,7 +195,7 @@ See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 ```
 apps/
   marketing/    # static marketing site (Next.js, /)
-  live/         # the diagram editor app (Next.js, clean routes)
+  editor/       # the diagram editor app (Next.js, clean routes)
   help/         # help centre (Next.js export + MDX, /help)
   community/    # public gallery of shared boards (Next.js export, /community)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
@@ -326,7 +326,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 - **Every feature decides its share roles.** When specifying or building anything a shared document can reach, state what an Editor, a Participant and a Viewer may do with it, gate it on the session's `can`, never on `isReadOnly` alone, and lock it with tests: follow [`docs/instructions/gate-a-feature-by-share-role.md`](docs/instructions/gate-a-feature-by-share-role.md).
 - Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app — it will break Cloudflare Pages deploys.
 - Put any logic shared by two or more apps in `packages/` rather than copying it.
-- **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/live/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.
+- **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/editor/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.
 - This is a public repo, rely on CI rather than running full E2E locally before a PR
 - Worker apps target the Cloudflare Workers runtime — prefer Web APIs (`fetch`, `Request`, `Response`, `crypto.subtle`) over Node-only APIs.
 - D1 schemas and migrations (when they arrive) live with the Worker that owns the binding.

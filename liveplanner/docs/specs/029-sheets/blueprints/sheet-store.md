@@ -160,14 +160,14 @@ SheetWrite; cells?: CellDto[]; created?: true; deleted?: true; refetch?: true }`
 
 - **Gate (cost)**: a Sheet element's content router (`ShapeContentRouter`) loads `PlanSheetView` with
   `next/dynamic`, so the sheet chunk (the grid, the store client and the engine) loads the first time a Sheet is
-  drawn. `hasPlanContent` (`apps/live/hooks/plan/usePlanNeeded.ts`) counts `plan-sheet`, so a tab with a Sheet loads
+  drawn. `hasPlanContent` (`apps/editor/hooks/plan/usePlanNeeded.ts`) counts `plan-sheet`, so a tab with a Sheet loads
   the project's items once, for the card functions.
-- **Bridge** (`apps/live/hooks/sheets/useSheetsBridge.ts`, tiny, in the main bundle): `{ scope, activeTabId, self,
+- **Bridge** (`apps/editor/hooks/sheets/useSheetsBridge.ts`, tiny, in the main bundle): `{ scope, activeTabId, self,
 canEdit, locale, peers, pushUndo, toast, notify, sendPresence, commitElements, undo, redo,
 selectElement, attach }`, made in `useEditorState` and provided by `EditorView` (`SheetsBridgeContext`). The room
   hands it `sheets` system ops and `sheet-presence` ops (`useRoomConnection`); the sheet chunk `attach`es its
   handlers, and before it has, every op is dropped (the first load reads the sheets fresh). A rejoin resyncs.
-- **Store client** (`apps/live/components/sheets/sheet-store-client.ts`, in the lazy sheet chunk): a module store
+- **Store client** (`apps/editor/components/sheets/sheet-store-client.ts`, in the lazy sheet chunk): a module store
   per project (`sheetStoreFor(deps)`), `useSyncExternalStore`-subscribed. State per sheet: the confirmed sheet, the
   pending writes (by write id) and the view (confirmed with the pending laid over it, `rebase`); per-tab load status
   (`idle | loading | ready | error`); one `Workbook` per tab. Actions: `loadTab(tabId)`, `create(create, seed?,
@@ -188,12 +188,12 @@ selectElement, attach }`, made in `useEditorState` and provided by `EditorView` 
   - The workbook evaluates lazily and is told which cells changed (`updateSheet(sheet, touched)`); a value is worked
     out when it is read, so a change costs what depends on it (no frame slicing). Cards reach it through
     `setCards(cardSourceOf(items, types, ...))` from `useSheetModel` when any formula uses a card function.
-- **Model** (`apps/live/components/sheets/useSheetModel.ts`): attaches the store to the room through the bridge
+- **Model** (`apps/editor/components/sheets/useSheetModel.ts`): attaches the store to the room through the bridge
   (reference-counted across the tab's Sheets), loads the tab, makes a placed sheet (`takePlacedSheet`: blank, or
   from a dropped CSV with its file name) or a copy (`copyOf`: from the loaded source, a clipboard seed, or the
   server; a copy whose source the server cannot find is refused with the spec's paste toast and the element
   removed).
-- `apps/live/lib/api/sheets.ts`: `fetchSheets(scope, { tabId | ids })`, `createSheet`, `writeSheet`, `deleteSheet`,
+- `apps/editor/lib/api/sheets.ts`: `fetchSheets(scope, { tabId | ids })`, `createSheet`, `writeSheet`, `deleteSheet`,
   each dispatching `isOfflineId(docId)` to `lib/offline/offline-sheets.ts`.
 - Offline record: `OfflineProjectRecord.sheets?: SheetDto[]`; `offline-sheets.ts` applies `applySheetWrite` inside
   `serializeOfflineWrite`.
@@ -224,7 +224,7 @@ when the tab's `backgroundColor` is not `isLightColor`, the mark dropped from ea
   inserted with `insertSheetStatements` unless it exists, the tab is full (`PROJECT_SHEETS_MAX`,
   `PROJECT_CELLS_MAX`: log `[changeset] template sheet skipped`) or it does not validate; only the Sheets made lose
   the mark; never a refusal.
-- The wizard's This Browser create (`apps/live/lib/template-sheets.ts` `withTemplateSheets`, which imports the subpath
+- The wizard's This Browser create (`apps/editor/lib/template-sheets.ts` `withTemplateSheets`, which imports the subpath
   only when `hasTemplateSheets`), stored as the record's `sheets` by `offlineCreateProject`.
 - The editor (`useSheetModel`): a Sheet still carrying a known `start`, its sheet absent once the tab is `ready`, for
   someone who may edit: `templateSheetWithCharts` (`dark` from the canvas surface), `store.create` (on `sheet_exists`, `resync`),
@@ -284,10 +284,10 @@ LIMIT SHEET_EXPIRY_BATCH` (the partial index), deletes them in one batch (cells 
   left or the cells deleted reach `SHEET_EXPIRY_CELLS_MAX`; the rest waits a day. Cost follows what expired, not
   how many tabs or sheets exist. Logs `[sheets] sheets.expired { sheets, cells, more }`.
 - **Editor**:
-  - `apps/live/lib/sheet-references.ts` `sheetsDeletedWith(tabs, activeTabId, targetIds)`: the sheet ids of the
+  - `apps/editor/lib/sheet-references.ts` `sheetsDeletedWith(tabs, activeTabId, targetIds)`: the sheet ids of the
     targets' Sheet elements (not a copy not yet made: it has no sheet) that no element outside the targets, on any
     tab, references by `sheetId` or `copyOf`.
-  - `apps/live/hooks/sheets/useSheetDeleteGuard.ts`: `guard(targetIds)` answers `null` when no sheet goes (delete at
+  - `apps/editor/hooks/sheets/useSheetDeleteGuard.ts`: `guard(targetIds)` answers `null` when no sheet goes (delete at
     once) or a promise of `{ release }` (confirmed) or `null` (cancelled), after `useConfirm` with the spec's copy
     (title by `sheetTitle` from the bridge, falling back to `Sheet`). When the sheet chunk has not attached, it
     answers `null`: the sheet is then left as a Cut's.
@@ -410,21 +410,21 @@ inputs, formats or titles.
 | Write batch: upsert, patch per key, clear, rows, rename         | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                                                                         |
 | Rev race retries then busy; huge write relayed as refetch       | `apps/api/src/routes/sheet-routes.test.ts` ("writes")                                                                                                                                                                                         |
 | Delete; copy a sheet; copy a project; seeds                    | `apps/api/src/routes/sheet-routes.test.ts` ("deleting, copies and seeds")                                                                                                                                                                     |
-| Template starts: build, materialise, create, changeset, editor  | `packages/sheets/src/template-starts.test.ts`, `packages/templates/src/template-sheets.test.ts`, `apps/api/src/routes/sheet-routes.test.ts`, `apps/api/src/changesets/submit.test.ts`, `apps/live/components/sheets/useSheetModel.test.tsx`   |
+| Template starts: build, materialise, create, changeset, editor  | `packages/sheets/src/template-starts.test.ts`, `packages/templates/src/template-sheets.test.ts`, `apps/api/src/routes/sheet-routes.test.ts`, `apps/api/src/changesets/submit.test.ts`, `apps/editor/components/sheets/useSheetModel.test.tsx`   |
 | Reference index: sheetId and copyOf, marks, clears, settles     | `apps/api/src/db/sheet-refs.test.ts`                                                                                                                                                                                                          |
 | Delete when unreferenced, now or on the last reference; restore | `apps/api/src/routes/sheet-routes.test.ts` ("deleting with the element")                                                                                                                                                                      |
 | Expiry deletes past 30 days, bounded by cells                   | `apps/api/src/sheet-sweep.test.ts`                                                                                                                                                                                                            |
-| Which sheets a delete takes (duplicates, copies, other tabs)    | `apps/live/lib/sheet-references.test.ts`                                                                                                                                                                                                      |
-| Confirm, cancel, Cut skips, release, undo restores              | `apps/live/hooks/sheets/useSheetDeleteGuard.test.tsx`, `hooks/canvas/useElementSelectionActions.test.ts`, `components/sheets/sheet-store-client.test.ts`, `components/sheets/useSheetModel.test.tsx`, `hooks/sheets/useSheetsBridge.test.tsx` |
-| Offline restore keeps a stored sheet; delete query              | `apps/live/lib/offline/offline-sheets.test.ts`, `lib/api/sheets.test.ts`                                                                                                                                                                      |
+| Which sheets a delete takes (duplicates, copies, other tabs)    | `apps/editor/lib/sheet-references.test.ts`                                                                                                                                                                                                      |
+| Confirm, cancel, Cut skips, release, undo restores              | `apps/editor/hooks/sheets/useSheetDeleteGuard.test.tsx`, `hooks/canvas/useElementSelectionActions.test.ts`, `components/sheets/sheet-store-client.test.ts`, `components/sheets/useSheetModel.test.tsx`, `hooks/sheets/useSheetsBridge.test.tsx` |
+| Offline restore keeps a stored sheet; delete query              | `apps/editor/lib/offline/offline-sheets.test.ts`, `lib/api/sheets.test.ts`                                                                                                                                                                      |
 | Room op scoped to the tab                                       | `apps/api/src/room-scope.test.ts`                                                                                                                                                                                                             |
-| Store client: optimistic, reconcile, gap, queue, split, undo    | `apps/live/components/sheets/sheet-store-client.test.ts`                                                                                                                                                                                      |
-| Transient write failures resent with backoff, refusals dropped  | `apps/live/components/sheets/sheet-store-client.test.ts`, `components/sheets/sheet-write-retry.test.ts`                                                                                                                                       |
-| Undo of a deletion merges into the sheet as it is               | `packages/sheets/src/store-inverse-delete.test.ts`, `apps/live/components/sheets/sheet-store-client.test.ts`                                                                                                                                  |
-| Presence: receive, throttle, re-say                             | `apps/live/components/sheets/sheet-presence-store.test.ts`                                                                                                                                                                                    |
-| Model: attach, load, placed and copied sheets, cards            | `apps/live/components/sheets/useSheetModel.test.tsx`                                                                                                                                                                                          |
-| Bridge: room ops, attach, undo journal                          | `apps/live/hooks/sheets/useSheetsBridge.test.tsx`                                                                                                                                                                                             |
-| Api client, offline store, clipboard seeds                      | `apps/live/lib/api/sheets.test.ts`, `lib/offline/offline-sheets.test.ts`, `lib/clipboard-payload.sheets.test.ts`                                                                                                                              |
+| Store client: optimistic, reconcile, gap, queue, split, undo    | `apps/editor/components/sheets/sheet-store-client.test.ts`                                                                                                                                                                                      |
+| Transient write failures resent with backoff, refusals dropped  | `apps/editor/components/sheets/sheet-store-client.test.ts`, `components/sheets/sheet-write-retry.test.ts`                                                                                                                                       |
+| Undo of a deletion merges into the sheet as it is               | `packages/sheets/src/store-inverse-delete.test.ts`, `apps/editor/components/sheets/sheet-store-client.test.ts`                                                                                                                                  |
+| Presence: receive, throttle, re-say                             | `apps/editor/components/sheets/sheet-presence-store.test.ts`                                                                                                                                                                                    |
+| Model: attach, load, placed and copied sheets, cards            | `apps/editor/components/sheets/useSheetModel.test.tsx`                                                                                                                                                                                          |
+| Bridge: room ops, attach, undo journal                          | `apps/editor/hooks/sheets/useSheetsBridge.test.tsx`                                                                                                                                                                                             |
+| Api client, offline store, clipboard seeds                      | `apps/editor/lib/api/sheets.test.ts`, `lib/offline/offline-sheets.test.ts`, `lib/clipboard-payload.sheets.test.ts`                                                                                                                              |
 | Agent verbs, MCP tools and output schemas                       | `packages/agent-verbs/src/sheets/sheet-engine.test.ts`, `packages/agent-verbs/src/verbs/sheet.test.ts`, `apps/mcp/src/sheet-tools.test.ts`, `output-schema.test.ts`, `tools.test.ts`                                                          |
 
 ## Constants and configuration

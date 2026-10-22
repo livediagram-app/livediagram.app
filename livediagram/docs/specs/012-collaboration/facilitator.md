@@ -155,7 +155,7 @@ one click.
 | Follow Me, the laser, the spotlight, reactions, cursors                                                                                                  | Pointing at things is everybody's job                                                                          |
 | Running a slide deck                                                                                                                                     | `presentingAt` is local state: it is your own screen                                                           |
 | Comments, assigned actions                                                                                                                               | They are a conversation, not a pace                                                                            |
-| All ordinary editing, import, export, themes, layout cleanup                                                                                             | Nothing to collide over that the selection lock ([Live app](../007-editor/live-app.md)) doesn't already handle |
+| All ordinary editing, import, export, themes, layout cleanup                                                                                             | Nothing to collide over that the selection lock ([Editor app](../007-editor/editor-app.md)) doesn't already handle |
 
 ### Two elements this changes
 
@@ -207,7 +207,7 @@ verified identity inside the room, and field-level guards on the save path.
 
 ## Freeing somebody's lock
 
-The concurrent-selection lock ([Live app](../007-editor/live-app.md)) makes an element
+The concurrent-selection lock ([Editor app](../007-editor/editor-app.md)) makes an element
 somebody else has selected un-editable for everyone else. Usually that resolves
 itself — they click away, or they leave and their presence goes with them. What
 does not resolve is the person who is still connected and has wandered off with

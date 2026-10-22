@@ -175,7 +175,7 @@ popover hanging under it, and closed again. The popover hangs from the
 button's left edge (`computeDockAnchor(..., 'button')`).
 
 Layers and Collaborate open as **popovers over their bottom-row
-buttons** ([Live app](live-app.md)): they are not corner panels. Every
+buttons** ([Editor app](editor-app.md)): they are not corner panels. Every
 other panel (AI, the minimap and the tool panels) docks in its corner
 ([Panel docking](panel-docking.md)). Layers and Collaborate render outside
 the corner layer, since a popover positions against the canvas and a corner stack would move it.
@@ -191,7 +191,7 @@ are menus: opening one closes whichever other is open, and a press anywhere
 outside closes it. The strip stops `pointerdown` from reaching the canvas, so
 their outside-press listeners run in the capture phase, before that. The
 Explorer popover gets the same (`dismissOnOutside`), and so do the Layers and
-Collaborate popovers ([Live app](live-app.md)). The strip's dropdown menus are kept
+Collaborate popovers ([Editor app](editor-app.md)). The strip's dropdown menus are kept
 on screen sideways as well as vertically, whatever the trigger's position.
 
 ## One layout
@@ -217,7 +217,7 @@ A phone is a viewport below `sm`, **or a touch screen under 500px tall** (one he
 `PHONE_MEDIA_QUERY` (`lib/responsive.ts`) and the `phone:` CSS variant (`app/globals.css`) state
 that one query, so JS and CSS flip together; phone-only classes use `phone:`, not `max-sm:`. A
 popover hanging below its button is capped to the canvas below it and scrolls, as one above its
-button always was. It gets the same chrome as a desktop ([Live app](live-app.md)):
+button always was. It gets the same chrome as a desktop ([Editor app](editor-app.md)):
 panels in their corners, Layers and Collaborate as popovers over
 their bottom-row buttons. What changes to fit the width:
 
@@ -236,7 +236,7 @@ their bottom-row buttons. What changes to fit the width:
   category's tiles, and Icons, Stickers and Technology their groups.
 - **More spans the screen** between the gutters instead of hanging from its
   button.
-- **Zoom drops − and +** (`pinchOnly`), as on every phone ([Live app](live-app.md)). Fit
+- **Zoom drops − and +** (`pinchOnly`), as on every phone ([Editor app](editor-app.md)). Fit
   stays.
 - **The top corner stacks start below the strip** (68px down rather than
   the 16px inset), since the strip spans the width. A panel docked top-right,
@@ -248,7 +248,7 @@ their bottom-row buttons. What changes to fit the width:
   for every role, and nothing brings them back while the phone is sideways: the screen is too
   short for the Explorer to be any use. The strip starts at the left gutter in the menu card's
   place, still swiping. Turning the phone upright brings the button back ([A phone held
-  sideways](live-app.md#a-phone-held-sideways)).
+  sideways](editor-app.md#a-phone-held-sideways)).
 - The minimap stays off ([Minimap](../008-canvas/minimap.md)).
 
 ## Layout details

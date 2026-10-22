@@ -26,15 +26,15 @@ Scope, by file:
 | `apps/api/src/index.ts`, `auth/guest-rest.ts`                                                                  | `trash` dispatch + guest-signature scope; the cron's `purgeExpiredTrash`                 |
 | `apps/api/src/openapi/manifest.ts`, `project.ts`, `scripts/gen-openapi-...`                                    | The Trash tag and routes; 410 on the project doors; `TrashedProject` schema              |
 | `apps/mcp/src/{tools,schema}.ts`                                                                               | `delete_project` to the Trash only; `list_trash`, `restore_project`                      |
-| `apps/live/lib/api/trash.ts`                                                                                   | `apiListTrash`, `apiRestoreProject`, `apiPurgeProject`, `apiEmptyTrash`                  |
-| `apps/live/lib/offline/offline-trash.ts`, `offline-store.ts`                                                   | The local Trash on the IndexedDB record                                                  |
-| `apps/live/lib/project-trashed.ts`, `project-tombstones.ts`                                                    | `ProjectTrashedError`, `isProjectTrashedError`; `unmarkProjectDeleted`                   |
-| `apps/live/lib/trash-groups.ts`, `trash-copy.ts`                                                               | Grouping and days-left copy; the confirmation line                                       |
-| `apps/live/hooks/persistence/useTrash.ts`, `components/panels/TrashPane.tsx`                                   | The Trash view                                                                           |
-| `apps/live/app/explorer/{TrashSection.tsx,trash/page.tsx,routes.ts,views.tsx}`                                 | The `/explorer/trash` route, no sidebar row                                              |
-| `apps/live/components/dialogs/settings/{settings-catalogue.ts,SettingsTrashRow}`                               | Settings › Account › Trash, the one way in                                               |
-| `apps/live/app/project/[id]/{useProjectTrashed,useIdentityBootstrap,...}.ts`                                   | The deleted state: load, room, autosave                                                  |
-| `apps/live/components/chrome/ProjectTrashedCard.tsx`, `editor-page.tsx`                                        | The deleted card, Restore when allowed                                                   |
+| `apps/editor/lib/api/trash.ts`                                                                                   | `apiListTrash`, `apiRestoreProject`, `apiPurgeProject`, `apiEmptyTrash`                  |
+| `apps/editor/lib/offline/offline-trash.ts`, `offline-store.ts`                                                   | The local Trash on the IndexedDB record                                                  |
+| `apps/editor/lib/project-trashed.ts`, `project-tombstones.ts`                                                    | `ProjectTrashedError`, `isProjectTrashedError`; `unmarkProjectDeleted`                   |
+| `apps/editor/lib/trash-groups.ts`, `trash-copy.ts`                                                               | Grouping and days-left copy; the confirmation line                                       |
+| `apps/editor/hooks/persistence/useTrash.ts`, `components/panels/TrashPane.tsx`                                   | The Trash view                                                                           |
+| `apps/editor/app/explorer/{TrashSection.tsx,trash/page.tsx,routes.ts,views.tsx}`                                 | The `/explorer/trash` route, no sidebar row                                              |
+| `apps/editor/components/dialogs/settings/{settings-catalogue.ts,SettingsTrashRow}`                               | Settings › Account › Trash, the one way in                                               |
+| `apps/editor/app/project/[id]/{useProjectTrashed,useIdentityBootstrap,...}.ts`                                   | The deleted state: load, room, autosave                                                  |
+| `apps/editor/components/chrome/ProjectTrashedCard.tsx`, `editor-page.tsx`                                        | The deleted card, Restore when allowed                                                   |
 | `apps/help/app/account-and-data/trash/page.mdx`, help registry, article icon                                   | The help article                                                                         |
 | `../liveworkspace/apps/site/app/telemetry/liveplanner/catalogue/{content,connections}.ts`, explanations, vocab | The Trash stack; the two MCP tool charts                                                 |
 
@@ -243,12 +243,12 @@ room`; open sessions still stop at their next save (I5).
 | Permanent removal keeps shared tabs                     | `apps/api/src/db/project-delete.test.ts`                                    |
 | OpenAPI parity                                          | `apps/api/src/openapi/*.test.ts`                                            |
 | MCP tools                                               | `apps/mcp/src/tools.test.ts`                                                |
-| Local Trash                                             | `apps/live/lib/offline/offline-trash.test.ts`                               |
-| Client calls, dispatch, 410                             | `apps/live/lib/api/trash.test.ts`                                           |
-| Room client stops on 4004                               | `apps/live/lib/api/room.test.ts`                                            |
-| Grouping and copy                                       | `apps/live/lib/trash-groups.test.ts`                                        |
-| End to end                                              | `apps/live/e2e/trash.spec.ts`                                               |
-| Telemetry coverage and charts                           | `apps/live` telemetry tests, `liveworkspace/apps/site/app/telemetry` suites |
+| Local Trash                                             | `apps/editor/lib/offline/offline-trash.test.ts`                               |
+| Client calls, dispatch, 410                             | `apps/editor/lib/api/trash.test.ts`                                           |
+| Room client stops on 4004                               | `apps/editor/lib/api/room.test.ts`                                            |
+| Grouping and copy                                       | `apps/editor/lib/trash-groups.test.ts`                                        |
+| End to end                                              | `apps/editor/e2e/trash.spec.ts`                                               |
+| Telemetry coverage and charts                           | `apps/editor` telemetry tests, `liveworkspace/apps/site/app/telemetry` suites |
 
 ## Constants and configuration
 

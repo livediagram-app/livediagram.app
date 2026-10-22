@@ -23,13 +23,13 @@ Derived from [New version prompt](../new-version-prompt.md).
 | `apps/api/src/responses.ts`                        | `CORS_HEADERS` exposes the header                                                                     |
 | `apps/api/src/project-room.ts`                    | Sends the room format message on `hello`                                                              |
 | `packages/api-schema/src/room-messages.ts`         | The `format` kind on `ServerMessage` and `RoomIncoming`                                               |
-| `apps/live/lib/server-release.ts`                  | The page's server release store (format number and build id, docs/specs/016-platform/stale-builds.md) |
-| `apps/live/lib/api/core.ts`                        | `apiFetch` notes the header                                                                           |
-| `apps/live/lib/api/room.ts`                        | The room client notes the message                                                                     |
-| `apps/live/lib/reload-when-saved.ts`               | `reloadWhenSaved`: wait for a settled save, then reload, or give up                                   |
-| `apps/live/components/chrome/NewVersionPrompt.tsx` | The prompt                                                                                            |
-| `apps/live/app/project/[id]/useAutosave.ts`       | Returns `hasUnsavedChanges()`                                                                         |
-| `apps/live/app/project/[id]/EditorView.tsx`       | Mounts the prompt with `hasUnsavedChanges`                                                            |
+| `apps/editor/lib/server-release.ts`                  | The page's server release store (format number and build id, docs/specs/016-platform/stale-builds.md) |
+| `apps/editor/lib/api/core.ts`                        | `apiFetch` notes the header                                                                           |
+| `apps/editor/lib/api/room.ts`                        | The room client notes the message                                                                     |
+| `apps/editor/lib/reload-when-saved.ts`               | `reloadWhenSaved`: wait for a settled save, then reload, or give up                                   |
+| `apps/editor/components/chrome/NewVersionPrompt.tsx` | The prompt                                                                                            |
+| `apps/editor/app/project/[id]/useAutosave.ts`       | Returns `hasUnsavedChanges()`                                                                         |
+| `apps/editor/app/project/[id]/EditorView.tsx`       | Mounts the prompt with `hasUnsavedChanges`                                                            |
 
 ## Interfaces and contracts
 
@@ -42,14 +42,14 @@ export function parseProjectFormat(value: unknown): number | null; // a positive
 // apps/api/src/server-release-header.ts
 export function withServerRelease(response: Response, buildId: string | null | undefined): Response;
 
-// apps/live/lib/server-release.ts
+// apps/editor/lib/server-release.ts
 export function noteServerProjectFormat(value: unknown): void; // ignores anything unparsable
 export function serverProjectFormat(): number | null;
 export function newVersionAvailable(): boolean;
 export function subscribeServerRelease(listener: () => void): () => void;
 export function resetServerReleaseForTests(): void;
 
-// apps/live/lib/reload-when-saved.ts
+// apps/editor/lib/reload-when-saved.ts
 export const RELOAD_SAVE_WAIT_MS = 10_000;
 export const RELOAD_SAVE_POLL_MS = 200;
 export function reloadWhenSaved(opts: {
@@ -59,7 +59,7 @@ export function reloadWhenSaved(opts: {
   pollMs?: number;
 }): Promise<'reloaded' | 'unsaved'>;
 
-// apps/live/components/chrome/NewVersionPrompt.tsx
+// apps/editor/components/chrome/NewVersionPrompt.tsx
 export function NewVersionPrompt(props: {
   hasUnsavedChanges: () => boolean;
   reload?: () => void; // window.location.reload by default
@@ -140,12 +140,12 @@ The number is not a secret and grants nothing; a forged value can only show a re
 | Format parsing                                           | `packages/api-schema/src/project-format.test.ts`                  |
 | Header on responses, not on a 101; CORS exposes it       | `apps/api/src/server-release-header.test.ts`                       |
 | Room sends its format on hello                           | `apps/api/src/project-room.test.ts`                               |
-| Store keeps the maximum, notifies on rise, ignores junk  | `apps/live/lib/server-release.test.ts`                             |
-| `apiFetch` and the room client note the number           | `apps/live/lib/api/core.test.ts`, `apps/live/lib/api/room.test.ts` |
-| Reload waits for a settled save, gives up after the wait | `apps/live/lib/reload-when-saved.test.ts`                          |
-| Prompt states, copy, role, keyboard, telemetry           | `apps/live/components/chrome/NewVersionPrompt.test.tsx`            |
-| `hasUnsavedChanges`                                      | `apps/live/app/project/[id]/useAutosave.test.tsx`                 |
-| An older editor against a newer server (Playwright)      | `apps/live/e2e/new-version-prompt.spec.ts`                         |
+| Store keeps the maximum, notifies on rise, ignores junk  | `apps/editor/lib/server-release.test.ts`                             |
+| `apiFetch` and the room client note the number           | `apps/editor/lib/api/core.test.ts`, `apps/editor/lib/api/room.test.ts` |
+| Reload waits for a settled save, gives up after the wait | `apps/editor/lib/reload-when-saved.test.ts`                          |
+| Prompt states, copy, role, keyboard, telemetry           | `apps/editor/components/chrome/NewVersionPrompt.test.tsx`            |
+| `hasUnsavedChanges`                                      | `apps/editor/app/project/[id]/useAutosave.test.tsx`                 |
+| An older editor against a newer server (Playwright)      | `apps/editor/e2e/new-version-prompt.spec.ts`                         |
 
 ## Constants and configuration
 

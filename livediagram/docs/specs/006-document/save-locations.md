@@ -29,8 +29,8 @@ anything on the canvas. A document in This Browser still says what it is on the 
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
 
 - One function answers it: `defaultSaveLocationFor({ signedIn, clerkEnabled })` in
-  `apps/live/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
-  `resolveSaveLocation` in `useNewDocumentLocation` (`apps/live/app/new/useNewDocumentLocation.ts`): a mode chosen
+  `apps/editor/lib/save-locations.ts`. Every create from `/new` asks it at commit, through
+  `resolveSaveLocation` in `useNewDocumentLocation` (`apps/editor/app/new/useNewDocumentLocation.ts`): a mode chosen
   in the wizard, its **Create** and **Skip**, and the wizard-less links (`/new?template=`, `/new?blank=1`).
 - A `/new?folder=` / `?team=` context names a server place, so it is
   livediagram whoever is creating.
@@ -112,7 +112,7 @@ per-row delay, so nothing waits on a beat it will never see.
 
 ## The contract for adding a location
 
-A save location is one id in a small module, `apps/live/lib/save-locations.ts`:
+A save location is one id in a small module, `apps/editor/lib/save-locations.ts`:
 
 - `SaveLocationId` is the closed union of location ids (`'livediagram' |
 'browser'` today).
@@ -151,10 +151,10 @@ is.
 
 ## Implementation map
 
-- `apps/live/lib/save-locations.ts` (+ test): the ids and helpers above.
-- `apps/live/app/new/useNewDocumentLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
-- `apps/live/app/new/page.tsx`: derives the offline create branch from the location id.
-- `apps/live/components/placement/PlacementBrowser.tsx`: the `layout` prop
+- `apps/editor/lib/save-locations.ts` (+ test): the ids and helpers above.
+- `apps/editor/app/new/useNewDocumentLocation.ts`: `resolveSaveLocation`, the location every create from `/new` uses.
+- `apps/editor/app/new/page.tsx`: derives the offline create branch from the location id.
+- `apps/editor/components/placement/PlacementBrowser.tsx`: the `layout` prop
   (`tiles` | `list`) on the browser, its `PlacementCard`, and `NewFolderTile`.
 
 ## References

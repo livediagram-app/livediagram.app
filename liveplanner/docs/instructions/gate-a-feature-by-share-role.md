@@ -17,11 +17,11 @@ something it cannot.
    `packages/project/src/participant-content.ts`: a new field a Participant may write is added to that file's lists
    and to the leak test's table (`participant-content.leak.test.ts`) in the same change.
 4. **Pick the editor gate.** Never gate on `isReadOnly` alone: it is true for a Participant too. Use the session's
-   `can` (`apps/live/lib/editor-capabilities.ts`): `can.takePart` for taking part, `can.addContent`, `can.move`,
+   `can` (`apps/editor/lib/editor-capabilities.ts`): `can.takePart` for taking part, `can.addContent`, `can.move`,
    `can.resize`, `can.writeText`, `can.remove` per element; add a flag there (with the Viewer branch `false`) when
    none fits. Structural hooks take `structureBlocked` / `structureCreateBlocked`.
 5. **Hide, do not dead-end.** A control the session cannot use is not rendered, or renders inert. A tool that
-   changes the board carries `mutates: true` in `CANVAS_TOOLS` (`apps/live/lib/editor-commands.ts`), which keeps it
+   changes the board carries `mutates: true` in `CANVAS_TOOLS` (`apps/editor/lib/editor-commands.ts`), which keeps it
    out of read-only command lists and the Participant's selection modes.
 6. **Check the copy.** Every empty state, hint, hover card and toast the feature shows: would a Participant or Viewer
    be told to do something it cannot? Give them a description instead (see the temperature check and comment empty

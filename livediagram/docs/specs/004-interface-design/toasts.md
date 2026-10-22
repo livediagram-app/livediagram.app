@@ -5,7 +5,7 @@ Status: shipped
 ## What
 
 A toast is a short, floating notice that says what just happened or what went wrong, and offers at most a couple of
-answers to it. It is the editor and Explorer's one notification surface (`useToast`, `apps/live/hooks/ui/useToast.tsx`):
+answers to it. It is the editor and Explorer's one notification surface (`useToast`, `apps/editor/hooks/ui/useToast.tsx`):
 a failure that would otherwise be silent, a consequential action that would otherwise go unconfirmed ("“Roadmap”
 deleted", with Undo), or an offer (power user mode). It never says what is already visible on screen (an element
 appearing, a copy button turning into "Copied"), and autosave has its own header pill.
@@ -35,15 +35,15 @@ scrolled away, can tell which one it was: "“Roadmap” deleted", "“Roadmap�
 “Plans”. Try again.", "“Sheet 1” added to “Roadmap”".
 
 - **The name is in curly quotes**, its whitespace collapsed to single spaces.
-- **It is cut to 30 characters**, the last one an ellipsis (`TOAST_NAME_MAX`, `apps/live/lib/toast-name.ts`), cut
+- **It is cut to 30 characters**, the last one an ellipsis (`TOAST_NAME_MAX`, `apps/editor/lib/toast-name.ts`), cut
   between characters so an emoji is never split. Two cut names and the words round them stay under the 90-character
   ceiling; where they would not, the advice is dropped first ("Could not add “Sheet 1” to “Roadmap”.").
 - **A blank or unknown name falls back to the generic word**: "Document deleted", "Could not move the document. Try
   again.", "moved to the team library". The surface never shows empty quotes.
 - **Where it went is named too**: the folder, or My Documents. A team is named when the surface knows it, else "the
   team library".
-- The wording lives in one place per family, so every surface says the same: `apps/live/lib/document-toast-copy.ts`
-  (delete, restore, move, duplicate) and `apps/live/lib/write-failure-copy.ts` (a failed folder or document write).
+- The wording lives in one place per family, so every surface says the same: `apps/editor/lib/document-toast-copy.ts`
+  (delete, restore, move, duplicate) and `apps/editor/lib/write-failure-copy.ts` (a failed folder or document write).
 
 ## Tones
 

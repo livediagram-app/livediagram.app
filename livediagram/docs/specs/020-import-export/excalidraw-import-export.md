@@ -22,18 +22,18 @@ degradation table below; nothing degrades silently outside that table.
 
 ## Where it lives
 
-- `apps/live/lib/excalidraw-envelope.ts`: `readExcalidrawEnvelope(text)`, the
+- `apps/editor/lib/excalidraw-envelope.ts`: `readExcalidrawEnvelope(text)`, the
   envelope reader (detection, size cap, `JSON.parse`, the named rejections) and
   `looksLikeExcalidraw(text)`, the cheap prefix test a paste runs first.
-- `apps/live/lib/excalidraw-scene.ts`: `excalidrawToBoardScene(envelope)`, the
+- `apps/editor/lib/excalidraw-scene.ts`: `excalidrawToBoardScene(envelope)`, the
   pure mapping from Excalidraw elements to a `BoardScene`. Helpers for colours,
   text and linear geometry sit beside it (`excalidraw-scene-*.ts`).
-- `apps/live/lib/excalidraw-read.ts`: `sceneFromExcalidrawText(text)` (envelope,
+- `apps/editor/lib/excalidraw-read.ts`: `sceneFromExcalidrawText(text)` (envelope,
   then scene, or the rejection's message) and `readExcalidrawFile(file)` (a
   dropped or pasted file: its scene, `not-excalidraw`, or an error). Never
   throws. Lazy-loaded by its callers, so the parser stays out of the editor's
   first bundle.
-- `apps/live/lib/excalidraw-paste.ts`: the cheap, synchronous recognisers a paste
+- `apps/editor/lib/excalidraw-paste.ts`: the cheap, synchronous recognisers a paste
   or drop runs first: `excalidrawTextFromPaste(data)` and
   `isExcalidrawFileCandidate(file)`, plus the drop refusal copy.
 - The Import dialog (`useTabImport`) reads the scene and hands it to the shared
@@ -42,14 +42,14 @@ degradation table below; nothing degrades silently outside that table.
   [Import image pipeline](import-image-pipeline.md) before the tab changes.
   `useClipboard` hands a pasted or dropped scene to the board-scene insert
   (`useBoardSceneInsert`); `usePaletteDrop` passes dropped files to it.
-- `apps/live/lib/excalidraw-embedded.ts`: `extractExcalidrawScene(input)`,
+- `apps/editor/lib/excalidraw-embedded.ts`: `extractExcalidrawScene(input)`,
   which finds the scene JSON inside an Excalidraw PNG or SVG export (see
   "Embedded-scene PNG and SVG") and hands plain JSON text through untouched.
-- `apps/live/lib/excalidraw-export.ts`: `tabToExcalidrawText(tab)`, a pure
+- `apps/editor/lib/excalidraw-export.ts`: `tabToExcalidrawText(tab)`, a pure
   `Tab -> string` serialiser plugged into the Export dialog's text-panel
   registry (`TEXT_PANELS`), like `tabToJsonText` / `tabToMarkdownText`.
 - None of these is needed by the MCP worker or any other app, so they stay in
-  `apps/live/lib` (Mermaid lives in `packages/document` only because the MCP
+  `apps/editor/lib` (Mermaid lives in `packages/document` only because the MCP
   server also renders it).
 
 ## Envelopes
