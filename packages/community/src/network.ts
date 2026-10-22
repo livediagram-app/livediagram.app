@@ -1,9 +1,8 @@
-// The network a Community like, copy or report comes from (docs/specs/025-community/community.md "Likes", "Reports
-// and moderation"; blueprint §7): the caller's address range rather than the exact address, so one person cannot
-// pass for many by rotating addresses inside what they hold (an IPv6 user typically holds a whole /56 or /64, and an
-// IPv4 one can often hop within a /24). IPv4 keeps its /24, IPv6 its /56. Anything unparseable is its own network.
-// Only ever stored as a one-way hash salted with the post id (communityNetworkHash), so it cannot be compared across
-// posts.
+// The network a request comes from (liveworkspace/docs/community.md "Likes"): the caller's address range rather
+// than the exact address, so one person cannot pass for many by rotating addresses inside what they hold (an IPv6
+// user typically holds a whole /56 or /64, and an IPv4 one can often hop within a /24). IPv4 keeps its /24, IPv6 its
+// /56. Anything unparseable is its own network. The Community service counts likes, copies and reports per network;
+// the apps key their per-network rate limits on it.
 
 const IPV4 = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.\d{1,3}$/;
 
@@ -16,7 +15,8 @@ export function communityNetwork(ip: string): string {
   return `${hextets.slice(0, 3).join(':')}:${hextets[3]!.slice(0, 2)}00::/56`;
 }
 
-// The eight four-digit hextets of an IPv6 address (an embedded IPv4 tail counts as two), or null when it is not one.
+// The eight four-digit hextets of an IPv6 address (an embedded IPv4 tail counts as two), or null when it
+// is not one.
 export function expandIpv6(ip: string): string[] | null {
   if (!ip.includes(':')) return null;
   let address = ip.toLowerCase().split('%')[0]!;

@@ -173,8 +173,12 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 #     from R2 + D1 once nothing references them.
 # Plus the docs/specs/014-identity/transactional-email.md email sweeps (lifecycle onboarding + token-expiry
 # warnings), both no-ops when RESEND_API_KEY is unset.
+#
+# `* * * * *`: every minute, the Community sync (docs/specs/025-community/community.md "Keeping in step"): what
+# changed about published documents goes to the liveworkspace Community service, and the posts it hid after reports
+# close their links here. One indexed D1 read and one request when nothing changed; a no-op without COMMUNITY_KEY.
 [triggers]
-crons = ["0 3 * * *"]
+crons = ["0 3 * * *", "* * * * *"]
 
 # Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
 # docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into document-write
@@ -239,15 +243,6 @@ name = "HOME_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1008"
 simple = { limit = 60, period = 60 }
-
-# Per-network limiter for Community likes and reports (docs/specs/025-community/blueprints/community.md
-# §7, C7), keyed community:<network> (an IPv4 /24 or IPv6 /56, community-network.ts). These callers are anonymous, so the owner-keyed write limiter would put them all on
-# one key. 30 / 60s is far above a person liking cards. Separate namespace. Absent binding → allow (self-host).
-[[unsafe.bindings]]
-name = "COMMUNITY_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1009"
-simple = { limit = 30, period = 60 }
 
 # Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
 # WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
@@ -373,6 +368,18 @@ simple = { limit = 20, period = 60 }
 # configuration. A mismatch is silent (the service drops the batch), so check
 # `wrangler secret list` on all three if server-side counts look flat.
 
+# COMMUNITY_KEY is livediagram's secret on the liveworkspace Community service
+# (liveworkspace/docs/community.md), sent as a bearer token on its app routes, where
+# it proves a publish, a sync or a copy is livediagram's. The service holds the same
+# value as COMMUNITY_KEY_LIVEDIAGRAM. Never in [vars]:
+#
+#   - Local dev: `COMMUNITY_KEY=dev-livediagram-community-key` and
+#     `COMMUNITY_URL=http://localhost:8791/api/community` in `apps/api/.dev.vars`.
+#   - Production and staging: the COMMUNITY_KEY / COMMUNITY_KEY_STAGING GitHub
+#     secrets, synced by the deploy workflow. COMMUNITY_URL comes from hosted-vars.json.
+#
+# Unset = no Community: publishing answers 404, and the sync does nothing.
+
 
 # ---------------------------------------------------------------------------
 # Staging (docs/specs/016-platform/staging-environment.md). Deploys as `livediagram-api-staging` via
@@ -491,12 +498,6 @@ namespace_id = "1008"
 simple = { limit = 60, period = 60 }
 
 [[env.staging.unsafe.bindings]]
-name = "COMMUNITY_RATE_LIMITER"
-type = "ratelimit"
-namespace_id = "1009"
-simple = { limit = 30, period = 60 }
-
-[[env.staging.unsafe.bindings]]
 name = "WORKBENCH_TICKET_RATE_LIMITER"
 type = "ratelimit"
 namespace_id = "1010"
@@ -533,7 +534,7 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 # staging too, against staging's own data. Restated rather than inherited so
 # that reading this block tells you what the staging worker actually does.
 [env.staging.triggers]
-crons = ["0 3 * * *"]
+crons = ["0 3 * * *", "* * * * *"]
 
 # CLERK_JWKS_URL, GUEST_ID_HMAC_SECRET and TELEMETRY_KEY come from the
 # `_STAGING` GitHub secrets via the deploy workflow. RESEND_API_KEY and the

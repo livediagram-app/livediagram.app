@@ -79,7 +79,11 @@ describe('CommunityShowcase', () => {
     render(<CommunityShowcase />);
     const urls = () => vi.mocked(fetch).mock.calls.map(([url]) => sentUrl(url));
     await waitFor(() =>
-      expect(urls().some((url) => url.endsWith('/community/featured'))).toBe(true),
+      expect(
+        urls().some(
+          (url) => url === 'https://liveworkspace.app/api/community/featured?app=livediagram.app',
+        ),
+      ).toBe(true),
     );
     expect(urls().some((url) => url.endsWith('/capabilities'))).toBe(false);
   });

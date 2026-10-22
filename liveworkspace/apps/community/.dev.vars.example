@@ -1,0 +1,5 @@
+# Local development: `wrangler dev` reads .dev.vars. Development answers localhost pages and skips the edge
+# cache. Give each app's api Worker the same value as COMMUNITY_KEY.
+ENVIRONMENT=development
+COMMUNITY_KEY_LIVEDIAGRAM=dev-livediagram-community-key
+COMMUNITY_KEY_LIVEPLANNER=dev-liveplanner-community-key

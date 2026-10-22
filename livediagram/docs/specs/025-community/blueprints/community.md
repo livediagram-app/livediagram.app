@@ -2,6 +2,30 @@
 
 Derived from [Community](../community.md). Implementation detail only; design decisions live in the spec.
 
+## 0. Since the listings moved to liveworkspace
+
+The listings now live in liveworkspace's Community service ([its doc](../../../../../liveworkspace/docs/community.md)),
+and the sections below that describe tables, queries and the public routes describe the service. Where they name
+livediagram's old identifiers, read them as:
+
+| Before (livediagram api)                                                   | Now                                                                                                                                                                                                           |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `community_posts`, `_post_tags`, `_likes`, `_copies`, `_reports`           | the service's `posts`, `post_tags`, `likes`, `copies`, `reports`, keyed by `app`; migration liveworkspace/apps/community/migrations/0001_community.sql. Dropped here by `0100_community_to_liveworkspace.sql` |
+| apps/api/src/db/community.ts, db/community-engagement.ts, community-row.ts | liveworkspace/apps/community/src/posts.ts, liveworkspace/apps/community/src/engagement.ts, liveworkspace/apps/community/src/rows.ts                                                                           |
+| apps/api/src/community-network.ts                                          | packages/community/src/network.ts (`@liveworkspace/community`, re-exported by api-schema)                                                                                                                     |
+| apps/api/src/community-copy.ts                                             | `apps/api/src/community-service.ts` (`countCommunityCopy`, copier hashed as `sha256('community-copier:' + owner)`)                                                                                            |
+| apps/api/src/edge-cache.ts                                                 | liveworkspace/apps/community/src/http.ts                                                                                                                                                                      |
+| `COMMUNITY_RATE_LIMITER` on the api                                        | the service's `COMMUNITY_RATE_LIMITER` (30 per 60 s per network)                                                                                                                                              |
+| `PUBLIC_POST`                                                              | here: `PUBLIC_LINK` over `community_links` (`apps/api/src/db/community-links.ts`); there: `state = 'listed' AND document_state = 'public'`                                                                    |
+| `GET /api/community/{posts,featured,facets,sitemap}`, likes, reports       | `liveworkspace.app/api/community/...?app=livediagram.app`, read from the pages with `communityServiceUrl`                                                                                                     |
+
+What stays here: `community_links` (one row per post: `share_code`, `document_id`, `author_id`, `post_id`, `title`,
+`anonymous`, `hidden_at`, `sent_state`), the owner routes `GET`/`PUT`/`DELETE /api/documents/:id/community` (now
+forwarding to the service's app routes with `COMMUNITY_KEY`), `GET /api/community/mine`, the community link's doors,
+and the sync (`syncCommunity`: inline after a document change, and on the `* * * * *` cron; one statement per state).
+Vars: `COMMUNITY_URL` (default `https://liveworkspace.app/api/community`), secret `COMMUNITY_KEY`; the pages'
+`NEXT_PUBLIC_COMMUNITY_API` and their Worker's `COMMUNITY_URL`. Without `COMMUNITY_KEY`, `communityEnabled` is false.
+
 ## 1. Domain and naming
 
 | Spec term      | Identifier                                                                                            |
@@ -20,15 +44,15 @@ Derived from [Community](../community.md). Implementation detail only; design de
 | Edit Listing   | the same `PUT /api/documents/:id/community` as publishing; the editor names the act, the api does not |
 
 Shared vocabulary lives in `packages/api-schema`, exported from the package index, so the worker, the editor and the
-Community app cannot disagree: `packages/api-schema/src/community.ts` holds the post (categories, reasons, limits, `normaliseCommunityTag`,
-`validateCommunityPostInput`, DTOs, `communityPostPath`, `communityImagePath`), and `packages/api-schema/src/community-query.ts` the search
+Community app cannot disagree: packages/community/src/post.ts holds the post (categories, reasons, limits, `normaliseCommunityTag`,
+`validateCommunityPostInput`, DTOs, `communityPostPath`, `communityImagePath`), and packages/community/src/query.ts the search
 grammar and list query (sorts, the `#tag` / `category:` / `sort:` / `is:mine` words, `parseCommunityListQuery`,
 `communityQueryParams`). Each category, report reason and sort carries `type`, its PascalCase telemetry value
 (`Architecture`, `PersonalInfo`, `Loved`, ...), so no caller derives one.
 
 ## 2. Constants and configuration
 
-All in `packages/api-schema/src/community.ts`.
+All in packages/community/src/post.ts.
 
 | Constant                           | Value         | Provenance            | Safe range |
 | ---------------------------------- | ------------- | --------------------- | ---------- |
@@ -51,8 +75,8 @@ All in `packages/api-schema/src/community.ts`.
 | `COMMUNITY_FEATURED_WINDOW_MS`     | 90 days       | spec "Featured"       | 30..365 d  |
 | `COMMUNITY_KEY_PATTERN`            | UUID v4 regex | C6                    | fixed      |
 
-Worker binding `COMMUNITY_RATE_LIMITER` (ratelimit, 30 per 60 s, keyed `community:<network>` from `communityNetwork`),
-production and staging.
+The service's Worker binding `COMMUNITY_RATE_LIMITER` (ratelimit, 30 per 60 s, keyed `community:<network>` from
+`communityNetwork`), production and staging; the api no longer has one.
 Worker var `COMMUNITY_ENABLED` (optional; `false`, `0` or `off` switches the Community off, anything else or unset
 leaves it on), read per request by `communityEnabled(env)` (`apps/api/src/community-enabled.ts`) and reported as
 `communityEnabled` by `GET /api/capabilities`. Moderation needs no var: it is reports alone.
@@ -120,7 +144,7 @@ wire); everything else is public post content.
   one batch on publish/update.
 - `search_text` = lowercased `title + '\n' + description + '\n' + tags.join(' ')`.
 - `like_count` / `copy_count` are recomputed with `LIKE_COUNT_SQL` / `COPY_COUNT_SQL`
-  (`apps/api/src/db/community-engagement.ts`: `SUM(MIN(n, COMMUNITY_COUNTED_PER_NETWORK))` over the rows grouped by
+  (liveworkspace/apps/community/src/engagement.ts: `SUM(MIN(n, COMMUNITY_COUNTED_PER_NETWORK))` over the rows grouped by
   `COALESCE(network_hash, liker_key | copier_id)`) in the same batch as the insert/delete that changes them, so they
   cannot drift.
 - Post ids: `generateShareCode(10)` (same alphabet), re-minted once on a primary-key collision.
@@ -235,7 +259,7 @@ Guards:
 - G3 publish (new post only): `firstTabElementCount > 0` (`apps/api/src/db/tabs.ts`: counted, not rendered); author
   has fewer than `COMMUNITY_POSTS_PER_AUTHOR`.
 - G4 public reads: `state = 'listed' AND trashed_at IS NULL AND team_id IS NULL AND d.owner_id = cp.author_id AND
-d.share_password IS NULL` (`PUBLIC_POST`, `apps/api/src/db/community.ts`).
+d.share_password IS NULL` (the service's `posts.ts`; here `PUBLIC_LINK`, `apps/api/src/db/community-links.ts`).
 - G5 like/report: valid community key, post passes G4.
 - G6 hidden is final: owner `PUT` / `DELETE` on a hidden post answer 409 `post_hidden`.
 - G7 previous owner (`apps/api/src/routes/community-owner-routes.ts`): a post whose `author_id` is not the document's
@@ -271,7 +295,7 @@ Snapshot and redaction (api): `getCommunityThumbnailSvg` (`apps/api/src/thumbnai
 redacted board and caches it under `thumb-community/<documentId>`, apart from the owner's `thumb/<id>`, fresh while
 its R2 `customMetadata.renderedAt >= savedAt`;
 `redactDocumentForCommunity` (`apps/api/src/redact-document.ts`) strips owner name, colour, folder and origin from the
-document a community grant reads. `communityNetwork` (`apps/api/src/community-network.ts`) maps an address to its
+document a community grant reads. `communityNetwork` (packages/community/src/network.ts) maps an address to its
 IPv4 /24 or IPv6 /56 for the limiter, report and count hashes.
 
 Editor (`apps/live`):
@@ -380,9 +404,9 @@ Community app (`apps/community`):
 - Publishing requires a verified Clerk identity (G1), so every public post is tied to an account.
 - No owner id leaves the worker in any Community DTO; authors are participant display identities only.
 - The community link is read-only (view role), cannot open the room, and cannot read comments.
-- Abuse: `COMMUNITY_RATE_LIMITER` per network (`communityNetwork`) for all `/api/community/*` writes (the
-  owner-keyed write limiter is skipped for these paths, because anonymous callers would all share its `anonymous` key;
-  publishing, under `/api/documents/:id/community`, stays on the per-owner limiter); auto-hide needs three distinct
+- Abuse: the service's `COMMUNITY_RATE_LIMITER` per network (`communityNetwork`) for likes and reports (publishing,
+  under the api's `/api/documents/:id/community`, stays on the api's per-owner limiter); the service's app routes
+  need the app's key, compared in constant time; auto-hide needs three distinct
   networks; like and copy counts take at most `COMMUNITY_COUNTED_PER_NETWORK` rows per `network_hash`; reports are
   never cleared and a hidden post cannot be removed to clear them.
 - `network_hash` = first 32 hex of SHA-256(`<postId>:<network>`): not comparable across posts.
@@ -402,7 +426,10 @@ Community app (`apps/community`):
   otherwise walks the whole likes table in primary-key order to suit the `GROUP BY`.
 - Tag and text filters walk the listed posts newest first (by `idx_community_posts_new`), checking each; fine at the
   expected sizes, with FTS5 the next step (as for search).
-- Hot paths outside the Community: the full document read adds one indexed subquery (`community_posts` by
+- Sync: one indexed read of `community_links` joined to `documents` and `share_links` per run (500 a batch, at most 10
+  a run), one request to the service, and one write statement per state on each side; an idle minute is two D1
+  reads and one request.
+- Hot paths outside the Community: the full document read adds one indexed subquery (`community_links` by
   `document_id`); the tab save adds one indexed lookup (`document_tabs_by_tab`) only for a tab new to the document;
   the read gate adds the post check only for a Community link.
 - Bundles (measured against main at merge time, gzipped first load): the editor about +4 KB (+0.3%), the Explorer
@@ -492,43 +519,45 @@ app's api errors read `[community] api <status> <code>`. Telemetry per the spec.
 
 ## 13. Testing
 
-| Spec rule                                  | Test                                                                                     |
-| ------------------------------------------ | ---------------------------------------------------------------------------------------- |
-| Tag normalisation, input validation, query | `packages/api-schema/src/community.test.ts`                                              |
-| Publish guards, update, unpublish          | `apps/api/src/routes/community-routes.test.ts` (sqlite D1)                               |
-| List filters, sorts, search, paging, trash | `apps/api/src/db/community.test.ts` (sqlite D1)                                          |
-| Likes, reports, auto-hide, hidden is final | `apps/api/src/db/community.test.ts`, `apps/api/src/routes/community-routes.test.ts`      |
-| Community link: unlisted, no join, no pw   | `apps/api/src/routes/community-routes.test.ts`                                           |
-| Community link: no room                    | `apps/api/src/routes/document-room-routes.test.ts`                                       |
-| Community grant                            | `apps/api/src/auth/document-access.test.ts`                                              |
-| Switched off: routes, links, capabilities  | `apps/api/src/community-enabled.test.ts`, `apps/api/src/routes/community-routes.test.ts` |
-| Switched off: footer links, fetch          | `packages/ui/src/community/useCommunityEnabled.test.tsx`                                 |
-| Hidden is final (Share dialog)             | `apps/live/components/dialogs/community/CommunitySection.test.tsx`                       |
-| Copy counting                              | `apps/api/src/db/community.test.ts`                                                      |
-| Query state round trip                     | `apps/community/lib/query-state.test.ts`                                                 |
-| Community key fallback                     | `apps/community/lib/community-key.test.ts`                                               |
-| Router forwards `/community`               | `apps/router/src/index.test.ts`                                                          |
-| Optimistic like and rollback               | `apps/community/components/shared/LikeButton.test.tsx`                                   |
-| Copy once from `?copy=1`                   | `apps/live/hooks/canvas/useAutoCopyParam.test.tsx`                                       |
-| Community section state, tag input         | `apps/live/components/dialogs/community/*.test.ts(x)`                                    |
-| Editor api client and error copy           | `apps/live/lib/api/community.test.ts`                                                    |
-| Network ranges (IPv4 /24, IPv6 /56)        | `apps/api/src/community-network.test.ts`                                                 |
-| Redaction for strangers                    | `apps/api/src/community-redact.test.ts`                                                  |
-| Community snapshot cache                   | `apps/api/src/thumbnail.test.ts`                                                         |
-| Post row mapping (Anonymous, state)        | `apps/api/src/community-row.test.ts`                                                     |
-| Tab id guard (`tab_id_taken`)              | `apps/api/src/routes/tab-put-route.test.ts`                                              |
-| Public badge                               | `apps/live/components/chrome/SharedBadge.test.tsx`                                       |
-| Community bar                              | `apps/live/components/chrome/CommunityBar.test.tsx`                                      |
-| Share dialog with Community, switched off  | `apps/live/components/dialogs/community/ShareDialogWithCommunity.test.tsx`               |
-| Community section, focus follows           | `apps/live/components/dialogs/community/CommunitySection.test.tsx`                       |
-| Publish dialog pieces                      | `apps/live/components/dialogs/community/publish-pieces.test.tsx`                         |
-| Owner post hook                            | `apps/live/hooks/persistence/useCommunityPost.test.tsx`                                  |
-| Gallery states, My Shares, sign-in wait    | `apps/community/components/gallery/GalleryView.test.tsx`                                 |
-| Post page, canonical                       | `apps/community/components/post/PostView.test.tsx`                                       |
-| Sign-in session and switched-off gate      | `apps/community/components/auth-and-gate.test.tsx`                                       |
-| Home page showcase                         | `apps/marketing/components/CommunityShowcase.test.tsx`                                   |
-| Shared card, counts, author                | `packages/ui/src/community/community-pieces.test.tsx`                                    |
-| Focus restore after an unmounting modal    | `packages/ui/src/useFocusTrap.test.tsx`                                                  |
+| Spec rule                                  | Test                                                                                                                                           |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Tag normalisation, input validation, query | packages/community/src/post.test.ts                                                                                                            |
+| Publish guards, update, unpublish          | `apps/api/src/routes/community-routes.test.ts` (sqlite D1)                                                                                     |
+| List filters, sorts, search, paging, trash | liveworkspace/apps/community/src/posts.test.ts (sqlite D1)                                                                                     |
+| Likes, reports, auto-hide, hidden is final | liveworkspace/apps/community/src/posts.test.ts, liveworkspace/apps/community/src/index.test.ts, `apps/api/src/routes/community-routes.test.ts` |
+| Community link: unlisted, no join, no pw   | `apps/api/src/routes/community-routes.test.ts`                                                                                                 |
+| Community link: no room                    | `apps/api/src/routes/document-room-routes.test.ts`                                                                                             |
+| Community grant                            | `apps/api/src/auth/document-access.test.ts`                                                                                                    |
+| Switched off: routes, links, capabilities  | `apps/api/src/community-enabled.test.ts`, `apps/api/src/routes/community-routes.test.ts`                                                       |
+| Switched off: footer links, fetch          | `packages/ui/src/community/useCommunityEnabled.test.tsx`                                                                                       |
+| Hidden is final (Share dialog)             | `apps/live/components/dialogs/community/CommunitySection.test.tsx`                                                                             |
+| Copy counting                              | liveworkspace/apps/community/src/posts.test.ts, `apps/api/src/routes/community-routes.test.ts`                                                 |
+| Query state round trip                     | `apps/community/lib/query-state.test.ts`                                                                                                       |
+| Community key fallback                     | `apps/community/lib/community-key.test.ts`                                                                                                     |
+| Router forwards `/community`               | `apps/router/src/index.test.ts`                                                                                                                |
+| Optimistic like and rollback               | `apps/community/components/shared/LikeButton.test.tsx`                                                                                         |
+| Copy once from `?copy=1`                   | `apps/live/hooks/canvas/useAutoCopyParam.test.tsx`                                                                                             |
+| Community section state, tag input         | `apps/live/components/dialogs/community/*.test.ts(x)`                                                                                          |
+| Editor api client and error copy           | `apps/live/lib/api/community.test.ts`                                                                                                          |
+| Network ranges (IPv4 /24, IPv6 /56)        | packages/community/src/network.test.ts                                                                                                         |
+| Redaction for strangers                    | `apps/api/src/community-redact.test.ts`                                                                                                        |
+| Community snapshot cache                   | `apps/api/src/thumbnail.test.ts`                                                                                                               |
+| Post row mapping (Anonymous, state)        | liveworkspace/apps/community/src/posts.test.ts                                                                                                 |
+| Community links, sync state                | `apps/api/src/db/community-links.test.ts`                                                                                                      |
+| Service routes, keys, CORS                 | liveworkspace/apps/community/src/index.test.ts                                                                                                 |
+| Tab id guard (`tab_id_taken`)              | `apps/api/src/routes/tab-put-route.test.ts`                                                                                                    |
+| Public badge                               | `apps/live/components/chrome/SharedBadge.test.tsx`                                                                                             |
+| Community bar                              | `apps/live/components/chrome/CommunityBar.test.tsx`                                                                                            |
+| Share dialog with Community, switched off  | `apps/live/components/dialogs/community/ShareDialogWithCommunity.test.tsx`                                                                     |
+| Community section, focus follows           | `apps/live/components/dialogs/community/CommunitySection.test.tsx`                                                                             |
+| Publish dialog pieces                      | `apps/live/components/dialogs/community/publish-pieces.test.tsx`                                                                               |
+| Owner post hook                            | `apps/live/hooks/persistence/useCommunityPost.test.tsx`                                                                                        |
+| Gallery states, My Shares, sign-in wait    | `apps/community/components/gallery/GalleryView.test.tsx`                                                                                       |
+| Post page, canonical                       | `apps/community/components/post/PostView.test.tsx`                                                                                             |
+| Sign-in session and switched-off gate      | `apps/community/components/auth-and-gate.test.tsx`                                                                                             |
+| Home page showcase                         | `apps/marketing/components/CommunityShowcase.test.tsx`                                                                                         |
+| Shared card, counts, author                | `packages/ui/src/community/community-pieces.test.tsx`                                                                                          |
+| Focus restore after an unmounting modal    | `packages/ui/src/useFocusTrap.test.tsx`                                                                                                        |
 
 ## 14. Defaults ledger
 

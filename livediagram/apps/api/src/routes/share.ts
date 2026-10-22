@@ -2,10 +2,10 @@
 
 import { LEVEL_TELEMETRY_TYPE } from '@livediagram/api-schema';
 import { documentImageSvg } from '../document-image';
-import { rowAuthor } from '../community-row';
 import {
   communityLinkAccess,
-  getCommunityPostByShareCode,
+  communityLinkAuthor,
+  getCommunityLinkByShareCode,
   getDocument,
   getDocumentSharePassword,
   getParticipant,
@@ -53,7 +53,7 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
     // else, decided before the trashed and password answers below so a closed link reveals nothing about its
     // document.
     if (link?.purpose === 'community') {
-      const post = await getCommunityPostByShareCode(env, link.code);
+      const post = await getCommunityLinkByShareCode(env, link.code);
       if (!post || (await communityLinkAccess(env, link.code)) !== 'public') return notFound();
       const d = await getDocument(env, link.documentId);
       if (!d) return notFound();
@@ -61,7 +61,7 @@ export async function handleShare(ctx: RouteContext): Promise<Response> {
         document: redactDocumentForCommunity(redactDocumentForReader(d, resolveOwner())),
         role: 'view',
         tabId: null,
-        community: { postId: post.id, author: rowAuthor(post) },
+        community: { postId: post.post_id, author: await communityLinkAuthor(env, post) },
       });
     }
     if (link) {

@@ -329,7 +329,10 @@ Add a custom-domain route to the router worker (`apps/router/wrangler.toml`) and
 - `/community` → Community, the public gallery of shared documents
 - `/api/*` → api worker
 
-The Community is on by default and needs nothing. To switch it off, set the api worker's `COMMUNITY_ENABLED` to
+The Community's listings live in liveworkspace's Community service
+([liveworkspace/docs/community.md](../../../liveworkspace/docs/community.md)). Without a `COMMUNITY_KEY` secret the api
+reports the Community off; to have one, run that service (or use liveworkspace.app's with a key it gives you), set
+the api's `COMMUNITY_URL` and `COMMUNITY_KEY`, and build the pages with `NEXT_PUBLIC_COMMUNITY_API`. To switch it off, set the api worker's `COMMUNITY_ENABLED` to
 `false` (a `[vars]` entry or `wrangler secret put COMMUNITY_ENABLED`): every Community route and link closes and it
 disappears from every app, with nothing deleted ([Community](../specs/025-community/community.md#turning-the-community-off)).
 

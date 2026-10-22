@@ -76,7 +76,9 @@ function route(
   routes.unshift({ match, answer });
 }
 
-const isPosts = (url: string) => url.startsWith('/api/community/posts');
+// The gallery reads the Community service; My Shares is this app's api.
+const SERVICE = 'https://liveworkspace.app/api/community';
+const isPosts = (url: string) => url.startsWith(`${SERVICE}/posts`);
 const isMine = (url: string) => url.startsWith('/api/community/mine');
 const queryOf = (url: string) => new URL(url, 'https://x.test').searchParams;
 
@@ -93,7 +95,7 @@ beforeEach(() => {
     () => new Response(null, { status: 404 }),
   );
   route(
-    (url) => url.startsWith('/api/community/facets'),
+    (url) => url.startsWith(`${SERVICE}/facets`),
     () =>
       Response.json({
         total: 3,

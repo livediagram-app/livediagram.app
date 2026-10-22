@@ -11,7 +11,7 @@ import { formLook } from '@livediagram/document';
 import { FORM_CODE_PATTERN, closedMessageOf, closedReason, publicForm } from '@livediagram/forms';
 import { typesOf } from '@livediagram/items';
 import { clientIp } from '../client-ip';
-import { communityNetwork } from '../community-network';
+import { communityNetwork } from '@livediagram/api-schema';
 import { addFormReport, countSuspendedFormLinks, suspendFormLink } from '../db';
 import { notifyFormSuspended } from '../email/notifications';
 import { responsesProblem } from '../forms/form-tab';

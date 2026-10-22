@@ -1,4 +1,4 @@
-// Who a Community post is credited to (docs/specs/025-community/community.md "Posts"): the author shape and the two
+// Who a Community post is credited to (livediagram/docs/specs/025-community/community.md "Posts"): the author shape and the two
 // stand-ins. Kept apart from the rest of the Community vocabulary so a caller that only shows an author (the
 // editor's share client) does not load the categories, limits and validation with it.
 

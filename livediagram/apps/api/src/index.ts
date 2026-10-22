@@ -46,7 +46,8 @@ import { CORS_HEADERS, forbidden, json, notFound, payloadTooLarge, rateLimited }
 import { deleteOldDocumentOpens } from './db/document-opens';
 import { reportServerEvent } from './server-telemetry';
 import { clientIp, clientRateKey } from './client-ip';
-import { communityNetwork } from './community-network';
+import { communityNetwork } from '@livediagram/api-schema';
+import { syncCommunity } from './community-service';
 import { MAX_BODY_BYTES, MAX_IMAGE_BYTES } from './limits';
 import { handleAccount } from './routes/account';
 import { handleAiReadNotes } from './routes/ai-read-notes';
@@ -340,9 +341,6 @@ async function routeApiRequest(
     if (await isWriteRateLimited(env, `room-ticket:${clientRateKey(request)}`))
       return rateLimited();
   }
-  // Community likes and reports (docs/specs/025-community/blueprints/community.md §7) are limited per
-  // network instead: their callers are anonymous, so the owner key would be 'anonymous' for everyone.
-  const isCommunityWrite = isWrite && segments[1] === 'community';
   // A form link's doors (docs/specs/030-forms/forms.md "Abuse and limits"): respondents are anonymous, so reads and
   // responses are limited per network, each on its own key, apart from everyone's document writes.
   const isFormRequest = segments[1] === 'forms';
@@ -361,18 +359,10 @@ async function routeApiRequest(
     });
     if (!ok.success) return rateLimited();
   }
-  if (isCommunityWrite && env.COMMUNITY_RATE_LIMITER) {
-    // Keyed by address range, not address: rotating addresses inside one range buys no extra writes.
-    const ok = await env.COMMUNITY_RATE_LIMITER.limit({
-      key: `community:${communityNetwork(clientIp(request))}`,
-    });
-    if (!ok.success) return rateLimited();
-  }
   if (
     isWrite &&
     url.pathname !== '/api/events' &&
     !isRoomTicketMint &&
-    !isCommunityWrite &&
     !isFormRequest &&
     !isInviteDecline
   ) {
@@ -651,8 +641,13 @@ const worker = {
           .catch((err) => console.error('workbench sweep failed', err)),
       );
     }
+    // docs/specs/025-community/community.md "Keeping in step": every minute, what changed about published documents
+    // goes to the liveworkspace Community service, and the posts it hid after reports close their links here.
+    if (event.cron === COMMUNITY_SYNC_CRON) ctx.waitUntil(syncCommunity(env));
   },
 } satisfies ExportedHandler<Env>;
+
+const COMMUNITY_SYNC_CRON = '* * * * *';
 
 export default worker;
 

@@ -5,6 +5,17 @@ Community with a title, a description, a category and a few tags; anyone can bro
 post's document read-only, like it, and make their own copy of it. It lives in its own app, `apps/community`, served at
 `/community`.
 
+## Where it lives
+
+The **listings** (posts, tags, likes, copies, reports, hidden) are kept by liveworkspace, in its Community service at
+`liveworkspace.app/api/community` with its own database, shared by every liveworkspace app with a Community and
+described in [liveworkspace's Community](../../../../liveworkspace/docs/community.md). livediagram keeps the
+**documents**: who owns one, whether it may be published, its community link, and the link's doors (the read-only
+view, the card image and copying). Its pages read the gallery, posts, likes and reports straight from the service,
+for `livediagram.app` posts only; its api publishes, edits and removes a post on the owner's behalf, answers My
+Shares, and tells the service where each published document stands (public, closed, away or gone) right after a
+change and on a one-minute cron. A post hidden after reports closes its link here within that minute.
+
 ## Why
 
 [Purpose](../001-project-vision/purpose.md) makes the growth model distribution: every shared document is a way in. Two
@@ -307,9 +318,10 @@ most liked over the last three months, topped up (when fewer than six were liked
 of all time by likes and copies, newest first on a tie. Public posts only, credited as they are in the
 gallery (Anonymous when the author chose it). The page is static, so the six load after it: placeholder cards
 hold their space, and with nothing to show the section says the Community is just getting started. **Explore
-the Community** leads to the gallery. The api answers `GET /api/community/featured`, cacheable for one
-minute, and answers it from Cloudflare's edge cache for that minute (every home page visit asks; the facets read
-is edge-cached the same way for its 30 seconds; [Web performance](../016-platform/web-performance.md)).
+the Community** leads to the gallery. The Community service answers
+`GET liveworkspace.app/api/community/featured?app=livediagram.app`, cacheable for one minute, and answers it from
+Cloudflare's edge cache for that minute (every home page visit asks; the facets read is edge-cached the same way
+for its 30 seconds; [Web performance](../016-platform/web-performance.md)).
 
 ## Where Community is linked from
 
@@ -336,9 +348,9 @@ A click is tracked as every help deep link is (`UI·Opened·<article id>`).
 
 ## Abuse limits
 
-Liking and reporting are rate limited per network (the caller's address range) by the dedicated
-`COMMUNITY_RATE_LIMITER` binding, since their callers are anonymous. Publishing is an owner's document write and goes
-through the ordinary per-owner write limiter. Bodies are capped at the sizes above. Public list responses are
+Liking and reporting are rate limited per network (the caller's address range) by the Community service's own
+limiter, since their callers are anonymous. Publishing is an owner's document write and goes through the api's
+ordinary per-owner write limiter. Bodies are capped at the sizes above. Public list responses are
 cacheable for a short time.
 
 ## Telemetry
@@ -379,7 +391,9 @@ While it is off:
 
 ## Self-hosting
 
-Community works with zero external services: D1 holds posts, the snapshot cache renders images, the app is static
+Community needs liveworkspace's Community service, which holds the listings: an api without `COMMUNITY_KEY` reports
+the Community off, and a self-host that wants one runs the service (`liveworkspace/apps/community`) and points
+`COMMUNITY_URL` and `NEXT_PUBLIC_COMMUNITY_API` at it. The snapshot cache renders images, the app is static
 behind a small worker script that binds to the api for search-engine metadata and the sitemap (an optional binding: left
 out, the pages are served exactly as built). A self-host can leave it as is; nothing is published until someone publishes. Publishing and My Shares need sign-in, so
 a build without a Clerk key offers neither; the Community app reads the same `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` as

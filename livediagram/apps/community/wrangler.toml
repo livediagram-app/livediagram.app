@@ -15,11 +15,10 @@ binding = "ASSETS"
 not_found_handling = "404-page"
 run_worker_first = ["/post", "/post/", "/sitemap.xml"]
 
-# The api, for the post the page names and the sitemap's list. Optional: without it the worker serves
-# the assets unchanged.
-[[services]]
-binding = "API"
-service = "livediagram-api"
+# The post the page names and the sitemap's list come from the liveworkspace Community service
+# (liveworkspace/docs/community.md), over HTTPS.
+[vars]
+COMMUNITY_URL = "https://liveworkspace.app/api/community"
 
 # Staging (docs/specs/016-platform/staging-environment.md): `wrangler deploy --env staging` deploys
 # the same static `./out` as `livediagram-community-staging`. The build that fills `out/` is a
@@ -36,7 +35,6 @@ binding = "ASSETS"
 not_found_handling = "404-page"
 run_worker_first = ["/post", "/post/", "/sitemap.xml"]
 
-# Service bindings are not inherited: staging reads the staging api.
-[[env.staging.services]]
-binding = "API"
-service = "livediagram-api-staging"
+# Vars are not inherited: staging reads the staging Community service.
+[env.staging.vars]
+COMMUNITY_URL = "https://staging.liveworkspace.app/api/community"

@@ -2,9 +2,10 @@ import type { NextConfig } from 'next';
 import { livediagramNextConfig } from '@livediagram/next-config';
 
 // liveworkspace.app: one static export, served as Cloudflare static assets (liveworkspace/docs/site.md).
-// Every page is here: the home page, the telemetry dashboard and the sign-in pages. The APIs are two
+// Every page is here: the home page, the telemetry dashboard and the sign-in pages. The APIs are
 // Workers on more specific routes of the same origin: accounts on /api/auth/* (and the two
-// .well-known documents), telemetry on /api/telemetry/*. The shared settings are livediagram's,
+// .well-known documents), telemetry on /api/telemetry/*, the Community on /api/community/* (whose
+// pages each app hosts itself; liveworkspace.app has none). The shared settings are livediagram's,
 // whose UI package the site's switcher and the dashboard come from.
 
 // In development the dev server stands in for those routes, so the whole site works from one
@@ -12,6 +13,7 @@ import { livediagramNextConfig } from '@livediagram/next-config';
 // export can't proxy.
 const ACCOUNTS_DEV = process.env.ACCOUNTS_DEV_ORIGIN ?? 'http://localhost:8787';
 const TELEMETRY_DEV = process.env.TELEMETRY_DEV_ORIGIN ?? 'http://localhost:8790';
+const COMMUNITY_DEV = process.env.COMMUNITY_DEV_ORIGIN ?? 'http://localhost:8791';
 
 const nextConfig: NextConfig = {
   ...livediagramNextConfig({ exportInDev: false }),
@@ -33,6 +35,10 @@ const nextConfig: NextConfig = {
             {
               source: '/api/telemetry/:path*',
               destination: `${TELEMETRY_DEV}/api/telemetry/:path*`,
+            },
+            {
+              source: '/api/community/:path*',
+              destination: `${COMMUNITY_DEV}/api/community/:path*`,
             },
           ];
         },

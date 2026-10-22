@@ -40,4 +40,5 @@ jobs:
       CLERK_JWKS_URL: ${{ secrets.CLERK_JWKS_URL }}
       GUEST_ID_HMAC_SECRET: ${{ secrets.GUEST_ID_HMAC_SECRET }}
       TELEMETRY_KEY: ${{ secrets.TELEMETRY_KEY }}
+      COMMUNITY_KEY: ${{ secrets.COMMUNITY_KEY }}
       NEXT_PUBLIC_GOOGLE_API_KEY: ${{ secrets.NEXT_PUBLIC_GOOGLE_API_KEY }}

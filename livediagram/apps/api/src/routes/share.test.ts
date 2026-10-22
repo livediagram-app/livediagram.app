@@ -32,8 +32,9 @@ vi.mock('../db', () => ({
   getShareLink: vi.fn(),
   getParticipant: vi.fn(),
   recordSharedAccess: vi.fn(),
-  getCommunityPostByShareCode: vi.fn(),
+  getCommunityLinkByShareCode: vi.fn(),
   communityLinkAccess: vi.fn(),
+  communityLinkAuthor: vi.fn(),
 }));
 
 // The live-image endpoint (docs/specs/013-workspace/live-image-share.md + docs/specs/006-document/document-snapshots.md) delegates the actual
@@ -69,7 +70,7 @@ vi.mock('../thumbnail', () => ({
 import { handleShare, passwordGate } from './share';
 import {
   communityLinkAccess,
-  getCommunityPostByShareCode,
+  getCommunityLinkByShareCode,
   getDocument,
   getParticipant,
   getShareLink,
@@ -429,7 +430,7 @@ describe('GET /api/share/<code> (docs/specs/013-workspace/share-password.md + do
     // A Community link (docs/specs/025-community/community.md): the post checks out, then the document is deleted
     // before the read. Nothing about it leaks; the link simply answers like any closed one.
     getShareLinkMock.mockResolvedValue({ ...shareLink('d1'), purpose: 'community' });
-    vi.mocked(getCommunityPostByShareCode).mockResolvedValue({ id: 'post1' } as never);
+    vi.mocked(getCommunityLinkByShareCode).mockResolvedValue({ post_id: 'post1' } as never);
     vi.mocked(communityLinkAccess).mockResolvedValue('public');
     getDocumentMock.mockResolvedValue(null);
     const { ctx } = resolveCtx({ visitor: 'someone-else' });

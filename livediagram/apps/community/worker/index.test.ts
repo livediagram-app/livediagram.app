@@ -31,6 +31,8 @@ class RecordingRewriter {
 
 const SHELL = '<html><head><title>Community Document</title></head><body></body></html>';
 
+// The Community service, answering `api` for each path it is asked (always for livediagram.app's posts), or
+// unreachable without one.
 function makeEnv(api?: (path: string, init?: RequestInit) => Promise<Response> | Response) {
   const assets: string[] = [];
   const env: Env = {
@@ -40,15 +42,14 @@ function makeEnv(api?: (path: string, init?: RequestInit) => Promise<Response> |
         return new Response(SHELL, { headers: { 'content-type': 'text/html' } });
       },
     },
-    ...(api
-      ? {
-          API: {
-            fetch: async (input, init) =>
-              api(new URL(typeof input === 'string' ? input : input.url).pathname, init),
-          },
-        }
-      : {}),
   };
+  vi.stubGlobal('fetch', async (input: string | URL | Request, init?: RequestInit) => {
+    const url = new URL(input instanceof Request ? input.url : input);
+    if (!api) throw new Error('unreachable');
+    expect(url.origin).toBe('https://liveworkspace.app');
+    expect(url.searchParams.get('app')).toBe('livediagram.app');
+    return api(url.pathname, init);
+  });
   return { env, assets };
 }
 
@@ -102,13 +103,13 @@ describe('community worker: a post page', () => {
     expect(await res.text()).toBe(SHELL);
   });
 
-  it('serves the shell unchanged when the api fails, is unreachable, or is not bound', async () => {
-    for (const env of [
-      makeEnv(() => new Response('', { status: 500 })).env,
-      makeEnv(() => Promise.reject(new Error('down'))).env,
-      makeEnv().env,
+  it('serves the shell unchanged when the service fails or is unreachable', async () => {
+    for (const make of [
+      () => makeEnv(() => new Response('', { status: 500 })).env,
+      () => makeEnv(() => Promise.reject(new Error('down'))).env,
+      () => makeEnv().env,
     ]) {
-      const res = await get('/post/?id=p1', env);
+      const res = await get('/post/?id=p1', make());
       expect(res.status).toBe(200);
       expect(await res.text()).toBe(SHELL);
     }

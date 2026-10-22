@@ -11,6 +11,7 @@ import {
   purgeDocuments,
   trashDocument,
 } from '../db';
+import { syncCommunity } from '../community-service';
 import { markTimelineEventsDeletedBySource } from '../db/timeline';
 import { documentTrashed, forbidden, noContent, notFound } from '../responses';
 import { broadcastDocumentTrashed } from '../room-client';
@@ -42,6 +43,7 @@ export async function handleDocumentDelete(ctx: RouteContext, id: string): Promi
     // docs/specs/013-workspace/timeline.md §3.5: the server copy leaves no trace
     // on the Timeline, and the move itself earns an owner-only card.
     await deleteDocument(env, id);
+    ctx.waitUntil?.(syncCommunity(env, id));
     ctx.waitUntil?.(
       markTimelineEventsDeletedBySource(env, 'document', id)
         .then(() => recordDocumentOffline(env, existing, owner))
@@ -55,6 +57,8 @@ export async function handleDocumentDelete(ctx: RouteContext, id: string): Promi
   // Open sessions end now, with the deleted state; later joins are refused
   // because the room's admission reads live documents only.
   ctx.waitUntil?.(broadcastDocumentTrashed(env, existing.id));
+  // docs/specs/025-community/community.md "Keeping in step": a trashed document's post leaves the gallery now.
+  ctx.waitUntil?.(syncCommunity(env, id));
   if (permanent) {
     await purgeDocuments(env, [id]);
     console.info('[trash] deleted permanently', id);
@@ -76,6 +80,7 @@ async function deleteFromTrash(
   if (!binned || !(await mayDeleteDocument(ctx, binned))) return notFound();
   if (!permanent) return documentTrashed();
   await purgeDocuments(ctx.env, [id]);
+  ctx.waitUntil?.(syncCommunity(ctx.env, id));
   console.info('[trash] purged from the Trash', id);
   return noContent();
 }

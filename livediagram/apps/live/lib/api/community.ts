@@ -2,11 +2,12 @@
 // docs/specs/025-community/blueprints/community.md §4): the owner's post on a document (read,
 // publish / Edit Listing, remove). The public gallery reads live in
 // apps/community; nothing here is called without an owner identity.
-import type {
-  CommunityFacetsResponse,
-  CommunityOwnPost,
-  CommunityOwnPostResponse,
-  CommunityPostInput,
+import {
+  communityServiceUrl,
+  type CommunityFacetsResponse,
+  type CommunityOwnPost,
+  type CommunityOwnPostResponse,
+  type CommunityPostInput,
 } from '@livediagram/api-schema';
 import { API_BASE, apiDelete, apiFetch, apiHeaders, expectOk } from './core';
 
@@ -52,11 +53,16 @@ export async function apiRemoveCommunityPost(ownerId: string, documentId: string
   });
 }
 
-// The most used tags, offered as suggestions in the publish dialog. The facets read is public, so it
-// goes out with no identity at all; any failure is just no suggestions.
+// The most used tags, offered as suggestions in the publish dialog: this app's, from the liveworkspace
+// Community service (liveworkspace/docs/community.md). The facets read is public, so it goes out with no
+// identity at all; any failure is just no suggestions.
 export async function apiCommunityPopularTags(): Promise<string[]> {
   try {
-    const res = await apiFetch(`${API_BASE}/community/facets`);
+    const res = await apiFetch(
+      communityServiceUrl('livediagram.app', '/facets', {
+        base: process.env.NEXT_PUBLIC_COMMUNITY_API,
+      }),
+    );
     if (!res.ok) return [];
     const { tags } = (await res.json()) as Partial<CommunityFacetsResponse>;
     return Array.isArray(tags) ? tags.map((t) => t.tag).filter((t) => typeof t === 'string') : [];

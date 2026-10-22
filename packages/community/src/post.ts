@@ -1,8 +1,9 @@
-import type { CommunityAuthor } from './community-authors';
+import type { CommunityAuthor } from './authors';
 
-// Community (docs/specs/025-community/community.md; blueprint docs/specs/025-community/blueprints/community.md):
-// the vocabulary, limits, validation and wire shapes shared by the api worker, the editor's publish dialog and the
-// Community app, so the three cannot disagree on what a valid post, tag or query is.
+// Community (liveworkspace/docs/community.md; the product spec is livediagram/docs/specs/025-community/community.md):
+// the vocabulary, limits, validation and wire shapes shared by liveworkspace's Community service, each app's
+// Workers, its editor's publish dialog and its Community pages, so none of them can disagree on what a valid
+// post, tag or query is.
 
 // ---------------------------------------------------------------------
 // Categories
@@ -141,16 +142,16 @@ export const COMMUNITY_RELATED_POSTS = 6;
 export const COMMUNITY_SEARCH_TERMS_MAX = 5;
 // The longest search a query keeps (the search box stops there too).
 export const COMMUNITY_SEARCH_MAX = 200;
-// The landing page's Community section (docs/specs/025-community/community.md "Featured on the home page"):
+// The landing page's Community section (livediagram/docs/specs/025-community/community.md "Featured on the home page"):
 // how many posts, and the window their likes are counted over.
 export const COMMUNITY_FEATURED_COUNT = 6;
 export const COMMUNITY_FEATURED_WINDOW_MS = 90 * 24 * 60 * 60 * 1000;
 export const COMMUNITY_SEARCH_TERM_MAX = 40;
 
-// The header and storage key the Community app's per-browser key travels under (spec "Likes"). Deliberately not
-// the guest owner id: a like must never put an owner credential on the wire.
+// The header the Community pages' per-browser key travels under (liveworkspace/docs/community.md "Likes"; each app keeps it
+// under its own storage key). Deliberately not the guest owner id: a like must never put an owner credential on
+// the wire.
 export const COMMUNITY_KEY_HEADER = 'X-Community-Key';
-export const COMMUNITY_KEY_STORAGE = 'livediagram:v2:community-key';
 const COMMUNITY_KEY_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
@@ -184,7 +185,7 @@ export type CommunityPostInput = {
   description: string;
   category: CommunityCategory;
   tags: string[];
-  // Shown as "Anonymous" rather than the author's name and picture (docs/specs/025-community/community.md
+  // Shown as "Anonymous" rather than the author's name and picture (livediagram/docs/specs/025-community/community.md
   // "Publishing"). On unless the author turns it off; an input without it publishes anonymously.
   anonymous: boolean;
 };
@@ -317,7 +318,7 @@ export type CommunityFacetsResponse = {
   tags: { tag: string; count: number }[];
 };
 export type CommunityPostResponse = { post: CommunityPost; related: CommunityPost[] };
-// The Community sitemap's source (docs/specs/025-community/community.md "Search engines"): every post the public can
+// The Community sitemap's source (livediagram/docs/specs/025-community/community.md "Search engines"): every post the public can
 // see, newest first, up to COMMUNITY_SITEMAP_MAX, as just what a sitemap entry needs. `updatedAt` is epoch ms.
 export type CommunitySitemapEntry = { id: string; updatedAt: number };
 export type CommunitySitemapResponse = { posts: CommunitySitemapEntry[] };

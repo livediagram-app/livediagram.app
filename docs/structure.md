@@ -6,11 +6,13 @@
 liveworkspace/                 git root, one pnpm workspace, one lockfile, one turbo.json
 ├─ packages/                   shared by every product (@liveworkspace/*)
 │  ├─ auth-client              sign-in redirect, code swap, refresh, token check
+│  ├─ community                the Community contract: apps, vocabulary, limits, wire shapes
 │  ├─ sites                    liveworkspace's sites, for every logo's site switcher
 │  └─ telemetry                the telemetry contract: apps, batch format, dashboard summary
 ├─ liveworkspace/              the platform's own apps
 │  ├─ apps/site                liveworkspace.app, one static site: the front door, /telemetry, /sign-in
 │  ├─ apps/accounts            liveworkspace.app/api/auth: sign-in for every product
+│  ├─ apps/community           liveworkspace.app/api/community: every app's listings, own D1
 │  └─ apps/telemetry           liveworkspace.app/api/telemetry: every product's events, own D1
 ├─ livediagram/                imported with full history (main at 82e6ed79a)
 │  ├─ apps/                    live, api, mcp, cli, marketing, help, community, router
@@ -60,6 +62,7 @@ liveworkspace/
 ├─ liveworkspace/apps/
 │  ├─ accounts                     sign-in
 │  ├─ telemetry (+ -dashboard)     every product's anonymous events (docs/telemetry.md there)
+│  ├─ community                    every product's Community listings (docs/community.md there)
 │  └─ home (later)                 one place for all your documents across products
 ├─ livediagram/
 │  ├─ apps/live                    thin: workbench + mode-draw (+ mode-plan for now)
