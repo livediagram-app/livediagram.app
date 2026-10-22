@@ -40,8 +40,8 @@ Its content sits in the Explorer's content width.
 Top to bottom, left column:
 
 - **Status pills**, two, each a link with a coloured dot:
-  - the person's projects: "1 project" / "N projects" (My Projects, the person's own space, this browser's
-    projects in This Browser not counted), opening **My Projects**; a green dot;
+  - the person's projects: "1 project" / "N projects" (My Work, the person's own space, this browser's
+    projects in This Browser not counted), opening **My Work**; a green dot;
   - the Inbox: "Inbox is clear" when no open action is assigned to the person, else "N open in your Inbox", the
     sidebar's Inbox count ([Inbox](inbox.md)), opening the **Inbox**; a sky dot.
   - A pill is drawn once its count is known: never "0 projects" while the lists load or after the list failed to, nor "Inbox is clear" for an
@@ -288,7 +288,7 @@ the **4 most used** and the **4 most recent**, no project twice.
 - A one-person entry is a link that opens the project. A comment or reply shows its words beneath, an action its
   name, on one line; then where the project lives and the time.
 - "Where the project lives" reads the team's name for a project in a team (whoever reaches it, its owner included)
-  or **My Projects**, then `›` and the folder when it has one; a
+  or **My Work**, then `›` and the folder when it has one; a
   project shared with the person reads **Shared by** and the owner's name.
 - A person without a known name is **Someone**. A summary names at most three people, then "and N others".
 - Times are clock times in the person's own time zone and locale (`14:05`, `2:05 PM`), under the day heading that dates

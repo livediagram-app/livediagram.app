@@ -166,7 +166,7 @@ export const DRIVE_CONNECTED = chart(
   'Drive',
   'Linked',
   'Drive Connected',
-  'Someone connected Google Drive to mirror My Documents.',
+  'Someone connected Google Drive to mirror My Work.',
 );
 
 export const DRIVE_DISCONNECTED = chart(
@@ -197,7 +197,7 @@ export const DRIVE_FIRST_MIRROR = chart(
   'Drive',
   'Created',
   'First Mirrors Finished',
-  'A newly connected mirror finished copying every document in My Documents into Drive.',
+  'A newly connected mirror finished copying every document in My Work into Drive.',
   { types: ['FirstMirror'] },
 );
 
@@ -290,7 +290,7 @@ export const AGENT_CHANGESETS: MetricStack = {
 export const DRIVE_MIRROR: MetricStack = {
   stack: true,
   title: 'Google Drive',
-  blurb: 'My Documents mirrored to Google Drive, and what comes back from Drive.',
+  blurb: 'My Work mirrored to Google Drive, and what comes back from Drive.',
   headline: DRIVE_CONNECTED,
   members: [
     DRIVE_CONNECTED,

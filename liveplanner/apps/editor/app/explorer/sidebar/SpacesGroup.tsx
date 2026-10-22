@@ -18,7 +18,7 @@ import { TeamRows } from './TeamRows';
 import { useMyProjectsMenu } from './useMyProjectsMenu';
 import { useExplorerDropTarget } from '../useExplorerDropTarget';
 
-// Spaces (docs/specs/013-workspace/explorer-structure.md): My Projects and each team as
+// Spaces (docs/specs/013-workspace/explorer-structure.md): My Work and each team as
 // root folders, then Invites and New Team, or the guest's sign-in nudge.
 // `rows` (from sidebarGroups) decides which show.
 export function SpacesGroup({

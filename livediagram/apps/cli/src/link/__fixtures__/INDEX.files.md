@@ -14,7 +14,7 @@
 ## Home \*screen\*
 
 - Link: https://livediagram.app/document/d-home
-- Folder: My documents/Minigames
+- Folder: My Work/Minigames
 - Files: `home-screen.livediagram.json`, `home-screen.md`
 - Tabs:
   - Main · diagram · 12 elements · rev 17
@@ -23,7 +23,7 @@
 ## Zeta
 
 - Link: https://livediagram.app/document/d-zeta
-- Folder: My documents/Minigames/Screens
+- Folder: My Work/Minigames/Screens
 - Files: `screens/zeta.livediagram.json`, `screens/zeta.md`
 - Tabs:
   - Flow · diagram · 1 element · rev 4

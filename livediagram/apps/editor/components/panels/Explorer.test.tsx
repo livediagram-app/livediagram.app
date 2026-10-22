@@ -102,14 +102,14 @@ describe('Explorer', () => {
     expect(document.querySelector('[data-explorer-sheet-scroll]')).toBeNull();
   });
 
-  it('opens on Home under its Current Document card, and lists My Documents when picked', async () => {
+  it('opens on Home under its Current Document card, and lists My Work when picked', async () => {
     show();
     expect(screen.getByRole('region', { name: 'Current document' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Rename Roadmap' })).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Home' })).toBeTruthy();
     expect(await screen.findByText('home view')).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'My Documents' }));
-    expect(screen.getByRole('heading', { name: 'My Documents' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'My Work' }));
+    expect(screen.getByRole('heading', { name: 'My Work' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Budget' })).toBeTruthy();
   });
 
@@ -142,7 +142,7 @@ describe('Explorer', () => {
       folder('new', 'New folder', parentId),
     );
     show({ folders: [folder('f1', 'Projects'), folder('f2', 'Drafts', 'f1')], onCreateFolder });
-    fireEvent.click(screen.getByRole('button', { name: 'My Documents' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My Work' }));
     fireEvent.click(screen.getByRole('button', { name: 'New Folder' }));
     expect(onCreateFolder).toHaveBeenLastCalledWith({ name: 'New folder', parentId: null });
     fireEvent.click(await screen.findByRole('button', { name: 'Projects' }));
@@ -151,7 +151,7 @@ describe('Explorer', () => {
     expect(onCreateFolder).toHaveBeenLastCalledWith({ name: 'New folder', parentId: 'f2' });
     // Back out to the root: New Folder makes a root folder again.
     fireEvent.click(screen.getByRole('button', { name: /^Projects/ }));
-    fireEvent.click(screen.getByRole('button', { name: /^My Documents.*Projects/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^My Work.*Projects/ }));
     fireEvent.click(screen.getByRole('button', { name: 'New Folder' }));
     expect(onCreateFolder).toHaveBeenLastCalledWith({ name: 'New folder', parentId: null });
   });
@@ -161,11 +161,11 @@ describe('Explorer', () => {
       folder('new', 'New folder', parentId),
     );
     show({ folders: [folder('f1', 'Projects')], onCreateFolder, onRenameFolder: vi.fn() });
-    fireEvent.click(screen.getByRole('button', { name: 'My Documents' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My Work' }));
     fireEvent.click(await screen.findByRole('button', { name: 'Menu for Projects' }));
     fireEvent.click(await screen.findByRole('menuitem', { name: /New Subfolder/ }));
     expect(onCreateFolder).toHaveBeenLastCalledWith({ name: 'New folder', parentId: 'f1' });
     // The pane is now in Projects, under its back bar.
-    expect(await screen.findByRole('button', { name: /^My Documents.*Projects/ })).toBeTruthy();
+    expect(await screen.findByRole('button', { name: /^My Work.*Projects/ })).toBeTruthy();
   });
 });

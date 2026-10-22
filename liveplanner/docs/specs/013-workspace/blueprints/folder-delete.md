@@ -3,18 +3,18 @@
 Derived from [Folders → Deleting a folder](../folders.md#deleting-a-folder). The spec decides; this
 file adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) as `D121`, `D122`.
 
-| File                                                                                               | Role                                                       |
-| -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `apps/api/src/db/folders.ts`                                                                       | `deleteFolder(env, id)`: one batch, contents to the parent |
-| `apps/api/src/routes/folders.ts`                                                                   | `DELETE /api/folders/:id`: authorise, delete, log          |
-| `apps/editor/lib/folder-delete-confirmation.ts`                                                      | The confirmation's words                                   |
-| `apps/editor/hooks/persistence/useFolders.ts`                                                        | Optimistic: subfolders to the parent                       |
-| `apps/editor/hooks/persistence/useProjectListActions.ts`                                             | Confirm; optimistic: projects to the parent                |
+| File                                                                                                   | Role                                                       |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------- |
+| `apps/api/src/db/folders.ts`                                                                           | `deleteFolder(env, id)`: one batch, contents to the parent |
+| `apps/api/src/routes/folders.ts`                                                                       | `DELETE /api/folders/:id`: authorise, delete, log          |
+| `apps/editor/lib/folder-delete-confirmation.ts`                                                        | The confirmation's words                                   |
+| `apps/editor/hooks/persistence/useFolders.ts`                                                          | Optimistic: subfolders to the parent                       |
+| `apps/editor/hooks/persistence/useProjectListActions.ts`                                               | Confirm; optimistic: projects to the parent                |
 | `apps/editor/hooks/ui/useTeamFolderActions.ts`, `apps/editor/components/panels/TeamSharedProjects.tsx` | Team folders: the same confirmation                        |
 
 ## Domain and naming
 
-- **Parent**: the deleted folder's `parent_id`; null is the root of its space (My Projects, or the
+- **Parent**: the deleted folder's `parent_id`; null is the root of its space (My Work, or the
   team's root). "Move up" in copy, never "promote" or "fall to Unsorted".
 
 ## Behaviour and state
@@ -66,7 +66,7 @@ Two indexed updates (`folders.parent_id`, `projects.folder_id`) and two point de
 ## Presentation and UX
 
 Confirmation: title `Delete "<name>"?`; message "Its projects and subfolders move to <parent>.",
-<parent> = the parent folder's name in quotes, "My Projects", or "the team's root" (`D122`); plus the
+<parent> = the parent folder's name in quotes, "My Work", or "the team's root" (`D122`); plus the
 default-folder line when the folder is one of the reader's defaults; confirm label **Delete folder**.
 
 ## Observability
@@ -81,6 +81,6 @@ default-folder line when the folder is one of the reader's defaults; confirm lab
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Contents move to the parent; root for top level; trashed too; one batch | `apps/api/src/db/folders.test.ts`, `apps/api/src/db/trash.test.ts` |
 | The delete logs where the contents went                                 | `apps/api/src/routes/folders.test.ts`                              |
-| Confirmation wording                                                    | `apps/editor/lib/folder-delete-confirmation.test.ts`                 |
-| Optimistic move-up                                                      | `apps/editor/hooks/persistence/useFolders.test.tsx`                  |
-| End to end                                                              | `apps/editor/e2e/default-folders.spec.ts`                            |
+| Confirmation wording                                                    | `apps/editor/lib/folder-delete-confirmation.test.ts`               |
+| Optimistic move-up                                                      | `apps/editor/hooks/persistence/useFolders.test.tsx`                |
+| End to end                                                              | `apps/editor/e2e/default-folders.spec.ts`                          |

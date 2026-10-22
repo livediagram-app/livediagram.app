@@ -9,7 +9,7 @@ import type {
   PeopleValue,
 } from './dimensions';
 
-/** A space as the lens names it: My Documents, Shared With Me, or one team by id. */
+/** A space as the lens names it: My Work, Shared With Me, or one team by id. */
 export type SpaceValue = 'mine' | 'shared' | `team:${string}`;
 
 /** The value type of each dimension. */

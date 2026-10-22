@@ -65,7 +65,7 @@ export function projectDragProps(
 }
 
 // Who a row's Owner cell names: the team for a team project, the sharer
-// for one shared with you, otherwise you: a project in My Projects or in
+// for one shared with you, otherwise you: a project in My Work or in
 // this browser alike is the reader's own (projectSpace).
 export function ownerLabelFor(liveDoc: PaneProject): string {
   const space = projectSpace(liveDoc);

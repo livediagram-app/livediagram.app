@@ -17,7 +17,7 @@ describe('folderDeleteConfirmation', () => {
   it('names the space root for a top-level folder', () => {
     expect(
       folderDeleteConfirmation({ name: 'A', parentName: null, scope: 'personal' }).message,
-    ).toBe('Its documents and subfolders move to My Documents.');
+    ).toBe('Its documents and subfolders move to My Work.');
     expect(folderDeleteConfirmation({ name: 'A', parentName: null, scope: 'team' }).message).toBe(
       "Its documents and subfolders move to the team's root.",
     );
@@ -32,7 +32,7 @@ describe('folderDeleteConfirmation', () => {
         defaultKeys: ['mode:pages'],
       }).message,
     ).toBe(
-      'Its documents and subfolders move to My Documents.\nNew documents are saved here by default. Choose another default folder in Settings.',
+      'Its documents and subfolders move to My Work.\nNew documents are saved here by default. Choose another default folder in Settings.',
     );
   });
 

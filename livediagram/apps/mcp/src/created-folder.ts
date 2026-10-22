@@ -1,11 +1,11 @@
 // The folder create_document reports (docs/specs/015-api/mcp-server.md §4.3,
-// docs/specs/013-workspace/default-folders.md): "My Documents" for a document left at the root of
-// the user's My Documents; the name of the default folder the server filed it in otherwise.
+// docs/specs/013-workspace/default-folders.md): "My Work" for a document left at the root of
+// the user's My Work; the name of the default folder the server filed it in otherwise.
 
 import { ApiError, apiJson } from './api';
 import type { Env } from './env';
 
-const ROOT_FOLDER = 'My Documents';
+const ROOT_FOLDER = 'My Work';
 /** Said when the default folder's name cannot be read: the document is filed, the name unknown. */
 const UNNAMED_DEFAULT_FOLDER = 'your default folder';
 

@@ -31,7 +31,7 @@ anything.
 
 ## Which projects take tags
 
-The reader's own projects (My Projects, This Browser) and their teams' projects. A project **shared with you**
+The reader's own projects (My Work, This Browser) and their teams' projects. A project **shared with you**
 takes none: it lives in the sharer's library, its menu offers Open and Dismiss only, the same rule as Favourites.
 
 ## Putting tags on a project

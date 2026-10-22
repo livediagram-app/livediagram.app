@@ -1,6 +1,6 @@
 # Google Drive mirror
 
-A signed-in user can **mirror My Documents to their own Google Drive**.
+A signed-in user can **mirror My Work to their own Google Drive**.
 Every document becomes a `.livediagram` file in a folder tree that matches their
 livediagram folders, kept in step both ways while a livediagram tab is open.
 Double-clicking such a file in Drive opens it in livediagram.
@@ -19,7 +19,7 @@ this spec does not restate it.
 - **Signed-in users only.** A guest has no lasting identity to attach a Google
   account to. The verified Clerk user id owns the connection; the unsigned
   `X-Owner-Id` header never reaches any Drive route.
-- **My Documents only.** Team libraries are not mirrored (whose Drive would
+- **My Work only.** Team libraries are not mirrored (whose Drive would
   hold a team's copy is unresolved). Documents shared with the user, and Offline
   Mode documents, are not mirrored either.
 - **Everyone, free.** Hosted livediagram.app offers it to every signed-in user.
@@ -97,7 +97,7 @@ this spec does not restate it.
   **Connecting…** (never Not connected: the connection exists) until the
   mirror reports, and the mirror syncs at once, even when another tab of the
   same browser is the one running it.
-- **Below the card:** not connected, "My Documents, copied to your
+- **Below the card:** not connected, "My Work, copied to your
   Google Drive in matching folders. Renames, moves and deletions sync both
   ways. livediagram only sees files it created."; connected, "Your documents
   are synced to “<root folder name>” in Google Drive." (the root's actual
@@ -141,7 +141,7 @@ this spec does not restate it.
   token and stores it. The browser never sees the refresh token.
 - **First mirror:** the browser creates the root folder in My Drive (or
   reuses the one recorded for this user), creates the folder tree,
-  then uploads every document in My Documents, oldest first, with progress in
+  then uploads every document in My Work, oldest first, with progress in
   the Cloud Sync row. It is resumable: a closed tab continues where it stopped on the
   next visit.
 - **The root folder's name** comes from the deployment's address, with no
@@ -210,7 +210,7 @@ this spec does not restate it.
   - The page Google returns to (`/drive/connected`) then asks, in a dialog
     titled **Switch Google Account?**: "This Google account is not the one
     livediagram syncs with. Switching moves Cloud Sync to the new account and
-    starts a fresh copy of My Documents in its Drive. The files already in the
+    starts a fresh copy of My Work in its Drive. The files already in the
     other account's Drive stay there untouched." Buttons **Keep Current
     Account** and **Switch Account**.
   - **Switch Account** confirms: in one step the new token and account replace
@@ -262,9 +262,9 @@ this spec does not restate it.
 
 ## Folders
 
-- The root folder is the **root of My Documents**: documents without a folder sit
+- The root folder is the **root of My Work**: documents without a folder sit
   directly in it.
-- Every folder in My Documents is a Drive folder at the same place in the tree.
+- Every folder in My Work is a Drive folder at the same place in the tree.
 - **Folders created in Drive** by the user are invisible to livediagram under
   `drive.file` until the user shows them to it; see
   [Folders livediagram cannot see](#folders-livediagram-cannot-see).
@@ -280,8 +280,8 @@ this spec does not restate it.
 | Document deleted (to Trash)      | File moved to Drive's bin                                                                                                                                                                       |
 | Document restored from Trash     | File restored from the bin (re-created if it is gone)                                                                                                                                           |
 | Document purged from Trash       | File permanently deleted, if still in the bin                                                                                                                                                   |
-| Document moved into a team       | File moved to Drive's bin (the document left My Documents)                                                                                                                                      |
-| Document moved out of a team     | File created (or restored), as a new document in My Documents                                                                                                                                   |
+| Document moved into a team       | File moved to Drive's bin (the document left My Work)                                                                                                                                           |
+| Document moved out of a team     | File created (or restored), as a new document in My Work                                                                                                                                        |
 | Folder created / renamed / moved | Folder created / renamed / moved                                                                                                                                                                |
 | Folder deleted                   | Its documents and subfolders move to its parent folder (the root for a top-level folder, [Folders](../013-workspace/folders.md#deleting-a-folder)), then the empty Drive folder goes to the bin |
 
@@ -296,8 +296,8 @@ folder id):
 | File copied (Drive's "Make a copy")                  | Nothing: livediagram never sees the copy (**verified**, [Copies made in Drive](#copies-made-in-drive)) |
 | File renamed                                         | Document renamed (the `.livediagram` extension is dropped; an empty name keeps the old one)            |
 | File moved to another mirrored folder                | Document moved to that folder                                                                          |
-| File moved to the root folder                        | Document moved to the root of My Documents                                                             |
-| File moved to a folder livediagram cannot see        | Document moved to the root of My Documents, with a notice (see below)                                  |
+| File moved to the root folder                        | Document moved to the root of My Work                                                                  |
+| File moved to a folder livediagram cannot see        | Document moved to the root of My Work, with a notice (see below)                                       |
 | File moved outside the `livediagram` tree entirely   | Same as a folder livediagram cannot see                                                                |
 | File moved to the bin                                | Document moved to Trash ([Trash](../013-workspace/trash.md))                                           |
 | File restored from the bin                           | Document restored from Trash                                                                           |
@@ -351,14 +351,14 @@ copy (below), or **Duplicate** inside livediagram.
   records another file for that `ldDocumentId` (and `ldOrigin` is this
   host). It is never taken for the original: livediagram never opens the
   original from it and never re-tags or adopts it as the original. It offers
-  **Import as new document**, which makes a new document in My Documents from
+  **Import as new document**, which makes a new document in My Work from
   the **copy's contents**.
 - **What the copy becomes** (the current rule, **pending the operator's
   confirmation**): after the import a copy the user owns is re-tagged with the
   new document's id and recorded (one someone else owns is imported and left
   as it is), so it mirrors the new document like any mirrored
   file and no second file is made for it. The new document lands in the
-  livediagram folder the copy's Drive folder mirrors; at the root of My Documents when the copy
+  livediagram folder the copy's Drive folder mirrors; at the root of My Work when the copy
   sits in the root, and at that root with [the notice](#folders-livediagram-cannot-see)
   when it sits in a folder livediagram cannot see.
 - **Afterwards.** Once opened, the copy can reach livediagram's change feed.
@@ -379,7 +379,7 @@ livediagram: moving a document's file into it shows up only as "moved to an
 unknown folder". The user's goal is to shape the tree from either side with
 the same result, so the mirror handles this openly, never silently:
 
-- The document moves to the **root of My Documents**, and a notice in the Cloud Sync row (and on
+- The document moves to the **root of My Work**, and a notice in the Cloud Sync row (and on
   the document's Explorer row) says so: "Moved in Drive to a folder livediagram
   can't see." The notice is kept on the item row, so every device shows it; it
   clears when the document is moved again from either side, or when the folder
@@ -388,7 +388,7 @@ the same result, so the mirror handles this openly, never silently:
 - **Adopting a folder:** the notice offers **Show this folder to livediagram**,
   which opens the Google Picker with folder selection. Picking the folder
   grants livediagram access to it; livediagram then creates a matching
-  folder in My Documents, places it under its nearest mirrored ancestor (or at
+  folder in My Work, places it under its nearest mirrored ancestor (or at
   the root when that is unknown too), and moves the document into it. From then
   on that folder syncs both ways like any other. Widening access to all of
   Drive (a restricted scope with a yearly paid security assessment) is
@@ -450,7 +450,7 @@ Named constants in one cadence module of the mirror code, with the values and bu
 
 When a check applies a change from Drive, every open view that lists or shows
 documents re-reads itself without a reload: the Explorer (Recent, folders,
-My Documents, the Trash view), the editor's own Explorer panel and folders, the
+My Work, the Trash view), the editor's own Explorer panel and folders, the
 New Document page's recent list, and the open editor itself (its title after a
 rename, its folder after a move, the deleted card after a move to the Trash).
 Every open tab follows, not only the one that ran the check. It rides the
@@ -475,7 +475,7 @@ metadata colour, and only its symbol in colour, named on hover and focus.
 What decides it:
 
 - **Mirrorable** is known from the row itself: the user's own document, in
-  My Documents, saved in the cloud. Team documents, documents shared
+  My Work, saved in the cloud. Team documents, documents shared
   with the user and offline documents never carry a mark.
 - **Synced** when the savedAt last uploaded (`drive_items.mirrored_saved_at`)
   is at least the document's savedAt. Otherwise **Waiting**, or **Syncing**
@@ -507,7 +507,7 @@ What decides it:
     that `ldDocumentId`): offer **Import as new document**
     ([Copies made in Drive](#copies-made-in-drive)), never the original.
   - **They cannot** (someone shared the Drive file with them): offer
-    **Import a copy**, which creates a new document in My Documents from the
+    **Import a copy**, which creates a new document in My Work from the
     file's contents.
   - **The file is from another deployment** (`ldOrigin` differs) or has no
     `ldDocumentId`: offer **Import a copy** only.

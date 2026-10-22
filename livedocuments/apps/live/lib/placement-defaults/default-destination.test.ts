@@ -85,7 +85,7 @@ describe('destinationOf', () => {
     );
   });
 
-  it('is dangling when deleted, its documents going to My Documents instead', () => {
+  it('is dangling when deleted, its documents going to My Work instead', () => {
     const d = defaults([['mode:pages', 'gone']]);
     expect(destinationOf('mode:pages', d, index, () => ({ name: 'Decks', teamId: null }))).toEqual({
       kind: 'dangling',

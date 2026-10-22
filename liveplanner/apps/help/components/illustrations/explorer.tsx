@@ -1,5 +1,5 @@
-// Explorer-category illustrations (docs/specs/018-help/help-app.md): My Projects
-// as a folder tree, shared by the Explorer page, Folders and My Projects articles.
+// Explorer-category illustrations (docs/specs/018-help/help-app.md): My Work
+// as a folder tree, shared by the Explorer page, Folders and My Work articles.
 // The other Explorer scenes live in explorer-structure.tsx, explorer-feeds.tsx and
 // explorer-imports.tsx. Composed only from the shared primitives so the house style holds.
 
@@ -8,7 +8,7 @@ import { SidebarRow } from './explorer-parts';
 
 // --- Scenes ------------------------------------------------------------------
 
-/** My Projects as a folder tree: its root folders, nested project folders, then root projects. */
+/** My Work as a folder tree: its root folders, nested project folders, then root projects. */
 export function MyProjectsTree() {
   const row = (
     y: number,
@@ -54,7 +54,7 @@ export function MyProjectsTree() {
         strokeWidth={1.5}
       />
       <Label x={40} y={32} size={11} weight={700} tone="strong">
-        My Projects
+        My Work
       </Label>
       <line x1={24} y1={44} x2={396} y2={44} className="stroke-slate-200" strokeWidth={1.5} />
       {row(56, 'Projects', 0, { open: true })}

@@ -9,7 +9,7 @@ import { LIBRARY_EXPAND_KEY, MY_PROJECTS_EXPAND_KEY } from './sidebar-structure'
 import { useSidebarExpansion } from './useSidebarExpansion';
 
 describe('useSidebarExpansion', () => {
-  it('starts with My Projects open and Library closed', () => {
+  it('starts with My Work open and Library closed', () => {
     const { result } = renderHook(() => useSidebarExpansion({ kind: 'inbox' }));
     expect(result.current.expanded.has(MY_PROJECTS_EXPAND_KEY)).toBe(true);
     expect(result.current.expanded.has(LIBRARY_EXPAND_KEY)).toBe(false);

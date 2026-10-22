@@ -21,7 +21,7 @@ import type { SettingsPlacementDefaultRowSpec } from './settings-catalogue';
 
 // One row of Settings > Projects > Default Folders
 // (docs/specs/013-workspace/default-folders.md "Settings"): an entry, where its new projects go
-// (a folder, My Projects, or a dangling default and where they go instead), Clear and Change (the
+// (a folder, My Work, or a dangling default and where they go instead), Clear and Change (the
 // default folder picker). Not a preference: it reads and writes the page's default-folders store.
 
 export type SettingsPlacementLists = ReturnType<typeof usePlacementOptions>;
@@ -30,13 +30,13 @@ export type SettingsPlacementLists = ReturnType<typeof usePlacementOptions>;
 function destinationText(destination: DefaultDestination): string {
   switch (destination.kind) {
     case 'root':
-      return 'My Projects';
+      return 'My Work';
     case 'folder':
       return destination.teamName
         ? `${destination.folder.name} · ${destination.teamName}`
         : destination.folder.name;
     case 'dangling': {
-      const instead = destination.fallback?.name ?? 'My Projects';
+      const instead = destination.fallback?.name ?? 'My Work';
       if (destination.name === null) return `A deleted folder, using ${instead}`;
       const why = destination.reason === 'deleted' ? 'deleted' : 'no longer available';
       return `${destination.name} (${why}), using ${instead}`;
@@ -142,7 +142,7 @@ export function SettingsPlacementDefaultRow({
 }
 
 // A small folder before a chosen folder's name, so a default that is set reads apart from one
-// that is not (My Projects) at a glance.
+// that is not (My Work) at a glance.
 function FolderMark() {
   return (
     <svg

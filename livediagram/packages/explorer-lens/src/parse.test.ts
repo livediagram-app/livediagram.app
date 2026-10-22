@@ -104,7 +104,7 @@ describe('parseLens', () => {
       expect(parseLens('edited:7d,7D edited:7d', aggregate).lens.filters.edited).toEqual(['7d']);
     });
 
-    it('orders spaces as My Documents, Shared With Me, then teams by id', () => {
+    it('orders spaces as My Work, Shared With Me, then teams by id', () => {
       const { lens } = parseLens('space:team:T1,shared space:team:A9,mine', aggregate);
       expect(lens.filters.space).toEqual(['mine', 'shared', 'team:A9', 'team:T1']);
     });

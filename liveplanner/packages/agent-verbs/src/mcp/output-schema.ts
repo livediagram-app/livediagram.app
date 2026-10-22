@@ -82,7 +82,7 @@ export const createProjectOutput = {
   folder: z
     .string()
     .describe(
-      'The Explorer folder it appears in: "My Projects" for the root, or the name of the user\'s ' +
+      'The Explorer folder it appears in: "My Work" for the root, or the name of the user\'s ' +
         'default folder it was filed in.',
     ),
   url,

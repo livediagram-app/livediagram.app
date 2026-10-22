@@ -18,7 +18,7 @@ describe('documentSpace', () => {
     expect(documentSpace({ ownerId: 'offline' })).toBe('mine');
   });
 
-  it("counts a document in My Documents as the reader's own", () => {
+  it("counts a document in My Work as the reader's own", () => {
     expect(documentSpace({ ownerId: 'user_1' })).toBe('mine');
   });
 

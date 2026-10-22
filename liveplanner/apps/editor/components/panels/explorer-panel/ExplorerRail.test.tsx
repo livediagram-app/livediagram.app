@@ -40,14 +40,14 @@ describe('ExplorerRail', () => {
       'Home',
       'Inbox',
       'Shared With Me (2)',
-      'My Projects',
+      'My Work',
       'Design guild',
       'This Browser (3)',
       'Tags',
       'Library',
       'Trash',
     ]);
-    expect(screen.getByRole('button', { name: 'My Projects' }).getAttribute('aria-current')).toBe(
+    expect(screen.getByRole('button', { name: 'My Work' }).getAttribute('aria-current')).toBe(
       'true',
     );
   });

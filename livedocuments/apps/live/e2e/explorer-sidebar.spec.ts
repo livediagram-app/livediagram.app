@@ -46,13 +46,13 @@ test.describe('explorer sidebar', () => {
       'Timeline',
       'Shared With Me',
     ]);
-    // A guest on a deployment without sign-in: My Documents only, no teams, no New Team.
-    expect((await rowNames(page, 'Spaces'))[0]).toBe('My Documents');
+    // A guest on a deployment without sign-in: My Work only, no teams, no New Team.
+    expect((await rowNames(page, 'Spaces'))[0]).toBe('My Work');
     await expect(row(page, 'New Team')).toHaveCount(0);
     // This Browser holds nothing yet, so it is hidden.
     expect(await rowNames(page, 'More')).toEqual(['Library', 'Trash']);
-    // My Documents starts open on its root folders: no Unsorted or Generated bucket.
-    const myDocuments = row(page, 'My Documents');
+    // My Work starts open on its root folders: no Unsorted or Generated bucket.
+    const myDocuments = row(page, 'My Work');
     await expect(row(page, 'Projects')).toBeVisible();
     await expect(myDocuments).toHaveAttribute('aria-expanded', 'true');
     const children = await myDocuments
@@ -222,14 +222,14 @@ test.describe('editor Explorer panel', () => {
     const rail = page.getByRole('navigation', { name: 'Explorer sections' });
     await expect(rail.getByRole('button', { name: 'Home' })).toBeVisible({ timeout: 30_000 });
     await expect(rail.getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);
-    // Opens on Home; My Documents lists its documents as rows, the open one current.
+    // Opens on Home; My Work lists its documents as rows, the open one current.
     await expect(rail.getByRole('button', { name: 'Home' })).toHaveAttribute(
       'aria-current',
       'true',
     );
-    await rail.getByRole('button', { name: 'My Documents' }).click();
+    await rail.getByRole('button', { name: 'My Work' }).click();
     // The pane's list (the header's title is a button of the same name).
-    const list = page.getByRole('list', { name: 'My Documents' });
+    const list = page.getByRole('list', { name: 'My Work' });
     await expect(list.getByRole('button', { name: 'Another', exact: true })).toBeVisible();
     await expect(list.getByRole('button', { name: 'Open one', exact: true })).toHaveAttribute(
       'aria-current',

@@ -128,7 +128,7 @@ describe('moving a team project within its team', () => {
 });
 
 describe('moving a team project out of its team', () => {
-  it('re-sweeps the teams and My Projects once the move landed', async () => {
+  it('re-sweeps the teams and My Work once the move landed', async () => {
     vi.mocked(apiSetProjectFolder).mockResolvedValueOnce(undefined);
     const { moves, refreshTeamLibraries, refreshPersonal } = setup();
     moves.moveProjectTo('t1', { teamId: null, folderId: null });
@@ -138,7 +138,7 @@ describe('moving a team project out of its team', () => {
   });
 
   it.each([
-    ['to My Projects', null],
+    ['to My Work', null],
     ['to another team', 'team-2'],
   ])('says so, and logs it, when the move %s fails', async (_, teamId) => {
     vi.mocked(apiSetProjectFolder).mockRejectedValueOnce(new Error('offline'));

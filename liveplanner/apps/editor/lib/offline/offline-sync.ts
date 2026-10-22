@@ -83,7 +83,7 @@ async function upload(rec: OfflineProjectRecord, ownerId: string): Promise<void>
   } catch (err) {
     // The server refuses a folder deleted since, or not the caller's, by name and writes nothing
     // (docs/specs/013-workspace/folders.md "Placement on create"). The sync files the project in
-    // the root of My Projects instead, on its own say-so, rather than losing the conversion over a folder.
+    // the root of My Work instead, on its own say-so, rather than losing the conversion over a folder.
     const code = err instanceof ApiError ? err.code : null;
     if (code !== 'folder_not_found' && code !== 'folder_scope_mismatch') throw err;
     console.warn(`[offline-sync] placement refused reason=${code}, filed at root`);

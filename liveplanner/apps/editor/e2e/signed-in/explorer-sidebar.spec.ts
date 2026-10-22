@@ -54,7 +54,7 @@ test('a signed-in member sees teams as root folders and New Team last', async ({
   });
 
   expect(await rowNames(page, 'Spaces')).toEqual([
-    'My Projects',
+    'My Work',
     'Design guild',
     'Platform',
     'New Team',
@@ -81,7 +81,7 @@ test('a signed-out visitor sees the sign-in nudge instead of New Team', async ({
   await expect(nav(page).getByRole('treeitem', { name: /^Home/ })).toBeVisible({
     timeout: 30_000,
   });
-  expect(await rowNames(page, 'Spaces')).toEqual(['My Projects']);
+  expect(await rowNames(page, 'Spaces')).toEqual(['My Work']);
   const spaces = nav(page).locator('section', { has: page.getByRole('tree', { name: 'Spaces' }) });
   await expect(spaces.getByRole('link', { name: /Sign in to access Teams/ })).toBeVisible();
   expectNoPageErrors(pageErrors);

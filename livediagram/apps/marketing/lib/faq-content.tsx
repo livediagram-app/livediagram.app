@@ -586,7 +586,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I keep a copy in my own Google Drive?',
-        a: 'Yes, once you sign in. Switch on the Google Drive mirror and the documents in My documents are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
+        a: 'Yes, once you sign in. Switch on the Google Drive mirror and the documents in My Work are kept in step with matching files and folders in your own Drive, so you always hold a copy.',
       },
     ],
   },

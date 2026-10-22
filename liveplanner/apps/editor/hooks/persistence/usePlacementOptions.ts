@@ -15,7 +15,7 @@ import { apiCreateFolder, apiGetTeamLibrary, apiListFolders, apiListTeams } from
 //
 // Everything degrades rather than throws. A folder or team fetch that fails
 // leaves an empty list, because being unable to offer a team is not a reason to
-// block someone making a project — they land at the root of My Projects and can move it later.
+// block someone making a project — they land at the root of My Work and can move it later.
 export function usePlacementOptions({
   selfId,
   accountUserId,

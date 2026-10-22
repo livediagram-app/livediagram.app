@@ -27,7 +27,7 @@ export const CLOUD_SYNC_PROVIDERS: readonly CloudSyncProvider[] = [
     label: 'Google Drive',
     keywords: 'drive google sync backup mirror cloud gdrive',
     description:
-      'My Documents, copied to your Google Drive in matching folders. Renames, moves and deletions sync both ways. livediagram only sees files it created.',
+      'My Work, copied to your Google Drive in matching folders. Renames, moves and deletions sync both ways. livediagram only sees files it created.',
     helpArticle: 'googleDrive',
   },
 ];

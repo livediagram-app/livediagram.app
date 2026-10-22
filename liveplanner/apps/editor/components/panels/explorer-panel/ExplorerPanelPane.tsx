@@ -54,7 +54,7 @@ export function ExplorerPanelPane({
   onOpenProject: (id: string, shareCode?: string) => void;
   // The rows of a section that holds projects (PanelExplorerTree), rendered by the host which owns their state.
   tree: ReactNode;
-  // My Projects' or a team's New Folder; absent where the session may not make one.
+  // My Work' or a team's New Folder; absent where the session may not make one.
   onNewFolder?: () => void;
   // A folder is open in the pane, so New Folder makes one inside it and says so.
   inFolder?: boolean;

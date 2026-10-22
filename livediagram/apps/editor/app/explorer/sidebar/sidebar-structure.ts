@@ -19,7 +19,7 @@ export const SIDEBAR_LABELS = {
   inbox: 'Inbox',
   timeline: 'Timeline',
   shared: 'Shared With Me',
-  myDocuments: 'My Documents',
+  myDocuments: 'My Work',
   invites: 'Invites',
   newTeam: 'New Team',
   thisBrowser: 'This Browser',

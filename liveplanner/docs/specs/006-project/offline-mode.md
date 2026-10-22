@@ -87,16 +87,16 @@ API. The full editor works: shapes, arrows, sketches, layers, tabs, links,
 templates, themes, undo/redo, export. What changes are the features that
 _require the server_, which are hidden or gated (not broken) for an offline project:
 
-| Feature                                                                 | Offline behaviour                                                                                                                                                                                                                                                              |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Feature                                                                 | Offline behaviour                                                                                                                                                                                                                                                                  |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Share links / embeds                                                    | The header **Share** button stays visible, but for an offline project it opens a gate prompting you to sync to your account first (nothing lives on a server to share yet). Read-only embeds are unavailable for the same reason ([Editor app](../007-editor/editor-app.md), /54). |
-| Live presence / realtime                                                | N/A — a private project never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                    |
-| Teams / shared library                                                  | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                              |
-| Comments                                                                | Local-only (just you), stored in the project; no cross-user.                                                                                                                                                                                                                   |
-| Duplicate                                                               | Makes **another offline project** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                    |
-| Folders                                                                 | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                   |
-| Tab linking ([Tab ↔ project many-to-many](tab-project-many-to-many.md)) | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                                                       |
-| Thumbnails                                                              | A fixed **offline illustration** in the Explorer — there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                                                                                                 |
+| Live presence / realtime                                                | N/A — a private project never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                        |
+| Teams / shared library                                                  | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                                  |
+| Comments                                                                | Local-only (just you), stored in the project; no cross-user.                                                                                                                                                                                                                       |
+| Duplicate                                                               | Makes **another offline project** — a copy never uploads what the user chose to keep local.                                                                                                                                                                                        |
+| Folders                                                                 | Personal-tree placement stored in the record; team moves are impossible (the shared library is server-side).                                                                                                                                                                       |
+| Tab linking ([Tab ↔ project many-to-many](tab-project-many-to-many.md)) | Unavailable in either direction — linked tabs are one shared server row.                                                                                                                                                                                                           |
+| Thumbnails                                                              | A fixed **offline illustration** in the Explorer — there's no server snapshot ([Live image share link](../013-workspace/live-image-share.md)).                                                                                                                                     |
 
 Autosave still runs for an offline project ([Per-tab storage](per-tab-storage.md)) — it writes to IndexedDB
 instead of the API, and the "Saved" indicator means _saved on this device_.
@@ -174,7 +174,7 @@ Explorer lists follow after the paint.
   offline projects; offline rows never trigger a server fetch (list, thumbnail,
   or otherwise).
 - **The reader's own.** An offline project counts as one of the reader's own
-  projects: Space `mine` and owner "You", like a project in My Projects
+  projects: Space `mine` and owner "You", like a project in My Work
   ([Explorer structure: projects in This Browser](../013-workspace/explorer-structure.md#projects-in-this-browser)).
 - **Sidebar.** The full-page Explorer's **This Browser** row (the More group,
   [Explorer structure](../013-workspace/explorer-structure.md)) opens
@@ -281,13 +281,13 @@ Share dialog gate, Share Form's, and the move prompt after signing in).
   cloud project owned by the current identity (signed-in account, or the guest
   `X-Owner-Id` if not signed in — [Auth + guest access](../014-identity/auth-and-guest-access.md)).
 - **Everything on the record travels**, not just tabs: the created date, the folder (kept only when it is one of the
-  caller's own personal folders, else the root of My Projects) and the star ([Favourite projects](../013-workspace/favourites.md)). The
+  caller's own personal folders, else the root of My Work) and the star ([Favourite projects](../013-workspace/favourites.md)). The
   local copy is deleted next, so anything the create leaves behind is gone.
 - **A refused folder lands at the root, on the sync's say-so.** The create carries the folder as
   its placement ([Folders → Placement on create](../013-workspace/folders.md#placement-on-create)),
   and the server refuses a folder deleted since, or not the caller's, by name rather than
   filing it elsewhere. On `folder_not_found` or `folder_scope_mismatch` the sync creates the
-  project again at the root of My Projects and logs `[offline-sync] placement refused reason=<code>, filed at root`;
+  project again at the root of My Work and logs `[offline-sync] placement refused reason=<code>, filed at root`;
   any other failure fails the sync and keeps the local copy.
 - **A forked tab comes back as its own tab.** The create never writes into a tab
   another project holds: a seeded tab whose id is already taken outside this
@@ -335,7 +335,7 @@ confirmation:
   server row they live on is about to be deleted. The star is read from the account's
   favourites; if that read fails the conversion aborts before anything is written,
   rather than taking the project as unstarred and losing the star with the row. A team project's folder is a
-  team folder, which has no place in the personal tree, so it lands at the root of My Projects.
+  team folder, which has no place in the personal tree, so it lands at the root of My Work.
 - **Shared tabs fork.** A tab also linked into other projects
   ([Tab ↔ project many-to-many](tab-project-many-to-many.md)) is not taken
   away from them: the server delete keeps it there whole, history included, and

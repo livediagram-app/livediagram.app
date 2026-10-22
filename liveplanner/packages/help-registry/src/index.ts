@@ -1007,7 +1007,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'personal-space',
-    title: 'My Projects and Folders',
+    title: 'My Work and Folders',
     description: 'Your own library: the folders you create, and your unfiled projects at its root.',
     keywords:
       'my projects personal space library my work your projects your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
@@ -1018,7 +1018,7 @@ export const articles: Article[] = [
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'Each team as a space beside My projects, its shared folders, and your invites.',
+    description: 'Each team as a space beside My Work, its shared folders, and your invites.',
     keywords: 'teams team spaces shared workspace invites membership group new team',
     category: 'Explorer',
     categorySlug: 'explorer',

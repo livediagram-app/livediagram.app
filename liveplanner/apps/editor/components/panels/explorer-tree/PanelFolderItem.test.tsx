@@ -31,7 +31,7 @@ function tree(over: Partial<PanelTree> = {}): PanelTree {
 
 const node = (t: PanelTree) => (
   <PanelTreeProvider value={t}>
-    <ul aria-label="My Projects">
+    <ul aria-label="My Work">
       <PanelFolderItem
         folder={folder}
         index={{

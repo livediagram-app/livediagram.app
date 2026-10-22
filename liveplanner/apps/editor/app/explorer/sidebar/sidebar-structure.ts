@@ -18,7 +18,7 @@ export const SIDEBAR_LABELS = {
   home: 'Home',
   inbox: 'Inbox',
   shared: 'Shared With Me',
-  myProjects: 'My Projects',
+  myProjects: 'My Work',
   invites: 'Invites',
   newTeam: 'Manage Teams',
   thisBrowser: 'This Browser',

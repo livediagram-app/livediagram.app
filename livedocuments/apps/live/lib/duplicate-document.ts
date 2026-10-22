@@ -30,7 +30,7 @@ import { ApiError } from './api/core';
 import { isOfflineId, offlineCreateDocument } from './offline/offline-store';
 
 // The refusals that mean "not beside the source for this person", where the copy is filed at the
-// explicit root of My Documents instead (docs/specs/013-workspace/default-folders.md "Duplicate").
+// explicit root of My Work instead (docs/specs/013-workspace/default-folders.md "Duplicate").
 const PLACE_REFUSALS: ReadonlySet<string> = new Set([
   'team_forbidden',
   'folder_not_found',

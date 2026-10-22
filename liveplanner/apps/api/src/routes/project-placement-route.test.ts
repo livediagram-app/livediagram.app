@@ -140,7 +140,7 @@ describe('PUT /projects/:id/folder — leaving a team library', () => {
 // A space's root is no bucket of its own (docs/specs/013-workspace/folders.md#the-root-and-the-retired-buckets):
 // a move to it names the space, never Unsorted.
 describe('PUT /projects/:id/folder — moving to a root', () => {
-  it('names My Projects for the personal root', async () => {
+  it('names My Work for the personal root', async () => {
     db.getProject
       .mockResolvedValueOnce(inTeam({ teamId: null, folderId: 'f2' }))
       .mockResolvedValueOnce(inTeam({ teamId: null, folderId: null }));
@@ -150,7 +150,7 @@ describe('PUT /projects/:id/folder — moving to a root', () => {
     expect(timeline.recordProjectMoved).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({ id: 'd1' }),
-      'My Projects',
+      'My Work',
       'alice',
     );
   });

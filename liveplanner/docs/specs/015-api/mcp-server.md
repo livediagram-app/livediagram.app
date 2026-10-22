@@ -237,7 +237,7 @@ canvas overrides; the model then personalises labels via `update_project`'s
    a clear message naming the offending tab).
 2. **Keeps the model's placement.** Elements are kept at the `x` and `y` given; nothing is laid out for the model,
    and a tab may hold only the Plan elements (§4.7a).
-3. **Tags it as made by AI.** The create sends `source: 'mcp'`, which the Explorer's **Made by AI** filter (`made-by:ai`, [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's own work and AI-made projects can be told apart wherever either is filed. Unfiled, it sits at the root of My Projects like any other project, with its **Made by AI** badge. (Earlier this find-or-created a real "Generated" folder, then the Explorer showed a Generated view; provenance is a filter, not a place.) The create also sends the creation `intent` of the first tab it built and the template it used, so with no folder named the server files it in the user's [default folder](../013-workspace/default-folders.md) for that intent, when they have one.
+3. **Tags it as made by AI.** The create sends `source: 'mcp'`, which the Explorer's **Made by AI** filter (`made-by:ai`, [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's own work and AI-made projects can be told apart wherever either is filed. Unfiled, it sits at the root of My Work like any other project, with its **Made by AI** badge. (Earlier this find-or-created a real "Generated" folder, then the Explorer showed a Generated view; provenance is a filter, not a place.) The create also sends the creation `intent` of the first tab it built and the template it used, so with no folder named the server files it in the user's [default folder](../013-workspace/default-folders.md) for that intent, when they have one.
 4. **Persists** all tabs via `POST /api/projects` (which seeds a `tabs[]` array
    and accepts `source`). A tab given as a `template` travels
    as such and is compiled by the api ([API app](api.md)), so the MCP and the
@@ -248,7 +248,7 @@ canvas overrides; the model then personalises labels via `update_project`'s
    ([API](api.md#marking-a-project-used)) for a model making many projects in one go,
    so a batch never pushes the user's own work out of reach. Absent, nothing is sent and the
    create counts.
-5. **Returns** the new `id`, tab count + ids, the folder ("My Projects" for the root,
+5. **Returns** the new `id`, tab count + ids, the folder ("My Work" for the root,
    or the name of the default folder it was filed in), the deep-link `url`,
    **and the rendered PNG of the first tab** so the user sees the result inline.
 
@@ -833,7 +833,7 @@ Worker (no DOM, no React).
 
 - **Streaming progress** from tools (the SDK supports it; v1 returns once).
 - **Folder / team management** via MCP — there are no tools to list, rename, or
-  move folders (create_project files new projects at the root of the user's My Projects, or their default folder);
+  move folders (create_project files new projects at the root of the user's My Work, or their default folder);
   more `/api` surface can be wrapped later if demand appears. (Share-link
   creation IS in scope now — `share_project`, [§4.8](#48-share_project); managing
   folders/teams themselves stays out.)

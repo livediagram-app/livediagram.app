@@ -48,7 +48,7 @@ describe('inbound rows', () => {
     expect(w.events).toContain('Applied:Move');
   });
 
-  it('File moved to the root folder: document to the root of My Documents', async () => {
+  it('File moved to the root folder: document to the root of My Work', async () => {
     const w = await mirrored();
     w.google.userMove(w.file().id, w.ld.connection!.rootFolderId!);
     await w.engine.syncNow();

@@ -78,7 +78,7 @@ function inOrder<T extends string>(list: readonly T[], values: readonly string[]
   return list.filter((candidate) => values.includes(candidate));
 }
 
-/** Spaces in canonical order: My Documents, Shared With Me, then teams by id. */
+/** Spaces in canonical order: My Work, Shared With Me, then teams by id. */
 function orderSpaces(values: readonly string[]): SpaceValue[] {
   const teams = [...new Set(values.filter(isTeamValue))].sort();
   return [...inOrder(SPACE_FIXED_VALUES, values), ...teams];

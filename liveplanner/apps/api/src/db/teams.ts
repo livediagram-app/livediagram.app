@@ -143,7 +143,7 @@ export async function getMembership(
 }
 
 export async function deleteTeam(env: Env, id: string): Promise<void> {
-  // Re-home the team's projects to the root of their owners' My Projects FIRST
+  // Re-home the team's projects to the root of their owners' My Work FIRST
   // (docs/specs/013-workspace/team-shared-projects.md): deleting a team must never destroy members' work. Each
   // team project already carries an owner_id (its creator, or whoever a
   // move-out transferred it to), so clearing team_id + folder_id returns

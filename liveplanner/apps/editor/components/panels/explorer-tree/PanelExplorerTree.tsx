@@ -41,7 +41,7 @@ export function paneFolderParent(
 const NO_PROJECTS: ProjectListItem[] = [];
 
 // The rows of one of the editor's Explorer sections that hold projects (docs/specs/013-workspace/explorer-structure.md
-// "The pane"): My Projects' and a team's folders then projects, opening a folder in place under a breadcrumb back
+// "The pane"): My Work' and a team's folders then projects, opening a folder in place under a breadcrumb back
 // to the space's root; This Browser's projects; what is shared with the reader. Each empty place says so in the
 // Explorer's own empty state.
 export function PanelExplorerTree({

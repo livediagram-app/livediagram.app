@@ -29,7 +29,7 @@ const spaces = (over: Partial<PlacementSpaces> = {}): PlacementSpaces => ({
 const ids = (stack: PickerFolder[]) => stack.map((f) => f.id);
 
 describe('placementViewFor', () => {
-  it('opens the overview for the My Projects root', () => {
+  it('opens the overview for the My Work root', () => {
     expect(placementViewFor('unsorted', spaces())).toEqual({ space: null, stack: [] });
   });
 
@@ -37,7 +37,7 @@ describe('placementViewFor', () => {
     expect(placementViewFor('team:t1', spaces())).toEqual({ space: null, stack: [] });
   });
 
-  it('opens My Projects at its root for a top-level folder', () => {
+  it('opens My Work at its root for a top-level folder', () => {
     const view = placementViewFor('folder:loose', spaces());
     expect(view.space).toBe('personal-space');
     expect(ids(view.stack)).toEqual([]);
@@ -87,7 +87,7 @@ describe('placementViewFor', () => {
     expect(ids(placementViewFor('team:t1:folder:sprints', scoped).stack)).toEqual(['design']);
   });
 
-  it('never opens My Projects on a surface that does not offer it', () => {
+  it('never opens My Work on a surface that does not offer it', () => {
     expect(placementViewFor('folder:workshops', spaces({ showPersonal: false }))).toEqual({
       space: 't1',
       stack: [],

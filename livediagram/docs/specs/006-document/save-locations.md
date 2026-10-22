@@ -57,7 +57,7 @@ lives.
 
 **Subfolder count.** A destination that holds more folders says so with a
 small badge beside its name, "1 Subfolder" / "3 Subfolders": the space cards
-on the overview (root folders of My Documents or the team), the "save here" card
+on the overview (root folders of My Work or the team), the "save here" card
 at the top of a level, and any folder row that drills in. A folder with
 nothing inside shows no badge, so the badge itself is the "there's more in
 here" cue, not just a number. Both layouts show it; in a row it sits beside
@@ -69,10 +69,10 @@ and a chip naming where you are). Where there is not, it is a static heading
 in the same shape: **"Choose a Space"** on the space overview, **"Choose a
 Folder"** (with the space's name as the chip) at the root of a team-scoped
 surface's one team. **The overview is always the first screen wherever
-My Documents is offered**, even when it is the only space: choosing where
+My Work is offered**, even when it is the only space: choosing where
 a document lives starts with choosing the space, deliberately, and that
 screen is where a "create a team" option belongs for someone who has no
-team yet. An earlier version dropped a lone My Documents space straight into
+team yet. An earlier version dropped a lone My Work space straight into
 its folders, which left nowhere to put that option.
 
 **It opens where its selection is.** The overview is the first screen while
@@ -128,7 +128,7 @@ SaveLocationId`.
 
 ## Google Drive is a mirror, not a location
 
-A signed-in user can mirror the documents in My Documents to their own Google
+A signed-in user can mirror the documents in My Work to their own Google
 Drive. The document still lives in livediagram (the default location): Drive
 holds a copy that is kept in sync both ways while a tab is open, and a Drive
 file is never the document's home. So Drive is never a save location, and a document created with

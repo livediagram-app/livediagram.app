@@ -54,7 +54,7 @@ Wire DTOs (`Team`, `TeamListItem`, `TeamMember`, `TeamRole`) live in `@liveplann
 
 ## Explorer UI
 
-In the Explorer sidebar, each team is a root-level folder row in the **Spaces** group, after **My Projects**: the two kinds of space read as the same noun ([Explorer structure](explorer-structure.md)).
+In the Explorer sidebar, each team is a root-level folder row in the **Spaces** group, after **My Work**: the two kinds of space read as the same noun ([Explorer structure](explorer-structure.md)).
 
 - One row per team the user has joined; selecting it shows the team in the right pane, and it expands to the team's folders.
 - **Manage Teams**, the group's last row (signed-in only), opens liveworkspace.app's teams page. A guest sees the sign-in nudge in its place.

@@ -11,18 +11,18 @@ data-loss warning and a folder browser; it was removed, as most people answered 
 anything on the canvas. A document in This Browser still says what it is on the document itself: the editor header's
 **This Browser** badge and its legend, [Offline Mode](offline-mode.md#this-browser-badge--explorer).)
 
-| Location         | What it means                                                                                                |
-| ---------------- | ------------------------------------------------------------------------------------------------------------ |
-| **livedocuments**    | A normal cloud document, saved to the api (D1), reachable from any device.                                   |
-| **This Browser** | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
+| Location          | What it means                                                                                                |
+| ----------------- | ------------------------------------------------------------------------------------------------------------ |
+| **livedocuments** | A normal cloud document, saved to the api (D1), reachable from any device.                                   |
+| **This Browser**  | Offline Mode ([Offline Mode](offline-mode.md)): saved only in this browser's IndexedDB, never to the server. |
 
 ## The default depends on who is creating
 
-| Who                               | Default          |
-| --------------------------------- | ---------------- |
-| A guest, with sign-in enabled     | **This Browser** |
-| A signed-in person                | **livedocuments**    |
-| Anyone on a guest-only deployment | **livedocuments**    |
+| Who                               | Default           |
+| --------------------------------- | ----------------- |
+| A guest, with sign-in enabled     | **This Browser**  |
+| A signed-in person                | **livedocuments** |
+| Anyone on a guest-only deployment | **livedocuments** |
 
 Why a guest starts local: [Auth + guest access → Guest documents start local](../014-identity/auth-and-guest-access.md#guest-documents-start-local).
 
@@ -55,7 +55,7 @@ lives.
 
 **Subfolder count.** A destination that holds more folders says so with a
 small badge beside its name, "1 Subfolder" / "3 Subfolders": the space cards
-on the overview (root folders of My Documents or the team), the "save here" card
+on the overview (root folders of My Work or the team), the "save here" card
 at the top of a level, and any folder row that drills in. A folder with
 nothing inside shows no badge, so the badge itself is the "there's more in
 here" cue, not just a number. Both layouts show it; in a row it sits beside
@@ -67,10 +67,10 @@ and a chip naming where you are). Where there is not, it is a static heading
 in the same shape: **"Choose a Space"** on the space overview, **"Choose a
 Folder"** (with the space's name as the chip) at the root of a team-scoped
 surface's one team. **The overview is always the first screen wherever
-My Documents is offered**, even when it is the only space: choosing where
+My Work is offered**, even when it is the only space: choosing where
 a document lives starts with choosing the space, deliberately, and that
 screen is where a "create a team" option belongs for someone who has no
-team yet. An earlier version dropped a lone My Documents space straight into
+team yet. An earlier version dropped a lone My Work space straight into
 its folders, which left nowhere to put that option.
 
 **It opens where its selection is.** The overview is the first screen while

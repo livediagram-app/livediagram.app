@@ -12,7 +12,7 @@ import {
 import { defaultKeyEntry } from '@/lib/placement-defaults/default-key-entries';
 
 // The default folder picker (docs/specs/013-workspace/default-folders.md "The default folder
-// picker"): the shared placement browser in a dialog, for one key. The My Projects root clears the
+// picker"): the shared placement browser in a dialog, for one key. The My Work root clears the
 // default; a team's root cannot be a default, so with it selected the dialog says so and its button
 // is unavailable. Opened by Settings' Change and the wizard's Change default.
 
@@ -37,7 +37,7 @@ export function DefaultFolderPickerDialog({
     parentId: string | null,
     teamId: string | null,
   ) => Promise<PickerFolder | null>;
-  /** The chosen folder, or null for the My Projects root (clear the default). */
+  /** The chosen folder, or null for the My Work root (clear the default). */
   onPick: (folderId: string | null) => void;
   onClose: () => void;
 }) {
@@ -98,7 +98,7 @@ export function DefaultFolderPickerDialog({
           Cancel
         </Button>
         <Button size="sm" disabled={unchanged || teamRoot} onClick={() => commit(placement)}>
-          {folderId === null && !teamRoot ? 'Use My Projects' : 'Use this folder'}
+          {folderId === null && !teamRoot ? 'Use My Work' : 'Use this folder'}
         </Button>
       </div>
     </Dialog>

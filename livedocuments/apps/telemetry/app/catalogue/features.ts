@@ -675,7 +675,7 @@ export const DEFAULT_FOLDERS_CLEARED = chart(
   'Folder',
   'Cleared',
   'Default Folders Cleared',
-  'A default folder cleared, so new documents of that kind land in My Documents again.',
+  'A default folder cleared, so new documents of that kind land in My Work again.',
   { rising: 'neutral' },
 );
 

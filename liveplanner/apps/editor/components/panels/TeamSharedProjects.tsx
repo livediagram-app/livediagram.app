@@ -73,7 +73,7 @@ export function TeamSharedProjects({
   // `moveProjectTo`, which picks the right API call from the project's
   // current placement. Same-team picks keep using lib.moveProject.
   onMoveProjectTo?: (id: string, dest: MoveDestination) => void;
-  // A library changed from this page: this team's (null for My Projects, from the move picker's New Folder), so the
+  // A library changed from this page: this team's (null for My Work, from the move picker's New Folder), so the
   // Explorer's own lists (the sidebar, search, every other move picker) follow without a reload.
   onLibraryChange?: (teamId: string | null) => void;
   // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md): while it is set, the
@@ -279,7 +279,7 @@ export function TeamSharedProjects({
             <EmptyState
               icon={<TeamIcon />}
               title="Nothing Shared Yet"
-              description="Move a project here from My Projects, or create a folder to organise ahead."
+              description="Move a project here from My Work, or create a folder to organise ahead."
             />
           ) : (
             <EmptyState
@@ -353,7 +353,7 @@ export function TeamSharedProjects({
       {/* ---------- Move picker ---------- */}
       {/* Same shared move modal as the personal surfaces (docs/specs/013-workspace/folders.md). With
           `moveDests` (the explorer page supplies it) a PROJECT move offers
-          every space — My Projects plus each team — so a team project can be
+          every space — My Work plus each team — so a team project can be
           re-homed back to the personal tree or on to another team from
           right here; the space overview + back bar come with it. This
           team's own folders come from the live lib (fresher than the
@@ -421,7 +421,7 @@ export function TeamSharedProjects({
               void lib.moveProject(moveTarget.id, dest.folderId);
               return;
             }
-            // Leaving this team (to My Projects or another team): route via the
+            // Leaving this team (to My Work or another team): route via the
             // explorer's placement-aware mover, then refresh this library so
             // the row disappears once the move lands.
             void Promise.resolve(onMoveProjectTo?.(moveTarget.id, dest)).then(() => lib.refresh());

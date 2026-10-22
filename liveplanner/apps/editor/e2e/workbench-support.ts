@@ -178,7 +178,7 @@ export function mintWorkspaceTicket(
   });
 }
 
-// A folder of the person's, at the top of My Projects, as `liveplanner folder create` makes it.
+// A folder of the person's, at the top of My Work, as `liveplanner folder create` makes it.
 export async function createFolder(
   request: APIRequestContext,
   person: Person,

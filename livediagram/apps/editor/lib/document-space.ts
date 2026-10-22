@@ -3,7 +3,7 @@ import { OFFLINE_OWNER_ID } from './offline/offline-store';
 
 // Where a listed document stands to the reader
 // (docs/specs/013-workspace/explorer-structure.md#documents-in-this-browser). A document saved only
-// in this browser (Offline Mode) is the reader's own, exactly like one in My Documents: Space
+// in this browser (Offline Mode) is the reader's own, exactly like one in My Work: Space
 // `mine`, owner "You". It just lives somewhere else, which the This Browser pill says.
 
 type DocumentSpace = 'mine' | 'team' | 'shared';

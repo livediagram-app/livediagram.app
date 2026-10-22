@@ -1,5 +1,5 @@
 // One pass's view of both sides (docs/specs/022-drive-mirror/blueprints/drive-mirror.md,
-// "Passes"): My Documents as livediagram holds it, and the mirror's item
+// "Passes"): My Work as livediagram holds it, and the mirror's item
 // rows, indexed the ways the planners look them up.
 
 import type { DriveItem, DriveItemKind } from '@livediagram/api-schema';
@@ -77,7 +77,7 @@ export function dropSnapshotItem(
   snapshot.items.delete(key);
 }
 
-// The Drive folder a livediagram folder id maps to: the Drive root for the root of My Documents,
+// The Drive folder a livediagram folder id maps to: the Drive root for the root of My Work,
 // the folder's file once mirrored, null while it is not mirrored yet.
 export function folderFileId(snapshot: MirrorSnapshot, folderId: string | null): string | null {
   if (folderId === null) return snapshot.rootFolderId;

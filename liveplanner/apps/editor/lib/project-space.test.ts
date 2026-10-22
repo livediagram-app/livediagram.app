@@ -18,7 +18,7 @@ describe('projectSpace', () => {
     expect(projectSpace({ ownerId: 'offline' })).toBe('mine');
   });
 
-  it("counts a project in My Projects as the reader's own", () => {
+  it("counts a project in My Work as the reader's own", () => {
     expect(projectSpace({ ownerId: 'user_1' })).toBe('mine');
   });
 

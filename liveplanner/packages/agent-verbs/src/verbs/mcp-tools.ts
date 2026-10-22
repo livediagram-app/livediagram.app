@@ -151,7 +151,7 @@ export const mcpCreateProject = mcpTool('create_project', {
     'the call\u2019s other tabs, or raw "elements" (the full format is documented inline on the "tabs" argument ' +
     'below). Pass one tab, or several to build a multi-tab project in one call. The server validates each tab, ' +
     "tags the project as made by AI (the Explorer's Made by AI filter finds it), files it at the root of the " +
-    "user's My Projects (or in their default folder for what it is made as, when they have set one), and " +
+    "user's My Work (or in their default folder for what it is made as, when they have set one), and " +
     'returns the link, the folder, and an inline PNG of the first tab. Cards, boards, sheets and forms are then ' +
     'filled in with change_items, add_board, change_sheet and add_form.',
   inputSchema: createProjectShape,

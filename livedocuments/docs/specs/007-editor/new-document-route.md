@@ -253,7 +253,7 @@ page), logging `[new] restored, back out <target>`.
   so it makes the create a cloud one whoever is creating.
 - **Filed** (livedocuments) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
   otherwise the create carries no placement and the server files it in the person's
-  [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Documents.
+  [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
 - **Named** after its template (`untitledNameForTemplate`); it is renamed in the editor.
 - **Themed** Default: the Theme and canvas controls change it later.
 - People change where documents go in **Settings > Documents > Default Folders**, and move a document between

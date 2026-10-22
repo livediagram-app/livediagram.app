@@ -113,13 +113,11 @@ describe('moveProjectToFolder', () => {
     expect(track).toHaveBeenCalledWith('Project', 'Moved');
   });
 
-  it('says when it went back to My Projects', async () => {
+  it('says when it went back to My Work', async () => {
     vi.mocked(apiSetProjectFolder).mockResolvedValueOnce(undefined);
     const { actions, toast } = setup();
     actions.moveProjectToFolder('b', null);
-    await vi.waitFor(() =>
-      expect(toast.success).toHaveBeenCalledWith('“Doc b” moved to My Projects'),
-    );
+    await vi.waitFor(() => expect(toast.success).toHaveBeenCalledWith('“Doc b” moved to My Work'));
   });
 
   it('puts the row back, says so and logs it when the move fails', async () => {

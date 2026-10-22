@@ -570,7 +570,7 @@ export const articles: Article[] = [
   {
     slug: 'google-drive',
     title: 'Google Drive',
-    description: 'Sync My documents to your own Google Drive, both ways.',
+    description: 'Sync My Work to your own Google Drive, both ways.',
     keywords:
       'google drive mirror sync backup copy cloud storage open with livediagram file folders',
     category: 'Account and Data',
@@ -2059,7 +2059,7 @@ export const articles: Article[] = [
   },
   {
     slug: 'personal-space',
-    title: 'My Documents and Folders',
+    title: 'My Work and Folders',
     description:
       'Your own library: the folders you create, and your unfiled documents at its root.',
     keywords:
@@ -2071,7 +2071,7 @@ export const articles: Article[] = [
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'Each team as a space beside My documents, its shared folders, and your invites.',
+    description: 'Each team as a space beside My Work, its shared folders, and your invites.',
     keywords: 'teams team spaces shared workspace invites membership group new team',
     category: 'Explorer',
     categorySlug: 'explorer',

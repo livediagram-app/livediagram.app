@@ -237,7 +237,7 @@ Mode's second effect off):
   looks signed in waits for identity, so a signed-in person is never handed a project in This Browser.
 - **Filed** (liveplanner) in the `/new?folder=` / `?team=` context when there is one, an explicit placement that makes
   the create a cloud one whoever is creating; otherwise the create carries no placement and the server files it in
-  the person's [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Projects.
+  the person's [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
   People change where projects go in **Settings > Projects > Default Folders**.
 - **Named** after its template (`untitledNameForTemplate`); it is renamed in the editor.
 - **Themed** Default (`brand`); the Theme and canvas controls change it later.

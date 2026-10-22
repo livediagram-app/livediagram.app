@@ -70,10 +70,10 @@ describe('SettingsPlacementDefaultRow', () => {
     ).toMatchObject({ helpArticle: 'defaultFolders' });
   });
 
-  it('says My Projects without a default, and offers no Clear', async () => {
+  it('says My Work without a default, and offers no Clear', async () => {
     await withDefaults([]);
     render(<SettingsPlacementDefaultRow row={rowFor('template:kanban')} lists={lists()} />);
-    expect(screen.getByText('My Projects')).toBeTruthy();
+    expect(screen.getByText('My Work')).toBeTruthy();
     expect(
       screen.getByRole('button', { name: 'Change default folder for Kanban boards' }),
     ).toBeTruthy();
@@ -90,7 +90,7 @@ describe('SettingsPlacementDefaultRow', () => {
       );
     });
     expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'template:kanban');
-    expect(screen.getByText('My Projects')).toBeTruthy();
+    expect(screen.getByText('My Work')).toBeTruthy();
   });
 
   it('says a deleted default is deleted, by its remembered name, and where projects go instead', async () => {
@@ -112,7 +112,7 @@ describe('SettingsPlacementDefaultRow', () => {
   it('says so when it never saw the deleted folder', async () => {
     await withDefaults([{ key: 'template:kanban', folderId: 'gone' }]);
     render(<SettingsPlacementDefaultRow row={rowFor('template:kanban')} lists={lists()} />);
-    expect(screen.getByText('A deleted folder, using My Projects')).toBeTruthy();
+    expect(screen.getByText('A deleted folder, using My Work')).toBeTruthy();
   });
 
   it('waits for the folders before judging, and says when it cannot read them', async () => {

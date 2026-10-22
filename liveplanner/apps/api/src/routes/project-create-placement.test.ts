@@ -151,7 +151,7 @@ describe('POST /projects placement', () => {
     expect(await errorOf(res)).toBe('folder_scope_mismatch');
   });
 
-  it('names a joined team folder asked for in My Projects', async () => {
+  it('names a joined team folder asked for in My Work', async () => {
     const res = await create(asUser('user_alice'), { folderId: 't1-folder' });
     expect(res.status).toBe(400);
     expect(await errorOf(res)).toBe('folder_scope_mismatch');

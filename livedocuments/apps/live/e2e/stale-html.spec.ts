@@ -13,7 +13,7 @@ import { expect, test, pageOwnerHeaders } from './fixtures';
 // while the Explorer first loads, the stack serves its build assets `no-store`
 // (POST /__e2e/assets-out-of-cache, until the deploy): the browser keeps the page, not its chunks.
 
-// A document of this guest's, listed at the root of the Explorer's My Documents.
+// A document of this guest's, listed at the root of the Explorer's My Work.
 async function seedDocument(page: Page, name: string): Promise<string> {
   // The guest's signed id is minted asynchronously; seed under the final one.
   await expect

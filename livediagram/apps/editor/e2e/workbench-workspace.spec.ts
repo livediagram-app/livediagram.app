@@ -83,7 +83,7 @@ test('a workspace frame is its own approval, browses the Explorer, and opens doc
   await expect.poll(async () => (await places(page)).at(-1)?.view).toBe('home');
 
   // A sidebar row moves the frame; a document opens in it, with Back to where it was opened from.
-  await frame.getByText('My Documents', { exact: true }).first().click();
+  await frame.getByText('My Work', { exact: true }).first().click();
   await expect.poll(async () => (await places(page)).at(-1)?.view).toBe('all');
   await frame.getByText('Home screen', { exact: true }).first().click();
   await frame.locator('[data-canvas-a11y-root]').waitFor({ timeout: 30_000 });

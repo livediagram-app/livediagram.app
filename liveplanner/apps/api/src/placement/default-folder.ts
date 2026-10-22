@@ -1,5 +1,5 @@
 // The default-folder step of placement on create (docs/specs/013-workspace/default-folders.md,
-// blueprint docs/specs/013-workspace/blueprints/default-folders.md): at the root of My Projects, a
+// blueprint docs/specs/013-workspace/blueprints/default-folders.md): at the root of My Work, a
 // create with an intent lands in the person's default for it. A dangling default is skipped, never
 // a refusal, and the next key, then the root, answers instead.
 

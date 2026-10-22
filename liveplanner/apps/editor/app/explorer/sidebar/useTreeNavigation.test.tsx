@@ -61,10 +61,10 @@ function Tree({ onActivate = () => {} }: { onActivate?: (label: string) => void 
         </ul>
         <ul role="tree" aria-label="Spaces">
           <Item
-            label="My Projects"
+            label="My Work"
             expanded={open}
             onToggle={() => setOpen((v) => !v)}
-            onActivate={() => onActivate('My Projects')}
+            onActivate={() => onActivate('My Work')}
           >
             <Item label="Archive" selected />
             <Item label="Projects" />
@@ -91,7 +91,7 @@ describe('useTreeNavigation', () => {
 
   it('falls back to the first row when no row is selected', () => {
     render(<Tree />);
-    fireEvent.click(item('My Projects').querySelector('[data-tree-toggle]')!);
+    fireEvent.click(item('My Work').querySelector('[data-tree-toggle]')!);
     expect(item('Home').tabIndex).toBe(0);
   });
 
@@ -99,7 +99,7 @@ describe('useTreeNavigation', () => {
     render(<Tree />);
     item('Inbox').focus();
     key('ArrowDown');
-    expect(focused()).toBe('My Projects');
+    expect(focused()).toBe('My Work');
     key('ArrowDown');
     expect(focused()).toBe('Archive');
     key('ArrowUp');
@@ -135,17 +135,17 @@ describe('useTreeNavigation', () => {
     render(<Tree />);
     item('Archive').focus();
     key('ArrowLeft');
-    expect(focused()).toBe('My Projects');
+    expect(focused()).toBe('My Work');
     key('ArrowLeft');
-    expect(item('My Projects').getAttribute('aria-expanded')).toBe('false');
+    expect(item('My Work').getAttribute('aria-expanded')).toBe('false');
   });
 
   it('expands with Right, then moves to the first child', () => {
     render(<Tree />);
-    item('My Projects').focus();
+    item('My Work').focus();
     key('ArrowLeft');
     key('ArrowRight');
-    expect(item('My Projects').getAttribute('aria-expanded')).toBe('true');
+    expect(item('My Work').getAttribute('aria-expanded')).toBe('true');
     key('ArrowRight');
     expect(focused()).toBe('Archive');
   });
@@ -155,15 +155,15 @@ describe('useTreeNavigation', () => {
     render(<Tree onActivate={onActivate} />);
     item('Home').focus();
     key('Enter');
-    item('My Projects').focus();
+    item('My Work').focus();
     key(' ');
-    expect(onActivate.mock.calls).toEqual([['Home'], ['My Projects']]);
+    expect(onActivate.mock.calls).toEqual([['Home'], ['My Work']]);
   });
 
   it('activates only the focused row, never a child row', () => {
     const onActivate = vi.fn();
     render(<Tree onActivate={onActivate} />);
-    item('My Projects').focus();
+    item('My Work').focus();
     key('Enter');
     expect(onActivate).toHaveBeenCalledTimes(1);
   });

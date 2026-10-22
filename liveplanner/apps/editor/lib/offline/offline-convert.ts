@@ -117,7 +117,7 @@ async function downloadAndRemoveCloudCopy(
     name: liveDoc.name,
     // Keep its place: the server row, the only other copy, is
     // deleted below. A team folder isn't a place in the personal tree the
-    // offline record lives in, so a team project lands at the root of My Projects.
+    // offline record lives in, so a team project lands at the root of My Work.
     folderId: liveDoc.teamId ? null : (liveDoc.folderId ?? null),
     createdAt: liveDoc.createdAt ?? now,
     savedAt: now,

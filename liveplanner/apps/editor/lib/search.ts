@@ -230,7 +230,7 @@ type SearchInput = {
   // Optional: surfaces without the list omit it.
   shared?: SearchInputShared[];
   // Team-library folders (docs/specs/013-workspace/team-shared-projects.md), breadcrumb-pathed + tagged with
-  // their team. Surfaced in the Teams group (not "My Projects", which is
+  // their team. Surfaced in the Teams group (not "My Work", which is
   // personal-only), with their own cap. Optional: guests have none.
   teamFolders?: { id: string; path: string; teamId: string; teamName: string }[];
   // Team-library projects (docs/specs/013-workspace/team-shared-projects.md), tagged with their team. Also
@@ -312,13 +312,13 @@ export function buildSearchResults(input: SearchInput): SearchGroup[] {
     });
   }
 
-  // "My Projects": the personal folder tree only (team folders live under
+  // "My Work": the personal folder tree only (team folders live under
   // Teams below, so this group's label honestly means "yours").
   const folderMatches = folders.filter((f) => matches(q, f.name)).slice(0, FOLDER_LIMIT);
   if (folderMatches.length > 0) {
     groups.push({
       key: 'folders',
-      label: 'My Projects',
+      label: 'My Work',
       items: folderMatches.map((f): FolderItem => ({
         kind: 'folder',
         id: f.id,

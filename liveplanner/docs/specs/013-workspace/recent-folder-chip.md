@@ -24,8 +24,8 @@ two-level breadcrumb was considered for disambiguating repeated names
 
 Special cases:
 
-- **No folder** still shows a location: `My Projects`, linking to its root.
-- **A project kept in this browser** shows `This Browser`, linking to that place ([Explorer structure](explorer-structure.md) "Places"): it is not in My Projects, and its chip used to say it was.
+- **No folder** still shows a location: `My Work`, linking to its root.
+- **A project kept in this browser** shows `This Browser`, linking to that place ([Explorer structure](explorer-structure.md) "Places"): it is not in My Work, and its chip used to say it was.
   "Filed at the root" is information too. An AI-made project is no
   exception: provenance is the
   `made-by:ai` filter ([Explorer filters](explorer-filters.md)), not a

@@ -49,7 +49,7 @@ type ProjectActionsDeps = {
   sessionShareCode: string | null;
   // Post-move refreshes for the scope-aware mover below: the team
   // libraries sweep (a row moved within / left a team) and the personal
-  // list (a project landed in — or left — My Projects).
+  // list (a project landed in — or left — My Work).
   refreshTeamLibraries: () => void;
   refreshProjectList: () => Promise<void> | void;
   // Fired after a successful scope-aware move so the editor can sync any

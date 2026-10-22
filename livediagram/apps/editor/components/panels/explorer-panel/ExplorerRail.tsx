@@ -2,7 +2,7 @@
 
 // The editor's Explorer rail (docs/specs/013-workspace/explorer-structure.md "The rail"): every section as an entry,
 // the picked one marked. A column of rows on a desktop, a sideways-scrolling row of chips on a phone. Up and Down (Left
-// and Right on a phone) move between entries; Enter or Space picks one. My Documents takes a dragged document, filing
+// and Right on a phone) move between entries; Enter or Space picks one. My Work takes a dragged document, filing
 // it at the root.
 import { useEffect, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import {

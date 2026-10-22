@@ -39,7 +39,7 @@ describe('sidebarGroups', () => {
     expect(rowsOf(SIGNED_IN, 'overview')).toEqual(['home', 'inbox', 'timeline', 'shared']);
   });
 
-  it('gives a signed-in reader My Documents, teams and New Team last', () => {
+  it('gives a signed-in reader My Work, teams and New Team last', () => {
     expect(rowsOf(SIGNED_IN, 'spaces')).toEqual(['myDocuments', 'teams', 'newTeam']);
   });
 
@@ -140,7 +140,7 @@ describe('isLibraryView', () => {
 });
 
 describe('initialExpanded', () => {
-  it('opens My Documents by default', () => {
+  it('opens My Work by default', () => {
     expect([...initialExpanded({ kind: 'timeline' })]).toEqual([MY_DOCUMENTS_EXPAND_KEY]);
   });
 

@@ -45,7 +45,7 @@ export function TeamPane({
   onLoadResult?: (found: boolean) => void;
   // Full move destinations + cross-scope router for the shared-projects
   // move picker (docs/specs/013-workspace/team-shared-projects.md): passed straight through to TeamSharedProjects
-  // so a team project can be re-homed to My Projects / another team.
+  // so a team project can be re-homed to My Work / another team.
   moveDests?: ComponentProps<typeof TeamSharedProjects>['moveDests'];
   onMoveProjectTo?: ComponentProps<typeof TeamSharedProjects>['onMoveProjectTo'];
   // The Explorer's lens (docs/specs/013-workspace/explorer-filters.md), passed straight through.

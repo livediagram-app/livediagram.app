@@ -18,7 +18,7 @@ export const DROP_TARGET_ROW =
   'bg-brand-50 outline-2 -outline-offset-2 outline-brand-400 dark:bg-brand-500/15';
 
 // A place that takes a document dragged onto it (docs/specs/013-workspace/folders.md): a folder
-// row, My Documents, a team, a folder card. Returns the hover-highlight flag plus the
+// row, My Work, a team, a folder card. Returns the hover-highlight flag plus the
 // three drag handlers the element spreads on.
 //
 // - `onDropDocument`: files the dropped document; absent = this place takes no drops.

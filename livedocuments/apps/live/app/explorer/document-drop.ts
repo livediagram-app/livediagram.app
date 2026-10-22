@@ -1,5 +1,5 @@
 // What dropping a dragged document onto a place means (docs/specs/013-workspace/folders.md
-// "Drag-and-drop"). A place is a space (My Documents when `teamId` is null, else that team's
+// "Drag-and-drop"). A place is a space (My Work when `teamId` is null, else that team's
 // library) and a folder in it (null = the space's root).
 export type DropPlace = { teamId: string | null; folderId: string | null };
 

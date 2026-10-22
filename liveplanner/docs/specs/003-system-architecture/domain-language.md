@@ -12,11 +12,11 @@ agents read, and the code: the type (`Project`), its package, tables, API routes
 Three words describe how a project and its tabs differ. They answer different questions and are never
 interchangeable. These are design decisions, taken before any feature that uses them.
 
-| Term         | Answers                        | Values                                                      | Where it lives                    |
-| ------------ | ------------------------------ | ----------------------------------------------------------- | --------------------------------- |
-| **mode**     | How is a tab worked on?        | Plan, the one mode (`EditorMode`)                           | Named, never stored on a tab      |
-| **kind**     | What is a tab?                 | the general tab, or a Board, Sheet, Dashboard or Form tab   | `Tab.kind`                        |
-| **template** | What was a project made from?  | a template (`TemplateKind`), grouped into template families | Captured once, at creation        |
+| Term         | Answers                       | Values                                                      | Where it lives               |
+| ------------ | ----------------------------- | ----------------------------------------------------------- | ---------------------------- |
+| **mode**     | How is a tab worked on?       | Plan, the one mode (`EditorMode`)                           | Named, never stored on a tab |
+| **kind**     | What is a tab?                | the general tab, or a Board, Sheet, Dashboard or Form tab   | `Tab.kind`                   |
+| **template** | What was a project made from? | a template (`TemplateKind`), grouped into template families | Captured once, at creation   |
 
 ### Mode
 
@@ -54,13 +54,13 @@ interchangeable. These are design decisions, taken before any feature that uses 
 
 The words for the work a Plan board frames ([Items](../026-plan/items.md), [Plan board](../026-plan/plan-board.md)).
 
-| Term           | Means                                                                   | Never called                |
-| -------------- | ----------------------------------------------------------------------- | --------------------------- |
+| Term           | Means                                                                  | Never called                |
+| -------------- | ---------------------------------------------------------------------- | --------------------------- |
 | **item**       | One record in a project's item store: a type and an open bag of fields | ticket, task, issue, card   |
-| **item type**  | What an item is: Task, Story, Bug, Epic, Note, Idea, Action, Risk       | kind (that is a tab's)      |
+| **item type**  | What an item is: Task, Story, Bug, Epic, Note, Idea, Action, Risk      | kind (that is a tab's)      |
 | **item store** | Every item of one project, stored apart from its tabs                  | backlog, database           |
-| **Plan board** | The element that draws items as columns of cards from a stored set-up   | Kanban element, board tab   |
-| **card**       | How an item is drawn, on a Plan board or alone as a Plan card           | item (the data is the item) |
+| **Plan board** | The element that draws items as columns of cards from a stored set-up  | Kanban element, board tab   |
+| **card**       | How an item is drawn, on a Plan board or alone as a Plan card          | item (the data is the item) |
 
 - **Plan** is an editor mode, never a kind: a Plan board is an element on a general tab.
 - A **column** belongs to a Plan board and stands for a status; a **lane** is the Lane element.
@@ -99,7 +99,7 @@ The words for a program working on projects for a person ([Agents](../024-agents
 | **ref**            | The short name a view prints for an element: its id, or its shortest unique id prefix                   | handle (that is a mention), alias       |
 | **selector**       | An expression matching one or more elements (a ref, `type:sticky`, `in:f1`)                             | query, filter (that is the Explorer's)  |
 | **access level**   | What a share link, embed or token admits: Viewer, Participant or Editor (`view`, `participate`, `edit`) | permission, scope (the field is `role`) |
-| **ownership**      | The owner's powers over a project (sharing, delete, move), apart from any level                        | admin, edit level                       |
+| **ownership**      | The owner's powers over a project (sharing, delete, move), apart from any level                         | admin, edit level                       |
 
 - **Participant** is the access level; a person's name and colour (the `participants` table) are their
   **display identity**.
@@ -116,7 +116,7 @@ The words for choosing a colour ([Colour picker](../004-interface-design/colour-
 | **standard colours**     | The ten named colours every picker offers (Ink or White, Grey, Red ... Pink)                      | stock colours (outside Draw), presets |
 | **tone**                 | Which version of the standard colours a picker offers: `strong` (lines, text) or `soft` (fills)   | shade, variant, a drawing finish      |
 | **theme colours**        | The active theme's own colours, offered on the canvas only                                        | presets                               |
-| **Custom colours**       | The colours picked with + in the project, kept with its tabs                                     | custom swatches, recent colours       |
+| **Custom colours**       | The colours picked with + in the project, kept with its tabs                                      | custom swatches, recent colours       |
 | **custom colour editor** | The square, hue, hex and eyedropper panel that **Add a custom colour** (four coloured dots) opens | colour wheel, native picker           |
 | **skin**                 | Where and how a picker opens: inline, field, swatch button                                        | variant, mode                         |
 
@@ -159,7 +159,7 @@ The words for the editor framed beside code ([Workbench embeds](../013-workspace
 ## This Browser
 
 **This Browser** is the one name for a project saved only in this browser ([Offline Mode](../006-project/offline-mode.md)):
-the place it lives (the Explorer's This Browser section, beside My Projects and the teams), the pill and badge that
+the place it lives (the Explorer's This Browser section, beside My Work and the teams), the pill and badge that
 mark it, and where a new guest's projects start. A project is **in This Browser**; it is never "Local Only",
 "Local Browser" or "offline" in copy. "Offline Mode" stays the name of the feature, and code may say `offline`.
 

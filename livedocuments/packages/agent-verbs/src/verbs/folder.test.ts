@@ -57,7 +57,7 @@ describe('folder create', () => {
     return { bodies, route };
   }
 
-  it('makes a folder at the top of My Documents and prints its id and path', async () => {
+  it('makes a folder at the top of My Work and prints its id and path', async () => {
     const { bodies, route } = recorder();
     const api = fakeApi({ ...library, '/folders': route });
 

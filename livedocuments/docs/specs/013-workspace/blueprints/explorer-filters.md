@@ -454,7 +454,7 @@ type LibraryLens = { active: boolean; input: string; issues: readonly LensIssue[
 | Lens set on a view whose base list is empty       | Empty, not Filtered empty                                                          |
 | Select-all in the field, then type                | The selection is replaced, never collapsed by the model                            |
 | A pill removed by its button                      | Focus returns to the field on the next frame, reading the new string               |
-| My Documents with no folders                      | The sidebar row has no chevron; in the panel it opens its page when empty          |
+| My Work with no folders                           | The sidebar row has no chevron; in the panel it opens its page when empty          |
 
 ### Presentation
 
@@ -509,7 +509,7 @@ list=documents|shared')`. Never a word of the lens or an id.
 | States copy and the announcer's settle                     | `apps/live/app/explorer/lens/LensStates.test.tsx`                      |
 | The Made by AI badge                                       | `apps/live/components/primitives/MadeByAiPill.test.tsx`                |
 | Routes, retired views, titles                              | `apps/live/app/explorer/routes.test.ts`, `view-titles.test.ts`         |
-| The panel's My Documents: folders then documents           | `apps/live/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
+| The panel's My Work: folders then documents                | `apps/live/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
 | A move to a root names the space                           | `apps/api/src/routes/document-placement-route.test.ts`                 |
 | Real browser as a guest, desktop and phone                 | `apps/live/e2e/explorer-filters.spec.ts`                               |
 | Real browser signed in: team root, team lens, Space chip   | `apps/live/e2e/clerk-stub/explorer-filters.spec.ts`                    |

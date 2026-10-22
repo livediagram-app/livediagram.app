@@ -85,7 +85,7 @@ export function coverageOf(
     id: d.id,
     name: d.name,
     folderPath: d.folderPath ?? [],
-    indexFolder: 'My documents/Games',
+    indexFolder: 'My Work/Games',
     library: 'personal',
     savedAt: 0,
   }));

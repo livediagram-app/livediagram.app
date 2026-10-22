@@ -43,7 +43,7 @@ describe('wizardBypassKind (docs/specs/007-editor/new-document-route.md)', () =>
 });
 
 describe('choosePlacementAgainUrl (docs/specs/007-editor/new-document-route.md)', () => {
-  it('drops the refused placement and the bypass, so the wizard starts from the root of My Documents', () => {
+  it('drops the refused placement and the bypass, so the wizard starts from the root of My Work', () => {
     expect(choosePlacementAgainUrl('?blank=1&team=t1&folder=f1')).toBe('/new');
   });
 

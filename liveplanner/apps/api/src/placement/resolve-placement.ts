@@ -80,7 +80,7 @@ const explicitFolder: FolderStep = async ({ requested, caller, lookups }) => {
 /** Folder steps in order, first answer wins; the space's root answers when none does. */
 const FOLDER_STEPS: readonly FolderStep[] = [explicitFolder, defaultFolder];
 
-/** Nothing was chosen and no default answered: the root of My Projects. */
+/** Nothing was chosen and no default answered: the root of My Work. */
 function personalRoot(skipped: DefaultSkip[]): PlacementOutcome {
   return { ok: true, placement: { teamId: null, folderId: null }, via: 'root', skipped };
 }

@@ -190,7 +190,7 @@ choice is project-wide, applying to every share link's image.
 ### Where thumbnails appear
 
 The thumbnail shows on **every** Explorer surface that lists a project:
-the full-page `/explorer` rows (Recent / My Projects / folders / Search results /
+the full-page `/explorer` rows (Recent / My Work / folders / Search results /
 This Browser), the team library page, the "Shared With Me" list, and the
 in-editor Explorer. A single shared `ProjectThumbnail`
 component (`components/panels/ProjectThumbnail.tsx`) backs them all, fed
@@ -201,7 +201,7 @@ of those gets a 404 and the row falls back to its icon.
 
 ### List / card view
 
-The browse views (Recent / My Projects / folders / Search results / This Browser)
+The browse views (Recent / My Work / folders / Search results / This Browser)
 have a **List / Card / Details** toggle in the header's actions, left of Help and
 Create, which always sit further right (device-local preference,
 `liveplanner:explorer-view`). **Card is the default**:

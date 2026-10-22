@@ -60,10 +60,10 @@ describe('lensChips', () => {
 
   it('names a team by its name, never its id', () => {
     const space = lensChips(parseLens('space:team:T1,mine', aggregate), aggregate)[5];
-    expect(space).toMatchObject({ values: ['mine', 'team:T1'], name: 'Space: My Projects, Acme' });
+    expect(space).toMatchObject({ values: ['mine', 'team:T1'], name: 'Space: My Work, Acme' });
     expect(space?.options.map((o) => o.label)).toEqual([
       'Any',
-      'My Projects',
+      'My Work',
       'Shared With Me',
       'Acme',
     ]);
@@ -106,8 +106,8 @@ describe('lensPills', () => {
     const [pill] = lensPills(parseLens('space:mine', scoped), scoped);
     expect(pill).toMatchObject({
       state: 'inert',
-      label: 'Space: My Projects',
-      name: 'Filter Space: My Projects, not applied: The breadcrumb sets the space here, so Space filters don’t apply.',
+      label: 'Space: My Work',
+      name: 'Filter Space: My Work, not applied: The breadcrumb sets the space here, so Space filters don’t apply.',
       note: 'The breadcrumb sets the space here, so Space filters don’t apply.',
     });
   });
@@ -165,7 +165,7 @@ describe('labels', () => {
       { id: 'a', name: 'Alpha' },
     ];
     expect(valueOptions('space', teams).map((o) => o.label)).toEqual([
-      'My Projects',
+      'My Work',
       'Shared With Me',
       'Alpha',
       'beta',

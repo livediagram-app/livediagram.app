@@ -49,14 +49,14 @@ describe('readCoverage', () => {
         id: 'd-home',
         name: 'Home',
         folderPath: ['screens'],
-        indexFolder: 'My documents/Minigames/Screens',
+        indexFolder: 'My Work/Minigames/Screens',
         library: 'personal',
         savedAt: docs[0]!.savedAt,
       },
       expect.objectContaining({
         id: 'd-top',
         folderPath: [],
-        indexFolder: 'My documents/Minigames',
+        indexFolder: 'My Work/Minigames',
       }),
     ]);
     expect(logs).toEqual(['coverage 2 covered folder found']);
@@ -68,7 +68,7 @@ describe('readCoverage', () => {
     ).run();
     expect(coverage.documents.map((d) => [d.id, d.folderPath, d.indexFolder, d.library])).toEqual([
       ['d-team', ['sub-folder'], 'Platform team/Architecture/Sub folder', 'Platform team'],
-      ['d-root', [], 'My documents', 'personal'],
+      ['d-root', [], 'My Work', 'personal'],
       ['d-shared', [], 'Shared with me', 'Shared with me'],
     ]);
     expect(coverage.documents[2]!.name).toBeNull();

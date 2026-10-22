@@ -339,7 +339,7 @@ export function SearchDocuments() {
           rows: [{ icon: <SharedIcon />, label: 'Onboarding v2' }],
         },
         {
-          title: 'My Documents',
+          title: 'My Work',
           rows: [{ icon: <FolderIcon />, label: 'Onboarding' }],
         },
       ]}

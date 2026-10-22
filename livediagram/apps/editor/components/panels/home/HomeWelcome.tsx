@@ -30,7 +30,7 @@ export function HomeWelcome({
 }: {
   /** A guest on a deployment with sign-in: they may have been signed out. */
   offerSignIn: boolean;
-  /** The Explorer's Import From control, filing into My Documents; absent when no source is available. */
+  /** The Explorer's Import From control, filing into My Work; absent when no source is available. */
   importToolbar?: ReactNode;
 }) {
   useEffect(() => {

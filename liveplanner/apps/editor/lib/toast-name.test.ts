@@ -45,7 +45,7 @@ describe('the toasts that name a project or folder', () => {
   it('fall back to a generic word when the name is unknown', () => {
     expect(projectDeletedMessage(undefined)).toBe('Project deleted');
     expect(projectDuplicatedMessage('')).toBe('Project duplicated');
-    expect(projectMovedMessage(null, 'my-projects')).toBe('Project moved to My Projects');
+    expect(projectMovedMessage(null, 'my-projects')).toBe('Project moved to My Work');
     expect(projectMovedMessage('Roadmap', { team: '' })).toBe(
       '“Roadmap” moved to the team library',
     );

@@ -18,7 +18,7 @@ One string means the lens fits a URL as it is, and a saved view later is that st
 
 Two different things narrow a list, and they never mix:
 
-- The **scope** is where you are: a folder, a team, My Projects. It is the **breadcrumb**, never a chip and never a
+- The **scope** is where you are: a folder, a team, My Work. It is the **breadcrumb**, never a chip and never a
   token. A scoped view lists what lives in its scope.
 - The **lens** narrows whatever the current view lists.
 
@@ -30,13 +30,13 @@ An **aggregate view** lists projects from every place at once: **Recent**, **Fav
 
 | View                                                     | Route                                                                              | Lens                              |
 | -------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------------------- |
-| My Projects, and each of its folders                     | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
+| My Work, and each of its folders                         | `/explorer/all`, `/explorer/folder?id=<id>`                                        | Scoped                            |
 | A team, at its root or in one of its folders             | `/explorer/team?id=<id>`                                                           | Scoped                            |
 | This Browser                                             | `/explorer/offline`                                                                | Scoped                            |
 | Recent, Favourites, Search results, Shared With Me       | `/explorer/recent`, `/explorer/favourites`, `/explorer/search`, `/explorer/shared` | Aggregate                         |
 | Home, Inbox, Timeline, the Library pages, Trash, Invites | Their own                                                                          | None: typing opens Search results |
 
-- **Search results** (`/explorer/search`) lists every project the reader can open: their own (My Projects and this
+- **Search results** (`/explorer/search`) lists every project the reader can open: their own (My Work and this
   browser), every team's they have joined, and Shared With Me, newest first, with no cap. It has no sidebar row; its
   page title is **Search results**.
 - A view that lists no projects has no lens of its own. Typing into the field there takes the reader to Search
@@ -76,7 +76,7 @@ general diagram tab's environment.
 | Made by   | `made-by`  | Made by AI  | `ai` Made by AI: the project's `source` is an AI tool through the MCP server (not the CLI)                    |
 | Edited    | `edited`   | Edited      | `today` Today, `7d` Last 7 days, `30d` Last 30 days, `12m` Last 12 months, `this-year` This year              |
 | People    | `people`   | People      | `me` Me, `others` Others: the owner of a project; the actor of a Timeline event                               |
-| Space     | `space`    | Space       | `mine` My Projects, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                |
+| Space     | `space`    | Space       | `mine` My Work, `shared` Shared With Me, `team:<id>` the team's name. Aggregate views only                    |
 
 - **Opens in** and **Template** read the creation intent recorded on the project (Default folders: `opensIn`, `templateFamily` on the project summary). Opens in offers one value per editor mode (`EDITOR_MODES`: Plan alone); Kind offers the specific tab kinds, every creatable kind but the general diagram tab; Template offers the template families (`TEMPLATE_FAMILIES`). A project whose recorded value is unknown (made before the intent was recorded) matches no value of that dimension; it shows whenever that dimension is not set. A general diagram tab matches no Kind value, and a project made from no family matches no Template value.
 - **Made by AI is a filter, not a place.** AI-made projects are no bucket of their own: they live at the root of
@@ -88,7 +88,7 @@ general diagram tab's environment.
   1 January. A save in the future (a skewed clock) counts as edited.
 - **People** on a project is its owner: `me` when the reader owns it, `others` otherwise. Every row of Shared With Me
   is `others`.
-- **Space** on a project is `mine` for one in My Projects or in this browser ([Offline Mode](../006-project/offline-mode.md),
+- **Space** on a project is `mine` for one in My Work or in this browser ([Offline Mode](../006-project/offline-mode.md),
   the projects the sidebar marks "This Browser"), `team:<id>` for one in a team, `shared` for a row of Shared With Me. A
   token names a team by id; every label shows the team's **name**, never the id.
 - A row that cannot answer a dimension (a Shared With Me row carries no provenance, mode, kind or family) matches no

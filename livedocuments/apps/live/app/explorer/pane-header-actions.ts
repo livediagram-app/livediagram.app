@@ -24,7 +24,7 @@ const NO_NEW_DOCUMENT: ReadonlySet<Kind> = new Set<Kind>([
   'tags',
 ]);
 
-// Sections with New folder: only the places folders live, the My Documents root and a folder.
+// Sections with New folder: only the places folders live, the My Work root and a folder.
 // Every view (Recent, Favourites, Search results, ...) is computed, so a folder made there
 // would not appear where it was made (docs/specs/013-workspace/favourites.md "The view").
 const NEW_FOLDER: ReadonlySet<Kind> = new Set<Kind>(['all', 'folder']);

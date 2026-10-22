@@ -104,7 +104,7 @@ describe('suggestTokens', () => {
     );
     const suggestions = suggestTokens('space:', 6, { ...context, subjects: spaces });
     expect(suggestions.map((s) => [s.insert, s.label, s.name])).toEqual([
-      ['space:mine', 'My Projects', 'My Projects, Space'],
+      ['space:mine', 'My Work', 'My Work, Space'],
       ['space:shared', 'Shared With Me', 'Shared With Me, Space'],
       ['space:team:T1', 'Acme', 'Acme, Space'],
       ['space:team:T2', 'Zeta', 'Zeta, Space'],

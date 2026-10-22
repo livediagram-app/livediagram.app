@@ -56,7 +56,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area:
 
-- **Explorer** — the project library (explorer/14, teams/32+35): The Explorer overview, Home, Recent, Shared With Me, My Projects and folders, Team Spaces, and Saved Themes, one guide per sidebar row.
+- **Explorer** — the project library (explorer/14, teams/32+35): The Explorer overview, Home, Recent, Shared With Me, My Work and folders, Team Spaces, and Saved Themes, one guide per sidebar row.
 - **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Format Painter, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
 - **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
 - **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Project, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.

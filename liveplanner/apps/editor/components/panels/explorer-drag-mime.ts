@@ -23,7 +23,7 @@ export function startProjectDrag(
 }
 
 // A dragged folder (docs/specs/013-workspace/explorer-structure.md "Dragging to the Trash"): its own type, so the
-// project drop targets (folders, My Projects) never take it; only the sidebar's Trash does.
+// project drop targets (folders, My Work) never take it; only the sidebar's Trash does.
 export const FOLDER_DRAG_MIME = 'application/x-liveplanner-folder-id';
 
 /** What a dragged folder card or row carries: one of the reader's own folders, never one being renamed. */

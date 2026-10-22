@@ -16,7 +16,7 @@ const entries = (withFiles: boolean): IndexEntry[] => [
     name: 'Zeta',
     folderPath: ['screens'],
     section: {
-      indexFolder: 'My documents/Minigames/Screens',
+      indexFolder: 'My Work/Minigames/Screens',
       files: withFiles
         ? { mirror: 'screens/zeta.livediagram.json', outline: 'screens/zeta.md' }
         : null,
@@ -36,7 +36,7 @@ const entries = (withFiles: boolean): IndexEntry[] => [
     name: 'Home *screen*',
     folderPath: [],
     section: {
-      indexFolder: 'My documents/Minigames',
+      indexFolder: 'My Work/Minigames',
       files: withFiles
         ? { mirror: 'home-screen.livediagram.json', outline: 'home-screen.md' }
         : null,
@@ -88,7 +88,7 @@ describe('indexFileText', () => {
       id: 'd-beta',
       name: 'Beta',
       folderPath: [],
-      section: { indexFolder: 'My documents', files: null, tabs: [] },
+      section: { indexFolder: 'My Work', files: null, tabs: [] },
     };
     const after = render('files', [...entries(true), added]);
     const sections = (text: string) => text.split('\n## ').slice(1);

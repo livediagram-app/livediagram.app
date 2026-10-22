@@ -67,7 +67,7 @@ export function documentDragProps(
 }
 
 // Who a row's Owner cell names: the team for a team document, the sharer
-// for one shared with you, otherwise you: a document in My Documents or in
+// for one shared with you, otherwise you: a document in My Work or in
 // this browser alike is the reader's own (documentSpace).
 export function ownerLabelFor(liveDoc: PaneDocument): string {
   const space = documentSpace(liveDoc);

@@ -312,7 +312,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         teamId: {
           type: ['string', 'null'],
           description:
-            "The team library to file into; absent or null = the caller's My projects. " +
+            "The team library to file into; absent or null = the caller's My Work. " +
             'Requires a signed-in caller (or API token) who has joined the team.',
         },
         folderId: {
@@ -329,7 +329,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
             "the first tab's kind: board, sheet, dashboard or form, or empty for a blank first tab; absent is empty. " +
             "With no choice of place, the project lands in the caller's default folder for it: " +
             'the tab kind default, else the template family default, else the mode default, else ' +
-            'the root of My projects. Malformed: intent_invalid (400).',
+            'the root of My Work. Malformed: intent_invalid (400).',
           properties: {
             mode: ref('EditorMode'),
             tabKind: { anyOf: [ref('CreationTabKind'), { type: 'null' }] },

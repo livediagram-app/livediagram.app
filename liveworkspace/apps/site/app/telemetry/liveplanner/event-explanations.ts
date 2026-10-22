@@ -132,8 +132,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Project|Reverted|':
     "Someone reverted a single change from a tab's activity log, in the since-removed Activity panel.",
   'Project|Shared|Edit': 'Someone generated an edit-role share link for a project.',
-  'Project|Shared|ExpiryWeek':
-    'Someone set a share link to expire after a week, when creating it.',
+  'Project|Shared|ExpiryWeek': 'Someone set a share link to expire after a week, when creating it.',
   'Project|Shared|Extended':
     'Someone re-armed an expiring share link for another full round of its original lifetime.',
   'Project|Shared|Participate':
@@ -579,7 +578,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Home|Selected|Welcome.Template':
     'Someone with no projects yet started a popular template from the first-run Home.',
   'Home|Selected|Hero.Projects':
-    'Someone followed the projects pill at the top of Home to My Projects.',
+    'Someone followed the projects pill at the top of Home to My Work.',
   'Home|Selected|Hero.Inbox': 'Someone followed the Inbox pill at the top of Home to their Inbox.',
   'Home|Selected|Hero.NewProject':
     'Someone started a new project from the New project button in the search field at the top of Home.',
@@ -621,8 +620,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Somebody pressed Show on the toast an agent's change raised, to see what it touched.",
   'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a project.',
   'Mcp|Used|CreateProject': 'An AI tool connected over MCP created a new project.',
-  'Mcp|Used|FindProjects':
-    "An AI tool connected over MCP searched for one of the user's projects.",
+  'Mcp|Used|FindProjects': "An AI tool connected over MCP searched for one of the user's projects.",
   'Mcp|Used|ReadProject': "An AI tool connected over MCP read a project's contents.",
   'Mcp|Used|RenameProject': 'An AI tool connected over MCP renamed a project.',
   'Mcp|Used|ShareProject': 'An AI tool connected over MCP generated a share link for a project.',
@@ -1008,7 +1006,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Explorer|Deleted|Tag':
     'Someone deleted one of their tags, which takes it off every project it was on.',
   'Explorer|Selected|Space':
-    'Someone filtered an aggregate Explorer list by where projects live (My Projects, Shared With Me, a team).',
+    'Someone filtered an aggregate Explorer list by where projects live (My Work, Shared With Me, a team).',
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
@@ -2441,7 +2439,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Folder|Changed':
     'Someone chose a default folder: where new projects of one kind (diagrams, whiteboards, retrospectives or Kanban boards) land when they pick no place.',
   'Folder|Cleared':
-    'Someone cleared a default folder, so new projects of that kind land in My Projects again.',
+    'Someone cleared a default folder, so new projects of that kind land in My Work again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted projects wait for 30 days.',
   'Explorer|Created': 'Someone made something in the Explorer (a tag).',
   'Explorer|Added': 'Someone put one of their tags on a project.',
@@ -2512,8 +2510,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Someone picked an option from a dropdown, or clicked through on a banner, somewhere in the editor.',
   'UI|Started': 'Someone started a presentation or the welcome tour.',
   'UI|Toggled': 'Someone turned an editor setting on or off.',
-  'UI|Used':
-    'Someone used a wizard-skipping entry point into a new project, or accepted an offer.',
+  'UI|Used': 'Someone used a wizard-skipping entry point into a new project, or accepted an offer.',
   'UI|Declined': 'Someone turned down an offer the editor made them.',
   'UI|View': 'The welcome tour advanced to (or back to) a particular stage.',
 };

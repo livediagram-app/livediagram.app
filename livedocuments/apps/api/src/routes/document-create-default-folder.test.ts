@@ -13,7 +13,7 @@ import {
 } from './placement-test-support';
 
 // Default folders on create against a real schema (docs/specs/013-workspace/default-folders.md): a
-// create at the root of My Documents with an intent lands in the person's default for it; an
+// create at the root of My Work with an intent lands in the person's default for it; an
 // explicit place wins; a dangling default is skipped, logged, kept, and never fails the create.
 
 let db: SqliteD1;
@@ -76,7 +76,7 @@ describe('POST /documents with default folders', () => {
     expect(logs).toContain('placement: resolved scope=team folder=set via=default key=mode:pages');
   });
 
-  it('lets an explicit root of My Documents win over the default', async () => {
+  it('lets an explicit root of My Work win over the default', async () => {
     const res = await create(asUser('user_alice'), { folderId: null, intent: PAGES });
     expect(res.status).toBe(201);
     expect(stored()).toEqual({ owner_id: 'user_alice', folder_id: null, team_id: null });

@@ -341,7 +341,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
 
   // A rename made in Drive reaches livediagram on the next pass.
   google.fake.userRename(fileNamed('Meeting notes.livediagram')!.id, 'Standup notes.livediagram');
-  // Into a folder livediagram cannot see: the root of My Documents, and a notice.
+  // Into a folder livediagram cannot see: the root of My Work, and a notice.
   const hidden = google.fake.userCreateFolder(USER, 'Clients', fileNamed(ROOT_NAME)!.id);
   google.fake.userMove(fileNamed('Quarterly plan.livediagram')!.id, hidden);
   await syncNow(page);
@@ -367,7 +367,7 @@ test('connect, first mirror, then changes in Drive come back', async ({ page, pa
   ).toBeNull();
 
   // Show the folder to livediagram (the Picker picks it): adopted, and the
-  // document moves into the new folder in My Documents.
+  // document moves into the new folder in My Work.
   google.fake.grantAccess(USER, hidden);
   await page.evaluate(
     (id) => ((window as unknown as { __e2ePickFolder: string }).__e2ePickFolder = id),

@@ -13,7 +13,7 @@
 ## Home \*screen\*
 
 - Link: https://livediagram.app/document/d-home
-- Folder: My documents/Minigames
+- Folder: My Work/Minigames
 - Tabs:
   - Main · diagram · 12 elements · rev 17
     `tab a "Main" · 12 elements: 10 boxes, 2 arrows · rev 17`
@@ -23,7 +23,7 @@
 ## Zeta
 
 - Link: https://livediagram.app/document/d-zeta
-- Folder: My documents/Minigames/Screens
+- Folder: My Work/Minigames/Screens
 - Tabs:
   - Flow · diagram · 1 element · rev 4
     `tab a "Flow" · 1 element: 1 box · rev 4`

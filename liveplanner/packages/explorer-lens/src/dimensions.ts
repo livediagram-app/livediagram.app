@@ -68,7 +68,7 @@ export const VALUE_LABELS = {
     'this-year': 'This year',
   },
   people: { me: 'Me', others: 'Others' },
-  space: { mine: 'My Projects', shared: 'Shared With Me' },
+  space: { mine: 'My Work', shared: 'Shared With Me' },
 } as const;
 
 /** A dimension or the free text: what `Explorer / Selected / <Facet>` names. */

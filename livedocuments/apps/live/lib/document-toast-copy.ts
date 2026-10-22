@@ -7,7 +7,7 @@ import { toastName } from './toast-name';
 export type MoveDestination = { folder: string } | { team: string } | 'my-documents';
 
 const where = (dest: MoveDestination): string => {
-  if (dest === 'my-documents') return 'My Documents';
+  if (dest === 'my-documents') return 'My Work';
   if ('folder' in dest) return toastName(dest.folder) ?? 'the folder';
   return toastName(dest.team) ?? 'the team library';
 };

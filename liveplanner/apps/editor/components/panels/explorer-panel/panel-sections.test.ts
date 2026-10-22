@@ -32,7 +32,7 @@ describe('the editor Explorer sections', () => {
   });
 
   it('names each section, a team by its name', () => {
-    expect(sectionLabel({ kind: 'mine' })).toBe('My Projects');
+    expect(sectionLabel({ kind: 'mine' })).toBe('My Work');
     expect(sectionLabel({ kind: 'team', id: 't1' }, () => 'Design guild')).toBe('Design guild');
     expect(sectionLabel({ kind: 'team', id: 't1' })).toBe('Team');
   });

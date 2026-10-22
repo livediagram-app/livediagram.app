@@ -102,11 +102,11 @@ test.describe('default folders', () => {
     await expect(row.locator('[data-default-marker]').first()).toBeVisible();
     await expect(row).toHaveAccessibleDescription('Default folder for new retrospectives');
 
-    // My Projects holds every key without a working default, and only clears.
+    // My Work holds every key without a working default, and only clears.
     await page.mouse.click(900, 600);
     // Its own line: the item's centre may sit on one of the folders it holds.
     await nav(page)
-      .getByRole('treeitem', { name: 'My Projects' })
+      .getByRole('treeitem', { name: 'My Work' })
       .locator('[data-tree-row]')
       .first()
       .click({ button: 'right' });
@@ -133,7 +133,7 @@ test.describe('default folders', () => {
     // No Location step: choosing Draw makes the whiteboard, in the whiteboards' default folder.
     const whiteboard = await createInMode(page, 'draw');
     expect(await projectFolder(page, s, whiteboard)).toBe(workshops);
-    // Diagrams have no default: the root of My Projects.
+    // Diagrams have no default: the root of My Work.
     const diagram = await createInMode(page, 'diagram');
     expect(await projectFolder(page, s, diagram)).toBeNull();
     expectNoPageErrors(pageErrors);
@@ -171,7 +171,7 @@ test.describe('default folders', () => {
     expect(await defaults(page, s)).toEqual({ 'mode:draw': workshops });
 
     await page.goto(`/explorer/folder?id=${projects}&settings=projects`);
-    await expect(page.getByText('Workshops (deleted), using My Projects')).toBeVisible({
+    await expect(page.getByText('Workshops (deleted), using My Work')).toBeVisible({
       timeout: 30_000,
     });
     await page.getByRole('button', { name: 'Clear default folder for whiteboards' }).click();

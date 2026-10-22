@@ -175,7 +175,7 @@ export async function handleProjectPlacement(ctx: RouteContext): Promise<Respons
             ? ((await getFolder(env, folderId))?.name ?? 'a folder')
             : moved.teamId
               ? ((await getTeam(env, moved.teamId))?.name ?? 'the team')
-              : 'My Projects';
+              : 'My Work';
           ctx.waitUntil?.(recordProjectMoved(env, moved, folderName, owner));
         }
       }

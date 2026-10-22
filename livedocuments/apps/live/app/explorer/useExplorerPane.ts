@@ -69,7 +69,7 @@ export function useExplorerPane({
   viewerId: string;
   now: number;
 }) {
-  // A document saved only in this browser lives in This Browser, not at the root of My Documents
+  // A document saved only in this browser lives in This Browser, not at the root of My Work
   // (docs/specs/013-workspace/explorer-structure.md); filed in one of the reader's folders, it is
   // listed there.
   const documentsByFolder = useMemo(
@@ -193,7 +193,7 @@ export function useExplorerPane({
   }, [selected, folderById, teams]);
 
   // Breadcrumb segments for the pane header, following the sidebar's rows. The leaf (the current
-  // view) is plain text. Folders sit under My Documents, Recent under Home; every
+  // view) is plain text. Folders sit under My Work, Recent under Home; every
   // other view is its own single leaf.
   type Crumb = { name: string; onClick?: () => void };
   const paneCrumbs = useMemo<Crumb[]>(() => {

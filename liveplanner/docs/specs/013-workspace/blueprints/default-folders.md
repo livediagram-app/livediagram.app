@@ -29,11 +29,11 @@ Scope, by file:
 | `apps/api/src/index.ts`, `auth/guest-rest.ts`             | Dispatch case; owner-scoped segment                                                                            |
 | `packages/api-schema/src/error-telemetry.ts`              | `placement-defaults` in `API_ROUTE_RESOURCES`                                                                  |
 | `apps/api/src/openapi/manifest.ts`                        | The three routes; the create body's `folderId` semantics and `intent`                                          |
-| `apps/editor/lib/api/placement-defaults.ts`                 | `apiListPlacementDefaults`, `apiSetPlacementDefault`, `apiClearPlacementDefault`                               |
-| `apps/editor/lib/api/projects.ts`                           | `apiCreateProject` sends `folderId` when not `undefined` (null included) and `intent`                          |
-| `apps/editor/app/new/page.tsx` (`createByDefault`)          | The wizard's placement: the `/new?folder=` / `?team=` context, else none                                       |
-| `apps/editor/app/new/page.tsx`                              | The wizard and its bypasses send the first tab's intent and the template's family                              |
-| `apps/editor/lib/duplicate-project.ts`                      | Duplicate: beside the source, the source's recorded intent, root on refusal                                    |
+| `apps/editor/lib/api/placement-defaults.ts`               | `apiListPlacementDefaults`, `apiSetPlacementDefault`, `apiClearPlacementDefault`                               |
+| `apps/editor/lib/api/projects.ts`                         | `apiCreateProject` sends `folderId` when not `undefined` (null included) and `intent`                          |
+| `apps/editor/app/new/page.tsx` (`createByDefault`)        | The wizard's placement: the `/new?folder=` / `?team=` context, else none                                       |
+| `apps/editor/app/new/page.tsx`                            | The wizard and its bypasses send the first tab's intent and the template's family                              |
+| `apps/editor/lib/duplicate-project.ts`                    | Duplicate: beside the source, the source's recorded intent, root on refusal                                    |
 | `apps/mcp/src/tools.ts`, `apps/mcp/src/created-folder.ts` | `create_project` sends the intent; reports the folder it landed in                                             |
 
 ## Domain and naming
@@ -50,7 +50,7 @@ Scope, by file:
 | Template family  | `TemplateFamily`, `TEMPLATE_FAMILIES = ['retrospective', 'kanban']`; `template_family`, `templateFamily` | The family of templates a project was made from             |
 | Recorded intent  | `RecordedIntent` `{ opensIn, tabKind, templateFamily }`, each nullable                                   | What the create insert wrote; null `opensIn` = unknown      |
 | Chosen placement | `RequestedPlacement.chosen`                                                                              | The body names a team or carries the `folderId` key         |
-| Explicit root    | `{ teamId: null, folderId: null, chosen: true }`                                                         | The root of My Projects, chosen on purpose                  |
+| Explicit root    | `{ teamId: null, folderId: null, chosen: true }`                                                         | The root of My Work, chosen on purpose                      |
 | Dangling default | `DefaultSkipReason`                                                                                      | `folder_missing` / `folder_not_visible` / `team_not_joined` |
 | Via              | `via: 'explicit' \| 'default' \| 'root'`, log `via=default key=<key>`                                    | Which step decided; `root` only when nothing was chosen     |
 
@@ -156,7 +156,7 @@ Location step and no client-side resolution ([New project route](../../007-edito
   body when a string, `folderId` when not `undefined` (null included), `intent` when set. The
   placement-default functions throw `ApiError` with the token as `code`.
 - **MCP:** `create_project` body gains `intent: creationIntentOf(tabs[0], templateFamilyOf(<the first
-input tab's template kind, or null>))`; output `folder` is `"My Projects"` when the created
+input tab's template kind, or null>))`; output `folder` is `"My Work"` when the created
   `project.folderId` is null, else the folder's name (`D24`).
 
 ## Data and persistence
@@ -237,23 +237,23 @@ owner_id = ?` then `DELETE … WHERE owner_id = <guest>`: the account's row for 
 
 ## Testing
 
-| Rule                                                                         | Test                                                                                            |
-| ---------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Editor modes are one list                                                    | `packages/project/src/editor-mode.test.ts`                                                      |
-| Keys, intent derivation and parsing, key order, telemetry values             | `packages/api-schema/src/placement-defaults.test.ts`                                            |
-| Template to template family map                                              | `apps/editor/lib/template-families.test.ts`                                                       |
-| Chosen or not; explicit root; default step; kind before template before mode | `apps/api/src/placement/resolve-placement.test.ts`                                              |
-| Routes: every answer and rejection, encoded keys, logs (real SQLite)         | `apps/api/src/routes/placement-defaults.test.ts`                                                |
-| Create lands in the default; explicit root wins; dangling; intent_invalid    | `apps/api/src/routes/project-create-default-folder.test.ts`                                     |
-| Placement on create, chosen roots logged as explicit                         | `apps/api/src/routes/project-create-placement.test.ts`                                          |
-| Recorded intent written once, read back, unknown for legacy rows, copied     | `apps/api/src/routes/project-create-intent.test.ts`, `apps/api/src/project-intent-row.test.ts`  |
-| Store order, replace, clear; sign-up keeps the account's row                 | `apps/api/src/db/placement-defaults.test.ts`                                                    |
-| Deletion and migration of every owner-keyed column                           | `apps/api/src/db/account-owner-columns.test.ts`                                                 |
-| Dispatch, route labels, OpenAPI parity                                       | `apps/api/src/route-resources.test.ts`, `apps/api/src/openapi/*.test.ts`                        |
+| Rule                                                                         | Test                                                                                                |
+| ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Editor modes are one list                                                    | `packages/project/src/editor-mode.test.ts`                                                          |
+| Keys, intent derivation and parsing, key order, telemetry values             | `packages/api-schema/src/placement-defaults.test.ts`                                                |
+| Template to template family map                                              | `apps/editor/lib/template-families.test.ts`                                                         |
+| Chosen or not; explicit root; default step; kind before template before mode | `apps/api/src/placement/resolve-placement.test.ts`                                                  |
+| Routes: every answer and rejection, encoded keys, logs (real SQLite)         | `apps/api/src/routes/placement-defaults.test.ts`                                                    |
+| Create lands in the default; explicit root wins; dangling; intent_invalid    | `apps/api/src/routes/project-create-default-folder.test.ts`                                         |
+| Placement on create, chosen roots logged as explicit                         | `apps/api/src/routes/project-create-placement.test.ts`                                              |
+| Recorded intent written once, read back, unknown for legacy rows, copied     | `apps/api/src/routes/project-create-intent.test.ts`, `apps/api/src/project-intent-row.test.ts`      |
+| Store order, replace, clear; sign-up keeps the account's row                 | `apps/api/src/db/placement-defaults.test.ts`                                                        |
+| Deletion and migration of every owner-keyed column                           | `apps/api/src/db/account-owner-columns.test.ts`                                                     |
+| Dispatch, route labels, OpenAPI parity                                       | `apps/api/src/route-resources.test.ts`, `apps/api/src/openapi/*.test.ts`                            |
 | Client functions; the create body's absent versus null `folderId`            | `apps/editor/lib/api/placement-defaults.test.ts`, `apps/editor/lib/api-client.test.ts`              |
 | Wizard placement: the context, else none (server decides)                    | `apps/editor/app/new/useNewProjectLocation.test.tsx`, e2e `apps/editor/e2e/default-folders.spec.ts` |
-| Duplicate beside its source, record-only, root on refusal                    | `apps/editor/lib/duplicate-project.test.ts`                                                       |
-| MCP create sends the intent and names the folder                             | `apps/mcp/src/create-project-placement.test.ts`                                                 |
+| Duplicate beside its source, record-only, root on refusal                    | `apps/editor/lib/duplicate-project.test.ts`                                                         |
+| MCP create sends the intent and names the folder                             | `apps/mcp/src/create-project-placement.test.ts`                                                     |
 
 ## Constants and configuration
 
@@ -287,36 +287,36 @@ D17 to D25, D27, D28, D105 to D120, D123 and D124 in [DEFAULTS.md](DEFAULTS.md).
 Derived from [Default folders → Surfaces](../default-folders.md#surfaces). Defaults applied where that
 section is silent are `D105` to `D120` and `D123` to `D125`.
 
-| File                                                                                                                                  | Role                                                                                                                                                     |
-| ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/icons/lucide-manifest.json`                                                                                                 | Vendors `square-kanban` and `folder-check` (`D110`, `D118`)                                                                                              |
-| `apps/editor/lib/placement-defaults/default-key-entries.ts`                                                                             | `DEFAULT_KEY_ENTRIES`, `defaultKeyEntry`, `joinNouns`, `defaultFolderDescription`                                                                        |
-| `apps/editor/lib/placement-defaults/placement-defaults-store.ts`                                                                        | The page's one copy: load, set, clear, optimistic with rollback, telemetry, logs                                                                         |
-| `apps/editor/lib/placement-defaults/default-destination.ts`                                                                             | Pure: `DefaultFolderIndex`, `workingDefault`, `resolveDefaultFor`, `destinationOf`, keys                                                                 |
-| `apps/editor/lib/placement-defaults/default-folder-names.ts`                                                                            | This Browser's memory of default folders' names (`D113`)                                                                                                 |
-| `apps/editor/lib/folder-delete-confirmation.ts`                                                                                         | `folderDeleteConfirmation`: where the contents go, the default-folder line                                                                               |
-| `apps/editor/hooks/persistence/usePlacementDefaults.ts`                                                                                 | `usePlacementDefaults(ownerId)`, `useFolderDefaultKeys(folderId)`                                                                                        |
-| `apps/editor/hooks/persistence/useDefaultFolderMenus.ts`                                                                                | `useDefaultFolderIndex(lists)`, `useDefaultFolderMenus(ownerId, lists)`: the menu bundles for a folder and for My Projects; notes default folders' names |
-| `apps/editor/hooks/persistence/usePlacementOptions.ts`                                                                                  | Moved from `app/new`: folders, teams and team folders for a picker, inline create, and `ready` / `failed`                                                |
-| `apps/editor/components/placement/default-key-icons.tsx`                                                                                | `DEFAULT_KEY_ICONS`, `DefaultKeyIcon`                                                                                                                    |
-| `apps/editor/components/placement/DefaultFolderMarker.tsx`                                                                              | The marker; `useDefaultFolderDescription(folderId)` for a tree row's description                                                                         |
-| `apps/editor/components/placement/UseAsDefaultMenu.tsx`                                                                                 | The submenu: a plain flyout of `MenuCheckRow`s                                                                                                           |
-| `apps/editor/components/placement/DefaultFolderPickerDialog.tsx`                                                                        | The default folder picker                                                                                                                                |
-| `apps/editor/components/primitives/MenuCheckRow.tsx`                                                                                    | A `menuitemcheckbox` row                                                                                                                                 |
-| `apps/editor/components/primitives/MenuFlyoutSection.tsx`, `MenuFlyoutPanel.tsx`                                                        | Gains `plain`: a trigger shaped like a plain `MenuActionRow`; the panel and trigger faces in their own file                                              |
-| `apps/editor/app/explorer/folder-actions-menu.tsx`                                                                                      | `defaults?: DefaultFolderMenu` renders the submenu before Delete                                                                                         |
-| `apps/editor/app/explorer/folder-row.tsx`, `explorer-folder-cards.tsx`                                                                  | Marker; `menuHandlers` passes `defaults`                                                                                                                 |
-| `apps/editor/app/explorer/useExplorerState.ts`                                                                                          | `folderActions` bundles `defaults`; exposes `rootDefaults`                                                                                               |
-| `apps/editor/app/explorer/sidebar/SpacesGroup.tsx`, `useMyProjectsMenu.tsx`                                                             | My Projects' `⋯` and right-click menu, shared with the panel                                                                                             |
-| `apps/editor/app/explorer/sidebar/SidebarFolderSubtree.tsx`, `TeamFolderSubtree.tsx`                                                    | `FolderLabel` (name, then marker); the marker's words as the row's description                                                                           |
-| `apps/editor/components/panels/explorer-tree/*`                                                                                         | `PanelTree.defaultFolders`; panel folder rows and My Projects                                                                                            |
-| `apps/editor/components/panels/TeamSharedProjects.tsx`                                                                                  | Team library folder menus carry `defaults`                                                                                                               |
-| `apps/editor/components/placement/placement-view.ts`, `usePlacementView.ts`                                                             | The browser opens where its selection is: `placementViewFor`, followed until the reader moves (`D125`)                                                   |
-| `apps/editor/components/dialogs/settings/SettingsPlacementDefaultRow.tsx`                                                               | One Settings row                                                                                                                                         |
-| `apps/editor/components/dialogs/settings/settings-catalogue.ts`, `settings-icons.tsx`                                                   | The `projects` category (its folder glyph on a lime tile), one `placementDefault` row per key                                                            |
-| `apps/editor/components/dialogs/SettingsDialog.tsx`, `apps/editor/components/dialogs/settings/SettingsCategoryPane.tsx`                   | `ownerId` loads the defaults; the pane fetches the folder lists only for a pane with Projects rows                                                       |
-| `apps/editor/app/explorer/useExplorerState.ts` (settings link)                                                                          | The `?settings=` deep link is read once hydrated                                                                                                         |
-| `apps/editor/hooks/persistence/useProjectListActions.ts`, `useFolders.ts`, `hooks/ui/useTeamFolderActions.ts`, `TeamSharedProjects.tsx` | One confirmation; optimistic move-up                                                                                                                     |
+| File                                                                                                                                    | Role                                                                                                                                                 |
+| --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/icons/lucide-manifest.json`                                                                                                   | Vendors `square-kanban` and `folder-check` (`D110`, `D118`)                                                                                          |
+| `apps/editor/lib/placement-defaults/default-key-entries.ts`                                                                             | `DEFAULT_KEY_ENTRIES`, `defaultKeyEntry`, `joinNouns`, `defaultFolderDescription`                                                                    |
+| `apps/editor/lib/placement-defaults/placement-defaults-store.ts`                                                                        | The page's one copy: load, set, clear, optimistic with rollback, telemetry, logs                                                                     |
+| `apps/editor/lib/placement-defaults/default-destination.ts`                                                                             | Pure: `DefaultFolderIndex`, `workingDefault`, `resolveDefaultFor`, `destinationOf`, keys                                                             |
+| `apps/editor/lib/placement-defaults/default-folder-names.ts`                                                                            | This Browser's memory of default folders' names (`D113`)                                                                                             |
+| `apps/editor/lib/folder-delete-confirmation.ts`                                                                                         | `folderDeleteConfirmation`: where the contents go, the default-folder line                                                                           |
+| `apps/editor/hooks/persistence/usePlacementDefaults.ts`                                                                                 | `usePlacementDefaults(ownerId)`, `useFolderDefaultKeys(folderId)`                                                                                    |
+| `apps/editor/hooks/persistence/useDefaultFolderMenus.ts`                                                                                | `useDefaultFolderIndex(lists)`, `useDefaultFolderMenus(ownerId, lists)`: the menu bundles for a folder and for My Work; notes default folders' names |
+| `apps/editor/hooks/persistence/usePlacementOptions.ts`                                                                                  | Moved from `app/new`: folders, teams and team folders for a picker, inline create, and `ready` / `failed`                                            |
+| `apps/editor/components/placement/default-key-icons.tsx`                                                                                | `DEFAULT_KEY_ICONS`, `DefaultKeyIcon`                                                                                                                |
+| `apps/editor/components/placement/DefaultFolderMarker.tsx`                                                                              | The marker; `useDefaultFolderDescription(folderId)` for a tree row's description                                                                     |
+| `apps/editor/components/placement/UseAsDefaultMenu.tsx`                                                                                 | The submenu: a plain flyout of `MenuCheckRow`s                                                                                                       |
+| `apps/editor/components/placement/DefaultFolderPickerDialog.tsx`                                                                        | The default folder picker                                                                                                                            |
+| `apps/editor/components/primitives/MenuCheckRow.tsx`                                                                                    | A `menuitemcheckbox` row                                                                                                                             |
+| `apps/editor/components/primitives/MenuFlyoutSection.tsx`, `MenuFlyoutPanel.tsx`                                                        | Gains `plain`: a trigger shaped like a plain `MenuActionRow`; the panel and trigger faces in their own file                                          |
+| `apps/editor/app/explorer/folder-actions-menu.tsx`                                                                                      | `defaults?: DefaultFolderMenu` renders the submenu before Delete                                                                                     |
+| `apps/editor/app/explorer/folder-row.tsx`, `explorer-folder-cards.tsx`                                                                  | Marker; `menuHandlers` passes `defaults`                                                                                                             |
+| `apps/editor/app/explorer/useExplorerState.ts`                                                                                          | `folderActions` bundles `defaults`; exposes `rootDefaults`                                                                                           |
+| `apps/editor/app/explorer/sidebar/SpacesGroup.tsx`, `useMyProjectsMenu.tsx`                                                             | My Work' `⋯` and right-click menu, shared with the panel                                                                                             |
+| `apps/editor/app/explorer/sidebar/SidebarFolderSubtree.tsx`, `TeamFolderSubtree.tsx`                                                    | `FolderLabel` (name, then marker); the marker's words as the row's description                                                                       |
+| `apps/editor/components/panels/explorer-tree/*`                                                                                         | `PanelTree.defaultFolders`; panel folder rows and My Work                                                                                            |
+| `apps/editor/components/panels/TeamSharedProjects.tsx`                                                                                  | Team library folder menus carry `defaults`                                                                                                           |
+| `apps/editor/components/placement/placement-view.ts`, `usePlacementView.ts`                                                             | The browser opens where its selection is: `placementViewFor`, followed until the reader moves (`D125`)                                               |
+| `apps/editor/components/dialogs/settings/SettingsPlacementDefaultRow.tsx`                                                               | One Settings row                                                                                                                                     |
+| `apps/editor/components/dialogs/settings/settings-catalogue.ts`, `settings-icons.tsx`                                                   | The `projects` category (its folder glyph on a lime tile), one `placementDefault` row per key                                                        |
+| `apps/editor/components/dialogs/SettingsDialog.tsx`, `apps/editor/components/dialogs/settings/SettingsCategoryPane.tsx`                 | `ownerId` loads the defaults; the pane fetches the folder lists only for a pane with Projects rows                                                   |
+| `apps/editor/app/explorer/useExplorerState.ts` (settings link)                                                                          | The `?settings=` deep link is read once hydrated                                                                                                     |
+| `apps/editor/hooks/persistence/useProjectListActions.ts`, `useFolders.ts`, `hooks/ui/useTeamFolderActions.ts`, `TeamSharedProjects.tsx` | One confirmation; optimistic move-up                                                                                                                 |
 
 ### Domain and naming (surfaces)
 
@@ -360,7 +360,7 @@ templateFamily: f }` (`D112`).
 - `destinationOf(key, defaults, index)`: no stored default → `root`; working → `folder`; else
   `dangling` with `reason: 'deleted'` (a personal id, or a team folder of a listed team, not in the
   index) or `'unavailable'` (remembered as a team folder whose team is not listed), and
-  `fallback = resolveDefaultFor(representativeIntent(key))` over the other keys (null = My Projects).
+  `fallback = resolveDefaultFor(representativeIntent(key))` over the other keys (null = My Work).
 - `folderDefaultKeys(folderId, defaults)`: the keys stored for this folder, in list order.
 
 **Menus** (`useDefaultFolderMenus`):
@@ -469,19 +469,19 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 
 ### Testing (surfaces)
 
-| Rule                                                         | Test                                                                                            |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| Entries, nouns joined, marker words                          | `apps/editor/lib/placement-defaults/default-key-entries.test.ts`                                  |
-| Load, set, clear, telemetry before the write, rollback       | `apps/editor/lib/placement-defaults/placement-defaults-store.test.ts`                             |
-| Working default, resolution, destinations, dangling fallback | `apps/editor/lib/placement-defaults/default-destination.test.ts`                                  |
-| Name memory per owner                                        | `apps/editor/lib/placement-defaults/default-folder-names.test.ts`                                 |
-| Folder delete wording                                        | `apps/editor/lib/folder-delete-confirmation.test.ts`                                              |
-| Menu checks for a folder and for My Projects                 | `apps/editor/hooks/persistence/useDefaultFolderMenus.test.tsx`                                    |
-| Submenu renders, toggles, ARIA                               | `apps/editor/components/placement/UseAsDefaultMenu.test.tsx`                                      |
-| Marker icons, +N, words                                      | `apps/editor/components/placement/DefaultFolderMarker.test.tsx`                                   |
-| The browser opens at the selected folder's level, then pins  | `apps/editor/components/placement/placement-view.test.ts`, `PlacementBrowser.test.tsx`            |
-| Lists ready or failed                                        | `apps/editor/hooks/persistence/usePlacementOptions.test.tsx`                                      |
-| Settings row states                                          | `apps/editor/components/dialogs/settings/SettingsPlacementDefaultRow.test.tsx`                    |
+| Rule                                                         | Test                                                                                                |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| Entries, nouns joined, marker words                          | `apps/editor/lib/placement-defaults/default-key-entries.test.ts`                                    |
+| Load, set, clear, telemetry before the write, rollback       | `apps/editor/lib/placement-defaults/placement-defaults-store.test.ts`                               |
+| Working default, resolution, destinations, dangling fallback | `apps/editor/lib/placement-defaults/default-destination.test.ts`                                    |
+| Name memory per owner                                        | `apps/editor/lib/placement-defaults/default-folder-names.test.ts`                                   |
+| Folder delete wording                                        | `apps/editor/lib/folder-delete-confirmation.test.ts`                                                |
+| Menu checks for a folder and for My Work                     | `apps/editor/hooks/persistence/useDefaultFolderMenus.test.tsx`                                      |
+| Submenu renders, toggles, ARIA                               | `apps/editor/components/placement/UseAsDefaultMenu.test.tsx`                                        |
+| Marker icons, +N, words                                      | `apps/editor/components/placement/DefaultFolderMarker.test.tsx`                                     |
+| The browser opens at the selected folder's level, then pins  | `apps/editor/components/placement/placement-view.test.ts`, `PlacementBrowser.test.tsx`              |
+| Lists ready or failed                                        | `apps/editor/hooks/persistence/usePlacementOptions.test.tsx`                                        |
+| Settings row states                                          | `apps/editor/components/dialogs/settings/SettingsPlacementDefaultRow.test.tsx`                      |
 | End to end, guest and signed in, desktop and phone           | `apps/editor/e2e/default-folders.spec.ts`, `apps/editor/e2e/signed-in/default-folders-team.spec.ts` |
 
 ### Constants and configuration (surfaces)

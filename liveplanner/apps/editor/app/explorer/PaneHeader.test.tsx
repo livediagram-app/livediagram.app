@@ -9,7 +9,7 @@ describe('PaneHeader', () => {
   it('puts Help and Create after the view toggle', () => {
     const { container } = render(
       <PaneHeader
-        title="My Projects"
+        title="My Work"
         crumbs={[]}
         onCreateProject={() => {}}
         onCreateFolder={() => {}}

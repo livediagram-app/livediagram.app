@@ -11,7 +11,7 @@ afterEach(cleanup);
 const group = (divider: 'titles' | 'separators', first = false) =>
   render(
     <SidebarGroup id="spaces" divider={divider} first={first}>
-      <li role="treeitem" aria-selected={false} aria-label="My Projects" />
+      <li role="treeitem" aria-selected={false} aria-label="My Work" />
     </SidebarGroup>,
   );
 
@@ -60,7 +60,7 @@ describe('SidebarGroup', () => {
   it('places a trailing item after its tree, outside it', () => {
     render(
       <SidebarGroup id="spaces" divider="titles" after={<a href="/sign-in/">Sign in</a>}>
-        <li role="treeitem" aria-selected={false} aria-label="My Projects" />
+        <li role="treeitem" aria-selected={false} aria-label="My Work" />
       </SidebarGroup>,
     );
     const tree = screen.getByRole('tree');

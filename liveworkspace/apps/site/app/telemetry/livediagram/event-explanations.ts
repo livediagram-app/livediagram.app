@@ -683,7 +683,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Home|Selected|Welcome.Template':
     'Someone with no documents yet started a popular template from the first-run Home.',
   'Home|Selected|Hero.Documents':
-    'Someone followed the documents pill at the top of Home to My Documents.',
+    'Someone followed the documents pill at the top of Home to My Work.',
   'Home|Selected|Hero.Inbox': 'Someone followed the Inbox pill at the top of Home to their Inbox.',
   'Home|Selected|Hero.NewDocument':
     'Someone started a new document from the New document button in the search field at the top of Home.',
@@ -1149,7 +1149,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Explorer|Deleted|Tag':
     'Someone deleted one of their tags, which takes it off every document it was on.',
   'Explorer|Selected|Space':
-    'Someone filtered an aggregate Explorer list by where documents live (My Documents, Shared With Me, a team).',
+    'Someone filtered an aggregate Explorer list by where documents live (My Work, Shared With Me, a team).',
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
@@ -2642,13 +2642,13 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Selected':
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
   'Drive|Linked':
-    'Someone connected Google Drive, so My Documents is mirrored to their own Drive. The type says how: through the server (Broker) or with browser-only access (Browser).',
+    'Someone connected Google Drive, so My Work is mirrored to their own Drive. The type says how: through the server (Broker) or with browser-only access (Browser).',
   'Drive|Unlinked':
     'Someone disconnected Google Drive. livediagram stops updating it, and the files stay in their Drive.',
   'Drive|Changed':
     "Google stopped accepting a mirror's access (revoked, or unused for six months), so the mirror asks to be reconnected. Nothing is deleted.",
   'Drive|Created':
-    'A newly connected mirror finished copying every document in My Documents into Google Drive for the first time.',
+    'A newly connected mirror finished copying every document in My Work into Google Drive for the first time.',
   'Drive|Applied':
     'A change someone made in Google Drive reached livediagram: a rename, a move (or a move into a folder livediagram cannot see), a bin, a restore, or a permanent delete.',
   'Drive|Opened':
@@ -2656,7 +2656,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Folder|Changed':
     'Someone chose a default folder: where new documents of one kind (diagrams, whiteboards, Event Storming boards, retrospectives or Kanban boards) land when they pick no place.',
   'Folder|Cleared':
-    'Someone cleared a default folder, so new documents of that kind land in My Documents again.',
+    'Someone cleared a default folder, so new documents of that kind land in My Work again.',
   'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
   'Explorer|Created': 'Someone made something in the Explorer (a tag).',
   'Explorer|Added': 'Someone put one of their tags on a document.',

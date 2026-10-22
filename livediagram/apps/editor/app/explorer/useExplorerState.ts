@@ -202,7 +202,7 @@ export function useExplorerState() {
       setSettingsOpen(true);
     }
   }
-  // Which sidebar rows are open: folders, teams, My Documents and Library
+  // Which sidebar rows are open: folders, teams, My Work and Library
   // (docs/specs/013-workspace/explorer-structure.md#expansion).
   const { expanded, expand, toggleExpand } = useSidebarExpansion(selected);
   // Team libraries swept lazily (docs/specs/013-workspace/team-shared-documents.md) for the four consumers: the
@@ -351,7 +351,7 @@ export function useExplorerState() {
     const created = await hookCreateFolder({ parentId });
     if (created) {
       setRenamingFolderId(created.id);
-      // Reveal the new row so its rename field shows: its parent, or My Documents for a root folder.
+      // Reveal the new row so its rename field shows: its parent, or My Work for a root folder.
       expand(parentId ?? MY_DOCUMENTS_EXPAND_KEY);
     }
   };
@@ -561,7 +561,7 @@ export function useExplorerState() {
     teams,
     teamFolders,
     teamDocuments,
-    // My Documents' own menu: "Use as Default for" only.
+    // My Work' own menu: "Use as Default for" only.
     rootDefaults: defaultFolders.forRoot,
     invites,
     tokens,
@@ -645,7 +645,7 @@ export function useExplorerState() {
       refreshTeamLibraries();
     },
     // A team page changed a library (docs/specs/013-workspace/team-shared-documents.md): its own team's, or, from its
-    // move picker, My Documents' folders or another team's. The sidebar, the search panel and every move picker read
+    // move picker, My Work' folders or another team's. The sidebar, the search panel and every move picker read
     // the Explorer's lists, which never heard of it until a reload.
     refreshAfterTeamPage: (teamId: string | null) => {
       if (teamId) refreshTeamLibraries();

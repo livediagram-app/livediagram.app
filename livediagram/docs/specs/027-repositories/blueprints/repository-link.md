@@ -639,7 +639,7 @@ passed, so the outline is whole. `rev` is the tab's recorded revision; `tabIds` 
 - At `index` each tab line is followed by `    ` (four spaces) and `codeSpan(headerLine(facts))`: the outline's
   header line, built from the overview's facts, so `rg` finds tab names and counts (spec).
 - At `index` the `Files:` line is left out.
-- `<space>` is `My Documents` for a personal folder, the team's name for a team folder; a listed document whose
+- `<space>` is `My Work` for a personal folder, the team's name for a team folder; a listed document whose
   folder this account cannot see shows `Shared With Me` (RL7).
 - `<n> elements` is the header facts' `elements` (`1 element` when one).
 - A document whose action is `unreadable`, `transient` or refused keeps its previous section verbatim when the

@@ -7,7 +7,7 @@ import { useMenuItemProps } from './menu-item-props';
 // A checkable menu row (`menuitemcheckbox`): a fixed check slot (empty when unchecked, so labels
 // never shift as checks come and go), the entry's own icon, then its label, at the reading size of
 // a plain MenuActionRow. A disabled row stays in the menu, focusable and greyed, so the menu keeps
-// its shape (the "Use as Default for" submenu's checked My Projects entries,
+// its shape (the "Use as Default for" submenu's checked My Work entries,
 // docs/specs/013-workspace/default-folders.md).
 export function MenuCheckRow({
   label,

@@ -10,11 +10,11 @@ describe('upgradeLegacyPreferences', () => {
   });
 
   it('lets the new key win when both are present', () => {
-    expect(
-      upgradeLegacyPreferences({ notifyDiagramJoin: false, notifyProjectJoin: true }),
-    ).toEqual({
-      notifyProjectJoin: true,
-    });
+    expect(upgradeLegacyPreferences({ notifyDiagramJoin: false, notifyProjectJoin: true })).toEqual(
+      {
+        notifyProjectJoin: true,
+      },
+    );
   });
 
   it("drops Pages mode's tour, guide and Contents keys under every name", () => {
@@ -67,7 +67,7 @@ describe('upgradeLegacyPreferences', () => {
 
   // docs/specs/007-editor/user-preferences.md "Retired keys": the New Project wizard has no Location step to skip.
   it('drops the retired skip-the-Location-step place, set or cleared', () => {
-    const place = { saveLocation: 'liveplanner', placement: 'unsorted', placeName: 'My projects' };
+    const place = { saveLocation: 'liveplanner', placement: 'unsorted', placeName: 'My Work' };
     expect(upgradeLegacyPreferences({ skipLocationStep: place, theme: 'dark' })).toEqual({
       theme: 'dark',
     });

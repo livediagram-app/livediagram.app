@@ -76,10 +76,10 @@ describe('SettingsPlacementDefaultRow', () => {
     ).toMatchObject({ helpArticle: 'defaultFolders' });
   });
 
-  it('says My Documents without a default, and offers no Clear', async () => {
+  it('says My Work without a default, and offers no Clear', async () => {
     await withDefaults([]);
     render(<SettingsPlacementDefaultRow row={rowFor('mode:draw')} lists={lists()} />);
-    expect(screen.getByText('My Documents')).toBeTruthy();
+    expect(screen.getByText('My Work')).toBeTruthy();
     expect(
       screen.getByRole('button', { name: 'Change default folder for whiteboards' }),
     ).toBeTruthy();
@@ -94,7 +94,7 @@ describe('SettingsPlacementDefaultRow', () => {
       fireEvent.click(screen.getByRole('button', { name: 'Clear default folder for whiteboards' }));
     });
     expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:draw');
-    expect(screen.getByText('My Documents')).toBeTruthy();
+    expect(screen.getByText('My Work')).toBeTruthy();
   });
 
   it('says a deleted default is deleted, by its remembered name, and where documents go instead', async () => {
@@ -116,7 +116,7 @@ describe('SettingsPlacementDefaultRow', () => {
   it('says so when it never saw the deleted folder', async () => {
     await withDefaults([{ key: 'mode:draw', folderId: 'gone' }]);
     render(<SettingsPlacementDefaultRow row={rowFor('mode:draw')} lists={lists()} />);
-    expect(screen.getByText('A deleted folder, using My Documents')).toBeTruthy();
+    expect(screen.getByText('A deleted folder, using My Work')).toBeTruthy();
   });
 
   it('waits for the folders before judging, and says when it cannot read them', async () => {

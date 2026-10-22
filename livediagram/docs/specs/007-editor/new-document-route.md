@@ -350,7 +350,7 @@ answered. It does not ask where the document goes or what it is called:
     for identity, so a signed-in person is never handed a document in This Browser.
   - **Filed** (livediagram) in the `/new?folder=` / `?team=` context when there is one, an explicit placement;
     otherwise the create carries no placement and the server files it in the person's
-    [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Documents.
+    [default folder](../013-workspace/default-folders.md) for its intent, else the root of My Work.
   - **Named** after its template ("Untitled Diagram", `untitledNameForTemplate`); it is renamed in the editor.
   - People change where documents go in **Settings > Documents > Default Folders**, and move a document between
     livediagram and this browser afterwards ([Offline Mode](../006-document/offline-mode.md)).

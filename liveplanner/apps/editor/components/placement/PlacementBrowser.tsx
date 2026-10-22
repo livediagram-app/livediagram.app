@@ -20,7 +20,7 @@ import {
 import { usePlacementView } from './usePlacementView';
 
 // The standardised folder-placement browser (docs/specs/006-project/offline-mode.md, extended by docs/specs/013-workspace/folders.md):
-// a two-level tile-grid browse. Pick a SPACE first (My Projects, or one of your
+// a two-level tile-grid browse. Pick a SPACE first (My Work, or one of your
 // teams), then drill into its folder tree; every level shows a "here" card
 // (Unsorted / Team Library / the open folder itself) plus the folders
 // directly inside it, with an optional inline New Folder tile. One space
@@ -104,7 +104,7 @@ export function PlacementBrowser({
   // Per-team folder lists, keyed by team id. Empty / missing while the team
   // libraries are still loading.
   teamFolders: Record<string, PickerFolder[]>;
-  // Whether the personal ("My Projects") space is offered. Team-scoped surfaces
+  // Whether the personal ("My Work") space is offered. Team-scoped surfaces
   // (the team library's own move picker) turn it off and pass exactly one
   // team, so the browser opens directly inside that team's tree.
   showPersonal?: boolean;
@@ -181,7 +181,7 @@ export function PlacementBrowser({
         <div key="overview" className={levelClass}>
           {showPersonal ? (
             <PlacementCard
-              label="My Projects"
+              label="My Work"
               sub="Your folders"
               icon={<PersonalSpaceIcon />}
               count={countChildren(folders, null)}
@@ -227,7 +227,7 @@ export function PlacementBrowser({
   const teamId = isPersonalSpace ? null : (space as string);
   const team = teamId ? teams.find((t) => t.id === teamId) : undefined;
   const spaceFolders = isPersonalSpace ? folders : (teamFolders[teamId!] ?? []);
-  const spaceName = isPersonalSpace ? 'My Projects' : (team?.name ?? 'Team');
+  const spaceName = isPersonalSpace ? 'My Work' : (team?.name ?? 'Team');
 
   // Placement value for a folder in this space.
   const valueFor = (folderId: string) =>
@@ -311,7 +311,7 @@ export function PlacementBrowser({
           />
         ) : (
           <PlacementCard
-            label={isPersonalSpace ? 'My Projects' : 'Team Library'}
+            label={isPersonalSpace ? 'My Work' : 'Team Library'}
             sub={isPersonalSpace ? 'Top level' : (team?.name ?? 'Team')}
             icon={isPersonalSpace ? <PersonalSpaceIcon /> : <TeamPlaceIcon />}
             count={children.length}

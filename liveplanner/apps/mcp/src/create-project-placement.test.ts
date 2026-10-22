@@ -120,9 +120,9 @@ describe('create_project intent', () => {
 });
 
 describe('create_project folder', () => {
-  it('reports My Projects when the project landed at the root', async () => {
+  it('reports My Work when the project landed at the root', async () => {
     const { run, requested } = harness({ folderId: null, teamId: null });
-    expect((await run([elements])).structuredContent.folder).toBe('My Projects');
+    expect((await run([elements])).structuredContent.folder).toBe('My Work');
     expect(requested.filter((r) => r.startsWith('GET') && !r.includes('/tabs/'))).toEqual([]);
   });
 

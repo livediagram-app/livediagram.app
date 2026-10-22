@@ -4,7 +4,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // The "Use as Default for" submenu's checks (docs/specs/013-workspace/default-folders.md "Use as
-// default for"): a folder holds the keys pointing at it; My Documents holds the keys with no
+// default for"): a folder holds the keys pointing at it; My Work holds the keys with no
 // working default, and only clears.
 
 const { api } = vi.hoisted(() => ({
@@ -65,7 +65,7 @@ describe('useDefaultFolderMenus', () => {
     expect(result.current.forFolder({ id: 'x', teamId: 'team-left' })).toBeUndefined();
   });
 
-  it('leaves My Documents unchecked for a working default, and clears it from there', async () => {
+  it('leaves My Work unchecked for a working default, and clears it from there', async () => {
     const { result } = await ready();
     const root = result.current.forRoot!;
     expect(root.isChecked('mode:pages')).toBe(false);
@@ -74,7 +74,7 @@ describe('useDefaultFolderMenus', () => {
     expect(api.apiClearPlacementDefault).toHaveBeenCalledWith('owner', 'mode:pages');
   });
 
-  it('checks My Documents for a default whose folder is gone, and only clears', async () => {
+  it('checks My Work for a default whose folder is gone, and only clears', async () => {
     api.apiListPlacementDefaults.mockResolvedValue([{ key: 'mode:pages', folderId: 'gone' }]);
     const { result } = await ready();
     const root = result.current.forRoot!;

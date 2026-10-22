@@ -157,7 +157,7 @@ export async function handleProjects(ctx: RouteContext): Promise<Response> {
         templateElements = seed.templateElements;
       }
       // The creation intent (docs/specs/013-workspace/default-folders.md): which default folder a
-      // create at the root of My Projects lands in. Malformed, it refuses the create.
+      // create at the root of My Work lands in. Malformed, it refuses the create.
       const intent =
         body.intent === undefined && derivedIntent
           ? { ok: true as const, intent: derivedIntent }
@@ -368,9 +368,7 @@ export async function handleProjects(ctx: RouteContext): Promise<Response> {
           // Making it is a use of it for its maker, unless the create said not (a bulk import):
           // docs/specs/013-workspace/explorer-home.md "Making a project".
           console.info(`home: making doc=${liveDoc.id} marked=${making.markUsed}`);
-          ctx.waitUntil?.(
-            recordProjectCreated(env, liveDoc, owner, { markUsed: making.markUsed }),
-          );
+          ctx.waitUntil?.(recordProjectCreated(env, liveDoc, owner, { markUsed: making.markUsed }));
         }
       }
       // docs/specs/014-identity/transactional-email.md (#6): on a genuine create (no prior row), check for a project

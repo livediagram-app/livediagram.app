@@ -405,7 +405,7 @@ export const DEFAULT_FOLDERS_CLEARED = chart(
   'Folder',
   'Cleared',
   'Default Folders Cleared',
-  'A default folder cleared, so new projects of that kind land in My Projects again.',
+  'A default folder cleared, so new projects of that kind land in My Work again.',
   { rising: 'neutral' },
 );
 

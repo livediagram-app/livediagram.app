@@ -185,7 +185,7 @@ export async function handleDocumentPlacement(ctx: RouteContext): Promise<Respon
             ? ((await getFolder(env, folderId))?.name ?? 'a folder')
             : moved.teamId
               ? ((await getTeam(env, moved.teamId))?.name ?? 'the team')
-              : 'My Documents';
+              : 'My Work';
           ctx.waitUntil?.(recordDocumentMoved(env, moved, folderName, owner));
         }
       }

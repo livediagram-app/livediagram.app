@@ -489,7 +489,7 @@ describe('the root folder (docs/specs/022-drive-mirror/drive-mirror.md, "Connect
     const { engine } = makeEngine(w);
     await engine.start();
     const root = w.ld.connection!.rootFolderId!;
-    const mine = w.google.userCreateFolder(OWNER, 'My projects');
+    const mine = w.google.userCreateFolder(OWNER, 'My Work');
     w.google.userRename(root, 'Documents');
     w.google.userMove(root, mine);
     w.clock.tick(MIN);
@@ -512,9 +512,9 @@ describe('the root folder name in the status (blueprint "Cloud Sync in Settings"
     await engine.start();
     // The test host is a self-hosted one.
     expect(statuses.at(-1)!.rootName).toBe('livediagram (self-hosted)');
-    w.google.userRename(w.ld.connection!.rootFolderId!, 'My Documents');
+    w.google.userRename(w.ld.connection!.rootFolderId!, 'My Work');
     await engine.syncNow();
-    expect(statuses.at(-1)!.rootName).toBe('My Documents');
+    expect(statuses.at(-1)!.rootName).toBe('My Work');
   });
 
   it('reads the name of a root it finds on arrival', async () => {

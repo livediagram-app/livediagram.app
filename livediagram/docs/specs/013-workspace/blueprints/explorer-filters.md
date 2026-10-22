@@ -332,26 +332,26 @@ The lens on `/explorer`, over `@livediagram/explorer-lens`. Files:
 
 | File                                                                    | Role                                                                                                       |
 | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `apps/editor/app/explorer/lens/lens-views.ts`                             | `lensViewOf`, `SEARCH_RESULTS_PATH`, `lensHref`, `carriedHref`                                             |
-| `apps/editor/app/explorer/lens/field-model.ts`                            | `splitField`, `composeField`, `settleField`, `writeDraft`, `removePill`, `chooseChipValue`                 |
-| `apps/editor/app/explorer/lens/pane-lens.ts`                              | `lensSubjectOf`, `isLensSet`, `narrowRows`, `scopeDocuments`, `RECENT_LIMIT`, `LibraryLens`                |
-| `apps/editor/app/explorer/lens/lens-telemetry.ts`                         | `trackLensChange`: `Explorer / Selected / <Facet>` per gained facet                                        |
-| `apps/editor/app/explorer/lens/useExplorerLens.ts`                        | `useExplorerLens`, `ExplorerLens`: the string, the caret, the URL kept in step, Search results             |
-| `apps/editor/app/explorer/lens/LensField.tsx`                             | `LensField`, `FIELD_PLACEHOLDER`: the header field, its pills and its suggestion listbox                   |
-| `apps/editor/app/explorer/lens/LensChips.tsx`                             | `LensChips`: the chip row, its listboxes, Clear, the issue lines                                           |
-| `apps/editor/app/explorer/lens/PaneLensBar.tsx`                           | `PaneLensBar`: the chip row of the current view, wired to the lens                                         |
-| `apps/editor/app/explorer/lens/LensStates.tsx`                            | `LensAnnouncer`, `LensIssues`, `FilteredEmpty`, `LoadFailed`                                               |
-| `apps/editor/app/explorer/search/page.tsx`                                | `/explorer/search`, Search results                                                                         |
-| `apps/editor/app/explorer/RetiredViewRedirect.tsx`                        | `RETIRED_VIEW_TARGETS`, `RetiredViewRedirect`: `/explorer/unsorted`, `/dynamic`, `/generated`, `/activity` |
-| `apps/editor/app/explorer/ViewInfo.tsx`                                   | The info note This Browser shows under its breadcrumb                                                      |
-| `apps/editor/components/primitives/MadeByAiPill.tsx`                      | `MadeByAiPill`, `isMadeByAi`, `MADE_BY_AI_LABEL`, `MADE_BY_AI_DESCRIPTION`                                 |
-| `apps/editor/app/explorer/useExplorerPane.ts`                             | Each view's base list narrowed by the lens; `PaneLensResult` (counts, empty, subjects)                     |
-| `apps/editor/app/explorer/useExplorerState.ts`                            | Composes `useExplorerLens`; carries the lens in `go`; `failedReads`                                        |
-| `apps/editor/app/explorer/ExplorerShell.tsx`                              | Mounts `LensField` in the header and `LensAnnouncer` beside it                                             |
-| `apps/editor/app/explorer/ExplorerPane.tsx`                               | `PaneLensBar` under the header; Failed, Empty, Filtered empty, the list; the folder chips                  |
-| `apps/editor/components/panels/TeamSharedDocuments.tsx`                   | Narrows the team library it reads (`LibraryLens`), its own announcer and filtered-empty state              |
-| `apps/editor/hooks/persistence/useTeamLibrariesSweep.ts`                  | Team rows carry `source`, `opensIn`, `tabKind`, `templateFamily`                                           |
-| `apps/editor/lib/api/documents.ts`                                        | `DocumentListItem` carries the recorded intent, optional                                                   |
+| `apps/editor/app/explorer/lens/lens-views.ts`                           | `lensViewOf`, `SEARCH_RESULTS_PATH`, `lensHref`, `carriedHref`                                             |
+| `apps/editor/app/explorer/lens/field-model.ts`                          | `splitField`, `composeField`, `settleField`, `writeDraft`, `removePill`, `chooseChipValue`                 |
+| `apps/editor/app/explorer/lens/pane-lens.ts`                            | `lensSubjectOf`, `isLensSet`, `narrowRows`, `scopeDocuments`, `RECENT_LIMIT`, `LibraryLens`                |
+| `apps/editor/app/explorer/lens/lens-telemetry.ts`                       | `trackLensChange`: `Explorer / Selected / <Facet>` per gained facet                                        |
+| `apps/editor/app/explorer/lens/useExplorerLens.ts`                      | `useExplorerLens`, `ExplorerLens`: the string, the caret, the URL kept in step, Search results             |
+| `apps/editor/app/explorer/lens/LensField.tsx`                           | `LensField`, `FIELD_PLACEHOLDER`: the header field, its pills and its suggestion listbox                   |
+| `apps/editor/app/explorer/lens/LensChips.tsx`                           | `LensChips`: the chip row, its listboxes, Clear, the issue lines                                           |
+| `apps/editor/app/explorer/lens/PaneLensBar.tsx`                         | `PaneLensBar`: the chip row of the current view, wired to the lens                                         |
+| `apps/editor/app/explorer/lens/LensStates.tsx`                          | `LensAnnouncer`, `LensIssues`, `FilteredEmpty`, `LoadFailed`                                               |
+| `apps/editor/app/explorer/search/page.tsx`                              | `/explorer/search`, Search results                                                                         |
+| `apps/editor/app/explorer/RetiredViewRedirect.tsx`                      | `RETIRED_VIEW_TARGETS`, `RetiredViewRedirect`: `/explorer/unsorted`, `/dynamic`, `/generated`, `/activity` |
+| `apps/editor/app/explorer/ViewInfo.tsx`                                 | The info note This Browser shows under its breadcrumb                                                      |
+| `apps/editor/components/primitives/MadeByAiPill.tsx`                    | `MadeByAiPill`, `isMadeByAi`, `MADE_BY_AI_LABEL`, `MADE_BY_AI_DESCRIPTION`                                 |
+| `apps/editor/app/explorer/useExplorerPane.ts`                           | Each view's base list narrowed by the lens; `PaneLensResult` (counts, empty, subjects)                     |
+| `apps/editor/app/explorer/useExplorerState.ts`                          | Composes `useExplorerLens`; carries the lens in `go`; `failedReads`                                        |
+| `apps/editor/app/explorer/ExplorerShell.tsx`                            | Mounts `LensField` in the header and `LensAnnouncer` beside it                                             |
+| `apps/editor/app/explorer/ExplorerPane.tsx`                             | `PaneLensBar` under the header; Failed, Empty, Filtered empty, the list; the folder chips                  |
+| `apps/editor/components/panels/TeamSharedDocuments.tsx`                 | Narrows the team library it reads (`LibraryLens`), its own announcer and filtered-empty state              |
+| `apps/editor/hooks/persistence/useTeamLibrariesSweep.ts`                | Team rows carry `source`, `opensIn`, `tabKind`, `templateFamily`                                           |
+| `apps/editor/lib/api/documents.ts`                                      | `DocumentListItem` carries the recorded intent, optional                                                   |
 | `packages/api-schema/src/telemetry-schema.ts`                           | The `Explorer` category                                                                                    |
 | liveworkspace/apps/site/app/telemetry/livediagram/catalogue/features.ts | `EXPLORER_FILTERS_PICKED`, in the Organisation stack                                                       |
 | liveworkspace/apps/site/app/telemetry/livediagram/computed-emitters.ts  | The facets `Explorer·Selected` sends, read from `LENS_TELEMETRY_TYPES`                                     |
@@ -462,7 +462,7 @@ type LibraryLens = { active: boolean; input: string; issues: readonly LensIssue[
 | Lens set on a view whose base list is empty       | Empty, not Filtered empty                                                          |
 | Select-all in the field, then type                | The selection is replaced, never collapsed by the model                            |
 | A pill removed by its button                      | Focus returns to the field on the next frame, reading the new string               |
-| My Documents with no folders                      | The sidebar row has no chevron; in the panel it opens its page when empty          |
+| My Work with no folders                           | The sidebar row has no chevron; in the panel it opens its page when empty          |
 
 ### Presentation
 
@@ -506,8 +506,8 @@ list=documents|shared')`. Never a word of the lens or an id.
 
 ### Testing
 
-| Rule                                                       | Test                                                                   |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Rule                                                       | Test                                                                     |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------ |
 | Which views are scoped, aggregate or none; carry; hrefs    | `apps/editor/app/explorer/lens/lens-views.test.ts`                       |
 | Pills and draft, completion, caret mapping, chips, removal | `apps/editor/app/explorer/lens/field-model.test.ts`                      |
 | Subjects of every row kind; scope reaches subfolders       | `apps/editor/app/explorer/lens/pane-lens.test.ts`                        |
@@ -517,8 +517,8 @@ list=documents|shared')`. Never a word of the lens or an id.
 | States copy and the announcer's settle                     | `apps/editor/app/explorer/lens/LensStates.test.tsx`                      |
 | The Made by AI badge                                       | `apps/editor/components/primitives/MadeByAiPill.test.tsx`                |
 | Routes, retired views, titles                              | `apps/editor/app/explorer/routes.test.ts`, `view-titles.test.ts`         |
-| The panel's My Documents: folders then documents           | `apps/editor/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
-| A move to a root names the space                           | `apps/api/src/routes/document-placement-route.test.ts`                 |
+| The panel's My Work: folders then documents                | `apps/editor/components/panels/explorer-tree/PanelExplorerTree.test.tsx` |
+| A move to a root names the space                           | `apps/api/src/routes/document-placement-route.test.ts`                   |
 | Real browser as a guest, desktop and phone                 | `apps/editor/e2e/explorer-filters.spec.ts`                               |
 | Real browser signed in: team root, team lens, Space chip   | `apps/editor/e2e/clerk-stub/explorer-filters.spec.ts`                    |
 

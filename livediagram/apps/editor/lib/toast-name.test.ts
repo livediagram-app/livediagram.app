@@ -45,7 +45,7 @@ describe('the toasts that name a document or folder', () => {
   it('fall back to a generic word when the name is unknown', () => {
     expect(documentDeletedMessage(undefined)).toBe('Document deleted');
     expect(documentDuplicatedMessage('')).toBe('Document duplicated');
-    expect(documentMovedMessage(null, 'my-documents')).toBe('Document moved to My Documents');
+    expect(documentMovedMessage(null, 'my-documents')).toBe('Document moved to My Work');
     expect(documentMovedMessage('Roadmap', { team: '' })).toBe(
       '“Roadmap” moved to the team library',
     );

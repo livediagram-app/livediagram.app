@@ -31,7 +31,7 @@ anything.
 
 ## Which documents take tags
 
-The reader's own documents (My Documents, This Browser) and their teams' documents. A document **shared with you**
+The reader's own documents (My Work, This Browser) and their teams' documents. A document **shared with you**
 takes none: it lives in the sharer's library, its menu offers Open and Dismiss only, the same rule as Favourites.
 
 ## Putting tags on a document

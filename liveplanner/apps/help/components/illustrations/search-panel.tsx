@@ -294,7 +294,7 @@ export function SearchProjects() {
           rows: [{ icon: <SharedIcon />, label: 'Onboarding v2' }],
         },
         {
-          title: 'My Projects',
+          title: 'My Work',
           rows: [{ icon: <FolderIcon />, label: 'Onboarding' }],
         },
       ]}

@@ -16,7 +16,7 @@ by project / customer / topic.
 Folders give a lightweight organisational layer. Nested folders let
 people build a "Projects / Customer / Engagement" hierarchy when
 they want it; for users who don't, everything sits at the root of
-My Projects. Expand-on-demand so the Explorer stays compact.
+My Work. Expand-on-demand so the Explorer stays compact.
 
 ## Scope
 
@@ -35,7 +35,7 @@ In scope:
   browser** — the same two-level space -> folder tile-grid browse as
   the New Project wizard's Save In step ([Offline Mode](../006-project/offline-mode.md),
   `components/placement/PlacementBrowser`), so the product has exactly
-  one way to choose where a project lives. Spaces first (My Projects +
+  one way to choose where a project lives. Spaces first (My Work +
   each team, [Team shared projects](team-shared-projects.md), on an overview that is shown even when My
   projects is the only space, so the choice is deliberate and the screen has
   room for a create-team option; only team-scoped surfaces skip it and
@@ -56,7 +56,7 @@ In scope:
   stays disabled until the choice changes, and double-clicking a
   destination card commits the move in one gesture. Shared by the
   /explorer page, the editor's Explorer, and the team library —
-  and every project-move surface offers every space (My Projects + each
+  and every project-move surface offers every space (My Work + each
   team, [Team shared projects](team-shared-projects.md)), so a project is never trapped in a scope; only folder
   moves stay scoped to their own tree. It replaced the earlier
   filterable indented-tree modal, which itself outgrew an anchored
@@ -73,7 +73,7 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | Shared With Me                                                 | `/explorer/shared`                                                 |
 | Recent projects                                                | `/explorer/recent` (no sidebar row)                                |
 | Favourites ([Favourite projects](favourites.md))               | `/explorer/favourites` (no sidebar row)                            |
-| My Projects, the root of the personal tree                     | `/explorer/all`                                                    |
+| My Work, the root of the personal tree                         | `/explorer/all`                                                    |
 | Search results ([Explorer filters](explorer-filters.md#views)) | `/explorer/search` (no sidebar row)                                |
 | Retired: Unsorted and Dynamic                                  | `/explorer/unsorted`, `/explorer/dynamic`, opening `/explorer/all` |
 | Retired: Generated                                             | `/explorer/generated`, opening `/explorer/search?q=made-by:ai`     |
@@ -114,7 +114,7 @@ diagrams
 ```
 
 - `folder_id IS NULL` means the project sits at the root of its space
-  (My Projects, or its team). The root has no row in the folders
+  (My Work, or its team). The root has no row in the folders
   table, so it can't be renamed or deleted.
 - `source` records how the project came to exist: NULL
   for one a person made in the editor; `'mcp'` for one an external AI tool
@@ -179,7 +179,7 @@ table and the `folder_id` column.
 - The same rule holds for personal and team folders.
 - The delete confirmation names where the contents go: "Its projects
   and subfolders move to <parent>.", <parent> being the parent
-  folder's name, "My Projects", or "the team's root". When the folder
+  folder's name, "My Work", or "the team's root". When the folder
   is one of the reader's [default folders](default-folders.md), it adds
   the default-folder line ([Deleting a default
   folder](default-folders.md#deleting-a-default-folder)).
@@ -207,7 +207,7 @@ All endpoints continue the existing `X-Owner-Id` convention.
 ### Placement on create
 
 A project is placed by the write that creates it. `POST /api/projects` carries the
-**placement** beside `id` and `name`: `teamId` (absent or null = My Projects, a string =
+**placement** beside `id` and `name`: `teamId` (absent or null = My Work, a string =
 that team's library) and `folderId` (a string = that folder; `null` = the root of that space,
 chosen on purpose; absent = no folder chosen). There is no second placement request
 after a create, so a project never exists, even for a moment, in a place the caller did not ask
@@ -215,13 +215,13 @@ for.
 
 - **Chosen or not.** A placement is **chosen** when the body names a team or carries the
   `folderId` key at all, `null` included. `folderId: null` with no team is the **explicit root**
-  of My Projects. A body with neither is **no choice**: the project lands at the root of My
+  of My Work. A body with neither is **no choice**: the project lands at the root of My
   projects unless a [default folder](default-folders.md) answers for its `intent`. A `teamId: null`
   alone is no choice, like an absent one.
 
 - **Resolution order.** The space first, then the folder: a chosen placement (a folder, or a
   space's root chosen on purpose), else the person's [default folder](default-folders.md) for the
-  create's `intent`, else the root of My Projects. The resolver (`apps/api/src/placement/`) is an
+  create's `intent`, else the root of My Work. The resolver (`apps/api/src/placement/`) is an
   ordered list of folder steps (`explicitFolder`, `defaultFolder`), the root answering when none
   does.
 - **Defaults.** Only a create that carries an `intent` and whose placement is no choice consults
@@ -231,7 +231,7 @@ for.
   into a team, and only when it is a **joined** member of that team. The guest `X-Owner-Id`
   header never counts. A guest, an invited-but-not-joined member, or an unknown team is
   refused with `team_forbidden`.
-- **Folder.** The folder must exist and belong to the resolved space: in My Projects the
+- **Folder.** The folder must exist and belong to the resolved space: in My Work the
   caller's own personal folder, in a team a folder of that team.
   - A folder that does not exist, or one the caller cannot see (another person's personal
     folder, a folder of a team the caller has not joined), is `folder_not_found`: the answer
@@ -251,7 +251,7 @@ for.
   | `intent_invalid`        | 400    | `intent` is present but not `{ mode, tabKind?, templateFamily? }` of known values |
 
 - **One write.** `folder_id` and `team_id` are written by the same `INSERT` that creates the
-  row; the caller is the owner, in a team as in My Projects.
+  row; the caller is the owner, in a team as in My Work.
 - **A re-commit keeps its place.** A create naming an id the caller already owns is the editor
   re-committing it: the stored placement stands and the body's placement is not applied
   (moving is `PUT /api/projects/:id/folder`'s job). A malformed placement is still
@@ -269,7 +269,7 @@ for.
 
 What a caller does with a rejection is its own: the New Project wizard shows it
 ([Dedicated route for new-project creation](../007-editor/new-project-route.md)), an Offline
-Mode sync files the project at the root of My Projects on a refused folder, saying so in its log
+Mode sync files the project at the root of My Work on a refused folder, saying so in its log
 ([Offline Mode](../006-project/offline-mode.md)).
 
 ## Explorer UI — two surfaces
@@ -307,7 +307,7 @@ toggle ([Editor app](../007-editor/editor-app.md)). Neither carries a link to th
 - A "Current Project" card sits at the top. Beneath it, the panel shows
   the sidebar's three groups, Overview, Spaces and More, built from the
   same rows ([Explorer structure: the editor's Explorer](explorer-structure.md#the-editors-explorer)).
-  In the panel, My Projects, each folder and each team expand to show
+  In the panel, My Work, each folder and each team expand to show
   their folders, then their projects, as rows; expansion is local state
   (not persisted) and starts collapsed so the panel stays compact.
 - A folder with nothing inside shows no expand chevron (its gutter stays,
@@ -333,7 +333,7 @@ toggle ([Editor app](../007-editor/editor-app.md)). Neither carries a link to th
   and teams with their folders — see the move-picker note above).
   Picking one calls `PUT /api/projects/:id/folder`.
 - **Drag-and-drop**: project rows are HTML5-draggable. Drop targets
-  are personal folder rows (any nested depth) and the My Projects
+  are personal folder rows (any nested depth) and the My Work
   row, which files the project at the root. Drag-over highlights the target with a brand-blue ring so
   the user sees where the project will land. Drop fires the same
   `onMoveProjectToFolder(projectId, targetFolderId)` callback the
@@ -373,13 +373,13 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 `UserPreferences` dialog the editor uses ([User preferences](../007-editor/user-preferences.md)).
 
 - **Sidebar (left, fixed width):** the navigation tree of [Explorer structure](explorer-structure.md):
-  Overview (Home, Inbox, Shared With Me), Spaces (My Projects with
+  Overview (Home, Inbox, Shared With Me), Spaces (My Work with
   its root folders beneath it, each team with its
   folders, New Team), and More (This Browser, Tags, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,
   Use as Default for ([Default folders](default-folders.md#use-as-default-for)), Delete.
 - **Right pane:**
-  - Breadcrumb showing the path from "My Projects" through every
+  - Breadcrumb showing the path from "My Work" through every
     ancestor of the focused folder. Each segment is a button that
     jumps the focus.
   - List view with four columns: Name, Updated, Visibility, action.
@@ -397,7 +397,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 - **Drag-and-drop:** any project the reader can move (their own, a
   team's, one in this browser) drags from its list row or card; a
   project shared with them does not, nor one being renamed. It drops on
-  a sidebar folder, My Projects (the root), a team or team folder, or a
+  a sidebar folder, My Work (the root), a team or team folder, or a
   folder row or card in the pane. The drop takes the move picker's path
   (`moveProjectTo`), so it moves within a space or across spaces exactly
   as a pick does, with the same toast, rollback and telemetry. Dropping
@@ -417,13 +417,13 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
   - Each names the project or folder it failed on, quoted and cut to fit
     ([Toasts](../004-interface-design/toasts.md#naming-what-it-acted-on));
     "the project" / "the folder" stands in for a blank or unknown name.
-  - A project into a folder of My Projects: the row goes back to its
+  - A project into a folder of My Work: the row goes back to its
     folder; "Could not move “Roadmap”. Try again."
-  - A project into a team: the row comes back to My Projects; "Couldn’t
+  - A project into a team: the row comes back to My Work; "Couldn’t
     move “Roadmap” to the team. Try again."
   - A team project to another folder of its team: "Could not move
     “Roadmap”. Try again."
-  - A team project out of its team, to My Projects or another team:
+  - A team project out of its team, to My Work or another team:
     "Couldn’t move “Roadmap” out of the team. Try again."
   - A folder under another folder: "Could not move “Plans”. Try again."
   - A folder made from the picker's New Folder tile: "Could not create
@@ -456,7 +456,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 
 Empty states:
 
-- No folders and no projects: My Projects shows its empty state.
+- No folders and no projects: My Work shows its empty state.
   With projects but no folders, it lists the projects.
 
 ## Non-goals for V1

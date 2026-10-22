@@ -7,14 +7,14 @@ Status: shipped
 The Explorer's sidebar is one navigation tree in three **groups**. It answers two questions at once: where a
 project **lives**, and which **views** compute lists of projects from wherever they live.
 
-- **Places.** A project lives in exactly one place: **My Projects**, a **team**, or **this browser**
+- **Places.** A project lives in exactly one place: **My Work**, a **team**, or **this browser**
   ([Offline Mode](../006-project/offline-mode.md)). Moving a project changes its place.
 - **Views.** Everything else (Home, Inbox, Shared With Me, Recent, Favourites, Search results, the Library pages,
   Trash) is a computed view. A view never owns a project; it lists projects that live somewhere else.
 - **A space's root holds projects.** A project filed in no folder sits at the root of its space, listed beside the
   root folders: there is no Unsorted bucket and no Generated bucket. What an AI made is found with the **Made by AI**
   filter ([Explorer filters](explorer-filters.md)), wherever it is filed.
-- **Spaces are root folders.** My Projects and each team are root-level folder rows in one tree, with their folders
+- **Spaces are root folders.** My Work and each team are root-level folder rows in one tree, with their folders
   beneath them.
 
 The sidebar holds navigation only. It carries no greeting, no search field, no New button and no pins:
@@ -33,7 +33,7 @@ The sidebar shares Home's front-page language ([Explorer Home](explorer-home.md#
 - **Rows** are about 36 px high (44 px on a touch screen), their labels 14 px, rounded 12 px. A row hovers to a soft
   slate wash.
 - **Tiles.** Every top-level row of Overview and Spaces carries its icon on a small rounded **tile** (24 px, radius
-  8 px) tinted in the row's **tone**: Home and My Projects sky, Inbox violet, Shared With Me emerald,
+  8 px) tinted in the row's **tone**: Home and My Work sky, Inbox violet, Shared With Me emerald,
   a team indigo, Invites rose. New Team and the rows of More (This Browser, Tags, Library, Trash) keep a bare slate
   icon, so the places and views people go to most read first. Nested rows (folders, a team's folders, the Library
   pages, tags) keep a bare icon too.
@@ -49,7 +49,7 @@ The editor's Explorer panel ([below](#the-editors-explorer)) keeps its own look.
 ## Groups and rows
 
 Top to bottom. "Opens" names the view a row selects; every view keeps its own route
-([Folders: Explorer routes](folders.md#explorer-routes)). Row labels are Title Case (My Projects, Shared With Me, New Team), and every place a row's name appears (page titles, breadcrumbs, folder chips, help articles) uses the same casing. The command-line tool keeps "My Projects" in the folder paths it writes to disk, so existing synced folders keep their names.
+([Folders: Explorer routes](folders.md#explorer-routes)). Row labels are Title Case (My Work, Shared With Me, New Team), and every place a row's name appears (page titles, breadcrumbs, folder chips, help articles) uses the same casing. The command-line tool keeps "My Work" in the folder paths it writes to disk, so existing synced folders keep their names.
 
 ### Overview
 
@@ -67,22 +67,22 @@ and an old `/explorer/timeline` link lands on Home. Recent and Favourites have n
 
 ### Spaces
 
-| Row         | Opens                                 | Children                | Badge                      |
-| ----------- | ------------------------------------- | ----------------------- | -------------------------- |
-| My Projects | `/explorer/all`, the My Projects root | The root folders        | None                       |
-| Each team   | `/explorer/team?id=<id>`              | The team's root folders | Member count, when above 1 |
-| Invites     | `/explorer/invites`                   | None                    | Pending invites            |
-| New Team    | The New Team form (a dialog)          | None                    | None                       |
+| Row       | Opens                             | Children                | Badge                      |
+| --------- | --------------------------------- | ----------------------- | -------------------------- |
+| My Work   | `/explorer/all`, the My Work root | The root folders        | None                       |
+| Each team | `/explorer/team?id=<id>`          | The team's root folders | Member count, when above 1 |
+| Invites   | `/explorer/invites`               | None                    | Pending invites            |
+| New Team  | The New Team form (a dialog)      | None                    | None                       |
 
-- **The My Projects root** lists its root folders, then its root projects, newest first. A team's root does the
+- **The My Work root** lists its root folders, then its root projects, newest first. A team's root does the
   same for the team. The old Unsorted, Generated and Dynamic addresses still answer: `/explorer/unsorted` and
-  `/explorer/dynamic` open the My Projects root, `/explorer/generated` opens Search results filtered by
+  `/explorer/dynamic` open the My Work root, `/explorer/generated` opens Search results filtered by
   `made-by:ai`.
 - A folder row opens its folder, expands to its subfolders, and carries the folder menu (Rename, New subfolder,
   Change folder, Use as Default for, Delete). A team folder row opens the team page at that folder and carries no menu.
-- **My Projects** carries a menu of its own (its `⋯` button, a right-click, Shift+F10) holding only **Use as
+- **My Work** carries a menu of its own (its `⋯` button, a right-click, Shift+F10) holding only **Use as
   Default for** ([Default folders](default-folders.md#use-as-default-for)).
-- **The `⋯` shows on hover.** A folder row's and My Projects' `⋯` stays hidden until the row is hovered or has
+- **The `⋯` shows on hover.** A folder row's and My Work' `⋯` stays hidden until the row is hovered or has
   keyboard focus, and stays while its menu is open. On a touch screen (a coarse pointer), where nothing hovers, it
   always shows. The editor's Explorer rows behave the same.
 - A folder that is one of the reader's default folders shows the **default marker** after its name
@@ -151,7 +151,7 @@ the breadcrumb and the help centre's copy. Routes stay as they are.
 | -------------- | ------------------- | -------------- |
 | Home           | `/explorer/home`    | Home           |
 | Shared With Me | `/explorer/shared`  | Shared With Me |
-| My Projects    | `/explorer/all`     | My Projects    |
+| My Work        | `/explorer/all`     | My Work        |
 | This Browser   | `/explorer/offline` | This Browser   |
 
 Every other row's view already carries its row's label (Inbox, a folder or team by its name, Invites,
@@ -163,7 +163,7 @@ Home, and its breadcrumb leads back to it (**Home › Recent**).
 | Row           | Guest (sign-in configured) | Guest (no sign-in deployment) | Signed in               |
 | ------------- | -------------------------- | ----------------------------- | ----------------------- |
 | Overview      | All four                   | All four                      | All four                |
-| My Projects   | Yes                        | Yes                           | Yes                     |
+| My Work       | Yes                        | Yes                           | Yes                     |
 | Teams         | None                       | None                          | One row per team        |
 | Invites       | No                         | No                            | While one is pending    |
 | New Team      | No                         | No                            | Yes                     |
@@ -174,10 +174,10 @@ Home, and its breadcrumb leads back to it (**Home › Recent**).
 
 ## Expansion
 
-- **My Projects** starts expanded, so its root folders stay one click away.
+- **My Work** starts expanded, so its root folders stay one click away.
 - **Library** starts collapsed, and expands by itself when one of its pages is the current view (on arrival and on
   navigating to one), so the highlighted row is always visible.
-- **Teams and folders** start collapsed. My Projects, a team or a folder with no subfolders shows no chevron.
+- **Teams and folders** start collapsed. My Work, a team or a folder with no subfolders shows no chevron.
 - Expansion is session-local (a reload starts afresh) and shared between the desktop sidebar and the mobile drawer.
 
 ## Group titles and separators
@@ -199,7 +199,7 @@ nothing moves on its own.
 ## Alignment
 
 Every row reserves a fixed **chevron gutter** before its icon, whether or not it can expand. So every top-level row's
-icon sits on one column, and an expandable row (My Projects, a team, Library) lines up with a plain one (Home, Trash,
+icon sits on one column, and an expandable row (My Work, a team, Library) lines up with a plain one (Home, Trash,
 New Team). Each level of nesting indents the whole row (gutter, icon and label) by one step.
 
 On a touch screen the chevron moves to the row's far end instead, after any trailing action, as a disclosure the full
@@ -222,7 +222,7 @@ The sidebar follows the WAI-ARIA tree pattern, one tree per group:
 - **Home / End** move to the first / last visible row.
 - **Enter** and **Space** activate the row: open its view, toggle Library, or open the New Team form.
 - **Typing a character** moves to the next row whose label starts with it.
-- **Shift+F10** or the **Menu** key opens a folder row's (or My Projects') menu, the same menu as its `⋯` button and a
+- **Shift+F10** or the **Menu** key opens a folder row's (or My Work') menu, the same menu as its `⋯` button and a
   right-click.
 - Keys typed into a folder's inline rename field are the field's, never the tree's.
 - Every inline rename field (a folder's, a project's, New Folder's) is named "Rename <name>" for a screen reader
@@ -276,7 +276,7 @@ aside: the panel reaches under the strip and they would cover its header.
 
 The rail opens with **New Project** (one click to a new project; a "New" chip first in the row on a phone), then the
 sidebar's three groups, Overview, Spaces and More, as one column of entries: Home, Inbox,
-Shared With Me; My Projects and each team; This Browser, Tags, Library and Trash. Shared With Me and This Browser carry
+Shared With Me; My Work and each team; This Browser, Tags, Library and Trash. Shared With Me and This Browser carry
 their counts (the panel reads no other feed until its section is shown). No
 Invites, New Team or sign-in nudge: those are the Explorer page's.
 
@@ -301,7 +301,7 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
 | Home           | **Jump Back In**: up to six projects (most used, then most recent), never the one already open, as preview cards, with **See all** (Recent); when the open one is the only one, the empty state says "Nothing else yet" rather than "No projects yet". **What Happened**, only when someone else did something: each project's summary sentence under its day | None       |
 | Inbox          | The Inbox ([Inbox](inbox.md)): assigned to you, you assigned, open comment threads                                                                                                                                                                                                                                                                            | None       |
 | Shared With Me | The projects shared with the reader, as rows                                                                                                                                                                                                                                                                                                                  | None       |
-| My Projects    | The root folders as preview cards (their counts on the picture), then the root projects as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it                                         | New Folder |
+| My Work        | The root folders as preview cards (their counts on the picture), then the root projects as rows; a folder opens **in the pane** under the import and export screens' back bar (back to the folder above, the folder as its chip). New Folder makes the folder in the one open here; a folder's New Subfolder opens it                                         | New Folder |
 | A team         | The team's folders, then its projects, the same way                                                                                                                                                                                                                                                                                                           | New Folder |
 | Tags           | Each tag as a heading (its chip and count) over its projects as rows ([Tags](tags.md#the-editors-explorer-panel))                                                                                                                                                                                                                                             | None       |
 | This Browser   | The projects saved only in this browser                                                                                                                                                                                                                                                                                                                       | None       |
@@ -316,9 +316,9 @@ compact size, skeleton rows while loading, and one line with **Try Again** when 
   project, the This Browser pill; the open project's row is the current one. A folder row shows its counts ("2
   folders · 5 projects") and opens the folder in the pane; Up and Down move between rows.
 - **Filing.** One of the reader's own project rows drags onto a personal folder row (resting on it opens it), or onto
-  the My Projects rail entry to file it at the root ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)).
+  the My Work rail entry to file it at the root ([Folders: drag-and-drop](folders.md#the-editors-explorer-editor--new)).
   A personal folder row carries the folder menu plus Show in Explorer; a team folder row carries the team folder verbs
-  the session may use; My Projects carries its Use as Default for menu.
+  the session may use; My Work carries its Use as Default for menu.
 - **An empty place** says so in the Explorer's empty state: "Nothing shared with you yet", "Nothing in this browser",
   "No projects yet", "This folder is empty", "Nothing waiting on you", "Nothing in the Trash right now".
 - **Motion**: picking a section slides its content in, opening a folder slides its contents in, and rows and cards
@@ -352,7 +352,7 @@ from the card follows the editor's rename (an Editor only); a Participant or Vie
 ## projects in This Browser
 
 A project saved only in this browser ([Offline Mode](../006-project/offline-mode.md)) is the reader's own: it counts
-wherever the reader's own projects count (Space `mine`, owner "You"), the same as a project in My Projects. Every
+wherever the reader's own projects count (Space `mine`, owner "You"), the same as a project in My Work. Every
 row and card of one, wherever it is listed (folders, This Browser, Recent and Favourites, Search results, the
 editor's Explorer, the Trash), carries the **This Browser** pill
 ([Offline Mode: This Browser pill](../006-project/offline-mode.md#this-browser-pill)).
@@ -371,5 +371,5 @@ Themes, Trash), never a name or id
 ## Help
 
 The help centre's [Explorer page](../../../apps/help/app/explorer/explorer-page/page.mdx) article describes the groups;
-[My Projects and Folders](../../../apps/help/app/explorer/personal-space/page.mdx) and
+[My Work and Folders](../../../apps/help/app/explorer/personal-space/page.mdx) and
 [Team Spaces](../../../apps/help/app/explorer/team-spaces/page.mdx) describe the two kinds of space.

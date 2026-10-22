@@ -124,7 +124,7 @@ export function locationLabel(
 ): string {
   if (doc.via === 'shared') return doc.ownerName ? `Shared by ${doc.ownerName}` : 'Shared with you';
   // A team document lives in its team whoever reaches it: its owner reads it as `own`.
-  const space = doc.teamName ?? 'My Documents';
+  const space = doc.teamName ?? 'My Work';
   return doc.folderName ? `${space} › ${doc.folderName}` : space;
 }
 

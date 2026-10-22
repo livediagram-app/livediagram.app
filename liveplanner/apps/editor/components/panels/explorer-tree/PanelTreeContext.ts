@@ -26,7 +26,7 @@ export type PanelTree = {
   onDuplicateProject?: (id: string) => void;
   onMoveProjectRequest?: (id: string) => void;
   onMoveTeamProjectRequest?: (id: string, teamId: string) => void;
-  // Present = the reader's own rows drag onto personal folders and My Projects.
+  // Present = the reader's own rows drag onto personal folders and My Work.
   onMoveProjectToFolder?: (projectId: string, folderId: string | null) => void;
   onDismissShared?: (id: string) => void;
   favouriteIds?: Set<string>;

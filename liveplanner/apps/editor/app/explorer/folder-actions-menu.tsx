@@ -50,7 +50,7 @@ export function FolderActionsMenu({
   onMove?: () => void;
   onDelete?: () => void;
   // "Use as Default for" (docs/specs/013-workspace/default-folders.md): the reader's default
-  // folders, checked for this folder (or for My Projects). Absent until the defaults load, and
+  // folders, checked for this folder (or for My Work). Absent until the defaults load, and
   // on a folder the reader may not file into.
   defaults?: DefaultFolderMenu;
 }) {

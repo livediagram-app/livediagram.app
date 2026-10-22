@@ -468,7 +468,7 @@ export function TimelineStack() {
 export function RecentView() {
   const rows: { name: string; chip?: string; meta: string }[] = [
     { name: 'Q3 roadmap', chip: 'Planning', meta: '4m ago' },
-    { name: 'Onboarding flow', chip: 'My Projects', meta: '1h ago' },
+    { name: 'Onboarding flow', chip: 'My Work', meta: '1h ago' },
     { name: 'Incident runbook', chip: 'Platform team', meta: 'yesterday' },
     { name: 'Hiring plan', meta: '2 days ago' },
   ];
@@ -604,7 +604,7 @@ export function SharedWithMeTable() {
   );
 }
 
-/** The sidebar's Spaces group when signed in: My Projects, each team (expandable to its shared
+/** The sidebar's Spaces group when signed in: My Work, each team (expandable to its shared
  *  folders, with a member count), Invites while one waits, and New Team. */
 export function TeamSpacesSidebar() {
   const x = 100;
@@ -634,7 +634,7 @@ export function TeamSpacesSidebar() {
         SPACES
       </Label>
       {chevron(x + w - 18, 49, false)}
-      <SidebarRow x={x} y={38} w={w - 20} label="My Projects" glyph="folder" />
+      <SidebarRow x={x} y={38} w={w - 20} label="My Work" glyph="folder" />
       {chevron(x + w - 18, 73, true)}
       <SidebarRow x={x} y={62} w={w - 20} label="Platform team" glyph="team" count={5} active />
       <SidebarRow x={x} y={86} w={w - 20} label="Roadmaps" glyph="folder" indent={16} />

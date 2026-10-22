@@ -2,7 +2,7 @@
 // project is filed, and the named refusals when that cannot be honoured. The api answers these
 // tokens and the editor branches on them, so both read them from here.
 
-/** Where a project is filed: a team's library (My Projects when null) and a folder in it (the
+/** Where a project is filed: a team's library (My Work when null) and a folder in it (the
  *  space's root when null). */
 export type ProjectPlacement = { teamId: string | null; folderId: string | null };
 

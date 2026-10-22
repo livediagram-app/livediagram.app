@@ -1,5 +1,5 @@
 // The list item a project row sits in, across every list in the Explorer
-// panel: the sidebar tree's folders, My Projects and This Browser
+// panel: the sidebar tree's folders, My Work and This Browser
 // rows, the current-project row, and the Recent sections.
 //
 // It exists for one behaviour that all five had written out longhand — a row
