@@ -355,13 +355,13 @@ document"**; everything else stays put.
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
   edges and two slowly drifting, blurred brand-tinted glows behind the
   centre. Dark-aware like every screen ([Live app](live-app.md)).
-- **Centrepiece:** the shared `DiagramBuildAnimation`, a small live diagram
-  being drawn by a collaborator cursor labelled "You": the cursor places a
-  card, drags a connector that draws under it to the next card, and so on
-  until three cards are wired; a pulse of light then runs along each
-  connector before the whole diagram dissolves and the loop restarts. The
-  cards are white (dark: slate) with a coloured accent each, and the
-  connectors blend from their source colour to their target colour.
+- **Centrepiece:** `PageBuildAnimation`, livedocuments' own loader: a page
+  whose heading and paragraphs write themselves line by line behind a caret,
+  while a collaborator cursor labelled "You" drags a picture in between them;
+  then the work fans out into its other shapes, an infographic to one side
+  and a slide to the other, a sheen runs across the page, and it all
+  dissolves before the loop restarts. livediagram keeps its diagram loader;
+  each app's loader shows that app's own work.
 - **Continuity:** the loop's phase is measured from the first time the
   animation mounts in the document, so a remount (the creating stage giving
   way to the editor's load) continues the drawing where it was instead of
@@ -371,9 +371,9 @@ document"**; everything else stays put.
   "This is taking longer than usual." with a Refresh button. Past that, the
   load's watchdog takes over: one self-healing reload, then the load-error
   screen with its recovery card ([Load recovery](load-recovery.md)).
-- **Reduced motion:** the drawing sits finished, the cursor, pulses, glows
-  and bar are still.
-- `DiagramBuildAnimation` stays a bare illustration (no surface of its own),
+- **Reduced motion:** the page, infographic and slide sit finished; the
+  cursor, caret, glows and bar are still.
+- `PageBuildAnimation` stays a bare illustration (no surface of its own),
   so the sso-callback and OAuth consent cards keep composing it inside their
   own card.
 - The bar is the shared `LoadingSweep`.

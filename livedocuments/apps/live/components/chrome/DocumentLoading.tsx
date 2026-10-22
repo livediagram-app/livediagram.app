@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import { Button, DiagramBuildAnimation, LoadingSweep, RefreshIcon } from '@livedocuments/ui';
+import { Button, LoadingSweep, PageBuildAnimation, RefreshIcon } from '@livedocuments/ui';
 import { getLoadProgress, subscribeLoadProgress } from '@/lib/load-progress';
 import { track } from '@/lib/telemetry';
 import { useOnline } from '@/hooks/ui/useOnline';
@@ -11,7 +11,7 @@ import { useOnline } from '@/hooks/ui/useOnline';
 // "creating" stage while the document is persisted, the editor renders it at
 // the "opening" stage while the document loads, and because /new hands off to
 // the editor in place the two read as one continuous screen: only the label
-// changes, and DiagramBuildAnimation keeps its phase across the remount.
+// changes, and PageBuildAnimation keeps its phase across the remount.
 //
 // Dark-aware on purpose: it is a whole SCREEN, not a panel, so it honours
 // the appearance like every other route (docs/specs/007-editor/live-app.md).
@@ -88,7 +88,7 @@ export function DocumentLoading({ stage = 'opening' }: { stage?: DocumentLoading
       </div>
 
       <div className="relative flex w-full max-w-sm flex-col items-center">
-        <DiagramBuildAnimation className="max-w-[360px]" />
+        <PageBuildAnimation className="max-w-[360px]" />
 
         <div role="status" aria-live="polite" className="mt-8 flex flex-col items-center">
           {/* Keyed on the stage so the label re-enters when "Creating"

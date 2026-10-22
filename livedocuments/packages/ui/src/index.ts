@@ -48,6 +48,7 @@ export { HoverCard, type HoverCardProps } from './HoverCard';
 export { useRowPreview, type RowPreview } from './useRowPreview';
 export { SnapCarousel } from './SnapCarousel';
 export { DiagramBuildAnimation } from './DiagramBuildAnimation';
+export { PageBuildAnimation } from './PageBuildAnimation';
 export { SheetBuildAnimation } from './SheetBuildAnimation';
 export { LoadingSweep } from './LoadingSweep';
 export { EmptyState, EmptyStateArt } from './EmptyState';
