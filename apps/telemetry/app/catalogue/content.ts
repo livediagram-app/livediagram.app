@@ -16,29 +16,11 @@ const TABLE_TOGGLES: readonly string[] = ['TableHeaderRow', 'TableHeaderColumn',
 const isTablePart = (type: string | null): boolean => TABLE_PARTS.includes(type ?? '');
 
 // Filling out existing stacks.
-export const JUST_DRAW = chart(
-  'UI',
-  'Used',
-  'Start Blank',
-  'Straight to a blank canvas, skipping the wizard: the Start Blank shortcut into /new, or Start Blank in the template picker.',
-  { types: ['JustDraw'] },
-);
-
-// Escape in the New Document wizard: back to where they came from, nothing made
-// (docs/specs/007-editor/new-document-route.md "Escape backs out").
-export const NEW_DOCUMENT_BACKED_OUT = chart(
-  'UI',
-  'Closed',
-  'New Document Backed Out',
-  'Escape or the X in the New Document wizard went back to the page that opened it, creating nothing.',
-  { types: ['NewDocument'] },
-);
-
 export const TEMPLATE_LINKS = chart(
   'UI',
   'Used',
   'Template Links',
-  'A document made straight from a template link into /new, skipping the wizard.',
+  'A project made straight from a template link into /new.',
   { types: ['TemplateLink'] },
 );
 
@@ -281,17 +263,15 @@ export const DOCUMENT_ACTIONS: MetricStack = {
   stack: true,
   title: 'Document Actions',
   blurb:
-    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: Start Blank, a template link, or in This Browser (those three are part of Documents Created), and how often the wizard was backed out of with Escape.',
+    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: a template link, or in This Browser (both part of Documents Created).',
   members: [
     DOCUMENTS_LOADED,
     DOCUMENTS_CREATED,
     DOCUMENTS_RENAMED,
     DOCUMENTS_DELETED,
     DOCUMENTS_DUPLICATED,
-    JUST_DRAW,
     TEMPLATE_LINKS,
     CREATED_OFFLINE,
-    NEW_DOCUMENT_BACKED_OUT,
   ],
   headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
 };

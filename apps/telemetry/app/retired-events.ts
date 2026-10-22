@@ -65,12 +65,18 @@ const LOCATION_STEP_AND_QUICK_START_UI = new Set([
   'Toggled|TemplateModePlan',
 ]);
 
+// The New Document wizard itself (removed 2026-10-21, docs/specs/007-editor/new-document-route.md "Creating on
+// arrival"): its Escape / X back-out and the Start Blank link that skipped it. /new asks nothing now; a template link
+// carries on (UI·Used·TemplateLink).
+const NEW_DOCUMENT_WIZARD_UI = new Set(['Closed|NewDocument', 'Used|JustDraw']);
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))
     return true;
+  if (category === 'UI' && NEW_DOCUMENT_WIZARD_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'Help') {
     return ACTIVITY_PANEL_HELP_IDS.has(type ?? '') || type === PALETTE_FAVOURITES_HELP_ID;
   }
