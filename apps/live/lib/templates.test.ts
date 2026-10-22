@@ -26,7 +26,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "147 templates (11 default + 136 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "135 templates (11 default + 124 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -175,21 +175,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "147 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "135 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 147 templates (11 default + 136 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(147);
+  it('lists exactly 135 templates (11 default + 124 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(135);
   });
 
-  it('splits cleanly into 11 default + 136 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 124 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(136);
+    expect(extras).toHaveLength(124);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -552,7 +552,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // hint + glyph, island + Shout-outs headings. Stickies: title, mood check,
     // agenda, timer + vote, 32 zone notes (8 per zone), 3 shout-outs,
     // checklist, progress bar, clap sticker.
-    sailboat: { names: ['Board', 'Stickies'], scaffold: 61, content: 43 },
+    sailboat: { names: ['Board', 'Stickies'], scaffold: 61, content: 42 },
     // Board: the subtitle, the question's paper and heading, the rail note, 4 column panels with their
     // header, glyph and hint. Stickies: the title, the question, the timer and vote, and 16 ideas.
     brainstorm: { names: ['Board', 'Stickies'], scaffold: 20, content: 20 },
@@ -585,7 +585,7 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // frames + number chips, the invite line. Sketches: title + meta, prompt,
     // 2 stickers, timer + vote, done check, sheet name + status, the three
     // sketches and their captions, 5 empty-panel hints.
-    'crazy-eights': { names: ['Sheet', 'Sketches'], scaffold: 35, content: 54 },
+    'crazy-eights': { names: ['Sheet', 'Sketches'], scaffold: 35, content: 53 },
     // Card: how-to, the profile card's chrome, 5 panels of tint, header,
     // glyph and prompt, spectrum poles, channel glyphs, How we help band.
     // Details: title, profile facts, monogram, stat row, tags, quote, 9 notes,

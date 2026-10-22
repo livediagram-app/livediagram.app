@@ -3,8 +3,7 @@
 // meter. Built in the behaviour elements' current look ("The face"): flat,
 // no printed instrument, motion that says something happened.
 //
-// Deliberately never hidden, the opposite choice from the estimate card:
-// watching the bars move as people answer IS the reading, and it shows a
+// Deliberately never hidden: watching the bars move as people answer IS the reading, and it shows a
 // dissenter they are not alone before they have to say so out loud.
 
 import {

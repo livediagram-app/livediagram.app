@@ -155,11 +155,8 @@ export function usePaletteCatalogue({
   };
   // The add-handler bundle every catalogue-driven tile grid consumes
   // (palette-tile-defs). All handlers above already wrap the mobile-close /
-  // draw-armed behaviour, so a tile behaves the same from any tab.
-  // Avatar mode (docs/specs/008-canvas/avatar-mode.md) is read-only, so reaching for a tile means the user
-  // wants to edit again: every add leaves the mode first (back to whichever
-  // tool preceded it) and then drops as normal. Wrapping the bundle covers
-  // every tile, including ones added later.
+  // draw-armed behaviour, so a tile behaves the same from any tab. Wrapping the
+  // bundle covers every tile, including ones added later.
   const tileActions: PaletteTileActions = withTileActionPreamble<PaletteTileActions>(
     {
       addShape,

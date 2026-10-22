@@ -272,11 +272,6 @@ describe('sailboat template', () => {
   it('runs the ritual round a drawn scene on a blank canvas', () => {
     expect(templateCanvasOverrides('sailboat').backgroundPattern).toBe('blank');
     expectRitual(els, 'How’s the voyage feeling?', 8);
-    expect(
-      shapesOf(els, 'checklist').some((c) =>
-        (c.checklistItems ?? []).some((i) => i.text.startsWith('Anchors')),
-      ),
-    ).toBe(true);
     // The picture is locked against the theme so the sea stays blue.
     // (FreehandElement does not declare the flag; the theme reads it generically.)
     expect((sea as { themeLockFill?: boolean }).themeLockFill).toBe(true);

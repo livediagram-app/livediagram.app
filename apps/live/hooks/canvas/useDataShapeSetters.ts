@@ -195,9 +195,9 @@ export function useDataShapeSetters({
     track('Element', 'Changed', 'Entity');
   };
 
-  // --- The collaboration elements (docs/specs/012-collaboration/estimate-card.md, 127, 128, 130) ----------------
+  // --- The collaboration elements (docs/specs/012-collaboration/decision-record.md) ----------------
   // Selection-wide like every other setter here, each gated to its own kind so
-  // a multi-selection containing a chair and a chart only writes the chair.
+  // a multi-selection containing a decision and a chart only writes the decision.
   const setCollabFieldSelected = (
     kind: ShapeElement['shape'],
     patch: Partial<ShapeElement>,

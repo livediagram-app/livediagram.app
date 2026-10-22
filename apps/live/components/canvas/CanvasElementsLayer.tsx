@@ -167,7 +167,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     canMove,
     canWriteText,
     canResize,
-    canvasTool,
     onEnterPortal,
     remoteCursors,
     remoteSelectionsByElement,
@@ -267,8 +266,8 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   });
   // One timer bag and one comment / action bag per element, built from the stable wrappers above, so
   // a view's memo holds across editor renders (docs/specs/008-canvas/canvas-performance.md).
-  // Running the timer is the session's runner's (docs/specs/013-workspace/share-roles.md, facilitator.md): a
-  // Participant, a Viewer and anyone but the facilitator see the face without its controls.
+  // Running the timer is an Editor's (docs/specs/013-workspace/share-roles.md): a Participant and a Viewer see the
+  // face without its controls.
   const timerControls = useMemo(
     () =>
       sessionStartBlocked
@@ -404,7 +403,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onFollowLink: h.onFollowLink,
       onPressSessionButton: h.onPressSessionButton,
       sessionStartBlocked,
-        timerState,
+      timerState,
       tabTimer: tabTimer ?? null,
       onSetSessionConfig: h.onSetSessionConfig,
       onOpenElementSettings: h.onOpenElementSettings,
@@ -413,7 +412,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       timerControls,
       onRollPicker: h.onRollPicker,
       collab,
-        onEnterPortal: h.onEnterPortal,
+      onEnterPortal: h.onEnterPortal,
       onOpenComments: h.onOpenComments,
       onOpenAction: h.onOpenAction,
       onOpenNote: h.onOpenNote,
@@ -436,13 +435,12 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       voteReview,
       stablePalette,
       sessionStartBlocked,
-        timerState,
+      timerState,
       tabTimer,
       commentSelfId,
       actionSelfId,
       timerControls,
       collab,
-        canvasTool,
       imageContext,
     ],
   );

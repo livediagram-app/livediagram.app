@@ -202,10 +202,10 @@ export function ElementFaceRouter({
     <>
       {settingsMenu}
       {element.type === 'shape' &&
-        element.shape === 'session-button' &&
-        element.session?.tool === 'timer' &&
-        !isEditing &&
-        timerControls ? (
+      element.shape === 'session-button' &&
+      element.session?.tool === 'timer' &&
+      !isEditing &&
+      timerControls ? (
         /* A TIMER session element is the timer (docs/specs/012-collaboration/session-button.md), not a button that
            starts one elsewhere: same TabTimer, same tab field, same pure
            display maths as the top-of-page pill, so pausing here pauses
@@ -331,7 +331,7 @@ export function ElementFaceRouter({
           element={element}
           surface={surface}
           selected={isSelected}
-          // A locked window, or a read-only canvas (presenting, a viewer), keeps its tab: no Choose a Tab.
+          // A locked window, or a read-only canvas (a viewer), keeps its tab: no Choose a Tab.
           canChoose={!readOnly && !isLocked}
         />
       ) : element.type === 'annotation' && element.articleNote ? (

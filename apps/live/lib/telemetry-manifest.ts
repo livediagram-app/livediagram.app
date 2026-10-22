@@ -101,11 +101,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   // The hosted reader's budget was spent and the photo import failed over to
   // the in-browser reader (docs/specs/021-event-storming/event-storming.md Phase 9).
   'Error·Warning',
-  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): taken, handed on, stepped down. The
-  // question is whether rooms use the role at all, never who held it.
-  'Facilitator·Changed',
-  'Facilitator·Ended',
-  'Facilitator·Started',
   'Folder·Changed',
   'Folder·Cleared',
   'Folder·Created',
@@ -193,7 +188,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Tab·Started',
   'Tab·Toggled',
   'Tab·Unlocked',
-  'Tab·Voted',
   'Team·Added',
   'Team·Changed',
   'Team·Created',
@@ -230,7 +224,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Trash·Deleted',
   'Trash·Opened',
   'Trash·Restored',
-  'UI·Added',
   'UI·Changed',
   // A browser repair from the load-error screen (docs/specs/007-editor/load-recovery.md).
   'UI·Cleared',
@@ -241,7 +234,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'UI·Ended',
   'UI·Moved',
   'UI·Opened',
-  'UI·Removed',
   'UI·Searched',
   'UI·Selected',
   'UI·Started',

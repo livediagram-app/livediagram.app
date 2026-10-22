@@ -1,8 +1,7 @@
 'use client';
 
-// The Eraser Panel (docs/specs/008-canvas/eraser-panel.md): mode, size and what it may erase — the fourth
-// mode panel, on the same terms as the Laser and
-// Spotlight ones.
+// The Eraser Panel (docs/specs/008-canvas/eraser-panel.md): mode, size and what it may erase — a mode panel,
+// on the same terms as the Format one.
 //
 // The preview here matters more than in the other two: this is the tool that
 // destroys work, so the brush is drawn at its true radius over a scrap of

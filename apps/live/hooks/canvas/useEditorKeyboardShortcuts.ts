@@ -398,8 +398,7 @@ export function useEditorKeyboardShortcuts(deps: EditorKeyboardShortcutsDeps): v
 
       if (live.isReadOnly) {
         // A Participant's tiles show their keys, and each tile works as an Editor's does (share-roles.md).
-        const add =
-          live.participant ? PARTICIPANT_KEYS[lower] : undefined;
+        const add = live.participant ? PARTICIPANT_KEYS[lower] : undefined;
         if (add) {
           e.preventDefault();
           add(live);

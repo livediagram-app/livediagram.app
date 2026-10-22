@@ -2,8 +2,7 @@ import { useRef, useState } from 'react';
 import { isDragTravel } from '@/lib/press-gestures';
 import { useLatest } from './useLatest';
 
-// A list's rows dragged to reorder them (the Slide Deck's slides, docs/specs/012-collaboration/presentation-mode.md;
-// Contents' pages, docs/specs/007-editor/pages-mode.md "Contents"). The order does NOT change while you drag:
+// A list's rows dragged to reorder them (Contents' pages, docs/specs/007-editor/pages-mode.md "Contents"). The order does NOT change while you drag:
 // a caret shows where the row will land and the move commits on release. Reordering live meant the list reshuffled
 // under the pointer, which moved the very row you were aiming at; the tab bar settled this already
 // (docs/specs/006-document/tab-folders.md) and this follows it, with pointer events instead of HTML5 dnd so it works

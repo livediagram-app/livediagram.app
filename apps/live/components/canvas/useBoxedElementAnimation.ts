@@ -105,8 +105,7 @@ export function useBoxedElementAnimation(element: BoxedElement, textColor: strin
     animation === 'gradient';
   // An ANNOTATION is a drawn pin in a transparent box, the same case again.
   const isDrawnArt =
-    element.type === 'annotation' ||
-    (element.type === 'shape' && element.shape === 'sticker');
+    element.type === 'annotation' || (element.type === 'shape' && element.shape === 'sticker');
   const isTextNativeAnim = (element.type === 'text' || isDrawnArt) && silhouetteAnim;
   // `gradient` is a background clipped to the glyphs, which drawn art has
   // nothing to clip to, so it gets a hue cycle over its own colours instead,

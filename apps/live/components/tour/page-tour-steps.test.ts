@@ -12,27 +12,17 @@ const ids = (steps: { id: string }[]) => steps.map((s) => s.id);
 const everything = () => true;
 
 describe('the tracks', () => {
-  it('Slides: layout, background, another slide, then the deck: its rows, a slide’s menu, the show, present', () => {
-    expect(ids(pageTourSteps('slide'))).toEqual([
-      'layouts',
-      'background',
-      'add-page',
-      'deck',
-      'slide-menu',
-      'show-settings',
-      'present',
-      'outro',
-    ]);
+  it('Slides: layout, background, another slide', () => {
+    expect(ids(pageTourSteps('slide'))).toEqual(['layouts', 'background', 'add-page', 'outro']);
   });
 
-  it('Infographic: its name, layout, background, size, another page, present', () => {
+  it('Infographic: its name, layout, background, size, another page', () => {
     expect(ids(pageTourSteps('infographic'))).toEqual([
       'page-name',
       'layouts',
       'background',
       'page-size',
       'add-page',
-      'present',
       'outro',
     ]);
   });
@@ -92,10 +82,10 @@ describe('what the tour starts with', () => {
     );
   });
 
-  it('leaves out a step whose control is not on screen (no Slides button on a phone)', () => {
-    const exists = (sel: string) => !sel.includes('data-tour-id="slides"');
-    expect(ids(shownPageTourSteps('slide', api, exists))).not.toContain('present');
-    expect(ids(shownPageTourSteps('slide', api, exists))).toContain('layouts');
+  it('leaves out a step whose control is not on screen (no Layout button)', () => {
+    const exists = (sel: string) => !sel.includes('Layout');
+    expect(ids(shownPageTourSteps('slide', api, exists))).not.toContain('layouts');
+    expect(ids(shownPageTourSteps('slide', api, exists))).toContain('background');
   });
 
   it('checks what a step opens by the button that opens it', () => {

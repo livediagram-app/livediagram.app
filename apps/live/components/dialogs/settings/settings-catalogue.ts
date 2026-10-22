@@ -118,8 +118,7 @@ function emailSwitch(
 // the Palette / Layers / AI / Map gear popovers that used to carry
 // them are gone (docs/specs/007-editor/user-preferences.md). One setting, one place. The panels kept their
 // reset-position button, which was the only non-preference thing those
-// popovers held, and the Slide Deck popover stays because its contents are
-// deck state rather than user preferences.
+// popovers held.
 //
 // This is a flat catalogue, so it stays one file however long it gets.
 

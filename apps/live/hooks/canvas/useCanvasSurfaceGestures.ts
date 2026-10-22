@@ -105,13 +105,14 @@ export function useCanvasSurfaceGestures({
   // gesture.
   //  - Pan tool / Space / Isometric view → drag scrolls.
   //  - Select tool → drag draws a marquee for multi-select.
-  const startPan = (e: ReactPointerEvent) =>
+  const startPan = (e: ReactPointerEvent, onTap?: () => void) =>
     setPan({
       startClientX: e.clientX,
       startClientY: e.clientY,
       startOffsetX: viewportOffset.x,
       startOffsetY: viewportOffset.y,
       movedRef: { current: false },
+      ...(onTap ? { onTap } : {}),
     });
 
   const routePanOrMarquee = (e: ReactPointerEvent) => {

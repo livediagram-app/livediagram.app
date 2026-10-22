@@ -29,7 +29,7 @@ const NO_API: DrawTourApi = {};
 // Orchestrates the Draw tour (docs/specs/023-draw-mode/draw-tour.md). Mounted once in
 // EditorView beside TourHost; renders nothing until a person who has not seen it is in Draw mode with an
 // editor they can use, no other tour is on screen and the settle delay has passed, or the Settings row asks
-// for a rerun. Mirrors WorkshopTourHost. It places nothing: its steps point at the dock.
+// for a rerun. Mirrors PlanTourHost. It places nothing: its steps point at the dock.
 export function DrawTourHost() {
   const ctx = useEditorContext();
   const apiRef = useLatest(NO_API);

@@ -2,11 +2,7 @@ import { useCallback } from 'react';
 import { useLatest } from '@/hooks/ui/useLatest';
 import type { Ref } from 'react';
 import type { Element, ShapeElement, Tab } from '@liveplanner/document';
-import {
-  portalName,
-  resolvePortalDestination,
-  viewportOffsetCentredOn,
-} from '@/lib/portals';
+import { portalName, resolvePortalDestination, viewportOffsetCentredOn } from '@/lib/portals';
 
 // What happens when somebody goes through a portal (docs/specs/009-elements/portal-element.md).
 //

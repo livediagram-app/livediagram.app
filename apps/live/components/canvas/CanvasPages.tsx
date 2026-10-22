@@ -94,7 +94,7 @@ export function CanvasPages({
 }: {
   view: PagesModeView;
   zoom: number;
-  // The sheets alone, without their title bars or the add button (zen, presenting).
+  // The sheets alone, without their title bars or the add button (zen, the isometric view).
   bare?: boolean;
   // A palette tile is armed (tap to drop or drag to draw): the page is where it will land, so the in-page layout
   // card steps aside until the tool is put down.

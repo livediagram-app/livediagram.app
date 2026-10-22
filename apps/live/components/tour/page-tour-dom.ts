@@ -65,57 +65,12 @@ export function pageOrPopover(pageId: string, name: string): string {
   return document.querySelector(titlePopover(name)) ? titlePopover(name) : pageButton(pageId, name);
 }
 
-// The Slide Deck, opened from the Slides button in the bottom-right cluster. The anchor is the button itself
-// (ClusterPopoverSegment) or, in an older layout, its wrapper: matched either way, as missing it left out every deck
-// step (and Present) without a sign.
-export const SLIDES_BUTTON =
-  '[data-tour-id="slides"][aria-expanded], [data-tour-id="slides"] button[aria-expanded]';
-export const SLIDE_DECK = '[data-tour-id="slide-deck"]';
-let deckOpened = false;
-
-// The deck's steps run back to back: each step's end lets go of the deck a moment later, and the next deck step's start
-// keeps it, so it stays open between them and still closes when the tour leaves it (another step, or the tour ends).
-const DECK_HANDOVER_MS = 120;
-let deckRelease: ReturnType<typeof setTimeout> | null = null;
-
-/** Opens the deck for a step, or keeps it open from the step before. */
-export async function holdSlideDeck(): Promise<void> {
-  if (deckRelease) clearTimeout(deckRelease);
-  deckRelease = null;
-  await openSlideDeck();
-}
-
-/** Lets go of the deck as a step ends: it closes unless the next step holds it. */
-export function releaseSlideDeck(): void {
-  if (deckRelease) clearTimeout(deckRelease);
-  deckRelease = setTimeout(() => {
-    deckRelease = null;
-    closeSlideDeck();
-  }, DECK_HANDOVER_MS);
-}
-
-export async function openSlideDeck(): Promise<void> {
-  if (deckOpened) return;
-  deckOpened = true;
-  const button = document.querySelector<HTMLButtonElement>(SLIDES_BUTTON);
-  if (button && button.getAttribute('aria-expanded') !== 'true') button.click();
-  await waitForSelector(SLIDE_DECK, 1000);
-}
-
-export function closeSlideDeck(): void {
-  if (!deckOpened) return;
-  deckOpened = false;
-  const button = document.querySelector<HTMLButtonElement>(SLIDES_BUTTON);
-  if (button?.getAttribute('aria-expanded') === 'true') button.click();
-}
-
 /** Closes whatever a page's tour opened, for a tour that stops under a step (its page gone, the mode left). */
 export function tidyPageTour(pageId: string): void {
   closeTitlePopover(pageId, 'Layout');
   closeTitlePopover(pageId, 'Background');
   closeTitlePopover(pageId, 'Style');
   closeTitlePopover(pageId, 'Text');
-  closeSlideDeck();
   pinPageToolbar(null);
   clearCombineDemo();
 }
@@ -123,5 +78,4 @@ export function tidyPageTour(pageId: string): void {
 /** Forgets what an earlier tour opened (one that ended with its page unmounted under it): each run starts clean. */
 export function resetPageTour(): void {
   opened.clear();
-  deckOpened = false;
 }

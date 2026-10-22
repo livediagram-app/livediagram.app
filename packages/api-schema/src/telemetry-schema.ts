@@ -43,13 +43,6 @@ export const TELEMETRY_CATEGORIES = [
   // to-layer, 'Opened' for the panel. Never layer names in `type`.
   'Layer',
   'Session',
-  // The facilitator baton (docs/specs/012-collaboration/facilitator.md): who is running a live session.
-  // 'Started' when somebody takes a free one, 'Changed' when it is handed on
-  // or taken back, 'Ended' when the holder steps down. `type` is the shape of
-  // the move ('Claimed' / 'Granted' / 'Released'), or 'Unlocked' when the
-  // facilitator frees an element somebody was holding (docs/specs/007-editor/live-app.md lock) — never a
-  // name: the question is whether rooms use the role at all, not who held it.
-  'Facilitator',
   'AI',
   'Team',
   // Participant lifecycle (docs/specs/017-telemetry/telemetry.md): 'Participant'/'Created' fires
@@ -453,38 +446,11 @@ export const PALETTE_TELEMETRY_TYPES = {
     'PlanCard',
     'PlanView',
     'PlanSheet',
-    'ModeButton',
     'Portal',
     // Tab window (docs/specs/009-elements/tab-window.md).
     'TabWindow',
     'SessionButton',
-    'Reveal',
     'Picker',
-    'ReactionPad',
-    // Done check (docs/specs/012-collaboration/done-check.md): a Behaviour element by its palette home.
-    'DoneCheck',
-    // Quiz (docs/specs/012-collaboration/quiz.md): a Behaviour element by its palette home.
-    'Quiz',
-    // Chair (docs/specs/009-elements/chair.md): a Behaviour element, so it ranks with them.
-    'Chair',
-    // Desk, sofa and fence (docs/specs/009-elements/chair.md, fence.md): beside the chair in Navigate.
-    'Desk',
-    'Sofa',
-    'Fence',
-    // Avatar Pad (docs/specs/009-elements/avatar-pad.md): beside the fence in Navigate.
-    'Avatar-pad',
-    // The virtual office (docs/specs/009-elements/office.md), in Navigate.
-    'Room',
-    'Meeting-table',
-    'Plant',
-    'Bookshelf',
-    'Water-cooler',
-    'Coffee-machine',
-    'Rug',
-    // Bring Focus (docs/specs/012-collaboration/bring-focus.md): likewise Behaviour, in the Navigate group. The
-    // token is what elementTelemetryType actually emits for the kind, which
-    // for a hyphenated one is the hyphen kept (see Pie-chart above).
-    'Focus-button',
     'Pie-chart',
     'Bar-chart',
     'Line-chart',
@@ -495,20 +461,12 @@ export const PALETTE_TELEMETRY_TYPES = {
     // Sankey diagram (docs/specs/009-elements/sankey.md): a Build element; its kind has no hyphen to keep.
     'Sankey',
   ],
-  // The Collaborate category (docs/specs/012-collaboration/estimate-card.md to docs/specs/012-collaboration/roll-call.md) — its own bucket rather
-  // than more entries under `tools`, because the palette gave it its own
-  // category and the dashboard's cards are the palette's own tabs. The Chair
-  // (docs/specs/009-elements/chair.md) is NOT here: it ships in Behaviour, so it buckets with the
-  // other behaviour elements under `tools` above.
+  // The Collaborate category (docs/specs/012-collaboration/temperature-check.md, decision-record.md) — its own
+  // bucket rather than more entries under `tools`, because the palette gave it its own category and the
+  // dashboard's cards are the palette's own tabs.
   collaborate: [
-    'Estimate',
     'Temperature',
-    'Idea-box',
-    // Q&A board (docs/specs/012-collaboration/qa-board.md).
-    'Qa-board',
-    'Agenda',
     'Decision',
-    'Roll-call',
     // Comment pin (docs/specs/012-collaboration/comment-pin.md).
     'CommentPin',
     // Action panel (docs/specs/012-collaboration/action-panel.md).

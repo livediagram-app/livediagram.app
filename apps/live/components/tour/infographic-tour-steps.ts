@@ -1,19 +1,15 @@
 // The Infographic track of the Pages tour (docs/specs/007-editor/pages-tour.md "Infographic track"): on the
-// person's own page, its name, the Layout and Background popovers opened to choose from, its size in the panel, the +
-// and the Slide Deck. Each control stays live, so a pick made while its step is up is kept.
+// person's own page, its name, the Layout and Background popovers opened to choose from, its size in the panel and
+// the +. Each control stays live, so a pick made while its step is up is kept.
 import type { PageTourStep } from './page-tour-api';
 import {
   addPageAnchor,
-  closeSlideDeck,
   closeTitlePopover,
-  openSlideDeck,
   openTitlePopover,
   pageButton,
   pageCog,
   pageOrPopover,
   pageSheet,
-  SLIDE_DECK,
-  SLIDES_BUTTON,
 } from './page-tour-dom';
 
 export const INFOGRAPHIC_WELCOME: PageTourStep = {
@@ -63,15 +59,6 @@ export function infographicTourSteps(): PageTourStep[] {
       title: 'Add a Page',
       body: '+ adds another page like this one; the button under it adds a page of any kind.',
       selector: addPageAnchor,
-    },
-    {
-      id: 'present',
-      title: 'Present It',
-      body: 'Add any page as a slide, then Present shows them full screen.',
-      selector: () => SLIDE_DECK,
-      requires: () => SLIDES_BUTTON,
-      prepare: openSlideDeck,
-      cleanup: closeSlideDeck,
     },
     {
       id: 'outro',

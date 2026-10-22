@@ -2,7 +2,7 @@
 
 // The Draw tour's welcome card hero (docs/specs/023-draw-mode/draw-tour.md "The steps"): a whiteboard where a marker
 // stroke draws itself on, a highlighter swipes under it and a star is circled, with the tour's spark motif. The
-// welcome art's recipe (TourWelcomeArt, art/TourArtFrame, WorkshopTourArt): pure inline SVG + CSS keyframes, Tailwind
+// welcome art's recipe (TourWelcomeArt, art/TourArtFrame): pure inline SVG + CSS keyframes, Tailwind
 // fill/stroke classes for light and dark, looping with the `animation` shorthand and `infinite`, and still under
 // reduced motion (the global collapse in globals.css, plus its own `animation: none`).
 export function DrawTourArt() {

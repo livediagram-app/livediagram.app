@@ -5,8 +5,8 @@ import type { TourStepOf } from './tour-step';
 import { elementSelector } from '@/lib/canvas-selectors';
 
 // The Portal tour (docs/specs/007-editor/element-tours.md "The Portal tour"), on a selected portal: a shortcut to the
-// portal it is linked to, stepping through (or, unlinked, why it is dim), linking it from its menu, and walking an
-// Avatar-mode character in. It never travels itself: arriving on another tab ends the tour.
+// portal it is linked to, stepping through (or, unlinked, why it is dim), and linking it from its menu. It never
+// travels itself: arriving on another tab ends the tour.
 
 type PortalTourContext = MenuTourEnv & {
   // A link out of it, or one into it from another portal on this tab.
@@ -41,12 +41,6 @@ export function portalTourSteps(ctx: PortalTourContext): TourStepOf<ElementTourA
       'Link It',
       'Tools › Portal names it and picks where it leads. Create Portal makes its partner.',
       ['Tools', 'Portal'],
-    ),
-    onGraphic(
-      'walk',
-      'Walk Into It',
-      'In Avatar mode, walk into a portal to come out of the other.',
-      elementSelector(id),
     ),
     conceptOutro('That Is a Portal', 'Undo takes back any change.'),
   ];

@@ -84,7 +84,6 @@ describe('create_document intent', () => {
     ['event-storming', { mode: 'diagram', tabKind: 'event-storming' }],
     ['incident-postmortem', { mode: 'workshop', tabKind: 'diagram' }],
     ['floor-plan', { mode: 'pages', tabKind: 'diagram' }],
-    ['lean-coffee', { mode: 'workshop', tabKind: 'diagram' }],
     ['whiteboard', { mode: 'draw', tabKind: 'diagram' }],
     ['flowchart', { mode: 'diagram', tabKind: 'diagram' }],
   ])('sends the intent of a %s template tab', async (template, intent) => {

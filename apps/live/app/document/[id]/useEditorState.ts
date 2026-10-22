@@ -63,7 +63,6 @@ import {
   type BoxedElement,
   type CommentMention,
   type Element,
-  type ShapeElement,
   type EditorMode,
   type Tab,
 } from '@liveplanner/document';

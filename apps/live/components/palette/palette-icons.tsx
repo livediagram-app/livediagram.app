@@ -118,9 +118,8 @@ export function HighlighterIcon({ size = 14 }: IconSizeProps = {}) {
   return <ModeGlyphIcon mode="highlighter" size={size} />;
 }
 
-// Slide Deck (docs/specs/012-collaboration/presentation-mode.md): a card with a smaller one behind it, which is what a
-// deck IS. Deliberately not a "play" triangle — the tool opens the workbench
-// where you build slides, and only the Start button inside it presents.
+// Slides (docs/specs/007-editor/pages-mode.md): a card with a smaller one behind it, which is what a
+// deck IS.
 export function SlideDeckIcon() {
   return (
     <Glyph size={14} units={16}>
@@ -266,7 +265,7 @@ export function StopwatchIcon({ size = 14 }: IconSizeProps = {}) {
 // Vote: the same glyph as its context-menu category.
 export const VoteIcon = lucideGlyph(lucideCircleCheck, 14);
 
-// --- Reveal zone (docs/specs/009-elements/reveal-zone.md) + Picker (docs/specs/012-collaboration/picker.md) ------------------------------
+// --- Picker (docs/specs/012-collaboration/picker.md) ------------------------------
 
 export function PickerIcon({ size = 14 }: IconSizeProps = {}) {
   return (
@@ -324,8 +323,7 @@ export function SessionVoteIcon() {
 }
 
 // A selection-mode glyph drawn from the shared data (MODE_GLYPHS in
-// @liveplanner/icons), the ONE drawing the palette, the Mode button face and
-// the export all use (docs/specs/009-elements/mode-button.md).
+// @liveplanner/icons), the ONE drawing of each mode the palette uses.
 function ModeGlyphIcon({ mode, size }: { mode: string; size: number }) {
   const g = MODE_GLYPHS[mode]!;
   return (

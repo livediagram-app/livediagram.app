@@ -13,10 +13,9 @@ import { watchUntilSettled } from '@/components/canvas/settle-watch';
 // Both layers fill the element's box, as the wrapper does, so they line up exactly. Neither sets a z-index: the
 // copy comes first, so the live face paints over it without a new stacking context for its controls.
 //
-// A copy carries the face's CSS animations with it, and a fresh copy would start them again from 0: a quiz's
-// answers, fanning out from the disc, were dragged back to it by every re-take while its countdown ticked, for as
-// long as the round ran. So each copy's animations are set to where the live face's are (syncInkAnimations), and a
-// re-take lands on the same frame instead of restarting.
+// A copy carries the face's CSS animations with it, and a fresh copy would start them again from 0, dragging a
+// moving part back to its start on every re-take. So each copy's animations are set to where the live face's are
+// (syncInkAnimations), and a re-take lands on the same frame instead of restarting.
 
 /** What the ink copy leaves out: photos and embeds are not drawings, and a skipped part keeps its own look. */
 const SKETCH_INK_PRUNE = 'img, video, iframe, canvas, [data-sketch-skip]';

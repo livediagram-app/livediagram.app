@@ -5,7 +5,7 @@ import { DRAG_CLICK_WINDOW_MS, rowDropIndex, useRowReorderDrag } from './useRowR
 
 afterEach(() => vi.restoreAllMocks());
 
-// Where a dragged row lands (the Slide Deck and Contents lists).
+// Where a dragged row lands (the Contents list).
 describe('rowDropIndex', () => {
   it('moves up before a row and down after one', () => {
     expect(rowDropIndex(3, { index: 0, side: 'before' }, 5)).toBe(0);

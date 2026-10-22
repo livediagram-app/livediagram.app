@@ -149,7 +149,7 @@ export function historyReset(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[]))
   return { past: [], present: next, future: [], depth: 0, branch: branchOf(h) + 1 };
 }
 
-// Replace the present with content from elsewhere (a resync's fetched tabs, a Q&A board's own
+// Replace the present with content from elsewhere (a resync's fetched tabs, a card's own
 // write) WITHOUT touching the undo / redo stacks. A peer's op goes through historyApplyRemoteOp
 // instead, so undo never brings back what a peer changed.
 export function historyApplyRemote(h: History, tabs: Tab[] | ((prev: Tab[]) => Tab[])): History {

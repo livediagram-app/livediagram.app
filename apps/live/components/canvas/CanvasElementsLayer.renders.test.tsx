@@ -91,13 +91,11 @@ const BOARD: Element[] = [a, b, c, ab];
 const NONE = { layout: null, knockouts: [] };
 const STABLE = {
   arrowLabels: { renderOf: () => NONE, labelRectOf: () => null, draftLayout: () => null },
-  collab: { selfKey: 'me', participants: [] },
-  chairSitters: () => [],
+  collab: { selfKey: 'me' },
   selfParticipant: { id: 'me', name: 'Me', color: '#000000' },
   settings: {},
   remoteCursors: [],
   remoteSelectionsByElement: new Map(),
-  laserTrails: [],
   selectionInput: {
     elements: BOARD,
     editingId: null,
@@ -137,8 +135,6 @@ function layerProps(over: { elements?: Element[]; zoom?: number } = {}) {
     onSetSessionConfig: fresh(),
     onOpenElementSettings: fresh(),
     onEnterPortal: fresh(),
-    onFireReaction: fresh(),
-    onReactionBurstDone: fresh(),
     handleArrowSelect: fresh(),
     handleElementClick: fresh(),
     handleElementContextSelect: fresh(),

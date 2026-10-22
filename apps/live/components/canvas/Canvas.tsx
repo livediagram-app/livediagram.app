@@ -424,352 +424,350 @@ function CanvasView(props: CanvasProps) {
     // This canvas's tab's finish (docs/specs/008-canvas/finish.md), over the editor's active tab's.
     <CanvasFinishProvider finish={props.tabFinish}>
       <CanvasMenu.Provider value={onCanvasContextMenu ?? null}>
-          <main
-            ref={mainRef}
-            // In the tab order (docs/specs/004-interface-design/canvas-accessibility.md): keyboard users Tab to the canvas as
-            // one stop, then Tab / Shift+Tab walk the elements (useCanvasA11y,
-            // engaged only while this surface itself is focused — the marker
-            // attribute below is how the hook recognises it). The role stays
-            // the main landmark (not "application") because the floating
-            // panels render inside it and must keep normal SR navigation.
-            tabIndex={0}
-            aria-label="Canvas"
-            data-region="canvas"
-            data-canvas-a11y-root=""
-            onPointerMove={handlePointerMoveCanvas}
-            onPointerLeave={handlePointerLeaveCanvas}
-            onDragOver={paletteDrop.onDragOver}
-            onDrop={paletteDrop.onDrop}
-            onPointerDownCapture={(e) => {
-              surface.onPointerDownCapture(e);
-              if (!e.isPropagationStopped()) smallElementTap.onPointerDownCapture(e);
-            }}
-            // A dark backdrop deepens the sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md): the shadow
-            // ink is tuned for light paper and vanishes on a dark wall. Flagged
-            // here so the peel's CSS can respond without knowing about themes.
-            data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
-            // The Tab Style colour ease scopes to the canvas (lib/tab-style-ease.ts).
-            data-canvas-root=""
-            onContextMenu={surface.onContextMenu}
-            onPointerUp={surface.onContextMenuPointerUp}
-            onPointerDown={surface.onPointerDown}
-            onDoubleClick={(e) => {
-              if (e.target !== e.currentTarget) return;
-              if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
-              surface.onSurfaceDoubleClick(e);
-            }}
-            // A finger's double-tap on an element too small to work on frames it before it edits (useSmallElementDoubleTap).
-            onDoubleClickCapture={smallElementTap.onDoubleClickCapture}
-            // focus-visible ring only: pointer focus stays outline-free, but a
-            // keyboard user Tabbing to the canvas sees where they landed.
-            // overflow-clip, not overflow-hidden: a hidden box still scrolls (focus revealing a label
-            // editor past the bottom edge, a scrollIntoView), and the corner chrome positioned in it (the
-            // bottom-right cluster, the Map) rode up the screen by every scroll and stayed there. A
-            // clipped box clips the same and can never scroll (docs/specs/008-canvas/canvas-and-palette.md).
-            className={`relative flex-1 touch-none select-none overflow-clip outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
-              pendingDraw ? '' : cursorClass
-            }`}
-            style={{
-              // The paper hollow arrowheads fill with (arrow-defs.tsx).
-              ['--lvd-canvas-paper' as string]: tabBackgroundColor,
-              // The sticky notes' paper peel, as a picture (sticky-peel-image.ts).
-              ...stickyPeel,
-              // In world space: the pattern pans and zooms with the elements, so
-              // they stay on the same dots at any zoom (worldPatternOrigin).
-              ...tabBackgroundStyle(
-                tabBackgroundPattern,
-                worldPatternOrigin(viewportOffset, viewportZoom, {
-                  w: mainSize.width,
-                  h: mainSize.height,
-                }),
-                tabBackgroundColor,
-                tabPatternColor,
-                tabBackgroundOpacity,
-                tabBackgroundPatternScale * viewportZoom,
-              ),
-              // Mirror the inner-wrapper cursor on <main>. The inner div is
-              // `absolute inset-0` but its CSS transform scales it (zoom),
-              // so when zoom is below 1 the hit area shrinks and the
-              // surrounding "letterbox" gap falls through to <main>. Without
-              // setting cursor here too, the user would see the OS default
-              // arrow in that gap while a draw-to-size intent is pending.
-              ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
-              ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
-            }}
-          >
-            {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
+        <main
+          ref={mainRef}
+          // In the tab order (docs/specs/004-interface-design/canvas-accessibility.md): keyboard users Tab to the canvas as
+          // one stop, then Tab / Shift+Tab walk the elements (useCanvasA11y,
+          // engaged only while this surface itself is focused — the marker
+          // attribute below is how the hook recognises it). The role stays
+          // the main landmark (not "application") because the floating
+          // panels render inside it and must keep normal SR navigation.
+          tabIndex={0}
+          aria-label="Canvas"
+          data-region="canvas"
+          data-canvas-a11y-root=""
+          onPointerMove={handlePointerMoveCanvas}
+          onPointerLeave={handlePointerLeaveCanvas}
+          onDragOver={paletteDrop.onDragOver}
+          onDrop={paletteDrop.onDrop}
+          onPointerDownCapture={(e) => {
+            surface.onPointerDownCapture(e);
+            if (!e.isPropagationStopped()) smallElementTap.onPointerDownCapture(e);
+          }}
+          // A dark backdrop deepens the sticky paper-peel (docs/specs/008-canvas/canvas-and-palette.md): the shadow
+          // ink is tuned for light paper and vanishes on a dark wall. Flagged
+          // here so the peel's CSS can respond without knowing about themes.
+          data-dark-canvas={isDarkCanvas(tabBackgroundColor) ? '' : undefined}
+          // The Tab Style colour ease scopes to the canvas (lib/tab-style-ease.ts).
+          data-canvas-root=""
+          onContextMenu={surface.onContextMenu}
+          onPointerUp={surface.onContextMenuPointerUp}
+          onPointerDown={surface.onPointerDown}
+          onDoubleClick={(e) => {
+            if (e.target !== e.currentTarget) return;
+            if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
+            surface.onSurfaceDoubleClick(e);
+          }}
+          // A finger's double-tap on an element too small to work on frames it before it edits (useSmallElementDoubleTap).
+          onDoubleClickCapture={smallElementTap.onDoubleClickCapture}
+          // focus-visible ring only: pointer focus stays outline-free, but a
+          // keyboard user Tabbing to the canvas sees where they landed.
+          // overflow-clip, not overflow-hidden: a hidden box still scrolls (focus revealing a label
+          // editor past the bottom edge, a scrollIntoView), and the corner chrome positioned in it (the
+          // bottom-right cluster, the Map) rode up the screen by every scroll and stayed there. A
+          // clipped box clips the same and can never scroll (docs/specs/008-canvas/canvas-and-palette.md).
+          className={`relative flex-1 touch-none select-none overflow-clip outline-none focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand-400/70 [-webkit-touch-callout:none] [-webkit-tap-highlight-color:transparent] ${
+            pendingDraw ? '' : cursorClass
+          }`}
+          style={{
+            // The paper hollow arrowheads fill with (arrow-defs.tsx).
+            ['--lvd-canvas-paper' as string]: tabBackgroundColor,
+            // The sticky notes' paper peel, as a picture (sticky-peel-image.ts).
+            ...stickyPeel,
+            // In world space: the pattern pans and zooms with the elements, so
+            // they stay on the same dots at any zoom (worldPatternOrigin).
+            ...tabBackgroundStyle(
+              tabBackgroundPattern,
+              worldPatternOrigin(viewportOffset, viewportZoom, {
+                w: mainSize.width,
+                h: mainSize.height,
+              }),
+              tabBackgroundColor,
+              tabPatternColor,
+              tabBackgroundOpacity,
+              tabBackgroundPatternScale * viewportZoom,
+            ),
+            // Mirror the inner-wrapper cursor on <main>. The inner div is
+            // `absolute inset-0` but its CSS transform scales it (zoom),
+            // so when zoom is below 1 the hit area shrinks and the
+            // surrounding "letterbox" gap falls through to <main>. Without
+            // setting cursor here too, the user would see the OS default
+            // arrow in that gap while a draw-to-size intent is pending.
+            ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
+            ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
+          }}
+        >
+          {/* SR-only polite live region (docs/specs/004-interface-design/canvas-accessibility.md): selection / delete / undo
           announcements land here. */}
-            <CanvasLiveRegion />
-            {/* Animated backdrops (docs/specs/008-canvas/canvas-and-palette.md) paint as an ambient overlay behind the
+          <CanvasLiveRegion />
+          {/* Animated backdrops (docs/specs/008-canvas/canvas-and-palette.md) paint as an ambient overlay behind the
           canvas content; the static patterns ride the <main> background
           above. tabBackgroundStyle returns just the backdrop colour for
           these, so this layer is the only thing that draws their motion. */}
-            {isAnimatedPattern(tabBackgroundPattern) ? (
-              <AnimatedCanvasBackground
-                variant={tabBackgroundPattern}
-                color={tabPatternColor}
-                scale={tabBackgroundPatternScale}
-                speed={tabBackgroundAnimationSpeed}
-                opacity={tabBackgroundOpacity}
-              />
-            ) : null}
-            <div
-              ref={wrapperRef}
-              // The pages and elements, as against the chrome over them (useLogoPaletteSwitch).
-              data-canvas-content=""
-              onPointerDown={surface.onWrapperPointerDown}
-              onDoubleClick={(e) => {
-                // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
-                // add-text double-click while the intent is armed.
-                if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
-                // Off a page nothing is made, but a finger's double-tap still zooms there.
-                if (offPage(e) && !surface.pressedByFinger()) return;
-                surface.onWrapperDoubleClick(e);
-              }}
-              // Isometric view (docs/specs/008-canvas/isometric-view.md): the layer goes pointer-events-none so NO
-              // element kind can be selected / dragged (a per-element capture guard can't catch every select path
-              // — boxed elements, arrow hit-bands, labels, click vs pointerdown) — it's a read-only view tool.
-              // Clicks fall through to <main>, where a drag pans (canvasTool === 'isometric' is added to
-              // `wantsPan`).
-              className={`absolute inset-0 origin-center touch-none ${
-                canvasTool === 'isometric' ? 'pointer-events-none' : ''
-              } ${pendingDraw ? '' : cursorClass}`}
-              // Scopes the [data-iso] CSS (globals.css): frames settle just under
-              // the base plane while the camera orbits so they can't z-fight
-              // (flicker) with the coplanar contents above them.
-              data-iso={canvasTool === 'isometric' ? '' : undefined}
-              // A whiteboard pen draws wherever it presses, so nothing under it swaps
-              // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/draw-mode.md "Pens").
-              data-pen-in-hand={
-                (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
-                pendingDraw?.type === 'path'
-                  ? ''
-                  : undefined
-              }
-              data-path-cursor={pathTool.cursor ? '' : undefined}
-              style={{
-                // Translate is in canvas-coords (applied first); scale is centred
-                // on the wrapper so zooming keeps the viewport centre stable.
-                // Isometric tilt (docs/specs/008-canvas/isometric-view.md) is appended INNERMOST (last in the list,
-                // so it transforms the content first): that keeps the pan translate
-                // in screen space, so a drag moves the scene the way the cursor
-                // moves at any camera angle. The fragment (built above as
-                // isoFragment) pivots the tilt around the content centre so the
-                // canvas tilts in place / stays centred while orbiting rather than
-                // swinging off-screen. preserve-3d lets the depth layer's
-                // translateZ stack read as real extruded height.
-                transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
-                ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
-                // Draw-mode cursor: every intent gets a custom inline-SVG
-                // cursor (crosshair at the pointer tip plus a small glyph
-                // hinting at what's about to land). Without this, tool
-                // intents inherited the default arrow cursor because the
-                // wrapper drops its Tailwind cursor- class above when
-                // pendingDraw is set, leaving no cursor specified at all.
-                ...(pendingDraw
-                  ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) }
-                  : null),
-                // A path in its edit mode says what a press would do (usePathTool).
-                ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
-              }}
-            >
-              {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted
+          {isAnimatedPattern(tabBackgroundPattern) ? (
+            <AnimatedCanvasBackground
+              variant={tabBackgroundPattern}
+              color={tabPatternColor}
+              scale={tabBackgroundPatternScale}
+              speed={tabBackgroundAnimationSpeed}
+              opacity={tabBackgroundOpacity}
+            />
+          ) : null}
+          <div
+            ref={wrapperRef}
+            // The pages and elements, as against the chrome over them (useLogoPaletteSwitch).
+            data-canvas-content=""
+            onPointerDown={surface.onWrapperPointerDown}
+            onDoubleClick={(e) => {
+              // Polygon finish-line double-click (docs/specs/008-canvas/polygon-tool.md) wins over the
+              // add-text double-click while the intent is armed.
+              if (handlePolygonDoubleClick() || pathTool.handlePathDoubleClick()) return;
+              // Off a page nothing is made, but a finger's double-tap still zooms there.
+              if (offPage(e) && !surface.pressedByFinger()) return;
+              surface.onWrapperDoubleClick(e);
+            }}
+            // Isometric view (docs/specs/008-canvas/isometric-view.md): the layer goes pointer-events-none so NO
+            // element kind can be selected / dragged (a per-element capture guard can't catch every select path
+            // — boxed elements, arrow hit-bands, labels, click vs pointerdown) — it's a read-only view tool.
+            // Clicks fall through to <main>, where a drag pans (canvasTool === 'isometric' is added to
+            // `wantsPan`).
+            className={`absolute inset-0 origin-center touch-none ${
+              canvasTool === 'isometric' ? 'pointer-events-none' : ''
+            } ${pendingDraw ? '' : cursorClass}`}
+            // Scopes the [data-iso] CSS (globals.css): frames settle just under
+            // the base plane while the camera orbits so they can't z-fight
+            // (flicker) with the coplanar contents above them.
+            data-iso={canvasTool === 'isometric' ? '' : undefined}
+            // A whiteboard pen draws wherever it presses, so nothing under it swaps
+            // the pen cursor for its own (globals.css, docs/specs/023-draw-mode/draw-mode.md "Pens").
+            data-pen-in-hand={
+              (pendingDraw?.type === 'freehand' && pendingDraw.variant === 'whiteboard') ||
+              pendingDraw?.type === 'path'
+                ? ''
+                : undefined
+            }
+            data-path-cursor={pathTool.cursor ? '' : undefined}
+            style={{
+              // Translate is in canvas-coords (applied first); scale is centred
+              // on the wrapper so zooming keeps the viewport centre stable.
+              // Isometric tilt (docs/specs/008-canvas/isometric-view.md) is appended INNERMOST (last in the list,
+              // so it transforms the content first): that keeps the pan translate
+              // in screen space, so a drag moves the scene the way the cursor
+              // moves at any camera angle. The fragment (built above as
+              // isoFragment) pivots the tilt around the content centre so the
+              // canvas tilts in place / stays centred while orbiting rather than
+              // swinging off-screen. preserve-3d lets the depth layer's
+              // translateZ stack read as real extruded height.
+              transform: `scale(${viewportZoom}) translate(${viewportOffset.x}px, ${viewportOffset.y}px)${isoFragment}`,
+              ...(canvasTool === 'isometric' ? { transformStyle: 'preserve-3d' as const } : null),
+              // Draw-mode cursor: every intent gets a custom inline-SVG
+              // cursor (crosshair at the pointer tip plus a small glyph
+              // hinting at what's about to land). Without this, tool
+              // intents inherited the default arrow cursor because the
+              // wrapper drops its Tailwind cursor- class above when
+              // pendingDraw is set, leaving no cursor specified at all.
+              ...(pendingDraw ? { cursor: penCursorValue ?? drawIntentCursor(pendingDraw) } : null),
+              // A path in its edit mode says what a press would do (usePathTool).
+              ...(pathTool.cursor ? { cursor: pathTool.cursor } : null),
+            }}
+          >
+            {/* Isometric extrusion (docs/specs/008-canvas/isometric-view.md): per-element raised blocks painted
             behind the real element layer, which caps each column at z=0.
             Only mounted while the tool is active. */}
-              {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
-              {/* Pages mode's A4 pages, under every element (CanvasPages). */}
-              {props.pagesMode ? (
-                // The image store's access, for the pages' pictures (page-image-access).
-                <PageImageAccessProvider access={props.imageContext}>
-                  <CanvasPages
-                    // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
-                    // tab's own: page ids repeat across tabs.
-                    key={props.activeTabId}
-                    view={props.pagesMode}
-                    zoom={viewportZoom}
-                    // Zen and the isometric view show the sheets alone: no labels, cogs,
-                    // layout invites or add button.
-                    bare={props.zenMode === true || canvasTool === 'isometric'}
-                    placing={!!pendingDraw}
-                    onOpenTheme={props.onOpenCanvasTheme}
-                  />
-                </PageImageAccessProvider>
-              ) : null}
-              {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
-            zone's elements sit in the room the writing leaves them. */}
-              {props.pagesMode?.articles && canvasTool !== 'isometric' ? (
-                <ArticleFlows
+            {canvasTool === 'isometric' ? <IsometricDepthLayer elements={elements} /> : null}
+            {/* Pages mode's A4 pages, under every element (CanvasPages). */}
+            {props.pagesMode ? (
+              // The image store's access, for the pages' pictures (page-image-access).
+              <PageImageAccessProvider access={props.imageContext}>
+                <CanvasPages
+                  // Its page state (the palette's pages seen, an open panel, hidden layout cards) is the
+                  // tab's own: page ids repeat across tabs.
+                  key={props.activeTabId}
                   view={props.pagesMode}
                   zoom={viewportZoom}
-                  interactive={!pendingDraw}
-                  elements={elements}
+                  // Zen and the isometric view show the sheets alone: no labels, cogs,
+                  // layout invites or add button.
+                  bare={props.zenMode === true || canvasTool === 'isometric'}
+                  placing={!!pendingDraw}
+                  onOpenTheme={props.onOpenCanvasTheme}
                 />
-              ) : null}
-              <CanvasStillProvider still={props.editorMode === 'draw'}>
-                <CanvasArrivalProvider
-                  tabId={props.activeTabId ?? ''}
-                  loaded={props.activeTabLoaded ?? true}
-                >
-                  {/* The zoom reaches only the counter-scaled parts of each element
+              </PageImageAccessProvider>
+            ) : null}
+            {/* Article pages' writing (ArticleFlows), over the sheets and under the elements, so a
+            zone's elements sit in the room the writing leaves them. */}
+            {props.pagesMode?.articles && canvasTool !== 'isometric' ? (
+              <ArticleFlows
+                view={props.pagesMode}
+                zoom={viewportZoom}
+                interactive={!pendingDraw}
+                elements={elements}
+              />
+            ) : null}
+            <CanvasStillProvider still={props.editorMode === 'draw'}>
+              <CanvasArrivalProvider
+                tabId={props.activeTabId ?? ''}
+                loaded={props.activeTabLoaded ?? true}
+              >
+                {/* The zoom reaches only the counter-scaled parts of each element
               (docs/specs/008-canvas/canvas-performance.md). */}
-                  <CanvasZoomProvider zoom={viewportZoom}>
-                    <MindGrowProvider value={mindGrow}>
-                      <MindOutlineProvider value={mindOutlineBadges}>
-                        <ElementIndicatorStyleProvider
-                          style={readElementIndicatorStyle(props.settings)}
-                        >
-                          <CanvasElementsLayer
-                            {...props}
-                            elements={pathTool.elements}
-                            // Portal travel is resolved HERE (Canvas owns the viewport), so the prop
-                            // from the host is overridden with the local resolver.
-                            onEnterPortal={resolvePortal}
-                            hasArrows={hasArrows}
-                            arrowLabels={arrowLabels}
-                            selectionInput={selectionInput}
-                            isPaintMode={isPaintMode}
-                            handleArrowSelect={handleArrowSelect}
-                            handleElementClick={handleElementClick}
-                            handleElementContextSelect={handleElementContextSelect}
-                            quickRingOpen={quickRingOpen}
-                            setQuickRingOpen={setQuickRingOpen}
-                            drawDrag={drawDrag}
-                          />
-                        </ElementIndicatorStyleProvider>
-                      </MindOutlineProvider>
-                    </MindGrowProvider>
-                  </CanvasZoomProvider>
-                </CanvasArrivalProvider>
-              </CanvasStillProvider>
-              {/* Drafts and the logo page's guides: editor-only, left out of an animated GIF
+                <CanvasZoomProvider zoom={viewportZoom}>
+                  <MindGrowProvider value={mindGrow}>
+                    <MindOutlineProvider value={mindOutlineBadges}>
+                      <ElementIndicatorStyleProvider
+                        style={readElementIndicatorStyle(props.settings)}
+                      >
+                        <CanvasElementsLayer
+                          {...props}
+                          elements={pathTool.elements}
+                          // Portal travel is resolved HERE (Canvas owns the viewport), so the prop
+                          // from the host is overridden with the local resolver.
+                          onEnterPortal={resolvePortal}
+                          hasArrows={hasArrows}
+                          arrowLabels={arrowLabels}
+                          selectionInput={selectionInput}
+                          isPaintMode={isPaintMode}
+                          handleArrowSelect={handleArrowSelect}
+                          handleElementClick={handleElementClick}
+                          handleElementContextSelect={handleElementContextSelect}
+                          quickRingOpen={quickRingOpen}
+                          setQuickRingOpen={setQuickRingOpen}
+                          drawDrag={drawDrag}
+                        />
+                      </ElementIndicatorStyleProvider>
+                    </MindOutlineProvider>
+                  </MindGrowProvider>
+                </CanvasZoomProvider>
+              </CanvasArrivalProvider>
+            </CanvasStillProvider>
+            {/* Drafts and the logo page's guides: editor-only, left out of an animated GIF
             (GifOmit). */}
-              <GifOmit>
-                {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
+            <GifOmit>
+              {/* The whiteboard pen's stroke being drawn (docs/specs/023-draw-mode/draw-mode.md "Pens"):
             in this transformed layer, after the elements, laid out as the stroke it lands as, so
             the same layer rasterises both and release changes no pixel. */}
-                {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
-                  <WhiteboardPenPreview
-                    stroke={penStroke}
-                    pen={pendingDraw}
-                    ink={props.whiteboardInk ?? 'currentColor'}
-                    zoom={viewportZoom}
-                  />
-                ) : null}
-                {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
-                {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
-                {/* A logo page's guides, its snap points and Mirror's live twins (LogoCanvasOverlays). */}
-                {props.pagesMode ? (
-                  <LogoCanvasOverlays
-                    view={props.pagesMode}
-                    bare={props.zenMode === true || canvasTool === 'isometric'}
-                    pendingDraw={pendingDraw}
-                    penStroke={penStroke}
-                    pathDraft={pathTool.draftView}
-                    ink={props.whiteboardInk ?? 'currentColor'}
-                    wrapperRef={wrapperRef}
-                    zoom={viewportZoom}
-                  />
-                ) : null}
-                {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
-              </GifOmit>
-            </div>
+              {penStroke && isWhiteboardPenIntent(pendingDraw) ? (
+                <WhiteboardPenPreview
+                  stroke={penStroke}
+                  pen={pendingDraw}
+                  ink={props.whiteboardInk ?? 'currentColor'}
+                  zoom={viewportZoom}
+                />
+              ) : null}
+              {/* The path being drawn (docs/specs/023-draw-mode/path-tool.md), in the same layer. */}
+              {pathTool.draftView ? <PathDraftLayer {...pathTool.draftView} /> : null}
+              {/* A logo page's guides, its snap points and Mirror's live twins (LogoCanvasOverlays). */}
+              {props.pagesMode ? (
+                <LogoCanvasOverlays
+                  view={props.pagesMode}
+                  bare={props.zenMode === true || canvasTool === 'isometric'}
+                  pendingDraw={pendingDraw}
+                  penStroke={penStroke}
+                  pathDraft={pathTool.draftView}
+                  ink={props.whiteboardInk ?? 'currentColor'}
+                  wrapperRef={wrapperRef}
+                  zoom={viewportZoom}
+                />
+              ) : null}
+              {pathTool.editView ? <PathEditLayer {...pathTool.editView} /> : null}
+            </GifOmit>
+          </div>
 
-            {/* The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md): a screen-space sibling of the
+          {/* The eraser's brush ring (docs/specs/008-canvas/eraser-panel.md): a screen-space sibling of the
           transformed wrapper — it must not pan or zoom with the canvas, and it must never take a pointer event.
           Rendered before CanvasChrome so the palette + chrome paint ON TOP. */}
-            {canvasTool === 'eraser' ? (
-              <EraserBrushRing
-                pos={eraserPos}
-                // A whiteboard's brush is fixed per mode (docs/specs/023-draw-mode/draw-mode.md "Eraser").
-                radius={
-                  props.whiteboardDock
-                    ? WHITEBOARD_ERASER_RADIUS_PX[props.whiteboardDock.prefs.eraserMode]
-                    : eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)
-                }
-                filtered={
-                  !props.whiteboardDock &&
-                  (props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'
-                }
-              />
-            ) : null}
-
-            <CanvasSelectionToolbars
-              props={props}
-              selectionInput={selectionInput}
-              quickRingOpen={quickRingOpen !== null}
-            />
-            {pathTool.toolbar ? (
-              <PathEditToolbar
-                {...pathTool.toolbar}
-                viewportOffset={viewportOffset}
-                zoom={viewportZoom}
-              />
-            ) : null}
-
-            <CanvasChrome
-              {...props}
-              // While a path is being drawn, Undo and Redo (the dock's and the corner's) step through its
-              // nodes, not the board (docs/specs/023-draw-mode/path-tool.md "Drawing").
-              {...(pathTool.history
-                ? {
-                    canUndo: pathTool.history.canUndo,
-                    canRedo: pathTool.history.canRedo,
-                    onUndo: pathTool.history.undo,
-                    onRedo: pathTool.history.redo,
-                  }
-                : null)}
-              mainSize={mainSize}
-              eraserConfig={props.eraserConfig}
-              onChangeEraserField={props.onChangeEraserField}
-              formatConfig={props.formatConfig}
-              onToggleFormatGroup={props.onToggleFormatGroup}
-              onSetFormatMode={props.onSetFormatMode}
-              formatBrushSource={props.formatBrushSource}
-              formatPanelPosition={props.formatPanelPosition}
-              onMoveFormatPanel={props.onMoveFormatPanel}
-              onResetFormatPanel={props.onResetFormatPanel}
-              eraserPanelPosition={props.eraserPanelPosition}
-              onMoveEraserPanel={props.onMoveEraserPanel}
-              onResetEraserPanel={props.onResetEraserPanel}
-              offscreenContent={offscreenContent}
-              marquee={marquee}
-              drawDrag={drawDrag}
-              drawHover={drawHover}
-              stamp={stamp}
-              // Off a whiteboard, a marker's live stroke guides off its box as the pencil's does.
-              penPoints={
-                penPoints ??
-                (penStroke && props.editorMode !== 'draw' ? penStroke.points.slice() : null)
+          {canvasTool === 'eraser' ? (
+            <EraserBrushRing
+              pos={eraserPos}
+              // A whiteboard's brush is fixed per mode (docs/specs/023-draw-mode/draw-mode.md "Eraser").
+              radius={
+                props.whiteboardDock
+                  ? WHITEBOARD_ERASER_RADIUS_PX[props.whiteboardDock.prefs.eraserMode]
+                  : eraserRadius(props.eraserConfig ?? DEFAULT_ERASER_CONFIG)
               }
-              polygonVertices={polygonVertices}
-              polygonCursor={polygonCursor}
-              wrapperRef={wrapperRef}
-              activeDockPanel={activeDockPanel}
-              setActiveDockPanel={setActiveDockPanel}
-              activeDockAnchor={activeDockAnchor}
-              setActiveDockAnchor={setActiveDockAnchor}
-              handleDockButtonClick={handleDockButtonClick}
-              handleZoomIn={handleZoomIn}
-              handleZoomOut={handleZoomOut}
-              handleSetZoom={handleSetZoom}
-              onIsoOrbit={isoCamera.startOrbit}
-              onIsoReset={isoCamera.reset}
+              filtered={
+                !props.whiteboardDock &&
+                (props.eraserConfig ?? DEFAULT_ERASER_CONFIG).target !== 'anything'
+              }
             />
-            {/* Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
+          ) : null}
+
+          <CanvasSelectionToolbars
+            props={props}
+            selectionInput={selectionInput}
+            quickRingOpen={quickRingOpen !== null}
+          />
+          {pathTool.toolbar ? (
+            <PathEditToolbar
+              {...pathTool.toolbar}
+              viewportOffset={viewportOffset}
+              zoom={viewportZoom}
+            />
+          ) : null}
+
+          <CanvasChrome
+            {...props}
+            // While a path is being drawn, Undo and Redo (the dock's and the corner's) step through its
+            // nodes, not the board (docs/specs/023-draw-mode/path-tool.md "Drawing").
+            {...(pathTool.history
+              ? {
+                  canUndo: pathTool.history.canUndo,
+                  canRedo: pathTool.history.canRedo,
+                  onUndo: pathTool.history.undo,
+                  onRedo: pathTool.history.redo,
+                }
+              : null)}
+            mainSize={mainSize}
+            eraserConfig={props.eraserConfig}
+            onChangeEraserField={props.onChangeEraserField}
+            formatConfig={props.formatConfig}
+            onToggleFormatGroup={props.onToggleFormatGroup}
+            onSetFormatMode={props.onSetFormatMode}
+            formatBrushSource={props.formatBrushSource}
+            formatPanelPosition={props.formatPanelPosition}
+            onMoveFormatPanel={props.onMoveFormatPanel}
+            onResetFormatPanel={props.onResetFormatPanel}
+            eraserPanelPosition={props.eraserPanelPosition}
+            onMoveEraserPanel={props.onMoveEraserPanel}
+            onResetEraserPanel={props.onResetEraserPanel}
+            offscreenContent={offscreenContent}
+            marquee={marquee}
+            drawDrag={drawDrag}
+            drawHover={drawHover}
+            stamp={stamp}
+            // Off a whiteboard, a marker's live stroke guides off its box as the pencil's does.
+            penPoints={
+              penPoints ??
+              (penStroke && props.editorMode !== 'draw' ? penStroke.points.slice() : null)
+            }
+            polygonVertices={polygonVertices}
+            polygonCursor={polygonCursor}
+            wrapperRef={wrapperRef}
+            activeDockPanel={activeDockPanel}
+            setActiveDockPanel={setActiveDockPanel}
+            activeDockAnchor={activeDockAnchor}
+            setActiveDockAnchor={setActiveDockAnchor}
+            handleDockButtonClick={handleDockButtonClick}
+            handleZoomIn={handleZoomIn}
+            handleZoomOut={handleZoomOut}
+            handleSetZoom={handleSetZoom}
+            onIsoOrbit={isoCamera.startOrbit}
+            onIsoReset={isoCamera.reset}
+          />
+          {/* Lazy per-tab load (docs/specs/006-document/per-tab-storage.md). Last child + z-[var(--z-overlay)] so it covers the
           canvas AND the floating palette, blocking any edit that would
           otherwise overwrite an unfetched tab's real content. */}
-            {tabLoadState && tabLoadState !== 'ready' ? (
-              <TabLoadOverlay state={tabLoadState} onRetry={() => onRetryTabLoad?.()} />
-            ) : null}
-            {/* Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md): previews where a dragged palette shape
+          {tabLoadState && tabLoadState !== 'ready' ? (
+            <TabLoadOverlay state={tabLoadState} onRetry={() => onRetryTabLoad?.()} />
+          ) : null}
+          {/* Drag-to-add ghost (docs/specs/010-palette/palette-drag-ghost.md): previews where a dragged palette shape
           will land, following the cursor over the canvas. */}
-            <PaletteDragGhost zoom={viewportZoom} />
-            {/* Map (docs/specs/008-canvas/minimap.md) now renders inside CanvasChrome's docking layer
+          <PaletteDragGhost zoom={viewportZoom} />
+          {/* Map (docs/specs/008-canvas/minimap.md) now renders inside CanvasChrome's docking layer
           (docs/specs/007-editor/panel-docking.md) so it snaps + stacks like the other floating panels. */}
-            {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md
+          {/* Touch long-press "hold" ring at the finger: the docs/specs/008-canvas/canvas-and-palette.md
             press-and-hold affordance that opens the context menu on touch. */}
-            <LongPressRing point={surface.canvasLongPress.pressPoint} />
-          </main>
+          <LongPressRing point={surface.canvasLongPress.pressPoint} />
+        </main>
       </CanvasMenu.Provider>
     </CanvasFinishProvider>
   );

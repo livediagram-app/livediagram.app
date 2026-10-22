@@ -15,8 +15,8 @@ export function EraserBrushRing({
   filtered,
 }: {
   // Pointer position in px relative to <main>, or null before the first move
-  // over the canvas (nothing to draw yet — unlike the spotlight, an eraser
-  // parked in the middle of the screen would be a lie).
+  // over the canvas (nothing to draw yet — an eraser parked in the middle of
+  // the screen would be a lie).
   pos: { x: number; y: number } | null;
   radius: number;
   filtered: boolean;

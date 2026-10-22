@@ -101,7 +101,7 @@ export function CommentBubbles({
                       text={c.text}
                       mentions={c.mentions}
                       // Falls back to the text colour where no card accent is in
-                      // scope (the presentation popover reuses these bubbles).
+                      // scope.
                       chipStyle={{
                         color: `var(--collab-accent-ink, ${textColor})`,
                         backgroundColor: tint(`var(--collab-accent, ${textColor})`, 0.16),

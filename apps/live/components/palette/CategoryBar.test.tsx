@@ -305,8 +305,6 @@ describe('Session’s browse', () => {
     expect(groups.map((g) => g.textContent?.replace(/\d+$/, ''))).toEqual([
       'Tools',
       'Record',
-      'React',
-      'Selection Mode',
       'Navigate',
     ]);
     expect(groups[0]!.getAttribute('aria-current')).toBe('true');
@@ -317,19 +315,19 @@ describe('Session’s browse', () => {
     show('workshop');
     fireEvent.click(button('Session'), { detail: 1 });
     const rail = () => within(flyout()!).getByRole('navigation');
-    fireEvent.click(within(rail()).getByRole('button', { name: /^React/ }));
-    expect(within(flyout()!).getAllByRole('button', { name: /Confetti/ })[0]).toBeTruthy();
+    fireEvent.click(within(rail()).getByRole('button', { name: /^Record/ }));
+    expect(within(flyout()!).getAllByRole('button', { name: /Decision/ })[0]).toBeTruthy();
     fireEvent.change(within(flyout()!).getByRole('textbox'), { target: { value: 'portal' } });
     expect(within(flyout()!).getByText(/Results for/)).toBeTruthy();
     expect(within(flyout()!).getAllByRole('button', { name: /Portal/ })[0]).toBeTruthy();
-    // Back to the canvas and in again: React, not Tools.
+    // Back to the canvas and in again: Record, not Tools.
     act(() => {
       document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
     fireEvent.click(button('Session'), { detail: 1 });
     expect(
       within(rail())
-        .getByRole('button', { name: /^React/ })
+        .getByRole('button', { name: /^Record/ })
         .getAttribute('aria-current'),
     ).toBe('true');
   });

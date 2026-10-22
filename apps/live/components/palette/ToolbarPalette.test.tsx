@@ -372,7 +372,7 @@ describe('ToolbarPalette', () => {
     // The other Collaborate categories are Session's groups, not buttons of their own.
     expect(COLLAB_IDS.length).toBeGreaterThan(0);
     const session = openFlyout('Session');
-    for (const group of ['Tools', 'Record', 'React', 'Selection Mode', 'Navigate'])
+    for (const group of ['Tools', 'Record', 'Navigate'])
       expect(
         within(session).getByRole('button', { name: new RegExp(`^${group}`) }),
         group,

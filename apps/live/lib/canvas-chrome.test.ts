@@ -97,28 +97,6 @@ describe('canvasCursorClass', () => {
   it('an active marquee shows crosshair', () => {
     expect(canvasCursorClass({ ...rest, marquee: true })).toBe('cursor-crosshair');
   });
-  it('the laser tool shows crosshair unless Space is held', () => {
-    expect(canvasCursorClass({ ...rest, canvasTool: 'laser' })).toBe('cursor-crosshair');
-    // Space held suppresses the laser cursor, falling through to the rest
-    // (pan tool here -> grab).
-    expect(canvasCursorClass({ ...rest, canvasTool: 'laser', spaceHeld: true })).toBe(
-      'cursor-grab',
-    );
-  });
-  it('the spotlight tool shows the glowing-dot cursor unless Space is held', () => {
-    expect(canvasCursorClass({ ...rest, canvasTool: 'spotlight' })).toBe('cursor-spotlight');
-    // Space held suppresses the spotlight cursor, falling through to the rest
-    // (pan tool here -> grab) for a temporary pan.
-    expect(canvasCursorClass({ ...rest, canvasTool: 'spotlight', spaceHeld: true })).toBe(
-      'cursor-grab',
-    );
-  });
-  it('avatar mode shows the pointer cursor (click to walk) unless Space is held', () => {
-    expect(canvasCursorClass({ ...rest, canvasTool: 'avatar' })).toBe('cursor-pointer');
-    expect(canvasCursorClass({ ...rest, canvasTool: 'avatar', spaceHeld: true })).toBe(
-      'cursor-grab',
-    );
-  });
   it('the eraser tool shows the eraser cursor unless Space is held', () => {
     expect(canvasCursorClass({ ...rest, canvasTool: 'eraser' })).toBe('cursor-eraser');
     // Space held suppresses the eraser cursor, falling through to the rest

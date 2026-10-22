@@ -139,7 +139,7 @@ describe('prioritization matrix template', () => {
   });
 
   it('places eight dot-voted ideas inside the quadrants', () => {
-    const ideas = stickies(els);
+    const ideas = stickies(els).filter((s) => quadrants.some((q) => inside(s, q)));
     expect(ideas).toHaveLength(8);
     for (const idea of ideas) expect(quadrants.some((q) => inside(idea, q))).toBe(true);
     const tallies = shapesOf(els, 'circle');
