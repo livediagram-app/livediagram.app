@@ -27,11 +27,11 @@ export function StartDrawingCta({ surface }: { surface: 'Home' | 'Feature' }) {
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgb(37_99_235/0.35),transparent_65%)]"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[36rem] w-[36rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgb(217_119_6/0.35),transparent_65%)]"
       />
 
       <div className="relative mx-auto max-w-3xl px-6 py-24 text-center sm:py-28">
-        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-sky-300">
+        <p className="text-sm font-semibold uppercase tracking-[0.14em] text-amber-300">
           Ready when you are
         </p>
         <h2
@@ -47,7 +47,7 @@ export function StartDrawingCta({ surface }: { surface: 'Home' | 'Feature' }) {
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <a
             href={ctaHref('/new', source)}
-            className="inline-flex h-12 items-center gap-1.5 rounded-full bg-white px-6 text-base font-semibold text-[#0b1026] shadow-[0_10px_30px_-10px_rgb(56_189_248/0.6)] transition-colors hover:bg-sky-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+            className="inline-flex h-12 items-center gap-1.5 rounded-full bg-white px-6 text-base font-semibold text-[#0b1026] shadow-[0_10px_30px_-10px_rgb(251_191_36/0.6)] transition-colors hover:bg-amber-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >
             <span className="text-optical-centre">Start drawing</span>
             <ChevronRightIcon size={16} aria-hidden />

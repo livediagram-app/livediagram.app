@@ -33,8 +33,8 @@ backdrop, a heavy display heading, pills with a coloured dot, the glowing search
 ## The hero
 
 A band the page's full width, under the Explorer header and above the sidebar and Home's sections, on Home only. Its
-ground is the marketing hero's: a soft sky wash under a dotted grid, a hairline under it. In dark mode it is the
-[Midnight](../004-interface-design/color-scheme.md#explorer-midnight) ground with a soft blue glow from the top.
+ground is the marketing hero's: a soft amber wash under a dotted grid, a hairline under it. In dark mode it is the
+[Midnight](../004-interface-design/color-scheme.md#explorer-midnight) ground with a soft amber glow from the top.
 Its content sits in the Explorer's content width.
 
 Top to bottom, left column:
@@ -51,7 +51,7 @@ Top to bottom, left column:
   (about 56 px on a desktop, 36 px on a phone), extra bold, tight tracking. The tab's title stays **Home**.
 - **The lead**: "Jump back into what you use most, or see what changed while you were away."
 - **The search field**: the Explorer's lens field ([Explorer filters](explorer-filters.md#the-field)) drawn large
-  (60 px high, a 2 px sky edge and a soft sky glow), with **New Document** as a solid button inside its right end.
+  (60 px high, a 2 px amber edge and a soft amber glow), with **New Document** as a solid button inside its right end.
   On Home it is the only lens field: the header's is not drawn, so the page never shows two. Typing in it opens
   Search results, as the header's field does from Home, and the header's field there takes the focus with the caret
   after what was typed, so the typing carries on uninterrupted.
@@ -195,7 +195,7 @@ the **4 most used** and the **4 most recent**, no document twice.
   inside it, the name in semibold and the quiet line under it), most used first from the left.
 - **Recent** under it: up to 4 compact cards (a 64 × 44 thumbnail beside the name and the quiet line), newest first.
 - Four across from the `lg` breakpoint; two across below it. Nothing scrolls sideways.
-- A card lifts a little on hover (a sky edge and a soft sky shadow), within the motion budget.
+- A card lifts a little on hover (an amber edge and a soft amber shadow), within the motion budget.
 
 ### Phone
 

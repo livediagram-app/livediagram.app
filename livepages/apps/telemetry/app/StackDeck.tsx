@@ -68,7 +68,7 @@ export function StackDeck({
         onKeyDown={onKeyDown}
         className={`relative flex flex-1 cursor-pointer flex-col rounded-2xl border bg-white p-5 transition-colors hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500 dark:bg-slate-900 dark:focus-visible:ring-brand-400 dark:hover:border-slate-600 ${
           expanded
-            ? 'border-sky-300 ring-4 ring-sky-100 dark:border-brand-500 dark:ring-brand-500/20'
+            ? 'border-brand-300 ring-4 ring-brand-100 dark:border-brand-500 dark:ring-brand-500/20'
             : 'border-slate-200 dark:border-slate-700'
         }`}
       >

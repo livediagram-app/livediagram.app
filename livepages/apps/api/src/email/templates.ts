@@ -8,17 +8,19 @@ import { xmlEscape } from '@livepages/icons';
 import type { Env } from '../types';
 import { appBaseUrl } from './client';
 
-const BRAND = '#0ea5e9';
-// The wordmark's "live" accent: brand-600, as in the site header's light mode.
-const WORDMARK_ACCENT = '#0284c7';
+// brand-700: it carries the button's white text and the links' text, and white on
+// amber-500 is 2.2:1 where brand-700 clears AA at 5.9:1.
+const BRAND = '#a34a0c';
+// The wordmark's "live" accent: brand-700, as in the site header's light mode.
+const WORDMARK_ACCENT = '#a34a0c';
 const INK = '#0f172a';
 const MUTED = '#475569';
-// The brand prism's light-to-deep sky run, for the band across the top of the
+// The brand prism's light-to-deep amber run, for the band across the top of the
 // card. Outlook ignores the gradient and paints BRAND underneath instead.
-const BAND_GRADIENT = 'linear-gradient(90deg,#38bdf8 0%,#0ea5e9 45%,#1d4ed8 100%)';
+const BAND_GRADIENT = 'linear-gradient(90deg,#fbbf24 0%,#f59e0b 45%,#c2410c 100%)';
 // The page behind the card: brand-50, so the frame reads livepages before a
 // word is read.
-const CANVAS = '#f0f9ff';
+const CANVAS = '#fffbeb';
 
 // The logo mark beside the wordmark. A transparent PNG on the public site, not
 // inline SVG: Gmail and Outlook drop SVG, and most clients block data: images.

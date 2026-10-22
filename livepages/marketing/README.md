@@ -34,5 +34,5 @@ marketing/
   they are.
 - **Free means free.** MIT-licensed, self-hostable, no paid tier, no plan for
   one. Say so where the format allows.
-- **Brand color** is sky blue, `#0EA5E9` ("livepages blue"). See
+- **Brand color** is amber, `#F59E0B` ("livepages amber"); text and fills in it use `#A34A0C`. See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).

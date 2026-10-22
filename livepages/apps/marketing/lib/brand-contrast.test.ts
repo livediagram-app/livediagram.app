@@ -3,8 +3,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
 // The brand colours marketing writes small text in, and puts white text on, must meet WCAG 2.2 AA (4.5:1)
-// in light and in dark (docs/specs/019-marketing/marketing-site.md "Tone & brand"). sky-500 and sky-600
-// read at 2.8:1 and 4.1:1 against white, so the CTA panels and small brand text use brand-700.
+// in light and in dark (docs/specs/019-marketing/marketing-site.md "Tone & brand"). amber-500 and amber-600
+// read at 2.2:1 and 3.2:1 against white, so the CTA panels and small brand text use brand-700.
 const read = (path: string) => readFileSync(fileURLToPath(new URL(path, import.meta.url)), 'utf8');
 const THEME = read('../../../packages/tailwind-config/theme.css');
 
@@ -70,7 +70,7 @@ describe('brand text contrast', () => {
     ['white', '#ffffff'],
     ['slate-300 (copy)', '#cbd5e1'],
     ['slate-400 (launcher lines)', '#94a3b8'],
-    ['sky-300 (eyebrows)', '#7dd3fc'],
+    ['amber-300 (eyebrows)', '#fcd34d'],
     ['emerald (Free)', '#34d399'],
     ['amber (No Account)', '#fbbf24'],
     ['sky (Open Source)', '#38bdf8'],

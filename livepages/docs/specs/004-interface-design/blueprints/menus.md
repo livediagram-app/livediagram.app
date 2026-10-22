@@ -236,10 +236,10 @@ spec. No layout shift: roles and `tabIndex` add no box, and `inert` changes no s
 - Roles, states and properties as in Behaviour; verified by `ariaSnapshot` in e2e.
 - Ring: `[data-menu-surface] :is(button, a, [role^='menuitem'], [role='button']):focus-visible` gets
   `outline: 2px solid var(--color-brand-600); outline-offset: -2px`, `.dark` overrides to `--color-brand-400` (D52).
-  Contrast: light brand 600 `#0284c7` against white 4.10, slate 100 3.74, brand 100 3.57; dark brand 400 `#8fb3e0`
-  against slate 900 7.99, slate 800 7.57, the checked tint 5.6.
-- App-wide ring: `:is(button, a, summary, [role='button']):focus-visible` light outline to brand 600 (4.10 on white);
-  `.dark` keeps brand 500 `#5b86bf` (4.62 on slate 900).
+  Contrast: light brand 600 `#c76508` against white 3.97, slate 100 3.62, brand 100 3.56; dark brand 400 `#e0bb8f`
+  against slate 900 9.63, slate 800 9.12, the checked tint 6.6.
+- App-wide ring: `:is(button, a, summary, [role='button']):focus-visible` light outline to brand 600 (3.97 on white);
+  `.dark` keeps brand 500 `#bf935b` (6.22 on slate 900).
 - Reduced motion: nothing new animates.
 
 ## Web Experience

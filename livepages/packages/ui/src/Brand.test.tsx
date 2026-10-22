@@ -21,11 +21,11 @@ describe('Brand', () => {
     expect(wordmark.textContent).toBe('livepages');
   });
 
-  it('accents "live", brand-700 in light and sky-400 in dark, with "diagram" in ink', () => {
+  it('accents "live", brand-700 in light and amber-400 in dark, with "pages" in ink', () => {
     const { container } = render(<Brand />);
     const live = container.querySelector('[data-logotype] > span');
     expect(live?.textContent).toBe('live');
-    expect(live?.className).toBe('text-brand-700 dark:text-sky-400');
+    expect(live?.className).toBe('text-brand-700 dark:text-amber-400');
   });
 
   it('tints "live" and the mark from a theme accent', () => {

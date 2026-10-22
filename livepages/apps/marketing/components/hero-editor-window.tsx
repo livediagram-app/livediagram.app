@@ -193,7 +193,7 @@ export function EditorWindow({
                         a shared document whoever else is there). */}
                 {t.active ? (
                   <span className="ml-0.5 flex items-center">
-                    <TabAvatar initials="TM" color="#0ea5e9" last={!shared} />
+                    <TabAvatar initials="TM" color="#d97706" last={!shared} />
                     {shared ? <TabAvatar initials="JR" color="#ec4899" last /> : null}
                   </span>
                 ) : null}

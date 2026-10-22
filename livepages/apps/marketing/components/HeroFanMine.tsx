@@ -47,7 +47,7 @@ const SLOT =
 const HEAD =
   'flex flex-col items-stretch gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-2 [&>*:last-child]:self-end sm:[&>*:last-child]:self-auto';
 const CARD =
-  'hero-fan-in flex h-56 w-[6.5rem] flex-col gap-2 rounded-xl border border-sky-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-2xl sm:p-4 dark:border-transparent';
+  'hero-fan-in flex h-56 w-[6.5rem] flex-col gap-2 rounded-xl border border-amber-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-2xl sm:p-4 dark:border-transparent';
 
 export function HeroFanMine({ diagrams }: { diagrams: readonly RecentDiagram[] }) {
   // Read once per mount: "2 hours ago" need not tick while the page is open.
@@ -79,12 +79,12 @@ export function HeroFanMine({ diagrams }: { diagrams: readonly RecentDiagram[] }
         <a href={EXPLORER_HOME_HREF} className={CARD} style={dealt(diagrams.length)}>
           <span className={HEAD}>
             <span className="min-w-0 truncate text-xs font-semibold sm:text-sm">Explorer Home</span>
-            <span className="flex shrink-0 items-center justify-end gap-1 text-[11px] font-semibold text-sky-700 sm:text-xs">
+            <span className="flex shrink-0 items-center justify-end gap-1 text-[11px] font-semibold text-brand-700 sm:text-xs">
               Open
               <ChevronRightIcon size={12} aria-hidden />
             </span>
           </span>
-          <span className="flex h-20 flex-col items-center justify-center gap-2 rounded-lg bg-sky-50 text-sky-700 sm:h-32 sm:rounded-xl">
+          <span className="flex h-20 flex-col items-center justify-center gap-2 rounded-lg bg-brand-50 text-brand-700 sm:h-32 sm:rounded-xl">
             <ExplorerGlyph size={28} aria-hidden />
             <span className="hidden text-xs font-medium sm:block">All your documents</span>
           </span>

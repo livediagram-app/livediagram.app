@@ -50,7 +50,7 @@ think visually. Lead with the hook: the canvas works without signing in (open a
 link, draw, share). Be honest about trade-offs (realtime is last-write-wins,
 not CRDT). Say "free, MIT-licensed, self-hostable, no paid tier" where the
 format allows ([03](../002-project-scope/open-source-and-business-model.md)). Product name
-**livepages** (lowercase); brand colour sky-blue `#0EA5E9`
+**livepages** (lowercase); brand colour amber `#F59E0B`, text and fills in `#A34A0C`
 ([01-color-scheme](../004-interface-design/color-scheme.md)). No em dashes in the copy.
 
 ## Media

@@ -157,7 +157,7 @@ export function HeroFan() {
                 <a
                   key={kind}
                   href={ctaHref(templateCreateHref(kind), 'Home.HeroFan')}
-                  className={`flex h-56 w-[6.5rem] flex-col gap-2 rounded-xl border border-sky-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-sky-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-2xl sm:p-4 dark:border-transparent ${motion}`}
+                  className={`flex h-56 w-[6.5rem] flex-col gap-2 rounded-xl border border-amber-100 bg-white p-2 text-slate-900 shadow-[0_30px_60px_-30px_var(--hero-card-shadow)] outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-amber-400 sm:h-72 sm:w-56 sm:gap-3 sm:rounded-2xl sm:p-4 dark:border-transparent ${motion}`}
                 >
                   <span className="truncate text-xs font-semibold sm:text-sm">
                     <span className="sr-only">{createLabelPrefix(t.title)}</span>

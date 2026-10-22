@@ -15,7 +15,8 @@ export const SIDEBAR_TONES: Record<SidebarTone, string> = {
 };
 
 /** The tile of the current row, whatever its tone. */
-export const SIDEBAR_TILE_CURRENT = 'bg-sky-600 text-white dark:bg-sky-500';
+// A step deeper than the brand's 600/500, so the white glyph keeps 3:1 on amber (amber-600 is 3.2:1, amber-500 2.2:1).
+export const SIDEBAR_TILE_CURRENT = 'bg-amber-700 text-white dark:bg-amber-600';
 
 /** The tile's box. */
 // Its icon drawn at 14 px, so the 24 px tile centres it on whole pixels (a 13 px icon would sit on a half pixel and
@@ -23,9 +24,9 @@ export const SIDEBAR_TILE_CURRENT = 'bg-sky-600 text-white dark:bg-sky-500';
 export const SIDEBAR_TILE =
   'grid size-6 shrink-0 place-items-center rounded-lg [&>svg]:block [&>svg]:size-3.5';
 
-/** The current row: a raised white pill; in dark a glass pill with a sky hairline inside its edge. */
+/** The current row: a raised white pill; in dark a glass pill with an amber hairline inside its edge. */
 export const SIDEBAR_CURRENT =
-  'border-sky-200 bg-white shadow-[0_6px_18px_-8px_rgba(2,132,199,0.35)] dark:border-transparent dark:bg-transparent dark:bg-gradient-to-r dark:from-sky-400/[0.18] dark:to-sky-400/[0.04] dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-sky-400/35';
+  'border-amber-200 bg-white shadow-[0_6px_18px_-8px_rgba(217,119,6,0.35)] dark:border-transparent dark:bg-transparent dark:bg-gradient-to-r dark:from-amber-400/[0.18] dark:to-amber-400/[0.04] dark:shadow-none dark:ring-1 dark:ring-inset dark:ring-amber-400/35';
 
 /** Every other row: a transparent edge (so selecting moves nothing) and a soft hover wash. */
 export const SIDEBAR_RESTING = 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800';

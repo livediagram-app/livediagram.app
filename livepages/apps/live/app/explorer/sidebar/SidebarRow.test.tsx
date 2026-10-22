@@ -38,13 +38,13 @@ describe('SidebarRow', () => {
     expect(screen.getByRole('treeitem').querySelector('[data-sidebar-tile]')).toBeNull();
   });
 
-  it('raises the current row into a white pill with a solid sky tile', () => {
+  it('raises the current row into a white pill with a solid brand-amber tile', () => {
     row({ tone: 'sky', selected: true });
     const line = screen.getByRole('treeitem').querySelector('[data-tree-row]')!;
     expect(line.className).toContain('bg-white');
-    expect(line.className).toContain('border-sky-200');
+    expect(line.className).toContain('border-amber-200');
     expect(screen.getByRole('treeitem').querySelector('[data-sidebar-tile]')!.className).toContain(
-      'bg-sky-600',
+      'bg-amber-700',
     );
   });
 
