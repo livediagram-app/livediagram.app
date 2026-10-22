@@ -28,10 +28,6 @@ export function cornerRadiusPx(
 | -------------------------------------------------------------------------- | ----------------------------------------- |
 | `apps/live/components/canvas/element-variant.ts`                           | 8 (`DEFAULT_BOX_RADIUS_PX`), 12 mind node |
 | `apps/live/components/canvas/BoxedElementView.tsx` (dashed-border overlay) | 8, 12 mind node                           |
-| `apps/live/components/canvas/ImageElementView.tsx`                         | 4                                         |
-| `apps/live/components/canvas/web/BannerFace.tsx`                           | `lg`'s px (24)                            |
-| `apps/live/components/canvas/web/SiteHeaderFace.tsx`                       | `md`'s px (12)                            |
-| `apps/live/components/canvas/web/StatRowFace.tsx`                          | `md`'s px (12)                            |
 | `packages/document/src/svg-render-border.ts` (`borderOf`)                  | `DEFAULT_BOX_RADIUS_PX`                   |
 | `packages/document/src/svg-render-describe.ts`                             | 4 (images)                                |
 | `packages/document/src/svg-render-web.ts`                                  | the caller's fallback                     |

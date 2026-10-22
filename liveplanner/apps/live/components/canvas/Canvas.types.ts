@@ -11,7 +11,6 @@ import type {
   BackgroundPattern,
   Element,
   Layer,
-  IconPosition,
   ShapeKind,
   TextAlignX,
   TextAlignY,
@@ -140,12 +139,6 @@ export type CanvasProps = {
   // The collaboration elements (docs/specs/012-collaboration/temperature-check.md): the viewer's identity and
   // the writes they may make — one prop for their faces.
   collab?: import('@/components/canvas/collab/CollabFaceRouter').CollabApi;
-  // Portal (docs/specs/009-elements/portal-element.md): resolve a portal's pairing — the paired portal's name and, when
-  // it has one, the action that travels there.
-  onEnterPortal?: (element: import('@liveplanner/document').ShapeElement) => {
-    targetName: string | null;
-    travel?: () => void;
-  };
   // The format painter's settings (docs/specs/008-canvas/format-panel.md) and what its brush holds. Owned
   // in editor state, where the paint happens; Canvas forwards them.
   formatConfig?: import('@/lib/format-config').FormatConfig;
@@ -404,28 +397,11 @@ export type CanvasProps = {
   // Inline label-editor (rich-text) alignment control, threaded through
   // CanvasElementsLayer to the in-place editor on the selected element.
   onSetTextAlign: (x: TextAlignX, y: TextAlignY) => void;
-  // Single combined table commit (cells + the parallel colWidths /
-  // rowHeights / cellStyles arrays) applied in ONE commit, so structural
-  // ops can't drop a side array or clobber each other off a stale base.
-  // A lane's title gutter, resized by dragging its seam (docs/specs/009-elements/lane.md). One
-  // commit per gesture, so a drag is one undo step.
-  onCommitHeaderSize?: (elementId: string, px: number) => void;
-  onCommitTable: (
-    id: string,
-    patch: Partial<
-      Pick<
-        import('@liveplanner/document').TableElement,
-        'cells' | 'colWidths' | 'rowHeights' | 'cellStyles'
-      >
-    >,
-  ) => void;
   onCancelEdit: () => void;
   // Table quick-connect ring (docs/specs/008-canvas/canvas-and-palette.md): append a row / column to the
   // selected table from the bottom / right plus.
   onAddTableRow: () => void;
   onAddTableColumn: () => void;
-  // Toggle one checklist row's done state (docs/specs/009-elements/checklist.md). Omitted in read-only.
-  onToggleChecklistItem?: (elementId: string, index: number) => void;
   // Entities (docs/specs/009-elements/entity.md): fields saved in place, relationships drawn from a field,
   // the ring's Add Field / Add Related Entity and the arrow toolbar's Cardinality. Omitted in read-only.
   entityActions?: import('@/hooks/canvas/useEntityActions').EntityActions;
@@ -445,17 +421,7 @@ export type CanvasProps = {
   // Escape on the empty node a Tab made one time too many removes it.
   onAbandonMindNode: (id: string) => boolean;
   onSetPageHeading: (elementId: string, field: 'pageTitle' | 'pageSubtitle', value: string) => void;
-  // The web components (docs/specs/009-elements/web-components-and-no-groups.md): a row edited in place, one more row from
-  // the quick-connect ring, and a hero's caption line. Omitted in read-only.
-  onSetWebRows?: (elementId: string, rows: import('@liveplanner/document').WebRows) => void;
-  // A pointer note's tip let go at a canvas point (docs/specs/009-elements/pointer-note.md). Omitted in read-only.
-  onSetPointerTip?: (elementId: string, tipAbs: { x: number; y: number }) => void;
   onAppendWebRow?: (elementId: string) => void;
-  onSetHeroCaptionLine?: (
-    elementId: string,
-    field: keyof import('@liveplanner/document').HeroCaption,
-    value: string,
-  ) => void;
   // Default chart slice colours derived from the active theme (docs/specs/009-elements/pie-chart.md), used
   // by pie charts for slices without an explicit colour.
   chartPalette: readonly string[];
@@ -480,13 +446,6 @@ export type CanvasProps = {
   // gates its mutations itself.
   onOpenAction: (elementId: string) => void;
   onOpenNote?: (elementId: string) => void;
-  // Drop a palette icon onto a shape: set its inline iconId and the
-  // position (which side of the text) derived from where it was dropped.
-  // Optional so read-only / pre-identity Canvas mounts can omit it.
-  onDropIcon?: (elementId: string, iconId: string, position: IconPosition) => void;
-  // Open the link picker for a specific table cell. Optional so read-
-  // only / pre-identity Canvas mounts can omit it.
-  onLinkCell?: (tableId: string, r: number, c: number) => void;
   // Open the link picker for a link-card element (docs/specs/009-elements/link-cards.md), on double-click.
   // Omitted for read-only viewers.
   onEditLink?: (id: string) => void;

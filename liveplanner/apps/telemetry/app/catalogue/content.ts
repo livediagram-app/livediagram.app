@@ -542,13 +542,6 @@ export const ELEMENTS_LOCKED = chart(
   { actionIn: ['Unlocked'] },
 );
 
-export const ELEMENT_ACTIONS_USED = chart(
-  'Element',
-  'Used',
-  'Element Actions Used',
-  'Using an element in place: a reaction pad, Bring into Focus, playing a video.',
-);
-
 export const KEYBOARD_SELECTIONS = chart(
   'Element',
   'Selected',
@@ -570,7 +563,6 @@ export const ELEMENT_EDITING: MetricStack = {
     ELEMENTS_REORDERED,
     ELEMENT_OPTIONS_TOGGLED,
     ELEMENTS_LOCKED,
-    ELEMENT_ACTIONS_USED,
     KEYBOARD_SELECTIONS,
     LINKS_ADDED,
     LINKS_REMOVED,

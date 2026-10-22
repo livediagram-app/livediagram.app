@@ -224,25 +224,24 @@ Telemetry: `Element` / `Added` / `Page`. Masthead edits emit nothing; the propos
 
 ## Testing
 
-| Rule                                            | Test                                            | File                                                        |
-| ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------- |
-| Page has a body in exports                      | `every kind with a body draws one` lists `page` | `packages/document/src/export-consistency.test.ts`          |
-| Page is found in palette search                 | palette search kinds                            | `apps/live/lib/palette-search.test.ts`                      |
-| Masthead line commits through `onSetHeading`    | web component heading commit (shared line)      | `apps/live/components/canvas/web/WebComponentFace.test.tsx` |
-| Size 420 × 594, alignment, padding, colours     | none                                            | (GD7)                                                       |
-| Exempt from new-element colour derivation (I3)  | none                                            | (GD7)                                                       |
-| Exempt from theme applies [QD15]                | none                                            | (GD7)                                                       |
-| CSS box path                                    | none                                            | (GD7)                                                       |
-| `PAGE_HEADING_MAX` validated (I1)               | none                                            | (GD7)                                                       |
-| Empty line stores `undefined`                   | none                                            | (GD7)                                                       |
-| Enter commits, Escape restores, keys stay local | none                                            | (GD7)                                                       |
-| Fold clamps and hides                           | none                                            | (GD7)                                                       |
-| Export body under the rule; fold cut is paper   | starts a page label under the masthead, ...     | `packages/document/src/svg-render-fidelity.test.ts`         |
-| Text align applies to a page                    | `supportsTextAlign` on for plain shapes ...     | `packages/document/src/collab-shapes.test.ts`               |
-| `svgPageMasthead` title / subtitle text, colour | none                                            | (GD7)                                                       |
-| Body ink reads on dark paper [QD17]             | none                                            | (GD15)                                                      |
-| Markdown title + indented body [QD13]           | none                                            | (GD7)                                                       |
-| Body clips / scrolls [QD12]                     | none                                            | (GD7)                                                       |
+| Rule                                            | Test                                            | File                                                |
+| ----------------------------------------------- | ----------------------------------------------- | --------------------------------------------------- |
+| Page has a body in exports                      | `every kind with a body draws one` lists `page` | `packages/document/src/export-consistency.test.ts`  |
+| Page is found in palette search                 | palette search kinds                            | `apps/live/lib/palette-search.test.ts`              |
+| Size 420 × 594, alignment, padding, colours     | none                                            | (GD7)                                               |
+| Exempt from new-element colour derivation (I3)  | none                                            | (GD7)                                               |
+| Exempt from theme applies [QD15]                | none                                            | (GD7)                                               |
+| CSS box path                                    | none                                            | (GD7)                                               |
+| `PAGE_HEADING_MAX` validated (I1)               | none                                            | (GD7)                                               |
+| Empty line stores `undefined`                   | none                                            | (GD7)                                               |
+| Enter commits, Escape restores, keys stay local | none                                            | (GD7)                                               |
+| Fold clamps and hides                           | none                                            | (GD7)                                               |
+| Export body under the rule; fold cut is paper   | starts a page label under the masthead, ...     | `packages/document/src/svg-render-fidelity.test.ts` |
+| Text align applies to a page                    | `supportsTextAlign` on for plain shapes ...     | `packages/document/src/collab-shapes.test.ts`       |
+| `svgPageMasthead` title / subtitle text, colour | none                                            | (GD7)                                               |
+| Body ink reads on dark paper [QD17]             | none                                            | (GD15)                                              |
+| Markdown title + indented body [QD13]           | none                                            | (GD7)                                               |
+| Body clips / scrolls [QD12]                     | none                                            | (GD7)                                               |
 
 ## Constants and configuration
 

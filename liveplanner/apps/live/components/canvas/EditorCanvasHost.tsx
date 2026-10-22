@@ -1,7 +1,6 @@
 'use client';
 
 import { TagColoursProvider } from '@/components/canvas/TagColoursContext';
-import { usePointerNoteSetters } from '@/hooks/canvas/usePointerNoteSetters';
 import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
@@ -142,8 +141,6 @@ export function EditorCanvasHost() {
     commitPolygon,
     styleNewElement,
     commitLabel,
-    commitTable,
-    commitHeaderSize,
     createFolder,
     deleteCurvePoint,
     deleteDocument,
@@ -156,7 +153,6 @@ export function EditorCanvasHost() {
     documentListLoading,
     documentName,
     dismissSharedDocument,
-    dropIconOnElement,
     dropPaletteItem,
     duplicateDocument,
     duplicateMultiSelected,
@@ -199,7 +195,6 @@ export function EditorCanvasHost() {
     completeAction,
     reopenAction,
     linkedActions,
-    openCellLinkPicker,
     openComments,
     openDocument,
     openNote,
@@ -252,11 +247,8 @@ export function EditorCanvasHost() {
     setMapPosition,
     setMultiSelectedIds,
     setSelectedId,
-    toggleChecklistItem,
     setPageHeading,
-    setWebRows,
     appendWebRowTo,
-    setHeroCaptionLine,
     growMindNode,
     flowchartActions,
     entityActions,
@@ -290,8 +282,6 @@ export function EditorCanvasHost() {
     isOutOfScope,
     tabLoadErrors,
   } = useEditorContext();
-  // A pointer note's tip handle (docs/specs/009-elements/pointer-note.md).
-  const { setPointerTip } = usePointerNoteSetters(commitElements, activeTab.elements);
   // A free arrow's frame stands down while a handle reshapes it (arrow-bending.md).
   const reshapingArrowId =
     drag &&
@@ -461,7 +451,6 @@ export function EditorCanvasHost() {
             participantPalette={participating && can.addContent}
             takePart={can.takePart}
             canMove={can.move}
-            canWriteText={can.writeText}
             canResize={can.resize}
             documentName={documentName}
             tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
@@ -578,8 +567,6 @@ export function EditorCanvasHost() {
             onAddIcon={addIcon}
             onAddSticker={addSticker}
             onAddTechIcon={addTechIcon}
-            onDropIcon={isReadOnly ? undefined : dropIconOnElement}
-            onLinkCell={isReadOnly ? undefined : openCellLinkPicker}
             onAddTable={addTable}
             onAddAnnotation={addAnnotation}
             onAddLinkCard={addLinkCard}
@@ -843,16 +830,10 @@ export function EditorCanvasHost() {
             onPressArmedAction={pressArmedAction}
             onBeginEdit={beginEdit}
             onCommitLabel={commitLabel}
-            onCommitTable={commitTable}
-            onCommitHeaderSize={commitHeaderSize}
             onAddTableRow={appendTableRowSelected}
             onAddTableColumn={appendTableColumnSelected}
-            onToggleChecklistItem={isReadOnly ? undefined : toggleChecklistItem}
             onSetPageHeading={setPageHeading}
-            onSetWebRows={isReadOnly ? undefined : setWebRows}
-            onSetPointerTip={isReadOnly ? undefined : setPointerTip}
             onAppendWebRow={isReadOnly ? undefined : appendWebRowTo}
-            onSetHeroCaptionLine={isReadOnly ? undefined : setHeroCaptionLine}
             onGrowMindNode={growMindNode}
             flowchartActions={isReadOnly ? undefined : flowchartActions}
             entityActions={isReadOnly ? undefined : entityActions}

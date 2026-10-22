@@ -8,13 +8,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import {
-  BROWSER_CHROME,
-  SHAPE_GEOMETRY_KINDS,
-  shapeGeometry,
-  type ShapeKind,
-} from '@liveplanner/document';
-import { BrowserChrome } from './boxed-element-overlays';
+import { SHAPE_GEOMETRY_KINDS, shapeGeometry, type ShapeKind } from '@liveplanner/document';
 import { ShapeSvgOverlay } from './shape-svg-overlay';
 
 afterEach(cleanup);
@@ -74,12 +68,5 @@ describe('ShapeSvgOverlay draws the shared table', () => {
   it('paints a frame with its fill, like every other shape', () => {
     const { container } = render(<ShapeSvgOverlay shape="frame" fill="#fef3c7" stroke="#000" />);
     expect(container.querySelector('rect')!.getAttribute('fill')).toBe('#fef3c7');
-  });
-});
-
-describe('the fixed-pixel drawings read the table too', () => {
-  it('BrowserChrome draws the table nav glyphs', () => {
-    const { container } = render(<BrowserChrome stroke="#000" />);
-    expect(marks(container.querySelector('svg')!)).toEqual([...BROWSER_CHROME.nav.paths]);
   });
 });

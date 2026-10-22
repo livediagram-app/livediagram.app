@@ -6,6 +6,11 @@ import { dropRetiredEvents, isRetiredEvent } from './retired-events';
 // reach a chart.
 
 describe('isRetiredEvent', () => {
+  it('retires using a diagram element in place', () => {
+    expect(isRetiredEvent('Element', 'Used', 'Video')).toBe(true);
+    expect(isRetiredEvent('Element', 'Changed', 'Video')).toBe(false);
+  });
+
   it('retires the Activity panel events', () => {
     expect(isRetiredEvent('Document', 'Reverted', null)).toBe(true);
     expect(isRetiredEvent('UI', 'Opened', 'Activity')).toBe(true);

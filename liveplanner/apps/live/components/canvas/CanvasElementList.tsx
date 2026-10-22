@@ -67,7 +67,6 @@ type CanvasElementListProps = Pick<
   | 'tabLayers'
   | 'remoteSelectionsByElement'
   | 'canMove'
-  | 'canWriteText'
   | 'canResize'
   | 'voteReview'
   | 'tabFont'
@@ -83,8 +82,6 @@ type CanvasElementListProps = Pick<
   actionActionsFor: ((id: string) => BoxedViewProp<'actionActions'>) | null;
   // Bumped when webfonts land, so every fitted label measures again in its real face (useFontEpoch).
   fontEpoch: number;
-  // The ids a stack holds, which glide to their slots when it reflows (docs/specs/009-elements/stack.md).
-  stackedIds: ReadonlySet<string>;
 };
 
 type BoxedViewProp<K extends string> = K extends keyof Parameters<typeof SelectableBoxedView>[0]
@@ -110,14 +107,12 @@ export const CanvasElementList = memo(function CanvasElementList({
   tabLayers,
   remoteSelectionsByElement,
   canMove,
-  canWriteText,
   canResize,
   voteReview,
   commentActionsFor,
   actionActionsFor,
   tabFont,
   tabFinish,
-  stackedIds,
 }: CanvasElementListProps) {
   return (
     // The element plane (docs/specs/008-canvas/canvas-performance.md "The canvas's cursor stays off the
@@ -206,8 +201,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 // onto its own z-plane (globals.css --iso-z): coplanar layers
                 // z-fight under preserve-3d, which is the flicker.
                 isoDepth={isoDepth}
-                // A stack's child glides to its new slot, unless the gesture is moving it (docs/specs/009-elements/stack.md).
-                stackGlide={stackedIds.has(element.id) && entry === undefined}
                 // Resolved once here, where both the vote and the tab's layers
                 // are in scope, rather than threading `layers` down to the
                 // gesture hook and the overlay separately (docs/specs/012-collaboration/vote-layer-scope.md).
@@ -219,7 +212,6 @@ export const CanvasElementList = memo(function CanvasElementList({
                 isEditing={element.id === editingId}
                 editCursorAtEnd={element.id === editingId && editCursorAtEnd === true}
                 movable={!readOnly || canMove?.(element) === true}
-                writable={!readOnly || canWriteText?.(element) === true}
                 resizable={!readOnly || canResize?.(element) === true}
                 isVoteFocus={voteReview?.focusId === element.id}
                 commentActions={commentActionsFor?.(element.id)}

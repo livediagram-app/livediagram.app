@@ -325,6 +325,11 @@ const EXPLORER_TIMELINE = new Set([
 // `icon search`, which found ids for diagram boxes.
 const AGENT_ICON_SEARCH = new Set(['Mcp|Used|SearchIcons', 'Cli|Used|IconSearch']);
 
+// liveplanner's diagram elements used in place (removed 2026-10-22, plans/0001-liveplanner-fork.md Phase 4): playing a
+// video, a reaction pad, Bring into Focus. No Plan element sends `Element·Used`.
+const isElementUsedInPlace = (category: string, action: string) =>
+  category === 'Element' && action === 'Used';
+
 // liveplanner's diagram tours and palette (removed 2026-10-22, plans/0001-liveplanner-fork.md Phase 4): the element
 // tours offered beside a selected diagram element, the Tab Style dialog's Show Me, their Settings switches, and the
 // strip palette's Icons, Stickers and Technology searches and groups. Each tour's events carry its token as the type
@@ -371,6 +376,7 @@ function isRetiredDiagramTourEvent(category: string, action: string, type: strin
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (isRetiredDiagramTourEvent(category, action, type)) return true;
   if (AGENT_ICON_SEARCH.has(`${category}|${action}|${type ?? ''}`)) return true;
+  if (isElementUsedInPlace(category, action)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
   if (category === 'Document' && action === 'Reverted') return true;
   if (EXPLORER_TIMELINE.has(`${category}|${action}|${type ?? ''}`)) return true;

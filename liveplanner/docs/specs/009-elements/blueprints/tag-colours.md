@@ -31,7 +31,7 @@ Derived from [Tag colours](../tag-colours.md). Defaults in [DEFAULTS.md](DEFAULT
 - `withTagAccent(el, map)`: for a card with a tag colour, the card as it renders: `accentEdge` its own or `'left'`,
   `accentEdgeColor` its own or the tag colour. Any other element, or a card with none, comes back unchanged (same
   object).
-- Canvas: `BoxedElementView` renders `withTagAccent(element, map)` for the accent edge overlay; `CardFace` tints tags.
+- Canvas: `BoxedElementView` renders `withTagAccent(element, map)` for the accent edge overlay.
 - Export: `renderElementsToSvg` reads `tab.tagColours` and renders cards through `withTagAccent`, tags tinted.
 
 ### Invariants
@@ -104,7 +104,6 @@ Each colour row is named "<tag> colour"; Clear is "Clear <tag> colour".
 | ---------------------------- | ------------------------------------------------------- |
 | Map writes, lookup, I1 to I2 | `packages/document/src/tag-colours.test.ts`             |
 | Export (I3)                  | same                                                    |
-| Canvas edge and chips        | `apps/live/components/canvas/web/CardFace.test.tsx`     |
 | Menu block                   | `apps/live/components/palette/TagColoursBlock.test.tsx` |
 
 ## Constants and configuration

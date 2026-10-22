@@ -82,7 +82,6 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Element·Unlinked',
   'Element·Unlocked',
   // Playback started on a video element (docs/specs/009-elements/youtube-video.md).
-  'Element·Used',
   'Element·Voted',
   'Error·Api',
   'Error·Client',

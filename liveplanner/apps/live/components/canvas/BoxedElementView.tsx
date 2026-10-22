@@ -17,9 +17,7 @@ import {
   defaultTextColor,
   ownColours,
   isSelfDrawingShape,
-  isUprightTitle,
   labelBodyInset,
-  uprightTitleStrip,
   voteKeyOf,
   type ShapeMarker,
   type TextSize,
@@ -30,12 +28,7 @@ import {
 } from '@liveplanner/document';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
-import { LaneGutter } from '@/components/canvas/LaneGutter';
-import { uprightTitleFrame } from '@/components/canvas/upright-title';
-import { EntityView } from '@/components/canvas/entity/EntityView';
-import { openEntityFieldAt } from '@/components/canvas/entity/entity-double-click';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';
-import { captionBandAlignY, captionBandClass } from '@/components/primitives/icon-band';
 import { LockBadge, SelectionChromeLayer } from '@/components/canvas/element-parts';
 import { isSvgRenderedShape } from '@/components/canvas/shape-svg-overlay';
 import { BoxBorderOverlay } from '@/components/canvas/BoxBorderOverlay';
@@ -52,7 +45,6 @@ import { FaceFinishProvider } from '@/components/canvas/CanvasFinishContext';
 import { useFaceFinishPass } from '@/components/canvas/useFaceFinishPass';
 import { liveFiltersRedrawOnRepaint } from '@/lib/live-filter-cost';
 import { AccentEdgeOverlay } from '@/components/canvas/AccentEdgeOverlay';
-import { PointerNoteOverlay } from '@/components/canvas/PointerNoteOverlay';
 import { useTagColours } from '@/components/canvas/TagColoursContext';
 import { useIsSketchBackdrop } from '@/lib/sketch-backdrop-store';
 import { RemoteSelectorsStrip } from '@/components/canvas/element-badges';
@@ -62,11 +54,9 @@ import { useElementIndicators } from '@/components/canvas/useElementIndicators';
 import { AnnotationHoverNote } from '@/components/canvas/AnnotationMarker';
 import { useBoxedElementGestures } from '@/components/canvas/useBoxedElementGestures';
 import { useElementPopIn } from '@/components/canvas/useElementPopIn';
-import { IconDropPreview, useIconDropTarget } from '@/components/canvas/useIconDropTarget';
 import { ElementVoteOverlay } from '@/components/canvas/ElementVoteOverlay';
 import { ShapeContentRouter } from '@/components/canvas/ShapeContentRouter';
 import { clearingInset } from '@/components/canvas/InsetContent';
-import { BrowserChrome } from '@/components/canvas/boxed-element-overlays';
 
 import type { BoxedElementViewProps } from './BoxedElementView.types';
 import { isPanThrough } from '@/hooks/canvas/pan-through';
@@ -103,18 +93,8 @@ function BoxedElementViewImpl({
   onBeginEdit,
   onCommitLabel,
   onSetTextAlign,
-  onCommitTable,
-  onCommitHeaderSize,
-  onSnapSeam,
-  onToggleChecklistItem,
-  onSetEntityFields,
-  onStartFieldArrow,
   onSetPageHeading,
-  onSetWebRows,
-  onSetPointerTip,
-  onSetHeroCaptionLine,
   isoDepth,
-  stackGlide,
   chartPalette,
   onCancelEdit,
   onFollowLink,
@@ -131,7 +111,6 @@ function BoxedElementViewImpl({
   actionActions,
   onRollPicker,
   collab,
-  onEnterPortal,
   onOpenComments,
   onOpenAction,
   onOpenNote,
@@ -144,15 +123,12 @@ function BoxedElementViewImpl({
   isVoteFocus,
   onCastVote,
   onRetractVote,
-  onDropIcon,
-  onLinkCell,
   onContextSelect,
   remoteSelectors,
   tabLocked,
   tabSummaries,
   readOnly,
   movable = true,
-  writable,
   fontFamily,
 }: BoxedElementViewProps) {
   // Which paper this element sits on, for every colour it doesn't carry
@@ -274,11 +250,6 @@ function BoxedElementViewImpl({
   // The tab's tag colours, for a card's accent edge (docs/specs/009-elements/tag-colours.md).
   const tagColours = useTagColours();
   const remoteBorderColor = remoteSelectors.length > 0 ? remoteSelectors[0]!.color : null;
-  // Accent for the data-element fills (progress bar / ring, rating stars): a
-  // remote selector colour wins, else the element's own stroke, else the theme
-  // default stroke. Shared by the ProgressView / RatingView branches below so
-  // they all read the same accent.
-  const accent = remoteBorderColor ?? own.stroke ?? defaultStrokeColor(element, surface);
   const variant = describeVariant(
     element,
     isSelected,
@@ -315,31 +286,12 @@ function BoxedElementViewImpl({
   // The one-shot pop-in entry class (docs/specs/008-canvas/canvas-and-palette.md) — see useElementPopIn.
   const popInClass = useElementPopIn();
 
-  // An icon element's caption is confined to its own band — the complement
-  // of the glyph band (docs/specs/010-palette/technology-icons.md, iconCaptionBand) — so the text can never
-  // stack over the art. The label renders with the band's INTERNAL vertical
-  // anchor (side captions centre on the glyph's row) and the JSX below wraps
-  // it in the band container.
-  const iconCaptionBand =
-    element.type === 'shape' && element.shape === 'icon' ? captionBandClass(alignX, alignY) : null;
-
-  // An upright lane title turns in its strip; inside the turned frame it reads along the strip,
-  // centred across it (docs/specs/009-elements/lane.md "Upright titles").
-  const uprightStrip =
-    element.type === 'shape' && element.shape === 'lane' && isUprightTitle(element)
-      ? uprightTitleStrip(element, element.width, element.height)
-      : null;
-  const labelFrame = uprightStrip ? uprightTitleFrame(uprightStrip) : null;
-
   // A whiteboard text box hugs its text, growing with it while typed (useTextHug).
   const textHug = useTextHug(element, isEditing, fontFamily);
   // A mind node grows taller with its label's lines while typed (useMindLabelFit).
   const mindFit = useMindLabelFit(element, isEditing, fontFamily);
 
-  const labelPadding = uprightStrip
-    ? // A one-line strip has no room for a roomy padding across it.
-      Math.min(PADDING_PX.sm, PADDING_PX[element.padding ?? defaultPadding(element)])
-    : PADDING_PX[element.padding ?? defaultPadding(element)];
+  const labelPadding = PADDING_PX[element.padding ?? defaultPadding(element)];
   // The element's indicators, placed before the label so the content can move out of their way.
   const indicators = useElementIndicators(
     element,
@@ -354,8 +306,8 @@ function BoxedElementViewImpl({
     element,
     label,
     textSize,
-    uprightStrip ? uprightStrip.alongAlign : alignX,
-    uprightStrip ? 'middle' : iconCaptionBand ? captionBandAlignY(alignX, alignY) : alignY,
+    alignX,
+    alignY,
     labelPadding,
     isEditing,
     (next, runs) => onCommitLabel(element.id, next, runs),
@@ -373,27 +325,15 @@ function BoxedElementViewImpl({
     mindFit.onLiveText,
   );
 
-  // Palette-icon drop target (docs/specs/008-canvas/canvas-and-palette.md inline icons) — see
-  // useIconDropTarget; the wrapper mounts its handlers below and the
-  // IconDropPreview band renders while dragging over.
-  const { acceptsIconDrop, dropSide, handleIconDragOver, handleIconDragLeave, handleIconDrop } =
-    useIconDropTarget(element, onDropIcon);
-
   return (
     <div
       ref={wrapperRef}
       data-element-id={element.id}
-      data-stack-glide={stackGlide ? '' : undefined}
       // Screen-reader name (docs/specs/004-interface-design/canvas-accessibility.md): same naming the change log uses,
       // so 'Square "Login"' reads consistently across both surfaces. A face with controls of its own is a named group,
       // so its buttons stay reachable.
       role={elementRole(element)}
       aria-label={elementAriaLabel(element)}
-      // Frames are tagged so isometric mode can settle them just under the
-      // base plane (globals.css [data-iso] rule): a frame's big surface is
-      // coplanar with its contents under preserve-3d, and coplanar layers
-      // z-fight (flicker) while the camera orbits.
-      data-frame={element.type === 'shape' && element.shape === 'frame' ? '' : undefined}
       // What the face's own parts are drawn in (docs/specs/008-canvas/finish.md "Faces"; app/face-finish.css).
       data-face-finish={faceFinish}
       onPointerDown={(e) => {
@@ -403,31 +343,12 @@ function BoxedElementViewImpl({
         handleShapeDown(e);
       }}
       onDoubleClick={(e) => {
-        // An Editor's double-click on an entity's fields edits that field in place
-        // (docs/specs/009-elements/entity.md "Editing on the canvas"); on its title, the title.
-        if (
-          element.type === 'shape' &&
-          element.shape === 'entity' &&
-          !readOnly &&
-          !isLocked &&
-          !remotelyLocked &&
-          !element.rotation &&
-          onSetEntityFields &&
-          wrapperRef.current &&
-          openEntityFieldAt(element, wrapperRef.current.getBoundingClientRect(), e.clientY)
-        ) {
-          e.stopPropagation();
-          return;
-        }
         handleDoubleClick(e);
       }}
       onContextMenu={handleContextMenu}
       onPointerUp={handlePointerUp}
       onPointerEnter={isAnnotation ? () => setHovering(true) : undefined}
       onPointerLeave={isAnnotation ? () => setHovering(false) : undefined}
-      onDragOver={acceptsIconDrop ? handleIconDragOver : undefined}
-      onDragLeave={acceptsIconDrop ? handleIconDragLeave : undefined}
-      onDrop={acceptsIconDrop ? handleIconDrop : undefined}
       // `group` so the vote stepper inside can fade up on element hover
       // (docs/specs/012-collaboration/session-tools.md) without threading a hover state through props.
       className={`group group/el absolute origin-center touch-none select-none ${
@@ -491,24 +412,9 @@ function BoxedElementViewImpl({
             element={withTagAccent(element, tagColours)}
             stroke={own.stroke ?? defaultStrokeColor(element, surface)}
           />
-          {element.type === 'shape' && element.shape === 'pointer-note' ? (
-            <PointerNoteOverlay
-              element={element}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              editable={isSelected && !readOnly && !isLocked}
-              onSetTip={onSetPointerTip}
-            />
-          ) : null}
           <ShapeContentRouter
             element={element}
-            isEditing={isEditing}
-            accent={accent}
             textColor={textColor}
-            remoteBorderColor={remoteBorderColor}
-            isLocked={isLocked}
-            isSelected={isSelected}
-            readOnly={readOnly}
-            onToggleChecklistItem={onToggleChecklistItem}
             chartPalette={chartPalette}
             fontFamily={fontFamily}
           />
@@ -532,47 +438,6 @@ function BoxedElementViewImpl({
               radiusPx={cornerPx}
             />
           ) : null}
-          {/* A Record's rows (docs/specs/009-elements/entity.md), under its title label. */}
-          {element.type === 'shape' && element.shape === 'entity' ? (
-            <EntityView
-              element={element}
-              textColor={textColor}
-              fontFamily={fontFamily}
-              stroke={own.stroke ?? defaultStrokeColor(element, surface)}
-              actions={
-                // An Editor's selected, unlocked, upright entity edits in place (docs/specs/009-elements/entity.md).
-                isSelected &&
-                !readOnly &&
-                !isLocked &&
-                !remotelyLocked &&
-                !element.rotation &&
-                onSetEntityFields &&
-                onStartFieldArrow
-                  ? { setFields: onSetEntityFields, startFieldArrow: onStartFieldArrow }
-                  : undefined
-              }
-            />
-          ) : null}
-          {/* A Lane's title gutter (docs/specs/009-elements/lane.md), behind the label. */}
-          {element.type === 'shape' && element.shape === 'lane' ? (
-            <LaneGutter
-              stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
-              headerFill={element.headerFill}
-              headerSize={element.headerSize}
-              titleOrientation={element.titleOrientation}
-              width={element.width}
-              height={element.height}
-              onCommitSize={
-                onCommitHeaderSize ? (px) => onCommitHeaderSize(element.id, px) : undefined
-              }
-              onSnapSeam={onSnapSeam}
-              elementId={element.id}
-              elementX={element.x}
-              elementY={element.y}
-              alignX={alignX}
-              alignY={alignY}
-            />
-          ) : null}
           {/* A Page's turned-back bottom-right corner (docs/specs/009-elements/page-element.md). */}
           {element.type === 'shape' && element.shape === 'page' ? (
             <PageCornerFold
@@ -582,47 +447,25 @@ function BoxedElementViewImpl({
               stroke={element.strokeColor ?? defaultStrokeColor(element, surface)}
             />
           ) : null}
-          {/* Browser-only HTML chrome overlay. SVG handles only the
-          outer frame + divider so the user's border style applies;
-          the dots / nav / URL bar render here so their geometry is
-          fixed-pixel and doesn't deform with the box's aspect
-          ratio. */}
-          {element.type === 'shape' && element.shape === 'browser' ? (
-            <BrowserChrome
-              stroke={
-                remoteBorderColor ?? element.strokeColor ?? defaultStrokeColor(element, surface)
-              }
-            />
-          ) : null}
-
           {/* Whatever this element shows in place of a plain label: a pressable
           face, a drawn body, or the label itself. See ElementFaceRouter. */}
           <ElementFaceRouter
             element={element}
             isEditing={isEditing}
-            isSelected={isSelected}
             readOnly={readOnly}
-            writable={writable}
             fontFamily={fontFamily}
             collab={collab}
             commentActions={commentActions}
             actionSelfId={actionSelfId}
             actionActions={actionActions}
             commentSelfId={commentSelfId}
-            tabSummaries={tabSummaries}
             tabTimer={tabTimer}
             timerControls={timerControls}
             timerState={timerState}
             sessionStartBlocked={sessionStartBlocked}
-            onCommitTable={onCommitTable}
-            onEnterPortal={onEnterPortal}
-            onFollowLink={onFollowLink}
-            onLinkCell={onLinkCell}
             onPressSessionButton={onPressSessionButton}
             onRollPicker={onRollPicker}
             onSetPageHeading={onSetPageHeading}
-            onSetWebRows={onSetWebRows}
-            onSetHeroCaptionLine={onSetHeroCaptionLine}
             onSetSessionConfig={onSetSessionConfig}
             onOpenElementSettings={onOpenElementSettings}
             label={label}
@@ -630,24 +473,11 @@ function BoxedElementViewImpl({
             // Clear of the indicators and on the label body (a cylinder's, under its lid).
             contentInset={clearingInset(indicators.layout?.inset, labelBodyInset(element))}
             textColor={textColor}
-            textSize={textSize}
-            alignX={alignX}
-            alignY={alignY}
             isLocked={isLocked}
-            remoteBorderColor={remoteBorderColor}
-            inlineIcon={inlineIcon}
-            marker={marker}
-            iconCaptionBand={iconCaptionBand}
-            labelFrame={labelFrame}
           />
         </SketchFace>
       </FaceFinishProvider>
       {element.type === 'image' ? sketchOverlay() : null}
-
-      {/* Live drop preview while dragging a palette icon over this shape:
-          a brand ring + a translucent band on the side the icon will
-          land. Cleared on drop / drag-leave. */}
-      {dropSide ? <IconDropPreview side={dropSide} /> : null}
 
       {isLocked ? <LockBadge /> : null}
 

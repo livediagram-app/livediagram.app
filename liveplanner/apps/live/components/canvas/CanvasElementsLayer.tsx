@@ -12,16 +12,12 @@ import {
   elementFontId,
   resolveFontStack,
   resolveFinish,
-  alignmentCoordinates,
   buildElementIndex,
   layerBands,
-  laneSeamCoordinates,
   layerOpacityOf,
-  snapSeamCoordinate,
   type CommentMention,
   createElementGridTracker,
   type ElementIndex,
-  stackedElementIds,
 } from '@liveplanner/document';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
@@ -45,7 +41,7 @@ import {
   SheetChartsContext,
   type SheetChartsValue,
 } from '@/components/sheets/sheet-charts-context';
-import { sheetDrawnChartIds, type LaneGutterEdge, type LaneLike } from '@liveplanner/document';
+import { sheetDrawnChartIds } from '@liveplanner/document';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
 const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
@@ -107,17 +103,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCancelEdit,
     onCommitLabel,
     onSetTextAlign,
-    onCommitTable,
-    onCommitHeaderSize,
     onAddTableRow,
     onAddTableColumn,
-    onToggleChecklistItem,
     entityActions,
     onSetPageHeading,
-    onSetWebRows,
-    onSetPointerTip,
     onAppendWebRow,
-    onSetHeroCaptionLine,
     chartPalette,
     onSpawnConnect,
     onStartArrow,
@@ -148,8 +138,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenNote,
     onEditLink,
     onOpenEditDialog,
-    onDropIcon,
-    onLinkCell,
     onShiftSelect,
     tabVote,
     selfParticipant,
@@ -158,9 +146,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     readOnly,
     takePart = false,
     canMove,
-    canWriteText,
     canResize,
-    onEnterPortal,
     remoteCursors,
     remoteSelectionsByElement,
     shiftDupGhostIds,
@@ -203,32 +189,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onCastVote: readOnly && !takePart ? undefined : onCastVote,
     onRetractVote: readOnly && !takePart ? undefined : onRetractVote,
     onSetTextAlign: readOnly ? undefined : onSetTextAlign,
-    onCommitTable,
-    onCommitHeaderSize: readOnly ? undefined : onCommitHeaderSize,
-    // The seam's snap targets (docs/specs/009-elements/lane.md). Resolved here because this is where
-    // the sibling elements are: BoxedElementView only ever sees its own.
-    onSnapSeam: readOnly
-      ? undefined
-      : (
-          candidate: number,
-          axis: 'x' | 'y',
-          excludeId: string,
-          edgeOf: (el: LaneLike) => LaneGutterEdge,
-          sizeOf: (el: LaneLike) => number,
-        ) =>
-          snapSeamCoordinate(candidate, {
-            seams: laneSeamCoordinates(elements, axis, excludeId, edgeOf, sizeOf),
-            alignment: alignmentCoordinates(elements, axis, excludeId),
-          }).value,
-    onToggleChecklistItem: readOnly ? undefined : onToggleChecklistItem,
-    onSetEntityFields: readOnly ? undefined : entityActions?.setFields,
-    onStartFieldArrow: readOnly ? undefined : entityActions?.startFieldArrow,
     onAddEntityField: readOnly ? undefined : entityActions?.addFieldSelected,
     onAddRelatedEntity: readOnly ? undefined : entityActions?.addRelatedSelected,
     onSetPageHeading,
-    onSetWebRows: readOnly ? undefined : onSetWebRows,
-    onSetPointerTip: readOnly ? undefined : onSetPointerTip,
-    onSetHeroCaptionLine: readOnly ? undefined : onSetHeroCaptionLine,
     onFollowLink,
     onPressSessionButton,
     onRollPicker,
@@ -237,12 +200,9 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     onOpenNote,
     onEditLink,
     onOpenEditDialog,
-    onDropIcon,
-    onLinkCell,
     // docs/specs/008-canvas/canvas-performance.md: the rest of what each view receives, stable too.
     onSetSessionConfig,
     onOpenElementSettings,
-    onEnterPortal,
     onPauseTimer,
     onResumeTimer,
     onResetTimer,
@@ -299,8 +259,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   // paint — re-render this layer once they are in so every fitted label
   // re-measures in its real face (see useFontEpoch).
   const fontEpoch = useFontEpoch();
-  // What the tab's stacks hold, for the reflow glide (docs/specs/009-elements/stack.md "Animation").
-  const stackedIds = useMemo(() => stackedElementIds(elements), [elements]);
   // The font an element following the tab letters in, resolved once (docs/specs/004-interface-design/fonts.md):
   // the tab's, or the handwriting font on a Sketch tab (docs/specs/008-canvas/finish.md).
   const tabFontStack = resolveFontStack(elementFontId({}, tabFont, tabFinish));
@@ -375,16 +333,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       onBeginEdit: h.onBeginEdit,
       onCommitLabel: h.onCommitLabel,
       onSetTextAlign: h.onSetTextAlign,
-      onCommitTable: h.onCommitTable,
-      onCommitHeaderSize: h.onCommitHeaderSize,
-      onSnapSeam: h.onSnapSeam,
-      onToggleChecklistItem: h.onToggleChecklistItem,
-      onSetEntityFields: h.onSetEntityFields,
-      onStartFieldArrow: h.onStartFieldArrow,
       onSetPageHeading: h.onSetPageHeading,
-      onSetWebRows: h.onSetWebRows,
-      onSetPointerTip: h.onSetPointerTip,
-      onSetHeroCaptionLine: h.onSetHeroCaptionLine,
       chartPalette: stablePalette,
       onCancelEdit: h.onCancelEdit,
       onFollowLink: h.onFollowLink,
@@ -399,14 +348,11 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       timerControls,
       onRollPicker: h.onRollPicker,
       collab,
-      onEnterPortal: h.onEnterPortal,
       onOpenComments: h.onOpenComments,
       onOpenAction: h.onOpenAction,
       onOpenNote: h.onOpenNote,
       onEditLink: h.onEditLink,
       onOpenEditDialog: h.onOpenEditDialog,
-      onDropIcon: h.onDropIcon,
-      onLinkCell: h.onLinkCell,
       onContextSelect: h.handleElementContextSelect,
     }),
     [
@@ -552,7 +498,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             tabLayers={tabLayers}
             remoteSelectionsByElement={remoteSelectionsByElement}
             canMove={canMove}
-            canWriteText={canWriteText}
             canResize={canResize}
             voteReview={voteReview}
             commentActionsFor={commentActionsFor}
@@ -560,7 +505,6 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
             tabFont={tabFont}
             tabFinish={tabFinish}
             fontEpoch={fontEpoch}
-            stackedIds={stackedIds}
           />
 
           {/* The line or arrow being drawn (docs/specs/007-editor/editor-modes.md): the

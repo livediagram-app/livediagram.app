@@ -261,28 +261,8 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
   seed 7, base frequency 0.12) and one `feDisplacementMap` (scale 3) over a 5% margin.
 - WebKit (spec "In WebKit"): `lib/live-filter-cost.ts` `liveFiltersRedrawOnRepaint()` is true when `window` has
   `GestureEvent` (WebKit's own; `navigator.vendor` is not used, since jsdom answers Apple too). When it holds,
-  `BoxedElementView` passes `active={false}` to `SketchFace` (the face draws whole), and `ShapeContentRouter` wraps
-  icon and sticker art in `components/canvas/SketchArtPicture.tsx` instead of the `filter: url(#lvd-sketch-tile)`
-  div. `SketchArtPicture` renders an empty `[data-sketch-art-picture]` div (`aria-hidden`, `inert`, no pointer
-  events) then a hider div holding the live art, all `absolute inset-0` in a `relative h-full w-full` box (the box
-  the filtered div was). In a layout effect `sketchArtPictureCopy(live)` clones the art and swaps each top-level
-  `<svg>` for a `<span>` carrying the drawing's class and style (`display: block`, `position: relative`) that holds an
-  `<img>` (`alt=""`, a `data:image/svg+xml` URL of `sketchArtPictureMarkup(svg)`). The markup is the drawing at
-  its `clientWidth` x `clientHeight` (fill and stroke resolved from computed style wherever a class, `var(...)` or
-  `currentColor` set them; `color` from the drawing; ids and classes stripped) inside
-  `<g filter="url(#lvd-sketch-art)">` and `svgSketchArtFilter()` (`svg-render-sketch.ts`, the export's filter, so
-  the picture wobbles as the export does; its units are the picture's, so the scale changes only sharpness), in a
-  viewBox past the drawing by `SKETCH_ART_PICTURE_MARGIN` on each side. The image is laid out `scale` times the
-  margin-padded box (`left`/`top` at minus the margin, `width`/`height` at `(1 + 2 x margin) x scale x 100%`) and
-  shrunk by `transform: scale(1 / scale)` from its top left, because a filter in a picture runs at one pixel per
-  laid-out pixel. `scale = sketchArtRasterScale(longest side, devicePixelRatio x canvas zoom)`: the ceiling of the
-  screen pixels per CSS pixel, at most `SKETCH_ART_PICTURE_MAX_SCALE` and what keeps the padded side within
-  `SKETCH_ART_PICTURE_MAX_PX`, at least 1. The copy is re-taken through `watchUntilSettled(live, take, { resize: true })`
-  and replaces the pictures only when its markup changed; the hider is `visibility: hidden` while pictures show.
-  Art with a running animation (`getAnimations({ subtree: true })`) or a drawing with no size yet gets no copy: the
-  live art shows, unwobbled.
-- `components/canvas/settle-watch.ts`: `watchUntilSettled(live, take, { resize })`, the settle wait `SketchFace` and
-  `SketchArtPicture` share (a `MutationObserver` on the subtree, and a `ResizeObserver` after its first report when
+  `BoxedElementView` passes `active={false}` to `SketchFace` (the face draws whole).
+- `components/canvas/settle-watch.ts`: `watchUntilSettled(live, take, { resize })`, the settle wait `SketchFace` uses (a `MutationObserver` on the subtree, and a `ResizeObserver` after its first report when
   `resize` is set), with `SKETCH_INK_SETTLE_MS` and `SKETCH_INK_MAX_WAIT_MS`.
 - Lettering of faces: the `BoxedElementView` wrapper sets `fontFamily` to the element's resolved stack when there is
   one, so words a face writes itself inherit it.
@@ -521,10 +501,7 @@ per command letter.
 | one door to both pens; Marker in the export; backdrops       | `packages/document/src/hand-drawn.test.ts`                                                               |
 | export split, body placement, tab window frame, defs, fonts  | `packages/document/src/svg-render-sketch.test.ts`                                                        |
 | ink copy, settle and longest wait, single render             | `apps/live/components/canvas/SketchFace.test.tsx`                                                        |
-| face split per finish, element font on the wrapper           | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
-| WebKit: faces whole, icons as pictures, elsewhere unchanged  | `apps/live/components/canvas/BoxedElementView.sketch-face.test.tsx`                                      |
 | WebKit is told by `GestureEvent`                             | `apps/live/lib/live-filter-cost.test.ts`                                                                 |
-| pictures: markup, colours, ids, scale, margin, settle, reuse | `apps/live/components/canvas/SketchArtPicture.test.tsx`                                                  |
 
 ## Constants and configuration
 

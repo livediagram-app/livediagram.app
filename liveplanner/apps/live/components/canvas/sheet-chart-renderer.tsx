@@ -27,7 +27,6 @@ export type BoxedShared = Omit<
   | 'isEditing'
   | 'editCursorAtEnd'
   | 'movable'
-  | 'writable'
   | 'resizable'
   | 'isVoteFocus'
   | 'commentActions'
@@ -68,7 +67,6 @@ export function useSheetChartRenderer(
           isEditing={false}
           // The Sheet's frame moves and resizes it; nothing types on a chart.
           movable={false}
-          writable={false}
           resizable={false}
           readOnly={shared.readOnly || !interactive}
           fontFamily={resolveFontStack(element.font) ?? tabFontStack}

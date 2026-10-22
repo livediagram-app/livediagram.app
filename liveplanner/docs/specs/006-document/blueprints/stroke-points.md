@@ -192,7 +192,6 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Pen outline      | `packages/document/src/pen-stroke.ts`                                    | `freehandPenStroke` / `penStrokeSvg` decode                                         |
 | SVG export       | `packages/document/src/svg-render-shapes.ts`                             | decode                                                                              |
 | Stored migration | `packages/document/src/stored-elements.ts`                               | adds `migrateLegacyStrokePoints`                                                    |
-| Canvas view      | `apps/live/components/canvas/boxed-element-overlays.tsx`                 | decode                                                                              |
 | Style presets    | `apps/live/lib/style-presets.ts`                                         | re-pack without pressures                                                           |
 | Realtime         | `apps/live/app/document/[id]/useRoomConnection.ts`, `room-op-migrate.ts` | `migrateRoomOp` on receipt                                                          |
 | Clipboard        | `apps/live/lib/clipboard-payload.ts`                                     | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
