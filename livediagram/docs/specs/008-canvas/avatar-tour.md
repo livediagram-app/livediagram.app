@@ -38,7 +38,7 @@ sends no message and pushes nobody. There is nothing to take away and nothing in
 ## The steps
 
 A welcome card, five steps, then an outro card. The bookend cards sit outside the step count. Each step rings an
-element by its `data-tour-id`. The exact strings live in `apps/live/components/tour/avatar-tour-steps.ts`.
+element by its `data-tour-id`. The exact strings live in `apps/editor/components/tour/avatar-tour-steps.ts`.
 
 0. **Meet Your Avatar** (the offer): centred card with its own illustration (two pixel characters on a dotted
    canvas, one waving, a speech bubble rising from the other), offering a quick tour of dressing up, reacting,

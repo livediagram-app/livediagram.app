@@ -11,8 +11,8 @@ this blueprint adds only what the fifth mode changes.
 | The mode                   | `'workshop'`, a member of `EditorMode` (`packages/document/src/editor-mode.ts`)             |
 | Its catalogue entry        | `EDITOR_MODE_CATALOGUE` row `{ id: 'workshop', label: 'Workshop', description }` (D2)       |
 | Its mark                   | `FlipchartIcon` in `packages/ui/src/icons/drawing-kinds.tsx`, `EDITOR_MODE_ICONS.workshop`  |
-| Its palette layout         | `WORKSHOP: PaletteLayout` in `apps/live/components/palette/palette-layouts.ts`              |
-| The strip's tools per mode | `sessionStripTools(mode, esBoard)` in `apps/live/components/canvas/SessionClusterStrip.tsx` |
+| Its palette layout         | `WORKSHOP: PaletteLayout` in `apps/editor/components/palette/palette-layouts.ts`              |
+| The strip's tools per mode | `sessionStripTools(mode, esBoard)` in `apps/editor/components/canvas/SessionClusterStrip.tsx` |
 | Its blank                  | template kind `'blank-session'`, label "Blank Session", document name "Untitled Session"    |
 | Its default folder key     | `'mode:workshop'`, words `{ label: 'Sessions', noun: 'sessions' }` (`MODE_WORDS`)           |
 
@@ -153,7 +153,7 @@ export const EDITOR_MODE_ICONS: Record<EditorMode, IconComponent>; // key type d
 | Strip per mode; Diagram none while running                                                | `components/canvas/SessionClusterStrip.test.tsx`                                                                           |
 | Strip kept on an event-storming board                                                     | `SessionClusterStrip.test.tsx`                                                                                             |
 | Share roles in Workshop                                                                   | `SessionClusterStrip.test.tsx` (view role), `palette-layouts.test.ts` (participant tiles), `StartModeSwitch.menu.test.tsx` |
-| Templates open in Workshop; blank                                                         | `apps/live/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                                |
+| Templates open in Workshop; blank                                                         | `apps/editor/lib/templates.test.ts`, `packages/templates/src/popular.test.ts`                                                |
 | Default folder key + label                                                                | `default-key-entries.test.ts`, api-schema `placement-defaults.test.ts`                                                     |
 | Explorer Opens in chip                                                                    | `packages/explorer-lens` tests                                                                                             |
 | OpenAPI enum current                                                                      | `apps/api` `manifest.test.ts`                                                                                              |

@@ -17,15 +17,15 @@ Scope, by file:
 | `packages/document/src/svg-render-data.ts`                | `svgProgressBar`, `svgProgressRing`, `PROGRESS_LABEL_PX`: the export body    |
 | `packages/document/src/svg-render-body.ts`                | `svgElementBody`: the export dispatch, its track from `progressTrackColour`  |
 | `packages/document/src/progress-colours.ts`               | `PROGRESS_TRACK_DEFAULT`, `progressTrackColour`, `progressLabelInks`         |
-| `apps/live/components/canvas/ProgressView.tsx`            | Canvas bar and ring, the `lvd-prog-*` class choice                           |
-| `apps/live/components/canvas/ShapeContentRouter.tsx`      | Routes the two kinds to `ProgressView` ahead of `ShapeSvgOverlay`            |
-| `apps/live/app/canvas-motion.css`                         | The `lvd-prog-*` keyframes and their reduced-motion override                 |
-| `apps/live/lib/icons.ts`                                  | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties       |
-| `apps/live/components/palette/ElementDataSections.tsx`    | The Progress section inside the Tools flyout                                 |
-| `apps/live/components/palette/context-menu-data-rows.tsx` | `ProgressRow`, `PercentSliderRow`, `ProgressAnimTiles`, `AnimTiles`          |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`           | The four progress setters, via `makeShapePatcher`                            |
-| `apps/live/hooks/canvas/shape-patcher.ts`                 | `makeShapePatcher`: selection-wide, kind-gated patch plus telemetry          |
-| `apps/live/components/palette/palette-tile-defs.tsx`      | Tiles `data:progress-bar` and `data:progress-ring`                           |
+| `apps/editor/components/canvas/ProgressView.tsx`            | Canvas bar and ring, the `lvd-prog-*` class choice                           |
+| `apps/editor/components/canvas/ShapeContentRouter.tsx`      | Routes the two kinds to `ProgressView` ahead of `ShapeSvgOverlay`            |
+| `apps/editor/app/canvas-motion.css`                         | The `lvd-prog-*` keyframes and their reduced-motion override                 |
+| `apps/editor/lib/icons.ts`                                  | `animSpeedVars`: the `--lvd-prog-speed` / `--lvd-prog-iter` properties       |
+| `apps/editor/components/palette/ElementDataSections.tsx`    | The Progress section inside the Tools flyout                                 |
+| `apps/editor/components/palette/context-menu-data-rows.tsx` | `ProgressRow`, `PercentSliderRow`, `ProgressAnimTiles`, `AnimTiles`          |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`           | The four progress setters, via `makeShapePatcher`                            |
+| `apps/editor/hooks/canvas/shape-patcher.ts`                 | `makeShapePatcher`: selection-wide, kind-gated patch plus telemetry          |
+| `apps/editor/components/palette/palette-tile-defs.tsx`      | Tiles `data:progress-bar` and `data:progress-ring`                           |
 
 ## Domain and naming
 
@@ -140,7 +140,7 @@ progress?: number;
 progressAnim?: ProgressAnim;
 progressAnimSpeed?: AnimationSpeed;
 progressAnimRepeat?: boolean;
-// apps/live
+// apps/editor
 export function ProgressView(props: {
   element: ShapeElement;
   accent: string;
@@ -232,9 +232,9 @@ No log fingerprints: rendering is pure and the setters report through telemetry 
 | Export draws the body, rasterised in PNG          | draws more than a box and a label for each of them; rasterises every kind whose body the SVG emitter draws | `packages/document/src/export-consistency.test.ts`  |
 | Export on dark paper paints no light track        | paints no element kind on a light base unless the element stores that fill                                 | `packages/document/src/svg-render-surface.test.ts`  |
 | Track follows the paper; label AA on both parts   | `progressTrackColour`, `progressLabelInks`, `svgProgressBar label` cases                                   | `packages/document/src/progress-colours.test.ts`    |
-| Canvas splits the label per part, clips grow      | `ProgressView bar label` cases                                                                             | `apps/live/components/canvas/ProgressView.test.tsx` |
+| Canvas splits the label per part, clips grow      | `ProgressView bar label` cases                                                                             | `apps/editor/components/canvas/ProgressView.test.tsx` |
 | Fill colour supported                             | stays on for the shapes that do paint one                                                                  | `packages/document/src/colors.test.ts`              |
-| Setter patches only its kind, empty = no trace    | `makeShapePatcher` cases (rating fixture)                                                                  | `apps/live/hooks/canvas/shape-patcher.test.ts`      |
+| Setter patches only its kind, empty = no trace    | `makeShapePatcher` cases (rating fixture)                                                                  | `apps/editor/hooks/canvas/shape-patcher.test.ts`      |
 | Seeds `progress: 50`, `progressAnim: 'fill'`      | none [GE11]                                                                                                |                                                     |
 | `clampPercent` rounds and clamps                  | none [GE11]                                                                                                |                                                     |
 | Fill once, pulse / stripes loop, repeat overrides | none (`animLoops`) [GE11]                                                                                  |                                                     |

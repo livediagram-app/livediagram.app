@@ -25,21 +25,21 @@ Scope, by file:
 | `packages/document/src/graph-authoring.ts`                             | `entityNode`: a graph node with fields is an entity                     |
 | `packages/document/src/mermaid-er.ts`                                  | Attribute markers become the field's key                                |
 | `packages/document/src/element-normalise.ts`                           | `normaliseEntity`: an authored box fits its rows                        |
-| `apps/live/components/canvas/entity/EntityView.tsx`                    | `EntityView`: band, stripes, gutter, rows                               |
-| `apps/live/components/canvas/entity/EntityFieldControls.tsx`           | Double-click to edit, field ports, hover light                          |
-| `apps/live/components/canvas/entity/EntityFieldEditor.tsx`             | One field edited in place                                               |
-| `apps/live/components/canvas/entity/EntityKeyGlyph.tsx`                | The key glyphs on canvas and in the menu                                |
-| `apps/live/components/canvas/entity/CardinalityButton.tsx`             | The arrow toolbar's Cardinality group                                   |
-| `apps/live/components/canvas/entity/entity-actions.ts`                 | `EntityCanvasActions`: what a selected entity's view may call           |
-| `apps/live/lib/entity-field-edit.ts`                                   | The field being edited in place (module store)                          |
-| `apps/live/hooks/canvas/useEntityActions.ts`                           | The editor verbs                                                        |
-| `apps/live/hooks/canvas/arrow-endpoint-resolve.ts`                     | A dragged end snaps to a field row                                      |
-| `apps/live/hooks/canvas/useEditorDrag.ts`                              | Relationship heads on release                                           |
-| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`                       | `beginAnchorDrag(…, { field })`                                         |
-| `apps/live/components/canvas/QuickConnectRing.tsx` (+ options, pluses) | Add Related Entity, Add Field                                           |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`                        | `setEntityFieldsSelected` (the menu)                                    |
-| `apps/live/components/palette/EntityFieldsEditor.tsx`                  | The Fields menu section                                                 |
-| `apps/live/components/palette/palette-tile-defs.tsx`                   | Tile `tools:entity`, section `components`                               |
+| `apps/editor/components/canvas/entity/EntityView.tsx`                    | `EntityView`: band, stripes, gutter, rows                               |
+| `apps/editor/components/canvas/entity/EntityFieldControls.tsx`           | Double-click to edit, field ports, hover light                          |
+| `apps/editor/components/canvas/entity/EntityFieldEditor.tsx`             | One field edited in place                                               |
+| `apps/editor/components/canvas/entity/EntityKeyGlyph.tsx`                | The key glyphs on canvas and in the menu                                |
+| `apps/editor/components/canvas/entity/CardinalityButton.tsx`             | The arrow toolbar's Cardinality group                                   |
+| `apps/editor/components/canvas/entity/entity-actions.ts`                 | `EntityCanvasActions`: what a selected entity's view may call           |
+| `apps/editor/lib/entity-field-edit.ts`                                   | The field being edited in place (module store)                          |
+| `apps/editor/hooks/canvas/useEntityActions.ts`                           | The editor verbs                                                        |
+| `apps/editor/hooks/canvas/arrow-endpoint-resolve.ts`                     | A dragged end snaps to a field row                                      |
+| `apps/editor/hooks/canvas/useEditorDrag.ts`                              | Relationship heads on release                                           |
+| `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`                       | `beginAnchorDrag(…, { field })`                                         |
+| `apps/editor/components/canvas/QuickConnectRing.tsx` (+ options, pluses) | Add Related Entity, Add Field                                           |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`                        | `setEntityFieldsSelected` (the menu)                                    |
+| `apps/editor/components/palette/EntityFieldsEditor.tsx`                  | The Fields menu section                                                 |
+| `apps/editor/components/palette/palette-tile-defs.tsx`                   | Tile `tools:entity`, section `components`                               |
 | `packages/templates/src/template-builders-uml.ts`                      | UML class template built from entities                                  |
 | `packages/templates/src/template-builders-er.ts`                       | Database schema template: keys and ER ends                              |
 | `packages/document-views/src/content-summary.ts`                       | A field's key in the text views                                         |
@@ -163,7 +163,7 @@ entityPartAt(el, count, point): EntityPart | null; snapToEntityField(cursor, ele
 // packages/document/src/entity-related.ts
 buildRelatedEntity(source, side: RelatedSide, elements): { entity; arrow };
 
-// apps/live/hooks/canvas/useEntityActions.ts
+// apps/editor/hooks/canvas/useEntityActions.ts
 { setFields, startFieldArrow, addFieldSelected, addRelatedSelected, setCardinalitySelected }
 ```
 
@@ -266,11 +266,11 @@ None in code today [GA1]; telemetry: `Element·Changed·Entity`, `Added·EntityF
 | Field snap (B8)                                    | snapToEntityField                                 | `packages/document/src/entity-related.test.ts`                    |
 | Validation of key and field                        | validation                                        | `packages/document/src/entity-fields.test.ts`                     |
 | Export band, stripe, glyphs (I3)                   | export                                            | `packages/document/src/entity-fields.test.ts`                     |
-| In-place edit, ports (B6, B7)                      | EntityFieldControls                               | `apps/live/components/canvas/entity/EntityFieldControls.test.tsx` |
-| Menu key button and remove remap                   | EntityFieldsEditor                                | `apps/live/components/palette/EntityFieldsEditor.test.tsx`        |
+| In-place edit, ports (B6, B7)                      | EntityFieldControls                               | `apps/editor/components/canvas/entity/EntityFieldControls.test.tsx` |
+| Menu key button and remove remap                   | EntityFieldsEditor                                | `apps/editor/components/palette/EntityFieldsEditor.test.tsx`        |
 | Mermaid keys                                       | parseMermaid: ER diagrams                         | `packages/document/src/mermaid-er.test.ts`                        |
-| Schema template keys and ER ends                   | database schema (er-diagram)                      | `apps/live/lib/template-technical.test.ts`                        |
-| Class template uses entities, fields as rows       | class diagram drops four entity classes           | `apps/live/lib/templates.test.ts`                                 |
+| Schema template keys and ER ends                   | database schema (er-diagram)                      | `apps/editor/lib/template-technical.test.ts`                        |
+| Class template uses entities, fields as rows       | class diagram drops four entity classes           | `apps/editor/lib/templates.test.ts`                                 |
 
 ## Constants and configuration
 

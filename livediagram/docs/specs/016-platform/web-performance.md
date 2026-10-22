@@ -50,7 +50,7 @@ Next renders the root not-found slot inside the layout, so its code is part of e
   ([Drive mirror](../022-drive-mirror/drive-mirror.md)); every other tab, and every person without
   Drive, never downloads it. The token source every signed-in tab needs lives apart from it
   (`lib/drive/browser-tokens.ts`).
-- `apps/live/app/first-load-lazy.test.ts` fails if any of these become static imports again.
+- `apps/editor/app/first-load-lazy.test.ts` fails if any of these become static imports again.
 
 ### A surface that is not on screen loads when it is
 
@@ -62,7 +62,7 @@ this way. Where switching to one must stay instant, its code is fetched once the
 
 ### The document page loads what a board may not need on demand
 
-`apps/live/lib/editor-deferred-code.ts` names every module the editor loads on demand, so a surface's
+`apps/editor/lib/editor-deferred-code.ts` names every module the editor loads on demand, so a surface's
 `next/dynamic` and the prefetch below share one import:
 
 - **Content a board may draw on open**: Pages mode's pages and their writing, the Draw dock, tables
@@ -79,7 +79,7 @@ this way. Where switching to one must stay instant, its code is fetched once the
   first drawn in, measured then rather than before it is on the page.
 - A panel whose code cannot load (offline behind the load-error card) draws nothing rather than
   throwing into the screen around it.
-- `apps/live/app/document/[id]/document-lazy-load.test.ts` fails if any of these become static
+- `apps/editor/app/document/[id]/document-lazy-load.test.ts` fails if any of these become static
   imports again.
 
 ### A page loads only the scene it shows

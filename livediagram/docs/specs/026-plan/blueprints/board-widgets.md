@@ -19,14 +19,14 @@ packages/items/src/board-widgets.ts      kinds, default set, readBoardWidgets, w
                                          nudgeWidget, removeWidget (pure)
 packages/items/src/board.ts              PlanBoardSetup.widgets; normaliseBoardSetup keeps it via readBoardWidgets
 packages/plan-art/src/board-widget-info.ts            BOARD_WIDGET_INFO (label, description)
-apps/live/components/plan/plan-tile-art.tsx           BoardWidgetArt (one Glyph per kind)
+apps/editor/components/plan/plan-tile-art.tsx           BoardWidgetArt (one Glyph per kind)
 packages/plan-art/src/widget-stats.ts                 boardItems, boardPeople, boardTypeCounts, overWipColumns,
                                                       dueCounts (pure)
-apps/live/components/plan/widgets/BoardWidgetView.tsx one pill per kind (WIDGET_PILL, 28 px)
-apps/live/components/plan/widgets/BoardWidgetZone.tsx the zone: order, reorder drag, keys, ×, the + and its picker
-apps/live/components/plan/PlanBoardHeader.tsx         title, zone, Reveal / Retry, the unplaced list
-apps/live/hooks/plan/widget-slot.ts                   widgetSlotAt (the reorder's landmark)
-apps/live/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the widgets the board lacks, a row each
+apps/editor/components/plan/widgets/BoardWidgetView.tsx one pill per kind (WIDGET_PILL, 28 px)
+apps/editor/components/plan/widgets/BoardWidgetZone.tsx the zone: order, reorder drag, keys, ×, the + and its picker
+apps/editor/components/plan/PlanBoardHeader.tsx         title, zone, Reveal / Retry, the unplaced list
+apps/editor/hooks/plan/widget-slot.ts                   widgetSlotAt (the reorder's landmark)
+apps/editor/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the widgets the board lacks, a row each
 ```
 
 ## Behaviour and state
@@ -107,7 +107,7 @@ apps/live/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the widg
 | ------------------------------------------------- | ---------------------------------------------------------- |
 | Known kinds once, default set, place/nudge/remove | packages/items/src/board-widgets.test.ts                   |
 | Counts behind People, Types, WIP, Due             | packages/plan-art/src/widget-stats.test.ts                 |
-| Slot math, the + picker offering only the missing | apps/live/components/plan/widgets/BoardWidgetZone.test.tsx |
+| Slot math, the + picker offering only the missing | apps/editor/components/plan/widgets/BoardWidgetZone.test.tsx |
 
 ## Constants and configuration
 

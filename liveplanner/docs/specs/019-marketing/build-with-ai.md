@@ -22,7 +22,7 @@ Status: shipped
 
 ## The clients
 
-`lib/ai-clients.ts` holds the clients as data: an `id` (the URL hash), a `name`, a `group`, a one-line `blurb`, and `steps`, each step a sentence with optional code (`{ lang, code }`) or a link button (`{ href, label }`). One address constant, `MCP_URL`, feeds every snippet: this deployment's MCP worker, read from `NEXT_PUBLIC_MCP_ORIGIN` through the resolver the live app's consent pages use (`resolveMcpOrigin`, `@liveplanner/api-schema`), so a staging or local build shows its own address and the hosted one shows `https://mcp.liveplanner.app/mcp`.
+`lib/ai-clients.ts` holds the clients as data: an `id` (the URL hash), a `name`, a `group`, a one-line `blurb`, and `steps`, each step a sentence with optional code (`{ lang, code }`) or a link button (`{ href, label }`). One address constant, `MCP_URL`, feeds every snippet: this deployment's MCP worker, read from `NEXT_PUBLIC_MCP_ORIGIN` through the resolver the editor app's consent pages use (`resolveMcpOrigin`, `@liveplanner/api-schema`), so a staging or local build shows its own address and the hosted one shows `https://mcp.liveplanner.app/mcp`.
 
 | id            | Name        | Group         | The way in                                                                                                                                                                                                       |
 | ------------- | ----------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

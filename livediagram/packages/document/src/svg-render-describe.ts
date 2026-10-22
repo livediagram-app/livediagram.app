@@ -121,7 +121,7 @@ export type BoxedExportOptions = {
   // Something sits on this shape (sketch-backdrop.ts): under Sketch it keeps a solid fill.
   sketchBackdrop?: boolean;
   // The paper the export is being drawn on, for elements that carry no
-  // colours of their own (docs/specs/007-editor/live-app.md). Defaults to light, so a caller that
+  // colours of their own (docs/specs/007-editor/editor-app.md). Defaults to light, so a caller that
   // doesn't say gets exactly the output it always got.
   surface?: CanvasSurface;
   // The paper colour under the element, for what cuts through to it (a page's fold).

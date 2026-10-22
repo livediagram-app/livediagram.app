@@ -4,7 +4,7 @@ Derived from [Share roles](../share-roles.md), with the room of
 [Realtime conflict resolution](../../012-collaboration/realtime-conflict-resolution.md) and
 [Collab race hardening](../../012-collaboration/collab-race-hardening.md), the queued tab write of the
 [Q&A board](../../012-collaboration/qa-board.md), the baton of [Facilitator](../../012-collaboration/facilitator.md),
-the pass and pill of [Live app](../../007-editor/live-app.md#share-dialog), [Embeds](../embeds.md), the Plan item
+the pass and pill of [Editor app](../../007-editor/editor-app.md#share-dialog), [Embeds](../embeds.md), the Plan item
 and Sheet doors of [Plan board](../../026-plan/plan-board.md) and [Sheet store](../../029-sheets/sheet-store.md), and the share
 types of [Telemetry](../../017-telemetry/telemetry.md). The code sites it answers are catalogued in
 `docs/research/access-levels/current-abilities.md`. The spec decides; this file only adds engineering precision.
@@ -36,11 +36,11 @@ socket, the answers route, a look-only Viewer) are not derived here; their earli
 | `apps/api/src/routes/item-routes.ts`, `item-patches-route.ts`                                                | Create, patch, move and patches at participate                                                 |
 | `apps/api/src/routes/sheet-route-kit.ts`, `sheet-write-route.ts`                                             | `cells` writes at participate                                                                  |
 | `packages/agent-verbs/src/mcp/*`                                                                             | `share_document.role` takes three levels, default `participate`                                |
-| `apps/live/lib/editor-capabilities.ts` (new)                                                                 | `resolveEditorCapabilities`, `EditorCapabilities`                                              |
-| `apps/live/app/document/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`) | `sessionRole: AccessLevel`; `can`; the participant save flow                                   |
-| `apps/live/components/dialogs/ShareComposer.tsx`, `share-dialog-parts.tsx`                                   | Three cards                                                                                    |
-| `apps/live/components/chrome/RoleIndicator.tsx`, `app/document/[id]/useRoleIndicator.ts`                     | Participating pill                                                                             |
-| `apps/live/lib/collaborator-roster.ts`, `app/explorer/views.tsx`                                             | Participant badge; Participate chip                                                            |
+| `apps/editor/lib/editor-capabilities.ts` (new)                                                                 | `resolveEditorCapabilities`, `EditorCapabilities`                                              |
+| `apps/editor/app/document/[id]/*` (`useViewPreview`, `useEditorState`, `tab-save-flow`, `editor-page-helpers`) | `sessionRole: AccessLevel`; `can`; the participant save flow                                   |
+| `apps/editor/components/dialogs/ShareComposer.tsx`, `share-dialog-parts.tsx`                                   | Three cards                                                                                    |
+| `apps/editor/components/chrome/RoleIndicator.tsx`, `app/document/[id]/useRoleIndicator.ts`                     | Participating pill                                                                             |
+| `apps/editor/lib/collaborator-roster.ts`, `app/explorer/views.tsx`                                             | Participant badge; Participate chip                                                            |
 
 ## Domain and naming
 
@@ -423,10 +423,10 @@ The Share dialog is a lazy chunk; a third card adds no request. A Participant's 
 | Write: applied, unchanged, refused, CAS retry, 404, 409, 413    | `apps/api/src/participant-write.test.ts`                             |
 | Room: op gate per level; participant path; adder header         | `apps/api/src/document-room.test.ts`, `document-room-routes.test.ts` |
 | Items and Sheets doors at participate                           | `apps/api/src/routes/item-routes.test.ts`, `sheet-routes.test.ts`    |
-| Capabilities per level                                          | `apps/live/lib/editor-capabilities.test.ts`                          |
-| Participant save branch                                         | `apps/live/app/document/[id]/tab-save-flow.test.ts`                  |
-| Three cards and keys                                            | `apps/live/components/dialogs/ShareDialog.test.tsx`                  |
-| Pill per level                                                  | `apps/live/components/chrome/RoleIndicator.test.tsx`                 |
+| Capabilities per level                                          | `apps/editor/lib/editor-capabilities.test.ts`                          |
+| Participant save branch                                         | `apps/editor/app/document/[id]/tab-save-flow.test.ts`                  |
+| Three cards and keys                                            | `apps/editor/components/dialogs/ShareDialog.test.tsx`                  |
+| Pill per level                                                  | `apps/editor/components/chrome/RoleIndicator.test.tsx`                 |
 | MCP default and enum                                            | `packages/agent-verbs` MCP schema tests                              |
 
 ## Constants and configuration

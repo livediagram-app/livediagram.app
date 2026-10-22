@@ -1,6 +1,6 @@
 // Share dialog, share-gate and Community scenes for the Collaboration › Sharing articles
 // (docs/specs/018-help/help-app.md). Drawn from the live Share dialog
-// (apps/live/components/dialogs/Share*.tsx): every link is a pass with a role-coloured band across its top, the
+// (apps/editor/components/dialogs/Share*.tsx): every link is a pass with a role-coloured band across its top, the
 // composer's fine print holds Opens / Valid / Create Pass, and the password is one switch beneath the
 // passes. Labels are the real UI strings.
 

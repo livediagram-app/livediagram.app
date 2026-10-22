@@ -10,20 +10,20 @@ and from [Avatar tour](../avatar-tour.md).
 | `packages/api-schema/src/avatar-say.ts`                | `AvatarSayOp`, the limits, `parseAvatarSay`, `countWords`, `clampSayText`                         |
 | `packages/api-schema/src/room-messages.ts`             | `avatar-say` in `PRESENCE_OP_KINDS`                                                               |
 | `apps/api/src/room-op-gate.ts`                         | Drops a Viewer's `avatar-say`, and one `parseAvatarSay` refuses                                   |
-| `apps/live/lib/avatar-speech.ts`                       | Pure: `flightMs`, `bubbleMotion`, `admitBubble`, `headPoint`, `SeenIds`                           |
-| `apps/live/lib/avatar-speech-store.ts`                 | The bubbles on screen: `addOwnBubble`, `receivePeerSay`, `useSpeechBubbles`, `resetSpeechBubbles` |
-| `apps/live/hooks/canvas/useAvatarSpeech.ts`            | Composer state, cooldown, the floating bubbles, send and receive                                  |
-| `apps/live/components/canvas/AvatarSpeechLayer.tsx`    | The composer and the bubbles, in canvas space at reading size; the live region                    |
-| `apps/live/components/canvas/AvatarSpeechBubble.tsx`   | One bubble's look (tail, name, text), shared by the composer and a floating bubble                |
-| `apps/live/components/canvas/AvatarClusterButton.tsx`  | The Avatar button in the bottom-right cluster                                                     |
-| `apps/live/components/panels/AvatarPanel.tsx`          | The panel, now a popover, with Send a Message                                                     |
-| `apps/live/components/panels/AvatarMessagePopover.tsx` | The panel's message popover                                                                       |
-| `apps/live/hooks/collab/useEditorBroadcast.ts`         | `broadcastAvatarSay`                                                                              |
-| `apps/live/app/document/[id]/useRoomConnection.ts`     | Routes a received `avatar-say` to the speech hook                                                 |
-| `apps/live/components/tour/avatar-tour-steps.ts`       | The tour's steps                                                                                  |
-| `apps/live/components/tour/AvatarTourHost.tsx`         | Orchestrates the tour, as `DrawTourHost`                                                          |
-| `apps/live/components/tour/AvatarTourArt.tsx`          | The welcome card's illustration                                                                   |
-| `apps/live/lib/avatar-tour.ts`                         | The relaunch event                                                                                |
+| `apps/editor/lib/avatar-speech.ts`                       | Pure: `flightMs`, `bubbleMotion`, `admitBubble`, `headPoint`, `SeenIds`                           |
+| `apps/editor/lib/avatar-speech-store.ts`                 | The bubbles on screen: `addOwnBubble`, `receivePeerSay`, `useSpeechBubbles`, `resetSpeechBubbles` |
+| `apps/editor/hooks/canvas/useAvatarSpeech.ts`            | Composer state, cooldown, the floating bubbles, send and receive                                  |
+| `apps/editor/components/canvas/AvatarSpeechLayer.tsx`    | The composer and the bubbles, in canvas space at reading size; the live region                    |
+| `apps/editor/components/canvas/AvatarSpeechBubble.tsx`   | One bubble's look (tail, name, text), shared by the composer and a floating bubble                |
+| `apps/editor/components/canvas/AvatarClusterButton.tsx`  | The Avatar button in the bottom-right cluster                                                     |
+| `apps/editor/components/panels/AvatarPanel.tsx`          | The panel, now a popover, with Send a Message                                                     |
+| `apps/editor/components/panels/AvatarMessagePopover.tsx` | The panel's message popover                                                                       |
+| `apps/editor/hooks/collab/useEditorBroadcast.ts`         | `broadcastAvatarSay`                                                                              |
+| `apps/editor/app/document/[id]/useRoomConnection.ts`     | Routes a received `avatar-say` to the speech hook                                                 |
+| `apps/editor/components/tour/avatar-tour-steps.ts`       | The tour's steps                                                                                  |
+| `apps/editor/components/tour/AvatarTourHost.tsx`         | Orchestrates the tour, as `DrawTourHost`                                                          |
+| `apps/editor/components/tour/AvatarTourArt.tsx`          | The welcome card's illustration                                                                   |
+| `apps/editor/lib/avatar-tour.ts`                         | The relaunch event                                                                                |
 
 ## Domain and naming
 
@@ -217,10 +217,10 @@ canvas. INP: Enter opens the composer in one render.
 | Parser rejections                    | same                                                     |
 | Presence classification              | `room-messages` tests: `avatar-say` is presence          |
 | Room drops a Viewer's op             | `apps/api` document-room role test                       |
-| Flight time, motion, cap, seen ids   | `apps/live/lib/avatar-speech.test.ts`                    |
-| Enter opens; Escape cancels; send    | `apps/live/hooks/canvas/useAvatarSpeech.test.tsx`        |
+| Flight time, motion, cap, seen ids   | `apps/editor/lib/avatar-speech.test.ts`                    |
+| Enter opens; Escape cancels; send    | `apps/editor/hooks/canvas/useAvatarSpeech.test.tsx`        |
 | Viewer cannot open                   | same                                                     |
-| Composer and bubbles render          | `apps/live/components/canvas/AvatarSpeechLayer.test.tsx` |
+| Composer and bubbles render          | `apps/editor/components/canvas/AvatarSpeechLayer.test.tsx` |
 | Panel button and message popover     | `AvatarPanel.test.tsx`, `AvatarMessagePopover.test.tsx`  |
 | Avatar button shows only in the mode | `AvatarClusterButton.test.tsx`                           |
 | Tour steps filter, telemetry tokens  | `avatar-tour-steps.test.ts`, `AvatarTourHost.test.tsx`   |

@@ -67,8 +67,8 @@ toggle.
   the tool row rather than inside the tool group.
 
 A phone held sideways folds the header and the tab bar on its own, without zen mode, and
-shows them again from a handle ([A phone held sideways](live-app.md#a-phone-held-sideways)); in zen
+shows them again from a handle ([A phone held sideways](editor-app.md#a-phone-held-sideways)); in zen
 mode that handle is not drawn.
 
-See also [Live app](live-app.md) (editor chrome) and
+See also [Editor app](editor-app.md) (editor chrome) and
 [Canvas and palette](../008-canvas/canvas-and-palette.md) (palette tool row + shortcuts).

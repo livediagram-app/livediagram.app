@@ -22,5 +22,5 @@ query, [Community](../025-community/community.md)). The box always reads as the 
 
 ## Building it
 
-- `FilterSearchBox` (apps/live/components/primitives) draws the field; the caller owns what a chip and the add
+- `FilterSearchBox` (apps/editor/components/primitives) draws the field; the caller owns what a chip and the add
   control mean. The Community box predates it and writes its filters as text tokens; both read the same way.

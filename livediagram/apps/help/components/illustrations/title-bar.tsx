@@ -1,5 +1,5 @@
 // The editor's title bar for the User Interface › The Title Bar article (docs/specs/018-help/help-app.md).
-// Drawn from the live header (apps/live/components/chrome/EditorHeader.tsx): the logo and section menu,
+// Drawn from the live header (apps/editor/components/chrome/EditorHeader.tsx): the logo and section menu,
 // the document name, the visibility pill (SharedBadge), the role pill (RoleIndicator), Share and the
 // account button; and the visibility pill's legend (VisibilityLegend). Labels are the real UI strings,
 // in capitals where the editor prints them in capitals.

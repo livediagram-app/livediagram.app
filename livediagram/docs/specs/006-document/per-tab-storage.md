@@ -21,7 +21,7 @@ D1. Cost grows linearly with the document's tab count.
 - ~~Sharing a tab across documents~~ — landed in [Tab ↔ document many-to-many](tab-document-many-to-many.md) (migration 0011). The link table lives next to `tabs` and holds the per-document placement.
 - Per-element rows / CRDT. Each tab still serialises its `elements`
   array as JSON within its row; the granularity stops at the tab.
-- Online migration. The cutover is one D1 migration; the live app
+- Online migration. The cutover is one D1 migration; the editor app
   hydrates the new schema on the next save.
 
 ## Data model
@@ -45,7 +45,7 @@ A `tabs` row is the tab's body and nothing else. Which documents contain it, and
 
 The table was introduced by `0005_tabs.sql` and has this shape since `0049_tabs_drop_legacy_columns.sql`, which removed the original `document_id` + `order_index` columns and the `document_id` foreign key.
 
-`documents` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the live app had been on the new schema for a release window.
+`documents` keeps `id`, `owner_id`, `name`, `shareable`, `folder_id`, `saved_at`, `created_at`. The `data` column was dropped in migration 0006 once the editor app had been on the new schema for a release window.
 
 ## API surface
 
@@ -71,7 +71,7 @@ Realtime room op stays element-level for the cursor / select / log
 broadcasts; the `tabs` op shrinks to `{ kind: 'tab', tabId, tab }`
 so peers only get the one that changed.
 
-## Live app
+## Editor app
 
 1. On hydration: fetch the document + tab summaries. The active tab is
    lazily fetched (single `GET /tabs/:id`); other tabs hydrate
@@ -182,13 +182,13 @@ not only on the next edit: during an outage or a deploy, the last edit before so
 would otherwise wait for an edit that may never come. The retry waits 5 seconds, then doubles (10,
 20, 40) up to a minute between attempts, and resets after a save succeeds. Each attempt re-sends
 whatever still differs from the last saved state, so nothing is sent twice
-(`apps/live/app/document/[id]/useAutosave.ts`, `saveRetryDelayMs`).
+(`apps/editor/app/document/[id]/useAutosave.ts`, `saveRetryDelayMs`).
 
 A save that never answers counts as failed too. Each tab's saves run one after another, so a request
 left hanging on a stalled connection (a laptop switching networks can hold one open for minutes)
 used to hold back every later save of that tab. A tab save and a document meta save now give up
 after 20 seconds plus the time to upload their body at 16 KB/s (`saveTimeoutMs` in
-`apps/live/lib/api/core.ts`: just over two and a half minutes for the largest tab), and the retry
+`apps/editor/lib/api/core.ts`: just over two and a half minutes for the largest tab), and the retry
 above sends the newest content on a fresh connection.
 
 ### An unauthenticated save names the sign-in

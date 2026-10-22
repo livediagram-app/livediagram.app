@@ -82,7 +82,7 @@ it brings are a card-type change of their own and stay after an undo, as a templ
    "<Form> Responses" with three columns (**New**, **In Progress**, **Done**), its status **New**; for a sheet
    starter, a new Sheet tab "<Form> Responses" after the Form tab (in its theme) holding one blank sheet, made at
    once (without opening its tab) so responses have a sheet before anyone opens it, and steps 3 and 4 are skipped.
-   The sheet's create waits for the new tab's own save (`whenTabSaved`, `apps/live/lib/tab-saved.ts`, noted by
+   The sheet's create waits for the new tab's own save (`whenTabSaved`, `apps/editor/lib/tab-saved.ts`, noted by
    autosave, at most `TAB_SAVE_WAIT_MS` 8 s), so it never reaches the server ahead of its tab and comes back 404 to
    be retried: a new form leaves the console clean;
 3. picks the **card type**: the starter's ready-made type, the document's own copy first (Bug for Bug Report, Idea

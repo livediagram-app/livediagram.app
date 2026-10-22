@@ -41,7 +41,7 @@ Turbo spins up all seven dev servers in parallel:
 | ---------------- | -------------------------------------------------------------------------------------------------- |
 | `apps/router`    | `http://localhost:3000` — **everything on one port**, stitched like production                     |
 | `apps/marketing` | `http://localhost:3001`                                                                            |
-| `apps/live`      | `http://localhost:3002` (clean routes: /new, /explorer, ...)                                       |
+| `apps/editor`      | `http://localhost:3002` (clean routes: /new, /explorer, ...)                                       |
 | `apps/help`      | `http://localhost:3004/help`                                                                       |
 | `apps/community` | `http://localhost:3005/community`                                                                  |
 | `apps/api`       | `http://localhost:8787/api`                                                                        |
@@ -54,7 +54,7 @@ The `router` dev server (`wrangler dev --env local`, port 3000) gives you the pr
 **Use port 3000 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api` — correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3002` cannot reach the api worker until you tell it where the worker is:
 
 ```sh
-# apps/live/.env.local  (gitignored; see apps/live/.env.example)
+# apps/editor/.env.local  (gitignored; see apps/editor/.env.example)
 NEXT_PUBLIC_API_BASE=http://localhost:8787/api
 ```
 
@@ -77,7 +77,7 @@ The Community's listings live in liveworkspace's Community service, not this api
 COMMUNITY_URL=http://localhost:8791/api/community
 COMMUNITY_KEY=dev-livediagram-community-key
 
-# apps/community/.env.local, apps/live/.env.local and apps/marketing/.env.local
+# apps/community/.env.local, apps/editor/.env.local and apps/marketing/.env.local
 NEXT_PUBLIC_COMMUNITY_API=http://localhost:8791/api/community
 ```
 
@@ -86,7 +86,7 @@ Without `COMMUNITY_KEY` the api reports the Community off and Share to Community
 ## Scoping commands to one workspace
 
 ```sh
-pnpm --filter @livediagram/live dev
+pnpm --filter @livediagram/editor dev
 pnpm --filter @livediagram/api test
 pnpm --filter @livediagram/marketing build
 ```
@@ -105,11 +105,11 @@ Run from the repo root:
 | `pnpm lint`                                                             | oxlint across the repo (`turbo run lint`).                                                                                                                                                                                                                                                                                                                                            |
 | `pnpm typecheck`                                                        | `tsc --noEmit` across every workspace (`turbo run typecheck`).                                                                                                                                                                                                                                                                                                                        |
 | `pnpm test`                                                             | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                                                                                                                                                      |
-| `pnpm --filter @livediagram/live perf:canvas`                           | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/live/test-results/perf/`. Needs a fresh `next build`; set `E2E_LIVE_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev`. Reports, never fails on a miss. |
-| `pnpm --filter @livediagram/live test:e2e`                              | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                          |
-| `pnpm --filter @livediagram/live test:e2e:clerk-stub`                   | The signed-in specs (`apps/live/e2e/clerk-stub/`) against `.next/out-clerk-stub/`; run `pnpm --filter @livediagram/live build:clerk-stub` first. Boots its own stack on `:3015` / `:8788` / `:3016`.                                                                                                                                                                                  |
-| `pnpm --filter @livediagram/live test:e2e:armed`                        | The armed guest-signature specs (`apps/live/e2e/armed/`) with guest signature enforcement on, against the guest-mode `out/`. Boots its own stack on `:3017` / `:8789` / `:3018`.                                                                                                                                                                                                      |
-| `cd apps/live && bun scripts/ms-whiteboard-verify.mts <folder or .zip>` | Runs the [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) over real board exports outside the repo and prints counts only (boards, replay stats, items per kind, report notes, timings, largest tab), never their content.                                                                                                                              |
+| `pnpm --filter @livediagram/editor perf:canvas`                           | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/editor/test-results/perf/`. Needs a fresh `next build`; set `E2E_EDITOR_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev`. Reports, never fails on a miss. |
+| `pnpm --filter @livediagram/editor test:e2e`                              | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                          |
+| `pnpm --filter @livediagram/editor test:e2e:clerk-stub`                   | The signed-in specs (`apps/editor/e2e/clerk-stub/`) against `.next/out-clerk-stub/`; run `pnpm --filter @livediagram/editor build:clerk-stub` first. Boots its own stack on `:3015` / `:8788` / `:3016`.                                                                                                                                                                                  |
+| `pnpm --filter @livediagram/editor test:e2e:armed`                        | The armed guest-signature specs (`apps/editor/e2e/armed/`) with guest signature enforcement on, against the guest-mode `out/`. Boots its own stack on `:3017` / `:8789` / `:3018`.                                                                                                                                                                                                      |
+| `cd apps/editor && bun scripts/ms-whiteboard-verify.mts <folder or .zip>` | Runs the [Microsoft Whiteboard import](../specs/020-import-export/whiteboard-import.md) over real board exports outside the repo and prints counts only (boards, replay stats, items per kind, report notes, timings, largest tab), never their content.                                                                                                                              |
 | `pnpm --filter @livediagram/cli build`                                  | Bundle the CLI into `apps/cli/dist/livediagram.mjs` (see [Running the CLI from source](#running-the-cli-from-source-optional)).                                                                                                                                                                                                                                                       |
 | `pnpm format`                                                           | Prettier write across the repo.                                                                                                                                                                                                                                                                                                                                                       |
 | `pnpm format:check`                                                     | Prettier check (this is what CI runs).                                                                                                                                                                                                                                                                                                                                                |
@@ -132,7 +132,7 @@ The editor works without Clerk. To exercise the signed-in code paths:
 3. Drop them into the two env files:
 
    ```sh
-   # apps/live/.env.local (gitignored)
+   # apps/editor/.env.local (gitignored)
    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_...
 
    # apps/community/.env.local (gitignored), optional: turns on My Shares
@@ -144,7 +144,7 @@ The editor works without Clerk. To exercise the signed-in code paths:
 
 4. Restart `pnpm dev`.
 
-To also show the **"Continue with Google"** button on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (dev instances can use Clerk's shared Google credentials with no Google Cloud setup) and add to `apps/live/.env.local`:
+To also show the **"Continue with Google"** button on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (dev instances can use Clerk's shared Google credentials with no Google Cloud setup) and add to `apps/editor/.env.local`:
 
 ```sh
 NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true
@@ -194,16 +194,16 @@ Restart `pnpm dev`. `GET /api/capabilities` will start reporting `{ aiEnabled: t
 ```sh
 pnpm test                                # everything
 pnpm --filter @livediagram/api test      # one workspace
-pnpm --filter @livediagram/live exec vitest   # watch mode while developing
+pnpm --filter @livediagram/editor exec vitest   # watch mode while developing
 ```
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@livediagram/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
-The Google Drive mirror has an opt-in end-to-end run against the fake Google ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)): `pnpm --filter @livediagram/live test:e2e:drive`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`) and a test client id, then boots the e2e stack with `E2E_DRIVE=1`, which gives the api worker test values for `CLERK_JWKS_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DRIVE_TOKEN_KEY` and `GOOGLE_OAUTH_BASE_URL`. The test serves the JWKS (port 8795) and the fake Google (8796) itself. Rebuild the live app normally before running the ordinary e2e again, and stop any `pnpm dev` on port 3002 first (or set `E2E_LIVE_PORT`, `E2E_API_PORT`, `E2E_MARKETING_PORT` and `E2E_BASE_URL`), since Playwright reuses a running server.
+The Google Drive mirror has an opt-in end-to-end run against the fake Google ([Google Drive mirror](../specs/022-drive-mirror/drive-mirror.md)): `pnpm --filter @livediagram/editor test:e2e:drive`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`) and a test client id, then boots the e2e stack with `E2E_DRIVE=1`, which gives the api worker test values for `CLERK_JWKS_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `DRIVE_TOKEN_KEY` and `GOOGLE_OAUTH_BASE_URL`. The test serves the JWKS (port 8795) and the fake Google (8796) itself. Rebuild the editor app normally before running the ordinary e2e again, and stop any `pnpm dev` on port 3002 first (or set `E2E_EDITOR_PORT`, `E2E_API_PORT`, `E2E_MARKETING_PORT` and `E2E_BASE_URL`), since Playwright reuses a running server.
 
-`pnpm --filter @livediagram/live test:e2e:drive-shots` uses the same build and stack to screenshot every Drive state (Settings > Account > Cloud Sync in every phase, Open with, the Explorer following a change made in Drive) in light and dark at 1280 x 800 (`E2E_DRIVE_SHOTS_SCALE=2` for 2x, `E2E_DRIVE_SHOTS_NARROW=1` for the phone layout), into `E2E_DRIVE_PR_SHOTS` (default `/tmp/ld-drive-pr-shots`) with a `README.md` naming each file. Run it on its own: it serves the same fake Google port as `test:e2e:drive`.
+`pnpm --filter @livediagram/editor test:e2e:drive-shots` uses the same build and stack to screenshot every Drive state (Settings > Account > Cloud Sync in every phase, Open with, the Explorer following a change made in Drive) in light and dark at 1280 x 800 (`E2E_DRIVE_SHOTS_SCALE=2` for 2x, `E2E_DRIVE_SHOTS_NARROW=1` for the phone layout), into `E2E_DRIVE_PR_SHOTS` (default `/tmp/ld-drive-pr-shots`) with a `README.md` naming each file. Run it on its own: it serves the same fake Google port as `test:e2e:drive`.
 
-Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livediagram/live test:e2e:workbench`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as Clerk (as under `E2E_CLERK_JWKS`, minting session tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3021`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/live/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/document/**`) the stack serves from that one page, as the live worker does.
+Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @livediagram/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as Clerk (as under `E2E_CLERK_JWKS`, minting session tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3021`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/document/**`) the stack serves from that one page, as the editor worker does.
 
 ## Enabling the Google Drive mirror locally (optional)
 
@@ -215,7 +215,7 @@ GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=...
 DRIVE_TOKEN_KEY=...        # openssl rand -base64 32
 
-# apps/live/.env.local (gitignored)
+# apps/editor/.env.local (gitignored)
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=123456789012-abc.apps.googleusercontent.com
 NEXT_PUBLIC_GOOGLE_API_KEY=... # optional: the Picker's browser key, for adopting a folder
 ```
@@ -230,14 +230,14 @@ the photo import reads the handwriting with the in-browser model (and shows
 its download the first time):
 
 ```bash
-E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 E2E_NO_AI=1 node scripts/e2e-stack.mjs
+E2E_EDITOR_PORT=3402 E2E_API_PORT=8887 E2E_EDITOR_ONLY=1 E2E_NO_AI=1 node scripts/e2e-stack.mjs
 ```
 
-`E2E_LIVE_ONLY=1` serves the static editor only, proxying to the api already
+`E2E_EDITOR_ONLY=1` serves the static editor only, proxying to the api already
 on `E2E_API_PORT`; `E2E_NO_AI=1` answers `/api/capabilities` with
 `aiEnabled: false`.
 
-`E2E_LIVE_OUT=<dir>` serves another export of the live app (the signed-in specs use
+`E2E_EDITOR_OUT=<dir>` serves another export of the editor app (the signed-in specs use
 `.next/out-clerk-stub`), and `E2E_CLERK_JWKS=1` makes the stack stand in for Clerk: the api
 verifies session tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
 
@@ -254,7 +254,7 @@ to the in-browser model and says so ([Event storming](../specs/021-event-stormin
 
   Next 16 also writes `next-env.d.ts` into whichever app you run it from, gitignored on purpose: it names the active distDir inside itself, so dev and build would otherwise rewrite it over each other, and each app's tsconfig already picks up the Next types without it being tracked. Next can also generate an `AGENTS.md` + `CLAUDE.md` pair of agent instructions; the shared config turns that off (`agentRules: false`), because the repo's agent instructions are written by hand in the root `AGENTS.md`. Any old generated pair left in an app folder stays gitignored and can be deleted.
 
-  The webpack escape hatch is still there — `pnpm --filter @livediagram/live dev:webpack` boots the editor on webpack, and `scripts/next-dev.mjs` honours `--webpack` from any app. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default: Turbopack became the default precisely because webpack's HMR kept desynchronising here and serving `__webpack_modules__[moduleId] is not a function` until someone wiped `.next`. If you find yourself needing the hatch, that is worth a spec note rather than a habit. The editor on webpack also runs without the React Compiler, whose native Rust port is Turbopack-only ([React state and effects](../specs/003-system-architecture/react-state-and-effects.md)), so a render bug seen only on one bundler may be the compiler.
+  The webpack escape hatch is still there — `pnpm --filter @livediagram/editor dev:webpack` boots the editor on webpack, and `scripts/next-dev.mjs` honours `--webpack` from any app. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default: Turbopack became the default precisely because webpack's HMR kept desynchronising here and serving `__webpack_modules__[moduleId] is not a function` until someone wiped `.next`. If you find yourself needing the hatch, that is worth a spec note rather than a habit. The editor on webpack also runs without the React Compiler, whose native Rust port is Turbopack-only ([React state and effects](../specs/003-system-architecture/react-state-and-effects.md)), so a render bug seen only on one bundler may be the compiler.
 
 - **`/licences` needs its generated data.** `pnpm dev` does not run the generator (it takes about 20 seconds), so the marketing dev server fails that one page with `LicencesManifestMissing` until you run `pnpm licences` once. Don't run `pnpm licences` while a `next build` of the editor, help centre or telemetry dashboard is running: Next's analyzer shares an app's Turbopack build cache (`.next/cache`), and two processes on it corrupt it. `pnpm build` orders them for you.
 

@@ -7,7 +7,7 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from 'react';
 
-// Dragging a phone sheet by its grab handle (docs/specs/007-editor/live-app.md "Mobile chrome"). A sheet rests
+// Dragging a phone sheet by its grab handle (docs/specs/007-editor/editor-app.md "Mobile chrome"). A sheet rests
 // at its own height; dragged up past SHEET_SNAP_PX (or flicked up) it fills the screen below the editor's top
 // bar, and stays there, its handle still across its top; dragged down from there past the same it returns to
 // rest. Dragged down from rest past SHEET_DISMISS_PX (or flicked down) it closes; anything less springs back.

@@ -9,7 +9,7 @@ where the work begins instead of in a step before it. The New Document wizard as
 
 ## The panel
 
-One shared panel, `StartPanel` (`apps/live/components/start/StartPanel.tsx`), draws all five starts (Start Planning
+One shared panel, `StartPanel` (`apps/editor/components/start/StartPanel.tsx`), draws all five starts (Start Planning
 included, `components/plan/start/StartPlanning.tsx`); each start says what its groups and cards are, the panel
 draws them.
 
@@ -94,7 +94,7 @@ A **Participant** or **Viewer** never sees a start: they keep the empty-canvas c
 route](new-document-route.md) "The empty-canvas hint"), which tells a Viewer the owner can build it out and points a
 Participant at what they may add.
 
-A new tab opens on its mode's start (`newTabOpening` in `apps/live/lib/new-tab-seed.ts`).
+A new tab opens on its mode's start (`newTabOpening` in `apps/editor/lib/new-tab-seed.ts`).
 
 An **explicit blank** opens with its start already closed (`closeStartForBlank`): a document made by Skip, Start
 Blank's `/new?blank=1`, a blank's `/new?template=` link, or a mode chosen after the public sites' Start Blank

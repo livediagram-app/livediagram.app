@@ -25,21 +25,21 @@ Derived from [Stale builds](../stale-builds.md).
 | `apps/api/src/server-release-header.ts`                               | `withServerRelease(response, env.BUILD_ID)`                                                                                                               |
 | `apps/api/src/document-room.ts`                                       | The room's `format` message carries `build`                                                                                                               |
 | `.github/workflows/deploy-reusable.yml`                               | One commit id to `NEXT_PUBLIC_BUILD_ID` and the api's `BUILD_ID`                                                                                          |
-| `apps/live/lib/server-release.ts`                                     | The server release store: format and build, `runningStaleBuild`                                                                                           |
-| `apps/live/lib/stale-chunks.ts`                                       | Pure core: detection, loop guard, intents, recovery                                                                                                       |
-| `apps/live/lib/stale-build-navigation.ts`                             | Browser wiring: clicks, back and forward, chunk failures, `navigateTo`                                                                                    |
-| `apps/live/lib/unsaved-work.ts`                                       | The unsaved work registry                                                                                                                                 |
-| `apps/live/components/providers/StaleBuildBoot.tsx`                   | Installs the wiring from the root layout, hands over the router                                                                                           |
-| `apps/live/hooks/navigation/useAppNavigation.ts`                      | `push` / `replace` for the app's programmatic navigations                                                                                                 |
-| `apps/live/components/primitives/AreaErrorBoundary.tsx`               | Recovers a chunk failure an area caught                                                                                                                   |
-| `apps/live/app/global-error.tsx`                                      | The root error boundary: recovers, else a calm page                                                                                                       |
-| `apps/live/app/document/[id]/EditorView.tsx`                          | Registers the autosave's `hasUnsavedChanges`                                                                                                              |
+| `apps/editor/lib/server-release.ts`                                     | The server release store: format and build, `runningStaleBuild`                                                                                           |
+| `apps/editor/lib/stale-chunks.ts`                                       | Pure core: detection, loop guard, intents, recovery                                                                                                       |
+| `apps/editor/lib/stale-build-navigation.ts`                             | Browser wiring: clicks, back and forward, chunk failures, `navigateTo`                                                                                    |
+| `apps/editor/lib/unsaved-work.ts`                                       | The unsaved work registry                                                                                                                                 |
+| `apps/editor/components/providers/StaleBuildBoot.tsx`                   | Installs the wiring from the root layout, hands over the router                                                                                           |
+| `apps/editor/hooks/navigation/useAppNavigation.ts`                      | `push` / `replace` for the app's programmatic navigations                                                                                                 |
+| `apps/editor/components/primitives/AreaErrorBoundary.tsx`               | Recovers a chunk failure an area caught                                                                                                                   |
+| `apps/editor/app/global-error.tsx`                                      | The root error boundary: recovers, else a calm page                                                                                                       |
+| `apps/editor/app/document/[id]/EditorView.tsx`                          | Registers the autosave's `hasUnsavedChanges`                                                                                                              |
 | liveworkspace/apps/site/app/telemetry/livediagram/catalogue/health.ts | The Stale Build Reloads card                                                                                                                              |
 | `apps/router/src/cache-policy.ts`                                     | The caching rules: `cacheRule`, `applyCachePolicy`, `isBuildAsset`                                                                                        |
 | `apps/router/src/index.ts`                                            | Applies the caching rules to every site's response (the api's excepted)                                                                                   |
-| `apps/live/lib/stale-html-guard.ts`                                   | `STALE_HTML_GUARD_SCRIPT` (static source) and `STALE_HTML_GUARD_ATTRIBUTES` (its settings as data): the pre-boot guard, first script in the layout's head |
-| `apps/live/lib/reload-guard.ts`                                       | The one reload guard: `claimReloadIn`, `claimReload`, `RELOAD_GUARD_KEY`, `APP_RECOVERY_FLAG`                                                             |
-| `apps/live/lib/api/base.ts`                                           | `API_BASE`, browser-free, for the guard                                                                                                                   |
+| `apps/editor/lib/stale-html-guard.ts`                                   | `STALE_HTML_GUARD_SCRIPT` (static source) and `STALE_HTML_GUARD_ATTRIBUTES` (its settings as data): the pre-boot guard, first script in the layout's head |
+| `apps/editor/lib/reload-guard.ts`                                       | The one reload guard: `claimReloadIn`, `claimReload`, `RELOAD_GUARD_KEY`, `APP_RECOVERY_FLAG`                                                             |
+| `apps/editor/lib/api/base.ts`                                           | `API_BASE`, browser-free, for the guard                                                                                                                   |
 | `scripts/e2e-stack.mjs`                                               | Production's caching, the router's rules, and the deploy simulation                                                                                       |
 
 ## Interfaces and contracts
@@ -49,7 +49,7 @@ Derived from [Stale builds](../stale-builds.md).
 export const BUILD_ID_HEADER = 'X-Livediagram-Build';
 export function parseBuildId(value: unknown): string | null; // /^[A-Za-z0-9._-]{1,64}$/
 
-// apps/live/lib/server-release.ts (beside the format number)
+// apps/editor/lib/server-release.ts (beside the format number)
 export const EDITOR_BUILD_ID: string | null;
 export function noteServerBuild(value: unknown): void; // notifies on change
 export function serverBuild(): string | null;
@@ -57,7 +57,7 @@ export function isStaleBuild(editor: string | null, server: string | null): bool
 export function runningStaleBuild(): boolean;
 export function subscribeServerRelease(listener: () => void): () => void;
 
-// apps/live/lib/stale-chunks.ts
+// apps/editor/lib/stale-chunks.ts
 export const NAVIGATION_INTENT_MS = 10_000;
 export function isChunkLoadError(error: unknown): boolean;
 export function createNavigationIntents(): {
@@ -72,7 +72,7 @@ export function recoverFromChunkError(
   deps: ChunkRecoveryDeps,
 ): Promise<ChunkRecovery>;
 
-// apps/live/lib/stale-build-navigation.ts
+// apps/editor/lib/stale-build-navigation.ts
 export function browserNavigationDeps(): NavigationDeps;
 export function installStaleBuildNavigation(deps: NavigationDeps): () => void;
 export function navigateTo(url: string, replace: boolean, deps: NavigationDeps): Promise<void>;
@@ -91,7 +91,7 @@ export function setClientNavigator(
   "Loading (CSS) chunk … failed", Turbopack's "Failed to load chunk", Chrome's "Failed to fetch
   dynamically imported module", Safari's "Importing a module script failed" or Firefox's "error
   loading dynamically imported module".
-- **One reload guard** (`apps/live/lib/reload-guard.ts`): `claimReloadIn(storage, key, url, now,
+- **One reload guard** (`apps/editor/lib/reload-guard.ts`): `claimReloadIn(storage, key, url, now,
 windowMs)`, self-contained so the pre-boot guard embeds its source (`claimReloadIn.toString()`);
   `claimReload(url, storage, now)` is the app's call. A `sessionStorage` map under
   `RELOAD_GUARD_KEY` (`livediagram:stale-chunk-reloads`) of page (`url` without its hash) to time;
@@ -190,18 +190,18 @@ The build id grants nothing; a forged value can only make navigations full page 
 | Build id parsing                                                                  | `packages/api-schema/src/build-id.test.ts`                                                                                     |
 | Build header on responses, CORS                                                   | `apps/api/src/server-release-header.test.ts`                                                                                   |
 | Room format message carries the build                                             | `apps/api/src/document-room.test.ts`                                                                                           |
-| Store: build kept, stale only when both known and differ                          | `apps/live/lib/server-release.test.ts`                                                                                         |
-| `apiFetch` and the room client note the build                                     | `apps/live/lib/api/core.test.ts`, `apps/live/lib/api/room.test.ts`                                                             |
-| Detection, loop guard, intents, recovery, unsaved                                 | `apps/live/lib/stale-chunks.test.ts`                                                                                           |
-| Links, back and forward, programmatic, window failures                            | `apps/live/lib/stale-build-navigation.test.ts`                                                                                 |
-| Unsaved work registry                                                             | `apps/live/lib/unsaved-work.test.ts`                                                                                           |
-| Root error page recovers and shows the calm page                                  | `apps/live/app/global-error.test.tsx`                                                                                          |
+| Store: build kept, stale only when both known and differ                          | `apps/editor/lib/server-release.test.ts`                                                                                         |
+| `apiFetch` and the room client note the build                                     | `apps/editor/lib/api/core.test.ts`, `apps/editor/lib/api/room.test.ts`                                                             |
+| Detection, loop guard, intents, recovery, unsaved                                 | `apps/editor/lib/stale-chunks.test.ts`                                                                                           |
+| Links, back and forward, programmatic, window failures                            | `apps/editor/lib/stale-build-navigation.test.ts`                                                                                 |
+| Unsaved work registry                                                             | `apps/editor/lib/unsaved-work.test.ts`                                                                                           |
+| Root error page recovers and shows the calm page                                  | `apps/editor/app/global-error.test.tsx`                                                                                          |
 | Recovery is a recovery, not an exception                                          | liveworkspace/apps/site/app/telemetry/livediagram/ranking-rules.test.ts                                                        |
-| A stale build in the browser (Playwright)                                         | `apps/live/e2e/stale-builds.spec.ts`                                                                                           |
+| A stale build in the browser (Playwright)                                         | `apps/editor/e2e/stale-builds.spec.ts`                                                                                           |
 | Caching rules: pages, build assets, missing assets, the api untouched             | `apps/router/src/cache-policy.test.ts`, `apps/router/src/index.test.ts`                                                        |
-| Pre-boot guard: failed assets, look-back at DOMContentLoaded, bfcache, loop guard | `apps/live/lib/stale-html-guard.test.ts`                                                                                       |
-| One reload guard shared by both paths; the guard stands down for the running app  | `apps/live/lib/reload-guard.test.ts`, `apps/live/lib/stale-html-guard.test.ts`, `apps/live/lib/stale-build-navigation.test.ts` |
-| Back after a deploy, real browser cache (Playwright)                              | `apps/live/e2e/stale-html.spec.ts`                                                                                             |
+| Pre-boot guard: failed assets, look-back at DOMContentLoaded, bfcache, loop guard | `apps/editor/lib/stale-html-guard.test.ts`                                                                                       |
+| One reload guard shared by both paths; the guard stands down for the running app  | `apps/editor/lib/reload-guard.test.ts`, `apps/editor/lib/stale-html-guard.test.ts`, `apps/editor/lib/stale-build-navigation.test.ts` |
+| Back after a deploy, real browser cache (Playwright)                              | `apps/editor/e2e/stale-html.spec.ts`                                                                                             |
 
 ## Constants and configuration
 

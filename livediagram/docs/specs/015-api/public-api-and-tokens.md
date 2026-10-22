@@ -332,7 +332,7 @@ mode the feature is **absent end to end** — there is no API Tokens category to
 open and no way to mint one:
 
 - **Frontend** — the Settings API Tokens category (and the AI Tools link row to
-  it) renders only when `clerkEnabled` (`apps/live/lib/clerk-config.ts`, derived
+  it) renders only when `clerkEnabled` (`apps/editor/lib/clerk-config.ts`, derived
   from the presence of `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`). This is the **same
   flag** that already hides the teams / sign-in sections of the sidebar, so when
   auth is off the category simply isn't in the list.
@@ -409,7 +409,7 @@ signed up, your documents require your Bearer token; the header can't reach
 them" — which is the property to assert in tests.
 
 (b) is the heavier change — every guest write now signs — but it's the one that
-actually closes the harvested-id escalation, and the live app already obtains
+actually closes the harvested-id escalation, and the editor app already obtains
 its signature, so wiring it onto REST requests is incremental. API tokens
 ([§3](#3-design-api-tokens)) are a parallel server-verifiable credential for
 external callers.
@@ -424,7 +424,7 @@ adding signatures). So don't try; bound the window instead and lean on the
 self-heal that already exists:
 
 1. The app already, on load, mints a _signed_ id and migrates a legacy unsigned
-   id's documents onto it (`apps/live/lib/guest-identity.ts` → `apiUpgradeGuestId`).
+   id's documents onto it (`apps/editor/lib/guest-identity.ts` → `apiUpgradeGuestId`).
    Active guests largely hold a signed id already (they migrated when signing
    first shipped, [Auth + guest access](../014-identity/auth-and-guest-access.md)).
 2. Ship the `X-Owner-Sig` requirement **behind a grace flag / cutoff date.**
@@ -454,9 +454,9 @@ them out, so the cutoff exists to let them self-heal. A Clerk `sub` presented as
 `X-Owner-Id` has no such story. No client has ever sent one:
 
 - The guest credential is always a server-minted `crypto.randomUUID()`
-  (`POST /api/guest-id`), and `apps/live/lib/local-identity.ts` only ever writes
+  (`POST /api/guest-id`), and `apps/editor/lib/local-identity.ts` only ever writes
   a UUID into that header.
-- A signed-in caller sends `Authorization` **instead** — the live app's
+- A signed-in caller sends `Authorization` **instead** — the editor app's
   `lib/api/core.ts` sends one or the other, never both.
 
 So a `user_…` value in that header is only ever a replay of an account id

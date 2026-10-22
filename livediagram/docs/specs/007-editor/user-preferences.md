@@ -44,7 +44,7 @@ PRIMARY KEY`, `prefs TEXT NOT NULL` (serialised JSON blob),
   reflects the change without waiting for the network), then
   `PUT /api/preferences` with the full updated blob in the
   background. Last-write-wins per device.
-- **Saving to the server** (`apps/live/lib/preferences-sync.ts`):
+- **Saving to the server** (`apps/editor/lib/preferences-sync.ts`):
   - **It fits.** The blob is trimmed to the api's cap (4,096
     characters of `{"prefs":...}`) before it is cached or sent:
     the oldest hidden-from-Recent ids go first
@@ -191,7 +191,7 @@ type UserPreferences = {
   uiScaleToolbar?: number;
   uiScaleCornerButtons?: number;
   // Button Labels (Settings › Appearance): the names beside the editor's bottom buttons' icons, the
-  // footer bar's and, on a wide desktop, the bottom-right cluster's (live-app.md "Named on a wide
+  // footer bar's and, on a wide desktop, the bottom-right cluster's (editor-app.md "Named on a wide
   // desktop"). Missing / true === shown; a phone never shows them. Read through useDockNames.
   dockButtonNames?: boolean;
 
@@ -369,7 +369,7 @@ Missing key === undefined === default behaviour. Concretely:
   a move never changes an anchor. The rule is the same for every
   pinned end, including ends the user placed by hand. The derivation
   lives in ONE place, `autoRebindArrowsEnabled(prefs)` in
-  `apps/live/lib/user-preferences.ts`, shared by the Settings
+  `apps/editor/lib/user-preferences.ts`, shared by the Settings
   dialog's row and the editor-preferences hook so the default
   can't drift between consumers.
 - `telemetryEnabled` undefined → telemetry on (the default).
@@ -534,7 +534,7 @@ and the dialog stays as the one complete, browsable index of them.
   transition, slide size, loop, hide pointer) are deck state rather than user
   preferences, so they have no home in Settings and should not get one.
 
-- **Settings dialog**: `apps/live/components/dialogs/SettingsDialog.tsx`,
+- **Settings dialog**: `apps/editor/components/dialogs/SettingsDialog.tsx`,
   lazy-loaded via `next/dynamic` (matches the other on-demand
   modals: ShareDialog, ExportTabDialog, ImagePicker). Trigger: a
   gear-icon button in the TabBar footer, sitting between Search and the
@@ -786,7 +786,7 @@ and the dialog stays as the one complete, browsable index of them.
   on **marks that flag**, so its promise is true for a reader who had simply never taken the tour. Turning it
   on from off additionally relaunches in place on a Diagram tab; on a tab in another mode the offer waits
   for a Diagram tab. The Plan tour is a
-  tour of several tracks (`apps/live/lib/tour-tracks.ts`): **Plan Tours** is one switch over all of them
+  tour of several tracks (`apps/editor/lib/tour-tracks.ts`): **Plan Tours** is one switch over all of them
   (`tourTracksSwitch`, key `planTourSeen`: on while any track is owed, off answers every track, on forgets every
   answer), and each track has its own row nested beneath it (`parent: 'planTourSeen'`), named for itself: **Boards
   Tour**, **Sheets Tour** and **Dashboards Tour** (`tourTrackSwitch`, keys `planTourSeen-boards`,
@@ -822,7 +822,7 @@ and the dialog stays as the one complete, browsable index of them.
   **Button Labels** (Appearance › Interface, `dockButtonNames`, on by default)
   names the editor's bottom buttons beside their icons: the footer bar's Search,
   Settings and theme, and the bottom-right cluster's (Layers, Style, Tidy Up and
-  the rest) on a desktop wide enough for them ([Live app](live-app.md)). Off,
+  the rest) on a desktop wide enough for them ([Editor app](editor-app.md)). Off,
   they are icons alone, each still named in its hover card. A phone always shows
   icons alone, so the row is desktop only there.
 
@@ -873,7 +873,7 @@ and the dialog stays as the one complete, browsable index of them.
 
 ## Read / write helpers
 
-Live in `apps/live/lib/user-preferences.ts`:
+Live in `apps/editor/lib/user-preferences.ts`:
 
 - `readUserPreferences(): UserPreferences` returns the current
   cached preferences, parsing the stored JSON and defaulting any

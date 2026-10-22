@@ -11,11 +11,11 @@ Scope, by file:
 | `packages/project/src/retired-schemes.ts`          | Frozen retired colours; `retiredSchemeOf`; `migrateRetiredScheme`        |
 | `packages/project/src/stored-tab.ts`               | `migrateStoredTab`: retired scheme + stored-element migrations, one call |
 | `packages/project/src/themes-data.ts`, `themes.ts` | `LEGACY_THEMES` and the `'charcoal'` `ThemeId` are removed               |
-| `apps/live/lib/themes.ts`, `themes-taxonomy.ts`     | Drop the legacy lookup and Charcoal's taxonomy rows                      |
+| `apps/editor/lib/themes.ts`, `themes-taxonomy.ts`     | Drop the legacy lookup and Charcoal's taxonomy rows                      |
 | `apps/api/src/tab-row.ts`                           | `rowToTab` runs `migrateStoredTab`                                       |
 | `apps/api/src/thumbnail.ts`                         | `renderTabDataToSvg` runs `migrateStoredTab` on the parsed body          |
-| `apps/live/lib/offline/offline-store.ts`            | `offlineLoadTab` runs `migrateStoredTab`                                 |
-| `apps/live/lib/import-merge.ts`                     | `mergeImportedTab` runs `migrateStoredTab` on the imported tab first     |
+| `apps/editor/lib/offline/offline-store.ts`            | `offlineLoadTab` runs `migrateStoredTab`                                 |
+| `apps/editor/lib/import-merge.ts`                     | `mergeImportedTab` runs `migrateStoredTab` on the imported tab first     |
 
 ## Domain and naming
 
@@ -136,8 +136,8 @@ a tab with nothing to migrate.
 | Charcoal no longer resolves or is offered              | `packages/project/src/default-scheme.test.ts`                     |
 | api read path                                          | `apps/api/src/tab-row.test.ts`                                     |
 | Thumbnail path                                         | `apps/api/src/thumbnail.test.ts`                                   |
-| Offline read path                                      | `apps/live/lib/offline/offline-store.test.ts`                      |
-| Import path                                            | `apps/live/lib/import-merge.test.ts`                               |
+| Offline read path                                      | `apps/editor/lib/offline/offline-store.test.ts`                      |
+| Import path                                            | `apps/editor/lib/import-merge.test.ts`                               |
 
 ## Constants and configuration
 

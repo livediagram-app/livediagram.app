@@ -6,7 +6,7 @@
 // icon's arrows attach to its fixed-size mark, docs/specs/010-palette/technology-icons.md). Tech ids carry no
 // common prefix ('aws-*' but also bare 'k8s' / 'docker'), so a cheap prefix
 // test can't replace a membership check; ~68 short strings ≈ 1 kB. A parity
-// test (apps/live tech-icons.test.ts) pins this set to the data catalogue's
+// test (apps/editor tech-icons.test.ts) pins this set to the data catalogue's
 // ids, so adding an icon without registering its id here fails CI rather
 // than silently rendering as the line-art placeholder.
 export const TECH_ICON_IDS: ReadonlySet<string> = new Set([

@@ -35,11 +35,11 @@ cap, oldest exclusions first ([User preferences, Saving to the server](../007-ed
 Both Recent lists filter on it, and both filter **before** the cap so hiding
 one project promotes the next one in rather than leaving a gap:
 
-- `apps/live/app/explorer/useExplorerPane.ts` — the route's Recent list, and
+- `apps/editor/app/explorer/useExplorerPane.ts` — the route's Recent list, and
   the sidebar's **Recent badge count**, which counts what Recent will actually
   show. (It previously counted all sources without re-running the filter,
   which would have made the badge promise rows the pane then dropped.)
-- `apps/live/components/panels/useExplorerViewModel.ts` — the editor panel's
+- `apps/editor/components/panels/useExplorerViewModel.ts` — the editor panel's
   Recent list, alongside the existing "not the currently-open project" rule.
 
 Preference ownership moved into `useExplorerState` for the route. It was in

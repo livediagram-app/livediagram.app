@@ -331,7 +331,7 @@ export async function handleProjects(ctx: RouteContext): Promise<Response> {
         tabKind: intent.intent?.tabKind ?? null,
         templateFamily: intent.intent?.templateFamily ?? null,
       });
-      // Seed tabs if the caller provided them. The live app's
+      // Seed tabs if the caller provided them. The editor app's
       // welcome flow uses this when it commits a fresh project
       // id — it ships the templated tab inline so the very
       // first per-tab fetch already has data.
@@ -588,7 +588,7 @@ export async function handleProjects(ctx: RouteContext): Promise<Response> {
   // /api/projects/<id>/thumbnail — cached SVG snapshot (docs/specs/006-project/project-snapshots.md). Read-
   // gated exactly like GET /api/projects/<id>: the owner, a joined team
   // member, or a valid share-code visitor. A native <img> can't send
-  // auth headers, so the live app fetches this with headers and wraps
+  // auth headers, so the editor app fetches this with headers and wraps
   // the bytes in a blob URL; a miss (no project, no read access, no R2
   // binding, empty project) is a 404 the row turns into its icon.
   if (segments.length === 4 && segments[3] === 'thumbnail') {

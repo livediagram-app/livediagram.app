@@ -192,13 +192,13 @@ fields from the type and compiling every workspace, plus the untyped entry point
 | Pen outline      | `packages/project/src/pen-stroke.ts`                                    | `freehandPenStroke` / `penStrokeSvg` decode                                         |
 | SVG export       | `packages/project/src/svg-render-shapes.ts`                             | decode                                                                              |
 | Stored migration | `packages/project/src/stored-elements.ts`                               | adds `migrateLegacyStrokePoints`                                                    |
-| Style presets    | `apps/live/lib/style-presets.ts`                                         | re-pack without pressures                                                           |
-| Realtime         | `apps/live/app/project/[id]/useRoomConnection.ts`, `room-op-migrate.ts` | `migrateRoomOp` on receipt                                                          |
-| Clipboard        | `apps/live/lib/clipboard-payload.ts`                                     | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
-| Tab file import  | `apps/live/lib/import-tab.ts`, `export-tab-text.ts`                      | migrate; `TAB_SCHEMA_VERSION` 2                                                     |
+| Style presets    | `apps/editor/lib/style-presets.ts`                                         | re-pack without pressures                                                           |
+| Realtime         | `apps/editor/app/project/[id]/useRoomConnection.ts`, `room-op-migrate.ts` | `migrateRoomOp` on receipt                                                          |
+| Clipboard        | `apps/editor/lib/clipboard-payload.ts`                                     | migrate before `isValidElement`; `CLIPBOARD_SCHEMA_VERSION` 2                       |
+| Tab file import  | `apps/editor/lib/import-tab.ts`, `export-tab-text.ts`                      | migrate; `TAB_SCHEMA_VERSION` 2                                                     |
 | Api writes       | `apps/api/src/routes/projects.ts`, `project-subresource-routes.ts`     | `migrateStoredTab` before `isValidTab`                                              |
 | Api reads        | `apps/api/src/tab-row.ts`, `thumbnail.ts`                                | unchanged (already migrate)                                                         |
-| Offline store    | `apps/live/lib/offline/offline-store.ts`                                 | unchanged (already migrates)                                                        |
+| Offline store    | `apps/editor/lib/offline/offline-store.ts`                                 | unchanged (already migrates)                                                        |
 | MCP server       | `packages/project/src/element-normalise.ts`, `tools.ts`                 | `normaliseElement` migrates; `mergeElementUpdate` lets new points replace the block |
 | Polygon tool     | `useCanvasPolygonGesture.ts`                                             | unchanged: `createFreehand`                                                         |
 | Undo             | `useEditorHistory.ts`                                                    | unchanged: element snapshots by reference                                           |
@@ -294,8 +294,8 @@ The api's existing `invalid tab` 400 covers a block that fails validation.
 | Pen outline unchanged                                                               | `packages/project/src/pen-stroke.test.ts`                                          |
 | SVG export within the bound                                                         | `packages/project/src/svg-render-shapes.test.ts`, `stroke-points-fidelity.test.ts` |
 | Api migrates former shape on create and save                                        | `apps/api/src/routes/stroke-points-writes.test.ts`                                  |
-| Clipboard and tab import migrate                                                    | `apps/live/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
-| Room ops migrated on receipt                                                        | `apps/live/app/project/[id]/room-op-migrate.test.ts`                               |
+| Clipboard and tab import migrate                                                    | `apps/editor/lib/clipboard-payload.test.ts`, `import-tab.test.ts`                     |
+| Room ops migrated on receipt                                                        | `apps/editor/app/project/[id]/room-op-migrate.test.ts`                               |
 | Untrusted tabs and elements: migrated or passed through                             | `packages/project/src/legacy-stroke-points.test.ts`                                |
 | MCP packs a model's former-shape stroke; an update's points replace the block       | `packages/project/src/element-normalise.test.ts`                                   |
 | Every template builds a valid tab with packed strokes (MCP and editor)              | `packages/templates/src/template-tab.test.ts`                                       |

@@ -52,7 +52,7 @@ export function roundRect(
 }
 
 /** "5 mins ago" / "2 hours ago" / "yesterday" / "354 days ago": a comment's
- *  age, as the canvas's relativeSince (apps/live lib/relative-time). */
+ *  age, as the canvas's relativeSince (apps/editor lib/relative-time). */
 export function relativeSince(at: number, now = Date.now()): string {
   const seconds = Math.floor((now - at) / 1000);
   if (seconds < 5) return 'just now';

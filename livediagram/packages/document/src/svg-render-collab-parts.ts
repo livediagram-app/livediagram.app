@@ -1,6 +1,6 @@
 // The small parts the modern Collaborate cards are built from, for the
 // headless render (docs/specs/020-import-export/export-fidelity.md): the same parts the canvas composes its
-// cards from (apps/live collab/qa/qa-parts, CollabComposer, CollabPanel), at
+// cards from (apps/editor collab/qa/qa-parts, CollabComposer, CollabPanel), at
 // the canvas's own sizes, so a card built from them exports the way it looks.
 // Every size here is a canvas class, noted beside it.
 
@@ -73,7 +73,7 @@ export function relativeAge(at: number, now = Date.now()): string {
 }
 
 /** "5 mins ago" / "2 hours ago" / "yesterday" / "354 days ago": a comment's
- *  age, as the canvas's relativeSince (apps/live lib/relative-time). */
+ *  age, as the canvas's relativeSince (apps/editor lib/relative-time). */
 export function relativeSince(at: number, now = Date.now()): string {
   const seconds = Math.floor((now - at) / 1000);
   if (seconds < 5) return 'just now';

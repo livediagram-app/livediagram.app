@@ -43,7 +43,7 @@ export function oauthRedirectUrl(uri: string): URL | null {
 // id (team member lists expose them), and the api worker refuses it outright
 // (apps/api/src/index.ts). The editor applies the same rule from the other
 // side: a signed-in client with no session token never sends its account id
-// as the guest header (apps/live/lib/api/core.ts `apiHeaders`).
+// as the guest header (apps/editor/lib/api/core.ts `apiHeaders`).
 export function isClerkIdShape(ownerId: string): boolean {
   return ownerId.startsWith('user_');
 }

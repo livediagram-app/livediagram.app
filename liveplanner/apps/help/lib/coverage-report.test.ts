@@ -217,7 +217,7 @@ describe('AREAS', () => {
     const paths = AREAS.flatMap((a) => a.paths);
     expect(new Set(paths).size).toBe(paths.length);
     for (const p of [
-      'apps/live',
+      'apps/editor',
       'apps/api',
       'apps/mcp',
       'apps/help',

@@ -58,7 +58,7 @@ The planner is real:
 - **Hybrid auth** ([Auth + guest access](../014-identity/auth-and-guest-access.md)): guests get everything without
   signing in; a signed-in person's projects travel under their account, adding cross-device sync. Guest projects
   migrate on first sign-in. Sign-in goes through the liveworkspace accounts
-  Worker; without its settings the api and the live app degrade to pure guest mode.
+  Worker; without its settings the api and the editor app degrade to pure guest mode.
 - **Offline Mode** ([Offline Mode](../006-project/offline-mode.md)): a project saved only in this browser
   (IndexedDB), convertible either way.
 - **Export**: a tab as PNG, SVG, PDF, Markdown, CSV (a Board or Sheet tab) or a portable JSON file, and a JSON export
@@ -72,7 +72,7 @@ The planner is real:
   onboarding, team invites, form responses and account messages, off until a `RESEND_API_KEY` is set.
 
 **No project content lives in `localStorage`.** A project is stored on the server, or in IndexedDB for an Offline
-Mode project, and `apps/live/lib/api-client.ts` is the single persistence boundary over both. `localStorage` holds
+Mode project, and `apps/editor/lib/api-client.ts` is the single persistence boundary over both. `localStorage` holds
 only small per-browser state, under `liveplanner:*` keys:
 
 - **Identity bootstrap**: the guest participant id, the name-confirmed flag and the collaboration key
@@ -91,7 +91,7 @@ only small per-browser state, under `liveplanner:*` keys:
   ([Domain language](../003-system-architecture/domain-language.md)). Still to do:
   - **The diagram element code.** The element routers carry only Plan's kinds, but the diagram kinds' modules
     (flowcharts, mind maps, arrows' routing, Sankey, the concept graphics, Mermaid, the unmounted palette strip) are
-    still in `packages/project` and `apps/live`, reached from shared code. Their specs in
+    still in `packages/project` and `apps/editor`, reached from shared code. Their specs in
     [Canvas](../008-canvas/README.md), [Elements](../009-elements/README.md), [Palette](../010-palette/README.md) and
     [Import and export](../020-import-export/README.md) stay until that code goes, and go with it.
   - **The help centre** around the Plan category, and the brand's remaining sky hexes.

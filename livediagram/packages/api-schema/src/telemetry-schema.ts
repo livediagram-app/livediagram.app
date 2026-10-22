@@ -62,7 +62,7 @@ export const TELEMETRY_CATEGORIES = [
   // 'Started' when somebody takes a free one, 'Changed' when it is handed on
   // or taken back, 'Ended' when the holder steps down. `type` is the shape of
   // the move ('Claimed' / 'Granted' / 'Released'), or 'Unlocked' when the
-  // facilitator frees an element somebody was holding (docs/specs/007-editor/live-app.md lock) — never a
+  // facilitator frees an element somebody was holding (docs/specs/007-editor/editor-app.md lock) — never a
   // name: the question is whether rooms use the role at all, not who held it.
   'Facilitator',
   'AI',

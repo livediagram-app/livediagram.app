@@ -96,7 +96,7 @@ jobs:
       # against a v5 runner with every check green.
       # The editor's suite is the one exception: it runs in the Editor unit tests jobs below.
       - name: Coverage thresholds
-        run: pnpm turbo run test:coverage --concurrency=2 --filter=!@liveplanner/live
+        run: pnpm turbo run test:coverage --concurrency=2 --filter=!@liveplanner/editor
 
       # Every workspace's lcov above, reported on Codecov; see the upload in Editor unit tests.
       - name: Upload coverage
@@ -107,7 +107,7 @@ jobs:
           disable_search: true
           fail_ci_if_error: false
 
-  # The editor's suite (apps/live, about 800 files) is most of the repo's tests: on one 4-vCPU runner it
+  # The editor's suite (apps/editor, about 800 files) is most of the repo's tests: on one 4-vCPU runner it
   # took 7 minutes. Split three ways, each job runs a third of its files under coverage, finishing
   # inside the Checks job's time (docs/specs/003-system-architecture/testing.md "Sizing the shards").
   # Codecov merges the thirds into one report; the editor holds no thresholds, so nothing needs the merge
@@ -144,7 +144,7 @@ jobs:
 
       - name: Test
         run: >-
-          pnpm --filter @liveplanner/live exec vitest run --coverage
+          pnpm --filter @liveplanner/editor exec vitest run --coverage
           --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
       # OIDC, so no Codecov secret. A Codecov
@@ -153,7 +153,7 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           use_oidc: true
-          files: apps/live/coverage/lcov.info
+          files: apps/editor/coverage/lcov.info
           disable_search: true
           fail_ci_if_error: false
 

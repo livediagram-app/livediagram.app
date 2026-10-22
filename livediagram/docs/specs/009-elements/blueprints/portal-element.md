@@ -11,15 +11,15 @@ Scope, by file:
 | `packages/document/src/shape-factory.ts`             | 72x112, transparent, `#38bdf8` energy, `aspectLocked`, unlabelled |
 | `packages/document/src/validate.ts`                  | `portalTarget` must be a non-empty string                         |
 | `packages/document/src/svg-render-faces.ts`          | The export ring (`'portal'`)                                      |
-| `apps/live/lib/portals.ts`                           | Names, sites, resolution, exit point, camera centring             |
-| `apps/live/components/canvas/portal-travel.ts`       | `usePortalTravel`: `enterPortal` and `resolvePortal`, no state    |
-| `apps/live/components/canvas/useCanvasAvatar.tsx`    | Calls `usePortalTravel`; walk-in through `enterPortalRef`         |
-| `apps/live/hooks/canvas/useAvatarWalk.ts`            | Arrival hook, `teleportTo`, the ignored exit portal               |
-| `apps/live/components/canvas/PortalFace.tsx`         | The ring, lit / dead states, the press, hover cards               |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`  | Renders the face while not editing                                |
-| `apps/live/components/palette/PortalMenuSection.tsx` | Name, Leads to, Create Portal                                     |
-| `apps/live/hooks/canvas/usePortalSetters.ts`         | Link, unlink, rename, create across tabs                          |
-| `apps/live/lib/themes.ts`                            | `deriveNewBoxedColours` leaves a portal's colours alone           |
+| `apps/editor/lib/portals.ts`                           | Names, sites, resolution, exit point, camera centring             |
+| `apps/editor/components/canvas/portal-travel.ts`       | `usePortalTravel`: `enterPortal` and `resolvePortal`, no state    |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`    | Calls `usePortalTravel`; walk-in through `enterPortalRef`         |
+| `apps/editor/hooks/canvas/useAvatarWalk.ts`            | Arrival hook, `teleportTo`, the ignored exit portal               |
+| `apps/editor/components/canvas/PortalFace.tsx`         | The ring, lit / dead states, the press, hover cards               |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`  | Renders the face while not editing                                |
+| `apps/editor/components/palette/PortalMenuSection.tsx` | Name, Leads to, Create Portal                                     |
+| `apps/editor/hooks/canvas/usePortalSetters.ts`         | Link, unlink, rename, create across tabs                          |
+| `apps/editor/lib/themes.ts`                            | `deriveNewBoxedColours` leaves a portal's colours alone           |
 
 ## Domain and naming
 
@@ -216,12 +216,12 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Rule                                                   | Test                                            | File                                                |
 | ------------------------------------------------------ | ----------------------------------------------- | --------------------------------------------------- |
 | Defaults: taller than wide, unlinked, unlabelled, lock | "makes a portal portal-shaped and unpaired"     | `packages/document/src/factories.test.ts`           |
-| Candidates and positional names                        | `portalsOnTab`, `portalName` blocks             | `apps/live/lib/portals.test.ts`                     |
-| Every broken link resolves to unlinked (E1-E3)         | `resolvePortalTarget` block                     | `apps/live/lib/portals.test.ts`                     |
-| Incoming link and precedence (E4, E5)                  | "leads back down an INCOMING link", "prefers …" | `apps/live/lib/portals.test.ts`                     |
-| Cross-tab resolution (E6)                              | `resolvePortalDestination` block                | `apps/live/lib/portals.test.ts`                     |
-| Exit point, camera centring with zoom                  | `portalExitPoint`, `viewportOffsetCentredOn`    | `apps/live/lib/portals.test.ts`                     |
-| Travel order, ignored exit, unlinked inert (I4)        | `usePortalTravel` block                         | `apps/live/components/canvas/portal-travel.test.ts` |
+| Candidates and positional names                        | `portalsOnTab`, `portalName` blocks             | `apps/editor/lib/portals.test.ts`                     |
+| Every broken link resolves to unlinked (E1-E3)         | `resolvePortalTarget` block                     | `apps/editor/lib/portals.test.ts`                     |
+| Incoming link and precedence (E4, E5)                  | "leads back down an INCOMING link", "prefers …" | `apps/editor/lib/portals.test.ts`                     |
+| Cross-tab resolution (E6)                              | `resolvePortalDestination` block                | `apps/editor/lib/portals.test.ts`                     |
+| Exit point, camera centring with zoom                  | `portalExitPoint`, `viewportOffsetCentredOn`    | `apps/editor/lib/portals.test.ts`                     |
+| Travel order, ignored exit, unlinked inert (I4)        | `usePortalTravel` block                         | `apps/editor/components/canvas/portal-travel.test.ts` |
 | Not votable                                            | "rejects the interactive Behaviour shapes"      | `packages/document/src/session.test.ts`             |
 | Export draws a ring                                    | "draws more than a box and a label"             | `packages/document/src/export-consistency.test.ts`  |
 | Export ring lit when linked, dim when not              | "draws a portal as its lit ring when paired, …" | `packages/document/src/svg-render-fidelity.test.ts` |

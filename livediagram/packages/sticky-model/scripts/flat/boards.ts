@@ -101,7 +101,7 @@ function grid(rng: Rng, width: number, height: number, size: number, gap: number
   return notes;
 }
 
-// The e2e suite's walls, exactly (`apps/live/e2e/photo-model.spec.ts`).
+// The e2e suite's walls, exactly (`apps/editor/e2e/photo-model.spec.ts`).
 function e2eBoards(): Board[] {
   const rng = rngFrom(0);
   const make = (name: string, notes: DrawnNote[]): Board => {

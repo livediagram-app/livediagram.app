@@ -1,5 +1,5 @@
 // Pure SVG-markup builders for the two glyph kinds, mirroring the editor's
-// React renderers (apps/live icon-glyph.tsx / tech-icon-glyph.tsx) so a
+// React renderers (apps/editor icon-glyph.tsx / tech-icon-glyph.tsx) so a
 // headless export draws the same art the canvas shows. Data-free: safe to
 // import from a first-load bundle; the catalogues themselves stay in their
 // own modules (async chunk in the editor, static import in the workers via

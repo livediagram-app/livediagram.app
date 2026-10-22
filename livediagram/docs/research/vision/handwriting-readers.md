@@ -4,7 +4,7 @@ Which reader can turn a sticky-note crop into words, measured on one real wall
 ([Event storming](../../specs/021-event-storming/event-storming.md) Phase 8/9). The detector found 32 crops in the operator's kraft-wall
 photo; 24 were labelled by eye (verbatim, casing as written) and 4 were
 labelled blank (two pieces of tape, the photographer's two shoes). Every reader
-got the same crops, cut exactly as `apps/live/lib/photo-detect.ts` cuts them.
+got the same crops, cut exactly as `apps/editor/lib/photo-detect.ts` cuts them.
 
 **What shipped** ([Event storming](../../specs/021-event-storming/event-storming.md) Phase 9): the reader is pluggable. A model configured
 on the api reads the crops — Google defaults to `gemini-2.5-flash-lite` for this
@@ -81,7 +81,7 @@ in the photo.
 
 The table above was one wall without every word known. Two walls now carry
 the true words of 86 notes (at most eight words each, 95% five or fewer), and
-`apps/live/scripts/reader-bench.mts` scores the in-browser reader on them
+`apps/editor/scripts/reader-bench.mts` scores the in-browser reader on them
 through the editor's own `readOne` (same prompt, same q4 weights, node CPU
 standing in for WASM). SmolVLM-256M at the size the photo gives: 37/86 exact,
 60% of words, CER 27%, and 17 answers that are mostly not the note.
@@ -99,7 +99,7 @@ Invention has two causes, and each has a guard ([Event storming](../../specs/021
   | invented   | 13   | 11  | 9   | 17  | 11  | 26  | 28  | 42  | 5   |
 
   48 px is the crossing, so a crop whose short edge is under 48 px is not
-  asked about (`READ_MIN_EDGE_PX`, `apps/live/lib/reading/floor.ts`). A
+  asked about (`READ_MIN_EDGE_PX`, `apps/editor/lib/reading/floor.ts`). A
   whiteboard shot from across the room puts every note at 12-41 px, which is
   where the browser reader answered "The answer is 1.", "Yes." and the like:
   asked about all 272 of its notes, it put words on 149 (91 after the chat
@@ -112,7 +112,7 @@ Invention has two causes, and each has a guard ([Event storming](../../specs/021
 - **An answer shaped like chat.** "Yes.", "I'm not.", "The text is written in
   black marker.": a bare yes / no / sure, an opener that talks about the
   picture or itself, or more than twelve words leaves the note unread
-  (`apps/live/lib/reading/answer.ts`). It flags none of the 86 true notes and
+  (`apps/editor/lib/reading/answer.ts`). It flags none of the 86 true notes and
   takes no correct reading away; on full-size crops it turns 4 of the 17
   inventions into unread notes (and 5 of 16 at 128 px).
 
@@ -122,7 +122,7 @@ Neither guard applies to the hosted reader, which does not invent this way.
 
 Every free, MIT-compatible reader that runs in onnxruntime-web or
 transformers.js and fits a phone download, scored through the same bench
-(`apps/live/scripts/reader-bench.mts`): crops cut as the editor cuts them,
+(`apps/editor/scripts/reader-bench.mts`): crops cut as the editor cuts them,
 `words` = 86 notes with true words, `tiny` = 272 whiteboard notes too small
 to read (every non-blank answer there is invented). Exact, CER and invented
 (CER over 60%) are after the editor's answer guard; the guard never removed
@@ -332,7 +332,7 @@ In-browser readers are scored in node against the labelled walls, through the
 editor's own reading code:
 
 ```sh
-cd apps/live
+cd apps/editor
 npx tsx scripts/reader-bench.mts --reader smolvlm-256m --set words [--edge 48]
 npx tsx scripts/reader-bench-score.mts /tmp/reader-bench-*.json
 ```

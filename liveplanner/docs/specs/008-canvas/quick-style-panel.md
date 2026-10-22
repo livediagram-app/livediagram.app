@@ -24,7 +24,7 @@ notation carry itself.
 
 A right-hand **Editor panel** once held every per-element setting. It was removed: it duplicated the
 context menu, grew with every feature, and covered the canvas it was meant to serve. Per-element
-formatting lives in the right-click context menus ([Live app](../007-editor/live-app.md),
+formatting lives in the right-click context menus ([Editor app](../007-editor/editor-app.md),
 [Canvas and palette](canvas-and-palette.md)).
 
 The quick style panel is deliberately not that panel coming back:

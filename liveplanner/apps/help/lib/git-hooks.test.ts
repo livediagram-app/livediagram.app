@@ -15,21 +15,21 @@ describe('prePushPlan', () => {
 
   it('checks formatting of only the changed files prettier formats', () => {
     const [format] = prePushPlan(
-      ['apps/live/a.tsx', 'docs/b.md', '.github/workflows/c.yml', 'apps/live/d.png', 'e.mjs'],
+      ['apps/editor/a.tsx', 'docs/b.md', '.github/workflows/c.yml', 'apps/editor/d.png', 'e.mjs'],
       COVERAGE_FILTERS,
     );
     expect(format!.args).toEqual([
       'exec',
       'prettier',
       '--check',
-      'apps/live/a.tsx',
+      'apps/editor/a.tsx',
       'docs/b.md',
       '.github/workflows/c.yml',
     ]);
   });
 
   it('runs lint, typecheck and both test tasks for the affected workspaces, as CI splits them', () => {
-    const steps = prePushPlan(['apps/live/a.png'], COVERAGE_FILTERS);
+    const steps = prePushPlan(['apps/editor/a.png'], COVERAGE_FILTERS);
     expect(steps.map((s) => s.args.join(' '))).toEqual([
       'exec turbo run lint typecheck --affected',
       'exec turbo run test --affected --concurrency=2 --filter=!@x/api',
@@ -42,7 +42,7 @@ describe('prePushPlan', () => {
       'help guards (repo-wide references)',
     );
     expect(labels(['README.md'])).toContain('help guards (repo-wide references)');
-    expect(labels(['apps/live/a.ts', 'packages/ui/b.ts'])).not.toContain(
+    expect(labels(['apps/editor/a.ts', 'packages/ui/b.ts'])).not.toContain(
       'help guards (repo-wide references)',
     );
   });

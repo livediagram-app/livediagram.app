@@ -5,7 +5,7 @@ into [Board scenes](../board-scene.md); the landing, the new-tab commit path and
 are the board scene's and the [Import image pipeline](import-image-pipeline.md)'s and are not
 restated. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md).
 
-Scope, by file (all under `apps/live/lib/ms-whiteboard/` unless a path says otherwise):
+Scope, by file (all under `apps/editor/lib/ms-whiteboard/` unless a path says otherwise):
 
 | File                                                            | Role                                                                                                                                                      |
 | --------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -23,20 +23,20 @@ Scope, by file (all under `apps/live/lib/ms-whiteboard/` unless a path says othe
 | `import.ts`                                                     | `listBoards`, `boardSceneOf`: the import's two steps                                                                                                      |
 | `board-identity.ts`                                             | `boardTitle`, `boardDates`: the board record's title and dates, cleaned (the document name is `boardDocumentName` in `lib/board-scene/board-document.ts`) |
 | `ms-whiteboard-fixtures.ts`                                     | Test-only encoder: readable board descriptions to export files                                                                                            |
-| `apps/live/lib/zip-reader.ts`                                   | Generic Zip reading (stored and deflated entries, byte budget)                                                                                            |
-| `apps/live/lib/zip-writer-fixture.ts`                           | Test-only Zip writer (Node)                                                                                                                               |
-| `apps/live/lib/pick-folder.ts`                                  | A folder pick or drop to a file set                                                                                                                       |
-| `apps/live/components/dialogs/MsWhiteboardImportPanel.tsx`      | The import panel: pick, list, progress, result                                                                                                            |
-| `apps/live/hooks/persistence/useMsWhiteboardImport.ts`          | The panel's flow: read, list, build scenes, hand them to the host's commit (`importBoardsAsDocuments`)                                                    |
-| `apps/live/components/dialogs/MsWhiteboardImportDialog.tsx`     | The "Import from Microsoft Whiteboard" dialog hosting the panel                                                                                           |
-| `apps/live/hooks/persistence/useMsWhiteboardImportLauncher.tsx` | `openMicrosoftWhiteboardImport` and the dialog element, for any host                                                                                      |
-| `apps/live/app/explorer/import-sources.tsx`                     | `IMPORT_SOURCES`: the shipped sources (id, name, icon), one entry each                                                                                    |
-| `apps/live/components/dialogs/import-source-icons.tsx`          | `MsWhiteboardSourceIcon`, the original glyph (art, on the raw-svg allowlist)                                                                              |
-| `apps/live/app/explorer/useExplorerImport.tsx`                  | The page host: toolbar, launcher, `importBoardsAsDocuments` with the folder, list refresh                                                                 |
-| `apps/live/app/explorer/ImportFromToolbar.tsx`                  | The page header's "Import from" toolbar                                                                                                                   |
-| `apps/live/app/explorer/ExplorerPane.tsx`                       | Puts the toolbar in `headerActions` wherever the section offers New document                                                                              |
-| `apps/live/e2e/ms-whiteboard-board.ts`                          | The synthesised export the end-to-end spec imports                                                                                                        |
-| `apps/live/scripts/ms-whiteboard-verify.mts`                    | Local verification over real exports (path argument; prints counts only)                                                                                  |
+| `apps/editor/lib/zip-reader.ts`                                   | Generic Zip reading (stored and deflated entries, byte budget)                                                                                            |
+| `apps/editor/lib/zip-writer-fixture.ts`                           | Test-only Zip writer (Node)                                                                                                                               |
+| `apps/editor/lib/pick-folder.ts`                                  | A folder pick or drop to a file set                                                                                                                       |
+| `apps/editor/components/dialogs/MsWhiteboardImportPanel.tsx`      | The import panel: pick, list, progress, result                                                                                                            |
+| `apps/editor/hooks/persistence/useMsWhiteboardImport.ts`          | The panel's flow: read, list, build scenes, hand them to the host's commit (`importBoardsAsDocuments`)                                                    |
+| `apps/editor/components/dialogs/MsWhiteboardImportDialog.tsx`     | The "Import from Microsoft Whiteboard" dialog hosting the panel                                                                                           |
+| `apps/editor/hooks/persistence/useMsWhiteboardImportLauncher.tsx` | `openMicrosoftWhiteboardImport` and the dialog element, for any host                                                                                      |
+| `apps/editor/app/explorer/import-sources.tsx`                     | `IMPORT_SOURCES`: the shipped sources (id, name, icon), one entry each                                                                                    |
+| `apps/editor/components/dialogs/import-source-icons.tsx`          | `MsWhiteboardSourceIcon`, the original glyph (art, on the raw-svg allowlist)                                                                              |
+| `apps/editor/app/explorer/useExplorerImport.tsx`                  | The page host: toolbar, launcher, `importBoardsAsDocuments` with the folder, list refresh                                                                 |
+| `apps/editor/app/explorer/ImportFromToolbar.tsx`                  | The page header's "Import from" toolbar                                                                                                                   |
+| `apps/editor/app/explorer/ExplorerPane.tsx`                       | Puts the toolbar in `headerActions` wherever the section offers New document                                                                              |
+| `apps/editor/e2e/ms-whiteboard-board.ts`                          | The synthesised export the end-to-end spec imports                                                                                                        |
+| `apps/editor/scripts/ms-whiteboard-verify.mts`                    | Local verification over real exports (path argument; prints counts only)                                                                                  |
 | `file-sets.ts`                                                  | A `.zip` or a folder pick as an `ExportFileSet` (`MAX_IMPORT_BYTES`)                                                                                      |
 
 ## Domain and naming

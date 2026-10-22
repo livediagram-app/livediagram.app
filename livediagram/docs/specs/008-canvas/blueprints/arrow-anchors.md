@@ -25,13 +25,13 @@ Scope, by file:
 | `packages/document/src/validate.ts`                           | `ANCHORS` derived from `ALL_ANCHORS`                                                               |
 | `packages/document/src/legacy-groups.ts`                      | Legacy group anchors resolved through the table                                                    |
 | `packages/document/src/duplicate.ts`                          | Endpoint copy without `manual`                                                                     |
-| `apps/live/lib/user-preferences.ts`                           | `autoRebindArrowsEnabled`: on unless `false`                                                       |
-| `apps/live/hooks/canvas/useEditorDrag.ts`                     | Live rebind per drag frame                                                                         |
-| `apps/live/hooks/canvas/useNudgeSelection.ts`                 | Rebind per nudge                                                                                   |
-| `apps/live/app/document/[id]/useArrowConnect.ts`              | Click-to-connect: creation anchors only, no rebind                                                 |
-| `apps/live/hooks/canvas/arrow-endpoint-resolve.ts`            | Stops writing `manual`                                                                             |
-| `apps/live/hooks/canvas/useBoxedDragHandlers.ts`              | Quick-connect pins `nearestOfferedAnchor`; tap-placed arrow direction from `anchorOutward`         |
-| `apps/live/components/dialogs/settings/settings-catalogue.ts` | Setting copy                                                                                       |
+| `apps/editor/lib/user-preferences.ts`                           | `autoRebindArrowsEnabled`: on unless `false`                                                       |
+| `apps/editor/hooks/canvas/useEditorDrag.ts`                     | Live rebind per drag frame                                                                         |
+| `apps/editor/hooks/canvas/useNudgeSelection.ts`                 | Rebind per nudge                                                                                   |
+| `apps/editor/app/document/[id]/useArrowConnect.ts`              | Click-to-connect: creation anchors only, no rebind                                                 |
+| `apps/editor/hooks/canvas/arrow-endpoint-resolve.ts`            | Stops writing `manual`                                                                             |
+| `apps/editor/hooks/canvas/useBoxedDragHandlers.ts`              | Quick-connect pins `nearestOfferedAnchor`; tap-placed arrow direction from `anchorOutward`         |
+| `apps/editor/components/dialogs/settings/settings-catalogue.ts` | Setting copy                                                                                       |
 | `apps/help/app/palette/auto-attach-arrows/page.mdx`           | Help article                                                                                       |
 | `apps/api/src/ai-prompt.ts`                                   | Anchor list for the AI                                                                             |
 | `apps/api/src/openapi/schemas.generated.ts`                   | Regenerated `Anchor` enum and pinned endpoint schema                                               |
@@ -491,7 +491,7 @@ swaps log, plus the anchor fallbacks (O5, O6, prefix `[arrow-anchors]`); never a
 | 16 anchors, clockwise, old 8 kept                                                                        | ids, order, uniqueness                                                                    | `anchors.test.ts`                                                |
 | Class, sides, primary side, `anchorsOf`                                                                  | whole table                                                                               | `anchors.test.ts`                                                |
 | Offered anchors per kind, I7, class fallback on a side                                                   | circle / diamond / actor 8, triangle 9, document 14, square 16; triangle corner → quarter | `anchors.test.ts`                                                |
-| Snapping and markers honour the offer (I8)                                                               | no quarter snap on a circle; 8 markers                                                    | `anchor-geometry.test.ts`, `apps/live/lib/drag-geometry.test.ts` |
+| Snapping and markers honour the offer (I8)                                                               | no quarter snap on a circle; 8 markers                                                    | `anchor-geometry.test.ts`, `apps/editor/lib/drag-geometry.test.ts` |
 | Face-placed anchors                                                                                      | parallelogram, trapezoid, hexagon, triangle points; star on its box; cylinder on its caps | `anchor-geometry.test.ts`                                        |
 | A side without anchors                                                                                   | triangle target above: facing side falls to w / e; creation anchor never `n`              | `anchor-geometry.test.ts`, `arrow-rebind.test.ts`                |
 | Fallback logs O1, O5, O6                                                                                 | triangle side fallback, circle class fallback, remap, creation; silent otherwise          | `arrow-rebind.test.ts`, `anchor-geometry.test.ts`                |
@@ -524,11 +524,11 @@ swaps log, plus the anchor fallbacks (O5, O6, prefix `[arrow-anchors]`); never a
 | I5, I6                                                                                                   | second run no-op, two runs equal                                                          | `arrow-rebind.test.ts`                                           |
 | O1                                                                                                       | spy `console.debug`                                                                       | `arrow-rebind.test.ts`                                           |
 | Swap: crossing same side, uncross only, pass-through guard, different sides, not considered, cap, O2, O3 | eight cases                                                                               | `arrow-rebind-swap.test.ts`                                      |
-| Default on                                                                                               | `{}` → true, `false` → false                                                              | `apps/live/lib/user-preferences.test.ts`                         |
-| Live drag re-anchors in the browser                                                                      | seeded diagram, path read with the drag held open, O1                                     | `apps/live/e2e/arrow-rebind.spec.ts`                             |
-| The first crossing frame decides a quarter                                                               | drag past the quarter: `ene`, not `ese`                                                   | `apps/live/e2e/arrow-rebind.spec.ts`                             |
-| Setting off: nothing moves                                                                               | flip the Settings switch, drag                                                            | `apps/live/e2e/arrow-rebind.spec.ts`                             |
-| Snap-target markers show 16                                                                              | `computeSnapTargets` length                                                               | `apps/live/lib/drag-geometry.test.ts`                            |
+| Default on                                                                                               | `{}` → true, `false` → false                                                              | `apps/editor/lib/user-preferences.test.ts`                         |
+| Live drag re-anchors in the browser                                                                      | seeded diagram, path read with the drag held open, O1                                     | `apps/editor/e2e/arrow-rebind.spec.ts`                             |
+| The first crossing frame decides a quarter                                                               | drag past the quarter: `ene`, not `ese`                                                   | `apps/editor/e2e/arrow-rebind.spec.ts`                             |
+| Setting off: nothing moves                                                                               | flip the Settings switch, drag                                                            | `apps/editor/e2e/arrow-rebind.spec.ts`                             |
+| Snap-target markers show 16                                                                              | `computeSnapTargets` length                                                               | `apps/editor/lib/drag-geometry.test.ts`                            |
 
 ## Constants and configuration
 

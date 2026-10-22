@@ -15,13 +15,13 @@ Scope, by file:
 | `packages/document/src/element-deltas.ts`                    | The `check` delta, `checklistDeltaFor`, `keepLocalTicks`, `mergeIncomingElement`                            |
 | `packages/document/src/collab-ledger.ts`                     | Wire validation of an incoming `check` delta                                                                |
 | `packages/document/src/svg-render-shapes.ts`                 | `svgChecklistShape`: the headless render                                                                    |
-| `apps/live/components/canvas/ChecklistView.tsx`              | Canvas card, row buttons, footer count                                                                      |
-| `apps/live/components/canvas/ShapeContentRouter.tsx`         | Routes the kind; `editable = !readOnly && !isLocked`                                                        |
-| `apps/live/hooks/canvas/useCollabElements.ts`                | `toggleChecklistItem`: builds and applies the delta                                                         |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`              | `setChecklistItemsSelected`: whole-array row edits                                                          |
-| `apps/live/components/palette/ElementDataSections.tsx`       | The Checklist section (Tools flyout)                                                                        |
-| `apps/live/components/palette/context-menu-data-editors.tsx` | `ChecklistRowsEditor`                                                                                       |
-| `apps/live/components/palette/palette-tile-defs.tsx`         | Tile `tools:checklist`, section `components`                                                                |
+| `apps/editor/components/canvas/ChecklistView.tsx`              | Canvas card, row buttons, footer count                                                                      |
+| `apps/editor/components/canvas/ShapeContentRouter.tsx`         | Routes the kind; `editable = !readOnly && !isLocked`                                                        |
+| `apps/editor/hooks/canvas/useCollabElements.ts`                | `toggleChecklistItem`: builds and applies the delta                                                         |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`              | `setChecklistItemsSelected`: whole-array row edits                                                          |
+| `apps/editor/components/palette/ElementDataSections.tsx`       | The Checklist section (Tools flyout)                                                                        |
+| `apps/editor/components/palette/context-menu-data-editors.tsx` | `ChecklistRowsEditor`                                                                                       |
+| `apps/editor/components/palette/palette-tile-defs.tsx`         | Tile `tools:checklist`, section `components`                                                                |
 | `apps/api/src/ai-prompt.ts`                                  | AI vocabulary entry for `checklist`                                                                         |
 
 ## Domain and naming
@@ -171,7 +171,7 @@ dropped delta (no match) is silent [GE12].
 | Whole-element update keeps ticks       | keeps our ticks and our comments, takes their row edits                                              | `packages/document/src/element-deltas.test.ts`                    |
 | Tick-only change is delta-only         | is true for an answer, a tick or a comment alone                                                     | `packages/document/src/element-deltas.test.ts`                    |
 | Export: rows, strike-through, footer   | renders a checklist as rows with ticked boxes                                                        | `packages/document/src/svg-render.test.ts`                        |
-| Row draft survives, follows the rows   | keeps a typed draft through a re-render with the same rows; follows the element when its rows change | `apps/live/components/palette/context-menu-data-editors.test.tsx` |
+| Row draft survives, follows the rows   | keeps a typed draft through a re-render with the same rows; follows the element when its rows change | `apps/editor/components/palette/context-menu-data-editors.test.tsx` |
 | Starter rows all unchecked, no footer  | none [GE11]                                                                                          |                                                                   |
 | Lock and layer gating of ticks         | none [GE6]                                                                                           |                                                                   |
 | Ticks are not undoable and not tracked | none [GE11]                                                                                          |                                                                   |

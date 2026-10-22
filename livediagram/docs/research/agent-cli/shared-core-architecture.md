@@ -173,7 +173,7 @@ No `--token` flag: it lands in shell history and in agent transcripts.
 
 ### 6.1 `auth login`: loopback + PKCE on the existing server
 
-The OAuth server in `apps/mcp/src/oauth.ts` already implements RFC 8414 discovery, dynamic client registration accepting loopback redirects (`isLoopbackHostname`), PKCE S256, the Clerk-authed consent page in `apps/live/app/oauth/consent`, the server-read session (`GET /oauth/session/<id>`, anti-phishing), the read-only checkbox and token mint via `/api/oauth/exchange`. The CLI reuses all of it:
+The OAuth server in `apps/mcp/src/oauth.ts` already implements RFC 8414 discovery, dynamic client registration accepting loopback redirects (`isLoopbackHostname`), PKCE S256, the Clerk-authed consent page in `apps/editor/app/oauth/consent`, the server-read session (`GET /oauth/session/<id>`, anti-phishing), the read-only checkbox and token mint via `/api/oauth/exchange`. The CLI reuses all of it:
 
 1. `GET {host}/api/capabilities` gives `oauthIssuer` (new field; hosted: `https://mcp.livediagram.app`).
 2. Discovery at `{issuer}/.well-known/oauth-authorization-server`.
@@ -187,7 +187,7 @@ Two changes are needed in `oauth.ts`:
 
 ### 6.2 Headless: device authorisation grant
 
-SSH sessions, containers and remote agent sandboxes have no browser on the loopback. Add RFC 8628 to the same server: `POST /oauth/device_authorization` (device code + short user code in `OAUTH_KV`, 10-minute TTL), a `apps/live` page `/oauth/device` where the signed-in person types the code and sees the same consent (client name from the server, read-only checkbox), and `grant_type=urn:ietf:params:oauth:grant-type:device_code` on `/oauth/token` with `slow_down` polling. `auth login` picks device flow automatically when no display is detected or with `--device`. This is what `gh` and `vercel` do.
+SSH sessions, containers and remote agent sandboxes have no browser on the loopback. Add RFC 8628 to the same server: `POST /oauth/device_authorization` (device code + short user code in `OAUTH_KV`, 10-minute TTL), a `apps/editor` page `/oauth/device` where the signed-in person types the code and sees the same consent (client name from the server, read-only checkbox), and `grant_type=urn:ietf:params:oauth:grant-type:device_code` on `/oauth/token` with `slow_down` polling. `auth login` picks device flow automatically when no display is detected or with `--device`. This is what `gh` and `vercel` do.
 
 ### 6.3 Storage, status, logout
 
@@ -257,7 +257,7 @@ actor "AI agent / person" as user
 package "Front-ends (transport only)" {
   [apps/cli\nlivediagram <resource> <verb>\nviews · auth · profiles · sync] as cli
   [apps/mcp\nMCP tools + prompts\nOAuth 2.1 AS (loopback, device)] as mcp
-  [apps/live\neditor · consent · device page] as live
+  [apps/editor\neditor · consent · device page] as live
 }
 
 package "Shared packages (isomorphic, pure)" {
@@ -331,7 +331,7 @@ apps/
 packages/
   agent-operations/          # NEW: the catalogue (zod, behaviour, handlers, views hooks)
   api-client/                # NEW: from apps/mcp/src/api.ts, fetch injected, typed by api-schema
-  document-views/            # NEW: outline (from apps/live export-tab-text), ids, graph, comments, diff
+  document-views/            # NEW: outline (from apps/editor export-tab-text), ids, graph, comments, diff
   render-png/                # NEW: from apps/mcp/src/render.ts, wasm + font loaders injected
   document/                  # gains element-normalise, graph-input, tab-builders, element-format
   templates/, api-schema/, icons/   # unchanged
@@ -353,7 +353,7 @@ Ordered by value. Each lands in `apps/api` with its manifest entry, `tokenUsable
 8. **Render:** `GET …/tabs/:tabId/render.svg` (the shared renderer, images embedded under the api's budget).
 9. **Catalogues behind the api:** `GET /api/templates` and `GET /api/schema/elements` (Markdown and JSON Schema), so help text and template lists follow the server, not the install.
 10. **Capabilities:** `authEnabled`, `oauthIssuer`, `documentFormat`, `telemetryEnabled`, `cli.minVersion` on `GET /api/capabilities`.
-11. **OAuth server (`apps/mcp`):** RFC 8252 port-agnostic loopback matching; pre-registered `livediagram-cli` public client; RFC 8628 device authorisation grant with a `apps/live` `/oauth/device` page; discovery metadata lists `device_authorization_endpoint`.
+11. **OAuth server (`apps/mcp`):** RFC 8252 port-agnostic loopback matching; pre-registered `livediagram-cli` public client; RFC 8628 device authorisation grant with a `apps/editor` `/oauth/device` page; discovery metadata lists `device_authorization_endpoint`.
 12. **Telemetry enums:** `Cli` category (`Used`), plus the shared `Error·Api` tokens per operation.
 
 Items 1 to 3 also make the MCP thinner and fix its live-editor clobbering; they are worth doing before any CLI code.

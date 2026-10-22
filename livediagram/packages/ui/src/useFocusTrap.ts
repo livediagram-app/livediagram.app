@@ -61,7 +61,7 @@ export function useFocusTrap(
 
     // A control that already took focus as the modal opened (an `autoFocus` field) keeps it; otherwise the first.
     // On a touch screen the container takes it instead: focusing the first control there highlights it and can
-    // raise the on-screen keyboard for a field nobody tapped (docs/specs/007-editor/live-app.md).
+    // raise the on-screen keyboard for a field nobody tapped (docs/specs/007-editor/editor-app.md).
     if (!node.contains(document.activeElement)) {
       (coarsePointer() || initial === 'container' ? node : (focusables()[0] ?? node)).focus({
         preventScroll: true,

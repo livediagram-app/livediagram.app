@@ -1,7 +1,7 @@
 // The one geometry table for the shapes that are DRAWN rather than boxed.
 //
 // Two renderers paint these: the editor's React overlays (ShapeSvgOverlay,
-// BrowserChrome, FurnitureView in apps/live) and the headless string emitters
+// BrowserChrome, FurnitureView in apps/editor) and the headless string emitters
 // (svg-render-shapes / svg-render-faces here, used by exports, thumbnails,
 // the api's live image and the MCP render). They used to carry their own
 // copies of every path, kept "in sync" by a comment, and the copies drifted
@@ -200,7 +200,7 @@ export function shapePathData(kind: ShapeKind): string | null {
 /** A single-polygon silhouette's vertices in its 0..100 box (which equals
  *  CSS percentages), or null for a kind not drawn as one polygon. For the
  *  consumers that need the outline itself rather than a drawing: anchor
- *  projection (geometry.ts) and the isometric clip (apps/live isometric.ts). */
+ *  projection (geometry.ts) and the isometric clip (apps/editor isometric.ts). */
 export function shapePolygonVertices(kind: ShapeKind): [number, number][] | null {
   const parts = FIXED_GEOMETRY[kind]?.parts;
   const only = parts?.length === 1 ? parts[0] : undefined;

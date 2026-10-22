@@ -7,12 +7,12 @@ Derived from [Workshop tour](../workshop-tour.md). Where this is silent, the
 
 | Thing               | Identifier                                                                                        |
 | ------------------- | ------------------------------------------------------------------------------------------------- |
-| The host            | `WorkshopTourHost` in `apps/live/components/tour/WorkshopTourHost.tsx`                            |
+| The host            | `WorkshopTourHost` in `apps/editor/components/tour/WorkshopTourHost.tsx`                            |
 | The steps           | `WORKSHOP_TOUR_STEPS`, `workshopTourSteps({ canShare })` in `workshop-tour-steps.ts`              |
-| The welcome art     | `WorkshopTourArt` in `apps/live/components/tour/WorkshopTourArt.tsx`                              |
+| The welcome art     | `WorkshopTourArt` in `apps/editor/components/tour/WorkshopTourArt.tsx`                              |
 | The seen-guard      | `UserPreferences.workshopTourSeen` (synced)                                                       |
-| The rerun signal    | `WORKSHOP_TOUR_RELAUNCH_EVENT`, `requestWorkshopTourRelaunch` in `apps/live/lib/workshop-tour.ts` |
-| The one-tour slot   | `ActiveTour` `'workshop'` in `apps/live/lib/tour-active.ts`                                       |
+| The rerun signal    | `WORKSHOP_TOUR_RELAUNCH_EVENT`, `requestWorkshopTourRelaunch` in `apps/editor/lib/workshop-tour.ts` |
+| The one-tour slot   | `ActiveTour` `'workshop'` in `apps/editor/lib/tour-active.ts`                                       |
 | The Settings switch | `workshopTourSeen`, "Workshop Tour", third toggle row in the Tours category                       |
 | The help article    | `canvas/workshop-mode/workshop-tour` (`helpArticle: 'workshopTour'`)                              |
 

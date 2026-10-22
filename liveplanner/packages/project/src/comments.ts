@@ -12,7 +12,7 @@ import { isComment, keepLocalTicks } from './element-deltas';
 import { mapElementThreads, type CellCommentThreads } from './cell-comments';
 
 // A single comment inside a thread. The author is the participant who
-// wrote it (per `apps/live/lib/identity.ts`). The participant model is
+// wrote it (per `apps/editor/lib/identity.ts`). The participant model is
 // local-session-only today; the comment carries a denormalised copy of
 // the name + colour so the badge keeps rendering even if the participant
 // list later evolves (e.g. user renames themselves mid-session).

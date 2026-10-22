@@ -2,7 +2,7 @@
 
 Follow the references below only as needed; never upfront.
 
-- ./live-app.md - when working on the live app: the planner's routes (clean, no `/live` prefix), layout, role pill, selection lock, share dialog, mobile chrome
+- ./editor-app.md - when working on the editor app: the planner's routes (clean, no `/live` prefix), layout, role pill, selection lock, share dialog, mobile chrome
 - ./editor-modes.md - when working on the editor mode: Plan as the one mode, where the mode is still named, retired modes and their stored ids, the one look, text box sizing
 - ./start-panel.md - when working on the start panel an empty tab shows (StartPanel, drawing Start Planning): the panel, Best Match, its keyboard, when it shows, search handed over from /new, its look
 - ./new-project-route.md - when working on `/new`: creating a project and landing on Start Planning

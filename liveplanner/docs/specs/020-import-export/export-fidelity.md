@@ -18,7 +18,7 @@ returns ([MCP server](../015-api/mcp-server.md)).
 
 There are **three** renderers for the same content: the canvas (React, DOM +
 CSS + SVG), the SVG emitters in `packages/project/src/svg-render*.ts`, and the
-PNG / PDF canvas-2D drawers in `apps/live/lib/export-tab-canvas-draw.ts`. Each
+PNG / PDF canvas-2D drawers in `apps/editor/lib/export-tab-canvas-draw.ts`. Each
 was internally consistent, so each looked right in its own tests, and the
 differences between them were invisible until someone laid two pictures side by
 side. They were not small:

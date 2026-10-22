@@ -19,7 +19,7 @@ One row per default applied where the spec is silent or qualitative.
 | D13 | drive-mirror | Lease holder identity                                   | A random per-browser id in `localStorage` (`livediagram:v2:drive-device`)                                |
 | D14 | drive-mirror | When a content edit made in Drive is rewritten          | At the ordinary write cadence (idle and minimum interval), not at once                                   |
 | D15 | drive-mirror | Where the unseen-folder notice shows on a row           | A small amber folder mark after the document's name, in list rows and cards alike                        |
-| D16 | drive-mirror | Which pages run the engine                              | Every page of the live app except `/embed` and the `/drive` routes, from the root layout                 |
+| D16 | drive-mirror | Which pages run the engine                              | Every page of the editor app except `/embed` and the `/drive` routes, from the root layout                 |
 | D17 | drive-mirror | Test ports for the opt-in e2e                           | JWKS on 8795, the fake Google on 8796, both overridable (`E2E_DRIVE_JWKS_PORT`, `E2E_DRIVE_GOOGLE_PORT`) |
 | D18 | drive-mirror | Telemetry pairs for the spec's events                   | Reuse `Linked`, `Unlinked`, `Changed`, `Created`, `Opened`; add only the `Drive` category and `Applied`  |
 | D21 | drive-mirror | "On focus" guard at the 2-minute pace                   | At most one focus check every 30 seconds                                                                 |

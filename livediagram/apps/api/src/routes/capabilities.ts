@@ -33,7 +33,7 @@ function cliCapabilities({ env, url }: RouteContext) {
 
 // GET /api/capabilities — no auth required.
 // Returns which optional server-side features are configured so the
-// live app can hide UI surfaces for features the operator hasn't
+// editor app can hide UI surfaces for features the operator hasn't
 // provisioned. Fail-closed by design: an absent / misconfigured
 // binding returns false, never true.
 export function handleCapabilities(ctx: RouteContext): Response {
@@ -55,7 +55,7 @@ export function handleCapabilities(ctx: RouteContext): Response {
     // instead (see apps/api/wrangler.toml). Staging has the flag on today and
     // has exactly that broken panel for guests.
     aiEnabled: aiConfigured(env),
-    // docs/specs/014-identity/profile-and-email-notifications.md: the live app hides the email-notification toggles when
+    // docs/specs/014-identity/profile-and-email-notifications.md: the editor app hides the email-notification toggles when
     // Resend isn't configured (they'd do nothing). Same gate docs/specs/014-identity/transactional-email.md uses.
     emailEnabled: emailEnabled(env),
     // docs/specs/022-drive-mirror/drive-mirror.md: which Drive token path the app takes;

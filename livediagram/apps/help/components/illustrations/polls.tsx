@@ -1,5 +1,5 @@
 // Live poll scenes for the Collaboration › Session Tools articles (docs/specs/018-help/help-app.md),
-// drawn from the live editor's PollPromptSheet and PollPanel (apps/live/components/panels). Labels
+// drawn from the live editor's PollPromptSheet and PollPanel (apps/editor/components/panels). Labels
 // are the real UI strings.
 
 import { Label, Panel, Scene, Shape } from './primitives';

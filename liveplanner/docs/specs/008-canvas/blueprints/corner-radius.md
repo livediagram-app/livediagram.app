@@ -26,8 +26,8 @@ export function cornerRadiusPx(
 
 | File                                                                       | Fallback px                               |
 | -------------------------------------------------------------------------- | ----------------------------------------- |
-| `apps/live/components/canvas/element-variant.ts`                           | 8 (`DEFAULT_BOX_RADIUS_PX`), 12 mind node |
-| `apps/live/components/canvas/BoxedElementView.tsx` (dashed-border overlay) | 8, 12 mind node                           |
+| `apps/editor/components/canvas/element-variant.ts`                           | 8 (`DEFAULT_BOX_RADIUS_PX`), 12 mind node |
+| `apps/editor/components/canvas/BoxedElementView.tsx` (dashed-border overlay) | 8, 12 mind node                           |
 | `packages/project/src/svg-render-border.ts` (`borderOf`)                  | `DEFAULT_BOX_RADIUS_PX`                   |
 | `packages/project/src/svg-render-describe.ts`                             | 4 (images)                                |
 | `packages/project/src/svg-render-web.ts`                                  | the caller's fallback                     |
@@ -48,7 +48,7 @@ See the quick style blueprint's "Corners row".
 | Quarter cap, presets, fallback, Full exempt, None 0, broken sides      | `packages/project/src/corner-radius.test.ts`                                 |
 | Shorter side at least 4x the preset: unchanged, every preset           | same                                                                          |
 | SVG export and hit outline use the rule (small rounded square)         | `packages/project/src/corner-radius-renderers.test.ts`, `svg-render.test.ts` |
-| Canvas variant uses the rule (presets, kind defaults, Full, mind node) | `apps/live/components/canvas/element-variant.test.ts`                         |
+| Canvas variant uses the rule (presets, kind defaults, Full, mind node) | `apps/editor/components/canvas/element-variant.test.ts`                         |
 
 ## Constants and configuration
 

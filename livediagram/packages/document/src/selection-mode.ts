@@ -1,6 +1,6 @@
 // The selection modes a Mode Button element can switch someone into
 // (docs/specs/009-elements/mode-button.md). The editor's own `CanvasTool` union is the same vocabulary, but it
-// lives in the live app; this is the DATA half — what a saved element may carry
+// lives in the editor app; this is the DATA half — what a saved element may carry
 // — so it belongs with the model, where validation can reach it.
 //
 // Kept deliberately as the full set: a button that hands someone the Eraser is

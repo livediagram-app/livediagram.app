@@ -2,7 +2,7 @@
 // "The page panel", "Page actions", docs/specs/007-editor/article-pages.md "An article"): turn,
 // resize, rename, paint and lock a page; add, duplicate, move, delete and lay one out. On an article
 // page the edits that reach its look (a turn, a size, its paint) and its place (a move, a delete) act
-// on every page of the article. Shared by the page panel (apps/live page-edits) and the
+// on every page of the article. Shared by the page panel (apps/editor page-edits) and the
 // agents' page changes (docs/specs/024-agents/pages-for-agents.md), so an agent's edit is the
 // panel's. Each answers the next tab (the same one when nothing changes) or why it was refused.
 import {

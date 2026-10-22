@@ -289,7 +289,7 @@ unusable through WebGL without a GPU or the plain-JavaScript backend.
 
 ## What wiring it into the editor needs (done by group M: [m-editor-model.md](m-editor-model.md))
 
-1. **Ship the weights** as a static asset of `apps/live` (the uint8
+1. **Ship the weights** as a static asset of `apps/editor` (the uint8
    `model.json` + `weights.bin`, ~86 KB). They are synthetic-only: reproducible
    from E's generator and seeds, nothing derived from any photo, MIT.
 2. **A browser-safe home for the pure parts.** `packages/sticky-model` depends
@@ -300,7 +300,7 @@ unusable through WebGL without a GPU or the plain-JavaScript backend.
    `-layers` and `-backend-webgpu`, falling back to `-backend-wasm` (single
    thread: cross-origin isolation for threads would constrain the whole app).
    Start loading when the photo dialog opens, so the shader compile overlaps
-   the author choosing a photo. New dependencies for `apps/live`.
+   the author choosing a photo. New dependencies for `apps/editor`.
 4. **Run it in a Web Worker** (up to ~0.8 s on WASM), then
    `detectStickies(image, { model: { cues, rules: HYBRID_RULES } })`. Any
    failure (no backend, load error, timeout) falls back to the classical

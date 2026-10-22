@@ -12,7 +12,7 @@ function envWithLive() {
   } as unknown as Fetcher;
   const env: Env = {
     MARKETING: fetcher,
-    LIVE: fetcher,
+    EDITOR: fetcher,
     API: fetcher,
     HELP: fetcher,
   };
@@ -54,7 +54,7 @@ describe('router dispatch of the legacy editor route', () => {
     expect(urls).toEqual([]);
   });
 
-  it('still serves the current editor route from the live worker', async () => {
+  it('still serves the current editor route from the editor worker', async () => {
     const { env, urls } = envWithLive();
     await dispatch('/document/abc-123', env);
     expect(urls).toEqual(['https://livediagram.app/document/abc-123']);

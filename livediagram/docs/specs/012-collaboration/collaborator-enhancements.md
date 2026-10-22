@@ -10,7 +10,7 @@ its own numbered section, so later ones land here rather than in a new spec.
 
 ### The problem
 
-The presence stack on each tab ([Live app](../007-editor/live-app.md)) answers "who is on
+The presence stack on each tab ([Editor app](../007-editor/editor-app.md)) answers "who is on
 _this_ tab", three avatars at a time, and nothing more. To learn where everyone
 is you had to hover every tab in turn, and a folder's hidden members only showed
 as a merged stack on the chip. Clicking an avatar did one thing, start following
@@ -55,7 +55,7 @@ result for a click whose obvious meaning is "tell me about this person".
 - View-role visitors get the full modal: it mutates nothing, and following is
   already allowed for them ([Follow-me viewport](follow-me-viewport.md)).
 - Available wherever the presence stack is, which is only a shared or team
-  document (a private document has no stack, [Live app](../007-editor/live-app.md)). Hidden in embed mode, like
+  document (a private document has no stack, [Editor app](../007-editor/editor-app.md)). Hidden in embed mode, like
   the tab bar.
 - **Also reachable by name from the search panel** ([Canvas and palette](../008-canvas/canvas-and-palette.md)),
   as the `collaborators` command. The presence stack is the discoverable entry
@@ -68,7 +68,7 @@ result for a click whose obvious meaning is "tell me about this person".
 
 ### Implementation notes
 
-- `apps/live/lib/collaborator-roster.ts` builds the grouped roster from the
+- `apps/editor/lib/collaborator-roster.ts` builds the grouped roster from the
   same `participantsByTab` map the tab bar already renders, so the modal and
   the stacks cannot disagree about who is where.
 - `CollaboratorsDialog` is its own dialog file on the shared `Dialog` shell;

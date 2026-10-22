@@ -70,7 +70,7 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 1. Create a Clerk application in the [Clerk dashboard](https://dashboard.clerk.com).
 2. Copy the publishable key and the JWKS URL.
 3. Set them on the two workers / apps:
-   - **Live and Community (build-time, browser-side)**: set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in your CI build env, or in `apps/live/.env.production` and `apps/community/.env.production` (Community uses it only for My Shares).
+   - **Live and Community (build-time, browser-side)**: set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` in your CI build env, or in `apps/editor/.env.production` and `apps/community/.env.production` (Community uses it only for My Shares).
    - **API (worker secret)**:
 
      ```sh
@@ -106,13 +106,13 @@ The hosted version uses Clerk for sign-in. To enable on your self-host:
 
 6. **API tokens ([Public API and API tokens](../specs/015-api/public-api-and-tokens.md)) come with Clerk.** They're a signed-in-only feature, so a self-host with Clerk configured gets the API Tokens category in Settings automatically; a guest-only self-host has no accounts and therefore no tokens (nothing to configure). Each token lasts six months and is stored hashed.
 
-7. **Optional — "Continue with Google" button.** To surface Google OAuth on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (a production `pk_live_*` instance needs your own Google Cloud OAuth client registered against Clerk's redirect URI, `https://clerk.<domain>/v1/oauth_callback`, shown verbatim in the dashboard), then set the build-time flag on the live app alongside the publishable key:
+7. **Optional — "Continue with Google" button.** To surface Google OAuth on `/sign-in` and `/get-started`, enable the Google SSO connection in the Clerk dashboard (a production `pk_live_*` instance needs your own Google Cloud OAuth client registered against Clerk's redirect URI, `https://clerk.<domain>/v1/oauth_callback`, shown verbatim in the dashboard), then set the build-time flag on the editor app alongside the publishable key:
 
    ```sh
    NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED=true
    ```
 
-   Like the publishable key it's baked in at build time (CI env or `apps/live/.env.production`). It's gated on Clerk being configured, so it's a no-op in guest-only mode. Unset keeps just the email-code sign-in.
+   Like the publishable key it's baked in at build time (CI env or `apps/editor/.env.production`). It's gated on Clerk being configured, so it's a no-op in guest-only mode. Unset keeps just the email-code sign-in.
 
 Without the Clerk vars set, the api worker treats every request as a guest (resolves owner from `X-Owner-Id`), and the live frontend's ClerkProvider becomes a pass-through that renders the editor without any auth UI. Self-host without Clerk is a fully-supported path; the canvas works identically (and guest-id signing is moot, since there's no migrate without Clerk accounts).
 
@@ -130,7 +130,7 @@ pnpm build           # static export for marketing + live + telemetry + help + c
                      # plus the generated /licences page (no network needed)
 # Then deploy each worker (run from the repo root):
 pnpm --filter @livediagram/marketing exec wrangler deploy
-pnpm --filter @livediagram/live exec wrangler deploy
+pnpm --filter @livediagram/editor exec wrangler deploy
 pnpm --filter @livediagram/telemetry exec wrangler deploy
 pnpm --filter @livediagram/help exec wrangler deploy
 pnpm --filter @livediagram/community exec wrangler deploy
@@ -176,7 +176,7 @@ nothing. To run it:
    Cloudflare dashboard (Workers → `livediagram-mcp` → Domains & Routes → add a
    custom domain) — the same way every other worker here gets its hostname, since
    the deploy token only uploads scripts, not zone routes. Then set
-   `CONSENT_BASE_URL` (in `apps/mcp/wrangler.toml`) to your live app's origin and
+   `CONSENT_BASE_URL` (in `apps/mcp/wrangler.toml`) to your editor app's origin and
    `NEXT_PUBLIC_MCP_ORIGIN` (live and marketing build env) to the MCP origin, so the
    consent page posts the minted token only to your trusted host and the Build
    with AI page (`/ai`) gives AI tools your address, not the hosted one.
@@ -267,7 +267,7 @@ adds the columns; nothing else to configure.
 ## Forms
 
 Form tabs ([Forms](../specs/030-forms/forms.md)) need nothing extra: migration `0092_forms.sql` creates their tables
-with the others, and a form link is served by the live worker (`/form/<code>`) and the api (`/api/forms/...`).
+with the others, and a form link is served by the editor worker (`/form/<code>`) and the api (`/api/forms/...`).
 
 - `FORM_RATE_LIMITER` (optional binding, declared in `apps/api/wrangler.toml`): 60 reads and 60 responses a minute
   per network. Without the binding every request is allowed; the per-form cap of 500 responses an hour still holds.
@@ -291,7 +291,7 @@ Signed-in users can mirror My Documents to their own Google Drive ([Google Drive
 
 1. In Google Cloud, create a project, enable the **Google Drive API**, and create an OAuth client of type **Web application**. Add `https://<your-host>/drive/connected` as an authorised redirect URI and `https://<your-host>` as a JavaScript origin. The consent screen needs only the non-sensitive scopes `drive.file` and `drive.install`, so no verification or security assessment is required.
 2. For **Open with**, configure the Drive API's **Drive UI integration**: Open URL `https://<your-host>/drive/open`, default MIME type `application/vnd.livediagram+json`, default extension `livediagram`.
-3. Set the client id on the api worker as a `[vars]` entry `GOOGLE_CLIENT_ID`, and build the live app with the same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
+3. Set the client id on the api worker as a `[vars]` entry `GOOGLE_CLIENT_ID`, and build the editor app with the same value as `NEXT_PUBLIC_GOOGLE_CLIENT_ID`.
 4. For syncing without a click every hour, also set two worker secrets (without them the browser holds hour-long tokens and asks the user to **Resume sync**):
 
 ```sh

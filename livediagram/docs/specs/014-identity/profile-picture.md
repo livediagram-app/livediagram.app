@@ -217,7 +217,7 @@ initials underneath keep their existing contrast.
 - `https:` on `img.clerk.com` only. Every image is requested with
   `referrerpolicy="no-referrer"`, so Clerk's host never learns which
   document is open.
-- The live app sends no `Content-Security-Policy` today (its worker defers
+- The editor app sends no `Content-Security-Policy` today (its worker defers
   CSP to a dedicated cycle). When one lands, `img-src` must allow
   `https://img.clerk.com`, as Clerk's CSP guide says.
 - Deleting the account deletes the participant record, and with it the URL.

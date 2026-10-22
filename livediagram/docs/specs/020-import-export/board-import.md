@@ -14,12 +14,12 @@ result plus an honest report. [Miro import](miro-import.md) and
 - Each source is a **format card in the Import dialog**, next to Markdown,
   Mermaid and Excalidraw, with a **single undo step** per import. No new
   surface is added.
-- Each importer is its own module in `apps/live/lib/` (beside
+- Each importer is its own module in `apps/editor/lib/` (beside
   `excalidraw-import.ts`) that parses its source into a board scene; the one
-  landing (`apps/live/lib/board-scene/`) and the shared image stage
-  (`apps/live/lib/import-images/`) do the rest. Lazy-loaded by `useTabImport`
+  landing (`apps/editor/lib/board-scene/`) and the shared image stage
+  (`apps/editor/lib/import-images/`) do the rest. Lazy-loaded by `useTabImport`
   like the other importers. Nothing here is needed by the MCP worker, so it
-  stays in `apps/live`.
+  stays in `apps/editor`.
 
 ## Stages
 

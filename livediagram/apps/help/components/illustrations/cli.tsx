@@ -1,7 +1,7 @@
 // The livediagram CLI's sign-in surfaces, drawn for the Developers article on the CLI
 // (docs/specs/015-api/cli.md "Authentication"): a terminal running `auth login --device` beside the
 // editor's /oauth/device page, and the approval card the browser sign-in opens. Labels are the real
-// ones from apps/cli and apps/live/app/oauth. Composed from the shared primitives so the house style
+// ones from apps/cli and apps/editor/app/oauth. Composed from the shared primitives so the house style
 // holds; the terminal stays dark in both appearances, like the code windows elsewhere.
 
 import { Scene, Panel, Button, Label } from './primitives';

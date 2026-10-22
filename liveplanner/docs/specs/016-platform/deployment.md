@@ -9,13 +9,13 @@ There is a second environment, **staging**, which does deploy on its own: every 
 | App              | Cloudflare Worker       | Type                                                                          |
 | ---------------- | ----------------------- | ----------------------------------------------------------------------------- |
 | `apps/marketing` | `liveplanner-marketing` | Static assets only (Next.js `output: 'export'`).                              |
-| `apps/live`      | `liveplanner-live`      | Static assets + a tiny path-rewrite worker.                                   |
+| `apps/editor`      | `liveplanner-editor`      | Static assets + a tiny path-rewrite worker.                                   |
 | `apps/help`      | `liveplanner-help`      | Static assets only (help centre, [Help app](../018-help/help-app.md)).        |
 | `apps/api`       | `liveplanner-api`       | Worker (D1 binding + Durable Object).                                         |
 | `apps/mcp`       | `liveplanner-mcp`       | Worker (OAuth + MCP tools; own host, [MCP server](../015-api/mcp-server.md)). |
 | `apps/router`    | `liveplanner-router`    | Worker (service bindings to the other five).                                  |
 
-The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The live worker serves files from `apps/live/out/` plus a small worker (`apps/live/src/worker.ts`) that rewrites every `/project/<id>` request to the single statically-built `/project/placeholder/` page — see [New project route](../007-editor/new-project-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.liveplanner.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
+The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`). The editor worker serves files from `apps/editor/out/` plus a small worker (`apps/editor/src/worker.ts`) that rewrites every `/project/<id>` request to the single statically-built `/project/placeholder/` page — see [New project route](../007-editor/new-project-route.md). The telemetry worker is static-assets-only like marketing, served under `/telemetry` ([22-telemetry](../017-telemetry/telemetry.md)). The help worker is static-assets-only too, served under `/help` ([55-help-app](../018-help/help-app.md)). The api worker holds the REST + WebSocket layer (see [11-api.md](../015-api/api.md)). The mcp worker exposes the AI tools over its own host `mcp.liveplanner.app` (it binds to the api worker, not the router; see [62-mcp-server.md](../015-api/mcp-server.md)). The router holds **no application logic** — only `MARKETING`, `LIVE`, `TELEMETRY`, `HELP` and `API` service bindings that forward requests to the right downstream worker.
 
 `wrangler.toml` for each app sits at the app root and is the source of truth for the worker's name, compatibility date, `[assets]`, `[[services]]`, `[[d1_databases]]`, and Durable Object bindings. Account-level identifiers (account id, custom domain, secrets) **never** go in `wrangler.toml` — they live in environment variables or the Cloudflare dashboard. See [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
 
@@ -33,8 +33,8 @@ The marketing worker serves files from `apps/marketing/out/` (`output: 'export'`
 Three jobs run in parallel, each after its own `pnpm install --frozen-lockfile`, so a PR waits for the slowest rather than their sum:
 
 - **Checks**: `pnpm lint`, `pnpm format:check`, `pnpm typecheck`.
-- **Tests**: `pnpm turbo run test --concurrency=2` for every workspace without `test:coverage`, then `pnpm turbo run test:coverage --concurrency=2 --filter=!@liveplanner/live` for those with it (enforcing the per-file coverage thresholds), and uploads their coverage to Codecov.
-- **Editor unit tests i/3**: the editor's suite (`apps/live`) under coverage, a third of its files per job (`vitest run --shard=i/3`), each uploading its coverage to Codecov ([Coverage report](../003-system-architecture/testing.md#coverage-report)). Each suite runs exactly once; `scripts/ci-test-filters.mjs` derives the exclusions from the manifests, so adding or removing a coverage script needs no CI edit.
+- **Tests**: `pnpm turbo run test --concurrency=2` for every workspace without `test:coverage`, then `pnpm turbo run test:coverage --concurrency=2 --filter=!@liveplanner/editor` for those with it (enforcing the per-file coverage thresholds), and uploads their coverage to Codecov.
+- **Editor unit tests i/3**: the editor's suite (`apps/editor`) under coverage, a third of its files per job (`vitest run --shard=i/3`), each uploading its coverage to Codecov ([Coverage report](../003-system-architecture/testing.md#coverage-report)). Each suite runs exactly once; `scripts/ci-test-filters.mjs` derives the exclusions from the manifests, so adding or removing a coverage script needs no CI edit.
 - **Build**: `pnpm build`, then `pnpm staging:check`.
 
 No job needs another's output: only the nine apps have a `build` script, and no workspace depends on an app, so checks and tests build nothing. The `main` ruleset requires all three checks by name.
@@ -67,18 +67,18 @@ Every `wrangler` invocation in the reusable workflow ends in `${WRANGLER_ENV:+--
 
 Jobs:
 
-1. **build** — installs deps, runs `pnpm build`, uploads `apps/marketing/out`, `apps/live/out` and `apps/help/out` as workflow artifacts. (Telemetry and its dashboard are liveworkspace's, deployed from there: liveworkspace/docs/telemetry.md.)
+1. **build** — installs deps, runs `pnpm build`, uploads `apps/marketing/out`, `apps/editor/out` and `apps/help/out` as workflow artifacts. (Telemetry and its dashboard are liveworkspace's, deployed from there: liveworkspace/docs/telemetry.md.)
 2. **deploy-marketing** — downloads `marketing-out`, runs `pnpm exec wrangler deploy` from `apps/marketing/`.
-3. **deploy-live** — downloads `live-out`, runs `pnpm exec wrangler deploy` from `apps/live/`.
+3. **deploy-editor** — downloads `live-out`, runs `pnpm exec wrangler deploy` from `apps/editor/`.
 4. **deploy-api** — runs:
    - `pnpm exec wrangler whoami` (diagnostic — prints which Cloudflare account the token authenticates against so a `7403 account not authorized` error is debuggable from the log).
    - `pnpm exec wrangler d1 migrations apply DB --remote` applies any pending migrations BEFORE the worker deploy (after the secret syncs, straight before it) so the new code never briefly runs against an older schema; see Renaming migrations below for the non-additive case. If this step fails the job halts and surfaces a precise error pointing at the missing token scopes. (Wrangler 4 dropped the `--yes` flag; the command is non-interactive by default in CI.)
    - `pnpm exec wrangler deploy` from `apps/api/`, plus the hosted profile's `--var` flags on liveplanner.app's own repository (see "Hosted profile" below), then `node scripts/hosted-vars.mjs verify` against the live version.
 5. **deploy-help** — downloads `help-out`, runs `pnpm exec wrangler deploy` from `apps/help/` (in parallel with the others).
 6. **deploy-mcp** — depends on **deploy-api** (the MCP worker has a service binding to the api worker, [MCP server](../015-api/mcp-server.md), so api must exist first). Runs `pnpm exec wrangler deploy` from `apps/mcp/` — no static artifact to download, the worker bundles from source. NOT a `deploy-router` dependency: `mcp.liveplanner.app` is its own host, not a path under the main hostname.
-7. **deploy-router** — depends on **deploy-marketing**, **deploy-live**, **deploy-api** and **deploy-help**. Runs `pnpm exec wrangler deploy` from `apps/router/`. The router's service bindings target the four workers above, so it must deploy after they exist. This is the one job carrying a GitHub `environment`, so a run files a single deployment record with the public URL rather than six.
+7. **deploy-router** — depends on **deploy-marketing**, **deploy-editor**, **deploy-api** and **deploy-help**. Runs `pnpm exec wrangler deploy` from `apps/router/`. The router's service bindings target the four workers above, so it must deploy after they exist. This is the one job carrying a GitHub `environment`, so a run files a single deployment record with the public URL rather than six.
 
-`deploy-marketing`, `deploy-api` and `deploy-help` run in parallel off `build`, and `deploy-live` follows `deploy-api`; `deploy-mcp` runs once `deploy-api` is up (parallel to the rest); `deploy-router` waits for the four it binds (not mcp, which is a separate host).
+`deploy-marketing`, `deploy-api` and `deploy-help` run in parallel off `build`, and `deploy-editor` follows `deploy-api`; `deploy-mcp` runs once `deploy-api` is up (parallel to the rest); `deploy-router` waits for the four it binds (not mcp, which is a separate host).
 
 All six deploy jobs use raw `pnpm exec wrangler` rather than `cloudflare/wrangler-action` — wrangler 4 ships sensible defaults and the explicit invocation makes the workflow log read 1:1 against a local run.
 
@@ -91,7 +91,7 @@ versions briefly serve side by side. The deploy keeps that window short and reco
 
 - **deploy-api** syncs its secrets first and applies the migration straight before `wrangler deploy`,
   so the window is the deploy itself.
-- **deploy-live** waits for **deploy-api**, so a new editor never calls an api that lacks its routes;
+- **deploy-editor** waits for **deploy-api**, so a new editor never calls an api that lacks its routes;
   **deploy-router** still waits for the six it binds.
 - A save that fails in the window is retried on its own
   ([Per-tab storage](../006-project/per-tab-storage.md#retrying-a-failed-save)).
@@ -155,7 +155,7 @@ Cloudflare dashboard → any zone → right sidebar → **Account ID** (copy).
 
 ## First deploy
 
-On the first run, none of the workers exist yet. The job ordering handles this: `deploy-marketing`, `deploy-live`, `deploy-api` and `deploy-help` run first and create those workers, then `deploy-router` runs, by which point its four service-binding targets already exist, so wrangler accepts the bindings.
+On the first run, none of the workers exist yet. The job ordering handles this: `deploy-marketing`, `deploy-editor`, `deploy-api` and `deploy-help` run first and create those workers, then `deploy-router` runs, by which point its four service-binding targets already exist, so wrangler accepts the bindings.
 
 Subsequent deploys are idempotent updates.
 

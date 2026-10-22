@@ -119,7 +119,7 @@ so focus returns at once.
 
 The editor's floating chrome (the corner panels such as the Map, the tab bar, the zoom cluster)
 **fades in** as it mounts, `fade-in` at the short token (200ms), opacity only, so a document opens
-softly rather than its parts popping into place. It is one rule in `apps/live/app/globals.css`
+softly rather than its parts popping into place. It is one rule in `apps/editor/app/globals.css`
 keyed on the surfaces' existing markers (`data-floating-panel`, `data-editor-tabbar`,
 `data-zoom-cluster`), in the components layer so a surface's own entrance utility still wins.
 

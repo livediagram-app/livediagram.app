@@ -115,7 +115,7 @@ existing emitters: the build-time `NEXT_PUBLIC_TELEMETRY_ENABLED` gate plus the
 [User preferences](../007-editor/user-preferences.md) per-browser opt-out, which every app on the origin reads from the same
 preferences key.
 
-- **editor** (`apps/live`) and **help centre** (`apps/help`): already emitting.
+- **editor** (`apps/editor`) and **help centre** (`apps/help`): already emitting.
 - **Community** (`apps/community`): page views through the shared `PageViewBoot`, alongside its own
   [Community](../025-community/community.md) events.
 - **marketing** (`apps/marketing`) and, until it moved to liveworkspace in October 2026,

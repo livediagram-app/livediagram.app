@@ -179,7 +179,7 @@ The five **default types** ([Item types](item-types.md#the-type-catalogue)), eac
   Sheets, it is hidden: those buttons would be noise there. It comes back the moment such an element arrives (a board
   placed, a Sheet set up from Plan Cards), and goes when the last one leaves.
 - On a wide desktop (1440 px and up) each of its buttons is named beside its icon in one short word (**Trash**,
-  **New**, **Find**, **Types**), as the cluster's other strips are ([Live app](../007-editor/live-app.md)); narrower,
+  **New**, **Find**, **Types**), as the cluster's other strips are ([Editor app](../007-editor/editor-app.md)); narrower,
   they are icons alone. Their accessible names and hover cards keep the fuller labels (New Card, Find a Card, Card
   Types), each containing its short name.
 

@@ -8,9 +8,9 @@ Derived from [Tag colours](../tag-colours.md). Defaults in [DEFAULTS.md](DEFAULT
 | `packages/project/src/validate.ts` (tab checks)    | `tagColours` validation                                                |
 | `packages/project/src/accent-edge.ts`              | `resolvedAccentEdge` takes the tab's map                               |
 | `packages/project/src/svg-render-card.ts`          | Tinted tag chips in export                                             |
-| `apps/live/components/canvas/TagColoursContext.tsx` | The active tab's map, for the canvas                                   |
-| `apps/live/hooks/editor/useTagColourSetter.ts`      | `setTagColour(tag, colour \| null)`: one history step on the tab       |
-| `apps/live/components/palette/TagColoursBlock.tsx`  | The Card section's Tag Colours rows                                    |
+| `apps/editor/components/canvas/TagColoursContext.tsx` | The active tab's map, for the canvas                                   |
+| `apps/editor/hooks/editor/useTagColourSetter.ts`      | `setTagColour(tag, colour \| null)`: one history step on the tab       |
+| `apps/editor/components/palette/TagColoursBlock.tsx`  | The Card section's Tag Colours rows                                    |
 
 ## Domain and naming
 
@@ -104,7 +104,7 @@ Each colour row is named "<tag> colour"; Clear is "Clear <tag> colour".
 | ---------------------------- | ------------------------------------------------------- |
 | Map writes, lookup, I1 to I2 | `packages/project/src/tag-colours.test.ts`             |
 | Export (I3)                  | same                                                    |
-| Menu block                   | `apps/live/components/palette/TagColoursBlock.test.tsx` |
+| Menu block                   | `apps/editor/components/palette/TagColoursBlock.test.tsx` |
 
 ## Constants and configuration
 

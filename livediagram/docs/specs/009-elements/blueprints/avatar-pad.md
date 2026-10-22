@@ -18,21 +18,21 @@ Scope, by file:
 | `packages/document/src/colors.ts`                               | Transparent skin; in `SELF_PAINTING_SHAPES`                                     |
 | `packages/document/src/animation-membership.ts`                 | Wordless                                                                        |
 | `packages/document/src/svg-render-faces.ts`                     | `avatarPadArt`: the export pixels                                               |
-| `apps/live/components/canvas/avatar-sprite-palette.ts`          | Re-exports the sprite tones from `AVATAR_PALETTE`                               |
-| `apps/live/components/canvas/collab/AvatarPadView.tsx`          | The canvas pixels; the shimmering lights group                                  |
-| `apps/live/components/canvas/BoxedElementView.tsx`              | Mounts `AvatarPadView`                                                          |
-| `apps/live/components/canvas/shape-svg-overlay.tsx`             | Not an SVG-overlay shape                                                        |
-| `apps/live/components/canvas/useBoxedElementAnimation.ts`       | Silhouette animations on the drawing                                            |
-| `apps/live/lib/avatar-pad.ts`                                   | `pickSpawnPad`, `padEntry`, `padUnderFeet`, `nextArrivals`, constants           |
-| `apps/live/hooks/canvas/useAvatarWalk.ts`                       | Entry order: pad, button, remembered spot, view centre; camera; telemetry       |
-| `apps/live/hooks/canvas/useAvatarPadArrivals.ts`                | Arrivals from presence: own and peers'                                          |
-| `apps/live/components/canvas/AvatarPadArrivals.tsx`             | The beam, floor flash and sparks                                                |
-| `apps/live/components/canvas/useCanvasAvatar.tsx`, `Canvas.tsx` | Compose the arrivals; draw them over the characters                             |
-| `apps/live/app/canvas-motion.css`                               | `avatar-pad-shimmer`, `-beam`, `-flash`, `-spark`; reduced motion               |
-| `apps/live/components/palette/palette-tile-defs.tsx`            | `tools:avatar-pad` in **Navigate** (`tileGroup: 'move'`)                        |
-| `apps/live/components/palette/palette-icons.tsx`                | `AvatarPadIcon`                                                                 |
-| `apps/live/components/palette/canvas-tool-options.tsx`          | `BOARD_ONLY_TOOLS`: Avatar listed only while in force                           |
-| `apps/live/lib/editor-commands.ts`, `editor-shortcut-keys.ts`   | No `tool:avatar`, no `W`                                                        |
+| `apps/editor/components/canvas/avatar-sprite-palette.ts`          | Re-exports the sprite tones from `AVATAR_PALETTE`                               |
+| `apps/editor/components/canvas/collab/AvatarPadView.tsx`          | The canvas pixels; the shimmering lights group                                  |
+| `apps/editor/components/canvas/BoxedElementView.tsx`              | Mounts `AvatarPadView`                                                          |
+| `apps/editor/components/canvas/shape-svg-overlay.tsx`             | Not an SVG-overlay shape                                                        |
+| `apps/editor/components/canvas/useBoxedElementAnimation.ts`       | Silhouette animations on the drawing                                            |
+| `apps/editor/lib/avatar-pad.ts`                                   | `pickSpawnPad`, `padEntry`, `padUnderFeet`, `nextArrivals`, constants           |
+| `apps/editor/hooks/canvas/useAvatarWalk.ts`                       | Entry order: pad, button, remembered spot, view centre; camera; telemetry       |
+| `apps/editor/hooks/canvas/useAvatarPadArrivals.ts`                | Arrivals from presence: own and peers'                                          |
+| `apps/editor/components/canvas/AvatarPadArrivals.tsx`             | The beam, floor flash and sparks                                                |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`, `Canvas.tsx` | Compose the arrivals; draw them over the characters                             |
+| `apps/editor/app/canvas-motion.css`                               | `avatar-pad-shimmer`, `-beam`, `-flash`, `-spark`; reduced motion               |
+| `apps/editor/components/palette/palette-tile-defs.tsx`            | `tools:avatar-pad` in **Navigate** (`tileGroup: 'move'`)                        |
+| `apps/editor/components/palette/palette-icons.tsx`                | `AvatarPadIcon`                                                                 |
+| `apps/editor/components/palette/canvas-tool-options.tsx`          | `BOARD_ONLY_TOOLS`: Avatar listed only while in force                           |
+| `apps/editor/lib/editor-commands.ts`, `editor-shortcut-keys.ts`   | No `tool:avatar`, no `W`                                                        |
 | `packages/api-schema/src/telemetry-schema.ts`                   | `Avatar-pad` element type token                                                 |
 
 ## Domain and naming
@@ -114,7 +114,7 @@ export function avatarPadArtRect(box: { width: number; height: number }): {
 export function avatarPadCore(pad: PadBox): { x: number; y: number };
 export function avatarPadFootprint(pad: PadBox): { rx: number; ry: number };
 
-// apps/live/lib/avatar-pad.ts
+// apps/editor/lib/avatar-pad.ts
 export const AVATAR_PAD_ARRIVAL_MS = 900;
 export const AVATAR_PAD_MAX_ARRIVALS = 8;
 export function avatarPads(elements: readonly Element[]): ShapeElement[];
@@ -199,13 +199,13 @@ the parts table is a few hundred array entries built once. INP: entry adds one O
 | Drawing on its grid, merged, palette, tints            | `packages/document/src/avatar-pad.test.ts`                                                     |
 | Scale whole, centred; core and footprint; rotation     | same                                                                                           |
 | Kind registration, factory, export pixels              | same                                                                                           |
-| Spawn pad: nearest, tie by layer, none, no view        | `apps/live/lib/avatar-pad.test.ts`                                                             |
+| Spawn pad: nearest, tie by layer, none, no view        | `apps/editor/lib/avatar-pad.test.ts`                                                             |
 | Arrivals: new on a pad, not seen, cap, replace, expiry | same                                                                                           |
-| Entry order, recentre, telemetry, I1, every entry      | `apps/live/hooks/canvas/useAvatarWalk.pad.test.tsx`                                            |
-| Own and peer beams from presence, once, expiry         | `apps/live/hooks/canvas/useAvatarPadArrivals.test.tsx`                                         |
-| View pixels and shimmer group; beam placement, colour  | `apps/live/components/canvas/AvatarPadArrivals.test.tsx`                                       |
+| Entry order, recentre, telemetry, I1, every entry      | `apps/editor/hooks/canvas/useAvatarWalk.pad.test.tsx`                                            |
+| Own and peer beams from presence, once, expiry         | `apps/editor/hooks/canvas/useAvatarPadArrivals.test.tsx`                                         |
+| View pixels and shimmer group; beam placement, colour  | `apps/editor/components/canvas/AvatarPadArrivals.test.tsx`                                       |
 | I5: picker, key, command                               | `canvas-tool-options.test.ts`, `useEditorKeyboardShortcuts.test.ts`, `editor-commands.test.ts` |
-| A peer walks in from a board button                    | `apps/live/e2e/realtime-peers.spec.ts`                                                         |
+| A peer walks in from a board button                    | `apps/editor/e2e/realtime-peers.spec.ts`                                                         |
 
 ## Constants and configuration
 

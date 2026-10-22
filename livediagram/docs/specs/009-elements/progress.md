@@ -18,7 +18,7 @@ They are `ShapeElement`s with the `ShapeKind`s `'progress-bar'` and `'progress-r
 
 ## Rendering
 
-`ProgressView` (`apps/live/components/canvas/ProgressView.tsx`), rendered by `ShapeContentRouter` (inside `BoxedElementView`) for the two kinds (ahead of the generic `ShapeSvgOverlay` branch, which has no case for them):
+`ProgressView` (`apps/editor/components/canvas/ProgressView.tsx`), rendered by `ShapeContentRouter` (inside `BoxedElementView`) for the two kinds (ahead of the generic `ShapeSvgOverlay` branch, which has no case for them):
 
 - **Bar** — an HTML track (the element's **fill** colour, fully rounded) with an inner fill (the element's **stroke/accent** colour) sized to `progress%`.
 - **Ring** — an SVG track circle plus a progress arc (`pathLength={100}`, `stroke-dasharray="<pct> 100"`, round cap, starting at 12 o'clock).
@@ -28,7 +28,7 @@ Colours map to the existing controls: the **fill colour** is the track, the **st
 
 ### The percentage stays legible
 
-The bar's percentage sits across the filled portion and the track, so one ink cannot be trusted to read on both. The label's ink is chosen **per part**: over the filled portion it is the element's text colour lifted or deepened until it meets **4.5:1** (WCAG AA) against the stroke colour, and over the track the same against the track (`progressLabelInks`). When both parts want the same ink the bar draws one label; otherwise it draws two, each clipped to its part, so a label that straddles the edge changes ink exactly where the fill ends. The canvas clips with `clip-path` (the **Fill** animation grows the filled-part clip in step with the fill, so the split follows the edge as it moves); the export clips with a nested `<svg>` viewport per part, which every SVG / PNG / PDF consumer honours. The ring's label sits in the hole, over the paper, so it keeps the element's text colour. The `lvd-prog-*` classes (`apps/live/app/canvas-motion.css`) are pure CSS — **deterministic**, **reduced-motion-safe** (the resting frame is the static fill), and they **freeze on export** like every other element animation.
+The bar's percentage sits across the filled portion and the track, so one ink cannot be trusted to read on both. The label's ink is chosen **per part**: over the filled portion it is the element's text colour lifted or deepened until it meets **4.5:1** (WCAG AA) against the stroke colour, and over the track the same against the track (`progressLabelInks`). When both parts want the same ink the bar draws one label; otherwise it draws two, each clipped to its part, so a label that straddles the edge changes ink exactly where the fill ends. The canvas clips with `clip-path` (the **Fill** animation grows the filled-part clip in step with the fill, so the split follows the edge as it moves); the export clips with a nested `<svg>` viewport per part, which every SVG / PNG / PDF consumer honours. The ring's label sits in the hole, over the paper, so it keeps the element's text colour. The `lvd-prog-*` classes (`apps/editor/app/canvas-motion.css`) are pure CSS — **deterministic**, **reduced-motion-safe** (the resting frame is the static fill), and they **freeze on export** like every other element animation.
 
 ## Context menu
 

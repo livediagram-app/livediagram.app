@@ -12,25 +12,25 @@ Scope, by file:
 | `packages/document/src/validate.ts`                     | `TEXT_SCALE_MIN`, `TEXT_SCALE_MAX`; the two fields' checks                               |
 | `packages/document/src/svg-render-describe.ts`          | An export draws a text box's label at its scale                                          |
 | `apps/api/src/openapi/schemas.generated.ts`             | Regenerated: the two fields on `TextElement`                                             |
-| `apps/live/lib/text-hug.ts`                             | Pure geometry: padding, font px, hug size, placement, commit, resize                     |
-| `apps/live/components/canvas/text-hug-measure.ts`       | The DOM measurer: `measureTextHug`, `measureDrawnText`, `labelRuns`                      |
-| `apps/live/components/canvas/useTextHug.ts`             | The element view's live size while typing                                                |
-| `apps/live/components/canvas/BoxedElementView.tsx`      | Draws the live size; hands `TextHugLabel` to `renderLabel`                               |
-| `apps/live/components/canvas/element-labels.tsx`        | `renderLabel(..., hug)`: padding, no placeholder, fixed px for `scale`, the scale        |
-| `apps/live/components/canvas/element-label-views.tsx`   | `FixedSizeLabel` takes `px`; `RichLabel` takes `textScale`; padding may be CSS           |
-| `apps/live/components/canvas/label-style.ts`            | `labelBasePx`, `labelRunPx`, `LabelPadding`                                              |
-| `apps/live/components/canvas/RichTextEditor*.ts(x)`     | `textScale`, `onLiveText`                                                                |
-| `apps/live/components/canvas/useRichTextSession.ts`     | Scaled px; reports the editor node after every change                                    |
-| `apps/live/components/rich-text/useRichTextDocument.ts` | Re-sets the caret when an Enter at the end opens the empty last line                     |
-| `apps/live/components/rich-text/rich-text-dom.ts`       | `reconcileTrailingNewline` says whether it added the line; `reassertSelection`           |
-| `apps/live/lib/draw-commit.ts`                          | `buildDrawnBoxed` places a Draw mode text box through `placedTextBox`                    |
-| `apps/live/app/document/[id]/useSelectionEditing.ts`    | `commitLabel` hugs or removes, in the label's one commit                                 |
-| `apps/live/hooks/canvas/boxed-drag-resolve.ts`          | `resizedElement`, `TextHugResize`                                                        |
-| `apps/live/hooks/canvas/useEditorDrag.ts`               | A lone hugging text box resizes through `resizedElement`                                 |
-| `apps/live/hooks/canvas/useTextStyleSetters.ts`         | Size, font, bold, italic, underline, strikethrough re-hug; a picked size drops the scale |
-| `apps/live/hooks/canvas/useElementStyle.ts`             | Passes `activeTab` to the text setters                                                   |
-| `apps/live/hooks/canvas/useEditModeContextMenu.ts`      | No element menu beside a whiteboard text box being typed into (T4)                       |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`      | Passes `whiteboard` to `useEditModeContextMenu`                                          |
+| `apps/editor/lib/text-hug.ts`                             | Pure geometry: padding, font px, hug size, placement, commit, resize                     |
+| `apps/editor/components/canvas/text-hug-measure.ts`       | The DOM measurer: `measureTextHug`, `measureDrawnText`, `labelRuns`                      |
+| `apps/editor/components/canvas/useTextHug.ts`             | The element view's live size while typing                                                |
+| `apps/editor/components/canvas/BoxedElementView.tsx`      | Draws the live size; hands `TextHugLabel` to `renderLabel`                               |
+| `apps/editor/components/canvas/element-labels.tsx`        | `renderLabel(..., hug)`: padding, no placeholder, fixed px for `scale`, the scale        |
+| `apps/editor/components/canvas/element-label-views.tsx`   | `FixedSizeLabel` takes `px`; `RichLabel` takes `textScale`; padding may be CSS           |
+| `apps/editor/components/canvas/label-style.ts`            | `labelBasePx`, `labelRunPx`, `LabelPadding`                                              |
+| `apps/editor/components/canvas/RichTextEditor*.ts(x)`     | `textScale`, `onLiveText`                                                                |
+| `apps/editor/components/canvas/useRichTextSession.ts`     | Scaled px; reports the editor node after every change                                    |
+| `apps/editor/components/rich-text/useRichTextDocument.ts` | Re-sets the caret when an Enter at the end opens the empty last line                     |
+| `apps/editor/components/rich-text/rich-text-dom.ts`       | `reconcileTrailingNewline` says whether it added the line; `reassertSelection`           |
+| `apps/editor/lib/draw-commit.ts`                          | `buildDrawnBoxed` places a Draw mode text box through `placedTextBox`                    |
+| `apps/editor/app/document/[id]/useSelectionEditing.ts`    | `commitLabel` hugs or removes, in the label's one commit                                 |
+| `apps/editor/hooks/canvas/boxed-drag-resolve.ts`          | `resizedElement`, `TextHugResize`                                                        |
+| `apps/editor/hooks/canvas/useEditorDrag.ts`               | A lone hugging text box resizes through `resizedElement`                                 |
+| `apps/editor/hooks/canvas/useTextStyleSetters.ts`         | Size, font, bold, italic, underline, strikethrough re-hug; a picked size drops the scale |
+| `apps/editor/hooks/canvas/useElementStyle.ts`             | Passes `activeTab` to the text setters                                                   |
+| `apps/editor/hooks/canvas/useEditModeContextMenu.ts`      | No element menu beside a whiteboard text box being typed into (T4)                       |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`      | Passes `whiteboard` to `useEditModeContextMenu`                                          |
 
 ## Domain and naming
 
@@ -202,9 +202,9 @@ copy of the editor's nodes; per resize frame: one layout. Both well under a fram
 
 | Rule                                                  | Test                                                                 |
 | ----------------------------------------------------- | -------------------------------------------------------------------- |
-| Padding, font px, hug size, wrap at 480               | `apps/live/lib/text-hug.test.ts`                                     |
-| Placement: tap caret-sized, drag width, one line      | `apps/live/lib/draw-commit.test.ts`, `text-hug.test.ts`              |
-| Commit hugs; empty removed; set width kept            | `apps/live/lib/text-hug.test.ts` (`hugCommittedText`)                |
+| Padding, font px, hug size, wrap at 480               | `apps/editor/lib/text-hug.test.ts`                                     |
+| Placement: tap caret-sized, drag width, one line      | `apps/editor/lib/draw-commit.test.ts`, `text-hug.test.ts`              |
+| Commit hugs; empty removed; set width kept            | `apps/editor/lib/text-hug.test.ts` (`hugCommittedText`)                |
 | Resize: width set, height hugs, anchors, Shift scale  | `text-hug.test.ts`, `hooks/canvas/boxed-drag-resolve.resize.test.ts` |
 | Style changes re-hug; a picked size drops the scale   | `hooks/canvas/useTextStyleSetters.test.ts`                           |
 | No menu beside a whiteboard text box being typed into | `hooks/canvas/useEditModeContextMenu.test.tsx`                       |

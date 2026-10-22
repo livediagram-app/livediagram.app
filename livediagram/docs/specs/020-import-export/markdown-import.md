@@ -147,10 +147,10 @@ _different_ problem from Mermaid, so they stay:
   parser deliberately skips code fences, so a future "Mermaid blocks
   inside Markdown" pass could claim them.
 
-Implementation: `apps/live/lib/markdown-import.ts` (pure parser + layout +
+Implementation: `apps/editor/lib/markdown-import.ts` (pure parser + layout +
 `buildTabFromMarkdown`, unit-tested), dynamically imported by
 `useTabActions.importIntoActiveTab` (which replaces the active tab) so the
 parser stays out of the initial editor bundle. The dialog is
-`apps/live/components/dialogs/ImportTabDialog.tsx`. See also
+`apps/editor/components/dialogs/ImportTabDialog.tsx`. See also
 [Document structure](../006-document/document-structure.md) (element model) and
 [Canvas and palette](../008-canvas/canvas-and-palette.md) (import/export menu).

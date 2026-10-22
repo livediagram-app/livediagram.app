@@ -70,7 +70,7 @@ export type DialogProps = {
   // viewport there anyway, and the dim signals modality.
   backdrop?: 'dim' | 'desktop-light';
   // On a phone (below sm), rise as a sheet docked to the bottom edge, with a grab handle that drags
-  // it down to close, instead of filling the screen (docs/specs/007-editor/live-app.md "Working
+  // it down to close, instead of filling the screen (docs/specs/007-editor/editor-app.md "Working
   // dialogs rise as sheets on a phone"). A centred card from sm up either way.
   phoneSheet?: boolean;
   // Where focus lands on open: the first control (default), or the panel itself ('container') when the

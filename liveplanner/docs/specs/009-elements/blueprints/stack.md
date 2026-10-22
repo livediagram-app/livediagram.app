@@ -6,10 +6,10 @@ Derived from [The stack](../stack.md). Defaults in [DEFAULTS.md](DEFAULTS.md) as
 | --------------------------------------------------- | --------------------------------------------------------- |
 | `packages/project/src/stack.ts`                    | Fields, bounds, children, the layout, `settleStacks`      |
 | `packages/project/src/containment.ts`              | `stack` joins `CONTAINER_KINDS`                           |
-| `apps/live/lib/settle-tabs.ts`                      | Settles stacks per changed tab (after keys, before chips) |
+| `apps/editor/lib/settle-tabs.ts`                      | Settles stacks per changed tab (after keys, before chips) |
 | `packages/project/src/stored-tab.ts`               | Settles stacks on read                                    |
-| `apps/live/components/palette/StackMenuSection.tsx` | Arrangement, columns, gap, padding, align                 |
-| `apps/live/app/canvas-motion.css`                   | The reflow glide                                          |
+| `apps/editor/components/palette/StackMenuSection.tsx` | Arrangement, columns, gap, padding, align                 |
+| `apps/editor/app/canvas-motion.css`                   | The reflow glide                                          |
 
 ## Domain and naming
 
@@ -112,7 +112,7 @@ Menu tiles named "Row Stack", "Column Stack", "Grid Stack", "Align Start / Centr
 | Children, layout per arrangement  | `packages/project/src/stack.test.ts`                    |
 | Settle (I1 to I3), nesting, carry | same                                                     |
 | Budget                            | `packages/project/src/stack.perf.test.ts`               |
-| Menu section                      | `apps/live/components/palette/StackMenuSection.test.tsx` |
+| Menu section                      | `apps/editor/components/palette/StackMenuSection.test.tsx` |
 
 ## Constants and configuration
 

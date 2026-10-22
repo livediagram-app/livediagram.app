@@ -43,7 +43,7 @@ have cloud projects and offline projects side by side.
   IndexedDB) so the Explorer can list them and the persistence layer knows which
   ids resolve locally vs to the API.
 - **Every tab of the browser agrees on the index.** Each tab mirrors it in memory
-  (`apps/live/lib/offline/offline-ids.ts`), and every id registered or removed is told
+  (`apps/editor/lib/offline/offline-ids.ts`), and every id registered or removed is told
   to the other tabs on the `liveplanner-offline` BroadcastChannel (`{ kind: 'add' |
 'remove', id }`), which apply it at once. Without it, a tab that missed a Take
   Offline kept saving that project to the server (where it no longer is), and a tab
@@ -66,7 +66,7 @@ have cloud projects and offline projects side by side.
   the container became a project ([Project](project.md#renaming-from-diagram)). Opening
   version 2 of `liveplanner-offline` moves every record into `projects` inside the upgrade
   transaction, then drops the old store, logging how many moved
-  (`apps/live/lib/offline/legacy-offline-store.ts`). A tab still running the code from before the upgrade
+  (`apps/editor/lib/offline/legacy-offline-store.ts`). A tab still running the code from before the upgrade
   asks for version 1, which the browser refuses once another tab has opened version 2; its offline
   projects are out of reach in that tab until it reloads.
 - **Durability honesty (important).** An offline project has **no backup**:
@@ -89,7 +89,7 @@ _require the server_, which are hidden or gated (not broken) for an offline proj
 
 | Feature                                                                 | Offline behaviour                                                                                                                                                                                                                                                              |
 | ----------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Share links / embeds                                                    | The header **Share** button stays visible, but for an offline project it opens a gate prompting you to sync to your account first (nothing lives on a server to share yet). Read-only embeds are unavailable for the same reason ([Live app](../007-editor/live-app.md), /54). |
+| Share links / embeds                                                    | The header **Share** button stays visible, but for an offline project it opens a gate prompting you to sync to your account first (nothing lives on a server to share yet). Read-only embeds are unavailable for the same reason ([Editor app](../007-editor/editor-app.md), /54). |
 | Live presence / realtime                                                | N/A — a private project never opens the room anyway ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).                                                                                                                                    |
 | Teams / shared library                                                  | Hidden — a team library is server-side ([Teams](../013-workspace/teams.md), /35).                                                                                                                                                                                              |
 | Comments                                                                | Local-only (just you), stored in the project; no cross-user.                                                                                                                                                                                                                   |
@@ -383,7 +383,7 @@ Offline Mode is independent of sign-in:
 
 ## Persistence architecture
 
-The editor already has a **single persistence boundary**: `apps/live/lib/api-client.ts`
+The editor already has a **single persistence boundary**: `apps/editor/lib/api-client.ts`
 (a barrel over `lib/api/*`); nothing in the editor calls `fetch` directly. Offline
 Mode is implemented **behind that boundary** so the editor is unaware of the
 target:
@@ -475,7 +475,7 @@ Track adoption without content, reusing the closed vocabulary:
 
 ## Implementation map
 
-- `apps/live/lib/api-client.ts` + `lib/api/*` — the persistence-backend seam;
+- `apps/editor/lib/api-client.ts` + `lib/api/*` — the persistence-backend seam;
   new `LocalBackend` (IndexedDB) beside the existing API calls; per-project
   dispatch via a local index.
 - New Project wizard (`TemplatePicker` / `template-picker-settings.tsx`,

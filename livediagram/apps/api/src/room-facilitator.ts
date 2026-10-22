@@ -206,7 +206,7 @@ export class RoomFacilitator {
   }
 
   /**
-   * Tell one peer to let go of an element (docs/specs/007-editor/live-app.md lock, docs/specs/012-collaboration/facilitator.md facilitator).
+   * Tell one peer to let go of an element (docs/specs/007-editor/editor-app.md lock, docs/specs/012-collaboration/facilitator.md facilitator).
    *
    * Sent to the holder's socket ALONE, which is the entire addressing scheme:
    * a client is never told its own presence id (docs/specs/015-api/public-api-and-tokens.md §6), so a broadcast

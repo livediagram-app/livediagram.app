@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 // This has been wrong five separate times: a spec naming a component deleted
 // in a refactor, one naming a constant that never existed, a setup step telling
 // you to replace a placeholder absent from the file, and eight paths whose
-// directory changed when apps/live was grouped by domain (docs/specs/003-system-architecture/source-layout.md). None of
+// directory changed when apps/editor was grouped by domain (docs/specs/003-system-architecture/source-layout.md). None of
 // them failed anything — a spec is prose, and prose does not compile — so each
 // was found by someone going looking, and the eight had been wrong for months.
 //
@@ -29,7 +29,7 @@ const ROOT = fileURLToPath(new URL('../../..', import.meta.url));
 
 const WORKSPACE_ROOTS = [
   '',
-  'apps/live/',
+  'apps/editor/',
   'apps/api/src/',
   'apps/api/',
   'apps/help/',
@@ -305,9 +305,9 @@ describe('repo paths quoted in specs and docs', () => {
   }, 30_000);
 
   it('only exempts a planned path in a blueprint', () => {
-    const src = 'see `apps/live/lib/nowhere.ts` (planned)';
+    const src = 'see `apps/editor/lib/nowhere.ts` (planned)';
     expect(plannedIn('docs/specs/008-canvas/blueprints/canvas-performance.md', src)).toEqual(
-      new Set(['apps/live/lib/nowhere.ts']),
+      new Set(['apps/editor/lib/nowhere.ts']),
     );
     expect(plannedIn('docs/specs/008-canvas/canvas-performance.md', src)).toEqual(new Set());
   });

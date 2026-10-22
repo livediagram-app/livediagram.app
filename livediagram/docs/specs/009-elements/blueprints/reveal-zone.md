@@ -13,16 +13,16 @@ Scope, by file:
 | `packages/document/src/colors.ts`                        | `behaviourSkin` (accent and ink per paper), `REVEAL_COVER_BASE` |
 | `packages/document/src/validate.ts`                      | `revealed` must be a boolean                                    |
 | `packages/document/src/svg-render-faces.ts`              | `revealCover`, omitted when `revealed === true`                 |
-| `apps/live/components/canvas/RevealFace.tsx`             | Cover, double press, Hide pill                                  |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`      | Resolves the accent: `ownColours(element).stroke` or default    |
-| `apps/live/app/qa-board.css`                             | `.reveal-sweep`, `.reveal-cover` hover                          |
-| `apps/live/hooks/ui/usePressWithoutDrag.ts`              | `requireDouble` and `isDoublePress`                             |
-| `apps/live/lib/double-press.ts`                          | `DOUBLE_PRESS_MS`                                               |
-| `apps/live/hooks/canvas/useBehaviourElements.ts`         | `revealedIds`, `toggleRevealForMe`, the facilitator gate        |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`       | `onToggleReveal={runBlocked ? undefined : toggleRevealForMe}`   |
-| `apps/live/components/palette/BehaviourMenuSections.tsx` | `RevealMenuSection`                                             |
-| `apps/live/hooks/canvas/usePortalSetters.ts`             | `setRevealedSelected` (`Element·Changed·Reveal`)                |
-| `apps/live/components/palette/palette-tile-defs.tsx`     | `tools:reveal` in Behaviours                                    |
+| `apps/editor/components/canvas/RevealFace.tsx`             | Cover, double press, Hide pill                                  |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`      | Resolves the accent: `ownColours(element).stroke` or default    |
+| `apps/editor/app/qa-board.css`                             | `.reveal-sweep`, `.reveal-cover` hover                          |
+| `apps/editor/hooks/ui/usePressWithoutDrag.ts`              | `requireDouble` and `isDoublePress`                             |
+| `apps/editor/lib/double-press.ts`                          | `DOUBLE_PRESS_MS`                                               |
+| `apps/editor/hooks/canvas/useBehaviourElements.ts`         | `revealedIds`, `toggleRevealForMe`, the facilitator gate        |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`       | `onToggleReveal={runBlocked ? undefined : toggleRevealForMe}`   |
+| `apps/editor/components/palette/BehaviourMenuSections.tsx` | `RevealMenuSection`                                             |
+| `apps/editor/hooks/canvas/usePortalSetters.ts`             | `setRevealedSelected` (`Element·Changed·Reveal`)                |
+| `apps/editor/components/palette/palette-tile-defs.tsx`     | `tools:reveal` in Behaviours                                    |
 
 ## Domain and naming
 
@@ -193,8 +193,8 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Double press within 450 ms, single never (I3)    | none                                                           | (gap, `isDoublePress` is pure)                      |
 | Local lift never writes (I1)                     | none                                                           | (gap)                                               |
 | Blocked viewer cannot lift                       | none                                                           | (gap) [QF15]                                        |
-| Revealed for all hides the cover everywhere      | "draws nothing once it is revealed for everyone"               | `apps/live/components/canvas/RevealFace.test.tsx`   |
-| Hide pill takes the press and restores the cover | "lets the Hide pill take the press that puts the cover back"   | `apps/live/components/canvas/RevealFace.test.tsx`   |
+| Revealed for all hides the cover everywhere      | "draws nothing once it is revealed for everyone"               | `apps/editor/components/canvas/RevealFace.test.tsx`   |
+| Hide pill takes the press and restores the cover | "lets the Hide pill take the press that puts the cover back"   | `apps/editor/components/canvas/RevealFace.test.tsx`   |
 
 ## Constants and configuration
 

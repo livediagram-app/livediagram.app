@@ -45,7 +45,7 @@ delete, undo, label edit via Space) that already work on a selection.
 - **A name needs a role.** `aria-label` goes only on an element with a role (or a native one): a labelled indicator is
   `role="img"`, a loading skeleton `role="status"`, a labelled wrapper `role="group"`, and a pill whose words
   matter speaks them as `sr-only` text over an `aria-hidden` face. On a plain span or div ARIA prohibits it and
-  screen readers drop it. `apps/live/aria-label-roles.test.ts` scans the editor and `@livediagram/ui` for it.
+  screen readers drop it. `apps/editor/aria-label-roles.test.ts` scans the editor and `@livediagram/ui` for it.
 - Boxed element wrappers get `role="img"` + `aria-label` derived from the
   shared naming helpers in `lib/element-names.ts` (`kindLabel` /
   `describeOne`): `Square "Login"`, `Sticky note`, `Arrow

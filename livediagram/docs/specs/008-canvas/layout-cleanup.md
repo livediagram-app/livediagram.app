@@ -20,7 +20,7 @@ locked element is never a [unit](#what-moves-together).
 
 ## Auto-align (grid snap)
 
-`autoAlignElements` (`apps/live/lib/auto-align.ts`, positions in `auto-align-lines.ts`). A
+`autoAlignElements` (`apps/editor/lib/auto-align.ts`, positions in `auto-align-lines.ts`). A
 **grid snap that keeps what is already lined up**: so near-aligned shapes become exactly aligned
 and small drift collapses, without breaking the alignment the author already has. It never reads
 the arrow graph for structure and never moves anything far: the use case is "things are a few px
@@ -283,7 +283,7 @@ a component's nodes are positioned:
 ## The Tidy Up button
 
 Diagram mode has a **Tidy Up** button in the bottom-right cluster, the segment immediately
-**left of Layers** in the Layers and Theme strip ([Live app](../007-editor/live-app.md)): Tidy Up,
+**left of Layers** in the Layers and Theme strip ([Editor app](../007-editor/editor-app.md)): Tidy Up,
 Layers, the Theme & Canvas brush, all three about how the tab is arranged and how it looks rather
 than what is on it. Its glyph is a broom. It opens the **Tidy Up popover** above it, like the
 strip's other buttons (one open at a time, a second press or a press outside closes it).

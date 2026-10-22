@@ -3,7 +3,7 @@
 Derived from [Import image pipeline](../import-image-pipeline.md). The spec decides; this file only
 adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 
-Scope, by file (all under `apps/live/lib/import-images/`):
+Scope, by file (all under `apps/editor/lib/import-images/`):
 
 | File              | Role                                                                                           |
 | ----------------- | ---------------------------------------------------------------------------------------------- |
@@ -295,7 +295,7 @@ No new persisted fields. A stored image sets the existing `ImageElement.imageId`
 | No canvas WebP detected by blob type; WASM encodes    | `webp.test.ts`                                             |
 | Detection remembered; failed load retried             | `webp.test.ts`                                             |
 | No WebP at all → PNG / JPEG fallback                  | `prepare.test.ts`                                          |
-| Safari path end to end, in Chromium and WebKit        | `apps/live/e2e/import-images.spec.ts` (canvas answers PNG) |
+| Safari path end to end, in Chromium and WebKit        | `apps/editor/e2e/import-images.spec.ts` (canvas answers PNG) |
 
 All with a fake `ImageCodec` and fake `upload` / `toDataUrl` / `loadWasm`; the browser codec is
 proven end to end by the e2e spec, in WebKit with `E2E_WEBKIT=1`.
@@ -304,7 +304,7 @@ proven end to end by the e2e spec, in WebKit with `E2E_WEBKIT=1`.
 
 | Asset                                  | Source                             | Licence                                      |
 | -------------------------------------- | ---------------------------------- | -------------------------------------------- |
-| `@jsquash/webp` 1.5.0 (glue + `.wasm`) | npm, pinned exactly in `apps/live` | Apache-2.0; libwebp inside the `.wasm` BSD-3 |
+| `@jsquash/webp` 1.5.0 (glue + `.wasm`) | npm, pinned exactly in `apps/editor` | Apache-2.0; libwebp inside the `.wasm` BSD-3 |
 | `wasm-feature-detect` (jSquash's dep)  | npm, via the lockfile              | Apache-2.0                                   |
 
 Reproducible: `pnpm install` resolves both from the lockfile; the build emits the `.wasm` files

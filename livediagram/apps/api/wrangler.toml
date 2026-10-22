@@ -13,7 +13,7 @@ globs = ["**/*.ttf", "**/*.otf"]
 # what only livediagram.app runs with is NOT here: TELEMETRY_ENABLED and the
 # image gallery caps live in `hosted-vars.json`, which the deploy workflow adds
 # with `wrangler deploy --var` on livediagram.app's own repository only, and
-# then verifies on the live worker (docs/specs/016-platform/deployment.md
+# then verifies on the editor worker (docs/specs/016-platform/deployment.md
 # "Hosted profile"). A fork is therefore telemetry-off and uncapped until it
 # opts in, by declaring the var here. TELEMETRY_ENABLED gates the anonymous,
 # first-party product analytics this worker sends to the liveworkspace
@@ -82,13 +82,13 @@ OAUTH_ISSUER = "https://mcp.livediagram.app"
 #     lives in `hosted-vars.json` (a fork has its own Google project and must
 #     not inherit ours), per environment: production and staging are separate
 #     Google Cloud projects with separate client ids. The hosted build bakes
-#     the same environment's id into the live app as NEXT_PUBLIC_GOOGLE_CLIENT_ID
+#     the same environment's id into the editor app as NEXT_PUBLIC_GOOGLE_CLIENT_ID
 #     (scripts/hosted-vars.mjs build-env --env ...), and verify / verify-build
 #     prove the two agree on every deploy.
 #   - GOOGLE_CLIENT_SECRET, DRIVE_TOKEN_KEY: secrets, set by hand exactly like
 #     RESEND_API_KEY: `wrangler secret put GOOGLE_CLIENT_SECRET` and
 #     `wrangler secret put DRIVE_TOKEN_KEY` (base64 of 32 random bytes).
-# Without GOOGLE_CLIENT_ID every /api/drive route answers 503 and the live app
+# Without GOOGLE_CLIENT_ID every /api/drive route answers 503 and the editor app
 # shows no Drive entry, which is the self-host default.
 
 # D1 database holding documents + participants. The local binding name

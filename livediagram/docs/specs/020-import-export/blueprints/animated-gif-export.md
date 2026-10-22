@@ -1,6 +1,6 @@
 # Animated GIF export blueprint
 
-Derived from [Animated GIF export](../animated-gif-export.md). Everything lives in `apps/live` (the only app with the
+Derived from [Animated GIF export](../animated-gif-export.md). Everything lives in `apps/editor` (the only app with the
 canvas DOM it captures); nothing in it is shared with another app.
 
 ## Domain and naming
@@ -295,7 +295,7 @@ frames=<n>`, `done frames=<written> bytes=<n> ms=<n>`, `cancelled`, `failed <cod
 
 ## Assets and external resources
 
-`gifenc` 1.0.3 (MIT, Matt DesLauriers), an npm dependency of `apps/live`, bundled into the worker chunk only; the
+`gifenc` 1.0.3 (MIT, Matt DesLauriers), an npm dependency of `apps/editor`, bundled into the worker chunk only; the
 licences page picks it up from what the app bundles.
 
 ## Defaults ledger

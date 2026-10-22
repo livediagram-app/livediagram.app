@@ -3,7 +3,7 @@
 An empty tab starts from a choice, not a blank page and a modal: **Start Planning**
 ([Plan mode](../026-plan/plan-mode.md#starting-a-board)), a wide panel in the middle of the canvas, its rail of groups
 beside a grid of cards, so the boards, sheets, forms, layouts and templates sit where the work begins. This spec is
-the panel itself (`StartPanel`, `apps/live/components/start/StartPanel.tsx`); what Start Planning offers is
+the panel itself (`StartPanel`, `apps/editor/components/start/StartPanel.tsx`); what Start Planning offers is
 [Plan mode](../026-plan/plan-mode.md#starting-a-board) (`components/plan/start/StartPlanning.tsx`).
 
 Until 2026-10-22 the panel also drew the template starts of the retired editor modes (Start Diagramming, Start

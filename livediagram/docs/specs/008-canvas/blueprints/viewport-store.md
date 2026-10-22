@@ -7,14 +7,14 @@ canvas, not the editor**. The same shape as the [Selection store](selection-stor
 
 | File                                               | Role                                                                       |
 | -------------------------------------------------- | -------------------------------------------------------------------------- |
-| `apps/live/lib/viewport-store.ts`                  | `createViewportStore`, `View`, `ViewportStore`                             |
-| `apps/live/hooks/ui/useStoreSlice.ts`              | `useStoreSlice(store, select, equal)`: the shared slice subscription       |
-| `apps/live/hooks/canvas/useSelectionStore.tsx`     | `useSelectionOf` delegates to `useStoreSlice`                              |
-| `apps/live/hooks/canvas/useEditorViewport.ts`      | Holds the store; `zoomRef` / `viewportOffsetRef` read it; no view state    |
-| `apps/live/app/document/[id]/useEditorState.ts`    | Never subscribes; passes `viewport` on; effects subscribe                  |
-| `apps/live/components/canvas/EditorCanvasHost.tsx` | Passes no view to the canvas                                               |
-| `apps/live/components/canvas/Canvas.tsx`           | `CanvasView` subscribes to the view; children subscribe where they show it |
-| `apps/live/hooks/canvas/useViewportStore.tsx`      | `ViewportStoreProvider`, `useViewportStore`, `useViewportOf`               |
+| `apps/editor/lib/viewport-store.ts`                  | `createViewportStore`, `View`, `ViewportStore`                             |
+| `apps/editor/hooks/ui/useStoreSlice.ts`              | `useStoreSlice(store, select, equal)`: the shared slice subscription       |
+| `apps/editor/hooks/canvas/useSelectionStore.tsx`     | `useSelectionOf` delegates to `useStoreSlice`                              |
+| `apps/editor/hooks/canvas/useEditorViewport.ts`      | Holds the store; `zoomRef` / `viewportOffsetRef` read it; no view state    |
+| `apps/editor/app/document/[id]/useEditorState.ts`    | Never subscribes; passes `viewport` on; effects subscribe                  |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx` | Passes no view to the canvas                                               |
+| `apps/editor/components/canvas/Canvas.tsx`           | `CanvasView` subscribes to the view; children subscribe where they show it |
+| `apps/editor/hooks/canvas/useViewportStore.tsx`      | `ViewportStoreProvider`, `useViewportStore`, `useViewportOf`               |
 
 ## Domain and naming
 

@@ -68,12 +68,12 @@ describe('Trusted Types sinks', () => {
     const isClient = (f: string) => /^'use client';/.test(read(f));
     const isLayout = (f: string) => /^apps\/[^/]+\/app\/layout\.tsx$/.test(f);
     const sinks = files.filter(
-      (f) => !f.startsWith('apps/live/') && htmlExpressions(read(f)).length > 0,
+      (f) => !f.startsWith('apps/editor/') && htmlExpressions(read(f)).length > 0,
     );
     // Who imports a module, by its path without extension (relative or `@/` specifiers).
     const importers = (target: string) =>
       files.filter((f) => {
-        if (f.startsWith('apps/live/')) return false;
+        if (f.startsWith('apps/editor/')) return false;
         const app = /^(apps|packages)\/[^/]+\//.exec(f)![0];
         const stem = target.replace(/\.tsx?$/, '');
         // Type-only imports carry no code onto the page.
@@ -108,7 +108,7 @@ describe('Trusted Types sinks', () => {
       (f) =>
         /\bnew DOMParser\(\)/.test(read(f)) &&
         !f.endsWith('packages/ui/src/trusted-types.ts') &&
-        !f.endsWith('apps/live/lib/drawio/test-support.ts'),
+        !f.endsWith('apps/editor/lib/drawio/test-support.ts'),
     );
     expect(direct).toEqual([]);
   });
@@ -131,7 +131,7 @@ describe.each(APPS)('apps/%s', (app) => {
 
   it('sends the Trusted Types header on every page', () => {
     if (app === 'live') {
-      const worker = read('apps/live/src/worker.ts');
+      const worker = read('apps/editor/src/worker.ts');
       expect(worker).toMatch(/'Content-Security-Policy':\s*TRUSTED_TYPES_CSP/);
     } else {
       const headers = read(`apps/${app}/public/_headers`);

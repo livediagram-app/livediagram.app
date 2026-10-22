@@ -3,7 +3,7 @@
 import { useSyncExternalStore } from 'react';
 
 // The part of the page a person can actually see while it differs from the window (docs/specs/007-editor/
-// live-app.md "A dialog stays above the on-screen keyboard"). A touch screen's keyboard shrinks the VISUAL
+// editor-app.md "A dialog stays above the on-screen keyboard"). A touch screen's keyboard shrinks the VISUAL
 // viewport, not the layout one that `position: fixed` and `vh` measure against, so a modal centred in the window
 // sat half under the keyboard. Null while the visible area is the whole window (no keyboard, no pinch zoom), so
 // a desktop dialog keeps its own CSS placement untouched.

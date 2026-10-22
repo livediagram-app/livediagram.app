@@ -63,7 +63,7 @@ describe('help centre internal links', () => {
 // Links OUT of the help centre, into the editor app
 // ---------------------------------------------------------------------
 
-const LIVE_APP_DIR = fileURLToPath(new URL('../../live/app', import.meta.url));
+const EDITOR_APP_DIR = fileURLToPath(new URL('../../editor/app', import.meta.url));
 
 // Routes served by a different worker entirely, so there is no page.tsx to
 // find. The router stitches these under the same hostname (docs/specs/016-platform/router-app.md).
@@ -84,8 +84,8 @@ function productLinksIn(source: string): string[] {
 function liveRouteExists(path: string): boolean {
   if (OTHER_WORKERS.has(path)) return true;
   const rel = path.replace(/^\//, '');
-  if (rel === '') return existsSync(`${LIVE_APP_DIR}/page.tsx`);
-  return existsSync(`${LIVE_APP_DIR}/${rel}/page.tsx`);
+  if (rel === '') return existsSync(`${EDITOR_APP_DIR}/page.tsx`);
+  return existsSync(`${EDITOR_APP_DIR}/${rel}/page.tsx`);
 }
 
 describe('help centre links into the editor', () => {
@@ -98,7 +98,7 @@ describe('help centre links into the editor', () => {
     // assertion pass without checking anything.
     expect(total).toBeGreaterThan(10);
     // And the route tree must actually be readable from here.
-    expect(existsSync(`${LIVE_APP_DIR}/new/page.tsx`)).toBe(true);
+    expect(existsSync(`${EDITOR_APP_DIR}/new/page.tsx`)).toBe(true);
   });
 
   it('every product link resolves to a real editor route', () => {

@@ -10,13 +10,13 @@ import { LIVE_ROUTE_SEGMENTS } from '@livediagram/api-schema';
 export interface Env {
   // Production service bindings (absent in the `local` env).
   MARKETING?: Fetcher;
-  LIVE?: Fetcher;
+  EDITOR?: Fetcher;
   API?: Fetcher;
   HELP?: Fetcher;
   COMMUNITY?: Fetcher;
   // Local-dev origins (absent in production).
   MARKETING_ORIGIN?: string;
-  LIVE_ORIGIN?: string;
+  EDITOR_ORIGIN?: string;
   API_ORIGIN?: string;
   HELP_ORIGIN?: string;
   COMMUNITY_ORIGIN?: string;
@@ -45,9 +45,9 @@ export function telemetryDashboardUrl(env: Pick<Env, 'DEPLOY_ENV'>): string {
 const HELP_PATH = '/help';
 const COMMUNITY_PATH = '/community';
 
-// The live app's top-level page route segments. These serve at CLEAN
-// URLs (no `/live` prefix) — the live worker's `out/` files are already
-// `/live`-free — so the router forwards them to the live worker AS-IS,
+// The editor app's top-level page route segments. These serve at CLEAN
+// URLs (no `/live` prefix) — the editor worker's `out/` files are already
+// `/live`-free — so the router forwards them to the editor worker AS-IS,
 // no strip. Marketing owns every other first segment (`/`,
 // `/alternatives`, `/faq`, ...) and there's no overlap with this set.
 // `/live/*` still exists ONLY for the bundled `_next` assets (the live
@@ -56,7 +56,7 @@ const COMMUNITY_PATH = '/community';
 // page-view split (docs/specs/017-telemetry/page-view-telemetry.md) reads the same list this routes by.
 
 // Root-served live assets that don't ride the `assetPrefix` (Next's
-// metadata icon). Routed to the live worker by exact path.
+// metadata icon). Routed to the editor worker by exact path.
 const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 
 // Help-centre category slugs, which are the first segment of every help
@@ -67,7 +67,7 @@ const LIVE_ROOT_ASSETS = new Set(['/icon.svg']);
 //
 // The list is pinned to the registry's own categories by index.test.ts, so a
 // new category cannot quietly stop redirecting. `explorer` is deliberately
-// absent: the live app owns that segment (it is matched first either way).
+// absent: the editor app owns that segment (it is matched first either way).
 const HELP_CATEGORY_SEGMENTS = new Set([
   'about',
   'account-and-data',
@@ -122,7 +122,7 @@ export function withPrefixedRedirect(res: Response, prefix: string): Response {
 //
 // Local dev (origin): swap the origin and keep the path UNstripped — the
 // Next dev servers serve their own prefixes (basePath for telemetry/help/community,
-// the live app's `/live` assetPrefix, which applies in dev too).
+// the editor app's `/live` assetPrefix, which applies in dev too).
 function forward(
   request: Request,
   url: URL,
@@ -203,10 +203,10 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (hasPrefix(url.pathname, API_PATH)) {
     return forward(request, url, env.API, env.API_ORIGIN);
   }
-  // `/live/*` is ONLY the live app's `_next` assets (its `assetPrefix`).
+  // `/live/*` is ONLY the editor app's `_next` assets (its `assetPrefix`).
   // Stripped in production — the worker serves them from `out/_next`.
   if (hasPrefix(url.pathname, LIVE_PATH)) {
-    return forward(request, url, env.LIVE, env.LIVE_ORIGIN, LIVE_PATH);
+    return forward(request, url, env.EDITOR, env.EDITOR_ORIGIN, LIVE_PATH);
   }
   if (hasPrefix(url.pathname, TELEMETRY_PATH)) {
     return Response.redirect(telemetryDashboardUrl(env), 301);
@@ -220,7 +220,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (legacyHelp) return legacyHelp;
   if (hasPrefix(url.pathname, HELP_PATH)) {
     // The help centre (docs/specs/018-help/help-app.md), a basePath:'/help' static app — same
-    // prefix-strip as the live app's assets.
+    // prefix-strip as the editor app's assets.
     return forward(request, url, env.HELP, env.HELP_ORIGIN, HELP_PATH);
   }
   const legacyEditor = legacyEditorRedirect(url);
@@ -229,7 +229,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   // its root-served icon: forwarded AS-IS (no strip — the worker's
   // files are already `/live`-free).
   if (isLivePageRoute(url.pathname)) {
-    return forward(request, url, env.LIVE, env.LIVE_ORIGIN);
+    return forward(request, url, env.EDITOR, env.EDITOR_ORIGIN);
   }
   // A help article URL that lost its `/help` prefix. Sent on with a
   // permanent redirect rather than dropped into marketing's 404: the path

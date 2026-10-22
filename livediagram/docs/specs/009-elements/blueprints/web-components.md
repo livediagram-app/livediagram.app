@@ -21,18 +21,18 @@ Scope, by file:
 | `packages/document/src/stored-tab.ts`                       | `migrateStoredTab`: every stored-tab entry point runs it                         |
 | `apps/api/src/tab-row.ts`                                   | `rowToTab` runs the migration                                                    |
 | `apps/api/src/thumbnail.ts`                                 | The thumbnail render runs the migration on the tab it parses                     |
-| `apps/live/lib/offline/offline-store.ts`                    | `offlineLoadTab` runs the migration                                              |
-| `apps/live/lib/import-merge.ts`                             | `mergeImportedTab` runs the migration on a JSON tab import [QA2]                 |
-| `apps/live/components/canvas/web/*.tsx`                     | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
-| `apps/live/components/canvas/InlineTextLine.tsx`            | The in-place single-line editor                                                  |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`         | Routes faces; computes `editable`                                                |
-| `apps/live/hooks/canvas/useWebComponentSetters.ts`          | Row writes, ring append, hero caption writes                                     |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`             | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |
-| `apps/live/components/palette/context-menu-web-editors.tsx` | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
-| `apps/live/components/palette/ElementContentSections.tsx`   | The image menu's "Caption Card" toggle                                           |
-| `apps/live/components/canvas/CanvasElementsLayer.tsx`       | `WEB_ROW_ACTION`: the ring's add-row action                                      |
-| `apps/live/lib/element-telemetry.ts`                        | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
-| `apps/live/lib/excalidraw-scene.ts`, `excalidraw-export.ts` | No group mapping                                                                 |
+| `apps/editor/lib/offline/offline-store.ts`                    | `offlineLoadTab` runs the migration                                              |
+| `apps/editor/lib/import-merge.ts`                             | `mergeImportedTab` runs the migration on a JSON tab import [QA2]                 |
+| `apps/editor/components/canvas/web/*.tsx`                     | One face per kind, `HeroCaptionCard`, `LabelRegion`, `WebFaceProps`              |
+| `apps/editor/components/canvas/InlineTextLine.tsx`            | The in-place single-line editor                                                  |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`         | Routes faces; computes `editable`                                                |
+| `apps/editor/hooks/canvas/useWebComponentSetters.ts`          | Row writes, ring append, hero caption writes                                     |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`             | `setPageHeading` (`MASTHEAD_SHAPES`)                                             |
+| `apps/editor/components/palette/context-menu-web-editors.tsx` | `WebRowsMenuSection`, `StatsEditor`, `TextRowsEditor`                            |
+| `apps/editor/components/palette/ElementContentSections.tsx`   | The image menu's "Caption Card" toggle                                           |
+| `apps/editor/components/canvas/CanvasElementsLayer.tsx`       | `WEB_ROW_ACTION`: the ring's add-row action                                      |
+| `apps/editor/lib/element-telemetry.ts`                        | `COMPONENT_TELEMETRY`, `SHAPE_TOKENS` entries                                    |
+| `apps/editor/lib/excalidraw-scene.ts`, `excalidraw-export.ts` | No group mapping                                                                 |
 
 ## Domain and naming
 
@@ -170,7 +170,7 @@ export function migrateStoredTab<
   T extends Pick<Tab, 'theme' | 'backgroundColor' | 'patternColor' | 'elements'>,
 >(tab: T): T;
 
-// apps/live/hooks/canvas/useWebComponentSetters.ts
+// apps/editor/hooks/canvas/useWebComponentSetters.ts
 setWebRows: (elementId: string, rows: WebRows) => void;
 appendWebRowTo: (elementId: string) => void;
 setWebRowsSelected: (rows: WebRows) => void;
@@ -277,22 +277,22 @@ the same pipeline logs `[tab-migrate] retired-scheme` [GA1].
 | Accent bar retheme touches only stroke       | an accent bar retheme touches only its stroke                                         | `packages/document/src/web-components.test.ts`                   |
 | Export draws rows, title once, hero caption  | headless render (three cases)                                                         | `packages/document/src/web-components.test.ts`                   |
 | `withWebRows` / `appendWebRow`               | row writes (two cases)                                                                | `packages/document/src/web-components.test.ts`                   |
-| Faces commit, inert until selected           | web component faces (six cases)                                                       | `apps/live/components/canvas/web/WebComponentFace.test.tsx`      |
-| Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                                       | `apps/live/components/palette/context-menu-web-editors.test.tsx` |
-| Setters, caption toggle                      | useWebComponentSetters (five cases)                                                   | `apps/live/hooks/canvas/useWebComponentSetters.test.ts`          |
+| Faces commit, inert until selected           | web component faces (six cases)                                                       | `apps/editor/components/canvas/web/WebComponentFace.test.tsx`      |
+| Menu add, remove, reorder, bounds            | WebRowsMenuSection (five cases)                                                       | `apps/editor/components/palette/context-menu-web-editors.test.tsx` |
+| Setters, caption toggle                      | useWebComponentSetters (five cases)                                                   | `apps/editor/hooks/canvas/useWebComponentSetters.test.ts`          |
 | Migration freezes and strips (I2)            | migrateLegacyGroups (five cases)                                                      | `packages/document/src/legacy-groups.test.ts`                    |
 | Migration pipeline                           | migrateStoredElements (two cases)                                                     | `packages/document/src/stored-elements.test.ts`                  |
 | Tab migration includes the element step      | migrates a retired scheme and retired element fields in one pass                      | `packages/document/src/stored-tab.test.ts`                       |
 | api read migrates                            | freezes a legacy group out of the stored elements                                     | `apps/api/src/tab-row.test.ts`                                   |
-| Offline load runs the tab migration          | migrates a tab saved against a retired scheme on load                                 | `apps/live/lib/offline/offline-store.test.ts`                    |
-| JSON import runs the tab migration           | migrates an imported tab saved against a retired scheme                               | `apps/live/lib/import-merge.test.ts`                             |
+| Offline load runs the tab migration          | migrates a tab saved against a retired scheme on load                                 | `apps/editor/lib/offline/offline-store.test.ts`                    |
+| JSON import runs the tab migration           | migrates an imported tab saved against a retired scheme                               | `apps/editor/lib/import-merge.test.ts`                             |
 | Thumbnail runs the tab migration             | renders the migrated tab, not the colours Charcoal baked                              | `apps/api/src/thumbnail.test.ts`                                 |
-| Excalidraw import has no groups              | maps common properties: opacity, angle, lock, link, dash; groups are dropped          | `apps/live/lib/excalidraw-import.test.ts`                        |
-| ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/live/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
-| Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/live/lib/canvas-selection.test.ts`                         |
-| Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/live/lib/draw-commit.test.ts`                              |
+| Excalidraw import has no groups              | maps common properties: opacity, angle, lock, link, dash; groups are dropped          | `apps/editor/lib/excalidraw-import.test.ts`                        |
+| ⌘G left to the browser                       | leaves Cmd+G to the browser now that there are no groups                              | `apps/editor/hooks/canvas/useEditorKeyboardShortcuts.test.ts`      |
+| Single selection bounds itself               | a single selection is bounded by the element itself                                   | `apps/editor/lib/canvas-selection.test.ts`                         |
+| Drag-to-draw sizes per axis                  | sizes to the dragged box, per axis                                                    | `apps/editor/lib/draw-commit.test.ts`                              |
 | Disc glyphs on the cap band in export        | %s centres its disc glyph on its cap band                                             | `packages/document/src/svg-cap-band-render.test.ts`              |
-| Text alignment in the Quick Style Panel      | offers no text alignment on a kind with its own face, but keeps it on a web component | `apps/live/lib/quick-style.test.ts`                              |
+| Text alignment in the Quick Style Panel      | offers no text alignment on a kind with its own face, but keeps it on a web component | `apps/editor/lib/quick-style.test.ts`                              |
 | Ring add hidden when full                    | none [GA14]                                                                           |                                                                  |
 | Export draws the inline icon                 | none [GA2]                                                                            |                                                                  |
 

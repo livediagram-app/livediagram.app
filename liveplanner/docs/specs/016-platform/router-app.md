@@ -13,14 +13,14 @@ A small Cloudflare Worker that fronts the apex domain (`liveplanner.app`) and ro
 | `/api`, `/api/*`                                                                                                                         | api worker (`apps/api`)                                                                  |
 | `/telemetry`, `/telemetry/*`                                                                                                             | `301` to the central dashboard, `?app=liveplanner.app` (liveworkspace/docs/telemetry.md) |
 | `/help`, `/help/*`                                                                                                                       | help app (`apps/help`), stripped                                                         |
-| `/live/*` (the live app's `_next` assets only)                                                                                           | live app (`apps/live`), stripped                                                         |
-| live page routes: `/project/*`, `/explorer/*`, `/form/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/icon.svg` | live app (`apps/live`), as-is                                                            |
+| `/live/*` (the editor app's `_next` assets only)                                                                                           | editor app (`apps/editor`), stripped                                                         |
+| live page routes: `/project/*`, `/explorer/*`, `/form/*`, `/new`, `/join`, `/sign-in`, `/get-started`, `/embed`, `/oauth/*`, `/icon.svg` | editor app (`apps/editor`), as-is                                                            |
 | a help category segment with no `/help` prefix (`/canvas/*`, `/policies/*`, ...)                                                         | 308 redirect to `/help/<path>`                                                           |
 | everything else                                                                                                                          | marketing app (`apps/marketing`)                                                         |
 
-The live app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the live app's route segments don't overlap any of them, so the router selects the live app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@liveplanner/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the live worker's `out/` files are already prefix-free).
+The editor app serves at **clean URLs** — there's no `/live` prefix in the address bar. Marketing owns every other first segment (`/`, `/alternatives`, `/faq`, the legal pages), and the editor app's route segments don't overlap any of them, so the router selects the editor app by matching its known first segments (`LIVE_ROUTE_SEGMENTS`, exported from `@liveplanner/api-schema` so the telemetry dashboard's per-app page-view split, [Page view telemetry](../017-telemetry/page-view-telemetry.md), reads the same list) and forwards those **as-is** (no strip — the editor worker's `out/` files are already prefix-free).
 
-The one thing that keeps a `/live` prefix is the live app's bundled **`_next` assets** (its prod `assetPrefix: '/live'`). Both Next static exports want `/_next`, so the live app's assets ride `/live/_next/*` to avoid colliding with marketing's `/_next`. The router **strips** `/live` from those before forwarding (shared `forwardStripped()` helper, same as `/telemetry/*`) so the worker serves them from `out/_next`. (Next's `basePath` used to add the prefix to pages too; that's gone — only `assetPrefix` remains, on assets only.)
+The one thing that keeps a `/live` prefix is the editor app's bundled **`_next` assets** (its prod `assetPrefix: '/live'`). Both Next static exports want `/_next`, so the editor app's assets ride `/live/_next/*` to avoid colliding with marketing's `/_next`. The router **strips** `/live` from those before forwarding (shared `forwardStripped()` helper, same as `/telemetry/*`) so the worker serves them from `out/_next`. (Next's `basePath` used to add the prefix to pages too; that's gone — only `assetPrefix` remains, on assets only.)
 
 `/api/*` is forwarded **as-is** — no prefix stripping. The api worker expects the full `/api/...` path. Marketing sees `/`, `/faq`, etc. as-is.
 
@@ -34,7 +34,7 @@ Centre** and **Troubleshooting**), then **Help Centre**. It is still a 404, so s
 engines drop it. The editor answers an unknown address with its own card instead
 ([New project route](../007-editor/new-project-route.md) "Unknown addresses").
 
-Two properties keep it safe. It sits **after** the live-route check, so `/explorer/*` (a segment the help centre and the live app both use) still reaches the editor — which is why `explorer` is absent from the set. And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
+Two properties keep it safe. It sits **after** the live-route check, so `/explorer/*` (a segment the help centre and the editor app both use) still reaches the editor — which is why `explorer` is absent from the set. And `index.test.ts` walks the registry's own categories and asserts each one redirects, so a new help category cannot silently stop working.
 
 ## Implementation
 
@@ -58,23 +58,23 @@ export default {
     if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
       return forward(request, url, env.API, env.API_ORIGIN); // /api/* as-is; api worker wants the full path
     }
-    // /live/* is now ONLY the live app's _next assets — strip and forward.
+    // /live/* is now ONLY the editor app's _next assets — strip and forward.
     if (url.pathname === '/live' || url.pathname.startsWith('/live/')) {
-      return forward(request, url, env.LIVE, env.LIVE_ORIGIN, '/live');
+      return forward(request, url, env.EDITOR, env.EDITOR_ORIGIN, '/live');
     }
     if (url.pathname === '/telemetry' || url.pathname.startsWith('/telemetry/')) {
       return telemetryRedirect(env); // 301 to the central dashboard, ?app=liveplanner.app
     }
     // Clean live-app page routes + its root icon: forward as-is (no strip).
     if (LIVE_ROUTE_SEGMENTS.has(url.pathname.split('/')[1]) || url.pathname === '/icon.svg') {
-      return forward(request, url, env.LIVE, env.LIVE_ORIGIN);
+      return forward(request, url, env.EDITOR, env.EDITOR_ORIGIN);
     }
     return forward(request, url, env.MARKETING, env.MARKETING_ORIGIN);
   },
 };
 ```
 
-Adding a new top-level route to the live app means adding its first segment to `LIVE_ROUTE_SEGMENTS` (in `packages/api-schema/src/page-views.ts`), or the router will send it to marketing.
+Adding a new top-level route to the editor app means adding its first segment to `LIVE_ROUTE_SEGMENTS` (in `packages/api-schema/src/page-views.ts`), or the router will send it to marketing.
 
 The router does **not** count page views. It can't see client-side navigations inside the Next apps, and can't read the per-browser telemetry opt-out, so each frontend reports its own ([Page view telemetry](../017-telemetry/page-view-telemetry.md)).
 
@@ -94,7 +94,7 @@ The router **also runs locally**, so `pnpm dev` gives you the production URL sha
 
 **How local mode works.** Service bindings only exist between deployed Workers, so the router's `wrangler.toml` carries an `[env.local]` environment that defines no service bindings and instead sets `<APP>_ORIGIN` vars (`http://127.0.0.1:<port>` for each downstream app). The worker resolves each target as _binding if present, else proxy to the origin_; `pnpm --filter @liveplanner/router dev` runs `wrangler dev --env local --port 3100`, and the root `pnpm dev` includes it.
 
-Origin mode forwards **as-is, never stripped**: unlike the deployed static-asset workers (which hold prefix-free `out/` files), the local Next dev servers serve their own prefixes themselves — `basePath` for telemetry/help, and the live app's `/live` assetPrefix, which applies **in dev too** (Next's dev server serves both the prefixed and unprefixed asset paths) precisely so the local router can tell live's `/live/_next/*` apart from marketing's `/_next/*` the same way production does.
+Origin mode forwards **as-is, never stripped**: unlike the deployed static-asset workers (which hold prefix-free `out/` files), the local Next dev servers serve their own prefixes themselves — `basePath` for telemetry/help, and the editor app's `/live` assetPrefix, which applies **in dev too** (Next's dev server serves both the prefixed and unprefixed asset paths) precisely so the local router can tell live's `/live/_next/*` apart from marketing's `/_next/*` the same way production does.
 
 The routing decisions stay identical in both modes — only the transport (binding vs origin proxy) and the stripping differ. The router remains optional: visiting each app's own port directly still works.
 

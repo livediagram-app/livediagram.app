@@ -10,11 +10,11 @@ Scope, by file:
 | ---------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `packages/document/src/pen-colours.ts`                                                                                 | `hexOklch`, `PEN_NEUTRAL_CHROMA`, `penColourAtHue`, `nearestPenColour` (pure) |
 | `packages/document/src/snap-colours.ts`                                                                                | `SNAP_COLOUR_FIELDS`, `snappableCustomColours`, `snapTabColours` (pure)       |
-| `apps/live/hooks/canvas/useSnapColours.ts`                                                                             | The board's snappable colours and the one-commit `snap()`                     |
-| `apps/live/components/canvas/whiteboard/SnapColoursSection.tsx`                                                        | The Settings flyout's Colours section                                         |
-| `apps/live/components/canvas/whiteboard/dock-flyouts.tsx`                                                              | Renders the section last in `SettingsFlyoutBody`                              |
-| `apps/live/hooks/canvas/useWhiteboard.ts`                                                                              | Carries `snapColours` on the dock model                                       |
-| `apps/live/app/document/[id]/useEditorState.ts`                                                                        | Builds `useSnapColours` and hands it to `useWhiteboard`                       |
+| `apps/editor/hooks/canvas/useSnapColours.ts`                                                                             | The board's snappable colours and the one-commit `snap()`                     |
+| `apps/editor/components/canvas/whiteboard/SnapColoursSection.tsx`                                                        | The Settings flyout's Colours section                                         |
+| `apps/editor/components/canvas/whiteboard/dock-flyouts.tsx`                                                              | Renders the section last in `SettingsFlyoutBody`                              |
+| `apps/editor/hooks/canvas/useWhiteboard.ts`                                                                              | Carries `snapColours` on the dock model                                       |
+| `apps/editor/app/document/[id]/useEditorState.ts`                                                                        | Builds `useSnapColours` and hands it to `useWhiteboard`                       |
 | `packages/api-schema/src/telemetry-schema.ts`, liveworkspace/apps/site/app/telemetry/livediagram/event-explanations.ts | The `SnapColours` token's comment and its dashboard sentence                  |
 
 ## Domain and naming
@@ -86,7 +86,7 @@ keeps its exact colour (the board scene's own rule, docs/specs/020-import-export
   (status sentence, no button). The result lives in component state, so closing the flyout (which
   unmounts it) forgets it; undo re-renders **offer** once colours are back and no result is shown.
 - Section heading "Colours" in the flyouts' small capitals; `role="group"`, `aria-label="Colours"`.
-- Offer copy: "1 custom colour" / "N custom colours"; swatches: first `TAB_CUSTOM_COLOURS_MAX` (8, `apps/live/lib/quick-style-pen.ts`),
+- Offer copy: "1 custom colour" / "N custom colours"; swatches: first `TAB_CUSTOM_COLOURS_MAX` (8, `apps/editor/lib/quick-style-pen.ts`),
   each `aria-hidden`, its hex in `data-snap-swatch`; button "Snap to stock colours", disabled when
   `blocked`.
 - Done copy: "1 custom colour snapped to stock colours" / "N custom colours snapped to stock
@@ -186,7 +186,7 @@ export function snapTabColours(
 | Hook: one commit, telemetry, blocked no-op                             | `useSnapColours.test.tsx`                       |
 | Section: hidden, offer copy, press, done status, disabled              | `SnapColoursSection.test.tsx`                   |
 | Settings flyout shows the section only with custom colours             | `WhiteboardDock.test.tsx`                       |
-| End to end: snap, undo, light and dark, dock at the top and the bottom | `apps/live/e2e/whiteboard-snap-colours.spec.ts` |
+| End to end: snap, undo, light and dark, dock at the top and the bottom | `apps/editor/e2e/whiteboard-snap-colours.spec.ts` |
 
 ## Constants and configuration
 

@@ -14,20 +14,20 @@ Scope, by file:
 | `packages/document/src/behaviour-skin.ts`               | `ownColours`: a stamped skin reads as unset                         |
 | `packages/document/src/validate.ts`                     | Rejects an unknown `mode`                                           |
 | `packages/document/src/svg-render-faces.ts`             | The export face (`svgBehaviourFace`, `'mode-button'`, `keycapEdge`) |
-| `apps/live/components/canvas/ModeButtonFace.tsx`        | The face: chip, derived text, press; `MODE_LABEL`                   |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`     | Renders the face while not editing                                  |
-| `apps/live/components/canvas/BoxedElementView.tsx`      | Resolves `textColor` through `ownColours` and `defaultTextColor`    |
-| `apps/live/hooks/ui/usePressWithoutDrag.ts`             | Click presses, drag stays silent                                    |
-| `apps/live/lib/press-gestures.ts`                       | `isDragTravel`, `PRESS_DRAG_SLOP_PX`                                |
-| `apps/live/components/canvas/useCanvasAvatar.tsx`       | `pressModeButton`: records the Avatar spawn point                   |
-| `apps/live/app/document/[id]/useEditorState.ts`         | `pressModeButton`: Leave, else `pickCanvasTool`                     |
-| `apps/live/hooks/canvas/useCanvasTool.ts`               | `selectCanvasTool` telemetry, `toolBeforeCurrent`                   |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`      | Threads the press; `mode ?? DEFAULT_BUTTON_MODE`                    |
-| `apps/live/components/palette/palette-tile-defs.tsx`    | Nine `tools:mode-<mode>` tiles, `tileGroup: 'mode'` [QF6]           |
-| `apps/live/components/palette/ElementDataSections.tsx`  | The **Button** menu section                                         |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`         | `setButtonModeSelected`                                             |
-| `apps/live/lib/draw-commit.ts`, `useElementCreation.ts` | Apply the tile's `mode` at commit / drop                            |
-| `apps/live/lib/element-telemetry.ts`                    | `SHAPE_TOKENS['mode-button'] = 'ModeButton'`                        |
+| `apps/editor/components/canvas/ModeButtonFace.tsx`        | The face: chip, derived text, press; `MODE_LABEL`                   |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`     | Renders the face while not editing                                  |
+| `apps/editor/components/canvas/BoxedElementView.tsx`      | Resolves `textColor` through `ownColours` and `defaultTextColor`    |
+| `apps/editor/hooks/ui/usePressWithoutDrag.ts`             | Click presses, drag stays silent                                    |
+| `apps/editor/lib/press-gestures.ts`                       | `isDragTravel`, `PRESS_DRAG_SLOP_PX`                                |
+| `apps/editor/components/canvas/useCanvasAvatar.tsx`       | `pressModeButton`: records the Avatar spawn point                   |
+| `apps/editor/app/document/[id]/useEditorState.ts`         | `pressModeButton`: Leave, else `pickCanvasTool`                     |
+| `apps/editor/hooks/canvas/useCanvasTool.ts`               | `selectCanvasTool` telemetry, `toolBeforeCurrent`                   |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`      | Threads the press; `mode ?? DEFAULT_BUTTON_MODE`                    |
+| `apps/editor/components/palette/palette-tile-defs.tsx`    | Nine `tools:mode-<mode>` tiles, `tileGroup: 'mode'` [QF6]           |
+| `apps/editor/components/palette/ElementDataSections.tsx`  | The **Button** menu section                                         |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`         | `setButtonModeSelected`                                             |
+| `apps/editor/lib/draw-commit.ts`, `useElementCreation.ts` | Apply the tile's `mode` at commit / drop                            |
+| `apps/editor/lib/element-telemetry.ts`                    | `SHAPE_TOKENS['mode-button'] = 'ModeButton'`                        |
 
 ## Domain and naming
 
@@ -131,7 +131,7 @@ export function ownColours(el: BoxedElement): { fill?: string; stroke?: string; 
 // ShapeElement
 mode?: SelectionMode;
 
-// apps/live
+// apps/editor
 export const MODE_LABEL: Record<SelectionMode, string>; // = SELECTION_MODE_LABEL
 export function ModeButtonFace(props: { mode: SelectionMode; label: string;
   activeMode?: SelectionMode; textColor: string; onPress?: () => void }): JSX.Element;
@@ -237,15 +237,15 @@ No log exists today. Proposed fingerprints (gap, see the report):
 | Created with no stored colour                        | "are created with no stored colour"                       | `packages/document/src/behaviour-skin.test.ts`      |
 | Skin follows the paper                               | "resolve light ink on dark paper and dark ink …"          | `packages/document/src/behaviour-skin.test.ts`      |
 | A stamped skin reads as unset; a pick is kept        | "treat the skin …", "keep a colour the author picked"     | `packages/document/src/behaviour-skin.test.ts`      |
-| Drag tolerance is 4 px, radial (D108)                | `isDragTravel` block                                      | `apps/live/lib/press-gestures.test.ts`              |
+| Drag tolerance is 4 px, radial (D108)                | `isDragTravel` block                                      | `apps/editor/lib/press-gestures.test.ts`              |
 | Unknown `mode` rejected, every mode accepted (I4)    | `mode button validation` block                            | `packages/document/src/validate.test.ts`            |
 | A stored Highlighter mode migrates to the default    | `migrateLegacyModeButtons` block                          | `packages/document/src/legacy-mode-buttons.test.ts` |
 | Fixed size                                           | "names the controls that never take resize handles"       | `packages/document/src/selection-mode.test.ts`      |
-| No resize handles on fixed-size elements             | fixed-size block                                          | `apps/live/lib/canvas-selection.test.ts`            |
+| No resize handles on fixed-size elements             | fixed-size block                                          | `apps/editor/lib/canvas-selection.test.ts`            |
 | Shared settings `…` on the face                      | "gives the shared menu to a kind with settings behind it" | `packages/document/src/behaviour-shapes.test.ts`    |
 | Not votable                                          | "rejects the interactive Behaviour shapes"                | `packages/document/src/session.test.ts`             |
-| Draw banner spells the kind                          | "spells out a hyphenated kind"                            | `apps/live/lib/draw-mode.test.ts`                   |
-| Telemetry token `ModeButton`                         | palette census                                            | `apps/live/lib/palette-telemetry-coverage.test.ts`  |
+| Draw banner spells the kind                          | "spells out a hyphenated kind"                            | `apps/editor/lib/draw-mode.test.ts`                   |
+| Telemetry token `ModeButton`                         | palette census                                            | `apps/editor/lib/palette-telemetry-coverage.test.ts`  |
 | Export draws a face                                  | "draws more than a box and a label"                       | `packages/document/src/export-consistency.test.ts`  |
 | Export names an unlabelled button by its mode        | "names an unlabelled Mode button by its destination"      | `packages/document/src/svg-render-fidelity.test.ts` |
 | Drag never presses (I2)                              | none (`usePressWithoutDrag`)                              | (gap)                                               |

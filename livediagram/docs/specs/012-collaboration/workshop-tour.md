@@ -41,7 +41,7 @@ taken away when the tour ends, however it ends. Nothing reaches the document's h
 ## The steps
 
 A welcome card, six steps, then an outro card. The bookend cards sit outside the step count. The palette
-itself is the Diagram tour's, so this tour does not repeat it. The exact strings live in `apps/live/components/tour/workshop-tour-steps.ts`.
+itself is the Diagram tour's, so this tour does not repeat it. The exact strings live in `apps/editor/components/tour/workshop-tour-steps.ts`.
 
 0. **Getting started with Workshop?** (the offer): centred card with its own illustration (a flipchart with two sticky
    notes and a timer), saying Workshop is for running a session with a team and offering a quick look, then

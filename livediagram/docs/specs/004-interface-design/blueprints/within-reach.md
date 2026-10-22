@@ -13,7 +13,7 @@ Scope, by file:
 | `packages/api-schema/src/within-reach.test.ts` | The rule, its ties and its merge property                |
 | `packages/api-schema/src/index.ts`             | Re-exports the module                                    |
 
-`@livediagram/api-schema` is the home because it is already the one package both the api worker and the live app
+`@livediagram/api-schema` is the home because it is already the one package both the api worker and the editor app
 import (`D48`).
 
 ## Domain and naming
@@ -88,8 +88,8 @@ kinds; Home's 8 server items plus this browser's opened local documents).
 | Recent newest first, never one of the most used     | same                                                                                           |
 | Short groups, empty input, `n <= 0`, stable ties    | same                                                                                           |
 | The merge property over two lists                   | same                                                                                           |
-| The Shapes flyout unchanged                         | `apps/live/lib/whiteboard-shape-slots.test.ts`, `apps/live/e2e/whiteboard-shape-slots.spec.ts` |
-| Jump Back In's split, merge and alternation         | `apps/live/app/explorer/home/home-model.test.ts`                                               |
+| The Shapes flyout unchanged                         | `apps/editor/lib/whiteboard-shape-slots.test.ts`, `apps/editor/e2e/whiteboard-shape-slots.spec.ts` |
+| Jump Back In's split, merge and alternation         | `apps/editor/app/explorer/home/home-model.test.ts`                                               |
 
 ## Constants and configuration
 

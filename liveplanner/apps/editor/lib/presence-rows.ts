@@ -1,0 +1,242 @@
+// Pure aggregation of realtime presence state into the row shapes the
+// editor renders: per-tab presence buckets, remote cursor rows, and the
+// per-element remote-selection map. Lifted out of
+// useEditorState so this join logic (presence x tab-focus x idle, scoped
+// to the active tab and filtered to live participants) is unit-testable
+// without standing up the room. `now` and the last-seen map are passed in
+// rather than read from Date.now() / a ref, keeping the functions pure.
+import { participantKey, statusFromIdleMs, type Participant } from './identity';
+
+// Row shapes the builders below return. Module-private: only this file's own
+// functions name them, so they carry no `export` (consumers get the inferred
+// return types).
+type CursorRow = {
+  id: string;
+  name: string;
+  color: string;
+  x: number;
+  y: number;
+};
+// `holds`: whether the selection locks the element against editing (docs/specs/013-workspace/share-roles.md): a
+// Viewer only looks, so its selection shows its badge and holds nothing. A peer with no role (an older room) holds.
+export type RemoteSelector = { id: string; name: string; color: string; holds: boolean };
+
+// Group participants by the tab they're focused on, so each TabBar entry
+// renders the right avatar dots. Always includes the local participant on
+// their active tab; remote peers without a tab-focus op yet default to the
+// first tab. Status is per-viewer (on my tab -> online, elsewhere -> away)
+// unless idle has dragged them to away/offline. Returns an empty map for
+// private (unshared) projects.
+//
+// One person, one avatar (docs/specs/012-collaboration/collaborator-enhancements.md): the room mints an id per socket, so the
+// same browser open in two tabs arrives as two peers. Every tab in a browser
+// shares one collab key (`participantKey`), so connections are collapsed on
+// it: our own other tabs are dropped (we already sit on our active tab), and
+// a peer with several keeps only their most recently active connection,
+// which is the tab they are actually looking at.
+export function buildParticipantsByTab(input: {
+  projectShareable: boolean;
+  // A team project (docs/specs/013-workspace/team-shared-projects.md) is collaborative for its members even
+  // with no share link, so tab presence shows there too.
+  projectTeamId: string | null;
+  // An agent is present (docs/specs/024-agents/agent-presence.md): a personal project's stack shows too, so its
+  // owner sees their agent.
+  agentsPresent?: boolean;
+  activeId: string;
+  selfParticipant: Participant;
+  tabs: { id: string }[];
+  remoteTabFocus: Map<string, string>;
+  // The tab in each person's other pane while they work side by side (docs/specs/007-editor/split-view.md
+  // "Presence"): they show on that tab's pill too. Peers by id; ourselves apart.
+  remoteBesideTabs?: ReadonlyMap<string, string>;
+  selfBesideTabId?: string | null;
+  livePresence: Participant[];
+  livePresenceById: Map<string, Participant>;
+  lastSeen: ReadonlyMap<string, number>;
+  now: number;
+}): Map<string, Participant[]> {
+  const {
+    projectShareable,
+    projectTeamId,
+    agentsPresent = false,
+    activeId,
+    selfParticipant,
+    tabs,
+    remoteTabFocus,
+    remoteBesideTabs,
+    selfBesideTabId = null,
+    livePresence,
+    livePresenceById,
+    lastSeen,
+    now,
+  } = input;
+  const map = new Map<string, Participant[]>();
+  if (!projectShareable && !projectTeamId && !agentsPresent) return map;
+  map.set(activeId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
+  if (selfBesideTabId && selfBesideTabId !== activeId)
+    map.set(selfBesideTabId, [{ ...selfParticipant, status: 'online', lastActiveAt: now }]);
+  const defaultTabId = tabs[0]?.id ?? activeId;
+  const tabFocus = new Map<string, string>(remoteTabFocus);
+  for (const p of livePresence) {
+    if (p.id === selfParticipant.id) continue;
+    if (!tabFocus.has(p.id)) tabFocus.set(p.id, defaultTabId);
+  }
+  const selfKey = participantKey(selfParticipant);
+  const newestByKey = new Map<string, string>();
+  for (const [id] of tabFocus) {
+    const p = livePresenceById.get(id);
+    if (!p || id === selfParticipant.id) continue;
+    const key = participantKey(p);
+    const held = newestByKey.get(key);
+    if (held === undefined || (lastSeen.get(id) ?? now) > (lastSeen.get(held) ?? now)) {
+      newestByKey.set(key, id);
+    }
+  }
+  for (const [id, tabId] of tabFocus) {
+    if (id === selfParticipant.id) continue;
+    const p = livePresenceById.get(id);
+    if (!p) continue;
+    const key = participantKey(p);
+    if (key === selfKey || newestByKey.get(key) !== id) continue;
+    const lastActiveAt = lastSeen.get(id) ?? now;
+    const idleStatus = statusFromIdleMs(now - lastActiveAt);
+    const status =
+      idleStatus === 'offline'
+        ? 'offline'
+        : idleStatus === 'away'
+          ? 'away'
+          : tabId === activeId
+            ? 'online'
+            : 'away';
+    const withStatus: Participant = { ...p, status, lastActiveAt };
+    const bucket = map.get(tabId);
+    if (bucket) bucket.push(withStatus);
+    else map.set(tabId, [withStatus]);
+    // On screen beside it too: the same person, with the status that tab earns from our side.
+    const besideTabId = remoteBesideTabs?.get(id);
+    if (besideTabId && besideTabId !== tabId) {
+      const besideStatus =
+        idleStatus === 'online' && besideTabId === activeId
+          ? 'online'
+          : status === 'offline'
+            ? 'offline'
+            : 'away';
+      const beside: Participant = { ...p, status: besideStatus, lastActiveAt };
+      const besideBucket = map.get(besideTabId);
+      if (besideBucket) besideBucket.push(beside);
+      else map.set(besideTabId, [beside]);
+    }
+  }
+  return map;
+}
+
+// Remote cursor rows joined with presence (fresh colour + name) and
+// filtered to the active tab, dropping self + off-canvas (null) cursors.
+export function buildRemoteCursorRows(
+  remoteCursors: Map<string, { tabId: string; x: number; y: number } | null>,
+  livePresenceById: Map<string, Participant>,
+  selfId: string,
+  activeId: string,
+): CursorRow[] {
+  const rows: CursorRow[] = [];
+  for (const [id, pos] of remoteCursors) {
+    if (!pos) continue;
+    if (id === selfId) continue;
+    if (pos.tabId !== activeId) continue;
+    const p = livePresenceById.get(id);
+    if (!p) continue;
+    rows.push({ id, name: p.name, color: p.color, x: pos.x, y: pos.y });
+  }
+  return rows;
+}
+
+// Three-tier resolution for the canvas's top-middle "Owner" badge,
+// lifted out of EditorCanvasHost:
+//   1. Self IS the owner -> always have name + colour.
+//   2. Owner is currently in the room -> use the live presence row so
+//      the avatar (and its online dot) matches what visitors see in
+//      the TabBar.
+//   3. Owner is offline -> fall back to the joined name + colour we
+//      got from the project fetch (api worker LEFT JOINs participants
+//      on owner_id).
+// Returns null only when the owner truly has no participant record on
+// the server.
+export function resolveOwnerBadge(input: {
+  isOwner: boolean;
+  selfParticipant: Participant;
+  livePresence: Participant[];
+  projectOwnerId: string | null;
+  projectOwnerName: string | null;
+  projectOwnerColor: string | null;
+}): Participant | null {
+  const {
+    isOwner,
+    selfParticipant,
+    livePresence,
+    projectOwnerId,
+    projectOwnerName,
+    projectOwnerColor,
+  } = input;
+  if (isOwner) return selfParticipant;
+  // The share endpoint redacts ownerId to '' for visitors (so an
+  // observer can't learn + claim a guest's owner-id), so a
+  // visitor can't match the owner's live presence row by id.
+  // When we have the real id (owner opening their own link) match
+  // on it; otherwise fall back to the joined owner name + colour,
+  // which is the same identity the fetch already trusts. Without
+  // this, an online owner always resolved to the offline branch
+  // below and showed a red (offline) dot to viewers.
+  const live = projectOwnerId
+    ? livePresence.find((p) => p.id === projectOwnerId)
+    : livePresence.find((p) => p.name === projectOwnerName && p.color === projectOwnerColor);
+  if (live) return live;
+  // Owner not in the room: key the badge off the NAME, not the
+  // (blanked) id, or viewers never get the badge at all. The id
+  // here is display-only, so a synthetic fallback is fine.
+  if (projectOwnerName) {
+    return {
+      id: projectOwnerId || 'owner',
+      name: projectOwnerName,
+      color: projectOwnerColor ?? '#94a3b8',
+      status: 'offline' as const,
+    };
+  }
+  return null;
+}
+
+// A peer's current selection: the element id plus the tab it lives on.
+// `tabId` is optional for wire compatibility (an older peer's frame
+// omits it and is treated as tab-unknown — visible everywhere, the old
+// behaviour).
+export type RemoteSelection = { elementId: string | null; tabId?: string };
+
+// Per-element map of which remote participants have it selected (for the
+// on-element badges). Drops self + null (deselected) entries, and — like
+// cursors — entries scoped to a DIFFERENT tab: element ids
+// aren't unique across tabs in older projects (tab duplication used to
+// copy them verbatim), so an unscoped badge also LOCKED the same-id
+// element on other tabs via the docs/specs/007-editor/editor-app.md selection lock.
+export function buildRemoteSelectionsByElement(
+  remoteSelections: Map<string, RemoteSelection>,
+  livePresenceById: Map<string, Participant>,
+  selfId: string,
+  activeTabId: string,
+): Map<string, RemoteSelector[]> {
+  const out = new Map<string, RemoteSelector[]>();
+  for (const [participantId, selection] of remoteSelections) {
+    if (!selection.elementId) continue;
+    if (selection.tabId !== undefined && selection.tabId !== activeTabId) continue;
+    if (participantId === selfId) continue;
+    const participant = livePresenceById.get(participantId);
+    if (!participant) continue;
+    const list = out.get(selection.elementId) ?? [];
+    list.push({
+      id: participant.id,
+      name: participant.name,
+      color: participant.color,
+      holds: participant.role !== 'view',
+    });
+    out.set(selection.elementId, list);
+  }
+  return out;
+}

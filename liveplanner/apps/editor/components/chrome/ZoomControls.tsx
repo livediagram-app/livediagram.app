@@ -1,0 +1,188 @@
+import { IsometricOrbitButton } from '@/components/chrome/IsometricOrbitButton';
+import { ZoomMenu, type ZoomRange } from '@/components/chrome/ZoomMenu';
+import { ZenExitIcon, ZenIcon } from '@/components/palette/palette-icons';
+import { HoverCard, Glyph } from '@liveplanner/ui';
+
+type ZoomControlsProps = {
+  zoom: number;
+  onZoomIn: () => void;
+  onZoomOut: () => void;
+  onSetZoom: (zoom: number) => void;
+  onFitToScreen: () => void;
+  // Isometric orbit control (docs/specs/008-canvas/isometric-view.md). When both are set (the isometric
+  // tool is active) the orbit button sits between Fit and Zen: drag to
+  // orbit the camera, click to reset its angle. Omitted on every other
+  // tool → no button.
+  onIsoOrbit?: (clientX: number, clientY: number) => void;
+  onIsoReset?: () => void;
+  // Zen / focus mode (docs/specs/007-editor/zen-mode.md). The dock carries the EXIT button, shown
+  // while zen is active (it is the only chrome left in zen). Zen is entered with Z or the command
+  // palette's Enter zen mode; `zenEnterHere` adds a visible enter button for view-only visitors.
+  onToggleZen?: () => void;
+  zenActive?: boolean;
+  zenEnterHere?: boolean;
+  // A phone (docs/specs/007-editor/editor-app.md): the cluster also carries Activity + Layers there, so
+  // the step buttons go (pinch zooms) and Fit stays.
+  pinchOnly?: boolean;
+  // Zoom belongs to a Sheet (docs/specs/029-sheets/sheet.md "Zoom"); on every other tab a Board, Dashboard or Form
+  // fills the canvas and there is nothing to zoom, so the zoom buttons go and only Isometric and Zen stay.
+  zoomHidden?: boolean;
+  // What the controls zoom: the canvas, or a Sheet covering it (docs/specs/029-sheets/sheet.md "Zoom"), which only
+  // their hover cards tell apart.
+  zoomScope?: 'canvas' | 'sheet';
+  // The levels the zoom can reach, when narrower than the canvas's: the preset menu offers only those.
+  zoomRange?: ZoomRange | undefined;
+};
+
+// The hover cards' lines, by what the controls zoom.
+const ZOOM_COPY = {
+  canvas: {
+    out: 'Zoom out by 10%.',
+    in: 'Zoom in by 10%.',
+    fit: 'Pan and zoom so everything on the tab fits.',
+  },
+  sheet: {
+    out: 'Zoom the sheet out by 10%.',
+    in: 'Zoom the sheet in by 10%.',
+    fit: 'Show the sheet at 100%.',
+  },
+} as const;
+
+// Floating zoom controls, bottom-right of the canvas. Three
+// controls: -10% / current % (click to fit, hover for the preset-level
+// popover — see ZoomMenu) / +10%. Below `sm` the percentage button is
+// hidden (and touch has no hover), so a plain Fit button stands in
+// there. In zen mode it also carries the exit-zen button.
+export function ZoomControls({
+  zoom,
+  onZoomIn,
+  onZoomOut,
+  onSetZoom,
+  onFitToScreen,
+  onIsoOrbit,
+  onIsoReset,
+  onToggleZen,
+  zenActive,
+  zenEnterHere,
+  pinchOnly = false,
+  zoomHidden = false,
+  zoomScope = 'canvas',
+  zoomRange,
+}: ZoomControlsProps) {
+  const copy = ZOOM_COPY[zoomScope];
+  const iso = onIsoOrbit && onIsoReset;
+  const zen = onToggleZen && (zenActive || zenEnterHere);
+  // With zoom hidden and neither Isometric nor Zen to offer, the cluster goes rather than sit empty over the page.
+  if (zoomHidden && !iso && !zen) return null;
+  return (
+    <div
+      data-zoom-controls
+      onPointerDown={(e) => e.stopPropagation()}
+      onContextMenu={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+      className="pointer-events-auto flex animate-fade-in items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/5 dark:border-slate-700 dark:bg-slate-900 dark:shadow-slate-950/40"
+    >
+      {zoomHidden ? null : (
+        <>
+          {pinchOnly ? null : (
+            <HoverCard title="Zoom out" description={copy.out}>
+              <IconButton onClick={onZoomOut} label="Zoom out">
+                <Glyph size={14} units={14}>
+                  <line x1="3" y1="7" x2="11" y2="7" />
+                </Glyph>
+              </IconButton>
+            </HoverCard>
+          )}
+          <ZoomMenu
+            zoom={zoom}
+            onSetZoom={onSetZoom}
+            onFitToScreen={onFitToScreen}
+            range={zoomRange}
+          />
+          {pinchOnly ? null : (
+            <HoverCard title="Zoom in" description={copy.in}>
+              <IconButton onClick={onZoomIn} label="Zoom in">
+                <Glyph size={14} units={14}>
+                  <line x1="3" y1="7" x2="11" y2="7" />
+                  <line x1="7" y1="3" x2="7" y2="11" />
+                </Glyph>
+              </IconButton>
+            </HoverCard>
+          )}
+          {/* Mobile-only Fit: below `sm` the percentage button (whose click
+          is Fit on desktop) is hidden, and hover popovers don't exist on
+          touch, so a plain Fit button keeps the action reachable. */}
+          <span className="contents sm:hidden">
+            {pinchOnly ? null : (
+              <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+            )}
+            <HoverCard title="Fit to screen" description={copy.fit}>
+              <button
+                type="button"
+                onClick={onFitToScreen}
+                aria-label="Fit to screen"
+                className="flex h-9 items-center justify-center rounded-md px-2.5 text-xs font-medium text-slate-700 transition hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800"
+              >
+                Fit
+              </button>
+            </HoverCard>
+          </span>
+        </>
+      )}
+      {iso ? (
+        <>
+          {zoomHidden ? null : (
+            <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+          )}
+          <IsometricOrbitButton onOrbit={onIsoOrbit} onReset={onIsoReset} />
+        </>
+      ) : null}
+      {zen ? (
+        // Exit-only in normal sessions: zen is entered with Z or the command
+        // palette's Enter zen mode, so outside zen the dock stays minimal.
+        // Inside zen the dock is the only chrome left, so the exit button
+        // lives here. zenEnterHere (view-only sessions) adds an enter button.
+        <>
+          {zoomHidden && !iso ? null : (
+            <div className="mx-0.5 h-6 w-px bg-slate-200 dark:bg-slate-700" aria-hidden />
+          )}
+          <HoverCard
+            title={zenActive ? 'Exit zen mode' : 'Zen mode'}
+            description={
+              zenActive
+                ? 'Bring back the toolbars and panels (Z or Esc).'
+                : 'Hide every panel and toolbar to focus on the tab (Z).'
+            }
+          >
+            <IconButton onClick={onToggleZen} label={zenActive ? 'Exit zen mode' : 'Zen mode'}>
+              {zenActive ? <ZenExitIcon /> : <ZenIcon />}
+            </IconButton>
+          </HoverCard>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
+function IconButton({
+  onClick,
+  label,
+  children,
+}: {
+  onClick: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="flex h-9 w-9 items-center justify-center rounded-md text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 dark:text-slate-300 dark:hover:bg-slate-800 dark:hover:text-white"
+    >
+      {children}
+    </button>
+  );
+}

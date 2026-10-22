@@ -216,7 +216,7 @@ export type Folder = {
 // gated). Stored as a JSON string in the `custom_themes.definition`
 // column; this is the parsed shape the api emits and the live editor
 // materialises into a full ThemeDefinition. Kept structurally in step
-// with `apps/live/lib/themes.ts` ThemeDefinition by the editor's
+// with `apps/editor/lib/themes.ts` ThemeDefinition by the editor's
 // `materialiseCustomTheme` helper.
 export type CustomThemeDefinition = {
   backgroundColor: string;
@@ -410,7 +410,7 @@ export type ShareLink = {
 // ---------------------------------------------------------------------
 
 // A persisted participant row, returned by `POST /api/participants`
-// when the editor registers identity. The live app wraps this in its
+// when the editor registers identity. The editor app wraps this in its
 // own `Participant` type that adds presence status (`online` / `away`
 // / `stale`) on top — that status is purely client-derived from idle
 // time and never crosses the wire.
@@ -510,7 +510,7 @@ export type CapabilitiesResponse = {
   projectFormat?: number;
   cli?: { minVersion: string };
   // True only when the deployment has Resend configured (docs/specs/014-identity/transactional-email.md). The
-  // live app hides the email-notification toggles (docs/specs/014-identity/profile-and-email-notifications.md) when false,
+  // editor app hides the email-notification toggles (docs/specs/014-identity/profile-and-email-notifications.md) when false,
   // since they'd be inert without an email backend. Optional so an older
   // client / a fail-closed default still parses.
   emailEnabled?: boolean;

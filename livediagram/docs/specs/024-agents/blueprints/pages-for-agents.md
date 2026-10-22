@@ -23,7 +23,7 @@ function and a test here; nothing here adds design.
 | article frames    | `tabArticleOps(before, after, { agent })`, `ARTICLE_FRAME_CHARS` (moved)                                                                                                                      | `packages/api-schema/src/article-frames.ts`                                             |
 | submit            | `submitPages`, `pagesRoomOps`                                                                                                                                                                 | `apps/api/src/changesets/pages.ts`                                                      |
 | relay             | `relayPages`                                                                                                                                                                                  | `apps/api/src/room-client.ts`                                                           |
-| grow marks        | `markArticleGrow`, `isArticleGrowPending`, `clearArticleGrow`; `shouldGrowForAbsentWriter`                                                                                                    | `apps/live/lib/article/article-grow-store.ts`, `packages/document/src/article-pages.ts` |
+| grow marks        | `markArticleGrow`, `isArticleGrowPending`, `clearArticleGrow`; `shouldGrowForAbsentWriter`                                                                                                    | `apps/editor/lib/article/article-grow-store.ts`, `packages/document/src/article-pages.ts` |
 | icon check        | `isIconId`, `iconsLike`                                                                                                                                                                       | `packages/icons/src/search.ts`                                                          |
 | route             | `handleTabPages`                                                                                                                                                                              | `apps/api/src/routes/tab-pages-route.ts`                                                |
 | verbs             | `changePages`, `writeArticle`, `readArticle`, `pagesTabOf`                                                                                                                                    | `packages/agent-verbs/src/pages/pages-calls.ts`                                         |
@@ -46,7 +46,7 @@ Banned synonyms: "document" for an article, "slide deck" for a tab of slides (it
 3. `withBackgroundPatch`, `sameFill` and `PAGE_GRADIENT_ANGLE` now live in
    `packages/document/src/page-paint.ts`; the editor's paint module re-exports them and keeps only what
    draws.
-4. The tab transforms inside `apps/live/hooks/editor/page-edits.ts` became pure functions in
+4. The tab transforms inside `apps/editor/hooks/editor/page-edits.ts` became pure functions in
    `packages/document/src/pages-edits.ts`. Each takes the tab and answers `{ tab } | { refused: PageEditRefusal }`
    (`PageEditRefusal = 'locked' | 'no_orientation' | 'size_not_offered' | 'pattern_not_offered' | 'page_limit' |
 'last_page' | 'unknown_page'`); the hook keeps telemetry, toasts, `onGoTo`, `claimArticleLayout` and debug
@@ -130,7 +130,7 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
 ### The editor grows an article for an absent writer
 
 - `RoomOp` `article` gains `agent?: true`, set by the api relay only.
-- `apps/live/lib/article/article-grow-store.ts` holds the marks (tab and flow). `room-op-apply.ts` marks a flow on
+- `apps/editor/lib/article/article-grow-store.ts` holds the marks (tab and flow). `room-op-apply.ts` marks a flow on
   an incoming `article` op with `agent: true`; `useArticles` marks every flow of the active tab as it loads.
 - `useArticles` `onLayout` with `!layout.local` calls `growForAbsentWriter`: a marked flow, once web fonts are
   loaded (`document.fonts.status`), clears its mark and, when the pure decision says so, ticks

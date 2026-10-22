@@ -6,13 +6,13 @@ Derived from [Colour picker](../colour-picker.md). Engineering detail only; desi
 
 | Spec term            | Identifier                                                                                                                                                                                      |
 | -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| colour picker        | `ColourPicker` (`apps/live/components/colour/ColourPicker.tsx`)                                                                                                                                 |
-| swatch               | `ColourSwatch`, `SwatchChip` (`apps/live/components/colour/ColourSwatch.tsx`)                                                                                                                   |
+| colour picker        | `ColourPicker` (`apps/editor/components/colour/ColourPicker.tsx`)                                                                                                                                 |
+| swatch               | `ColourSwatch`, `SwatchChip` (`apps/editor/components/colour/ColourSwatch.tsx`)                                                                                                                   |
 | standard colours     | `STANDARD_COLOUR_NAMES`, `standardColours(tone, appearance)` (`packages/project/src/standard-colours.ts`)                                                                                      |
 | tone                 | `StandardTone = 'strong' \| 'soft'`                                                                                                                                                             |
 | theme colours        | the host's `ColourOption[]` passed as `theme`, named by `colourWords` (`packages/project/src/quick-swatches.ts`)                                                                               |
-| Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/project`), `projectColours(...)` (`apps/live/lib/project-colours.ts`), `useProjectColours()` (`apps/live/hooks/ui/`) |
-| custom colour editor | `CustomColourEditor` (`apps/live/components/colour/CustomColourEditor.tsx`)                                                                                                                     |
+| Custom colours       | `Tab.customColours`, `customColoursOf` / `withCustomColour` (`packages/project`), `projectColours(...)` (`apps/editor/lib/project-colours.ts`), `useProjectColours()` (`apps/editor/hooks/ui/`) |
+| custom colour editor | `CustomColourEditor` (`apps/editor/components/colour/CustomColourEditor.tsx`)                                                                                                                     |
 | skins                | inline `ColourPicker`; row (`ColourRow`); `ColourField`; `ColourSwatchButton`, `useColourWell`; all popovers are `ColourPopover`                                                                |
 | no colour            | a leading `ColourOption` with `none: true` (`noColour(id, label)`)                                                                                                                              |
 
@@ -44,7 +44,7 @@ min(chroma * SOFT_CHROMA_SCALE, SOFT_MAX_CHROMA), hue)`; grey at chroma 0.
 - `type-changes.ts` `colourOf`: any `#rrggbb`, else `type_change_invalid` ("is not a colour").
 - MCP `plan-schema.ts`: `color` and `colourArg` describe "a #rrggbb colour" with four examples.
 
-### `apps/live/components/colour`
+### `apps/editor/components/colour`
 
 ```ts
 type ColourOption = { id: string; colour: string; label: string; none?: boolean };
@@ -110,7 +110,7 @@ ColourPicker({
 
 ## Data and persistence
 
-- No new stored field. `applyStrokeColorToEl` / `applyTextColorToEl` (`apps/live/lib/style-presets.ts`) store any pen
+- No new stored field. `applyStrokeColorToEl` / `applyTextColorToEl` (`apps/editor/lib/style-presets.ts`) store any pen
   name by name where the element has `penColour` / `penTextColour` (shape, arrow, freehand; text, sticky), else its
   light hex; Ink leaves a nameless element unchanged.
 - `customSwatches` and `whiteboardYourColours` stay in the `UserPreferences` type, marked dead, so stored blobs load;
@@ -122,7 +122,7 @@ ColourPicker({
 - `addCustomColour(hex)` on the editor state (`hooks/editor/useAddCustomColour.ts`): `tickTabs` on the active tab
   (no history step), a no-op without edit rights or when nothing changes. `ColourPicker` calls it, lower-cased, on the
   custom editor's **Use**, before `onPick`; outside an `EditorContext` there is none.
-- `projectColours(tabs, offered = [], firstTabId?)` (`apps/live/lib/project-colours.ts`): `customColoursOf` of
+- `projectColours(tabs, offered = [], firstTabId?)` (`apps/editor/lib/project-colours.ts`): `customColoursOf` of
   `firstTabId`'s tab, then the others in tab order; leaves out `offered`; deduped; stops at `YOUR_COLOURS_MAX`
   (= `CUSTOM_COLOURS_MAX`). Never reads elements. `useProjectColours(offered?)` memoises on the
   editor's `tabs`, the active tab id and the joined `offered`; with no editor context, `[]`. `ColourPicker` also leaves
@@ -153,7 +153,7 @@ from typed constants; nothing is injected as markup.
 
 ## Presentation and UX
 
-Constants (`apps/live/components/colour/colour-metrics.ts`):
+Constants (`apps/editor/components/colour/colour-metrics.ts`):
 
 | Constant                 | Value | Why                           |
 | ------------------------ | ----- | ----------------------------- |
@@ -186,12 +186,12 @@ Picks are reported by each surface's own write path (`track('Element', 'Changed'
 | --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | ten standard colours, both tones, readable                | `packages/project/src/standard-colours.test.ts`                                                                                            |
 | Grey is a stock colour, not hued                          | `packages/project/src/pen-colours.test.ts`                                                                                                 |
-| one Tab stop, arrows wrap, Home/End                       | `apps/live/components/colour/ColourPicker.test.tsx`                                                                                         |
+| one Tab stop, arrows wrap, Home/End                       | `apps/editor/components/colour/ColourPicker.test.tsx`                                                                                         |
 | pick, custom Use, value matching, yours cap               | `ColourPicker.test.tsx`                                                                                                                     |
 | preview and revert                                        | `ColourPicker.test.tsx`                                                                                                                     |
 | skins open, pick closes, Escape refocuses                 | `ColourSkins.test.tsx`                                                                                                                      |
-| custom colours kept and listed                            | `packages/project/src/custom-colours.test.ts`, `apps/live/lib/project-colours.test.ts`                                                    |
-| no new pickers: no colour well, editor only in the picker | `apps/live/components/colour/one-picker.test.ts`                                                                                            |
+| custom colours kept and listed                            | `packages/project/src/custom-colours.test.ts`, `apps/editor/lib/project-colours.test.ts`                                                    |
+| no new pickers: no colour well, editor only in the picker | `apps/editor/components/colour/one-picker.test.ts`                                                                                            |
 | element menu rows                                         | `components/palette/context-menu-input-rows.test.tsx`                                                                                       |
 | Quick Style rows, More colours, keys                      | `components/canvas/QuickStylePanel.test.tsx`, `hooks/canvas/useQuickStyle.test.tsx`                                                         |
 | Plan surfaces                                             | `ColourSwatches.test.tsx`, `ItemFieldEditor.colour.test.tsx`, `PlanColumnPopover.colour.test.tsx`, `packages/items/src/item-colour.test.ts` |

@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { Dialog, keyboardBandStyles } from './Dialog';
 
-// The shared dialog shell (docs/specs/007-editor/live-app.md "A dialog closes from the backdrop
+// The shared dialog shell (docs/specs/007-editor/editor-app.md "A dialog closes from the backdrop
 // only on a press that starts there").
 
 afterEach(cleanup);
@@ -36,7 +36,7 @@ describe('Dialog backdrop', () => {
 });
 
 // A fake on-screen keyboard: the visual viewport shrinks under the window, the window itself does not
-// (docs/specs/007-editor/live-app.md "A dialog stays above the on-screen keyboard").
+// (docs/specs/007-editor/editor-app.md "A dialog stays above the on-screen keyboard").
 type FakeViewport = EventTarget & {
   height: number;
   width: number;

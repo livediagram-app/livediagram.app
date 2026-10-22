@@ -9,10 +9,10 @@ Derived from [Tags](../tags.md). Implementation detail only; design lives in the
 | Tag           | `Tag` `{ id, name, colour, createdAt }`                  | `packages/api-schema/src/tags.ts`       |
 | Link          | `TagLink` `{ tagId, documentId }`; table `document_tags` | api-schema, migration `0094_tags.sql`   |
 | Tag list      | `TagsList` `{ tags, links }`                             | `GET /api/tags`                         |
-| Tag picker    | `TagPicker`, opened through `openPicker(target)`         | `apps/live/components/tags/`            |
-| Chip / dots   | `TagChip`, `DocumentTagChips`, `DocumentTagDots`         | `apps/live/components/tags/TagChip.tsx` |
-| Tags page     | `SelectedNode { kind: 'tags'; id?: string }`, `TagsPane` | `apps/live/app/explorer/tags/`          |
-| Panel section | `PanelSection { kind: 'tags' }`, `PanelTagsSection`      | `apps/live/components/panels/`          |
+| Tag picker    | `TagPicker`, opened through `openPicker(target)`         | `apps/editor/components/tags/`            |
+| Chip / dots   | `TagChip`, `DocumentTagChips`, `DocumentTagDots`         | `apps/editor/components/tags/TagChip.tsx` |
+| Tags page     | `SelectedNode { kind: 'tags'; id?: string }`, `TagsPane` | `apps/editor/app/explorer/tags/`          |
+| Panel section | `PanelSection { kind: 'tags' }`, `PanelTagsSection`      | `apps/editor/components/panels/`          |
 
 No synonyms: never "label" or "category" in code.
 
@@ -88,11 +88,11 @@ Every write carries `owner_id` in its statement (the insert selects from the cal
 | Schema: uniqueness, limit, owner, cascades, trash, merge, plans | `apps/api/src/db/tags.test.ts`                                                                   |
 | Routes and refusals                                             | `apps/api/src/routes/tags.test.ts`                                                               |
 | Owner-keyed ledger                                              | `apps/api/src/db/account-owner-columns.test.ts`                                                  |
-| Optimistic writes and reverts                                   | `apps/live/components/tags/useDocumentTagsState.test.tsx`                                        |
-| Picker                                                          | `apps/live/components/tags/TagPicker.test.tsx`                                                   |
-| Chips, dots, delete copy                                        | `apps/live/components/tags/TagChip.test.tsx`                                                     |
-| Colour by appearance                                            | `apps/live/components/tags/tag-colour.test.ts`                                                   |
-| Offline carry-over                                              | `apps/live/lib/offline/offline-convert.test.ts`                                                  |
+| Optimistic writes and reverts                                   | `apps/editor/components/tags/useDocumentTagsState.test.tsx`                                        |
+| Picker                                                          | `apps/editor/components/tags/TagPicker.test.tsx`                                                   |
+| Chips, dots, delete copy                                        | `apps/editor/components/tags/TagChip.test.tsx`                                                     |
+| Colour by appearance                                            | `apps/editor/components/tags/tag-colour.test.ts`                                                   |
+| Offline carry-over                                              | `apps/editor/lib/offline/offline-convert.test.ts`                                                  |
 | Routes, sidebar rows, panel sections                            | `routes.test.ts`, `sidebar-structure.test.ts`, `panel-sections.test.ts`, `ExplorerRail.test.tsx` |
 
 ## Constants and configuration

@@ -2,7 +2,7 @@
 // app's search + category/browse listings AND the editor's search-panel "Help"
 // group (docs/specs/008-canvas/canvas-and-palette.md + docs/specs/018-help/contextual-help-links.md). It lives in a shared package because the two
 // consumers are separate builds: apps/help renders browse/search/breadcrumbs
-// from it, and apps/live derives its searchable help catalogue from it
+// from it, and apps/editor derives its searchable help catalogue from it
 // (lib/help-search.ts), so every article is findable from the canvas without
 // hand-maintaining a second list.
 //

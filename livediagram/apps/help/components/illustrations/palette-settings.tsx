@@ -1,6 +1,6 @@
 // Palette behaviour scenes for the Palette Settings articles (Quick-add on Hover): the quick-add
 // "+" menu opened by hovering. The Settings dialog panes those articles also show live in
-// settings-dialog.tsx. Labels are lifted from apps/live: the quick-add options from
+// settings-dialog.tsx. Labels are lifted from apps/editor: the quick-add options from
 // components/canvas/quick-connect-options.tsx.
 
 import { Scene, Shape, SelectionBox } from './primitives';

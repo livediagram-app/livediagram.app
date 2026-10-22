@@ -21,7 +21,7 @@ toolbar beside a selected element.
 | Surface                                                                | Where the button sits                                     | Who sees it                                  |
 | ---------------------------------------------------------------------- | --------------------------------------------------------- | -------------------------------------------- |
 | [Card type editor](../026-plan/item-types.md#editing-a-type)           | The editor's title row                                    | Whoever can open the editor (an Editor)      |
-| [Share dialog](live-app.md#share-dialog)                               | The dialog's title row (not on the offline gate)          | The owner (only the owner can open it)       |
+| [Share dialog](editor-app.md#share-dialog)                               | The dialog's title row (not on the offline gate)          | The owner (only the owner can open it)       |
 | [Dashboard Settings](../026-plan/plan-tabs.md#dashboard-settings)      | The settings panel's title row                            | An Editor (only an Editor sees the settings) |
 | [Photo import review](../021-event-storming/event-storming.md#show-me) | The review's top-left corner, once the stickies are found | Whoever reaches the review (edit access)     |
 | [Page panel](pages-tour.md#where-it-appears)                           | The page panel's title row, on every unlocked page        | An Editor (only an Editor has the panel)     |
@@ -78,7 +78,7 @@ Completed, Skipped) on the telemetry dashboard beside the card type tour's, and 
 
 ## Code
 
-`apps/live/components/tour/ShowMe.tsx` holds the button (`ShowMeButton`) and the running tour (`ShowMeStage`);
+`apps/editor/components/tour/ShowMe.tsx` holds the button (`ShowMeButton`) and the running tour (`ShowMeStage`);
 each surface keeps its steps in `<surface>-tour-steps.ts` and its literal telemetry in `<Surface>Tour.tsx`, so
 the dashboard's emitter scan reads every event. The engine scrolls each step's control into view in its scrolling
 panel (`revealInScrollers`, `tour-reveal.ts`, [Mechanics](editor-tour.md#mechanics)); a step never scrolls itself. A surface whose steps depend on what is there (a second tab, an empty slot, a box found) fixes

@@ -42,7 +42,7 @@ on:
         description: >-
           Baked into the live build as NEXT_PUBLIC_MCP_ORIGIN. Empty falls
           back to the hosted https://mcp.livediagram.app (see
-          apps/live/lib/mcp-config.ts).
+          apps/editor/lib/mcp-config.ts).
         type: string
         default: ''
     secrets:
@@ -146,8 +146,8 @@ jobs:
         # at this step. Repo secret because the user doesn't want
         # the value in source even though it's publishable — set in
         # GitHub → Settings → Secrets → Actions. Unset is fine: the
-        # ClerkProvider becomes a pass-through and the live app
-        # runs in guest-only mode (see apps/live/lib/clerk-config.ts).
+        # ClerkProvider becomes a pass-through and the editor app
+        # runs in guest-only mode (see apps/editor/lib/clerk-config.ts).
         # Staging passes its test tenant's `pk_test_*` key here, so a
         # staging sign-in can never touch a production user.
         env:
@@ -155,10 +155,10 @@ jobs:
           # Show the "Continue with Google" OAuth button on the sign-in
           # / get-started pages. Plain public flag, not a secret. Only takes
           # effect when the Clerk key above is also set and Google SSO is
-          # enabled in the Clerk dashboard (see apps/live/lib/clerk-config.ts
+          # enabled in the Clerk dashboard (see apps/editor/lib/clerk-config.ts
           # + docs/specs/014-identity/auth-and-guest-access.md).
           NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED: 'true'
-          # Which MCP host the live app points at. Empty in production (the
+          # Which MCP host the editor app points at. Empty in production (the
           # app's own default is the hosted one); staging passes
           # mcp-staging.livediagram.app so a staging OAuth flow stays inside
           # staging (docs/specs/016-platform/staging-environment.md).
@@ -195,7 +195,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: live-out
-          path: apps/live/out
+          path: apps/editor/out
           retention-days: 1
 
       - name: Upload help build
@@ -327,7 +327,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: pnpm exec wrangler deploy ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
-  deploy-live:
+  deploy-editor:
     name: Deploy live
     # After the api, so a new editor never calls an api that lacks its routes
     # (docs/specs/016-platform/deployment.md, "Renaming migrations").
@@ -357,10 +357,10 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           name: live-out
-          path: apps/live/out
+          path: apps/editor/out
 
       - name: Deploy to Cloudflare Workers
-        working-directory: apps/live
+        working-directory: apps/editor
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -478,7 +478,7 @@ jobs:
             | pnpm exec wrangler secret put COMMUNITY_KEY ${WRANGLER_ENV:+--env "$WRANGLER_ENV"}
 
       # Runs straight before the deploy, after the secret syncs, so the time the
-      # live worker runs against a schema newer than its code is only the deploy
+      # editor worker runs against a schema newer than its code is only the deploy
       # itself (docs/specs/016-platform/deployment.md, "Renaming migrations").
       # Apply any pending D1 migrations before the new worker code is
       # deployed. Idempotent: wrangler tracks applied migrations in a
@@ -606,7 +606,7 @@ jobs:
     name: Deploy router
     # Router has service bindings to all six path-routed workers, so they
     # must exist before it deploys.
-    needs: [deploy-marketing, deploy-live, deploy-api, deploy-help, deploy-community]
+    needs: [deploy-marketing, deploy-editor, deploy-api, deploy-help, deploy-community]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # The router is what makes the hostname serve the new code, so it is the

@@ -86,10 +86,10 @@ snapEdge)` with `lead` from the raw pointer, so the square survives the snap; wi
 
 ## Interfaces and contracts
 
-- `apps/live/lib/resize-geometry.ts` (re-exported from `lib/canvas.ts`): `nextBounds`,
+- `apps/editor/lib/resize-geometry.ts` (re-exported from `lib/canvas.ts`): `nextBounds`,
   `constrainedBounds`, `leadingAxis`, `minUniformScale`, `snapLeadingAxis(candidate, handle, lead,
 snapEdge, minScale = 0)`, `unionResizeMember`, `ResizeAxis`. All pure.
-- `apps/live/components/canvas/SelectionGripsLayer.tsx`: `SelectionGripsLayer({ onHosts, isoDepth,
+- `apps/editor/components/canvas/SelectionGripsLayer.tsx`: `SelectionGripsLayer({ onHosts, isoDepth,
 children })`, `SelectionGripsContext` (`SelectionGripHosts | null`, `{ box: HTMLElement; arrows:
 SVGGElement }`), `BoxGripsPortal({ children })`, `ArrowGripsPortal({ arrowId, children })` (wraps
   its children in `<g transform="translate(shiftX 0)">` from `useInsertShift().xFor(arrowId)`),
@@ -98,7 +98,7 @@ SVGGElement }`), `BoxGripsPortal({ children })`, `ArrowGripsPortal({ arrowId, ch
 onBeginDrag })` in `element-parts.tsx`.
 - `MenuFlyoutSection` treats a press inside `[data-grips-for]` as a press on the element, as it
   treats `[data-element-id]`, so an open flyout stays open when a handle is pressed.
-- `apps/live/hooks/canvas/boxed-drag-resolve.ts`: `resolveBoxedResize({ elements, startBounds,
+- `apps/editor/hooks/canvas/boxed-drag-resolve.ts`: `resolveBoxedResize({ elements, startBounds,
 primaryId, mode, dx, dy, shiftHeld, dragAspectLocked, guidesOn })` returns `{ boundsById, guides }`
   or null for `move`, a missing start box, or a multi-selection without a corner.
 

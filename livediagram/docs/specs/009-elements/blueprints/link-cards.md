@@ -19,19 +19,19 @@ Scope, by file:
 | `apps/api/src/routes/unfurl.ts`                          | `handleUnfurl`, `isBlockedHost`, `parsePublicHttpUrl`, `buildUnfurlResult` |
 | `apps/api/src/index.ts`                                  | Dispatch of `unfurl`                                                       |
 | `apps/api/wrangler.toml`                                 | `UNFURL_RATE_LIMITER` (production and `[env.staging]`)                     |
-| `apps/live/lib/api/unfurl.ts`                            | `apiUnfurl`: fail-soft client                                              |
-| `apps/live/hooks/canvas/useElementLinks.ts`              | `applyElementLink`: sets the link, then fetches and commits `meta`         |
-| `apps/live/lib/url-safety.ts`                            | `normaliseUrl`, `isSafeFollowUrl`                                          |
-| `apps/live/components/canvas/LinkCardView.tsx`           | Card face: banner, favicon, title, destination, "Open link" row            |
-| `apps/live/components/canvas/element-variant.ts`         | The card chrome: 10 px radius, 1 px border, fill                           |
-| `apps/live/components/canvas/BoxedElementView.tsx`       | Excludes link cards from the corner link badge                             |
-| `apps/live/components/canvas/useBoxedElementGestures.ts` | Double-click → `onEditLink`                                                |
-| `apps/live/components/canvas/EditorCanvasHost.tsx`       | `onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}`             |
-| `apps/live/components/dialogs/LinkPickerDialog.tsx`      | The shared link editor                                                     |
-| `apps/live/components/palette/palette-tile-defs.tsx`     | `tools:link-card` tile                                                     |
-| `apps/live/app/document/[id]/useElementCreation.ts`      | `addLinkCard`: arms the draw gesture                                       |
-| `apps/live/hooks/canvas/useShapeDrawing.ts`              | Commit: `track('Element', 'Added', 'LinkCard')`                            |
-| `apps/live/lib/search.ts`                                | Palette search entry                                                       |
+| `apps/editor/lib/api/unfurl.ts`                            | `apiUnfurl`: fail-soft client                                              |
+| `apps/editor/hooks/canvas/useElementLinks.ts`              | `applyElementLink`: sets the link, then fetches and commits `meta`         |
+| `apps/editor/lib/url-safety.ts`                            | `normaliseUrl`, `isSafeFollowUrl`                                          |
+| `apps/editor/components/canvas/LinkCardView.tsx`           | Card face: banner, favicon, title, destination, "Open link" row            |
+| `apps/editor/components/canvas/element-variant.ts`         | The card chrome: 10 px radius, 1 px border, fill                           |
+| `apps/editor/components/canvas/BoxedElementView.tsx`       | Excludes link cards from the corner link badge                             |
+| `apps/editor/components/canvas/useBoxedElementGestures.ts` | Double-click → `onEditLink`                                                |
+| `apps/editor/components/canvas/EditorCanvasHost.tsx`       | `onEditLink={isReadOnly ? undefined : setLinkPickerOpenForId}`             |
+| `apps/editor/components/dialogs/LinkPickerDialog.tsx`      | The shared link editor                                                     |
+| `apps/editor/components/palette/palette-tile-defs.tsx`     | `tools:link-card` tile                                                     |
+| `apps/editor/app/document/[id]/useElementCreation.ts`      | `addLinkCard`: arms the draw gesture                                       |
+| `apps/editor/hooks/canvas/useShapeDrawing.ts`              | Commit: `track('Element', 'Added', 'LinkCard')`                            |
+| `apps/editor/lib/search.ts`                                | Palette search entry                                                       |
 
 ## Domain and naming
 
@@ -156,7 +156,7 @@ export function isBlockedHost(hostname: string): boolean;
 export function parsePublicHttpUrl(raw: string): URL | null;
 export function buildUnfurlResult(collected: CollectedMeta, finalUrl: string): UnfurlResult;
 
-// apps/live/lib/api/unfurl.ts: null on any error or non-2xx
+// apps/editor/lib/api/unfurl.ts: null on any error or non-2xx
 export function apiUnfurl(url: string): Promise<UnfurlResult | null>;
 ```
 
@@ -266,9 +266,9 @@ LinkUnfurled` exist.
 | og:\* precedence, relative resolution, favicon fallback | `buildUnfurlResult` suite                                   | `apps/api/src/routes/unfurl.test.ts`             |
 | Rate limit, redirect re-check, non-HTML, timeout, cap   | none (GB16)                                                 |                                                  |
 | 280×120 factory, no link or meta                        | `createLinkCard is a 280x120 boxed bookmark…`               | `packages/document/src/factories.test.ts`        |
-| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/live/lib/draw-commit.test.ts`              |
-| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/live/lib/draw-mode.test.ts`                |
-| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/live/lib/element-telemetry.test.ts`        |
+| Drawn to size                                           | `draws a link card to the dragged box`                      | `apps/editor/lib/draw-commit.test.ts`              |
+| Draw banner copy                                        | `drawBannerMessage` case                                    | `apps/editor/lib/draw-mode.test.ts`                |
+| Telemetry token `LinkCard`                              | `elementTelemetryType` case                                 | `apps/editor/lib/element-telemetry.test.ts`        |
 | Boxed                                                   | `isBoxed is true for every boxed-element kind…`             | `packages/document/src/geometry.test.ts`         |
 | No inline text                                          | `is false for label-less kinds…`                            | `packages/document/src/element-has-text.test.ts` |
 | Shadow supported                                        | `supportsShadow` suite                                      | `packages/document/src/shadow.test.ts`           |

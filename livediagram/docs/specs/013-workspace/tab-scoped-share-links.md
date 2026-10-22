@@ -113,7 +113,7 @@ A session's scope and code come from its room ticket, minted a moment before the
 
 ## Testing
 
-`apps/live/e2e/tab-scoped-share.spec.ts` drives the whole path: the owner scopes a link in the Share dialog, a visitor opens it in a second browser, no response or realtime frame carries the other tabs, and rescoping to All tabs reloads the visitor into every tab. The e2e stack proxies the realtime room's WebSocket for this.
+`apps/editor/e2e/tab-scoped-share.spec.ts` drives the whole path: the owner scopes a link in the Share dialog, a visitor opens it in a second browser, no response or realtime frame carries the other tabs, and rescoping to All tabs reloads the visitor into every tab. The e2e stack proxies the realtime room's WebSocket for this.
 
 ## Telemetry
 

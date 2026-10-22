@@ -54,21 +54,21 @@ jobs:
         uses: ./.github/actions/next-cache-restore
         with:
           name: live
-          paths: apps/live/.next/cache
+          paths: apps/editor/.next/cache
 
       # Built the way production builds it: a clean env with no NEXT_PUBLIC_API_BASE / Clerk keys,
       # so it calls same-origin `/api` (the e2e stack proxies it) and runs in guest mode. A build
       # id, so the stale build spec can make the server report a newer one
       # (docs/specs/016-platform/stale-builds.md).
-      - name: Build live app
+      - name: Build editor app
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/live build
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/editor build
 
       # Playwright's webServer boots scripts/e2e-stack.mjs (api worker on local D1 + the static
       # serve). CI=1 makes it always start fresh.
       - name: Run smoke shard
-        run: pnpm --filter @livediagram/live test:e2e:smoke --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+        run: pnpm --filter @livediagram/editor test:e2e:smoke --shard=${{ matrix.shard }}/${{ strategy.job-total }}
 
       # Every shard builds the same thing: one of them saves it.
       - name: Save build cache
@@ -79,13 +79,13 @@ jobs:
       # leaves the trace of its failing attempt (retain-on-first-failure) in test-results, and a
       # finished run copies it into its report. always(): a timed-out job is cancelled, not failed.
       - name: Upload report with traces
-        if: always() && hashFiles('apps/live/test-results/**/trace.zip', 'apps/live/playwright-report/data/*.zip') != ''
+        if: always() && hashFiles('apps/editor/test-results/**/trace.zip', 'apps/editor/playwright-report/data/*.zip') != ''
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report-shard-${{ matrix.shard }}
           path: |
-            apps/live/playwright-report
-            apps/live/test-results
+            apps/editor/playwright-report
+            apps/editor/test-results
           retention-days: 7
 
   sites:
@@ -107,7 +107,7 @@ jobs:
         with:
           name: sites
           paths: |
-            apps/live/.next/cache
+            apps/editor/.next/cache
             apps/help/.next/cache
             apps/community/.next/cache
             apps/marketing/.next/cache
@@ -120,33 +120,33 @@ jobs:
         env:
           NEXT_PUBLIC_BUILD_ID: e2e-build
         run: >-
-          bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/live --filter @livediagram/help
+          bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/editor --filter @livediagram/help
           --filter @livediagram/community build
 
       - name: Build marketing
         run: bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/marketing build
 
       - name: Run sites audit
-        run: pnpm --filter @livediagram/live test:e2e:sites
+        run: pnpm --filter @livediagram/editor test:e2e:sites
       # The armed guest-signature specs (docs/specs/003-system-architecture/e2e-smoke.md "Armed guest
       # signatures") reuse this job's guest-mode build, on their own stack with enforcement on.
       - name: Run armed guest-signature specs
         if: always()
-        run: pnpm --filter @livediagram/live test:e2e:armed
+        run: pnpm --filter @livediagram/editor test:e2e:armed
 
       - name: Save build cache
         uses: ./.github/actions/next-cache-save
 
       - name: Upload report with traces
-        if: always() && hashFiles('apps/live/test-results*/**/trace.zip', 'apps/live/playwright-report*/data/*.zip') != ''
+        if: always() && hashFiles('apps/editor/test-results*/**/trace.zip', 'apps/editor/playwright-report*/data/*.zip') != ''
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report-sites
           path: |
-            apps/live/playwright-report
-            apps/live/test-results
-            apps/live/playwright-report-armed
-            apps/live/test-results-armed
+            apps/editor/playwright-report
+            apps/editor/test-results
+            apps/editor/playwright-report-armed
+            apps/editor/test-results-armed
           retention-days: 7
 
   signed-in:
@@ -169,26 +169,26 @@ jobs:
         uses: ./.github/actions/next-cache-restore
         with:
           name: live-clerk-stub
-          paths: apps/live/.next/cache
+          paths: apps/editor/.next/cache
 
       # The signed-in specs (docs/specs/014-identity/blueprints/profile-picture.md) need Clerk ON, a
       # build-time switch, so they run against their own export with a stub key and a fake
       # window.Clerk; no Clerk account or secret is involved.
-      - name: Build live app with Clerk stubbed
-        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/live build:clerk-stub
+      - name: Build editor app with Clerk stubbed
+        run: bash scripts/next-build-cold-retry.sh pnpm --filter @livediagram/editor build:clerk-stub
 
       - name: Run signed-in specs
-        run: pnpm --filter @livediagram/live test:e2e:clerk-stub
+        run: pnpm --filter @livediagram/editor test:e2e:clerk-stub
 
       - name: Save build cache
         uses: ./.github/actions/next-cache-save
 
       - name: Upload report with traces
-        if: always() && hashFiles('apps/live/test-results-clerk-stub/**/trace.zip', 'apps/live/playwright-report-clerk-stub/data/*.zip') != ''
+        if: always() && hashFiles('apps/editor/test-results-clerk-stub/**/trace.zip', 'apps/editor/playwright-report-clerk-stub/data/*.zip') != ''
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report-clerk-stub
           path: |
-            apps/live/playwright-report-clerk-stub
-            apps/live/test-results-clerk-stub
+            apps/editor/playwright-report-clerk-stub
+            apps/editor/test-results-clerk-stub
           retention-days: 7

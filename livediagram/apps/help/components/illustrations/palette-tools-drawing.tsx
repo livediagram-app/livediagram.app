@@ -10,7 +10,7 @@ import { PaletteCategoryPanel } from './palette-rows';
 /** The palette's Draw category with the Highlighter row armed, the "Drag to
  *  highlight" banner up, and the one stroke it lays down mid-drag across a
  *  label that stays legible through it. The rows are the real layout: caption,
- *  blurb and key (apps/live/components/palette/PaletteToolRows.tsx). */
+ *  blurb and key (apps/editor/components/palette/PaletteToolRows.tsx). */
 export function HighlighterTile() {
   return (
     <Scene w={420} h={258}>

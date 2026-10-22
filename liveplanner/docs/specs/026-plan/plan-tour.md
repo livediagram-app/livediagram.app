@@ -102,7 +102,7 @@ recorded as tour content (`plan-tour-content` in localStorage) while it exists, 
 
 A welcome card, then the track's steps, then its outro card. The bookend cards sit outside the step count. Copy
 is one or two short sentences per step and speaks of the person's board or sheet ("your board"); the exact
-strings live in `apps/live/components/tour/plan-tour-steps.ts`.
+strings live in `apps/editor/components/tour/plan-tour-steps.ts`.
 
 0. The offer, a centred card named for its track, never the mode: eyebrow **Boards tour** and title **Getting
    started with boards?** over a board whose card moves to the next column; eyebrow **Sheets tour** and title

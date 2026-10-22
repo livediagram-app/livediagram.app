@@ -124,7 +124,7 @@ type ElementLink =
   | { kind: 'url'; url: string }; // external address, opens in a new tab
 ```
 
-Persistence shape lives in [Api](../015-api/api.md) (per-tab rows + `documents` rows in D1). The `apps/live/lib/api-client.ts` boundary serialises this same in-memory shape against the api worker.
+Persistence shape lives in [Api](../015-api/api.md) (per-tab rows + `documents` rows in D1). The `apps/editor/lib/api-client.ts` boundary serialises this same in-memory shape against the api worker.
 
 ### Colours are colours
 
@@ -152,7 +152,7 @@ Element IDs are document-scoped so cross-tab links are stable even if elements m
 
 ## UI implications
 
-- The tab bar sits at the **bottom** of the editor (see [07-live-app.md](../007-editor/live-app.md)). The active tab fills the canvas area.
+- The tab bar sits at the **bottom** of the editor (see [07-editor-app.md](../007-editor/editor-app.md)). The active tab fills the canvas area.
 - A `+` button on the tab bar adds a new empty tab and switches to it.
 - **Rename** a tab by double-clicking its label (inline input — Enter commits, Escape cancels). Also available via the per-tab ellipsis menu.
 - **Reorder** tabs by dragging a tab to a new position in the bar.

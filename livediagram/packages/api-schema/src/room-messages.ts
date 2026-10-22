@@ -289,7 +289,7 @@ export type FacilitatorAction =
   // Step down.
   | { action: 'release' }
   // Free an element somebody else is holding through the concurrent-selection
-  // lock (docs/specs/007-editor/live-app.md), so the room can get on. USING the baton rather than moving
+  // lock (docs/specs/007-editor/editor-app.md), so the room can get on. USING the baton rather than moving
   // it, but it rides the same arbitrated channel for the same reason the
   // others do: relayed, it would be a command any peer could issue against any
   // other, and the point is that only the person running the session can.
@@ -339,7 +339,7 @@ export type ServerMessage =
       reason: FacilitatorReason;
       token?: string;
     }
-  // "Your hold on this element has been released" (docs/specs/007-editor/live-app.md + docs/specs/012-collaboration/facilitator.md), sent
+  // "Your hold on this element has been released" (docs/specs/007-editor/editor-app.md + docs/specs/012-collaboration/facilitator.md), sent
   // to the HOLDER'S SOCKET ALONE. Being sent it is the whole of the addressing:
   // the room mints a presence id per socket and never tells a client which one
   // is its own (docs/specs/015-api/public-api-and-tokens.md §6), so a broadcast carrying a target id would reach
@@ -508,7 +508,7 @@ export type RoomOp =
   // `tabId` scopes the selection to the tab it lives on: element ids
   // are only unique per tab in older documents (tab duplication used to
   // copy ids verbatim), so an unscoped selection rendered — and, via
-  // the docs/specs/007-editor/live-app.md concurrent-selection lock, LOCKED — the same-id element
+  // the docs/specs/007-editor/editor-app.md concurrent-selection lock, LOCKED — the same-id element
   // on every other tab too. Optional for wire compatibility: a frame
   // without it is treated as tab-unknown and shown everywhere (the old
   // behaviour).

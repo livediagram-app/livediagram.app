@@ -118,7 +118,7 @@ multi-selection the preset applies to every selected arrow at once.
 - The category renders in both the single-element context menu and the
   multi-selection menu, for the matching element type (shape vs arrow). The
   `ShapePresetsSection` / `ArrowPresetsSection` components in
-  `apps/live/components/palette/PresetSections.tsx` are shared by both menus so
+  `apps/editor/components/palette/PresetSections.tsx` are shared by both menus so
   there is one implementation; the multi menu surfaces a shape section when the
   selection holds any preset-eligible shape and an arrow section when it holds
   any arrow, and the apply / reset handlers are already selection-wide
@@ -128,7 +128,7 @@ multi-selection the preset applies to every selected arrow at once.
   the Animation sections use); a single-kind selection keeps the plain
   **Presets** label.
 - Colour presets are theme-derived via `shapeColorPresets(theme)` in
-  `apps/live/lib/themes.ts` (reusing the existing `tint` / `shade` /
+  `apps/editor/lib/themes.ts` (reusing the existing `tint` / `shade` /
   `isLightColor` colour helpers), so they always track the active theme like
   the colour-picker swatches (`themePresetColors`). Each preset carries a
   stable `id`; `shapeColorPresetById(theme, id)` / `rederiveColorPresetForTheme`
@@ -138,9 +138,9 @@ multi-selection the preset applies to every selected arrow at once.
   override. The `colorPreset` binding lives on `ShapeElement` in
   `packages/project`.
 - Arrow presets are a static preset table in the presets component
-  (`apps/live/components/palette/StylePresets.tsx`); shape style presets are theme-derived
+  (`apps/editor/components/palette/StylePresets.tsx`); shape style presets are theme-derived
   (`shapeColorPresets`), each carrying its border treatment.
-- The element transforms each preset performs live in `apps/live/lib/style-presets.ts`
+- The element transforms each preset performs live in `apps/editor/lib/style-presets.ts`
   (`applyColorPresetToEl` / `applyArrowPresetToEl`),
   shared so the hover preview is byte-for-byte the change the click commits. The
   granular single-field transforms live in the same file
@@ -150,11 +150,11 @@ multi-selection the preset applies to every selected arrow at once.
   `useElementStyle.ts` and the preview/commit pairs in `useStylePreview.ts`, so
   the swatch/tile preview matches its commit exactly.
 - Direct (non-preview) commits go through the selection setters in
-  `apps/live/hooks/canvas/useElementStyle.ts` (`applyShapeColorPresetSelected` /
+  `apps/editor/hooks/canvas/useElementStyle.ts` (`applyShapeColorPresetSelected` /
   `resetShapeStyleSelected` / `applyArrowPresetSelected` /
   `resetArrowStyleSelected`). Hand-editing a
   colour or resetting clears the `colorPreset` binding there.
-- Hover preview is owned by `apps/live/hooks/canvas/useStylePreview.ts`: preview +
+- Hover preview is owned by `apps/editor/hooks/canvas/useStylePreview.ts`: preview +
   revert go through `tickTabs` (present-only, no history); the click
   commit restores the originals into the present, then commits, so the undo
   snapshot is taken from the true pre-hover state. The

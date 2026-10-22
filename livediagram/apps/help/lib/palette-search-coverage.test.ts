@@ -26,11 +26,11 @@ import { searchArticles } from './articles';
 // first version of this guard checked captions alone and would have passed
 // while "hexagon" returned nothing, which is what prompted the split.
 //
-// Reading apps/live from apps/help is the coupling ui-labels-in-articles,
+// Reading apps/editor from apps/help is the coupling ui-labels-in-articles,
 // repo-paths-in-docs and shortcut-coverage already take on: the help centre's
 // findability genuinely depends on the editor's vocabulary.
 const TILE_DEFS = fileURLToPath(
-  new URL('../../live/components/palette/palette-tile-defs.tsx', import.meta.url),
+  new URL('../../editor/components/palette/palette-tile-defs.tsx', import.meta.url),
 );
 
 function paletteNames(): string[] {

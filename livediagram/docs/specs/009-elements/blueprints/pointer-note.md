@@ -8,9 +8,9 @@ the note's own tip. Defaults in [DEFAULTS.md](DEFAULTS.md) as `Dn`.
 | `packages/document/src/pointer-note.ts`                   | Kind guard, tip read / write, leader geometry, tip snapping         |
 | `packages/document/src/attachment.ts`                     | `settleChips` settles a pointer note; `withAttached` carries it     |
 | `packages/document/src/svg-render-pointer-note.ts`        | Headless body: panel, leader, tip                                   |
-| `apps/live/components/canvas/PointerNoteOverlay.tsx`      | Canvas face: leader, tip, the tip handle while selected             |
-| `apps/live/components/palette/PointerNoteMenuSection.tsx` | Detach                                                              |
-| `apps/live/hooks/canvas/usePointerNoteSetters.ts`         | `setPointerTip(id, tipAbs)`: snap, attach or free, one history step |
+| `apps/editor/components/canvas/PointerNoteOverlay.tsx`      | Canvas face: leader, tip, the tip handle while selected             |
+| `apps/editor/components/palette/PointerNoteMenuSection.tsx` | Detach                                                              |
+| `apps/editor/hooks/canvas/usePointerNoteSetters.ts`         | `setPointerTip(id, tipAbs)`: snap, attach or free, one history step |
 
 ## Domain and naming
 
@@ -131,9 +131,9 @@ on key-up.
 | ----------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Settling (I1, I2, deletes, carries) | `packages/document/src/pointer-note.test.ts`                                                                                 |
 | Leader, snapping, export (I3)       | same                                                                                                                         |
-| Face, tip handle drag and keys      | `apps/live/components/canvas/PointerNoteOverlay.test.tsx`                                                                    |
-| Menu section                        | `apps/live/components/palette/PointerNoteMenuSection.test.tsx`                                                               |
-| E5, no turn kept or offered         | `packages/document/src/unturnable-rotation.test.ts`; `apps/live/components/palette/MultiPlacementSections.rotation.test.tsx` |
+| Face, tip handle drag and keys      | `apps/editor/components/canvas/PointerNoteOverlay.test.tsx`                                                                    |
+| Menu section                        | `apps/editor/components/palette/PointerNoteMenuSection.test.tsx`                                                               |
+| E5, no turn kept or offered         | `packages/document/src/unturnable-rotation.test.ts`; `apps/editor/components/palette/MultiPlacementSections.rotation.test.tsx` |
 
 ## Constants and configuration
 

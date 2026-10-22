@@ -32,8 +32,8 @@ export default defineConfig({
     '**/dist/**',
     '**/build/**',
     '**/.next/**',
-    // Dev-server cache dir for `apps/live`, separated from `.next/` to keep `next dev` from
-    // racing `next build` on the same files. See `apps/live/next.config.ts` + the dev script.
+    // Dev-server cache dir for `apps/editor`, separated from `.next/` to keep `next dev` from
+    // racing `next build` on the same files. See `apps/editor/next.config.ts` + the dev script.
     '**/.next-dev/**',
     // The licences generator's analysis of each Next app
     // (docs/specs/002-project-scope/third-party-licences.md): build output.

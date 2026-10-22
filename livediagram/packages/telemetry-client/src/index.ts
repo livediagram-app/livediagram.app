@@ -1,5 +1,5 @@
 // The shared browser telemetry engine (docs/specs/017-telemetry/telemetry.md), extracted from the
-// duplicated emitters in apps/live and apps/help: three-field
+// duplicated emitters in apps/editor and apps/help: three-field
 // {category, action, type} events buffered and flushed — batched — to the
 // liveworkspace telemetry service (liveworkspace/docs/telemetry.md), POST
 // <url>/api/events, on a short timer and on page-hide (via

@@ -15,19 +15,19 @@ Scope, by file:
 | `packages/document/src/colors.ts`                            | `supportsColours` false; `SELF_PAINTING_SHAPES` membership                                    |
 | `packages/document/src/validate.ts`                          | Snippet length, closed language set, closed scheme ids                                        |
 | `packages/document/src/svg-render-shapes.ts`                 | `svgCodeBlockShape`, `wrapLine`: the headless render                                          |
-| `apps/live/lib/code-tokens.ts`                               | `tokenizeCode`: the lazy tokenizer chunk                                                      |
-| `apps/live/lib/code-highlight-registry.ts`                   | `useCodeTokenizer`, `tokenizeLoaded`: memoised dynamic import                                 |
-| `apps/live/components/canvas/CodeBlockView.tsx`              | Canvas card, badge, placeholder, highlighted lines                                            |
-| `apps/live/components/dialogs/CodeEditDialog.tsx`            | Edit code dialog                                                                              |
-| `apps/live/components/dialogs/EditorElementDialogs.tsx`      | Mounts the dialog for `codeEditOpenForId`                                                     |
-| `apps/live/components/canvas/useBoxedElementGestures.ts`     | Double-click routes a code block to `onEditCode`                                              |
-| `apps/live/components/palette/ElementDataSections.tsx`       | The Code section (Tools flyout)                                                               |
-| `apps/live/components/palette/context-menu-data-editors.tsx` | `CodeSummary`: line count, language, Edit Code, Wrap toggle                                   |
-| `apps/live/components/palette/PresetSections.tsx`            | `CodeThemePresetsSection` in the Style band                                                   |
-| `apps/live/lib/style-presets.ts`                             | `applyCodeThemeToEl`                                                                          |
-| `apps/live/hooks/canvas/useDataShapeSetters.ts`              | `setCodeSelected`, `setCodeWrapSelected`                                                      |
-| `apps/live/hooks/canvas/useStylePreview.ts`                  | `previewCodeTheme`, `commitCodeTheme`                                                         |
-| `apps/live/components/palette/palette-tile-defs.tsx`         | Tile `tools:code-block`, section `components`                                                 |
+| `apps/editor/lib/code-tokens.ts`                               | `tokenizeCode`: the lazy tokenizer chunk                                                      |
+| `apps/editor/lib/code-highlight-registry.ts`                   | `useCodeTokenizer`, `tokenizeLoaded`: memoised dynamic import                                 |
+| `apps/editor/components/canvas/CodeBlockView.tsx`              | Canvas card, badge, placeholder, highlighted lines                                            |
+| `apps/editor/components/dialogs/CodeEditDialog.tsx`            | Edit code dialog                                                                              |
+| `apps/editor/components/dialogs/EditorElementDialogs.tsx`      | Mounts the dialog for `codeEditOpenForId`                                                     |
+| `apps/editor/components/canvas/useBoxedElementGestures.ts`     | Double-click routes a code block to `onEditCode`                                              |
+| `apps/editor/components/palette/ElementDataSections.tsx`       | The Code section (Tools flyout)                                                               |
+| `apps/editor/components/palette/context-menu-data-editors.tsx` | `CodeSummary`: line count, language, Edit Code, Wrap toggle                                   |
+| `apps/editor/components/palette/PresetSections.tsx`            | `CodeThemePresetsSection` in the Style band                                                   |
+| `apps/editor/lib/style-presets.ts`                             | `applyCodeThemeToEl`                                                                          |
+| `apps/editor/hooks/canvas/useDataShapeSetters.ts`              | `setCodeSelected`, `setCodeWrapSelected`                                                      |
+| `apps/editor/hooks/canvas/useStylePreview.ts`                  | `previewCodeTheme`, `commitCodeTheme`                                                         |
+| `apps/editor/components/palette/palette-tile-defs.tsx`         | Tile `tools:code-block`, section `components`                                                 |
 | `apps/api/src/ai-prompt.ts`                                  | The AI vocabulary, which omits `code-block`                                                   |
 
 ## Domain and naming
@@ -125,7 +125,7 @@ export type CodeThemeId =
 export function codeTheme(id: string | undefined): CodeTheme;
 export function isCodeThemeId(id: string | undefined): id is CodeThemeId;
 export function svgCodeBlockShape(el: BoxedElement & { type: 'shape' }): string;
-// apps/live
+// apps/editor
 export type CodeTokenKind = 'plain' | 'keyword' | 'string' | 'comment' | 'number';
 export function tokenizeCode(code: string, language: CodeLanguage): CodeToken[][];
 export function tokenizeLoaded(code: string, language: CodeLanguage): CodeToken[][] | undefined;
@@ -214,12 +214,12 @@ The tokenizer and dialog are separate chunks (LCP unaffected). The canvas card i
 | Unknown scheme falls back                       | falls back rather than returning undefined                                 | `packages/document/src/code-themes.test.ts`  |
 | Headless render: card, lines, badge             | renders a code block as the dark card + mono lines                         | `packages/document/src/svg-render.test.ts`   |
 | Headless wraps word-first; off keeps one line   | code block wrapping cases                                                  | `packages/document/src/code-themes.test.ts`  |
-| Preset writes only the scheme                   | sets the scheme on a code block and nothing else                           | `apps/live/lib/style-presets.test.ts`        |
+| Preset writes only the scheme                   | sets the scheme on a code block and nothing else                           | `apps/editor/lib/style-presets.test.ts`        |
 | Tokenizer classes per language                  | none [GE11]                                                                |                                              |
 | Degrades to plain until loaded                  | none [GE11]                                                                |                                              |
 | Tab inserts two spaces; Save is one undo step   | none [GE11]                                                                |                                              |
 | Double-click opens the dialog                   | none [GE11]                                                                |                                              |
-| Dialog suspends at its own boundary             | each carry their own Suspense boundary (ssr: false or a loading component) | `apps/live/lib/dynamic-has-boundary.test.ts` |
+| Dialog suspends at its own boundary             | each carry their own Suspense boundary (ssr: false or a loading component) | `apps/editor/lib/dynamic-has-boundary.test.ts` |
 
 ## Constants and configuration
 

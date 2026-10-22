@@ -57,5 +57,5 @@ small grey text. Every empty state reads alike, wherever it is: an icon in the b
 - `NoMatches` (`@liveplanner/ui`) is the no-results state of a search or a filter: it takes the things' plural
   noun, the words, how many filters, an optional line and an optional clear, and writes the heading with
   `noMatchTitle`. Every search or filter that can come back empty uses it, so the copy cannot drift.
-- `apps/live/empty-states.test.ts` fails the build on a "No <things> yet" or "No <things> found" written as bare JSX
+- `apps/editor/empty-states.test.ts` fails the build on a "No <things> yet" or "No <things> found" written as bare JSX
   text; a canvas element's drawn face (Entity, Estimate, Mood Meter, a board widget's pill) is listed there as exempt.

@@ -175,7 +175,7 @@ underline?, strikethrough?, size? xs|sm|md|lg, color? #rrggbb, link? http(s)/mai
   stored swatch or `undefined`, so a value written before validation (or by hand) never draws.
 - Built-in Project fields: `title, description, status, assignee, priority, color, start, due, labels` (+
   comments). `BUILT_IN_FIELD_IDS` lists `color` after `priority`, before `estimate`.
-- Editor: `apps/live/components/plan/ColourSwatches.tsx` puts Plan on the one colour picker: `TypeColourButton` (a
+- Editor: `apps/editor/components/plan/ColourSwatches.tsx` puts Plan on the one colour picker: `TypeColourButton` (a
   swatch at the end of the type editor's Name field, opening the picker in a popover) and `ColourSelect` (the panel's
   Colour field, None first) (`patch { set: { color } }` or `{ clear: ['color'] }`, tracked `('Plan', 'Changed', 'ProjectColour')`).
   `ColourDot` draws an item's colour (8 px, ringed) beside a Parent chip and a Project swimlane header; the
@@ -350,19 +350,19 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 
 ## Editor slice
 
-- `apps/live/lib/api/items.ts`: `fetchItems(scope)` and `writeItem(scope, write, by)` (one `ItemWrite`: create,
+- `apps/editor/lib/api/items.ts`: `fetchItems(scope)` and `writeItem(scope, write, by)` (one `ItemWrite`: create,
   patch, patches, move, vote, delete; a create of many goes to `/items/bulk` and a patch of many to
   `/items/patches`, each in batches of `ITEM_BULK_MAX`); each dispatches
   `isOfflineId(docId)` to `lib/offline/offline-items.ts`, which applies `applyItemWrite` to the record's store
   inside `serializeOfflineWrite`.
-- `apps/live/hooks/plan/usePlanItems.ts`: `{ store, items, status, self, write, receive, refetch }`. `self` is the
+- `apps/editor/hooks/plan/usePlanItems.ts`: `{ store, items, status, self, write, receive, refetch }`. `self` is the
   person with the hashed id (`itemPersonId` of the editor's self id, the id the api resolves as owner).
   - Optimistic: a write applies `applyItemWrite` locally (creates carry client-made ids, `withCreateIds`), sends,
     then merges the answer. A failed write refetches the store and toasts "Couldn't save that change".
   - Room op `items`: `mergeItemChanges` keeps the higher `rev` per item; `removed` deletes; a rev past
     `serverRevRef + 1`, or an op with no items (a tab-scoped session), refetches (`ITEM_REFETCH_DEBOUNCE_MS`). Room
     resync and reconnect (`onRoomJoined`) refetch.
-- `apps/live/hooks/plan/usePlanSlice.ts` composes the board actions into `PlanContext`; `usePlanPresence` sends
+- `apps/editor/hooks/plan/usePlanSlice.ts` composes the board actions into `PlanContext`; `usePlanPresence` sends
   and hears `plan-presence`.
 - Offline record: `OfflineProjectRecord.items?`, `itemsRev?`, `itemsNextKey?`.
 - Sync to cloud sends `storeAsCreates(items)` (column order kept, votes carried); Take offline fetches the store
@@ -454,25 +454,25 @@ include `fields` or comment text.
 | Validation per kind, every rejection           | `packages/items/src/fields.test.ts`                                                                                                                                                   |
 | Rank always between, stable under repeats      | `rank.test.ts` (property: 1,000 random inserts; 2,000 appends and prepends stay at most 8 digits)                                                                                     |
 | Bulk create grows linearly, keeps column order | `packages/items/src/store-growth.test.ts`; no per-card key query: `apps/api/src/routes/item-routes.test.ts`                                                                           |
-| Write checks shared with offline               | `packages/items/src/write-checks.test.ts`, `apps/live/lib/offline/offline-items.test.ts`                                                                                              |
-| Partial many-item write: answer, client, undo  | `apps/api/src/routes/item-routes.test.ts`, `apps/live/lib/api/items-patches.test.ts`, `apps/live/hooks/plan/usePlanItems.undo.test.ts`                                                |
-| Archive drag-off is one move                   | `apps/live/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                    |
+| Write checks shared with offline               | `packages/items/src/write-checks.test.ts`, `apps/editor/lib/offline/offline-items.test.ts`                                                                                              |
+| Partial many-item write: answer, client, undo  | `apps/api/src/routes/item-routes.test.ts`, `apps/editor/lib/api/items-patches.test.ts`, `apps/editor/hooks/plan/usePlanItems.undo.test.ts`                                                |
+| Archive drag-off is one move                   | `apps/editor/hooks/plan/usePlanBoardDrop.restore.test.ts`, `apps/api/src/routes/item-routes.test.ts`                                                                                    |
 | apply functions                                | `apply.test.ts`                                                                                                                                                                       |
 | Projection: columns, lanes, unplaced, quick    | `board.test.ts`                                                                                                                                                                       |
 | Tab-scoped set                                 | `board.test.ts` (`itemIdsShownOnTab`)                                                                                                                                                 |
 | Routes: gates, rejections, keys, cascade, copy | `apps/api/src/routes/item-routes.test.ts`                                                                                                                                             |
 | Room op redacted for a tab-scoped session      | `apps/api/src/room-scope.test.ts`                                                                                                                                                     |
 | Store transitions, inverses, sync order        | `packages/items/src/store.test.ts`                                                                                                                                                    |
-| Undo interleaving                              | `apps/live/hooks/plan/item-undo-journal.test.ts`                                                                                                                                      |
+| Undo interleaving                              | `apps/editor/hooks/plan/item-undo-journal.test.ts`                                                                                                                                      |
 | Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts`                                                                                                            |
-| Offline store                                  | `apps/live/lib/offline/offline-items.test.ts`                                                                                                                                         |
+| Offline store                                  | `apps/editor/lib/offline/offline-items.test.ts`                                                                                                                                         |
 | Comments field: read-only, budget, restore     | `packages/items/src/comments-field.test.ts`                                                                                                                                           |
 | Thread ops, item writes, redaction, restore    | `packages/project/src/item-comments.test.ts`                                                                                                                                         |
 | Comment routes: gates, own/edit delete, relay  | `apps/api/src/routes/item-comment-routes.test.ts`                                                                                                                                     |
-| Editor comment writes, room merge, refusals    | `apps/live/hooks/plan/usePlanItems.comments.test.ts`, `apps/live/lib/api/items-comments.test.ts`                                                                                      |
-| Panel thread and card count                    | `apps/live/components/plan/ItemComments.test.tsx`                                                                                                                                     |
-| Tab export: items, catalogue, Markdown, layout | `packages/project/src/export-tab-plan.test.ts`, `apps/live/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                         |
-| Tab import: parse, plan, land, report          | `apps/live/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/live/hooks/plan/usePlanTabImport.test.ts`, `apps/live/hooks/persistence/useTabImport.plan.test.ts` |
+| Editor comment writes, room merge, refusals    | `apps/editor/hooks/plan/usePlanItems.comments.test.ts`, `apps/editor/lib/api/items-comments.test.ts`                                                                                      |
+| Panel thread and card count                    | `apps/editor/components/plan/ItemComments.test.tsx`                                                                                                                                     |
+| Tab export: items, catalogue, Markdown, layout | `packages/project/src/export-tab-plan.test.ts`, `apps/editor/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                         |
+| Tab import: parse, plan, land, report          | `apps/editor/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/editor/hooks/plan/usePlanTabImport.test.ts`, `apps/editor/hooks/persistence/useTabImport.plan.test.ts` |
 
 ## Constants and configuration
 

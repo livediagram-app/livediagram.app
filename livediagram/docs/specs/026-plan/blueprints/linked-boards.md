@@ -7,7 +7,7 @@ Derived from [Linked boards](../linked-boards.md).
 | Spec term       | Identifier                                                                                         |
 | --------------- | -------------------------------------------------------------------------------------------------- |
 | linked board    | `PlanBoardSetup.collects?: LinkedRecordKind` (`LINKED_RECORD_KINDS = ['actions']`, packages/items) |
-| Actions board   | `actionsBoardIn(tabs)` (apps/live), `collectingBoard(boards, 'actions')` (packages/items)          |
+| Actions board   | `actionsBoardIn(tabs)` (apps/editor), `collectingBoard(boards, 'actions')` (packages/items)          |
 | linked card     | an item whose `fields.linked` parses (`cardLink`); id `linkedCardId('actions', actionId)`          |
 | link            | `fields.linked = 'actions/<tabId>/<elementId>/<actionId>'` (`LINKED_FIELD`, `linkString`)          |
 | baseline        | `fields.linkedAt` (the action's `updatedAt`) and `fields.linkedRev` (the card's `rev`)             |
@@ -31,19 +31,19 @@ packages/items/src/linked-cards.ts            ids, links, status mapping, linked
 packages/templates/src/linked-board-start.ts  actionsBoardSetup, actionsBoardTab, ACTIONS_BOARD_TITLE
 packages/document/src/collab-index-rows.ts    a Won't Do action indexes as 'done' (closed)
 apps/api/src/db/plan-board-index.ts           CARDS_CTES: `json_extract(i.fields, '$.linked') IS NULL`
-apps/live/hooks/plan/linked-actions.ts        placedActions, actionsBoardIn, unloadedTabIds, applyActionChanges,
+apps/editor/hooks/plan/linked-actions.ts        placedActions, actionsBoardIn, unloadedTabIds, applyActionChanges,
                                               removeAction, restoreAction, goneActionIds (pure)
-apps/live/hooks/plan/useLinkedActionCards.ts  the editor wiring (below)
-apps/live/hooks/plan/usePlanItems.ts          writeQuiet(write, { silent }); onOwnWrite(write, before)
-apps/live/hooks/collab/useEditorActions.ts    wontDoAction; onCreated
-apps/live/app/document/[id]/useCollabDeepLink.ts  returns arrive(link): an Inbox-style landing asked in the editor
-apps/live/components/plan/LinkedActionBanner.tsx  the item panel's banner
-apps/live/components/plan/ItemPanel.tsx       linkedActions prop: banner, read-only Assignee ("Set on the action")
-apps/live/components/plan/duplicate-item.ts   unlinkedFields on Duplicate
-apps/live/components/canvas/ActionPanelFace.tsx  Board chip (BoardChip), closed counts via isClosedAction
-apps/live/components/canvas/collab/action/ActionRow.tsx  the Won't Do row (SlashGlyph)
-apps/live/components/panels/ActionPopover.tsx  Won't Do, View on Board
-apps/live/components/dialogs/AssignActionDialog.tsx  the Status row when editing (SegmentedRadio over ACTION_STATUSES);
+apps/editor/hooks/plan/useLinkedActionCards.ts  the editor wiring (below)
+apps/editor/hooks/plan/usePlanItems.ts          writeQuiet(write, { silent }); onOwnWrite(write, before)
+apps/editor/hooks/collab/useEditorActions.ts    wontDoAction; onCreated
+apps/editor/app/document/[id]/useCollabDeepLink.ts  returns arrive(link): an Inbox-style landing asked in the editor
+apps/editor/components/plan/LinkedActionBanner.tsx  the item panel's banner
+apps/editor/components/plan/ItemPanel.tsx       linkedActions prop: banner, read-only Assignee ("Set on the action")
+apps/editor/components/plan/duplicate-item.ts   unlinkedFields on Duplicate
+apps/editor/components/canvas/ActionPanelFace.tsx  Board chip (BoardChip), closed counts via isClosedAction
+apps/editor/components/canvas/collab/action/ActionRow.tsx  the Won't Do row (SlashGlyph)
+apps/editor/components/panels/ActionPopover.tsx  Won't Do, View on Board
+apps/editor/components/dialogs/AssignActionDialog.tsx  the Status row when editing (SegmentedRadio over ACTION_STATUSES);
                                               SaveActionInput.status, sent only when changed
 ```
 
@@ -160,11 +160,11 @@ narrows a read; it widens nothing.
 | Heal: create, agree, either side wins, baseline | linked-cards.test.ts "healLinkedCards"                                                           |
 | Trash both ways                                 | linked-cards.test.ts "linkedCardGonePatch", "linkedCardsTrashedBy"; useLinkedActionCards.test.ts |
 | Duplicate carries no link                       | linked-cards.test.ts "unlinkedFields"                                                            |
-| Board made once, after a lazy commit            | apps/live/hooks/plan/useLinkedActionCards.test.ts                                                |
+| Board made once, after a lazy commit            | apps/editor/hooks/plan/useLinkedActionCards.test.ts                                                |
 | Unopened tabs read first                        | useLinkedActionCards.test.ts                                                                     |
 | Only an Editor heals or makes the board         | useLinkedActionCards.test.ts "never makes…", "heals nothing…"                                    |
-| Canvas writes                                   | apps/live/hooks/plan/linked-actions.test.ts                                                      |
-| Won't Do on the panel, the Board chip           | apps/live/components/canvas/ActionPanelFace.test.tsx                                             |
+| Canvas writes                                   | apps/editor/hooks/plan/linked-actions.test.ts                                                      |
+| Won't Do on the panel, the Board chip           | apps/editor/components/canvas/ActionPanelFace.test.tsx                                             |
 | Won't Do indexed closed                         | packages/document/src/collab-index-rows.test.ts                                                  |
 | Linked cards off the Inbox                      | apps/api/src/db/activity-cards.test.ts                                                           |
 

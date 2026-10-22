@@ -11,16 +11,16 @@ Scope, by file:
 | `packages/project/src/shape-marker.ts`                       | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
 | `packages/project/src/element-types.ts`                      | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
 | `packages/project/src/collab-shapes.ts`                      | `supportsMarkers`: the menu gate, beside `hasOwnFace`                      |
-| `apps/live/components/canvas/ShapeMarker.tsx`                | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |
-| `apps/live/components/canvas/shape-inline-icon-layout.tsx`   | `ShapeInlineIconLayout`: marker + label group, `MARKER_FIXED_PX`           |
-| `apps/live/components/canvas/BoxedElementView.tsx`           | Resolves `marker` (none for self-drawing shapes)                           |
-| `apps/live/components/canvas/ElementFaceRouter.tsx`          | Inline layout for an icon or a marker, after the face branches             |
-| `apps/live/components/palette/context-menu-rows.tsx`         | `MarkerTiles`: None + five tiles, the Size row                             |
-| `apps/live/components/palette/ElementAppearanceSections.tsx` | Single-element gate `showMarkers`, Text flyout placement                   |
-| `apps/live/components/palette/MultiSelectionContextMenu.tsx` | Multi-selection gate `markerSrc`                                           |
-| `apps/live/lib/style-presets.ts`                             | `applyMarkerToEl`, `applyMarkerSizeToEl`                                   |
-| `apps/live/hooks/canvas/useStylePreview.ts`                  | `previewMarker` / `commitMarker`, `previewMarkerSize` / `commitMarkerSize` |
-| `apps/live/hooks/canvas/useShapeStyleSetters.ts`             | `setMarkerSelected`, `setMarkerSizeSelected`                               |
+| `apps/editor/components/canvas/ShapeMarker.tsx`                | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |
+| `apps/editor/components/canvas/shape-inline-icon-layout.tsx`   | `ShapeInlineIconLayout`: marker + label group, `MARKER_FIXED_PX`           |
+| `apps/editor/components/canvas/BoxedElementView.tsx`           | Resolves `marker` (none for self-drawing shapes)                           |
+| `apps/editor/components/canvas/ElementFaceRouter.tsx`          | Inline layout for an icon or a marker, after the face branches             |
+| `apps/editor/components/palette/context-menu-rows.tsx`         | `MarkerTiles`: None + five tiles, the Size row                             |
+| `apps/editor/components/palette/ElementAppearanceSections.tsx` | Single-element gate `showMarkers`, Text flyout placement                   |
+| `apps/editor/components/palette/MultiSelectionContextMenu.tsx` | Multi-selection gate `markerSrc`                                           |
+| `apps/editor/lib/style-presets.ts`                             | `applyMarkerToEl`, `applyMarkerSizeToEl`                                   |
+| `apps/editor/hooks/canvas/useStylePreview.ts`                  | `previewMarker` / `commitMarker`, `previewMarkerSize` / `commitMarkerSize` |
+| `apps/editor/hooks/canvas/useShapeStyleSetters.ts`             | `setMarkerSelected`, `setMarkerSizeSelected`                               |
 
 ## Domain and naming
 
@@ -155,10 +155,10 @@ Telemetry `track('Element', 'Changed', 'Marker' | 'MarkerSize')` from `commitSty
 
 | Rule                                         | Test                                                                                    | File                                             |
 | -------------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------ |
-| Set and clear a marker                       | sets and clears a marker on the selected shape                                          | `apps/live/hooks/canvas/useElementStyle.test.ts` |
-| Set the size bucket                          | sets the marker size bucket                                                             | `apps/live/hooks/canvas/useElementStyle.test.ts` |
-| Command palette offers / clears markers      | offers the marker catalogue; offers Clear marker and hides the current                  | `apps/live/lib/editor-commands.test.ts`          |
-| Not offered for non-shapes (palette)         | does not offer markers for a non-shape boxed element                                    | `apps/live/lib/editor-commands.test.ts`          |
+| Set and clear a marker                       | sets and clears a marker on the selected shape                                          | `apps/editor/hooks/canvas/useElementStyle.test.ts` |
+| Set the size bucket                          | sets the marker size bucket                                                             | `apps/editor/hooks/canvas/useElementStyle.test.ts` |
+| Command palette offers / clears markers      | offers the marker catalogue; offers Clear marker and hides the current                  | `apps/editor/lib/editor-commands.test.ts`          |
+| Not offered for non-shapes (palette)         | does not offer markers for a non-shape boxed element                                    | `apps/editor/lib/editor-commands.test.ts`          |
 | Self-drawing shapes never draw a marker      | none [GE11]                                                                             |                                                  |
 | Marker sits left of the label, centred alone | none [GE11]                                                                             |                                                  |
 | Menu gate: no self-drawing or own-face kind  | is off for kinds with their own face and for self-drawing kinds; is on for plain shapes | `packages/project/src/collab-shapes.test.ts`     |

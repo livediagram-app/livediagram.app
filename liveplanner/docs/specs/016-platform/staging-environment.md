@@ -24,13 +24,13 @@ runs against the one holding people's projects.
 ### "live" is an app, not an environment
 
 Worth stating once, because the two readings collide constantly in this repo: **`live`
-is the name of the editor app** — `apps/live`, the `liveplanner-live` worker, the
-`LIVE` service binding, the `deploy-live` job. It is a proper noun. The environments
+is the name of the editor app** — `apps/editor`, the `liveplanner-editor` worker, the
+`LIVE` service binding, the `deploy-editor` job. It is a proper noun. The environments
 are **production** and **staging**, and nothing else.
 
-So `deploy-live` deploys the editor, in whichever environment the run targets; there is
+So `deploy-editor` deploys the editor, in whichever environment the run targets; there is
 no "live environment". Phrases like "goes live" are avoided in the deploy workflow for
-exactly this reason — in a file that also contains `deploy-live`, the same word would
+exactly this reason — in a file that also contains `deploy-editor`, the same word would
 be doing two jobs.
 
 Both run in the **same Cloudflare account**, under the same `CF_API_TOKEN` /
@@ -274,7 +274,7 @@ declares, so any var set **only** in the Cloudflare dashboard is wiped on the ne
 deploy unless `keep_vars = true`. So nothing is set only in the dashboard: a var is
 either committed (`[vars]` / `[env.staging.vars]`, every environment's default too) or part of
 the hosted profile, which the deploy sends with `--var` on every run and then reads back
-off the live worker ([Deployment](deployment.md) "Hosted profile"). Either way the
+off the editor worker ([Deployment](deployment.md) "Hosted profile"). Either way the
 environment is reproducible from the repo alone.
 
 The general lesson: **an optional guard that fails open is

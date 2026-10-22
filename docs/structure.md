@@ -27,7 +27,7 @@ I compared each file with the product name ignored, and these counts are from th
 
 |                                                                                                  | identical | changed | only in one |
 | ------------------------------------------------------------------------------------------------ | --------- | ------- | ----------- |
-| `apps/live` (the editor)                                                                         | 2,718     | 1,248   | ~1,080      |
+| `apps/editor` (the editor)                                                                         | 2,718     | 1,248   | ~1,080      |
 | `packages/document`                                                                              | 474       | 169     | 110         |
 | `packages/ui`                                                                                    | 168       | 42      | 23          |
 | `packages/templates`                                                                             | 142       | 95      | 21          |
@@ -52,7 +52,7 @@ liveworkspace/
 │  ├─ document, document-views, edit-operations, agent-verbs, api-schema
 │  ├─ items, sheets, forms, plan-art, templates, template-previews
 │  ├─ ui                           design system: buttons, menus, dialogs, tokens
-│  ├─ workbench                    NEW: the editor shell lifted out of apps/live:
+│  ├─ workbench                    NEW: the editor shell lifted out of apps/editor:
 │  │                               tabs, explorer, panels, chrome, split view, start
 │  │                               screen, toasts, providers. A product hands it the tab
 │  │                               kinds it offers.
@@ -65,12 +65,12 @@ liveworkspace/
 │  ├─ community                    every product's Community listings (docs/community.md there)
 │  └─ home (later)                 one place for all your documents across products
 ├─ livediagram/
-│  ├─ apps/live                    thin: workbench + mode-draw (+ mode-plan for now)
+│  ├─ apps/editor                    thin: workbench + mode-draw (+ mode-plan for now)
 │  ├─ apps/api                     api-core + the diagram-only routes
 │  ├─ apps/…                       marketing, help, mcp, cli, community: product-specific
 │  └─ packages/                    mode-draw (canvas tabs), diagram, diagram-lint, sticky-*
 └─ liveplanner/
-   ├─ apps/live                    thin: workbench + mode-plan
+   ├─ apps/editor                    thin: workbench + mode-plan
    ├─ apps/api                     api-core + the planner-only routes
    └─ apps/…                       marketing, help, mcp, cli
 ```
@@ -97,7 +97,7 @@ Each step is its own PR, and both products build and pass their tests after ever
    Then move.
 3. **The big ones** (`document`, `templates`, `ui`, `api-schema`, `edit-operations`,
    `agent-verbs`), in the same way, one per PR.
-4. **Carve `workbench` out of `apps/live`** one area at a time (`lib/split`, `lib/tags`,
+4. **Carve `workbench` out of `apps/editor`** one area at a time (`lib/split`, `lib/tags`,
    `components/chrome`, the tab system, explorer, …). Each slice is moved once and deleted from
    both apps.
 5. **`api-core`** out of the two `apps/api` Workers.

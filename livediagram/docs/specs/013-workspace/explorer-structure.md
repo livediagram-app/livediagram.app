@@ -268,7 +268,7 @@ Top to bottom:
    shows the picked one.
 4. **The footer**: the product's surfaces as links, one row: **Home** (the landing page), **Explorer** (the Explorer
    page), **Community** (while the Community is on), **Help**. They are the product menu's entries but Telemetry; the editor
-   header carries no product menu ([Live app: header](../007-editor/live-app.md)).
+   header carries no product menu ([Editor app: header](../007-editor/editor-app.md)).
 5. **The sign-in note** for a signed-out guest: one quiet line under the Current Document card ("Keep your work. A free
    account saves it across devices." with **Sign in**, on a phone "Keep your work." with **Sign in** alone so it stays one
    line; on a deployment without sign-in, "No sign-in here. Only this browser can open your documents.": they are saved, but belong to this browser's guest id, so "Browser only" would contradict the card's Private), dismissible as the sign-in

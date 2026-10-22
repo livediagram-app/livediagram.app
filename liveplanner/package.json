@@ -18,8 +18,8 @@
     "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
     "clean": "turbo run clean --filter=@liveplanner/* && rm -rf node_modules",
     "icons:vendor": "pnpm --filter @liveplanner/icons vendor:lucide",
-    "icons:sheet": "pnpm --filter @liveplanner/live icons:sheet",
-    "icons:brand": "pnpm --filter @liveplanner/live icons:brand"
+    "icons:sheet": "pnpm --filter @liveplanner/editor icons:sheet",
+    "icons:brand": "pnpm --filter @liveplanner/editor icons:brand"
   },
   "devDependencies": {
     "@liveplanner/oxlint-config": "workspace:*",

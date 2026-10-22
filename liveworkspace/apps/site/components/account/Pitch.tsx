@@ -78,7 +78,7 @@ export function Pitch({ google }: { google: boolean }) {
         Your liveworkspace account
       </p>
       <h2 className="text-2xl leading-tight font-semibold tracking-tight text-indigo-950 sm:text-4xl lg:text-6xl lg:leading-[1.02] lg:tracking-[-.03em] dark:text-slate-100">
-        One account for every live app.
+        One account for every editor app.
       </h2>
       <ul className="mt-1 flex flex-col gap-2 lg:gap-3">
         {ROWS.map((row, i) => (

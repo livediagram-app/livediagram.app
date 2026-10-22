@@ -29,7 +29,7 @@ being reintroduced. The two that had to be closed deliberately:
   entry: an entry saying "Priya edited Idea Box" beside six anonymous cards is a
   five-second deanonymisation.
 - **The selection lock.** Adding a card does not select the element, so the
-  [Live app](../007-editor/live-app.md) concurrent-selection highlight doesn't put a coloured ring and a name
+  [Editor app](../007-editor/editor-app.md) concurrent-selection highlight doesn't put a coloured ring and a name
   on the box at the moment somebody types into it.
 
 ### The limit, stated plainly

@@ -88,7 +88,7 @@ endpoint's short `Cache-Control`. The labelled boxes drawn before cost about 0.2
 
 ## Renderer sharing (the build's main work)
 
-The SVG renderer currently lives in `apps/live/lib/export-tab.ts` (client-only)
+The SVG renderer currently lives in `apps/editor/lib/export-tab.ts` (client-only)
 and the worker can't import from an app. So the tab→SVG renderer must move into
 a **new shared, DOM-free package** (`@liveplanner/render`), imported by **both**
 the live editor's export and the api worker. What moves: `renderTabToSvg`,

@@ -302,7 +302,7 @@ empty takes its separator with it (the Explorer behind an error screen
 has no project, so no Share / Export). This replaced a **+ New** chip
 whose hover-open popover held only band 1. The
 editor's bottom bar keeps Search, Settings and the appearance
-toggle ([Live app](../007-editor/live-app.md)). Neither carries a link to the source code: it is not public.
+toggle ([Editor app](../007-editor/editor-app.md)). Neither carries a link to the source code: it is not public.
 
 - A "Current Project" card sits at the top. Beneath it, the panel shows
   the sidebar's three groups, Overview, Spaces and More, built from the
@@ -360,7 +360,7 @@ toggle ([Live app](../007-editor/live-app.md)). Neither carries a link to the so
 
 This is the full-page library view. Open to both guests and signed-in
 users: the owner id resolves the same way every other surface in the
-live app does (the account userId when signed in, the `liveplanner:v2:self-id`
+editor app does (the account userId when signed in, the `liveplanner:v2:self-id`
 localStorage UUID otherwise), so a guest sees the projects + folders
 their per-browser id owns. AuthControls in the page header
 surfaces a "Sign in" CTA for guests who want to upgrade. The page is

@@ -12,9 +12,9 @@ images arrive, and when some cannot, see how many and why, never a failed import
 
 ## Where it lives
 
-`apps/live/lib/import-images/`, a folder of small modules, not a package:
+`apps/editor/lib/import-images/`, a folder of small modules, not a package:
 
-- Every consumer is an importer in the live editor (`apps/live/lib/*-import.ts`); no other app
+- Every consumer is an importer in the live editor (`apps/editor/lib/*-import.ts`); no other app
   imports boards.
 - It needs the browser: canvas decoding and encoding (`createImageBitmap`, `<canvas>`), the
   editor's authenticated api client (`apiUploadImage`) and the Offline Mode store check. The MCP

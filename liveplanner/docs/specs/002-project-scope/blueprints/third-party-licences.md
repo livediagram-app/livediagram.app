@@ -32,8 +32,8 @@ silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `Dn`.
 | `apps/marketing/app/sitemap.ts`                                           | Lists `/licences`                                                     |
 | `packages/ui/src/SiteFooter.tsx`                                          | "Licences" footer link; legal strip at AA contrast                    |
 | `packages/ui/src/ShareRail.tsx`                                           | Its "Share" label at AA contrast (found by the page's axe run)        |
-| `apps/live/components/panels/ExplorerHeaderMenu.tsx`                      | "Licences" row                                                        |
-| `apps/live/components/chrome/tab-bar-icons.tsx`                           | `ScaleIcon` (vendored Lucide `scale`, at `MENU_ICON_PX`)              |
+| `apps/editor/components/panels/ExplorerHeaderMenu.tsx`                      | "Licences" row                                                        |
+| `apps/editor/components/chrome/tab-bar-icons.tsx`                           | `ScaleIcon` (vendored Lucide `scale`, at `MENU_ICON_PX`)              |
 | `packages/icons/lucide-manifest.json`                                     | Gains `scale`                                                         |
 | `turbo.json`, `apps/marketing/package.json`, `package.json`, `.gitignore` | Build wiring                                                          |
 

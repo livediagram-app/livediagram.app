@@ -1,7 +1,7 @@
 // Timeline wire format (docs/specs/013-workspace/timeline.md): the event record behind Home, a
 // project's History and a team's Activity.
 //
-// The api worker emits these; the live app's scoped feeds and Home consume
+// The api worker emits these; the editor app's scoped feeds and Home consume
 // them. Kept in its own module rather than piled into index.ts: the
 // timeline has a scope model + an event vocabulary of its own, and
 // both want room to grow without the barrel becoming a catalogue.

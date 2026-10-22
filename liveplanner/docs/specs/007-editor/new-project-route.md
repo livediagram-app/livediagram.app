@@ -6,7 +6,7 @@ project's editor, whose empty first tab opens on Start Planning ([Plan mode](../
 asked. The editor route is editor-only.
 
 > **Routing note (later change, [Router app](../016-platform/router-app.md)):** the `/live` URL prefix was
-> removed — the live app serves at clean routes. So today the editor is
+> removed — the editor app serves at clean routes. So today the editor is
 > `/project/<id>` (not `/live/project/<id>`), `/new` is `/new`, and
 > there is no bare `/live` entry point (`/` is the marketing home). The
 > historical `/live...` URLs below describe the pre-cleanup scheme; map
@@ -75,7 +75,7 @@ Editor URLs use a path segment rather than a query string. `output:
    via `generateStaticParams = [{ id: 'placeholder' }]` on the
    dynamic-segment server page. The page wraps a client `EditorPage`
    component that owns the editor logic.
-2. The live worker (`apps/live/src/worker.ts`) wraps the static-assets
+2. The editor worker (`apps/editor/src/worker.ts`) wraps the static-assets
    binding and rewrites any `/project/<anything>` request to
    `/project/placeholder/`. The browser URL stays `/project/<id>`.
 3. Client code reads `window.location.pathname` to extract the real
@@ -103,7 +103,7 @@ up: Next.js's static export bakes the framework default 404 into
 the `notFound` slot of the layout's flight payload and the client
 router reaches it before any of those interventions can finish.
 
-Working approach: **embrace the trigger**. `apps/live/app/not-found.tsx`
+Working approach: **embrace the trigger**. `apps/editor/app/not-found.tsx`
 exports `<EditorPage />` directly. When the client router fires
 `notFound()` for an unrecognised id, the layout swaps from
 `children` to the `notFound` slot — which is now the editor. The
@@ -212,7 +212,7 @@ Kept on the editor route:
 
 ## `/new` state
 
-The route (`apps/live/app/new/page.tsx`) owns:
+The route (`apps/editor/app/new/page.tsx`) owns:
 
 - The participant-identity bootstrap (same `liveplanner:v2:self-id`
   localStorage key, same `apiLoadSelf` / `apiSaveSelf` API).
@@ -227,7 +227,7 @@ Mode's second effect off):
 
 - **What:** `?template=<kind>` makes that template (`templateKindOf`); anything
   else, a `?template=` naming no known kind included, makes a blank project: one empty tab in the Default theme, in
-  Plan, which opens on Start Planning. Read by `newProjectKind` in `apps/live/lib/new-project-params.ts`, which the
+  Plan, which opens on Start Planning. Read by `newProjectKind` in `apps/editor/lib/new-project-params.ts`, which the
   workspace frame's create in place reads too. A template link fires `UI / Used / TemplateLink`. The marketing site's
   template gallery links every card here ([Marketing site](../019-marketing/marketing-site.md)).
 - **Stored** where [Save Locations → The default depends on who is creating](../006-project/save-locations.md#the-default-depends-on-who-is-creating)
@@ -254,7 +254,7 @@ Mode's second effect off):
 
 `/new` creates as it mounts, so a back/forward-cache restore of it (before its handoff) backs out instead of creating
 again or stranding the person on a frozen screen: to the page of ours that opened it (`history.back()`), else to the
-home page (`backOutTarget`, `apps/live/lib/back-out.ts`), logging `[new] restored, back out <target>`.
+home page (`backOutTarget`, `apps/editor/lib/back-out.ts`), logging `[new] restored, back out <target>`.
 
 ### In-place handoff to the editor
 
@@ -275,7 +275,7 @@ it cannot tell the difference from a direct visit.
   at its "opening" stage until it is.
 - **The opening screen is the editor's outermost Suspense fallback, so no lazy
   piece inside the editor may suspend up to it.** Every `next/dynamic` import
-  in the live app passes `ssr: false` (or a `loading` component), which gives
+  in the editor app passes `ssr: false` (or a `loading` component), which gives
   it a boundary of its own; without one, the first open of Settings or Search
   swapped the whole editor for the opening screen until the dialog's chunk
   landed. `lib/dynamic-has-boundary.test.ts` guards it.
@@ -296,7 +296,7 @@ project"**; everything else stays put.
 - **Surface:** headerless and full height, on the canvas colour
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
   edges and two slowly drifting, blurred brand-tinted glows behind the
-  centre. Dark-aware like every screen ([Live app](live-app.md)).
+  centre. Dark-aware like every screen ([Editor app](editor-app.md)).
 - **Centrepiece:** the shared `DiagramBuildAnimation`, a small live diagram
   being drawn by a collaborator cursor labelled "You": the cursor places a
   card, drags a connector that draws under it to the next card, and so on

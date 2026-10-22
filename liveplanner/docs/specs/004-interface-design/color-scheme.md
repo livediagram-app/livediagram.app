@@ -55,7 +55,7 @@ In dark mode the three surface stops are the blue-slate of the [dark palette](#d
 
 Small text (13 px and under) in the editor's chrome reads at WCAG 2.2 AA, 4.5:1, in light mode: never `slate-300`
 or `slate-400` on a light surface (2.6:1 at best on white), and `slate-600`, not `slate-500`, on a `slate-100` or
-`slate-200` chip or track (`slate-500` there is 4.3:1 and 3.9:1). A test in `apps/live/lib/small-text-contrast.test.ts`
+`slate-200` chip or track (`slate-500` there is 4.3:1 and 3.9:1). A test in `apps/editor/lib/small-text-contrast.test.ts`
 holds the class strings to it. White words on a coloured banner (the sign-in banner, a tour's offer and last card) sit on a colour white reads on at 5.9:1 or more, so their 90% white copy still clears 4.5:1: `brand-700` and darker, or a tab's accent deepened to it.
 
 ## Semantic colors
@@ -76,7 +76,7 @@ Reserved for status — never used decoratively.
   badges, the closing call-to-action band) sits on `brand-700` in light mode, and a control hovers to `brand-800`: white
   on `#0369a1` is 5.9:1 and on `#075985` 7.6:1, both above WCAG 2.2 AA's 4.5:1 for small text. Neither lighter step
   carries white text: white on `brand-500` is 2.8:1 and on `brand-600` 4.1:1. Dark mode keeps its own pairing
-  (`brand-600`, through `SOLID_BRAND_DARK` / `SOLID_BRAND_DARK_CONTROL`, [below](#rules)). `apps/live/app/light-palette.test.ts`
+  (`brand-600`, through `SOLID_BRAND_DARK` / `SOLID_BRAND_DARK_CONTROL`, [below](#rules)). `apps/editor/app/light-palette.test.ts`
   reads every app's and package's source and fails a light `bg-brand-500` or `bg-brand-600` under white text. Tinted
   fills (`brand-500/10`) and decoration with no text on it (progress bars, dots, underlines) keep `brand-500`.
 - **Secondary actions** use a `slate-200` border with `slate-700` text on white. No filled neutrals as buttons.
@@ -84,7 +84,7 @@ Reserved for status — never used decoratively.
   checks, row icons, icon chips on a `brand-50` / `brand-100` tint) is `brand-700` in light mode, and a hover that
   deepens it goes to `brand-800`. `brand-700` reads 5.9:1 on white, 5.6:1 on `brand-50` and 5.2:1 on `brand-100`;
   `brand-600` is 4.1:1 on white and 3.9:1 on `slate-50`, and `brand-500` 2.8:1, both under AA's 4.5:1 for small text.
-  `apps/live/app/light-palette.test.ts` fails a light `text-brand-500` or `text-brand-600` in any app's or package's
+  `apps/editor/app/light-palette.test.ts` fails a light `text-brand-500` or `text-brand-600` in any app's or package's
   source, outside a short list of decorative uses with no text (a loading spinner, a drag ghost, a sparkline).
 - **Links** are `brand-700` with underline on hover.
 - **Focus rings** are 2px `brand-500` with a 2px `brand-100` halo for accessibility.
@@ -189,7 +189,7 @@ Explorer panel and every other page keep Steel.
 - **How.** While the Explorer (or an account or connect page) is mounted, the project root carries `data-palette="midnight"`; under `.dark` that
   attribute retargets the same tokens Steel does (selector `.dark[data-palette='midnight']`, which outranks `.dark`).
   Menus, dialogs and tooltips opened from the Explorer portal to the body and so follow it too. The attribute is set
-  before the first paint and removed when the page unmounts (`useMidnightPalette`, `apps/live/hooks/ui/`).
+  before the first paint and removed when the page unmounts (`useMidnightPalette`, `apps/editor/hooks/ui/`).
 - **Surfaces**
 
   | Token       | Midnight  | Usage                                              |
@@ -221,18 +221,18 @@ Explorer panel and every other page keep Steel.
   tint, never `slate-400` (2.6:1), which stays for icons, placeholders and disabled controls. The public sites
   (marketing, help, telemetry), the New Project wizard and the editor's small and uppercase labels follow
   it (issue #863), held by
-  `apps/live/label-contrast.test.ts`, which fails a class string pairing a small size (`text-xs`, `text-sm`,
+  `apps/editor/label-contrast.test.ts`, which fails a class string pairing a small size (`text-xs`, `text-sm`,
   `text-[9px]` to `text-[13px]`) or `uppercase` with a light-mode `text-slate-400`. Dark mode keeps `slate-400`.
 - **The active tab's label** is its tab's accent, nudged (hue kept, 10% at a time toward black, or white in dark) until
-  it reads at 4.5:1 on the pill's own surface, white or `slate-800` (`legibleColor`, `apps/live/lib/tab-accent.ts`).
+  it reads at 4.5:1 on the pill's own surface, white or `slate-800` (`legibleColor`, `apps/editor/lib/tab-accent.ts`).
 - Never rely on color alone to convey status; pair semantic colors with an icon or label.
-- **Contrast guard (dark mode).** A Playwright audit (`apps/live/e2e/contrast-audit.spec.ts`) walks every visible
+- **Contrast guard (dark mode).** A Playwright audit (`apps/editor/e2e/contrast-audit.spec.ts`) walks every visible
   text node on the New Project wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
   the real background under it, and fails below 4.5:1 (3:1 for large text: 24px, or 18.66px bold). It has no
   allow-list. It covers **dark mode only**: light mode's colours are owned by Thomas
   ([@tommcclean](https://github.com/tommcclean)) under issue #74.
 - **Contrast guard (light mode, brand ramp).** #74's light half is settled: white text on a solid brand fill and brand
-  ink on white are both `brand-700` ([Usage rules](#usage-rules)), held by `apps/live/app/light-palette.test.ts`, which
+  ink on white are both `brand-700` ([Usage rules](#usage-rules)), held by `apps/editor/app/light-palette.test.ts`, which
   reads every app's and package's source and checks the light ramp's ratios against white.
 
 ## Tailwind integration

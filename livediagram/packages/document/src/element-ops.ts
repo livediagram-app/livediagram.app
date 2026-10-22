@@ -11,7 +11,7 @@
 // `ElementOp` in a `{ tabId, op }` frame (see @livediagram/api-schema).
 //
 // Level 0 scope: `update` replaces the whole element by id (simple + correct;
-// two peers editing the same element still last-writer-wins, which the docs/specs/007-editor/live-app.md
+// two peers editing the same element still last-writer-wins, which the docs/specs/007-editor/editor-app.md
 // selection lock covers). Field-level merge of the same element is deferred to
 // the CRDT (Level 2).
 

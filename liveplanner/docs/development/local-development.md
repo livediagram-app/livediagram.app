@@ -43,7 +43,7 @@ Turbo spins up all eight dev servers in parallel:
 | ---------------- | -------------------------------------------------------------------------------------------------- |
 | `apps/router`    | `http://localhost:3100` — **everything on one port**, stitched like production                     |
 | `apps/marketing` | `http://localhost:3101`                                                                            |
-| `apps/live`      | `http://localhost:3102` (clean routes: /new, /explorer, ...)                                       |
+| `apps/editor`      | `http://localhost:3102` (clean routes: /new, /explorer, ...)                                       |
 | `apps/help`      | `http://localhost:3104/help`                                                                       |
 | `apps/api`       | `http://localhost:8887/api`                                                                        |
 | `apps/mcp`       | `http://localhost:8888` (MCP server, [MCP server](../specs/015-api/mcp-server.md); signed-in only) |
@@ -53,7 +53,7 @@ The `router` dev server (`wrangler dev --env local`, port 3100) gives you the pr
 **Use port 3100 unless you have a reason not to.** Each app's own port still serves its pages, but only the router puts the API on the same origin. The frontends call `NEXT_PUBLIC_API_BASE`, defaulting to the relative `/api` — correct in production and behind the router, and a dead end on an app's own port, where nothing serves `/api` (these are static exports; there are no Next API routes, see [Architecture](architecture.md)). So the editor on `http://localhost:3102` cannot reach the api worker until you tell it where the worker is:
 
 ```sh
-# apps/live/.env.local  (gitignored; see apps/live/.env.example)
+# apps/editor/.env.local  (gitignored; see apps/editor/.env.example)
 NEXT_PUBLIC_API_BASE=http://localhost:8887/api
 ```
 
@@ -68,7 +68,7 @@ The editor works in pure-guest mode without any auth setup: `pnpm dev` and open 
 ## Scoping commands to one workspace
 
 ```sh
-pnpm --filter @liveplanner/live dev
+pnpm --filter @liveplanner/editor dev
 pnpm --filter @liveplanner/api test
 pnpm --filter @liveplanner/marketing build
 ```
@@ -87,10 +87,10 @@ Run from the repo root:
 | `pnpm lint`                                                    | oxlint across the repo (`turbo run lint`).                                                                                                                                                                                                                                                                                                                                            |
 | `pnpm typecheck`                                               | `tsc --noEmit` across every workspace (`turbo run typecheck`).                                                                                                                                                                                                                                                                                                                        |
 | `pnpm test`                                                    | Vitest across every workspace that has tests (`turbo run test`).                                                                                                                                                                                                                                                                                                                      |
-| `pnpm --filter @liveplanner/live perf:canvas`                  | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/live/test-results/perf/`. Needs a fresh `next build`; set `E2E_LIVE_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev`. Reports, never fails on a miss. |
-| `pnpm --filter @liveplanner/live test:e2e`                     | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                          |
-| `pnpm --filter @liveplanner/live test:e2e:signed-in`           | The signed-in specs (`apps/live/e2e/signed-in/`) against `.next/out-signed-in/`; run `pnpm --filter @liveplanner/live build:signed-in` first. Boots its own stack on `:3115` / `:8888` / `:3116`.                                                                                                                                                                                     |
-| `pnpm --filter @liveplanner/live test:e2e:armed`               | The armed guest-signature specs (`apps/live/e2e/armed/`) with guest signature enforcement on, against the guest-mode `out/`. Boots its own stack on `:3017` / `:8789` / `:3018`.                                                                                                                                                                                                      |
+| `pnpm --filter @liveplanner/editor perf:canvas`                  | The canvas performance probe ([Canvas performance](../specs/008-canvas/canvas-performance.md)): builds the 1,000-element reference board, traces every gesture at 4x CPU and writes the budget table to `apps/editor/test-results/perf/`. Needs a fresh `next build`; set `E2E_EDITOR_PORT` / `E2E_API_PORT` / `E2E_BASE_URL` to run beside a `pnpm dev`. Reports, never fails on a miss. |
+| `pnpm --filter @liveplanner/editor test:e2e`                     | Playwright end-to-end suite ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)); reuses a running `pnpm dev` or boots its own stack. Set `E2E_WEBKIT=1` (after `npx playwright install webkit`) to also run the image import spec in WebKit.                                                                                                                          |
+| `pnpm --filter @liveplanner/editor test:e2e:signed-in`           | The signed-in specs (`apps/editor/e2e/signed-in/`) against `.next/out-signed-in/`; run `pnpm --filter @liveplanner/editor build:signed-in` first. Boots its own stack on `:3115` / `:8888` / `:3116`.                                                                                                                                                                                     |
+| `pnpm --filter @liveplanner/editor test:e2e:armed`               | The armed guest-signature specs (`apps/editor/e2e/armed/`) with guest signature enforcement on, against the guest-mode `out/`. Boots its own stack on `:3017` / `:8789` / `:3018`.                                                                                                                                                                                                      |
 | `pnpm --filter @liveplanner/cli build`                         | Bundle the CLI into `apps/cli/dist/liveplanner.mjs` (see [Running the CLI from source](#running-the-cli-from-source-optional)).                                                                                                                                                                                                                                                       |
 | `pnpm format`                                                  | Prettier write across the repo.                                                                                                                                                                                                                                                                                                                                                       |
 | `pnpm format:check`                                            | Prettier check (this is what CI runs).                                                                                                                                                                                                                                                                                                                                                |
@@ -121,7 +121,7 @@ The editor works without sign-in. To exercise the signed-in code paths, run live
 3. Drop the values into the two env files:
 
    ```sh
-   # apps/live/.env.local (gitignored)
+   # apps/editor/.env.local (gitignored)
    NEXT_PUBLIC_SIGN_IN_ENABLED=true
 
    # apps/api/.dev.vars (gitignored)
@@ -158,12 +158,12 @@ both at a scratch directory to keep a test run apart from your own sign-in.
 ```sh
 pnpm test                                # everything
 pnpm --filter @liveplanner/api test      # one workspace
-pnpm --filter @liveplanner/live exec vitest   # watch mode while developing
+pnpm --filter @liveplanner/editor exec vitest   # watch mode while developing
 ```
 
 Tests live alongside the code they cover, as `*.test.ts` / `*.test.tsx` files. The test runner is [Vitest](https://vitest.dev) with the shared config from `@liveplanner/vitest-config`. See [Testing](../specs/003-system-architecture/testing.md) for the testing contract.
 
-Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @liveplanner/live test:e2e:workbench`. It rebuilds `apps/live/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3021`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/live/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/project/**`) the stack serves from that one page, as the live worker does.
+Workbench embeds have an opt-in end-to-end run ([Workbench embeds](../specs/013-workspace/workbench-embeds.md)): `pnpm --filter @liveplanner/editor test:e2e:workbench`. It rebuilds `apps/editor/out` with the test-only session bridge (`NEXT_PUBLIC_E2E_AUTH=1`), then boots the e2e stack with `E2E_WORKBENCH=1` on its own ports (live 3021, api 8791, marketing 3022): the stack acts as the accounts Worker (as under `E2E_ACCOUNTS_STUB`, minting access tokens on `/e2e/token`) and gives the api worker `APP_BASE_URL=http://localhost:3021`, so its workbench and pairing URLs point at the live server. The spec serves a fake workbench (`apps/editor/e2e/fixtures/fake-workbench.html`) from `127.0.0.1` on a free port, pairs it on the pairing page, and frames `/embed/workbench` in it; `workbench-workspace.spec.ts` pairs it again for the whole workspace and frames `/embed/workbench/explorer`, whose places (`/embed/workbench/explorer/**`, `/embed/workbench/project/**`) the stack serves from that one page, as the editor worker does.
 
 ## Serving the editor beside a running stack
 
@@ -171,13 +171,13 @@ The e2e stack (`scripts/e2e-stack.mjs`) can serve the built editor a second
 time, beside a running stack:
 
 ```bash
-E2E_LIVE_PORT=3402 E2E_API_PORT=8887 E2E_LIVE_ONLY=1 node scripts/e2e-stack.mjs
+E2E_EDITOR_PORT=3402 E2E_API_PORT=8887 E2E_EDITOR_ONLY=1 node scripts/e2e-stack.mjs
 ```
 
-`E2E_LIVE_ONLY=1` serves the static editor only, proxying to the api already
+`E2E_EDITOR_ONLY=1` serves the static editor only, proxying to the api already
 on `E2E_API_PORT`.
 
-`E2E_LIVE_OUT=<dir>` serves another export of the live app (the signed-in specs use
+`E2E_EDITOR_OUT=<dir>` serves another export of the editor app (the signed-in specs use
 `.next/out-signed-in`), and `E2E_ACCOUNTS_STUB=1` makes the stack stand in for the accounts Worker:
 the api verifies access tokens the stack mints on `/e2e/token?sub=user_…` ([End-to-end tests](../specs/003-system-architecture/e2e-smoke.md)).
 
@@ -189,7 +189,7 @@ the api verifies access tokens the stack mints on `/e2e/token?sub=user_…` ([En
 
   Next 16 also writes `next-env.d.ts` into whichever app you run it from, gitignored on purpose: it names the active distDir inside itself, so dev and build would otherwise rewrite it over each other, and each app's tsconfig already picks up the Next types without it being tracked. Next can also generate an `AGENTS.md` + `CLAUDE.md` pair of agent instructions; the shared config turns that off (`agentRules: false`), because the repo's agent instructions are written by hand in the root `AGENTS.md`. Any old generated pair left in an app folder stays gitignored and can be deleted.
 
-  The webpack escape hatch is still there — `pnpm --filter @liveplanner/live dev:webpack` boots the editor on webpack, and `scripts/next-dev.mjs` honours `--webpack` from any app. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default: Turbopack became the default precisely because webpack's HMR kept desynchronising here and serving `__webpack_modules__[moduleId] is not a function` until someone wiped `.next`. If you find yourself needing the hatch, that is worth a spec note rather than a habit. The editor on webpack also runs without the React Compiler, whose native Rust port is Turbopack-only ([React state and effects](../specs/003-system-architecture/react-state-and-effects.md)), so a render bug seen only on one bundler may be the compiler.
+  The webpack escape hatch is still there — `pnpm --filter @liveplanner/editor dev:webpack` boots the editor on webpack, and `scripts/next-dev.mjs` honours `--webpack` from any app. It exists for the case where Turbopack genuinely doesn't support something the app needs, and it is a diagnostic rather than a default: Turbopack became the default precisely because webpack's HMR kept desynchronising here and serving `__webpack_modules__[moduleId] is not a function` until someone wiped `.next`. If you find yourself needing the hatch, that is worth a spec note rather than a habit. The editor on webpack also runs without the React Compiler, whose native Rust port is Turbopack-only ([React state and effects](../specs/003-system-architecture/react-state-and-effects.md)), so a render bug seen only on one bundler may be the compiler.
 
 - **`/licences` needs its generated data.** `pnpm dev` does not run the generator (it takes about 20 seconds), so the marketing dev server fails that one page with `LicencesManifestMissing` until you run `pnpm licences` once. Don't run `pnpm licences` while a `next build` of the editor, help centre or telemetry dashboard is running: Next's analyzer shares an app's Turbopack build cache (`.next/cache`), and two processes on it corrupt it. `pnpm build` orders them for you.
 

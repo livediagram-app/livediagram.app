@@ -144,7 +144,7 @@ export function mayRunSession(state: FacilitatorState, presenceId: string): bool
 }
 
 /**
- * May this session free an element somebody else is holding (docs/specs/007-editor/live-app.md's
+ * May this session free an element somebody else is holding (docs/specs/007-editor/editor-app.md's
  * concurrent-selection lock)?
  *
  * Deliberately the SAME rule as `mayRunSession` rather than a stricter

@@ -120,7 +120,7 @@ Response for **both modes**: `Content-Type: text/event-stream`, OpenAI SSE forma
 - `clean`: elements to **replace by ID** (same IDs as input; new IDs = append).
 - `ask`: SSE text deltas rendered straight into the panel as they arrive.
 
-**Client-side normalisation.** As elements are parsed out of the stream (`extractElementsFromBuffer`, `apps/live/lib/api/ai.ts`), each shape is normalised so the result renders consistently: a shape with no `textSize` (or `"scale"`) is pinned to `"md"`. Without this the canvas default for an unset size is `'scale'` (auto-fit), so a generated node with no explicit size balloons its label to fill the box while sized siblings stay small — the classic "inconsistent font sizes" output. The model's explicit `sm`/`md`/`lg` hierarchy is preserved; only missing / `scale` sizes are rewritten. The system prompt is also strict that every shape must carry an explicit `textSize` (never omit, never `scale`) and that siblings at the same tier share one size, but the normalisation is the safety net regardless of what the model returns.
+**Client-side normalisation.** As elements are parsed out of the stream (`extractElementsFromBuffer`, `apps/editor/lib/api/ai.ts`), each shape is normalised so the result renders consistently: a shape with no `textSize` (or `"scale"`) is pinned to `"md"`. Without this the canvas default for an unset size is `'scale'` (auto-fit), so a generated node with no explicit size balloons its label to fill the box while sized siblings stay small — the classic "inconsistent font sizes" output. The model's explicit `sm`/`md`/`lg` hierarchy is preserved; only missing / `scale` sizes are rewritten. The system prompt is also strict that every shape must carry an explicit `textSize` (never omit, never `scale`) and that siblings at the same tier share one size, but the normalisation is the safety net regardless of what the model returns.
 
 ## Deterministic auto-layout
 
@@ -176,7 +176,7 @@ gets the worker-wide `bad_request` 400 every owner-scoped route sends.
 
 **`off_topic` is not one of them.** A prompt the model judges off-topic still returns **200**: the
 streamed body carries `"offTopic": true`, and the editor turns that into a local `off_topic` error
-for the AI panel to render (`apps/live/lib/api/ai.ts`). A client reading only the envelope will
+for the AI panel to render (`apps/editor/lib/api/ai.ts`). A client reading only the envelope will
 never see it, and must look at the body.
 
 ## Whose model? The key says.
