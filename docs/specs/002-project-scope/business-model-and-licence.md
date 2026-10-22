@@ -1,6 +1,6 @@
 # Business model + licence
 
-liveplanner is **proprietary software** run as one hosted service at [liveplanner.app](https://liveplanner.app). It is **free to use**: there is no paid tier and no plan to introduce one. Its source is not public.
+liveplanner is **proprietary software** run as one hosted service at [liveplanner.app](https://liveplanner.app) (not deployed yet). It is **free to use**: there is no paid tier and no plan to introduce one. Its source is not public.
 
 ## Licence
 
@@ -20,7 +20,7 @@ These are the claims the product makes about itself, and each holds without anyo
 - **Free.** Every feature is available to every user, at no cost.
 - **No trackers and no ads.** No third-party analytics, advertising or tracking scripts; product telemetry is anonymous and published on the public dashboard ([Telemetry](../017-telemetry/telemetry.md)).
 - **Real-time collaboration** for everyone, signed in or not ([Auth + guest access](../014-identity/auth-and-guest-access.md)).
-- **Your data is yours to take.** Documents export in open formats, and the Privacy Policy says what is stored and why.
+- **Your data is yours to take.** Projects export in open formats, and the Privacy Policy says what is stored and why.
 
 ## Implications for how we build
 

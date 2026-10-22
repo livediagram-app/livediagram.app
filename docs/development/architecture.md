@@ -1,11 +1,11 @@
 # Architecture
 
-A pnpm + Turborepo monorepo: eight Cloudflare-deployed apps, one distributed command-line app and thirty shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
+A pnpm + Turborepo monorepo: seven apps built for Cloudflare, one distributed command-line app and the shared packages. Everything runs on Cloudflare Workers (Static Assets for the Next.js apps); there's no Node-hosted backend.
 
 ```
 apps/
   marketing/    static landing site (Next.js export, /)
-  live/         the editor (Next.js export; clean routes)
+  live/         the planner: Explorer + project editor (Next.js export; clean routes)
   telemetry/    public anonymous-events dashboard (Next.js export, /telemetry)
   help/         help centre (Next.js export + MDX, /help)
   api/          REST + WebSocket worker (D1 + Durable Objects + R2, /api)
@@ -14,7 +14,7 @@ apps/
   cli/          the liveplanner command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             shared UI primitives + chrome icons (Brand, Timeline, CloseIcon, etc.)
-  document/       document data model (Tab, Element types + helpers)
+  document/       project data model (Tab, Element types + helpers)
   icons/          icon catalogues (line-art + Technology marks) + SVG markup builders
   templates/      template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ per-template preview SVGs (editor template starts + marketing template gallery)

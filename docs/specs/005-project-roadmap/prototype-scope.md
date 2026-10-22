@@ -1,118 +1,123 @@
 # Build phase
 
-The frontend-only prototype phase ended once the API app landed. This spec captures **where we are now** and **what's still ahead**, so nobody has to reverse-engineer the timeline from AGENTS.md and git history.
+liveplanner is a fork of livediagram cut down to its Plan mode and the core experience around it
+([Scope](../002-project-scope/product-scope.md)). This spec captures **where we are now** and **what's still ahead**,
+so nobody has to reverse-engineer the timeline from AGENTS.md and git history.
 
 ## Where we are now
 
-Eight apps, all deployable to Cloudflare Workers (with Static Assets for the five Next.js apps):
+**Not deployed.** Nothing runs at liveplanner.app yet. The Cloudflare resource ids in every wrangler config are
+placeholders for the liveplanner account, the Google client ids are empty, and the staging deploy, CLI publish and MCP
+registry workflows run only by hand ([Deployment](../016-platform/deployment.md)). The stack runs locally on its own
+ports (router 3100, marketing 3101, live 3102, telemetry 3103, help 3104, api 8887, mcp 8888), so it sits beside a
+livediagram checkout ([Local development](../../development/local-development.md)).
 
-- **marketing**: static landing site at `/`.
-- **live**: the diagram editor (clean routes, no `/live` prefix). Statically exported Next.js.
-- **telemetry**: public anonymous-events dashboard at `/telemetry`. Statically exported Next.js. Reads aggregate counts from the api worker's D1 events table. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
-- **help**: the help centre at `/help`. Statically exported Next.js with MDX articles.
-- **api**: Cloudflare Worker holding the REST endpoints + Durable Object realtime room. D1 is the durable store.
-- **mcp**: Cloudflare Worker at its own host, `mcp.liveplanner.app`, that connects the editor to AI tools ([MCP server](../015-api/mcp-server.md)).
-- **router**: Worker that stitches marketing, live, telemetry, help and api under one hostname.
+Eight apps, all built for Cloudflare Workers (with Static Assets for the five Next.js apps):
 
-The editor is real:
+- **marketing**: the static landing site at `/`, pitching a planner of boards, sheets, dashboards and forms.
+- **live**: the planner: the Explorer and the project editor, at clean routes (no `/live` prefix).
+- **telemetry**: the public anonymous-events dashboard at `/telemetry` ([Telemetry](../017-telemetry/telemetry.md)).
+- **help**: the help centre at `/help`, statically exported with MDX articles.
+- **api**: the Worker holding the REST endpoints and a Durable Object realtime room per project; D1 is the durable store.
+- **mcp**: the Worker at its own host, `mcp.liveplanner.app`, that gives AI tools the project, board, card, sheet and
+  form tools ([MCP server](../015-api/mcp-server.md)).
+- **router**: the Worker that stitches marketing, live, telemetry, help and api under one hostname.
+- **cli**: `liveplanner`, the command line agents and scripts read and change projects with ([CLI](../015-api/cli.md)).
 
-- **Canvas primitives**: shapes (geometric primitives plus frames, device mockups for wireframing, progress bars / rings, star ratings, timelines, pie / bar / line charts, syntax-highlighted code blocks, and tickable checklists, plus a curated single-colour icon catalogue and a ~190-strong colour-emoji sticker set, see [Stickers](../010-palette/stickers.md)), tables, sticky notes, text, images, arrows (straight / curved / angled with draggable curve / elbow handles, configurable thickness + arrowhead size, optional labels), a click-to-place polygon / polyline tool ([Polygon tool](../008-canvas/polygon-tool.md)), comment threads, per-element links (including link-to-tab) + locks, and drop shadows with presets + sliders (see [Element shadows](../008-canvas/element-shadows.md)).
-- **Flowcharts**: a chart grown from the keyboard (Tab the next step, Enter a parallel one) in the classic step types, laid out again after every change, with Yes / No decision exits, loops routed round the side and optional swimlanes; the flowchart templates are live charts. See [The flowchart](../009-elements/flowchart.md).
-- **Web components**: elements that lay themselves out (banner, callout, stat row, process, header, hero); groups are gone. See [Web components are elements; groups are gone](../009-elements/web-components-and-no-groups.md).
-- **Multi-select**: marquee drag, plain-click, shift-click, format painter.
-- **Layers**: per-tab Photoshop-style layers with a dockable Layers panel (per-layer previews, hide, lock, rename, drag-to-restack); Bring to Front / Send to Back move elements between layers, and hidden layers stay out of exports. See [Layers](../006-document/layers.md).
-- **Rotation**: any boxed element tilts about its centre to a preset 45° angle from the right-click Rotation menu or the search palette's Rotate actions; the angle round-trips through copy / paste / duplicate / save ([Canvas and palette](../008-canvas/canvas-and-palette.md)).
-- **Templates**: a hundred and forty themed starters across fourteen categories grouped by the job to be done (pinned by `apps/live/lib/templates.test.ts`) (Planning, Finance, Spreadsheets, Forms, Workshops, Brainstorm, Timelines, Flowcharts, Strategy, Org Charts, Design, Presentations, Technical, Quizzes & Games), from Blank, Flowchart, Kanban, and SWOT to Gantt, ER diagram, sequence diagram, system architecture, and three UI wireframes. The `/new` wizard asks only for a mode; an empty tab opens on its mode's start (Start Diagramming, Start a Workshop, Start Making Pages, Start Planning, [Template starts](../007-editor/start-diagramming.md)), and each mode has its own tour (Diagram, Plan, Workshop, Pages).
-- **Editor modes**: every general tab switches between **Diagram**, **Draw**, **Workshop**, **Pages** and **Plan** beside the page switcher; whiteboarding is a mode, not a tab kind ([Editor modes](../007-editor/editor-modes.md)).
-- **Plan mode** ([Plan mode](../026-plan/plan-mode.md)): the fourth editor mode, for running work on boards. A
-  **Plan board** draws a document's **items** (tasks, bugs, notes, ideas, kept in their own D1 table with an open
-  field bag, or inside an offline document) as columns of cards: drag between columns and rows, WIP limits, Add Card
-  (pick a card type, then name it in the item panel), an item panel, voting and hide-writing for retros, presence on cards, one undo
-  timeline with the canvas, ten Plan templates (boards set up for their use, opening on example cards), and item verbs for the CLI and MCP
-  ([Items](../026-plan/items.md), [Plan board](../026-plan/plan-board.md)).
-- **Sheets** ([Sheet](../029-sheets/sheet.md)): a Plan-mode spreadsheet tab on the canvas, kept in its own D1 store:
-  cells, 157 functions (reading other sheets on the tab and Plan cards), number formats, borders, merges,
-  freeze, sort, filter, find and replace, copy and paste with Google Sheets and Excel, CSV in and out, live for
-  everyone with one undo timeline, maximised like a board, and sheet tools for the CLI and MCP.
-- **Forms** ([Forms](../030-forms/forms.md)): a Plan-mode Form tab built in place from seven starters, ten question
-  types and sections, each answer mapped to the card's title, description or a field (Multiple Choice and Rating
-  joined the card field kinds), published as a public link anyone can fill in without an account; every response
-  becomes a card in the board column the form names, with the Inbox, a New mark and an email to hear of it.
-- **Actions board** ([Linked boards](../026-plan/linked-boards.md)): the first action added to a document makes an
-  Actions board tab (New, Done, Won't Do) where every action in the document has a card, kept in step both ways: tick
-  an action and its card moves, move a card and its action follows. Actions gain a Won't Do status.
-- **Packed strokes**: every freehand stroke is stored as one compact binary block of points and pressures, so a board of thousands of strokes fits its tab; an editor left open across a format change asks calmly to be reloaded. See [Stroke points](../006-document/stroke-points.md) and [New version prompt](../016-platform/new-version-prompt.md).
-- **Corners that scale down**: a corner preset is drawn at most a quarter of a shape's shorter side, so a small rounded square stays a rounded square ([Corner radius](../008-canvas/corner-radius.md)).
-- **Quick Style Panel on mixed selections**: one panel styles any mix of selected elements at once, each row applying to the elements it fits and passing over the rest, so a whole imported board can be restyled in one go ([Quick Style Panel](../008-canvas/quick-style-panel.md)).
-- **Themes**: twenty-four presets (including the multi-colour palettes from [Multi-colour (rainbow) themes](../011-theme/multicolour-themes.md)) that recolour the canvas, every shape, every arrow in one click, plus a custom-scheme builder that saves owner-scoped schemes to the database ([Custom themes](../011-theme/custom-themes.md)). Every theme has a light and a dark half and follows each reader's own appearance setting ([Light and dark halves](../011-theme/light-and-dark.md)).
-- **Multiplayer**: live presence, cursors, selection rings, comments, broadcast via per-document Durable Object rooms ([API app](../015-api/api.md)). Concurrent edits to _different_ elements merge, the room orders mutations so everyone converges, and a dropped connection catches up on reconnect ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)).
-- **Undo and redo**: snapshot-based, personal to each editor, in the bottom-right cluster and on Cmd/Ctrl+Z. The per-tab Activity panel (change log with per-entry revert) was removed on 2026-10-03 ([Collaboration](../012-collaboration/README.md#removed-the-activity-panel)).
-- **Tabs**: every document is a stack of tabs (link across them; copy a tab into another document), groupable into one-level collapsible folders ([Tab folders](../006-document/tab-folders.md)).
-- **Trash**: a deleted document waits 30 days in the Trash (Settings › Account) before it is purged; team documents go to their team Trash and Offline Mode documents to a local one. See [Trash](../013-workspace/trash.md).
-- **Folders**: nested folders in the Explorer; full-page `/explorer` for signed-in users ([Folders](../013-workspace/folders.md)). New documents land in a per-person [default folder](../013-workspace/default-folders.md) chosen by what they open as; the server side is built, the surfaces to set one come next.
-- **History and Team Activity**: a document's History (from its row menu) and a team's Team Activity show a day-grouped feed of what happened to it (comments, assigned actions, team membership, sharing, plus forward-dated expiry warnings) with a calendar month view, from the same record Home's What Happened and its unread badge read. Guests included; their history migrates on sign-up. The Explorer's own Timeline section was removed. See [Timeline events](../013-workspace/timeline.md).
-- **Inbox**: the Explorer section under Home that lists what is still _outstanding_ for you across every document: open actions assigned to you, open actions you assigned to others, and unresolved comment threads you are in, each row opening the document at that element with its popover ready. See [Inbox](../013-workspace/inbox.md).
-- **Sharing**: editor or view-only share links per document, with an optional password gate that applies to every link on the document; revoke individually or in bulk at any time.
-- **Embeds**: a read-only `/embed` view of any share link, iframe-able into wikis, Notion, and docs (copy the snippet from the Share dialog); live-updates as the document is edited. See [Read-only embeds (`/embed`)](../013-workspace/embeds.md).
-- **"Shared with you"**: the Explorer accordion + standalone `/explorer` page surface the documents another owner has shared with the visitor; the row's link carries a still-live share code so the non-owner can actually open it. The visitor can copy a shared document into their own files via the header's "Make a copy" button.
-- **Hybrid Clerk auth.** Guests get everything without signing in (full persistence keyed to a per-browser id; the [Auth + guest access](../014-identity/auth-and-guest-access.md) hard rule); a signed-in user's documents travel under their Clerk userId via Bearer-verified requests, which adds cross-device sync. Sign-in lives at `/sign-in/` (email-code OR Google OAuth), sign-up at `/get-started/`, account self-delete from the header menu (gated by Clerk's reverification step-up). Guest → authed migration runs on first sign-in via `POST /api/migrate`. The api worker degrades to pure guest mode when `CLERK_JWKS_URL` is unset, and the frontend ClerkProvider becomes a pass-through when `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` is unset, so a deployment can run without Clerk ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
-- **Offline Mode** (optional, per document): a document saved only in this browser (IndexedDB), never on the server. Opted into from the New Document wizard's Settings step; converts either way later (Sync Document uploads it to your account, Take Offline pulls a cloud document down and deletes the server copy). See [Offline Mode](../006-document/offline-mode.md).
-- **Export / import**: export the active tab as PNG, SVG, PDF, Markdown, CSV (a Board or Sheet tab) or a portable JSON file; import a JSON export into the active tab. The JSON envelope's `schemaVersion` lets the editor refuse files newer than it understands instead of silently corrupting state. Agents can also hand over Mermaid text ([Mermaid input & export](../020-import-export/mermaid.md)).
-- **Teams**: teams with Admin / Member roles and email invites in the Explorer, plus a per-team shared library of documents. See [Teams](../013-workspace/teams.md) and [Team shared documents](../013-workspace/team-shared-documents.md).
-- **Assigned actions**: a named, described piece of work attached to any element and assigned to a teammate, optionally by email. Actions live beside comments in the Collaborate panel, so a document carries the follow-ups it generated instead of them leaking into a separate tracker. See [Assigned actions](../012-collaboration/assigned-actions.md).
-- **API tokens + public API**: signed-in users mint `lvd_` tokens and drive the REST API from outside the editor: scripts, CI, anything that can send a header. See [Public API and API tokens](../015-api/public-api-and-tokens.md).
-- **MCP server**: `mcp.liveplanner.app` connects the editor to AI tools over OAuth, so an assistant can find, read, create, and edit your documents directly. It is an OAuth front door onto the same API tokens, not a second permission model. See [MCP server](../015-api/mcp-server.md).
-- **Agent changesets** ([Agent changesets](../024-agents/agent-changesets.md)): the MCP server and API-token scripts change tabs with changesets that reach anyone with the tab open, live, outlined in their author's colour with a toast offering Show and Undo, survive a person's next save, refuse an element a person has selected, and revert as one unit for 30 days; every server-stored document, personal ones included, has a room. Closed liveplanner-app/liveplanner.app#343.
-- **Document views and edit operations** ([Document views](../024-agents/document-views.md), [Edit operations](../024-agents/edit-operations.md)): agents read a tab as compact text (outline, graph, layout, comments, show, find) addressed by refs, and change it with twelve intent-level operations (`add set rm move connect rewire insert wrap unwrap order layout test`) in the line form or JSON, by ref or selector, placed beside what they name, making room on insert, and answered with one result line per element. The [diagram lint](../024-agents/diagram-lint.md) checks every
-  changeset's result (overlaps, crossings, arrows behind boxes, overflowing labels) and names a fix for each finding.
-- **The CLI** ([CLI](../015-api/cli.md)): `liveplanner` signs in through the browser, with a code on another device
-  (`--device`) or with a token, keeping it in the system's own keychain; reads every view, lint and diff; edits with
-  edit operations based on read copies; creates, renames, shares and removes documents and tabs; comments, shows its
-  presence, and waits on or watches a document's room; pulls a document to a file and pushes it back, exports every
-  document, and draws tabs and graph files as SVG or PNG. It counts its commands like the MCP's tools, and the MCP's
-  tools are verbs of the same catalogue. Published on npm as `@liveplanner/cli`, with provenance.
-- **Workbench embeds** ([Workbench embeds](../013-workspace/workbench-embeds.md)): a developer tool, once paired in the
-  person's browser, opens a document signed in inside its own frame through a ticket the person's CLI mints; the
-  frame is confined to that one document, and the person's selection reaches their agent as a selection reference.
-- **Agent presence** ([Agent presence](../024-agents/agent-presence.md)): an agent shows the people on a tab what it is
-  doing and looking at, under its owner's name, and comments, replies, resolves and reopens through the same endpoints
-  people use.
-- **AI assistance** (optional): an in-editor panel with two modes: Ask answers questions about the active tab, Clean fixes label typos and normalises sizes, positions, and styles. Hidden entirely unless the api worker has a model key set; per-user opt-in via Settings. This is the in-editor panel only; driving documents from an outside assistant is the MCP server. See [AI Assistance](../007-editor/ai-assistance.md).
-- **Anonymous first-party telemetry** + the public `/telemetry` dashboard. The editor emits a closed-vocabulary `{category, action, type}` event for every meaningful interaction (shapes added, themes changed, comments posted, etc.) via batched POSTs to `/api/events`; the dashboard renders aggregate counts read from the api worker's D1 summary. No third-party analytics; no identifiers crossing the wire. Off by default on any deployment that does not turn it on (the api's `TELEMETRY_ENABLED` flag + the live build's `NEXT_PUBLIC_TELEMETRY_ENABLED` both need to be on for events to flow end-to-end), and a per-user opt-out ([User preferences](../007-editor/user-preferences.md)) overrides both when off. See [Telemetry + public transparency dashboard](../017-telemetry/telemetry.md).
-- **Never stale after a deploy**: pages are never served from a stale cache, a page still running an earlier build reloads once into the current one, and in-app navigation across a deploy loads in full instead of failing ([Stale builds](../016-platform/stale-builds.md)).
-- **A quiet console**: every decision point logs a fingerprinted trace line, shown in production only when the browser's debug flag asks for it; warnings and errors always show ([Console logging](../003-system-architecture/console-logging.md)).
-- **Transactional + lifecycle email** (optional): welcome on first sign-in, week-1 / week-2 onboarding tips off the daily cron, and transactional team-invite + account-deleted messages, sent via Resend. Off until a `RESEND_API_KEY` is set; guests never receive email (it is authenticated-only). See [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md).
+The planner is real:
 
-**No document content lives in `localStorage`.** A document is stored on the server, or in IndexedDB for an Offline Mode document, and `apps/live/lib/api-client.ts` is the single persistence boundary over both. `localStorage` holds only small per-browser state, under `liveplanner:*` keys:
+- **One mode, four tab kinds** ([Editor mode](../007-editor/editor-modes.md), [Plan tabs](../026-plan/plan-tabs.md)):
+  every tab is in Plan. `/new` creates a project and lands on **Start Planning**, which makes the tab a Board, Sheet,
+  Dashboard or Form tab, or starts it from a Plan template.
+- **Boards** ([Plan board](../026-plan/plan-board.md), [Items](../026-plan/items.md)): a board draws a project's
+  **items** (kept in their own D1 table with an open field bag, or inside an offline project) as columns of cards:
+  drag between columns and rows, WIP limits, card types with custom fields ([Item types](../026-plan/item-types.md)),
+  an item panel, voting and hide-writing for retros, presence on cards, board widgets and plan views (Gantt, calendar,
+  workload, status, priority; [Plan views](../026-plan/plan-views.md)).
+- **Sheets** ([Sheet](../029-sheets/sheet.md)): cells in their own D1 store, formulas that read other sheets and the
+  project's cards, number formats, borders, merges, freeze, sort, filter, validation, conditional formats, copy and
+  paste with Google Sheets and Excel, CSV in and out, live for everyone with one undo timeline.
+- **Dashboards** ([Plan tabs](../026-plan/plan-tabs.md)): rows of slots holding live versions of the project's boards
+  and sheets, plan views, charts and notes.
+- **Forms** ([Forms](../030-forms/forms.md)): built in place from starters, published as a public link anyone can fill
+  in without an account; every response becomes a card in the column the form names.
+- **Actions board** ([Linked boards](../026-plan/linked-boards.md)): the first action added to a project makes an
+  Actions board tab where every action has a card, kept in step both ways.
+- **Templates** ([Plan templates](../026-plan/plan-templates.md)): projects that open with their tabs, card types and
+  example cards set up for the job, and the Plan tour ([Plan tour](../026-plan/plan-tour.md)).
+- **Multiplayer** ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)): live presence,
+  cursors and selections; concurrent edits to different cards, cells and elements merge, the room orders changes so
+  everyone converges, and a dropped connection catches up on reconnect.
+- **Collaboration**: comments and mentions, assigned actions, and the session tools Plan's templates use (timer, vote,
+  picker, temperature check; [Collaboration](../012-collaboration/README.md)).
+- **The Explorer** ([Workspace](../013-workspace/README.md)): Home, the Inbox, nested folders, default folders,
+  favourites, tags, Recent, Shared With Me, a project's History, the Trash (30 days), and teams with Admin and Member
+  roles and a shared library.
+- **Sharing**: editor, participant and view-only links per project, with expiry, an optional password, tab-scoped
+  links and read-only embeds ([Share roles](../013-workspace/share-roles.md)).
+- **Hybrid Clerk auth** ([Auth + guest access](../014-identity/auth-and-guest-access.md)): guests get everything without
+  signing in; a signed-in person's projects travel under their account, adding cross-device sync. Guest projects
+  migrate on first sign-in. Without Clerk keys the api and the live app degrade to pure guest mode.
+- **Offline Mode** ([Offline Mode](../006-document/offline-mode.md)): a project saved only in this browser
+  (IndexedDB), convertible either way.
+- **Export**: a tab as PNG, SVG, PDF, Markdown, CSV (a Board or Sheet tab) or a portable JSON file, and a JSON export
+  imported back into a tab ([Export fidelity](../020-import-export/export-fidelity.md)).
+- **Machine access**: API tokens and the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)),
+  the MCP server, agent changesets that reach anyone with the tab open and revert as one unit
+  ([Agent changesets](../024-agents/agent-changesets.md)), agent presence, and the CLI.
+- **AI assistance** (optional; [AI Assistance](../007-editor/ai-assistance.md)): an in-editor panel, hidden unless the
+  api has a model key.
+- **Anonymous first-party telemetry** and the public `/telemetry` dashboard, off unless a deployment turns it on, with a
+  per-person opt-out ([Telemetry](../017-telemetry/telemetry.md)).
+- **Transactional and lifecycle email** (optional; [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)):
+  onboarding, team invites, form responses and account messages, off until a `RESEND_API_KEY` is set.
 
-- **Identity bootstrap**: the guest participant id, the name-confirmed flag and the collaboration key (`lib/local-identity.ts`); Clerk users key their data off their userId instead.
-- **Device-local preferences and UI state**: the preferences cache ([User preferences](../007-editor/user-preferences.md)), the UI mode, the panel layout, per-tool configs (format painter, ), recent toolbar tiles, style memory, the Explorer and Settings views, and the keyboard-shortcuts switch.
-- **One-off prompts and counters**: the pending tour, the sign-in prompt and banner dismissals, the power-user offer, the last active day.
-- **The share-password cache**: one entry per share code, so a returning visitor skips the gate ([Share password](../013-workspace/share-password.md#password-cache)).
+**No project content lives in `localStorage`.** A project is stored on the server, or in IndexedDB for an Offline
+Mode project, and `apps/live/lib/api-client.ts` is the single persistence boundary over both. `localStorage` holds
+only small per-browser state, under `liveplanner:*` keys:
 
-- **Participant share links** ([Share roles](../013-workspace/share-roles.md)): a third level between Viewer and Editor, so a facilitator hands a retro to a team who add stickies, write, move and recolour stickies and vote, without reshaping the board; the room applies their changes through one participant content rule.
+- **Identity bootstrap**: the guest participant id, the name-confirmed flag and the collaboration key
+  (`lib/local-identity.ts`); signed-in people key their data off their account id instead.
+- **Device-local preferences and UI state**: the preferences cache ([User preferences](../007-editor/user-preferences.md)),
+  the UI mode, the panel layout, style memory, the Explorer and Settings views, and the keyboard-shortcuts switch.
+- **One-off prompts and counters**: the pending tour, the sign-in prompt and banner dismissals, the power-user offer,
+  the last active day.
+- **The share-password cache**: one entry per share code, so a returning visitor skips the gate
+  ([Share password](../013-workspace/share-password.md#password-cache)).
 
 ## Next
 
-- **Agents as collaborators** ([Agents](../024-agents/README.md)): with changesets, views, edit operations, the [lint](../024-agents/diagram-lint.md), presence and the [CLI](../015-api/cli.md) built and published, the CLI's update check next.
-- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): Participant links are built; token levels, ownership as separate powers, server-derived collaboration keys and a look-only Viewer are next.
+- **Finish the fork**: trim the element kinds, palette, templates and tours to what Plan uses and drop the modules
+  nothing reaches (including the diagram lint); rename "document" to **project** in code, tables, routes, MCP tools and
+  CLI verbs ([Domain language](../003-system-architecture/domain-language.md)); finish the help centre around Plan.
+- **Run and verify**: walk every Plan flow on the local stack, and measure the project page's first-load JS against
+  livediagram's.
+- **Launch**: create the Cloudflare resources on the liveplanner account and fill in their ids, set up Clerk, Resend and
+  the model key, deploy staging, then production at liveplanner.app, then publish the CLI and the MCP registry entry.
 
 ## Later
 
-These are the meaningful gaps between today and "full product":
+These are the meaningful gaps between launch and "full product":
 
-- **Finer-grained team permissions** — every member of a team can edit every document in its shared library ([Team shared documents](../013-workspace/team-shared-documents.md)).
-- **Per-user grants beyond teams + share links** — a document is private, shared via a link with a role, or part of a team's shared library (teams with Admin/Member roles shipped — see [Teams](../013-workspace/teams.md) + [Team shared documents](../013-workspace/team-shared-documents.md)). There are still no per-document per-user grants outside those.
-- **Same-element concurrent edits are last-writer-wins.** Edits to different elements merge ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)), and the fields many people write at once merge as deltas, but two people changing the same element at the same moment still lose one edit. The advisory selection lock ([Live app](../007-editor/live-app.md)) makes that rare; it does not prevent it. A field-level CRDT that would close it was scoped and deliberately dropped, so this gap stays open by choice.
-
-- **Plan mode, next steps**: custom item types with their own fields, a text `board` view for agents, item
-  history, and connectors that fill items from GitHub Issues, Jira or Linear (deliberately not in the first cut).
+- **Plan, next steps**: a text `board` view for agents, item history, and connectors that fill items from GitHub
+  Issues, Jira or Linear (deliberately not in the first cut).
+- **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): token levels, ownership as
+  separate powers, server-derived collaboration keys and a look-only Viewer.
+- **Finer-grained team permissions**: every member of a team can edit every project in its shared library
+  ([Team shared documents](../013-workspace/team-shared-documents.md)).
+- **Per-person grants beyond teams and share links**: a project is private, shared via a link with a role, or part of a
+  team's library; there are no per-project per-person grants outside those.
+- **Same-field concurrent edits are last-writer-wins.** Different cards, cells and elements merge
+  ([Realtime conflict resolution](../012-collaboration/realtime-conflict-resolution.md)), but two people changing the
+  same field at the same moment still lose one edit. A field-level CRDT was scoped and deliberately dropped, so this
+  gap stays open by choice.
 
 ## Hard rules carried forward
 
-These were called out at prototype time and still apply:
-
-- **Static-only frontends.** Next.js apps use `output: 'export'`. No SSR, no Node runtime, no Next.js API routes. Server logic goes in the api worker.
-- **Reuse over duplication** ([AGENTS.md](../../../AGENTS.md#core-principle-reuse-over-duplication)). Shared types, UI primitives, configs, and the document data model live in `packages/`, never copy-pasted across apps.
-- **Optional integrations.** The editor runs fully without any external SaaS dependency. Clerk auth is optional (see [04](../014-identity/auth-and-guest-access.md)); when it isn't configured, the worker and the live frontend degrade to pure-guest mode and the editor remains fully usable. There is no paid tier and no plan to introduce one (see [03](../002-project-scope/business-model-and-licence.md)).
-- **No secrets in source** — see [06-secrets-policy.md](../002-project-scope/secrets-policy.md).
+- **Static-only frontends.** Next.js apps use `output: 'export'`. No SSR, no Node runtime, no Next.js API routes.
+  Server logic goes in the api worker.
+- **Reuse over duplication** ([AGENTS.md](../../../AGENTS.md#core-principle-reuse-over-duplication)). Shared types, UI
+  primitives, configs and the project data model live in `packages/`, never copy-pasted across apps.
+- **Optional integrations.** The planner runs fully without any external SaaS dependency
+  ([Business model + licence](../002-project-scope/business-model-and-licence.md)).
+- **No secrets in source** ([Secrets policy](../002-project-scope/secrets-policy.md)).
