@@ -214,7 +214,7 @@ export function CanvasSelectionToolbars({
             // reach comments via the right-click / ellipsis context menu (gated !isReadOnly), so the
             // toolbar button was a duplicate for them; a read-only session has no context menu, so
             // the toolbar is its way into a thread.
-            // Not where the reader has no comments to open (an embed's viewer, a Community visitor).
+            // Not where the reader has no comments to open (an embed's viewer).
             // A Viewer writes no comment (docs/specs/013-workspace/share-roles.md): it reads the thread an
             // element has, behind Show Comments, and gets no button on one with none.
             onOpenComments={

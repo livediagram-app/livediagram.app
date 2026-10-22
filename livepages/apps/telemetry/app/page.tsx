@@ -6,7 +6,6 @@ import type { TelemetrySummary, TelemetryWindowKey } from '@livepages/api-schema
 import {
   ActivityGlyph,
   AlertGlyph,
-  HeartGlyph,
   LayersGlyph,
   SearchGlyph,
   SparkGlyph,
@@ -28,16 +27,14 @@ const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? '/api';
 // Ways to read the same summary payload (docs/specs/017-telemetry/telemetry.md). The timeframe
 // window is global (the WindowPanel above the tabs), so it lives here
 // alongside the active tab and is passed into whichever view renders.
-// The key metrics first, then the four Detail tabs (each gathering what were
+// The key metrics first, then the three Detail tabs (each gathering what were
 // separate tabs until October 2026 as sections): what people build with
-// (Features), how they find their way (Pages & Help), what they share with
-// everyone (Community), and whether it all works and is fast (Health). Search
-// is the power-user lens.
+// (Features), how they find their way (Pages & Help), and whether it all works
+// and is fast (Health). Search is the power-user lens.
 const VIEWS: { key: ViewKey; label: string; icon: ReactNode }[] = [
   { key: 'dashboard', label: 'Dashboard', icon: <SparkGlyph /> },
   { key: 'features', label: 'Features', icon: <LayersGlyph /> },
   { key: 'pages', label: 'Pages & Help', icon: <WindowGlyph /> },
-  { key: 'community', label: 'Community', icon: <HeartGlyph /> },
   { key: 'health', label: 'Health', icon: <AlertGlyph /> },
   { key: 'search', label: 'Search', icon: <SearchGlyph /> },
 ];

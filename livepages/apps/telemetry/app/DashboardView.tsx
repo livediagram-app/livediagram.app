@@ -7,7 +7,6 @@ import {
   ALL_VISITORS,
   CANVAS_MODES,
   CLI_COMMANDS_STACK,
-  COMMUNITY_ENGAGEMENT,
   DOCUMENT_ACTIONS,
   DOCUMENTS_CREATED,
   ELEMENT_EDITING,
@@ -96,14 +95,7 @@ export const GROUPS: MetricGroup[] = [
   // so read them against it.
   {
     title: 'Collaboration',
-    metrics: [
-      LIVE_TOGETHER,
-      SHARING_AND_JOINING,
-      TIMELINE_AND_ACTIVITY,
-      PRESENTATIONS,
-      VOTING,
-      COMMUNITY_ENGAGEMENT,
-    ],
+    metrics: [LIVE_TOGETHER, SHARING_AND_JOINING, TIMELINE_AND_ACTIVITY, PRESENTATIONS, VOTING],
   },
   {
     title: 'Connections',

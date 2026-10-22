@@ -8,7 +8,6 @@ import {
   rewriteCommentAuthors,
   threadsOfTab,
 } from './comments';
-import { redactElementsForCommunity } from './community-redact';
 import {
   claimedComments,
   newComments,
@@ -18,8 +17,7 @@ import {
 import type { ParticipantDTO } from './types';
 
 // A Sheet's cell threads (docs/specs/029-sheets/sheet.md "Cell comments") behind the same trust boundary as an
-// element's thread: authors locked on save, ids redacted, deletes found, timeline events keyed per thread, and
-// nothing of them published to the Community.
+// element's thread: authors locked on save, ids redacted, deletes found, and timeline events keyed per thread.
 
 const B4 = 'row004:colb01';
 const c = (id: string, extra: Partial<Comment> = {}): Comment => ({
@@ -88,11 +86,6 @@ describe('cell threads behind the comment trust boundary', () => {
       hasNewComments([sheet([c('a'), c('b', { authorId: 'me' })])], [sheet([c('a')])], 'me'),
     ).toBe(true);
     expect(hasNewComments([sheet([c('a')])], [sheet([c('a')])], 'me')).toBe(false);
-  });
-
-  it('keeps cell threads out of a Community copy', () => {
-    const [out] = redactElementsForCommunity([sheet([c('a')])]);
-    expect((out as ShapeElement).cellComments).toBeUndefined();
   });
 
   it('lists a cell thread with the A1 the caller resolves', () => {

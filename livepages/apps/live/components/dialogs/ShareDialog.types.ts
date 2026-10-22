@@ -1,7 +1,5 @@
-import type { ReactNode } from 'react';
 import type { ShareLink, ShareLinkExpiry, ShareRole } from '@/lib/api-client';
 import type { Participant } from '@/lib/identity';
-import type { ShareTab } from './ShareTabs';
 
 export type ShareDialogProps = {
   participant: Participant;
@@ -49,17 +47,7 @@ export type ShareDialogProps = {
   // Whether the reader is known yet, so Sync Document can run (a document in This Browser opens before it is,
   // docs/specs/006-document/offline-mode.md "Instant open").
   syncReady?: boolean;
-  // The Community band (docs/specs/025-community/community.md "Publishing"), drawn beneath the
-  // password; absent where publishing doesn't apply.
-  community?: ReactNode;
-  // Listed in the public Community: the status line says Public (docs/specs/025-community/community.md).
-  communityListed?: boolean;
-  // The tab it opens on: Passes, or Community when it comes back from writing a listing.
-  initialTab?: ShareTab;
   // The document sits in a team library: the status line says every member can open it.
   teamDocument?: boolean;
-  // Why the password can't be set right now (a published document: a post and a password exclude each
-  // other), shown in place of the switch's effect; null or absent when it can.
-  passwordLockedReason?: string | null;
   onClose: () => void;
 };

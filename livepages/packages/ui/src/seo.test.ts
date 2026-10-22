@@ -20,8 +20,8 @@ describe('pageMetadata', () => {
   });
 
   it('takes a `website` OG type for an app front page, defaulting to `article`', () => {
-    const md = pageMetadata({ title: 't', description: 'd', path: '/community/', type: 'website' });
-    expect(md.openGraph).toMatchObject({ type: 'website', url: '/community/' });
+    const md = pageMetadata({ title: 't', description: 'd', path: '/telemetry/', type: 'website' });
+    expect(md.openGraph).toMatchObject({ type: 'website', url: '/telemetry/' });
     expect(pageMetadata({ title: 't', description: 'd', path: '/x' }).openGraph).toMatchObject({
       type: 'article',
     });

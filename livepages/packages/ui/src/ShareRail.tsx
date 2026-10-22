@@ -89,7 +89,7 @@ export function ShareRail({ share = true, wide = false }: { share?: boolean; wid
     'flex h-8 w-8 items-center justify-center rounded-md text-slate-500 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100';
 
   return (
-    // A wide surface (max-w-7xl, the help centre and the Community) has no gutter for the rail until 2xl: at xl it
+    // A wide surface (max-w-7xl, the help centre) has no gutter for the rail until 2xl: at xl it
     // would cover the content's right edge, so there the rail (and with it the Appearance toggle) waits.
     <div
       className={`fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 flex-col items-end gap-2 ${wide ? '2xl:flex' : 'xl:flex'}`}

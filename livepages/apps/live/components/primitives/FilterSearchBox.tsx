@@ -1,7 +1,7 @@
 'use client';
 
-// A search and its filters as one field (docs/specs/004-interface-design/search-and-filters.md), as the Community
-// gallery's search box reads: the filters are chips inside the box, before the text, so the box always reads as the
+// A search and its filters as one field (docs/specs/004-interface-design/search-and-filters.md), as a Plan
+// card search reads: the filters are chips inside the box, before the text, so the box always reads as the
 // whole query; the control that adds a filter sits inside its right edge, with the clear. Backspace in an empty box
 // takes the last filter off. The caller owns what a chip and the filter control mean.
 import { useRef, type ReactNode } from 'react';

@@ -1,7 +1,6 @@
 import { lucideBookOpen, lucidePenTool, lucideSparkles } from '@livepages/icons/lucide';
 
 import { Brand } from './Brand';
-import { CommunityFooterLink } from './community/CommunityFooterLink';
 import { CONTRIBUTORS } from './contributors';
 import { Glyph } from './icons/Glyph';
 import { lucideGlyph } from './icons/lucide-glyph';
@@ -10,8 +9,8 @@ import { REPO_URL } from './site';
 // NEXT_PUBLIC_BUILD_YEAR (docs/specs/016-platform/nextjs.md "One configuration"); empty outside a Next build.
 const buildYear = () => process.env.NEXT_PUBLIC_BUILD_YEAR ?? '';
 
-// The public site footer shared by the marketing landing page, the help centre, the telemetry dashboard and the
-// Community. Brand + tagline on top, the site links grouped into titled columns below, and a thin legal/credits
+// The public site footer shared by the marketing landing page, the help centre and the telemetry dashboard.
+// Brand + tagline on top, the site links grouped into titled columns below, and a thin legal/credits
 // strip at the bottom crediting the human contributors by their avatars. Only the key links carry an icon (the
 // first action, AI, help and the source); the rest stay plain text so the columns read quietly.
 // On a touch screen each link is a 44px-tall row (touch-targets.md) and the column drops its gap, so
@@ -22,10 +21,9 @@ const ICON_SIZE = 16;
 
 type FooterLink = { href: string; label: string; icon?: ReturnType<typeof lucideGlyph> };
 
-const COMMUNITY = 'community';
 const GITHUB = 'github';
 
-const COLUMNS: { title: string; links: (FooterLink | typeof COMMUNITY | typeof GITHUB)[] }[] = [
+const COLUMNS: { title: string; links: (FooterLink | typeof GITHUB)[] }[] = [
   {
     title: 'Product',
     links: [
@@ -36,8 +34,6 @@ const COLUMNS: { title: string; links: (FooterLink | typeof COMMUNITY | typeof G
         icon: lucideGlyph(lucideSparkles, ICON_SIZE),
       },
       { href: '/alternatives', label: 'Product Comparison' },
-      // The public gallery of shared documents (docs/specs/025-community/community.md), unless switched off.
-      COMMUNITY,
       { href: '/faq', label: 'FAQ' },
     ],
   },
@@ -89,8 +85,6 @@ export function SiteFooter() {
               </h2>
               <div className="mt-3 flex flex-col items-start gap-2 pointer-coarse:mt-0.5 pointer-coarse:gap-0">
                 {column.links.map((link) => {
-                  if (link === COMMUNITY)
-                    return <CommunityFooterLink key={link} className={LINK} />;
                   if (link === GITHUB)
                     return (
                       <a

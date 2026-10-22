@@ -319,7 +319,7 @@ comment, max)` (append unless present or full, `resolved: false`), `threadWithou
 
 - **Every item answer** (list, create, bulk, patch, move, vote, comment) is `itemForViewer(item, caller.owner)`;
   **every relay** is `itemForRoom`. A create's `comments` passes `readRestoredThread(raw, caller.owner)` (bad:
-  `field_value_invalid`). A Community copy writes items with `json_remove(fields, '$.comments')`.
+  `field_value_invalid`).
 - **Editor**: `writeItemComment(scope, itemId, action, { ownerId, by })` in `lib/api/items.ts`
   (`ItemCommentAction = add { text, mentions? } | delete { commentId } | resolve { resolved }`; 204 → `null`);
   offline, `offlineWriteItemComment` applies `applyItemComment` to the record. `usePlanItems.comment(itemId,

@@ -23,7 +23,7 @@ import { StartBlankLink } from './StartBlankLink';
 // `center` is an optional slot between the two clusters, shown from `sm` up
 // (the help centre's search box). `actions` replaces the default CTA pair
 // (no surface uses it today). `shareRail` (default true) puts the
-// share links on the page-edge rail; help and Community turn them off, keeping the rail's Appearance card. `wide` matches a surface whose
+// share links on the page-edge rail; help turns them off, keeping the rail's Appearance card. `wide` matches a surface whose
 // pages run max-w-7xl with md:px-8 (help), so the logo lines up with the
 // breadcrumb and content below instead of sitting inside a narrower column.
 //

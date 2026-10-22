@@ -35,7 +35,7 @@ const CONFETTI_BG =
   '</svg>")';
 
 // A tab's pattern colour is document data, so another editor (or a copied
-// Community board) chooses it, and it is spliced into SVG markup (the export
+// board) chooses it, and it is spliced into SVG markup (the export
 // preview renders that as HTML) and into CSS `url(...)` values. Anything
 // outside a plain colour grammar (hex, rgb/hsl functions, a named colour)
 // becomes transparent, so a quote or `<` can never leave its attribute.

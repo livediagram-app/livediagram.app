@@ -9,7 +9,7 @@ import { brandLogoSvg, brandMarkSvg } from '@livepages/ui';
 // `pnpm icons:brand` from the Living Prism module in @livepages/ui. Nothing
 // at runtime notices one of them drifting; this does.
 
-const APPS = ['marketing', 'live', 'help', 'telemetry', 'community'] as const;
+const APPS = ['marketing', 'live', 'help', 'telemetry'] as const;
 const REPO = new URL('../../../', import.meta.url);
 const read = (path: string) => readFileSync(fileURLToPath(new URL(path, REPO)), 'utf8').trim();
 const REGENERATE = 'stale: run `pnpm icons:brand`';
@@ -32,18 +32,17 @@ describe('brand icon', () => {
     }
   });
 
-  // The apps that serve their own icon under a basePath (help, community) pair the SVG with a PNG fallback through
-  // Next's icon file convention (both app/icon.svg and app/icon.png), the 256px white tile the other three name in
-  // BRAND_ICONS (docs/specs/016-platform/nextjs.md "Features used and declined").
-  it('gives help and community the PNG fallback, the same tile marketing serves', () => {
+  // The app that serves its own icon under a basePath (help) pairs the SVG with a PNG fallback through Next's icon
+  // file convention (both app/icon.svg and app/icon.png), the 256px white tile the other three name in BRAND_ICONS
+  // (docs/specs/016-platform/nextjs.md "Features used and declined").
+  it('gives help the PNG fallback, the same tile marketing serves', () => {
     const tile = readFileSync(
       fileURLToPath(new URL('apps/marketing/public/livepages-icon-256.png', REPO)),
     );
-    for (const app of ['help', 'community'])
-      expect(
-        readFileSync(fileURLToPath(new URL(`apps/${app}/app/icon.png`, REPO))).equals(tile),
-        `${app} ${REGENERATE}`,
-      ).toBe(true);
+    expect(
+      readFileSync(fileURLToPath(new URL('apps/help/app/icon.png', REPO))).equals(tile),
+      `help ${REGENERATE}`,
+    ).toBe(true);
   });
 
   // The api's emails load the mark from the site (docs/specs/014-identity/transactional-email.md "Branding"), so the

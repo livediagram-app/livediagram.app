@@ -126,9 +126,8 @@ cache, cached share passwords, and the stale-build reload guards.
 - the guest identity: `self-id`, `self-sig`, `pending-signed-id`,
   `name-confirmed` (all under `livepages:v2:`). Losing the guest id loses
   every document a guest owns;
-- `collab-key`, its secret half `collab-secret`, and `community-key`, the
-  per-browser keys that past answers, votes and
-  likes are matched against;
+- `collab-key` and its secret half `collab-secret`, the per-browser keys that
+  past answers and votes are matched against;
 - Google Drive mirror state (`livepages:v2:drive-*`,
   `livepages:drive-mirror*`);
 - the offline store (IndexedDB `livepages-offline`): Offline Mode documents

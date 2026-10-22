@@ -10,8 +10,7 @@ import {
 import { formLook } from '@livepages/document';
 import { FORM_CODE_PATTERN, closedMessageOf, closedReason, publicForm } from '@livepages/forms';
 import { typesOf } from '@livepages/items';
-import { clientIp } from '../client-ip';
-import { communityNetwork } from '../community-network';
+import { clientIp, clientNetwork } from '../client-ip';
 import { addFormReport, countSuspendedFormLinks, suspendFormLink } from '../db';
 import { notifyFormSuspended } from '../email/notifications';
 import { responsesProblem } from '../forms/form-tab';
@@ -27,7 +26,7 @@ const REASON_TYPES: Record<FormReportReason, string> = {
   other: 'Other',
 };
 
-// Reports from this many distinct networks suspend a link for good (= Community's rule).
+// Reports from this many distinct networks suspend a link for good.
 const FORM_REPORTS_TO_SUSPEND = 3;
 const BROWSER_ID = /^[A-Za-z0-9-]{8,64}$/;
 
@@ -80,7 +79,7 @@ async function fileReport(ctx: RouteContext, code: string): Promise<Response> {
     {
       code,
       browser,
-      network: communityNetwork(clientIp(ctx.request)),
+      network: clientNetwork(clientIp(ctx.request)),
       reason: reason as string,
       note,
     },

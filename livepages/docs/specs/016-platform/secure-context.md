@@ -19,7 +19,7 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
 
 - **Ids work everywhere.** A pre-hydration script (`RANDOM_UUID_BOOT_SCRIPT`, `packages/ui/src/random-uuid-boot.ts`),
   inlined straight after the Trusted Types boot and before any app code by each layout whose app mints ids in the
-  browser (the editor's, and Community's for its like key), installs
+  browser (the editor's), installs
   `crypto.randomUUID` when the browser left it out. It mints RFC 4122 version 4 ids from
   `crypto.getRandomValues`, which every context has, so the ids are as random as the real ones. A browser that
   has `randomUUID` keeps its own. Call sites keep calling `crypto.randomUUID()`: one shim, no second id helper.
@@ -39,7 +39,6 @@ first id the editor minted threw `crypto.randomUUID is not a function` while it 
 
 `packages/ui/src/random-uuid-boot.test.ts` runs the script as the browser does (`runInlineScript`) with a
 `crypto` that lacks `randomUUID` and checks the ids it mints are version 4 and distinct, that a real `randomUUID`
-is kept, and that it never throws without `crypto`. `apps/live/app/pre-hydration-scripts.test.ts` and
-`apps/community/app/layout-boot.test.ts` check each layout inlines it before any app code.
+is kept, and that it never throws without `crypto`. `apps/live/app/pre-hydration-scripts.test.ts` checks the layout inlines it before any app code.
 `packages/items/src/sha256.test.ts` checks the plain-code digest against the FIPS 180-4 vectors and against Web
 Crypto at every length across the padding boundaries, and that `sha256` picks Web Crypto when it is there.

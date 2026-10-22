@@ -165,10 +165,9 @@ Explorer lists follow after the paint.
 - **The visibility legend** (`VisibilityLegend`, on the badge's hover and focus, closing 120 ms after the
   pointer leaves): a hero in the current state's tone, eyebrow **Who Can See This**, the state's icon and
   name, its sentence, and its **reach** drawn as rings around you, lit out to how far the document goes
-  (Private: none; Shared: one, with people on it; Team: two; Public: all three); the words sit level with the
-  rings, centred, and the hero keeps one height whichever audience it shows. Under it, **From Just You
-  to Everyone**: the audiences on one scale, **Just you** (a lock), **Link** (a link), **Team** (people),
-  **Everyone** (a globe), the track filled to the current stop, which is larger, filled in its tone and
+  (Private: none; Shared: one, with people on it; Team: both); the words sit level with the
+  rings, centred, and the hero keeps one height whichever audience it shows. Under it, the audiences on one
+  scale, **Just you** (a lock), **Link** (a link), **Team** (people), the track filled to the current stop, which is larger, filled in its tone and
   bold. Hovering a stop shows that audience in the hero, eyebrow **If It Were**, and tints the stop;
   leaving the scale puts the current state back. **This Browser** (its browser-window icon, amber) stands
   apart below as "Or This Browser: never leaves this browser." (when current: "This Browser: saved only here,

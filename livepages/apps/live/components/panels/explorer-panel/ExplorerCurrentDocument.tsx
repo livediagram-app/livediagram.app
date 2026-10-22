@@ -74,7 +74,6 @@ export function ExplorerCurrentDocument({
               shareable={visibility.shareable}
               team={visibility.team}
               offline={visibility.offline}
-              community={visibility.community}
               onManage={visibility.onManage}
               portal
             />

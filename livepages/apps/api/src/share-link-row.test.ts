@@ -17,7 +17,6 @@ function row(over: Partial<ShareLinkRow> = {}): ShareLinkRow {
     expiry: null,
     expires_at: null,
     tab_id: null,
-    purpose: 'share',
     level: null,
     ...over,
   };

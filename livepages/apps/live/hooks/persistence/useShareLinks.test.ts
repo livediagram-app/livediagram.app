@@ -31,7 +31,6 @@ const link = (over: Partial<ShareLink> = {}): ShareLink => ({
   expiry: 'never',
   expiresAt: null,
   tabId: null,
-  purpose: 'share',
   ...over,
 });
 

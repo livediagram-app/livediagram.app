@@ -1,4 +1,4 @@
--- Community counts that one person cannot inflate (docs/specs/025-community/community.md "Likes"; blueprint §3, §7).
+-- Community counts that one person cannot inflate (dropped by 0100_drop_community.sql).
 -- A like and a copy remember the network they came from (a one-way hash of the caller's address range, salted with
 -- the post id), so a post's like and copy counts take at most a few from any one network. Rows from before this
 -- migration have none and each counts on its own, as before.

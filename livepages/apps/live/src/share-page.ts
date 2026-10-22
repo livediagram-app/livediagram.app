@@ -12,8 +12,7 @@ import {
   type SharePreviewResponse,
 } from '@livepages/api-schema';
 
-// The few runtime types used here, written out so the app's one DOM-lib typecheck covers this file too (as the
-// Community worker does, apps/community/worker/index.ts).
+// The few runtime types used here, written out so the app's one DOM-lib typecheck covers this file too.
 export type Fetcher = { fetch: (input: Request | string, init?: RequestInit) => Promise<Response> };
 type RewriterElement = {
   setAttribute(name: string, value: string): void;
@@ -26,7 +25,7 @@ type Rewriter = {
 declare const HTMLRewriter: new () => Rewriter;
 
 // How long the page waits on the api before sending the plain shell. The card is three indexed D1 reads (tens of
-// milliseconds), so this only bites when the api is in trouble. The Community worker's budget.
+// milliseconds), so this only bites when the api is in trouble.
 export const SHARE_CARD_TIMEOUT_MS = 1500;
 
 // What a named preview says under the document's name.

@@ -64,4 +64,3 @@ export {
   TidyUpIcon,
   UndoIcon,
 } from './editor-chrome';
-export { HeartIcon } from './community';

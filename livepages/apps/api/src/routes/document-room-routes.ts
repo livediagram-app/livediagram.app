@@ -18,13 +18,7 @@ import { clientRateKey } from '../client-ip';
 import { consumeWsTicket, createWsTicket, getDocumentMeta } from '../db';
 import { noteWorkbenchSessionRoom } from '../db/workbench';
 import { forbidden, json, notFound } from '../responses';
-import {
-  COMMUNITY_CONTENT,
-  gateGrant,
-  missingDocument,
-  ownsDocument,
-  type RouteContext,
-} from './context';
+import { gateGrant, missingDocument, ownsDocument, type RouteContext } from './context';
 import { personTagFor } from '../person-tag';
 import { networkTagFor } from '../vote-integrity';
 
@@ -55,11 +49,8 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
     if (!liveDoc) return missingDocument(ctx, id);
     // The grant carries the role, a tab-scoped link's scope and the code that
     // granted it (docs/specs/013-workspace/tab-scoped-share-links.md); the ticket takes all three to the room.
-    const grant = await gateGrant(ctx, id, liveDoc.ownerId, liveDoc.teamId, COMMUNITY_CONTENT);
+    const grant = await gateGrant(ctx, id, liveDoc.ownerId, liveDoc.teamId);
     if (!grant) return notFound();
-    // A Community visitor never joins the author's room (docs/specs/025-community/community.md): no presence, no
-    // cursors on the author's board, no live stream.
-    if (grant.community) return forbidden('community_link');
     // A verified Clerk session (not an API token, not a guest header) marks the ticket as an
     // account session: the room lets it publish a profile picture and see others'
     // (docs/specs/014-identity/profile-picture.md §6).
@@ -178,7 +169,6 @@ export async function handleDocumentRoomRoutes(ctx: RouteContext): Promise<Respo
       console.info('[room-upgrade] legacy leg admitted', { leg: 'owner', documentId: id });
     } else {
       const link = await shareLinkForDocument(env, url.searchParams.get('s'), id);
-      if (link?.purpose === 'community') return forbidden('community_link');
       if (link) {
         role = link.role;
         tabScope = link.tabId;

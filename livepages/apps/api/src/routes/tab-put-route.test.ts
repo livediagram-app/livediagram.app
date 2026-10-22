@@ -267,7 +267,7 @@ describe('the tab read', () => {
 });
 
 // A save upserts by tab id: an id that names another document's tab is refused, never overwritten or adopted.
-// Community makes tab ids public (a post's document lists them), so this is what keeps a published board safe.
+// A share link makes tab ids visible (its document lists them), so this is what keeps a shared board safe.
 describe("someone else's tab id", () => {
   it('is refused, leaving the tab and its document as they were', async () => {
     const db = await documentWith([box('a', 'Original')]);

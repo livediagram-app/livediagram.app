@@ -119,15 +119,6 @@ describe('Share dialog Show Me', () => {
     expect(props.onClose).not.toHaveBeenCalled();
   });
 
-  it('brings the Passes tab forward when started from Community', async () => {
-    renderDialog({ community: <p>Community controls</p> });
-    fireEvent.click(screen.getByRole('tab', { name: /community/i }));
-    expect(screen.getByText('Community controls')).toBeTruthy();
-    await startShowMe();
-    expect(screen.queryByText('Community controls')).toBeNull();
-    expect(screen.getByRole('tab', { name: /passes/i }).getAttribute('aria-selected')).toBe('true');
-  });
-
   it('reports a skip when left before its end', async () => {
     renderDialog();
     await startShowMe();

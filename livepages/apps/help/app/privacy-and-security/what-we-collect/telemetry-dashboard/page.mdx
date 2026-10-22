@@ -38,14 +38,13 @@ The windows are whole calendar days in UTC: **Today** is since midnight UTC, **L
 
 Below the window cards, a row of tabs picks the view. **Dashboard** and **Search** stand on their own at the left; every other view is a closer look at one area, grouped in a bar titled **Detail** that scrolls sideways when it does not fit.
 
-- **Dashboard**: the overview, and where the page opens. Every event the product sends lands in one of its charts, grouped by the question they answer: Visitors, Content, Features, Collaboration, Teams and facilitation, Community, Connections, Health and support, and Email. Each card shows the window's count with a line for the last 30 days, and a stack opens into the cards it combines.
+- **Dashboard**: the overview, and where the page opens. Every event the product sends lands in one of its charts, grouped by the question they answer: Visitors, Content, Features, Collaboration, Teams and facilitation, Connections, Health and support, and Email. Each card shows the window's count with a line for the last 30 days, and a stack opens into the cards it combines.
 - **Pages**: which pages get viewed, by the app that serves them. Every document counts as one page, `/document`, because ids never leave the browser.
 - **Palette**: what people add from the creation palette, most to least used, broken out by the palette's own tabs.
 - **Modes**: the canvas modes people switch into and the options they set inside them.
 - **Look & Feel**: which templates, themes and canvas styles get picked, and how much the custom theme builder gets used.
 - **Editing**: the tools that organise work rather than draw it (notes, assigned actions and folders), then the formatting controls, export formats and dialogs people use.
 - **Help**: help centre reads and article feedback, the articles opened from inside the editor, and how far people get through the tour.
-- **Community**: documents shared to the Community, what people do with them, and why posts get reported.
 - **Settings**: how often each setting in the editor's Settings dialog is changed, and which Settings categories people open.
 - **Exceptions**: what failed and where, counted only as a short code such as a status and the request or area, never an error message or stack. An empty view here is the goal.
 - **Timings**: how fast things feel (see below).
@@ -57,7 +56,7 @@ Browsers never send an exact time, only the range a timing fell in (such as "und
 
 The view opens with **Editor Timings**, one card each for **Document Load**, **Tab Switch**, **Save**, **Live Connect** and **Live Reconnect**. Each card leads with the **p75** (three timings in four were at least this quick), shows the **Median** and **p95** beside it, draws how many timings fell in each range, and plots each day's p75 across the last 30 days. A card with fewer than 20 timings in the window says it has too few to read a percentile, rather than showing a misleading number.
 
-Below that, **Core Web Vitals** gives one card per app (Marketing, Live, Help, Dashboard and Community) with the 75th percentile of three measures, each rated **Good**, **Needs Work** or **Poor** against Google's thresholds:
+Below that, **Core Web Vitals** gives one card per app (Marketing, Live, Help and Dashboard) with the 75th percentile of three measures, each rated **Good**, **Needs Work** or **Poor** against Google's thresholds:
 
 | Measure | What it tracks                                    |
 | ------- | ------------------------------------------------- |

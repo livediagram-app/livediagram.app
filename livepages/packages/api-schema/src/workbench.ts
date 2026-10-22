@@ -283,7 +283,7 @@ const WORKBENCH_ROUTES: readonly RouteShape[] = [
 
 // The workspace scope: everything the Explorer does, and the editor of every document in it. Never the account
 // (profile, preferences' writes, the guest migration, tokens and pairings, team administration, the account, the AI
-// assistant), and never a route the minting token could not call (Community publishing, Drive: Clerk only, WB51).
+// assistant), and never a route the minting token could not call (Drive: Clerk only, WB51).
 const WORKSPACE_ROUTES: readonly RouteShape[] = [
   shape('GET', 'capabilities'),
   shape('GET', 'openapi.json'),
@@ -315,9 +315,8 @@ const WORKSPACE_ROUTES: readonly RouteShape[] = [
   shape('DELETE', 'workbench/sessions/current'),
 ];
 
-// Inside an allowed workspace resource, the doors that stay closed: Community publishing and an agent's presence.
+// Inside an allowed workspace resource, the door that stays closed: an agent's presence.
 const WORKSPACE_CLOSED: readonly RouteShape[] = [
-  shape(ALL_METHODS, 'documents/:p/community/**'),
   shape(ALL_METHODS, 'documents/:p/tabs/:p/presence'),
 ];
 

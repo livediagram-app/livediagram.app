@@ -27,7 +27,7 @@ const OG_IMAGE = {
 const TWITTER_IMAGE = `${SITE_URL}/twitter-image`;
 
 // The brand card alone, for a page whose og:url cannot be known at build time
-// (the Community post shell serves every post), so it still previews with an
+// (the editor's document shell serves every document), so it still previews with an
 // image rather than none.
 export const BRAND_OG_IMAGE = OG_IMAGE;
 export const BRAND_TWITTER_IMAGE = TWITTER_IMAGE;
@@ -53,7 +53,7 @@ export type PageMetadataInput = {
   // of the brand card (the help centre's per-article cards, docs/specs/018-help/help-app.md "SEO").
   image?: { url: string; alt: string };
   // The OG type. `article` suits a content page; a hub or dashboard that is
-  // the app's own front page (the Community gallery, the Telemetry
+  // the app's own front page (the Telemetry
   // dashboard) is a `website`.
   type?: 'article' | 'website';
 };

@@ -78,7 +78,6 @@ ingest drops.
 | `Status`    | `/status`                          | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                                   |
 | `Dashboard` | `/telemetry`                       | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                                   |
 | `Help`      | `/help`, `/help/*`                 | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                                   |
-| `Community` | `/community`, `/community/*`       | `Header`, `HeaderBlank`, `HeaderDraw`, `HeaderWhiteboard`, `HeaderIllustration`, `HeaderPlan`, `HeaderSession`                                                                                                                                                                                                                                                   |
 
 The slots:
 
@@ -93,8 +92,6 @@ The slots:
   (`/new?template=blank-session`). The help centre's header has one
   Start drawing button, its `Header`.
 - `Ai` ([Build with AI](build-with-ai.md)) has the header slots only: its own buttons open an AI tool, sign-up or the help centre, never `/new`.
-- `Community` ([Community](../025-community/community.md)) has the header slots only: its Share Your Own buttons open
-  Explorer Home rather than `/new`, so they are not funnel sources.
 - `Hero` / `HeroDraw` / `HeroBrainstorm` (**retired**: the landing hero no longer has buttons; the slots stay in the table so their stored history still reads on the dashboard, and no link carries them any more): the landing hero's three, Diagram
   (`/new`), Drawing (`/new?template=whiteboard`) and Brainstorm
   (`/new?browse=brainstorm`, a collection since removed). `HeroDraw` kept its slot when Start Blank's blank

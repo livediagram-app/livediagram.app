@@ -30,7 +30,7 @@ describe('ProductNavLinks', () => {
     const labels = [...html.matchAll(/<a [^>]*href="([^"]+)"[^>]*>.*?<\/span>([^<]+)<\/a>/g)].map(
       (m) => m[2],
     );
-    expect(labels).toEqual(['Home', 'Explorer', 'Community', 'Help']);
+    expect(labels).toEqual(['Home', 'Explorer', 'Help']);
     expect(html).toContain('aria-label="Go to"');
     expect(html).not.toContain('>Editor<');
   });

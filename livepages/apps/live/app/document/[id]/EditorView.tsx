@@ -33,12 +33,6 @@ import { useFormBoardValue } from '@/hooks/forms/useFormBoardValue';
 import { SheetsProviders } from '@/hooks/sheets/sheet-comments-context';
 import { PresentationHost } from '@/components/canvas/PresentationHost';
 import { EditorHeader } from '@/components/chrome/EditorHeader';
-import { CommunityBar } from '@/components/chrome/CommunityBar';
-import { useAutoCopyParam } from '@/hooks/canvas/useAutoCopyParam';
-import { documentIsPublic } from '@/lib/community-public';
-import { useCommunityState } from '@/lib/community-state-store';
-import { useCommunityEnabled } from '@livepages/ui';
-import { API_BASE } from '@/lib/api-client';
 import { EmbedChrome } from '@/components/chrome/EmbedChrome';
 import { WorkbenchOpenLink, WorkbenchReconnectLine } from '@/components/chrome/WorkbenchChrome';
 import { appHrefOfPlace } from '@/lib/workbench/workspace-place';
@@ -189,21 +183,7 @@ export function EditorView() {
     zenMode,
     openCollaborators,
     userPreferences,
-    sessionCommunity,
   } = ctx;
-  // The header badge follows the document's Community post (docs/specs/025-community/community.md).
-  const communityState = useCommunityState(documentId);
-  // The badge goes too while the Community is switched off (docs/specs/025-community/community.md).
-  // Asked only while there is a listed post to badge, and never in an embed, so other opens make no request.
-  const communityOn = useCommunityEnabled(API_BASE, communityState === 'listed' && appChrome);
-  // `?copy=1` from the Community's Make a Copy (docs/specs/025-community/community.md).
-  useAutoCopyParam({
-    hydrated,
-    sessionShareCode,
-    // The author's own post copies nothing: their bar offers Edit Your Document instead.
-    community: sessionCommunity !== null && !sessionCommunity.ownDocumentId,
-    makeCopy,
-  });
   // Minimal chrome (docs/specs/007-editor/power-user-mode.md): one flag, read by every chrome surface.
   const minimalChrome = isMinimalChrome(userPreferences);
   // UI scale (docs/specs/007-editor/ui-scale.md): desktop only, so a phone resolves to 1.
@@ -277,16 +257,10 @@ export function EditorView() {
   );
 
   // The same visibility for the Explorer panel's Current Document card (document-visibility-store).
-  const headerCommunity = documentIsPublic({
-    communityOn,
-    ownPostState: communityState,
-    communitySession: sessionCommunity !== null,
-  });
   usePublishDocumentVisibility(
     documentShareable,
     !!documentTeamId,
     isOffline,
-    headerCommunity,
     canShareDocument && hydrated
       ? () => {
           setShareDialogOpen(true);
@@ -311,7 +285,6 @@ export function EditorView() {
             hideTitle={anyWelcomeOpen}
             showShare={canShareDocument && hydrated && !anyWelcomeOpen}
             shareable={documentShareable}
-            community={headerCommunity}
             teamDocument={!!documentTeamId}
             offline={isOffline}
             // Visitors see "Make a copy" instead of "Share": same slot (a joined
@@ -319,9 +292,9 @@ export function EditorView() {
             // different action. Hidden during the welcome flow so the
             // first-paint chrome stays minimal, and during hydration so
             // we don't render the button before we know whether the user
-            // is the owner. A Community visitor gets it from the Community bar instead.
+            // is the owner.
             onMakeCopy={
-              !canShareDocument && hydrated && !anyWelcomeOpen && documentId && !sessionCommunity
+              !canShareDocument && hydrated && !anyWelcomeOpen && documentId
                 ? () => void makeCopy()
                 : undefined
             }
@@ -530,20 +503,13 @@ export function EditorView() {
                                       </div>
                                     ) : null}
                                     {headerInColumn}
-                                    {sessionCommunity && appChrome && hydrated ? (
-                                      <CommunityBar
-                                        community={sessionCommunity}
-                                        onMakeCopy={() => void makeCopy()}
-                                        copying={copying}
-                                      />
-                                    ) : null}
                                     <AreaErrorBoundary area="TabDialogs">
                                       <EditorTabDialogs />
                                     </AreaErrorBoundary>
                                     <AreaErrorBoundary area="Collaborators">
                                       <CollaboratorsHost />
                                     </AreaErrorBoundary>
-                                    {/* At the canvas's top edge, under the header and any Community bar. */}
+                                    {/* At the canvas's top edge, under the header. */}
                                     {landscapeBarsHandle}
                                     <AreaErrorBoundary
                                       area="Canvas"
@@ -556,7 +522,7 @@ export function EditorView() {
                                         <AgentFocusContext.Provider value={ctx.agentFocusByElement}>
                                           {/* No comment badges for a viewer in an embed (docs/specs/013-workspace/embeds.md). */}
                                           <CommentBadgesContext.Provider
-                                            value={!(embedMode && isReadOnly) && !sessionCommunity}
+                                            value={!(embedMode && isReadOnly)}
                                           >
                                             {/* Indicators are editor chrome: an embed never draws them (docs/specs/008-canvas/element-indicators.md). */}
                                             <SuppressElementIndicators when={embedMode}>

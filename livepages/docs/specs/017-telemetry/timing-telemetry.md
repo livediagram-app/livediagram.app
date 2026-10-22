@@ -89,8 +89,8 @@ product. Every timing is also skipped when it ends in failure; failures are alre
 
 - **`Lcp.<App>`**, **`Inp.<App>`**, **`Cls.<App>`**: the page's Core Web Vitals as Google's `web-vitals`
   library computes them (the copy bundled with Next.js, `next/web-vitals`), one of each per full page
-  load, `<App>` being the app that served it (`pageViewApp`: `Marketing`, `Live`, `Help`, `Dashboard`,
-  `Community`). INP is only recorded when the person interacted with the page. LCP, INP and CLS describe
+  load, `<App>` being the app that served it (`pageViewApp`: `Marketing`, `Live`, `Help`, `Dashboard`).
+  INP is only recorded when the person interacted with the page. LCP, INP and CLS describe
   a full page load, so an in-app navigation records none of them.
 - The reporter is a lazily loaded client chunk (`WebVitalsBoot` in `@livepages/ui`), so the library
   (about 3 KB gzipped) never sits on a page's critical path; its observers are buffered, so it still sees

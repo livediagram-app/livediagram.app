@@ -30,8 +30,8 @@ export function elementIndicatorItems(
   element: BoxedElement,
   handlers: Handlers,
   mindRoot?: { editOutline: () => void; tidy: () => void },
-  // False where the reader has no comments to open (a viewer in an embed, docs/specs/013-workspace/embeds.md; a
-  // Community visitor, docs/specs/025-community/community.md): no comment indicator.
+  // False where the reader has no comments to open (a viewer in an embed, docs/specs/013-workspace/embeds.md): no
+  // comment indicator.
   showComments = true,
 ): IndicatorItem[] {
   // A margin note shows its count and action on its own face.

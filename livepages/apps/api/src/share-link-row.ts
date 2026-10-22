@@ -3,7 +3,6 @@ import {
   type AccessLevel,
   type ShareLink as ShareLinkDTO,
   type ShareLinkExpiry,
-  type SharePurpose,
 } from '@livepages/api-schema';
 
 // share_links row shape as read from D1 (migration 0003 + the expiry
@@ -23,8 +22,6 @@ export type ShareLinkRow = {
   expires_at: number | null;
   // Tab scope (docs/specs/013-workspace/tab-scoped-share-links.md). NULL = All tabs.
   tab_id: string | null;
-  // What the link is for (docs/specs/025-community/community.md, migration 0068). NOT NULL DEFAULT 'share'.
-  purpose: string;
 };
 
 // Pure mapper from D1 row to wire-format DTO. Pulled out of db.ts
@@ -44,14 +41,7 @@ export function rowToShareLink(row: ShareLinkRow): ShareLinkDTO {
     expiry: normaliseExpiry(row.expiry),
     expiresAt: row.expires_at ?? null,
     tabId: row.tab_id ?? null,
-    purpose: normalisePurpose(row.purpose),
   };
-}
-
-// Only the exact 'community' marks a post's link: anything else is an ordinary link, which is the side that keeps
-// a link listed and revocable by its owner.
-function normalisePurpose(value: string | null | undefined): SharePurpose {
-  return value === 'community' ? 'community' : 'share';
 }
 
 // Same defensive posture as the role check, opposite bias: an

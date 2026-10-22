@@ -663,8 +663,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
   } = useEditorComments({
     applyElementDelta,
     selfParticipant,
-    // A Community visitor reads the board, never its conversation (docs/specs/025-community/community.md).
-    commentsOff: realtime.sessionCommunity !== null,
     // Bound below, once the teams the mention list comes from have loaded.
     onMentioned: (text, mentions) => mentionNotifyRef.current(text, mentions),
   });
@@ -1038,7 +1036,6 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
       setSelfParticipant,
       setSessionRole,
       setSessionShareCode,
-      setSessionCommunity: realtime.setSessionCommunity,
       setSessionTabScope,
       setSharedDocuments,
       setShareLinks,
@@ -1270,7 +1267,7 @@ export function useEditorState(opts: { surface?: EditorSurface } = {}) {
     documentId,
     documentServerStored: realtime.documentServerStored,
     // A workbench session that ended stops the room (blueprint "The workbench page" step 6).
-    enabled: realtime.sessionCommunity === null && !workbench?.ended,
+    enabled: !workbench?.ended,
     onWorkbenchEnded: workbench ? () => workbench.end('revoked') : undefined,
     documentTeamId,
     selfParticipant,

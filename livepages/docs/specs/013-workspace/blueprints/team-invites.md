@@ -91,7 +91,7 @@ declined | expired --re-invite--> (row gone) + new invited row
 - Only hashes are stored; a D1 leak yields no working link. Secrets are 256 bits from `crypto.getRandomValues`.
 - Compare: `timingSafeEqual` over every stored hash with no early exit; failures share one 404.
 - Link scanners: GET never writes; only the page's button POSTs.
-- Rate limit: `TEAM_INVITE_RATE_LIMITER` 20/60s keyed `invite-decline:<network>` (`communityNetwork`), outside `WRITE_RATE_LIMITER`. Absent binding allows.
+- Rate limit: `TEAM_INVITE_RATE_LIMITER` 20/60s keyed `invite-decline:<network>` (the caller's IPv4 /24 or IPv6 /56), outside `WRITE_RATE_LIMITER`. Absent binding allows.
 - Rejected rows are excluded from mentions and assignees (`isOpenTeamMember`) on the server and in `teamMemberRows`.
 - Share roles: not applicable (teams are managed outside document sessions; see the spec).
 

@@ -35,30 +35,23 @@ export function SheetCommentsProvider({
   openId,
   openCell,
   canComment,
-  off,
   children,
 }: {
   open: (elementId: string, cell?: string) => void;
   openId: string | null;
   openCell: string | null;
   canComment: boolean;
-  // No comments at all (a Community visitor).
-  off?: boolean;
   children: ReactNode;
 }) {
   // `open` is a fresh closure each render: read through the latest, so the value changes only with what it says.
   const latestOpen = useLatest(open);
   const value = useMemo<SheetComments | null>(
-    () =>
-      off
-        ? null
-        : {
-            open: (elementId, cell) => latestOpen.current(elementId, cell),
-            openCell:
-              openId !== null && openCell !== null ? { elementId: openId, cell: openCell } : null,
-            canComment,
-          },
-    [off, openId, openCell, canComment, latestOpen],
+    () => ({
+      open: (elementId, cell) => latestOpen.current(elementId, cell),
+      openCell: openId !== null && openCell !== null ? { elementId: openId, cell: openCell } : null,
+      canComment,
+    }),
+    [openId, openCell, canComment, latestOpen],
   );
   return <SheetCommentsContext.Provider value={value}>{children}</SheetCommentsContext.Provider>;
 }

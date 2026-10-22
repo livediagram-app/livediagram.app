@@ -210,7 +210,6 @@ describe('useIdentityBootstrap in a workspace frame, a document shared with the 
       document: SHARED,
       role: 'edit',
       tabId: null,
-      community: null,
     });
     const { set } = run(workbenchOf({ scope: 'workspace', shareCode: 'CODE2345', level: 'view' }));
 
@@ -229,7 +228,6 @@ describe('useIdentityBootstrap in a workspace frame, a document shared with the 
       document: SHARED,
       role: 'view',
       tabId: 't2',
-      community: null,
     });
     const { set } = run(workbenchOf({ scope: 'workspace', shareCode: 'CODE2345', tabId: 't1' }));
 
@@ -258,7 +256,6 @@ describe('useIdentityBootstrap in a workspace frame, a document shared with the 
       document: { ...SHARED, id: 'doc-9' },
       role: 'edit',
       tabId: null,
-      community: null,
     });
     const { set } = run(workbenchOf({ scope: 'workspace', shareCode: 'CODE2345' }));
 

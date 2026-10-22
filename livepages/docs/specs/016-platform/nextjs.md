@@ -2,7 +2,7 @@
 
 Status: shipped
 
-How the five Next.js apps (live, marketing, help, community, telemetry) are built: which Next.js they run, the one
+How the four Next.js apps (live, marketing, help, telemetry) are built: which Next.js they run, the one
 shared configuration, and which Next.js features they use or decline, with the reason.
 
 ## Versions
@@ -59,7 +59,7 @@ shared configuration, and which Next.js features they use or decline, with the r
 | `turbopackAdditionalRoots`                                                              | Declined | No linked package lives outside the repository                                                                                                    |
 | Next.js Devtools MCP                                                                    | Declined | Developer tooling, not part of the product                                                                                                        |
 | The analyzer's `next-bundle-optimizer` agent skill                                      | Declined | Agent tooling installed outside the repository, not part of the build                                                                             |
-| Multiple icon formats (`app/icon.svg` beside `app/icon.png`)                            | Used     | Help and community, which serve their own basePath icon, gain the PNG fallback the other three name in `BRAND_ICONS`                              |
+| Multiple icon formats (`app/icon.svg` beside `app/icon.png`)                            | Used     | Help, which serves its own basePath icon, gains the PNG fallback the other three name in `BRAND_ICONS`                                            |
 | `optimisticRouting`, `prefetchInlining`, Turbopack's shared runtime and export mangling | Used     | On by default since 16.4                                                                                                                          |
 | Hydration diff indicator, the new default error page                                    | Used     | Development only, on by default                                                                                                                   |
 | `catchError()`, `unstable_retry()`                                                      | Declined | No area throws `notFound()` or `redirect()` and there are no Server Components to retry; `AreaErrorBoundary` keeps its stale-chunk recovery       |

@@ -5,13 +5,7 @@
 import { pageViewApp, type PageViewApp, type TelemetryCount } from '@livepages/api-schema';
 import { rank } from './rank';
 
-export const PAGE_VIEW_APPS: PageViewApp[] = [
-  'Marketing',
-  'Live',
-  'Help',
-  'Dashboard',
-  'Community',
-];
+export const PAGE_VIEW_APPS: PageViewApp[] = ['Marketing', 'Live', 'Help', 'Dashboard'];
 
 const isPageView = (r: TelemetryCount) =>
   r.category === 'Page' && r.action === 'View' && r.type !== null;

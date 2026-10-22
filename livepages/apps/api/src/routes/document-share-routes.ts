@@ -6,14 +6,12 @@
 // expiring link.
 
 import { DEFAULT_LINK_LEVEL, isAccessLevel, type ShareLinkExpiry } from '@livepages/api-schema';
-import { communityEnabled } from '../community-enabled';
 import { MAX_PASSWORD_LEN } from '../limits';
 import {
   createShareLink,
   deleteShareLink,
   extendShareLink,
   generateShareCode,
-  getCommunityPostForDocument,
   getDocumentSharePassword,
   getShareLinkIncludingExpired,
   listShareLinks,
@@ -24,7 +22,7 @@ import {
 } from '../db';
 import { emailEnabled } from '../email/client';
 import { notifyFirstShare } from '../email/notifications';
-import { badRequest, conflict, json, noContent, notFound } from '../responses';
+import { badRequest, json, noContent, notFound } from '../responses';
 import type { ShareRole } from '../types';
 import { hashSharePassword } from '../auth/share-password-hash';
 import { closeShareCodeSessions } from '../room-access-client';
@@ -126,15 +124,6 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       if (password !== null && password.length > MAX_PASSWORD_LEN) {
         return badRequest('password too long');
       }
-      // A share password and a listed Community post exclude each other (docs/specs/025-community/community.md): a
-      // public post cannot ask its visitors for a password. A post hidden by reports is closed for good, so it
-      // does not stand in the way.
-      // Switched off, no post is public, so none stands in the way either.
-      const post =
-        password?.trim() && communityEnabled(env)
-          ? await getCommunityPostForDocument(env, id)
-          : null;
-      if (post && post.state !== 'hidden') return conflict('community_published');
       // Whitespace-only clears, so a stray space can't lock a document in a way
       // the owner can't see. Anything else is stored as the hash of its trimmed
       // value: the visitor's gate trims what is typed, so an untrimmed hash
@@ -161,9 +150,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
       // code alone. Without this, managing ANY document let you revoke any link
       // whose code you had seen. Same guard as /extend below.
       const existing = await getShareLinkIncludingExpired(env, code);
-      // A Community post's link is not the owner's to revoke here: Remove From Community does that
-      // (docs/specs/025-community/community.md).
-      if (!existing || existing.documentId !== id || existing.purpose === 'community') {
+      if (!existing || existing.documentId !== id) {
         return notFound();
       }
       await deleteShareLink(env, code);
@@ -183,8 +170,7 @@ export async function handleDocumentShareRoutes(ctx: RouteContext): Promise<Resp
     // the code stays, and its holders reload into the new scope.
     if (request.method === 'PUT') {
       const existing = await getShareLinkIncludingExpired(env, code);
-      // A post covers every tab (docs/specs/025-community/community.md), so its link is never rescoped.
-      if (!existing || existing.documentId !== id || existing.purpose === 'community') {
+      if (!existing || existing.documentId !== id) {
         return notFound();
       }
       const body = await readOptionalBody(request);

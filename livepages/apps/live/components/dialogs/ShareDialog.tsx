@@ -18,8 +18,6 @@ import type { ShareDialogProps } from './ShareDialog.types';
 import { ShareIdentity } from './ShareIdentity';
 import { ShareOfflineGate } from './ShareOfflineGate';
 import { SharePasswordSection } from './SharePasswordSection';
-import { ShareTabs, shareTabId, sharePanelId, type ShareTab } from './ShareTabs';
-import { CommunityGuide } from './community/CommunityGuide';
 import { ShareStatus } from './ShareStatus';
 import { SECTION_LABEL } from './share-dialog-parts';
 import { ShareShowMeButton, ShareTourStage, useShareTour } from '@/components/tour/ShareTour';
@@ -50,11 +48,7 @@ export function ShareDialog({
   offline,
   onSyncToCloud,
   syncReady = true,
-  community,
-  communityListed = false,
-  initialTab = 'passes',
   teamDocument = false,
-  passwordLockedReason,
   onClose,
 }: ShareDialogProps) {
   // When a Clerk display name is supplied, the name is the account's and the
@@ -63,8 +57,6 @@ export function ShareDialog({
   const nameLocked = !!lockedName;
   const toast = useToast();
   const [busy, setBusy] = useState(false);
-  // Passes first; Community is its own tab, there only when the caller supplies its section.
-  const [tab, setTab] = useState<ShareTab>(community ? initialTab : 'passes');
   const { copied: copiedCode, flash } = useCopiedFlash<string>(1500);
   // The pass issued in this dialog session, which opens into the list on arrival.
   const [freshCode, setFreshCode] = useState<string | null>(null);
@@ -75,7 +67,7 @@ export function ShareDialog({
   useEffect(() => () => window.clearTimeout(highlightTimer.current), []);
   const multiTab = tabs.length > 1;
   // Show Me: the tour of issuing and managing passes, run on this dialog (docs/specs/007-editor/live-app.md).
-  const { tour, freeze: freezeTour } = useShareTour(multiTab, () => setTab('passes'));
+  const { tour, freeze: freezeTour } = useShareTour(multiTab);
   // Which tab the Live image renders (docs/specs/013-workspace/live-image-share.md). null = the first tab,
   // which the server serves from its cached snapshot, so the URL omits
   // `?tab=`. Document-wide: the same choice applies to every pass's image.
@@ -177,7 +169,6 @@ export function ShareDialog({
           <ShareStatus
             passes={activeLinks.length}
             password={sharePasswordSet}
-            community={communityListed}
             team={teamDocument}
           />
         }
@@ -187,113 +178,90 @@ export function ShareDialog({
         <DialogCloseButton onClick={close} />
       </DialogHeader>
 
-      {community ? <ShareTabs tab={tab} onTab={setTab} listed={communityListed} /> : null}
+      <div className="flex flex-col gap-5 overflow-y-auto px-6 py-5">
+        <ShareComposer
+          tabs={tabs}
+          busy={busy}
+          onIssue={(role, expiry, tabId) => void issue(role, expiry, tabId)}
+        />
 
-      {community && tab === 'community' ? (
-        <div
-          id={sharePanelId('community')}
-          role="tabpanel"
-          aria-labelledby={shareTabId('community')}
-          className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
+        <section
+          className="flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800"
+          aria-labelledby="share-passes-heading"
+          data-tour-id="share-passes"
         >
-          <CommunityGuide />
-          {community}
-        </div>
-      ) : (
-        <div
-          id={community ? sharePanelId('passes') : undefined}
-          role={community ? 'tabpanel' : undefined}
-          aria-labelledby={community ? shareTabId('passes') : undefined}
-          className="flex flex-col gap-5 overflow-y-auto px-6 py-5"
-        >
-          <ShareComposer
-            tabs={tabs}
-            busy={busy}
-            onIssue={(role, expiry, tabId) => void issue(role, expiry, tabId)}
-          />
-
-          <section
-            className="flex flex-col gap-2 border-t border-slate-100 pt-5 dark:border-slate-800"
-            aria-labelledby="share-passes-heading"
-            data-tour-id="share-passes"
-          >
-            <p id="share-passes-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
-              Passes
-              {activeLinks.length > 0 ? <CountBadge count={activeLinks.length} /> : null}
+          <p id="share-passes-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
+            Passes
+            {activeLinks.length > 0 ? <CountBadge count={activeLinks.length} /> : null}
+          </p>
+          {activeLinks.length === 0 ? (
+            <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
+              {links.length === 0
+                ? 'No passes yet. Only you can open this document.'
+                : 'Every pass has expired. Extend one below or issue a new one.'}
             </p>
-            {activeLinks.length === 0 ? (
-              <p className="rounded-xl border-2 border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
-                {links.length === 0
-                  ? 'No passes yet. Only you can open this document.'
-                  : 'Every pass has expired. Extend one below or issue a new one.'}
-              </p>
-            ) : (
-              <ul className="-mx-0.5 -mt-0.5 -mb-2 flex flex-col">
-                {activeLinks.map((link) => (
-                  <ActiveSharePass
-                    key={link.code}
-                    link={link}
-                    now={now}
-                    origin={origin}
-                    copied={copiedCode === link.code}
-                    fresh={freshCode === link.code}
-                    highlight={highlightCode === link.code}
-                    busy={busy}
-                    sharePasswordSet={sharePasswordSet}
-                    tabs={tabs}
-                    liveImageTabId={liveImageTabId}
-                    firstTabId={firstTabId}
-                    liveImageTabParam={liveImageTabParam}
-                    setLiveImageTabId={setLiveImageTabId}
-                    shareUrlFor={shareUrlFor}
-                    onCopy={(code) => void copy(code)}
-                    onRevoke={(code) => withBusy(() => onRevokeLink(code))}
-                    onRescope={
-                      multiTab
-                        ? (code, tabId) => void withBusy(() => onRescopeLink(code, tabId))
-                        : null
-                    }
-                  />
-                ))}
-              </ul>
-            )}
-          </section>
+          ) : (
+            <ul className="-mx-0.5 -mt-0.5 -mb-2 flex flex-col">
+              {activeLinks.map((link) => (
+                <ActiveSharePass
+                  key={link.code}
+                  link={link}
+                  now={now}
+                  origin={origin}
+                  copied={copiedCode === link.code}
+                  fresh={freshCode === link.code}
+                  highlight={highlightCode === link.code}
+                  busy={busy}
+                  sharePasswordSet={sharePasswordSet}
+                  tabs={tabs}
+                  liveImageTabId={liveImageTabId}
+                  firstTabId={firstTabId}
+                  liveImageTabParam={liveImageTabParam}
+                  setLiveImageTabId={setLiveImageTabId}
+                  shareUrlFor={shareUrlFor}
+                  onCopy={(code) => void copy(code)}
+                  onRevoke={(code) => withBusy(() => onRevokeLink(code))}
+                  onRescope={
+                    multiTab
+                      ? (code, tabId) => void withBusy(() => onRescopeLink(code, tabId))
+                      : null
+                  }
+                />
+              ))}
+            </ul>
+          )}
+        </section>
 
-          {/* Expired passes (docs/specs/013-workspace/share-link-expiry.md): only when there's
+        {/* Expired passes (docs/specs/013-workspace/share-link-expiry.md): only when there's
             something in it, so owners who never use expiry never see it. */}
-          {inactiveLinks.length > 0 ? (
-            <section className="flex flex-col gap-2" aria-labelledby="share-expired-heading">
-              <p
-                id="share-expired-heading"
-                className={`${SECTION_LABEL} flex items-center gap-1.5`}
-              >
-                Expired
-                <CountBadge count={inactiveLinks.length} />
-              </p>
-              <ul className="-mx-0.5 -mt-0.5 -mb-2 flex flex-col">
-                {inactiveLinks.map((link) => (
-                  <ExpiredSharePass
-                    key={link.code}
-                    link={link}
-                    busy={busy}
-                    shareUrlFor={shareUrlFor}
-                    onExtend={(code) => void withBusy(() => onExtendLink(code))}
-                    onDelete={(code) => withBusy(() => onRevokeLink(code))}
-                  />
-                ))}
-              </ul>
-            </section>
-          ) : null}
+        {inactiveLinks.length > 0 ? (
+          <section className="flex flex-col gap-2" aria-labelledby="share-expired-heading">
+            <p id="share-expired-heading" className={`${SECTION_LABEL} flex items-center gap-1.5`}>
+              Expired
+              <CountBadge count={inactiveLinks.length} />
+            </p>
+            <ul className="-mx-0.5 -mt-0.5 -mb-2 flex flex-col">
+              {inactiveLinks.map((link) => (
+                <ExpiredSharePass
+                  key={link.code}
+                  link={link}
+                  busy={busy}
+                  shareUrlFor={shareUrlFor}
+                  onExtend={(code) => void withBusy(() => onExtendLink(code))}
+                  onDelete={(code) => withBusy(() => onRevokeLink(code))}
+                />
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
-          <SharePasswordSection
-            sharePasswordSet={sharePasswordSet}
-            onSetPassword={onSetPassword}
-            busy={busy}
-            setBusy={setBusy}
-            lockedReason={passwordLockedReason ?? null}
-          />
-        </div>
-      )}
+        <SharePasswordSection
+          sharePasswordSet={sharePasswordSet}
+          onSetPassword={onSetPassword}
+          busy={busy}
+          setBusy={setBusy}
+        />
+      </div>
 
       <DialogFooter>
         {nameLocked ? null : (

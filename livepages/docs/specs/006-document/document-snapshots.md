@@ -74,7 +74,7 @@ instead put every page side by side, which at thumbnail size shrank to a
 row of slivers nobody could recognise; a deck is recognised by its cover.
 The same rule holds wherever this renderer serves a preview: the Explorer
 thumbnail, the default live image, a `?tab=` live image of a Pages
-tab, and the Community snapshot. Only the first page's images are read for
+tab. Only the first page's images are read for
 it (its elements' images and its picture background), so a long deck of
 photos costs one page's R2 reads.
 
@@ -196,7 +196,7 @@ document renders lazily.
 `GET /api/share/:code/image.png`, the picture a pasted share link previews with
 ([Share-link previews](../013-workspace/share-link-previews.md)): the same drawing,
 behind the same gate, fitted onto a 1200 x 630 PNG. The PNG is cached in R2 beside
-the snapshots (`og/<documentId>`, `og-community/<documentId>`), stamped with its
+the snapshots (`og/<documentId>`), stamped with its
 own render time, and deleted with them.
 
 ### Share dialog

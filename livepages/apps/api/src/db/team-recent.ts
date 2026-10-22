@@ -10,7 +10,7 @@ import { firstTabCountSql } from './tabs';
 
 // Binds: ?1 = the person's owner id, ?2 = how many. `picked` finds the ids from the person's joined
 // teams by team_members_user_idx and documents_team_idx, reading only each one's first-tab count;
-// the full summary (share code, Community state, stats) is then drawn for those few alone.
+// the full summary (share code, stats) is then drawn for those few alone.
 // Exported for the query-plan guard in team-recent.test.ts.
 export const TEAM_RECENT_SQL = `WITH
   my_teams(team_id) AS (

@@ -348,7 +348,7 @@ ON t.id = s.token_id WHERE s.secret_hash = ?`. No row → `unknown`; token revok
 | DELETE           | `workbench/sessions/current`                                                                                                                                                   |
 
 Everything else is `confined`, among it: `documents/:doc` `DELETE`, `copy`, `folder`, `shared-tabs`, `share*`,
-`community`, `thumbnail`, `tabs/:tabId/link`, `tabs/:tabId/presence` (an agent's door), `documents` (the library),
+`thumbnail`, `tabs/:tabId/link`, `tabs/:tabId/presence` (an agent's door), `documents` (the library),
 `folders`, `shared`, `favourites`, `home`, `timeline`, `activity`, `trash`, `placement-defaults`, `tokens`, `teams`,
 `account`, `migrate`, `guest-id`, `ai`, `drive`, `oauth`, every write to `preferences`, `participants`,
 `custom-themes`, `shape-libraries`, `images/:id` `DELETE`, `images/usage`, `GET images`, and every
@@ -455,7 +455,6 @@ The Surface table, every gate `workbenchMode` touches (`appChrome` is `surface =
 | Gate                                                                                                                                        | File                                                         | In a workbench                                            |
 | ------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------- |
 | `EditorHeader` (and with it the account menu, Share, Make a copy, role pill)                                                                | `EditorView.tsx`                                             | Not rendered                                              |
-| `CommunityBar`, Community badge request                                                                                                     | `EditorView.tsx`                                             | Not rendered, not requested                               |
 | TabBar, palette, toolbars, Quick style, panels, search                                                                                      | `EditorView.tsx`                                             | Rendered as in the app                                    |
 | `EmbedChrome`                                                                                                                               | `EditorView.tsx`                                             | Not rendered; `WorkbenchChrome` instead                   |
 | Explorer (popover and status-screen panel)                                                                                                  | `useCanvasChromePanels.tsx`, `editor-page.tsx` status shells | Not rendered; status screens use `EmbedShell`             |
@@ -619,7 +618,7 @@ is a person's editor and every route re-gates it with the owner's identity at th
 | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | GET                    | `capabilities`, `openapi.json`, `templates/**`, `icons`, `schema/**`, `preferences`, `participants/:owner` (the owner only)         |
 | GET                    | `share/**` (the person opening a link shared with them)                                                                             |
-| GET, POST, PUT, DELETE | `documents/**` but `documents/:p/community/**` and `documents/:p/tabs/:p/presence`                                                  |
+| GET, POST, PUT, DELETE | `documents/**` but `documents/:p/tabs/:p/presence`                                                                                  |
 | GET, POST, PUT, DELETE | `folders/**`, `shared/**`, `favourites/**`, `tags/**`, `home/**`, `timeline/**`, `activity/**`, `trash/**`, `placement-defaults/**` |
 | GET, POST, PUT, DELETE | `images/**`, `custom-themes/**`, `shape-libraries/**`                                                                               |
 | GET                    | `teams`, `teams/:p`, `teams/:p/library`, `teams/:p/members`                                                                         |
@@ -628,8 +627,7 @@ is a person's editor and every route re-gates it with the owner's identity at th
 Everything else is `confined`, among it (Never the account): `account`, `migrate`, `guest-id`, `tokens/**`,
 `workbench/**` but the one above, every write to `participants` and `preferences`, `ai/**`, `oauth/**`, `drive/**`,
 `teams` writes and `teams/invites`, `teams/invite-link/**`, `teams/invite-decline/**`, `teams/:p/invite-link`
-(team administration), `community/**` and `documents/:p/community/**` (Community publishing needs a Clerk session,
-so the token cannot, WB51), `documents/:p/tabs/:p/presence` (an agent's door), `forms/**` and `telemetry/**`.
+(team administration), `documents/:p/tabs/:p/presence` (an agent's door), `forms/**` and `telemetry/**`.
 `events` and `unfurl` are called without credentials and never see `lvw_`.
 
 #### Route effects under a workspace session
@@ -674,7 +672,7 @@ other phase is the document scope's.
    the app href to `navigate`.
 2. `navigate(href, { replace })`: `framePathOfAppHref(href)` maps `/explorer/...` and `/document/<id>[?s=][&tab=]`
    to a frame path and calls `history.pushState` (or `replaceState`), which the App Router hears; `/new...` runs New
-   document in place (below); any other app href (help, sign-in, Community, an external page) opens in a new tab
+   document in place (below); any other app href (help, sign-in, an external page) opens in a new tab
    with `noopener` (WB57). Logged `[workbench] open { kind }` only for `livepages:open`.
 3. The place (`workspacePlaceOf(usePathname(), useSearchParams())`) renders:
    - an Explorer view: `ExplorerShell` (its surface read from the session, `useExplorerSurface`) around `ExplorerPane`,
@@ -1200,7 +1198,7 @@ CREATE TABLE workbench_session_rooms (
 - **The workspace scope is a second approval**: no document pairing ever answers a workspace mint (E35); widening is
   only by Allow on a workspace request, whose page says so.
 - **Never more than the token** in the workspace scope: `clerkUserId` and `token` are null, so every Clerk-only route
-  (team administration, Community publishing, Drive, the account) refuses as it refuses the token, and
+  (team administration, Drive, the account) refuses as it refuses the token, and
   `WORKSPACE_ROUTES` refuses them first with `workbench_confined`; a view session is read-only at the choke point and
   never lists share links (WB54).
 - **Share links in the workspace scope** are the person's own: a code reaches only what the code reaches for anyone,

@@ -28,7 +28,7 @@ import {
 } from './image-refs';
 
 // Whether `tabId` is a tab that exists but is not one of `documentId`'s: a save must never adopt it. A save
-// upserts by tab id, so without this a tab id seen elsewhere (a share link, a Community post's document) could
+// upserts by tab id, so without this a tab id seen elsewhere (a share link) could
 // overwrite that tab and link it into the caller's own document. Linking an existing tab has its own route.
 export async function tabBelongsElsewhere(
   env: Env,

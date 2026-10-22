@@ -117,7 +117,7 @@ only when `raw` is not an object. `QUESTION_TYPE_NAMES` and `QUESTION_TYPE_TELEM
 | `FORM_SUSPENSIONS_MAX`                                       | 2           | spec "Report This Form"                                      | 1..5                  |
 | `DROPDOWN_AFTER`                                             | 7           | DEFAULTS D6                                                  | 5..12                 |
 | `FORM_RESPONSES_PER_HOUR` (respond.ts)                       | 500         | spec "Abuse and limits"                                      | 100..2000             |
-| `FORM_REPORTS_TO_SUSPEND` (forms.ts)                         | 3           | = Community's                                                | fixed                 |
+| `FORM_REPORTS_TO_SUSPEND` (forms.ts)                         | 3           | spec "Report This Form"                                      | fixed                 |
 | `FORM_EMAIL_THROTTLE_MS` (notifications.ts)                  | 15 min      | = the comment email's                                        | 5..60 min             |
 | `FORM_RATE_LIMITER` (wrangler.toml)                          | 60 / 60 s   | spec; one binding, keys `form:` and `form-read:` per network | 30..120               |
 | `FORM_LINK_POLL_MS` (useFormLink.ts)                         | 30 s        | DEFAULTS D7                                                  | 15..120 s             |

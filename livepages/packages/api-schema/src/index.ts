@@ -40,9 +40,6 @@ export type LiveDoc = {
   // rotated when re-shared after a revoke.
   shareable: boolean;
   shareCode: string | null;
-  // The document's Community post (docs/specs/025-community/community.md): 'listed', 'hidden', or
-  // null / absent when it has none. Owner-only: every other reader gets null.
-  communityState?: 'listed' | 'hidden' | null;
   // Folder placement. null means the document sits at the root of its
   // space. See docs/specs/013-workspace/folders.md.
   folderId: string | null;
@@ -97,9 +94,6 @@ export type DocumentSummary = {
   name: string;
   shareable: boolean;
   shareCode: string | null;
-  // Listed in the public Community (docs/specs/025-community/community.md "In the Explorer"). Only the listed
-  // state: a listed post is public anyway, while a hidden post's state stays owner-only (LiveDoc.communityState).
-  communityListed: boolean;
   folderId: string | null;
   // Team library placement (docs/specs/013-workspace/team-shared-documents.md) — see LiveDoc.teamId.
   teamId: string | null;
@@ -391,10 +385,6 @@ export type TeamInviteDecline = {
 // A share link's access level (docs/specs/013-workspace/share-roles.md): Viewer, Participant or Editor.
 export type ShareRole = AccessLevel;
 
-// What a share link is for (docs/specs/025-community/community.md): an ordinary link the owner manages in the Share
-// dialog, or the community link a Community post owns (never listed, never expires, no room, no comments).
-export type SharePurpose = 'share' | 'community';
-
 // Lifetime chosen at link creation (docs/specs/013-workspace/share-link-expiry.md). 'never' is the default
 // and the pre-expiry behaviour: the link works until revoked.
 export type ShareLinkExpiry = 'never' | 'week' | 'month' | 'sixMonths';
@@ -425,8 +415,6 @@ export type ShareLink = {
   // Tab scope (docs/specs/013-workspace/tab-scoped-share-links.md): the one tab this link opens, or null
   // for All tabs.
   tabId: string | null;
-  // 'community' only on a Community post's own link; the owner's list never carries one.
-  purpose: SharePurpose;
 };
 
 // ---------------------------------------------------------------------
@@ -605,9 +593,6 @@ export type CapabilitiesResponse = {
   // Google Drive mirror (docs/specs/022-drive-mirror/drive-mirror.md): how the deployment
   // gets Google access tokens. Optional so an older worker parses as 'off'.
   driveMode?: DriveMode;
-  // The Community's off switch (docs/specs/025-community/community.md "Turning the Community off"). Only an explicit
-  // false hides it, so an older worker that omits it leaves the Community showing.
-  communityEnabled?: boolean;
 };
 
 // Per-day buckets for the trend charts on the dashboard. `days` is
@@ -698,10 +683,6 @@ export * from './document-source';
 export * from './catalogues';
 export * from './comment-threads';
 export * from './agent-presence';
-export * from './community';
-export * from './community-authors';
-export * from './community-paths';
-export * from './community-query';
 export * from './document-paths';
 // Share-link previews (docs/specs/013-workspace/share-link-previews.md).
 export * from './share-preview';

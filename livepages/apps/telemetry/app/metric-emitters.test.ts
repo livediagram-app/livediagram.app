@@ -7,7 +7,6 @@ import { COMPUTED_EMITTERS, TOUR_STEP_SOURCE } from './computed-emitters';
 import { COMPUTED, scanEmitters, type Emit } from './emitter-scan';
 import { GROUPS as EXCEPTIONS, RECOVERY_GROUPS, RECOVERY_TYPES } from './ExceptionsView';
 import { GROUPS as HELP } from './HelpView';
-import { GROUPS as COMMUNITY } from './CommunityView';
 import { GROUPS as DASHBOARD } from './DashboardView';
 import { GROUPS as TIMINGS } from './TimingsView';
 import { GROUPS as PAGES } from './PagesView';
@@ -97,7 +96,6 @@ const ALL: MetricGroup[] = [
   ...TOURS_GROUPS,
   ...FACILITATION_GROUPS,
   ...CONNECTIONS_GROUPS,
-  ...COMMUNITY,
   ...TIMINGS,
 ];
 // Plus every catalogue chart, including ones parked off every tab, so a chart
@@ -129,9 +127,6 @@ describe('the emitter scan', () => {
     expect(has('Help', 'Unhelpful', COMPUTED as never)).toBe(true);
     expect(has('Session', 'SignedUp', null)).toBe(true); // reportServerEvent(env, ...), const action
     expect(has('Email', 'Sent', COMPUTED as never)).toBe(true);
-    // siteTrack called by name, through the Community app's wrapper object.
-    expect(has('Community', 'Liked', 'Post')).toBe(true);
-    expect(has('Community', 'Reported', COMPUTED as never)).toBe(true);
     expect(KNOWN.some((e) => e.category === 'Error' && e.path.startsWith('apps/mcp/'))).toBe(true);
     expect(KNOWN.some((e) => e.category === 'Error' && e.path === 'apps/api/src/index.ts')).toBe(
       true,

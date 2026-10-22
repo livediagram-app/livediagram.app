@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { ChipField } from './ChipField';
 
-// The shared chip field (Community tags, Plan labels).
+// The chip field (Plan labels).
 
 afterEach(cleanup);
 

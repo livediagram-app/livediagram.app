@@ -12,7 +12,7 @@ injection then needs a policy's help, and every policy is small, named and liste
 livepages-markup livepages-inert-parse nextjs ProseMirrorClipboard default`, enforced from the start, never
   report-only.
 - **Where it is set**: the editor's worker (`apps/live/src/worker.ts`) beside its other security headers; the four
-  static apps (marketing, help, community, telemetry) in their `public/_headers`. The router adds nothing; it holds no
+  static apps (marketing, help, telemetry) in their `public/_headers`. The router adds nothing; it holds no
   logic ([Router app](router-app.md)).
 - **Further policy names** (a third party's own policy) join the `trusted-types` list only with a row in
   "Third parties" below.
@@ -60,7 +60,7 @@ file to this.
 | Next.js's own script helper                                | Its pass-through policy                                                                                                                                            | The `nextjs` policy name                                               |
 | ProseMirror (the article editor)                           | Parsing pasted HTML into an inert template                                                                                                                         | The `ProseMirrorClipboard` policy name                                 |
 | Our web workers                                            | Their script URLs under `/_next/`                                                                                                                                  | `default`                                                              |
-| Clerk (editor, community sign-in)                          | Script URLs on the Clerk frontend API origin                                                                                                                       | `default`, origin from the publishable key                             |
+| Clerk (editor sign-in)                                     | Script URLs on the Clerk frontend API origin                                                                                                                       | `default`, origin from the publishable key                             |
 | Clerk's sign-up bot protection                             | Cloudflare Turnstile's script on `https://challenges.cloudflare.com`                                                                                               | `default`, beside Clerk's origin                                       |
 | Clerk's session timers                                     | A `Worker` from the page's own `blob:` URL (its fixed timer source)                                                                                                | `default`, for the Worker constructor sink alone                       |
 | The Drive mirror (editor, a build with a Google client id) | Google Identity Services (`https://accounts.google.com/gsi/client`) and the API loader with the Picker (`https://apis.google.com/js/api.js`, then the same origin) | `default`, those two origins, only with `NEXT_PUBLIC_GOOGLE_CLIENT_ID` |

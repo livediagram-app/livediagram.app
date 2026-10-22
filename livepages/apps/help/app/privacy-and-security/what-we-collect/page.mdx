@@ -30,7 +30,7 @@ The same rules apply to error tracking. When something breaks, the event records
 
 ## Page views
 
-Every page on livepages.app (the landing pages, the help centre, the Community, the Explorer, the editor and the telemetry dashboard) also counts a view when you open it. The event is the same three fields, with the page's address as the type, reduced in your browser before it is sent to just _which page_ it was:
+Every page on livepages.app (the landing pages, the help centre, the Explorer, the editor and the telemetry dashboard) also counts a view when you open it. The event is the same three fields, with the page's address as the type, reduced in your browser before it is sent to just _which page_ it was:
 
 - **No query string or link fragment.** Anything after a `?` or `#`, which is where invite and share codes live, is dropped.
 - **No ids.** Every document is counted as the same page, `/document`. Any other part of the address that looks like an id is cut off the same way.
@@ -69,8 +69,7 @@ You are always in control of your own browser.
 <Step n={2}>Choose the **Privacy** category and switch off **Send Anonymous Usage Events**.</Step>
 <Step n={3}>
   From that point on, your browser sends no events from any livepages page (the editor, the help
-  centre, the Community and the public pages share the one setting), whatever the deployment's
-  setting.
+  centre and the public pages share the one setting), whatever the deployment's setting.
 </Step>
 
 The opt-out itself is the last signal your browser sends, so even leaving is recorded only as an anonymous "someone opted out", never tied to you.

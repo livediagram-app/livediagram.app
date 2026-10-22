@@ -10,7 +10,7 @@ import { pageViewPath } from '@livepages/api-schema';
 // the build gate and the docs/specs/007-editor/user-preferences.md opt-out stay app-owned.
 //
 // `usePathname` is only the trigger. The path reported is
-// `window.location.pathname`, because under a basePath (help, telemetry, community)
+// `window.location.pathname`, because under a basePath (help, telemetry)
 // `usePathname` drops the prefix and `/canvas/the-canvas` would be counted as
 // a marketing page. A query-only change (a tab or folder switch) leaves the
 // pathname alone, so it is not a new page.
