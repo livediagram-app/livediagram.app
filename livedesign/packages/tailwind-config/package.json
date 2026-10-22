@@ -1,0 +1,36 @@
+{
+  "name": "@livedesign/tailwind-config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./theme.css",
+  "exports": {
+    ".": "./theme.css",
+    "./theme.css": "./theme.css",
+    "./motion": "./src/motion.ts",
+    "./motion-budget": "./src/motion-budget.ts",
+    "./optical-guard": "./src/optical-guard.ts",
+    "./touch-target-guard": "./src/touch-target-guard.ts"
+  },
+  "files": [
+    "theme.css",
+    "src"
+  ],
+  "scripts": {
+    "lint": "oxlint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "devDependencies": {
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
+    "@types/node": "^26.6.4",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  },
+  "dependencies": {
+    "@livedesign/source-ast": "workspace:*"
+  }
+}

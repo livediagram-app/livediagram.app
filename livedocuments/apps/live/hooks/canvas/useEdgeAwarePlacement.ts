@@ -1,0 +1,134 @@
+'use client';
+
+import { useEffectEvent, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
+import { VIEWPORT_EDGE_MARGIN as EDGE } from '@/lib/clamp-to-viewport';
+import type { Rect } from '@livedocuments/document';
+
+type XY = { x: number; y: number };
+
+// Whether a box overlaps any floating chrome over the canvas (`data-floating-panel`: the palette, panels, the
+// top-centre toolbar), other than one it sits in.
+export function overlapsChrome(r: DOMRect, self: Element): boolean {
+  for (const el of document.querySelectorAll('[data-floating-panel]')) {
+    if (el.contains(self)) continue;
+    const b = el.getBoundingClientRect();
+    if (b.width === 0 || b.height === 0) continue;
+    if (r.left < b.right && r.right > b.left && r.top < b.bottom && r.bottom > b.top) return true;
+  }
+  return false;
+}
+
+// Positions a floating box that hovers above (or below, when there's no room)
+// a canvas-space `bounds`, nudging it back inside the viewport when it would
+// overflow an edge. Shared by FloatingToolbar + SelectionPopover so the subtle
+// flip guard lives in one place.
+//
+// `placeAbove` flips above<->below at most ONCE per geometry (the flip guard):
+// a box that fits neither side could otherwise ping-pong above<->below forever,
+// an infinite synchronous re-render that trips React's "Maximum update depth".
+// `adjust` is the one-shot edge nudge and is deliberately NOT an effect
+// trigger, so the effect never re-enters on its own setAdjust. `zoom` is
+// folded into the geometry signature (a zoom change earns a fresh flip
+// decision) but does not trigger either — the effect re-runs on the
+// bounds / offset / placeAbove changes that actually move the box, and the
+// placement itself is an effect event reading the newest nudge and zoom.
+//
+// The box ref must be attached to the floating element so its measured rect can
+// be checked against the viewport. `style` is the ready-to-spread placement:
+// the box is horizontally centred over the selection and sits `gap` (in canvas
+// units — the caller divides by zoom) above or below it, counter-scaled by
+// 1/zoom so it stays a constant on-screen size. Callers still read `placeAbove`
+// for any above/below-dependent chrome (e.g. a title badge's side).
+export function useEdgeAwarePlacement(
+  bounds: Rect,
+  canvasOffset: XY,
+  zoom: number,
+  gap: number,
+  // While the selection moves the box is hidden and measures nothing: a gesture frame never reads
+  // layout (docs/specs/008-canvas/canvas-performance.md). It places once on resuming.
+  suspended = false,
+): { ref: React.RefObject<HTMLDivElement | null>; placeAbove: boolean; style: CSSProperties } {
+  const ref = useRef<HTMLDivElement>(null);
+  const [adjust, setAdjust] = useState<XY>({ x: 0, y: 0 });
+  const flipSigRef = useRef('');
+  const flippedRef = useRef(false);
+  const [placeAbove, setPlaceAbove] = useState(true);
+
+  const place = useEffectEvent(() => {
+    const node = ref.current;
+    if (!node) return;
+    const sig = `${bounds.x},${bounds.y},${bounds.width},${bounds.height},${canvasOffset.x},${canvasOffset.y},${zoom}`;
+    if (flipSigRef.current !== sig) {
+      flipSigRef.current = sig;
+      flippedRef.current = false;
+    }
+    const rect = node.getBoundingClientRect();
+    // The flip / nudge boundaries are the CANVAS AREA's edges, not the raw
+    // viewport: the header band sits above <main> and the tab bar below it,
+    // so a viewport-relative test let the box pass while tucked under the
+    // header (the reported stuck-under-the-header toolbar). Measured live,
+    // so zen mode (no header) naturally widens the area back out.
+    const host = node.closest('main');
+    const area = host
+      ? host.getBoundingClientRect()
+      : { top: 0, bottom: window.innerHeight, left: 0, right: window.innerWidth };
+    if (!flippedRef.current) {
+      // The floating chrome over the canvas (the palette, the panels) counts as an edge too: a box that would
+      // sit on it flips to the selection's other side, as it does at the header.
+      if (placeAbove && (rect.top < area.top + EDGE || overlapsChrome(rect, node))) {
+        flippedRef.current = true;
+        setPlaceAbove(false);
+        return;
+      }
+      if (!placeAbove && (rect.bottom > area.bottom - EDGE || overlapsChrome(rect, node))) {
+        flippedRef.current = true;
+        setPlaceAbove(true);
+        return;
+      }
+    }
+    // The measured rect already carries the current nudge (it rendered
+    // with `adjust` applied), so compute the fresh correction against
+    // the UN-nudged position — measuring the nudged box and storing the
+    // result as the absolute adjust made the toolbar alternate between
+    // clamped and un-clamped while dragging along an edge. The style
+    // applies `adjust` in canvas units inside the scale(zoom) wrapper,
+    // so its on-screen effect is adjust·zoom (and the screen-space
+    // correction below is divided back by zoom when stored).
+    const left = rect.left - adjust.x * zoom;
+    const right = rect.right - adjust.x * zoom;
+    const top = rect.top - adjust.y * zoom;
+    const bottom = rect.bottom - adjust.y * zoom;
+    let dx = 0;
+    let dy = 0;
+    if (left < area.left + EDGE) dx = area.left + EDGE - left;
+    else if (right > area.right - EDGE) dx = area.right - EDGE - right;
+    if (top < area.top + EDGE) dy = area.top + EDGE - top;
+    else if (bottom > area.bottom - EDGE) dy = area.bottom - EDGE - bottom;
+    const nx = dx / zoom;
+    const ny = dy / zoom;
+    if (nx !== adjust.x || ny !== adjust.y) setAdjust({ x: nx, y: ny });
+  });
+  useLayoutEffect(() => {
+    if (!suspended) place();
+  }, [
+    bounds.x,
+    bounds.y,
+    bounds.width,
+    bounds.height,
+    canvasOffset.x,
+    canvasOffset.y,
+    placeAbove,
+    suspended,
+  ]);
+
+  const baseLeft = bounds.x + bounds.width / 2;
+  const baseTop = placeAbove ? bounds.y - gap : bounds.y + bounds.height + gap;
+  const style: CSSProperties = {
+    left: baseLeft + adjust.x,
+    top: baseTop + adjust.y,
+    transform: `translate(-50%, ${placeAbove ? '-100%' : '0'}) scale(${1 / zoom})`,
+    transformOrigin: placeAbove ? 'center bottom' : 'center top',
+  };
+
+  return { ref, placeAbove, style };
+}

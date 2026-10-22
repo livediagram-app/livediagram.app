@@ -1,0 +1,113 @@
+import { describe, expect, it } from 'vitest';
+import { ITEM_TYPES, defaultCatalogue, presetSetup } from '@livedesign/items';
+import { fakeApi } from '../testing/fake-api';
+import { bringBoardCardTypes } from './brought-types';
+
+// docs/specs/026-plan/plan-agents.md "Adding a board": a board an agent makes brings its card types.
+const D = 'doc1';
+const board = (preset: 'bug-triage' | 'retro' | 'kanban') => ({
+  type: 'shape',
+  shape: 'plan-board',
+  planBoard: presetSetup(preset),
+});
+
+function api(
+  put: (r: Request) => Response | Promise<Response>,
+  doc: { itemTypes: unknown; items: unknown[] } = { itemTypes: null, items: [] },
+) {
+  const calls: string[] = [];
+  const fake = fakeApi({
+    [`/documents/${D}`]: (r: Request) => {
+      calls.push(`${r.method} document`);
+      return Response.json({ document: { id: D, tabs: [], itemTypes: doc.itemTypes } });
+    },
+    [`/documents/${D}/items`]: (r: Request) => {
+      calls.push(`${r.method} items`);
+      return Response.json({ items: doc.items, rev: 1 });
+    },
+    [`/documents/${D}/item-types`]: (r: Request) => {
+      calls.push(`${r.method} item-types`);
+      return put(r);
+    },
+  });
+  return { api: fake, calls };
+}
+
+const savedIds = async (r: Request) =>
+  ((await r.json()) as { itemTypes: { types: { id: string }[] } }).itemTypes.types.map((t) => t.id);
+
+describe('bringBoardCardTypes', () => {
+  it('reads nothing when no Plan board is among the elements', async () => {
+    const { api: a, calls } = api(() => Response.json({ itemTypes: null }));
+    expect(await bringBoardCardTypes(a, D, [{ type: 'sticky' }])).toEqual([]);
+    expect(calls).toEqual([]);
+  });
+
+  it('chooses a fresh document’s card types: exactly the board’s', async () => {
+    let saved: string[] = [];
+    const { api: a, calls } = api(async (r) => {
+      saved = await savedIds(r);
+      return Response.json({ itemTypes: null });
+    });
+    expect(await bringBoardCardTypes(a, D, [board('kanban')])).toEqual(['task', 'action']);
+    expect(saved).toEqual(['task', 'action']);
+    expect(calls.sort()).toEqual(['GET document', 'PUT item-types']);
+  });
+
+  it('adds only what is missing, after the types the document has', async () => {
+    let saved: string[] = [];
+    const { api: a } = api(
+      async (r) => {
+        saved = await savedIds(r);
+        return Response.json({ itemTypes: null });
+      },
+      { itemTypes: defaultCatalogue(), items: [{ id: 'i1' }] },
+    );
+    expect(await bringBoardCardTypes(a, D, [board('bug-triage')])).toEqual(['bug']);
+    expect(saved).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug']);
+  });
+
+  it('writes nothing when the board brings nothing new', async () => {
+    const { api: a, calls } = api(() => Response.json({ itemTypes: null }));
+    const known = { stored: defaultCatalogue() };
+    expect(await bringBoardCardTypes(a, D, [board('retro')], known)).toEqual([]);
+    expect(calls).toEqual([]);
+  });
+
+  it('leaves the board as made when the save is refused', async () => {
+    const { api: a } = api(() => Response.json({ error: 'forbidden' }, { status: 403 }));
+    const known = { stored: null };
+    expect(await bringBoardCardTypes(a, D, [board('bug-triage')], known)).toEqual([]);
+  });
+
+  it('lets a failure that is not a refusal throw', async () => {
+    const { api: a } = api(() => new Response('down', { status: 503 }));
+    const known = { stored: null };
+    await expect(bringBoardCardTypes(a, D, [board('bug-triage')], known)).rejects.toThrow();
+  });
+
+  // docs/specs/026-plan/item-types.md "Storage and sync": the save names the revision read; another change landing
+  // first sends it back to read the card types again.
+  it('reads the card types again when another change landed first', async () => {
+    let rev = 2;
+    const sent: unknown[] = [];
+    const fake = fakeApi({
+      [`/documents/${D}`]: () =>
+        Response.json({ document: { id: D, tabs: [], itemTypes: null, itemTypesRev: rev } }),
+      [`/documents/${D}/items`]: () => Response.json({ items: [], rev: 1 }),
+      [`/documents/${D}/item-types`]: async (r: Request) => {
+        sent.push(((await r.json()) as { expectedRev?: number }).expectedRev);
+        if (sent.length === 1) {
+          rev = 3;
+          return Response.json(
+            { error: 'item_types_stale', itemTypes: null, itemTypesRev: 3 },
+            { status: 409 },
+          );
+        }
+        return Response.json({ itemTypes: null, itemTypesRev: 4 });
+      },
+    });
+    expect(await bringBoardCardTypes(fake, D, [board('kanban')])).toEqual(['task', 'action']);
+    expect(sent).toEqual([2, 3]);
+  });
+});

@@ -1,0 +1,377 @@
+'use client';
+
+import { useEffect, useRef, useState } from 'react';
+import { Button, CloseIcon, TextInput } from '@livedocuments/ui';
+import {
+  ACTION_STATUSES,
+  ACTION_STATUS_LABELS,
+  type ElementAction,
+  type ElementActionStatus,
+} from '@livedocuments/document';
+import { SegmentedRadio } from '@/components/primitives/SegmentedRadio';
+import { Dialog } from '@/components/dialogs/Dialog';
+import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
+import type { TeamListItem } from '@/lib/api-client';
+import type { SaveActionInput } from '@/hooks/collab/useEditorActions';
+import { useAuthHrefs } from '@/components/chrome/auth-shared';
+import { useAssigneeOptions } from '@/hooks/collab/useAssigneeOptions';
+import {
+  AssigneePicker,
+  type PickableMember,
+} from '@/components/dialogs/AssignActionAssigneePicker';
+import { ToggleSwitch } from '@/components/palette/palette-controls';
+import { clerkEnabled } from '@/lib/clerk-config';
+import { track } from '@/lib/telemetry';
+import { DialogFooter } from '@/components/dialogs/DialogFooter';
+
+// Assign Action dialog (docs/specs/012-collaboration/assigned-actions.md §2). The picker always offers a pinned
+// **Myself** row (the feature is not sign-in gated: a signed-out user can
+// assign an action to themselves as a personal to-do), then the joined
+// members of every team the signed-in user has joined. Also serves as the
+// edit form (prefilled from the element's existing action); on an edit
+// that changes the assignee the email offer returns for the NEW assignee,
+// and an edit that keeps the assignee never sends email (the hook
+// enforces it, the control hides to match).
+//
+// The email offer is the shared iOS-style ToggleSwitch, default on, and
+// is hidden entirely for a self-assignment — you don't email yourself
+// about your own action. Picking a teammate also fires a REAL access
+// check (docs/specs/012-collaboration/assigned-actions.md §4) so the "can't open this document" hint only shows
+// when the server says so.
+
+// What the per-open seed last filled the fields from; a new object per seed.
+type SeedTarget = { existing: ElementAction | null; elementLabel: string | null };
+
+type AssignActionDialogProps = {
+  open: boolean;
+  // The element's current action when editing; null when assigning fresh.
+  existing: ElementAction | null;
+  // The element's own text (label / first table cell), used as the
+  // default action name on create so it reads as the work item it sits
+  // on. Null for an unlabelled element (the field starts empty).
+  elementLabel: string | null;
+  // Teams the current user has joined (useTeams already filters to
+  // joined memberships server-side via listTeamsByUser).
+  teams: TeamListItem[];
+  // The signed-in Clerk id, or null for a guest session (guests get the
+  // Myself-only picker).
+  ownerId: string | null;
+  // The assigner's identity: the Clerk account, or the guest participant
+  // identity (docs/specs/014-identity/auth-and-guest-access.md). Drives the Myself row.
+  selfUserId: string | null;
+  selfName: string | null;
+  // The document's id + team-library team (null team for a personal
+  // document). Drive the access check: picking a teammate asks the server
+  // whether they can actually open this document (docs/specs/012-collaboration/assigned-actions.md §4).
+  documentId: string | null;
+  documentTeamId: string | null;
+  // capabilities.emailEnabled — hides the email offer on a self-host
+  // without Resend (never advertise a send we can't perform).
+  emailEnabled: boolean;
+  // Inline personal-document fix (docs/specs/012-collaboration/assigned-actions.md §2): file the document into the
+  // picked team's library root so teammates become assignable without an
+  // Explorer round-trip. Resolves false on failure (the picker shows a
+  // retry-able error line).
+  onMoveToTeam?: (teamId: string) => Promise<boolean>;
+  onSubmit: (input: SaveActionInput) => void;
+  // A two-step delete inside the dialog, for an action with no popover of its own to hold one. No caller
+  // passes it today.
+  onDelete?: () => void;
+  onClose: () => void;
+};
+
+export function AssignActionDialog({
+  open,
+  existing,
+  elementLabel,
+  teams,
+  onMoveToTeam,
+  ownerId,
+  selfUserId,
+  selfName,
+  documentId,
+  documentTeamId,
+  emailEnabled,
+  onSubmit,
+  onDelete,
+  onClose,
+}: AssignActionDialogProps) {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  // Editing: Open, Done or Won't Do (docs/specs/012-collaboration/assigned-actions.md), saved with the rest.
+  const [status, setStatus] = useState<ElementActionStatus>('open');
+  const [assignee, setAssignee] = useState<PickableMember | null>(null);
+  const [notifyEmail, setNotifyEmail] = useState(true);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  // The team id mid inline move (docs/specs/012-collaboration/assigned-actions.md §2 personal-document fix), and
+  // whether the last attempt failed.
+  const [movingToTeamId, setMovingToTeamId] = useState<string | null>(null);
+  const [moveFailed, setMoveFailed] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
+  const { signInHref } = useAuthHrefs();
+
+  const signedIn = ownerId !== null;
+  // The assignee dataset (Myself row, team members incl. invited, the
+  // preselect-on-edit, the per-pick access check, and the by-team
+  // grouping) lives in useAssigneeOptions.
+  const { selfRow, members, grouped, memberOfDocumentTeam, assigneeAccess } = useAssigneeOptions({
+    open,
+    existing,
+    teams,
+    ownerId,
+    selfUserId,
+    selfName,
+    documentId,
+    documentTeamId,
+    assignee,
+    setAssignee,
+  });
+  // Re-seed per open: a reopened dialog must show the CURRENT action (or
+  // the create defaults), never the previous attempt. Creating defaults
+  // the name to the element's own text (selected, so typing replaces it)
+  // and preselects Myself — the common self-assignment is zero-click.
+  // The email offer re-defaults to on each time (docs/specs/012-collaboration/assigned-actions.md: default on; it
+  // only renders for a non-self assignee anyway).
+  // The seed is adjusted during render against the target it last seeded for, so the first commit
+  // already shows the seeded fields. selfRow is read but is not a trigger: a late identity settle
+  // (Clerk name resolving after the dialog opened) can't re-seed and wipe mid-typing edits.
+  const [seededFor, setSeededFor] = useState<SeedTarget | null>(null);
+  if (!open && seededFor !== null) setSeededFor(null);
+  if (
+    open &&
+    (seededFor === null ||
+      seededFor.existing !== existing ||
+      seededFor.elementLabel !== elementLabel)
+  ) {
+    setSeededFor({ existing, elementLabel });
+    setConfirmingDelete(false);
+    setName(existing?.name ?? elementLabel ?? '');
+    setDescription(existing?.description ?? '');
+    setStatus(existing?.status ?? 'open');
+    setAssignee(existing ? null : selfRow);
+    setNotifyEmail(true);
+  }
+  // Focus + select once the seeded name is on screen, so typing replaces it.
+  useEffect(() => {
+    if (!seededFor) return;
+    nameRef.current?.focus();
+    nameRef.current?.select();
+  }, [seededFor]);
+
+  // Signed-out impression: the Myself-only picker with the sign-in
+  // nudge. One emit per open so the funnel is measurable (docs/specs/017-telemetry/telemetry.md).
+  useEffect(() => {
+    if (open && !signedIn && clerkEnabled) track('UI', 'Opened', 'ActionSignInNudge');
+  }, [open, signedIn]);
+
+  const editing = existing !== null;
+  // The email offer matters on create, and on an edit that picks a NEW
+  // assignee; an edit that keeps the assignee sends nothing (docs/specs/012-collaboration/assigned-actions.md §3).
+  // Hidden entirely for a self-assignment: you don't email yourself
+  // about your own action.
+  const assigneeChanged =
+    !editing ||
+    (assignee !== null &&
+      (assignee.userId !== existing.assignee.userId ||
+        assignee.memberId !== existing.assignee.memberId));
+  const showEmailControl =
+    emailEnabled &&
+    assignee !== null &&
+    assignee.teamId !== null &&
+    !(assignee.userId !== null && assignee.userId === selfUserId) &&
+    assigneeChanged;
+  // Access hint (docs/specs/012-collaboration/assigned-actions.md §4): a definite server "no" gets definite
+  // wording; a failed check falls back to the picked-team heuristic with
+  // hedged wording; in-flight / yes / Myself shows nothing.
+  const showAccessHint =
+    assignee !== null &&
+    !(assignee.userId !== null && assignee.userId === selfUserId) &&
+    (assigneeAccess === 'no' ||
+      assigneeAccess === 'invited' ||
+      (assigneeAccess === 'error' && assignee.teamId !== documentTeamId));
+
+  const canSubmit = name.trim().length > 0 && assignee !== null;
+  const submit = () => {
+    if (!assignee || !name.trim()) {
+      nameRef.current?.focus();
+      return;
+    }
+    onSubmit({
+      name: name.trim(),
+      description: description.trim(),
+      assignee: {
+        userId: assignee.userId,
+        ...(assignee.memberId ? { memberId: assignee.memberId } : {}),
+        name: assignee.name,
+      },
+      teamId: assignee.teamId,
+      notifyEmail: showEmailControl && notifyEmail,
+      ...(editing && status !== existing.status ? { status } : {}),
+    });
+  };
+
+  return (
+    <Dialog open={open} onClose={onClose} titleId="assign-action-title">
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          submit();
+        }}
+      >
+        <div className="border-b border-slate-100 px-6 pb-5 pt-5 dark:border-slate-800">
+          <div className="flex items-start justify-between gap-3">
+            <h2
+              id="assign-action-title"
+              className="text-lg font-semibold text-slate-900 dark:text-slate-50"
+            >
+              {editing ? 'Edit Action' : 'Assign an Action'}
+            </h2>
+            <div className="-mr-1.5 -mt-0.5 flex items-center gap-0.5">
+              <HelpArticleLink article="assignedActions" variant="icon" />
+              <button
+                type="button"
+                aria-label="Close"
+                onClick={onClose}
+                className="rounded p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-slate-200"
+              >
+                <CloseIcon size={14} />
+              </button>
+            </div>
+          </div>
+          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            {editing
+              ? 'Change what needs doing, or hand it to someone else.'
+              : 'Attach a piece of work to this element, for yourself or a teammate.'}
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4 px-6 py-5">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+              Action name
+            </span>
+            <TextInput
+              ref={nameRef}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Confirm the retry budget"
+              maxLength={200}
+            />
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+              Description{' '}
+              <span className="font-normal text-slate-500 dark:text-slate-400">(optional)</span>
+            </span>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              maxLength={2000}
+              placeholder="Any detail the assignee needs…"
+              className="w-full resize-none rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 outline-none transition focus:border-brand-400 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:placeholder:text-slate-400"
+            />
+          </label>
+
+          {editing ? (
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-medium text-slate-700 dark:text-slate-200">Status</span>
+              <SegmentedRadio
+                label="Status"
+                options={ACTION_STATUSES.map((id) => ({ id, label: ACTION_STATUS_LABELS[id] }))}
+                value={status}
+                onChange={setStatus}
+              />
+            </div>
+          ) : null}
+
+          <AssigneePicker
+            signedIn={signedIn}
+            selfRow={selfRow}
+            grouped={grouped}
+            members={members}
+            memberOfDocumentTeam={memberOfDocumentTeam}
+            documentTeamId={documentTeamId}
+            assignee={assignee}
+            onPick={setAssignee}
+            signInHref={signInHref}
+            teams={teams}
+            movingToTeamId={movingToTeamId}
+            moveFailed={moveFailed}
+            onMoveToTeam={
+              onMoveToTeam
+                ? (teamId) => {
+                    setMoveFailed(false);
+                    setMovingToTeamId(teamId);
+                    void onMoveToTeam(teamId).then((ok) => {
+                      setMovingToTeamId(null);
+                      if (!ok) setMoveFailed(true);
+                      else track('Action', 'Moved', 'DocumentToTeam');
+                    });
+                  }
+                : undefined
+            }
+          />
+
+          {showAccessHint ? (
+            <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
+              {assigneeAccess === 'invited' ? (
+                // Informational, not a warning: access arrives with the
+                // invite acceptance, no owner action needed.
+                <>
+                  {assignee?.name} hasn&apos;t accepted the team invite yet; they&apos;ll get access
+                  to this document when they join.
+                </>
+              ) : (
+                <>
+                  {assignee?.name}{' '}
+                  {assigneeAccess === 'no'
+                    ? "can't open this document yet"
+                    : 'may not be able to open this document'}
+                  : share it or move it to the team library.
+                </>
+              )}
+            </p>
+          ) : null}
+
+          {showEmailControl ? (
+            <button
+              type="button"
+              onClick={() => setNotifyEmail((v) => !v)}
+              aria-pressed={notifyEmail}
+              className="flex w-full cursor-pointer items-center justify-between gap-3 rounded-lg border border-slate-200 px-3 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              <span>Email {assignee?.name ?? 'them'} about this action</span>
+              <ToggleSwitch
+                checked={notifyEmail}
+                label={`Email ${assignee?.name ?? 'them'} about this action`}
+                presentational
+              />
+            </button>
+          ) : null}
+        </div>
+
+        <DialogFooter>
+          {onDelete && editing ? (
+            <Button
+              type="button"
+              variant={confirmingDelete ? 'primary' : 'secondary'}
+              onClick={() => (confirmingDelete ? onDelete() : setConfirmingDelete(true))}
+              className="mr-auto"
+            >
+              {confirmingDelete ? 'Confirm Delete' : 'Delete Action'}
+            </Button>
+          ) : null}
+
+          <Button type="button" variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button type="submit" disabled={!canSubmit}>
+            {editing ? 'Save action' : 'Assign action'}
+          </Button>
+        </DialogFooter>
+      </form>
+    </Dialog>
+  );
+}

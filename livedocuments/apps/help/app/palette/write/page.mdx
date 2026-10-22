@@ -1,0 +1,59 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Write Elements',
+  description:
+    'Pick the right Write element: a Text label, a Sticky note or a Pointer note, by how much you have to say and where it belongs.',
+  path: '/help/palette/write/',
+});
+
+<ArticleLayout
+  title="Write Elements"
+  description="The three elements whose content is words rather than a picture."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles('write')}
+>
+
+The palette's **Write** category holds the elements whose content is _words_. Everywhere else in the palette you place something with a shape and then maybe label it; here the text is the point and the shape is just what carries it.
+
+There is no Page element among them: on a tab of pages the page itself is where you write, and an [article](/help/pages/articles/) is the place for paragraphs. Write holds the words you put _on_ a page.
+
+## What the category contains
+
+- A **Text** element is a free-standing label with no box around it: just words on the page. `T` drops one. Use it for titles, column headings, and anything that labels a _region_ rather than an element, since a shape's own label is the better way to name a shape. See [Text and Fonts](/help/canvas/text-and-fonts/).
+- A **Sticky note** is a coloured note card, the one that reads as somebody's contribution rather than the author's structure. `N` drops one. See [Sticky Notes](/help/palette/tools/sticky-notes/).
+- A **Pointer note** is a short note with a line out to a dot. Drag the dot onto a corner or edge of a shape and the note follows that shape wherever it moves: use it for "this is where it fails" remarks. See [Pointer Notes](/help/palette/pointer-notes/).
+
+On a logo page, Write holds just Text, for a wordmark, and the Sticky note, for a comment on the design.
+
+## Picking between them
+
+All three put their words **on the page**, where everyone reads them without doing anything. The question is what the words belong to.
+
+A Text label belongs to the page: it is part of what the page says. A Sticky note belongs to whoever wrote it: it reads as a remark or an idea rather than the finished design. A Pointer note belongs to one spot: it says something about a particular element and stays joined to it.
+
+<Note>
+  There is another way to attach words, and it is not in this category: any element can carry a
+  [note](/help/canvas/notes/) or a [comment](/help/collaboration/comments/) of its own. Those belong
+  to the element they are on and move with it.
+</Note>
+
+## Cards, not pictures
+
+Shapes show as a grid of pictures, because the picture is the explanation. The Write elements are all text, so at tile size they would look nearly alike. In their [palette panel](/help/palette/toolbar-layout/) each one is a card with a one-line description instead, because "a free-standing text label" against "a note with a line to one spot" is what you are actually choosing between.
+
+## Working with them
+
+Each behaves like any other element once placed: select, restyle, lock, [rotate](/help/canvas/rotation/) and move it freely, and each can carry a [link](/help/canvas/links/) like anything else on the page.
+
+Text styling is shared with the rest of the canvas rather than special to this category: font, size, weight and alignment all come from the same controls that style a shape's label. See [Text and Fonts](/help/canvas/text-and-fonts/).
+
+<Tip>
+  `T` and `N` drop a text label and a sticky note without opening the palette at all: type, `N`,
+  type, `N`.
+</Tip>
+
+</ArticleLayout>

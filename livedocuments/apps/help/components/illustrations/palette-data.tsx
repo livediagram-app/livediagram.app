@@ -1,0 +1,366 @@
+// Palette "Data and Chart Elements" illustrations (docs/specs/018-help/help-app.md): progress bars and
+// rings, star ratings, pie charts, bar / line charts, and timeline rails. These
+// are chart motifs the shared kit deliberately doesn't ship, so they draw raw
+// <rect>/<circle>/<path>/<text> directly, but only with the house palette
+// (brand / slate / accent Tailwind classes) so they read as the same window
+// into the editor as every other scene. Chrome (panels, labels) still comes
+// from the shared primitives.
+
+import { Scene, Panel, Label } from './primitives';
+
+// --- Reusable motif builders -------------------------------------------------
+
+/** A horizontal progress bar: a rounded slate track filled brand to `pct`%,
+ *  with a centred percentage label, exactly as the canvas element draws. */
+function ProgressBar({
+  x,
+  y,
+  w,
+  h = 26,
+  pct,
+}: {
+  x: number;
+  y: number;
+  w: number;
+  h?: number;
+  pct: number;
+}) {
+  const fillW = Math.max(h, (w * pct) / 100);
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={w}
+        height={h}
+        rx={h / 2}
+        className="fill-slate-100 stroke-slate-200"
+        strokeWidth={1.5}
+      />
+      <rect x={x} y={y} width={fillW} height={h} rx={h / 2} className="fill-brand-500" />
+      <Label x={x + w / 2} y={y + h / 2 + 1} anchor="middle" size={12} weight={700} tone="strong">
+        {pct}%
+      </Label>
+    </g>
+  );
+}
+
+/** A donut progress ring drawn from the top, filled brand to `pct`%, with the
+ *  percentage centred in the hole. */
+function ProgressRing({
+  cx,
+  cy,
+  r = 30,
+  pct,
+}: {
+  cx: number;
+  cy: number;
+  r?: number;
+  pct: number;
+}) {
+  const stroke = 10;
+  const circ = 2 * Math.PI * r;
+  const on = (circ * pct) / 100;
+  return (
+    <g>
+      <circle cx={cx} cy={cy} r={r} fill="none" className="stroke-slate-100" strokeWidth={stroke} />
+      <circle
+        cx={cx}
+        cy={cy}
+        r={r}
+        fill="none"
+        className="stroke-brand-500"
+        strokeWidth={stroke}
+        strokeLinecap="round"
+        strokeDasharray={`${on} ${circ - on}`}
+        transform={`rotate(-90 ${cx} ${cy})`}
+      />
+      {/* A small ring gets a smaller figure, so it sits inside the band rather than touching it. */}
+      <Label x={cx} y={cy + 1} anchor="middle" size={r < 26 ? 11 : 14} weight={700} tone="strong">
+        {pct}%
+      </Label>
+    </g>
+  );
+}
+
+/** A single five-pointed star, filled amber when `on`, otherwise an empty
+ *  slate outline. */
+function Star({ cx, cy, r = 13, on }: { cx: number; cy: number; r?: number; on: boolean }) {
+  const pts: string[] = [];
+  for (let i = 0; i < 10; i++) {
+    const rad = i % 2 === 0 ? r : r * 0.42;
+    const ang = (Math.PI / 5) * i - Math.PI / 2;
+    pts.push(`${(cx + rad * Math.cos(ang)).toFixed(2)} ${(cy + rad * Math.sin(ang)).toFixed(2)}`);
+  }
+  return (
+    <path
+      d={`M${pts.join(' L')} Z`}
+      className={on ? 'fill-amber-400 stroke-amber-500' : 'fill-white stroke-slate-300'}
+      strokeWidth={1.5}
+      strokeLinejoin="round"
+    />
+  );
+}
+
+/** A row of five stars, the first `filled` of them amber. */
+function StarRow({
+  x,
+  cy,
+  r = 13,
+  filled,
+  gap,
+}: {
+  x: number;
+  cy: number;
+  r?: number;
+  filled: number;
+  gap?: number;
+}) {
+  const step = gap ?? r * 2 + 8;
+  return (
+    <g>
+      {[0, 1, 2, 3, 4].map((i) => (
+        <Star key={i} cx={x + i * step} cy={cy} r={r} on={i < filled} />
+      ))}
+    </g>
+  );
+}
+
+const PIE_SLICES: { label: string; value: number; cls: string }[] = [
+  { label: 'Design', value: 40, cls: 'fill-brand-500' },
+  { label: 'Build', value: 30, cls: 'fill-emerald-500' },
+  { label: 'Test', value: 18, cls: 'fill-violet-500' },
+  { label: 'Ship', value: 12, cls: 'fill-amber-500' },
+];
+
+/** A pie chart of the shared slice set, drawn around (`cx`,`cy`). */
+function Pie({ cx, cy, r = 56 }: { cx: number; cy: number; r?: number }) {
+  const total = PIE_SLICES.reduce((s, x) => s + x.value, 0);
+  // Sweep the slices in a plain loop rather than map(): the callback would
+  // close over the running angle, and reassigning a captured binding
+  // mid-render is what react-hooks/refs flags.
+  const wedges: { key: number; d: string; cls: string }[] = [];
+  let acc = -Math.PI / 2;
+  for (const [i, s] of PIE_SLICES.entries()) {
+    const frac = s.value / total;
+    const a0 = acc;
+    const a1 = acc + frac * Math.PI * 2;
+    acc = a1;
+    const x0 = cx + r * Math.cos(a0);
+    const y0 = cy + r * Math.sin(a0);
+    const x1 = cx + r * Math.cos(a1);
+    const y1 = cy + r * Math.sin(a1);
+    const large = a1 - a0 > Math.PI ? 1 : 0;
+    wedges.push({
+      key: i,
+      d: `M${cx} ${cy} L${x0.toFixed(2)} ${y0.toFixed(2)} A${r} ${r} 0 ${large} 1 ${x1.toFixed(2)} ${y1.toFixed(2)} Z`,
+      cls: s.cls,
+    });
+  }
+  return (
+    <g>
+      {wedges.map((wedge) => (
+        <path key={wedge.key} d={wedge.d} className={`${wedge.cls} stroke-white`} strokeWidth={2} />
+      ))}
+    </g>
+  );
+}
+
+/** The chart's own key for the shared pie slices: a square swatch and the
+ *  label per slice, stacked (Left / Right placement). The key prints no values;
+ *  hovering a slice shows its value. */
+function PieLegend({ x, y }: { x: number; y: number }) {
+  return (
+    <g>
+      {PIE_SLICES.map((s, i) => {
+        const ry = y + i * 22;
+        return (
+          <g key={i}>
+            <rect x={x} y={ry} width={11} height={11} rx={2} className={s.cls} />
+            <Label x={x + 18} y={ry + 6} size={10} tone="body" weight={500}>
+              {s.label}
+            </Label>
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
+/** The same key in a centred row under the chart (the default, Below). */
+function PieLegendRow({ cx, y }: { cx: number; y: number }) {
+  const itemW = 62;
+  const x0 = cx - (PIE_SLICES.length * itemW) / 2;
+  return (
+    <g>
+      {PIE_SLICES.map((s, i) => (
+        <g key={i}>
+          <rect x={x0 + i * itemW + 8} y={y - 5} width={11} height={11} rx={2} className={s.cls} />
+          <Label x={x0 + i * itemW + 25} y={y + 1} size={10} tone="body" weight={500}>
+            {s.label}
+          </Label>
+        </g>
+      ))}
+    </g>
+  );
+}
+
+// --- Scenes ------------------------------------------------------------------
+
+/** Overview montage: every data element on one canvas (progress bar + ring,
+ *  star rating and a pie chart). */
+export function DataElementsOverview() {
+  return (
+    <Scene w={420} h={240}>
+      <Panel x={20} y={18} w={172} h={70} title="PROGRESS">
+        <ProgressBar x={32} y={52} w={148} h={22} pct={70} />
+      </Panel>
+      <Panel x={208} y={18} w={88} h={70}>
+        <ProgressRing cx={252} cy={53} r={22} pct={65} />
+      </Panel>
+      <Panel x={312} y={18} w={88} h={70} title="RATING">
+        <StarRow x={326} cy={62} r={6.5} filled={4} gap={15} />
+      </Panel>
+      <Panel x={20} y={104} w={380} h={120} title="PIE">
+        <Pie cx={70} cy={172} r={38} />
+        <PieLegend x={124} y={140} />
+      </Panel>
+    </Scene>
+  );
+}
+
+/** A progress bar at ~70% beside a progress ring: the two progress elements. */
+export function ProgressBarAndRing() {
+  return (
+    <Scene w={420} h={200}>
+      <Panel x={36} y={42} w={216} h={116} title="PROGRESS">
+        <Label x={50} y={80} size={10} tone="muted">
+          Bar
+        </Label>
+        <ProgressBar x={50} y={94} w={188} h={26} pct={70} />
+        <Label x={50} y={138} size={10} tone="muted">
+          Fills from the left
+        </Label>
+      </Panel>
+      <Panel x={272} y={42} w={112} h={116} title="DONUT">
+        <ProgressRing cx={328} cy={108} r={32} pct={70} />
+      </Panel>
+    </Scene>
+  );
+}
+
+/** A star rating showing four of five filled, the amber accent default. */
+export function StarRating() {
+  return (
+    <Scene w={420} h={170}>
+      {/* The element draws only the stars, no score label (RatingView.tsx). Centred on the scene. */}
+      <StarRow x={98} cy={85} r={20} filled={4} gap={56} />
+    </Scene>
+  );
+}
+
+/** A pie chart of four slices with its key in a row underneath, the default
+ *  Below placement. */
+export function PieChartWithLegend() {
+  return (
+    <Scene w={420} h={230}>
+      <Pie cx={210} cy={96} r={72} />
+      <PieLegendRow cx={210} y={196} />
+    </Scene>
+  );
+}
+
+/** The legend element on its own: a card of round colour chips and labels,
+ *  which is what the canvas draws (the pie's key uses square chips, since
+ *  those stand for slices rather than the element's own dots). */
+export function LegendCard() {
+  return (
+    <Scene w={420} h={200}>
+      {/* No heading: the legend element draws only its dot-and-label rows (LegendView.tsx). */}
+      <Panel x={120} y={44} w={180} h={120}>
+        {PIE_SLICES.map((s, i) => {
+          const cy = 66 + i * 26;
+          return (
+            <g key={s.label}>
+              <circle cx={144} cy={cy} r={6} className={s.cls} />
+              <Label x={160} y={cy} size={11} tone="body" weight={500}>
+                {s.label}
+              </Label>
+            </g>
+          );
+        })}
+      </Panel>
+    </Scene>
+  );
+}
+
+/** A bar chart beside a line chart. A bar chart holds one value per row, each
+ *  bar in its own colour like a pie's slices; a line chart holds one line per
+ *  series across shared categories. */
+export function BarAndLineCharts() {
+  const bars: [number, string][] = [
+    [34, 'fill-brand-500'],
+    [58, 'fill-amber-500'],
+    [46, 'fill-emerald-500'],
+    [72, 'fill-rose-500'],
+  ];
+  const series: [number[], string, string][] = [
+    [[24, 54, 40, 70], 'stroke-brand-500', 'fill-brand-500'],
+    [[12, 26, 52, 36], 'stroke-amber-500', 'fill-amber-500'],
+  ];
+  const baseY = 150;
+  return (
+    <Scene w={420} h={200}>
+      {/* Bar chart */}
+      <Panel x={24} y={24} w={176} h={158} title="BAR">
+        <line
+          x1={44}
+          y1={baseY}
+          x2={184}
+          y2={baseY}
+          className="stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        {bars.map(([v, cls], i) => (
+          <rect
+            key={i}
+            x={56 + i * 32}
+            y={baseY - v}
+            width={22}
+            height={v}
+            rx={3}
+            className={cls}
+          />
+        ))}
+      </Panel>
+      {/* Line chart: two series */}
+      <Panel x={216} y={24} w={180} h={158} title="LINE">
+        <line
+          x1={234}
+          y1={baseY}
+          x2={384}
+          y2={baseY}
+          className="stroke-slate-200"
+          strokeWidth={1.5}
+        />
+        {series.map(([vals, stroke, fill], si) => (
+          <g key={si}>
+            <polyline
+              points={vals.map((v, i) => `${246 + i * 42} ${baseY - v}`).join(' ')}
+              fill="none"
+              className={stroke}
+              strokeWidth={2.5}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            {vals.map((v, i) => (
+              <circle key={i} cx={246 + i * 42} cy={baseY - v} r={3.5} className={fill} />
+            ))}
+          </g>
+        ))}
+      </Panel>
+    </Scene>
+  );
+}
+
+/** A horizontal timeline rail with four evenly spaced, labelled milestones. */

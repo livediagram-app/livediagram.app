@@ -1,0 +1,174 @@
+'use client';
+
+import { Fragment, useState } from 'react';
+import { cascadeDelayMs } from '@livedocuments/tailwind-config/motion';
+import { useAppearance, Glyph } from '@livedocuments/ui';
+import type { TelemetrySummary, TelemetryWindowKey } from '@livedocuments/api-schema';
+import { MetricCard } from './MetricCard';
+import { MetricStackCard } from './MetricStackCard';
+import { stackMemberColors } from './stack-colours';
+import { StackModal } from './StackModal';
+import {
+  dailySeries,
+  isStack,
+  metricKey,
+  stackDrawsLines,
+  previousCount,
+  windowCount,
+  type Metric,
+} from './metric-series';
+import type { SectionKey } from './view-keys';
+import { previousSpanLabel, windowDays, windowHighlightFrom } from './windows';
+
+export type { Metric, MetricGroup } from './metric-series';
+import type { MetricGroup } from './metric-series';
+
+// Curated metrics rendered as cards: the selected-window count + a 30-day
+// trend line each (MetricCard), or a chart stack (MetricStackCard) whose
+// members open in a modal over the page (StackModal). Shared by every
+// metric-card view so each is just a list of metric groups rendered
+// identically.
+
+const GRID = 'grid gap-4 sm:grid-cols-2 xl:grid-cols-3';
+
+type OpenStack = { key: string; anchor: HTMLElement };
+
+export function MetricGroups({
+  groups,
+  summary,
+  active,
+  onOpenSection,
+}: {
+  groups: MetricGroup[];
+  summary: TelemetrySummary;
+  active: TelemetryWindowKey;
+  // Follows a stack's See also link. Views that host no linking stack omit it.
+  onOpenSection?: (section: SectionKey) => void;
+}) {
+  const daily = summary.daily;
+  const highlightFromIndex = daily ? windowHighlightFrom(daily, active) : null;
+  // Trend arrows compare each count with the same span just before the window.
+  const against = previousSpanLabel(summary, active);
+  const span = windowDays(active);
+  const previousOf = (m: Metric) => (against ? previousCount(summary, active, m, span) : null);
+  // The one open stack, and its head card (focus returns there on close). Opening
+  // another stack replaces it. View state only: nothing persists it.
+  const [open, setOpen] = useState<OpenStack | null>(null);
+  const close = () => setOpen(null);
+  const { appearance } = useAppearance();
+
+  return (
+    <div className="mt-6 flex flex-col gap-8">
+      {groups.map((group) => (
+        <section key={group.title}>
+          <h2 className="text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+            {group.title}
+          </h2>
+          <div className={`mt-3 ${GRID}`}>
+            {group.metrics.map((item) => {
+              if (!isStack(item)) {
+                return (
+                  <MetricCard
+                    key={metricKey(item)}
+                    metric={item}
+                    count={windowCount(summary, active, item)}
+                    series={daily ? dailySeries(daily, item) : undefined}
+                    days={daily?.days}
+                    highlightFromIndex={highlightFromIndex}
+                    previous={previousOf(item)}
+                    against={against}
+                  />
+                );
+              }
+              const key = `${group.title}|${item.title}`;
+              const opened = open?.key === key ? open : null;
+              const counts = item.members.map((m) => windowCount(summary, active, m));
+              const lines = stackDrawsLines(item.members.length);
+              const colors = stackMemberColors(item.members, appearance);
+              const series = item.members.map((m, i) => ({
+                label: m.title,
+                color: colors[i]!,
+                values: daily ? dailySeries(daily, m) : [],
+              }));
+              // The modal is portalled to <body>, so rendering it beside
+              // the head adds nothing to the grid.
+              return (
+                <Fragment key={`stack:${item.title}`}>
+                  <MetricStackCard
+                    stack={item}
+                    series={series}
+                    counts={counts}
+                    days={daily?.days}
+                    highlightFromIndex={highlightFromIndex}
+                    previousCounts={item.members.map(previousOf)}
+                    against={against}
+                    expanded={opened !== null}
+                    onToggle={(anchor) => setOpen(opened ? null : { key, anchor })}
+                  />
+                  {opened ? (
+                    <StackModal
+                      anchor={opened.anchor}
+                      title={item.title}
+                      subtitle={`${item.members.length} charts`}
+                      count={item.members.length}
+                      onClose={close}
+                      footer={
+                        item.seeAlso && onOpenSection ? (
+                          <SeeAlsoLink
+                            label={item.seeAlso.label}
+                            onClick={() => {
+                              const section = item.seeAlso!.section;
+                              close();
+                              onOpenSection(section);
+                            }}
+                          />
+                        ) : undefined
+                      }
+                    >
+                      {item.members.map((m, i) => (
+                        <div
+                          key={metricKey(m)}
+                          className="tl-fan-out"
+                          // The Timeline's fan, on the shared cascade (docs/specs/004-interface-design/motion.md).
+                          style={{ animationDelay: `${cascadeDelayMs(i)}ms` }}
+                        >
+                          <MetricCard
+                            metric={m}
+                            count={counts[i] ?? 0}
+                            series={series[i]?.values}
+                            days={daily?.days}
+                            highlightFromIndex={highlightFromIndex}
+                            previous={previousOf(m)}
+                            against={against}
+                            color={lines ? series[i]?.color : undefined}
+                          />
+                        </div>
+                      ))}
+                    </StackModal>
+                  ) : null}
+                </Fragment>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+// The full-width link at the foot of a stack's modal into a tab that goes
+// deeper (docs/specs/017-telemetry/telemetry.md See also).
+function SeeAlsoLink({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-sky-600 transition-colors hover:border-sky-300 hover:bg-sky-50 dark:border-slate-700 dark:bg-slate-900 dark:text-brand-300 dark:hover:border-brand-500/60 dark:hover:bg-brand-500/10"
+    >
+      {label}
+      <Glyph size={16} units={24}>
+        <path d="M5 12h14M13 6l6 6-6 6" />
+      </Glyph>
+    </button>
+  );
+}

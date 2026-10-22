@@ -1,0 +1,398 @@
+'use client';
+
+// Right-click context menu for the editor, lifted out of
+// editor-page.tsx. Renders one of two menus depending on what was
+// clicked: a single-element menu (link / layer order / note /
+// comment) or a whole-selection 'multi' menu. The canvas (empty-space)
+// right-click opens the tab menu with its canvas sections folded in,
+// rendered by the TabBar — not here. Duplicate lives in the selection
+// toolbar (SelectionPopover), not here.
+//
+// Purely presentational: every action is a callback prop, and each
+// item closes the menu after firing (the close-then-act pattern the
+// inline version used). The page owns the open/closed state + the
+// handlers; this component only decides which items to show.
+
+import {
+  DEFAULT_ICON_SIZE,
+  defaultPadding,
+  isBoxed,
+  isChartShape,
+  positionsInlineIcon,
+  isChecklistShape,
+  isCodeBlockShape,
+  isLegendShape,
+  isSankeyShape,
+  isLineShape,
+  isProgressShape,
+  isRatingShape,
+  isSelfDrawingShape,
+  supportsBorderControls,
+  supportsColours,
+  supportsShadow,
+  type IconSize,
+  type IconWeight,
+  DEFAULT_ICON_WEIGHT,
+  type Padding,
+  type TextAlignX,
+  type TextAlignY,
+  type TextSize,
+} from '@livedocuments/document';
+import { ContextMenuDivider } from '@/components/palette/ContextMenu';
+import {
+  IconCategoryGlyph,
+  RemoveIconGlyph,
+  StyleMenuGlyph,
+  TextGlyph,
+} from '@/components/palette/context-menu-icons';
+import { MenuAccordionSection, MenuGroupSeparator } from '@/components/primitives/PortalMenu';
+import { MenuTile } from '@/components/primitives/MenuTiles';
+import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
+import { TypographySections } from './TypographySections';
+import { presetPxFor } from './TextSizeControl';
+import { WordmarkSection } from './WordmarkSection';
+
+import { IconSizeTiles, IconWeightTiles } from '@/components/palette/context-menu-tiles';
+import { isTechIconId } from '@/lib/tech-icons';
+import { AlignIcon as AlignLinesIcon } from '@/components/canvas/table-icons';
+import { AlignmentGrid } from '@/components/palette/palette-controls';
+import { hasStylePresets, TargetPresetsSection } from '@/components/palette/PresetSections';
+import {
+  IconPositionGrid,
+  MarkersMenuGlyph,
+  MarkerTiles,
+} from '@/components/palette/context-menu-rows';
+import type { EditorContextMenuProps } from './EditorContextMenu.types';
+import { useContextMenuScaffold } from './useContextMenuScaffold';
+import { ElementDataSections } from './ElementDataSections';
+import { ElementColourBorderSections } from './ElementColourBorderSections';
+
+type Scaffold = ReturnType<typeof useContextMenuScaffold>;
+
+// The element menu's appearance group: type-specific style sections — Presets,
+// Progress / Rail / Rating, Animation, Colours, Border, Data / Chart. Derives
+// its own type flags off `target` and shares the accordion + colour
+// scaffolding via props. Split out of EditorContextMenu.
+type ElementAppearanceSectionsProps = {
+  props: EditorContextMenuProps;
+  target: EditorContextMenuProps['elements'][number];
+  onClose: () => void;
+  sectionProps: Scaffold['sectionProps'];
+  flyoutProps: Scaffold['flyoutProps'];
+  colorProps: Scaffold['colorProps'];
+  textColorHandlers: Scaffold['textColorHandlers'];
+  fillColorHandlers: Scaffold['fillColorHandlers'];
+  headerFillHandlers: Scaffold['headerFillHandlers'];
+  arrowheadColorHandlers: Scaffold['arrowheadColorHandlers'];
+  strokeColorHandlers: Scaffold['strokeColorHandlers'];
+};
+
+export function ElementAppearanceSections({
+  props,
+  target,
+  onClose,
+  sectionProps,
+  flyoutProps,
+  colorProps,
+  textColorHandlers,
+  fillColorHandlers,
+  headerFillHandlers,
+  arrowheadColorHandlers,
+  strokeColorHandlers,
+  afterGroup = true,
+}: ElementAppearanceSectionsProps & {
+  // A group sits above (Layer, Size, Rotation): the appearance group is set apart from it. Not on an element covering
+  // the canvas, whose menu has none of them.
+  afterGroup?: boolean;
+}) {
+  const boxed = isBoxed(target);
+  const isIcon = target.type === 'shape' && target.shape === 'icon';
+  // Border controls apply only where a wrapper border actually renders
+  // (shapes / freehand / tables — supportsBorderControls excludes icons
+  // and the self-drawing data shapes, whose controls were dead).
+  const borderable = supportsBorderControls(target);
+  // A regular shape carrying an inline icon (drag-an-icon-onto-it
+  // feature, docs/specs/008-canvas/canvas-and-palette.md) gets a "Remove Icon" entry; the dedicated 'icon'
+  // shape is its own glyph and excluded.
+  const hasInlineIcon =
+    target.type === 'shape' && target.shape !== 'icon' && target.iconId !== undefined;
+  const isProgress = target.type === 'shape' && isProgressShape(target.shape);
+  const isRating = target.type === 'shape' && isRatingShape(target.shape);
+  const isChart = target.type === 'shape' && isChartShape(target.shape);
+  const isLine = target.type === 'shape' && isLineShape(target.shape);
+  const isCodeBlock = target.type === 'shape' && isCodeBlockShape(target.shape);
+  const isLegend = target.type === 'shape' && isLegendShape(target.shape);
+  const isSankey = target.type === 'shape' && isSankeyShape(target.shape);
+  const isChecklist = target.type === 'shape' && isChecklistShape(target.shape);
+  // The Text band (docs/specs/008-canvas/canvas-and-palette.md): Markers + Alignment. Markers are regular-shape
+  // only (self-drawing shapes have no label slot); Alignment applies to any
+  // boxed element with a text slot.
+  // Markers decorate the LABEL (docs/specs/009-elements/shape-markers.md), so the category only shows once
+  // the element actually has text — or while its text is being TYPED: in
+  // edit mode the label is still uncommitted (text commits on blur), and
+  // the menu riding alongside the editor (docs/specs/008-canvas/canvas-and-palette.md) must offer the text
+  // options for the words on screen, not the empty committed label.
+  const hasText =
+    ((target as { label?: string }).label ?? '').trim().length > 0 || props.editingId === target.id;
+  const showMarkers = target.type === 'shape' && !isSelfDrawingShape(target.shape) && hasText;
+  // Like Markers, Text Alignment only shows once there's text to align.
+  const showAlignment =
+    boxed &&
+    target.type !== 'image' &&
+    !(target.type === 'shape' && isSelfDrawingShape(target.shape)) &&
+    hasText;
+  // The shape-only sections below (Marker / Progress / Rail / Rating / Data)
+  // all render under a `target.type === 'shape'` guard, so this is non-null
+  // wherever they read it — `shapeTarget?.field ?? default` reads the shape
+  // fields without an `as ShapeElement` assertion at each site.
+  const shapeTarget = target.type === 'shape' ? target : null;
+  // The appearance group's divider shows whenever any appearance section will
+  // render — boxed elements (shapes / freehand / tables / images) and arrows.
+  const showAppearanceGroup = boxed || target.type === 'arrow';
+  // The Style flyout shows when any of its children would: presets
+  // (shapes with looks / arrow line looks), Colours, or Border — the
+  // same gates the sections carry inside.
+  // A code block takes no element colours (docs/specs/009-elements/code-block.md) but it does pick a colour
+  // SCHEME, so the band opens for it carrying only Presets: Colours and Border
+  // gate themselves off it already.
+  const showStyle =
+    isCodeBlock ||
+    hasStylePresets(target) ||
+    target.type === 'sticky' ||
+    target.type === 'arrow' ||
+    (boxed && supportsColours(target) && !isChart && !isSankey) ||
+    (borderable && !isChart) ||
+    // An image has no colours, border or looks, only a Shadow (docs/specs/008-canvas/element-shadows.md),
+    // which sits in this flyout: without this it was never reachable on one.
+    supportsShadow(target);
+  return (
+    <>
+      {showAppearanceGroup && afterGroup ? <MenuGroupSeparator /> : null}
+      {/* ── Style band (docs/specs/008-canvas/canvas-and-palette.md): Presets (docs/specs/010-palette/style-presets.md) + Colours + Border,
+            grouped under one "Style" row that opens them in a side flyout —
+            the same fold the Text band uses — so the three style categories
+            take one slot in the menu's vertical stack. Inside the flyout
+            they're the same collapsible sections as before (shared with the
+            multi-selection menu, which still stacks them inline), all
+            starting closed. ── */}
+      {showStyle ? (
+        <MenuFlyoutSection title="Style" icon={<StyleMenuGlyph />} {...flyoutProps('style')}>
+          {/* Which Presets grid this element gets: shape looks, a sticky's
+              pad of note colours, a code block's colour scheme, or an arrow's
+              line looks. See PresetSections. */}
+          <TargetPresetsSection
+            target={target}
+            props={props}
+            accordion={sectionProps('presets')}
+            onClose={onClose}
+          />
+          {/* Colours + Border accordions — see ElementColourBorderSections. */}
+          <ElementColourBorderSections
+            props={props}
+            target={target}
+            boxed={boxed}
+            isIcon={isIcon}
+            isChart={isChart}
+            borderable={borderable}
+            onClose={onClose}
+            sectionProps={sectionProps}
+            colorProps={colorProps}
+            textColorHandlers={textColorHandlers}
+            fillColorHandlers={fillColorHandlers}
+            headerFillHandlers={headerFillHandlers}
+            arrowheadColorHandlers={arrowheadColorHandlers}
+            strokeColorHandlers={strokeColorHandlers}
+          />
+        </MenuFlyoutSection>
+      ) : null}
+      <ElementDataSections
+        props={props}
+        target={target}
+        isProgress={isProgress}
+        isRating={isRating}
+        isChart={isChart}
+        isLine={isLine}
+        isCodeBlock={isCodeBlock}
+        isLegend={isLegend}
+        isSankey={isSankey}
+        isChecklist={isChecklist}
+        sectionProps={sectionProps}
+        flyoutProps={flyoutProps}
+      />
+      {/* Icon — a Technology icon element's fixed tile size (docs/specs/010-palette/technology-icons.md).
+            The mark renders at a preset pixel size regardless of the box;
+            these tiles pick the preset. */}
+      {isIcon && isTechIconId((target as { iconId?: string }).iconId) ? (
+        <>
+          <MenuGroupSeparator />
+          <MenuAccordionSection
+            title="Icon"
+            icon={<IconCategoryGlyph />}
+            {...sectionProps('icon-size')}
+          >
+            <IconSizeTiles
+              value={(target as { iconSize?: IconSize }).iconSize ?? DEFAULT_ICON_SIZE}
+              onSet={props.onSetIconSize}
+              onPreview={props.onPreviewIconSize}
+              onPreviewEnd={props.onPreviewStyleEnd}
+            />
+          </MenuAccordionSection>
+        </>
+      ) : null}
+      {/* Weight — a line-art icon's thin / regular / bold stroke (docs/specs/004-interface-design/iconography.md). */}
+      {isIcon && !isTechIconId((target as { iconId?: string }).iconId) ? (
+        <>
+          <MenuGroupSeparator />
+          <MenuAccordionSection
+            title="Weight"
+            icon={<IconCategoryGlyph />}
+            {...sectionProps('icon-weight')}
+          >
+            <IconWeightTiles
+              iconId={(target as { iconId?: string }).iconId}
+              value={(target as { iconWeight?: IconWeight }).iconWeight ?? DEFAULT_ICON_WEIGHT}
+              onSet={props.onSetIconWeight}
+              onPreview={props.onPreviewIconWeight}
+              onPreviewEnd={props.onPreviewStyleEnd}
+            />
+          </MenuAccordionSection>
+        </>
+      ) : null}
+      {/* Icon — re-place or remove a shape's inline icon. Sits directly
+            above Markers (both are shape-content controls); the Icon position
+            grid here is now the only way to move the icon, since drag-to-
+            reposition was removed. */}
+      {hasInlineIcon ? (
+        <>
+          <MenuGroupSeparator />
+          <MenuAccordionSection title="Icon" icon={<IconCategoryGlyph />} {...sectionProps('icon')}>
+            {/* A card, callout, header or boundary places its own icon, so it offers no position. */}
+            {positionsInlineIcon(target) ? (
+              <>
+                <p className="px-3 pb-1 text-[10px] font-medium text-slate-500 dark:text-slate-400">
+                  Icon position
+                </p>
+                <IconPositionGrid
+                  current={(target as { iconPosition?: string }).iconPosition ?? 'left'}
+                  onPick={(pos) =>
+                    props.onSetIconPosition(
+                      target.id,
+                      (target as { iconId?: string }).iconId ?? '',
+                      pos,
+                    )
+                  }
+                  onPreview={(pos) =>
+                    props.onPreviewIconPosition(
+                      target.id,
+                      (target as { iconId?: string }).iconId ?? '',
+                      pos,
+                    )
+                  }
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                />
+                <ContextMenuDivider />
+              </>
+            ) : null}
+
+            <div className="px-2 py-1.5">
+              <MenuTile
+                icon={<RemoveIconGlyph />}
+                label="Remove Icon"
+                onClick={() => {
+                  props.onRemoveIcon(target.id);
+                  onClose();
+                }}
+              />
+            </div>
+          </MenuAccordionSection>
+        </>
+      ) : null}
+      {/* ── Text band (docs/specs/008-canvas/canvas-and-palette.md): every text control for the element —
+            typography (Font / Size / Padding / Alignment) plus Markers
+            (docs/specs/009-elements/shape-markers.md) — grouped under one "Text" row that opens them in a side
+            flyout, so they don't lengthen the menu's vertical stack. The row
+            only shows when the element has text (showMarkers / showAlignment
+            both require a non-empty label). Sub-categories all start closed:
+            auto-expanding the first one flipped the shared one-open-section
+            scaffold, collapsing whichever inline accordion the user had open
+            in the host menu behind the flyout. Sits in the style band
+            (no separator of its own), beside Style + Animation. ── */}
+      {showMarkers || showAlignment ? (
+        <MenuFlyoutSection title="Text" icon={<TextGlyph />} {...flyoutProps('text')}>
+          {/* Typography — Font / Size / Padding, shared with the rich-text
+              toolbar's overflow menu. Applies to the element's whole label. */}
+          {showAlignment ? (
+            <TypographySections
+              currentFont={(target as { font?: string }).font ?? null}
+              currentSize={(target as { textSize?: TextSize }).textSize ?? 'sm'}
+              presetPx={presetPxFor(target.type)}
+              padding={(target as { padding?: Padding }).padding ?? defaultPadding(target)}
+              onSetFont={props.onSetFont}
+              onSetSize={props.onSetTextSize}
+              onSetPadding={props.onSetPadding}
+              onPreviewFont={props.onPreviewFont}
+              onPreviewSize={props.onPreviewTextSize}
+              onPreviewPadding={props.onPreviewPadding}
+              onPreviewEnd={props.onPreviewStyleEnd}
+              sectionProps={sectionProps}
+            />
+          ) : null}
+          {/* Wordmark type on a logo page (docs/specs/007-editor/logo-pages.md). */}
+          {showAlignment &&
+          target.type === 'text' &&
+          props.wordmarkOffered &&
+          props.onSetWordmark &&
+          props.onPreviewWordmark ? (
+            <WordmarkSection
+              element={target}
+              section={sectionProps('wordmark')}
+              onSet={props.onSetWordmark}
+              onPreview={props.onPreviewWordmark}
+              onPreviewEnd={props.onPreviewStyleEnd}
+            />
+          ) : null}
+          {/* Alignment — the text toolbar's 3×3 grid, here too for discovery. */}
+          {showAlignment ? (
+            <MenuAccordionSection
+              title="Alignment"
+              icon={
+                <AlignLinesIcon
+                  dir={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+                />
+              }
+              {...sectionProps('text-align')}
+            >
+              <div className="px-2 py-1.5">
+                <AlignmentGrid
+                  alignX={(target as { textAlignX?: TextAlignX }).textAlignX ?? 'center'}
+                  alignY={(target as { textAlignY?: TextAlignY }).textAlignY ?? 'middle'}
+                  onChange={props.onSetTextAlign}
+                  onPreview={props.onPreviewTextAlign}
+                  onPreviewEnd={props.onPreviewStyleEnd}
+                />
+              </div>
+            </MenuAccordionSection>
+          ) : null}
+          {showMarkers ? (
+            <MenuAccordionSection
+              title="Markers"
+              icon={<MarkersMenuGlyph />}
+              {...sectionProps('markers')}
+            >
+              <MarkerTiles
+                marker={shapeTarget?.marker ?? null}
+                size={shapeTarget?.markerSize ?? 'scale'}
+                onSet={props.onSetMarker}
+                onSetSize={props.onSetMarkerSize}
+                onPreview={props.onPreviewMarker}
+                onPreviewSize={props.onPreviewMarkerSize}
+                onPreviewEnd={props.onPreviewStyleEnd}
+              />
+            </MenuAccordionSection>
+          ) : null}
+        </MenuFlyoutSection>
+      ) : null}
+      {/* ── Content group: Line / Pointer / Text / Icon / Image / Table / Link ── */}
+    </>
+  );
+}

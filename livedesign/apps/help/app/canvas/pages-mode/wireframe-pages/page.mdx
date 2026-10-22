@@ -1,0 +1,77 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Wireframe Pages',
+  description:
+    'Wireframe a screen inside a device frame: a phone, tablet, laptop, browser or watch, ready-made screens and mockup export.',
+  path: '/help/canvas/pages-mode/wireframe-pages/',
+});
+
+<ArticleLayout
+  title="Wireframe Pages"
+  description="A screen to wireframe, framed by the device it is for: a phone, a tablet, a laptop, a desktop, a browser or a watch."
+  categoryTitle="Canvas"
+  categorySlug="canvas"
+  parentArticle={{ title: 'Pages Mode', slug: 'pages-mode' }}
+  subArticles={getSubArticles('pages-mode').filter((a) => a.slug !== 'wireframe-pages')}
+>
+
+A **wireframe page** is a kind of page in [Pages mode](/help/canvas/pages-mode/): a screen to wireframe on, framed by the **device** it is for. The page is the device, drawn front on at its real size, and everything you put on the page lives on its screen.
+
+## Adding a Wireframe Page
+
+- Press the **+** after the last page and choose **Wireframe**, or choose **Wireframe** when a new tab's first page asks what it is for.
+- Then **Choose a Device**: an **iPhone**, an **iPhone Duo** (Apple's foldable, opened to one wide 890 x 626 screen), an **Android** phone, an **iPad** or **Android** tablet, a **Laptop**, a **Desktop** monitor, a **Browser** window, or a **Watch**. Each screen is the device's real size in pixels (an iPhone is 393 x 852), so a wireframe is drawn at the size it will be seen.
+- A new wireframe page after another takes the same device and frame, so a flow of screens stays consistent.
+
+## Changing the Device
+
+Beside the page's cog sits the **Device** button, showing the page's device. It opens:
+
+- **Device**: switch to any other device. What is on the screen comes with it, scaled down only if it no longer fits.
+- **Orientation**: turn a phone or tablet to **Landscape**.
+- **Frame**: **Theme** (the default) draws the device in your tab theme's colours, browser toolbar included, so it changes when the theme does; or choose **Dark**, **Light**, or **Outline** for a low-fidelity line drawing.
+- **System Bars**: the status bar (9:41, signal, Wi-Fi and battery) and the home indicator, on by default. They are drawn over your content, as a real screen draws them; turn them off for a bare screen.
+
+The same choices are in the page's cog panel, on **Device**. A **Browser** page's address bar shows the page's name, so naming the page **Pricing** shows `example.com/pricing`.
+
+## The Screen
+
+- The page's **Background** paints the screen. A **Grid** pattern makes a handy layout grid.
+- Anything that reaches past the screen's edge is cut off at it, rounded corners included, never drawn over the frame.
+- Elements snap to the screen's edges and centre lines, and to its **safe area**: the screen less its system bars and a gutter (16 px on a phone, 24 on a tablet, 32 on a computer).
+
+## Starting From a Screen
+
+The **Layout** button above a wireframe page offers **forty screens** in nine categories, each built for the device you chose: a single column on a phone, sidebars and columns on a tablet or computer.
+
+- **Start**: Onboarding, Sign In, Sign Up, Verify Code, Permissions and an Empty State.
+- **Browse**: a Home Feed, Search Results, an Article and Places on a map.
+- **Shop**: a Shop Grid, a Product Detail, a Cart, a Checkout and Order Tracking.
+- **Social**: a Profile, a Post with comments, a Stories Feed, a New Post, a Chat and Notifications.
+- **Work**: a Dashboard, a Kanban Board, a Task List, a Calendar, an Inbox and a Data Table.
+- **Media**: a Music Player, a Video Player, a Podcast and a Photo Gallery.
+- **Account**: Settings, Edit Profile and a Help Center.
+- **Marketing**: a Landing Page, Pricing, a Team page, a Contact form and a Blog.
+- **Travel**: a Flight Search, a Boarding Pass and a Ride.
+
+A watch has nine of its own: a **Glance**, a **List**, a **Workout**, **Now Playing**, **Weather**, a **Timer**, **Heart Rate**, **Up Next** and a **Notification**. Every part of a layout is an ordinary element you can edit, move or delete.
+
+## Wireframe Templates
+
+**Start Making Pages** has a **Wireframes** group:
+
+- **Blank wireframes**: one empty screen in a **Phone**, **Tablet**, **Website** (browser), **Laptop** or **Watch**.
+- **Ready-made flows**, a row of screens to make your own: a **Mobile App Wireframe** (onboarding to checkout on an iPhone), a **Website Wireframe** (home, pricing and sign in), a **Web App Wireframe** (a dashboard, an orders table and settings on a laptop), a **Tablet App Wireframe** and a **Watch App Wireframe**.
+
+## The Elements Palette
+
+On a wireframe page the palette changes to suit it: **Components** and **Elements** come first on the strip, and Elements opens by itself. Move to another kind of page and the palette changes with you. It holds the parts a screen is made of: a **Button** and an **Outline Button**, a **Text Field** and a **Search Field**, a **Chip**, a **Badge** (with the same presets as in Diagram mode: New, Beta, Version, Count, Draft and Warning), an **Image Placeholder**, an **Avatar**, a **Card**, a **Checklist** and a **Divider**. Text and sticky notes for comments on the design are in **Write**.
+
+## Exporting
+
+Export a wireframe page as PNG, SVG or PDF from **Export**: you get the whole device with your screen in it. PNG and SVG are see-through around the device, ready to drop into a deck or a document.
+
+</ArticleLayout>

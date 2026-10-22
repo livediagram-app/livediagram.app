@@ -1,0 +1,392 @@
+/*
+ * The Text animation set (docs/specs/028-animation/element-animations.md "Text").
+ *
+ * A label's content node (.lvd-tx) animates ONE registered number, --lvd-tx-p, from 0 to 1 over its
+ * cycle. Each unit (.lvd-tx-unit: a letter, a word, or the whole block, numbered by --i) derives its
+ * own state from that progress with calc(), so a reveal can type, hold and clear in one seamless
+ * cycle, letters stay in step however many there are, and nothing runs but CSS. The cost is a
+ * style recalculation of the label's units each frame, bounded by the 400-letter limit.
+ *
+ * Variables, set inline by useTextAnimation:
+ *   --lvd-text-n      the number of units
+ *   --lvd-text-speed  duration factor (slowest 4 ... fast 0.5)
+ *   --lvd-text-iter   infinite, or 1 to play once (reveals then stay revealed)
+ *   --lvd-tx-color    the label's text colour (Scramble's stand-ins)
+ *   --lvd-anim-color  the accent: the element's stroke, else brand sky (Underline, Shine, Glow)
+ *   --lvd-tx-mark     Highlighter's marker: the element's stroke, else marker yellow
+ *
+ * The progress's initial value is 1, the end of a cycle: with no animation (reduced motion, or the
+ * app's own Reduce Motion setting, which jumps to the last frame) every reveal shows fully revealed
+ * and every loop at rest. A reveal's clear fades the whole label out and back to visible at 100%,
+ * so that last frame is never blank.
+ */
+
+@property --lvd-tx-p {
+  syntax: '<number>';
+  inherits: true;
+  initial-value: 1;
+}
+
+/* The progress moves only while something visibly moves and holds still otherwise, so a label's
+ * letters are restyled only during its reveal or sweep, not through its hold and rest. */
+@keyframes lvd-tx-progress {
+  from {
+    --lvd-tx-p: 0;
+  }
+  to {
+    --lvd-tx-p: 1;
+  }
+}
+@keyframes lvd-tx-reveal {
+  0% {
+    --lvd-tx-p: 0;
+  }
+  45%,
+  100% {
+    --lvd-tx-p: 1;
+  }
+}
+@keyframes lvd-tx-sweep {
+  0% {
+    --lvd-tx-p: 0;
+  }
+  50%,
+  100% {
+    --lvd-tx-p: 1;
+  }
+}
+
+/* A reveal's clear: hold, fade out, and be visible again at the seam. */
+@keyframes lvd-tx-clear {
+  0%,
+  86% {
+    opacity: 1;
+  }
+  93%,
+  99.9% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.lvd-tx {
+  --lvd-tx-n: max(1, var(--lvd-text-n, 1));
+  /* The reveal's progress: the progress itself, which a reveal runs over the first 45% of its cycle
+   * (EA2) and then holds at 1. */
+  --lvd-tx-rp: var(--lvd-tx-p);
+}
+.lvd-tx-unit {
+  position: relative;
+  /* This unit's share of the reveal: 0 before its turn, 1 once it has had it. */
+  --r: clamp(0, var(--lvd-tx-rp) * var(--lvd-tx-n) - var(--i, 0), 1);
+}
+/* No word breaks across lines mid-animation. */
+.lvd-tx-word {
+  white-space: nowrap;
+}
+
+/* The reveals' cycle. Each sets its own --lvd-tx-d (the cycle length). */
+.lvd-tx-typewriter,
+.lvd-tx-words,
+.lvd-tx-cascade,
+.lvd-tx-focus,
+.lvd-tx-scramble,
+.lvd-tx-highlighter,
+.lvd-tx-underline {
+  animation:
+    lvd-tx-reveal var(--lvd-tx-d) linear var(--lvd-text-iter, infinite) both,
+    lvd-tx-clear var(--lvd-tx-d) linear var(--lvd-text-iter, infinite) both;
+}
+/* The loops' cycle: Wave and Shine sweep in the first half and rest; Rainbow flows throughout. */
+.lvd-tx-wave,
+.lvd-tx-shine {
+  animation: lvd-tx-sweep var(--lvd-tx-d) linear var(--lvd-text-iter, infinite) both;
+}
+.lvd-tx-rainbow {
+  /* Stepped: the colours move 24 times a cycle rather than every frame, so a board of rainbow
+   * labels restyles their letters a few times a second, not sixty. */
+  animation: lvd-tx-progress var(--lvd-tx-d) steps(24) var(--lvd-text-iter, infinite) both;
+}
+/* Repeat off: one pass and hold; no clear. */
+.lvd-tx.lvd-once {
+  animation: lvd-tx-reveal var(--lvd-tx-d) linear 1 both;
+}
+
+/* Typewriter: letters appear one at a time behind a caret. Each letter draws a caret after itself
+ * only while it is the newest letter; the last letter's caret blinks through the hold. */
+.lvd-tx-typewriter {
+  --lvd-tx-d: calc(clamp(2.4s, var(--lvd-tx-n) * 0.13s, 12s) * var(--lvd-text-speed, 1));
+}
+.lvd-tx-typewriter .lvd-tx-unit {
+  opacity: clamp(0, var(--r) * 1000, 1);
+}
+.lvd-tx-typewriter .lvd-tx-unit::after {
+  content: '';
+  position: absolute;
+  top: 0.1em;
+  bottom: 0.06em;
+  right: -0.06em;
+  width: 0.07em;
+  border-radius: 0.04em;
+  background: currentColor;
+  opacity: clamp(0, min(var(--r), 1 - var(--r)) * 1000, 1);
+}
+@keyframes lvd-tx-caret-blink {
+  0%,
+  49.9% {
+    scale: 1;
+  }
+  50%,
+  100% {
+    scale: 0;
+  }
+}
+.lvd-tx-typewriter .lvd-tx-unit[data-last]::after {
+  opacity: calc(clamp(0, var(--r) * 1000, 1) * clamp(0, (0.86 - var(--lvd-tx-p)) * 1000, 1));
+  animation: lvd-tx-caret-blink calc(1s * var(--lvd-text-speed, 1)) linear infinite;
+}
+
+/* Words: each word rises and fades in over its turn and the next. */
+.lvd-tx-words {
+  --lvd-tx-d: calc(clamp(2.4s, var(--lvd-tx-n) * 0.5s, 10s) * var(--lvd-text-speed, 1));
+}
+.lvd-tx-words .lvd-tx-unit {
+  display: inline-block;
+  --r2: clamp(0, (var(--lvd-tx-rp) * (var(--lvd-tx-n) + 1) - var(--i, 0)) / 2, 1);
+  opacity: var(--r2);
+  translate: 0 calc((1 - var(--r2)) * (1 - var(--r2)) * 0.45em);
+}
+
+/* Cascade: letters drop in from above, overshoot a touch and settle, four turns each. */
+.lvd-tx-cascade {
+  --lvd-tx-d: calc(clamp(2.4s, var(--lvd-tx-n) * 0.11s, 10s) * var(--lvd-text-speed, 1));
+}
+.lvd-tx-cascade .lvd-tx-unit {
+  display: inline-block;
+  --r4: clamp(0, (var(--lvd-tx-rp) * (var(--lvd-tx-n) + 3) - var(--i, 0)) / 4, 1);
+  opacity: min(1, var(--r4) * 3);
+  translate: 0
+    calc((1 - var(--r4)) * (1 - var(--r4)) * -0.7em + sin(var(--r4) * 180deg) * var(--r4) * 0.1em);
+}
+
+/* Focus: the words sharpen from a blur. */
+.lvd-tx-focus {
+  --lvd-tx-d: calc(3.6s * var(--lvd-text-speed, 1));
+}
+.lvd-tx-focus .lvd-tx-unit {
+  filter: blur(calc((1 - var(--lvd-tx-rp)) * 0.35em));
+  opacity: calc(0.15 + 0.85 * var(--lvd-tx-rp));
+}
+
+/* Scramble: two stand-in characters, then the real one, three turns each. The stand-ins are
+ * pseudo-element content from data attributes, so the DOM text never changes. */
+.lvd-tx-scramble {
+  --lvd-tx-d: calc(clamp(2.4s, var(--lvd-tx-n) * 0.13s, 12s) * var(--lvd-text-speed, 1));
+}
+.lvd-tx-scramble .lvd-tx-unit {
+  --r3: clamp(0, (var(--lvd-tx-rp) * (var(--lvd-tx-n) + 2) - var(--i, 0)) / 3, 1);
+  color: color-mix(
+    in srgb,
+    currentColor calc(clamp(0, (var(--r3) - 0.999) * 100000, 1) * 100%),
+    transparent
+  );
+}
+.lvd-tx-scramble .lvd-tx-unit::before,
+.lvd-tx-scramble .lvd-tx-unit::after {
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: var(--lvd-tx-color, currentColor);
+}
+.lvd-tx-scramble .lvd-tx-unit::before {
+  content: attr(data-a);
+  opacity: clamp(0, min(var(--r3), 0.5 - var(--r3)) * 100000, 1);
+}
+.lvd-tx-scramble .lvd-tx-unit::after {
+  content: attr(data-b);
+  opacity: clamp(0, min(var(--r3) - 0.4999, 0.999 - var(--r3)) * 100000, 1);
+}
+
+/* Highlighter: a marker stroke sweeps behind the words, line by line. */
+.lvd-tx-highlighter {
+  --lvd-tx-d: calc(4.4s * var(--lvd-text-speed, 1));
+}
+.lvd-tx-highlighter .lvd-tx-unit {
+  background-image: linear-gradient(
+    color-mix(in srgb, var(--lvd-tx-mark, #facc15) 45%, transparent),
+    color-mix(in srgb, var(--lvd-tx-mark, #facc15) 45%, transparent)
+  );
+  background-repeat: no-repeat;
+  background-position: 0 88%;
+  background-size: calc(var(--lvd-tx-rp) * 100%) 0.6em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Underline: a rounded line draws itself beneath the words. */
+.lvd-tx-underline {
+  --lvd-tx-d: calc(4s * var(--lvd-text-speed, 1));
+}
+.lvd-tx-underline .lvd-tx-unit {
+  background-image: linear-gradient(var(--lvd-anim-color, #0ea5e9), var(--lvd-anim-color, #0ea5e9));
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: calc(var(--lvd-tx-rp) * 100%) 0.09em;
+  padding-bottom: 0.06em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* Wave: a ripple runs along the letters in the first half of the cycle, then they rest. */
+.lvd-tx-wave {
+  --lvd-tx-d: calc(clamp(1.6s, var(--lvd-tx-n) * 0.09s, 6s) * var(--lvd-text-speed, 1));
+}
+.lvd-tx-wave .lvd-tx-unit {
+  display: inline-block;
+  --s: calc(var(--lvd-tx-p) * (var(--lvd-tx-n) + 5) - 2.5 - var(--i, 0));
+  translate: 0 calc(max(0, 1 - var(--s) * var(--s) / 6.25) * -0.28em);
+}
+
+/* Shine: a band of the accent sweeps across the letters in the first half, then rests. */
+.lvd-tx-shine {
+  --lvd-tx-d: calc(clamp(3s, var(--lvd-tx-n) * 0.14s, 8s) * var(--lvd-text-speed, 1));
+}
+.lvd-tx-shine .lvd-tx-unit {
+  --s: calc(var(--lvd-tx-p) * (var(--lvd-tx-n) + 6) - 3 - var(--i, 0));
+  color: color-mix(
+    in srgb,
+    var(--lvd-anim-color, #0ea5e9) calc(max(0, 1 - abs(var(--s)) / 3) * 75%),
+    currentColor
+  );
+}
+
+/* Flicker: a few letters (chosen from the element id) stutter like a failing neon sign, each at
+ * its own moment in the cycle. */
+@keyframes lvd-tx-flicker {
+  0%,
+  7%,
+  100% {
+    opacity: 1;
+  }
+  1% {
+    opacity: 0.15;
+  }
+  2% {
+    opacity: 1;
+  }
+  3.5% {
+    opacity: 0.35;
+  }
+  5% {
+    opacity: 0.9;
+  }
+}
+.lvd-tx-flicker .lvd-tx-unit[data-flick] {
+  animation: lvd-tx-flicker calc(4s * var(--lvd-text-speed, 1)) linear
+    var(--lvd-text-iter, infinite);
+  animation-delay: calc(var(--h, 0) * -4s * var(--lvd-text-speed, 1));
+}
+
+/* Rainbow: colour flows through the letters, easing in and out of the label's own colour at the
+ * seam so the loop is seamless and the rest frame is the plain label. */
+.lvd-tx-rainbow {
+  --lvd-tx-d: calc(4s * var(--lvd-text-speed, 1));
+}
+.lvd-tx-rainbow .lvd-tx-unit {
+  color: color-mix(
+    in oklch,
+    oklch(0.64 0.2 calc(var(--lvd-tx-p) * 360deg + var(--i, 0) * 24deg))
+      calc(min(1, sin(var(--lvd-tx-p) * 180deg) * 1.6) * 100%),
+    currentColor
+  );
+}
+
+/* Glow: a soft halo hugging the letters breathes. */
+@keyframes lvd-tx-glow {
+  0%,
+  100% {
+    filter: drop-shadow(
+      0 0 0.04em color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 25%, transparent)
+    );
+  }
+  50% {
+    filter: drop-shadow(
+      0 0 0.22em color-mix(in srgb, var(--lvd-anim-color, #0ea5e9) 60%, transparent)
+    );
+  }
+}
+.lvd-tx-glow {
+  animation: lvd-tx-glow calc(2.4s * var(--lvd-text-speed, 1)) ease-in-out
+    var(--lvd-text-iter, infinite);
+}
+
+/* Bounce: the words hop, squash and settle, then rest. */
+@keyframes lvd-tx-bounce {
+  0%,
+  70%,
+  100% {
+    translate: 0 0;
+    scale: 1;
+  }
+  10% {
+    scale: 1.03 0.95;
+    animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1);
+  }
+  32% {
+    translate: 0 -0.35em;
+    scale: 0.98 1.03;
+    animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4);
+  }
+  52% {
+    translate: 0 0;
+    scale: 1.04 0.95;
+  }
+}
+.lvd-tx-bounce {
+  animation: lvd-tx-bounce calc(1.2s * var(--lvd-text-speed, 1)) ease-out
+    var(--lvd-text-iter, infinite);
+}
+
+/* Float: the words drift around a soft loop. */
+@keyframes lvd-tx-float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  25% {
+    translate: 0.12em -0.06em;
+  }
+  50% {
+    translate: 0 -0.14em;
+  }
+  75% {
+    translate: -0.12em -0.06em;
+  }
+}
+.lvd-tx-float {
+  animation: lvd-tx-float calc(6s * var(--lvd-text-speed, 1)) cubic-bezier(0.37, 0, 0.63, 1)
+    var(--lvd-text-iter, infinite);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lvd-tx-typewriter,
+  .lvd-tx-typewriter .lvd-tx-unit[data-last]::after,
+  .lvd-tx-words,
+  .lvd-tx-cascade,
+  .lvd-tx-focus,
+  .lvd-tx-scramble,
+  .lvd-tx-highlighter,
+  .lvd-tx-underline,
+  .lvd-tx-wave,
+  .lvd-tx-shine,
+  .lvd-tx-flicker .lvd-tx-unit[data-flick],
+  .lvd-tx-rainbow,
+  .lvd-tx-glow,
+  .lvd-tx-bounce,
+  .lvd-tx-float,
+  .lvd-tx.lvd-once {
+    animation: none;
+  }
+}

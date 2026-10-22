@@ -1,0 +1,114 @@
+{
+  "graph": {
+    "title": "Order lifecycle",
+    "subtitle": "The states an order moves through. The happy path runs left to right; cancellations and returns branch off it.",
+    "direction": "right",
+    "key": {
+      "stadium": "State",
+      "circle": "Start or end"
+    },
+    "nodes": [
+      {
+        "id": "start",
+        "shape": "circle",
+        "label": ""
+      },
+      {
+        "id": "created",
+        "shape": "stadium",
+        "label": "Created",
+        "tone": "strong"
+      },
+      {
+        "id": "paid",
+        "shape": "stadium",
+        "label": "Paid"
+      },
+      {
+        "id": "packed",
+        "shape": "stadium",
+        "label": "Packed"
+      },
+      {
+        "id": "shipped",
+        "shape": "stadium",
+        "label": "Shipped"
+      },
+      {
+        "id": "delivered",
+        "shape": "stadium",
+        "label": "Delivered",
+        "tone": "soft"
+      },
+      {
+        "id": "cancelled",
+        "shape": "stadium",
+        "label": "Cancelled",
+        "tone": "muted"
+      },
+      {
+        "id": "returned",
+        "shape": "stadium",
+        "label": "Returned",
+        "tone": "muted"
+      },
+      {
+        "id": "refunded",
+        "shape": "stadium",
+        "label": "Refunded",
+        "tone": "soft"
+      }
+    ],
+    "edges": [
+      {
+        "from": "start",
+        "to": "created",
+        "label": "order placed"
+      },
+      {
+        "from": "created",
+        "to": "paid",
+        "label": "payment captured"
+      },
+      {
+        "from": "paid",
+        "to": "packed",
+        "label": "items picked"
+      },
+      {
+        "from": "packed",
+        "to": "shipped",
+        "label": "handed to carrier"
+      },
+      {
+        "from": "shipped",
+        "to": "delivered",
+        "label": "delivery confirmed"
+      },
+      {
+        "from": "created",
+        "to": "cancelled",
+        "label": "customer cancels",
+        "line": "dashed"
+      },
+      {
+        "from": "paid",
+        "to": "cancelled",
+        "label": "cancelled before packing",
+        "line": "dashed"
+      },
+      {
+        "from": "delivered",
+        "to": "returned",
+        "label": "return received",
+        "line": "dashed"
+      },
+      {
+        "from": "returned",
+        "to": "refunded",
+        "label": "refund issued",
+        "line": "dashed"
+      }
+    ]
+  }
+}

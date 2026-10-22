@@ -1,0 +1,58 @@
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+
+// Canvas motion keeps its own pace (docs/specs/004-interface-design/motion.md): it lives
+// in canvas-motion.css, which the chrome motion budget does not read.
+const read = (rel: string) => readFileSync(fileURLToPath(new URL(rel, import.meta.url)), 'utf8');
+
+describe('canvas-motion.css', () => {
+  it('declares the element entry pop at the canvas pace', () => {
+    expect(read('./canvas-motion.css')).toContain(
+      '--animate-element-pop-in: pop-in 360ms cubic-bezier(0.34, 1.56, 0.64, 1);',
+    );
+  });
+
+  // docs/specs/004-interface-design/motion.md "Reduced motion": an animated element rests still and visible. The
+  // shared reduced-motion rule stops the animation and nothing else; #638 added `opacity: 0` to it for the pointer
+  // tip's pulse and so hid every animated arrow, icon, chart and concept graphic for those who asked for less motion.
+  it('stops every animation under reduced motion without hiding the elements', () => {
+    const css = read('./canvas-motion.css');
+    const shared = /\.lvd-arrow-flow,[^{]*\{([^}]*)\}/.exec(css);
+    if (!shared)
+      throw new Error('the shared reduced-motion rule is missing from canvas-motion.css');
+    expect(shared[1]).toContain('animation: none');
+    expect(shared[1]).not.toMatch(/opacity|display|visibility/);
+  });
+
+  it('is imported by the editor stylesheet', () => {
+    expect(read('./globals.css')).toContain("@import './canvas-motion.css';");
+  });
+});
+
+// Editor arrival (docs/specs/004-interface-design/motion.md): the chrome fades in, the board appears
+// at once, since fading the canvas world re-lays out the page's compositing as it starts and ends.
+describe('the editor fade-in rule', () => {
+  const rule = () => {
+    const css = read('./globals.css');
+    const match = /\{\s*((?:\[data-[a-z-]+\],?\s*)+)\{\s*animation: fade-in/.exec(css);
+    if (!match) throw new Error('the editor fade-in rule is missing from globals.css');
+    return match[1]!.split(',').map((s) => s.trim());
+  };
+
+  it('fades the chrome in, never the board', () => {
+    expect(rule()).toEqual([
+      '[data-floating-panel]',
+      '[data-editor-tabbar]',
+      '[data-zoom-cluster]',
+    ]);
+  });
+});
+
+// The element plane (docs/specs/008-canvas/blueprints/canvas-performance.md): without this rule the plane passes the
+// canvas's cursor down and a tool switch or a pan restyles every element on the board.
+describe('the element plane rule', () => {
+  it('stops the canvas cursor at the plane', () => {
+    expect(read('./globals.css')).toMatch(/\[data-element-plane\]\s*\{[^}]*cursor:\s*auto/);
+  });
+});

@@ -1,0 +1,101 @@
+import { useMemo } from 'react';
+
+import { groupBy, groupDocumentsByFolder, indexFolders } from '@/lib/folder-tree';
+import { OFFLINE_OWNER_ID } from '@/lib/offline/offline-store';
+import type { ExplorerProps } from './Explorer.types';
+
+type ExplorerViewModelDeps = Pick<
+  ExplorerProps,
+  'documents' | 'folders' | 'currentDocumentId' | 'shared' | 'teamFolders' | 'teamDocuments'
+> & {
+  deletedTeamIds: Set<string>;
+};
+
+// Derives the Explorer panel's view-model from the raw document / folder / team
+// / shared inputs: the current document (resolved across personal, team, and
+// shared sources) and the by-folder / by-team / by-parent groupings the
+// panel's tree renders (docs/specs/013-workspace/explorer-structure.md#the-floating-explorer-panel). Pure memoised derivation, split out of
+// Explorer so the component is left with wiring + render.
+export function useExplorerViewModel({
+  documents: liveDocs,
+  folders,
+  currentDocumentId,
+  shared = [],
+  teamFolders = [],
+  teamDocuments = [],
+  deletedTeamIds,
+}: ExplorerViewModelDeps) {
+  const current = useMemo(
+    () => (currentDocumentId ? (liveDocs.find((d) => d.id === currentDocumentId) ?? null) : null),
+    [liveDocs, currentDocumentId],
+  );
+  // Team rows minus any the viewer just deleted (see deletedTeamIds).
+  const visibleTeamDocuments = useMemo(
+    () =>
+      deletedTeamIds.size === 0
+        ? teamDocuments
+        : teamDocuments.filter((d) => !deletedTeamIds.has(d.id)),
+    [teamDocuments, deletedTeamIds],
+  );
+  // When the open document lives in a team library it won't be in
+  // `documents` (those are personal only). Fall back to the swept team
+  // documents so the Current Document section renders for team documents.
+  const currentTeam = useMemo(
+    () =>
+      !current && currentDocumentId
+        ? (visibleTeamDocuments.find((d) => d.id === currentDocumentId) ?? null)
+        : null,
+    [current, visibleTeamDocuments, currentDocumentId],
+  );
+  // When the open document is shared (not owned / not team), it won't
+  // appear in `documents` either. Fall back to the shared list so the
+  // Current Document section still renders for visitors.
+  const currentShared = useMemo(
+    () =>
+      !current && !currentTeam && currentDocumentId
+        ? (shared.find((s) => s.id === currentDocumentId) ?? null)
+        : null,
+    [current, currentTeam, shared, currentDocumentId],
+  );
+  // This team's folder rows and documents, indexed by team, for the Teams
+  // accordion, which shows the documents inside each team folder (docs/specs/013-workspace/team-shared-documents.md).
+  const foldersByTeam = useMemo(() => groupBy(teamFolders, (f) => f.teamId), [teamFolders]);
+  const documentsByTeam = useMemo(
+    () => groupBy(visibleTeamDocuments, (d) => d.team.id),
+    [visibleTeamDocuments],
+  );
+
+  // Folder tree: index folders by parentId so the recursive renderer
+  // can ask for children by id without rescanning the full list.
+  const foldersByParent = useMemo(() => indexFolders(folders).childrenByParent, [folders]);
+
+  // Offline documents (docs/specs/006-document/offline-mode.md) stay out of the My Documents root: they
+  // render under the panel's This Browser row instead.
+  const documentsByFolder = useMemo(
+    () =>
+      groupDocumentsByFolder(liveDocs, {
+        exclude: (d) => d.folderId === null && d.ownerId === OFFLINE_OWNER_ID,
+      }),
+    [liveDocs],
+  );
+
+  // Offline documents (docs/specs/006-document/offline-mode.md): everything saved only in this browser,
+  // regardless of any folder placement in the local record, for the panel's
+  // This Browser row (mirrors the /explorer route).
+  const offlineDocuments = useMemo(
+    () =>
+      liveDocs.filter((d) => d.ownerId === OFFLINE_OWNER_ID).sort((a, b) => b.savedAt - a.savedAt),
+    [liveDocs],
+  );
+
+  return {
+    current,
+    currentTeam,
+    currentShared,
+    foldersByTeam,
+    documentsByTeam,
+    foldersByParent,
+    documentsByFolder,
+    offlineDocuments,
+  };
+}

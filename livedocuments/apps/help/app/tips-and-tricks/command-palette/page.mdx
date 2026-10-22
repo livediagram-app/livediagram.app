@@ -1,0 +1,40 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'The Palette',
+  description:
+    'Learn the livedocuments palette: pick a selection mode, add shapes, text, icons and more, and see how its dropdowns, categories and placing work.',
+  path: '/help/tips-and-tricks/command-palette/',
+});
+
+<ArticleLayout title="The Palette" description="Pick tools and drop new elements onto your pages from the palette strip across the top of the editor." categoryTitle="Tips and Tricks" categorySlug="tips-and-tricks">
+
+The palette is the strip across the top of the editor. It holds the canvas tools and every category of thing you can add to a page, so it is your main launchpad while you build.
+
+## The two dropdowns
+
+The **menu button** and the tab's name sit just left of the strip. The strip itself starts with the selection mode, then the categories:
+
+- On the left, the **selection mode** (what your pointer does), shown as a grid in three groups. **Edit**: **Select** (`V`), **Hand** (`H`) and the [Format](/help/tips-and-tricks/format-painter/) painter. **Present**: **Laser** (`K`), **Spotlight** and [Slide Deck](/help/selection-modes/slide-deck/). **Preview**: **Isometric** (`I`) and **Zen** (`Z`). Spotlight and Slide Deck are desktop only, and most of these stay greyed out until the canvas has something on it. See [Selection Modes](/help/selection-modes/).
+- Then the **categories**, by name. Rest the pointer on one, or click it, and its elements open in a panel underneath, in named groups; click one to add it or drag it onto a page. On an infographic page they are **Popular**, **Shapes**, **Write** (text, sticky notes and pointer notes), **Concepts** (concept graphics, the Timeline and the Sankey), **Components** (the Hero, Header, Banner, Stack, cards, callouts, stats and more), **Devices**, **Icons**, **Stickers**, **Media** (images, embeds and the Tab Window) and **Data** (charts, meters and the Table).
+
+  A slide, a wireframe and a logo page each have their own arrangement, offering what that kind of page is made of: a wireframe page leads with **Components** and **Elements**, the parts of a screen, and a logo page with **Draw**, which holds the Polygon. On an article page the strip holds the article's formatting.
+
+**Search** (the magnifier, or `S`) finds any element by name. See [where each one lives](/help/palette/tools/).
+
+## Adding elements
+
+Pick a tile and it arms a **tap-or-drag** gesture: click a page to drop the element at its natural size, or drag on the page to size it as you place it. You can also drag a tile straight onto a page.
+
+If a boxed element is already selected when you click to drop another, the new one inherits its width and height, so you can chain similarly-sized elements quickly. (A circle or diamond takes a square the size of the larger side.)
+
+A tile with a keyboard shortcut shows its key in the corner on the strip; in the More and Search grids, hold `⌘` (Ctrl on Windows and Linux) to show them. See [Keyboard Shortcuts](/help/tips-and-tricks/keyboard-shortcuts/).
+
+## More about the strip
+
+The strip stays pinned to the top of the canvas on every device; on a phone its categories swipe sideways. It steps aside in Zen mode and on a view-only link. See [Toolbar Layout](/help/palette/toolbar-layout/) for the categories, Search and the order of the tiles, and [Panel Layout](/help/user-interface/panel-layout/) for where everything else sits.
+
+Looking for commands rather than elements? `⌘K` opens search with its actions; see [the Command Palette](/help/search-panel/the-search-panel/command-palette/).
+
+</ArticleLayout>

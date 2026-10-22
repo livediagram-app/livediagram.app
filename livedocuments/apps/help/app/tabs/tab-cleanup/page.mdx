@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { CleanupBeforeAfter } from '@/components/illustrations/tabs';
+import { SearchCommandPalette } from '@/components/illustrations/search-panel';
+
+export const metadata = helpMetadata({
+  title: 'Cleaning Up a Tab',
+  description:
+    'Tidy a tab from the command palette: snap elements to a grid, or auto-lay-out the whole canvas from its arrows as a flowchart, tree or mindmap.',
+  path: '/help/tabs/tab-cleanup/',
+});
+
+<ArticleLayout
+  title="Cleaning Up a Tab"
+  description="Tidy a messy tab in one click: snap everything to a tidy grid, or recompute the whole layout from the arrows between elements."
+  categoryTitle="Tabs"
+  categorySlug="tabs"
+>
+
+A canvas that grew organically can end up slightly misaligned or tangled. The layout tidiers clean up the active tab in one step, so you do not have to nudge elements into place by hand.
+
+## Tidying from the command palette
+
+Open the [command palette](/help/search-panel/the-search-panel/command-palette/) (`Cmd` / `Ctrl` + `K`) and type **Auto Layout** or **Auto-align**. The tidiers appear under **Actions**:
+
+- **Auto Layout (tidy up)** recomputes positions from the arrows, laying the diagram out from scratch based on how its elements connect, in the arrangement that best fits its current rough flow. Reach for it when you want the structure rebuilt rather than nudged.
+- **Auto-align to Grid** snaps the current positions and sizes onto a tidy grid, straightening rows and columns while keeping your overall arrangement. Reach for it when the layout is basically right but a little ragged.
+- **Auto Layout: Flowchart (down)**, **Auto Layout: Flowchart (right)**, **Auto Layout: Tree** and **Auto Layout: Mindmap** run Auto Layout in that particular style: a flowchart running down or to the right, a tree with parents centred over their children, or a mindmap radiating from a central topic.
+
+<Figure caption="Typing layout in the command palette lists the Auto Layout commands under Actions.">
+  <SearchCommandPalette />
+</Figure>
+
+Every tidier acts on the whole tab at once, and each is a single step you can undo (`Cmd` / `Ctrl` + `Z`) if the result is not what you wanted.
+
+<Figure caption="Cleanup takes a scattered, misaligned canvas and snaps it into tidy rows and columns in one click.">
+  <CleanupBeforeAfter />
+</Figure>
+
+## More on layout
+
+These are the [Layout Cleanup](/help/tools/layout-cleanup/) tools. See that guide for the details of how [Auto-Align](/help/tools/layout-cleanup/auto-align/) and [Auto Layout](/help/tools/layout-cleanup/auto-layout/) decide where things go.
+
+A [locked tab](/help/tabs/locking-tabs/) can't be tidied until you unlock it, and the tidiers aren't offered on a view-only share link.
+
+<Tip>
+  Try **Auto-align** first, it is the gentler of the two and keeps your layout recognisable. Fall
+  back to **Auto Layout** when a canvas needs rebuilding from its connections.
+</Tip>
+
+</ArticleLayout>

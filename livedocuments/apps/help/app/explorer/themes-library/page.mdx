@@ -1,0 +1,48 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { SavedThemeCards } from '@/components/illustrations/explorer-imports';
+
+export const metadata = helpMetadata({
+  title: 'Saved Themes',
+  description:
+    'The Themes view in the Explorer Library holds your saved custom themes as swatch previews you can edit, duplicate, or delete.',
+  path: '/help/explorer/themes-library/',
+});
+
+<ArticleLayout
+  title="Saved Themes"
+  description="Your custom themes, kept as swatch previews in the Explorer Library, ready to edit, duplicate, or reuse across documents."
+  categoryTitle="Explorer"
+  categorySlug="explorer"
+>
+
+The **Themes** view sits under **Library** in the Explorer sidebar's More group, beside the [Image gallery](/help/explorer/image-gallery/), and holds the [custom themes](/help/canvas/themes/custom-themes/) you have built. It is where your themes live between documents, so a palette you crafted once is ready to reuse everywhere.
+
+## Your theme library
+
+Each saved theme shows as a card with a **swatch preview** and its name, so you can recognise it at a glance, plus a dashed **New Theme** card to start another. If you have not built any yet, the view says "No custom themes yet" and offers a **New Theme** button instead.
+
+<Figure caption="Each saved theme is a swatch card with Edit, Duplicate and Delete buttons, next to the New Theme card.">
+  <SavedThemeCards />
+</Figure>
+
+Each theme card carries three icon buttons (hover one to see its name):
+
+- **Edit** opens it in the theme builder to tweak its colours.
+- **Duplicate** creates a copy named "&lt;name&gt; copy", a starting point for a variation.
+- **Delete** removes it after you confirm. Any document still using a deleted theme falls back to the Default theme, and the removal cannot be undone.
+
+**New Theme** opens the same builder with a fresh theme. The builder here is the one the editor uses, so a theme made in either place looks and works the same.
+
+## Where themes get used
+
+Saved themes appear alongside the built-in ones wherever you pick a theme, at the end of the theme list, so applying your own palette to a tab is no different from choosing a built-in. See [Themes](/help/canvas/themes/) for applying them, and [Custom Themes](/help/canvas/themes/custom-themes/) for building one in the first place.
+
+Themes are yours whether or not you are signed in: a guest's themes belong to their browser, and come with them when they sign up. They are not shared with your teams.
+
+<Tip>
+  Duplicate a theme before a big change rather than editing in place, so you keep the original as a
+  fallback while you experiment with the copy.
+</Tip>
+
+</ArticleLayout>

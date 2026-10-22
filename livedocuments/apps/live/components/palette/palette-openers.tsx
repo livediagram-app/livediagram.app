@@ -1,0 +1,58 @@
+'use client';
+
+import { useIconCatalogs } from '@/hooks/ui/useIconCatalogs';
+import { PALETTE_CATEGORIES } from './palette-categories';
+import { catalogueStripGroups } from './catalogue-strip-groups';
+import type { PaletteTileDef, PaletteTileSection } from './palette-tile-defs';
+
+// Openers (docs/specs/007-editor/toolbar-layout.md "A tile's side panel"): a tile in a layout's list that stands for a
+// whole category, or one group of a catalogue, rather than one element. On the Toolbar strip it is drawn as an opener
+// (its glyph with a chevron) and opens a popover of what it stands for, as a catalogue's groups do
+// (docs/specs/007-editor/toolbar-layout.md "More"); elsewhere pressing it moves the palette to its category. Listed by
+// id beside the tile ids, so a layout places one exactly where a tile would go.
+
+type Opener = {
+  // The PALETTE_CATEGORIES id it opens.
+  category: string;
+  // One of a catalogue's browse groups (catalogueStripGroups), opened alone; absent for the whole category.
+  group?: string;
+  label: string;
+  section: PaletteTileSection;
+};
+
+const OPENERS: Record<string, Opener> = {
+  'open:technology/aws': {
+    category: 'technology',
+    group: 'aws',
+    label: 'AWS',
+    section: 'technology',
+  },
+};
+
+// Drawn at render, so a catalogue group's artwork (its first entry) appears once the catalogue chunk lands.
+function OpenerIcon({ category, group }: { category: string; group?: string | undefined }) {
+  // Starts the load (or retries a failed one) and redraws as the catalogues arrive; subscribing alone left the
+  // AWS opener blank for good when the editor's one prefetch failed.
+  // Gated on the subscription's value: a group's artwork is catalogue data, which the React Compiler would
+  // otherwise memoise from before the chunk landed.
+  const loaded = useIconCatalogs();
+  if (group)
+    return loaded ? (
+      <>{catalogueStripGroups(category)?.find((g) => g.id === group)?.icon ?? null}</>
+    ) : null;
+  return <>{PALETTE_CATEGORIES.find((c) => c.id === category)?.icon ?? null}</>;
+}
+
+/** The opener tile with this id, or undefined (not an opener). */
+export function openerById(id: string): PaletteTileDef | undefined {
+  const o = OPENERS[id];
+  if (!o) return undefined;
+  return {
+    id,
+    section: o.section,
+    label: o.label,
+    description: `Open ${o.label}.`,
+    icon: <OpenerIcon category={o.category} group={o.group} />,
+    action: { type: 'open', category: o.category, ...(o.group ? { group: o.group } : {}) },
+  };
+}

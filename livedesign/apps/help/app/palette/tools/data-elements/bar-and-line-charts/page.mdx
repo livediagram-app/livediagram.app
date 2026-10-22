@@ -1,0 +1,83 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { BarAndLineCharts } from '@/components/illustrations/palette-data';
+import { LineDataDialog } from '@/components/illustrations/tools-menus';
+
+export const metadata = helpMetadata({
+  title: 'Bar and Line Charts',
+  description:
+    'Add a column or bar chart that compares values side by side, or a multi-series line, area or scatter chart built from an editable grid or imported from a CSV.',
+  path: '/help/palette/tools/data-elements/bar-and-line-charts/',
+});
+
+<ArticleLayout
+  title="Bar and Line Charts"
+  description="Column and bar charts you edit as label and value rows, and line, area and scatter charts you edit as a grid or import from a CSV."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: 'Data and Chart Elements', slug: 'data-elements' }}
+  subArticles={getSubArticles('data-elements').filter((a) => a.slug !== 'bar-and-line-charts')}
+>
+
+Where a [pie chart](/help/palette/tools/data-elements/pie-chart/) shows one total split into slices, a **bar chart** compares values side by side, one bar per category, and a **line chart** plots one or more series across shared categories, so it suits trends over time. Both are ordinary canvas elements: they drop in with sample data and take their colours from the active [theme](/help/canvas/themes/).
+
+<Figure caption="A bar chart comparing four categories, and a line chart with two series across the same months.">
+  <BarAndLineCharts />
+</Figure>
+
+## Adding one
+
+<Step n={1}>
+  In [Pages](/help/canvas/pages-mode/), open the **Data** category on the palette strip. In Diagram
+  mode, use the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) instead:
+  type "bar chart" or "line chart".
+</Step>
+<Step n={2}>
+  Pick **Column** or **Line**, then tap the canvas to drop it, or drag to draw it at a size. It
+  lands with sample data so it looks finished straight away.
+</Step>
+
+## Chart types
+
+Any chart can draw its data seven ways, named as Google Sheets and Excel name them. Right-click it, open **Tools**, then **Chart Type**, and pick one:
+
+- **Column**: upright bars, one per category. The palette's **Column** tile makes one.
+- **Bar**: the same bars lying down, growing to the right, which leaves room for long category names.
+- **Line**: a line with a point per category, for each series.
+- **Area**: the lines, with the space under each one filled in its colour, so a total's shape reads at a glance.
+- **Scatter**: a point per category, no lines. When every category is a number, each point sits at its number along the bottom, so it shows how two measures relate.
+- **Pie** and **Doughnut**: slices of a whole; a doughnut leaves the middle open.
+
+Switching keeps the chart's size, colours, legend and animation. Moving between a column, bar or pie chart and a line, area or scatter chart moves the data too: the bars become one series named Series 1, or the first series becomes the bars.
+
+## Editing a column or bar chart
+
+A column or bar chart holds one value per bar, the same way a pie chart holds one per slice. Right-click it, open **Tools**, then **Data**: each row is a bar, with a swatch for its colour, a label and a value. Edit them in place, remove a bar with **×**, or add one with **+ Add Slice**. The chart updates as soon as you leave a field.
+
+## Editing a line, area or scatter chart
+
+A line chart's data is a grid (an area or scatter chart's too), too wide for the menu, so its **Tools** then **Data** section lists the series and offers **Edit Data**. That opens the **Chart Data** dialog:
+
+- **Edit the grid** directly: a row per category, a column per series. Add a series with the **+** at the end of the header row, add a category with **+ Add row**, and remove either with its **×** (a chart always keeps at least one of each).
+- **Import CSV** loads a file: the header row's first cell labels the category column and the rest name the series, and each row below is a category and its values (up to 12 series and 200 rows), so you can save a sheet from a spreadsheet and load it straight in. Importing replaces what the grid held.
+
+Changes apply as you make them (a typed cell when you leave it); **Done** closes the dialog.
+
+<Figure caption="The Chart Data dialog: Import CSV, a column per series, a row per category, and + Add row.">
+  <LineDataDialog />
+</Figure>
+
+## Display and colours
+
+Both charts share the pie chart's display options: in **Tools**, **Chart** places the legend (**Off**, **Top**, **Left**, **Right** or **Below**, the default) and sets its **Text Size**, and the **Animation** section offers **Grow**, **Pop**, **Spin** and **Pulse**. Hovering a bar or a point shows its label and value. **Show Values**, under the legend, prints each bar's or point's number on the chart; a column chart also names each column under it, so you can turn the legend off.
+
+Colours default to variants of the theme, so a multi-series chart stays legible and on-brand. To recolour the whole chart at once, open **Style** and pick a palette from its **Presets**: **Vivid**, **Ocean**, **Forest**, **Sunset**, **Berry**, **Earth**, **Grey** or **Contrast**. A colour you set on one bar by hand wins over the palette. Animations freeze on export, so a still image looks right.
+
+<Tip>
+  For a single percentage rather than a series, a [progress bar or
+  ring](/help/palette/tools/data-elements/progress-elements/) reads more clearly than a one-bar
+  chart.
+</Tip>
+
+</ArticleLayout>

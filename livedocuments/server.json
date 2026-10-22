@@ -1,0 +1,26 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.livedocuments-app/livedocuments",
+  "title": "livedocuments",
+  "description": "Create, edit, share and render real-time collaborative diagrams and mindmaps on livedocuments.app.",
+  "version": "0.1.0",
+  "websiteUrl": "https://livedocuments.app",
+  "repository": {
+    "url": "https://github.com/livedocuments-app/livedocuments.app",
+    "source": "github",
+    "subfolder": "apps/mcp"
+  },
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/livedocuments-app/livedocuments.app/main/marketing/media/icons/livedocuments-icon-512.png",
+      "mimeType": "image/png",
+      "sizes": ["512x512"]
+    }
+  ],
+  "remotes": [
+    {
+      "type": "streamable-http",
+      "url": "https://mcp.livedocuments.app/mcp"
+    }
+  ]
+}

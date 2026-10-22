@@ -1,0 +1,29 @@
+'use client';
+
+import { useLayoutEffect, useRef } from 'react';
+
+// While `active`, remembers what had keyboard focus as it began; when it ends, puts focus back there, or on
+// `fallback()` when that control has gone or is hidden. A presentation left by Escape dropped focus on the page
+// itself, and a keyboard user had to Tab in again from the top (docs/specs/012-collaboration/presentation-mode.md
+// "Exiting").
+export function useFocusReturn(active: boolean, fallback: () => HTMLElement | null): void {
+  const opener = useRef<HTMLElement | null>(null);
+  const was = useRef(false);
+  useLayoutEffect(() => {
+    if (active === was.current) return;
+    was.current = active;
+    if (active) {
+      const el = document.activeElement;
+      opener.current = el instanceof HTMLElement && el !== document.body ? el : null;
+      return;
+    }
+    const back = opener.current;
+    opener.current = null;
+    // After the frame that brings the chrome back, so a control hidden while it ran can take focus again.
+    const frame = requestAnimationFrame(() => {
+      const target = back?.isConnected && back.getClientRects().length > 0 ? back : fallback();
+      target?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [active, fallback]);
+}

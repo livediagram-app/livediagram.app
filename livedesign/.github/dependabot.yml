@@ -1,0 +1,42 @@
+# To get started with Dependabot version updates, you'll need to specify which
+# package ecosystems to update and where the package manifests are located.
+# Please see the documentation for all configuration options:
+# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
+
+version: 2
+updates:
+  # pnpm workspace. A single entry at the root covers every app and package:
+  # Dependabot reads pnpm-lock.yaml, which resolves the whole workspace.
+  - package-ecosystem: 'npm'
+    directory: '/' # Location of package manifests
+    schedule:
+      interval: 'weekly'
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: 'chore(deps)'
+      prefix-development: 'chore(deps-dev)'
+    groups:
+      # Non-majors are batched so a normal week is two PRs, not twenty. Dev and
+      # production stay apart because they carry different risk: a bad dev bump
+      # breaks CI, a bad production one ships.
+      dev-dependencies:
+        dependency-type: 'development'
+        update-types: ['minor', 'patch']
+      production-dependencies:
+        dependency-type: 'production'
+        update-types: ['minor', 'patch']
+      # Majors are deliberately left out of both groups, so each one arrives as
+      # its own PR. A Next or React major is real work and should not ride along
+      # with a batch of patches.
+  # Keeps the actions in ci.yml / deploy.yml / e2e.yml and the composite actions current. Same class
+  # of drift as the npm tree, and easy to forget because nothing here has a lockfile.
+  - package-ecosystem: 'github-actions'
+    # '/' scans .github/workflows; composite actions under .github/actions need naming.
+    directories: ['/', '/.github/actions/*']
+    schedule:
+      interval: 'weekly'
+    commit-message:
+      prefix: 'chore(actions)'
+    groups:
+      github-actions:
+        patterns: ['*']

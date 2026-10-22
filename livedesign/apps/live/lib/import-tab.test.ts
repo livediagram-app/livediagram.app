@@ -1,0 +1,183 @@
+import { describe, expect, it, vi } from 'vitest';
+import {
+  type FreehandElement,
+  type Tab,
+  TAB_SCHEMA_VERSION,
+  type ExportedTabEnvelope,
+} from '@livedesign/document';
+import { defaultCatalogue } from '@livedesign/items';
+import { parseImportedTab } from './import-tab';
+
+// A minimal but valid tab payload.
+const validTab: Tab = { id: 'tab-1', name: 'Imported', elements: [] };
+
+// Build a well-formed envelope, overridable per test.
+const envelope = (overrides: Partial<ExportedTabEnvelope> = {}): ExportedTabEnvelope => ({
+  kind: 'livedesign.tab',
+  schemaVersion: TAB_SCHEMA_VERSION,
+  exportedAt: 0,
+  tab: validTab,
+  ...overrides,
+});
+
+const parse = (value: unknown) => parseImportedTab(JSON.stringify(value));
+
+describe('parseImportedTab — happy path', () => {
+  it('accepts a well-formed envelope and returns the tab', () => {
+    const result = parse(envelope());
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.tab).toEqual(validTab);
+  });
+
+  it('accepts an envelope below the current schema version', () => {
+    // Only meaningful once TAB_SCHEMA_VERSION climbs above 1; guarded so
+    // the test stays valid at v1 (older-than-1 is not expressible).
+    const older = Math.max(1, TAB_SCHEMA_VERSION - 1);
+    const result = parse(envelope({ schemaVersion: older }));
+    expect(result.ok).toBe(true);
+  });
+});
+
+describe('parseImportedTab — rejections (never throws)', () => {
+  it('rejects non-JSON text', () => {
+    const result = parseImportedTab('{not json');
+    expect(result).toEqual({ ok: false, error: "File isn't valid JSON." });
+  });
+
+  it('rejects JSON that is not an object', () => {
+    expect(parseImportedTab('42').ok).toBe(false);
+    expect(parseImportedTab('null').ok).toBe(false);
+    expect(parseImportedTab('"a string"').ok).toBe(false);
+  });
+
+  it('rejects an object without the magic kind field', () => {
+    const result = parse({ schemaVersion: 1, tab: validTab });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/isn't a livedesign tab export/);
+  });
+
+  it('rejects a wrong kind value', () => {
+    const result = parse(envelope({ kind: 'something.else' as never }));
+    expect(result.ok).toBe(false);
+  });
+
+  it('rejects a missing or non-numeric schemaVersion', () => {
+    const result = parse({ kind: 'livedesign.tab', tab: validTab });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/Missing schemaVersion/);
+  });
+
+  it('refuses an envelope newer than this editor understands', () => {
+    const result = parse(envelope({ schemaVersion: TAB_SCHEMA_VERSION + 1 }));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/schema v/);
+  });
+
+  it('rejects an envelope missing the tab payload', () => {
+    const result = parse({
+      kind: 'livedesign.tab',
+      schemaVersion: TAB_SCHEMA_VERSION,
+      exportedAt: 0,
+    });
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/missing the tab payload/);
+  });
+
+  it('rejects a tab payload missing required fields', () => {
+    const result = parse(envelope({ tab: { id: 'x', name: 'no elements' } as Tab }));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error).toMatch(/missing required fields/);
+  });
+
+  it('rejects when id/name are the wrong type', () => {
+    const result = parse(envelope({ tab: { id: 1, name: 2, elements: [] } as unknown as Tab }));
+    expect(result.ok).toBe(false);
+  });
+});
+
+describe('parseImportedTab — malformed elements', () => {
+  it('drops elements that would crash the re-mint or land as junk', () => {
+    const good = { id: 's', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 };
+    const result = parse(
+      envelope({
+        tab: {
+          id: 'a',
+          name: 'b',
+          elements: [null, {}, { id: 'x', type: 'arrow' }, good],
+        } as unknown as Tab,
+      }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.tab.elements.map((e) => e.id)).toEqual(['s']);
+  });
+});
+
+describe('parseImportedTab — stroke points (docs/specs/006-document/stroke-points.md)', () => {
+  it('writes version 2, the first with packed stroke points', () => {
+    expect(TAB_SCHEMA_VERSION).toBe(2);
+  });
+
+  it('packs the former { nx, ny } strokes of a version 1 file', () => {
+    vi.spyOn(console, 'info').mockImplementation(() => {});
+    const stroke = {
+      id: 'f1',
+      type: 'freehand',
+      x: 0,
+      y: 0,
+      width: 10,
+      height: 10,
+      closed: false,
+      points: [
+        { nx: 0, ny: 0 },
+        { nx: 1, ny: 1 },
+      ],
+    };
+    const result = parse(
+      envelope({ schemaVersion: 1, tab: { ...validTab, elements: [stroke] } as unknown as Tab }),
+    );
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      const el = result.tab.elements[0] as FreehandElement;
+      expect(el.type).toBe('freehand');
+      expect(typeof el.packedPoints).toBe('string');
+    }
+  });
+});
+
+// A tab export's Plan items (docs/specs/026-plan/items.md "Copies and exports").
+describe('parseImportedTab, Plan items', () => {
+  const person = { id: 'p', name: 'Sam', color: '#2563eb' };
+  const item = {
+    id: 'item-1',
+    type: 'task',
+    key: 4,
+    rank: 'i',
+    fields: { title: 'Ship', status: 'todo' },
+    rev: 1,
+    createdAt: 0,
+    updatedAt: 0,
+    createdBy: person,
+    updatedBy: person,
+  };
+
+  it('reads the items, leaving behind what does not look like one', () => {
+    const r = parseImportedTab(
+      JSON.stringify(envelope({ items: [item, { id: 'nope' }] as never })),
+    );
+    // Cards with no catalogue: a tab exported before card types started empty, so the default types (legacyCatalogue).
+    expect(r.ok && r.plan).toEqual({ items: [item], itemTypes: defaultCatalogue() });
+  });
+
+  it('reads a valid catalogue and drops a broken one, its cards keeping the default types', () => {
+    const catalogue = { version: 1, types: 'broken' };
+    const r = parseImportedTab(
+      JSON.stringify(envelope({ items: [item], itemTypes: catalogue as never })),
+    );
+    expect(r.ok && r.plan?.itemTypes).toEqual(defaultCatalogue());
+  });
+
+  it('has no plan for a file without items', () => {
+    const r = parseImportedTab(JSON.stringify(envelope({ items: [] })));
+    expect(r.ok && 'plan' in r).toBe(false);
+  });
+});

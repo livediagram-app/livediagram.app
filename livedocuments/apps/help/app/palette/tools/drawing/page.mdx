@@ -1,0 +1,54 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+import { PolygonDraw } from '@/components/illustrations/palette-tools-drawing';
+
+export const metadata = helpMetadata({
+  title: 'Drawing with the Polygon',
+  description:
+    'Place clean, straight-edged outlines point by point with the Polygon tool, from a logo page’s Draw category or the search panel.',
+  path: '/help/palette/tools/drawing/',
+});
+
+<ArticleLayout
+  title="Drawing with the Polygon"
+  description="Place clean, straight-edged outlines point by point, closed and filled or left open."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  parentArticle={{ title: "Tools", slug: "tools" }}
+  subArticles={getSubArticles("drawing")}
+>
+
+The **Polygon** tool draws clean, straight-edged outlines with exactly the corners you choose: the outline of a mark, a zone on a plan, or any irregular region that none of the fixed shapes fits. Everything it draws is a regular element you can move, resize and style.
+
+## Where to find it
+
+On a [logo page](/help/pages/logo-pages/) the palette opens on **Draw**, and the Polygon is its tool. On any other page the palette strip does not show it, but the [search panel](/help/search-panel/the-search-panel/search-add-to-canvas/) (`⌘K` or `Ctrl+K`) adds it: type "polygon" and pick it under **Add to canvas**.
+
+## Placing points
+
+<Step n={1}>Pick **Polygon**. It has no keyboard shortcut.</Step>
+<Step n={2}>
+  Click to place each point. A preview line follows your pointer from the last point you placed.
+</Step>
+<Step n={3}>
+  Click the **start point** (a snap ring appears when you are close) to close the outline into a
+  **filled polygon**, or **double-click** (or press `Enter`) to finish an **open line** at the last
+  point.
+</Step>
+
+<Figure caption="Placing polygon points click by click, with the snap ring on the start point ready to close the outline.">
+  <PolygonDraw />
+</Figure>
+
+While placing points, `Backspace` removes the last point so you can walk a mistake back without starting over, and `Escape` clears the in-progress outline (press it again to put the tool down). An open line needs at least two points and a closed polygon three: until then, double-click and `Enter` do nothing, and clicking the start point just places another point. On a touch screen, taps place points just like clicks. Points snap to the edges and centres of nearby elements, as a drawn element's corners do.
+
+## Styling an outline
+
+A finished outline is a regular boxed element. Its stroke colour follows the tab's theme, and a closed polygon fills with the theme's fill colour; an open line stays stroke-only. From there you can:
+
+- Move it, resize it (the outline scales proportionally), rotate it, and lock it.
+- Recolour its stroke and fill from the element's Colours controls.
+- Apply the format painter, themes, and comments, exactly as with any shape.
+
+</ArticleLayout>

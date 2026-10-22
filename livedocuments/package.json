@@ -1,0 +1,38 @@
+{
+  "name": "livedocuments",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "turbo run build --filter=@livedocuments/*",
+    "dev": "turbo run dev --filter=@livedocuments/*",
+    "lint": "turbo run lint --filter=@livedocuments/*",
+    "test": "turbo run test --filter=@livedocuments/*",
+    "test:coverage": "turbo run test:coverage --filter=@livedocuments/*",
+    "typecheck": "turbo run typecheck --filter=@livedocuments/*",
+    "staging:check": "turbo run staging:check --filter=@livedocuments/*",
+    "licences": "pnpm --filter @livedocuments/marketing licences",
+    "bench:stroke-points": "node --expose-gc --import ./scripts/ts-source-hooks.mjs scripts/stroke-points-bench.ts",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md,yml,yaml}\"",
+    "clean": "turbo run clean --filter=@livedocuments/* && rm -rf node_modules",
+    "icons:vendor": "pnpm --filter @livedocuments/icons vendor:lucide",
+    "icons:sheet": "pnpm --filter @livedocuments/live icons:sheet",
+    "icons:brand": "pnpm --filter @livedocuments/live icons:brand"
+  },
+  "devDependencies": {
+    "@livedocuments/oxlint-config": "workspace:*",
+    "@livedocuments/prettier-config": "workspace:*",
+    "esbuild": "^0.28.2",
+    "oxlint": "^1.88.0",
+    "oxlint-tsgolint": "^7.0.2004",
+    "prettier": "^3.9.9",
+    "turbo": "^2.11.7",
+    "typescript": "^7.0.2",
+    "wrangler": "^4.148.0"
+  },
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=9"
+  }
+}

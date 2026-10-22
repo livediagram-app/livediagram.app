@@ -1,0 +1,89 @@
+/* ── Content card art (components/feature-art/canvas-marks.tsx, reach.tsx, pages-more.tsx,
+   embeds-timeline.tsx) ──
+   Each scene reads finished at rest; these move only an accent (a caret, a cursor, a packet, a
+   backdrop) so any frame of the loop is a good picture. Reduced motion settles them below. */
+
+/* A text caret blinking. */
+@keyframes fa-d-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+.fa-d-blink {
+  animation: fa-d-blink 1s steps(1, end) infinite;
+}
+
+/* A teammate's cursor: from its start offset (--fx, --fy) to where it is drawn, held, back. */
+@keyframes fa-d-move {
+  0%,
+  10% {
+    transform: translate(var(--fx, 0px), var(--fy, 0px));
+  }
+  40%,
+  86% {
+    transform: none;
+  }
+  100% {
+    transform: translate(var(--fx, 0px), var(--fy, 0px));
+  }
+}
+.fa-d-move {
+  animation: fa-d-move 6s cubic-bezier(0.45, 0, 0.25, 1) infinite;
+}
+
+/* Something lands and stays most of the loop (it is part of the finished picture). */
+@keyframes fa-d-land {
+  0%,
+  4% {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.96);
+  }
+  14%,
+  96% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-3px) scale(0.96);
+  }
+}
+.fa-d-land {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: fa-d-land 6s ease-out infinite;
+}
+
+/* A selection or focus ring that holds for most of the loop. */
+@keyframes fa-d-ring {
+  0%,
+  22% {
+    opacity: 0;
+  }
+  30%,
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+.fa-d-ring {
+  animation: fa-d-ring 6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fa-d-blink,
+  .fa-d-move,
+  .fa-d-land,
+  .fa-d-ring {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}

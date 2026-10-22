@@ -1,0 +1,65 @@
+name: Next build cache, restore
+description: >-
+  Restores Turbopack's build cache for one set of Next builds from the latest run on main, so the
+  build compiles only what changed (docs/specs/003-system-architecture/e2e-smoke.md "Cost controls").
+  Sets NEXT_CACHE_KEY, NEXT_CACHE_PATHS and NEXT_CACHE_RESTORED for the job's later steps.
+
+inputs:
+  name:
+    description: The cache's name, one per distinct set of builds (e.g. live, live-clerk-stub, sites).
+    required: true
+  paths:
+    description: The `.next/cache` directories, one per line.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    # The one place the key is made; next-cache-save reads it back from NEXT_CACHE_KEY. Keyed by
+    # version, lockfile, then commit: main saves under its commit, and any run takes the newest cache
+    # for the same lockfile. A dependency bump starts cold; Turbopack itself re-checks every input,
+    # so a cache from an older commit only ever saves work. Bump the version to discard every cache
+    # saved so far (v2: the caches saved while the Sites audit built marketing beside the others).
+    - name: Name the cache
+      id: key
+      shell: bash
+      env:
+        NAME: ${{ inputs.name }}
+        LOCK: ${{ hashFiles('pnpm-lock.yaml') }}
+        PATHS: ${{ inputs.paths }}
+      run: |
+        set -euo pipefail
+        prefix="next-v2-${NAME}-${LOCK}-"
+        echo "prefix=${prefix}" >> "${GITHUB_OUTPUT}"
+        echo "key=${prefix}${GITHUB_SHA}" >> "${GITHUB_OUTPUT}"
+        echo "NEXT_CACHE_KEY=${prefix}${GITHUB_SHA}" >> "${GITHUB_ENV}"
+        {
+          echo "NEXT_CACHE_PATHS<<NEXT_CACHE_PATHS_END"
+          echo "${PATHS}"
+          echo "NEXT_CACHE_PATHS_END"
+        } >> "${GITHUB_ENV}"
+
+    - name: Restore Next build cache
+      id: restore
+      uses: actions/cache/restore@v6
+      with:
+        path: ${{ inputs.paths }}
+        key: ${{ steps.key.outputs.key }}
+        restore-keys: ${{ steps.key.outputs.prefix }}
+
+    # next-build-cold-retry.sh reads NEXT_CACHE_RESTORED: only a build that ran on a restored cache
+    # is worth a second, cold attempt.
+    - name: Report the cache
+      shell: bash
+      env:
+        NAME: ${{ inputs.name }}
+        MATCHED: ${{ steps.restore.outputs.cache-matched-key }}
+      run: |
+        set -euo pipefail
+        if [ -n "${MATCHED}" ]; then
+          echo "[next-cache] ${NAME}: restored ${MATCHED}"
+          echo "NEXT_CACHE_RESTORED=1" >> "${GITHUB_ENV}"
+        else
+          echo "[next-cache] ${NAME}: miss, building cold"
+          echo "NEXT_CACHE_RESTORED=0" >> "${GITHUB_ENV}"
+        fi

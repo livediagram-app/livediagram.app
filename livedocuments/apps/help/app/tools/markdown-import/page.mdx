@@ -1,0 +1,36 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Markdown Import',
+  description:
+    'Bring Markdown into livedocuments as an article: import a .md file into a tab or paste it into a page, and headings, lists, quotes and code become blocks.',
+  path: '/help/tools/markdown-import/',
+});
+
+<ArticleLayout title="Markdown Import" description="Import a Markdown file as an article, or paste Markdown into an article page, and it becomes formatted writing." categoryTitle="Tools" categorySlug="tools" subArticles={getSubArticles("markdown-import")}>
+
+Markdown comes into livedocuments as writing. Import a `.md` file into a tab and it becomes an [article](/help/pages/articles/), or paste any Markdown into an article page: either way it is turned into the formatted blocks it describes, ready to edit like anything else you have typed.
+
+## What it reads
+
+- **Headings**: `#` becomes the largest heading, `##` the next, and `###` and deeper the smallest.
+- **Lists**: `-`, `*` and `+` make a bulleted list, `1.` a numbered one, and `- [ ]` or `- [x]` a to-do, ticked or not. Indenting an item nests it, up to four levels.
+- **Quotes**: a line starting with `>`.
+- **Code**: a block fenced with three backticks, kept exactly as written.
+- **Dividers**: a line of `---`, `***` or `___`.
+- **Inline marks**: bold, italic, strikethrough, inline code and links.
+
+Every other line is a paragraph. Pasting into an empty line replaces it with the pasted blocks; pasting into a code block, or pasting a single line with no Markdown in it, puts the text in exactly as typed.
+
+## Importing a file into a tab
+
+Open the tab's menu, choose **Import**, then **Markdown**. Paste the Markdown into the box, or press **Import a file instead** to pick a `.md` file. The tab's contents are replaced by an article holding the writing, flowed onto as many pages as it needs; undo brings the old contents back. See [Importing a Tab](/help/tabs/import-tabs/).
+
+<Tip>
+  Writing from scratch? The same Markdown works as shortcuts while you type in an article: start a
+  line with `#`, `-`, `1.`, `[ ]` or `>` and it becomes that block.
+</Tip>
+
+</ArticleLayout>

@@ -1,0 +1,73 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { LiveCursors } from '@/components/illustrations/collaboration';
+import { SharePassesDialog } from '@/components/illustrations/sharing';
+
+export const metadata = helpMetadata({
+  title: 'Sharing Your Document',
+  description:
+    'Hand a colleague a share link and collaborate on the same livedesign in real time, even if they never sign in.',
+  path: '/help/getting-started/sharing-your-document/',
+});
+
+<ArticleLayout title="Sharing Your Document" description="Hand over a link and build the same document together, live, even with people who never sign in." categoryTitle="Getting Started" categorySlug="getting-started">
+
+livedesign is multiplayer from the first shape. Sharing is just creating a link and handing it over: whoever opens it joins the same canvas, sees live cursors, and edits alongside you. The person you share with does not need an account. For the full details see [Sharing](/help/collaboration/sharing/).
+
+## Create a share link
+
+<Step n={1}>
+  Open the document you want to share and click **Share** at the top right of the editor, or choose
+  **Share** from the document's **⋯** menu in the Explorer. Only the document's owner can issue
+  passes, so someone who joined through a link sees no **Share** button.
+</Step>
+
+<Step n={2}>
+  Under **Issue a pass**, click the role card to choose a role: **Editor** (draws with you in real
+  time, the default), **Participant** (adds stickies, writes and votes, but can't reshape the board)
+  or **Viewer** (watches, pans and zooms; can't comment, vote or change a thing). **Valid** sets how
+  long it lasts: Forever, 1 week, 1 month or 6 months. In a document with several tabs, **Opens**
+  can limit the link to one tab.
+</Step>
+
+<Step n={3}>
+  Click **Create Pass**. The link is copied for you straight away, ready to send to whoever you want
+  in the document; each pass in the list also has its own copy button.
+</Step>
+
+If you are a guest, check the name under **Sharing as** at the foot of the dialog first (or press the
+shuffle button beside it for another): that is the name peers see on your cursor and comments. A document
+saved to **This Browser** has to be synced to your account before it can be shared.
+
+<Figure caption="The Share dialog: pick Editor, Participant or Viewer, set how long the pass is valid, then Create Pass. Live passes are listed below.">
+  <SharePassesDialog />
+</Figure>
+
+## What happens when they open it
+
+Someone opening your link for the first time enters the password if you set one, picks the name others will see (a signed-in visitor keeps their account name), and then lands on the canvas:
+
+<Figure caption="Everyone in a shared document sees the others' live cursors and a presence stack of who is here.">
+  <LiveCursors />
+</Figure>
+
+- **Live cursors and selections.** Everyone sees where everyone else is and what they have selected.
+- **Simultaneous editing.** On an Editor pass, you both change the document at once. To avoid clashes, an element one person has selected is gently locked for the others while they hold it.
+- **No sign-in required.** A guest can edit straight away, the canvas never blocks them with a sign-in wall. See [Guest vs account](/help/getting-started/guest-vs-account/).
+
+## Managing and ending access
+
+Back in the Share dialog you can manage links over time:
+
+- **Multiple passes.** Issue several, with different roles, for example a Viewer pass for stakeholders and an Editor pass for collaborators. They are listed under **Passes**.
+- **Revoke** a pass to cut off access through it. Expiring passes show a countdown, and expired ones move under **Expired**, where they can be extended or deleted. See [Share Link Expiry](/help/collaboration/sharing/share-link-expiry/).
+- **Password Protection.** Protect every pass with one shared password; everyone opening a link must enter it first, embeds included. See [Share Passwords](/help/collaboration/sharing/share-passwords/).
+
+<Tip>
+  Want to put the document on a web page or in a doc? Each pass can also be copied as an embed
+  (**Copy iframe**) or, while no password is set, as a live image that stays up to date. A Viewer or
+  Participant pass embeds look-only; an Editor pass embeds an editable canvas. See
+  [Embeds](/help/collaboration/sharing/embeds/).
+</Tip>
+
+</ArticleLayout>

@@ -1,0 +1,193 @@
+/* The scenes' shared build (components/hero-article-page.tsx, hero-slides-board.tsx, hero-page.tsx,
+   hero-logo-board.tsx, hero-together-board.tsx; docs/specs/019-marketing/marketing-site.md "Story
+   beats"). Every mark plays once at its own delay (--d): the window's group is remounted each time it
+   plays, and its veil (hero-fade) covers the last second, so nothing has to clear on a loop. Settled
+   (.hero-static) and under reduced motion every mark shows its finished frame. */
+
+/* A piece lands: a small overshoot from 70%. */
+.hm-pop {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hm-pop 0.45s cubic-bezier(0.2, 0.9, 0.3, 1.3) var(--d, 0s) both;
+}
+@keyframes hm-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A piece fades in. */
+.hm-fade {
+  opacity: 0;
+  animation: hm-fade 0.5s ease-out var(--d, 0s) both;
+}
+@keyframes hm-fade {
+  to {
+    opacity: 1;
+  }
+}
+
+/* A value gives way to the next. */
+.hm-out {
+  animation: hm-out 0.25s ease-in var(--d, 0s) both;
+}
+@keyframes hm-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* A stroke draws on along its length (--len) over --dur, as a hand would draw it; --to stops it
+   short (the donut fills only its share). */
+.hm-draw {
+  stroke-dasharray: var(--len) var(--len);
+  animation: hm-draw var(--dur, 0.6s) ease-in-out var(--d, 0s) both;
+}
+@keyframes hm-draw {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: var(--len);
+  }
+  1% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+    stroke-dashoffset: var(--to, 0);
+  }
+}
+
+/* A band wipes in from the left. */
+.hm-wipe {
+  transform-box: fill-box;
+  transform-origin: left center;
+  animation: hm-wipe 0.6s cubic-bezier(0.65, 0, 0.35, 1) var(--d, 0s) both;
+}
+@keyframes hm-wipe {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* A bar grows up from its axis. */
+.hm-grow {
+  transform-box: fill-box;
+  transform-origin: bottom;
+  animation: hm-grow 0.55s cubic-bezier(0.2, 0.9, 0.3, 1.15) var(--d, 0s) both;
+}
+@keyframes hm-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+/* A label typed out, one letter a step (--steps). */
+.hm-type {
+  /* jump-none: the last step is the whole word, reached inside the animation, so a finished label
+     never rests a letter short (steps(n, end) can hold its final step a hair before 100%). */
+  animation: hm-type 0.5s steps(var(--steps, 10), jump-none) var(--d, 0s) both;
+}
+@keyframes hm-type {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* A selection that shows for a moment, then goes. */
+.hm-select {
+  opacity: 0;
+  animation: hm-select 2.2s linear var(--d, 0s) both;
+}
+@keyframes hm-select {
+  0% {
+    opacity: 0;
+  }
+  5%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+/* A person's cursor: it comes in from (--sx, --sy), settles on (--cx, --cy), and stays. */
+.hm-cursor {
+  opacity: 0;
+  animation: hm-cursor 0.8s cubic-bezier(0.3, 0, 0.2, 1) var(--d, 0s) both;
+}
+@keyframes hm-cursor {
+  from {
+    opacity: 0;
+    transform: translate(var(--sx), var(--sy));
+  }
+  20% {
+    opacity: 1;
+  }
+  to {
+    opacity: 1;
+    transform: translate(var(--cx), var(--cy));
+  }
+}
+
+.hero-static .hm-pop,
+.hero-static .hm-fade,
+.hero-static .hm-draw,
+.hero-static .hm-wipe,
+.hero-static .hm-grow,
+.hero-static .hm-type {
+  animation: none;
+  opacity: 1;
+  clip-path: none;
+  transform: none;
+  stroke-dashoffset: var(--to, 0);
+}
+.hero-static .hm-out {
+  animation: none;
+  opacity: 0;
+}
+.hero-static .hm-select,
+.hero-static .hm-cursor {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-pop,
+  .hm-fade,
+  .hm-draw,
+  .hm-wipe,
+  .hm-grow,
+  .hm-type {
+    animation: none;
+    opacity: 1;
+    clip-path: none;
+    transform: none;
+    stroke-dashoffset: var(--to, 0);
+  }
+  .hm-out {
+    animation: none;
+    opacity: 0;
+  }
+  .hm-select {
+    display: none;
+  }
+  .hm-cursor {
+    animation: none;
+    opacity: 1;
+    transform: translate(var(--cx), var(--cy));
+  }
+}
