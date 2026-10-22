@@ -145,7 +145,7 @@ export async function handleDocuments(ctx: RouteContext): Promise<Response> {
         logPlacementRejected('placement_invalid', placementScope(body.teamId));
         return placementRejected('placement_invalid');
       }
-      // Seeded tabs given as a graph, Mermaid or a template are compiled first (docs/specs/015-api/api.md);
+      // Seeded tabs given as a template are compiled first (docs/specs/015-api/api.md);
       // with no intent given, the first compiled tab supplies it, as the MCP derives it.
       let derivedIntent: CreationIntent | null = null;
       let templateElements: Tab['elements'] = [];

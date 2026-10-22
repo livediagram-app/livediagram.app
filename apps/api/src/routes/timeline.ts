@@ -11,7 +11,6 @@
 // Hybrid identity like the rest of the api (docs/specs/014-identity/auth-and-guest-access.md): the Clerk
 // userId when signed in, X-Owner-Id otherwise.
 
-import { upgradeLegacyScope } from '../legacy-request-forms';
 import {
   TIMELINE_PAGE_MAX,
   TIMELINE_PAGE_SIZE,
@@ -35,7 +34,7 @@ export async function handleTimeline(ctx: RouteContext): Promise<Response> {
   if (segments.length === 2 && request.method === 'GET') {
     const raw = url.searchParams.get('scope');
     if (!raw) return badRequest('scope required');
-    const scope = parseScope(upgradeLegacyScope(raw));
+    const scope = parseScope(raw);
     if (scope === null) return badRequest('invalid scope');
     const allowed = await canReadScope(ctx, scope);
     if (!allowed) return forbidden();

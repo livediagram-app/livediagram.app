@@ -1718,7 +1718,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "additionalProperties": {},
         "type": "object"
       },
-      "graph": {},
       "kind": {
         "enum": [
           "board",
@@ -1731,9 +1730,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "auto",
           "preserve"
         ],
-        "type": "string"
-      },
-      "mermaid": {
         "type": "string"
       },
       "name": {
@@ -6208,46 +6204,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
       "below"
     ],
     "type": "string"
-  },
-  "IconSearchResponse": {
-    "additionalProperties": false,
-    "properties": {
-      "icons": {
-        "items": {
-          "additionalProperties": false,
-          "properties": {
-            "id": {
-              "type": "string"
-            },
-            "label": {
-              "type": "string"
-            },
-            "set": {
-              "enum": [
-                "line",
-                "technology"
-              ],
-              "type": "string"
-            }
-          },
-          "required": [
-            "id",
-            "label",
-            "set"
-          ],
-          "type": "object"
-        },
-        "type": "array"
-      },
-      "more": {
-        "type": "number"
-      }
-    },
-    "required": [
-      "icons",
-      "more"
-    ],
-    "type": "object"
   },
   "IconSize": {
     "enum": [

@@ -6,7 +6,7 @@ import { handleDocuments } from './documents';
 import { asUser } from './placement-test-support';
 import { compileSeededTabs } from './document-seed';
 
-// A create's seeded tabs given as a graph, Mermaid or a template (docs/specs/015-api/api.md): compiled by
+// A create's seeded tabs given as a template (docs/specs/015-api/api.md): compiled by
 // applyReplace before anything is written, the intent derived from the first, a refusal naming the tab.
 
 let db: SqliteD1;
@@ -31,28 +31,12 @@ afterEach(() => {
 });
 
 describe('seeded tabs compiled on create', () => {
-  it('lays out a graph and a Mermaid tab, and records the CLI as the source', async () => {
-    const res = await create(
-      [
-        {
-          id: 't1',
-          name: 'Arch',
-          graph: {
-            nodes: [
-              { id: 'web', label: 'Web' },
-              { id: 'api', label: 'API' },
-            ],
-            edges: [{ from: 'web', to: 'api' }],
-          },
-        },
-        { id: 't2', name: 'Flow', mermaid: 'flowchart LR\n  a[Cart] --> b[Pay]' },
-      ],
-      { source: 'cli' },
-    );
+  it('records the CLI as the source of a seeded create', async () => {
+    const res = await create([{ id: 't1', name: 'Board', template: 'kanban' }], {
+      source: 'cli',
+    });
     expect(res.status).toBe(201);
-    const arch = await getTab(db.env, 'd1', 't1');
-    expect(arch?.elements.map((e) => e.type).sort()).toEqual(['arrow', 'shape', 'shape']);
-    expect((await getTab(db.env, 'd1', 't2'))?.elements.length).toBe(3);
+    expect(await getTab(db.env, 'd1', 't1')).toBeTruthy();
     expect((await getDocument(db.env, 'd1'))?.source).toBe('cli');
   });
 
@@ -175,19 +159,19 @@ describe('compileSeededTabs', () => {
   it('passes through what is not a single source: elements, two sources, no id, not a tab', () => {
     const tabs = [
       { id: 'a', name: 'A', elements: [] },
-      { id: 'b', name: 'B', graph: { nodes: [] }, mermaid: 'graph TD' },
+      { id: 'b', name: 'B', template: 'kanban', elements: [] },
       { name: 'C', template: 'kanban' },
       'not a tab',
     ];
     expect(compileSeededTabs(tabs, 'd1')).toEqual({ tabs, intent: null, templateElements: [] });
   });
 
-  it('names an unnamed compiled tab, keeps its other fields, and themes it', () => {
+  it("keeps a compiled tab's other fields, and themes it", () => {
     const out = compileSeededTabs(
       [
         {
           id: 't1',
-          graph: { nodes: [{ id: 'a', label: 'A' }], edges: [] },
+          template: 'swot',
           theme: 'ocean',
           background: 'dots',
         },
@@ -195,7 +179,7 @@ describe('compileSeededTabs', () => {
       'd1',
     );
     expect(out).toMatchObject({
-      tabs: [{ id: 't1', name: 'Tab', background: 'dots' }],
+      tabs: [{ id: 't1', background: 'dots', theme: 'ocean' }],
       intent: { mode: 'plan' },
     });
   });

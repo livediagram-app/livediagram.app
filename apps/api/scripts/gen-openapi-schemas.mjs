@@ -113,7 +113,6 @@ export const ROOT_TYPES = [
   'DocumentCommentThread',
   'AgentPresenceResult',
   'TemplateCatalogueResponse',
-  'IconSearchResponse',
   'UnfurlResult',
 ];
 

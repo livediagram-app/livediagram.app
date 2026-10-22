@@ -217,21 +217,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/icons',
-    segment: 'icons',
-    tag: 'Catalogues',
-    summary:
-      'Icons from the line-art and Technology catalogues for a query, best first, as the palette ranks them.',
-    auth: 'public',
-    query: [
-      { name: 'query', required: true, description: '1 to 60 characters.' },
-      { name: 'limit', required: false, description: '1 to 50; 20 by default.' },
-    ],
-    responseSchema: 'IconSearchResponse',
-    statuses: [200, 400, 405],
-  },
-  {
-    method: 'GET',
     path: '/schema',
     segment: 'schema',
     tag: 'Catalogues',
@@ -312,7 +297,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         tabs: {
           type: 'array',
           description:
-            'The tabs to seed. A tab may give `graph`, `mermaid` or `template` in place of `elements`, compiled ' +
+            'The tabs to seed. A tab may give a `template` in place of `elements`, compiled ' +
             'by the edit-operations engine; a tab it refuses refuses the create (422, with `tabId`).',
           items: {
             anyOf: [
@@ -323,8 +308,6 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
                   id: { type: 'string' },
                   name: { type: 'string' },
                   theme: { type: 'string' },
-                  graph: { type: 'object' },
-                  mermaid: { type: 'string' },
                   template: { type: 'string' },
                 },
                 required: ['id'],

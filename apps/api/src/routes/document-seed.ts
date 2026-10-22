@@ -1,4 +1,4 @@
-// A created document's seeded tabs may give `graph`, `mermaid` or `template` in place of `elements`
+// A created document's seeded tabs may give a `template` in place of `elements`
 // (docs/specs/015-api/api.md, POST /api/documents): compiled here by the edit-operations engine's `applyReplace`,
 // as a `replace` changeset compiles, so the CLI and the MCP create documents the way they replace tabs. A tab the
 // engine refuses refuses the whole create, by its id, before anything is written.
@@ -17,7 +17,7 @@ import { engineLog } from '../changesets/log';
 import { engineRefusal } from '../changesets/request';
 import { isRecord } from '@liveplanner/document';
 
-const SOURCES = ['graph', 'mermaid', 'template'] as const;
+const SOURCES = ['template'] as const;
 
 type Refusal = { status: number; body: Record<string, unknown> };
 
@@ -53,7 +53,7 @@ export function compileSeededTabs(tabs: readonly unknown[], documentId: string):
       continue;
     }
     const tabId = raw.id as string;
-    const { graph: _g, mermaid: _m, template: given, ...rest } = raw;
+    const { template: given, ...rest } = raw;
     // A retired template's kind makes its replacement (templateKindOf).
     const template = templateKindOf(given) ?? given;
     const compiled = applyReplace(null, body, {

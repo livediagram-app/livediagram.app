@@ -13,7 +13,6 @@
 // so its request carries the text and mentions.
 
 import { isOpenTeamMember } from '@liveplanner/api-schema';
-import { legacyDocumentIdOf } from '../legacy-request-forms';
 import type { TeamMember } from '@liveplanner/api-schema';
 import { MENTIONS_MAX, itemThread, type Comment } from '@liveplanner/document';
 import { ITEM_ID_PATTERN } from '@liveplanner/items';
@@ -47,8 +46,7 @@ export async function handleTeamMentionRoutes(
     itemId?: unknown;
     commentId?: unknown;
   } | null;
-  const documentId =
-    typeof body?.documentId === 'string' ? body.documentId : legacyDocumentIdOf(body);
+  const documentId = typeof body?.documentId === 'string' ? body.documentId : '';
   // A Plan card's comment names its card, so the email opens it (docs/specs/012-collaboration/comment-mentions.md).
   const itemId = body?.itemId === undefined ? null : body.itemId;
   if (itemId !== null && (typeof itemId !== 'string' || !ITEM_ID_PATTERN.test(itemId))) {
