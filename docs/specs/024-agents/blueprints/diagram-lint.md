@@ -6,6 +6,9 @@ the refs, containment and `?view=` route of [Document views](../document-views.m
 [MCP server](../../015-api/mcp-server.md) §4.7. The spec decides; this file only adds engineering precision. Defaults
 applied where the spec is silent or qualitative are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as `LNn`.
 
+The CLI's `graph lint` and its `--compare` were removed 2026-10-22 with graph and Mermaid input; `lintGraph` and
+`compareGraphLayouts` stay in the package, reached by no front door. What follows about them describes the package.
+
 Scope, by file:
 
 | File                                                                              | Role                                                                                                                                                        |
@@ -43,7 +46,7 @@ Scope, by file:
 | `apps/api/src/changesets/{submit,revert}.ts`                                      | `lintFooterPart` fills the footer's lint slot; `lint` on the response                                                                                       |
 | `apps/api/src/openapi/manifest.ts`                                                | The tab view parameter lists `lint`                                                                                                                         |
 | `apps/mcp/src/lint-summary.ts`, `tools.ts`, `output-schema.ts`, `image-result.ts` | `create_document`, `add_tab`, `update_document` carry the summary line, also as a text block                                                                |
-| `apps/cli/src/commands/{tab,graph}.ts` (CLI blueprint)                            | `tab lint` reads the view; `graph lint` lints locally; `--json`, `--compare`, exit codes                                                                    |
+| The CLI's `tab lint` verb (CLI blueprint)                                         | `tab lint` reads the view; `--json`, exit codes                                                                                                             |
 | `docs/development/architecture.md`, `README.md`                                   | The package in the layout and its one-paragraph description                                                                                                 |
 
 The root `AGENTS.md` repo layout lists packages; its line for `diagram-lint/` needs the operator's permission to add.
@@ -156,13 +159,12 @@ and every `shapeColors` entry's. For `brand` both `DEFAULT_SCHEME_LIGHT` and `DE
 | MCP `update_document`, `add_tab`  | The changeset response's `lint`                           | `lint` (the summary line) in structured content and a second text block (LN24)                           |
 | MCP `create_document`             | `?view=lint&json=1` for each created tab                  | `lint: string[]`, one summary line per tab in `tabIds` order (LN24)                                      |
 | CLI `tab lint <doc> [--tab]`      | `?view=lint` (text), or `?view=lint&json=1` with `--json` | The text as served; `--json` prints `report.findings`                                                    |
-| CLI `graph lint <file>`           | The graph or Mermaid file, parsed by the CLI              | `lintGraph` locally, nothing sent; `--compare` the variant table                                         |
 
 The MCP's other write tools (rename, share, comments, trash) change no drawing and carry no lint. A lint that throws
 never fails the call that asked for it: the api and the MCP log `[lint] failed` and print `lint unavailable` where the
 verdict or summary would go (LN23); the view answers 500 with that message.
 
-`tab lint` and `graph lint` exit 1 when `report.counts.error > 0`, else 0; a usage error exits 2 and a view request
+`tab lint` exits 1 when `report.counts.error > 0`, else 0; a usage error exits 2 and a view request
 the api refuses exits with the CLI's code for it.
 
 ### Compare
@@ -293,9 +295,8 @@ MCP: `createDocumentOutput.lint: z.array(z.string())`, `addTabOutput.lint: z.str
 `updateDocumentOutput.lint: z.string()`, each described as "The diagram lint summary line of the tab as written."
 `apps/mcp` depends on `@liveplanner/diagram-lint` for `lintSummaryLine` only.
 
-CLI: `tab lint <doc> [--tab <t>] [--json]`; `graph lint <file> [--json] [--compare <dims>]`. `--json` prints
-`LintFinding[]` (`JSON.stringify(findings, null, 2)`), or `CompareRow[]` with `--compare` (LN38). `tab lint --compare`
-is a usage error (exit 2).
+CLI: `tab lint <doc> [--tab <t>] [--json]`. `--json` prints `LintFinding[]` (`JSON.stringify(findings, null, 2)`).
+`tab lint --compare` is a usage error (exit 2).
 
 ## Data and persistence
 
@@ -358,7 +359,6 @@ re-lints the tab through the view.
 - Abuse: a crafted tab of 10,000 elements (`MAX_ELEMENTS_PER_TAB`) cannot make the lint quadratic in arrows: the
   pair check is bounded by `LINT_MAX_ARROWS`, and the box and arrow-to-box checks ask the element grid.
 - Logs carry counts and codes only: no ids, refs, labels or theme ids.
-- `graph lint` never sends the file anywhere; telemetry stays the CLI's `Cli·Used·GraphLint` with no arguments.
 
 ## Performance and limits
 
@@ -454,7 +454,7 @@ that way, else the arrow's ref (N18).
 
 `LintOptions.log` defaults to `consoleLintLogger` (`console.info` / `warn` / `debug` by fingerprint); the CLI passes
 its debug logger, which writes to stderr only when debugging is on, so stdout stays data (LN30). No telemetry pair is
-added: the front doors already count the verbs (`Cli·Used·TabLint`, `Cli·Used·GraphLint`, `Mcp·Used`).
+added: the front doors already count the verbs (`Cli·Used·TabLint`, `Mcp·Used`).
 
 ## Testing
 
@@ -485,7 +485,7 @@ added: the front doors already count the verbs (`Cli·Used·TabLint`, `Cli·Used
 | The api serves the lint as a view, text and `json=1`, read gate, failure                                | `apps/api/src/routes/document-views-route.test.ts` › "the lint over REST", `apps/api/src/routes/document-views-lint-failure.test.ts`                    |
 | A changeset's footer carries the verdict; whole tab; dry run; revert; failure                           | `apps/api/src/routes/changesets.test.ts`, `apps/api/src/changesets/lint.test.ts`, `apps/api/src/changesets/lint-failure.test.ts`                        |
 | MCP write results carry the summary line                                                                | `apps/mcp/src/create-document-placement.test.ts` › "create_document lint", `apps/mcp/src/changeset-client.test.ts`, `apps/mcp/src/image-result.test.ts` |
-| `tab lint`, `graph lint`, `--json`, `--compare`, exit 1 on errors                                       | `apps/cli/src/commands/{tab,graph}.test.ts` (CLI blueprint)                                                                                             |
+| `tab lint`, `--json`, exit 1 on errors                                                                  | the CLI blueprint's `tab lint` tests                                                                                                                    |
 
 ## Constants and configuration
 

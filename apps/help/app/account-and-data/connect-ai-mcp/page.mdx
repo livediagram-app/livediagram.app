@@ -56,11 +56,8 @@ The connection gives your AI tool these tools:
 - **Change card types**: add, edit or delete the [card types](/help/canvas/plan-mode/items/) a document's boards hold, with their own fields. Deleting a type moves its cards to the Trash, as it does in the editor.
 - **Add a form**, **Read a form** and **Change a form**: build a [form](/help/canvas/plan-mode/forms/) on a Form tab, from a starter or from the questions you describe, with its responses going to a board or a sheet you name, then read it back or change its questions, sections and settings.
 - **Share a form** and **Try a form**: publish a form's link, close it or delete the link, and fill the form in once as a test, the way the builder's Preview does, to see the card or row a response makes.
-- **Search icons**: find an [icon](/help/palette/icons/) by what it shows, so the AI can put it on the canvas.
 
-For building the picture, the AI can just describe the **graph** (the nodes and what connects to what) and liveplanner lays it out, so the tool doesn't have to work out coordinates. It only needs to say what exists and what links to what, or hand over the same thing as **Mermaid** text (a flowchart, state diagram, or ER diagram). It can group related boxes into labelled sections and choose a flow, a tree (an org chart), or a mind map. Box labels are kept to short headings: when the AI writes a long sentence, the box shows the heading and the full text goes into the box's note, so a chatty AI doesn't fill your diagram with paragraphs.
-
-Beyond plain boxes and arrows, the AI can fill in **sticky notes** (in the sticky colours), **tables**, **code blocks**, **entities** (a titled record with field rows, for data models), **swimlanes**, **bar, line, and pie charts**, and **Sankey diagrams** (from a list of flows: what moves from where to where, and how much). Your AI tool may also surface a few ready-made **prompts** ("Diagram this", "Flowchart from steps" and "Show my document") as quick actions, so you don't have to know the tool names.
+Beyond plain boxes and arrows, the AI can fill in **sticky notes** (in the sticky colours), **tables**, **code blocks**, **entities** (a titled record with field rows, for data models), **swimlanes**, **bar, line, and pie charts**, and **Sankey diagrams** (from a list of flows: what moves from where to where, and how much). Your AI tool may also surface a few ready-made **prompts** ("Plan this", "Board from tasks" and "Show my project") as quick actions, so you don't have to know the tool names.
 
 When the AI changes a document you have open, you see it happen: the change arrives on your canvas straight away, outlined for a moment in your colour, and a note at the bottom says what changed. **Show** takes you to it and **Undo** puts it back (your own Undo shortcut only ever undoes your own edits). Anything you change at the same time is kept. To review or undo a change after its note has gone, see [Reviewing and Undoing an Agent's Changes](/help/developers/agent-changes/). An element someone else in the document has selected is off limits: a change that touches it is refused, and the AI is told to leave it out or try again later.
 
@@ -72,7 +69,7 @@ By default the token behind a connection has full read and write access to your 
 
 Either way, a connection can't manage your teams or your account: inviting members, changing roles, and deleting things other than documents stay in the app. It can never delete a document for good either; that stays with you, in the Trash. (A tab it deletes is gone for good.)
 
-Approving a connection creates a token, so it fails if you already have ten tokens that haven't expired; revoke one in **API Tokens** first. Some tools list each document tool twice, once under an older _diagram_ name marked deprecated: they do the same thing.
+Approving a connection creates a token, so it fails if you already have ten tokens that haven't expired; revoke one in **API Tokens** first.
 
 <Tip>
   Connected a tool you no longer use? Open **Settings**, then **Account**, then **API Tokens**, and

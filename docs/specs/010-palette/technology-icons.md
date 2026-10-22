@@ -95,7 +95,7 @@ type TechIconDef = {
 - **AWS:** S3, EC2, Lambda, RDS, DynamoDB, API Gateway, CloudFront, Route 53,
   VPC, SQS, SNS, ECS, EKS, CloudWatch, IAM, Lake Formation (data lakes) and MSK, and Elastic Load
   Balancing, ElastiCache, Fargate, Cognito, Kinesis, Step Functions and Secrets Manager, the services an agent's
-  architecture diagrams reached for and found missing ([MCP server](../015-api/mcp-server.md) §4.5a).
+  architecture diagrams reached for and found missing.
 - **Azure:** Virtual Machine, Blob Storage, App Service, Functions, SQL
   Database, Cosmos DB, AKS, Virtual Network, Load Balancer, Service Bus, Key
   Vault, Monitor.

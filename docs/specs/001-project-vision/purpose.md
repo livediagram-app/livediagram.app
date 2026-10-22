@@ -57,8 +57,7 @@ never arrives.
   pickers ([Picker](../012-collaboration/picker.md)) and decision records
   ([Decision record](../012-collaboration/decision-record.md)). These are elements on the canvas, not a side
   panel: the canvas already knew how to hold them.
-- **Getting work in and out**: import/export as JSON, Markdown and CSV export, Mermaid from agents
-  ([Mermaid input & export](../020-import-export/mermaid.md)); image export
+- **Getting work in and out**: import/export as JSON, Markdown and CSV export; image export
   ([Export fidelity](../020-import-export/export-fidelity.md)); read-only embeds.
 - **Teams** ([Teams](../013-workspace/teams.md), [Team shared documents](../013-workspace/team-shared-documents.md)): a
   named group with Admin/Member roles and a shared library of documents and

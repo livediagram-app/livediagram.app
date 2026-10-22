@@ -1,5 +1,9 @@
 # Mermaid input & export
 
+**Status: no surface.** liveplanner's MCP server, CLI and public API take no Mermaid (nor a node/edge `graph`), and
+the CLI has no `mermaid` export format (removed 2026-10-22). The parser, the serialiser and the graph layout below
+remain in `packages/document`, reached by no agent surface; this spec describes them as built.
+
 Agents (the MCP server, the CLI and the public API) can hand liveplanner [Mermaid](https://mermaid.js.org/)
 text in place of a graph or elements, and the CLI's `export --format mermaid` writes a tab back out as
 **flowchart** text. Mermaid is the lingua franca of diagram-as-code, sitting in countless READMEs, issues, and

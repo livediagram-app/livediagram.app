@@ -302,7 +302,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     both apps emit through: batching, caps, opt-in gates, page-hide beacon,
     error-tracking caps.
   - `apps/mcp`: tool argument schemas (and the name cap through the real MCP
-    SDK), tool registration + telemetry, graph input, element normalising, tab
+    SDK), tool registration + telemetry, element normalising, tab
     builders, the find-diagrams search, OAuth state handling, the request scope,
     and the api service-binding client.
   - `apps/router`: the dispatch table (prefix strips, clean live

@@ -175,12 +175,11 @@ browser. A token minted for the CLI is named "liveplanner CLI".
 
 ## 4. Tools
 
-Twenty-five tools: twelve for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
-([§4.9c](#49c-the-sheet-tools)) and four
-for forms ([§4.9e](#49e-the-form-tools)), besides the deprecated names ([§4.18](#418-deprecated-tool-names)). The search/view capability is two tools (find, then read); create,
+Twenty-five tools: eleven for documents, five for Plan boards ([§4.9b](#49b-the-plan-tools)), four for sheets
+([§4.9c](#49c-the-sheet-tools)) and five
+for forms ([§4.9e](#49e-the-form-tools)). The search/view capability is two tools (find, then read); create,
 add_tab, and update are separate because their inputs and intent differ;
-list_templates exposes the template catalogue ([§4.5](#45-list_templates)) and search_icons the icon catalogue
-([§4.5a](#45a-search_icons)); liveplanner keeps no uploaded pictures, so no tool lists or places one ([§4.5b](#45b-no-uploaded-pictures));
+list_templates exposes the template catalogue ([§4.5](#45-list_templates)); liveplanner keeps no uploaded pictures, so no tool lists or places one ([§4.5b](#45b-no-uploaded-pictures));
 share, rename, and delete complete the CRUD verbs, with list_trash and
 restore_document as the way back from a delete
 ([§4.8](#48-share_document), [§4.9](#49-rename_document-and-delete_document), [§4.9a](#49a-list_trash-and-restore_document)).
@@ -255,7 +254,7 @@ canvas overrides; the model then personalises labels via `update_document`'s
    than being raked into a disconnected-component column.
 3. **Tags it as made by AI.** The create sends `source: 'mcp'`, which the Explorer's **Made by AI** filter (`made-by:ai`, [Explorer filters](../013-workspace/explorer-filters.md)) reads, so a user's own work and AI-made documents can be told apart wherever either is filed. Unfiled, it sits at the root of My Documents like any other document, with its **Made by AI** badge. (Earlier this find-or-created a real "Generated" folder, then the Explorer showed a Generated view; provenance is a filter, not a place.) The create also sends the creation `intent` of the first tab it built and the template it used, so with no folder named the server files it in the user's [default folder](../013-workspace/default-folders.md) for that intent, when they have one.
 4. **Persists** all tabs via `POST /api/documents` (which seeds a `tabs[]` array
-   and accepts `source`). A tab given as `graph`, `mermaid` or `template` travels
+   and accepts `source`). A tab given as a `template` travels
    as such and is compiled by the api ([API app](api.md)), so the MCP and the
    [CLI](cli.md) build documents alike.
    Making a document is a use of it, so it joins the user's
@@ -329,8 +328,7 @@ like it (`"icon" is not a field of a shape; fields like it: iconId, iconPosition
 (`textSize` `sm`, `md`, `lg`, `scale` or a pixel number; the alignments, arrow styles, ends and heads, border styles
 and radii, and the diagram-building kinds' looks, media, attach points, boundary styles and pyramid variants: the
 same list edit operations check, [Edit operations](../024-agents/edit-operations.md)) is refused naming the values,
-and an `iconId` that names no icon is refused with the icons like it and a
-pointer to `search_icons`. Each of these was once stored and drawn wrong in silence. The check passes every element
+and an `iconId` that names no icon is refused with the icons like it. Each of these was once stored and drawn wrong in silence. The check passes every element
 of every template, so a tab read back as JSON writes again unchanged.
 
 ### 4.5 `list_templates`
@@ -352,14 +350,6 @@ A `template` that names no kind is refused before anything is written, offering 
 those whose kind or title has a word starting with a word of it of 3 letters or more (`closestTemplateKinds`, at most
 `CLOSEST_TEMPLATES_MAX` (5)), then every kind: `Unknown template "retro". Closest: retrospective, team-retro, four-ls,
 sailboat. Valid kinds: ...`. The CLI's and api's template bodies refuse with the same hint.
-
-### 4.5a `search_icons`
-
-Finds icons by what they show, best match first, across the line-art set and the Technology set (brand, cloud and
-database marks): `{ query, limit? }` (20 by default, at most 50) answers `{ icons: [{ id, label, set }], more }`. An
-id is what an element's `iconId` takes. The catalogue is bundled with the worker (`@liveplanner/icons`'s
-`searchIcons`, the api's `/icons` route and the CLI's `icon search` use the same ranking), so the search makes no
-api call. Read-only.
 
 ### 4.5b No uploaded pictures
 
@@ -384,238 +374,12 @@ input-schema field descriptions, so a client that ignores resources still gets
 enough. The schema text derives from `packages/document` types — single source of
 truth, no hand-maintained copy that can drift.
 
-### 4.7 Graph-first authoring (the low-burden path)
+### 4.7 No graph or Mermaid input
 
-Emitting raw `elements` with `x/y/width/height`, a shape vocabulary, and
-arrow-endpoint anchor objects is the biggest source of model error (it's why
-`coerceShapeKind`, the validation error paths, and auto-layout-on-replace all
-exist). So `create_document`, `add_tab`, and `update_document` (replace mode)
-accept an alternative **`graph`** input — the connection graph and nothing else —
-or the same thing written as **`mermaid`**:
-
-```
-graph: {
-  title?: string, subtitle?: string, key?: boolean,
-  nodes:  [{ id, label?, shape?, note?, group?, icon?, tone? }],
-  edges:  [{ from, to, label?, line? }],
-  groups?: [{ id, label?, members?: [nodeId, ...] }],
-  direction?: 'down' | 'right',
-  style?:  'flow' | 'tree' | 'mindmap' | 'lanes' | 'cycle',
-  lines?:  'straight' | 'angled' | 'curved',
-}
-mermaid: "flowchart LR\n  A[Idea] --> B{Worth it?} ..."
-```
-
-The server turns each node into a `shape` box and each edge into a pinned
-arrow, then **always lays it out** (a graph carries no positions). The model
-expresses only intent — which nodes exist, what points at what, how they group
-— and never touches geometry, anchors, or endpoint shapes. Off-vocabulary shape
-kinds are coerced; an edge to an unknown node id is dropped rather than
-producing a broken arrow. This is the **preferred path for any node/edge
-diagram** (flowcharts, org charts, architecture, dependency graphs); `elements`
-stays for deliberate arrangements (a ring, a grid) and mixed non-node content.
-Provide **one** of `graph` / `mermaid` / `elements` / `template`, not several.
-A graph holds at most 500 nodes and 1 000 edges (`GRAPH_LAYOUT_MAX_NODES` / `_EDGES`,
-[Mermaid](../020-import-export/mermaid.md#limits)): the schema refuses a larger `graph`, and a larger
-`mermaid` answers the parser's "too large to lay out" error, so the worker never spends its CPU on
-a layout no one could read.
-
-**A label is a heading; detail goes in the note.** A node's `label` is the text
-in the box and is capped at **40 characters** (`GRAPH_LABEL_MAX`). The cap is a
-plain fact in the tool's description, not an instruction (§4.15), and the server
-enforces it rather than rejecting the call. A label that fits keeps the line breaks written into it
-("App tasks\nECS Fargate" is two lines, measured line by line), other runs of space made one. A longer label becomes a heading:
-bracketed asides go first ("Web client (React SPA served from the CDN)" becomes
-"Web client"); then the noun phrase before its first clause word when there is
-one ("Orders service which creates orders" becomes "Orders service", "Message
-queue for async events" becomes "Message queue"); otherwise the text cut at a
-word boundary with an ellipsis. Either way the **full text moves into the node's `note`**
-(prepended to any note the model gave), which the editor shows as the element's
-note. A model now has somewhere to put the explanation, so the box keeps the
-heading; this is what stops a verbose model filling a diagram with sentences.
-Edge labels are capped the same way (overflow is dropped, an arrow has no note).
-
-**Boxes fit their labels.** Each node is sized from its label (estimated text
-width and line count, within a sane range) and **keeps that size** through the
-layout: the peer sizing that Tidy Up applies (every box of a tier as big as its
-longest label) is skipped for graph input, where it let one long label inflate
-every box ("CTO" drawn as wide as "Platform and site reliability"). An
-unlabelled circle is a small solid dot ([Mermaid](../020-import-export/mermaid.md)
-"Node boxes and text").
-
-**The graph look** (what makes graph input read like a template, the flowchart template being the yardstick):
-
-- **Boxes are template-sized.** A box is at least 180×64 (a diamond 180×104, wider than tall; a circle stays round),
-  wider for a longer label, never the 120×120 square the editor's palette starts a square at. The labelled boxes of
-  one kind share one size, the largest any of them needs, so a wrapped step does not stand taller than its
-  neighbours. Every node's text is
-  one size: `md` for a graph of up to 12 nodes (the template's size), `sm` beyond, so a large system still fits.
-- **Roles by notation.** In a flowchart (a graph with a diamond or a stadium) the first stadium a flow starts from is
-  `bold` and a stadium it ends on `soft`; a diamond is `soft`. A node's `tone` overrides: `strong` (bold), `soft`,
-  `muted` (outlined and dashed, the exception idiom) or `plain`. `icon` puts an icon (an id from `search_icons`) on
-  the box; an id that names none is refused.
-- **Flow lines are elbows.** `lines` defaults to `angled` for flow, lanes and tree; every edge to a later rank bends
-  twice along the flow. Unlabelled arrows out of one node share one trunk and arrows into one node one bus, as long as
-  they are drawn alike (an unset line is solid): where solid and dashed lines meet at one end of a node, the lines of
-  the style most of the ones that could merge have share it (a labelled arrow saying something of its own does not
-  count) and the rest keep their own ends, leaving from that side's quarter toward their other end, beside the
-  trunk rather than on it, so a dashed event line never rides a solid call's trunk, nor its run across the gap
-  between ranks (each line's runs take their own channel there); a labelled
-  arrow keeps its own ends, unless arrows into one node (or out of one) say the same thing in the same line: those
-  join one bus too (several services that each "publish" to one event bus), and so does the one labelled arrow
-  among unlabelled ones into one node in its line (an agent that names the bus once, on one of its arrows), the bus
-  saying it once, on the stretch
-  into that node they all share (four "publish" plates, one a leg, read as four different things; a trunk out of one
-  node keeps one on each leg, where each says where it goes), never a
-  decision's exits, whose label names that decision's branch (two decisions' "no" on one bus could not say which was
-  which), and its label
-  sits on a run no other labelled arrow shares (the drop into its target,
-  else the leg out of its source, else its longest run), one line wide. Runs are read as drawn, those on one line
-  as one, and a run takes the label only when its plate there touches no box: long enough along it, clear beside it,
-  and off every frame's and lane's border and heading, and, where any run allows, off every other line too (a
-  neighbour's drop struck a label through); where the middle of a run is not clear, a point a quarter or a
-  third of the way along it is tried before the next run. Where no run holds the label on its line, it sits beside
-  one, just off the line on either side, where it touches no box, border, heading or line (a wide label on a drop
-  beside a neighbour's drop), before it is ever laid over another line. Each label keeps off the labels placed
-  before it (two "publish" labels off one bus stood over each other).
-  The gap between two ranks fits the widest label crossing it, as Tidy Up's does (its width left to right, its line
-  height either side of the jog top to bottom), so a caption is never longer than its edge; between a group and a
-  node outside it too.
-- **Side steps sit level with their decision.** A decision (diamond) with two or more exits keeps its main exit on
-  the spine (the one labelled yes / ok / true / pass, else the one leading furthest) and lays each other exit whose
-  target nothing else enters on the decision's own rank, beside it, as the template's "No → Show card error" does.
-  An exit back to a step the flow reaches before the decision (a retry to the start, entered by nothing else) is a
-  loop, never a side step: laid level, it was drawn straight over the line into the decision.
-- **Loops go round the outside.** An edge back to an earlier rank (a retry, a loop) leaves its source by the side
-  away from the spine, runs outside every box between, and enters its target from that side: an elbow that never
-  crosses the spine. Several loops take separate tracks. On a drawing of up to 120 boxes a loop or a detour is first
-  searched for (the orthogonal router: the cheapest clean path over every pair of sides); the search shares one
-  budget per layout (`ROUTER_BUDGET`, grid crossings laid out plus steps taken), and once it is spent the rest take
-  their outside tracks, so a dense graph lays out in well under a second (60 boxes and 140 edges in about 0.2 s).
-  The search prices a run along a line already drawn (`ROUTER_SHARE_COST`), counting one within `ROUTER_SHARE_NEAR`
-  (8 px) beside it, or on its line stopping that short of its end, as sharing it: a "No" running up to the very point
-  a "Yes" turns into a step read as going into that step. It also prices each line already ending on a side the
-  route leaves or enters (`ROUTER_SIDE_LOAD_COST`, about two bends' worth), so a third line into one side of a shared
-  end takes a free side instead of squeezing in beside the other two.
-- **Groups keep their lines clear.** A node outside a group that a member links to sits by that member, not by the
-  middle of the group (a database under the service that owns it), its rank kept in order and its gaps kept. An edge
-  to or from the group itself leaves the frame facing the other end: from the side level with it when it lies under
-  the frame, else from the frame's near side, so it never sweeps along the frame past its members' own drops (the
-  D2 "publish events" bus). An edge between two nodes outside a group is routed round the frame, never through the
-  gaps between its members. A line into a group's first members lands clear of its heading: down the page, a frame
-  whose first member would take a line through the heading's text is widened on the left until it does not, on the
-  heading's side only: the far side hugs the members (a long heading framed two boxes in twice their room), unless
-  an edge meets the group itself, whose frame then stays centred on its members so that edge stays on their line.
-  A row of members with no lines among them sits by its links to the group most of the row links to (each store
-  under its own service, a service's link to a third party pulling it off none), never by a hub's. A hub (a member
-  linked to more outside nodes than half its row, at least three, in a row holding at least three one-link members:
-  a Kafka bus every service publishes to) goes to the end of its row rather than mid-row between a service and its
-  store. Two members wanting one spot split the difference, unless that spreads along a tight row: then the first
-  takes the spot and the next packs beside it, so the rest stay straight.
-  A label's plate keeps 6 px off every frame's and lane's border, inside or out, never sitting on the edge. The
-  reverse holds too: a group in one row whose members have no lines among them (a row of data stores) seats each
-  member by the outside nodes it links to, a database under its service, its order and gaps kept, and its frame
-  refits round them; skipped when the refitted frame would cover another node or frame. A member left within a
-  notch (6 px) of its spot sits on it, its gap shrinking by no more than that, so its line drops straight rather
-  than as a slant.
-- **Stacked groups line up.** Groups that follow one another down the flow, no two side by side (a pipeline's
-  stages), keep the spine straight: a group with one entry (the one member a line from outside reaches) moves,
-  frame and members together, until that entry sits on the line of what feeds it, so the spine runs straight
-  through every stage rather than jogging where a stage's own branch pulled its members aside. Each frame keeps
-  its own width, hugging what it holds: stretched to one width, frames of two boxes stood mostly empty. Skipped
-  for a group whose moved frame would cover another node or frame.
-- **Lanes stay compact and their decisions branch.** In a `lanes` graph a hand-off to the next lane up or down that is
-  its step's only way out and its next step's only way in drops straight into that lane, in the same column, rather
-  than taking a column of its own, so a chain of hand-offs climbs or descends a staircase instead of stretching across
-  the page; never two drops in a row, so the staircase steps right as it goes and the flow still reads left to right
-  (four drops in a row stood the first four steps in one column). Next steps one step of the same lane feeds, stacked in one column, spread until each clears that step's
-  points, so its exits can branch. A step with two or more exits (a decision, or any step that branches) keeps the one whose next step sits
-  most nearly level with it on its point toward the flow; each other exit leaves from its top or bottom, toward its
-  next step's lane, and bends once into that step's side, so no two exits leave as parallel stubs. A flow down the
-  page does the same across: of a step's exits leaving its bottom on their own ends (labelled, or drawn unlike the
-  trunk), one whose next step lies clearly to its left or right leaves that side instead. A step with exactly two
-  exits whose next steps lie clearly either side of it, neither ahead, sends both out of their sides (accept up,
-  decline down; yes left, no right): kept on the point, one left by a corner and the other by the tip, lopsided.
-  Steps stacked in one column of a lane read top to bottom as their feeders do (a step fed from its own lane and from
-  below sits over one fed only from below), so the lines into the stack do not cross on their way in. A stack one of
-  whose steps a step of the same lane feeds from an earlier column, with nothing of that lane on the line between
-  them, moves so the two sit level and the hand-off runs straight along the lane (a first decision's "No" straight
-  into a shared rejection); that line keeps the middle of its next step's side and another line into the same side
-  comes in beside it on a quarter. A decision's own branches stacked beside it are not lined up: they stay spread so
-  each leaves by its own side. The lane grows to hold a stack that moved. A labelled line running level across one
-  gap between columns (a decision's "Accept" on its point) widens that gap to hold its label, and every later column
-  moves along with it, so the label is never cut short ("Accep").
-- **Title, subtitle and key.** `title` and `subtitle` set a heading and a muted caption above the diagram, left
-  aligned, as every template has. `key` adds a key beside it, a frame titled "Key" so it moves, in the editor or by
-  an edit, as one: one miniature per shape kind the graph uses, with
-  what that shape means, in the tone the diagram gives that kind most, its muted exceptions aside unless every one is muted;
-  those exceptions then get a row of their own, "Exception or optional" (`{"muted": "Error path"}` renames it), so a
-  dashed step never goes unexplained. `true` names them by default: in a flowchart by ISO 5807
-  (stadium "Start or end", square "Step", diamond "Decision", parallelogram "Input or output", document "Document",
-  hexagon "Preparation"), otherwise as a diagram of systems reads them (stadium "Entry point", square "Component",
-  hexagon "Hub or bus", circle "Node"; cylinder "Data store", cloud "External system", actor "Person" in both). An
-  object names them by shape (`{"hexagon": "Event bus"}`), the rest by default.
-
-**Layout choices** (defaults in brackets):
-
-- `direction` (auto): `down` (ranks top to bottom) or `right` (left to right). Auto is `down` for a flowchart (it
-  reads down the page, as the template does) and for a graph of more than 150 nodes; any other flow is laid out
-  both ways and keeps the one whose aspect is nearer a landscape page (3:2).
-- `style` (`flow`): `flow` is the layered layout, `tree` the tidy tree (an org chart, a hierarchy; a parent below the root whose two or more children are all leaves stacks them in a column under it, indented, joined by a bus down its lower-left quarter, the compact org chart; its lines carry no arrowheads, as the org-chart template's do, since a tree shows belonging, unless an edge asks with `ends`; a node with a `role` draws as the template's person card, its name in bold over the role with a person icon unless it names another, in any style), `mindmap` a real mind map as the mind-map template draws one (mind nodes, so it grows with Tab and Enter, laid out balanced: the root is the first node nothing enters, a bold round centre; each first-level branch tinted in its own hue with its icon; leaves white and edged in their branch's hue, one height for every leaf of the map (the tallest any label needs); a root whose label would grow the circle past 260 px takes the next text size down, so the centre stays near the template's; curved connectors in the branch hue with no arrowheads; an edge the tree leaves out drawn dashed), `lanes` a swimlane diagram (each group a lane, one under another, its label in the lane's header strip (a heading, a size up from the steps, the strip as wide as the longest title needs up to the swimlane template's, the columns 48 px apart); the flow runs left to right across the lanes and a node outside every group gets an unnamed lane), `sequence` a sequence diagram (the nodes the participants, a node shaped `actor` a stick figure; the edges the messages in order, a dashed edge a reply; Mermaid says more), `cycle` a ring (the nodes in order clockwise from the top, each edge a curved arrow following the ring's arc, leaving and entering its stops along the ring's tangent so every arc bows out alike, a node with no edge at all at the ring's centre, sized on its own so a longer centre label never grows the stops, a node given no shape a circle).
-- `groups`: named clusters drawn as frames around their members and laid out as
-  one block each (the clustered layout the editor's Mermaid import uses); an edge
-  may point at a group id. With groups, `style` is flow. A node may name its
-  group itself (`group`), the shape a model reaches for first; it joins that
-  group's members, and a group id nothing declares is created with the id as its
-  label. `members` is then optional. Nodes and groups share one set of ids: an id naming both is refused, naming
-  it, since each becomes an element of that id, and so is a node id or a group id given twice. Groups do not nest: a group listed as another's member is refused,
-  naming both, rather than dropped; and a `lanes` graph refuses a node in no group, which would otherwise land in an
-  unlabelled lane of its own, and a node in two lanes, which each lane would draw (`graphShapeError`). The api's `replace` with a `graph` refuses the same, so every
-  caller of graph input is held to it (`graphBodyIssue`).
-- `lines` (`angled` for flow, lanes and tree, `curved` for mindmap and cycle): the
-  arrows' routing, from the editor's own arrow styles. Angled lines **bend
-  twice** along the flow (down, across at half height, down into the child's
-  top), the org-chart shape; one whose ends already line up runs straight
-  ([Layout cleanup](../008-canvas/layout-cleanup.md) "Angled lines bend twice"). **No notch in a straight line:** an
-  elbow whose ends sit within `NOTCH_MAX` (6 px) of one line, across a middle run shorter than `KINK_RUN` (12 px),
-  is drawn straight, as a step that short reads as a notch (two boxes of different widths centred a pixel or two
-  apart). Where one end's box meets no other line, that box moves across by the step so the line runs true, unless that would
-  take it onto a neighbour or over the border of a frame or lane that holds it; only
-  when both ends meet other lines is it drawn as a slight slant (a store's 5 px slant over 250 was seen). An elbow
-  whose straight line would cross a box it was routed round keeps its bends, and lines are straightened before their
-  labels are placed, so a label sits on the line as it is drawn.
-
-The flow layout reduces crossings: after ranking, a few up-and-down barycentre
-passes reorder each rank, and a new order is kept only when it crosses fewer
-edges ([Layout cleanup](../008-canvas/layout-cleanup.md)), so graph input, whose
-nodes all start at one point, no longer lays out in arbitrary input order. It
-also gives long edges a lane, places each node by its neighbours instead of
-centring its rank, and has every edge to a later rank leave and land on the
-faces that point along the flow (the same page). An arrow that still crosses an
-unrelated box passes behind it with a gap, on the canvas and in the preview
-([Arrows pass behind intervening boxes](../008-canvas/arrow-route-behind.md)).
-
-**`mermaid`** is parsed by the editor's own importer (`parseMermaid`:
-flowcharts with subgraphs, state diagrams and ER diagrams, [Mermaid](../020-import-export/mermaid.md)), or for a
-`sequenceDiagram` by the agents' sequence reader ([Sequence diagrams](../020-import-export/mermaid.md#sequence-diagrams-agents),
-drawn with lifelines, activation bars, notes and fragments as `style: "sequence"`), into the same
-graph, its direction and subgraphs becoming `direction` and `groups`, and then
-takes the same path, label cap included. Mermaid's front matter title (`---` / `title: Checkout` / `---`) heads the
-diagram as `title` does on a graph, in every dialect. A dialect it cannot read comes back as
-an error naming what is supported.
-
-The translation (`graphToElements`, the sizing, the clustered layout) is pure
-code in `packages/document` beside the layout it feeds, so the public API can
-adopt it later; the MCP side (`graph-input.ts`: the label cap, choosing the
-layout, the lines, Mermaid) lives in `apps/mcp/src` and is unit-tested there.
-The cap is the MCP's alone: the editor's Mermaid import never truncates what a
-person typed.
-
-The **prompts** (§4.10) are messages the user sends, not tool descriptions, so
-they do ask for it outright: short headings, detail in the note, related nodes
-grouped, a direction and style that fit the subject. Nodes are set in one fixed
-text size (`md` up to 12 nodes, else `sm`; what the sizing measures against), not the shape default that
-scales text to fill each box.
+The tools take no node/edge `graph` and no `mermaid` text. A tab is made from a `template`, a `dashboard` or raw
+`elements` (a Form tab from `add_form`), and the Plan, sheet and form tools fill it ([§4.9b](#49b-the-plan-tools),
+[§4.9c](#49c-the-sheet-tools), [§4.9e](#49e-the-form-tools)). The changeset `replace` body the api takes is the same
+set: exactly one of `template`, `dashboard`, `form` or `elements` ([Agent changesets](../024-agents/agent-changesets.md)).
 
 ### 4.7a Content-carrying element kinds
 
@@ -672,10 +436,10 @@ wrongly:
   fill its box, so a lane or entity title came out as one giant word across
   its contents and a sticky's note filled it edge to edge; a box drawn in the
   editor never arrives that way. This applies to every element on these paths,
-  not only the six. As graph input sizes its text by count, so do raw boxes: on a list of more than 12 labelled
+  not only the six. Raw boxes size their text by count: on a list of more than 12 labelled
   boxes, a box that gives no `textSize` takes `sm` rather than `md`, so a hand-placed architecture of twenty boxes
   does not wrap its names mid-word ("ElastiCa / che"). A raw arrow pinned at both ends that gives no `arrowStyle` is
-  angled, as graph input draws its lines, and an angled one that gives no bends takes graph input's two (out of its
+  angled, and an angled one that gives no bends takes two (out of its
   start, across, into its end), so it meets both ends square rather than as the editor's lone L, sideways into a top;
   one whose ends line up runs straight. `"arrowStyle": "straight"` keeps a diagonal. Both defaults are for content
   arriving fresh: a `replace` that sends back elements the tab already holds (by id) leaves their text size and lines
@@ -705,7 +469,7 @@ wrongly:
 **Style fields.** The element format names the style fields a box or arrow takes beyond its geometry, as facts:
 every closed vocabulary from `ELEMENT_FIELD_VALUES` (text size and alignment, icon position, arrow style, ends and
 heads, border style and radius, font) with its values, bold and italic, `colorPreset` with the theme's preset looks,
-`iconId` (from `search_icons`) and `note`. Before, these were discoverable only by reading a template's JSON, and
+`iconId` and `note`. Before, these were discoverable only by reading a template's JSON, and
 an agent hand-placing a dashboard guessed `textAlign` and `textSize: "xl"`.
 
 **Session kinds.** The format also names what the session kinds hold: a `session-button`'s `session` (a timer
@@ -879,13 +643,13 @@ built with the editor's own edits (`@liveplanner/forms`) and started as Start Pl
 Registered MCP **prompts** — pre-canned templates a client surfaces as slash
 commands / quick actions, so a user finds what the server does without knowing
 the tool names. Pure text (no api calls, no auth to list); each steers the model
-to the right tools and the graph-first path:
+to the right tools:
 
-- **`diagram_this`** `{ description }` — create a diagram from a description via
-  create_document + the graph input, and return a link.
-- **`flowchart_from_steps`** `{ steps }` — turn an ordered step list (with
-  branches) into a flowchart (diamond decisions, labelled branch edges).
-- **`show_my_document`** `{ name }` — find a document by name and read_document it
+- **`plan_this`** `{ description }` — turn a goal or a piece of work into a new project: a template from
+  list_templates made with create_document, then the real tasks added as cards with change_items, and a link back.
+- **`board_from_tasks`** `{ tasks }` — put a list of tasks on a board: a project from the `kanban` template, one
+  card per task with change_items (column, assignee and due date as the list gives them), and a link.
+- **`show_my_document`** `{ name }` — find a project by name with find_documents and read_document it
   inline.
 
 Registered in `apps/mcp/src/prompts.ts`, wired in `buildServer` beside the tools
@@ -956,12 +720,12 @@ while a destructive one always asks. Directory listings (the Claude connectors
 portal among them) also require them, and a missing block is a listing blocker,
 which is how the gap was found.
 
-Three behaviours cover the twenty tools, and each is a preset in
+Three behaviours cover the twenty-five tools, and each is a preset in
 `apps/mcp/src/tool-annotations.ts`:
 
 | Behaviour       | `readOnlyHint` | `destructiveHint` | Tools                                                                                                                                                                 |
 | --------------- | -------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `search_icons`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                             |
+| **read**        | `true`         | (not applicable)  | `find_documents`, `read_document`, `list_templates`, `list_trash`, `list_items`, `list_sheets`, `read_sheet`, `read_form`                                             |
 | **write**       | `false`        | `false`           | `create_document`, `add_tab`, `share_document`, `rename_document`, `restore_document`, `add_board`, `change_board`, `add_sheet`, `add_form`, `share_form`, `try_form` |
 | **destructive** | `false`        | `true`            | `update_document`, `delete_document`, `change_items`, `change_card_types`, `change_sheet`, `change_form`                                                              |
 
@@ -1083,8 +847,7 @@ matching fails the call loudly rather than shipping a wrong contract. A test
 drives every tool through a real SDK client and server, which validates
 `structuredContent` on both ends.
 
-**Every input parameter is described**, nested fields included (each graph
-node field, each `ops[]` entry's `op`, `element` and `elementId`). A parameter
+**Every input parameter is described**, nested fields included (each `ops[]` entry's `op`, `element` and `elementId`). A parameter
 with only a name and a type leaves the model guessing at intent and valid
 values, and connector directories score servers on it. A test walks the
 advertised `tools/list` schemas and fails on any property without a
@@ -1095,26 +858,6 @@ directories prefer dot-notation trees (`document.create`); it is not adopted,
 because several clients restrict a tool name to `[a-zA-Z0-9_-]`, and a rename
 would break every existing connection and the cross-references between tool
 descriptions.
-
-<!-- legacy-names -->
-
-### 4.18 Deprecated tool names
-
-The tools named for the container were `*_diagram` / `find_diagrams` before it became a document ([Document](../006-document/document.md)). Each `*_document` tool is also registered under its old name until **30 April 2027** (`apps/mcp/src/legacy-tool-names.ts`, wired in `registerTool`):
-
-- The alias is the same tool: the same handler, behaviour annotations and output schema, and its input checked
-  against the same schema, refused in the SDK's own words (`Input validation error: Invalid arguments for tool <old
-name>: ...`).
-- Its title ends in "(deprecated)" and its description is one line: "Deprecated: use `<new name>` instead; this name
-  is removed on 2027-04-30. It takes the same input as `<new name>`.", so a model reading the tool list prefers the
-  new name.
-- It lists an open input (any object), so the tool list carries each input schema once. The element format inside
-  `create_document` and `update_document` is most of the list: listing it again under the old names made them 22% of
-  every tool list (67,937 of 308,741 characters); without it they are 4% (10,733 of 251,537).
-- A call logs `[mcp] deprecated tool name <old> -> <new>` and counts as `Mcp·Used·<NewName>`, so the feature's history stays one line.
-
-The output literals that named the container changed with it: `renamed`, `deleted` and `restored` report `document` where they reported `diagram`.
-<!-- /legacy-names -->
 
 - **Previews**: an emoji icon or sticker, which needs a colour-emoji font a Worker lacks,
   draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its

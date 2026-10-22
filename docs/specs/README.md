@@ -27,7 +27,7 @@ Specs live in numbered category folders: the reserved `001`–`005` first (visio
 - ./017-telemetry/README.md - when adding or changing anonymous events or the telemetry dashboard
 - ./018-help/README.md - when working on the help centre or contextual help links
 - ./019-marketing/README.md - when working on the marketing site, comparison pages or outbound assets
-- ./020-import-export/README.md - when working on Mermaid text from agents, or export fidelity
+- ./020-import-export/README.md - when working on export fidelity, or the Mermaid code agents no longer reach
 - ./024-agents/README.md - when an agent reads, writes or comments on documents: changesets, presence, views, edit operations, lint
 - ./026-plan/README.md - when working on Plan mode, Plan boards and cards, or items and the item store
 - ./029-sheets/README.md - when working on Sheets: the Sheet element (a spreadsheet tab placed from Plan mode), its formulas, or the sheet store

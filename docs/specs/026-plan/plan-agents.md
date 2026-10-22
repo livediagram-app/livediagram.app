@@ -117,7 +117,7 @@ Every write takes what a person would say, and stores the ids:
 ## Making a dashboard
 
 - A **Dashboard tab** ([Plan tabs](plan-tabs.md)) is made where a tab is made: `create_document`'s tabs and `add_tab`
-  take `dashboard` in place of a graph, Mermaid, elements or a template, and the tab is made as a template's
+  take `dashboard` in place of elements or a template, and the tab is made as a template's
   Dashboard is (the same row builder, `buildDashboardTab`):
   - `tabs`: the document's Board and Sheet tabs it shows, by name (in `create_document`, the other tabs of the same
     call), or `"every"` for each Board and Sheet tab in order; two to a row.

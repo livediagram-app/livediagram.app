@@ -22,25 +22,25 @@ persistence boundary"). That write never reached the room, so:
 
 ## What a changeset is
 
-| Field        | Meaning                                                                                                                                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`         | `cs_` and 10 base32 characters, minted by the api                                                                                                                                                       |
-| `documentId` | The document                                                                                                                                                                                            |
-| `tabId`      | The one tab it writes; a changeset never spans tabs                                                                                                                                                     |
-| `agent`      | The token id and the owner id; absent when a signed-in session writes                                                                                                                                   |
-| `summary`    | Optional, up to 80 characters, written by the agent ("add payment service"); shown in the toast and the history                                                                                         |
-| `body`       | Either ordered [edit operations](edit-operations.md), or one `replace` (graph, Mermaid, template, dashboard, a new Form tab's `form`, or elements, which may make a new Board or Sheet tab with `kind`) |
-| `base`       | Optional: the tab revision the agent read, and a fingerprint of every element the operations target                                                                                                     |
-| `results`    | The result lines it printed, kept for `GET /api/documents/:id/changesets/:changesetId` and `changeset show`                                                                                             |
-| `rev`        | The tab revision the changeset produced                                                                                                                                                                 |
-| `elementOps` | The `ElementOp`s it compiled to (`add`, `update`, `remove`, `reorder`), the unit the room and editors apply                                                                                             |
-| `inverse`    | The element ops that undo it, computed from the before-images                                                                                                                                           |
+| Field        | Meaning                                                                                                                                                                                                    |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`         | `cs_` and 10 base32 characters, minted by the api                                                                                                                                                          |
+| `documentId` | The document                                                                                                                                                                                               |
+| `tabId`      | The one tab it writes; a changeset never spans tabs                                                                                                                                                        |
+| `agent`      | The token id and the owner id; absent when a signed-in session writes                                                                                                                                      |
+| `summary`    | Optional, up to 80 characters, written by the agent ("add payment service"); shown in the toast and the history                                                                                            |
+| `body`       | Either ordered [edit operations](edit-operations.md), or one `replace` (exactly one of a template, a dashboard, a new Form tab's `form`, or elements, which may make a new Board or Sheet tab with `kind`) |
+| `base`       | Optional: the tab revision the agent read, and a fingerprint of every element the operations target                                                                                                        |
+| `results`    | The result lines it printed, kept for `GET /api/documents/:id/changesets/:changesetId` and `changeset show`                                                                                                |
+| `rev`        | The tab revision the changeset produced                                                                                                                                                                    |
+| `elementOps` | The `ElementOp`s it compiled to (`add`, `update`, `remove`, `reorder`), the unit the room and editors apply                                                                                                |
+| `inverse`    | The element ops that undo it, computed from the before-images                                                                                                                                              |
 
 - **Atomic.** Every operation lands or none does. A rejected changeset writes nothing and says why.
 - **One tab, one changeset.** A new tab is a changeset that creates it (`replace` on a tab id the document lacks).
   A `replace`'s name names the tab it creates; on an existing tab it is ignored.
 - **A new document** is not a changeset: nothing else can hold it yet. `POST /api/documents` creates it, compiling
-  graph, Mermaid or template tabs with the same engine.
+  template tabs with the same engine.
 - **A fingerprint** covers the element without its live multi-writer fields (`LIVE_ELEMENT_FIELDS`: comments,
   answers, ideas, ticks and the like), which people change through deltas that never conflict with an agent's
   edit.

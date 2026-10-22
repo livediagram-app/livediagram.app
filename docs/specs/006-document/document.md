@@ -67,13 +67,8 @@ that named it moved in one change:
   store on the next visit), and stored names: a document still called "Untitled diagram" counts as
   untitled, exactly as "Untitled document" does.
 - **Addresses people already have** keep working: `/diagram/<id>` and six help articles redirect
-  for good ([Router app](../016-platform/router-app.md#legacy-editor-route)); the public API's
-  `/api/diagrams…` routes and the MCP `*_diagram` tools stay as deprecated aliases until 30 April
-  2027 ([Public API and API tokens §3.8](../015-api/public-api-and-tokens.md#38-deprecated-diagram-routes),
-  [MCP server §4.18](../015-api/mcp-server.md#418-deprecated-tool-names)).
-- **An editor left open across the deploy** runs the old code, which has no hook to reload it: it
-  keeps saving and connecting through the aliases, but stops seeing live name and tab-list
-  changes from others until it reloads.
+  for good ([Router app](../016-platform/router-app.md#legacy-editor-route)). liveplanner keeps no
+  `/api/diagrams…` routes and no MCP `*_diagram` tools: it has no clients from before the rename.
 
 Files that hold the old names on purpose are named `legacy-*`.
 <!-- /legacy-names -->

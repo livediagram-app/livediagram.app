@@ -1,6 +1,7 @@
 # Diagram lint
 
-**Status: built**, with the [CLI](../015-api/cli.md)'s `tab lint` and `graph lint` (`--compare`).
+**Status: built**, with the [CLI](../015-api/cli.md)'s `tab lint`. The CLI's `graph lint` (and its `--compare`) was removed
+2026-10-22 with graph and Mermaid input.
 `@liveplanner/diagram-lint` checks a tab; the api serves `?view=lint`, every changeset, dry run and revert carries
 the verdict, and the MCP's write tools carry the summary line.
 
@@ -49,10 +50,8 @@ I group-split-edges  core: 12 of 13 arrows cross its border  fix: group by owner
 ```
 
 - One summary line, then one finding a line, refs first, each ending with its fix.
-- `--compare direction,groups,lines` lays a graph source out in each variant and prints one line of measures each,
-  marking the best.
 - `--json` returns the findings as an array.
-- `tab lint` and `graph lint` exit 1 when any finding is an error, else 0.
+- `tab lint` exits 1 when any finding is an error, else 0.
 
 ## Where it runs
 
@@ -65,7 +64,6 @@ I group-split-edges  core: 12 of 13 arrows cross its border  fix: group by owner
   tab, not only what it touched.
 - The api serves a stored tab's lint as a view, `GET /api/documents/:id/tabs/:tabId?view=lint`
   ([Document views](document-views.md)); the CLI's `tab lint` reads it.
-- The CLI lints a graph or Mermaid file locally, before anything is written (`graph lint`).
 - The MCP appends the summary line to the result of every tool that writes a tab's elements: `create_document`,
   `add_tab` and `update_document`. An `update_document` whose edit changed nothing records no changeset and so has
   no changeset lint: it reads the tab's lint view instead, so the answer still lists what is wrong with the tab.
