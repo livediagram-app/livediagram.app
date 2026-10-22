@@ -37,7 +37,6 @@ export function pagesTourStepTelemetryType(kind: PageKind, stepId: string): stri
 
 // Each welcome card names its page kind's track, never the mode.
 const EYEBROW: Record<PageKind, string> = {
-  infographic: 'Infographic tour',
   logo: 'Logo tour',
   wireframe: 'Wireframe tour',
 };
@@ -50,7 +49,7 @@ export function PagesTourHost() {
   // The Logo track's Combine demonstration acts on this editor (logo-combine-demo.ts).
   useLogoCombineDemo();
   const ctx = useEditorContext();
-  const [subject, setSubject] = useState<TourPage>({ pageId: '', kind: 'infographic' });
+  const [subject, setSubject] = useState<TourPage>({ pageId: '', kind: 'wireframe' });
   const apiRef = useLatest<PageTourApi>({ pageId: subject.pageId, ...PAGE_PANEL });
 
   const [steps, setSteps] = useState<PageTourStep[]>([]);
@@ -96,7 +95,10 @@ export function PagesTourHost() {
   const kindsKey = [...new Set(pages.map((p) => (p.kind ? pageKindOf(p) : 'unchosen')))]
     .sort()
     .join(',');
-  const anyUnseen = pages.some((p) => !pagesKindSeen(prefs, pageKindOf(p)));
+  const anyUnseen = pages.some((p) => {
+    const kind = pageKindOf(p);
+    return kind !== null && !pagesKindSeen(prefs, kind);
+  });
 
   // Armed on entering Pages (or mounting in it), on a new kind arriving, and by a relaunch; disarmed on leaving
   // it or once an offer is made. Adjusted during render when the mode or the kinds change.

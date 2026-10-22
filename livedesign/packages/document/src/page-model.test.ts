@@ -47,6 +47,7 @@ describe('a page', () => {
         {
           id: 'p',
           orientation: 'portrait',
+          // A size no page takes any more.
           size: 'square',
           background: { fill: { kind: 'solid', color: 'red' }, pattern: 'dots' },
           name: '  Launch  ',
@@ -56,7 +57,6 @@ describe('a page', () => {
     expect(page).toEqual({
       id: 'p',
       orientation: 'portrait',
-      size: 'square',
       background: { pattern: 'dots' },
       name: 'Launch',
     });
@@ -82,25 +82,21 @@ describe('a page', () => {
 
   it('measures every size, the long side upright in portrait', () => {
     expect(pageDimensions({ orientation: 'portrait' })).toEqual({ width: 794, height: 1123 });
-    expect(pageDimensions({ orientation: 'landscape', size: 'wide' })).toEqual({
-      width: 1920,
-      height: 1080,
+    expect(pageDimensions({ orientation: 'landscape' })).toEqual({ width: 1123, height: 794 });
+    expect(pageDimensions({ orientation: 'landscape', size: 'logo' })).toEqual({
+      width: 1024,
+      height: 1024,
     });
-    expect(pageDimensions({ orientation: 'landscape', size: 'square' })).toEqual({
-      width: 1080,
-      height: 1080,
-    });
-    expect(pageHasOrientation({ size: 'square' })).toBe(false);
+    expect(pageHasOrientation({ size: 'logo' })).toBe(false);
     expect(pageMargin({ orientation: 'portrait' })).toBe(56);
   });
 
   it('names itself by its name, or its place once there are several', () => {
     expect(pageLabel({ orientation: 'portrait' }, 0, 1)).toBe('A4 · Portrait');
     expect(pageLabel({ orientation: 'landscape' }, 1, 2)).toBe('Page 2 · A4 · Landscape');
-    expect(pageLabel({ orientation: 'portrait', size: 'square', name: 'Launch' }, 0, 3)).toBe(
-      'Launch · Square',
-    );
-    expect(pageLabel({ orientation: 'landscape', size: 'wide' }, 0, 1)).toBe('Widescreen (16:9)');
+    expect(
+      pageLabel({ orientation: 'portrait', size: 'logo', kind: 'logo', name: 'Launch' }, 0, 3),
+    ).toBe('Launch · 1024 x 1024 · Logo');
     expect(pageLabel({ orientation: 'portrait', kind: 'logo' }, 1, 2)).toBe(
       'Page 2 · A4 · Portrait · Logo',
     );
@@ -109,10 +105,10 @@ describe('a page', () => {
   it('lays mixed sizes out in a row, each centred on the axis', () => {
     const [a, b] = layOutPages([
       { id: 'a', orientation: 'portrait' },
-      { id: 'b', orientation: 'portrait', size: 'square' },
+      { id: 'b', orientation: 'portrait', size: 'logo', kind: 'logo' },
     ]);
     expect(b!.rect.x).toBe(a!.rect.x + a!.rect.width + PAGE_GAP);
-    expect(b!.rect.y).toBe(-540);
+    expect(b!.rect.y).toBe(-512);
   });
 
   it('re-centres its content when its size changes, and moves the pages after it', () => {
@@ -123,7 +119,7 @@ describe('a page', () => {
     const [, b] = layOutPages(pages);
     const onB = box('x', b!.rect.x + b!.rect.width / 2, 0);
     const next = withPages({ elements: [onB], pages }, [
-      { id: 'a', orientation: 'portrait', size: 'a3' },
+      { id: 'a', orientation: 'landscape' },
       { id: 'b', orientation: 'portrait' },
     ]);
     const [, b2] = layOutPages(next.pages);

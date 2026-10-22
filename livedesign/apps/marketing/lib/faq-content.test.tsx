@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { describe, expect, it } from 'vitest';
 
 import { THEMES } from '@livedesign/document';
-import { LOGO_LAYOUTS, PAGE_LAYOUTS, TEMPLATE_CATEGORIES, TEMPLATES } from '@livedesign/templates';
+import { LOGO_LAYOUTS, TEMPLATE_CATEGORIES, TEMPLATES } from '@livedesign/templates';
 
 import { COMPETITOR_LOOK } from '@/components/compare/competitor-look';
 
@@ -14,7 +14,6 @@ import {
   FAQ_CATEGORIES,
   faqAnswerText,
   LOGO_LAYOUT_COUNT,
-  PAGE_LAYOUT_COUNT,
   TEMPLATE_CATEGORY_COUNT,
   TEMPLATE_COUNT,
 } from './faq-content';
@@ -96,16 +95,14 @@ describe('layout counts in marketing copy', () => {
       /^\d+$/.test(m[1]!) ? Number(m[1]) : WORDS[m[1]!.toLowerCase()],
     );
 
-  it('matches the infographic and logo catalogues in the FAQ', () => {
-    expect(PAGE_LAYOUT_COUNT).toBe(PAGE_LAYOUTS.length);
+  it('matches the logo catalogue in the FAQ', () => {
     expect(LOGO_LAYOUT_COUNT).toBe(LOGO_LAYOUTS.length);
   });
 
-  it('matches the infographic and logo catalogues on the landing page', () => {
+  it('matches the logo catalogue on the landing page', () => {
     // Written as words in the cards; a catalogue change fails here until the copy follows it.
-    const WORD: Record<number, string> = { 25: 'twenty-five', 92: 'Ninety-two' };
+    const WORD: Record<number, string> = { 25: 'twenty-five' };
     const copy = JSON.stringify(LANDING_SECTIONS.map((s) => s.items.map((i) => i.description)));
-    expect(copy).toContain(`${WORD[PAGE_LAYOUTS.length]} ready-made pages`);
     expect(copy).toContain(`${WORD[LOGO_LAYOUTS.length]} logo layouts`);
   });
 

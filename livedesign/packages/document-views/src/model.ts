@@ -72,7 +72,11 @@ function pagesFacts(tab: Tab): Pick<HeaderFacts, 'pages'> {
   if (opensInOf(tab) !== 'pages') return {};
   const pages = pagesOf(tab);
   const kinds: NonNullable<HeaderFacts['pages']>['kinds'] = {};
-  for (const p of pages) kinds[pageKindOf(p)] = (kinds[pageKindOf(p)] ?? 0) + 1;
+  // A blank page (its kind not chosen yet) counts among the pages alone.
+  for (const p of pages) {
+    const kind = pageKindOf(p);
+    if (kind) kinds[kind] = (kinds[kind] ?? 0) + 1;
+  }
   return { pages: { pages: pages.length, kinds } };
 }
 

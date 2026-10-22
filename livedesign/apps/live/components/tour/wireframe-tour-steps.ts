@@ -1,5 +1,5 @@
-// The Infographic track of the Pages tour (docs/specs/007-editor/pages-tour.md "Infographic track"): on the
-// person's own page, its name, the Layout and Background popovers opened to choose from, its size in the panel, the +
+// The Wireframe track of the Pages tour (docs/specs/007-editor/pages-tour.md "Wireframe track"): on the
+// person's own page, its name, the Layout and Background popovers opened to choose from, its device in the panel, the +
 // and the Slide Deck. Each control stays live, so a pick made while its step is up is kept.
 import type { PageTourStep } from './page-tour-api';
 import {
@@ -16,14 +16,14 @@ import {
   SLIDES_BUTTON,
 } from './page-tour-dom';
 
-export const INFOGRAPHIC_WELCOME: PageTourStep = {
+export const WIREFRAME_WELCOME: PageTourStep = {
   id: 'welcome',
   card: 'welcome',
-  title: 'Getting started with Infographics?',
-  body: 'A quick look at layouts, backgrounds, page size and presenting?',
+  title: 'Getting started with wireframes?',
+  body: 'A quick look at screen layouts, backgrounds and presenting?',
 };
 
-export function infographicTourSteps(): PageTourStep[] {
+export function wireframeTourSteps(): PageTourStep[] {
   return [
     {
       id: 'page-name',
@@ -51,8 +51,8 @@ export function infographicTourSteps(): PageTourStep[] {
     },
     {
       id: 'page-size',
-      title: 'Page Size',
-      body: 'The cog sets the page size and orientation, and duplicates or deletes the page.',
+      title: 'Device',
+      body: 'The cog picks the device, turns it and sets its frame, and duplicates or deletes the page.',
       selector: () => '[data-page-panel]',
       requires: (api) => pageCog(api.pageId),
       prepare: (api) => api.openPanel(api.pageId, 'page'),

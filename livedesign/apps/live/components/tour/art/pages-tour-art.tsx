@@ -5,7 +5,7 @@ import type { ReactNode } from 'react';
 import { ART, TourArtFrame } from './TourArtFrame';
 
 // The Pages tour's welcome card heroes (docs/specs/007-editor/pages-tour.md "The steps"), one per page
-// kind, each showing what its track teaches: an infographic page filling in, a logo's shapes combining on its
+// kind, each showing what its track teaches: a wireframe page filling in, a logo's shapes combining on its
 // guides. Drawn in TourArtFrame's recipe.
 
 const INFOGRAPHIC_CSS = `
@@ -33,8 +33,8 @@ const INFOGRAPHIC_CSS = `
   }
 `;
 
-/** Infographic: an A4 page filling in, a band, a headline, bars growing, and a ring chart drawing. */
-function InfographicTourArt() {
+/** Wireframe: a page filling in, a band, a headline, bars growing, and a ring chart drawing. */
+function LayoutTourArt() {
   return (
     <TourArtFrame css={INFOGRAPHIC_CSS}>
       <rect x="92" y="8" width="120" height="88" rx="3" className={ART.paper} strokeWidth="1.5" />
@@ -153,10 +153,8 @@ function LogoTourArt() {
 }
 
 const BY_KIND: Record<PageKind, () => ReactNode> = {
-  infographic: InfographicTourArt,
   logo: LogoTourArt,
-  // A wireframe page is laid out as an infographic page is: its track and art are the infographic's.
-  wireframe: InfographicTourArt,
+  wireframe: LayoutTourArt,
 };
 
 /** The welcome card's hero for a page kind's track. */

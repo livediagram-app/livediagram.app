@@ -10,7 +10,6 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   blank: ['empty', 'scratch', 'new', 'canvas', 'nothing'],
   whiteboard: ['empty', 'scratch', 'draw', 'sketch', 'freehand', 'pen'],
   'blank-illustration': ['empty', 'page', 'infographic', 'poster', 'design'],
-  'blank-infographic': ['empty', 'infographic', 'page', 'poster', 'flyer', 'handout', 'layout'],
   'blank-logo': ['empty', 'logo', 'brand', 'mark', 'wordmark', 'icon', 'artboard'],
   'blank-wireframe-phone': [
     'empty',
@@ -402,13 +401,11 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
   ],
   // Design.
   'paper-prototype': ['prototype', 'lo-fi', 'sketch', 'wireframe', 'usability', 'ux'],
-  storyboard: ['story', 'scenes', 'frames', 'film', 'video', 'ux'],
   journey: ['customer journey', 'journey map', 'cx', 'experience', 'touchpoints', 'ux'],
   'journey-doodle': ['customer journey', 'journey map', 'cx', 'experience', 'drawn'],
   'user-persona': ['persona', 'user', 'customer', 'profile', 'research', 'ux'],
   'empathy-map': ['empathy', 'says thinks does feels', 'user', 'research', 'ux'],
   'user-story-map': ['story map', 'user stories', 'backlog', 'mvp', 'releases', 'agile'],
-  'floor-plan': ['floorplan', 'layout', 'room', 'office', 'house', 'architecture'],
   'service-blueprint': [
     'blueprint',
     'service design',
@@ -419,16 +416,7 @@ const OWN_KEYWORDS: Readonly<Record<TemplateKind, readonly string[]>> = {
     'touchpoints',
   ],
   // Presentations.
-  'how-it-works': ['steps', 'explainer', 'onboarding', 'guide', 'infographic'],
-  'data-story': ['infographic', 'statistics', 'numbers', 'charts', 'report'],
-  'year-in-review': ['annual report', 'recap', 'wrapped', 'review', 'highlights'],
-  versus: ['vs', 'compare', 'comparison', 'pros and cons', 'social post'],
-  'social-carousel': ['linkedin', 'instagram', 'carousel', 'social media', 'post', 'tips'],
-  'event-poster': ['poster', 'flyer', 'event', 'invitation', 'promo'],
   'logo-design': ['logo', 'brand', 'branding', 'identity', 'icon', 'wordmark'],
-  resume: ['resume', 'cv', 'curriculum vitae', 'job', 'career'],
-  'recipe-card': ['recipe', 'cooking', 'food', 'ingredients', 'menu'],
-  'live-card': ['card', 'greeting', 'birthday', 'farewell', 'leaving card', 'thank you'],
   'comic-strip': ['comic', 'cartoon', 'story', 'panels', 'storyboard'],
   // Technical.
   'system-architecture': ['architecture', 'system design', 'services', 'components', 'c4'],

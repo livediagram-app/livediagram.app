@@ -269,7 +269,7 @@ Six articles about the container moved when it became a document ([Document](../
 | `/help/activity-panel/reverting-changes/`              | `/help/canvas/undo/`                                    |
 | `/help/getting-started/welcome-tour/`                  | `/help/getting-started/diagram-tour/`                   |
 | `/help/canvas/infographics/`                           | `/help/canvas/pages-mode/`                              |
-| `/help/canvas/infographics/infographic-layouts/`       | `/help/canvas/pages-mode/infographic-layouts/`          |
+| `/help/canvas/infographics/infographic-layouts/`       | `/help/canvas/pages-mode/`                              |
 | `/help/canvas/infographics/exporting-infographics/`    | `/help/canvas/pages-mode/exporting-pages/`              |
 | `/help/canvas/illustrate/`                             | `/help/canvas/pages-mode/`                              |
 | `/help/canvas/illustrate/<article>/`                   | `/help/canvas/pages-mode/<article>/`                    |

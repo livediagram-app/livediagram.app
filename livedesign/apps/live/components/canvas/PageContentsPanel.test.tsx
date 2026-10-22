@@ -23,8 +23,7 @@ const pages = (n: number) =>
     Array.from({ length: n }, (_, i): Page => ({
       id: `p${i + 1}`,
       orientation: 'portrait',
-      kind: i % 2 ? 'logo' : 'infographic',
-      ...(i % 2 ? { size: 'logo' } : {}),
+      ...(i % 2 ? { kind: 'logo', size: 'logo' } : {}),
     })),
   );
 

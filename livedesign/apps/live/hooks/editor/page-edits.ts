@@ -14,8 +14,6 @@ import {
   pageSizesFor,
   pageUnits,
   withPageKindChosen,
-  withDefaultPageBackgrounds,
-  type ThemeDefinition,
   PAGE_NAME_MAX,
   withPages,
   withPageSplit,
@@ -29,7 +27,6 @@ import {
   pageIsDark,
   pageLockRefuses,
   pageLockSet,
-  pageMargin,
   pageMovedTo,
   pageRemoved,
   pageRenamed,
@@ -51,9 +48,7 @@ import {
 import type { PageLayoutId } from '@livedesign/templates';
 import { sameFill, withBackgroundPatch } from '@/lib/page-paint';
 import { pageInkMemory, rememberPageInk } from '@/lib/page-ink-memory';
-import { tidyPageElements } from '@/lib/page-tidy';
 import { lastWireframeDevice } from '@/lib/wireframe-device-memory';
-import { lockedElementIds } from '@/lib/locked-element-ids';
 import { debugLog } from '@/lib/debug-log';
 import { clearLocalPreview, localPreview, setLocalPreview } from '@/lib/drag-preview';
 import { track } from '@/lib/telemetry';
@@ -108,14 +103,6 @@ export type PageEdits = BackgroundCopyEdits & {
   setLocked: (pageId: string, locked: boolean) => void;
   // Blank chosen on the page's Start From a Layout card: the card is not offered there again.
   startBlank: (pageId: string) => void;
-  // An infographic page's Tidy Up (docs/specs/007-editor/pages-mode.md "Tidy"): its
-  // elements aligned and spaced, one edit; a page already tidy says so and writes nothing.
-  tidyPage?: (pageId: string) => void;
-  // Whether a Tidy would change the page: its button shows only then.
-  canTidy?: (pageId: string) => boolean;
-  // The tidied page drawn in place while the button is hovered (a preview, writing nothing); null
-  // puts it back.
-  previewTidy?: (pageId: string | null) => void;
 };
 
 type TabChange = (tab: Tab) => Tab | null;
@@ -127,12 +114,10 @@ const edited = (before: Tab, out: PageEdit<Tab>): Tab | null =>
 
 // Telemetry for a kind chosen on the first page, and for a page of a kind added.
 const KIND_CHOSEN_EVENT: Record<PageKind, string> = {
-  infographic: 'PageKindInfographic',
   logo: 'PageKindLogo',
   wireframe: 'PageKindWireframe',
 };
 const KIND_ADDED_EVENT: Record<PageKind, string> = {
-  infographic: 'PageAdded',
   logo: 'LogoPageAdded',
   wireframe: 'WireframePageAdded',
 };
@@ -156,15 +141,6 @@ const WIREFRAME_FRAME_EVENT: Record<WireframeFrameLook, string> = {
   outline: 'WireframeFrameOutline',
 };
 
-// Whether a page would change under a Tidy, by tab and page, with what the answer was for: the
-// page's own elements (as objects, so an edit elsewhere keeps it), the layers (a lock) and the page
-// list. Bounded: past TIDY_MEMO_MAX entries it starts over.
-const TIDY_MEMO = new Map<
-  string,
-  { on: readonly Tab['elements'][number][]; layers: unknown; pages: string; can: boolean }
->();
-const TIDY_MEMO_MAX = 256;
-
 export function pageEdits({
   tabId,
   tab,
@@ -176,7 +152,6 @@ export function pageEdits({
   onLayoutPlaced,
   mayEdit = () => true,
   toastInfo = () => {},
-  theme,
 }: {
   tabId: string;
   // The tab as it is now: what an edit will do (a duplicate's id, how many pages a split makes, whether Tidy Up moves
@@ -199,15 +174,7 @@ export function pageEdits({
   onGoTo: (pageId: string) => void;
   // What a page action says it did (Split Into Pages).
   toastInfo?: (message: string) => void;
-  // The tab's theme: a new infographic page starts on its Dusk gradient, a new slide document's
-  // slide on Steel (defaultPageBackground).
-  // Absent, a new page starts on the plain paper.
-  theme?: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>;
 }): PageEdits {
-  // A new infographic page, or a new slide document's slide (by id), on its default background,
-  // unless it carried one over.
-  const themed = (t: Tab | null, id: string): Tab | null =>
-    t && theme ? withDefaultPageBackgrounds(t, theme, new Set([id])) : t;
   // A locked tab, or a person no longer editing, takes no page edit. A handler that tells or moves the view after
   // its edit asks first, so nothing is said of an edit that never landed.
   const takesEdits = () => mayEdit() && tab.locked !== true;
@@ -346,17 +313,12 @@ export function pageEdits({
   const movePage = (pageId: string, by: -1 | 1) => {
     if (canMove(pageId, by)) movePageTo(pageId, unitIndexOf(pageId) + by);
   };
-  // A new infographic page takes the last infographic page's size and orientation (else A4
-  // portrait); a new slide the last slide's size (else 16:9),
-  // landscape; a new logo page the 1024 artboard. All on the plain paper.
+  // A new logo page is the 1024 artboard; a new wireframe page the last wireframe's device. Both on the plain paper.
   const choosePageKind = (pageId: string, kind: PageKind, device?: WireframeDeviceId) => {
     if (refusedLocked(pageId, 'kind')) return;
     track('Tab', 'Changed', KIND_CHOSEN_EVENT[kind]);
     if (kind === 'wireframe' && device) track('Tab', 'Changed', WIREFRAME_DEVICE_EVENT[device]);
-    commitTab((t) => {
-      const chosen = withPageKindChosen(t, pageId, kind, device);
-      return kind === 'infographic' ? themed(chosen, pageId) : chosen;
-    });
+    commitTab((t) => withPageKindChosen(t, pageId, kind, device));
     debugLog('[page] first page kind chosen', { tabId, pageId, kind });
   };
   const addPage = (kind: PageKind, chosen?: WireframeDeviceId) => {
@@ -371,10 +333,7 @@ export function pageEdits({
     track('Tab', 'Changed', KIND_ADDED_EVENT[kind]);
     if (kind === 'wireframe' && chosen) track('Tab', 'Changed', WIREFRAME_DEVICE_EVENT[chosen]);
     const id = nextPageId(current);
-    commitTab((t) => {
-      const added = edited(t, pageAdded(t, kind, id, device));
-      return kind === 'infographic' ? themed(added, id) : added;
-    });
+    commitTab((t) => edited(t, pageAdded(t, kind, id, device)));
     onGoTo(id);
     debugLog('[page] page added', { tabId, count: current.length + 1 });
   };
@@ -400,10 +359,7 @@ export function pageEdits({
     const kind = pageKindOf(source);
     track('Tab', 'Changed', 'PageAddedLikeLast');
     const id = nextPageId(current);
-    commitTab((t) => {
-      const added = edited(t, pageAddedLike(t, pageId, id));
-      return kind === 'infographic' ? themed(added, id) : added;
-    });
+    commitTab((t) => edited(t, pageAddedLike(t, pageId, id)));
     onGoTo(id);
     debugLog('[page] page added like another', { tabId, from: pageId, kind });
   };
@@ -522,77 +478,11 @@ export function pageEdits({
     setLocalPreview(tabId, shown.elements, elements);
   };
 
-  // The tab with the page's elements tidied, or null when nothing would change. Read from the tab
-  // it is given, so the commit tidies the tab as it is at commit time.
-  const tidied = (t: Tab, pageId: string): Tab | null => {
-    const pages = layOutPages(pagesOf(t));
-    const target = pages.find((p) => p.id === pageId);
-    // An infographic page; a logo page tidies its drawn lines.
-    if (!target || pageKindOf(target) !== 'infographic') return null;
-    const next = tidyPageElements(t.elements, {
-      ids: elementIdsOnPage(t.elements, pages, pageId),
-      rect: target.rect,
-      margin: pageMargin(target),
-      lockedIds: lockedElementIds(t.elements, t.layers),
-    });
-    return next === t.elements ? null : { ...t, elements: next };
-  };
-  const tidyPage = (pageId: string) => {
-    if (!mayEdit() || refusedLocked(pageId, 'tidy')) return;
-    const out = tidied(tab, pageId);
-    const changed = out !== null;
-    if (out) commitTab((t) => (t === tab ? out : tidied(t, pageId)));
-    if (localPreview()?.tabId === tabId) clearLocalPreview(changed ? 'landed' : 'cancelled');
-    if (!changed) {
-      toastInfo('This page is already tidy.');
-      debugLog('[page] tidy: already tidy', { tabId, pageId });
-      return;
-    }
-    track('Tab', 'Aligned', 'PageTidyUp');
-    debugLog('[page] tidied', { tabId, pageId });
-  };
-  // Remembered per page while its own elements stay as they are, so a pan or a zoom (which
-  // re-renders every title bar) and an edit on another page rerun no tidy (3 to 8 ms a page).
-  const canTidy = (pageId: string): boolean => {
-    const pages = JSON.stringify(current);
-    const ids = elementIdsOnPage(elements, laidOut, pageId);
-    const on = elements.filter((el) => ids.has(el.id));
-    const key = `${tabId}|${pageId}`;
-    const hit = TIDY_MEMO.get(key);
-    if (
-      hit &&
-      hit.layers === layers &&
-      hit.pages === pages &&
-      hit.on.length === on.length &&
-      hit.on.every((el, k) => el === on[k])
-    ) {
-      return hit.can;
-    }
-    const can =
-      tidied({ id: tabId, elements, layers, pages: [...current] } as Tab, pageId) !== null;
-    if (TIDY_MEMO.size >= TIDY_MEMO_MAX) TIDY_MEMO.clear();
-    TIDY_MEMO.set(key, { on, layers, pages, can });
-    return can;
-  };
-  const previewTidy = (pageId: string | null) => {
-    const shown = pageId
-      ? tidied({ id: tabId, elements, layers, pages: [...current] } as Tab, pageId)
-      : null;
-    if (!shown || isLocked(pageId!)) {
-      if (localPreview()?.tabId === tabId) clearLocalPreview();
-      return;
-    }
-    setLocalPreview(tabId, shown.elements, elements);
-  };
-
   const room = current.length < MAX_PAGES;
   return {
     // Apply to All and the page format painter (docs/specs/007-editor/pages-mode.md
     // "Copying a background").
     ...backgroundCopyEdits({ tabId, current, commitTab, toastInfo, mayEdit }),
-    tidyPage,
-    canTidy,
-    previewTidy,
     previewInk,
     setOrientation,
     setSize,

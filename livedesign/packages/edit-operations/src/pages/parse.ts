@@ -20,7 +20,7 @@ import {
   WIREFRAME_FRAME_LOOKS,
 } from '@livedesign/document';
 
-const PAGE_KINDS = ['infographic', 'logo', 'wireframe'] as const;
+const PAGE_KINDS = ['logo', 'wireframe'] as const;
 const WIREFRAME_KEYS = ['device', 'frameLook', 'systemBars'];
 
 type Raw = Record<string, unknown>;

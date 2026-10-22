@@ -33,25 +33,25 @@ const all = () => true;
 
 describe('pickTourPage', () => {
   it('picks the page showing the most of itself in the window', () => {
-    drawPage('a', 'infographic', [-500, 0, 600, 300]);
-    drawPage('b', 'infographic', [120, 0, 600, 300]);
-    expect(pickTourPage(all)).toEqual({ pageId: 'b', kind: 'infographic' });
+    drawPage('a', 'wireframe', [-500, 0, 600, 300]);
+    drawPage('b', 'wireframe', [120, 0, 600, 300]);
+    expect(pickTourPage(all)).toEqual({ pageId: 'b', kind: 'wireframe' });
   });
 
   it('passes over a kind already toured', () => {
-    drawPage('a', 'infographic', [0, 0, 800, 450]);
+    drawPage('a', 'wireframe', [0, 0, 800, 450]);
     drawPage('b', 'logo', [820, 0, 100, 140]);
-    expect(pickTourPage((kind) => kind !== 'infographic')).toEqual({ pageId: 'b', kind: 'logo' });
+    expect(pickTourPage((kind) => kind !== 'wireframe')).toEqual({ pageId: 'b', kind: 'logo' });
   });
 
   it('passes over a locked page and one too small to show its cog', () => {
-    drawPage('a', 'infographic', [0, 0, 800, 450], { locked: true });
+    drawPage('a', 'wireframe', [0, 0, 800, 450], { locked: true });
     drawPage('b', 'logo', [0, 0, 300, 300], { cog: false });
     expect(pickTourPage(all)).toBeNull();
   });
 
   it('finds nothing with no page in the window', () => {
-    drawPage('a', 'infographic', [5000, 0, 800, 450]);
+    drawPage('a', 'wireframe', [5000, 0, 800, 450]);
     expect(pickTourPage(all)).toBeNull();
   });
 });

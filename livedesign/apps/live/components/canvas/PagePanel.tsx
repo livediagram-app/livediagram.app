@@ -63,16 +63,14 @@ const TAB_LABEL: Record<PagePanelTab, string> = {
 // Layouts (an infographic or wireframe page's Layouts sit beside its cog).
 export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
   // A wireframe page's size is its device (docs/specs/007-editor/wireframe-pages.md); its
-  // Background and Layouts sit beside its cog, as an infographic page's.
+  // Background and Layouts sit beside its cog.
   if (page.kind === 'wireframe') return ['device'];
   const hasPage = pageSizeChoices(page).length > 1 || pageHasOrientation(page);
-  // An infographic page's Background, and an infographic or wireframe page's Layouts, are beside its
-  // cog (PageBackgroundButton, PageLayoutsButton), so not here too.
+  // A logo page's Background and Layouts are here; a page whose kind is not chosen yet has its Page alone.
   const kind = pageKindOf(page);
   return [
     ...(hasPage ? (['page'] as const) : []),
-    ...(kind !== 'infographic' ? (['background'] as const) : []),
-    ...(kind === 'logo' ? (['layouts'] as const) : []),
+    ...(kind === 'logo' ? (['background', 'layouts'] as const) : []),
   ];
 }
 

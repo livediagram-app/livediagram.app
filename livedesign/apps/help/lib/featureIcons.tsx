@@ -524,16 +524,6 @@ export const FEATURE_ICONS: Record<string, ReactNode> = {
       <path d="M9 17.5v-4M12 17.5v-6.5M15 17.5v-2.5" />
     </Glyph>
   ),
-  // A page split into ready-made blocks: a layout to start from.
-  'infographic-layouts': (
-    <Glyph>
-      <rect x="5" y="2.5" width="14" height="19" rx="1.5" />
-      <rect x="7.5" y="5" width="9" height="4" rx="0.5" />
-      <rect x="7.5" y="11" width="4" height="4" rx="0.5" />
-      <rect x="12.5" y="11" width="4" height="4" rx="0.5" />
-      <path d="M7.5 18h9" />
-    </Glyph>
-  ),
   // A square artboard with a keyline circle and its centre lines: a logo built on its guides.
   'logo-pages': (
     <Glyph>

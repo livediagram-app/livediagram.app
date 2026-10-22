@@ -7,13 +7,14 @@ import { lucidePanelsTopLeft, lucideShapes } from '@livedesign/icons/lucide';
 import { lucideGlyph } from '@livedesign/ui';
 import { DeviceGlyph } from './wireframe/DeviceGlyph';
 
-const InfographicIcon = lucideGlyph(lucidePanelsTopLeft, 16);
+const PageIcon = lucideGlyph(lucidePanelsTopLeft, 16);
 const LogoIcon = lucideGlyph(lucideShapes, 16);
 
-export function PageKindGlyph({ kind }: { kind: PageKind }) {
+export function PageKindGlyph({ kind }: { kind: PageKind | null }) {
   switch (kind) {
-    case 'infographic':
-      return <InfographicIcon />;
+    case null:
+      // A page whose kind is not chosen yet.
+      return <PageIcon />;
     case 'logo':
       return <LogoIcon />;
     case 'wireframe':

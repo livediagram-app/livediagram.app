@@ -23,16 +23,6 @@ import {
   buildRichPicture,
   buildSketchnote,
 } from './template-builders-sketch';
-import { buildEventPoster } from './template-builders-poster';
-import { buildYearInReview } from './template-builders-year-review';
-import { buildResume } from './template-builders-resume';
-import { buildRecipeCard } from './template-builders-recipe';
-import { buildDataStory } from './template-builders-data-story';
-import { buildHowItWorks } from './template-builders-how-it-works';
-import { buildVersus } from './template-builders-versus';
-import { buildSocialCarousel } from './template-builders-social-carousel';
-import { buildStoryboard } from './template-builders-storyboard';
-import { buildOnDesignPage } from './template-design-pages';
 import {
   buildPrioritizationMatrix,
   buildRetrospective,
@@ -44,7 +34,6 @@ import { buildErDiagram } from './template-builders-er';
 import { buildSequenceDiagram } from './template-builders-sequence';
 import { buildUmlClass } from './template-builders-uml';
 import { buildStateMachine } from './template-builders-state-machine';
-import { buildFloorPlan } from './template-builders-floorplan';
 import { buildBusinessModelCanvas, buildEmpathyMap } from './template-builders-canvases';
 import { buildAffinityMap, buildUserStoryMap } from './template-builders-workshops';
 import { buildLeanCoffee, buildTownHall } from './template-builders-sessions';
@@ -61,7 +50,6 @@ import { buildSankey } from './template-builders-sankey';
 import { buildRoadmap } from './template-builders-roadmap';
 import { buildLogoDesign } from './template-builders-logo';
 import { buildGanttChart } from './template-builders-gantt';
-import { buildLiveCard } from './template-builders-livecard';
 import { buildComparisonTable, buildRaciMatrix } from './template-builders-table';
 import {
   buildFishbone,
@@ -188,8 +176,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildLogoDesign(cx, cy);
     case 'gantt':
       return buildGanttChart(cx, cy);
-    case 'live-card':
-      return buildLiveCard(cx, cy);
     case 'comparison-table':
       return buildComparisonTable(cx, cy);
     case 'system-architecture':
@@ -284,26 +270,18 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
       return buildOkrTree(cx, cy);
     case 'sitemap':
       return buildSitemap(cx, cy);
-    case 'storyboard':
-      return buildOnDesignPage('storyboard', buildStoryboard);
     case 'cloud-architecture':
       return buildCloudArchitecture(cx, cy);
     case 'uml-class':
       return buildUmlClass(cx, cy);
     case 'state-machine':
       return buildStateMachine(cx, cy);
-    case 'floor-plan':
-      return buildOnDesignPage('floor-plan', buildFloorPlan);
-    // A whiteboard is a clean board (docs/specs/023-draw-mode/draw-mode.md): what makes it one is its
-    // kind, which templateCanvasOverrides sets, not any seeded element. Workshop's blank is an empty
-    // tab too, opened in Workshop the same way.
     case 'whiteboard':
     case 'blank-session':
       return [];
     // A blank illustration is its one empty page, which asks what it is for, and a blank of a page kind its one
     // empty page of that kind (blank-page-templates.ts).
     case 'blank-illustration':
-    case 'blank-infographic':
     case 'blank-logo':
     case 'blank-wireframe-phone':
     case 'blank-wireframe-tablet':
@@ -334,22 +312,6 @@ function buildUnsettled(kind: TemplateKind, cx: number, cy: number): Element[] {
     case 'idea-garden':
       return buildIdeaGarden(cx, cy);
     // Built on their own pages (template-pages.ts), whatever the centre.
-    case 'event-poster':
-      return buildEventPoster();
-    case 'year-in-review':
-      return buildYearInReview();
-    case 'resume':
-      return buildResume();
-    case 'recipe-card':
-      return buildRecipeCard();
-    case 'data-story':
-      return buildDataStory();
-    case 'how-it-works':
-      return buildHowItWorks();
-    case 'versus':
-      return buildVersus();
-    case 'social-carousel':
-      return buildSocialCarousel();
   }
 }
 

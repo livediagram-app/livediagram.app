@@ -33,6 +33,7 @@ import {
   type PageBackground,
   type PageEdit,
   type PageEditRefusal,
+  type PageKind,
   type Tab,
   plural,
 } from '@livedesign/document';
@@ -90,10 +91,13 @@ const describePatch = (input: PageBackgroundInput) =>
     .filter(Boolean)
     .join(', ');
 
+// A page's kind in words: a page whose kind is not chosen yet is a blank page.
+const kindWord = (kind: PageKind | null): string => kind ?? 'blank';
+
 function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'> | undefined): string {
-  const kind = page ? pageKindOf(page) : 'infographic';
-  // "An infographic page", "A logo page".
-  const aKind = `${/^[aeiou]/.test(kind) ? 'An' : 'A'} ${kind}`;
+  const kind = page ? pageKindOf(page) : null;
+  // "A logo page", "A blank page" (one whose kind is not chosen yet).
+  const aKind = `A ${kindWord(kind)}`;
   // Every reason in words; the page is found before an edit, so `unknown_page` is only a fallback.
   const words: Record<PageEditRefusal, string> = {
     unknown_page: `No such page. Pages: ${listPages(tab)}.`,
@@ -158,7 +162,9 @@ export function applyPageChanges(
         if (!found)
           stop(
             'layout_unknown',
-            `A ${kind} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`,
+            offered.length
+              ? `A ${kindWord(kind)} page takes the layouts ${offered.map((l) => l.id).join(', ')}.`
+              : 'A blank page takes no layouts: add a logo or wireframe page for one.',
           );
         const laid = layOutPages(pages()).find((p) => p.id === page.id)!;
         const replaced = onPage(page.id);
@@ -286,13 +292,13 @@ export function applyPageChanges(
           if ('refused' in out)
             stop(
               'no_other_pages',
-              `Page ${placeOf(page.id)} is the only ${pageKindOf(page)} page: there is no other to give its background.`,
+              `Page ${placeOf(page.id)} is the only ${kindWord(pageKindOf(page))} page: there is no other to give its background.`,
             );
           const done = out as Extract<typeof out, { tab: Tab }>;
           current = done.tab;
           const kept = done.skipped ? `; ${done.skipped} locked kept their own` : '';
           lines.push(
-            `Gave ${done.applied} other ${pageKindOf(page)} page${done.applied === 1 ? '' : 's'} the background of page ${placeOf(page.id)}${kept}.`,
+            `Gave ${done.applied} other ${kindWord(pageKindOf(page))} page${done.applied === 1 ? '' : 's'} the background of page ${placeOf(page.id)}${kept}.`,
           );
           return;
         }

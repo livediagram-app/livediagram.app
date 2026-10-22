@@ -35,13 +35,14 @@ export const A4_LONG_SIDE = 1123;
 // The space between two pages in the row, in canvas px.
 export const PAGE_GAP = 96;
 
-// The most pages a tab holds (docs/specs/007-editor/pages-mode.md "Page actions"): room
-// for a long document's pages beside a set of infographic ones.
+// The most pages a tab holds (docs/specs/007-editor/pages-mode.md "Page actions"): room for a
+// wireframe flow's every screen beside its logo options.
 export const MAX_PAGES = 100;
 
 // A page's format (docs/specs/007-editor/pages-mode.md "Sizes"): its short and long side.
-export type PageSizeId =
-  'a4' | 'letter' | 'a3' | 'square' | 'social' | 'wide' | 'logo' | 'device' | 'fit';
+// A4 is the sheet of a page whose kind is not chosen yet; a logo page is the artboard, a wireframe
+// page its device.
+export type PageSizeId = 'a4' | 'logo' | 'device' | 'fit';
 
 // A logo page's artboard (docs/specs/007-editor/logo-pages.md "A logo page"): the common
 // app-icon master, square.
@@ -70,16 +71,6 @@ export const PAGE_SIZES: Readonly<
   >
 > = {
   a4: { short: A4_SHORT_SIDE, long: A4_LONG_SIDE, portrait: 'A4', landscape: 'A4' },
-  letter: { short: 816, long: 1056, portrait: 'US Letter', landscape: 'US Letter' },
-  a3: { short: 1123, long: 1587, portrait: 'A3', landscape: 'A3' },
-  square: { short: 1080, long: 1080, portrait: 'Square', landscape: 'Square' },
-  social: {
-    short: 1080,
-    long: 1350,
-    portrait: 'Portrait post (4:5)',
-    landscape: 'Landscape post (5:4)',
-  },
-  wide: { short: 1080, long: 1920, portrait: 'Story (9:16)', landscape: 'Widescreen (16:9)' },
   logo: {
     short: LOGO_SIDE,
     long: LOGO_SIDE,
@@ -105,26 +96,19 @@ export const PAGE_SIZES: Readonly<
 
 export const PAGE_SIZE_IDS = Object.keys(PAGE_SIZES) as PageSizeId[];
 
-const PAPER_AND_SCREEN_SIZE_IDS: readonly PageSizeId[] = [
-  'a4',
-  'letter',
-  'a3',
-  'square',
-  'social',
-  'wide',
-];
-
 // The one size a logo page takes (docs/specs/007-editor/logo-pages.md "A logo page").
 const LOGO_PAGE_SIZE_IDS: readonly PageSizeId[] = ['logo'];
 // A wireframe page's one size is its device (docs/specs/007-editor/wireframe-pages.md).
 const WIREFRAME_PAGE_SIZE_IDS: readonly PageSizeId[] = ['device'];
+// A page not chosen yet is a plain sheet until it is.
+const UNCHOSEN_PAGE_SIZE_IDS: readonly PageSizeId[] = ['a4'];
 
 /** The sizes a page of this kind offers in its panel: a logo page only the artboard, a wireframe
- *  page its device, an infographic page the paper and screen ones. */
-export function pageSizesFor(kind: PageKind): readonly PageSizeId[] {
+ *  page its device, a page not chosen yet its sheet. */
+export function pageSizesFor(kind: PageKind | null): readonly PageSizeId[] {
   if (kind === 'logo') return LOGO_PAGE_SIZE_IDS;
   if (kind === 'wireframe') return WIREFRAME_PAGE_SIZE_IDS;
-  return PAPER_AND_SCREEN_SIZE_IDS;
+  return UNCHOSEN_PAGE_SIZE_IDS;
 }
 
 /** The size tiles a page's panel shows: its kind's sizes (pageSizesFor), Fit to Content first on
@@ -162,10 +146,9 @@ export type PageBackground = { fill?: PageFill; pattern?: PagePattern };
 // The longest page name kept: a label, not a caption.
 export const PAGE_NAME_MAX = 60;
 
-// What a page is for, fixed when it is made (docs/specs/007-editor/pages-mode.md "Page
-// kinds"): an infographic page to lay out, a logo's artboard, or a wireframe's device
-// (docs/specs/007-editor/wireframe-pages.md).
-export type PageKind = 'infographic' | 'logo' | 'wireframe';
+// What a page is for, fixed once chosen (docs/specs/007-editor/pages-mode.md "Page kinds"): a
+// logo's artboard, or a wireframe's device (docs/specs/007-editor/wireframe-pages.md).
+export type PageKind = 'logo' | 'wireframe';
 
 export type Page = {
   id: string;
@@ -182,9 +165,9 @@ export type Page = {
   background?: PageBackground;
   // Absent shows the page's place ("Page 2").
   name?: string;
-  // Absent is an infographic page nobody has chosen yet (the first page offers the choice while
-  // it is the only page and empty); 'infographic' once chosen; 'logo' for a logo's artboard, always
-  // the `logo` size and never patterned.
+  // Absent is a page nobody has chosen a kind for yet (the first page offers the choice while it
+  // is the only page and empty); 'logo' for a logo's artboard, always the `logo` size and never
+  // patterned; 'wireframe' for a device's screen.
   kind?: PageKind;
   // Locked (docs/specs/007-editor/pages-mode.md "Locking a page"): it and what is on it stay
   // as they are. Absent is unlocked.
@@ -244,13 +227,11 @@ function parsePageFields(v: unknown): Page | undefined {
     ...(p.startedBlank === true ? { startedBlank: true as const } : {}),
   };
   const kindFields =
-    p.kind === 'infographic'
-      ? { kind: 'infographic' as const }
-      : p.kind === 'logo'
-        ? { kind: 'logo' as const }
-        : p.kind === 'wireframe'
-          ? { kind: 'wireframe' as const }
-          : {};
+    p.kind === 'logo'
+      ? { kind: 'logo' as const }
+      : p.kind === 'wireframe'
+        ? { kind: 'wireframe' as const }
+        : {};
   // A logo page is the artboard, never patterned nor pictured (docs/specs/007-editor/logo-pages.md).
   if (kindFields.kind === 'logo') {
     const fill = background?.fill?.kind === 'image' ? undefined : background?.fill;
@@ -284,8 +265,7 @@ function parsePageFields(v: unknown): Page | undefined {
       ...lock,
     };
   }
-  // The artboard is the logo kind's alone: any other page stored in it is read as A4. Fit to
-  // Content is an infographic page's, and only with its sides.
+  // A page not chosen yet is its sheet (A4), or Fit to Content with its sides.
   const fit = p.size === 'fit' ? parsePageSides(p.fit) : undefined;
   const ownSize =
     isPageSizeId(p.size) &&
@@ -305,9 +285,9 @@ function parsePageFields(v: unknown): Page | undefined {
   };
 }
 
-/** The page's kind: a logo or a wireframe page, or else an infographic page. */
-export function pageKindOf(page: Pick<Page, 'kind'>): PageKind {
-  return page.kind === 'logo' || page.kind === 'wireframe' ? page.kind : 'infographic';
+/** The page's kind: a logo or a wireframe page, or null for one whose kind is not chosen yet. */
+export function pageKindOf(page: Pick<Page, 'kind'>): PageKind | null {
+  return page.kind === 'logo' || page.kind === 'wireframe' ? page.kind : null;
 }
 
 /** A new wireframe page (docs/specs/007-editor/wireframe-pages.md "Choosing the device"): the
@@ -391,8 +371,8 @@ export function pageDimensions(
     : { width: long, height: short };
 }
 
-/** Whether a page has an orientation to choose (a square page has none, nor Fit to Content; a
- *  wireframe page while its device turns). */
+/** Whether a page has an orientation to choose (a logo's square artboard has none, nor Fit to
+ *  Content; a wireframe page while its device turns). */
 export function pageHasOrientation(
   page: Pick<Page, 'size'> & { device?: WireframeDeviceId },
 ): boolean {
@@ -402,7 +382,7 @@ export function pageHasOrientation(
   return short !== long && !fitOnly;
 }
 
-/** The size's name as this page shows it ("A4", "Widescreen (16:9)", a wireframe page's "iPhone"). */
+/** The size's name as this page shows it ("A4", "1024 x 1024", a wireframe page's "iPhone"). */
 export function pageSizeLabel(
   page: Pick<Page, 'orientation' | 'size'> & { device?: WireframeDeviceId },
 ): string {
@@ -412,8 +392,8 @@ export function pageSizeLabel(
 }
 
 /** The label above a page: its name, or "Page n" once there are several, then its size, where it
- *  has one its orientation, and its kind but for an infographic page or where the size names it
- *  ("Page 2 · A4 · Landscape", "Launch · Square · Logo"). */
+ *  has one its orientation, and its kind where it has one the size does not name ("Page 2 · A4 ·
+ *  Landscape", "Badge · 1024 x 1024 · Logo"). */
 export function pageLabel(
   page: Pick<Page, 'orientation' | 'size' | 'name' | 'kind' | 'device'>,
   index: number,
@@ -425,25 +405,21 @@ export function pageLabel(
   const sizeLabel = pageSizeLabel(page);
   parts.push(sizeLabel);
   const size = page.size ?? 'a4';
-  // A size whose name already says which way it faces (the social and wide formats) needs no
-  // orientation after it; nor does a square.
-  if (pageHasOrientation(page) && (size === 'a4' || size === 'letter' || size === 'a3')) {
+  // The sheet says which way it faces; the artboard is square.
+  if (pageHasOrientation(page) && size === 'a4') {
     parts.push(page.orientation === 'portrait' ? 'Portrait' : 'Landscape');
   }
   // A turned device says so; upright is how a device is seen.
   if (size === 'device' && page.orientation === 'landscape' && pageHasOrientation(page))
     parts.push('Landscape');
-  // The kind closes it, but for an infographic page, the plain page: its title bar keeps the room. Nor where the size
-  // already names it.
+  // The kind closes it, where it has one the size does not already name.
   const kind = pageKindOf(page);
-  const kindLabel = PAGE_KIND_LABEL[kind];
-  if (kind !== 'infographic' && !sizeLabel.toLowerCase().includes(kindLabel.toLowerCase()))
-    parts.push(kindLabel);
+  if (kind && !sizeLabel.toLowerCase().includes(PAGE_KIND_LABEL[kind].toLowerCase()))
+    parts.push(PAGE_KIND_LABEL[kind]);
   return parts.join(' · ');
 }
 
 const PAGE_KIND_LABEL: Record<PageKind, string> = {
-  infographic: 'Infographic',
   logo: 'Logo',
   wireframe: 'Wireframe',
 };

@@ -17,7 +17,7 @@ export const PALETTE_KIND_LANDING: Readonly<Record<PaletteKind, string>> = {
 
 /** The kind a page of `kind` gives the palette. */
 export function paletteKindForPage(kind: PageKind | null): PaletteKind {
-  return kind === 'infographic' || kind === null ? 'design' : kind;
+  return kind ?? 'design';
 }
 
 /** The palette's kind: the page someone is on's. */

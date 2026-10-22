@@ -30,11 +30,6 @@ export function PanelSection({ title, children }: { title: string; children: Rea
 // Short tile names: the full name is the tile's tooltip and the page label.
 const SIZE_TILE: Record<PageSizeId, { label: string; hint: string }> = {
   a4: { label: 'A4', hint: 'A4 paper, for print' },
-  letter: { label: 'Letter', hint: 'US Letter paper, for print in North America' },
-  a3: { label: 'A3', hint: 'A3 paper, for posters' },
-  square: { label: 'Square', hint: 'Square post (1:1)' },
-  social: { label: 'Post', hint: 'Portrait post (4:5) for Instagram and LinkedIn' },
-  wide: { label: 'Story', hint: 'Story (9:16), or a wide 16:9 page turned landscape' },
   logo: { label: 'Logo', hint: 'Logo artboard (1024 x 1024)' },
   device: { label: 'Device', hint: 'A wireframe page is its device' },
   fit: { label: 'Fit', hint: 'Sized around the board it was made for' },

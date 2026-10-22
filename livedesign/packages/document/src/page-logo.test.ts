@@ -70,14 +70,13 @@ describe('logo pages', () => {
 
   it('offer only the artboard, and no other kind offers it', () => {
     expect(pageSizesFor('logo')).toEqual(['logo']);
-    for (const kind of ['infographic', 'wireframe'] as const) {
+    for (const kind of [null, 'wireframe'] as const) {
       expect(pageSizesFor(kind)).not.toContain('logo');
     }
   });
 
   it('keep a 10% safe area as their margin', () => {
     expect(pageMargin(newLogoPage('l'))).toBe(102);
-    expect(pageMargin({ orientation: 'portrait', size: 'square' })).toBe(76);
   });
 
   it('label by size and kind', () => {
@@ -124,11 +123,11 @@ describe('logo pages', () => {
 
 // docs/specs/007-editor/pages-mode.md "Sizes": no two size tiles of one shape.
 describe('pageSizeChoices', () => {
-  it("offers an infographic page its kind's sizes, keeping one it is still on", () => {
+  it("offers a page its kind's sizes, keeping one it is still on", () => {
     const landscape = { orientation: 'landscape' as const };
-    expect(pageSizeChoices(landscape)).toContain('wide');
+    expect(pageSizeChoices(landscape)).toEqual(['a4']);
     expect(pageSizeChoices({ ...landscape, size: 'logo' })).toContain('logo');
-    expect(pageSizeChoices({ orientation: 'portrait' })).toEqual(pageSizesFor('infographic'));
+    expect(pageSizeChoices({ orientation: 'portrait' })).toEqual(pageSizesFor(null));
   });
 
   it('puts Fit to Content first on a page already in it', () => {

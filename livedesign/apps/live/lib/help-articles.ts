@@ -128,7 +128,6 @@ export const HELP_ARTICLES = {
   logoPages: 'canvas/pages-mode/logo-pages',
   wireframePages: 'canvas/pages-mode/wireframe-pages',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
-  infographicLayouts: 'canvas/pages-mode/infographic-layouts',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
@@ -481,10 +480,6 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     description: 'Device frames, ready-made screens, the Elements palette and mockup export.',
   },
 
-  infographicLayouts: {
-    title: 'Learn about infographic layouts',
-    description: 'Starting a page from a layout, its theme, and making it your own.',
-  },
   livePresence: {
     title: 'Learn about live presence',
     description: 'Who is in the document, where they are, and following them.',

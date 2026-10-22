@@ -2,8 +2,8 @@
 // its welcome card as the Pages tour offers them. Loaded at the offer or the press (`import('./page-tour-steps')`),
 // so the copy stays out of the editor's first load.
 import type { PageKind } from '@livedesign/document';
-import { INFOGRAPHIC_WELCOME, infographicTourSteps } from './infographic-tour-steps';
 import { LOGO_WELCOME, logoTourSteps } from './logo-tour-steps';
+import { WIREFRAME_WELCOME, wireframeTourSteps } from './wireframe-tour-steps';
 import type { PageTourApi, PageTourStep } from './page-tour-api';
 import { stepTelemetryType } from './tour-step';
 
@@ -12,34 +12,12 @@ export { resetPageTour, tidyPageTour } from './page-tour-dom';
 
 /** A kind's steps. */
 export function pageTourSteps(kind: PageKind): PageTourStep[] {
-  switch (kind) {
-    case 'logo':
-      return logoTourSteps();
-    // A wireframe page takes the infographic track, save that its cog sets a device rather than a page size.
-    case 'wireframe':
-      return infographicTourSteps().map((step) =>
-        step.id === 'page-size'
-          ? {
-              ...step,
-              title: 'Device',
-              body: 'The cog picks the device, turns it and sets its frame, and duplicates or deletes the page.',
-            }
-          : step,
-      );
-    default:
-      return infographicTourSteps();
-  }
+  return kind === 'logo' ? logoTourSteps() : wireframeTourSteps();
 }
 
 const WELCOMES: Record<PageKind, PageTourStep> = {
-  infographic: INFOGRAPHIC_WELCOME,
   logo: LOGO_WELCOME,
-  // A wireframe page is laid out as an infographic page is, and takes its track under its own welcome.
-  wireframe: {
-    ...INFOGRAPHIC_WELCOME,
-    title: 'Getting started with wireframes?',
-    body: 'A quick look at screen layouts, backgrounds and presenting?',
-  },
+  wireframe: WIREFRAME_WELCOME,
 };
 
 /** Whether a step's control is on screen as the tour starts (spec "Filtering"): what it needs to open, else its own

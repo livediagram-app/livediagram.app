@@ -188,7 +188,7 @@ describe('settings catalogue', () => {
       ['formTourSeen', 'toggle', 'Forms Tour', 'planForms'],
       ['avatarTourSeen', 'toggle', 'Avatar Tour', 'avatarTour'],
       ['pagesTourSeen', 'toggle', 'Pages Tours', 'pagesTour'],
-      ['pagesTourSeen-infographic', 'toggle', 'Infographic Tour', 'pagesTour'],
+      ['pagesTourSeen-wireframe', 'toggle', 'Wireframe Tour', 'pagesTour'],
       ['pagesTourSeen-logo', 'toggle', 'Logo Tour', 'pagesTour'],
       // Element tours (docs/specs/007-editor/element-tours.md): one switch over them all, then one per element,
       // linking that element's article.
@@ -235,7 +235,7 @@ describe('settings catalogue', () => {
         ['FormTourSeenOff', 'FormTourSeenOn'],
         ['AvatarTourSeenOff', 'AvatarTourSeenOn'],
         ['PagesTourSeenOff', 'PagesTourSeenOn'],
-        ['InfographicTourSeenOff', 'InfographicTourSeenOn'],
+        ['WireframeTourSeenOff', 'WireframeTourSeenOn'],
         ['LogoTourSeenOff', 'LogoTourSeenOn'],
         ['ElementToursSeenOff', 'ElementToursSeenOn'],
         ['SankeyTourSeenOff', 'SankeyTourSeenOn'],
@@ -319,7 +319,7 @@ describe('settings catalogue', () => {
       'planTourSeen-sheets': ['planTourSeen', 'planTourTracks'],
       'planTourSeen-dashboards': ['planTourSeen', 'planTourTracks'],
       pagesTourSeen: ['pagesTourSeen', 'pagesTourKinds'],
-      'pagesTourSeen-infographic': ['pagesTourSeen', 'pagesTourKinds'],
+      'pagesTourSeen-wireframe': ['pagesTourSeen', 'pagesTourKinds'],
       'pagesTourSeen-logo': ['pagesTourSeen', 'pagesTourKinds'],
       elementToursSeen: ['elementToursSeen', 'elementTourKinds'],
       // One element's tour writes the answered list alone (lib/element-tours.ts).
@@ -360,17 +360,17 @@ describe('settings catalogue', () => {
 
   // docs/specs/007-editor/pages-tour.md "Where it appears": one switch over every page kind's track.
   it('gives each kind of page its own tour row, turned back on alone', () => {
-    // docs/specs/007-editor/pages-tour.md: Infographic Tour, Logo Tour.
-    const infographic = TOGGLES.find((r) => r.key === 'pagesTourSeen-infographic')!;
+    // docs/specs/007-editor/pages-tour.md: Wireframe Tour, Logo Tour.
+    const wireframe = TOGGLES.find((r) => r.key === 'pagesTourSeen-wireframe')!;
     const logo = TOGGLES.find((r) => r.key === 'pagesTourSeen-logo')!;
-    const seen: UserPreferences = { pagesTourKinds: ['infographic', 'logo'] };
-    expect(infographic.read(seen)).toBe(false);
-    const next = infographic.write(seen, true);
+    const seen: UserPreferences = { pagesTourKinds: ['wireframe', 'logo'] };
+    expect(wireframe.read(seen)).toBe(false);
+    const next = wireframe.write(seen, true);
     expect(next).toEqual({
       pagesTourSeen: false,
       pagesTourKinds: ['logo'],
     });
-    expect(infographic.read(next)).toBe(true);
+    expect(wireframe.read(next)).toBe(true);
     expect(logo.read(next)).toBe(false);
   });
 

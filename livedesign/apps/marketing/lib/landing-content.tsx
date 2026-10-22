@@ -53,7 +53,6 @@ import {
   IntoPagesArt,
   PagesArt,
   ImagesArt,
-  InfographicLayoutArt,
   IsometricArt,
   LanesArt,
   LaserArt,
@@ -107,7 +106,6 @@ import {
   TechIconsArt,
   TemplatesArt,
   ThemesArt,
-  TidyPageArt,
   TimelineFeedArt,
   UndoRedoArt,
   UnlimitedTabsArt,
@@ -843,38 +841,24 @@ export const LANDING_SECTIONS: LandingSection[] = [
     label: 'Infographics',
     scene: 'infographic',
     cta: 'Explore infographics',
-    title: 'Posters, social posts and logos',
+    title: 'Logos and wireframes',
     description:
-      'Switch a tab to Pages and lay out pages: start from a ready-made layout, paint it from your theme, fill it with stats, charts and quotes, then export it print-ready or post it. Or design a logo on an artboard of its own.',
+      'Switch a tab to Pages and design on pages of their own: a logo on a square artboard, or a screen wireframed in its device. Paint each from your theme, then export it.',
     metaDescription:
-      'Lay out posters, one-pagers and social posts from ready-made layouts, design a logo on its own artboard, then export them print-ready.',
+      'Design a logo on its own artboard or wireframe a screen in its device, then export them.',
     highlights: [
-      'Pages for print and social',
-      'Start a page from a layout',
+      'A page for each logo and screen',
       'Design a logo',
+      'Backgrounds from your theme',
       'Every page, print-ready',
     ],
     items: [
       {
         art: <PagesArt />,
         href: '/help/canvas/pages-mode/',
-        title: 'Pages for print and social',
+        title: 'A page for each logo and screen',
         description:
-          'A4, US Letter and A3 for print; square, portrait post and story or slide for social; a square artboard for a logo. Each page has its own size and orientation, and everything on it moves with it.',
-      },
-      {
-        art: <InfographicLayoutArt />,
-        href: '/help/canvas/pages-mode/infographic-layouts/',
-        title: 'Start a page from a layout',
-        description:
-          'Ninety-two ready-made pages in eight categories, from a magazine cover and a gig poster to a KPI dashboard, a SWOT and a cheat sheet. Hover one to preview it on your page, press it to place it, then make it yours.',
-      },
-      {
-        art: <TidyPageArt />,
-        href: '/help/canvas/pages-mode/',
-        title: 'Tidy a page in one press',
-        description:
-          'Press the broom on a page and it straightens itself: anything poking past the margins comes back inside, edges that nearly line up do, and gaps that are nearly even become even. It keeps your layout and never moves anything far.',
+          'A square artboard for a logo; a phone, tablet, laptop, browser or watch for a screen. Each page is its own size, and everything on it moves with it.',
       },
       {
         art: <PagesBackgroundsArt />,
@@ -895,7 +879,7 @@ export const LANDING_SECTIONS: LandingSection[] = [
         href: '/help/canvas/pages-mode/tab-windows/',
         title: 'A live window onto another tab',
         description:
-          'Draw the diagram on its own tab, then put a window onto it on a slide or a poster. The window follows every change you or a collaborator make, so there is never a stale copy to paste again. Open jumps straight to the tab.',
+          'Draw the diagram on its own tab, then put a window onto it on a page. The window follows every change you or a collaborator make, so there is never a stale copy to paste again. Open jumps straight to the tab.',
       },
       {
         art: <LogoPageArt />,

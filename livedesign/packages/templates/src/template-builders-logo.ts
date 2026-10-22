@@ -15,7 +15,7 @@
 
 import { createShape, createText, type Element, type Page } from '@livedesign/document';
 import { heading, type Kit } from './page-layout-kit';
-import { pageKits, templateLogoPage, templatePage } from './template-page-kit';
+import { pageKits, templateLogoPage } from './template-page-kit';
 
 // The brand palette. Fills that carry the identity set `themeLockFill` so a
 // theme switch can't flatten them into the theme's single element fill.
@@ -185,7 +185,7 @@ const SWATCHES = [
   { name: 'Ink', role: 'Text: body copy and one-colour prints', hex: INK },
 ];
 
-/** The exploration's pages: a Logo page per lockup, then the palette on a Square infographic page.
+/** The exploration's pages: a Logo page per lockup, then the palette on one more artboard.
  *  The app icon sits on Crema, the way a launcher would show it. */
 export function logoDesignPages(): Page[] {
   return [
@@ -196,7 +196,7 @@ export function logoDesignPages(): Page[] {
         b.variant === 'app-icon' ? { fill: { kind: 'solid', color: CREMA } } : undefined,
       ),
     ),
-    templatePage(BOARDS.length + 1, 'square', 'portrait', 'Palette'),
+    templateLogoPage(BOARDS.length + 1, 'Palette'),
   ];
 }
 

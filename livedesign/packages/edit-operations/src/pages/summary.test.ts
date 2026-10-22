@@ -34,10 +34,7 @@ describe('backgrounds in words', () => {
 describe('sizes and labels', () => {
   it('names a size with its turn where it has one', () => {
     expect(sizeLabel(page('p'))).toBe('A4 portrait');
-    expect(sizeLabel(page('p', { size: 'social', orientation: 'landscape' }))).toBe(
-      'Landscape post (5:4) landscape',
-    );
-    expect(sizeLabel(page('p', { size: 'square' }))).toBe('Square');
+    expect(sizeLabel(page('p', { orientation: 'landscape' }))).toBe('A4 landscape');
     expect(sizeLabel(page('l', { size: 'logo', kind: 'logo' }))).toBe('1024 x 1024');
   });
 

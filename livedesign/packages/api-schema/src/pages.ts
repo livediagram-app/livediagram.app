@@ -87,7 +87,8 @@ export type PageSummary = {
   place: number;
   id: string;
   name: string | null;
-  kind: PageKind;
+  // Null for a page whose kind is not chosen yet.
+  kind: PageKind | null;
   size: PageSizeId;
   orientation: PageOrientation | null;
   rect: PageRect;

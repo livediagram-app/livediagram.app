@@ -24,9 +24,6 @@ describe('blanks of a page kind', () => {
   });
 
   it('makes each page the way the kind choice makes it', () => {
-    expect(blankPageTemplateOverrides('blank-infographic')!.pages).toEqual([
-      { id: 'page-1', orientation: 'portrait', kind: 'infographic' },
-    ]);
     expect(blankPageTemplateOverrides('blank-logo')!.pages).toEqual([
       { id: 'page-1', orientation: 'portrait', size: 'logo', kind: 'logo' },
     ]);
@@ -37,7 +34,6 @@ describe('blanks of a page kind', () => {
       expect(isBlankTemplate(kind)).toBe(true);
       expect(templateCategory(kind)).toBeNull();
     }
-    expect(untitledNameForTemplate('blank-infographic')).toBe('Untitled Infographic');
     expect(untitledNameForTemplate('blank-logo')).toBe('Untitled Logo');
   });
 
@@ -45,19 +41,5 @@ describe('blanks of a page kind', () => {
     expect(blankPageTemplateOverrides('blank-illustration')).toBeUndefined();
     expect(blankPageTemplateOverrides('logo-design')).toBeUndefined();
     expect(templateCanvasOverrides('blank-illustration').pages).toBeUndefined();
-  });
-});
-
-describe('a blank infographic on its theme', () => {
-  it("starts its page on the theme's default background; other templates keep theirs", async () => {
-    const { buildTemplateTab } = await import('./template-tab');
-    const { defaultPageBackground, getBuiltInTheme, pagesOf } =
-      await import('@livedesign/document');
-    const tab = buildTemplateTab('t', 'T', 'blank-infographic', 'ocean');
-    expect(pagesOf(tab)[0]!.background).toEqual(defaultPageBackground(getBuiltInTheme('ocean')));
-    const poster = buildTemplateTab('d', 'D', 'event-poster', 'ocean');
-    expect(pagesOf(poster)[0]!.background).not.toEqual(
-      defaultPageBackground(getBuiltInTheme('ocean')),
-    );
   });
 });

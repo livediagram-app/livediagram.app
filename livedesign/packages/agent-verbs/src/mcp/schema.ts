@@ -315,7 +315,7 @@ theirs: list_sheets lists a document's sheets, read_sheet reads one's cells by A
 formats cells, inserts and deletes rows and columns, sorts, freezes and renames,
 and sets dropdowns, checkboxes and other validation rules and conditional formats,
 and add_sheet puts a new Sheet on a tab in Plan, blank or from rows or CSV text.
-Tabs in Pages mode hold pages: infographics, logo artboards and wireframes.
+Tabs in Pages mode hold pages: logo artboards and wireframes.
 change_pages adds, changes, lays out (from a ready-made layout), moves, copies and
 deletes them and answers each page's rectangle on the canvas, where update_document
 puts elements. Asked for a logo, add a logo page; asked for a screen, add a wireframe

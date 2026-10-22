@@ -5,7 +5,7 @@
 // of its kind in one edit. Shown only while there is another page of the kind to reach.
 import { pageKindOf, type Page } from '@livedesign/document';
 import { Button } from '@livedesign/ui';
-import { KIND_PAGES } from '@/hooks/editor/pages-background-copy-edits';
+import { kindPages } from '@/hooks/editor/pages-background-copy-edits';
 
 export function ApplyBackgroundToAll({
   page,
@@ -18,7 +18,7 @@ export function ApplyBackgroundToAll({
   onApply: () => void;
 }) {
   if (reach === 0) return null;
-  const label = `Apply to All ${KIND_PAGES[pageKindOf(page)].many}`;
+  const label = `Apply to All ${kindPages(pageKindOf(page)).many}`;
   return (
     <div className="border-t border-slate-100 px-3 py-2 dark:border-slate-800">
       <Button

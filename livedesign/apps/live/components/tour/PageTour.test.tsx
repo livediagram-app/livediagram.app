@@ -103,7 +103,7 @@ function Page({ of, deleted = false }: { of: Page; deleted?: boolean }) {
   useFollowPagePanelRequests(setOpened);
   const { tour, kind, freeze } = usePageTour((id) => id === of.id && !deleted);
   const laid = layOutPages([of])[0]!;
-  const ofKind = pageKindOf(of);
+  const ofKind = pageKindOf(of) ?? 'wireframe';
   return (
     <div>
       {deleted ? null : (
@@ -167,7 +167,7 @@ const shows = (check: () => void) => waitFor(check);
 
 describe('Show Me on every page', () => {
   it.each([
-    ['infographic', '/help/canvas/pages-mode/infographic-layouts/'],
+    ['wireframe', '/help/canvas/pages-mode/wireframe-pages/'],
     ['logo', '/help/canvas/pages-mode/logo-pages/'],
   ] as const)('heads a %s page’s panel beside its own Help', (kind, href) => {
     render(<Page of={page(kind)} />);
@@ -177,16 +177,16 @@ describe('Show Me on every page', () => {
   });
 });
 
-describe('an infographic’s Show Me', () => {
-  it('opens the page’s panel on Page for its size, and closes it after', async () => {
-    render(<Page of={page('infographic')} />);
+describe('a wireframe page’s Show Me', () => {
+  it('opens the page’s panel on its device, and closes it after', async () => {
+    render(<Page of={page('wireframe')} />);
     await showMe();
-    expect(track).toHaveBeenCalledWith('UI', 'Started', 'InfographicTour');
+    expect(track).toHaveBeenCalledWith('UI', 'Started', 'WireframeTour');
     await shows(() => expect(stepDialog(/^Show Me step 1 of 6: Your Page/)).toBeTruthy());
     await next(); // Layout
     await next(); // Background
     await next();
-    await shows(() => expect(stepDialog(/Page Size/)).toBeTruthy());
+    await shows(() => expect(stepDialog(/Device/)).toBeTruthy());
     await shows(() => expect(document.querySelector('[data-page-panel]')).not.toBeNull());
     await next();
     await shows(() => expect(document.querySelector('[data-page-panel]')).toBeNull());

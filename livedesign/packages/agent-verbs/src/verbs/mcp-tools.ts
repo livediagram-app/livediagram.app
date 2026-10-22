@@ -164,8 +164,8 @@ export const mcpCreateDocument = mcpTool('create_document', {
   behaviour: 'write',
   title: 'Create a document',
   description:
-    'Create a new document: a diagram (flowchart, architecture, org chart, mind map, sequence, ER), a whiteboard, an ' +
-    'infographic, a logo, a wireframe, a Plan board or a spreadsheet. Each tab takes a "graph" ' +
+    'Create a new document: a diagram (flowchart, architecture, org chart, mind map, sequence, ER), a whiteboard, a ' +
+    'logo, a wireframe, a Plan board or a spreadsheet. Each tab takes a "graph" ' +
     '(nodes and edges, laid out in the template look: ' +
     'sizes, elbows, side exits, loops round the outside, title and key), "mermaid", raw "elements" (the full ' +
     'format is documented inline on the "tabs" argument below) or a "template". ' +
@@ -398,9 +398,9 @@ export const mcpChangePages = mcpTool('change_pages', {
   behaviour: 'destructive',
   title: 'Change pages',
   description:
-    'Build a logo, a wireframe or an infographic: change the pages of a tab in Pages mode, in ' +
-    'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} an ' +
-    'infographic, logo or wireframe page, set {page, name, size, orientation, background, locked}, layout ' +
+    'Build a logo or a wireframe: change the pages of a tab in Pages mode, in ' +
+    'order, as one edit. Each change is an object with its "op" (never a bare string): add {kind, layout, ...} a ' +
+    'logo or wireframe page, set {page, name, size, orientation, background, locked}, layout ' +
     '{page, layout}, move {page, to}, duplicate {page}, delete {page}, apply_background_to_all {page} (every ' +
     "other page of its kind, every logo page say, takes that page's background). A tab in another mode, named by tabId, " +
     'is switched into Pages. The answer gives every page with its rectangle in canvas coordinates, the ' +

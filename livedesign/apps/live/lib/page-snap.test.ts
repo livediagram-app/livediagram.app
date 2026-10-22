@@ -17,9 +17,9 @@ import {
 const SCREEN = { width: 1200, height: 800 };
 const BAND: SnapBand = { left: 0, right: 1200, top: 0, bottom: 800 };
 const pages = layOutPages([
-  { id: 'p1', size: 'wide', orientation: 'landscape' },
-  { id: 'p2', size: 'wide', orientation: 'landscape' },
-  { id: 'p3', size: 'wide', orientation: 'landscape' },
+  { id: 'p1', orientation: 'landscape' },
+  { id: 'p2', orientation: 'landscape' },
+  { id: 'p3', orientation: 'landscape' },
 ] as never);
 const page = (id: string) => pages.find((p) => p.id === id)!;
 const fitOf = (p: LaidOutPage): SnapFrame => computeFitBelow(SCREEN, p.rect, 0);
@@ -249,7 +249,6 @@ describe('pageSnap: cost', () => {
     const many = layOutPages(
       Array.from({ length: 100 }, (_, i) => ({
         id: `p${i}`,
-        size: 'wide',
         orientation: 'landscape',
       })) as never,
     );

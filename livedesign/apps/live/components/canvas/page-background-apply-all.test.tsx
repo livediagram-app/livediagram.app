@@ -16,9 +16,9 @@ describe('ApplyBackgroundToAll', () => {
     expect(screen.getByText(/Gives the other 35 this background and pattern/)).toBeTruthy();
   });
 
-  it('says Infographic Pages on an infographic page', () => {
+  it('says Blank Pages on a page whose kind is not chosen yet', () => {
     render(<ApplyBackgroundToAll page={{}} reach={2} onApply={vi.fn()} />);
-    expect(screen.getByRole('button', { name: 'Apply to All Infographic Pages' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Apply to All Blank Pages' })).toBeTruthy();
   });
 
   it('is absent with no other page of the kind', () => {

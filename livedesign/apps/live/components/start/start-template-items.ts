@@ -46,20 +46,11 @@ const RECOMMENDED_LINE: Record<TemplateStartMode, string> = {
 // Recommended leaves these to their group (Timeline, under Timelines).
 const NOT_RECOMMENDED: ReadonlySet<TemplateKind> = new Set(['timeline']);
 
-// Start Making Pages' Recommended opens on a blank of a page kind in place of the Popular shelf's Blank Illustration:
-// a page already of its kind is the quicker start (docs/specs/007-editor/start-diagramming.md
-// "Recommended and groups"). The shelf itself, shared with the Quick Start and the gallery, is unchanged.
-const RECOMMENDED_SWAPS: Partial<
-  Record<TemplateStartMode, ReadonlyMap<TemplateKind, TemplateKind>>
-> = {
-  pages: new Map<TemplateKind, TemplateKind>([['blank-illustration', 'blank-infographic']]),
-};
-
 type OwnGroup = { id: string; name: string; line: string; kinds: readonly TemplateKind[] };
 
 // The modes whose templates nearly all share one catalogue category (Workshops, Presentations) group them their own
-// way: Workshop by the session each runs, Pages by what each makes, each Pages group but Posters and Design led by
-// its blank of a page kind. A template of the mode in none of its groups is placed in the last.
+// way: Workshop by the session each runs, Pages by what each makes, each Pages group led by its blank of a page
+// kind. A template of the mode in none of its groups is placed in the last.
 const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonly OwnGroup[]>> = {
   workshop: [
     {
@@ -159,26 +150,6 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
   ],
   pages: [
     {
-      id: 'infographics',
-      name: 'Infographics',
-      line: 'Numbers, comparisons and how-tos told visually.',
-      kinds: [
-        'blank-infographic',
-        'year-in-review',
-        'data-story',
-        'how-it-works',
-        'versus',
-        'resume',
-        'recipe-card',
-      ],
-    },
-    {
-      id: 'posters',
-      name: 'Posters and Social',
-      line: 'Posters, cards and social posts to print, pin up or share.',
-      kinds: ['event-poster', 'social-carousel', 'live-card'],
-    },
-    {
       id: 'logos',
       name: 'Logos',
       line: 'Marks, wordmarks and lockups for a brand.',
@@ -201,12 +172,6 @@ const OWN_GROUPS: Readonly<Record<Exclude<TemplateStartMode, 'diagram'>, readonl
         'wireframe-watch-app',
       ],
     },
-    {
-      id: 'design',
-      name: 'Design',
-      line: 'Storyboards and floor plans, drawn to show.',
-      kinds: ['storyboard', 'floor-plan'],
-    },
   ],
 };
 
@@ -224,9 +189,7 @@ function build(mode: TemplateStartMode): TemplateStart {
     id: 'recommended',
     name: 'Recommended',
     line: RECOMMENDED_LINE[mode],
-    kinds: popularKindsFor(mode)
-      .filter((k) => !NOT_RECOMMENDED.has(k))
-      .map((k) => RECOMMENDED_SWAPS[mode]?.get(k) ?? k),
+    kinds: popularKindsFor(mode).filter((k) => !NOT_RECOMMENDED.has(k)),
   };
   const rest: TemplateStartGroup[] =
     mode === 'diagram'

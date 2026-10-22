@@ -25,7 +25,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "137 templates (11 default + 126 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "125 templates (11 default + 114 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -63,7 +63,6 @@ describe('TEMPLATES catalogue', () => {
     'wireframe-tablet-app',
     'wireframe-watch-app',
     'gantt',
-    'live-card',
     'comparison-table',
     'system-architecture',
     'er-diagram',
@@ -92,7 +91,6 @@ describe('TEMPLATES catalogue', () => {
     'sankey',
     'okr-tree',
     'sitemap',
-    'storyboard',
     'cloud-architecture',
     'uml-class',
     'state-machine',
@@ -115,10 +113,8 @@ describe('TEMPLATES catalogue', () => {
     'user-persona',
     'meeting-agenda',
     'objectives-planner',
-    'floor-plan',
     'whiteboard',
     'blank-illustration',
-    'blank-infographic',
     'blank-logo',
     'blank-wireframe-phone',
     'blank-wireframe-tablet',
@@ -129,14 +125,6 @@ describe('TEMPLATES catalogue', () => {
     'rich-picture',
     'comic-strip',
     'doodle-warmup',
-    'event-poster',
-    'year-in-review',
-    'resume',
-    'recipe-card',
-    'data-story',
-    'how-it-works',
-    'versus',
-    'social-carousel',
     'paper-prototype',
     'journey-doodle',
     'pre-mortem',
@@ -176,21 +164,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "137 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "125 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 137 templates (11 default + 126 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(137);
+  it('lists exactly 125 templates (11 default + 114 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(125);
   });
 
-  it('splits cleanly into 11 default + 126 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 114 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(126);
+    expect(extras).toHaveLength(114);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -231,7 +219,6 @@ describe('TEMPLATES catalogue', () => {
         kind === 'whiteboard' ||
         kind === 'blank-illustration' ||
         // One empty page of a chosen kind.
-        kind === 'blank-infographic' ||
         kind === 'blank-logo' ||
         kind.startsWith('blank-wireframe-') ||
         // An empty Plan tab, which opens on Start Planning.
@@ -312,9 +299,8 @@ describe('templateCanvasOverrides', () => {
       'One Colour',
       'Palette',
     ]);
-    // Each lockup on the logo artboard; the palette on a Square infographic page.
-    expect(o.pages!.slice(0, 6).every((p) => p.size === 'logo' && p.kind === 'logo')).toBe(true);
-    expect(o.pages![6]).toMatchObject({ size: 'square', kind: 'infographic' });
+    // Each lockup and the palette on the logo artboard.
+    expect(o.pages!.every((p) => p.size === 'logo' && p.kind === 'logo')).toBe(true);
     expect(templateCanvasOverrides('timeline')).toEqual({
       backgroundPattern: 'lines',
       backgroundOpacity: 0.6,
@@ -327,15 +313,6 @@ describe('templateCanvasOverrides', () => {
       layers: templateLayers('journey'),
       opensIn: 'workshop',
     });
-  });
-
-  it('opens the group card on a cover and an inside, both Portrait post (4:5) pages', () => {
-    const o = templateCanvasOverrides('live-card');
-    expect(o).toMatchObject({ backgroundPattern: 'blank', opensIn: 'pages' });
-    expect(o.pages?.map((p) => [p.name, p.size, p.orientation, p.kind])).toEqual([
-      ['Cover', 'social', 'portrait', 'infographic'],
-      ['Inside', 'social', 'portrait', 'infographic'],
-    ]);
   });
 
   it('leaves the blank template to inherit the theme backdrop', () => {
@@ -436,7 +413,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // themselves are pages. Content: the title slide's nine pieces, each other
     // slide's kicker + headline, and its body (pains 9, steps 5, traction 3, team 12, ask 5).
     // Frames: six panel cards, their number chips and the how-to.
-    storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 41 },
     // Title, caption, the two spine runs (done, to come) and the three-entry
     // status legend stay put; each of the six milestones brings a disc, its
     // glyph, a date, a title and a detail line, plus the Today marker + pill.
@@ -458,7 +434,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // scale bar + caption; the north arrow (N, ring, arrow); and the key
     // (2 headings, the zone legend, 6 symbol rows of glyph + name).
     // Furniture is the 21 movable pieces.
-    'floor-plan': { names: ['Rooms', 'Furniture'], scaffold: 64, content: 21 },
     // The plan 0002 batch. Retro formats share the Retrospective's kit.
     // Start / Stop / Continue: how-to, rail note, 3 columns + actions panel,
     // 3 lamp discs + their glyphs, actions glyph, verbs, prompts, actions
@@ -856,14 +831,6 @@ describe('planning + strategy templates', () => {
 // template-technical.test.ts with the rest of the technical starters.
 
 describe('design + table templates (later batch)', () => {
-  it('storyboard drops six numbered shots, each with an action and a sound line', () => {
-    const labels = labelsOf('storyboard');
-    expect(labels.filter((l) => /^[1-6]$/.test(l))).toHaveLength(6);
-    // Every shot chip names a framing and a start time.
-    expect(labels.filter((l) => /^[A-Z][a-z -]+ · 0:\d\d$/.test(l))).toHaveLength(6);
-    expect(labels.filter((l) => /^(SFX|VO|Music):/.test(l))).toHaveLength(6);
-  });
-
   it('raci matrix drops the tasks-by-roles grid with one legend chip per letter', () => {
     const tab = buildTemplatedTab('raci-matrix', 'brand', 'tab-1', 'raci');
     const table = tab.elements.find(

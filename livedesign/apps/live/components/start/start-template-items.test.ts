@@ -14,15 +14,8 @@ describe.each(MODES)('the %s template start', (mode) => {
   it("leads with Recommended, the mode's Popular shelf, its blank first, Timeline left out", () => {
     const recommended = start.groups[0]!;
     expect(recommended.id).toBe('recommended');
-    // Start Making Pages swaps Blank Illustration for Blank Infographic.
-    const swap: Partial<Record<string, string>> =
-      mode === 'pages' ? { 'blank-illustration': 'blank-infographic' } : {};
-    expect(recommended.kinds).toEqual(
-      popularKindsFor(mode)
-        .filter((k) => k !== 'timeline')
-        .map((k) => swap[k] ?? k),
-    );
-    if (mode !== 'pages') expect(recommended.kinds[0]).toBe(start.blank);
+    expect(recommended.kinds).toEqual(popularKindsFor(mode).filter((k) => k !== 'timeline'));
+    expect(recommended.kinds[0]).toBe(start.blank);
   });
 
   it('shows only groups holding a template, and only the mode’s templates', () => {
@@ -94,34 +87,21 @@ describe('Start a Workshop', () => {
 });
 
 describe('Start Making Pages', () => {
-  it('groups by what is made: Infographics, Posters and Social, Logos, Wireframes, Design', () => {
+  it('groups by what is made: Logos, Wireframes', () => {
     expect(TEMPLATE_STARTS.pages.groups.map((g) => g.name)).toEqual([
       'Recommended',
-      'Infographics',
-      'Posters and Social',
       'Logos',
       'Wireframes',
-      'Design',
     ]);
-    const group = (id: string) => TEMPLATE_STARTS.pages.groups.find((g) => g.id === id)!.kinds;
-    expect(group('posters')).toContain('social-carousel');
-    expect(group('design')).toEqual(['storyboard', 'floor-plan']);
     expect(TEMPLATE_STARTS.pages.blank).toBe('blank-illustration');
   });
 
-  it('leads Infographics and Logos with their blank of a page kind', () => {
+  it('leads Logos and Wireframes with their blank of a page kind', () => {
     // docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind".
     const first = Object.fromEntries(TEMPLATE_STARTS.pages.groups.map((g) => [g.id, g.kinds[0]]));
-    expect(first).toMatchObject({
-      infographics: 'blank-infographic',
-      logos: 'blank-logo',
-    });
-    // Recommended leads with Blank Infographic in Blank Illustration's place, and Blank Logo stays in
-    // its group alone.
-    const recommended = TEMPLATE_STARTS.pages.groups[0]!.kinds;
-    expect(recommended[0]).toBe('blank-infographic');
-    for (const k of ['blank-illustration', 'blank-logo'] as const)
-      expect(recommended).not.toContain(k);
+    expect(first).toMatchObject({ logos: 'blank-logo', wireframes: 'blank-wireframe-phone' });
+    // Blank Logo stays in its group alone.
+    expect(TEMPLATE_STARTS.pages.groups[0]!.kinds).not.toContain('blank-logo');
     expect(TEMPLATE_STARTS.pages.groups.filter((g) => g.kinds.includes('blank-logo'))).toHaveLength(
       1,
     );

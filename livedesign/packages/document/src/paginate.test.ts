@@ -51,14 +51,13 @@ describe('pageAround', () => {
     expect(pageAround(at(0, 0, 900, 400), 'p')).toEqual({
       id: 'p',
       orientation: 'landscape',
-      kind: 'infographic',
     });
     expect(pageAround(at(0, 0, 400, 900), 'p').orientation).toBe('portrait');
   });
 
   it('is Fit to Content, the content plus its own margin all round, when A4 is too small', () => {
     const page = pageAround(at(0, 0, 2284, 1147), 'p');
-    expect(page).toMatchObject({ size: 'fit', orientation: 'landscape', kind: 'infographic' });
+    expect(page).toMatchObject({ size: 'fit', orientation: 'landscape' });
     const m = pageMargin(page);
     expect(page.fit!.width).toBeGreaterThanOrEqual(2284 + 2 * m);
     expect(page.fit!.height).toBeGreaterThanOrEqual(1147 + 2 * m);
@@ -76,7 +75,7 @@ describe('withContentOnAPage', () => {
     const out = withContentOnAPage({ elements })!;
     expect(out.elements).toEqual(elements);
     expect(out.pages).toHaveLength(1);
-    expect(out.pages[0]).toMatchObject({ size: 'fit', kind: 'infographic' });
+    expect(out.pages[0]).toMatchObject({ size: 'fit' });
     // The row anchor is the content's centre, so the page sits over the content.
     expect(out.pages[0]!.rowAt).toEqual({ x: 2300, y: 1950 });
     insideItsPage(out);
@@ -152,13 +151,6 @@ describe('withContentOnAPage', () => {
     for (const page of kept) {
       expect(withContentOnAPage({ elements: stray, pages: [page] })).toBeNull();
     }
-    // An infographic page chosen but otherwise untouched is still replaced.
-    expect(
-      withContentOnAPage({
-        elements: stray,
-        pages: [{ id: 'i', orientation: 'portrait', kind: 'infographic' }],
-      }),
-    ).not.toBeNull();
   });
 
   it('counts a lone straight line on a page as on it', () => {

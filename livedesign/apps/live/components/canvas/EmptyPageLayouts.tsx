@@ -29,7 +29,6 @@ const DESCRIBED_MIN_WIDTH = 520;
 const KIND_NOUN = {
   logo: 'logo',
   wireframe: 'screen',
-  infographic: 'page',
 } as const;
 
 export function EmptyPageLayouts({
@@ -50,6 +49,8 @@ export function EmptyPageLayouts({
   const kind = pageKindOf(page);
   const count = layoutCatalogueFor(kind, pageDeviceClass(page)).layouts.length;
   const logo = page.kind === 'logo';
+  // A page whose kind is not chosen yet has no layouts to offer.
+  if (!kind || count === 0) return null;
   return (
     <div className="absolute inset-0 flex items-center justify-center">
       <div

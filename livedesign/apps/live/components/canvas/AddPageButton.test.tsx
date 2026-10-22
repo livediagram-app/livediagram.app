@@ -14,7 +14,7 @@ describe('AddPageButton', () => {
   it('sits level with the last page’s middle', () => {
     render(<AddPageButton last={page()} zoom={1} onAdd={vi.fn()} onAddLike={vi.fn()} />);
     const holder = screen
-      .getByRole('button', { name: 'Add Another Infographic Page' })
+      .getByRole('button', { name: 'Add Another Page' })
       .closest('div[style]') as HTMLElement;
     expect(holder.style.top).toBe('420px');
   });
@@ -39,14 +39,13 @@ describe('AddPageButton', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
     const rows = within(screen.getByRole('group', { name: 'Add a Page' })).getAllByRole('button');
     expect(rows.map((r) => r.querySelector('span.block')?.textContent)).toEqual([
-      'Infographic',
       'Logo',
       'Wireframe',
     ]);
     expect(document.activeElement).toBe(rows[0]);
     fireEvent.keyDown(rows[0]!, { key: 'ArrowUp' });
-    expect(document.activeElement).toBe(rows[2]);
-    fireEvent.click(rows[1]!);
+    expect(document.activeElement).toBe(rows[1]);
+    fireEvent.click(rows[0]!);
     expect(onAdd).toHaveBeenCalledWith('logo');
 
     fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
@@ -59,7 +58,7 @@ describe('AddPageButton', () => {
 
 describe('addAnotherLabel', () => {
   it('names each kind, a wireframe by its device', () => {
-    expect(addAnotherLabel({})).toBe('Add Another Infographic Page');
+    expect(addAnotherLabel({})).toBe('Add Another Page');
     expect(addAnotherLabel({ kind: 'logo' })).toBe('Add Another Logo Page');
     expect(addAnotherLabel({ kind: 'wireframe', device: 'iphone-duo' })).toBe(
       'Add Another iPhone Duo Screen',

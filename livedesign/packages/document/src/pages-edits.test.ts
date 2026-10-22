@@ -118,20 +118,18 @@ describe('turning and resizing', () => {
 
   it('resizes to a size the kind offers, and refuses any other and Fit to Content', () => {
     const tab = tabOf([a4('p1', { size: 'fit', fit: { width: 300, height: 200 } })]);
-    const a3 = pagesAfter(pageResized(tab, 'p1', 'a3'))[0]!;
-    expect(a3.size).toBe('a3');
-    expect(a3.fit).toBeUndefined();
-    const back = pagesAfter(pageResized(tabOf([a4('p1', { size: 'a3' })]), 'p1', 'a4'))[0]!;
+    const back = pagesAfter(pageResized(tab, 'p1', 'a4'))[0]!;
     expect(back.size).toBeUndefined();
+    expect(back.fit).toBeUndefined();
     expect(ok(pageResized(tabOf([a4('p1')]), 'p1', 'a4')).pages).toEqual([a4('p1')]);
     expect(pageResized(tabOf([a4('p1')]), 'p1', 'fit')).toEqual({ refused: 'size_not_offered' });
-    expect(pageResized(tabOf([a4('p1', { kind: 'infographic' })]), 'p1', 'logo')).toEqual({
+    expect(pageResized(tabOf([a4('p1')]), 'p1', 'logo')).toEqual({
       refused: 'size_not_offered',
     });
-    expect(pageResized(tabOf([a4('p1', { locked: true })]), 'p1', 'a3')).toEqual({
+    expect(pageResized(tabOf([a4('p1', { locked: true })]), 'p1', 'a4')).toEqual({
       refused: 'locked',
     });
-    expect(pageResized(tab, 'nope', 'a3')).toEqual({ refused: 'unknown_page' });
+    expect(pageResized(tab, 'nope', 'a4')).toEqual({ refused: 'unknown_page' });
   });
 });
 
@@ -170,29 +168,21 @@ describe('painting', () => {
 });
 
 describe('adding', () => {
-  it('adds an infographic page like the last one, A4 after Fit to Content', () => {
-    const like = pagesAfter(
-      pageAdded(tabOf([a4('p', { size: 'a3', orientation: 'landscape' })]), 'infographic', 'n'),
-    );
-    expect(like[1]).toEqual({ id: 'n', orientation: 'landscape', size: 'a3' });
+  it('adds a logo page as the artboard, after any page', () => {
     const afterFit = pagesAfter(
-      pageAdded(
-        tabOf([a4('p', { size: 'fit', fit: { width: 100, height: 100 } })]),
-        'infographic',
-        'n',
-      ),
+      pageAdded(tabOf([a4('p', { size: 'fit', fit: { width: 100, height: 100 } })]), 'logo', 'n'),
     );
-    expect(afterFit[1]).toEqual({ id: 'n', orientation: 'portrait' });
-    expect(pagesAfter(pageAdded(tabOf([]), 'infographic', 'n')).at(-1)).toEqual({
+    expect(afterFit[1]).toMatchObject({ id: 'n', size: 'logo', kind: 'logo' });
+    expect(pagesAfter(pageAdded(tabOf([]), 'logo', 'n')).at(-1)).toMatchObject({
       id: 'n',
-      orientation: 'portrait',
+      kind: 'logo',
     });
   });
 
   it('carries the last page’s background onto a new page of any kind, a logo without pattern', () => {
     const fill = { kind: 'gradient' as const, from: '#fde68a', to: '#fca5a5', angle: 160 };
     const tab = tabOf([a4('p', { background: { fill, pattern: 'dots' } })]);
-    for (const kind of ['infographic', 'wireframe'] as const) {
+    for (const kind of ['wireframe'] as const) {
       expect(pagesOf(ok(pageAdded(tab, kind, 'n')))[1]!.background).toEqual({
         fill,
         pattern: 'dots',

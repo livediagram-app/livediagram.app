@@ -126,7 +126,6 @@ describe('markup over the paper', () => {
       {
         id: 's',
         orientation: 'landscape',
-        kind: 'infographic',
         background: {
           fill: { kind: 'gradient', from: '#000000', to: '#ffffff', angle: 90 },
           pattern: 'dots',

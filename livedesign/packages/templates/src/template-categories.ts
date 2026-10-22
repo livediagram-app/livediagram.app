@@ -131,7 +131,6 @@ type BlankKind =
   | 'blank'
   | 'whiteboard'
   | 'blank-illustration'
-  | 'blank-infographic'
   | 'blank-logo'
   | 'blank-wireframe-phone'
   | 'blank-wireframe-tablet'
@@ -242,21 +241,13 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'family-tree': 'hierarchies',
   // Design and UX: screens, research and the spaces people move through.
   'paper-prototype': 'design',
-  storyboard: 'design',
   journey: 'design',
   'journey-doodle': 'design',
   'user-persona': 'design',
   'empathy-map': 'design',
   'user-story-map': 'design',
-  'floor-plan': 'design',
   'service-blueprint': 'design',
   // Presentations and Content: pages made to be read or shared.
-  'how-it-works': 'presentations',
-  'data-story': 'presentations',
-  'year-in-review': 'presentations',
-  versus: 'presentations',
-  'social-carousel': 'presentations',
-  'event-poster': 'presentations',
   'logo-design': 'presentations',
   // Design: the wireframe flows sit with the other wireframes.
   'wireframe-mobile-app': 'design',
@@ -264,9 +255,6 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'wireframe-dashboard': 'design',
   'wireframe-tablet-app': 'design',
   'wireframe-watch-app': 'design',
-  resume: 'presentations',
-  'recipe-card': 'presentations',
-  'live-card': 'presentations',
   'comic-strip': 'presentations',
   // Technical: developer diagrams.
   'system-architecture': 'technical',

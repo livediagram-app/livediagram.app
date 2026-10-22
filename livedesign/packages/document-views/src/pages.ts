@@ -28,7 +28,7 @@ const PAGE = { one: 'page line', many: 'page lines' };
 const LAYOUTS = { one: 'layout line', many: 'layout lines' };
 const ELEMENT = { one: 'element line', many: 'element lines' };
 
-const KIND_ORDER: readonly PageKind[] = ['infographic', 'logo', 'wireframe'];
+const KIND_ORDER: readonly PageKind[] = ['logo', 'wireframe'];
 
 const sizeName = (size: keyof typeof PAGE_SIZES, orientation: 'portrait' | 'landscape' | null) => {
   const s = PAGE_SIZES[size];
@@ -109,7 +109,7 @@ export function pagesView(model: ViewModel, options: PagesOptions = {}): ViewRes
     const on = new Set(p.refs);
     const nodes = reading.filter((node) => on.has(model.refs.refOf(node.el.id)));
     const facts = [
-      `${p.kind} ${sizeName(p.size, p.orientation)}`,
+      `${p.kind ?? 'blank'} ${sizeName(p.size, p.orientation)}`,
       `at ${x},${y} ${width}x${height}`,
       ...(p.background ? [`background ${p.background}`] : []),
       ...(p.locked ? ['locked'] : []),

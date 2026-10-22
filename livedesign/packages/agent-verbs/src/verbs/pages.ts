@@ -36,7 +36,7 @@ const pageOutput = z.object({
   place: z.number(),
   id: z.string(),
   name: z.string().nullable(),
-  kind: z.string(),
+  kind: z.string().nullable(),
   size: z.string(),
   orientation: z.string().nullable(),
   rect: z.object({ x: z.number(), y: z.number(), width: z.number(), height: z.number() }),
@@ -59,7 +59,7 @@ const doneOf = (done: PagesDone): z.infer<typeof doneOutput> => ({
   rev: done.tab.rev,
 });
 const pageLine = (p: z.infer<typeof pageOutput>) =>
-  `${p.place}  ${p.kind}  ${p.size}  ${p.rect.x},${p.rect.y} ${p.rect.width}x${p.rect.height}  ${p.name ?? ''}`.trimEnd();
+  `${p.place}  ${p.kind ?? 'blank'}  ${p.size}  ${p.rect.x},${p.rect.y} ${p.rect.width}x${p.rect.height}  ${p.name ?? ''}`.trimEnd();
 
 export const pageLs = defineVerb({
   id: 'page.ls',
@@ -102,10 +102,7 @@ export const pageSet = defineVerb({
     doc: docArg,
     tab: tabFlag,
     changes: z.string().optional().describe('A JSON file of page changes, or - for stdin'),
-    add: z
-      .enum(['infographic', 'logo', 'wireframe'])
-      .optional()
-      .describe('Add a page of this kind'),
+    add: z.enum(['logo', 'wireframe']).optional().describe('Add a page of this kind'),
     page: z.string().optional().describe('The page to change: its id, place or name'),
     name: z.string().optional().describe('Name the page'),
     size: sizeArg,
@@ -167,7 +164,7 @@ async function changesFrom(ctx: VerbContext, source: string): Promise<PageChange
 }
 
 type ChangeFlags = {
-  add?: 'infographic' | 'logo' | 'wireframe';
+  add?: 'logo' | 'wireframe';
   page?: string;
   name?: string;
   size?: string;

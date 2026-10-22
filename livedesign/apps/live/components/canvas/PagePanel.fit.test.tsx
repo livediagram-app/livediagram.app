@@ -57,7 +57,6 @@ const fit: Page = {
   orientation: 'landscape',
   size: 'fit',
   fit: { width: 2400, height: 1300 },
-  kind: 'infographic',
 };
 
 describe('a Fit to Content page in its panel', () => {
@@ -78,7 +77,7 @@ describe('a Fit to Content page in its panel', () => {
   });
 
   it('is not offered, nor is Split, on a page in a paper size', () => {
-    panel({ id: 'p', orientation: 'portrait', kind: 'infographic' });
+    panel({ id: 'p', orientation: 'portrait' });
     expect(screen.queryByRole('radio', { name: 'Fit to Content' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Split Into Pages' })).toBeNull();
   });

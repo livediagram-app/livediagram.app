@@ -208,19 +208,14 @@ export function pageAdded<T extends PagesTab>(
   // The new page wears the background of the page before it (the last), whatever either kind; a
   // logo page takes its fill alone, since it takes no pattern.
   const carried = carriedBackground(pages[pages.length - 1]?.background, kind);
-  let page: Page;
-  if (kind === 'logo') {
-    page = newLogoPage(id);
-  } else if (kind === 'wireframe') {
-    // The last wireframe page's device and frame (docs/specs/007-editor/wireframe-pages.md
-    // "Choosing the device"), its device unless one was just chosen.
-    const lastWireframe = [...pages].reverse().find((p) => p.kind === 'wireframe');
-    page = newWireframePage(id, device ?? lastWireframe?.device, lastWireframe?.frameLook);
-  } else {
-    const model = [...pages].reverse().find((p) => p.kind !== 'logo' && p.kind !== 'wireframe');
-    const size = model?.size === 'fit' ? undefined : model?.size;
-    page = { id, orientation: model?.orientation ?? 'portrait', ...(size ? { size } : {}) };
-  }
+  // A wireframe page takes the last wireframe page's device and frame
+  // (docs/specs/007-editor/wireframe-pages.md "Choosing the device"), its device unless one was
+  // just chosen.
+  const lastWireframe = [...pages].reverse().find((p) => p.kind === 'wireframe');
+  let page: Page =
+    kind === 'logo'
+      ? newLogoPage(id)
+      : newWireframePage(id, device ?? lastWireframe?.device, lastWireframe?.frameLook);
   if (carried) page = { ...page, background: carried };
   return { tab: withPages(tab, [...pages, page]) };
 }
@@ -239,21 +234,10 @@ export function pageAddedLike<T extends PagesTab>(
   const source = pages.find((p) => p.id === sourceId);
   if (!source) return refused('unknown_page');
   if (source.kind !== 'wireframe') {
+    // A page whose kind is not chosen yet has no like to add.
     const kind = pageKindOf(source);
-    if (kind !== 'infographic' || source.size === 'fit') return pageAdded(tab, kind, id);
-    // An infographic page in the source's own size and turn (pageAdded takes the last infographic's).
-    const out = pageAdded(tab, kind, id);
-    if (!('tab' in out)) return out;
-    const next = pagesOf(out.tab).map((p) => {
-      if (p.id !== id) return p;
-      const { size: _size, ...rest } = p;
-      return {
-        ...rest,
-        orientation: source.orientation,
-        ...(source.size && source.size !== 'a4' ? { size: source.size } : {}),
-      };
-    });
-    return { tab: withPages(out.tab, next) };
+    if (!kind) return refused('unknown_page');
+    return pageAdded(tab, kind, id);
   }
   if (!room(pages) || pages.some((p) => p.id === id)) return refused('page_limit');
   const carried = carriedBackground(pages[pages.length - 1]?.background, 'wireframe');

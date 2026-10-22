@@ -56,7 +56,6 @@ export type TemplateKind =
   | 'gantt'
   // Group card: a greeting card the whole team signs (cover + message
   // wall). The kind id predates the name. An extra.
-  | 'live-card'
   // Comparison table: a plan-buying decision on the table element, with
   // ticks / crosses and the recommended plan highlighted.
   | 'comparison-table'
@@ -128,7 +127,6 @@ export type TemplateKind =
   // The landing-page sibling of the mobile / laptop wireframes.
   // Storyboard: numbered shots of a short ad, each with a shot + timing
   // chip, a sketch, and action + sound lines beneath.
-  | 'storyboard'
   // Cloud architecture (Technology icons, docs/specs/010-palette/technology-icons.md): an AWS stack with
   // its services grouped into edge, region, VPC and subnet frames.
   | 'cloud-architecture'
@@ -142,7 +140,6 @@ export type TemplateKind =
   // with the top-down Furniture icons, zone-tinted, dimensioned and keyed.
   // The only template whose geometry means something in the world, so its
   // scale is captioned on the canvas.
-  | 'floor-plan'
   // Retro formats (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the Retrospective's siblings, run
   // with the same opening rail and closing actions so a team can rotate
   // formats without relearning the ritual. Columns (Start / Stop /
@@ -192,7 +189,6 @@ export type TemplateKind =
   | 'blank-illustration'
   // The blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): one empty page
   // whose kind is already chosen (blank-page-templates.ts), so it never asks what it is for.
-  | 'blank-infographic'
   | 'blank-logo'
   | 'blank-wireframe-phone'
   | 'blank-wireframe-tablet'
@@ -211,14 +207,6 @@ export type TemplateKind =
   | 'idea-garden'
   // Pages templates (docs/specs/007-editor/templates-by-mode.md "Pages templates"):
   // documents of pages, opening in Pages on pages of their own (template-pages.ts).
-  | 'event-poster'
-  | 'year-in-review'
-  | 'resume'
-  | 'recipe-card'
-  | 'data-story'
-  | 'how-it-works'
-  | 'versus'
-  | 'social-carousel'
   // Slide decks built from the slide layouts (template-builders-layout-decks.ts).
   // Workshop mode's blank (docs/specs/012-collaboration/workshop-mode.md "Templates").
   | 'blank-session'
@@ -294,12 +282,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-illustration',
     title: 'Blank Illustration',
     description: 'An empty page for an infographic, a slide, a logo or a wireframe.',
-    extra: true,
-  },
-  {
-    kind: 'blank-infographic',
-    title: 'Blank Infographic',
-    description: 'One empty A4 infographic page: lay it out yourself or start from a layout.',
     extra: true,
   },
   {
@@ -671,13 +653,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'live-card',
-    title: 'Group Card',
-    description:
-      'A greeting card the whole team signs, on two card pages: a cover with a photo, and an inside of signed notes with a slot for yours.',
-    extra: true,
-  },
-  {
     kind: 'comparison-table',
     title: 'Comparison Table',
     description:
@@ -870,13 +845,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     extra: true,
   },
   {
-    kind: 'storyboard',
-    title: 'Storyboard',
-    description:
-      'A 30-second ad in six shots: shot and timing chips, sketches, action and sound lines.',
-    extra: true,
-  },
-  {
     kind: 'cloud-architecture',
     title: 'Cloud Architecture',
     description:
@@ -895,13 +863,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'State Machine',
     description:
       'A delivery order’s UML lifecycle: a composite state, guards, a timeout and three final states.',
-    extra: true,
-  },
-  {
-    kind: 'floor-plan',
-    title: 'Floor Plan',
-    description:
-      'A two-bed flat with study drawn to scale: furniture, colour zones, dimensions and a key.',
     extra: true,
   },
   {
@@ -1092,62 +1053,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Idea Garden',
     description:
       'Grow ideas as a drawn tree: the question at the roots, themes as branches, ideas as leaves and the best ones as fruit.',
-    extra: true,
-  },
-  {
-    kind: 'event-poster',
-    title: 'Event Poster',
-    description:
-      'An A3 poster for a community night market: a bold title, the date, time and place, a photo and three highlights.',
-    extra: true,
-  },
-  {
-    kind: 'year-in-review',
-    title: 'Year in Review',
-    description:
-      "A four-page team report: a cover, the year's headline numbers, a timeline of its moments and a thank-you.",
-    extra: true,
-  },
-  {
-    kind: 'resume',
-    title: 'Résumé',
-    description:
-      'A one-page A4 résumé: name and role, a short profile, an experience timeline, skills and education.',
-    extra: true,
-  },
-  {
-    kind: 'recipe-card',
-    title: 'Recipe Card',
-    description:
-      'A recipe to share in two pages: the dish with serves and timings, then the ingredients and the method in steps.',
-    extra: true,
-  },
-  {
-    kind: 'data-story',
-    title: 'Data Story',
-    description:
-      'An A4 infographic that tells one story in numbers: a headline stat, pictograms, a then-and-now comparison and a source line.',
-    extra: true,
-  },
-  {
-    kind: 'how-it-works',
-    title: 'How It Works',
-    description:
-      'A tall explainer for a story or a phone screen: five illustrated steps down a winding path, from first tap to done.',
-    extra: true,
-  },
-  {
-    kind: 'versus',
-    title: 'Versus',
-    description:
-      'Two options side by side on a social post: a split page, matched rows of pros and cons, and a verdict at the foot.',
-    extra: true,
-  },
-  {
-    kind: 'social-carousel',
-    title: 'Social Carousel',
-    description:
-      'Five square slides for a LinkedIn or Instagram carousel: a hook, three tips and a call to action, swipe cues included.',
     extra: true,
   },
   ...FORM_TEMPLATES,

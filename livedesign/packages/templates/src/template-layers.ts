@@ -95,8 +95,6 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     // Tier lanes stay put while components and their wiring move.
     case 'system-architecture':
       return layered('Tiers', 'Components');
-    case 'storyboard':
-      return layered('Frames', 'Content');
     case 'timeline':
     case 'milestone-timeline':
     case 'milestone-timeline-vertical':
@@ -105,8 +103,6 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
       return layered('Stages', 'Notes');
     // The shell (walls, doorways, room captions) stays put while the
     // furniture is dragged around it.
-    case 'floor-plan':
-      return layered('Rooms', 'Furniture');
     default:
       return undefined;
   }

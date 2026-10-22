@@ -26,15 +26,22 @@ export type BackgroundCopyEdits = {
 };
 
 /** The pages of a kind, as Apply to All names them in its button and its notice. */
-export const KIND_PAGES: Record<PageKind, { one: string; many: string }> = {
-  infographic: { one: 'infographic page', many: 'Infographic Pages' },
+const KIND_PAGES: Record<PageKind, { one: string; many: string }> = {
   logo: { one: 'logo page', many: 'Logo Pages' },
   wireframe: { one: 'wireframe page', many: 'Wireframe Pages' },
 };
 
+/** The pages of a kind in words; a page whose kind is not chosen yet is a blank page. */
+export const kindPages = (kind: PageKind | null) =>
+  kind ? KIND_PAGES[kind] : { one: 'blank page', many: 'Blank Pages' };
+
 /** What Apply to All says it did: "Background applied to 35 slides." and the locked it skipped. */
-export function appliedToAllMessage(kind: PageKind, applied: number, skipped: number): string {
-  const { one } = KIND_PAGES[kind];
+export function appliedToAllMessage(
+  kind: PageKind | null,
+  applied: number,
+  skipped: number,
+): string {
+  const { one } = kindPages(kind);
   const n = (count: number) => `${count} ${one}${count === 1 ? '' : 's'}`;
   const done = `Background applied to ${n(applied)}.`;
   if (skipped === 0) return done;
@@ -118,7 +125,7 @@ export function backgroundCopyEdits({
   let reachOf: Map<string, number> | null = null;
   const applyToAllReach = (pageId: string) => {
     if (!reachOf) {
-      const byKind = new Map<PageKind, number>();
+      const byKind = new Map<PageKind | null, number>();
       for (const p of current) {
         const kind = pageKindOf(p);
         byKind.set(kind, (byKind.get(kind) ?? 0) + 1);

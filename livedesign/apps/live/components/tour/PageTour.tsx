@@ -26,12 +26,12 @@ type Frozen = { pageId: string; kind: PageKind };
 
 function trackStarted(kind: PageKind) {
   if (kind === 'logo') track('UI', 'Started', 'LogoTour');
-  else track('UI', 'Started', 'InfographicTour');
+  else track('UI', 'Started', 'WireframeTour');
 }
 
 function trackEnded(kind: PageKind, completed: boolean) {
   if (kind === 'logo') track('UI', 'Ended', completed ? 'LogoTourCompleted' : 'LogoTourSkipped');
-  else track('UI', 'Ended', completed ? 'InfographicTourCompleted' : 'InfographicTourSkipped');
+  else track('UI', 'Ended', completed ? 'WireframeTourCompleted' : 'WireframeTourSkipped');
 }
 
 // The tour, and `freeze`, which fixes its page, kind and steps when Show Me is pressed. The steps load at the press,
@@ -43,7 +43,7 @@ export function usePageTour(editable: (pageId: string) => boolean): {
   kind: PageKind;
   freeze: (pageId: string, kind: PageKind) => Promise<void>;
 } {
-  const [frozen, setFrozen] = useState<Frozen>({ pageId: '', kind: 'infographic' });
+  const [frozen, setFrozen] = useState<Frozen>({ pageId: '', kind: 'wireframe' });
   const [steps, setSteps] = useState<PageTourStep[]>([]);
   const apiRef = useLatest<PageTourApi>({ pageId: frozen.pageId, ...PAGE_PANEL });
   const tour = useTourEngine<PageTourApi>({
@@ -101,7 +101,6 @@ export function PageShowMeButton({
 
 // Each kind's help article, linked beside Show Me and from the tour's closing card.
 export const PAGE_TOUR_HELP: Record<PageKind, { article: HelpArticleKey }> = {
-  infographic: { article: 'infographicLayouts' },
   logo: { article: 'logoPages' },
   wireframe: { article: 'wireframePages' },
 };

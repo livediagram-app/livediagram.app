@@ -107,9 +107,10 @@ describe('the Image category', () => {
     expect(pageImageFilters({ id: 'p', orientation: 'landscape' })).toEqual({
       aspectRatio: 'wide',
     });
-    expect(pageImageFilters({ id: 'p', orientation: 'portrait', size: 'square' }).aspectRatio).toBe(
-      'square',
-    );
+    expect(
+      pageImageFilters({ id: 'p', orientation: 'portrait', size: 'logo', kind: 'logo' })
+        .aspectRatio,
+    ).toBe('square');
   });
 
   it('previews a hovered result under the overlay a pick would get', () => {

@@ -8923,9 +8923,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "kinds": {
                 "additionalProperties": false,
                 "properties": {
-                  "infographic": {
-                    "type": "number"
-                  },
                   "logo": {
                     "type": "number"
                   },
@@ -9475,7 +9472,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   },
   "PageKind": {
     "enum": [
-      "infographic",
       "logo",
       "wireframe"
     ],
@@ -9574,11 +9570,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
   "PageSizeId": {
     "enum": [
       "a4",
-      "letter",
-      "a3",
-      "square",
-      "social",
-      "wide",
       "logo",
       "device",
       "fit"
@@ -9607,7 +9598,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
         "type": "string"
       },
       "kind": {
-        "$ref": "#/components/schemas/PageKind"
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PageKind"
+          },
+          {
+            "type": "null"
+          }
+        ]
       },
       "locked": {
         "type": "boolean"
@@ -9790,7 +9788,14 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
               "type": "string"
             },
             "kind": {
-              "$ref": "#/components/schemas/PageKind"
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/PageKind"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "locked": {
               "type": "boolean"
@@ -15485,9 +15490,6 @@ export const COMPONENT_SCHEMAS: ComponentSchemas = {
           "kinds": {
             "additionalProperties": false,
             "properties": {
-              "infographic": {
-                "type": "number"
-              },
               "logo": {
                 "type": "number"
               },

@@ -52,9 +52,8 @@ describe('logo layout tiles', () => {
   });
 });
 
-// docs/specs/007-editor/pages-mode.md "The layout gallery": a picture-led layout's tile shows a sample
-// picture where the layout leaves one; every wireframe layout's tile renders within budget, since the
-// gallery can show them all.
+// docs/specs/007-editor/pages-mode.md "The layout gallery": every wireframe layout's tile renders within
+// budget, since the gallery can show them all.
 describe('layout tiles', () => {
   const [screen] = layOutPages([newWireframePage('s')]);
   const flow = {
@@ -65,19 +64,11 @@ describe('layout tiles', () => {
   } as unknown as Tab;
   const layouts = layoutCatalogueFor('wireframe', pageDeviceClass(screen!)).layouts;
 
-  it('draw a sample picture where the layout leaves one, and none where it leaves none', () => {
-    const pages = [{ id: 'p', orientation: 'portrait' as const, size: 'a4' as const }];
-    const [page] = layOutPages(pages);
-    const poster = { id: 't', name: 'T', elements: [], pages } as unknown as Tab;
-    expect(layoutRenderSvg(poster, page!, 'poster')).toContain('data:image/svg+xml');
-    expect(layoutRenderSvg(poster, page!, 'big-number')).not.toContain('data:image/svg+xml');
-  });
-
   it('draw a plain page as the viewer sees it: white in light chrome, the dark paper in dark', () => {
-    const [page] = layOutPages([{ id: 'p', orientation: 'portrait', size: 'a4' }]);
-    const tab = { id: 't', name: 'T', elements: [], pages: [page] } as unknown as Tab;
-    expect(layoutRenderSvg(tab, page!, 'big-number', 'light')).not.toContain(PAGE_PAPER_DARK);
-    expect(layoutRenderSvg(tab, page!, 'big-number', 'dark')).toContain(PAGE_PAPER_DARK);
+    const [logo] = layOutPages([newLogoPage('l')]);
+    const tab = { ...flow, pages: [logo] } as unknown as Tab;
+    expect(layoutRenderSvg(tab, logo!, 'logo-stacked', 'light')).not.toContain(PAGE_PAPER_DARK);
+    expect(layoutRenderSvg(tab, logo!, 'logo-stacked', 'dark')).toContain(PAGE_PAPER_DARK);
   });
 
   it('render all of them quickly enough for the whole gallery', () => {

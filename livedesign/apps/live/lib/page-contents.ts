@@ -18,20 +18,18 @@ export type ContentsRow = {
   number: number;
   // Its own name, else "Page n".
   name: string;
-  // What it is: "Infographic · A4 Portrait", "Logo".
+  // What it is: "Logo", "Wireframe · iPhone", "Page · A4 Portrait" for one whose kind is not chosen yet.
   line: string;
   locked: boolean;
   // Its shape on the sheet, for the thumbnail's frame.
   aspect: number;
-  kind: PageKind;
+  kind: PageKind | null;
 };
 
 // More pages than this show the Find a Page box.
 export const CONTENTS_FIND_AFTER = 6;
 
 const KIND_NAME = {
-  infographic: 'Infographic',
-  slide: 'Slide',
   logo: 'Logo',
   wireframe: 'Wireframe',
 } as const;
@@ -39,10 +37,10 @@ const KIND_NAME = {
 export function contentsRows(pages: readonly LaidOutPage[]): ContentsRow[] {
   return pages.map((p, i) => {
     const kind = pageKindOf(p);
-    let line: string = KIND_NAME[kind];
-    if (kind === 'infographic') {
+    let line: string = kind ? KIND_NAME[kind] : 'Page';
+    if (!kind) {
       const size = pageSizeLabel(p);
-      const turn = pageHasOrientation(p) && ['a4', 'letter', 'a3'].includes(p.size ?? 'a4');
+      const turn = pageHasOrientation(p) && (p.size ?? 'a4') === 'a4';
       line += ` · ${size}${turn ? ` ${p.orientation === 'portrait' ? 'Portrait' : 'Landscape'}` : ''}`;
     } else if (kind === 'wireframe') {
       line += ` · ${pageSizeLabel(p)}${p.orientation === 'landscape' && pageHasOrientation(p) ? ' Landscape' : ''}`;

@@ -4,7 +4,6 @@
 import { pageKindOf, WIREFRAME_DEVICES, type Page, type PageKind } from '@livedesign/document';
 
 const KIND_NOUN: Record<PageKind, string> = {
-  infographic: 'Infographic Page',
   logo: 'Logo Page',
   wireframe: 'Screen',
 };
@@ -12,6 +11,8 @@ const KIND_NOUN: Record<PageKind, string> = {
 /** The page a press of the + adds, in words: its kind, a wireframe page's device with it. */
 export function anotherPageNoun(page: Pick<Page, 'kind' | 'device'>): string {
   const kind = pageKindOf(page);
+  // A page whose kind is not chosen yet adds another like it: a page.
+  if (!kind) return 'Page';
   if (kind !== 'wireframe') return KIND_NOUN[kind];
   const device = page.device ?? 'iphone';
   const label = WIREFRAME_DEVICES[device].label;

@@ -9,7 +9,7 @@ export { describeBackground, pageSummaries } from '@livedesign/api-schema';
 
 /** A page's label in lines and lists: `2 Cover (wireframe)`, `3 (logo)`. */
 export function pageLabel(page: PageSummary): string {
-  return `${page.place}${page.name ? ` ${page.name}` : ''} (${page.kind})`;
+  return `${page.place}${page.name ? ` ${page.name}` : ''} (${page.kind ?? 'blank'})`;
 }
 
 /** A size in words for a result line: `16:9`, `A4 portrait`, `1024 x 1024`, a wireframe page's

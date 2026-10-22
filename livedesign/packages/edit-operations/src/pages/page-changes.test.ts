@@ -42,9 +42,12 @@ const tabOf = (extra: Partial<Tab> = {}): Tab => ({
 const page = (id: string, extra: Partial<Page> = {}): Page => ({
   id,
   orientation: 'portrait',
-  kind: 'infographic',
   ...extra,
 });
+
+// A named logo page: a page of a chosen kind, kept when another is added.
+const mark = (id: string, extra: Partial<Page> = {}): Page =>
+  page(id, { kind: 'logo', size: 'logo', name: 'Mark', ...extra });
 
 const onPage = (pages: Page[], index: number, id: string): Element => {
   const r = layOutPages(pages)[index]!.rect;
@@ -65,7 +68,7 @@ const kinds = (tab: Tab) => pageSummaries(tab).map((p) => p.kind);
 
 describe('fresh ids and the unexpected', () => {
   it('mints its own page ids when none are given', () => {
-    const out = applyPageChanges(tabOf({ pages: [page('p1')] }), [{ op: 'add', kind: 'logo' }]);
+    const out = applyPageChanges(tabOf({ pages: [mark('p1')] }), [{ op: 'add', kind: 'logo' }]);
     if ('refusal' in out) throw new Error('refused');
     expect(pagesOf(out.tab)[1]!.id).toMatch(/^page-/);
   });
@@ -113,7 +116,7 @@ describe('adding', () => {
     ]);
     // Of another kind, named or holding anything, the one page stays and the new one follows it.
     for (const kept of [
-      tabOf({ pages: [page('p1', { kind: 'infographic' })] }),
+      tabOf({ pages: [page('p1', { kind: 'wireframe', size: 'device', device: 'iphone' })] }),
       tabOf({ pages: [page('p1', { kind: 'logo', name: 'Title' })] }),
     ])
       expect(pagesOf(run(kept, [{ op: 'add', kind: 'logo' }]).tab)).toHaveLength(2);
@@ -149,14 +152,14 @@ describe('adding', () => {
     );
   });
 
-  it('adds logo and infographic pages, sized and turned', () => {
-    const tab = tabOf({ pages: [page('p1')] });
+  it('adds logo and wireframe pages', () => {
+    const tab = tabOf({ pages: [mark('p1')] });
     const out = run(tab, [
       { op: 'add', kind: 'logo' },
-      { op: 'add', kind: 'infographic', size: 'a3', orientation: 'landscape' },
+      { op: 'add', kind: 'wireframe', device: 'ipad' },
     ]);
-    expect(kinds(out.tab)).toEqual(['infographic', 'logo', 'infographic']);
-    expect(out.lines[1]).toBe('Added page 3 (infographic, A3 landscape): size a3, landscape.');
+    expect(kinds(out.tab)).toEqual(['logo', 'logo', 'wireframe']);
+    expect(out.lines[1]).toBe('Added page 3 (wireframe, iPad): device ipad.');
   });
 
   it('refuses a size the kind lacks', () => {
@@ -204,7 +207,7 @@ describe('naming a page', () => {
   it('refuses an unknown page, listing the pages', () => {
     const r = refusal(tab, [{ op: 'set', page: 9, name: 'X' }]);
     expect(r.code).toBe('page_unknown');
-    expect(r.message).toContain('1 Cover Page (infographic), 2 (infographic), 3 (infographic)');
+    expect(r.message).toContain('1 Cover Page (blank), 2 (blank), 3 (blank)');
     expect(refusal(tab, [{ op: 'delete', page: 'nope' }]).code).toBe('page_unknown');
   });
 });
@@ -217,14 +220,14 @@ describe('setting', () => {
         op: 'set',
         page: 1,
         name: '',
-        size: 'square',
+        orientation: 'landscape',
         background: { gradient: ['#000000', '#ffffff'], pattern: 'grid' },
         locked: true,
       },
     ]);
-    expect(pagesOf(out.tab)[0]).toMatchObject({ size: 'square', locked: true });
+    expect(pagesOf(out.tab)[0]).toMatchObject({ orientation: 'landscape', locked: true });
     expect(out.lines[0]).toBe(
-      'Set page 1: no name, size square, background gradient #000000 → #ffffff, grid pattern, locked.',
+      'Set page 1: no name, landscape, background gradient #000000 → #ffffff, grid pattern, locked.',
     );
   });
 
@@ -288,9 +291,9 @@ describe('setting', () => {
 
 describe('laying out, moving, duplicating, deleting', () => {
   it('lays a page out in place of what was on it', () => {
-    const pages = [page('p1')];
+    const pages = [page('p1', { kind: 'logo', size: 'logo' })];
     const tab = tabOf({ pages, elements: [onPage(pages, 0, 'old')] });
-    const layout = layoutCatalogueFor('infographic').layouts[0]!;
+    const layout = layoutCatalogueFor('logo').layouts[0]!;
     const out = run(tab, [{ op: 'layout', page: 1, layout: layout.id }]);
     expect(out.tab.elements.some((e) => e.id === 'old')).toBe(false);
     expect(out.lines[0]).toBe(`Laid out page 1 as ${layout.label} (replaced 1 element).`);
@@ -352,8 +355,8 @@ describe('laying out, moving, duplicating, deleting', () => {
       expect(pagesOf(deck.tab).map((p) => p.name)).toEqual(['Cover', 'Problem']);
     }
     // A page the call appended is deleted as asked.
-    const appended = run(tabOf({ pages: [page('p1', { name: 'One' })] }), [
-      { op: 'add', kind: 'infographic', name: 'Two' },
+    const appended = run(tabOf({ pages: [mark('p1', { name: 'One' })] }), [
+      { op: 'add', kind: 'logo', name: 'Two' },
       { op: 'delete', page: 2 },
     ]);
     expect(pagesOf(appended.tab).map((p) => p.id)).toEqual(['p1']);
@@ -398,7 +401,7 @@ describe('the answer', () => {
     expect(one).toMatchObject({
       place: 1,
       name: 'One',
-      kind: 'infographic',
+      kind: null,
       size: 'a4',
       orientation: 'portrait',
       background: '#fff, dots pattern',
@@ -485,7 +488,7 @@ describe('giving every page of a kind one background', () => {
 // frame look and system bars.
 describe('wireframe pages', () => {
   it('adds a page in its device, saying the device, the frame look and the bars', () => {
-    const out = run(tabOf({ pages: [page('p1')] }), [
+    const out = run(tabOf({ pages: [mark('p1')] }), [
       { op: 'add', kind: 'wireframe', device: 'watch', frameLook: 'dark', systemBars: false },
     ]);
     const added = pagesOf(out.tab)[1]!;
@@ -531,7 +534,7 @@ describe('wireframe pages', () => {
     expect(why.message).toMatch(/^A logo page has no device/);
     expect(
       refusal(tabOf({ pages: [page('p1')] }), [{ op: 'set', page: 1, frameLook: 'dark' }]).message,
-    ).toMatch(/^An infographic page has no device/);
+    ).toMatch(/^A blank page has no device/);
   });
 
   it("names the page's size by its device", () => {

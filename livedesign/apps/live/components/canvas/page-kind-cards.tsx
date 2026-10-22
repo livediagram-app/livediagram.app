@@ -1,6 +1,6 @@
 'use client';
 
-// The five kinds of page as cards (docs/specs/007-editor/pages-mode.md "Page kinds"): a
+// The kinds of page as cards (docs/specs/007-editor/pages-mode.md "Page kinds"): a
 // miniature of the page above its name and a line on what it is for: the first page's own choice.
 // The Add a Page list shows the same kinds as rows (AddPagePopover).
 import type { PageKind } from '@livedesign/document';
@@ -41,12 +41,6 @@ export function moveBetweenKindCards(
 
 export const PAGE_KINDS: readonly PageKindChoice[] = [
   {
-    kind: 'infographic',
-    name: 'Infographic',
-    line: 'A page to lay out: layouts, icons, charts and media.',
-    hint: 'Lay out icons, charts and media.',
-  },
-  {
     kind: 'logo',
     name: 'Logo',
     line: 'A square artboard for a logo, with guides and drawing tools.',
@@ -86,13 +80,7 @@ export function PageKindCard({
           wide ? 'w-[calc(50%-0.25rem)]' : ''
         }`}
       >
-        {choice.kind === 'wireframe' ? (
-          <WireframeMiniature />
-        ) : choice.kind === 'logo' ? (
-          <LogoMiniature />
-        ) : (
-          <InfographicMiniature />
-        )}
+        {choice.kind === 'wireframe' ? <WireframeMiniature /> : <LogoMiniature />}
       </span>
       <span className="px-0.5">
         <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -103,53 +91,6 @@ export function PageKindCard({
         </span>
       </span>
     </button>
-  );
-}
-
-function InfographicMiniature() {
-  return (
-    <svg width="58" height="78" viewBox="0 0 58 78" aria-hidden className="drop-shadow-sm">
-      <rect width="58" height="78" rx="3" className="fill-white dark:fill-slate-700" />
-      <rect
-        x="8"
-        y="8"
-        width="30"
-        height="5"
-        rx="2"
-        className="fill-slate-700 dark:fill-slate-200"
-      />
-      <rect
-        x="8"
-        y="16"
-        width="20"
-        height="3"
-        rx="1.5"
-        className="fill-slate-300 dark:fill-slate-500"
-      />
-      <rect
-        x="8"
-        y="26"
-        width="42"
-        height="22"
-        rx="3"
-        className="fill-brand-100 dark:fill-brand-500/25"
-      />
-      <rect x="13" y="38" width="5" height="7" rx="1" className="fill-brand-500" />
-      <rect x="21" y="33" width="5" height="12" rx="1" className="fill-brand-500" />
-      <rect x="29" y="30" width="5" height="15" rx="1" className="fill-brand-500" />
-      <rect x="37" y="35" width="5" height="10" rx="1" className="fill-brand-500" />
-      <circle cx="14" cy="60" r="5" className="fill-amber-400" />
-      <circle cx="29" cy="60" r="5" className="fill-emerald-400" />
-      <circle cx="44" cy="60" r="5" className="fill-rose-400" />
-      <rect
-        x="8"
-        y="69"
-        width="42"
-        height="2.5"
-        rx="1.25"
-        className="fill-slate-200 dark:fill-slate-500"
-      />
-    </svg>
   );
 }
 

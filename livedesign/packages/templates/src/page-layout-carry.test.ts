@@ -40,41 +40,14 @@ const relabel = (els: Element[], from: string, to: string) =>
 
 describe('carryPageContent', () => {
   it('leaves another layout untouched: placeholders stay behind', () => {
-    const placed = build('poster');
-    expect(carryPageContent(build('title'), placed)).toEqual(placed);
+    const placed = build('logo-stacked');
+    expect(carryPageContent(build('logo-icon-above'), placed)).toEqual(placed);
   });
 
   it('keeps the new layout ids, so its pinned arrows hold', () => {
-    const placed = build('process');
-    const out = carryPageContent(
-      relabel(build('title'), 'Your big headline', 'Q3 Results'),
-      placed,
-    );
+    const placed = build('logo-stacked');
+    const out = carryPageContent(relabel(build('logo-icon-above'), 'Brand', 'Acme'), placed);
     expect(out.map((el) => el.id)).toEqual(placed.map((el) => el.id));
-    expect(out.filter((el) => el.type === 'arrow')).toEqual(
-      placed.filter((el) => el.type === 'arrow'),
-    );
-  });
-
-  it('carries a title page into a poster: title, lead and picture', () => {
-    let page = relabel(build('title'), 'Your big headline', 'Q3 Results');
-    page = relabel(
-      page,
-      'One line on what this page shows, and why it matters.',
-      'Revenue grew in every region.',
-    );
-    page = page.map((el) => (el.type === 'image' ? { ...el, imageId: 'photo-1' } : el));
-    const placed = build('poster');
-    const out = carryPageContent(page, placed);
-    const title = texts(out).find((el) => el.label === 'Q3 Results')!;
-    // In the poster's headline place, with its look.
-    const headline = texts(placed).find((el) => el.label === 'Make it bold')!;
-    expect(title.id).toBe(headline.id);
-    expect(title.y).toBe(headline.y);
-    expect(labels(out)).toContain('Revenue grew in every region.');
-    const picture = out.find((el): el is ImageElement => el.type === 'image')!;
-    expect(picture.imageId).toBe('photo-1');
-    expect(picture.objectFit).toBe('cover');
   });
 
   it('matches words by role, each role in reading order', () => {
@@ -131,15 +104,12 @@ describe('carryPageContent', () => {
     expect(out[1]!.width).toBe(600);
   });
 
-  it('carries a shape data into the next shape of its kind, untouched ones not at all', () => {
+  it('carries a shape data into the next shape of its kind', () => {
     const stats = [{ value: '9', caption: 'Mine' }];
     const edited: ShapeElement = { ...createShape('stat-row', 0, 0), stats };
-    const untouched = build('key-stats').find(
-      (el): el is ShapeElement => el.type === 'shape' && el.shape === 'stat-row',
-    )!;
     const slot: ShapeElement = { ...createShape('stat-row', 50, 400), width: 640 };
     const second: ShapeElement = { ...createShape('stat-row', 50, 600), stats: [] };
-    const out = carryPageContent([untouched, edited], [slot, second]) as ShapeElement[];
+    const out = carryPageContent([edited], [slot, second]) as ShapeElement[];
     expect(out[0]).toMatchObject({ stats, x: 50, y: 400, width: 640 });
     expect(out[1]!.stats).toEqual([]);
   });
@@ -166,10 +136,11 @@ describe('carryPageContent', () => {
     expect((huge[0] as TextElement).textScale).toBeCloseTo(0.8, 1);
   });
 
-  it('carries into logo layouts too', () => {
-    const page = relabel(build('title'), 'Your big headline', 'Q3 Results');
-    const logo = carryPageContent(page, pageLayoutById('logo-icon-above').build(TALL));
-    expect(labels(logo)).toContain('Q3 Results');
+  it('carries between logo layouts', () => {
+    const page = relabel(build('logo-icon-above'), 'Brand', 'Acme');
+    const logo = carryPageContent(page, build('logo-stacked'));
+    expect(labels(logo)).toContain('Acme');
+    expect(labels(logo)).not.toContain('Brand');
   });
 
   it('stays within budget: placeholders warm in under 400 ms, a carry in under 20 ms', () => {
@@ -178,7 +149,7 @@ describe('carryPageContent', () => {
     expect(performance.now() - t0).toBeLessThan(400);
     const big = Array.from({ length: 300 }, (_, i) => text(i * 3, `Line ${i} words`));
     const t1 = performance.now();
-    carryPageContent(big, build('agenda'));
+    carryPageContent(big, build('wf-home-feed'));
     expect(performance.now() - t1).toBeLessThan(20);
   });
 

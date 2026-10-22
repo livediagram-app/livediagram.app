@@ -128,7 +128,7 @@ export const RESOURCES: readonly { name: string; alias?: string; summary: string
   { name: 'board', summary: 'Plan boards: add one' },
   { name: 'type', summary: 'Card types and their fields' },
   { name: 'sheet', summary: 'Sheets: their cells by A1, rows and columns' },
-  { name: 'page', summary: 'Pages: logos, wireframes, infographics' },
+  { name: 'page', summary: 'Pages: logos and wireframes' },
   { name: 'form', summary: 'Forms: build, read and publish one' },
   { name: 'changeset', summary: 'Changesets: what changed, by whom, and undoing one' },
   { name: 'comment', summary: 'Comment threads' },

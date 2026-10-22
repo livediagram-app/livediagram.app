@@ -35,9 +35,8 @@ const pageRef = z
 const size = z
   .enum(PAGE_SIZE_IDS as [PageSizeId, ...PageSizeId[]])
   .describe(
-    'Page size: a4, letter, a3, square, social (4:5), wide (9:16, or 16:9 turned) for infographic ' +
-      'pages; logo (1024) for logo pages; a wireframe page is its ' +
-      'device (use device, not size). fit is never chosen.',
+    'Page size: logo (1024) for logo pages; a wireframe page is its device (use device, not ' +
+      'size); a4 is a blank page\u2019s, whose kind is not chosen yet. fit is never chosen.',
   );
 const orientation = z
   .enum(['portrait', 'landscape'])
@@ -89,8 +88,8 @@ const background = z
 const layout = z
   .string()
   .describe(
-    `A ready-made arrangement put onto the page in place of what is on it. Infographic: ${layoutIds('infographic')}. ` +
-      `Logo: ${layoutIds('logo')}. Wireframe: ${layoutIds('wireframe')} ` +
+    `A ready-made arrangement put onto the page in place of what is on it. Logo: ${layoutIds('logo')}. ` +
+      `Wireframe: ${layoutIds('wireframe')} ` +
       '(the wf-watch-* on a watch only, the rest anywhere else).',
   );
 const name = z
@@ -104,7 +103,7 @@ const pageChange = z
       .object({
         op: z.literal('add').describe('Add a page.'),
         kind: z
-          .enum(['infographic', 'logo', 'wireframe'])
+          .enum(['logo', 'wireframe'])
           .describe('What the page is for (wireframe: a screen framed as a device).'),
         size: size.optional(),
         orientation: orientation.optional(),
@@ -178,7 +177,10 @@ const pageOut = z
     place: z.number().describe('Its place in the row, 1 first.'),
     id: z.string().describe('The page id.'),
     name: z.string().nullable().describe('Its name, or null.'),
-    kind: z.string().describe('infographic, logo or wireframe.'),
+    kind: z
+      .string()
+      .nullable()
+      .describe('logo or wireframe; null for a blank page whose kind is not chosen yet.'),
     size: z.string().describe('Its size id.'),
     orientation: z.string().nullable().describe('portrait, landscape, or null for none.'),
     rect: canvasRect.describe(

@@ -24,7 +24,6 @@ const slidePage = (id: string): Page => ({
 const infoPage = (id: string): Page => ({
   id,
   orientation: 'portrait',
-  kind: 'infographic',
 });
 const deckTab = (id: string, pages: Page[] | undefined, mode = 'pages'): Tab =>
   ({ id, name: id, elements: [], opensIn: mode, ...(pages ? { pages } : {}) }) as Tab;

@@ -173,7 +173,7 @@ describe('wireframe pages', () => {
 
   it('adds another page like a page: its kind and shape, a wireframe its device and frame too', () => {
     const t = tab([
-      { id: 'a', orientation: 'landscape', size: 'a3' },
+      { id: 'a', orientation: 'portrait', size: 'logo', kind: 'logo' },
       {
         id: 'w',
         orientation: 'landscape',
@@ -193,10 +193,7 @@ describe('wireframe pages', () => {
       systemBars: false,
     });
     const a = pageAddedLike(t, 'a', 'm');
-    expect('tab' in a && kinds(a.tab).at(-1)).toMatchObject({
-      size: 'a3',
-      orientation: 'landscape',
-    });
+    expect('tab' in a && kinds(a.tab).at(-1)).toMatchObject({ size: 'logo', kind: 'logo' });
     expect(pageAddedLike(t, 'nope', 'x')).toEqual({ refused: 'unknown_page' });
   });
 });

@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { pagesOf, layOutPages, type Element, type Tab } from '@livedesign/document';
+import {
+  pagesOf,
+  layOutPages,
+  newWireframePage,
+  type Element,
+  type Tab,
+} from '@livedesign/document';
 import { pageEdits } from './page-edits';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
@@ -30,6 +36,25 @@ function harness(tab: Tab) {
   return { edits, tab: () => tabs[0]!, commitTabs, onGoTo, onLayoutPlaced, toastInfo };
 }
 
+// Two logo artboards, a box at each one's centre: a page whose kind is chosen takes layouts.
+const twoLogos = (): Tab => {
+  const pages = [
+    { id: 'page-1', orientation: 'portrait', size: 'logo', kind: 'logo' },
+    { id: 'page-2', orientation: 'portrait', size: 'logo', kind: 'logo' },
+  ] as const;
+  const [one, two] = layOutPages([...pages]);
+  const at = (id: string, r: { x: number; width: number }) => box(id, r.x + r.width / 2);
+  return {
+    id: 't',
+    name: 'T',
+    elements: [
+      { ...at('a', one!.rect), y: one!.rect.y + one!.rect.height / 2 - 10 },
+      { ...at('b', two!.rect), y: two!.rect.y + two!.rect.height / 2 - 10 },
+    ],
+    pages: [...pages],
+  } as unknown as Tab;
+};
+
 const twoPages = (): Tab =>
   ({
     id: 't',
@@ -53,10 +78,9 @@ describe('Page edits', () => {
   it('stores A4 as no size, and skips a no-op', () => {
     const h = harness(twoPages());
     h.edits().setSize('page-1', 'a4');
+    // A page whose kind is not chosen yet is A4 alone.
+    h.edits().setSize('page-1', 'logo');
     expect(h.commitTabs).not.toHaveBeenCalled();
-    h.edits().setSize('page-1', 'square');
-    expect(pagesOf(h.tab())[0]!.size).toBe('square');
-    h.edits().setSize('page-1', 'a4');
     expect('size' in pagesOf(h.tab())[0]!).toBe(false);
   });
 
@@ -130,9 +154,9 @@ describe('Page edits', () => {
   });
 
   it('replaces a page with a layout inside its margins, leaving other pages alone', async () => {
-    const h = harness(twoPages());
+    const h = harness(twoLogos());
     expect(h.edits().contentCount('page-1')).toBe(1);
-    await h.edits().applyLayout('page-1', 'key-stats');
+    await h.edits().applyLayout('page-1', 'logo-icon-above');
     const els = h.tab().elements;
     expect(els.some((e) => e.id === 'a')).toBe(false);
     expect(els.some((e) => e.id === 'b')).toBe(true);
@@ -141,36 +165,38 @@ describe('Page edits', () => {
   });
 
   it('carries what was written on the page into the new layout', async () => {
-    const h = harness(twoPages());
-    await h.edits().applyLayout('page-1', 'title');
+    const h = harness(twoLogos());
+    await h.edits().applyLayout('page-1', 'logo-icon-above');
     const written = h
       .tab()
       .elements.map((e) =>
-        e.type === 'text' && e.label === 'Your big headline' ? { ...e, label: 'Q3 Results' } : e,
+        e.type === 'text' && e.label === 'Brand' ? { ...e, label: 'Acme' } : e,
       );
     h.commitTabs((ts) => [{ ...ts[0]!, elements: written }]);
-    await h.edits().applyLayout('page-1', 'poster');
+    await h.edits().applyLayout('page-1', 'logo-stacked');
     const labels = h.tab().elements.flatMap((e) => (e.type === 'text' ? [e.label] : []));
-    expect(labels).toContain('Q3 Results');
-    // The poster's own placeholder headline gave its place up.
-    expect(labels).not.toContain('Make it bold');
+    expect(labels).toContain('Acme');
+    // The stacked lockup's own placeholder name gave its place up.
+    expect(labels).not.toContain('Brand');
     // The other page's content stays where it is.
     expect(h.tab().elements.some((e) => e.id === 'b')).toBe(true);
   });
 
-  it('frames a turned or resized page again, as the view frames the page itself', () => {
+  it('frames a turned page again, as the view frames the page itself', () => {
     const h = harness(twoPages());
     h.edits().setOrientation('page-1', 'landscape');
-    expect(h.onGoTo).toHaveBeenLastCalledWith('page-1');
-    h.onGoTo.mockClear();
-    h.edits().setSize('page-1', 'a3');
     expect(h.onGoTo).toHaveBeenLastCalledWith('page-1');
   });
 
-  it('re-fits a full page into the page when it turns, text scaling with it', async () => {
-    const h = harness(twoPages());
-    await h.edits().applyLayout('page-1', 'top-tips');
-    h.edits().setOrientation('page-1', 'landscape');
+  it('re-fits a full screen into the page when it turns, text scaling with it', async () => {
+    const h = harness({
+      id: 't',
+      name: 'T',
+      elements: [],
+      pages: [newWireframePage('page-1')],
+    });
+    await h.edits().applyLayout('page-1', 'wf-onboarding');
+    h.edits().setDevice('page-1', { orientation: 'landscape' });
     const [page] = layOutPages(pagesOf(h.tab()));
     const r = page!.rect;
     const onPage = h.tab().elements.filter((e) => e.id !== 'b' && e.type !== 'arrow');
@@ -199,25 +225,31 @@ describe('logo page edits', () => {
       name: 'T',
       elements: [],
       pages: [
-        { id: 'page-1', orientation: 'landscape', size: 'a3', kind: 'infographic' },
+        {
+          id: 'page-1',
+          orientation: 'landscape',
+          size: 'device',
+          kind: 'wireframe',
+          device: 'ipad',
+        },
         { id: 'l1', orientation: 'portrait', size: 'logo', kind: 'logo' },
       ],
     }) as unknown as Tab;
 
-  it('adds the artboard, and an infographic page modelled on the last infographic', async () => {
+  it("adds the artboard, and a wireframe page on the last wireframe page's device", async () => {
     const { track } = await import('@/lib/telemetry');
     const h = harness(logoTab());
     h.edits().addPage!('logo');
     expect(track).toHaveBeenLastCalledWith('Tab', 'Changed', 'LogoPageAdded');
-    h.edits().addPage!('infographic');
+    h.edits().addPage!('wireframe');
     const [, , logo, page] = pagesOf(h.tab());
     expect(logo).toMatchObject({ size: 'logo', kind: 'logo' });
-    expect(page).toMatchObject({ orientation: 'landscape', size: 'a3' });
+    expect(page).toMatchObject({ kind: 'wireframe', device: 'ipad' });
   });
 
   it('keeps the artboard: no other size, no turn, no pattern', () => {
     const h = harness(logoTab());
-    h.edits().setSize('l1', 'square');
+    h.edits().setSize('l1', 'a4');
     h.edits().setOrientation('l1', 'landscape');
     h.edits().setBackground('l1', { pattern: 'dots' });
     expect(h.commitTabs).not.toHaveBeenCalled();
@@ -263,9 +295,9 @@ describe('locking a page (docs/specs/007-editor/pages-mode.md "Locking a page")'
     const before = h.tab();
     h.edits().rename('page-1', 'New');
     h.edits().setOrientation('page-1', 'landscape');
-    h.edits().setSize('page-1', 'a3');
+    h.edits().setSize('page-1', 'logo');
     h.edits().setBackground('page-1', { fill: { kind: 'solid', color: '#000000' } });
-    await h.edits().applyLayout('page-1', 'top-tips');
+    await h.edits().applyLayout('page-1', 'logo-stacked');
     h.edits().removePage?.('page-1');
     expect(h.tab()).toBe(before);
     h.edits().duplicatePage?.('page-1');
@@ -292,8 +324,8 @@ describe('locking a page (docs/specs/007-editor/pages-mode.md "Locking a page")'
       name: 'T',
       elements: [],
       pages: [
-        { id: 'd1', orientation: 'portrait', kind: 'infographic', locked: true },
-        { id: 'd2', orientation: 'portrait', kind: 'infographic' },
+        { id: 'd1', orientation: 'portrait', locked: true },
+        { id: 'd2', orientation: 'portrait' },
       ],
     } as unknown as Tab);
     h.edits().rename('d2', 'Part two');
@@ -307,7 +339,7 @@ describe('locking a page (docs/specs/007-editor/pages-mode.md "Locking a page")'
       id: 't',
       name: 'T',
       elements: [],
-      pages: [{ id: 'd1', orientation: 'portrait', kind: 'infographic' }],
+      pages: [{ id: 'd1', orientation: 'portrait' }],
     } as unknown as Tab);
     h.edits().setSize('d1', 'logo');
     h.edits().setSize('d1', 'device');
@@ -328,7 +360,6 @@ describe('Fit to Content page edits', () => {
           orientation: 'landscape',
           size: 'fit',
           fit: { width: 3000, height: 1000 },
-          kind: 'infographic',
         },
       ],
     }) as unknown as Tab;
@@ -338,9 +369,9 @@ describe('Fit to Content page edits', () => {
     plain.edits().setSize('page-1', 'fit');
     expect(plain.commitTabs).not.toHaveBeenCalled();
     const h = harness(fitTab([box('a', 0)]));
-    h.edits().setSize('f', 'a3');
+    h.edits().setSize('f', 'a4');
     const page = pagesOf(h.tab())[0]!;
-    expect(page.size).toBe('a3');
+    expect(page.size).toBeUndefined();
     expect('fit' in page).toBe(false);
   });
 
@@ -400,7 +431,7 @@ describe('Fit to Content page edits', () => {
       });
       edits.splitPage('f');
       edits.duplicatePage?.('f');
-      edits.addPage?.('infographic');
+      edits.addPage?.('logo');
       expect(toastInfo).not.toHaveBeenCalled();
       expect(onGoTo).not.toHaveBeenCalled();
       expect(commitTabs).not.toHaveBeenCalled();
@@ -415,11 +446,11 @@ describe('Fit to Content page edits', () => {
     expect(h.onGoTo).not.toHaveBeenCalled();
   });
 
-  it('adds an A4 page after a Fit to Content page, its sides being that page alone', () => {
+  it('adds a page after a Fit to Content page, its sides being that page alone', () => {
     const h = harness(fitTab([box('a', 0)]));
-    h.edits().addPage!('infographic');
+    h.edits().addPage!('logo');
     const added = pagesOf(h.tab())[1]!;
-    expect(added.size).toBeUndefined();
+    expect(added.size).toBe('logo');
     expect('fit' in added).toBe(false);
   });
 

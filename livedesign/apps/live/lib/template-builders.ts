@@ -12,7 +12,6 @@ import { type Tab } from '@livedesign/document';
 import {
   templateCanvasOverrides,
   templateTabs,
-  withBlankPageThemed,
   type TemplateKind,
   type TemplateTabDef,
 } from '@livedesign/templates';
@@ -66,22 +65,18 @@ function themedTab(
   // branch of the scaffold a distinct hue; single-colour themes fall
   // straight through to the per-element transform.
   const elements = recolourElementsForTheme(def.build(0, 0), theme);
-  return withBlankPageThemed(
-    {
-      id: tabId,
-      name: tabName,
-      elements,
-      theme: themeId,
-      backgroundColor: theme.backgroundColor,
-      backgroundPattern: theme.backgroundPattern,
-      patternColor: theme.patternColor,
-      ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
-      templateChosen: true,
-      // A companion Sheet takes the theme only; the template's canvas is its drawing's (template-companions.ts).
-      ...(def.ownCanvas ? {} : templateCanvasOverrides(kind)),
-      ...def.tab?.(ids),
-    },
-    kind,
-    theme,
-  );
+  return {
+    id: tabId,
+    name: tabName,
+    elements,
+    theme: themeId,
+    backgroundColor: theme.backgroundColor,
+    backgroundPattern: theme.backgroundPattern,
+    patternColor: theme.patternColor,
+    ...(theme.backgroundOpacity != null ? { backgroundOpacity: theme.backgroundOpacity } : {}),
+    templateChosen: true,
+    // A companion Sheet takes the theme only; the template's canvas is its drawing's (template-companions.ts).
+    ...(def.ownCanvas ? {} : templateCanvasOverrides(kind)),
+    ...def.tab?.(ids),
+  };
 }

@@ -38,37 +38,6 @@ function Plus({ cx, cy }: { cx: number; cy: number }) {
 
 export function templatePreviewGroup20(kind: TemplateKind): ReactElement | null {
   switch (kind) {
-    case 'blank-infographic':
-      // One empty A4 infographic page: faint blocks where a layout goes (a header, a stat, a chart, a strip). Hover
-      // story: the blocks light up, the layout it can start from.
-      return (
-        <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
-          <Page x={25} y={3} width={30} height={44} />
-          <g className="pv-pulse" style={pv({ '--pv-at': '500ms' })}>
-            <rect x="29" y="7" width="22" height="5" rx="1.2" fill={TINT} />
-            <rect x="33" y="8.8" width="14" height="1.4" rx="0.7" fill={SOFT_SKY} />
-            <rect x="29" y="14" width="10.5" height="10" rx="1.2" fill={TINT} />
-            <circle cx="34.25" cy="19" r="2.8" fill="none" stroke={SOFT_SKY} strokeWidth="1.4" />
-            <rect x="40.5" y="14" width="10.5" height="10" rx="1.2" fill={TINT} />
-            <rect x="42.5" y="19" width="1.6" height="3.5" rx="0.4" fill={SOFT_SKY} />
-            <rect x="45" y="17" width="1.6" height="5.5" rx="0.4" fill={SOFT_SKY} />
-            <rect x="47.5" y="18" width="1.6" height="4.5" rx="0.4" fill={SOFT_SKY} />
-            <rect x="29" y="26" width="22" height="9" rx="1.2" fill={TINT} />
-            {[29, 31.5].map((y, i) => (
-              <rect
-                key={y}
-                x="32"
-                y={y}
-                width={i === 1 ? 10 : 16}
-                height="1.2"
-                rx="0.6"
-                fill={LINE}
-              />
-            ))}
-          </g>
-          <Plus cx={40} cy={41} />
-        </svg>
-      );
     case 'blank-logo':
       // One empty square artboard: centre guides and a ring where the mark goes, a faint wordmark under it. Hover
       // story: the ring lights up.

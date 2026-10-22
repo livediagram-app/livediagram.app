@@ -55,10 +55,8 @@ function renderPanel(page: Page, initialTab: PagePanelTab, onPreview = vi.fn()) 
 }
 
 describe('pagePanelTabs', () => {
-  it('gives an infographic page Page alone, its Layouts and Background beside the cog', () => {
-    expect(
-      pagePanelTabs(laidOut({ id: 'p', orientation: 'portrait', kind: 'infographic' })),
-    ).toEqual(['page']);
+  it('gives a page whose kind is not chosen yet its Page alone', () => {
+    expect(pagePanelTabs(laidOut({ id: 'p', orientation: 'portrait' }))).toEqual(['page']);
   });
 
   it('gives a wireframe page its Device alone, its Background and Layouts beside the cog', () => {
@@ -77,10 +75,10 @@ describe('pagePanelTabs', () => {
 });
 
 describe('the Background tab', () => {
-  it('opens an infographic page asked for Background on Page, with no tab switch', () => {
-    renderPanel({ id: 'p', orientation: 'portrait', kind: 'infographic' }, 'background');
+  it('opens a page whose kind is not chosen asked for Background on Page, with no tab switch', () => {
+    renderPanel({ id: 'p', orientation: 'portrait' }, 'background');
     expect(screen.queryByRole('group', { name: 'Page panel section' })).toBeNull();
-    expect(screen.getByText('Size')).toBeTruthy();
+    expect(screen.getByRole('radiogroup', { name: 'Orientation' })).toBeTruthy();
   });
 
   it('opens a logo page on Background, its first tab', () => {

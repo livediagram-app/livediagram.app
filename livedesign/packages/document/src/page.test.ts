@@ -155,9 +155,9 @@ describe('withPages', () => {
 });
 
 describe('page kinds', () => {
-  it('read a page with no kind as an infographic, and an unknown kind as none', () => {
-    const [a, c] = pagesOf({ pages: [P('a'), { ...P('c'), kind: 'poster', flow: 'art-9' }] });
-    expect(pageKindOf(a!)).toBe('infographic');
+  it('read a page with no kind as none chosen yet, and an unknown kind as none', () => {
+    const [a, c] = pagesOf({ pages: [P('a'), { ...P('c'), kind: 'infographic', flow: 'art-9' }] });
+    expect(pageKindOf(a!)).toBeNull();
     expect(c).toEqual(P('c'));
   });
 
@@ -200,11 +200,6 @@ describe('Fit to Content pages', () => {
       expect(page!.size).toBeUndefined();
       expect(page!.fit).toBeUndefined();
     }
-  });
-
-  it('keeps an explicit infographic kind', () => {
-    const [page] = pagesOf({ pages: [fit({ kind: 'infographic' })] });
-    expect(page).toMatchObject({ size: 'fit', kind: 'infographic' });
   });
 
   it('has no orientation and says Fit to Content', () => {

@@ -112,7 +112,7 @@ const unionBox = (boxes: Box[]): Box =>
 
 /**
  * The page made around content with these bounds (docs/specs/007-editor/pages-mode.md "Into
- * pages"): an infographic page, landscape when the content is wider than LANDSCAPE_RATIO times its
+ * pages"): a page whose kind is not chosen yet, landscape when the content is wider than LANDSCAPE_RATIO times its
  * height; A4 when the content fits A4's margin box that way round, else Fit to Content, the
  * content's bounds plus the page's margin all round (within the Fit to Content limits).
  */
@@ -120,7 +120,7 @@ export function pageAround(box: Box, id: string): Page {
   const w = Math.max(0, box.r - box.x);
   const h = Math.max(0, box.b - box.y);
   const orientation = w > h * LANDSCAPE_RATIO ? 'landscape' : 'portrait';
-  const a4: Page = { id, orientation, kind: 'infographic' };
+  const a4: Page = { id, orientation };
   const paper = pageDimensions(a4);
   const am = pageMargin(a4);
   if (w <= paper.width - 2 * am && h <= paper.height - 2 * am) return a4;
@@ -136,7 +136,6 @@ export function pageAround(box: Box, id: string): Page {
         width: clampPageSide(Math.ceil(w + 2 * m)),
         height: clampPageSide(Math.ceil(h + 2 * m)),
       },
-      kind: 'infographic',
     };
     const own = pageMargin(page);
     // Past the largest side nothing more is gained: the content runs off the page, unscaled.
@@ -178,12 +177,9 @@ export function withContentOnAPage<T extends Pick<Tab, 'elements'>>(
       box.b <= r.y + r.height + 1;
     if (fits) return null;
   } else {
-    // Only pages nobody has made anything of are replaced: a page with a kind of its own (a
-    // slide, a logo), a name, a paint or a lock is kept, and the content stays where it is.
-    if (
-      stored.some((p) => p.locked || (p.kind && p.kind !== 'infographic') || p.name || p.background)
-    )
-      return null;
+    // Only pages nobody has made anything of are replaced: a page with a kind (a logo, a
+    // wireframe), a name, a paint or a lock is kept, and the content stays where it is.
+    if (stored.some((p) => p.locked || p.kind || p.name || p.background)) return null;
     const index = elementIndexFor(tab.elements);
     const onAPage = tab.elements.some((el) => pageAt(laid, elementAnchorPoint(el, index)));
     if (onAPage) return null;

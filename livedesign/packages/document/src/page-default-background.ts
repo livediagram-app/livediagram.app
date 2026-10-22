@@ -1,12 +1,10 @@
-// The background a new page starts on (docs/specs/007-editor/pages-mode.md "A new page's
-// background"): an infographic page the tab theme's Dusk gradient (its accent deepened into its
-// second colour), so a fresh page looks designed rather than bare. Pure:
-// every path that makes a page (adding one, choosing the first page's kind, a template, an AI
-// tool) lands the same background.
+// The tab theme's own page backgrounds (docs/specs/007-editor/pages-mode.md "Backgrounds"): Dusk,
+// its accent deepened into its second colour, and the accent and secondaries they are drawn from.
+// Pure.
 import { shade } from './colors';
-import { pagesOf, pageKindOf, type PageBackground } from './page';
+import type { PageBackground } from './page';
 import { PAGE_GRADIENT_ANGLE } from './page-paint';
-import type { Tab, ThemeDefinition } from './index';
+import type { ThemeDefinition } from './index';
 
 // The accent a theme without its own stroke paints in (the brand blue).
 export const FALLBACK_THEME_ACCENT = '#0ea5e9';
@@ -15,7 +13,7 @@ export const FALLBACK_THEME_ACCENT = '#0ea5e9';
 export const MIST_TOP_TINT = 0.95;
 export const MIST_BOTTOM_TINT = 0.72;
 // Dusk: the accent shaded this far toward black at the top, the second colour this far at the
-// bottom; the Gradient category's Theme Dusk, and a new infographic page's own.
+// bottom; the Gradient category's Theme Dusk.
 export const DUSK_TOP_SHADE = 0.65;
 export const DUSK_BOTTOM_SHADE = 0.4;
 // Steel: the Gradient category's Steel, a cool light grey.
@@ -46,7 +44,8 @@ export function themeSecondaries(
   return [b, c];
 }
 
-/** A new infographic page's background: the theme's Dusk gradient. */
+/** The theme's Dusk gradient as a page background: the Gradient category's Theme Dusk, which a
+ *  page painted with it keeps as the theme changes (page-theme-follow). */
 export function defaultPageBackground(
   theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
 ): PageBackground {
@@ -55,24 +54,4 @@ export function defaultPageBackground(
   const from = shade(a, DUSK_TOP_SHADE);
   const to = shade(b, DUSK_BOTTOM_SHADE);
   return { fill: { kind: 'gradient', from, to, angle: PAGE_GRADIENT_ANGLE } };
-}
-
-/** The tab with every new infographic page that has no background of its own given the theme's
- *  default, when `ids` names it (the pages just made). The same tab when none changes. */
-export function withDefaultPageBackgrounds<T extends Partial<Pick<Tab, 'pages'>>>(
-  tab: T,
-  theme: Partial<Pick<ThemeDefinition, 'elementStroke' | 'palette'>>,
-  ids?: ReadonlySet<string>,
-): T {
-  const pages = pagesOf(tab);
-  let changed = false;
-  const next = pages.map((p) => {
-    if (p.background || pageKindOf(p) !== 'infographic') return p;
-    if (ids && !ids.has(p.id)) return p;
-    // An unchosen first page (no kind yet) waits for its choice.
-    if (p.kind === undefined && !ids) return p;
-    changed = true;
-    return { ...p, background: defaultPageBackground(theme) };
-  });
-  return changed ? { ...tab, pages: next } : tab;
 }

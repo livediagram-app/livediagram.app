@@ -7,7 +7,6 @@ import { pageLayoutsRoom } from './PageLayoutsButton';
 import { pageDeckRoom } from './PageDeckButton';
 import { pageLockRoom } from './PageLockButton';
 import { pageNotesRoom } from './PageNotesButton';
-import { pageTidyUpRoom } from './PageTidyUpButton';
 import { pageDeviceRoom } from './wireframe/PageDeviceButton';
 
 // Screen px: the cog's width plus a gap, and the narrowest a label is still worth showing.
@@ -22,9 +21,8 @@ type TitleBarButtons = {
   // A slide in the deck: its Add Notes.
   notes: boolean;
   logo: boolean;
-  // An infographic or wireframe page's Layout and Background.
+  // A wireframe page's Layout and Background.
   page: boolean;
-  tidy: boolean;
   // A wireframe page's Device.
   device?: boolean;
 };
@@ -37,7 +35,6 @@ export function titleBarFixedRoom(b: TitleBarButtons, named: boolean): number {
     (b.notes ? pageNotesRoom(named) : 0) +
     (b.logo ? logoTitleBarRoom(true, named) : 0) +
     (b.page ? pageLayoutsRoom(named) + pageBackgroundRoom(named) : 0) +
-    (b.tidy ? pageTidyUpRoom() : 0) +
     (b.device ? pageDeviceRoom(named) : 0)
   );
 }

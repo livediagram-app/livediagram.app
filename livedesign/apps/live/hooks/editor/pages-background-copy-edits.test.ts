@@ -58,7 +58,7 @@ describe('Apply to All', () => {
       screen('s1'),
       screen('s2'),
       screen('s3'),
-      { id: 'i1', orientation: 'portrait', kind: 'infographic' },
+      { id: 'i1', orientation: 'portrait' },
       { id: 'l1', orientation: 'portrait', kind: 'logo', size: 'logo' },
       { id: 'l2', orientation: 'portrait', kind: 'logo', size: 'logo' },
     ];
@@ -145,9 +145,7 @@ describe('painting one page from another', () => {
 describe('appliedToAllMessage', () => {
   it('counts in the kind’s own words', () => {
     expect(appliedToAllMessage('logo', 35, 0)).toBe('Background applied to 35 logo pages.');
-    expect(appliedToAllMessage('infographic', 1, 0)).toBe(
-      'Background applied to 1 infographic page.',
-    );
+    expect(appliedToAllMessage(null, 1, 0)).toBe('Background applied to 1 blank page.');
     expect(appliedToAllMessage('logo', 3, 2)).toBe(
       'Background applied to 3 logo pages. 2 locked logo pages kept their own.',
     );

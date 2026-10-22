@@ -38,7 +38,7 @@ export function ContentsAddPage({ contents }: { contents: PageContents }) {
       type="button"
       disabled={full || !(addLike ?? add)}
       data-contents-add=""
-      onClick={() => (addLike ? addLike() : add?.('infographic'))}
+      onClick={() => (addLike ? addLike() : add?.('logo'))}
       className={`${BUTTON} ${IDLE} min-w-0 flex-1 px-3 py-2`}
     >
       <AddIcon />

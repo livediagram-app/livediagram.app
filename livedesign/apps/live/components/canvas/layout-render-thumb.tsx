@@ -24,7 +24,6 @@ import { renderTabToSvg } from '@/lib/export-tab';
 import { elementAsSeen } from '@/lib/stock-colour-projector';
 import { themeViewMap } from '@/lib/themes';
 import { buildPageLayout } from '@livedesign/templates';
-import { withSamplePictures } from './layout-sample-pictures';
 
 // A plain page's paper in dark chrome, as CanvasPages paints it (dark:bg-slate-900).
 export const PAGE_PAPER_DARK = '#0f172a';
@@ -39,8 +38,7 @@ function pageAsSeen(page: LaidOutPage, appearance: Appearance): LaidOutPage {
 }
 
 /** The page with `layout` placed, as SVG markup: what lands, as the viewer sees it, nothing else
- *  of the tab, save that each picture it leaves for the author shows a sample one
- *  (withSamplePictures). */
+ *  of the tab. */
 export function layoutRenderSvg(
   tab: Tab,
   page: LaidOutPage,
@@ -58,14 +56,9 @@ export function layoutRenderSvg(
       : 'light'
     : appearance;
   const map = themeViewMap(tab.theme, surface);
-  const { elements, pictures } = withSamplePictures(
-    placed.map((el) => elementAsSeen(el, surface, map)),
-  );
+  const elements = placed.map((el) => elementAsSeen(el, surface, map));
   // A tile is a thumbnail: an animated background is drawn still (export-tab's `stillBackground`).
-  return renderTabToSvg(
-    { ...tab, elements },
-    { page: seen, stillBackground: true, images: pictures },
-  );
+  return renderTabToSvg({ ...tab, elements }, { page: seen, stillBackground: true });
 }
 
 /** The tile, drawn with `tab`'s theme and font. */

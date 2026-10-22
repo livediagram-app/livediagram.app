@@ -82,7 +82,7 @@ describe('create_document intent', () => {
     ['four-ls', { mode: 'workshop', tabKind: 'diagram', templateFamily: 'retrospective' }],
     ['kanban', { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' }],
     ['incident-postmortem', { mode: 'workshop', tabKind: 'diagram' }],
-    ['floor-plan', { mode: 'pages', tabKind: 'diagram' }],
+    ['logo-design', { mode: 'pages', tabKind: 'diagram' }],
     ['lean-coffee', { mode: 'workshop', tabKind: 'diagram' }],
     ['whiteboard', { mode: 'draw', tabKind: 'diagram' }],
     ['flowchart', { mode: 'diagram', tabKind: 'diagram' }],

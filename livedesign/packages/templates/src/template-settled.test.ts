@@ -19,13 +19,13 @@ describe('template and layout output', () => {
     expect(unsettled).toEqual([]);
   });
 
-  it('is settled for every page, slide and logo layout', () => {
+  it('is settled for every wireframe and logo layout', () => {
     const page = {
       rect: { x: 0, y: 0, width: 1200, height: 900 },
       orientation: 'landscape',
       size: 'a4',
     };
-    const unsettled = (['infographic', 'logo'] as const).flatMap((kind) =>
+    const unsettled = (['wireframe', 'logo'] as const).flatMap((kind) =>
       layoutCatalogueFor(kind)
         .layouts.filter((l) => {
           const els = buildPageLayout(l.id, page as Parameters<typeof buildPageLayout>[1]);

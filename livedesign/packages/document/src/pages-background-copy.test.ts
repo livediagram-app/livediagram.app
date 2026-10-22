@@ -20,8 +20,6 @@ const picture = { kind: 'image' as const, imageId: 'img-1' };
 const slide = (id: string, extra: Partial<Page> = {}): Page => ({
   id,
   orientation: 'landscape',
-  kind: 'infographic',
-  size: 'wide',
   ...extra,
 });
 
@@ -188,7 +186,7 @@ describe('pageBackgroundCopied', () => {
 
 describe('backgroundPatchFor', () => {
   it('carries the fill and the pattern, absent ones clearing the target’s', () => {
-    expect(backgroundPatchFor({ kind: 'infographic' }, undefined)).toEqual({
+    expect(backgroundPatchFor({}, undefined)).toEqual({
       fill: undefined,
       pattern: undefined,
     });

@@ -35,7 +35,6 @@ export { templateCatalogue } from './template-catalogue';
 // The engine-free check; materialiseTemplateSheets (which carries the sheets engine) is the
 // '@livedesign/templates/template-sheets' subpath, so only a caller making sheets bundles it.
 export { hasTemplateSheets } from './template-sheet-marks';
-export { withBlankPageThemed } from './blank-page-templates';
 
 export * from './form-templates';
 export * from './form-start';

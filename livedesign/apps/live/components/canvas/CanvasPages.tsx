@@ -17,7 +17,6 @@ import { PageMotionLayer } from './PageMotionLayer';
 import { WireframeDeviceSheet } from './WireframeDeviceSheet';
 import { PageDeviceButton } from './wireframe/PageDeviceButton';
 import { PageNotesButton } from './PageNotesButton';
-import { PageTidyUpButton } from './PageTidyUpButton';
 import { LABEL_MIN, titleBarFixedRoom, titleBarNamed } from './page-title-bar-room';
 import { track } from '@/lib/telemetry';
 import { GIF_OMIT_ATTR } from '@/lib/gif-export/gif-omit';
@@ -131,6 +130,7 @@ export function CanvasPages({
   const reorderable = pageUnits(pages).length > 1;
   const openId = opened?.id ?? null;
   const open = edit && opened ? pages.find((p) => p.id === opened.id) : undefined;
+  const openKind = open ? pageKindOf(open) : null;
   // The panel goes with its page, and with the right to edit (zen, a lock, a view role): it never
   // comes back on its own, hung from a cog that is no longer there.
   if (opened && !open) setOpened(null);
@@ -152,7 +152,7 @@ export function CanvasPages({
   const openLayouts = (id: string) => setOpened({ id, tab: 'layouts' });
   // The pages whose in-page layout card was hidden, until the tab is next opened.
   const [layoutsHidden, setLayoutsHidden] = useState<ReadonlySet<string>>(() => new Set());
-  // An empty infographic page shows its layouts inside itself (EmptyPageLayouts): never on the first
+  // An empty logo or wireframe page shows its layouts inside itself (EmptyPageLayouts): never on the first
   // page while it offers its kind, under its open panel, while a palette tile is armed to place something on it, or
   // on a page too small on screen to hold the card.
   const layoutCardContext = (page: LaidOutPage): LayoutCardContext => ({
@@ -189,15 +189,11 @@ export function CanvasPages({
         // A locked page offers nothing to add (docs/specs/007-editor/pages-mode.md
         // "Locking a page"): no Layouts, no layout invite, no kind choice.
         const locked = page.locked === true;
-        // An infographic or wireframe page's Layouts and Background sit beside its cog, always; a
-        // locked page offers neither.
-        const pageButtons =
-          !!edit && !locked && (page.kind === 'wireframe' || pageKindOf(page) === 'infographic');
+        // A wireframe page's Layouts and Background sit beside its cog, always; a locked page offers
+        // neither.
+        const pageButtons = !!edit && !locked && page.kind === 'wireframe';
         // A wireframe page's Device, first beside its Layouts (PageDeviceButton).
         const deviceButton = pageButtons && page.kind === 'wireframe';
-        // An infographic or wireframe page's Tidy, left of its Background, shown only while it would
-        // change something.
-        const tidyButton = pageButtons && edit.canTidy?.(page.id) === true;
         // A logo page's empty artboard invites its layouts (its panel's Layouts tab).
         const empty = !!edit && !locked && page.kind === 'logo' && edit.contentCount(page.id) === 0;
         // The first page, unchosen and empty, offers its kind first (FirstPageChoice).
@@ -222,7 +218,6 @@ export function CanvasPages({
           notes: notesButton,
           logo: logoButtons,
           page: pageButtons,
-          tidy: tidyButton,
           device: deviceButton,
         };
         // The buttons name themselves on a desktop while the page is wide enough on screen to hold
@@ -400,9 +395,6 @@ export function CanvasPages({
                     }}
                   />
                 ) : null}
-                {/* An infographic or wireframe page's Tidy, its icon alone, left of the lock and cog
-                    (PageTidyUpButton), while it would change something. */}
-                {tidyButton ? <PageTidyUpButton pageId={page.id} edit={edit} /> : null}
                 {/* The page's lock, before the cog (PageLockButton). */}
                 {edit ? (
                   <PageLockButton
@@ -524,18 +516,19 @@ export function CanvasPages({
           }
           onClose={close}
           // A locked page has nothing to show: its controls are held (pages-mode.md "Locking a page").
+          // A page whose kind is not chosen yet has no track to show either.
           showMe={
-            open.locked === true
+            open.locked === true || !openKind
               ? undefined
               : {
                   button: (
                     <PageShowMeButton
                       tour={pageTour.tour}
-                      kind={pageKindOf(open)}
-                      onStart={() => pageTour.freeze(open.id, pageKindOf(open))}
+                      kind={openKind}
+                      onStart={() => pageTour.freeze(open.id, openKind)}
                     />
                   ),
-                  article: PAGE_TOUR_HELP[pageKindOf(open)].article,
+                  article: PAGE_TOUR_HELP[openKind].article,
                 }
           }
         />

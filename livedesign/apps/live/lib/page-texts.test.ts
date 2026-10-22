@@ -5,8 +5,8 @@ import { pageTexts } from './page-texts';
 
 // docs/specs/007-editor/pages-mode.md "Contents": Find a Page finds the words on the pages.
 const pages = layOutPages([
-  { id: 'a', orientation: 'portrait', kind: 'infographic' },
-  { id: 'b', orientation: 'portrait', kind: 'infographic', name: 'Field Notes' },
+  { id: 'a', orientation: 'portrait' },
+  { id: 'b', orientation: 'portrait', name: 'Field Notes' },
 ] as Page[]);
 const box = {
   ...createShape('square', pages[0]!.rect.x + 40, pages[0]!.rect.y + 40),

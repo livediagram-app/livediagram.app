@@ -1179,10 +1179,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Ended|DashboardTourSkipped': "Someone left Dashboard Settings' Show Me tour before its end.",
   'UI|Ended|LogoTourCompleted': "Someone reached the end of a logo page's Show Me tour.",
   'UI|Ended|LogoTourSkipped': "Someone left a logo page's Show Me tour before its end.",
-  'UI|Ended|InfographicTourCompleted':
-    "Someone reached the end of an infographic page's Show Me tour.",
-  'UI|Ended|InfographicTourSkipped':
-    "Someone left an infographic page's Show Me tour before its end.",
+  'UI|Ended|WireframeTourCompleted': "Someone reached the end of a wireframe page's Show Me tour.",
+  'UI|Ended|WireframeTourSkipped': "Someone left a wireframe page's Show Me tour before its end.",
   'UI|Ended|TabStyleTourCompleted':
     "Someone reached the end of the Tab Style dialog's Show Me tour.",
   'UI|Ended|TabStyleTourSkipped':
@@ -1497,8 +1495,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone pressed Show Me in the card type editor, starting its tour of making a card type.',
   'UI|Started|DashboardTour':
     'Someone pressed Show Me in Dashboard Settings, starting its tour of arranging and filling a dashboard.',
-  'UI|Started|InfographicTour':
-    "Someone pressed Show Me in an infographic page's panel, starting its tour of layouts, backgrounds and page size.",
+  'UI|Started|WireframeTour':
+    "Someone pressed Show Me in a wireframe page's panel, starting its tour of layouts, backgrounds and device.",
   'UI|Started|LogoTour':
     "Someone pressed Show Me in a logo page's panel, starting its tour of the logo tools.",
   'UI|Started|TabStyleTour':
@@ -1714,10 +1712,10 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone switched on Tours › "Pages Tours" in Settings (the switch over every kind of page; "Pages Tour" until October 2026), so every kind\'s Pages tour is offered again.',
   'UI|Toggled|PagesTourSeenOn':
     'Someone switched off Tours › "Pages Tours" in Settings (the switch over every kind of page; "Pages Tour" until October 2026), answering every kind\'s Pages tour.',
-  'UI|Toggled|InfographicTourSeenOff':
-    'Someone switched on Tours › "Infographic Tour" in Settings, so the Pages tour\'s infographic track is offered again.',
-  'UI|Toggled|InfographicTourSeenOn':
-    'Someone switched off Tours › "Infographic Tour" in Settings, marking the Pages tour\'s infographic track as answered.',
+  'UI|Toggled|WireframeTourSeenOff':
+    'Someone switched on Tours › "Wireframe Tour" in Settings, so the Pages tour\'s wireframe track is offered again.',
+  'UI|Toggled|WireframeTourSeenOn':
+    'Someone switched off Tours › "Wireframe Tour" in Settings, marking the Pages tour\'s wireframe track as answered.',
   'UI|Toggled|LogoTourSeenOff':
     'Someone switched on Tours › "Logo Tour" in Settings, so the Pages tour\'s logo track is offered again.',
   'UI|Toggled|LogoTourSeenOn':
@@ -1868,20 +1866,20 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The Pages tour reached its "Slides" step, on the Slides button in the bottom-right cluster.',
   'UI|View|PagesTourStepOutro':
     'The Pages tour reached its closing "You\'re ready to make pages" card.',
-  'UI|View|PagesTourStepInfographicPageName':
-    'The Pages tour\'s infographic track reached its "Your Page" step, on the page\'s name.',
-  'UI|View|PagesTourStepInfographicLayouts':
-    'The Pages tour\'s infographic track reached its "Start From a Layout" step, with the page\'s Layout popover open.',
-  'UI|View|PagesTourStepInfographicBackground':
-    'The Pages tour\'s infographic track reached its "Change the Background" step, with the page\'s Background popover open.',
-  'UI|View|PagesTourStepInfographicPageSize':
-    'The Pages tour\'s infographic track reached its "Page Size" step, with the page\'s settings open.',
-  'UI|View|PagesTourStepInfographicAddPage':
-    'The Pages tour\'s infographic track reached its "Add a Page" step, on the + after the last page.',
-  'UI|View|PagesTourStepInfographicPresent':
-    'The Pages tour\'s infographic track reached its "Present It" step, with the Slide Deck open.',
-  'UI|View|PagesTourStepInfographicOutro':
-    'The Pages tour\'s infographic track reached its closing "You\'re ready to make pages" card.',
+  'UI|View|PagesTourStepWireframePageName':
+    'The Pages tour\'s wireframe track reached its "Your Page" step, on the page\'s name.',
+  'UI|View|PagesTourStepWireframeLayouts':
+    'The Pages tour\'s wireframe track reached its "Start From a Layout" step, with the page\'s Layout popover open.',
+  'UI|View|PagesTourStepWireframeBackground':
+    'The Pages tour\'s wireframe track reached its "Change the Background" step, with the page\'s Background popover open.',
+  'UI|View|PagesTourStepWireframePageSize':
+    'The Pages tour\'s wireframe track reached its "Device" step, with the page\'s settings open.',
+  'UI|View|PagesTourStepWireframeAddPage':
+    'The Pages tour\'s wireframe track reached its "Add a Page" step, on the + after the last page.',
+  'UI|View|PagesTourStepWireframePresent':
+    'The Pages tour\'s wireframe track reached its "Present It" step, with the Slide Deck open.',
+  'UI|View|PagesTourStepWireframeOutro':
+    'The Pages tour\'s wireframe track reached its closing "You\'re ready to make pages" card.',
   'UI|View|PagesTourStepLogoLayouts':
     'The Pages tour\'s logo track reached its "Start From a Logo Layout" step, with the page\'s Layouts open.',
   'UI|View|PagesTourStepLogoGuides':

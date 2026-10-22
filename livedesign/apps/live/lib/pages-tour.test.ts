@@ -4,14 +4,14 @@ import { PAGES_TOUR_KINDS, pagesKindSeen, markPagesKindSeen } from './pages-tour
 
 describe('the Pages tour’s seen kinds', () => {
   it('counts a kind once answered, and the rest still owed', () => {
-    const prefs = markPagesKindSeen({}, 'infographic');
-    expect(pagesKindSeen(prefs, 'infographic')).toBe(true);
+    const prefs = markPagesKindSeen({}, 'wireframe');
+    expect(pagesKindSeen(prefs, 'wireframe')).toBe(true);
     expect(pagesKindSeen(prefs, 'logo')).toBe(false);
   });
 
   it('owes nothing once every kind is answered', () => {
     let prefs = {};
-    for (const kind of ['infographic', 'logo'] as const) prefs = markPagesKindSeen(prefs, kind);
+    for (const kind of ['wireframe', 'logo'] as const) prefs = markPagesKindSeen(prefs, kind);
     expect(PAGES_TOUR_KINDS.every((k) => pagesKindSeen(prefs, k))).toBe(true);
   });
 
@@ -24,7 +24,7 @@ describe('the Pages tour’s seen kinds', () => {
   });
 
   it('never lists a kind twice', () => {
-    const prefs = markPagesKindSeen(markPagesKindSeen({}, 'infographic'), 'infographic');
-    expect(prefs.pagesTourKinds).toEqual(['infographic']);
+    const prefs = markPagesKindSeen(markPagesKindSeen({}, 'wireframe'), 'wireframe');
+    expect(prefs.pagesTourKinds).toEqual(['wireframe']);
   });
 });

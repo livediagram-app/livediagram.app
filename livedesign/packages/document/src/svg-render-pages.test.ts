@@ -73,7 +73,7 @@ describe('a Pages tab drawn as its pages', () => {
     expect(svg.match(/<svg x=/g)).toHaveLength(4);
     expect(svg).toContain('>2  Two<');
     expect(pagesPerRow(laidOutPagesOf(tall))).toBe(3);
-    const wide = (id: string): Page => ({ id, orientation: 'landscape', size: 'wide' });
+    const wide = (id: string): Page => ({ id, orientation: 'landscape' });
     const slides = tab([wide('s1'), wide('s2'), wide('s3')]);
     expect(pagesPerRow(laidOutPagesOf(slides))).toBe(2);
     expect(pagesPerRow(laidOutPagesOf(tab([wide('s1')])))).toBe(1);

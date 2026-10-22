@@ -44,18 +44,9 @@ export const SECTION_TEMPLATE_KINDS: Readonly<Record<string, readonly TemplateKi
     'doodle-warmup',
     'whiteboard',
   ],
-  infographics: [
-    'data-story',
-    'how-it-works',
-    'event-poster',
-    'versus',
-    'social-carousel',
-    'logo-design',
-    'resume',
-    'recipe-card',
-    'live-card',
-  ],
-  slides: ['social-carousel'],
+  // Pages now makes logos and wireframes; this band is rewritten with the rest of marketing (Phase 7).
+  infographics: ['logo-design', 'wireframe-mobile-app', 'wireframe-website', 'wireframe-dashboard'],
+  slides: ['wireframe-mobile-app'],
   plan: [
     'kanban',
     'project-planner',

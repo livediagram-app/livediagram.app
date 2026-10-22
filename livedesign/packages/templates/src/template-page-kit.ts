@@ -9,29 +9,8 @@ import {
   pageMargin,
   type Page,
   type PageBackground,
-  type PageOrientation,
-  type PageSizeId,
 } from '@livedesign/document';
 import { kit, type Kit } from './page-layout-kit';
-
-/** An infographic page of a template: `page-n`, already an infographic page so the first page's
- *  kind choice is not offered. */
-export function templatePage(
-  n: number,
-  size: PageSizeId,
-  orientation: PageOrientation,
-  name: string,
-  background?: PageBackground,
-): Page {
-  return {
-    id: `page-${n}`,
-    orientation,
-    ...(size !== 'a4' ? { size } : {}),
-    ...(background ? { background } : {}),
-    name,
-    kind: 'infographic',
-  };
-}
 
 /** A template's logo page (docs/specs/007-editor/logo-pages.md): the 1024 artboard, named. */
 export function templateLogoPage(n: number, name: string, background?: PageBackground): Page {

@@ -79,7 +79,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   journey: 'lines',
   retrospective: 'grid',
   fishbone: 'grid',
-  'live-card': 'blank',
   mindmap: 'grid',
   // Tree map rides the dot grid like the radial map; the bubble map is a
   // clean radial layout, so it gets a blank canvas like Venn / pyramid.
@@ -162,7 +161,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'meeting-agenda': 'grid',
   // The other Pages templates: their pages are the paper.
   'blank-illustration': 'blank',
-  'blank-infographic': 'blank',
   'blank-logo': 'blank',
   'blank-wireframe-phone': 'blank',
   'blank-wireframe-tablet': 'blank',
@@ -174,14 +172,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'wireframe-dashboard': 'blank',
   'wireframe-tablet-app': 'blank',
   'wireframe-watch-app': 'blank',
-  'event-poster': 'blank',
-  'year-in-review': 'blank',
-  resume: 'blank',
-  'recipe-card': 'blank',
-  'data-story': 'blank',
-  'how-it-works': 'blank',
-  versus: 'blank',
-  'social-carousel': 'blank',
   // A personal planning sheet, read closely like a page: even dots behind
   // its cards read as noise, so it gets a clean canvas.
   'objectives-planner': 'blank',

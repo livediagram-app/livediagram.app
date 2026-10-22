@@ -45,9 +45,8 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
     'blank-illustration',
     'logo-design',
     'wireframe-mobile-app',
-    'event-poster',
-    'year-in-review',
-    'social-carousel',
+    'wireframe-website',
+    'wireframe-dashboard',
   ],
   plan: [
     'blank-plan',

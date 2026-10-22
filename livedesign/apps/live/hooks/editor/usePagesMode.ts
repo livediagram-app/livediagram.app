@@ -360,7 +360,6 @@ export function usePagesMode(deps: {
       onLayoutPlaced: deps.clearSelection,
       mayEdit,
       toastInfo: deps.toastInfo,
-      theme,
     }),
   };
 }

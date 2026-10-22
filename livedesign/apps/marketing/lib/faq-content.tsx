@@ -33,11 +33,10 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livedesign/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 137;
+export const TEMPLATE_COUNT = 125;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
-// Pages mode's infographic page layouts and logo layouts, pinned the same way.
-export const PAGE_LAYOUT_COUNT = 92;
+// Pages mode's logo layouts, pinned the same way.
 export const LOGO_LAYOUT_COUNT = 25;
 
 export const FAQ_CATEGORIES: FaqCategory[] = [
@@ -275,17 +274,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
           'Yes. Isometric mode tilts the whole tab and raises each box into a solid block, for an architecture walkthrough or a screenshot. It is a way to look at a diagram rather than edit it. See Isometric mode.',
       },
       {
-        q: 'Can I design infographics, posters or a logo?',
+        q: 'Can I design a logo?',
         a: (
           <>
-            Yes, in Pages. Lay out pages in print sizes (A4, US Letter, A3) or social sizes,
-            starting from one of {PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF,
-            PNG or SVG. A logo page is a square artboard with {LOGO_LAYOUT_COUNT} logo layouts,
+            Yes, in Pages. A logo page is a square artboard with {LOGO_LAYOUT_COUNT} logo layouts,
             construction guides, mirror drawing and wordmark type, and it exports a logo kit. See{' '}
             <a href="/help/canvas/pages-mode/">Pages mode</a>.
           </>
         ),
-        aText: `Yes, in Pages. Lay out pages in print sizes (A4, US Letter, A3) or social sizes, starting from one of ${PAGE_LAYOUT_COUNT} layouts, and export them print-ready as PDF, PNG or SVG. A logo page is a square artboard with ${LOGO_LAYOUT_COUNT} logo layouts, construction guides, mirror drawing and wordmark type, and it exports a logo kit. See Pages mode.`,
+        aText: `Yes, in Pages. A logo page is a square artboard with ${LOGO_LAYOUT_COUNT} logo layouts, construction guides, mirror drawing and wordmark type, and it exports a logo kit. See Pages mode.`,
       },
       {
         q: 'Can I use it as a whiteboard?',
