@@ -58,7 +58,7 @@ export async function apiRemoveCommunityPost(ownerId: string, documentId: string
 // identity at all; any failure is just no suggestions.
 export async function apiCommunityPopularTags(): Promise<string[]> {
   try {
-    const res = await fetch(
+    const res = await apiFetch(
       communityServiceUrl('livediagram.app', '/facets', {
         base: process.env.NEXT_PUBLIC_COMMUNITY_API,
       }),
