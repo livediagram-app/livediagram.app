@@ -1,0 +1,112 @@
+# Minimap
+
+A bottom-left minimap that gives a zoomed-out overview of the whole tab and
+lets you jump the viewport anywhere with a tap or drag.
+
+## Behaviour
+
+- **A movable panel.** The Map is a first-class corner panel (`MovablePanel`,
+  like AI and the tool panels), labelled **"Map"**: drag its header to move it and collapse
+  it to a banner. It **docks into the four canvas corners** like the other panels
+  ([Panel corner docking](../007-editor/panel-docking.md)) — snap-to-corner on drag, free-drop, and a
+  device-local persisted position; its default corner is **bottom-left**.
+- **When.** Shown when it's **enabled** (`showMinimap` preference, **on by
+  default**), the tab has **at least 4 elements**, **on desktop** (hidden on
+  mobile, where the canvas is already edge-to-edge), and **in Diagram, Draw and Workshop** only:
+  Pages has [Contents](../007-editor/pages-mode.md#contents) to find its pages, and a
+  Plan board is a list rather than a space to find your way round, so neither shows the Map. It stacks with any other panel docked bottom-left rather than hiding
+  behind it (the docking layout reflows them).
+- **Enable / disable + reset.** The map's preferences (**Enable Map**, **Dim
+  Outside the View**, **Map Size**) live in the **Settings** dialog
+  ([User preferences](../007-editor/user-preferences.md)), under Panels › Map.
+- **Named "Map" everywhere a user reads it**: the panel title, the Settings
+  rows and sub-category, and the help centre. "Minimap" survives only in code
+  identifiers, stored preference keys (`showMinimap`), telemetry tokens, the
+  help article's URL, and search keywords, so existing links, data and
+  dashboards keep working and a reader typing "minimap" still finds it.
+  The panel header keeps only the standard **Reset position** button, shown
+  once the map has left its default corner. It used to carry a settings gear
+  of its own; that popover was removed when every preference was centralised,
+  since one setting with two controls is one control too many.
+- **What it shows.** A **full-fidelity miniature of the tab**: the map is
+  drawn by the SAME headless renderer the exports / live image use
+  (`svgBoxed` / `svgArrow`, [MCP server](../015-api/mcp-server.md) §5), so every element appears with its
+  real colours, silhouette, table grid, freehand stroke, icon glyph (the
+  Technology marks pop in when the async catalogue lands), rotation, and
+  every arrow with its true curved / elbow path — not a grey wireframe. That
+  drawing is shown as **one image**, not as a copy of the board in the page: on
+  a large board a live copy doubled the page's elements and slowed every
+  gesture ([Canvas performance](canvas-performance.md)). **It draws no labels**:
+  element and arrow labels are left out of the picture. On a board of any size
+  they come out a pixel or two tall, too small to read, while laying them out
+  was half of the picture's cost (on a 1,000-element board, about 210 ms of the
+  browser's work at a slowed CPU, against 100 ms without). The
+  area **outside the current view is dimmed**, leaving a lit window (outlined
+  in the tab theme's accent, matching the on-canvas selection) that reads at
+  a glance as where you are. The window is coloured exactly like the canvas
+  marquee, softened on dark paper ([Marquee select](canvas-and-palette.md)),
+  both from one helper (`selectionBoxColors`, `apps/live/lib/selection-box.ts`).
+- **Fidelity: the map paints the canvas's paper.** An element with no colour
+  of its own takes its colours from the paper it sits on (`CanvasSurface`,
+  light or dark, derived from the tab's resolved backdrop), so the map reads
+  the SAME surface the canvas elements read (`useCanvasSurface`) and hands it
+  to `svgBoxed` / `svgArrow`. A Behaviour or Collaborate card that is a dark
+  card on a dark canvas is a dark card on the map, never the light skin. The
+  map's own background is the tab's resolved paper colour
+  (`tabBackgroundColor`), not a fixed grey, and the dim outside the current
+  view darkens rather than greys on dark paper. A kind whose look depends on
+  the paper keeps that dependency in ONE shared value both renderers read
+  (for example `REVEAL_COVER_BASE` for the Reveal cover), and a drift test
+  (`svg-render-surface.test.ts`) fails if any kind without a stored fill
+  paints a light base on dark paper. The Layers panel's previews follow the
+  same rule.
+- **Navigation.** Tap a point to re-centre the canvas there; press-and-drag
+  inside the map to pan continuously; **scroll** on it to zoom the canvas in/out
+  centred on that spot. The viewport rectangle tracks live as you move. (Drags
+  on the header move the panel; drags inside the map navigate the canvas.)
+
+### Fit leaves the Map clear
+
+The Map lies over a corner of the canvas, so Fit to Screen (and the fit a template or a tab
+opens on) never puts content under it. When the plain fit would reach under the Map (with
+16 px to spare), the content fits instead either beside the Map or above it (below it, for a
+Map docked at the top), whichever keeps it larger; a fit that stays clear is left as it is.
+The Map is found by its `data-tour-id="minimap"`; a Map that is not showing changes nothing.
+
+## Geometry
+
+The canvas transform is `scale(z) translate(o)` about the `<main>` centre
+(`origin-center`), so:
+
+- viewport centre, in world coords, is `(W/2 − oₓ, H/2 − o_y)`, and the visible
+  world rect is `W/z × H/z` around it (`W`,`H` = the `<main>` size);
+- re-centring on a world point `P` is therefore `offset = (W/2 − Pₓ, H/2 − P_y)`.
+
+The minimap is an SVG whose `viewBox` **is** world space (the union bounding box
+of the elements, padded), so element rects are drawn at their literal world
+coords and `getScreenCTM().inverse()` maps a click back to world coords —
+letterboxing handled for free.
+
+## Implementation
+
+- `lib/fit-clear-of-panel.ts` — `fitClearOfPanel`, the fit moved beside or above the Map
+  (above), used by `lib/tab-fit-view.ts`.
+
+- `components/canvas/Minimap.tsx` — the SVG overview inside a `MovablePanel`
+  (move / minimise / reset come from the shared panel). The element wireframe is
+  memoised on `elements` so panning only re-renders the viewport rectangle, and
+  redrawn when a gesture ends rather than on each frame of it, a remote edit at most
+  every 250 ms ([Canvas performance](canvas-performance.md)).
+  The `<main>` size (`W`,`H` above) comes in as a prop, measured by `Canvas`,
+  which owns `<main>`. The map must not observe `<main>` itself: it renders
+  inside `<main>`, and a child's layout effect runs before its parent's ref
+  attaches, so a map mounted with the canvas never measures and loses the
+  viewport rectangle.
+- `hooks/ui/useIsMobileViewport.ts` — a reactive (`useSyncExternalStore`)
+  version of `isMobileViewportSync` so the panel mounts / unmounts when the
+  viewport crosses the `sm` breakpoint.
+- `Canvas` renders it gated on
+  `!chromeHidden && !isMobile && mapEnabled && elements.length >= 4` (useCanvasChromePanels).
+
+Boxed elements only for now (arrows are usually within their endpoints'
+boxes); extending the bounds to arrow geometry is a possible follow-up.

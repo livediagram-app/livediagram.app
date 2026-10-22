@@ -18,7 +18,8 @@
     "dev:accounts": "turbo run dev --filter=@liveworkspace/accounts",
     "dev:telemetry": "turbo run dev --filter=@liveworkspace/telemetry-service",
     "dev:community": "turbo run dev --filter=@liveworkspace/community-service",
-    "dev:site": "turbo run dev --filter=@liveworkspace/site"
+    "dev:site": "turbo run dev --filter=@liveworkspace/site",
+    "dev:design": "turbo run dev --filter=@livedesign/*"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

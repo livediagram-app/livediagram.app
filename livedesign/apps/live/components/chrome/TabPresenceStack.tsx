@@ -1,0 +1,214 @@
+import { useEffect, useState } from 'react';
+import { MOTION_MS } from '@livedesign/tailwind-config/motion';
+import type { Participant } from '@/lib/identity';
+import { ParticipantAvatar } from '@/components/primitives/ParticipantAvatar';
+import { participantBadges } from '@/lib/collaborator-roster';
+import { GlyphDisc } from '@livedesign/ui';
+import type { AccessLevel } from '@livedesign/api-schema';
+
+// Compact stack of participant initials, sitting between the tab
+// label and the ellipsis menu in TabBar. Rendered smaller than the
+// EditorHeader avatars so it doesn't dominate the tab. The last
+// avatar uses 0 negative margin so the stack sits fully inside the
+// pill's right padding.
+//
+// Add / remove are animated: incoming avatars pop in with the brand
+// overshoot easing, departing avatars scale out before being dropped
+// from the DOM. Tracked in `rendered` state because React unmounts
+// the node immediately when props change otherwise, so we hold onto
+// leavers long enough to finish their exit transition.
+//
+// Lifted out of TabBar.tsx (was 991 lines) so the bar file reads as
+// tab-row chrome plus its inline icons, and this lives where the
+// presence-fade animation behaviour is testable in isolation.
+//
+// Clicking any avatar, or the "+N" overflow badge, opens the Collaborators
+// modal (docs/specs/012-collaboration/collaborator-enhancements.md), which lists everyone by tab and is where Follow lives
+// (docs/specs/012-collaboration/follow-me-viewport.md). The avatar used to start following directly.
+
+// An exit hold (docs/specs/004-interface-design/motion.md): a leaver stays mounted exactly
+// as long as its pop-out runs.
+const POP_OUT_MS = MOTION_MS.micro;
+
+export function TabPresenceStack({
+  participants,
+  selfId,
+  selfRole,
+  followingId,
+  followerCount = 0,
+  onOpenCollaborators,
+}: {
+  participants: Participant[];
+  selfId: string;
+  selfRole: AccessLevel;
+  // Who we are following (docs/specs/012-collaboration/follow-me-viewport.md), for the ring + hover card chip.
+  followingId?: string | null;
+  // How many follow us (docs/specs/012-collaboration/follow-me-viewport.md "Who follows whom"): a count on our own
+  // avatar, so a presenter knows to narrate rather than mouse in silence.
+  followerCount?: number;
+  // Opens the Collaborators modal with the clicked person highlighted (null
+  // from the "+N" badge). Absent leaves the avatars as plain indicators.
+  onOpenCollaborators?: (participantId: string | null) => void;
+}) {
+  const [rendered, setRendered] = useState<Slot[]>(() =>
+    participants.map((p) => ({ p, leaving: false })),
+  );
+
+  // Reconciled during render, so an arrival pops in on the render that
+  // brings it rather than a frame later.
+  const [seenParticipants, setSeenParticipants] = useState(participants);
+  if (participants !== seenParticipants) {
+    setSeenParticipants(participants);
+    setRendered((prev) => reconcileSlots(prev, participants));
+  }
+
+  useEffect(() => {
+    const leavers = rendered.filter((s) => s.leaving);
+    if (leavers.length === 0) return;
+    const id = window.setTimeout(() => {
+      setRendered((prev) => prev.filter((s) => !s.leaving));
+    }, POP_OUT_MS);
+    return () => window.clearTimeout(id);
+  }, [rendered]);
+
+  if (rendered.length === 0) return null;
+  // Visible slots: leavers count for layout (they're still animating
+  // out) but the overflow badge only considers active arrivals so a
+  // departing participant doesn't keep the +N up.
+  const active = rendered.filter((s) => !s.leaving);
+  const visibleCap = 3;
+  const overflow = Math.max(0, active.length - visibleCap);
+  const shown = rendered
+    .filter((s) => !s.leaving || rendered.indexOf(s) < visibleCap)
+    .slice(0, visibleCap + leavingExtra(rendered, visibleCap));
+  const slots = overflow > 0 ? shown.length + 1 : shown.length;
+
+  return (
+    // ml-2 keeps the avatar stack off the tab name it sits beside in
+    // TabBar (the row only uses gap-1, which crowds the initials).
+    <div className="ml-2 flex items-center">
+      {shown.map((slot, i) => (
+        <span
+          key={slot.p.id}
+          className={`inline-flex ${i === slots - 1 ? '' : '-mr-0.5'} ${
+            slot.leaving ? 'animate-pop-out' : 'animate-pop-in'
+          }`}
+          style={{ zIndex: slots - i, transformOrigin: 'center' }}
+        >
+          {(() => {
+            const following = followingId === slot.p.id;
+            const followed = slot.p.id === selfId ? followerCount : 0;
+            const badges = participantBadges(slot.p, selfId, selfRole, followingId, {
+              followerCount: followed,
+            });
+            const face = (
+              <ParticipantAvatar
+                participant={slot.p}
+                size={16}
+                withHoverCard
+                badges={badges.length > 0 ? badges : undefined}
+              />
+            );
+            const avatar =
+              followed > 0 ? (
+                <span className="relative inline-flex">
+                  {face}
+                  <span
+                    role="img"
+                    aria-label={`${followed} following you`}
+                    className="pointer-events-none absolute -right-1 -top-1.5 flex h-3 min-w-3 items-center justify-center rounded-full bg-brand-700 px-0.5 text-[8px] font-semibold leading-none text-white dark:bg-brand-500"
+                  >
+                    <span className="text-optical-centre">{followed}</span>
+                  </span>
+                </span>
+              ) : (
+                face
+              );
+            if (!onOpenCollaborators) return avatar;
+            return (
+              <button
+                type="button"
+                onClick={() => onOpenCollaborators(slot.p.id)}
+                aria-haspopup="dialog"
+                aria-label={`Collaborators, showing ${slot.p.name}`}
+                className={`inline-flex cursor-pointer rounded-full transition ${
+                  following ? 'ring-2 ring-brand-400 ring-offset-1 dark:ring-offset-slate-900' : ''
+                }`}
+              >
+                {avatar}
+              </button>
+            );
+          })()}
+        </span>
+      ))}
+      {overflow > 0 ? (
+        <GlyphDisc
+          size={16}
+          as="button"
+          type="button"
+          onClick={onOpenCollaborators ? () => onOpenCollaborators(null) : undefined}
+          disabled={!onOpenCollaborators}
+          aria-haspopup="dialog"
+          aria-label={`${overflow} more participant${overflow === 1 ? '' : 's'} on this tab`}
+          className="animate-pop-in cursor-pointer border-2 border-white bg-slate-200 text-[8px] font-semibold text-slate-600 shadow-sm transition hover:bg-slate-300 disabled:cursor-default disabled:hover:bg-slate-200 dark:border-slate-800 dark:bg-slate-700 dark:text-slate-200 dark:hover:bg-slate-600"
+        >
+          +{overflow}
+        </GlyphDisc>
+      ) : null}
+    </div>
+  );
+}
+
+type Slot = { p: Participant; leaving: boolean };
+
+// The slots after `participants` changes: the ones still here refreshed,
+// the ones gone marked leaving, arrivals appended. The same array when
+// nothing changed, so an identical list costs no re-render.
+function reconcileSlots(prev: Slot[], participants: Participant[]): Slot[] {
+  const incomingIds = new Set(participants.map((p) => p.id));
+  const stable = new Map(prev.map((s) => [s.p.id, s] as const));
+  const next: Slot[] = [];
+  // Preserve current entries: mark leaving the ones no longer
+  // present, refresh the participant payload for the ones that
+  // are. Skip already-leaving entries that have since been
+  // re-added: the leaving timer would otherwise yank them
+  // back out.
+  for (const slot of prev) {
+    if (incomingIds.has(slot.p.id)) {
+      const fresh = participants.find((p) => p.id === slot.p.id)!;
+      next.push({ p: fresh, leaving: false });
+    } else if (!slot.leaving) {
+      next.push({ p: slot.p, leaving: true });
+    } else {
+      next.push(slot);
+    }
+  }
+  // Append new arrivals.
+  for (const p of participants) {
+    if (!stable.has(p.id)) next.push({ p, leaving: false });
+  }
+  // No-op if nothing actually changed; cheap reference check
+  // saves a re-render storm when the parent computes the same
+  // identity on every animation frame.
+  if (
+    next.length === prev.length &&
+    next.every((s, i) => s.p === prev[i]!.p && s.leaving === prev[i]!.leaving)
+  ) {
+    return prev;
+  }
+  return next;
+}
+
+// Helper so the visible slice keeps any leavers that occupy a slot
+// inside the cap (so they can finish their exit animation) without
+// also showing leavers past the cap.
+function leavingExtra(slots: { leaving: boolean }[], cap: number): number {
+  let extra = 0;
+  let active = 0;
+  for (const s of slots) {
+    if (active >= cap) break;
+    if (s.leaving) extra++;
+    else active++;
+  }
+  return extra;
+}

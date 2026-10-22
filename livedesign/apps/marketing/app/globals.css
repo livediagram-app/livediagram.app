@@ -1,0 +1,81 @@
+@import 'tailwindcss';
+@import '@livedesign/tailwind-config';
+@import '@livedesign/template-previews/preview-art-tile.css';
+@import '@livedesign/template-previews/preview-motion.css';
+@import '@livedesign/ui/hero-band.css';
+@import './hero-fan.css';
+@import './hero-animations.css';
+@import './hero-mode-animations.css';
+@import './hero-scenes/diagram.css';
+@import './hero-scenes/draw.css';
+@import './hero-scenes/mindmap.css';
+@import './hero-scenes/infographic.css';
+@import './hero-scenes/article.css';
+@import './hero-scenes/plan.css';
+@import './hero-scenes/townhall.css';
+@import './promises.css';
+@import './feature-art/core.css';
+@import './feature-art/content.css';
+@import './feature-art/canvas.css';
+@import './feature-art/pages.css';
+@import './feature-art/versatility.css';
+@import './feature-art/modes.css';
+@import './feature-art/features.css';
+@import './page-motion.css';
+@import './privacy-art.css';
+@import './licences.css';
+
+/* Scan the shared UI package so utility classes used inside its
+ * components (e.g. `text-brand-700` in <Brand>'s wordmark) are
+ * generated here too. Tailwind v4 skips node_modules by default, and
+ * these workspace components are the only place some of those classes
+ * appear in the marketing app. */
+@source '../../../packages/ui/src';
+/* The shared template-browse art (PreviewFan) carries its own utility classes. */
+@source '../../../packages/template-previews/src/PreviewFan.tsx';
+
+@media (prefers-reduced-motion: reduce) {
+  /* the window veils stay hidden */
+  .hero-fade,
+  .hero-fade-out,
+  .hero-fade-end {
+    animation: none;
+    opacity: 0;
+  }
+
+  .fa-pop,
+  .fa-draw,
+  .fa-pulse,
+  .fa-grow,
+  .fa-hl,
+  .fa-spin,
+  .fa-rotate,
+  .fa-swap-a,
+  .fa-fade,
+  .fa-ripple,
+  .fa-flow,
+  .fa-glow,
+  .fa-spin-cont,
+  .fa-beat,
+  .tg-reveal,
+  .tg-reveal .tg-reveal-track > li {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    stroke-dashoffset: 0 !important;
+  }
+
+  /* the "after" half of a cross-fade stays hidden */
+  .fa-swap-b {
+    animation: none !important;
+    opacity: 0 !important;
+  }
+}
+
+/* The scene's chrome draws the editor's glyphs at a fraction of their size (11px in a 24px chip), where a glyph
+   whose ink sits off its box's middle (a flipchart's legs, a timer's crown) reads past the 0.5px optical tolerance
+   (docs/specs/004-interface-design/optical-alignment.md). Each glyph in a scene moves by half the difference of its
+   own ink insets (--glyph-ink-t / --glyph-ink-b, set by Glyph), so its ink, not its box, is centred. */
+.hero-glyph-ink .lvd-glyph {
+  translate: 0 calc((var(--glyph-ink-b, 0px) - var(--glyph-ink-t, 0px)) / 2);
+}

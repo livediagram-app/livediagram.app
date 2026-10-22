@@ -1,0 +1,201 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# Least privilege: this workflow only checks out and verifies. It never writes
+# to the repo, so the default token stays read-only rather than inheriting
+# whatever the repository-wide default happens to be. The jobs that upload
+# coverage add id-token: write, the OIDC token Codecov accepts in place of a secret.
+permissions:
+  contents: read
+
+# A pull request's newer push replaces its older run. On main every commit runs to the end, in a
+# group of its own: a shared group keeps only one pending run, so a burst of merges would still drop
+# the middle ones (docs/specs/016-platform/deployment.md "Runs on main are never cancelled").
+concurrency:
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+# Parallel jobs, so a PR waits for the slowest one rather than the sum.
+# None needs another: only the apps build, and nothing depends on an app.
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Type check
+        run: pnpm typecheck
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Every workspace runs its suite exactly once. Those with test:coverage run
+      # it in the coverage step, so plain `test` skips them; the filters come
+      # from the manifests (scripts/ci-test-filters.mjs), not a list kept here.
+      # Two packages at a time: each vitest already fills the runner's cores,
+      # and turbo's default fan-out starved the CPU-heavy suites into timeouts.
+      - name: Test
+        run: |
+          set -euo pipefail
+          node scripts/ci-test-filters.mjs | xargs pnpm turbo run test --concurrency=2
+
+      # Coverage runs as its own step because it ENFORCES something: the
+      # per-file 100% thresholds on the api worker's identity / token /
+      # share-link modules (apps/api/vitest.config.ts). Without this step the
+      # thresholds are a local-only opinion, and the coverage tooling itself
+      # goes unexercised in CI — which is how a v4 coverage provider once sat
+      # against a v5 runner with every check green.
+      # The editor's suite is the one exception: it runs in the Editor unit tests jobs below.
+      - name: Coverage thresholds
+        run: pnpm turbo run test:coverage --concurrency=2 --filter=!@livedesign/live
+
+      # Every workspace's lcov above, reported on Codecov; see the upload in Editor unit tests.
+      - name: Upload coverage
+        uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
+          files: apps/*/coverage/lcov.info,packages/*/coverage/lcov.info
+          disable_search: true
+          fail_ci_if_error: false
+
+  # The editor's suite (apps/live, about 800 files) is most of the repo's tests: on one 4-vCPU runner it
+  # took 7 minutes. Split three ways, each job runs a third of its files under coverage, finishing
+  # inside the Checks job's time (docs/specs/003-system-architecture/testing.md "Sizing the shards").
+  # Codecov merges the thirds into one report; the editor holds no thresholds, so nothing needs the merge
+  # to pass.
+  editor-tests:
+    name: Editor unit tests ${{ matrix.shard }}/${{ strategy.job-total }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      id-token: write
+    strategy:
+      # Every shard reports, so one failing shard never hides another's failures.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test
+        run: >-
+          pnpm --filter @livedesign/live exec vitest run --coverage
+          --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+
+      # OIDC, so no Codecov secret; a pull request from a fork uploads tokenless instead. A Codecov
+      # outage must not hold back a merge: the upload logs its error and the job still passes.
+      - name: Upload coverage
+        uses: codecov/codecov-action@v7
+        with:
+          use_oidc: true
+          files: apps/live/coverage/lcov.info
+          disable_search: true
+          fail_ci_if_error: false
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out
+        uses: actions/checkout@v7
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.0
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      # The CLI package as npm would publish it (docs/specs/015-api/blueprints/cli.md CLI3): its file list and size,
+      # without publishing. `pnpm build` wrote apps/cli/dist.
+      - name: CLI package dry run
+        working-directory: apps/cli/dist
+        run: npm pack --dry-run
+
+      # Resolve the staging wrangler configs without deploying anything
+      # (docs/specs/016-platform/staging-environment.md). Wrangler does NOT inherit bindings into a named
+      # environment, so a binding left out of an `[env.staging]` block is
+      # simply absent from the staging worker, and a `service =` value that
+      # lost its `-staging` suffix points the staging router at PRODUCTION.
+      # Neither is a type error and neither shows up in a test — without this
+      # step the first sign of either is a deploy. Covers the three workers
+      # that carry bindings; the five static apps have nothing in their
+      # staging block but an assets directory.
+      - name: Staging config check
+        run: pnpm staging:check

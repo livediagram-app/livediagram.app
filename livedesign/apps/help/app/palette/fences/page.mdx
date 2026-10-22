@@ -1,0 +1,50 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { getSubArticles } from '@/lib/articles';
+import { helpMetadata } from '@/lib/seo';
+
+export const metadata = helpMetadata({
+  title: 'Fences',
+  description:
+    'A barrier for Avatar mode: characters cannot walk through a fence, so a few fences joined end to end keep people out of part of the canvas.',
+  path: '/help/palette/fences/',
+});
+
+<ArticleLayout
+  title="Fences"
+  description="Characters in Avatar mode cannot walk through a fence. Join a few end to end to keep people out of an area."
+  categoryTitle="Palette"
+  categorySlug="palette"
+  subArticles={getSubArticles("fences")}
+>
+
+A **Fence** is a barrier for [Avatar mode](/help/selection-modes/avatar-mode/): no character can walk through one, from either side.
+
+It lives in the **Navigate** group of the palette's **Session** category, one of Workshop mode's [Collaborate](/help/palette/behaviour/) categories, beside the Portal, the [Chair](/help/palette/chairs/) and the Link card. Fences, like the rest of Collaborate, are in the [Workshop mode](/help/canvas/workshop-mode/) palette.
+
+## Fencing off an area
+
+1. Add a fence. It arrives as a short run across the canvas.
+2. Stretch it to length. A fence runs along its **longer side**, so drag a fence taller than it is wide and it turns to run down the canvas.
+3. Add more fences and line their ends up. Fences placed end to end carry each other's rails on, and two fences whose corners meet share a corner post, so a run of fences reads as one fence.
+
+Four fences round a board keep everybody's character out of it: people can walk all the way round the outside, but not in.
+
+You do not have to join fences exactly: any gap narrower than a character is closed. Leave a wider gap where you want a way in, or put a [Portal](/help/palette/tools/portals/) there.
+
+## Walking into a fence
+
+- A character walking straight at a fence stops just in front of it.
+- A character walking into a fence at an angle **slides along it**, the way people walk along a wall.
+- [Portals](/help/palette/tools/portals/) still take a character to the other side of a fence; a portal is a gate.
+- A character that starts inside a fenced area stays inside until it takes a portal out.
+
+Every character is stopped on its owner's own screen, so the whole room sees the same thing. Someone whose page has not reloaded since fences arrived may still walk through one until they refresh.
+
+## Setting it up
+
+- Change its colour with the stroke colour, which recolours the posts and rails together.
+- Rotate a fence like any element to point it any way you like.
+- A fence has no label and no **…** on its face.
+- Otherwise it behaves like any element: move, resize, rotate, lock, copy and export. Fences never get in the way of the canvas tools: they only stop characters.
+
+</ArticleLayout>

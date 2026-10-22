@@ -1,0 +1,200 @@
+// The export dialog's per-format preview glyphs (little themed file /
+// image chips), split out of ExportTabDialog the same way the other
+// per-surface icon files are. The type-only import back into the
+// dialog file is the usual host pattern.
+
+import type { Format } from './ExportTabDialog';
+
+export function FormatIcon({ kind }: { kind: Format }) {
+  switch (kind) {
+    case 'markdown':
+      return (
+        <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="18"
+            rx="2"
+            fill="none"
+            stroke="rgb(148 163 184)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="16"
+            y="14"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="9"
+            fontWeight="600"
+            fill="rgb(71 85 105)"
+          >
+            md
+          </text>
+        </svg>
+      );
+    case 'csv':
+      // A small grid: rows and columns of values.
+      return (
+        <svg width="32" height="20" viewBox="0 0 32 20" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="18"
+            rx="2"
+            fill="none"
+            stroke="rgb(148 163 184)"
+            strokeWidth="1.25"
+          />
+          <path d="M1 7.5h30M1 13.5h30M11 1v18M21 1v18" stroke="rgb(148 163 184)" strokeWidth="1" />
+          <rect
+            x="1.6"
+            y="1.6"
+            width="28.8"
+            height="5.4"
+            rx="1.4"
+            fill="rgb(71 85 105)"
+            fillOpacity="0.18"
+          />
+        </svg>
+      );
+    case 'logo-kit':
+      // A square artboard with a mark on it, and the .zip it comes in.
+      return (
+        <svg width="28" height="28" viewBox="0 0 28 28" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="26"
+            height="26"
+            rx="4"
+            fill="rgb(236 254 255)"
+            stroke="rgb(34 211 238)"
+            strokeWidth="1.25"
+          />
+          <circle cx="14" cy="12" r="5.5" fill="rgb(6 182 212)" />
+          <circle cx="14" cy="12" r="2.2" fill="rgb(236 254 255)" />
+          <rect x="8" y="20" width="12" height="2.5" rx="1.25" fill="rgb(14 116 144)" />
+        </svg>
+      );
+    case 'pdf':
+      return (
+        <svg width="22" height="28" viewBox="0 0 22 28" aria-hidden>
+          <path
+            d="M3 1h11l5 5v20a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1z"
+            fill="rgb(254 226 226)"
+            stroke="rgb(248 113 113)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="11"
+            y="20"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="7"
+            fontWeight="700"
+            fill="rgb(190 18 60)"
+          >
+            PDF
+          </text>
+        </svg>
+      );
+    case 'png':
+      return (
+        <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="20"
+            rx="2"
+            fill="rgb(219 234 254)"
+            stroke="rgb(147 197 253)"
+            strokeWidth="1.25"
+          />
+          <circle cx="9" cy="9" r="2.5" fill="rgb(251 191 36)" />
+          <path d="M2 18l8-8 6 6 4-4 10 8" stroke="rgb(59 130 246)" strokeWidth="1.5" fill="none" />
+        </svg>
+      );
+    case 'gif':
+      // A picture with frames behind it: an image that moves.
+      return (
+        <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>
+          <rect
+            x="5"
+            y="1"
+            width="26"
+            height="16"
+            rx="2"
+            fill="rgb(237 233 254)"
+            stroke="rgb(196 181 253)"
+            strokeWidth="1"
+          />
+          <rect
+            x="1"
+            y="5"
+            width="26"
+            height="16"
+            rx="2"
+            fill="rgb(219 234 254)"
+            stroke="rgb(147 197 253)"
+            strokeWidth="1.25"
+          />
+          <path d="M11 9.5v7l6-3.5z" fill="rgb(59 130 246)" />
+        </svg>
+      );
+    case 'svg':
+      return (
+        <svg width="32" height="22" viewBox="0 0 32 22" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="30"
+            height="20"
+            rx="2"
+            fill="rgb(220 252 231)"
+            stroke="rgb(134 239 172)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="16"
+            y="15"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="9"
+            fontWeight="600"
+            fill="rgb(21 128 61)"
+          >
+            SVG
+          </text>
+        </svg>
+      );
+    case 'file':
+      return (
+        <svg width="34" height="20" viewBox="0 0 34 20" aria-hidden>
+          <rect
+            x="1"
+            y="1"
+            width="32"
+            height="18"
+            rx="2"
+            fill="none"
+            stroke="rgb(148 163 184)"
+            strokeWidth="1.25"
+          />
+          <text
+            x="17"
+            y="14"
+            textAnchor="middle"
+            fontFamily="system-ui, sans-serif"
+            fontSize="9"
+            fontWeight="600"
+            fill="rgb(71 85 105)"
+          >
+            json
+          </text>
+        </svg>
+      );
+  }
+}

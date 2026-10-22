@@ -1,0 +1,144 @@
+/* The promises prism (components/PromisePrism.tsx, docs/specs/019-marketing/marketing-site.md
+   "Promises"). Paced as content: a white beam draws into the brand prism, the prism glows, five
+   coloured beams fan out one after another (--i) and each promise lights as its beam lands; then a
+   pulse keeps running along every beam. Only an armed stage (script has run) hides its pieces before
+   it is seen, so the static HTML shows them all in place; reduced motion shows them settled with
+   nothing looping. */
+
+.promise-beam-glow {
+  opacity: 0.16;
+  filter: blur(4px);
+  transition: opacity 150ms ease-out;
+}
+.promise-beam-line {
+  opacity: 0.75;
+  transition:
+    opacity 150ms ease-out,
+    stroke-width 150ms ease-out;
+}
+.promise-beam-pulse {
+  opacity: 0;
+  stroke-dasharray: 0.07 1;
+}
+.promise-beam[data-hot] .promise-beam-line {
+  opacity: 1;
+  stroke-width: 3;
+}
+.promise-beam[data-hot] .promise-beam-glow {
+  opacity: 0.4;
+}
+.promise-beam[data-dim] .promise-beam-line {
+  opacity: 0.3;
+}
+.promise-beam[data-dim] .promise-beam-glow {
+  opacity: 0.06;
+}
+.promise-card-slot[data-hot] .promise-card {
+  border-color: color-mix(in srgb, var(--hue) 55%, transparent);
+  background-color: color-mix(in srgb, var(--hue) 9%, transparent);
+}
+
+/* Armed and not yet seen: dark, waiting for the light. */
+.promise-stage[data-armed]:not([data-seen]) .promise-beam-in,
+.promise-stage[data-armed]:not([data-seen]) .promise-beam-line,
+.promise-stage[data-armed]:not([data-seen]) .promise-beam-glow {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+.promise-stage[data-armed]:not([data-seen]) .promise-prism-glow {
+  opacity: 0;
+}
+.promise-stage[data-armed]:not([data-seen]) .promise-card-slot {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .promise-stage[data-seen] .promise-beam-in {
+    stroke-dasharray: 1;
+    animation: promise-draw 700ms cubic-bezier(0.65, 0, 0.35, 1) both;
+  }
+  .promise-stage[data-seen] .promise-prism-glow {
+    animation: promise-glow 1200ms ease-out 550ms both;
+  }
+  .promise-stage[data-seen] .promise-prism {
+    animation: promise-prism 900ms cubic-bezier(0.2, 0.9, 0.25, 1.2) 550ms both;
+  }
+  .promise-stage[data-seen] .promise-beam-line,
+  .promise-stage[data-seen] .promise-beam-glow {
+    stroke-dasharray: 1;
+    animation: promise-draw 650ms cubic-bezier(0.65, 0, 0.35, 1) calc(900ms + var(--i) * 130ms) both;
+  }
+  .promise-stage[data-seen] .promise-card-slot {
+    animation: promise-card 520ms cubic-bezier(0.2, 0.9, 0.25, 1) calc(1250ms + var(--i) * 130ms)
+      both;
+  }
+  .promise-stage[data-seen] .promise-beam-pulse {
+    animation: promise-pulse 3600ms ease-in-out calc(2300ms + var(--i) * 450ms) infinite;
+  }
+}
+
+@keyframes promise-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes promise-glow {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  to {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+}
+@keyframes promise-prism {
+  from {
+    transform: scale(0.92);
+  }
+  40% {
+    transform: scale(1.06);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+@keyframes promise-card {
+  from {
+    opacity: 0;
+    transform: translateX(-14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes promise-pulse {
+  0% {
+    opacity: 0;
+    stroke-dashoffset: 0.07;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.9;
+  }
+  100% {
+    opacity: 0;
+    stroke-dashoffset: -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .promise-beam-pulse {
+    animation: none;
+  }
+}

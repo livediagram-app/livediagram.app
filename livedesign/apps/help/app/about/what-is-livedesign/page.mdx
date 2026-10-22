@@ -1,0 +1,51 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { CanvasOverview } from '@/components/illustrations/canvas';
+import { LiveCursors } from '@/components/illustrations/collaboration';
+
+export const metadata = helpMetadata({
+  title: 'What is livedesign?',
+  description:
+    'livedesign is a free, open-source, real-time multiplayer diagram editor that runs in your browser, with no sign-in needed to start.',
+  path: '/help/about/what-is-livedesign/',
+});
+
+<ArticleLayout title="What is livedesign?" description="A free, open-source canvas where teams build diagrams, whiteboards, mind maps, infographics and documents together, in real time, right in the browser." categoryTitle="About livedesign" categorySlug="about">
+
+livedesign is a web app where people build **diagrams, whiteboards, mind maps, infographics and documents together in real time**. It is a multiplayer canvas in the browser: anyone with access to a document can join, see other collaborators' cursors and edits live, and contribute at the same time. The result is a shared visual artifact, a flowchart, an architecture diagram, a mind map, or a brainstorm board, that a team builds together rather than one person authoring and the rest reviewing.
+
+## A multiplayer canvas
+
+The heart of livedesign is the [canvas](/help/canvas/the-canvas/). You drop down shapes, connect them with arrows, drag things around, and the diagram takes shape as you work. When more than one person is in the same document, everyone sees live cursors, who has what selected, and every change as it happens.
+
+<Figure caption="The editor at a glance: a canvas with shapes and arrows, the shape palette, and your live cursor.">
+  <CanvasOverview />
+</Figure>
+
+- **Shapes and arrows** for flowcharts, system diagrams, and process maps. See [Shapes](/help/palette/shapes/) and [Arrows](/help/palette/arrows/).
+- **Mind maps and brainstorms** built from quick, keyboard-driven nodes: Tab adds a child, Enter a sibling. See [Mind Maps](/help/palette/mind-maps/).
+- **Real-time presence** so collaborators rarely overwrite each other: an element someone else has selected is locked for everyone else.
+- **Tabs** to keep related views of one document in a single place. See [Tabs](/help/tabs/using-tabs/).
+- **Modes** for different kinds of work on a tab: Diagram for shapes and arrows, [Draw](/help/canvas/draw-mode/) for freehand whiteboarding, [Pages](/help/canvas/pages-mode/) for laying a tab out as pages (infographics, posters, handouts and articles), [Plan](/help/canvas/plan-mode/) for boards of cards you drag through columns, and [Workshop](/help/canvas/workshop-mode/) for running a session such as a retro or workshop, with timers, votes and polls to hand. A mode is how a tab is worked on, so everyone on the tab shares it. See [Editor Modes](/help/canvas/editor-modes/).
+- **Templates** for retrospectives, Kanban boards, flowcharts and more, so you rarely start from a blank page. See [Templates](/help/canvas/templates/).
+
+## Built for teams who think visually
+
+livedesign is aimed at people who need to think together, visually: engineering teams sketching architecture and sequence flows, product and design teams mapping journeys and information architecture, and cross-functional groups in workshops, planning sessions, and retrospectives. The unit of value is the team, not the single author.
+
+To make that frictionless, the canvas **always works without signing in**. You can land on a blank diagram, build something real, and hand the link to a colleague who edits it straight away, no account required. See [Sharing your document](/help/getting-started/sharing-your-document/).
+
+<Figure caption="Everyone in a document sees each other's live cursors and presence at once.">
+  <LiveCursors />
+</Figure>
+
+## Free and open source
+
+livedesign is **MIT-licensed** and **free for everyone**. There is no paid tier and no plan to introduce one. A free hosted version runs at livedesign.app, and because the whole codebase is open, anyone can self-host it on their own infrastructure. Every feature is available to every user. See [Why use livedesign?](/help/about/why-livedesign/).
+
+<Tip>
+  The fastest way to understand livedesign is to use it. Open a [new diagram](/new) and drop in a
+  couple of shapes, no sign-up needed.
+</Tip>
+
+</ArticleLayout>

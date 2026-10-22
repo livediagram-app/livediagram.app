@@ -1,0 +1,35 @@
+{
+  "name": "@livedesign/templates",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./template-sheets": "./src/template-sheets.ts",
+    "./plan-template-seeds": "./src/plan-template-seeds.ts",
+    "./page-layout-build": "./src/page-layout-build.ts"
+  },
+  "scripts": {
+    "lint": "oxlint",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf node_modules .turbo coverage"
+  },
+  "dependencies": {
+    "@livedesign/api-schema": "workspace:*",
+    "@livedesign/document": "workspace:*",
+    "@livedesign/forms": "workspace:*",
+    "@livedesign/items": "workspace:*",
+    "@livedesign/sheets": "workspace:*"
+  },
+  "devDependencies": {
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
+    "oxlint": "^1.88.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3"
+  }
+}

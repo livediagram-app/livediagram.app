@@ -1,0 +1,387 @@
+// Pure element transforms for the one-click style presets (docs/specs/010-palette/style-presets.md). Kept
+// separate from both the commit setters (`hooks/useElementStyle.ts`) and the
+// hover-preview hook (`hooks/useStylePreview.ts`) so the two share ONE
+// definition of what each preset does to an element — the preview a user sees
+// on hover is byte-for-byte the change a click commits.
+//
+// Colour presets also stamp the preset's stable id onto the shape's
+// `colorPreset` so a later theme change can re-derive the variant (see
+// `rederiveColorPresetForTheme` in lib/themes). Border + arrow presets carry no
+// theme binding, so they only touch their own fields.
+
+import {
+  INK_PEN_COLOUR,
+  isPenColourName,
+  penColourHex,
+  type PenColourName,
+  encodeStrokePoints,
+  freehandNormalisedPoints,
+  ARROW_THICKNESS_PX,
+  clampShadow,
+  DEFAULT_ANIMATION_SPEED,
+  isBoxed,
+  supportsBorder,
+  supportsShadow,
+  supportsFinish,
+  type ArrowFlow,
+  type Finish,
+  type ElementShadow,
+  type ArrowThickness,
+  type BorderRadius,
+  type BorderStroke,
+  type BorderStyle,
+  type Element,
+  type IconPosition,
+  type IconSize,
+  type IconWeight,
+  type Padding,
+  type ShapeKind,
+  takesChartPalette,
+  isLegendShape,
+  supportsRotation,
+  type ChartPaletteId,
+  type CodeThemeId,
+  type ShapeMarker,
+  type TextAlignX,
+  type TextAlignY,
+  type TextSize,
+  type TextSizePreset,
+  clampLetterSpacing,
+  clampTextArc,
+  type FontWeight,
+  type TextCase,
+  type TextElement,
+  withInlineIcon,
+} from '@livedesign/document';
+import type { ShapeColorPreset } from './themes';
+import { isTechIconId } from './tech-icons';
+import type { TablePreset } from '@livedesign/document';
+
+// Apply a theme-derived style preset to a shape: its colours (fill + stroke +
+// text) AND its border weight / pattern together — a preset is one complete
+// look (docs/specs/010-palette/style-presets.md). Border RADIUS is deliberately untouched: it's a silhouette
+// choice the user makes separately, and a preset clobbering it read as the
+// preset breaking the shape. Records the preset id so theme changes can
+// re-derive it.
+export function applyColorPresetToEl(el: Element, p: ShapeColorPreset): Element {
+  // A sticky takes the paper and the ink and nothing else: its edge against
+  // the peel shadow IS its border, so a stroke here would draw a hairline box
+  // around the note. Any hand-set one is cleared with the pick, which is what
+  // "one complete look" means for a note.
+  if (el.type === 'sticky')
+    return { ...el, fillColor: p.fill, textColor: p.text, strokeColor: undefined };
+  if (el.type !== 'shape') return el;
+  return {
+    ...el,
+    fillColor: p.fill,
+    strokeColor: p.stroke,
+    textColor: p.text,
+    strokeWidth: p.borderStroke,
+    strokeStyle: p.borderStyle,
+    colorPreset: p.id,
+    // A preset is a whole look: it replaces any quick-swatch binding
+    // (docs/specs/008-canvas/quick-style-panel.md) along with the colours it bound.
+    strokeSwatch: undefined,
+    fillSwatch: undefined,
+  };
+}
+
+// A table look (docs/specs/010-palette/style-presets.md): the four surfaces a table paints, plus the banding,
+// in one history step. `headerRow` / `headerColumn` are untouched: which cells
+// ARE headers is data, not a look. A no-op on anything but a table.
+export function applyTablePresetToEl(el: Element, p: TablePreset): Element {
+  if (el.type !== 'table') return el;
+  return {
+    ...el,
+    fillColor: p.fill,
+    strokeColor: p.stroke,
+    textColor: p.text,
+    headerFill: p.headerFill,
+    headerTextColor: p.headerText,
+    zebra: p.zebra,
+    // Records which look this is, so a theme change can re-derive it the way a
+    // shape's `colorPreset` does. Without it the four resolved colours read as
+    // hand-picked ones and the table strands on the old theme.
+    tablePreset: p.id,
+  };
+}
+
+// A chart's palette (docs/specs/009-elements/pie-chart.md). One field, like the code block's scheme: the
+// ramp is resolved at render, so this never touches the data and a slice the
+// user coloured deliberately keeps its colour.
+// A Legend takes one too, from its Legend section, so a legend and a chart set to the same palette stay in step;
+// `null` puts either back on the theme's ramp.
+export function applyChartPaletteToEl(el: Element, id: ChartPaletteId | null): Element {
+  if (el.type !== 'shape' || !(takesChartPalette(el.shape) || isLegendShape(el.shape))) return el;
+  return { ...el, chartPalette: id ?? undefined };
+}
+
+// A code block's colour scheme (docs/specs/009-elements/code-block.md). Its own kind of preset: the card
+// paints from the scheme and takes no element colours, so this writes one
+// field and nothing else. A no-op on anything that is not a code block.
+export function applyCodeThemeToEl(el: Element, id: CodeThemeId): Element {
+  if (el.type !== 'shape' || el.shape !== 'code-block') return el;
+  return { ...el, codeTheme: id };
+}
+
+// ── Granular single-field transforms ────────────────────────────────────
+//
+// The individual colour / border / rotation controls in the context menu hover-
+// preview the same way the presets do (docs/specs/010-palette/style-presets.md). These are the pure field
+// setters behind that flow, shared by the commit setters (useElementStyle) and
+// the preview hook (useStylePreview) so a hovered swatch shows byte-for-byte the
+// change its click commits. Each MUST match the per-type rules in
+// useElementStyle exactly.
+
+// Hand-editing any colour breaks the element's preset binding (docs/specs/010-palette/style-presets.md), so
+// setting fill / stroke / text clears `colorPreset` on a shape and
+// `tablePreset` on a table: past that point the colours are the user's, and a
+// theme change must preserve them rather than re-deriving a look they have
+// already edited away from. Fill applies to shapes + sticky / freehand / table.
+export function applyFillColorToEl(el: Element, color: string): Element {
+  // Also drops the quick-swatch binding (docs/specs/008-canvas/quick-style-panel.md): the slot no longer
+  // describes the colour.
+  if (el.type === 'shape')
+    return { ...el, fillColor: color, colorPreset: undefined, fillSwatch: undefined };
+  if (el.type === 'table') return { ...el, fillColor: color, tablePreset: undefined };
+  if (el.type === 'sticky' || el.type === 'freehand') return { ...el, fillColor: color };
+  return el;
+}
+
+// A colour row's choice on an element that stores stock colours by name (docs/specs/007-editor/
+// editor-modes.md "One look"): a standard colour (Ink, Grey, Red ...) is stored as its name and
+// drawn in its version for the canvas; any other colour replaces the name.
+const lineColour = (color: string): { strokeColor?: string; penColour?: PenColourName } =>
+  isPenColourName(color)
+    ? { strokeColor: undefined, penColour: color }
+    : { strokeColor: color, penColour: undefined };
+const textColour = (color: string): { textColor?: string; penTextColour?: PenColourName } =>
+  isPenColourName(color)
+    ? { textColor: undefined, penTextColour: color }
+    : { textColor: color, penTextColour: undefined };
+// Where an element stores no name (a table, a note's border), a standard colour lands as its
+// light-paper hex; Ink, the canvas's own drawing colour, leaves it as it is.
+const asHex = (color: string): string | null =>
+  color === INK_PEN_COLOUR ? null : isPenColourName(color) ? penColourHex(color, 'light') : color;
+
+export function applyStrokeColorToEl(el: Element, color: string): Element {
+  if (el.type === 'shape')
+    return { ...el, ...lineColour(color), colorPreset: undefined, strokeSwatch: undefined };
+  if (el.type === 'freehand') return { ...el, ...lineColour(color) };
+  if (el.type === 'arrow') return { ...el, ...lineColour(color), strokeSwatch: undefined };
+  const hex = asHex(color);
+  if (hex === null) return el;
+  if (el.type === 'table') return { ...el, strokeColor: hex, tablePreset: undefined };
+  if (el.type === 'sticky') return { ...el, strokeColor: hex };
+  return el;
+}
+
+export function applyTextColorToEl(el: Element, color: string): Element {
+  if (el.type === 'shape') return { ...el, ...textColour(color), colorPreset: undefined };
+  // A hand-picked colour is no longer the quick-swatch slot it came from.
+  if (el.type === 'text') return { ...el, ...textColour(color), textSwatch: undefined };
+  if (el.type === 'sticky' || el.type === 'arrow') return { ...el, ...textColour(color) };
+  const hex = asHex(color);
+  if (hex === null) return el;
+  if (el.type === 'table') return { ...el, textColor: hex, tablePreset: undefined };
+  if (isBoxed(el)) return { ...el, textColor: hex };
+  return el;
+}
+
+// The plate behind an arrow's label (docs/specs/008-canvas/canvas-and-palette.md "Caption"). Arrows only: nothing
+// else paints a caption onto the canvas rather than inside a box.
+export function applyLabelFillToEl(el: Element, color: string): Element {
+  return el.type === 'arrow' ? { ...el, labelFill: color } : el;
+}
+
+// An arrow's arrowhead colour, when it should differ from the line's. Arrows
+// only: nothing else has a pointer to paint.
+export function applyArrowheadColorToEl(el: Element, color: string): Element {
+  return el.type === 'arrow' ? { ...el, arrowheadColor: color } : el;
+}
+
+// The heading band's fill, for the elements that HAVE a heading distinct from
+// their body: a table's header row and a lane's title gutter. A no-op on
+// anything else, so a multi-selection containing a mix only paints the ones
+// with a heading rather than parking a dead field on the rest.
+export function applyHeaderFillToEl(el: Element, color: string): Element {
+  if (el.type === 'table') return { ...el, headerFill: color, tablePreset: undefined };
+  if (el.type === 'shape' && el.shape === 'lane') return { ...el, headerFill: color };
+  return el;
+}
+
+// Border weight / pattern apply to any border-bearing element (shapes + the
+// freehand pen) plus tables; radius is shape-only.
+export function applyBorderStrokeToEl(el: Element, value: BorderStroke): Element {
+  // A pen stroke's recorded width (docs/specs/023-draw-mode/draw-mode.md) outranks the preset when
+  // drawn, so choosing a preset must drop it or the choice would do nothing.
+  // A highlighter never draws the preset, so its width stays.
+  if (el.type === 'freehand' && el.pen !== 'highlighter' && el.penWidth !== undefined) {
+    // Its pen ink (pressures, streamline) goes with it: the preset draws a plain stroke, so the
+    // same points are re-packed without their pressures.
+    const { penWidth: _dropped, streamline: _s, ...rest } = el;
+    return {
+      ...rest,
+      packedPoints: encodeStrokePoints(freehandNormalisedPoints(el)),
+      strokeWidth: value,
+    };
+  }
+  return supportsBorder(el) || el.type === 'table' ? { ...el, strokeWidth: value } : el;
+}
+
+export function applyBorderStyleToEl(el: Element, value: BorderStyle): Element {
+  return supportsBorder(el) || el.type === 'table' ? { ...el, strokeStyle: value } : el;
+}
+
+export function applyBorderRadiusToEl(el: Element, value: BorderRadius): Element {
+  return el.type === 'shape' ? { ...el, borderRadius: value } : el;
+}
+
+// Element drop shadow (docs/specs/008-canvas/element-shadows.md). `null` clears the field; values clamp to
+// the slider limits so a preview / commit can never write an out-of-range
+// shadow. Gated to the body-drawing boxed types (shape / sticky / image /
+// link-card) via the shared supportsShadow predicate.
+export function applyShadowToEl(el: Element, shadow: ElementShadow | null): Element {
+  return supportsShadow(el) ? { ...el, shadow: shadow ? clampShadow(shadow) : undefined } : el;
+}
+
+// An element's own finish (docs/specs/008-canvas/finish.md). `null` is Follow Tab: the key is removed, never
+// stored as the tab's value, so the element follows a later tab change. Shapes, arrows, text, stickies and
+// tables only.
+export function applyFinishToEl(el: Element, finish: Finish | null): Element {
+  if (!supportsFinish(el)) return el;
+  if (finish) return { ...el, finish } as Element;
+  if (!('finish' in el)) return el;
+  const { finish: _cleared, ...rest } = el as Element & { finish?: Finish };
+  return rest;
+}
+
+// Rotation in degrees clockwise about the centre, normalised to 0..359; 0 is
+// stored as undefined (upright). Boxed elements only.
+export function applyRotationToEl(el: Element, deg: number): Element {
+  if (!supportsRotation(el)) return el;
+  const next = ((Math.round(deg) % 360) + 360) % 360;
+  return { ...el, rotation: next === 0 ? undefined : next };
+}
+
+// Morph a shape into a different kind, preserving width / height / label /
+// colour overrides. Circle and diamond are 1:1 shapes — coming from a
+// non-square box, snap to the larger side so the result fits the original
+// footprint. No-op on non-shapes.
+export function applyShapeKindToEl(el: Element, kind: ShapeKind): Element {
+  if (el.type !== 'shape') return el;
+  const oneToOne = kind === 'circle' || kind === 'diamond';
+  if (oneToOne) {
+    const side = Math.max(el.width, el.height);
+    return { ...el, shape: kind, width: side, height: side };
+  }
+  return { ...el, shape: kind };
+}
+
+// A Technology icon's fixed tile-size preset (docs/specs/010-palette/technology-icons.md). Icon shapes only.
+export function applyIconSizeToEl(el: Element, iconSize: IconSize): Element {
+  return el.type === 'shape' && el.shape === 'icon' ? { ...el, iconSize } : el;
+}
+
+// A line-art icon's thin / regular / bold weight (docs/specs/004-interface-design/iconography.md). Technology
+// marks are filled tiles and keep their art, so they are left alone.
+export function applyIconWeightToEl(el: Element, iconWeight: IconWeight): Element {
+  return el.type === 'shape' && el.shape === 'icon' && !isTechIconId(el.iconId)
+    ? { ...el, iconWeight }
+    : el;
+}
+
+// Status markers (docs/specs/009-elements/shape-markers.md): the glyph shown inside the shape, left of its
+// label; `null` clears it. Shapes only.
+export function applyMarkerToEl(el: Element, marker: ShapeMarker | null): Element {
+  return el.type === 'shape' ? { ...el, marker: marker ?? undefined } : el;
+}
+
+export function applyMarkerSizeToEl(el: Element, size: TextSizePreset): Element {
+  return el.type === 'shape' ? { ...el, markerSize: size } : el;
+}
+
+// Text alignment inside the box (the toolbar's 3×3 grid). Boxed elements only.
+export function applyTextAlignToEl(el: Element, x: TextAlignX, y: TextAlignY): Element {
+  return isBoxed(el) ? { ...el, textAlignX: x, textAlignY: y } : el;
+}
+
+// Label size preset. Boxed elements + arrows (arrow labels size too).
+export function applyTextSizeToEl(el: Element, size: TextSize): Element {
+  return isBoxed(el) || el.type === 'arrow' ? { ...el, textSize: size } : el;
+}
+
+// Label font. Boxed elements + arrows; `null` clears the override back to the
+// tab default. Mirrors setFontSelected so the hover-preview + click-commit path
+// applies the same change.
+export function applyFontToEl(el: Element, font: string | null): Element {
+  if (!(isBoxed(el) || el.type === 'arrow')) return el;
+  if (!font) {
+    const copy = { ...el };
+    delete (copy as { font?: string }).font;
+    return copy;
+  }
+  return { ...el, font };
+}
+
+// Box padding preset (space between the label and the element edge). Boxed
+// elements only.
+export function applyPaddingToEl(el: Element, padding: Padding): Element {
+  return isBoxed(el) ? { ...el, padding } : el;
+}
+
+// Re-place a shape's inline icon on another side (docs/specs/008-canvas/canvas-and-palette.md icons). Regular
+// shapes only — the dedicated 'icon' shape has no inline-icon slot. Mirrors
+// dropIconOnElement in useInlineIconMutators.
+export function applyInlineIconToEl(el: Element, iconId: string, position: IconPosition): Element {
+  return el.type === 'shape' && el.shape !== 'icon' ? withInlineIcon(el, iconId, position) : el;
+}
+
+// Apply a line preset (pattern × thickness × optional flow) to an arrow. A
+// preset without a flow clears any existing animation; one with a flow defaults
+// its speed to the shared default when the arrow had none. No-op on non-arrows.
+export function applyArrowPresetToEl(
+  el: Element,
+  p: { style: BorderStyle; thickness: ArrowThickness; flow?: ArrowFlow },
+): Element {
+  if (el.type !== 'arrow') return el;
+  return {
+    ...el,
+    strokeStyle: p.style,
+    strokeWidth: ARROW_THICKNESS_PX[p.thickness],
+    flow: p.flow,
+    flowSpeed: p.flow ? (el.flowSpeed ?? DEFAULT_ANIMATION_SPEED) : el.flowSpeed,
+  };
+}
+
+// Wordmark type (docs/specs/007-editor/logo-pages.md "Wordmark type"): a patch of tracking,
+// weight, case and arc for text elements; `null` clears a field. Choosing a weight clears bold
+// (the weight wins while set, and the Bold button clears it back).
+export type WordmarkPatch = {
+  letterSpacing?: number | null;
+  fontWeight?: FontWeight | null;
+  textCase?: TextCase | null;
+  textArc?: number | null;
+};
+
+export function applyWordmarkToEl(el: Element, patch: WordmarkPatch): Element {
+  if (el.type !== 'text') return el;
+  const next: TextElement = { ...el };
+  const set = <K extends keyof WordmarkPatch>(key: K, value: TextElement[K] | undefined) => {
+    if (value === undefined) delete next[key];
+    else next[key] = value;
+  };
+  if ('letterSpacing' in patch)
+    set(
+      'letterSpacing',
+      patch.letterSpacing == null ? undefined : clampLetterSpacing(patch.letterSpacing),
+    );
+  if ('textArc' in patch)
+    set('textArc', patch.textArc == null ? undefined : clampTextArc(patch.textArc));
+  if ('textCase' in patch) set('textCase', patch.textCase ?? undefined);
+  if ('fontWeight' in patch) {
+    set('fontWeight', patch.fontWeight ?? undefined);
+    if (patch.fontWeight != null) delete next.textBold;
+  }
+  return next;
+}

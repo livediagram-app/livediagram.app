@@ -1,0 +1,47 @@
+{
+  "name": "@livedesign/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev --var AI_ALLOWED_ORIGINS: --var GUEST_SIG_ENFORCE_AFTER:",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "deploy": "wrangler deploy",
+    "staging:check": "wrangler deploy --dry-run --env staging",
+    "lint": "oxlint",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "gen:openapi": "node scripts/gen-openapi-schemas.mjs",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist .wrangler node_modules .turbo coverage",
+    "db:migrate:local": "wrangler d1 migrations apply livedesign --local",
+    "db:migrate:remote": "wrangler d1 migrations apply livedesign --remote"
+  },
+  "dependencies": {
+    "@livedesign/api-schema": "workspace:*",
+    "@livedesign/diagram-lint": "workspace:*",
+    "@livedesign/document": "workspace:*",
+    "@livedesign/document-views": "workspace:*",
+    "@livedesign/edit-operations": "workspace:*",
+    "@livedesign/forms": "workspace:*",
+    "@livedesign/icons": "workspace:*",
+    "@livedesign/items": "workspace:*",
+    "@livedesign/plan-art": "workspace:*",
+    "@livedesign/render-png": "workspace:*",
+    "@livedesign/sheets": "workspace:*",
+    "@livedesign/templates": "workspace:*",
+    "jose": "^6.2.12"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261007.1",
+    "@livedesign/oxlint-config": "workspace:*",
+    "@livedesign/vitest-config": "workspace:*",
+    "@types/node": "^26.6.4",
+    "@vitest/coverage-v8": "^5.0.3",
+    "oxlint": "^1.88.0",
+    "ts-json-schema-generator": "^2.9.0",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.3",
+    "wrangler": "^4.148.0"
+  }
+}

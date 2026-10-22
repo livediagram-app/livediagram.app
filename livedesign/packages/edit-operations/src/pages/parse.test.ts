@@ -1,0 +1,161 @@
+import { describe, expect, it } from 'vitest';
+import { parsePagesRequest } from './parse';
+
+// docs/specs/024-agents/blueprints/pages-for-agents.md "Interfaces and contracts".
+
+const refusal = (raw: unknown) => {
+  const out = parsePagesRequest(raw);
+  if (!('refusal' in out)) throw new Error('expected a refusal');
+  return out.refusal;
+};
+
+describe('the body', () => {
+  it('takes an object of page changes', () => {
+    expect(refusal(null).code).toBe('invalid_body');
+    expect(refusal([]).code).toBe('invalid_body');
+    expect(refusal({}).code).toBe('invalid_body');
+    expect(refusal({ article: { markdown: '' } }).message).toContain('"article"');
+    expect(refusal({ pages: [{ op: 'delete', page: 1 }], extra: 1 }).message).toContain('"extra"');
+  });
+
+  it('takes 1 to 50 page changes', () => {
+    expect(refusal({ pages: [] }).code).toBe('invalid_body');
+    expect(refusal({ pages: Array(51).fill({ op: 'delete', page: 1 }) }).code).toBe('invalid_body');
+    expect(refusal({ pages: 'x' }).code).toBe('invalid_body');
+  });
+
+  it('rethrows what is not a refusal', () => {
+    const hostile = {
+      get pages() {
+        throw new TypeError('boom');
+      },
+    };
+    expect(() => parsePagesRequest(hostile)).toThrow('boom');
+  });
+});
+
+describe('page changes', () => {
+  it('reads every change with its fields', () => {
+    const out = parsePagesRequest({
+      pages: [
+        {
+          op: 'add',
+          kind: 'slide',
+          size: 'slide',
+          orientation: 'landscape',
+          name: 'Cover',
+          background: { gradient: ['#000000', '#ffffff'], angle: -90, pattern: 'none' },
+          layout: 'title',
+          at: 1,
+        },
+        { op: 'set', page: 'Cover', locked: false, background: { paper: true } },
+        { op: 'set', page: 2, background: { color: '#abc', pattern: 'dots' } },
+        { op: 'layout', page: 'page-1', layout: 'quote' },
+        { op: 'move', page: 1, to: 3 },
+        { op: 'duplicate', page: '2' },
+        { op: 'delete', page: 3 },
+        { op: 'apply_background_to_all', page: 1 },
+      ],
+    });
+    expect(out).toEqual({
+      pages: [
+        {
+          op: 'add',
+          kind: 'slide',
+          size: 'slide',
+          orientation: 'landscape',
+          name: 'Cover',
+          background: { gradient: ['#000000', '#ffffff'], angle: 270, pattern: 'none' },
+          layout: 'title',
+          at: 1,
+        },
+        { op: 'set', page: 'Cover', locked: false, background: { paper: true } },
+        { op: 'set', page: 2, background: { color: '#abc', pattern: 'dots' } },
+        { op: 'layout', page: 'page-1', layout: 'quote' },
+        { op: 'move', page: 1, to: 3 },
+        { op: 'duplicate', page: '2' },
+        { op: 'delete', page: 3 },
+        { op: 'apply_background_to_all', page: 1 },
+      ],
+    });
+  });
+
+  it('refuses each malformed field by name, at its change', () => {
+    const at = (change: unknown) => refusal({ pages: [{ op: 'delete', page: 1 }, change] });
+    expect(at('x')).toMatchObject({ code: 'invalid_value', change: 1 });
+    expect(at({ op: 'fly' }).message).toContain('"op" is one of');
+    expect(at({ op: 'add', kind: 'poster' }).message).toContain('"kind"');
+    expect(at({ op: 'add', kind: 'slide', size: 'huge' }).message).toContain('"size"');
+    expect(at({ op: 'add', kind: 'slide', orientation: 'up' }).message).toContain('"orientation"');
+    expect(at({ op: 'add', kind: 'slide', name: 3 }).message).toContain('"name" is text');
+    expect(at({ op: 'add', kind: 'slide', name: 'x'.repeat(61) }).message).toContain('at most 60');
+    expect(at({ op: 'add', kind: 'slide', at: 0 }).message).toContain('"at"');
+    expect(at({ op: 'add', kind: 'slide', colour: 'x' }).message).toContain('takes no "colour"');
+    expect(at({ op: 'set', page: 0, name: 'x' }).message).toContain('page place');
+    expect(at({ op: 'set', page: '', name: 'x' }).message).toContain('"page" names a page');
+    expect(at({ op: 'set', page: 1 }).message).toContain('at least one');
+    expect(at({ op: 'set', page: 1, locked: 'yes' }).message).toContain('"locked"');
+    expect(at({ op: 'layout', page: 1 }).message).toContain('"layout" is text');
+    expect(at({ op: 'move', page: 1, to: 1.5 }).message).toContain('"to"');
+  });
+
+  it('refuses a malformed background', () => {
+    const bg = (background: unknown) =>
+      refusal({ pages: [{ op: 'set', page: 1, background }] }).message;
+    expect(bg('red')).toContain('object');
+    expect(bg({})).toContain('sets a color');
+    expect(bg({ color: 'red' })).toContain('hex colour');
+    expect(bg({ color: '#000', paper: true })).toContain('one of color, gradient or paper');
+    expect(bg({ gradient: ['#000'] })).toContain('two hex colours');
+    expect(bg({ gradient: ['#000', 'x'] })).toContain('hex colour');
+    expect(bg({ angle: 10 })).toContain('beside a gradient');
+    expect(bg({ pattern: 'stars' })).toContain('"background.pattern"');
+    expect(bg({ paper: false })).toContain('"background.paper"');
+    expect(bg({ shade: 1 })).toContain('takes no "shade"');
+  });
+});
+
+describe('an add without a place', () => {
+  it('leaves it at the end', () => {
+    expect(parsePagesRequest({ pages: [{ op: 'add', kind: 'logo' }] })).toEqual({
+      pages: [{ op: 'add', kind: 'logo' }],
+    });
+  });
+});
+
+// docs/specs/007-editor/wireframe-pages.md: a wireframe page's device, frame look and system bars.
+describe('wireframe fields', () => {
+  it('reads a device, a frame look and system bars on an add', () => {
+    const out = parsePagesRequest({
+      pages: [
+        { op: 'add', kind: 'wireframe', device: 'watch', frameLook: 'dark', systemBars: false },
+      ],
+    });
+    if ('refusal' in out) throw new Error(out.refusal.message);
+    expect(out).toMatchObject({
+      pages: [
+        { op: 'add', kind: 'wireframe', device: 'watch', frameLook: 'dark', systemBars: false },
+      ],
+    });
+  });
+
+  it('refuses system bars that are not true or false, and an unknown device or look', () => {
+    expect(
+      refusal({ pages: [{ op: 'add', kind: 'wireframe', systemBars: 'yes' }] }).message,
+    ).toContain('"systemBars" is true or false.');
+    expect(refusal({ pages: [{ op: 'add', kind: 'wireframe', device: 'toaster' }] }).code).toBe(
+      'invalid_value',
+    );
+    expect(refusal({ pages: [{ op: 'set', page: 1, frameLook: 'neon' }] }).code).toBe(
+      'invalid_value',
+    );
+  });
+
+  it('never changes a device on a set', () => {
+    expect(refusal({ pages: [{ op: 'set', page: 1, device: 'ipad' }] }).message).toContain(
+      '"device" is chosen as a wireframe page is added',
+    );
+    const out = parsePagesRequest({ pages: [{ op: 'set', page: 1, systemBars: true }] });
+    expect('refusal' in out).toBe(false);
+  });
+});

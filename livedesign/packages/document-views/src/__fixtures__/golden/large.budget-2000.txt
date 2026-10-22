@@ -1,0 +1,168 @@
+tab 0b34 "Checkout platform ×10" · 300 elements: 160 boxes, 30 frames, 110 arrows · threads 10 open/20
+text e712 "Checkout platform: production"
+text 024b "Checkout platform: production"
+text 9474 "Checkout platform: production"
+text feaa "Checkout platform: production"
+text ec7c "Checkout platform: production"
+text cc7b "Checkout platform: production"
+text 2e28 "Checkout platform: production"
+text 0dad "Checkout platform: production"
+text 4ee9 "Checkout platform: production"
+text 78b0 "Checkout platform: production"
+frame 82c4 "Edge"
+  actor 6ff0 "Customer" → 87eb
+  square 87eb "Web app" → 09a5
+  hexagon 09a5 "API gateway" → 1eb6 "JWT", 8bab
+frame 82f7 "Services"
+frame 4da6 "Data"
+  cylinder bfe4 "Orders DB"
+  cylinder 9eb3 "Inventory DB"
+cloud 0ceb "Stripe"
+frame 2d76 "Edge"
+  actor f087 "Customer" → 7c4d
+  square 7c4d "Web app" → 10a6
+  hexagon 10a6 "API gateway" → 8886 "JWT", 4b67
+frame 6b96 "Services"
+frame a8a7 "Data"
+  cylinder 6faa "Orders DB"
+  cylinder a42d "Inventory DB"
+cloud c6f3 "Stripe"
+frame 3808 "Edge"
+  actor af90 "Customer" → d59e
+  square d59e "Web app" → 4904
+  hexagon 4904 "API gateway" → acf0 "JWT", c632
+frame 9914 "Services"
+frame e7e8 "Data"
+  cylinder b5c7 "Orders DB"
+  cylinder 5118 "Inventory DB"
+cloud 3ba4 "Stripe"
+frame aa25 "Edge"
+  actor a701 "Customer" → 288a
+  square 288a "Web app" → 1616
+  hexagon 1616 "API gateway" → cff6 "JWT", e90b
+frame 3f61 "Services"
+frame 7de6 "Data"
+  cylinder aae0 "Orders DB"
+  cylinder 93f6 "Inventory DB"
+cloud bcfe "Stripe"
+frame 656c "Edge"
+  actor ba84 "Customer" → 7efd6
+  square 7efd6 "Web app" → ed50
+  hexagon ed50 "API gateway" → 71e8 "JWT", 5b36
+frame 84f3 "Services"
+  square 71e8 "Auth service"
+  square 5b36 "Orders service" → 588d "charge", 205e, edae "OrderPlaced"
+  stadium edae "Event bus" → b5a3, 77cc
+  square 588d "Payments service" → 496f "HTTPS" ~dashed
+  square b5a3 "Inventory service" → 1df0
+  square 77cc "Notification worker"
+frame a43f "Data"
+  cylinder 205e "Orders DB"
+  cylinder 1df0 "Inventory DB"
+cloud 496f "Stripe"
+frame 5b2c "Edge"
+  actor 8493 "Customer" → 491c
+  square 491c "Web app" → 1cf2
+  hexagon 1cf2 "API gateway" → 7315 "JWT", c21a
+frame b507 "Services"
+  square 7315 "Auth service"
+  square c21a "Orders service" → c0ad "charge", 4cf6, 4d22 "OrderPlaced"
+  stadium 4d22 "Event bus" → c6a9, f064
+  square c0ad "Payments service" → 71c7 "HTTPS" ~dashed
+  square c6a9 "Inventory service" → d08c
+  square f064 "Notification worker"
+frame d275 "Data"
+  cylinder 4cf6 "Orders DB"
+  cylinder d08c "Inventory DB"
+cloud 71c7 "Stripe"
+frame f0ad "Edge"
+  actor fb5c "Customer" → f732
+  square f732 "Web app" → 7e26
+  hexagon 7e26 "API gateway" → c2e7 "JWT", 3e65
+frame c7be "Services"
+  square c2e7 "Auth service"
+  square 3e65 "Orders service" → 7888 "charge", ae26, 6d45 "OrderPlaced"
+  stadium 6d45 "Event bus" → 7cdd, cbde
+  square 7888 "Payments service" → 4869 "HTTPS" ~dashed
+  square 7cdd "Inventory service" → c355
+  square cbde "Notification worker"
+frame 9b65 "Data"
+  cylinder ae26 "Orders DB"
+  cylinder c355 "Inventory DB"
+cloud 4869 "Stripe"
+frame dc6a "Edge"
+  actor 32e5 "Customer" → b0e6
+  square b0e6 "Web app" → 6bcb
+  hexagon 6bcb "API gateway" → a364 "JWT", fe6c
+frame 5228 "Services"
+  square a364 "Auth service"
+  square fe6c "Orders service" → 8c80 "charge", de3e, 1a07 "OrderPlaced"
+  stadium 1a07 "Event bus" → 1369, 8697
+  square 8c80 "Payments service" → 1bb0 "HTTPS" ~dashed
+  square 1369 "Inventory service" → 012e
+  square 8697 "Notification worker"
+frame 17cc "Data"
+  cylinder de3e "Orders DB"
+  cylinder 012e "Inventory DB"
+cloud 1bb0 "Stripe"
+frame 4855 "Edge"
+  actor 8311 "Customer" → 75b3
+  square 75b3 "Web app" → 53f1
+  hexagon 53f1 "API gateway" → 46bc "JWT", baca
+frame e2ff "Services"
+  square 46bc "Auth service"
+  square baca "Orders service" → 8073 "charge", a721, 59af "OrderPlaced"
+  stadium 59af "Event bus" → 457d, a5a8
+  square 8073 "Payments service" → f104 "HTTPS" ~dashed
+  square 457d "Inventory service" → ff46
+  square a5a8 "Notification worker"
+frame e662 "Data"
+  cylinder a721 "Orders DB"
+  cylinder ff46 "Inventory DB"
+cloud f104 "Stripe"
+frame 83f1 "Edge"
+  actor 157b "Customer" → 74c6
+  square 74c6 "Web app" → fc0b
+  hexagon fc0b "API gateway" → 9778 "JWT", 428a
+frame 1dc8 "Services"
+  square 9778 "Auth service"
+  square 428a "Orders service" → e5d0 "charge", 2479, cabe "OrderPlaced"
+  stadium cabe "Event bus" → b4c3, 7716
+  square e5d0 "Payments service" → 4f77 "HTTPS" ~dashed
+  square b4c3 "Inventory service" → 7851
+  square 7716 "Notification worker"
+frame 59cf "Data"
+  cylinder 2479 "Orders DB"
+  cylinder 7851 "Inventory DB"
+cloud 4f77 "Stripe"
+entity 1b0f "Order"
+entity cbfe "Order"
+entity a63f "Order"
+entity 1588 "Order"
+entity 0d19 "Order"
+entity 2e79 "Order"
+entity 661b "Order"
+entity 46da "Order"
+entity 58f5 "Order"
+entity 85a4 "Order"
+table 3ab0
+sticky fa7c "Payment retries are not idempotent yet!" comments=2 open
+table 2154
+sticky d826 "Payment retries are not idempotent yet!" comments=2 open
+table c7f2
+sticky bef1 "Payment retries are not idempotent yet!" comments=2 open
+table 29ea
+sticky 2819 "Payment retries are not idempotent yet!" comments=2 open
+table 4550
+sticky d910 "Payment retries are not idempotent yet!" comments=2 open
+table 128b
+sticky cc83 "Payment retries are not idempotent yet!" comments=2 open
+table 406f
+sticky 43c4 "Payment retries are not idempotent yet!" comments=2 open
+table b1c9
+sticky 87c2 "Payment retries are not idempotent yet!" comments=2 open
+table dc85
+sticky 57a2 "Payment retries are not idempotent yet!" comments=2 open
+table 80a2
+sticky 5573 "Payment retries are not idempotent yet!" comments=2 open
+… notes hidden; attributes hidden; 13 elements in frame 82f7 hidden; 13 elements in frame 6b96 hidden; 13 elements in frame 9914 hidden; 13 elements in 1 other container hidden: view --only 82f7

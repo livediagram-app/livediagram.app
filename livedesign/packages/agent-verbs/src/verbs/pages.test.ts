@@ -1,0 +1,243 @@
+import { describe, expect, it } from 'vitest';
+import type { PageChange, PagesAnswer } from '@livedesign/api-schema';
+import { VerbRefusal } from '../define';
+import { changePages, pagesTabOf } from '../pages/pages-calls';
+import { contextOf, DOC_A, fakeApi, library, tabsOfA } from '../testing/fake-api';
+import { pageLs, pageSet } from './pages';
+
+// The Pages verbs and calls (docs/specs/024-agents/pages-for-agents.md "The front doors",
+// "Which tab").
+const ONE = 'tab-one-0000';
+const TWO = 'tab-two-0000';
+const tabPath = (id: string) => `/documents/${DOC_A}/tabs/${id}`;
+// A diagram with something on it: never switched unasked.
+const DRAWN = [{ id: 'box', type: 'shape', shape: 'square', x: 0, y: 0, width: 10, height: 10 }];
+
+const ANSWER: PagesAnswer = {
+  tab: { id: ONE, rev: 5 },
+  switched: false,
+  lines: ['Added page 2 (slide, Slide (16:9)).'],
+  pages: [
+    {
+      place: 1,
+      id: 'page-1',
+      name: 'Cover',
+      kind: 'slide',
+      size: 'slide',
+      orientation: null,
+      rect: { x: -960, y: -540, width: 1920, height: 1080 },
+      background: null,
+      locked: false,
+      elements: 3,
+    },
+  ],
+  changesetId: null,
+};
+
+const PAGES_TAB = {
+  id: ONE,
+  rev: 4,
+  opensIn: 'pages',
+  elements: [],
+  pages: [{ id: 'a1', orientation: 'portrait', kind: 'logo', size: 'logo' }],
+};
+
+function setUp(
+  tabs: Record<string, unknown> = { [TWO]: { id: TWO, elements: [] }, [ONE]: PAGES_TAB },
+  answer: (r: Request) => Response | Promise<Response> = () => Response.json(ANSWER),
+  input = '',
+) {
+  const sent: unknown[] = [];
+  const routes: Record<string, unknown> = { ...library, ...tabsOfA };
+  for (const [id, tab] of Object.entries(tabs)) routes[tabPath(id)] = { tab };
+  routes[`${tabPath(ONE)}/pages`] = async (r: Request) => {
+    sent.push(await r.clone().json());
+    return answer(r);
+  };
+  routes[`${tabPath(TWO)}/pages`] = routes[`${tabPath(ONE)}/pages`];
+  routes[`${tabPath(ONE)}?view=pages&door=cli`] = { text: 'tab one · pages' };
+  routes[`${tabPath(ONE)}?view=pages&door=cli&budget=50`] = { text: 'tab one · fitted' };
+  const api = fakeApi(routes);
+  return { api, sent, ctx: contextOf(api, [], [], { readInput: async () => input }) };
+}
+
+describe('which tab', () => {
+  it('is the one named, else the first in Pages mode', async () => {
+    const { api } = setUp();
+    expect(await pagesTabOf(api, DOC_A, TWO, 'mcp')).toMatchObject({ tabId: TWO });
+    expect(await pagesTabOf(api, DOC_A, undefined, 'mcp')).toMatchObject({ tabId: ONE });
+  });
+
+  it('takes an empty first tab, a document just made for pages', async () => {
+    const { api } = setUp({
+      [TWO]: { id: TWO, elements: DRAWN },
+      [ONE]: { id: ONE, elements: [] },
+    });
+    expect(await pagesTabOf(api, DOC_A, undefined, 'mcp')).toMatchObject({ tabId: ONE });
+  });
+
+  it('refuses rather than switching a diagram unasked, in each door’s words', async () => {
+    const { api } = setUp({
+      [TWO]: { id: TWO, elements: [] },
+      [ONE]: { id: ONE, elements: DRAWN },
+    });
+    const mcp = await pagesTabOf(api, DOC_A, undefined, 'mcp');
+    expect(mcp).toMatchObject({ ok: false, code: 'tab_needed' });
+    expect((mcp as { message: string }).message).toContain('add_tab');
+    const cli = await pagesTabOf(api, DOC_A, undefined, 'cli');
+    expect((cli as { message: string }).message).toContain('--tab');
+  });
+
+  it('turns a missing document into the api’s refusal', async () => {
+    const { api } = setUp();
+    expect(await pagesTabOf(api, 'nope', undefined, 'mcp')).toMatchObject({
+      ok: false,
+      code: 'not_found',
+    });
+  });
+});
+
+describe('the calls', () => {
+  it('sends page changes and answers what the api did', async () => {
+    const { api, sent } = setUp();
+    const done = await changePages(api, DOC_A, { changes: [{ op: 'add', kind: 'slide' }] }, 'mcp');
+    expect(done).toMatchObject({ ok: true, documentId: DOC_A, tabId: ONE, tab: { rev: 5 } });
+    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'slide' }] }]);
+  });
+
+  it('passes the api’s refusal through with its change', async () => {
+    const { api } = setUp(undefined, () =>
+      Response.json({ error: 'page_unknown', message: 'No page "9".', change: 0 }, { status: 400 }),
+    );
+    expect(
+      await changePages(api, DOC_A, { tabId: ONE, changes: [{ op: 'delete', page: 9 }] }, 'mcp'),
+    ).toEqual({ ok: false, code: 'page_unknown', message: 'No page "9".', change: 0 });
+  });
+
+  it('reads a refusal without a message as the generic words, and lets a 5xx throw', async () => {
+    const bare = setUp(undefined, () => new Response('nope', { status: 403 }));
+    const add = { tabId: ONE, changes: [{ op: 'add', kind: 'slide' }] as PageChange[] };
+    expect(await changePages(bare.api, DOC_A, add, 'mcp')).toMatchObject({
+      ok: false,
+      code: 'http_403',
+    });
+    const down = setUp(undefined, () => new Response('down', { status: 503 }));
+    await expect(changePages(down.api, DOC_A, add, 'mcp')).rejects.toThrow();
+  });
+});
+
+describe('the calls with no tab to act on', () => {
+  it('answer the refusal rather than send anything', async () => {
+    const { api, sent } = setUp({
+      [TWO]: { id: TWO, elements: DRAWN },
+      [ONE]: { id: ONE, elements: DRAWN },
+    });
+    expect(
+      await changePages(api, DOC_A, { changes: [{ op: 'add', kind: 'slide' }] }, 'mcp'),
+    ).toMatchObject({
+      code: 'tab_needed',
+    });
+    expect(sent).toEqual([]);
+  });
+});
+
+describe('page ls and page set', () => {
+  it('prints the pages view, fitted when asked', async () => {
+    const { ctx } = setUp();
+    const out = await pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A }));
+    expect(pageLs.text!(out)).toEqual(['tab one · pages']);
+    const fitted = await pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A, budget: 50 }));
+    expect(fitted.text).toBe('tab one · fitted');
+  });
+
+  it('refuses page ls with no Pages tab', async () => {
+    const { ctx } = setUp({
+      [TWO]: { id: TWO, elements: DRAWN },
+      [ONE]: { id: ONE, elements: DRAWN },
+    });
+    await expect(pageLs.run!(ctx, pageLs.input.parse({ doc: DOC_A }))).rejects.toBeInstanceOf(
+      VerbRefusal,
+    );
+  });
+
+  it('makes one change from the flags', async () => {
+    const cases: [Record<string, unknown>, unknown][] = [
+      [
+        { add: 'slide', layout: 'slide-title', name: 'Cover' },
+        { op: 'add', kind: 'slide', name: 'Cover', layout: 'slide-title' },
+      ],
+      [
+        { page: '2', delete: true },
+        { op: 'delete', page: 2 },
+      ],
+      [
+        { page: 'Cover', duplicate: true },
+        { op: 'duplicate', page: 'Cover' },
+      ],
+      [
+        { page: '1', backgroundToAll: true },
+        { op: 'apply_background_to_all', page: 1 },
+      ],
+      [
+        { page: '2', move: 1 },
+        { op: 'move', page: 2, to: 1 },
+      ],
+      [
+        { page: '2', layout: 'quote' },
+        { op: 'layout', page: 2, layout: 'quote' },
+      ],
+      [
+        { page: '2', size: 'a3', orientation: 'landscape' },
+        { op: 'set', page: 2, size: 'a3', orientation: 'landscape' },
+      ],
+    ];
+    for (const [flags, change] of cases) {
+      const { ctx, sent } = setUp();
+      const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, ...flags }));
+      expect(sent).toEqual([{ pages: [change] }]);
+      expect(pageSet.text!(out)).toEqual([
+        '~ Added page 2 (slide, Slide (16:9)).',
+        '1  slide  slide  -960,-540 1920x1080  Cover',
+      ]);
+      expect(pageSet.quiet!(out)).toEqual(['page-1']);
+    }
+  });
+
+  it('adds a page with no layout, and lists an unnamed page without a name', async () => {
+    const unnamed = { ...ANSWER, pages: [{ ...ANSWER.pages[0]!, name: null }] };
+    const { ctx, sent } = setUp(undefined, () => Response.json(unnamed));
+    const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, add: 'logo' }));
+    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'logo' }] }]);
+    expect(pageSet.text!(out)[1]).toBe('1  slide  slide  -960,-540 1920x1080');
+  });
+
+  it('takes a JSON list of changes, on the tab named', async () => {
+    const { ctx, sent } = setUp(undefined, undefined, '[{"op":"add","kind":"logo"}]');
+    await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, tab: 'Details', changes: 'c.json' }));
+    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'logo' }] }]);
+    const one = setUp(undefined, undefined, '{"op":"add","kind":"logo"}');
+    await pageSet.run!(one.ctx, pageSet.input.parse({ doc: DOC_A, changes: '-' }));
+    expect(one.sent).toEqual([{ pages: [{ op: 'add', kind: 'logo' }] }]);
+  });
+
+  it('refuses no change, bad JSON, too many changes and the api’s refusal', async () => {
+    const run = async (flags: Record<string, unknown>, input = '') => {
+      const { ctx } = setUp(
+        undefined,
+        () =>
+          Response.json({ error: 'page_unknown', message: 'No page.', change: 0 }, { status: 400 }),
+        input,
+      );
+      return pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, ...flags })).catch(
+        (e: unknown) => e,
+      );
+    };
+    expect(await run({})).toBeInstanceOf(VerbRefusal);
+    expect(await run({ page: '2' })).toBeInstanceOf(VerbRefusal);
+    expect(await run({ changes: 'c' }, 'not json')).toBeInstanceOf(VerbRefusal);
+    expect(await run({ changes: 'c' }, '[]')).toBeInstanceOf(VerbRefusal);
+    const refused = await run({ page: '9', delete: true });
+    expect(refused).toBeInstanceOf(VerbRefusal);
+    expect((refused as Error).message).toContain('change 1: No page.');
+  });
+});
