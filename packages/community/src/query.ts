@@ -1,7 +1,7 @@
-// The Community's search grammar and list query (docs/specs/025-community/community.md "Gallery", "My Shares"): the
+// The Community's search grammar and list query (livediagram/docs/specs/025-community/community.md "Gallery", "My Shares"): the
 // sorts, the list query and its URL form, and the words a search carries (`#tag`, `category:<id>`, `sort:<id>`,
-// `is:mine` and plain terms). Pure, shared by the api (parsing a request) and the Community app (the search box and
-// the address bar). Split from community.ts, which holds the post itself, its input and its wire shapes.
+// `is:mine` and plain terms). Pure, shared by the service (parsing a request) and the Community pages (the search box and
+// the address bar). Split from post.ts, which holds the post itself, its input and its wire shapes.
 
 import {
   COMMUNITY_MAX_OFFSET,
@@ -12,7 +12,7 @@ import {
   isCommunityCategory,
   normaliseCommunityTag,
   type CommunityCategory,
-} from './community';
+} from './post';
 
 // ---------------------------------------------------------------------
 // List query
@@ -46,7 +46,7 @@ export const EMPTY_COMMUNITY_QUERY: CommunityListQuery = {
   offset: 0,
 };
 
-// A search string carries every filter in words (docs/specs/025-community/community.md "Gallery"): `#tag`
+// A search string carries every filter in words (livediagram/docs/specs/025-community/community.md "Gallery"): `#tag`
 // tokens, each a tag the post must have; one `category:<id>` token; one `sort:<id>` token (`sort:loved`,
 // `sort:copied`; Newest needs none); `is:mine`, for only the caller's own posts (My Shares, signed in); and
 // plain terms matched against the title, description and tags.
