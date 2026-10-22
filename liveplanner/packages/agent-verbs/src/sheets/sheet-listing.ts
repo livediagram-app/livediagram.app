@@ -1,7 +1,7 @@
-// A document's sheets for an agent (docs/specs/029-sheets/sheet-store.md "Agents", MCP list_sheets and `sheet ls`):
+// A project's sheets for an agent (docs/specs/029-sheets/sheet-store.md "Agents", MCP list_sheets and `sheet ls`):
 // each one's title, tab, size in use and filled range, and the Sheet element that frames it.
 import type { ApiClient } from '@liveplanner/api-client';
-import type { DocumentResponse, TabResponse } from '@liveplanner/api-schema';
+import type { ProjectResponse, TabResponse } from '@liveplanner/api-schema';
 import { AGENT_LOCALE, formatRange, sheetFromJson, Workbook } from '@liveplanner/sheets';
 import { tabPath } from '../verbs/shared';
 import { readSheets } from './sheet-state';
@@ -24,11 +24,11 @@ type Framing = { id?: unknown; shape?: unknown; planSheet?: { sheetId?: unknown 
 // The Sheet elements of the tabs that hold sheets, by sheet id: one tab read per such tab, in parallel.
 async function framesOf(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   tabIds: readonly string[],
 ): Promise<Map<string, string>> {
   const tabs = await Promise.all(
-    tabIds.map((id) => api.json<TabResponse>(tabPath(documentId, id)).catch(() => null)),
+    tabIds.map((id) => api.json<TabResponse>(tabPath(projectId, id)).catch(() => null)),
   );
   const out = new Map<string, string>();
   for (const answer of tabs)
@@ -43,16 +43,16 @@ async function framesOf(
 
 export async function listSheets(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   tabId?: string,
 ): Promise<{ sheets: ListedSheet[] }> {
-  const [{ document }, sheets] = await Promise.all([
-    api.json<DocumentResponse>(`/documents/${encodeURIComponent(documentId)}`),
-    readSheets(api, documentId, tabId),
+  const [{ project }, sheets] = await Promise.all([
+    api.json<ProjectResponse>(`/projects/${encodeURIComponent(projectId)}`),
+    readSheets(api, projectId, tabId),
   ]);
-  const order = new Map(document.tabs.map((t) => [t.id, t.orderIndex ?? 0]));
-  const names = new Map(document.tabs.map((t) => [t.id, t.name]));
-  const frames = await framesOf(api, documentId, [...new Set(sheets.map((s) => s.tabId))]);
+  const order = new Map(project.tabs.map((t) => [t.id, t.orderIndex ?? 0]));
+  const names = new Map(project.tabs.map((t) => [t.id, t.name]));
+  const frames = await framesOf(api, projectId, [...new Set(sheets.map((s) => s.tabId))]);
   // Only the extents are read: the workbook works nothing out until asked for a value.
   const wb = new Workbook({ sheets: sheets.map(sheetFromJson), locale: AGENT_LOCALE });
   const listed = sheets.map((s): ListedSheet => {

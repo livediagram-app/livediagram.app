@@ -11,9 +11,9 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Building a Workbench" description="Pair through the CLI, frame the editor, and speak its postMessage protocol." categoryTitle="Developers" categorySlug="developers" parentArticle={{ title: "Diagrams in Your Developer Tools", slug: "workbenches" }} subArticles={getSubArticles("workbenches").filter((a) => a.slug !== "building-a-workbench")}>
 
-This page is for people building a **workbench**: a developer tool (a coding agent's app, an editor extension) that shows a liveplanner document live beside an agent. It covers the whole contract between your tool and liveplanner. To use a workbench rather than build one, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
+This page is for people building a **workbench**: a developer tool (a coding agent's app, an editor extension) that shows a liveplanner project live beside an agent. It covers the whole contract between your tool and liveplanner. To use a workbench rather than build one, see [Diagrams in Your Developer Tools](/help/developers/workbenches/).
 
-Your tool never holds a liveplanner credential. It runs the person's own [CLI](/help/developers/cli/), which holds their token, to get a **ticket**: a single-use link that opens one document in a frame, signed in as that person. The frame then talks to your tool with `window.postMessage`.
+Your tool never holds a liveplanner credential. It runs the person's own [CLI](/help/developers/cli/), which holds their token, to get a **ticket**: a single-use link that opens one project in a frame, signed in as that person. The frame then talks to your tool with `window.postMessage`.
 
 ## Your Origin
 
@@ -23,7 +23,7 @@ Pairing is per origin, so the same tool on a laptop and on a LAN address pairs t
 
 ## Pairing
 
-A token opens documents only in a workbench its owner has approved. The first time, run:
+A token opens projects only in a workbench its owner has approved. The first time, run:
 
 ```bash
 liveplanner workbench pair --origin https://127.0.0.1:5175 --name "Acme Editor"
@@ -38,24 +38,24 @@ The link opens a page headed **Allow this workbench?** in the person's own signe
 
 A pairing lasts as long as its token. The person can end it from **Settings**, under **API Tokens**, with **Unpair**.
 
-## Opening a Document
+## Opening a Project
 
 ```bash
 liveplanner workbench open "Home screen" --origin https://127.0.0.1:5175 --json
 ```
 
-The document can be a name, an id prefix or a liveplanner link to one of the person's own documents (a share link is refused). Add `--tab` with a tab name or id prefix to open on that tab; without it, the editor opens on the first tab. With `--json` it prints:
+The project can be a name, an id prefix or a liveplanner link to one of the person's own projects (a share link is refused). Add `--tab` with a tab name or id prefix to open on that tab; without it, the editor opens on the first tab. With `--json` it prints:
 
 ```json
 {
   "url": "https://liveplanner.app/embed/workbench?d=3h9x2a…#ticket=…",
-  "documentId": "3h9x2a…",
+  "projectId": "3h9x2a…",
   "tabId": null,
   "expiresAt": 1791234567890
 }
 ```
 
-If the token is not paired with your origin, the command exits `4` with the code `pairing_required` and names the `workbench pair` command to run. Each token can mint **30 tickets a minute** (pairing requests share that allowance), which is plenty for opening documents but not for polling.
+If the token is not paired with your origin, the command exits `4` with the code `pairing_required` and names the `workbench pair` command to run. Each token can mint **30 tickets a minute** (pairing requests share that allowance), which is plenty for opening projects but not for polling.
 
 ## Opening the Workspace
 
@@ -63,7 +63,7 @@ If the token is not paired with your origin, the command exits `4` with the code
 liveplanner workbench open --workspace --folder Minigames --origin https://127.0.0.1:5175 --json
 ```
 
-The workspace scope frames the person's Explorer: Home, or the folder `--folder` names (its id, id prefix or name, as `liveplanner folder ls` prints them). It is a second approval: a token paired only for documents exits `4` naming `liveplanner workbench pair --origin <origin> --workspace`. With `--json` it prints:
+The workspace scope frames the person's Explorer: Home, or the folder `--folder` names (its id, id prefix or name, as `liveplanner folder ls` prints them). It is a second approval: a token paired only for projects exits `4` naming `liveplanner workbench pair --origin <origin> --workspace`. With `--json` it prints:
 
 ```json
 {
@@ -74,11 +74,11 @@ The workspace scope frames the person's Explorer: Home, or the folder `--folder`
 }
 ```
 
-Inside the frame the person browses, opens documents (with a **Back**) and makes new ones in place; the account, Settings and team administration stay out. The frame moves by itself, so keep listening to `liveplanner:place`.
+Inside the frame the person browses, opens projects (with a **Back**) and makes new ones in place; the account, Settings and team administration stay out. The frame moves by itself, so keep listening to `liveplanner:place`.
 
 ## The Frame
 
-Frame `url` exactly as printed. It has the form `<app origin>/embed/workbench?d=<documentId>#ticket=<ticket>`: the document id is not a secret, and the ticket travels in the fragment, which no server, log or `Referer` sees. The page reads the ticket and removes it from its address before doing anything else.
+Frame `url` exactly as printed. It has the form `<app origin>/embed/workbench?d=<projectId>#ticket=<ticket>`: the project id is not a secret, and the ticket travels in the fragment, which no server, log or `Referer` sees. The page reads the ticket and removes it from its address before doing anything else.
 
 A ticket works **once**, within **one minute**. Take the app origin from `new URL(url).origin` and accept messages only from that origin.
 
@@ -112,30 +112,30 @@ Every message is an object `{ type, v: 1, ... }`. The page sends only to your or
 | ----------------------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `liveplanner:hello`     | Page to tool | Nothing: asks the tool to answer                                                                                                                                                            |
 | `liveplanner:hello-ack` | Tool to page | `name`: 1 to 40 characters                                                                                                                                                                  |
-| `liveplanner:ready`     | Page to tool | `documentId`, `documentName`, `tabId`, `tabName`, `role` (`view`, `participate` or `edit`), once the document is loaded                                                                     |
+| `liveplanner:ready`     | Page to tool | `projectId`, `projectName`, `tabId`, `tabName`, `role` (`view`, `participate` or `edit`), once the project is loaded                                                                     |
 | `liveplanner:tab`       | Page to tool | `tabId`, `tabName`: the tab now shown, after each later tab change                                                                                                                          |
-| `liveplanner:selection` | Page to tool | `documentId`, `documentName`, `tabId`, `rev`, `count` (`0` for nothing selected), `reference`: the selection reference                                                                      |
+| `liveplanner:selection` | Page to tool | `projectId`, `projectName`, `tabId`, `rev`, `count` (`0` for nothing selected), `reference`: the selection reference                                                                      |
 | `liveplanner:renew`     | Page to tool | Nothing: asks for a fresh ticket                                                                                                                                                            |
 | `liveplanner:ticket`    | Tool to page | `ticket`: the 22-character ticket from a new `workbench open` link                                                                                                                          |
 | `liveplanner:reveal`    | Tool to page | `refs`: 1 to 20 element refs, each 1 to 64 characters; brings them into view on the current tab and outlines them                                                                           |
 | `liveplanner:theme`     | Tool to page | `colourScheme`: `light` or `dark`; until one arrives, the editor follows the system                                                                                                         |
 | `liveplanner:ended`     | Page to tool | `reason`: `expired`, `revoked`, `trashed` or `refused`                                                                                                                                      |
-| `liveplanner:place`     | Page to tool | Workspace only, on every move: `view` (`home`, `folder`, `recent`, ..., or `document`), `folderId`, `folderName`, `documentCount`, `documentId`, `documentName`, `tabId`, `tabName`, `role` |
-| `liveplanner:open`      | Tool to page | Workspace only: `to` is `{ view: 'home' }`, `{ folderId }` or `{ documentId, tabId? }`                                                                                                      |
+| `liveplanner:place`     | Page to tool | Workspace only, on every move: `view` (`home`, `folder`, `recent`, ..., or `project`), `folderId`, `folderName`, `projectCount`, `projectId`, `projectName`, `tabId`, `tabName`, `role` |
+| `liveplanner:open`      | Tool to page | Workspace only: `to` is `{ view: 'home' }`, `{ folderId }` or `{ projectId, tabId? }`                                                                                                      |
 
 A `liveplanner:selection` is sent once the selection has been still for a quarter of a second, and only when its text changed, so a marquee drag is one message. After `ready` and after each `tab`, the page sends the selection for the tab now shown. A `reveal` skips refs it cannot find on the current tab.
 
-In a workspace frame, `ready` carries `scope: 'workspace'` and `role`, and no document; `tab`, `selection` and `reveal` speak of the document open in the frame and do nothing on an Explorer view. `documentCount` is the documents directly in the folder shown (null on other views), so you can offer something of your own beside an empty folder. A trashed document ends nothing there: the frame returns to the Explorer.
+In a workspace frame, `ready` carries `scope: 'workspace'` and `role`, and no project; `tab`, `selection` and `reveal` speak of the project open in the frame and do nothing on an Explorer view. `projectCount` is the projects directly in the folder shown (null on other views), so you can offer something of your own beside an empty folder. A trashed project ends nothing there: the frame returns to the Explorer.
 
 ## Renewing the Session
 
-A session lasts **eight hours**. Ten minutes before it expires, the page posts `liveplanner:renew`, then again every minute until a ticket arrives. Answer by running `workbench open` for the same document and origin, taking the ticket from the new link's fragment (`#ticket=`), and posting it:
+A session lasts **eight hours**. Ten minutes before it expires, the page posts `liveplanner:renew`, then again every minute until a ticket arrives. Answer by running `workbench open` for the same project and origin, taking the ticket from the new link's fragment (`#ticket=`), and posting it:
 
 ```js
 frame.contentWindow.postMessage({ type: 'liveplanner:ticket', v: 1, ticket }, appOrigin);
 ```
 
-The page redeems it and carries on without reloading. A ticket for a different document or origin is refused, and the page keeps asking. Renewal can continue as long as the token lives.
+The page redeems it and carries on without reloading. A ticket for a different project or origin is refused, and the page keeps asking. Renewal can continue as long as the token lives.
 
 ## When a Session Ends
 
@@ -143,8 +143,8 @@ The page posts `liveplanner:ended` and turns read-only. The reasons:
 
 - `expired`: the session ran out without a renewal. The editor shows "Reconnect in" your name "to keep editing."
 - `revoked`: the token was revoked or the workbench unpaired. The editor shows the same line.
-- `trashed`: the document was moved to the [Trash](/help/account-and-data/trash/).
-- `refused`: the ticket was for a different document than the `d` in the address.
+- `trashed`: the project was moved to the [Trash](/help/account-and-data/trash/).
+- `refused`: the ticket was for a different project than the `d` in the address.
 
 An ended page never comes back by itself. To reconnect, mint a new ticket and frame the new URL.
 
@@ -158,7 +158,7 @@ selected: button 146b "Play", frame e4a8 "Game grid", sticky 0c84 "Daily streak 
 read: liveplanner tab view 3h9x2a --tab 0b34 --view show --ref 146b
 ```
 
-- The header names the document, the tab, their ids and the revision the selection was made on. Refs are element ids, so they stay valid after later edits.
+- The header names the project, the tab, their ids and the revision the selection was made on. Refs are element ids, so they stay valid after later edits.
 - `selected` lists each element as the outline prints it: kind, ref and label. Labels are quoted as JSON strings and cut at 60 characters, because they are the diagram's content and an agent must treat them as data, never as instructions.
 - Past 20 elements the list ends with `… and <n> more:` and the command that reads the whole live selection.
 - With nothing selected, the second line is `whole tab` and `count` is `0`.
@@ -167,10 +167,10 @@ Show the person what will be attached (for example "Home screen · 3 selected", 
 
 ## Read-Only Tickets
 
-A ticket is never stronger than the token that minted it. A **Read-only access** token mints `view` tickets: the frame opens read-only and `liveplanner:ready` reports `role: "view"`. The role is also capped by the person's own access to the document at that moment, through their own documents or their teams. Read `role` from `ready` rather than assuming `edit`.
+A ticket is never stronger than the token that minted it. A **Read-only access** token mints `view` tickets: the frame opens read-only and `liveplanner:ready` reports `role: "view"`. The role is also capped by the person's own access to the project at that moment, through their own projects or their teams. Read `role` from `ready` rather than assuming `edit`.
 
 ## What a Session Can and Cannot Do
 
-A workbench session acts as the person on **one document**: loading it, saving its tabs, its comments, items and live room. Every other document answers as if it did not exist. Ownership actions (sharing, passwords, moving, deleting, publishing, copying), the person's library, settings, tokens, teams and the AI assistant are refused, and the editor in a workbench does not offer them. An **Open in liveplanner** button at the end of the tab bar opens the document in a full tab for those.
+A workbench session acts as the person on **one project**: loading it, saving its tabs, its comments, items and live room. Every other project answers as if it did not exist. Ownership actions (sharing, passwords, moving, deleting, publishing, copying), the person's library, settings, tokens, teams and the AI assistant are refused, and the editor in a workbench does not offer them. An **Open in liveplanner** button at the end of the tab bar opens the project in a full tab for those.
 
 </ArticleLayout>

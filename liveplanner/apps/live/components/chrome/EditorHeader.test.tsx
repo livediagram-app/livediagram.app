@@ -28,7 +28,7 @@ afterEach(cleanup);
 function renderHeader() {
   return render(
     <EditorHeader
-      documentName="Untitled document"
+      projectName="Untitled project"
       showShare
       shareable={false}
       onMakeCopy={() => {}}
@@ -77,7 +77,7 @@ describe('EditorHeader account menu', () => {
     const onOpenAccount = vi.fn();
     render(
       <EditorHeader
-        documentName="d"
+        projectName="d"
         showShare={false}
         shareable={false}
         onOpenShare={() => {}}
@@ -106,7 +106,7 @@ describe('EditorHeader account menu', () => {
 describe('EditorHeader rename requests', () => {
   const header = (renameNonce: number, hideTitle = false) => (
     <EditorHeader
-      documentName="Untitled document"
+      projectName="Untitled project"
       showShare={false}
       shareable={false}
       onOpenShare={() => {}}
@@ -115,7 +115,7 @@ describe('EditorHeader rename requests', () => {
       hideTitle={hideTitle}
     />
   );
-  const editing = () => screen.queryByDisplayValue('Untitled document');
+  const editing = () => screen.queryByDisplayValue('Untitled project');
 
   it('opens the name editor for a request, never on mount', () => {
     const { rerender } = render(header(0));
@@ -130,7 +130,7 @@ describe('EditorHeader rename requests', () => {
     expect(editing()).toBeNull();
     rerender(header(1, false));
     expect(editing()).not.toBeNull();
-    fireEvent.blur(screen.getByDisplayValue('Untitled document'));
+    fireEvent.blur(screen.getByDisplayValue('Untitled project'));
     expect(editing()).toBeNull();
     rerender(header(1, true));
     rerender(header(1, false));
@@ -140,20 +140,20 @@ describe('EditorHeader rename requests', () => {
   it('hands focus back to the title when a rename ends from the keyboard', async () => {
     // The field goes as the rename ends, so Escape (or Enter) left focus on the page (NameEditor).
     render(header(0));
-    fireEvent.click(screen.getByRole('button', { name: 'Untitled document' }));
-    fireEvent.keyDown(screen.getByDisplayValue('Untitled document'), { key: 'Escape' });
+    fireEvent.click(screen.getByRole('button', { name: 'Untitled project' }));
+    fireEvent.keyDown(screen.getByDisplayValue('Untitled project'), { key: 'Escape' });
     expect(editing()).toBeNull();
     await act(() => new Promise<void>((resolve) => requestAnimationFrame(() => resolve())));
-    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Untitled document' }));
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Untitled project' }));
   });
 });
 
-// docs/specs/004-interface-design/touch-targets.md: the document title is a 44px-tall tap target on a
+// docs/specs/004-interface-design/touch-targets.md: the project title is a 44px-tall tap target on a
 // touch screen, by padding, since `truncate` would clip a ::before pad.
 describe('EditorHeader title on a touch screen', () => {
   it('pads the rename button to 44px tall without a clipped pad', () => {
     renderHeader();
-    const title = screen.getByRole('button', { name: 'Untitled document' });
+    const title = screen.getByRole('button', { name: 'Untitled project' });
     expect(title.className).toMatch(/\bpointer-coarse:py-3\b/);
     expect(title.className).toMatch(/\btruncate\b/);
     expect(title.className).not.toMatch(/\btouch-target/);
@@ -169,14 +169,14 @@ describe('EditorHeader logo', () => {
   });
 });
 
-// A long document name truncates rather than pushing the header's actions off a phone: every flex box between the
+// A long project name truncates rather than pushing the header's actions off a phone: every flex box between the
 // header row and the name may shrink below its content (min-w-0), and the actions never shrink. jsdom does no layout,
 // so this holds the classes that make the layout work.
 describe('EditorHeader with a long name', () => {
   it('lets the name shrink and keeps the actions whole', () => {
     const { container } = renderHeader();
     const header = container.firstElementChild as HTMLElement;
-    const name = screen.getByRole('button', { name: 'Untitled document' });
+    const name = screen.getByRole('button', { name: 'Untitled project' });
     expect(name.className).toContain('truncate');
     for (let el = name.parentElement; el && el !== header; el = el.parentElement) {
       expect(el.className, el.outerHTML.slice(0, 80)).toContain('min-w-0');

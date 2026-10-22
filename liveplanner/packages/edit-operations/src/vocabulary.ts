@@ -97,7 +97,7 @@ export const PROTOTYPE_KEYS: ReadonlySet<string> = new Set([
 ]);
 
 // The layout engine's rank gap (EO23); larger reads as a separate drawing.
-export { LAYER_GAP as PLACEMENT_GAP } from '@liveplanner/document';
+export { LAYER_GAP as PLACEMENT_GAP } from '@liveplanner/project';
 export const PLACEMENT_GAP_MAX = 2000;
 // Below it boxes read as touching (EO32).
 export const INSERT_MIN_GAP = 16;

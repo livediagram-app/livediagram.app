@@ -2,7 +2,7 @@
 //
 // Colour keys on what happened, not on which part of the product it
 // happened in. A reader scanning a busy day is asking "is any of this
-// alarming?" long before they ask "was that a document or a team", and
+// alarming?" long before they ask "was that a project or a team", and
 // only the first question has a useful colour answer. Source type is
 // still how the filter chips slice the feed — that's a different axis,
 // and it's the one you'd use to hide a whole area.
@@ -45,13 +45,13 @@ const TONE_BY_EVENT: Record<KnownTimelineEventType, TimelineTone> = {
   // ---- structural ----
   // The shape of things changed. Nothing was lost, but something a
   // reader might rely on is no longer where or what it was: a name, who
-  // is in a team, who can reach a document.
-  document_renamed: 'structural',
-  document_moved: 'structural',
-  document_offline: 'structural',
-  document_synced: 'structural',
-  team_document_added: 'structural',
-  team_document_removed: 'structural',
+  // is in a team, who can reach a project.
+  project_renamed: 'structural',
+  project_moved: 'structural',
+  project_offline: 'structural',
+  project_synced: 'structural',
+  team_project_added: 'structural',
+  team_project_removed: 'structural',
   team_created: 'structural',
   team_invite_received: 'structural',
   team_invite_accepted: 'structural',
@@ -72,9 +72,9 @@ const TONE_BY_EVENT: Record<KnownTimelineEventType, TimelineTone> = {
   // ---- create ----
   // Things made, edited, said, or finished: the ordinary business of
   // using the product, and the bulk of any active day.
-  document_created: 'create',
-  document_edited: 'create',
-  document_duplicated: 'create',
+  project_created: 'create',
+  project_edited: 'create',
+  project_duplicated: 'create',
   comment_added: 'create',
   comment_resolved: 'create',
   action_assigned: 'create',
@@ -84,8 +84,8 @@ const TONE_BY_EVENT: Record<KnownTimelineEventType, TimelineTone> = {
   folder_created: 'create',
   // Somebody reaching your work is the good kind of news, and the whole
   // reason to share a link in the first place.
-  document_opened_by_visitor: 'create',
-  document_copied_by_visitor: 'create',
+  project_opened_by_visitor: 'create',
+  project_copied_by_visitor: 'create',
 };
 
 export function eventTone(eventType: string): TimelineTone {

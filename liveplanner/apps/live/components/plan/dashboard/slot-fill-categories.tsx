@@ -60,7 +60,7 @@ const FormGlyph = lucideGlyph(lucideClipboardList, 16);
  *  the picker said "Card Metrics" where the art was filed under "Metrics", and that card showed no picture, glyph or
  *  description. */
 export const SLOT_CATEGORIES = [
-  'This Document’s Tabs',
+  'This Project’s Tabs',
   'New Board',
   'New Sheet',
   'Card Metrics',
@@ -86,7 +86,7 @@ function StackedCards({ palette }: { palette: PlanPalette }) {
 }
 
 const SLOT_CATEGORY_INFO: Record<SlotCategory, Info> = {
-  'This Document’s Tabs': {
+  'This Project’s Tabs': {
     icon: <PanelsGlyph />,
     description: 'Your boards, sheets and diagrams, live.',
     picture: (p) => <DiagramPreview palette={p} />,

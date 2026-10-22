@@ -1,6 +1,6 @@
 // DOM <-> runs glue for the rich-text editor (docs/specs/008-canvas/canvas-and-palette.md). Kept separate from
 // the React component so the offset mapping is small, framework-free, and
-// easy to reason about. The pure runs algebra lives in @liveplanner/document
+// easy to reason about. The pure runs algebra lives in @liveplanner/project
 // (rich-text.ts); this module only bridges it to a live contentEditable.
 //
 // Invariant the whole design rests on: the editor renders runs as a flat
@@ -9,7 +9,7 @@
 // and a single string-length walk converts between DOM points and character
 // offsets in both directions.
 
-import { normalizeRuns, type TextRun } from '@liveplanner/document';
+import { normalizeRuns, type TextRun } from '@liveplanner/project';
 
 // data-* attribute names carried on each rendered span. Render
 // (`dataAttrsForRun`) and read-back (`readRunsFromDom`) must agree, so they
@@ -154,7 +154,7 @@ export function readRunsFromDom(editorEl: HTMLElement): TextRun[] {
 /**
  * Convert the live selection to character offsets into the editor's plain
  * text. Returns null when there's no selection or it isn't fully inside the
- * editor. Reads `range.start/end` (always document-ordered) so a
+ * editor. Reads `range.start/end` (always project-ordered) so a
  * right-to-left drag still yields start <= end.
  */
 export function domSelectionToOffsets(

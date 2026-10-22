@@ -46,7 +46,7 @@ vi.mock('./tour-dom', () => ({
   waitForTour: async () => null,
 }));
 const ctx = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({
+vi.mock('@/app/project/[id]/EditorContext', () => ({
   useEditorContext: () => ctx.current,
   useOptionalEditorContext: () => ctx.current,
 }));
@@ -290,7 +290,7 @@ describe('PlanTourHost tracks', () => {
   });
 
   // Spec "Tour subject": nothing is placed, added, moved or selected; the card panel is the one thing opened.
-  it('runs to the end without changing the document, opening only the first card', async () => {
+  it('runs to the end without changing the project, opening only the first card', async () => {
     start(BOARD);
     // Every anchored step finds no target in this harness and is skipped; the opening card waits for Next.
     await nextUntil('outro');

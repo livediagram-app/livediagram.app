@@ -51,19 +51,19 @@ export const VISUALISATION_INFO: Record<
   },
 };
 
-// What each metric reads out, over every live card in the document.
+// What each metric reads out, over every live card in the project.
 const METRIC_DESCRIPTIONS: Record<MetricKind, string> = {
-  count: 'A metric over every card in the document: how many there are.',
-  progress: 'A metric over every card in the document: the share that is done.',
-  people: 'A metric over every card in the document: who has cards, most first.',
-  types: 'A metric over every card in the document: how many of each type.',
+  count: 'A metric over every card in the project: how many there are.',
+  progress: 'A metric over every card in the project: the share that is done.',
+  people: 'A metric over every card in the project: who has cards, most first.',
+  types: 'A metric over every card in the project: how many of each type.',
   priorities:
-    'A metric over every card in the document: how many are urgent, high, medium and low.',
-  due: 'A metric over every card in the document: overdue, and due in the next 7 days.',
-  unassigned: 'A metric over every card in the document: the cards nobody has picked up.',
-  points: 'A metric over every card in the document: estimate points done out of all.',
-  'top-voted': 'A metric over every card in the document: the most voted card; press it to open.',
-  stale: 'A metric over every card in the document: cards not done and unchanged in two weeks.',
+    'A metric over every card in the project: how many are urgent, high, medium and low.',
+  due: 'A metric over every card in the project: overdue, and due in the next 7 days.',
+  unassigned: 'A metric over every card in the project: the cards nobody has picked up.',
+  points: 'A metric over every card in the project: estimate points done out of all.',
+  'top-voted': 'A metric over every card in the project: the most voted card; press it to open.',
+  stale: 'A metric over every card in the project: cards not done and unchanged in two weeks.',
 };
 
 export const PLAN_VIEW_TILES: PaletteTileDef[] = [

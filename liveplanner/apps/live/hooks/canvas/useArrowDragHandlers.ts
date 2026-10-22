@@ -13,7 +13,7 @@ import {
   resolveFinish,
   type ArrowElement,
   type FrameHandle,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 import { pointerToCanvas, type ArrowEnd, type DragState } from '@/lib/canvas';
 import type { EditorDragDeps } from './useEditorDrag.types';

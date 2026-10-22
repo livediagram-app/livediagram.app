@@ -1,7 +1,7 @@
 // The marks a Plan tab's still pictures are drawn with (docs/specs/026-plan/plan-tabs.md "Export"): boxes, text and a
 // view's frame (its card, a header of its name and count), in the board's palette, so a picture reads like the live
 // view it stands for. Pure: markup strings at canvas coordinates.
-import { svgFitLine, svgText, type PlanPalette } from '@liveplanner/document';
+import { svgFitLine, svgText, type PlanPalette } from '@liveplanner/project';
 import { xmlEscape } from '@liveplanner/icons';
 
 export type Rect = { x: number; y: number; width: number; height: number };

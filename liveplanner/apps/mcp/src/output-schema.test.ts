@@ -199,12 +199,12 @@ async function api(request: Request): Promise<Response> {
   const path = url.pathname.replace(/^\/api/, '');
   if (request.method === 'DELETE') return new Response(null, { status: 204 });
   const json = (body: unknown) => Response.json(body);
-  // A document view: text with the tab revision as its ETag, as the api answers it.
+  // A project view: text with the tab revision as its ETag, as the api answers it.
   if (url.searchParams.has('view')) {
     return new Response('tab t1 "Tab 1" · 0 elements · rev 3', { headers: { ETag: 'W/"3"' } });
   }
-  if (path === '/documents' && request.method === 'GET') {
-    return json({ documents: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
+  if (path === '/projects' && request.method === 'GET') {
+    return json({ projects: [{ id: 'd1', name: 'Roadmap', savedAt: 1_700_000_000_000 }] });
   }
   if (path === '/teams') return json({ teams: [] });
   if (path.endsWith('/sheets'))
@@ -240,7 +240,7 @@ async function api(request: Request): Promise<Response> {
   if (path.endsWith('/plan')) return json(PLAN);
   if (path.endsWith('/item-types')) return json({ itemTypes: null });
   if (/\/items(\/[^/]+(\/move)?)?$/.test(path)) return json({ item: ITEM, rev: 2 });
-  if (path.endsWith('/restore')) return json({ document: LIVE_DOC });
+  if (path.endsWith('/restore')) return json({ project: LIVE_DOC });
   if (path.endsWith('/share'))
     return json({ link: { code: 'abc', role: 'view', expiresAt: null } });
   if (path.endsWith('/changesets')) return json(CHANGESET);
@@ -250,17 +250,17 @@ async function api(request: Request): Promise<Response> {
   if (path.endsWith('/tabs/f1/form')) return json({ tabId: 'f1', rev: 3, name: 'Bug Report' });
   if (path.endsWith('/tabs/f1')) return json({ tab: FORM_TAB });
   if (/\/tabs\/[^/]+$/.test(path)) return json({ tab: TAB });
-  return json({ document: LIVE_DOC });
+  return json({ project: LIVE_DOC });
 }
 
 // Each tool, with both result branches of rename and delete.
 const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, unknown> }[] = [
-  { tool: 'read_form', output: 'readFormOutput', args: { documentId: 'd1' } },
+  { tool: 'read_form', output: 'readFormOutput', args: { projectId: 'd1' } },
   {
     tool: 'add_form',
     output: 'addFormOutput',
     args: {
-      documentId: 'd1',
+      projectId: 'd1',
       name: 'Party RSVP',
       questions: [
         { type: 'short', prompt: 'Name', required: true, goesTo: 'Title' },
@@ -278,64 +278,64 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     tool: 'change_form',
     output: 'changeFormOutput',
     args: {
-      documentId: 'd1',
+      projectId: 'd1',
       changes: [{ op: 'settings', limit: 50, closesAt: '2026-12-01T18:00:00Z' }],
     },
   },
-  { tool: 'share_form', output: 'shareFormOutput', args: { documentId: 'd1', action: 'close' } },
+  { tool: 'share_form', output: 'shareFormOutput', args: { projectId: 'd1', action: 'close' } },
   {
     tool: 'try_form',
     output: 'tryFormOutput',
-    args: { documentId: 'd1', answers: { Summary: 'Login fails', Severity: 'S1', 'How bad?': 4 } },
+    args: { projectId: 'd1', answers: { Summary: 'Login fails', Severity: 'S1', 'How bad?': 4 } },
   },
-  { tool: 'find_documents', output: 'findDocumentsOutput', args: {} },
-  { tool: 'read_document', output: 'readDocumentOutput', args: { documentId: 'd1' } },
+  { tool: 'find_projects', output: 'findProjectsOutput', args: {} },
+  { tool: 'read_project', output: 'readProjectOutput', args: { projectId: 'd1' } },
   {
-    tool: 'read_document',
-    output: 'readDocumentOutput',
-    args: { documentId: 'd1', format: 'json' },
+    tool: 'read_project',
+    output: 'readProjectOutput',
+    args: { projectId: 'd1', format: 'json' },
   },
   { tool: 'list_templates', output: 'listTemplatesOutput', args: {} },
   {
-    tool: 'create_document',
-    output: 'createDocumentOutput',
+    tool: 'create_project',
+    output: 'createProjectOutput',
     args: { name: 'New', tabs: [{ name: 'Tab', elements: [] }] },
   },
   {
     tool: 'add_tab',
     output: 'addTabOutput',
-    args: { documentId: 'd1', name: 'Detail', elements: [] },
+    args: { projectId: 'd1', name: 'Detail', elements: [] },
   },
   {
-    tool: 'update_document',
-    output: 'updateDocumentOutput',
-    args: { documentId: 'd1', mode: 'replace', elements: [] },
+    tool: 'update_project',
+    output: 'updateProjectOutput',
+    args: { projectId: 'd1', mode: 'replace', elements: [] },
   },
-  { tool: 'share_document', output: 'shareDocumentOutput', args: { documentId: 'd1' } },
+  { tool: 'share_project', output: 'shareProjectOutput', args: { projectId: 'd1' } },
   {
-    tool: 'rename_document',
-    output: 'renameDocumentOutput',
-    args: { documentId: 'd1', name: 'Renamed' },
+    tool: 'rename_project',
+    output: 'renameProjectOutput',
+    args: { projectId: 'd1', name: 'Renamed' },
   },
   {
-    tool: 'rename_document',
-    output: 'renameDocumentOutput',
-    args: { documentId: 'd1', tabId: 't1', name: 'Renamed' },
+    tool: 'rename_project',
+    output: 'renameProjectOutput',
+    args: { projectId: 'd1', tabId: 't1', name: 'Renamed' },
   },
-  { tool: 'delete_document', output: 'deleteDocumentOutput', args: { documentId: 'd1' } },
+  { tool: 'delete_project', output: 'deleteProjectOutput', args: { projectId: 'd1' } },
   {
-    tool: 'delete_document',
-    output: 'deleteDocumentOutput',
-    args: { documentId: 'd1', tabId: 't1' },
+    tool: 'delete_project',
+    output: 'deleteProjectOutput',
+    args: { projectId: 'd1', tabId: 't1' },
   },
   { tool: 'list_trash', output: 'listTrashOutput', args: {} },
-  { tool: 'restore_document', output: 'restoreDocumentOutput', args: { documentId: 'd2' } },
-  { tool: 'list_items', output: 'listItemsOutput', args: { documentId: 'd1' } },
+  { tool: 'restore_project', output: 'restoreProjectOutput', args: { projectId: 'd2' } },
+  { tool: 'list_items', output: 'listItemsOutput', args: { projectId: 'd1' } },
   {
     tool: 'change_items',
     output: 'changeItemsOutput',
     args: {
-      documentId: 'd1',
+      projectId: 'd1',
       changes: [
         { op: 'add', title: 'New' },
         { op: 'move', item: '#12', status: 'Done' },
@@ -348,13 +348,13 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     tool: 'add_board',
     output: 'addBoardOutput',
     // A board goes only on a tab in Plan: the Form tab is one.
-    args: { documentId: 'd1', tabId: 'f1', columns: ['Ideas', 'Done'], types: ['Task'] },
+    args: { projectId: 'd1', tabId: 'f1', columns: ['Ideas', 'Done'], types: ['Task'] },
   },
   {
     tool: 'change_board',
     output: 'changeBoardOutput',
     args: {
-      documentId: 'd1',
+      projectId: 'd1',
       board: 'Sprint',
       columns: ['To Do', 'Review', 'Done'],
       types: ['Bug'],
@@ -364,20 +364,20 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     tool: 'change_card_types',
     output: 'changeCardTypesOutput',
     args: {
-      documentId: 'd1',
+      projectId: 'd1',
       changes: [
         { op: 'add', name: 'Risk', custom: [{ name: 'Impact', kind: 'number' }] },
         { op: 'delete', type: 'Bug' },
       ],
     },
   },
-  { tool: 'list_sheets', output: 'listSheetsOutput', args: { documentId: 'd1' } },
-  { tool: 'read_sheet', output: 'readSheetOutput', args: { documentId: 'd1', sheet: 'Costs' } },
+  { tool: 'list_sheets', output: 'listSheetsOutput', args: { projectId: 'd1' } },
+  { tool: 'read_sheet', output: 'readSheetOutput', args: { projectId: 'd1', sheet: 'Costs' } },
   {
     tool: 'change_sheet',
     output: 'changeSheetOutput',
     args: {
-      documentId: 'd1',
+      projectId: 'd1',
       sheet: 'Costs',
       changes: [
         { op: 'set', at: 'C1', rows: [['Yearly'], ['=B2*12']] },
@@ -391,7 +391,7 @@ const CALLS: { tool: string; output: keyof typeof outputs; args: Record<string, 
     tool: 'add_sheet',
     output: 'addSheetOutput',
     // A Sheet goes only on a tab in Plan: the Form tab is one.
-    args: { documentId: 'd1', tabId: 'f1', title: 'Costs', csv: 'a,b\n1,2' },
+    args: { projectId: 'd1', tabId: 'f1', title: 'Costs', csv: 'a,b\n1,2' },
   },
 ];
 
@@ -425,7 +425,7 @@ describe('tool output schemas', () => {
         .strict()
         .parse(structured);
       // The text block carries the same object for clients that ignore structuredContent; a view
-      // carries its text, then one line naming the document, the tab and its revision (VW55).
+      // carries its text, then one line naming the project, the tab and its revision (VW55).
       const [first] = result.content as { type: string; text: string }[];
       const view = z.object({ tab: z.object({ text: z.string() }) }).safeParse(structured);
       if (view.success) {
@@ -443,7 +443,7 @@ describe('tool output schemas', () => {
   it('sends no structuredContent on an error result', async () => {
     const client = await connectTestClient(api);
     const result = await client.callTool({
-      name: 'create_document',
+      name: 'create_project',
       arguments: { name: 'New', tabs: [{ name: 'Tab', template: 'no-such-template' }] },
     });
     expect(result.isError).toBe(true);
@@ -486,7 +486,7 @@ describe('tool parameter descriptions', () => {
 });
 
 // docs/specs/013-workspace/share-roles.md: an agent's link is a Participant link unless it names a level.
-describe('share_document level', () => {
+describe('share_project level', () => {
   it('asks the api for participate by default, and for what the agent names', async () => {
     const roles: unknown[] = [];
     const recording = async (request: Request) => {
@@ -495,10 +495,10 @@ describe('share_document level', () => {
       return api(request);
     };
     const client = await connectTestClient(recording);
-    await client.callTool({ name: 'share_document', arguments: { documentId: 'd1' } });
+    await client.callTool({ name: 'share_project', arguments: { projectId: 'd1' } });
     await client.callTool({
-      name: 'share_document',
-      arguments: { documentId: 'd1', role: 'view' },
+      name: 'share_project',
+      arguments: { projectId: 'd1', role: 'view' },
     });
     expect(roles).toEqual(['participate', 'view']);
   });

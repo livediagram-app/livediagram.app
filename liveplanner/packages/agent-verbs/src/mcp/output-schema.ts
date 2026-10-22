@@ -3,20 +3,20 @@
 // The SDK validates every successful result against these on the way out, so a
 // shape here that stops matching tools.ts fails the call rather than shipping a
 // wrong contract. Error results are exempt and carry text only.
-import { EMPTY_DOCUMENT_STALE_DAYS, TRASH_REASONS } from '@liveplanner/api-schema';
+import { EMPTY_PROJECT_STALE_DAYS, TRASH_REASONS } from '@liveplanner/api-schema';
 import { z } from 'zod';
 
-const url = z.string().describe('Link that opens the document in the liveplanner editor.');
-const documentId = z.string().describe('The document id.');
+const url = z.string().describe('Link that opens the project in the liveplanner editor.');
+const projectId = z.string().describe('The project id.');
 const tabId = z.string().describe('The tab id.');
 
-export const findDocumentsOutput = {
-  count: z.number().int().describe('How many documents matched.'),
-  documents: z
+export const findProjectsOutput = {
+  count: z.number().int().describe('How many projects matched.'),
+  projects: z
     .array(
       z.object({
-        id: documentId,
-        name: z.string().describe('The document name.'),
+        id: projectId,
+        name: z.string().describe('The project name.'),
         updatedAt: z.number().describe('When it was last saved, as a ms epoch.'),
         library: z
           .string()
@@ -27,14 +27,14 @@ export const findDocumentsOutput = {
     .describe('The matches, most relevant first.'),
 };
 
-export const readDocumentOutput = {
-  id: documentId,
-  name: z.string().describe('The document name.'),
+export const readProjectOutput = {
+  id: projectId,
+  name: z.string().describe('The project name.'),
   tab: z
     .object({
       id: tabId,
       name: z.string().describe('The tab name.'),
-      rev: z.number().describe('The tab revision: pass it as rev to update_document.'),
+      rev: z.number().describe('The tab revision: pass it as rev to update_project.'),
       view: z.string().optional().describe('The view read (format "view").'),
       text: z.string().optional().describe('The view text (format "view").'),
       elements: z
@@ -47,7 +47,7 @@ export const readDocumentOutput = {
     .describe('The tab that was read.'),
   tabs: z
     .array(z.object({ id: tabId, name: z.string().describe('The tab name.') }))
-    .describe('Every tab of the document, in order: pass one as tabId to read it.'),
+    .describe('Every tab of the project, in order: pass one as tabId to read it.'),
   url,
 };
 
@@ -64,7 +64,7 @@ export const listTemplatesOutput = {
   templates: z
     .array(
       z.object({
-        kind: z.string().describe('Pass as "template" on create_document / add_tab.'),
+        kind: z.string().describe('Pass as "template" on create_project / add_tab.'),
         title: z.string().describe('The template display name.'),
         description: z.string().describe('What the template scaffolds.'),
         category: z.string().describe('The id of the category it belongs to.'),
@@ -73,10 +73,10 @@ export const listTemplatesOutput = {
     .describe('Every template in the library.'),
 };
 
-export const createDocumentOutput = {
-  id: documentId,
-  documentId: documentId.describe(
-    'The document id again, under the name the other tools take it by.',
+export const createProjectOutput = {
+  id: projectId,
+  projectId: projectId.describe(
+    'The project id again, under the name the other tools take it by.',
   ),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
   tabCount: z.number().int().describe('How many tabs were created.'),
@@ -84,7 +84,7 @@ export const createDocumentOutput = {
   folder: z
     .string()
     .describe(
-      'The Explorer folder it appears in: "My Documents" for the root, or the name of the user\'s ' +
+      'The Explorer folder it appears in: "My Projects" for the root, or the name of the user\'s ' +
         'default folder it was filed in.',
     ),
   url,
@@ -94,12 +94,12 @@ export const createDocumentOutput = {
 // changed nothing), the revision it left the tab at, and its result lines.
 const changesetAnswer = {
   changesetId: z.string().nullable().describe('The changeset written; null when nothing changed.'),
-  rev: z.number().describe('The tab revision now, to pass as rev on the next update_document.'),
+  rev: z.number().describe('The tab revision now, to pass as rev on the next update_project.'),
   text: z.string().describe('What the changeset did, one line per element, and how to revert it.'),
 };
 
 export const addTabOutput = {
-  documentId,
+  projectId,
   tabId: tabId.describe('The new tab id.'),
   name: z.string().describe('The stored tab name (shortened if it was over the cap).'),
   url,
@@ -107,74 +107,74 @@ export const addTabOutput = {
   ...changesetAnswer,
 };
 
-export const updateDocumentOutput = {
-  id: documentId,
-  documentId: documentId.describe(
-    'The document id again, under the name the other tools take it by.',
+export const updateProjectOutput = {
+  id: projectId,
+  projectId: projectId.describe(
+    'The project id again, under the name the other tools take it by.',
   ),
   tabId: tabId.describe('The tab that was edited.'),
   url,
   ...changesetAnswer,
 };
 
-export const shareDocumentOutput = {
+export const shareProjectOutput = {
   url: z.string().describe('The share link. Opening it needs no sign-in.'),
   role: z.enum(['view', 'participate', 'edit']).describe('What the link grants.'),
   expiresAt: z
     .number()
     .nullable()
     .describe('When the link stops working, as a ms epoch; null when it never expires.'),
-  documentUrl: url,
+  projectUrl: url,
 };
 
-export const renameDocumentOutput = {
+export const renameProjectOutput = {
   renamed: z
-    .enum(['document', 'tab'])
-    .describe('Whether the document or one of its tabs was renamed.'),
+    .enum(['project', 'tab'])
+    .describe('Whether the project or one of its tabs was renamed.'),
   name: z.string().describe('The stored name (shortened if it was over the cap).'),
-  id: documentId.optional().describe('The renamed document id (document renames).'),
+  id: projectId.optional().describe('The renamed project id (project renames).'),
   tabId: tabId.optional().describe('The renamed tab id (tab renames).'),
-  url: url.optional().describe('Link that opens the document (document renames).'),
+  url: url.optional().describe('Link that opens the project (project renames).'),
 };
 
-export const deleteDocumentOutput = {
+export const deleteProjectOutput = {
   deleted: z
-    .enum(['document', 'tab'])
-    .describe('Whether the document or one of its tabs was deleted.'),
-  documentId,
+    .enum(['project', 'tab'])
+    .describe('Whether the project or one of its tabs was deleted.'),
+  projectId,
   tabId: tabId.optional().describe('The deleted tab id (tab deletes).'),
-  trashed: z.boolean().optional().describe('True when the document went to the Trash.'),
+  trashed: z.boolean().optional().describe('True when the project went to the Trash.'),
   restorableForDays: z
     .number()
     .int()
     .optional()
-    .describe('Days the document can be restored with restore_document before it is purged.'),
+    .describe('Days the project can be restored with restore_project before it is purged.'),
 };
 
 export const listTrashOutput = {
   trash: z
     .array(
       z.object({
-        id: documentId,
-        name: z.string().describe('The document name.'),
+        id: projectId,
+        name: z.string().describe('The project name.'),
         library: z
           .string()
           .describe('Whose Trash: "personal", or the name of the team (or "team").'),
         reason: z
           .enum(TRASH_REASONS)
           .describe(
-            `Why it is in the Trash: "deleted" by someone, or "empty" (moved automatically after ${EMPTY_DOCUMENT_STALE_DAYS} days with no content).`,
+            `Why it is in the Trash: "deleted" by someone, or "empty" (moved automatically after ${EMPTY_PROJECT_STALE_DAYS} days with no content).`,
           ),
         deletedAt: z.string().describe('When it was deleted, as an ISO timestamp.'),
         purgeAt: z.string().describe('When it is purged for good, as an ISO timestamp.'),
       }),
     )
-    .describe('The documents that can still be restored.'),
+    .describe('The projects that can still be restored.'),
 };
 
-export const restoreDocumentOutput = {
-  restored: z.literal('document').describe('Always "document": tabs have no Trash.'),
-  id: documentId,
-  name: z.string().nullable().describe('The restored document name, or null if unknown.'),
+export const restoreProjectOutput = {
+  restored: z.literal('project').describe('Always "project": tabs have no Trash.'),
+  id: projectId,
+  name: z.string().nullable().describe('The restored project name, or null if unknown.'),
   url,
 };

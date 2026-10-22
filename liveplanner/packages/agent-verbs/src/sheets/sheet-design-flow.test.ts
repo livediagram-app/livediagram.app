@@ -38,7 +38,7 @@ function setup(
   const api = fakeApi(
     Object.assign(server.routes, {
       ...tabsOfA,
-      [`/documents/${DOC_A}/tabs/${ONE}`]: {
+      [`/projects/${DOC_A}/tabs/${ONE}`]: {
         tab: {
           id: ONE,
           elements: opts.elements ?? [SHEET_EL],
@@ -46,7 +46,7 @@ function setup(
           ...(opts.background ? { backgroundColor: opts.background } : {}),
         },
       },
-      [`/documents/${DOC_A}/tabs/${ONE}/changesets`]: async (r: Request) => {
+      [`/projects/${DOC_A}/tabs/${ONE}/changesets`]: async (r: Request) => {
         if (opts.changesets) return opts.changesets(r);
         sent.push((await r.json()) as SentChangeset);
         return Response.json({ changeset: { id: 'cs', rev: 4 } });

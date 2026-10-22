@@ -10,7 +10,7 @@ import {
   type Element,
   sketchRandom,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { rollMashup } from './look-mashup';
 import { SEASONAL_LOOKS } from './seasonal-looks';
 import { TAB_LOOKS, withLookApplied, type TabLook } from './tab-looks';

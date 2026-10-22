@@ -1,6 +1,6 @@
 // The form link's wire shapes (docs/specs/030-forms/blueprints/forms.md §11): what the Form tab reads and changes
 // about its link, and what a form link's page reads and sends.
-import type { FormLook } from '@liveplanner/document';
+import type { FormLook } from '@liveplanner/project';
 import type { AnswerError, PublicForm } from '@liveplanner/forms';
 
 // A Form tab's live link, as an Editor sees it.
@@ -19,7 +19,7 @@ export type FormLinkResponse = {
   unseen: number;
   // When the tab's last link was suspended after reports, while it has no live one.
   suspendedAt: number | null;
-  // Whether this document may still publish (its links have not been suspended too often).
+  // Whether this project may still publish (its links have not been suspended too often).
   canPublish: boolean;
 };
 

@@ -18,7 +18,7 @@ new user pokes at a real diagram that teaches itself.
 
 - **Welcome wizard only.** The template step of the welcome flow (both the
   first-run `/new` page and the in-editor welcome picker, see
-  [Dedicated route for new-document creation](new-document-route.md)) shows a **Take the guided tour** card
+  [Dedicated route for new-project creation](new-project-route.md)) shows a **Take the guided tour** card
   next to the **Blank** quick-pick card. It does not appear in the in-editor
   "Browse templates" mode — it's an onboarding affordance, not a template you
   reach for later.
@@ -47,7 +47,7 @@ the eye always knows where to go next. The panels pin their soft grey fill
    plus stickies about live links, comments and assigned actions.
 5. **Selection Modes**: a marquee-bait row, a grouped pair, and a locked
    element.
-6. **Explorer**: document shapes as diagrams-in-folders, plus a team
+6. **Explorer**: project shapes as diagrams-in-folders, plus a team
    library.
 
 Each section carries **one annotation marker** ([Annotations](../009-elements/annotations.md)) with the deeper
@@ -62,7 +62,7 @@ interaction changes, the tour copy changes in the same PR).
 
 - **A real template kind.** `'guided-tour'` joins `TemplateKind` with a
   builder (`template-builders-guided-tour.ts` in `packages/templates`), so
-  both commit paths — `/new`'s `commitNewDocument` and the in-editor
+  both commit paths — `/new`'s `commitNewProject` and the in-editor
   `chooseTemplate` — reuse the existing build → theme-recolour → commit
   pipeline unchanged.
 - **Hidden from listings.** `TemplateDescriptor` gains `hidden?: boolean`.

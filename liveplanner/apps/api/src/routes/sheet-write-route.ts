@@ -5,7 +5,7 @@
 
 import type { SheetWriteRequest, SheetWriteResponse } from '@liveplanner/api-schema';
 import {
-  DOCUMENT_CELLS_MAX,
+  PROJECT_CELLS_MAX,
   SHEET_BYTES_MAX,
   SHEET_CELLS_MAX,
   applySheetWrite,
@@ -23,7 +23,7 @@ import {
 import {
   axisDeleteStatement,
   cellWriteStatements,
-  documentSheetTotals,
+  projectSheetTotals,
   existingCells,
   headWriteStatement,
   listSheetHeads,
@@ -31,7 +31,7 @@ import {
   readFormulaCells,
   readSheetHead,
   recountStatement,
-  documentSavedStatement,
+  projectSavedStatement,
   type SheetHead,
 } from '../db';
 import { forbidden, json } from '../responses';
@@ -85,7 +85,7 @@ function growth(cells: readonly CellChange[]): { count: number; bytes: number; k
 
 async function capsProblem(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   head: SheetHead,
   cells: readonly CellChange[],
 ): Promise<Response | null> {
@@ -95,30 +95,30 @@ async function capsProblem(
   let addedBytes = g.bytes;
   const near =
     head.cellCount + g.count > SHEET_CELLS_MAX || head.cellBytes + g.bytes > SHEET_BYTES_MAX;
-  const totals = await documentSheetTotals(ctx.env, documentId);
-  const docNear = totals.cells + g.count > DOCUMENT_CELLS_MAX;
+  const totals = await projectSheetTotals(ctx.env, projectId);
+  const docNear = totals.cells + g.count > PROJECT_CELLS_MAX;
   if (near || docNear) {
     // Close to a cap: count exactly, as cells the write replaces add nothing new.
-    const existing = await existingCells(ctx.env, documentId, head.id, g.keys);
+    const existing = await existingCells(ctx.env, projectId, head.id, g.keys);
     added -= existing.count;
     addedBytes -= existing.bytes;
   }
   if (head.cellCount + added > SHEET_CELLS_MAX || head.cellBytes + addedBytes > SHEET_BYTES_MAX) {
-    console.info('[sheets] sheets.full', { documentId });
+    console.info('[sheets] sheets.full', { projectId });
     return sheetRejected('sheet_full', 413);
   }
-  if (totals.cells + added > DOCUMENT_CELLS_MAX) return sheetRejected('sheets_full', 413);
+  if (totals.cells + added > PROJECT_CELLS_MAX) return sheetRejected('sheets_full', 413);
   return null;
 }
 
 export async function writeSheet(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   sheetId: string,
 ): Promise<Response> {
   // A Participant writes cells; rows, columns and the title are the Sheet's shape, an Editor's
   // (docs/specs/013-workspace/share-roles.md "What a Participant changes").
-  const caller = await sheetCaller(ctx, documentId, 'participate');
+  const caller = await sheetCaller(ctx, projectId, 'participate');
   if (caller instanceof Response) return caller;
   const read = readWrite(await readBody(ctx));
   if (!read) return sheetRejected('write_invalid');
@@ -132,7 +132,7 @@ export async function writeSheet(
     body = { ...read, write: values };
   }
   const by = await writer(ctx, caller.owner);
-  return storeSheetWrite(ctx, documentId, sheetId, body, by, caller.scopeTab ?? null);
+  return storeSheetWrite(ctx, projectId, sheetId, body, by, caller.scopeTab ?? null);
 }
 
 // A checked write stored (docs/specs/029-sheets/sheet-store.md "Changing a sheet"): validated and applied by the engine,
@@ -140,18 +140,18 @@ export async function writeSheet(
 // and relayed. The sheet route's, after its gates, and a form's response row's (forms/sheet-response.ts).
 export async function storeSheetWrite(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   sheetId: string,
   body: SheetWriteRequest,
   by: SheetPerson,
   scopeTab: string | null,
 ): Promise<Response> {
   for (let attempt = 0; attempt < SHEET_WRITE_RETRIES; attempt++) {
-    const head = await readSheetHead(ctx.env, documentId, sheetId);
+    const head = await readSheetHead(ctx.env, projectId, sheetId);
     if (!head || (scopeTab && head.tabId !== scopeTab)) return sheetNotFound();
     const write = body.write;
     if (write.kind === 'title') {
-      const heads = await listSheetHeads(ctx.env, documentId, head.tabId);
+      const heads = await listSheetHeads(ctx.env, projectId, head.tabId);
       const lower = typeof write.title === 'string' ? write.title.trim().toLowerCase() : '';
       if (heads.some((h) => h.id !== sheetId && h.title.toLowerCase() === lower))
         return sheetRejected('sheet_title_taken', 409);
@@ -160,7 +160,7 @@ export async function storeSheetWrite(
     const light: Sheet = {
       ...head,
       cells: deletes(write)
-        ? cellsFromJson(await readFormulaCells(ctx.env, documentId, sheetId))
+        ? cellsFromJson(await readFormulaCells(ctx.env, projectId, sheetId))
         : new Map<string, Cell>(),
     };
     let landed;
@@ -187,13 +187,13 @@ export async function storeSheetWrite(
     }
     const applied = landed.applied;
     const cells = applied.kind === 'title' ? [] : (applied.cells ?? []);
-    const caps = await capsProblem(ctx, documentId, head, cells);
+    const caps = await capsProblem(ctx, projectId, head, cells);
     if (caps) return caps;
     const now = Date.now();
     const nextRev = head.rev + 1;
     const nonce = crypto.randomUUID();
     const statements = [
-      headWriteStatement(ctx.env, documentId, sheetId, head.rev, nonce, now, by, {
+      headWriteStatement(ctx.env, projectId, sheetId, head.rev, nonce, now, by, {
         ...(applied.kind === 'layout' && landed.sheet.layout !== head.layout
           ? { layout: landed.sheet.layout }
           : {}),
@@ -206,16 +206,16 @@ export async function storeSheetWrite(
           statements.push(
             axisDeleteStatement(
               ctx.env,
-              documentId,
+              projectId,
               sheetId,
               nonce,
               ch.k === 'deleteRows' ? 'r' : 'c',
               ch.ids,
             ),
           );
-    statements.push(...cellWriteStatements(ctx.env, documentId, sheetId, nonce, cells));
-    statements.push(recountStatement(ctx.env, documentId, sheetId));
-    statements.push(documentSavedStatement(ctx.env, documentId, sheetId, nonce, now));
+    statements.push(...cellWriteStatements(ctx.env, projectId, sheetId, nonce, cells));
+    statements.push(recountStatement(ctx.env, projectId, sheetId));
+    statements.push(projectSavedStatement(ctx.env, projectId, sheetId, nonce, now));
     const results = await ctx.env.DB.batch(statements);
     const raised = (results[0]?.results ?? []) as { rev: number }[];
     if (raised.length === 0) {
@@ -226,9 +226,9 @@ export async function storeSheetWrite(
     const answer: SheetWriteResponse = {
       applied,
       rev: nextRev,
-      cells: await readCells(ctx.env, documentId, sheetId, keys),
+      cells: await readCells(ctx.env, projectId, sheetId, keys),
     };
-    relaySheet(ctx, documentId, {
+    relaySheet(ctx, projectId, {
       kind: 'sheets',
       sheetId,
       tabId: head.tabId,

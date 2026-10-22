@@ -8,7 +8,7 @@ import {
   type Element,
   type SheetAnchor,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { planTabKindOf } from './plan-export-formats';
 import { dashboardExportTab, type DashboardExportInput } from './dashboard-export';
 

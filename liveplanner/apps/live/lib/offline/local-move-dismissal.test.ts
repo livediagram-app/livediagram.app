@@ -2,7 +2,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { dismissLocalMove, shouldOfferLocalMove } from './local-move-dismissal';
 
-// docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser after signing in".
+// docs/specs/014-identity/auth-and-guest-access.md "Moving projects in This Browser after signing in".
 describe('local move dismissal', () => {
   afterEach(() => localStorage.clear());
 

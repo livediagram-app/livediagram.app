@@ -3,7 +3,7 @@
 // row at the foot, and a slot in the last row with room (a new row when every row is full).
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { newDashboard, type DashboardLayout, type Tab } from '@liveplanner/document';
+import { newDashboard, type DashboardLayout, type Tab } from '@liveplanner/project';
 import { usePlanTabActions } from './usePlanTabActions';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));

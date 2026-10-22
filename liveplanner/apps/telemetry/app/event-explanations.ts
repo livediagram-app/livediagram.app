@@ -26,9 +26,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Editor|Changed|ModeWorkshop':
     'Someone switched a tab to Workshop mode, to run a session with their team: timers, votes, polls and reveals.',
   'Draw|Created|Template':
-    'Someone started a new document as a whiteboard, a plain board drawn on with pens, from the New Document wizard.',
+    'Someone started a new project as a whiteboard, a plain board drawn on with pens, from the New Project wizard.',
   'Draw|Created|NewTab':
-    'Someone added a whiteboard tab, a plain board drawn on with pens, to a document from Quick Start.',
+    'Someone added a whiteboard tab, a plain board drawn on with pens, to a project from Quick Start.',
   'AI|Toggled|AiOff': 'Someone turned off the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiOn': 'Someone turned on the AI Assistant panel, in Settings under AI Tools.',
   'AI|Toggled|AiSuggestedPromptsOff': 'Someone turned off Suggested Prompts for the AI Assistant.',
@@ -47,13 +47,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Action|Created|EmailOn':
     'Someone assigned an action to a teammate on an element and chose to email them about it.',
   'Action|Deleted|': 'Someone removed an assigned action from an element.',
-  'Action|Moved|DocumentToTeam':
-    "While assigning an action to someone, the document was moved into that person's team so they'd have access to it.",
+  'Action|Moved|ProjectToTeam':
+    "While assigning an action to someone, the project was moved into that person's team so they'd have access to it.",
   'Action|Linked|Board':
-    "Someone added a document's first action, which made its Actions board: a board tab where every action in the document has a card, kept in step with the canvas.",
+    "Someone added a project's first action, which made its Actions board: a board tab where every action in the project has a card, kept in step with the canvas.",
   'Action|Opened|': 'Someone opened the popover for an action already assigned to an element.',
   'Action|Opened|Board':
-    "Someone went from an action on the canvas to the document's Actions board, from the action's popover or an Action panel's Board chip.",
+    "Someone went from an action on the canvas to the project's Actions board, from the action's popover or an Action panel's Board chip.",
   'Action|Opened|Canvas':
     "Someone went from a card on the Actions board to its action on the canvas, with the card's Show on Canvas.",
   'Action|Resolved|': 'Someone marked an assigned action as done.',
@@ -109,41 +109,41 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Comment|Mentioned|': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved|': 'A comment thread was marked resolved.',
   'Comment|Unresolved|': 'A resolved comment thread was reopened.',
-  'Document|Created|Cloud': 'A brand-new document was created.',
-  'Document|Created|Offline': 'A brand-new document was created.',
-  'Document|Deleted|': 'A document was deleted.',
-  'Document|Duplicated|': 'A document was duplicated into a new one.',
-  'Document|Duplicated|Copy': 'A document was duplicated into a new one.',
-  'Document|Joined|Edit':
-    'Someone came into a document through an edit-role share link. Counted once per person per document, not on every revisit.',
-  'Document|Joined|Participate':
-    'Someone came into a document through a Participant share link. Counted once per person per document, not on every revisit.',
-  'Document|Loaded|':
-    'A document was opened, counted on every open (including a page refresh and the first open of a document just created).',
-  'Document|Moved|': 'A document was moved into (or out of) a folder.',
-  'Document|Moved|SavedToCloud':
-    'Someone synced a document in This Browser to their account, turning it into a cloud document kept on the server.',
-  'Document|Moved|TakenOffline':
-    'Someone took a document offline, moving it out of their account into this browser only.',
-  'Document|Redone|': 'Someone hit Redo on a document edit.',
-  'Document|Removed|ShareLink':
-    "Someone revoked a share link from a document's Share dialog, so it stops working.",
-  'Document|Renamed|': 'A document was renamed.',
-  'Document|Reverted|':
+  'Project|Created|Cloud': 'A brand-new project was created.',
+  'Project|Created|Offline': 'A brand-new project was created.',
+  'Project|Deleted|': 'A project was deleted.',
+  'Project|Duplicated|': 'A project was duplicated into a new one.',
+  'Project|Duplicated|Copy': 'A project was duplicated into a new one.',
+  'Project|Joined|Edit':
+    'Someone came into a project through an edit-role share link. Counted once per person per project, not on every revisit.',
+  'Project|Joined|Participate':
+    'Someone came into a project through a Participant share link. Counted once per person per project, not on every revisit.',
+  'Project|Loaded|':
+    'A project was opened, counted on every open (including a page refresh and the first open of a project just created).',
+  'Project|Moved|': 'A project was moved into (or out of) a folder.',
+  'Project|Moved|SavedToCloud':
+    'Someone synced a project in This Browser to their account, turning it into a cloud project kept on the server.',
+  'Project|Moved|TakenOffline':
+    'Someone took a project offline, moving it out of their account into this browser only.',
+  'Project|Redone|': 'Someone hit Redo on a project edit.',
+  'Project|Removed|ShareLink':
+    "Someone revoked a share link from a project's Share dialog, so it stops working.",
+  'Project|Renamed|': 'A project was renamed.',
+  'Project|Reverted|':
     "Someone reverted a single change from a tab's activity log, in the since-removed Activity panel.",
-  'Document|Shared|Edit': 'Someone generated an edit-role share link for a document.',
-  'Document|Shared|ExpiryWeek':
+  'Project|Shared|Edit': 'Someone generated an edit-role share link for a project.',
+  'Project|Shared|ExpiryWeek':
     'Someone set a share link to expire after a week, when creating it.',
-  'Document|Shared|Extended':
+  'Project|Shared|Extended':
     'Someone re-armed an expiring share link for another full round of its original lifetime.',
-  'Document|Shared|Participate':
+  'Project|Shared|Participate':
     'Someone generated a Participant share link: people take part and write without reshaping the board.',
-  'Document|Shared|PasswordCleared': "Someone removed the password from a document's share link.",
-  'Document|Shared|PasswordSet': "Someone set a password on a document's share link.",
-  'Document|Shared|View': 'Someone generated a view-role share link for a document.',
-  'Document|Undone|': 'Someone hit Undo on a document edit.',
-  'Document|Used|Multiplayer':
-    'A document was open with at least one other person live in the room, counted once per document per visit. The one event that counts collaboration happening rather than being offered.',
+  'Project|Shared|PasswordCleared': "Someone removed the password from a project's share link.",
+  'Project|Shared|PasswordSet': "Someone set a password on a project's share link.",
+  'Project|Shared|View': 'Someone generated a view-role share link for a project.',
+  'Project|Undone|': 'Someone hit Undo on a project edit.',
+  'Project|Used|Multiplayer':
+    'A project was open with at least one other person live in the room, counted once per project per visit. The one event that counts collaboration happening rather than being offered.',
   'Element|Changed|Agenda':
     'Someone pressed a segment on an Agenda element, starting its timer and marking it as the current item.',
   'Element|Changed|IconSwapped': 'Someone dropped an icon onto another icon, swapping its glyph.',
@@ -431,7 +431,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Changed|LogoMirrorCopies5': "Someone set a logo page's radial mirror to 5 copies.",
   'UI|Changed|LogoMirrorCopies6': "Someone set a logo page's radial mirror to 6 copies.",
   'UI|Changed|LogoMirrorCopies8': "Someone set a logo page's radial mirror to 8 copies.",
-  'Document|Exported|LogoKit':
+  'Project|Exported|LogoKit':
     'Someone downloaded a logo kit: an SVG, PNGs and a favicon of a logo page.',
   'UI|Toggled|LogoGuideCentreLinesOn': "Someone showed the logo guides' centre lines.",
   'UI|Toggled|LogoGuideCentreLinesOff': "Someone hid the logo guides' centre lines.",
@@ -457,7 +457,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Element|Grouped|': 'A multi-selection was grouped (before groups were removed).',
   'Element|Linked|ArrowPoint':
     "Someone dragged an arrow's end onto another element, pinning that end to it so the arrow follows if the element moves.",
-  'Element|Linked|Document': 'Someone linked an element to another document.',
+  'Element|Linked|Project': 'Someone linked an element to another project.',
   'Element|Linked|Tab': 'Someone linked an element to another tab.',
   'Element|Linked|Url': 'Someone linked an element to a web address.',
   'Element|Locked|': "An element's lock was turned on (no edits allowed).",
@@ -495,11 +495,11 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone pressed Select Image on an empty image's placeholder to open the image picker.",
   'Element|Used|Video': 'Someone pressed play on a video element.',
   'Element|Voted|': 'Someone cast a dot in a dot vote.',
-  'Email|Sent|DocumentJoined':
-    "An email went out to a document's owner after someone opened it for the first time through a share link.",
-  'Email|Sent|FirstShare': "An email went out marking someone's first time sharing a document.",
+  'Email|Sent|ProjectJoined':
+    "An email went out to a project's owner after someone opened it for the first time through a share link.",
+  'Email|Sent|FirstShare': "An email went out marking someone's first time sharing a project.",
   'Email|Sent|Milestone':
-    'An email went out congratulating someone on reaching a document-count milestone.',
+    'An email went out congratulating someone on reaching a project-count milestone.',
   'Email|Sent|TeamInviteReminder1':
     'A reminder went out about a team invite nobody had answered, a day after it was sent.',
   'Email|Sent|TeamInviteReminder2':
@@ -514,21 +514,21 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Error|Api|Network.SendEmail':
     "An email (a welcome message, an invite, a notification) couldn't be sent, because the email provider couldn't be reached at all.",
   'Error|Client|RealtimeResync':
-    'The editor noticed it had missed updates during a live session and refetched the document to catch back up. This is the editor recovering on its own, not a crash.',
+    'The editor noticed it had missed updates during a live session and refetched the project to catch back up. This is the editor recovering on its own, not a crash.',
   'Error|Client|StaleChunkReload':
     'A tab still running an earlier build of the editor asked for a piece of code the last deploy removed, and loaded the page in full instead of crashing. The editor recovering on its own after a deploy, not a crash.',
   'Error|Client|Uncaught':
     'A part of the editor or help centre crashed with an error nothing in the code caught. No longer recorded in this bare form; a crash like this now also records which page it happened on and what kind of error it was.',
   'Error|Client|UnhandledRejection':
     'A background task failed and nothing in the code handled the failure. No longer recorded in this bare form; a failure like this now also records which page it happened on and what kind of error it was.',
-  'Error|Warning|DocumentLoad.Slow':
-    'A document took more than 10 seconds to load, so the opening screen offered Refresh.',
-  'Error|Warning|DocumentLoad.AutoReload':
-    'A document load hit its 30-second limit and the page reloaded itself once to try a fresh start.',
-  'Error|Warning|DocumentLoad.Late':
-    'A document finished loading after its 30-second limit had already shown the error screen; the editor replaced it.',
+  'Error|Warning|ProjectLoad.Slow':
+    'A project took more than 10 seconds to load, so the opening screen offered Refresh.',
+  'Error|Warning|ProjectLoad.AutoReload':
+    'A project load hit its 30-second limit and the page reloaded itself once to try a fresh start.',
+  'Error|Warning|ProjectLoad.Late':
+    'A project finished loading after its 30-second limit had already shown the error screen; the editor replaced it.',
   'Error|Warning|OfflineStore.Unavailable':
-    "The browser's local database did not open in time, so the load carried on without checking for Offline Mode documents.",
+    "The browser's local database did not open in time, so the load carried on without checking for Offline Mode projects.",
   'Error|Warning|SessionToken.TimedOut':
     "A signed-in browser's session did not hand out a token within 10 seconds, so the request gave up instead of waiting forever.",
   'Facilitator|Changed|Granted':
@@ -539,12 +539,12 @@ export const EXACT: Readonly<Record<string, string>> = {
     'The facilitator of a live session stepped down, leaving nobody in charge of its shared tools.',
   'Facilitator|Started|Claimed':
     'Someone took the facilitator role in a live session, becoming the one in charge of its shared tools: the timer, votes, and polls.',
-  'Folder|Created|': 'A new folder was created in the document explorer.',
+  'Folder|Created|': 'A new folder was created in the project explorer.',
   'Folder|Created|Tab':
-    'A new tab folder was created inside a document, by typing a name the document had not used before.',
-  'Folder|Created|Team': 'A new folder was created in the document explorer.',
-  'Folder|Deleted|': 'A folder was deleted (contained documents move to the top level).',
-  'Folder|Deleted|Team': 'A folder was deleted (contained documents move to the top level).',
+    'A new tab folder was created inside a project, by typing a name the project had not used before.',
+  'Folder|Created|Team': 'A new folder was created in the project explorer.',
+  'Folder|Deleted|': 'A folder was deleted (contained projects move to the top level).',
+  'Folder|Deleted|Team': 'A folder was deleted (contained projects move to the top level).',
   'Folder|Moved|': 'A folder was re-parented under another folder (or the root).',
   'Folder|Moved|Team': 'A folder was re-parented under another folder (or the root).',
   'Folder|Renamed|': 'A folder was renamed.',
@@ -556,41 +556,41 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone searched the help centre and got at least one matching article. Counted once per finished search; the search words are never recorded.',
   'Home|Loaded|Retry': 'Someone pressed "Try again" after Home failed to load.',
   'Home|Opened|Group':
-    "Someone expanded a summary of several people's work on one document in Home's What Happened, to see every action.",
+    "Someone expanded a summary of several people's work on one project in Home's What Happened, to see every action.",
   'Home|Opened|Landing':
     'Someone arrived at the Explorer with Home as the very section that loaded.',
   'Home|Opened|Nav': 'Someone went to Home from another section of the Explorer.',
-  'UI|Selected|Sidebar.TrashDropDocument':
-    "Someone dragged a document onto the Trash row in the Explorer's sidebar, moving it to the Trash.",
+  'UI|Selected|Sidebar.TrashDropProject':
+    "Someone dragged a project onto the Trash row in the Explorer's sidebar, moving it to the Trash.",
   'UI|Selected|Sidebar.TrashDropFolder':
     "Someone dragged one of their folders onto the Trash row in the Explorer's sidebar to delete it.",
   'Home|Opened|Welcome':
-    'Someone with no documents yet saw the first-run Home, with its blanks and popular templates to start from.',
+    'Someone with no projects yet saw the first-run Home, with its blanks and popular templates to start from.',
   'Home|Selected|Welcome.AllTemplates':
-    'Someone with no documents yet followed Browse All Templates from the first-run Home.',
+    'Someone with no projects yet followed Browse All Templates from the first-run Home.',
   'Home|Selected|Welcome.Blank':
-    'Someone with no documents yet started a blank from the first-run Home.',
+    'Someone with no projects yet started a blank from the first-run Home.',
   'Home|Selected|Welcome.Search':
-    'Someone with no documents yet searched the templates from the field at the top of the first-run Home.',
+    'Someone with no projects yet searched the templates from the field at the top of the first-run Home.',
   'Home|Selected|Welcome.SignIn':
-    'Someone signed out with no documents followed Sign In from the first-run Home, to find their work.',
+    'Someone signed out with no projects followed Sign In from the first-run Home, to find their work.',
   'Home|Selected|Welcome.StartBlank':
-    'Someone with no documents yet started a blank diagram from the field at the top of the first-run Home.',
+    'Someone with no projects yet started a blank diagram from the field at the top of the first-run Home.',
   'Home|Selected|Welcome.Template':
-    'Someone with no documents yet started a popular template from the first-run Home.',
-  'Home|Selected|Hero.Documents':
-    'Someone followed the documents pill at the top of Home to My Documents.',
+    'Someone with no projects yet started a popular template from the first-run Home.',
+  'Home|Selected|Hero.Projects':
+    'Someone followed the projects pill at the top of Home to My Projects.',
   'Home|Selected|Hero.Inbox': 'Someone followed the Inbox pill at the top of Home to their Inbox.',
-  'Home|Selected|Hero.NewDocument':
-    'Someone started a new document from the New document button in the search field at the top of Home.',
+  'Home|Selected|Hero.NewProject':
+    'Someone started a new project from the New project button in the search field at the top of Home.',
   'Home|Selected|JumpBackIn.MostUsed':
-    "Someone opened a document from Home's Jump Back In that was among the ones they used on the most days.",
+    "Someone opened a project from Home's Jump Back In that was among the ones they used on the most days.",
   'Home|Selected|JumpBackIn.Recent':
-    "Someone opened a document from Home's Jump Back In that was among the ones they used most recently.",
+    "Someone opened a project from Home's Jump Back In that was among the ones they used most recently.",
   'Home|Selected|JumpBackIn.SeeMore':
     "Someone followed See More from Home's Jump Back In to the Recent page.",
   'Home|Selected|WhatHappened':
-    "Someone opened a document from Home's What Happened, which lists what other people did to their documents.",
+    "Someone opened a project from Home's What Happened, which lists what other people did to their projects.",
   'Layer|Added|': 'A new layer was added in the Layers panel.',
   'Layer|Changed|Opacity': "A layer's opacity was adjusted.",
   'Layer|Cleared|': 'A layer was emptied (its elements deleted, the layer kept).',
@@ -608,7 +608,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Layer|Toggled|OthersHidden': 'Someone hid every layer except one.',
   'Layer|Toggled|Shown': 'A hidden layer was shown again.',
   'Layer|Toggled|Unlocked': 'A locked layer was unlocked.',
-  'Agent|Viewed|Overview': 'An agent or a script read a document at a glance: one line per tab.',
+  'Agent|Viewed|Overview': 'An agent or a script read a project at a glance: one line per tab.',
   'Agent|Viewed|Outline': 'An agent or a script read a tab as an outline, one line per element.',
   'Agent|Viewed|Graph': 'An agent or a script read what connects to what on a tab.',
   'Agent|Viewed|Layout': 'An agent or a script read where things sit on a tab.',
@@ -619,21 +619,21 @@ export const EXACT: Readonly<Record<string, string>> = {
     'An agent or a script checked how a tab is drawn: overlaps, crossings, hidden arrows.',
   'Agent|Opened|Toast':
     "Somebody pressed Show on the toast an agent's change raised, to see what it touched.",
-  'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a document.',
-  'Mcp|Used|CreateDocument': 'An AI tool connected over MCP created a new document.',
-  'Mcp|Used|FindDocuments':
-    "An AI tool connected over MCP searched for one of the user's documents.",
-  'Mcp|Used|ReadDocument': "An AI tool connected over MCP read a document's contents.",
-  'Mcp|Used|RenameDocument': 'An AI tool connected over MCP renamed a document.',
-  'Mcp|Used|ShareDocument': 'An AI tool connected over MCP generated a share link for a document.',
-  'Mcp|Used|UpdateDocument': "An AI tool connected over MCP updated a tab's content in a document.",
+  'Mcp|Used|AddTab': 'An AI tool connected over MCP added a new tab to a project.',
+  'Mcp|Used|CreateProject': 'An AI tool connected over MCP created a new project.',
+  'Mcp|Used|FindProjects':
+    "An AI tool connected over MCP searched for one of the user's projects.",
+  'Mcp|Used|ReadProject': "An AI tool connected over MCP read a project's contents.",
+  'Mcp|Used|RenameProject': 'An AI tool connected over MCP renamed a project.',
+  'Mcp|Used|ShareProject': 'An AI tool connected over MCP generated a share link for a project.',
+  'Mcp|Used|UpdateProject': "An AI tool connected over MCP updated a tab's content in a project.",
   'Note|Added|': 'A note was added to an element (first non-empty save).',
   'Note|Changed|': "An existing note's text was edited.",
   'Note|Deleted|': 'A note was cleared from an element.',
   'Note|Opened|': 'Someone opened the note popover on an element.',
   'Page|View|/': 'Someone visited the marketing homepage.',
-  'Page|View|/document':
-    "Someone opened a document in the editor. Every document's page counts under this same path, with no document-specific detail recorded.",
+  'Page|View|/project':
+    "Someone opened a project in the editor. Every project's page counts under this same path, with no project-specific detail recorded.",
   'Page|View|/explorer': 'Someone opened the Explorer, landing on its default section.',
   'Page|View|/explorer/home': "Someone opened the Explorer's Home, its landing section.",
   'Page|View|/explorer/activity':
@@ -646,7 +646,7 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone visited the marketing site's Foundations features page.",
   'Page|View|/features/simple': "Someone visited the marketing site's Simple features page.",
   'Page|View|/help/canvas/links': 'Someone opened the help centre\'s "Learn about links" article.',
-  'Page|View|/new': 'Someone opened the New Document wizard.',
+  'Page|View|/new': 'Someone opened the New Project wizard.',
   'Page|View|/sign-in': 'Someone opened the sign-in page.',
   'Page|View|/sso-callback':
     'Someone was redirected through the sign-in callback page after completing Google sign-in.',
@@ -696,9 +696,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Form|Opened|NotTakingLimit':
     "Someone pressed a form's Not Taking Responses warning: it had reached its Response Limit.",
   'Form|Opened|NotTakingFull':
-    "Someone pressed a form's Not Taking Responses warning: its document held as many cards as it can.",
+    "Someone pressed a form's Not Taking Responses warning: its project held as many cards as it can.",
   'Form|Moved|SyncedToShare':
-    'Someone synced a document in This Browser from Share Form, so its form could be published.',
+    'Someone synced a project in This Browser from Share Form, so its form could be published.',
   'Form|Sent|Response':
     'Someone filled in a form through its link, and the response became a card on its board.',
   'Form|Sent|Dropped':
@@ -787,8 +787,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Session|Deleted|Account':
     'Someone permanently deleted their account and its data, after typing their email address to confirm.',
   'Session|Opened|Embed':
-    'A read-only embedded copy of a document was loaded on an outside page (for example an iframe in a wiki or a doc). Counted once per rendered embed.',
-  'Session|Opened|Workbench': 'A document opened inside a developer tool’s frame, signed in.',
+    'A read-only embedded copy of a project was loaded on an outside page (for example an iframe in a wiki or a doc). Counted once per rendered embed.',
+  'Session|Opened|Workbench': 'A project opened inside a developer tool’s frame, signed in.',
   'Session|Opened|WorkbenchWorkspace':
     'The Explorer opened inside a developer tool’s frame, signed in.',
   'Session|SignedIn|': 'A visitor just signed in to their account.',
@@ -903,8 +903,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Changed|TimerReset': "Someone reset a tab's timer back to its starting length.",
   'Tab|Cleared|': "A tab's content was wiped.",
   'Tab|Cleared|Vote': "A tab's content was wiped.",
-  'Tab|Created|': 'A new tab was added to a document.',
-  'Tab|Deleted|': 'A tab was removed from a document.',
+  'Tab|Created|': 'A new tab was added to a project.',
+  'Tab|Deleted|': 'A tab was removed from a project.',
   'Tab|Duplicated|': 'A tab was duplicated.',
   'Tab|Ended|CountdownTimer':
     "Someone cleared a tab's countdown timer, whether it had run out or was dismissed early.",
@@ -913,9 +913,9 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Ended|Vote': 'Someone ended a dot vote on a tab.',
   'Tab|Ended|VoteReview':
     "Someone finished reviewing a dot vote's ranked results, closing out the vote for everyone.",
-  'Tab|Linked|': 'A tab was linked into another document.',
+  'Tab|Linked|': 'A tab was linked into another project.',
   'Tab|Loaded|':
-    "A tab's content was fetched for viewing (the first tab when a document opens, then each tab switched to).",
+    "A tab's content was fetched for viewing (the first tab when a project opens, then each tab switched to).",
   'Tab|Locked|': 'A tab was locked (read-only).',
   'Tab|Moved|Folder': 'A tab was filed into a tab folder.',
   'Tab|Removed|Folder':
@@ -942,7 +942,7 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Tab|Unlocked|': 'A tab was unlocked (edits resume).',
   'Tab|Voted|Poll':
     'Someone answered a live poll. Counted once per person per poll, even if they change their answer.',
-  'Team|Added|Document': "A document was added to a team's shared library.",
+  'Team|Added|Project': "A project was added to a team's shared library.",
   'Team|Added|Member':
     'An admin invited someone to a team by email. This counts invitations sent, not accepted: that is Joined.',
   'Team|Changed|': "Someone updated a team's name or organisation in its settings.",
@@ -954,9 +954,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone turned down a team invite from the email's Decline link, without signing in.",
   'Team|Deleted|': 'An admin deleted a team.',
   'Team|Joined|': 'Someone accepted a team invite, by email or by invite link.',
-  'Team|Moved|Document':
-    "A document already in a team's shared library was moved: re-foldered within the team, moved to a different team, or taken back to the owner's personal space.",
-  'Team|Removed|Document': 'An admin removed a member who had joined the team.',
+  'Team|Moved|Project':
+    "A project already in a team's shared library was moved: re-foldered within the team, moved to a different team, or taken back to the owner's personal space.",
+  'Team|Removed|Project': 'An admin removed a member who had joined the team.',
   'Team|Removed|Link': "A team's shareable invite link was turned off.",
   'Team|Removed|Rejected':
     'An admin cleared a declined or expired team invite from the member list.',
@@ -966,13 +966,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Theme|Created|Custom': 'Someone created a custom theme with their own colours.',
   'Theme|Deleted|Custom': 'Someone deleted a custom theme they had created.',
   'Timeline|Changed|Calendar':
-    "Someone switched a document's History or a team's Activity from list view to calendar view.",
+    "Someone switched a project's History or a team's Activity from list view to calendar view.",
   'Timeline|Changed|List':
-    "Someone switched a document's History or a team's Activity from calendar view to list view.",
+    "Someone switched a project's History or a team's Activity from calendar view to list view.",
   'Timeline|Loaded|More':
-    'Someone clicked "Show More" at the bottom of a document\'s History or a team\'s Activity, loading the next page.',
+    'Someone clicked "Show More" at the bottom of a project\'s History or a team\'s Activity, loading the next page.',
   'Timeline|Loaded|Retry':
-    'Someone clicked "Try again" after a document\'s History or a team\'s Activity failed to load, retrying the read.',
+    'Someone clicked "Try again" after a project\'s History or a team\'s Activity failed to load, retrying the read.',
   'Timeline|Opened|Landing':
     "Someone arrived at the Explorer with the Timeline as the very section that loaded. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Opened|Menu':
@@ -980,42 +980,42 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Timeline|Opened|Nav':
     "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See Timeline link. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Opened|Stack':
-    'Someone expanded a collapsed run of similar entries (like "12 documents renamed") in a document\'s History or a team\'s Activity into its individual cards.',
+    'Someone expanded a collapsed run of similar entries (like "12 projects renamed") in a project\'s History or a team\'s Activity into its individual cards.',
   'Timeline|Removed|Entry':
     "Someone removed a single entry from their Timeline feed. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Removed|Stack':
     "Someone removed every entry in a collapsed run from their Timeline feed at once, from its ⋯ menu. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Selected|Everyone':
-    "Someone switched a document's History or a team's Activity to show everyone's activity, not just their own.",
+    "Someone switched a project's History or a team's Activity to show everyone's activity, not just their own.",
   'Timeline|Selected|Others':
-    "Someone switched a document's History or a team's Activity to show only other people's activity, hiding their own.",
+    "Someone switched a project's History or a team's Activity to show only other people's activity, hiding their own.",
   'Trash|Opened|Settings': 'Someone opened the Trash from Settings, under Account.',
   'Explorer|Selected|Text':
-    'Someone typed words into the Explorer search to narrow a list of documents.',
+    'Someone typed words into the Explorer search to narrow a list of projects.',
   'Explorer|Selected|OpensIn':
-    'Someone filtered an Explorer list by the editor mode documents open in (Diagram or Draw).',
+    'Someone filtered an Explorer list by the editor mode projects open in (Diagram or Draw).',
   'Explorer|Selected|Template':
-    'Someone filtered an Explorer list by the template family documents were made from (Retrospective, Kanban).',
-  'Explorer|Selected|MadeBy': 'Someone filtered an Explorer list to the documents an AI made.',
+    'Someone filtered an Explorer list by the template family projects were made from (Retrospective, Kanban).',
+  'Explorer|Selected|MadeBy': 'Someone filtered an Explorer list to the projects an AI made.',
   'Explorer|Selected|Edited':
-    'Someone filtered an Explorer list by when documents were last edited.',
+    'Someone filtered an Explorer list by when projects were last edited.',
   'Explorer|Selected|People':
-    'Someone filtered an Explorer list by who owns the documents (Me or Others).',
+    'Someone filtered an Explorer list by who owns the projects (Me or Others).',
   'Explorer|Created|Tag':
-    'Someone made a tag, a coloured label for grouping their documents, from the tag picker or the Tags page.',
-  'Explorer|Added|Tag': 'Someone put one of their tags on a document.',
-  'Explorer|Removed|Tag': 'Someone took one of their tags off a document.',
+    'Someone made a tag, a coloured label for grouping their projects, from the tag picker or the Tags page.',
+  'Explorer|Added|Tag': 'Someone put one of their tags on a project.',
+  'Explorer|Removed|Tag': 'Someone took one of their tags off a project.',
   'Explorer|Renamed|Tag': 'Someone renamed one of their tags.',
   'Explorer|Changed|TagColour': 'Someone changed the colour of one of their tags.',
   'Explorer|Deleted|Tag':
-    'Someone deleted one of their tags, which takes it off every document it was on.',
+    'Someone deleted one of their tags, which takes it off every project it was on.',
   'Explorer|Selected|Space':
-    'Someone filtered an aggregate Explorer list by where documents live (My Documents, Shared With Me, a team).',
+    'Someone filtered an aggregate Explorer list by where projects live (My Projects, Shared With Me, a team).',
   'Token|Created|MCP':
     'An AI tool was connected to the account over MCP, which creates an API token for it to use.',
   'Token|Created|Manual':
     'Someone created a new personal API token by hand, from the API Tokens category in Settings.',
-  'Token|Linked|Workbench': 'A token’s owner allowed a developer tool to open their documents.',
+  'Token|Linked|Workbench': 'A token’s owner allowed a developer tool to open their projects.',
   'Token|Removed|': 'Someone revoked an API token.',
   'UI|Added|PaletteFavourite':
     'Someone added a tile to their Favourites in the shape palette. No longer recorded: the palette opens on Popular, a fixed pick.',
@@ -1102,8 +1102,8 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|EmptyPageLayouts': 'Someone hid the Start From a Layout card on an empty page.',
   'UI|Closed|EmptyPageLayoutsBlank':
     'Someone chose Start From Scratch on an empty logo page, so its Start From a Layout card stays away on that page.',
-  'UI|Closed|NewDocument':
-    'Someone pressed Escape or the X in the New Document wizard and went back to where they came from, creating nothing.',
+  'UI|Closed|NewProject':
+    'Someone pressed Escape or the X in the New Project wizard and went back to where they came from, creating nothing.',
   'UI|Closed|Presentation': 'Someone exited presentation mode.',
   'UI|Closed|SignInBanner':
     'Someone dismissed the guest sign-in banner. An earlier version of this event, before it recorded which surface (the editor or the Explorer) showed the banner. No longer recorded.',
@@ -1120,11 +1120,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Closed|PlanTourOffer': "Someone dismissed the Plan tour's offer card without starting it.",
   'UI|Closed|Welcome': 'Someone dismissed the first-run welcome modal.',
   'UI|Cleared|BrowserRepair':
-    "Someone used Repair This Browser on a failed document load: liveplanner's settings and caches in that browser were cleared and the page reloaded.",
+    "Someone used Repair This Browser on a failed project load: liveplanner's settings and caches in that browser were cleared and the page reloaded.",
   'UI|Cleared|BrowserRepair.Help':
     "Someone used Repair This Browser from the help centre's Repair page, clearing liveplanner's settings and caches in that browser.",
   'UI|Copied|Diagnostics':
-    'Someone copied the diagnostics report from a failed document load, to send to support.',
+    'Someone copied the diagnostics report from a failed project load, to send to support.',
   'UI|Copied|Diagnostics.Help':
     "Someone copied the browser diagnostics report from the help centre's Repair page.",
   'UI|Copied|EmbedCode':
@@ -1352,11 +1352,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Declined|PowerUserOffer':
     'Someone said no thanks to the power user mode offer, or closed it.',
   'UI|Opened|NewVersionPrompt':
-    'An open editor learned the server now serves a newer document format and offered "A new version of liveplanner is ready".',
+    'An open editor learned the server now serves a newer project format and offered "A new version of liveplanner is ready".',
   'UI|Used|NewVersionPrompt':
     'Someone pressed Reload on the new version prompt; the editor reloads once their changes are saved.',
   'UI|Opened|TourOffer':
-    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first document or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
+    'The Diagram tour\'s offer card was shown on a Diagram tab, either automatically on a first project or replayed from Settings\' Tours › "Diagram Tour" ("Welcome", when it was the welcome tour, until October 2026).',
   'UI|Opened|PagesTourOffer':
     'The Pages tour was offered: as its own card the first time someone worked in Pages mode, or replayed from Settings\' Tours › "Pages Tour".',
   'UI|Opened|AvatarTourOffer':
@@ -1547,11 +1547,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|AutoRebindOn': 'Someone turned on auto-attach for arrows, in Settings > Editor.',
   'UI|Toggled|Dark': "Someone set the editor's appearance to Dark.",
   'UI|Toggled|ExplorerViewCard':
-    'Someone switched the Explorer to Card view, showing a large preview of each document.',
+    'Someone switched the Explorer to Card view, showing a large preview of each project.',
   'UI|Toggled|ExplorerViewDetails':
     'Someone switched the Explorer to Details view, a sortable table of type, comments, access, size and dates.',
   'UI|Toggled|ExplorerViewList':
-    'Someone switched the Explorer to List view, showing documents as compact rows.',
+    'Someone switched the Explorer to List view, showing projects as compact rows.',
   'UI|Toggled|HiddenLayersExport':
     'Someone turned on including hidden layers when exporting an image.',
   'UI|Toggled|IsometricExport':
@@ -1588,9 +1588,9 @@ export const EXACT: Readonly<Record<string, string>> = {
     'Someone turned Button Labels back on in Settings > Appearance, naming the bottom-right buttons beside their icons on a wide desktop.',
   'UI|Toggled|MinimapOn': 'Someone turned on the minimap, in Settings > Editor.',
   'UI|Toggled|HomeBannerOff':
-    "Someone hid Explorer Home's banner, from its close button or Settings > Documents. Home then opens on its page header.",
+    "Someone hid Explorer Home's banner, from its close button or Settings > Projects. Home then opens on its page header.",
   'UI|Toggled|HomeBannerOn':
-    "Someone turned Explorer Home's banner back on, in Settings > Documents.",
+    "Someone turned Explorer Home's banner back on, in Settings > Projects.",
   'UI|Toggled|NotificationsOff':
     'Someone turned off in-editor toast notifications, in Settings > Notifications.',
   'UI|Toggled|NotificationsOn':
@@ -1612,13 +1612,13 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|NotifyMentionsOn':
     'Someone turned on the email that arrives when a teammate @-mentions them in a comment, in Settings > Notifications.',
   'UI|Toggled|NotifyCommentsOff':
-    'Someone turned off the email that arrives when someone comments on a document they own, in Settings > Notifications.',
+    'Someone turned off the email that arrives when someone comments on a project they own, in Settings > Notifications.',
   'UI|Toggled|NotifyCommentsOn':
-    'Someone turned on the email that arrives when someone comments on a document they own, in Settings > Notifications.',
-  'UI|Toggled|NotifyDocumentJoinOff':
-    'Someone turned off the email that arrives when a new person opens one of their shared documents, in Settings > Notifications.',
-  'UI|Toggled|NotifyDocumentJoinOn':
-    'Someone turned on the email that arrives when a new person opens one of their shared documents, in Settings > Notifications.',
+    'Someone turned on the email that arrives when someone comments on a project they own, in Settings > Notifications.',
+  'UI|Toggled|NotifyProjectJoinOff':
+    'Someone turned off the email that arrives when a new person opens one of their shared projects, in Settings > Notifications.',
+  'UI|Toggled|NotifyProjectJoinOn':
+    'Someone turned on the email that arrives when a new person opens one of their shared projects, in Settings > Notifications.',
   'UI|Toggled|NotifyInviteResponseOff':
     'Someone turned off the email that arrives when a team invite they sent is accepted or declined, in Settings > Notifications.',
   'UI|Toggled|NotifyInviteResponseOn':
@@ -1652,30 +1652,30 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|ShortcutsOff': 'Someone turned off keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|ShortcutsOn': 'Someone turned on keyboard shortcuts, in Settings > Keyboard.',
   'UI|Toggled|SkipLocationStepOff':
-    'Someone turned off skipping the Location step, in Settings > Documents, so the New Document wizard asks where each document goes again.',
+    'Someone turned off skipping the Location step, in Settings > Projects, so the New Project wizard asks where each project goes again.',
   'UI|Toggled|SkipLocationStepOn':
-    'Someone ticked "Always save new documents in <place> and skip this step" on the New Document wizard\'s Location step.',
+    'Someone ticked "Always save new projects in <place> and skip this step" on the New Project wizard\'s Location step.',
   'UI|Toggled|SlideHidden':
     'Someone hid a slide from the presentation run, without deleting it, in the Slide Deck panel.',
   'UI|Toggled|SlideShown':
     'Someone unhid a slide, putting it back into the presentation run, in the Slide Deck panel.',
   'UI|Toggled|System': "Someone set the editor's appearance to follow the system.",
   'UI|Toggled|TemplateModeAll':
-    'Someone set the New Document template filter back to Everything, showing templates for every mode.',
+    'Someone set the New Project template filter back to Everything, showing templates for every mode.',
   'UI|Toggled|TemplateModeDiagram':
-    'Someone narrowed the New Document templates to the ones that open in Diagram mode.',
+    'Someone narrowed the New Project templates to the ones that open in Diagram mode.',
   'UI|Toggled|TemplateModeDraw':
-    'Someone narrowed the New Document templates to the ones that open in Draw mode.',
+    'Someone narrowed the New Project templates to the ones that open in Draw mode.',
   'UI|Toggled|TemplateModePages':
-    'Someone narrowed the New Document templates to the ones that open in Pages mode.',
+    'Someone narrowed the New Project templates to the ones that open in Pages mode.',
   'UI|Toggled|TemplateModePlan':
-    'Someone narrowed the New Document templates to the ones that open in Plan mode.',
+    'Someone narrowed the New Project templates to the ones that open in Plan mode.',
   'UI|Toggled|TemplateModeWorkshop':
-    'Someone narrowed the New Document templates to the ones that open in Workshop mode.',
+    'Someone narrowed the New Project templates to the ones that open in Workshop mode.',
   'UI|Toggled|TemplateShelfCollapsed':
-    'Someone put the New Document template shelf back to a carousel, with the other categories as a grid.',
+    'Someone put the New Project template shelf back to a carousel, with the other categories as a grid.',
   'UI|Toggled|TemplateShelfExpanded':
-    'Someone expanded the New Document template shelf to show every template in the category, with the other categories as a carousel.',
+    'Someone expanded the New Project template shelf to show every template in the category, with the other categories as a carousel.',
   'UI|Toggled|TelemetryOff':
     'Someone opted out of sending anonymous usage events, in Settings > Privacy.',
   'UI|Toggled|TelemetryOn':
@@ -1831,11 +1831,11 @@ export const EXACT: Readonly<Record<string, string>> = {
   'UI|Toggled|ZenModeOn':
     "Someone turned on zen mode, hiding the editor's chrome for a distraction-free canvas.",
   'UI|Used|JustDraw':
-    'Someone landed on the New Document page through a link that skips the wizard and goes straight into a blank document.',
+    'Someone landed on the New Project page through a link that skips the wizard and goes straight into a blank project.',
   'UI|Used|StartOtherMode':
     "Someone searching an empty tab's start chose a template the search found in another mode, which switched the tab to that mode.",
   'UI|Used|TemplateLink':
-    'Someone landed on the New Document page through a link that skips the wizard and goes straight into a specific template.',
+    'Someone landed on the New Project page through a link that skips the wizard and goes straight into a specific template.',
   'UI|View|PagesTourStepPageName':
     'The Pages tour reached its "Your Pages" step, on the first page\'s name.',
   'UI|View|PagesTourStepPageSettings':
@@ -2239,22 +2239,22 @@ export const EXACT: Readonly<Record<string, string>> = {
 
 export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timing|Measured':
-    'A key moment was timed: a document opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
+    'A key moment was timed: a project opening, a tab switch, a save, the live room connecting, or a page loading. Only the range it fell in is recorded, never the exact time.',
   'Editor|Changed': 'Someone switched a tab between Diagram mode and Draw mode.',
   'Element|Created': 'Someone made an element in a way other than placing it from the palette.',
   'Draw|Created': 'Someone made a whiteboard tab, a plain board drawn on with pens.',
   'Cta|Opened':
-    'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',
+    'Someone followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Project page.',
   'Cta|Created':
-    'Someone who arrived from a call to action on a public page went on to create a document. Counted once per arrival.',
+    'Someone who arrived from a call to action on a public page went on to create a project. Counted once per arrival.',
   'AI|Toggled': 'Someone turned an AI setting on or off in Settings under AI Tools.',
   'AI|Used':
     'Someone used a feature of the AI Assistant panel, or another AI-powered tool in the editor.',
   'Action|Changed': 'Someone changed something about an action assigned to an element.',
   'Action|Created': 'Someone assigned an action to a teammate, or to themselves, on an element.',
   'Action|Deleted': 'Someone removed an assigned action from an element.',
-  'Action|Linked': "Someone added a document's first action, which made its Actions board.",
-  'Action|Moved': "A document was moved into a teammate's team while assigning them an action.",
+  'Action|Linked': "Someone added a project's first action, which made its Actions board.",
+  'Action|Moved': "A project was moved into a teammate's team while assigning them an action.",
   'Action|Opened': 'Someone opened the popover for an action already assigned to an element.',
   'Action|Resolved': 'Someone marked an assigned action as done.',
   'Action|Unresolved': 'Someone reopened an assigned action that had been marked done.',
@@ -2269,7 +2269,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Form|Toggled': 'Someone switched Accepting Responses on or off for a published form.',
   'Form|Opened': "Someone pressed a form's Not Taking Responses warning, to see why and fix it.",
   'Form|Moved':
-    'Someone synced a document in This Browser from Share Form, so its form could be published.',
+    'Someone synced a project in This Browser from Share Form, so its form could be published.',
   'Form|Sent': 'A response came in through a form link.',
   'Form|Reported': 'Someone reported a form they were sent.',
   'Activity|Selected': "Someone clicked a row in the Explorer's Inbox, jumping to what it's about.",
@@ -2281,25 +2281,25 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Comment|Mentioned': 'A comment was sent that @-mentioned at least one teammate.',
   'Comment|Resolved': 'A comment thread was marked resolved.',
   'Comment|Unresolved': 'A resolved comment thread was reopened.',
-  'Document|Created': 'A brand-new document was created.',
-  'Document|Deleted': 'A document was deleted.',
-  'Document|Exported': 'Someone exported a tab, a selection or a page to a file or the clipboard.',
-  'Document|Duplicated': 'A document was duplicated into a new one.',
-  'Document|Joined':
-    'Someone came into a document through a share link. Counted once per person per document, not on every revisit.',
-  'Document|Loaded':
-    'A document was opened, counted on every open (including a page refresh and the first open of a document just created).',
-  'Document|Moved': 'A document was moved into (or out of) a folder.',
-  'Document|Redone': 'Someone hit Redo on a document edit.',
-  'Document|Removed':
-    "Someone removed something from a document's sharing, such as revoking a share link.",
-  'Document|Renamed': 'A document was renamed.',
-  'Document|Reverted':
+  'Project|Created': 'A brand-new project was created.',
+  'Project|Deleted': 'A project was deleted.',
+  'Project|Exported': 'Someone exported a tab, a selection or a page to a file or the clipboard.',
+  'Project|Duplicated': 'A project was duplicated into a new one.',
+  'Project|Joined':
+    'Someone came into a project through a share link. Counted once per person per project, not on every revisit.',
+  'Project|Loaded':
+    'A project was opened, counted on every open (including a page refresh and the first open of a project just created).',
+  'Project|Moved': 'A project was moved into (or out of) a folder.',
+  'Project|Redone': 'Someone hit Redo on a project edit.',
+  'Project|Removed':
+    "Someone removed something from a project's sharing, such as revoking a share link.",
+  'Project|Renamed': 'A project was renamed.',
+  'Project|Reverted':
     "Someone reverted a single change from a tab's activity log, in the since-removed Activity panel.",
-  'Document|Shared':
-    "Someone created or changed a document's share link: its role, how long it lasts, or its password.",
-  'Document|Undone': 'Someone hit Undo on a document edit.',
-  'Document|Used': 'A document was used in a particular way, such as with other people live in it.',
+  'Project|Shared':
+    "Someone created or changed a project's share link: its role, how long it lasts, or its password.",
+  'Project|Undone': 'Someone hit Undo on a project edit.',
+  'Project|Used': 'A project was used in a particular way, such as with other people live in it.',
   'Element|Changed':
     "Someone changed a property of one or more selected elements, from a style panel, the right-click menu, or an element's own controls.",
   'Element|Copied': 'Someone copied one or more selected elements to the clipboard.',
@@ -2307,7 +2307,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Duplicated': 'Someone duplicated one or more elements on the canvas.',
   'Element|Grouped': 'A multi-selection was grouped (before groups were removed).',
   'Element|Linked':
-    'Someone linked an element to something: another element, a web address, a document or a tab.',
+    'Someone linked an element to something: another element, a web address, a project or a tab.',
   'Element|Locked': "An element's lock was turned on (no edits allowed).",
   'Element|Removed':
     'Someone took something off an element, such as one of their dots in a dot vote.',
@@ -2323,10 +2323,10 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Element|Unlocked': "An element's lock was turned off (edits resume).",
   'Element|Searched': 'Someone searched for something to put in an element, such as a picture.',
   'Element|Used': 'Someone used an interactive element on the canvas, such as a Reaction Pad.',
-  'Element|Added': 'Someone added an element to a canvas, or put something into a document.',
+  'Element|Added': 'Someone added an element to a canvas, or put something into a project.',
   'Element|Voted': 'Someone cast a dot in a dot vote.',
   'Email|Sent':
-    'An automatic email went out: a welcome message, an onboarding nudge, a team invite, or a notification about activity on a document. The type names which one; it never says who received it.',
+    'An automatic email went out: a welcome message, an onboarding nudge, a team invite, or a notification about activity on a project. The type names which one; it never says who received it.',
   'Error|Api':
     "A request to liveplanner's servers failed, or a server itself hit an error while handling one. The type says what kind of failure it was and which operation was being attempted; see the accompanying pattern for how to read it.",
   'Error|Client':
@@ -2337,8 +2337,8 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'Something changed about who is facilitating a live session, or an element lock the facilitator freed.',
   'Facilitator|Ended': 'The facilitator role in a live session ended.',
   'Facilitator|Started': 'Someone became the facilitator of a live session.',
-  'Folder|Created': 'A new folder was created in the document explorer.',
-  'Folder|Deleted': 'A folder was deleted (contained documents move to the top level).',
+  'Folder|Created': 'A new folder was created in the project explorer.',
+  'Folder|Deleted': 'A folder was deleted (contained projects move to the top level).',
   'Folder|Moved': 'A folder was re-parented under another folder (or the root).',
   'Folder|Renamed': 'A folder was renamed.',
   'Help|Helpful':
@@ -2359,7 +2359,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Layer|Selected': 'Someone switched which layer is active.',
   'Layer|Toggled': 'Someone switched something on a layer on or off, such as hiding or locking it.',
   'Agent|Opened': "Somebody opened something an agent's change pointed them to.",
-  'Agent|Viewed': 'An agent or a script read a document as text.',
+  'Agent|Viewed': 'An agent or a script read a project as text.',
   'Agent|Applied':
     'An agent changed a tab with a changeset: through the MCP server, the CLI or the API.',
   'Agent|Conflicted':
@@ -2370,7 +2370,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     'An agent showed itself on a tab, with what it is doing, through the MCP server, the CLI or the API.',
   'Agent|Reverted':
     "An agent's changeset was undone, from the editor's toast or another front door.",
-  'Mcp|Used': 'An AI tool connected to liveplanner over MCP used one of its actions on a document.',
+  'Mcp|Used': 'An AI tool connected to liveplanner over MCP used one of its actions on a project.',
   'Note|Added': 'A note was added to an element (first non-empty save).',
   'Cli|Used': 'Someone ran a liveplanner command from the command line, and it succeeded.',
   'Note|Changed': "An existing note's text was edited.",
@@ -2397,14 +2397,14 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Someone tidied a tab's layout with Auto Layout, arranging its elements automatically.",
   'Tab|Changed': "Someone changed a tab-wide setting, such as the tab's default font or text size.",
   'Tab|Cleared': "A tab's content was wiped.",
-  'Tab|Created': 'A new tab was added to a document.',
-  'Tab|Deleted': 'A tab was removed from a document.',
+  'Tab|Created': 'A new tab was added to a project.',
+  'Tab|Deleted': 'A tab was removed from a project.',
   'Tab|Duplicated': 'A tab was duplicated.',
   'Tab|Ended': 'Someone ended a live activity on a tab, such as a poll or a timer.',
   'Tab|Imported': 'Someone imported a tab from a file.',
-  'Tab|Linked': 'A tab was linked into another document.',
+  'Tab|Linked': 'A tab was linked into another project.',
   'Tab|Loaded':
-    "A tab's content was fetched for viewing (the first tab when a document opens, then each tab switched to).",
+    "A tab's content was fetched for viewing (the first tab when a project opens, then each tab switched to).",
   'Tab|Locked': 'A tab was locked (read-only).',
   'Tab|Moved': 'A tab was filed into a tab folder.',
   'Tab|Removed': 'Someone took a tab out of its tab folder, making it a loose tab again.',
@@ -2422,13 +2422,13 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Tab|Unlocked': 'A tab was unlocked (edits resume).',
   'Tab|Voted': 'Someone answered a live vote or poll on a tab. Counted once per person per poll.',
   'Team|Added':
-    'Something was added to a team: an invitation sent, or a document added to its shared library.',
+    'Something was added to a team: an invitation sent, or a project added to its shared library.',
   'Team|Changed': "Something about a team's settings, or a member's role, was changed.",
   'Team|Created': 'Someone created a new team.',
   'Team|Declined': 'Someone turned down a team invite.',
   'Team|Deleted': 'An admin deleted a team.',
   'Team|Joined': 'Someone accepted a team invite, by email or by invite link.',
-  'Team|Moved': "A document already in a team's shared library was moved somewhere else.",
+  'Team|Moved': "A project already in a team's shared library was moved somewhere else.",
   'Team|Removed':
     'Someone was taken off a team, left one, or had a pending invite or the invite link withdrawn.',
   'Team|Shared': 'A team turned on a way for people to ask to join it.',
@@ -2436,7 +2436,7 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Theme|Deleted': 'Someone deleted a custom theme they had created.',
   'Home|Loaded': "More of Home's Timeline column loaded, or Home was read again after failing.",
   'Home|Opened': "Someone opened the Explorer's Home, or expanded a summary within it.",
-  'Home|Selected': "Someone opened a document from one part of the Explorer's Home.",
+  'Home|Selected': "Someone opened a project from one part of the Explorer's Home.",
   'Timeline|Changed': "Someone switched how the Explorer's Timeline displays its history.",
   'Timeline|Loaded':
     'The Timeline loaded more of its history, either the next page or a retry after a failed read.',
@@ -2445,13 +2445,13 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'Timeline|Selected':
     "Someone changed a Timeline filter: turned a category chip (such as Comments, Renames, or Sharing) off, or switched between seeing everyone's activity and just their own.",
   'Folder|Changed':
-    'Someone chose a default folder: where new documents of one kind (diagrams, whiteboards, retrospectives or Kanban boards) land when they pick no place.',
+    'Someone chose a default folder: where new projects of one kind (diagrams, whiteboards, retrospectives or Kanban boards) land when they pick no place.',
   'Folder|Cleared':
-    'Someone cleared a default folder, so new documents of that kind land in My Documents again.',
-  'Trash|Opened': 'Someone opened the Trash, where deleted documents wait for 30 days.',
+    'Someone cleared a default folder, so new projects of that kind land in My Projects again.',
+  'Trash|Opened': 'Someone opened the Trash, where deleted projects wait for 30 days.',
   'Explorer|Created': 'Someone made something in the Explorer (a tag).',
-  'Explorer|Added': 'Someone put one of their tags on a document.',
-  'Explorer|Removed': 'Someone took one of their tags off a document.',
+  'Explorer|Added': 'Someone put one of their tags on a project.',
+  'Explorer|Removed': 'Someone took one of their tags off a project.',
   'Explorer|Renamed': 'Someone renamed one of their tags.',
   'Explorer|Changed': 'Someone changed one of their tags (its colour).',
   'Explorer|Deleted': 'Someone deleted one of their tags.',
@@ -2490,13 +2490,13 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
     "Someone changed a Plan board's set-up, a card type, a project's colour or a timeline view: the value names the part (columns, WIP limits, rows, scope, card fields, voting, hide writing, or a timeline's dates, scale, rows or types).",
   'Plan|Revealed': 'Someone pressed Reveal on a board hiding writing, turning every card face up.',
   'Trash|Cleared':
-    'Someone emptied one group of their Trash (their own documents, a team, or this browser), deleting everything in it for good.',
-  'Trash|Deleted': 'Someone deleted a document in the Trash for good, before its 30 days were up.',
+    'Someone emptied one group of their Trash (their own projects, a team, or this browser), deleting everything in it for good.',
+  'Trash|Deleted': 'Someone deleted a project in the Trash for good, before its 30 days were up.',
   'Trash|Restored':
-    'Someone brought a deleted document back from the Trash, putting it back where it was.',
+    'Someone brought a deleted project back from the Trash, putting it back where it was.',
   'Token|Created':
     'A new API token was created, either by hand or for an AI tool connected over MCP.',
-  'Token|Linked': 'A token’s owner allowed a developer tool to open their documents.',
+  'Token|Linked': 'A token’s owner allowed a developer tool to open their projects.',
   'Token|Removed': 'Someone revoked an API token.',
   'UI|Added': 'Someone added something in the editor, such as a slide.',
   'UI|Changed':
@@ -2519,74 +2519,74 @@ export const BY_ACTION: Readonly<Record<string, string>> = {
   'UI|Started': 'Someone started a presentation or the welcome tour.',
   'UI|Toggled': 'Someone turned an editor setting on or off.',
   'UI|Used':
-    'Someone used a wizard-skipping entry point into a new document, or accepted an offer.',
+    'Someone used a wizard-skipping entry point into a new project, or accepted an offer.',
   'UI|Declined': 'Someone turned down an offer the editor made them.',
   'UI|View': 'The welcome tour advanced to (or back to) a particular stage.',
 };
 
 export const API_OPERATIONS: Readonly<Record<string, string>> = {
   AcceptTeamInvite: 'accepting a team invite',
-  AddTab: 'adding a tab to a document, from an AI tool connected over MCP',
-  AppendChangeLog: "recording an entry in a document's since-removed change history",
-  CopyDocument: 'duplicating a document',
+  AddTab: 'adding a tab to a project, from an AI tool connected over MCP',
+  AppendChangeLog: "recording an entry in a project's since-removed change history",
+  CopyProject: 'duplicating a project',
   CreateCustomTheme: 'saving a new custom theme',
-  CreateDocument: 'creating a new document',
+  CreateProject: 'creating a new project',
   CreateFolder: 'creating a folder',
   CreateShareLink: 'generating a share link',
   CreateTeam: 'creating a team',
   CreateToken: 'creating an API token',
   DeclineTeamInvite: "declining a team invite from the email's Decline link",
-  DeleteChangeLog: "clearing a document's since-removed change history",
-  DeleteChangeLogEntry: "removing one entry from a document's since-removed change history",
+  DeleteChangeLog: "clearing a project's since-removed change history",
+  DeleteChangeLogEntry: "removing one entry from a project's since-removed change history",
   DeleteComment: 'deleting a comment',
   DeleteCustomTheme: 'deleting a saved custom theme',
-  DeleteDocument: 'deleting a document',
+  DeleteProject: 'deleting a project',
   DeleteFolder: 'deleting a folder',
   DeleteImage: 'deleting a saved image',
   DeleteShareLink: 'deleting a share link',
   DeleteTab: 'deleting a tab',
   DeleteTeam: 'deleting a team',
-  DismissShared: "removing a shared document from a visitor's shared list",
+  DismissShared: "removing a shared project from a visitor's shared list",
   DismissTimelineEvent: 'clearing one entry from the activity timeline',
   DismissTimelineEvents: 'clearing entries from the activity timeline',
   ExtendShareLink: "extending a share link's expiry",
-  FindDocuments: 'searching for a document, from an AI tool connected over MCP',
+  FindProjects: 'searching for a project, from an AI tool connected over MCP',
   InviteTeamMember: 'inviting someone to a team',
   JoinTeamByInviteLink: 'joining a team through its invite link',
-  LinkTab: 'linking a tab into another document',
-  List: "listing a visitor's documents",
-  ListChangeLog: "listing a document's since-removed change history",
+  LinkTab: 'linking a tab into another project',
+  List: "listing a visitor's projects",
+  ListChangeLog: "listing a project's since-removed change history",
   ListCustomThemes: "listing an account's saved custom themes",
   ListFolders: "listing an account's folders",
-  ListShareLinks: "listing a document's share links",
-  ListShared: 'listing documents shared with a visitor',
+  ListShareLinks: "listing a project's share links",
+  ListShared: 'listing projects shared with a visitor',
   ListTeamInvites: "listing an account's pending team invites",
   ListTeams: "listing an account's teams",
   ListTemplates: 'listing available templates, from an AI tool connected over MCP',
   ListTokens: "listing an account's API tokens",
   LoadSelf: "loading a visitor's own profile details",
-  LoadShared: 'opening a document through a share link',
+  LoadShared: 'opening a project through a share link',
   LoadTab: "loading a tab's contents",
   LoadTeam: "loading a team's details",
-  LoadTeamLibrary: "loading a team's shared document library",
+  LoadTeamLibrary: "loading a team's shared project library",
   NotifyAssignedAction: 'emailing someone about an action assigned to them',
   OauthExchange: 'connecting an AI tool over MCP',
-  ReadDocument: 'reading a document, from an AI tool connected over MCP',
+  ReadProject: 'reading a project, from an AI tool connected over MCP',
   ReadTeamInviteDecline: "opening a team invite email's Decline link",
-  RenameDocument: 'renaming a document, from an AI tool connected over MCP',
+  RenameProject: 'renaming a project, from an AI tool connected over MCP',
   ResolveTeamInviteLink: "opening a team's invite link",
   RevokeTeamInviteLink: "turning off a team's invite link",
   RevokeToken: 'revoking an API token',
-  SaveDocumentMeta: "saving a document's name or other details",
+  SaveProjectMeta: "saving a project's name or other details",
   SaveSelf: "saving a visitor's own profile details",
   SaveTab: "saving a tab's contents",
   SearchIcons: 'searching the icon catalogue by name, from an AI tool connected over MCP',
   SendEmail: 'sending a transactional or lifecycle email',
-  SetFolder: 'moving a document into, or out of, a folder',
+  SetFolder: 'moving a project into, or out of, a folder',
   SetSharePassword: 'setting a password on a share link',
-  ShareDocument: 'generating a share link, from an AI tool connected over MCP',
+  ShareProject: 'generating a share link, from an AI tool connected over MCP',
   UpdateCustomTheme: 'updating a saved custom theme',
-  UpdateDocument: 'updating a document, from an AI tool connected over MCP',
+  UpdateProject: 'updating a project, from an AI tool connected over MCP',
   UpdateFolder: 'renaming or updating a folder',
   UpdateTeam: "updating a team's name or organisation",
   UploadImage: 'uploading an image',

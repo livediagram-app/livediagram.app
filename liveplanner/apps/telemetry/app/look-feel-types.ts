@@ -18,7 +18,7 @@ export const isNonThemePick = (t: string | undefined | null): boolean =>
   CUSTOM_THEME_TYPES.has(t ?? '') || RETIRED_THEME_TYPES.has(t ?? '');
 
 // The built-in brand theme was labelled Basic until #73 renamed it Default
-// (packages/document themes-data.ts), and the token follows the label. Rows
+// (packages/project themes-data.ts), and the token follows the label. Rows
 // stored before the rename fold into Default so one theme ranks once.
 export const THEME_ALIASES: TypeAliases = { Basic: 'Default' };
 

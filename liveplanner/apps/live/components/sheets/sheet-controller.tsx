@@ -5,7 +5,7 @@
 // open over it, and the write helper every command goes through. Lives inside MaximisableSlot, so maximising and
 // restoring keep all of it.
 import type { ChartPick, PlaceChartOpts } from './sheet-charts';
-import type { ChartType, SheetAnchor } from '@liveplanner/document';
+import type { ChartType, SheetAnchor } from '@liveplanner/project';
 import type { ItemUndoStep } from '@/hooks/plan/item-undo-journal';
 import { createContext, useCallback, useContext, useMemo, useRef, useState } from 'react';
 import {

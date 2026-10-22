@@ -11,11 +11,11 @@ export const metadata = helpMetadata({
 
 <ArticleLayout title="Assigned Actions" description="Turn any element into a piece of work: assign it to a teammate, describe what needs doing, and track it until it is done." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("assigned-actions")}>
 
-An action attaches a named piece of work to an element and hands it to a teammate. Where a comment starts a conversation, an action assigns an outcome: it has a name, an optional description, an assignee, and a done state. Use them to turn a review into a to-do list that lives right on the document.
+An action attaches a named piece of work to an element and hands it to a teammate. Where a comment starts a conversation, an action assigns an outcome: it has a name, an optional description, an assignee, and a done state. Use them to turn a review into a to-do list that lives right on the project.
 
-Anyone who can edit the document can assign an action to **themselves**, signed in or not, so actions also work as personal to-dos on a document. Assigning to other people is built on teams. For a document in a [team's shared library](/help/collaboration/teams/team-shared-documents/), the picker offers that team's members: joined ones, and invited ones who haven't accepted yet. Those are marked with an **Invited** badge; they get access to the document when they join, and the optional email goes to their invite address.
+Anyone who can edit the project can assign an action to **themselves**, signed in or not, so actions also work as personal to-dos on a project. Assigning to other people is built on teams. For a project in a [team's shared library](/help/collaboration/teams/team-shared-projects/), the picker offers that team's members: joined ones, and invited ones who haven't accepted yet. Those are marked with an **Invited** badge; they get access to the project when they join, and the optional email goes to their invite address.
 
-A personal document is self-assign only, but the dialog offers the fix inline: under "Move this document into a team library to assign teammates", pick one of your teams and the document moves into its shared library on the spot, so its members become assignable without leaving the canvas. As a guest, the dialog suggests signing in and joining a team instead.
+A personal project is self-assign only, but the dialog offers the fix inline: under "Move this project into a team library to assign teammates", pick one of your teams and the project moves into its shared library on the spot, so its members become assignable without leaving the canvas. As a guest, the dialog suggests signing in and joining a team instead.
 
 ## Assigning an action
 
@@ -27,19 +27,19 @@ A personal document is self-assign only, but the dialog offers the fix inline: u
 
 <Step n={2}>
   In **Assign an Action**, give it an **Action name** (up to 200 characters), add a **Description**
-  if the work needs more context, and pick **Myself** or a member of the document's team.
+  if the work needs more context, and pick **Myself** or a member of the project's team.
 </Step>
 
 <Step n={3}>
   When you pick a teammate, an **Email (their name) about this action** switch appears, already on.
-  Leave it on if you want them to get an email with a link back to the document, then confirm with
+  Leave it on if you want them to get an email with a link back to the project, then confirm with
   the dialog's "Assign action" button.
 </Step>
 
-The element gains a small clipboard badge while the action is open. Anyone on the document can click the badge to read the action, including who it is assigned to and who assigned it; people who can edit the document can also work with it from there.
+The element gains a small clipboard badge while the action is open. Anyone on the project can click the badge to read the action, including who it is assigned to and who assigned it; people who can edit the project can also work with it from there.
 
 <Tip>
-  The picker only offers members of the team the document lives in, so the assignee can always open
+  The picker only offers members of the team the project lives in, so the assignee can always open
   it. If an older action's assignee has since left the team, they may no longer be able to; the
   dialog warns you, and you can reassign it with **Edit** in the action's popover.
 </Tip>
@@ -65,7 +65,7 @@ Actions are deliberately not undoable: pressing undo after assigning, completing
 
 ## The Actions board
 
-The first time you add an action to a document, liveplanner makes an **Actions** board tab at the end of your tabs and tells you so: **Added to Your Actions Board**, with **Open Board**. From then on every action in the document, from every tab, has a card there, in one of three columns: **New**, **Done** and **Won’t Do**.
+The first time you add an action to a project, liveplanner makes an **Actions** board tab at the end of your tabs and tells you so: **Added to Your Actions Board**, with **Open Board**. From then on every action in the project, from every tab, has a card there, in one of three columns: **New**, **Done** and **Won’t Do**.
 
 The card and the action are the same piece of work, seen in two places:
 
@@ -79,7 +79,7 @@ The board is an ordinary board otherwise: add columns, filter, lane by person. A
 
 ## Email notifications
 
-When an action is assigned to you (and your deployment has email enabled), you get a short email naming the action, who assigned it, and which document it is on, with a link straight to the document. You can turn these off any time with **Someone Assigns Me an Action** in your [email notifications](/help/account-and-data/email-notifications/) (Settings › Notifications, signed in). Assigning an action to yourself never sends an email.
+When an action is assigned to you (and your deployment has email enabled), you get a short email naming the action, who assigned it, and which project it is on, with a link straight to the project. You can turn these off any time with **Someone Assigns Me an Action** in your [email notifications](/help/account-and-data/email-notifications/) (Settings › Notifications, signed in). Assigning an action to yourself never sends an email.
 
 <Tip>
   Keep action names short and outcome-shaped ("Confirm the retry budget", "Redraw the auth flow").

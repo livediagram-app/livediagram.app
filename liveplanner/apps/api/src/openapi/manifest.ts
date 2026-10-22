@@ -11,11 +11,11 @@
 // generated COMPONENT_SCHEMAS, itself derived from @liveplanner/api-schema) or
 // an inline JSON Schema for the small envelopes that wrap a payload. Path
 // parameters are derived from the `{param}` placeholders in `path` by
-// document.ts, so they aren't repeated here.
+// project.ts, so they aren't repeated here.
 
 import { TAB_VIEW_NAMES, TEAM_RECENT_INCLUDE, TEAM_RECENT_LIMIT } from '@liveplanner/api-schema';
-import { NAME_MAX_LENGTH } from '@liveplanner/document';
-import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@liveplanner/document-views';
+import { NAME_MAX_LENGTH } from '@liveplanner/project';
+import { FIND_QUERY_MAX_LENGTH, VIEW_BUDGET_MAX } from '@liveplanner/project-views';
 import type { BodySchema } from './types';
 
 /** How a caller authenticates (docs/specs/014-identity/auth-and-guest-access.md):
@@ -48,7 +48,7 @@ const ITEM_TAB_QUERY: QueryParam = {
 
 export interface RouteSpec {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  /** Path template under the server base, e.g. `/documents/{id}/tabs/{tabId}`. */
+  /** Path template under the server base, e.g. `/projects/{id}/tabs/{tabId}`. */
   path: string;
   /** Top-level resource segment, matching index.ts's dispatch switch. Used by
    *  the drift test to assert manifest/handler parity. */
@@ -69,10 +69,10 @@ export interface RouteSpec {
   /** Media type of the success body. Defaults to `application/json`; the SVG
    *  snapshot endpoints answer `image/svg+xml`. */
   responseMediaType?: string;
-  /** A plain-text form of the success body beside the JSON one (a document view). */
+  /** A plain-text form of the success body beside the JSON one (a project view). */
   textResponse?: { description: string };
   /** Meaningful status codes. The first 2xx is the success response; the rest
-   *  are documented with the shared Error schema by document.ts. */
+   *  are documented with the shared Error schema by project.ts. */
   statuses: number[];
 }
 
@@ -85,15 +85,15 @@ const listOf = (key: string, name: string): BodySchema => ({
   properties: { [key]: { type: 'array', items: ref(name) } },
   required: [key],
 });
-// A document name field: the worker shortens it to the name cap rather than
-// rejecting it (docs/specs/006-document/name-length.md).
+// A project name field: the worker shortens it to the name cap rather than
+// rejecting it (docs/specs/006-project/name-length.md).
 const nameField = {
   type: 'string',
   description:
     `At most ${NAME_MAX_LENGTH} characters; a longer name is stored shortened at a word boundary ` +
     'with an ellipsis, and whitespace runs collapse to one space.',
 };
-// The document views' query (docs/specs/024-agents/document-views.md): `view` turns the plain read into a
+// The project views' query (docs/specs/024-agents/project-views.md): `view` turns the plain read into a
 // view, text by default.
 const VIEW_COMMON_QUERY = [
   { name: 'view', required: false, description: 'A view instead of the plain read.' },
@@ -147,7 +147,7 @@ const TAB_VIEW_QUERY = [
   },
   { name: 'all', required: false, description: 'comments: `1` adds resolved threads.' },
 ];
-const DOCUMENT_VIEW_QUERY = [
+const PROJECT_VIEW_QUERY = [
   {
     ...VIEW_COMMON_QUERY[0]!,
     description:
@@ -234,31 +234,31 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     statuses: [200, 404, 405],
   },
 
-  // ---- Documents ----
+  // ---- Projects ----
   {
     method: 'GET',
-    path: '/documents',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: "List the caller's documents (metadata only, no tab contents).",
+    path: '/projects',
+    segment: 'projects',
+    tag: 'Projects',
+    summary: "List the caller's projects (metadata only, no tab contents).",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
       {
         name: 'include',
         required: false,
-        description: `${TEAM_RECENT_INCLUDE} adds \`teamRecent\`: the ${TEAM_RECENT_LIMIT} newest non-empty documents of the teams the caller has joined, newest first, each with its \`teamName\`.`,
+        description: `${TEAM_RECENT_INCLUDE} adds \`teamRecent\`: the ${TEAM_RECENT_LIMIT} newest non-empty projects of the teams the caller has joined, newest first, each with its \`teamName\`.`,
       },
     ],
     responseSchema: {
       type: 'object',
       properties: {
-        documents: { type: 'array', items: ref('DocumentSummary') },
+        projects: { type: 'array', items: ref('ProjectSummary') },
         teamRecent: {
           type: 'array',
           items: {
             allOf: [
-              ref('DocumentSummary'),
+              ref('ProjectSummary'),
               {
                 type: 'object',
                 properties: { teamName: { type: 'string' } },
@@ -268,17 +268,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           },
         },
       },
-      required: ['documents'],
+      required: ['projects'],
     },
     statuses: [200, 401],
   },
   {
     method: 'POST',
-    path: '/documents',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
-      'Create a document, optionally seeding it with tabs and filing it in a team and/or folder. ' +
+      'Create a project, optionally seeding it with tabs and filing it in a team and/or folder. ' +
       'An invalid placement refuses the whole create by name (placement_invalid, team_forbidden, ' +
       'folder_not_found, folder_scope_mismatch) or a malformed intent (intent_invalid); nothing is ' +
       'written.',
@@ -311,14 +311,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           },
         },
         source: {
-          anyOf: [ref('DocumentSource'), { type: 'null' }],
+          anyOf: [ref('ProjectSource'), { type: 'null' }],
           description: 'The agent front door that made it; `ai` and `mcp` count as Made by AI.',
         },
         // Placement (docs/specs/013-workspace/folders.md "Placement on create").
         teamId: {
           type: ['string', 'null'],
           description:
-            "The team library to file into; absent or null = the caller's My documents. " +
+            "The team library to file into; absent or null = the caller's My projects. " +
             'Requires a signed-in caller (or API token) who has joined the team.',
         },
         folderId: {
@@ -331,10 +331,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         intent: {
           type: ['object', 'null'],
           description:
-            'What the new document is made as, recorded on it (opensIn, tabKind, templateFamily). ' +
-            "With no choice of place, the document lands in the caller's default folder for it: " +
+            'What the new project is made as, recorded on it (opensIn, tabKind, templateFamily). ' +
+            "With no choice of place, the project lands in the caller's default folder for it: " +
             'the tab kind default, else the template family default, else the mode default, else ' +
-            'the root of My documents. Malformed: intent_invalid (400).',
+            'the root of My projects. Malformed: intent_invalid (400).',
           properties: {
             mode: ref('EditorMode'),
             tabKind: { anyOf: [ref('CreationTabKind'), { type: 'null' }] },
@@ -342,44 +342,44 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           },
           required: ['mode'],
         },
-        // The document's own dates, ms since the epoch (docs/specs/015-api/api.md "Document dates").
+        // The project's own dates, ms since the epoch (docs/specs/015-api/api.md "Project dates").
         createdAt: { type: 'integer' },
         savedAt: { type: 'integer' },
-        // Making a document is a use (docs/specs/015-api/api.md "Marking a document used").
+        // Making a project is a use (docs/specs/015-api/api.md "Marking a project used").
         markUsed: {
           type: 'boolean',
           description:
-            'Whether making the document counts as a use of it for the caller, so it joins their ' +
-            'Jump back in at once. Default true; send false when making many documents in one go ' +
+            'Whether making the project counts as a use of it for the caller, so it joins their ' +
+            'Jump back in at once. Default true; send false when making many projects in one go ' +
             '(the editor does for an import of more than one), so they wait until opened. Not a ' +
             'boolean: 400 invalid markUsed.',
         },
       },
       required: ['id', 'name'],
     },
-    responseSchema: wrap('document', 'Document'),
+    responseSchema: wrap('project', 'Project'),
     statuses: [201, 400, 401, 403, 404, 410, 413, 422],
   },
   {
     method: 'GET',
-    path: '/documents/{id}',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
-      'Get a document (metadata + tab summaries; tab contents fetched separately), or with `view=overview` one line per tab.',
+      'Get a project (metadata + tab summaries; tab contents fetched separately), or with `view=overview` one line per tab.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    query: DOCUMENT_VIEW_QUERY,
-    responseSchema: wrap('document', 'Document'),
-    textResponse: { description: 'With `view=overview`: the document and one line per tab.' },
+    query: PROJECT_VIEW_QUERY,
+    responseSchema: wrap('project', 'Project'),
+    textResponse: { description: 'With `view=overview`: the project and one line per tab.' },
     statuses: [200, 400, 401, 404, 410],
   },
   {
     method: 'PUT',
-    path: '/documents/{id}',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Update a document name and/or tab order.',
+    path: '/projects/{id}',
+    segment: 'projects',
+    tag: 'Projects',
+    summary: 'Update a project name and/or tab order.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -389,16 +389,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         tabIds: { type: 'array', items: { type: 'string' } },
       },
     },
-    responseSchema: wrap('document', 'Document'),
+    responseSchema: wrap('project', 'Project'),
     statuses: [200, 400, 401, 403, 404, 410],
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
-      'Move a document to the Trash, restorable for 30 days. With permanent=true, delete it for good. 410 when it is already in the Trash (without permanent).',
+      'Move a project to the Trash, restorable for 30 days. With permanent=true, delete it for good. 410 when it is already in the Trash (without permanent).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -406,17 +406,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         name: 'permanent',
         required: false,
         description:
-          '"true" deletes the document for good instead of moving it to the Trash; also purges one already in the Trash.',
+          '"true" deletes the project for good instead of moving it to the Trash; also purges one already in the Trash.',
       },
     ],
     statuses: [204, 401, 403, 404, 410],
   },
   {
     method: 'GET',
-    path: '/documents/{id}/shared-tabs',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Count the tabs a delete would leave in other documents.',
+    path: '/projects/{id}/shared-tabs',
+    segment: 'projects',
+    tag: 'Projects',
+    summary: 'Count the tabs a delete would leave in other projects.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: wrap('sharedTabs', 'SharedTabsSummary'),
@@ -424,22 +424,22 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/copy',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: "Duplicate a document into the caller's files.",
+    path: '/projects/{id}/copy',
+    segment: 'projects',
+    tag: 'Projects',
+    summary: "Duplicate a project into the caller's files.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: { type: 'object', properties: { name: nameField } },
-    responseSchema: wrap('document', 'Document'),
+    responseSchema: wrap('project', 'Project'),
     statuses: [201, 401, 403, 404, 410],
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/folder',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Move a document into a personal or team folder.',
+    path: '/projects/{id}/folder',
+    segment: 'projects',
+    tag: 'Projects',
+    summary: 'Move a project into a personal or team folder.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -453,9 +453,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
       'Get the full contents (elements) of one tab, with its revision (`rev`, also the weak `ETag`): what a changeset base names.',
     auth: 'guest-or-clerk',
@@ -470,9 +470,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/tabs/{tabId}',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}',
+    segment: 'projects',
+    tag: 'Projects',
     summary: `The editor's whole-tab save: create or replace one tab and its elements, merged with every changeset the editor had not seen (\`X-Changeset-Seen\`). An API token is refused with 405 \`use_changesets\`: scripts and agents write tabs with changesets. A new or changed tab name is stored shortened to ${NAME_MAX_LENGTH} characters.`,
     auth: 'guest-or-clerk',
     requestSchema: 'Tab',
@@ -481,11 +481,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/changesets',
-    segment: 'documents',
+    path: '/projects/{id}/tabs/{tabId}/changesets',
+    segment: 'projects',
     tag: 'Changesets',
     summary:
-      'Change one tab with a changeset: ordered edit operations or one replace, applied atomically, shown live to everyone with the tab open, credited to you and revertable. Pass the base you read (rev and element fingerprints) to refuse a write over a change made since. A whole-tab replace on a tab id the document lacks creates that tab.',
+      'Change one tab with a changeset: ordered edit operations or one replace, applied atomically, shown live to everyone with the tab open, credited to you and revertable. Pass the base you read (rev and element fingerprints) to refuse a write over a change made since. A whole-tab replace on a tab id the project lacks creates that tab.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -497,10 +497,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/changesets',
-    segment: 'documents',
+    path: '/projects/{id}/changesets',
+    segment: 'projects',
     tag: 'Changesets',
-    summary: "A document's changesets, newest first.",
+    summary: "A project's changesets, newest first.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -512,8 +512,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/changesets/{changesetId}',
-    segment: 'documents',
+    path: '/projects/{id}/changesets/{changesetId}',
+    segment: 'projects',
     tag: 'Changesets',
     summary: 'One changeset, with the result lines it answered.',
     auth: 'guest-or-clerk',
@@ -523,8 +523,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/changesets/{changesetId}/revert',
-    segment: 'documents',
+    path: '/projects/{id}/changesets/{changesetId}/revert',
+    segment: 'projects',
     tag: 'Changesets',
     summary:
       'Revert a changeset: its inverse, applied as a new changeset by you. Elements changed since are kept as they are and listed. Possible for 30 days after it landed, by anyone with edit access to the tab.',
@@ -535,10 +535,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/tabs/{tabId}/name',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: `Rename one tab. Advances the tab's revision and reaches everyone with the document open. Stored shortened to ${NAME_MAX_LENGTH} characters.`,
+    path: '/projects/{id}/tabs/{tabId}/name',
+    segment: 'projects',
+    tag: 'Projects',
+    summary: `Rename one tab. Advances the tab's revision and reaches everyone with the project open. Stored shortened to ${NAME_MAX_LENGTH} characters.`,
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: { type: 'object', properties: { name: nameField }, required: ['name'] },
@@ -547,19 +547,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/tabs/{tabId}',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Delete one tab from a document.',
+    path: '/projects/{id}/tabs/{tabId}',
+    segment: 'projects',
+    tag: 'Projects',
+    summary: 'Delete one tab from a project.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 401, 403, 404, 410],
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/comments',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/comments',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
       'Add a comment to an element on a tab; an API token is recorded on it for the audit trail.',
     auth: 'guest-or-clerk',
@@ -573,9 +573,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/comments/{commentId}',
+    segment: 'projects',
+    tag: 'Projects',
     summary: 'Delete a comment you wrote.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -583,9 +583,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/reply',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/comments/{commentId}/reply',
+    segment: 'projects',
+    tag: 'Projects',
     summary: 'Reply on the thread that holds a comment; it reopens a resolved thread.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -598,9 +598,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/resolve',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/comments/{commentId}/resolve',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
       'Resolve the thread that holds a comment; resolving a resolved thread changes nothing.',
     auth: 'guest-or-clerk',
@@ -609,9 +609,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/comments/{commentId}/reopen',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/comments/{commentId}/reopen',
+    segment: 'projects',
+    tag: 'Projects',
     summary: 'Reopen the thread that holds a comment; reopening an open thread changes nothing.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -619,9 +619,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/render.svg',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/render.svg',
+    segment: 'projects',
+    tag: 'Projects',
     summary: 'One tab drawn by the shared renderer. Read-gated like the tab; never cached.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -631,9 +631,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/tabs/{tabId}/presence',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/presence',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
       "An agent's presence on a tab: a status line (up to 80 characters), focus (up to 20 refs) and a ttl (1 to 120 seconds; 30 by default). API tokens only; shown as the token's owner.",
     auth: 'guest-or-clerk',
@@ -651,9 +651,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/tabs/{tabId}/presence',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/presence',
+    segment: 'projects',
+    tag: 'Projects',
     summary: "Clear an agent's presence on a tab; 204 whether or not it was there.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -661,39 +661,39 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/comments',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/comments',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
-      "The comment threads across the document, in tab and outline order, with each element's ref and label. status=open (default), resolved or all.",
+      "The comment threads across the project, in tab and outline order, with each element's ref and label. status=open (default), resolved or all.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [{ name: 'status', required: false, description: 'open (default), resolved or all.' }],
-    responseSchema: listOf('threads', 'DocumentCommentThread'),
+    responseSchema: listOf('threads', 'ProjectCommentThread'),
     statuses: [200, 400, 401, 403, 404, 405, 410],
   },
-  // The document's type catalogue (docs/specs/026-plan/item-types.md).
+  // The project's type catalogue (docs/specs/026-plan/item-types.md).
   {
     method: 'PUT',
-    path: '/documents/{id}/item-types',
-    segment: 'documents',
+    path: '/projects/{id}/item-types',
+    segment: 'projects',
     tag: 'Items',
     summary:
-      "Store the document's item types, whole: up to 32 types, each with its fields and custom fields. null goes back to the default types (Project, Task, Note, Idea, Action). expectedRev names the revision (itemTypesRev) the change was made to: when another change landed since, 409 item_types_stale answers with the stored types and revision to re-apply the change to. Needs edit access to the whole document.",
+      "Store the project's item types, whole: up to 32 types, each with its fields and custom fields. null goes back to the default types (Project, Task, Note, Idea, Action). expectedRev names the revision (itemTypesRev) the change was made to: when another change landed since, 409 item_types_stale answers with the stored types and revision to re-apply the change to. Needs edit access to the whole project.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: 'ItemTypesRequest',
     responseSchema: 'ItemTypesResponse',
     statuses: [200, 400, 401, 403, 404, 405, 409, 410],
   },
-  // The document's plan for agents (docs/specs/026-plan/plan-agents.md).
+  // The project's plan for agents (docs/specs/026-plan/plan-agents.md).
   {
     method: 'GET',
-    path: '/documents/{id}/plan',
-    segment: 'documents',
+    path: '/projects/{id}/plan',
+    segment: 'projects',
     tag: 'Items',
     summary:
-      "The document's Plan boards, in tab then canvas order, with their columns; the statuses they name, each once with its column name; and the card types. A tab-scoped link passes tabId and gets that tab's boards.",
+      "The project's Plan boards, in tab then canvas order, with their columns; the statuses they name, each once with its column name; and the card types. A tab-scoped link passes tabId and gets that tab's boards.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [ITEM_TAB_QUERY],
@@ -703,11 +703,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   // The sheet store (docs/specs/029-sheets/sheet-store.md). A caller on a tab-scoped link adds ?tabId=.
   {
     method: 'GET',
-    path: '/documents/{id}/sheets',
-    segment: 'documents',
+    path: '/projects/{id}/sheets',
+    segment: 'projects',
     tag: 'Sheets',
     summary:
-      "The document's sheets, cells included: a tab's (tabId), named ones (ids, comma-separated, up to 50), or all. A tab-scoped link gets its tab's only.",
+      "The project's sheets, cells included: a tab's (tabId), named ones (ids, comma-separated, up to 50), or all. A tab-scoped link gets its tab's only.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [
@@ -719,11 +719,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/sheets',
-    segment: 'documents',
+    path: '/projects/{id}/sheets',
+    segment: 'projects',
     tag: 'Sheets',
     summary:
-      "Make a sheet on a tab: blank, filled (a layout and up to 5,000 cells), or a copy of another of the document's sheets (copyOf). Titles are unique on a tab. Needs edit access.",
+      "Make a sheet on a tab: blank, filled (a layout and up to 5,000 cells), or a copy of another of the project's sheets (copyOf). Titles are unique on a tab. Needs edit access.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [SHEET_TAB_QUERY],
@@ -733,8 +733,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/sheets/{sheetId}',
-    segment: 'documents',
+    path: '/projects/{id}/sheets/{sheetId}',
+    segment: 'projects',
     tag: 'Sheets',
     summary: 'Delete a sheet and its cells.',
     auth: 'guest-or-clerk',
@@ -745,15 +745,15 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         name: 'whenUnreferenced',
         required: false,
         description:
-          'true to delete it once no element of the document references it (now, if none does): the editor deleting a Sheet with its element.',
+          'true to delete it once no element of the project references it (now, if none does): the editor deleting a Sheet with its element.',
       },
     ],
     statuses: [204, 400, 401, 403, 404, 410],
   },
   {
     method: 'POST',
-    path: '/documents/{id}/sheets/{sheetId}/writes',
-    segment: 'documents',
+    path: '/projects/{id}/sheets/{sheetId}/writes',
+    segment: 'projects',
     tag: 'Sheets',
     summary:
       'Change a sheet: cells (inputs and format keys, by row and column id), its layout (insert, delete, move, order, size, hide, freeze, merge, filter) or its title. Answers the write as it landed, the new rev and the stored cells it touched.',
@@ -767,11 +767,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   // The item store (docs/specs/026-plan/items.md). A caller on a tab-scoped link adds ?tabId=.
   {
     method: 'GET',
-    path: '/documents/{id}/items',
-    segment: 'documents',
+    path: '/projects/{id}/items',
+    segment: 'projects',
     tag: 'Items',
     summary:
-      "The document's items and the store's revision. A tab-scoped link passes tabId and gets the items that tab shows.",
+      "The project's items and the store's revision. A tab-scoped link passes tabId and gets the items that tab shows.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [ITEM_TAB_QUERY],
@@ -780,8 +780,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/items',
-    segment: 'documents',
+    path: '/projects/{id}/items',
+    segment: 'projects',
     tag: 'Items',
     summary:
       'Make an item: a type, its fields (a title at least) and an optional place (a status, and the item to sit after or before). Needs edit access.',
@@ -794,11 +794,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/items/bulk',
-    segment: 'documents',
+    path: '/projects/{id}/items/bulk',
+    segment: 'projects',
     tag: 'Items',
     summary:
-      'Make up to 200 items in one write, in order. Needs edit access to the whole document.',
+      'Make up to 200 items in one write, in order. Needs edit access to the whole project.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: 'ItemsBulkRequest',
@@ -807,8 +807,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/items/patches',
-    segment: 'documents',
+    path: '/projects/{id}/items/patches',
+    segment: 'projects',
     tag: 'Items',
     summary:
       'Change up to 200 items in one write: each an item id with fields to set, fields to clear and optionally a new type. Every item is checked first, so one refusal (naming its item) changes nothing.',
@@ -821,8 +821,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/items/tally',
-    segment: 'documents',
+    path: '/projects/{id}/items/tally',
+    segment: 'projects',
     tag: 'Items',
     summary:
       "Add a session vote's tally to up to 200 cards: each a card id and its voters' dots. A card gone meanwhile is skipped. Needs edit access.",
@@ -835,8 +835,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/items/{itemId}',
-    segment: 'documents',
+    path: '/projects/{id}/items/{itemId}',
+    segment: 'projects',
     tag: 'Items',
     summary:
       'Change an item: fields to set, fields to clear (never the title or votes) and optionally a new type. Other fields are untouched.',
@@ -849,8 +849,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/items/{itemId}',
-    segment: 'documents',
+    path: '/projects/{id}/items/{itemId}',
+    segment: 'projects',
     tag: 'Items',
     summary: 'Delete an item. Its key is never reused.',
     auth: 'guest-or-clerk',
@@ -860,8 +860,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/items/{itemId}/move',
-    segment: 'documents',
+    path: '/projects/{id}/items/{itemId}/move',
+    segment: 'projects',
     tag: 'Items',
     summary:
       "Move an item to a status and a place in that status's column (after or before another item), optionally setting or clearing a swimlane field (assignee, priority, or any lane field: Labels, Estimate, Start, Due or a custom field such as Parent) or its type.",
@@ -874,8 +874,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/items/{itemId}/comments',
-    segment: 'documents',
+    path: '/projects/{id}/items/{itemId}/comments',
+    segment: 'projects',
     tag: 'Items',
     summary:
       "Add a comment to an item's thread (a resolved thread reopens). The author is the caller; author ids reach only their author. Needs participate access.",
@@ -892,8 +892,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/items/{itemId}/comments/{commentId}',
-    segment: 'documents',
+    path: '/projects/{id}/items/{itemId}/comments/{commentId}',
+    segment: 'projects',
     tag: 'Items',
     summary: "Delete a comment from an item's thread: your own, or any with edit access.",
     auth: 'guest-or-clerk',
@@ -904,8 +904,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/items/{itemId}/comments/resolve',
-    segment: 'documents',
+    path: '/projects/{id}/items/{itemId}/comments/resolve',
+    segment: 'projects',
     tag: 'Items',
     summary: "Resolve an item's thread; resolving a resolved thread changes nothing (204).",
     auth: 'guest-or-clerk',
@@ -916,8 +916,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/items/{itemId}/comments/reopen',
-    segment: 'documents',
+    path: '/projects/{id}/items/{itemId}/comments/reopen',
+    segment: 'projects',
     tag: 'Items',
     summary: "Reopen an item's thread; reopening an open thread changes nothing (204).",
     auth: 'guest-or-clerk',
@@ -929,11 +929,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   // ---- Form links (docs/specs/030-forms/forms.md) ----
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/form',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/form',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
-      "Replace a Form tab's form whole (an agent's form write): `{ form, rev? }`. The tab takes the form's heading as its name, and the change reaches everyone with the document open. 409 form_changed (with `rev`) when the tab moved past the revision given, 409 form_locked while the form takes responses and the change is more than its settings, 400 not_a_form_tab. Edit access.",
+      "Replace a Form tab's form whole (an agent's form write): `{ form, rev? }`. The tab takes the form's heading as its name, and the change reaches everyone with the project open. 409 form_changed (with `rev`) when the tab moved past the revision given, 409 form_locked while the form takes responses and the change is more than its settings, 400 not_a_form_tab. Edit access.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -945,9 +945,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/tabs/{tabId}/form-link',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/form-link',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
       "A Form tab's link: whether it is published and open, how many responses it has, and how many the caller has not seen. Anyone who may read the tab; the code itself only to someone who may edit it.",
     auth: 'guest-or-clerk',
@@ -957,11 +957,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/form-link',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/form-link',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
-      'Publish the Form tab: make its public link. 409 form_already_published, 409 form_destination_missing (its board, column or card type is gone), 409 form_not_ready with its problems (no questions, an unworded question, a choice without options, a broken mapping or section rule), 403 form_suspensions (this document has had too many links suspended).',
+      'Publish the Form tab: make its public link. 409 form_already_published, 409 form_destination_missing (its board, column or card type is gone), 409 form_not_ready with its problems (no questions, an unworded question, a choice without options, a broken mapping or section rule), 403 form_suspensions (this project has had too many links suspended).',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: ref('FormLinkResponse'),
@@ -969,9 +969,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/tabs/{tabId}/form-link',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/form-link',
+    segment: 'projects',
+    tag: 'Projects',
     summary: 'Open or close the published form, keeping its link. Edit access.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -985,9 +985,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/tabs/{tabId}/form-link',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/form-link',
+    segment: 'projects',
+    tag: 'Projects',
     summary: 'Delete the form link; publishing again makes a new one. Edit access.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
@@ -996,9 +996,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/form-seen',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/form-seen',
+    segment: 'projects',
+    tag: 'Projects',
     summary: "Mark the form's responses so far as seen by the caller (the Inbox and the New dots).",
     auth: 'guest-or-clerk',
     responseSchema: ref('FormLinkResponse'),
@@ -1006,9 +1006,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/form-preview',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/tabs/{tabId}/form-preview',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
       'An Editor\'s Preview of the published form: sent as a counted response, its card titled "Preview: ...", taken while the form is closed too, with no email. 404 form_not_published when the form has no live link.',
     auth: 'guest-or-clerk',
@@ -1018,20 +1018,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/tabs/{tabId}/link',
-    segment: 'documents',
-    tag: 'Documents',
-    summary: 'Add (link) an existing tab into this document.',
+    path: '/projects/{id}/tabs/{tabId}/link',
+    segment: 'projects',
+    tag: 'Projects',
+    summary: 'Add (link) an existing tab into this project.',
     auth: 'guest-or-clerk',
     responseSchema: wrap('tab', 'TabSummary'),
     statuses: [200, 401, 403, 404, 410],
   },
   {
     method: 'GET',
-    path: '/documents/{id}/share',
-    segment: 'documents',
+    path: '/projects/{id}/share',
+    segment: 'projects',
     tag: 'Sharing',
-    summary: "List a document's share links and password state.",
+    summary: "List a project's share links and password state.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('links', 'ShareLink'),
@@ -1039,8 +1039,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/share',
-    segment: 'documents',
+    path: '/projects/{id}/share',
+    segment: 'projects',
     tag: 'Sharing',
     summary: 'Create a share link (edit or view role, optional expiry).',
     auth: 'guest-or-clerk',
@@ -1059,20 +1059,20 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/share',
-    segment: 'documents',
+    path: '/projects/{id}/share',
+    segment: 'projects',
     tag: 'Sharing',
-    summary: 'Revoke all share links for a document.',
+    summary: 'Revoke all share links for a project.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [200, 401, 403, 404, 410],
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/share-password',
-    segment: 'documents',
+    path: '/projects/{id}/share-password',
+    segment: 'projects',
     tag: 'Sharing',
-    summary: "Set or clear a document's share password.",
+    summary: "Set or clear a project's share password.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     requestSchema: {
@@ -1084,8 +1084,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/documents/{id}/share/{code}',
-    segment: 'documents',
+    path: '/projects/{id}/share/{code}',
+    segment: 'projects',
     tag: 'Sharing',
     summary: 'Revoke one share link by its code.',
     auth: 'guest-or-clerk',
@@ -1094,8 +1094,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/documents/{id}/share/{code}',
-    segment: 'documents',
+    path: '/projects/{id}/share/{code}',
+    segment: 'projects',
     tag: 'Sharing',
     summary: 'Change which tabs a share link opens: one tab, or null for all.',
     auth: 'guest-or-clerk',
@@ -1110,8 +1110,8 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/share/{code}/extend',
-    segment: 'documents',
+    path: '/projects/{id}/share/{code}/extend',
+    segment: 'projects',
     tag: 'Sharing',
     summary: 'Re-arm an expiring share link.',
     auth: 'guest-or-clerk',
@@ -1121,11 +1121,11 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/thumbnail',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/thumbnail',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
-      "The document's cached SVG snapshot (a tab-scoped share visitor gets their tab). Read-gated like GET /documents/{id}; 404 when there is no snapshot.",
+      "The project's cached SVG snapshot (a tab-scoped share visitor gets their tab). Read-gated like GET /projects/{id}; 404 when there is no snapshot.",
     auth: 'guest-or-clerk',
     tokenUsable: true,
     query: [{ name: 'v', required: false, description: 'Cache-buster (the savedAt stamp).' }],
@@ -1135,9 +1135,9 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'POST',
-    path: '/documents/{id}/room-ticket',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/room-ticket',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
       'Mint a one-time ticket for opening the realtime room: pass it to the WebSocket upgrade as `?t=`. Same access policy as a read, share password included. Exempt from the write rate limit.',
     auth: 'guest-or-clerk',
@@ -1150,16 +1150,16 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'GET',
-    path: '/documents/{id}/ws',
-    segment: 'documents',
-    tag: 'Documents',
+    path: '/projects/{id}/ws',
+    segment: 'projects',
+    tag: 'Projects',
     summary:
       'WebSocket upgrade to the realtime room. The op protocol is internal and not covered here.',
     auth: 'guest-or-clerk',
     query: [
       { name: 's', required: false, description: 'Share code, for non-owner collaborators.' },
       { name: 'o', required: false, description: 'Owner id (guest path).' },
-      { name: 'p', required: false, description: 'Share password, when the document is gated.' },
+      { name: 'p', required: false, description: 'Share password, when the project is gated.' },
     ],
     statuses: [101, 403, 404],
   },
@@ -1385,7 +1385,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/shared',
     segment: 'shared',
     tag: 'Sharing',
-    summary: 'List documents shared with the caller.',
+    summary: 'List projects shared with the caller.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     responseSchema: listOf('shared', 'SharedWithItem'),
@@ -1393,10 +1393,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'DELETE',
-    path: '/shared/{documentId}',
+    path: '/shared/{projectId}',
     segment: 'shared',
     tag: 'Sharing',
-    summary: 'Remove a document from the caller\'s "shared with you" list.',
+    summary: 'Remove a project from the caller\'s "shared with you" list.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [200, 401],
@@ -1406,17 +1406,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/share/{code}',
     segment: 'share',
     tag: 'Sharing',
-    summary: 'Resolve a share code to a document and the granted role.',
+    summary: 'Resolve a share code to a project and the granted role.',
     auth: 'public',
     query: [{ name: 'password', required: false, description: 'Required when the link is gated.' }],
     responseSchema: {
       type: 'object',
       properties: {
-        document: ref('Document'),
+        project: ref('Project'),
         role: ref('ShareRole'),
         tabId: { type: ['string', 'null'] },
       },
-      required: ['document', 'role', 'tabId'],
+      required: ['project', 'role', 'tabId'],
     },
     statuses: [200, 401, 403, 404, 410],
   },
@@ -1426,7 +1426,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'share',
     tag: 'Sharing',
     summary:
-      'Live image: the shared document as SVG, embeddable by a bare <img>. Public by share code; a password-protected share has no image.',
+      'Live image: the shared project as SVG, embeddable by a bare <img>. Public by share code; a password-protected share has no image.',
     auth: 'public',
     query: [
       {
@@ -1445,7 +1445,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'share',
     tag: 'Sharing',
     summary:
-      "A link preview's text: the shared document's name. 404 wherever the live image is (a dead code, a share password).",
+      "A link preview's text: the shared project's name. 404 wherever the live image is (a dead code, a share password).",
     auth: 'public',
     responseSchema: {
       type: 'object',
@@ -1550,7 +1550,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/favourites',
     segment: 'favourites',
     tag: 'Account',
-    summary: 'The document ids the caller has starred, newest first.',
+    summary: 'The project ids the caller has starred, newest first.',
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
@@ -1560,19 +1560,19 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
   },
   {
     method: 'PUT',
-    path: '/favourites/{documentId}',
+    path: '/favourites/{projectId}',
     segment: 'favourites',
     tag: 'Account',
-    summary: 'Star a document for the caller. Idempotent; 404 when there is no such document.',
+    summary: 'Star a project for the caller. Idempotent; 404 when there is no such project.',
     auth: 'guest-or-clerk',
     statuses: [204, 401, 404],
   },
   {
     method: 'DELETE',
-    path: '/favourites/{documentId}',
+    path: '/favourites/{projectId}',
     segment: 'favourites',
     tag: 'Account',
-    summary: 'Un-star a document for the caller.',
+    summary: 'Un-star a project for the caller.',
     auth: 'guest-or-clerk',
     statuses: [204, 401],
   },
@@ -1583,7 +1583,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/tags',
     segment: 'tags',
     tag: 'Account',
-    summary: "The caller's tags, alphabetical, and which live documents each is on.",
+    summary: "The caller's tags, alphabetical, and which live projects each is on.",
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
@@ -1604,7 +1604,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
           type: 'array',
           items: {
             type: 'object',
-            properties: { tagId: { type: 'string' }, documentId: { type: 'string' } },
+            properties: { tagId: { type: 'string' }, projectId: { type: 'string' } },
           },
         },
       },
@@ -1645,26 +1645,26 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/tags/{tagId}',
     segment: 'tags',
     tag: 'Account',
-    summary: "Delete one of the caller's tags; it comes off every document.",
+    summary: "Delete one of the caller's tags; it comes off every project.",
     auth: 'guest-or-clerk',
     statuses: [204, 401, 404],
   },
   {
     method: 'PUT',
-    path: '/tags/{tagId}/documents/{documentId}',
+    path: '/tags/{tagId}/projects/{projectId}',
     segment: 'tags',
     tag: 'Account',
     summary:
-      "Put a tag on a document. Idempotent; 404 when the tag is not the caller's or there is no such document.",
+      "Put a tag on a project. Idempotent; 404 when the tag is not the caller's or there is no such project.",
     auth: 'guest-or-clerk',
     statuses: [204, 401, 404],
   },
   {
     method: 'DELETE',
-    path: '/tags/{tagId}/documents/{documentId}',
+    path: '/tags/{tagId}/projects/{projectId}',
     segment: 'tags',
     tag: 'Account',
-    summary: 'Take a tag off a document.',
+    summary: 'Take a tag off a project.',
     auth: 'guest-or-clerk',
     statuses: [204, 401, 404],
   },
@@ -1731,10 +1731,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'trash',
     tag: 'Trash',
     summary:
-      'The documents the caller may restore: their personal Trash and every joined team Trash, newest first.',
+      'The projects the caller may restore: their personal Trash and every joined team Trash, newest first.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    responseSchema: listOf('trash', 'TrashedDocument'),
+    responseSchema: listOf('trash', 'TrashedProject'),
     statuses: [200, 400, 401],
   },
   {
@@ -1759,10 +1759,10 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'trash',
     tag: 'Trash',
     summary:
-      'Restore a document from the Trash to its folder, or the root of its space when that folder is gone.',
+      'Restore a project from the Trash to its folder, or the root of its space when that folder is gone.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
-    responseSchema: wrap('document', 'Document'),
+    responseSchema: wrap('project', 'Project'),
     statuses: [200, 400, 401, 404],
   },
   {
@@ -1770,7 +1770,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/trash/{id}',
     segment: 'trash',
     tag: 'Trash',
-    summary: 'Delete a document in the Trash for good.',
+    summary: 'Delete a project in the Trash for good.',
     auth: 'guest-or-clerk',
     tokenUsable: true,
     statuses: [204, 400, 401, 404],
@@ -1783,7 +1783,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'timeline',
     tag: 'Account',
     summary:
-      "A document's history (scope=document:<id>) or a team's activity (scope=team:<id>), newest first. Keyset-paginated via nextCursor. The scope is required.",
+      "A project's history (scope=project:<id>) or a team's activity (scope=team:<id>), newest first. Keyset-paginated via nextCursor. The scope is required.",
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
@@ -1812,7 +1812,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'activity',
     tag: 'Account',
     summary:
-      'What is outstanding for the caller across every document they can open: open actions assigned to them or by them, open Plan cards assigned to them, and unresolved comment threads they are in, on elements and on Plan cards. Capped at 100 per kind, newest first.',
+      'What is outstanding for the caller across every project they can open: open actions assigned to them or by them, open Plan cards assigned to them, and unresolved comment threads they are in, on elements and on Plan cards. Capped at 100 per kind, newest first.',
     auth: 'guest-or-clerk',
     responseSchema: {
       type: 'object',
@@ -1841,7 +1841,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'home',
     tag: 'Account',
     summary:
-      "The Explorer's Home in one read: Jump back in (the caller's Within reach set: the 4 documents they used on the most days over the last 90, then the 4 they used most recently, none twice; most used first) and What happened (other people's actions on documents the caller can open over the last 14 days, one group per document per day in `tz`). Query: `tz` (IANA, default UTC). 400 `tz_invalid`.",
+      "The Explorer's Home in one read: Jump back in (the caller's Within reach set: the 4 projects they used on the most days over the last 90, then the 4 they used most recently, none twice; most used first) and What happened (other people's actions on projects the caller can open over the last 14 days, one group per project per day in `tz`). Query: `tz` (IANA, default UTC). 400 `tz_invalid`.",
     auth: 'guest-or-clerk',
     responseSchema: { $ref: '#/components/schemas/HomeResponse' },
     statuses: [200, 400, 401, 429],
@@ -1853,7 +1853,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/account',
     segment: 'account',
     tag: 'Account',
-    summary: 'Delete the signed-in account and all of its data (documents, tokens, ...).',
+    summary: 'Delete the signed-in account and all of its data (projects, tokens, ...).',
     auth: 'clerk',
     responseSchema: { type: 'object', properties: { deleted: { type: 'number' } } },
     statuses: [204, 401],
@@ -2036,7 +2036,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Whether a joined teammate can open a document the caller can access (docs/specs/012-collaboration/assigned-actions.md): owner, team-library member, or prior share-link visitor.',
+      'Whether a joined teammate can open a project the caller can access (docs/specs/012-collaboration/assigned-actions.md): owner, team-library member, or prior share-link visitor.',
     auth: 'clerk',
     responseSchema: {
       type: 'object',
@@ -2051,17 +2051,17 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      'Email a joined teammate that an action on a document element was assigned to them (docs/specs/012-collaboration/assigned-actions.md). Best-effort; the assignee may have opted out.',
+      'Email a joined teammate that an action on a project element was assigned to them (docs/specs/012-collaboration/assigned-actions.md). Best-effort; the assignee may have opted out.',
     auth: 'clerk',
     requestSchema: {
       type: 'object',
       properties: {
         assigneeUserId: { type: 'string' },
-        documentId: { type: 'string' },
+        projectId: { type: 'string' },
         actionName: { type: 'string' },
         description: { type: 'string' },
       },
-      required: ['assigneeUserId', 'documentId', 'actionName'],
+      required: ['assigneeUserId', 'projectId', 'actionName'],
     },
     statuses: [202, 400, 401, 403, 404],
   },
@@ -2071,12 +2071,12 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'teams',
     tag: 'Teams',
     summary:
-      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The document must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
+      "Email the teammates a comment just @-mentioned (docs/specs/012-collaboration/comment-mentions.md). The project must be in this team's library; each mention must be a member of the team. Best-effort; a recipient may have opted out.",
     auth: 'clerk',
     requestSchema: {
       type: 'object',
       properties: {
-        documentId: { type: 'string' },
+        projectId: { type: 'string' },
         commentText: { type: 'string' },
         mentions: {
           type: 'array',
@@ -2088,7 +2088,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
         // A Plan card's comment: the card, so the email's button opens it.
         itemId: { type: 'string' },
       },
-      required: ['documentId', 'commentText', 'mentions'],
+      required: ['projectId', 'commentText', 'mentions'],
     },
     statuses: [202, 400, 401, 403, 404],
   },
@@ -2127,14 +2127,14 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     path: '/teams/{id}/library',
     segment: 'teams',
     tag: 'Teams',
-    summary: "Get a team's shared folder tree and documents (joined member).",
+    summary: "Get a team's shared folder tree and projects (joined member).",
     auth: 'clerk',
     tokenUsable: true,
     responseSchema: {
       type: 'object',
       properties: {
         folders: { type: 'array', items: ref('Folder') },
-        documents: { type: 'array', items: ref('DocumentSummary') },
+        projects: { type: 'array', items: ref('ProjectSummary') },
       },
     },
     statuses: [200, 401, 403, 404],
@@ -2214,7 +2214,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'workbench',
     tag: 'Workbench',
     summary:
-      "Mint a single-use, one-minute ticket that opens a document, or the person's whole workspace (scope workspace, on Home or a folder), in a paired developer tool. An origin the token is not paired with for that scope answers 428 with the pairing URL.",
+      "Mint a single-use, one-minute ticket that opens a project, or the person's whole workspace (scope workspace, on Home or a folder), in a paired developer tool. An origin the token is not paired with for that scope answers 428 with the pairing URL.",
     auth: 'clerk',
     tokenUsable: true,
     requestSchema: 'WorkbenchTicketRequest',
@@ -2229,7 +2229,7 @@ export const ROUTE_MANIFEST: RouteSpec[] = [
     segment: 'workbench',
     tag: 'Workbench',
     summary:
-      "Redeem a ticket for a workbench session: the person's editor on that one document, or in their workspace. The ticket is the credential.",
+      "Redeem a ticket for a workbench session: the person's editor on that one project, or in their workspace. The ticket is the credential.",
     auth: 'public',
     requestSchema: 'WorkbenchSessionRequest',
     responseSchema: 'WorkbenchSessionResponse',

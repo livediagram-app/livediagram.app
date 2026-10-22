@@ -13,7 +13,7 @@ import {
   type BorderStyle,
   type DashboardStyledType,
   type ElementShadow,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
 import {

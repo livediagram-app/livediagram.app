@@ -12,7 +12,7 @@ Where a large board spends its time during pan, zoom, drag, marquee and pen stro
 
 ## Agent CLI
 
-How an AI agent should read, build, edit and comment on documents through a CLI, and work beside a person live.
+How an AI agent should read, build, edit and comment on projects through a CLI, and work beside a person live.
 The resulting specs live in docs/specs/024-agents/ and docs/specs/015-api/cli.md.
 
 - ./agent-cli/agent-cli-ergonomics.md - when shaping CLI help, output, refs, errors or exit codes for agents
@@ -24,7 +24,7 @@ The resulting specs live in docs/specs/024-agents/ and docs/specs/015-api/cli.md
 
 ## Access levels
 
-Who may do what to a document: how other products define levels, what each identity can do in the code, the
+Who may do what to a project: how other products define levels, what each identity can do in the code, the
 constraints, and where taking part in a session belongs. The resulting spec is docs/specs/013-workspace/share-roles.md.
 
 - ./access-levels/prior-art.md - when comparing access levels with Google, Figma, Miro, Lucid, Notion and facilitation tools

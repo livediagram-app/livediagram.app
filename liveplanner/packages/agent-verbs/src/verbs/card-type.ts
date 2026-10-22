@@ -1,4 +1,4 @@
-// The card type verbs (docs/specs/026-plan/plan-agents.md "Changing card types"): `type ls` lists a document's card
+// The card type verbs (docs/specs/026-plan/plan-agents.md "Changing card types"): `type ls` lists a project's card
 // types with their fields, `type apply` applies changes from a JSON file (the MCP's change_card_types changes),
 // through the Plan engine the MCP shares.
 import { z } from 'zod';
@@ -7,9 +7,9 @@ import { cardTypeChangeSchema } from '../mcp/plan-schema';
 import { changeCardTypes } from '../plan/card-types';
 import { listedTypes } from '../plan/plan-listing';
 import { readPlanState } from '../plan/plan-state';
-import { columns, documentOf } from './shared';
+import { columns, projectOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or liveplanner URL');
+const projectArg = z.string().describe('A name, id prefix or liveplanner URL');
 
 const typeOut = z.object({
   id: z.string(),
@@ -20,16 +20,16 @@ const typeOut = z.object({
 
 export const typeLs = defineVerb({
   id: 'type.ls',
-  summary: 'The card types of a document',
+  summary: 'The card types of a project',
   description:
     'Lists the card types its boards hold: id, name, built-in fields and custom fields with their ids.',
   behaviour: 'read',
-  input: z.object({ doc: docArg }),
+  input: z.object({ project: projectArg }),
   output: z.object({ types: z.array(typeOut) }),
   listKey: 'types',
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
-    const { plan } = await readPlanState(ctx.api, document.id);
+    const project = await projectOf(ctx, input.project);
+    const { plan } = await readPlanState(ctx.api, project.id);
     return { types: listedTypes(plan.types, plan.statuses) };
   },
   text: ({ types }) =>
@@ -42,7 +42,7 @@ export const typeLs = defineVerb({
     ),
   quiet: ({ types }) => types.map((t) => t.id),
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     examples: ['liveplanner type ls "Sprint 14"', 'liveplanner type ls 3f9c --json'],
     prints: 'one type a line: id, name, fields',
   },
@@ -63,7 +63,7 @@ export const typeApply = defineVerb({
   description:
     'Applies card type changes from a JSON file (or stdin, with -f -): an array of add, set, delete and add_default_types changes, checked and saved together.',
   behaviour: 'destructive',
-  input: z.object({ doc: docArg, file: z.string().describe('The JSON file, or - for stdin') }),
+  input: z.object({ project: projectArg, file: z.string().describe('The JSON file, or - for stdin') }),
   output: z.object({ applied: z.array(z.string()), trashed: z.array(z.string()) }),
   run: async (ctx, input) => {
     const parsed = z
@@ -77,14 +77,14 @@ export const typeApply = defineVerb({
         message: `the file is not a list of card type changes: ${parsed.error.issues[0]!.message}`,
         hint: 'for example: [{"op":"add","name":"Bug","custom":[{"name":"Severity","kind":"choice","options":["S1","S2"]}]}]',
       });
-    const document = await documentOf(ctx, input.doc);
-    const result = await changeCardTypes(ctx.api, document.id, parsed.data);
+    const project = await projectOf(ctx, input.project);
+    const result = await changeCardTypes(ctx.api, project.id, parsed.data);
     if (result.refusal)
       throw new VerbRefusal({
         status: 400,
         code: result.refusal.code,
         message: result.refusal.message,
-        hint: 'list the card types with: liveplanner type ls <doc>',
+        hint: 'list the card types with: liveplanner type ls <project>',
       });
     return { applied: result.applied, trashed: result.trashed };
   },
@@ -94,7 +94,7 @@ export const typeApply = defineVerb({
   ],
   quiet: ({ applied }) => applied,
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     flags: { file: { short: 'f' } },
     examples: [
       'liveplanner type apply "Sprint 14" -f types.json',

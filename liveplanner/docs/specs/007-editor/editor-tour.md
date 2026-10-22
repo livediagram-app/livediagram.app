@@ -9,7 +9,7 @@ Settings' **Tours** category.
 ## Retired: the Diagram tour
 
 Until 2026-10-22 the **Diagram tour** ("Getting started with Diagrams?", the welcome tour until October 2026) was
-offered on a brand-new user's first document, in Diagram mode only, and from Settings' **Diagram Tour** row. It went
+offered on a brand-new user's first project, in Diagram mode only, and from Settings' **Diagram Tour** row. It went
 with Diagram mode ([Editor mode](editor-modes.md#retired-modes)): its host, the `/new` handoff flag that owed it
 (`liveplanner:v2:tour-pending`), its Settings row and its help article. A stored `tourSeen` preference is left in place
 and never read. A new user meets the Plan tour, which offers itself once a board or Sheet is on the tab.
@@ -31,7 +31,7 @@ full-screen layer with a rounded hole cut out of it (`TourSpotlight`).
 
 While a step is up, element tours take no clicks or wheel on the page, only on the step card:
 a press on what a step opened (a palette category's shape) closed it and the step reopened it, flickering the page.
-A shield under the card stops presses on the window in the capture phase, ahead of every document listener, and
+A shield under the card stops presses on the window in the capture phase, ahead of every project listener, and
 shows the not-allowed cursor. The keyboard still reaches the card. The other tours leave the page usable, as some
 of their steps ask the person to try things.
 
@@ -81,7 +81,7 @@ of their steps ask the person to try things.
 - **What counts as a dialog** is one signal, the modal guard (`lib/modal-guard.ts`): a count of open modal
   dialogs, fed by the editor's `Dialog` (so every dialog built on it counts with no extra work) and by the
   full-screen modals that do not use it calling `useModalGuard` themselves (the Search panel, the canvas theme
-  dialog, Photo Review, the identity prompt, the new document wizard, the sign-in reasons and delete account
+  dialog, Photo Review, the identity prompt, the new project wizard, the sign-in reasons and delete account
   modals). The window-level shortcut and paste listeners read the same count. The tours subscribe to it
   (`useOpenModalCount`, a `useSyncExternalStore` hook), never query the DOM for it. The engine keeps a
   **baseline**: the dialogs open when the tour started, raised when a step's target is found inside a dialog (the

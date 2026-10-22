@@ -1,7 +1,7 @@
 'use client';
 
 import { useId } from 'react';
-import { themeHalf } from '@liveplanner/document';
+import { themeHalf } from '@liveplanner/project';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { tabBackgroundStyle } from '@/lib/canvas-backgrounds';
 import type { ThemeDefinition } from '@/lib/themes';

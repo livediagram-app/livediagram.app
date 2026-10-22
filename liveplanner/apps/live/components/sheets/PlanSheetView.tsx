@@ -13,7 +13,7 @@ import { OPEN_TAB_TO_CHART, useSheetCharts } from './sheet-charts-context';
 import { Button } from '@liveplanner/ui';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { formatA1, normaliseRange, formatRange, quoteSheet } from '@liveplanner/sheets';
-import type { ShapeElement } from '@liveplanner/document';
+import type { ShapeElement } from '@liveplanner/project';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { usePlan } from '@/components/plan/PlanContext';
 import { planBandTint, planOwnColours, planPalette } from '@/components/plan/plan-palette';
@@ -120,7 +120,7 @@ function SheetBody({
             ? "Couldn't load this sheet"
             : loading || pending
               ? 'Opening Sheet'
-              : 'This sheet is no longer in this document'
+              : 'This sheet is no longer in this project'
         }
         action={
           model.status === 'error'

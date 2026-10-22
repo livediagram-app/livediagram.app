@@ -1,6 +1,6 @@
-import { drawnCount, type Tab } from '@liveplanner/document';
+import { drawnCount, type Tab } from '@liveplanner/project';
 
-// Whether the editor's own list row reads as empty after a save (docs/specs/006-document/document-snapshots.md):
+// Whether the editor's own list row reads as empty after a save (docs/specs/006-project/project-snapshots.md):
 // nothing to draw on the first tab (drawnCount: no element, no form), or no tab, as the server list will say. A first tab the editor has not loaded
 // is a placeholder whose elements are unknown, so the row keeps what the list last said.
 export function emptyAfterSave(

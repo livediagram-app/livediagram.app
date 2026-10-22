@@ -4,14 +4,14 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Jump Back In's ⋯ menu (docs/specs/013-workspace/explorer-home.md "Jump Back In"): every card and phone tile of a
-// document the Explorer has loaded carries that document's own Explorer menu, from a ⋯ button beside the card's link
-// or a right-click on the card; Rename edits the name in place; a renamed document shows its new name and a gone one
-// leaves; a document the Explorer has not loaded has no ⋯.
+// project the Explorer has loaded carries that project's own Explorer menu, from a ⋯ button beside the card's link
+// or a right-click on the card; Rename edits the name in place; a renamed project shows its new name and a gone one
+// leaves; a project the Explorer has not loaded has no ⋯.
 
 const { wide } = vi.hoisted(() => ({ wide: { value: true } }));
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
-vi.mock('@/components/panels/DocumentThumbnail', () => ({
-  DocumentThumbnail: (p: { documentId: string }) => <span data-testid={`thumb-${p.documentId}`} />,
+vi.mock('@/components/panels/ProjectThumbnail', () => ({
+  ProjectThumbnail: (p: { projectId: string }) => <span data-testid={`thumb-${p.projectId}`} />,
 }));
 vi.mock('@liveplanner/ui', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@liveplanner/ui')>()),
@@ -20,9 +20,9 @@ vi.mock('@liveplanner/ui', async (importOriginal) => ({
 
 import { JumpBackIn } from './JumpBackIn';
 import type { JumpBackInSet } from '@/app/explorer/home/home-model';
-import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
-import type { DocumentEntryFor } from '@/app/explorer/useDocumentEntryFor';
-import type { PaneDocument } from '@/app/explorer/views';
+import type { ProjectEntryProps } from '@/app/explorer/explorer-view-props';
+import type { ProjectEntryFor } from '@/app/explorer/useProjectEntryFor';
+import type { PaneProject } from '@/app/explorer/views';
 import { fixtureJumpItem as item } from './home-test-utils';
 
 afterEach(cleanup);
@@ -32,9 +32,9 @@ beforeEach(() => {
 
 const set: JumpBackInSet = { mostUsed: [item('a'), item('b')], recent: [item('c')] };
 
-function entry(id: string, over: Partial<DocumentEntryProps> = {}): DocumentEntryProps {
+function entry(id: string, over: Partial<ProjectEntryProps> = {}): ProjectEntryProps {
   return {
-    document: { id, name: `Doc ${id}`, ownerId: 'me', savedAt: 1 } as unknown as PaneDocument,
+    project: { id, name: `Doc ${id}`, ownerId: 'me', savedAt: 1 } as unknown as PaneProject,
     ownerId: 'me',
     renaming: false,
     onStartRename: vi.fn(),
@@ -47,14 +47,14 @@ function entry(id: string, over: Partial<DocumentEntryProps> = {}): DocumentEntr
   };
 }
 
-function menus(entries: Record<string, DocumentEntryProps>, gone: string[] = []): DocumentEntryFor {
+function menus(entries: Record<string, ProjectEntryProps>, gone: string[] = []): ProjectEntryFor {
   return {
     entryFor: (id) => entries[id] ?? null,
     isGone: (id) => gone.includes(id),
   };
 }
 
-function renderIt(documentMenus?: DocumentEntryFor) {
+function renderIt(projectMenus?: ProjectEntryFor) {
   render(
     <JumpBackIn
       ownerId="me"
@@ -62,13 +62,13 @@ function renderIt(documentMenus?: DocumentEntryFor) {
       loading={false}
       recentHref="/explorer/recent"
       onSeeMore={vi.fn()}
-      documentMenus={documentMenus}
+      projectMenus={projectMenus}
     />,
   );
 }
 
 describe('Jump Back In ⋯ menu', () => {
-  it('gives every card of a loaded document a ⋯ beside its link, never inside it', () => {
+  it('gives every card of a loaded project a ⋯ beside its link, never inside it', () => {
     renderIt(menus({ a: entry('a'), b: entry('b'), c: entry('c') }));
     for (const id of ['a', 'b', 'c']) {
       const button = screen.getByRole('button', { name: `Menu for Doc ${id}` });
@@ -77,7 +77,7 @@ describe('Jump Back In ⋯ menu', () => {
     }
   });
 
-  it("opens the document's Explorer menu from the ⋯", () => {
+  it("opens the project's Explorer menu from the ⋯", () => {
     const a = entry('a');
     renderIt(menus({ a }));
     fireEvent.click(screen.getByRole('button', { name: 'Menu for Doc a' }));
@@ -96,7 +96,7 @@ describe('Jump Back In ⋯ menu', () => {
   it('shows the name the Explorer has now, so a rename shows at once', () => {
     renderIt(
       menus({
-        a: entry('a', { document: { id: 'a', name: 'Renamed' } as unknown as PaneDocument }),
+        a: entry('a', { project: { id: 'a', name: 'Renamed' } as unknown as PaneProject }),
       }),
     );
     expect(screen.getByRole('link', { name: 'Renamed' })).toBeTruthy();
@@ -114,18 +114,18 @@ describe('Jump Back In ⋯ menu', () => {
     expect(a.onCommitRename).toHaveBeenCalledWith('New name');
   });
 
-  it('drops a document that has left the Explorer (Trash, taken off Shared With Me)', () => {
+  it('drops a project that has left the Explorer (Trash, taken off Shared With Me)', () => {
     renderIt(menus({ a: entry('a'), c: entry('c') }, ['b']));
     const ids = screen.getAllByTestId(/^thumb-/).map((t) => t.dataset.testid);
     expect(ids).toEqual(['thumb-a', 'thumb-c']);
   });
 
-  it('has no ⋯ for a document the Explorer has not loaded, which still opens', () => {
+  it('has no ⋯ for a project the Explorer has not loaded, which still opens', () => {
     renderIt(menus({ a: entry('a') }));
     expect(screen.getByRole('button', { name: 'Menu for Doc a' })).toBeTruthy();
     const card = screen.getByRole('link', { name: 'Doc c' });
     expect(within(card.parentElement!).queryByRole('button')).toBeNull();
-    expect(card.getAttribute('href')).toBe('/document/c');
+    expect(card.getAttribute('href')).toBe('/project/c');
   });
 
   it('draws no ⋯ at all outside the Explorer', () => {

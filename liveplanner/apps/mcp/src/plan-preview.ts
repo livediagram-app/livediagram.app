@@ -1,9 +1,9 @@
 // A Plan tab's preview as the editor exports it (docs/specs/015-api/mcp-server.md §5, docs/specs/026-plan/plan-tabs.md
 // "Export"): a Board tab its board alone, a Sheet tab its Sheet, a Dashboard its page laid out with every metric, chart
-// and card drawn from the document's cards (@liveplanner/plan-art), never the raw elements stacked where they sit.
+// and card drawn from the project's cards (@liveplanner/plan-art), never the raw elements stacked where they sit.
 // Null for any other tab. Every read is best-effort: what cannot be read draws as the editor draws it missing.
 import type {
-  DocumentResponse,
+  ProjectResponse,
   PlanResponse,
   SheetsResponse,
   TabResponse,
@@ -14,7 +14,7 @@ import {
   renderElementsToSvg,
   type ResolvePlanArt,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { statusPhasesOf, type Item, type ItemTypeDef } from '@liveplanner/items';
 import {
   sheetContentSize,
@@ -46,23 +46,23 @@ type PlanPreview = {
 // A Sheet tab's sheets (best-effort: null when they cannot be read, and the Sheet keeps its size).
 async function sheetsOfTab(
   tab: Tab,
-  auth: { env: Env; token: string; documentId: string },
+  auth: { env: Env; token: string; projectId: string },
 ): Promise<SheetJson[] | null> {
   const ids = [...new Set(sheetFramesOf(tab.elements as never).map((f) => f.sheetId))];
   if (ids.length === 0) return null;
-  const path = `/documents/${encodeURIComponent(auth.documentId)}/sheets?ids=${ids.join(',')}`;
+  const path = `/projects/${encodeURIComponent(auth.projectId)}/sheets?ids=${ids.join(',')}`;
   const read = await apiJson<SheetsResponse>(auth.env, auth.token, path).catch(() => null);
   return read?.sheets ?? null;
 }
 
-// Every tab of the document, this one as given; the rest read in parallel, up to PLAN_PREVIEW_TABS_MAX.
-async function documentTabs(
+// Every tab of the project, this one as given; the rest read in parallel, up to PLAN_PREVIEW_TABS_MAX.
+async function projectTabs(
   tab: Tab,
-  auth: { env: Env; token: string; documentId: string },
+  auth: { env: Env; token: string; projectId: string },
 ): Promise<Tab[]> {
-  const path = `/documents/${encodeURIComponent(auth.documentId)}`;
-  const doc = await apiJson<DocumentResponse>(auth.env, auth.token, path).catch(() => null);
-  const others = (doc?.document.tabs ?? [])
+  const path = `/projects/${encodeURIComponent(auth.projectId)}`;
+  const doc = await apiJson<ProjectResponse>(auth.env, auth.token, path).catch(() => null);
+  const others = (doc?.project.tabs ?? [])
     .filter((t) => t.id !== tab.id)
     .slice(0, PLAN_PREVIEW_TABS_MAX);
   const read = await Promise.all(
@@ -77,26 +77,26 @@ async function documentTabs(
 
 export async function planPreviewFor(
   tab: Tab,
-  auth: { env: Env; token: string; documentId?: string } | undefined,
+  auth: { env: Env; token: string; projectId?: string } | undefined,
   render: (tab: Tab) => string = (shown) => renderElementsToSvg(shown, {}),
 ): Promise<PlanPreview | null> {
   const kind = planTabKindOf(tab);
   if (!kind) return null;
-  const documentId = auth?.documentId;
+  const projectId = auth?.projectId;
   const [tabs, plan] =
-    kind === 'dashboard' && auth && documentId
+    kind === 'dashboard' && auth && projectId
       ? await Promise.all([
-          documentTabs(tab, { ...auth, documentId }),
+          projectTabs(tab, { ...auth, projectId }),
           apiJson<PlanResponse>(
             auth.env,
             auth.token,
-            `/documents/${encodeURIComponent(documentId)}/plan`,
+            `/projects/${encodeURIComponent(projectId)}/plan`,
           ).catch(() => null),
         ])
       : [[tab], null];
   // A Sheet tab's image shows every filled cell, as the tab does, rather than the frame's first screen of them.
   const sheets =
-    kind === 'sheet' && auth && documentId ? await sheetsOfTab(tab, { ...auth, documentId }) : null;
+    kind === 'sheet' && auth && projectId ? await sheetsOfTab(tab, { ...auth, projectId }) : null;
   const byId = new Map((sheets ?? []).map((s) => [s.id, s]));
   const now = new Date();
   const image = planImageOf(tab, {

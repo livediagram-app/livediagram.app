@@ -1,7 +1,7 @@
-// What the read verbs share: the list limits, dates, and reading a document's tabs.
+// What the read verbs share: the list limits, dates, and reading a project's tabs.
 
 import type { ApiClient } from '@liveplanner/api-client';
-import { resolveDocument, resolveTab, type ResolvedDocument, type TabSummary } from '../addressing';
+import { resolveProject, resolveTab, type ResolvedProject, type TabSummary } from '../addressing';
 import type { VerbContext } from '../define';
 
 export const LIST_DEFAULT_LIMIT = 20;
@@ -21,28 +21,28 @@ export function columns(rows: readonly (readonly string[])[]): string[] {
   );
 }
 
-type DocumentWithTabs = ResolvedDocument & { tabs: TabSummary[] };
+type ProjectWithTabs = ResolvedProject & { tabs: TabSummary[] };
 
-// The document a command names, its share code applied, with its tabs.
-export async function documentOf(ctx: VerbContext, doc: string): Promise<DocumentWithTabs> {
-  const resolved = await resolveDocument(ctx.api, doc, ctx.host, ctx.log);
+// The project a command names, its share code applied, with its tabs.
+export async function projectOf(ctx: VerbContext, projectRef: string): Promise<ProjectWithTabs> {
+  const resolved = await resolveProject(ctx.api, projectRef, ctx.host, ctx.log);
   if (resolved.shareCode) ctx.useShareCode(resolved.shareCode);
-  const { document } = await ctx.api.json<{
-    document: { tabs: TabSummary[] };
-  }>(`/documents/${encodeURIComponent(resolved.id)}`);
-  return { ...resolved, tabs: document.tabs };
+  const { project } = await ctx.api.json<{
+    project: { tabs: TabSummary[] };
+  }>(`/projects/${encodeURIComponent(resolved.id)}`);
+  return { ...resolved, tabs: project.tabs };
 }
 
-export async function tabOf(ctx: VerbContext, doc: string, tab: string | undefined) {
-  const document = await documentOf(ctx, doc);
-  return { document, tab: resolveTab(document.tabs, tab, doc, ctx.log) };
+export async function tabOf(ctx: VerbContext, projectRef: string, tab: string | undefined) {
+  const project = await projectOf(ctx, projectRef);
+  return { project, tab: resolveTab(project.tabs, tab, projectRef, ctx.log) };
 }
 
-export const tabPath = (documentId: string, tabId: string) =>
-  `/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}`;
+export const tabPath = (projectId: string, tabId: string) =>
+  `/projects/${encodeURIComponent(projectId)}/tabs/${encodeURIComponent(tabId)}`;
 
-// A document's item store (docs/specs/026-plan/items.md), for the CLI's item verbs and the MCP item tools.
-export const itemsPath = (documentId: string) =>
-  `/documents/${encodeURIComponent(documentId)}/items`;
+// A project's item store (docs/specs/026-plan/items.md), for the CLI's item verbs and the MCP item tools.
+export const itemsPath = (projectId: string) =>
+  `/projects/${encodeURIComponent(projectId)}/items`;
 
 export type { ApiClient };

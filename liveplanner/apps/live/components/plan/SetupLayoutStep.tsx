@@ -18,7 +18,7 @@ export function SetupLayoutStep({
   onChange,
 }: {
   layout: SetupLayout;
-  // The card types chosen in step 1 (what the swimlanes can group by), and every type of the document.
+  // The card types chosen in step 1 (what the swimlanes can group by), and every type of the project.
   types: readonly ItemTypeDef[];
   allTypes: readonly ItemTypeDef[];
   palette: PlanPalette;

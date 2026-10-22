@@ -33,7 +33,7 @@ import { SELECTION_MODES } from './PaletteView';
 // event something in the repo can actually send. Two ways that went wrong:
 //
 //  - A card that asks for `type: null` counts ONLY the bare event. When an
-//    emitter started typing Document·Created `Cloud` / `Offline`, "Diagrams
+//    emitter started typing Project·Created `Cloud` / `Offline`, "Diagrams
 //    Created" silently read 0 for months. So an untyped card must have no
 //    emitter that can send a type (a card that wants them says `allTypes` or
 //    `typeIn`).
@@ -114,12 +114,12 @@ describe('the emitter scan', () => {
     const has = (c: string, a: string, t: string | null) =>
       KNOWN.some((e) => e.category === c && e.action === a && e.type === t);
     expect(
-      has('Document', 'Exported', COMPUTED as never) || has('Document', 'Exported', 'PNG'),
+      has('Project', 'Exported', COMPUTED as never) || has('Project', 'Exported', 'PNG'),
     ).toBe(true);
     expect(has('AI', 'Toggled', 'AiOn')).toBe(true); // Settings catalogue row
     expect(has('Tab', 'Moved', 'Folder')).toBe(true); // ternary action
     expect(has('Tab', 'Removed', 'Folder')).toBe(true);
-    expect(has('Document', 'Created', 'Offline')).toBe(true); // ternary type
+    expect(has('Project', 'Created', 'Offline')).toBe(true); // ternary type
     expect(has('Canvas', 'Changed', 'BackgroundColor')).toBe(true); // returned closure
     // A callback's parameter, bound through the calls createVoteTally makes.
     expect(has('Help', 'Helpful', COMPUTED as never)).toBe(true);

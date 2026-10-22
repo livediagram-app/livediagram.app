@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape, type BoxedElement, type Element } from '@liveplanner/document';
+import { createShape, type BoxedElement, type Element } from '@liveplanner/project';
 import { MultiPlacementSections } from './MultiPlacementSections';
 import type { EditorContextMenuProps } from './EditorContextMenu.types';
 

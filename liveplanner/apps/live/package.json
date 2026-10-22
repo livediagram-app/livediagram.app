@@ -27,8 +27,8 @@
   "dependencies": {
     "@clerk/react": "^6.17.8",
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/document": "workspace:*",
-    "@liveplanner/document-views": "workspace:*",
+    "@liveplanner/project": "workspace:*",
+    "@liveplanner/project-views": "workspace:*",
     "@liveplanner/explorer-lens": "workspace:*",
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/help-registry": "workspace:*",

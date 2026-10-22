@@ -49,7 +49,7 @@ type SettingsDialogProps = {
   initialCategoryId?: string | null;
   // Section of that category to scroll to and focus (settingsSectionId).
   initialSectionId?: string | null;
-  // The reader's owner id, for the Documents rows (docs/specs/013-workspace/default-folders.md);
+  // The reader's owner id, for the Projects rows (docs/specs/013-workspace/default-folders.md);
   // the owner the page loaded its default folders for when absent.
   ownerId?: string | null;
 };
@@ -81,7 +81,7 @@ export function SettingsDialog({
   const { emailEnabled } = useCapabilities();
   const { clerkUserId, isSignedIn } = useClerkApiBootstrap();
   const signedIn = Boolean(isSignedIn && clerkUserId);
-  // A workbench's Settings reach nothing beyond its one document (docs/specs/013-workspace/
+  // A workbench's Settings reach nothing beyond its one project (docs/specs/013-workspace/
   // blueprints/workbench-embeds.md, Surface table).
   const workbench = useWorkbenchSession() !== null;
   // Loads the reader's default folders when the page has not (a no-op when it has).
@@ -313,8 +313,8 @@ export function SettingsDialog({
         <p className="text-[10px] text-slate-500 dark:text-slate-400">
           {/* A guest has no account to sync to: their settings follow them in this browser only. */}
           {signedIn
-            ? 'Settings sync to your account and apply to every document you open, on every device you sign in from.'
-            : 'Settings are kept in this browser and apply to every document you open. Sign in to have them on your other devices too.'}
+            ? 'Settings sync to your account and apply to every project you open, on every device you sign in from.'
+            : 'Settings are kept in this browser and apply to every project you open. Sign in to have them on your other devices too.'}
         </p>
       </footer>
     </Dialog>

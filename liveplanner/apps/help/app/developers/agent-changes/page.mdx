@@ -20,7 +20,7 @@ When an [AI tool](/help/account-and-data/connect-ai-mcp/), the [CLI](/help/devel
 
 ## In the Editor
 
-If you have the document open when a changeset lands, you see it happen. The change arrives on your canvas straight away, everything it touched is outlined in its author's colour for two seconds, and a note appears at the bottom of the screen:
+If you have the project open when a changeset lands, you see it happen. The change arrives on your canvas straight away, everything it touched is outlined in its author's colour for two seconds, and a note appears at the bottom of the screen:
 
 <Figure caption="The change toast: who changed how many elements and why, with Show and Undo.">
   <AgentChangeToast />
@@ -40,11 +40,11 @@ The note is an information message, so switching off **In-Editor Notifications**
 
 ### Once the Note Is Gone
 
-The editor has no history of changesets. Once you close the note, or if the change landed while you didn't have the document open (it simply appears when you next open it, with no outline and no note), review and undo it from the CLI or the API, below.
+The editor has no history of changesets. Once you close the note, or if the change landed while you didn't have the project open (it simply appears when you next open it, with no outline and no note), review and undo it from the CLI or the API, below.
 
 ## From the CLI
 
-`changeset ls` lists a document's recent changesets, newest first, 20 by default:
+`changeset ls` lists a project's recent changesets, newest first, 20 by default:
 
 ```bash
 liveplanner changeset ls "Auth flow"
@@ -104,9 +104,9 @@ Three routes read and revert changesets, with the same [authentication](/help/de
 
 | Route                                                      | What it does                                                                                                 |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
-| `GET /api/documents/{id}/changesets`                       | The recent changesets, newest first. `?tab=` narrows it to one tab; `?limit=` from 1 to 100 (20 by default). |
-| `GET /api/documents/{id}/changesets/{changesetId}`         | One changeset, with its result lines.                                                                        |
-| `POST /api/documents/{id}/changesets/{changesetId}/revert` | Reverts it, as a new changeset.                                                                              |
+| `GET /api/projects/{id}/changesets`                       | The recent changesets, newest first. `?tab=` narrows it to one tab; `?limit=` from 1 to 100 (20 by default). |
+| `GET /api/projects/{id}/changesets/{changesetId}`         | One changeset, with its result lines.                                                                        |
+| `POST /api/projects/{id}/changesets/{changesetId}/revert` | Reverts it, as a new changeset.                                                                              |
 
 Each changeset in the list looks like this:
 
@@ -140,9 +140,9 @@ Each changeset in the list looks like this:
 }
 ```
 
-It also carries `lint`, the [lint report](/help/developers/working-with-documents/) of the tab the revert leaves. `changeset` is `null` when there was nothing to revert.
+It also carries `lint`, the [lint report](/help/developers/working-with-projects/) of the tab the revert leaves. `changeset` is `null` when there was nothing to revert.
 
-Reading the history needs read access to the document; reverting needs edit access to the tab. A revert made with a token is refused with `409 elements_held` when somebody has one of its elements selected, as any agent change is; one made from the editor's **Undo** never is. See [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) for the other answers.
+Reading the history needs read access to the project; reverting needs edit access to the tab. A revert made with a token is refused with `409 elements_held` when somebody has one of its elements selected, as any agent change is; one made from the editor's **Undo** never is. See [Errors and Rate Limits](/help/developers/errors-and-rate-limits/) for the other answers.
 
 ## What Undo Keeps
 
@@ -162,6 +162,6 @@ Everything else goes back to how the changeset found it. Comments, votes and oth
 
 ## How Long You Can Undo
 
-A changeset can be reviewed and reverted for **30 days** after it lands, the same as the [Trash](/help/account-and-data/trash/) keeps a deleted document. After that its record is deleted: it no longer appears in the list, and showing or reverting it answers `404`. The change itself stays on the tab.
+A changeset can be reviewed and reverted for **30 days** after it lands, the same as the [Trash](/help/account-and-data/trash/) keeps a deleted project. After that its record is deleted: it no longer appears in the list, and showing or reverting it answers `404`. The change itself stays on the tab.
 
 </ArticleLayout>

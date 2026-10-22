@@ -1,4 +1,4 @@
-import { DOCUMENT_FORMAT } from '@liveplanner/api-schema';
+import { PROJECT_FORMAT } from '@liveplanner/api-schema';
 import { aiConfigured } from '../ai-provider';
 import { emailEnabled } from '../email/client';
 import { json, methodNotAllowed, notFound } from '../responses';
@@ -7,7 +7,7 @@ import type { RouteContext } from './context';
 const VERSION = /^\d+\.\d+\.\d+$/;
 
 // What the CLI learns about a host (docs/specs/015-api/blueprints/cli.md "Capabilities", CLI9 to CLI13): where
-// the api answers, whether sign-in exists, the OAuth server when it is an https origin, the document format
+// the api answers, whether sign-in exists, the OAuth server when it is an https origin, the project format
 // stored, and the version floor when one is set.
 function cliCapabilities({ env, url }: RouteContext) {
   const issuer = (() => {
@@ -23,7 +23,7 @@ function cliCapabilities({ env, url }: RouteContext) {
     apiBase: `${url.origin}/api`,
     authEnabled: Boolean(env.CLERK_JWKS_URL),
     ...(issuer ? { oauthIssuer: issuer } : {}),
-    documentFormat: DOCUMENT_FORMAT,
+    projectFormat: PROJECT_FORMAT,
     ...(minVersion && VERSION.test(minVersion) ? { cli: { minVersion } } : {}),
   };
 }

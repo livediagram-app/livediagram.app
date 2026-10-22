@@ -5,7 +5,7 @@ Derived from [Corner radius](../corner-radius.md). Defaults in [DEFAULTS.md](DEF
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/border-style.ts
+// packages/project/src/border-style.ts
 export const CORNER_RADIUS_MAX_SHARE = 0.25;
 export function cornerRadiusPx(
   preset: BorderRadius | undefined,
@@ -28,11 +28,11 @@ export function cornerRadiusPx(
 | -------------------------------------------------------------------------- | ----------------------------------------- |
 | `apps/live/components/canvas/element-variant.ts`                           | 8 (`DEFAULT_BOX_RADIUS_PX`), 12 mind node |
 | `apps/live/components/canvas/BoxedElementView.tsx` (dashed-border overlay) | 8, 12 mind node                           |
-| `packages/document/src/svg-render-border.ts` (`borderOf`)                  | `DEFAULT_BOX_RADIUS_PX`                   |
-| `packages/document/src/svg-render-describe.ts`                             | 4 (images)                                |
-| `packages/document/src/svg-render-web.ts`                                  | the caller's fallback                     |
-| `packages/document/src/svg-render.ts`                                      | 12 (mind node)                            |
-| `packages/document/src/shape-hit.ts`                                       | `CSS_DEFAULT_RADIUS_PX`                   |
+| `packages/project/src/svg-render-border.ts` (`borderOf`)                  | `DEFAULT_BOX_RADIUS_PX`                   |
+| `packages/project/src/svg-render-describe.ts`                             | 4 (images)                                |
+| `packages/project/src/svg-render-web.ts`                                  | the caller's fallback                     |
+| `packages/project/src/svg-render.ts`                                      | 12 (mind node)                            |
+| `packages/project/src/shape-hit.ts`                                       | `CSS_DEFAULT_RADIUS_PX`                   |
 
 The PNG export rasterises the SVG export, so it follows. Web component faces whose sub-boxes (a stat
 row's cards) are smaller than the element pass the sub-box size.
@@ -45,9 +45,9 @@ See the quick style blueprint's "Corners row".
 
 | Rule                                                                   | Test                                                                          |
 | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| Quarter cap, presets, fallback, Full exempt, None 0, broken sides      | `packages/document/src/corner-radius.test.ts`                                 |
+| Quarter cap, presets, fallback, Full exempt, None 0, broken sides      | `packages/project/src/corner-radius.test.ts`                                 |
 | Shorter side at least 4x the preset: unchanged, every preset           | same                                                                          |
-| SVG export and hit outline use the rule (small rounded square)         | `packages/document/src/corner-radius-renderers.test.ts`, `svg-render.test.ts` |
+| SVG export and hit outline use the rule (small rounded square)         | `packages/project/src/corner-radius-renderers.test.ts`, `svg-render.test.ts` |
 | Canvas variant uses the rule (presets, kind defaults, Full, mind node) | `apps/live/components/canvas/element-variant.test.ts`                         |
 
 ## Constants and configuration

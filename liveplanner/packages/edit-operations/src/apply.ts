@@ -10,7 +10,7 @@ import {
   invertElementOps,
   type ElementId,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { finalise } from './finalise';
 import { applyAdd } from './operations/add';
 import { applyAddKind } from './operations/add-kind';

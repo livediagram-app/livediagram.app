@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { applied, lines, refused } from '../fixtures/outcomes';
 import { elementOf, flowWith, lockedFlow, run } from '../fixtures/run';
 

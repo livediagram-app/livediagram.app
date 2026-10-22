@@ -41,16 +41,16 @@ test.describe('explorer sidebar', () => {
 
     await expect(nav(page).getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);
     expect(await rowNames(page, 'Overview')).toEqual(['Home', 'Inbox', 'Shared With Me']);
-    // A guest on a deployment without sign-in: My Documents only, no teams, no New Team.
-    expect((await rowNames(page, 'Spaces'))[0]).toBe('My Documents');
+    // A guest on a deployment without sign-in: My Projects only, no teams, no New Team.
+    expect((await rowNames(page, 'Spaces'))[0]).toBe('My Projects');
     await expect(row(page, 'New Team')).toHaveCount(0);
     // This Browser holds nothing yet, so it is hidden.
     expect(await rowNames(page, 'More')).toEqual(['Library', 'Trash']);
-    // My Documents starts open on its root folders: no Unsorted or Generated bucket.
-    const myDocuments = row(page, 'My Documents');
+    // My Projects starts open on its root folders: no Unsorted or Generated bucket.
+    const myProjects = row(page, 'My Projects');
     await expect(row(page, 'Projects')).toBeVisible();
-    await expect(myDocuments).toHaveAttribute('aria-expanded', 'true');
-    const children = await myDocuments
+    await expect(myProjects).toHaveAttribute('aria-expanded', 'true');
+    const children = await myProjects
       .locator(':scope > [role="group"] > [role="treeitem"]')
       .evaluateAll((els) => els.map((el) => el.getAttribute('data-tree-label')));
     expect(children).toEqual(['Projects']);
@@ -114,7 +114,7 @@ test.describe('explorer sidebar', () => {
     expectNoPageErrors(pageErrors);
   });
 
-  test('shows This Browser while it holds a document', async ({ page, pageErrors }) => {
+  test('shows This Browser while it holds a project', async ({ page, pageErrors }) => {
     await darkVisitor(page, await mintSignedGuest(page.request));
     // Seeded through the store the app upgrades on load (e2e/legacy-offline-store.spec.ts).
     await page.goto('/icon.svg');
@@ -204,7 +204,7 @@ test.describe('editor Explorer panel', () => {
     await page.addInitScript(() => localStorage.setItem('liveplanner:v2:tour-seen', '1'));
     const id = crypto.randomUUID();
     const make = async (docId: string, name: string) => {
-      const res = await page.request.post(`${apiBase}/documents`, {
+      const res = await page.request.post(`${apiBase}/projects`, {
         headers: ownerHeaders(owner, { Origin: origin }),
         data: { id: docId, name, tabs: [{ id: crypto.randomUUID(), name: 'Tab 1', elements: [] }] },
       });
@@ -212,19 +212,19 @@ test.describe('editor Explorer panel', () => {
     };
     await make(id, 'Open one');
     await make(crypto.randomUUID(), 'Another');
-    await page.goto(`/document/${id}`);
+    await page.goto(`/project/${id}`);
     await page.getByRole('button', { name: 'Explorer', exact: true }).click();
     const rail = page.getByRole('navigation', { name: 'Explorer sections' });
     await expect(rail.getByRole('button', { name: 'Home' })).toBeVisible({ timeout: 30_000 });
     await expect(rail.getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);
-    // Opens on Home; My Documents lists its documents as rows, the open one current.
+    // Opens on Home; My Projects lists its projects as rows, the open one current.
     await expect(rail.getByRole('button', { name: 'Home' })).toHaveAttribute(
       'aria-current',
       'true',
     );
-    await rail.getByRole('button', { name: 'My Documents' }).click();
+    await rail.getByRole('button', { name: 'My Projects' }).click();
     // The pane's list (the header's title is a button of the same name).
-    const list = page.getByRole('list', { name: 'My Documents' });
+    const list = page.getByRole('list', { name: 'My Projects' });
     await expect(list.getByRole('button', { name: 'Another', exact: true })).toBeVisible();
     await expect(list.getByRole('button', { name: 'Open one', exact: true })).toHaveAttribute(
       'aria-current',
@@ -237,7 +237,7 @@ test.describe('editor Explorer panel', () => {
     await page.keyboard.press('Enter');
     // Shared With Me, now current.
     await expect(page.getByRole('heading', { name: 'Shared With Me', exact: true })).toBeVisible();
-    await expect(page).toHaveURL(new RegExp(`/document/${id}`));
+    await expect(page).toHaveURL(new RegExp(`/project/${id}`));
     // The product's links live in the panel's footer, not the header.
     await expect(
       page.getByRole('navigation', { name: 'Go to' }).getByRole('link', { name: 'Help' }),

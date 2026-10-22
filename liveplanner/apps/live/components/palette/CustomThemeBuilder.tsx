@@ -20,7 +20,7 @@ import {
   shade,
   tint,
   type ShapeKind,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { CustomThemeDefinition } from '@liveplanner/api-schema';
 import { Button } from '@liveplanner/ui';
 import { materialiseCustomTheme } from '@/lib/custom-theme-registry';

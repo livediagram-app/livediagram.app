@@ -8,7 +8,7 @@
 // (components/panels/VotePanel.tsx): turnout, the rules in force, the results.
 
 import { useState, type ReactNode } from 'react';
-import { VOTE_DOTS_RANGE } from '@liveplanner/document';
+import { VOTE_DOTS_RANGE } from '@liveplanner/project';
 import { ToggleSwitch } from '@/components/palette/palette-controls';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
 import { StudioButton, StudioLabel, StudioSegmented } from './studio-ui';

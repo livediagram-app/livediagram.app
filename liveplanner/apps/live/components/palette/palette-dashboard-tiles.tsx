@@ -20,7 +20,7 @@ import {
   SHEET_METRICS,
   type FormMetricKind,
   type SheetMetricKind,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { FORM_METRIC_LINES, FORM_METRIC_NAMES, SHEET_METRIC_NAMES } from '@liveplanner/plan-art';
 import {
   DASHBOARD_CARD_KINDS,
@@ -171,13 +171,13 @@ const CARD_TILE_INFO: Record<DashboardCardKind, { description: string; icon: Rea
   },
   links: {
     description:
-      'A short list of labelled links: the repo, the spec, the design, or this document’s tabs.',
+      'A short list of labelled links: the repo, the spec, the design, or this project’s tabs.',
     icon: <LinksGlyph />,
   },
 };
 
 // The cards a Dashboard takes besides a note (docs/specs/026-plan/plan-tabs.md "Cards"): written on the page itself
-// rather than read from the document's work. The Title also sits in Layout, as a section's heading.
+// rather than read from the project's work. The Title also sits in Layout, as a section's heading.
 export const DASHBOARD_CARD_TILES: PaletteTileDef[] = DASHBOARD_CARD_KINDS.map((card) => ({
   id: `dashboard:card-${card}`,
   section: card === 'title' ? 'dashboard-layout' : 'dashboard-cards',
@@ -190,7 +190,7 @@ export const DASHBOARD_CARD_TILES: PaletteTileDef[] = DASHBOARD_CARD_KINDS.map((
 }));
 
 // Add to Slot's From a Sheet (docs/specs/026-plan/plan-tabs.md "Figures from a Sheet"): a figure read live from one of
-// the document's Sheets. Not in any palette category (Plan shows none): Add to Slot reads them.
+// the project's Sheets. Not in any palette category (Plan shows none): Add to Slot reads them.
 // Each figure's name, shared with its picture in an image export.
 export { FORM_METRIC_NAMES, SHEET_METRIC_NAMES };
 const SHEET_METRIC_LINES: Record<SheetMetricKind, string> = {
@@ -253,7 +253,7 @@ export const DASHBOARD_SHEET_TILES: PaletteTileDef[] = [
   },
 ];
 
-// Add to Slot's Form Metrics (docs/specs/026-plan/plan-tabs.md "Form Metrics"): a figure from one of the document's
+// Add to Slot's Form Metrics (docs/specs/026-plan/plan-tabs.md "Form Metrics"): a figure from one of the project's
 // forms, offered only while it has one. Not in any palette category: Add to Slot reads them.
 const ResponsesGlyph = lucideGlyph(lucideClipboardList, 18);
 const FormStatusGlyph = lucideGlyph(lucideCircleCheck, 18);

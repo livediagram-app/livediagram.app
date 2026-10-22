@@ -12,7 +12,7 @@ import {
   type ArrowElement,
   type ArrowLabelLayout,
   type Rect,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { sameLabelRender, type ArrowLabelRender } from '@/hooks/canvas/useArrowLabelLayouts';
 import type { ArrowEnd } from '@/lib/canvas';
 import { sameArrowViewFrame, sameRects, type ArrowViewFrame } from './arrow-view-frame';

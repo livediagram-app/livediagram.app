@@ -1,7 +1,7 @@
 // Cell comments on the grid (docs/specs/029-sheets/sheet.md "Cell comments"): which cells show a marker, where,
 // and what the hover preview says. Pure; the markers are worked out once per change to the threads or the layout
 // (a WeakMap on both), so a scroll frame or a hover reads a ready list.
-import type { CellCommentThreads, Comment } from '@liveplanner/document';
+import type { CellCommentThreads, Comment } from '@liveplanner/project';
 import { cellKey, layoutIndex, type SheetLayout } from '@liveplanner/sheets';
 
 // The comment colour: a marker's triangle (Tailwind amber-500).

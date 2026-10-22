@@ -3,7 +3,7 @@
 // Home's data (docs/specs/013-workspace/explorer-home.md; blueprint
 // docs/specs/013-workspace/blueprints/explorer-home-view.md "useHome").
 //
-// One read draws the first screen (GET /api/home); this browser's own opens of its local documents
+// One read draws the first screen (GET /api/home); this browser's own opens of its local projects
 // are read beside it and placed by the same Within reach rule. A failed read is an error, never an empty Home: "we could not
 // ask" and "there is nothing" are different answers (docs/specs/013-workspace/timeline.md §2.4).
 // The read moves the unread mark on the server, so a successful one clears the badge.
@@ -11,7 +11,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { HomeGroup } from '@liveplanner/api-schema';
 import { apiReadHome } from '@/lib/api-client';
-import { offlineListOpens, type LocalOpenDocument } from '@/lib/offline/offline-opens';
+import { offlineListOpens, type LocalOpenProject } from '@/lib/offline/offline-opens';
 import { track } from '@/lib/telemetry';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { jumpBackInSet, type JumpBackInSet } from './home-model';
@@ -46,7 +46,7 @@ function browserTimeZone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 }
 
-async function localOpens(): Promise<LocalOpenDocument[]> {
+async function localOpens(): Promise<LocalOpenProject[]> {
   try {
     return await offlineListOpens();
   } catch (err) {

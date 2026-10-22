@@ -66,7 +66,7 @@ describe('SignInBanner', () => {
   });
 
   // docs/specs/004-interface-design/toasts.md "Placement": the toasts stand on the banner while it shows, rather
-  // than landing on its words ("Document deleted · Undo" did). Its card is bottom chrome, and it says when it comes
+  // than landing on its words ("Project deleted · Undo" did). Its card is bottom chrome, and it says when it comes
   // and goes so a toast already up moves with it.
   it('is bottom chrome the toasts stand on, and says when it comes and goes', () => {
     const heard = vi.fn();

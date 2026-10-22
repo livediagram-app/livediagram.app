@@ -1,13 +1,13 @@
 # Edit operations: blueprint
 
 Derived from [Edit operations](../edit-operations.md), with the changeset body and limits of
-[Agent changesets](../agent-changesets.md), the refs and containment of [Document views](../document-views.md),
+[Agent changesets](../agent-changesets.md), the refs and containment of [Project views](../project-views.md),
 the `replace` inputs and normalisation of
 [MCP server](../../015-api/mcp-server.md) §4.4, §4.7 and §4.7a, and the token style of
 [Explorer filters](../../013-workspace/explorer-filters.md). The spec decides; this file only adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as
 `EOn`. Refs, slug ids, kind tokens, containment and the content origin are the shared modules the
-[Document views](document-views.md) blueprint defines in `@liveplanner/document`; this file consumes them.
+[Project views](project-views.md) blueprint defines in `@liveplanner/project`; this file consumes them.
 
 Scope, by file:
 
@@ -41,18 +41,18 @@ Scope, by file:
 | `packages/edit-operations/src/rejections.ts`                                      | `rejection` builders per code, `formatRejections`                                                                                                                   |
 | `packages/edit-operations/src/fixtures/checkout-flow.ts`, `run.ts`, `outcomes.ts` | The research's checkout tab (`n1` to `n8`, `t1`, `a1` to `a7`) plus a frame `f2`; a line-form runner; outcome readers                                               |
 | `packages/edit-operations/src/invariants.test.ts`, `performance.test.ts`          | I1 to I7 over one changeset per operation; cost growth with the tab and the changeset                                                                               |
-| `packages/document/src/element-normalise.ts` (+ test)                             | moved from `apps/mcp/src/`: `normaliseElement(s)`, `lanesToFront`, `mergeElementUpdate`                                                                             |
-| `packages/document/src/graph-input.ts` (+ test)                                   | moved from `apps/mcp/src/`: `GRAPH_LABEL_MAX`, `capLabel`, `layoutGraph`, `resolveGraphInput`                                                                       |
-| `packages/document/src/tab-builders.ts` (+ test)                                  | moved from `apps/mcp/src/`: `applyLayout`, `buildTab`, `buildGraphTab`                                                                                              |
-| `packages/templates/src/template-tab.ts` (+ test)                                 | `buildTemplateTab`, `resolveTemplate`, `validTemplateKinds`: the template builders, in `templates` because it imports `document` (EO1)                              |
-| `packages/document/src/element-fields.ts` (+ test)                                | `ELEMENT_FIELD_NAMES`: every stored field per element type, compile-time exhaustive                                                                                 |
-| `packages/document/src/validate.ts` (+ test)                                      | `elementValidationIssue(el)` names the field and rule; `isValidElement` delegates to it                                                                             |
-| `packages/document/src/containment.ts` (+ test)                                   | Shared: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin`; this blueprint adds `isContainer` and `containerContents`              |
-| `packages/document/src/element-refs.ts` (+ test)                                  | Shared: `SLUG_ID_PATTERN`, `isSlugId`, `slugIdFor`, `REF_MIN_LENGTH`, `computeRefs`, `RefTable`, `resolveRef`, `kindWordOf`                                         |
-| `packages/document/src/auto-layout.ts` (+ test)                                   | `flowDirectionOf`: the direction `autoLayoutElements` detects, named by `layout`'s result line                                                                      |
-| `packages/document/src/element-ops.ts` (+ test)                                   | `applyElementOps` writes runs of updates through an id index: exactly the sequential reduce, linear in the changeset                                                |
-| `packages/document/src/auto-layout-shared.ts`, `auto-layout-clusters.ts`          | Export `LAYER_GAP`, `SIBLING_GAP`, `FRAME_PAD`, `FRAME_TOP` through `index.ts`                                                                                      |
-| `packages/document/src/index.ts`, `packages/templates/src/index.ts`               | Re-export the moved and new modules                                                                                                                                 |
+| `packages/project/src/element-normalise.ts` (+ test)                             | moved from `apps/mcp/src/`: `normaliseElement(s)`, `lanesToFront`, `mergeElementUpdate`                                                                             |
+| `packages/project/src/graph-input.ts` (+ test)                                   | moved from `apps/mcp/src/`: `GRAPH_LABEL_MAX`, `capLabel`, `layoutGraph`, `resolveGraphInput`                                                                       |
+| `packages/project/src/tab-builders.ts` (+ test)                                  | moved from `apps/mcp/src/`: `applyLayout`, `buildTab`, `buildGraphTab`                                                                                              |
+| `packages/templates/src/template-tab.ts` (+ test)                                 | `buildTemplateTab`, `resolveTemplate`, `validTemplateKinds`: the template builders, in `templates` because it imports `project` (EO1)                              |
+| `packages/project/src/element-fields.ts` (+ test)                                | `ELEMENT_FIELD_NAMES`: every stored field per element type, compile-time exhaustive                                                                                 |
+| `packages/project/src/validate.ts` (+ test)                                      | `elementValidationIssue(el)` names the field and rule; `isValidElement` delegates to it                                                                             |
+| `packages/project/src/containment.ts` (+ test)                                   | Shared: `boxCentre`, `boxHoldsPoint`, `smallestHolder`, `deriveContainers`, `contentOrigin`; this blueprint adds `isContainer` and `containerContents`              |
+| `packages/project/src/element-refs.ts` (+ test)                                  | Shared: `SLUG_ID_PATTERN`, `isSlugId`, `slugIdFor`, `REF_MIN_LENGTH`, `computeRefs`, `RefTable`, `resolveRef`, `kindWordOf`                                         |
+| `packages/project/src/auto-layout.ts` (+ test)                                   | `flowDirectionOf`: the direction `autoLayoutElements` detects, named by `layout`'s result line                                                                      |
+| `packages/project/src/element-ops.ts` (+ test)                                   | `applyElementOps` writes runs of updates through an id index: exactly the sequential reduce, linear in the changeset                                                |
+| `packages/project/src/auto-layout-shared.ts`, `auto-layout-clusters.ts`          | Export `LAYER_GAP`, `SIBLING_GAP`, `FRAME_PAD`, `FRAME_TOP` through `index.ts`                                                                                      |
+| `packages/project/src/index.ts`, `packages/templates/src/index.ts`               | Re-export the moved and new modules                                                                                                                                 |
 | `apps/mcp/src/tools.ts`, `schema.ts`, `changeset-client.ts`                       | Import the moved modules; `ops` mode resolves an `elementId` as an id or a ref and targets it by `id:"…"`                                                           |
 | `apps/api/src/changesets/request.ts`                                              | `operations` as a JSON array or the line form as a string, parsed with the engine's log                                                                             |
 | `apps/live/lib/canvas.ts`                                                         | `withFrameContents` and `isFrameEl` removed; `framesFirst` reads `isContainer`                                                                                      |
@@ -79,7 +79,7 @@ Scope, by file:
 | Content origin     | `contentOrigin(tab)` (shared)                       | The point coordinates shown and taken are relative to                                                                        |
 | Field              | `fields` member, `FieldValue`                       | A key and its value; `null` unsets                                                                                           |
 | Field alias        | `FIELD_ALIASES`                                     | A spec-named key (`label`, `note`, `shape`, `fill`, `text`, `line`) or a view's style key (`stroke`, `text-color`, `border`) |
-| Live field         | `LIVE_ELEMENT_FIELDS` (`@liveplanner/document`)     | A multi-writer field that travels as a delta; never written by an operation                                                  |
+| Live field         | `LIVE_ELEMENT_FIELDS` (`@liveplanner/project`)     | A multi-writer field that travels as a delta; never written by an operation                                                  |
 | Theme slot         | `fillSlotNames`, `resolveColourValue`               | `theme` or one of the theme's six quick-swatch hues, written as a binding                                                    |
 | Container          | `isContainer` (frame or lane)                       | A shape whose box holds members                                                                                              |
 | Member, membership | `deriveContainers` (shared) over `smallestHolder`   | An element and the smallest frame or lane holding its centre                                                                 |
@@ -378,7 +378,7 @@ originY, fixedSizeIds })`, origin the selection's bounding-box top-left, every s
 
 ### Carry
 
-`containerContents(elements, ids) → Set<ElementId>` in `packages/document/src/containment.ts`, the one rule for
+`containerContents(elements, ids) → Set<ElementId>` in `packages/project/src/containment.ts`, the one rule for
 what travels with a moved frame or lane, called by the editor's drag (`useBoxedDragHandlers`) and by `move` and
 make room here:
 
@@ -440,8 +440,8 @@ On the working state, in order:
 ### Replace
 
 `applyReplace(tab | null, body, options)` builds the next tab as the MCP does and returns the same outcome shape
-(EO41). The api's `POST /api/documents` compiles each `template` tab through it with
-`tab === null`, and a changeset with a `replace` body on a tab id the document lacks creates that tab.
+(EO41). The api's `POST /api/projects` compiles each `template` tab through it with
+`tab === null`, and a changeset with a `replace` body on a tab id the project lacks creates that tab.
 
 - `elements`: `normaliseElements`, shape kinds coerced, `applyLayout(body.layout, elements)`, then `buildTab`'s
   facing bends (`withFacingBends`, [Layout cleanup](../../008-canvas/layout-cleanup.md) "Angled lines bend twice")
@@ -629,8 +629,8 @@ Text, two spaces after the ref, `·` between changes:
 
 Footer (`formatResultFooter`), composed by the api or the CLI from what only they know:
 
-- Write: `rev 41→42 · cs_8k2m4q7d1x · revert: liveplanner changeset revert <documentId> cs_8k2m4q7d1x`
-  (the document's full id, so the command resolves without a search);
+- Write: `rev 41→42 · cs_8k2m4q7d1x · revert: liveplanner changeset revert <projectId> cs_8k2m4q7d1x`
+  (the project's full id, so the command resolves without a search);
   rebased: `rev 41→44 · rebased over 3 writes · cs_… · …`.
 - Dry run: `dry run · rev 41 · nothing written` (EO44).
 
@@ -640,7 +640,7 @@ Footer (`formatResultFooter`), composed by the api or the CLI from what only the
 | ---------------------------------- | --------- | ----------------------------------------------------------------------------------------- |
 | `EditOperation`                    | transient | Parsed per request; the changeset record stores what the changesets blueprint names       |
 | `elementOps`, `inverse`            | derived   | JSON-serialisable `ElementOp[]`; stored and relayed by the changeset pipeline             |
-| New elements                       | content   | Written in the current `DOCUMENT_FORMAT` (`normaliseElement` packs stroke points)         |
+| New elements                       | content   | Written in the current `PROJECT_FORMAT` (`normaliseElement` packs stroke points)         |
 | `fillSwatch` on a slot             | content   | The quick-style binding the editor re-derives on a theme change (`rederiveQuickSwatches`) |
 | `results`, `targets`, `createdIds` | derived   | Recomputed on every apply; never stored by the engine                                     |
 
@@ -750,7 +750,7 @@ Worst case: `MAX_ELEMENTS_PER_TAB` (10,000) elements, `CHANGESET_MAX_OPERATIONS`
 
 ## Observability
 
-The engine logs through `options.log` (no logger, no logs); the api passes one that prefixes the document, tab
+The engine logs through `options.log` (no logger, no logs); the api passes one that prefixes the project, tab
 and changeset ids. Fields are counts, codes and names only.
 
 | Fingerprint                   | When                                         | Fields                                                               |
@@ -790,7 +790,7 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 | `set` changes the named fields; `key=` unsets; no geometry but widen-to-fit                                              | `packages/edit-operations/src/operations/set.test.ts`, `labels.test.ts`                                                               |
 | `rm` removes pinned arrows and lists them; `keep-arrows` frees their ends                                                | `packages/edit-operations/src/operations/rm.test.ts`                                                                                  |
 | `move`: pinned arrows follow; a frame or lane carries its members; membership changes reported                           | `packages/edit-operations/src/operations/move.test.ts`                                                                                |
-| The centre rule decides what a moved container carries: straddling boxes, nested containers, free arrows, smallest owner | `packages/document/src/containment.test.ts` › "containerContents"                                                                     |
+| The centre rule decides what a moved container carries: straddling boxes, nested containers, free arrows, smallest owner | `packages/project/src/containment.test.ts` › "containerContents"                                                                     |
 | A person dragging a frame or lane carries exactly what `move` carries                                                    | `apps/live/hooks/canvas/useEditorDrag.frames.test.tsx`                                                                                |
 | `connect`: pinned, anchors facing; second arrow needs `again`, else `arrow_exists`; `rewire` moves one end               | `packages/edit-operations/src/operations/connect.test.ts`                                                                             |
 | Locks: a locked tab, element or layer refuses with `element_locked`; make room passes locked units by                    | `locks.test.ts`, `invariants.test.ts` › "no locked element changes", `make-room.test.ts` › "passes a locked unit by"                  |
@@ -820,11 +820,11 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 | `too_large` over `CHANGESET_MAX_OPERATIONS`                                                                              | `parse.test.ts` › "caps the line length, the operation count"                                                                         |
 | Cost grows linearly with the tab and with the changeset                                                                  | `performance.test.ts`                                                                                                                 |
 | `replace` from template, dashboard, form, elements                                                                       | `replace.test.ts`                                                                                                                     |
-| Moved MCP modules behave as before                                                                                       | `packages/document/src/{element-normalise,graph-input,tab-builders}.test.ts`                                                          |
-| Every stored field listed per type                                                                                       | `packages/document/src/element-fields.test.ts` (plus the compile-time `satisfies`)                                                    |
-| Validation names the field and rule                                                                                      | `packages/document/src/validate.test.ts` › "elementValidationIssue"                                                                   |
-| Refs, slugs, kind words, containment, origin (the document-views blueprint's tests; `isContainer` here)                  | `packages/document/src/{element-refs,containment}.test.ts`                                                                            |
-| Batched element ops equal the sequential reduce                                                                          | `packages/document/src/element-ops.test.ts` › "applyElementOps, batched"                                                              |
+| Moved MCP modules behave as before                                                                                       | `packages/project/src/{element-normalise,graph-input,tab-builders}.test.ts`                                                          |
+| Every stored field listed per type                                                                                       | `packages/project/src/element-fields.test.ts` (plus the compile-time `satisfies`)                                                    |
+| Validation names the field and rule                                                                                      | `packages/project/src/validate.test.ts` › "elementValidationIssue"                                                                   |
+| Refs, slugs, kind words, containment, origin (the project-views blueprint's tests; `isContainer` here)                  | `packages/project/src/{element-refs,containment}.test.ts`                                                                            |
+| Batched element ops equal the sequential reduce                                                                          | `packages/project/src/element-ops.test.ts` › "applyElementOps, batched"                                                              |
 | Observability: each fingerprint fires with its fields and no content                                                     | `apply.test.ts` › "logs" (a recording `log`), `make-room.test.ts` › "logs what it shifted"                                            |
 
 ## Constants and configuration
@@ -837,8 +837,8 @@ Every suite uses `packages/edit-operations/src/fixtures/checkout-flow.ts` and a 
 | `PLACEMENT_GAP_MAX`        | 2,000                     | Larger reads as a separate drawing (EO23)                                             | 500 to 10,000   |
 | `INSERT_MIN_GAP`           | 16                        | Below it boxes read as touching (EO32)                                                | 8 to 40         |
 | `FRAME_PAD`, `FRAME_TOP`   | 32, 64                    | The clustered layout's frame padding and header band                                  | 16 to 96        |
-| `SLUG_ID_PATTERN`          | `^[a-z][a-z0-9_-]{0,23}$` | [Document views](../document-views.md), from `@liveplanner/document`                  | fixed           |
-| `REF_MIN_LENGTH`           | 4                         | [Document views](../document-views.md), from `@liveplanner/document`                  | fixed           |
+| `SLUG_ID_PATTERN`          | `^[a-z][a-z0-9_-]{0,23}$` | [Project views](../project-views.md), from `@liveplanner/project`                  | fixed           |
+| `REF_MIN_LENGTH`           | 4                         | [Project views](../project-views.md), from `@liveplanner/project`                  | fixed           |
 | `EDIT_LINE_MAX_CHARS`      | 16,384                    | A 4,000-character code value with escapes and its other fields fits (EO3)             | 8,192 to 65,536 |
 | `EDIT_MAX_ERRORS`          | 10                        | Enough to fix a batch of typos in one round (EO7)                                     | 1 to 50         |
 | `REJECTION_CANDIDATES_MAX` | 10                        | A readable list; the rest counted (EO45)                                              | 5 to 25         |

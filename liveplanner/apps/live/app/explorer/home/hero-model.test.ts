@@ -17,22 +17,22 @@ describe('heroGreeting', () => {
 });
 
 describe('heroPills', () => {
-  it('counts the documents and says how the Inbox stands', () => {
-    expect(heroPills({ documents: 1, inbox: 0 })).toEqual([
-      { id: 'documents', label: '1 document', tone: 'emerald' },
+  it('counts the projects and says how the Inbox stands', () => {
+    expect(heroPills({ projects: 1, inbox: 0 })).toEqual([
+      { id: 'projects', label: '1 project', tone: 'emerald' },
       { id: 'inbox', label: 'Inbox is clear', tone: 'sky' },
     ]);
-    expect(heroPills({ documents: 9, inbox: 3 }).map((p) => p.label)).toEqual([
-      '9 documents',
+    expect(heroPills({ projects: 9, inbox: 3 }).map((p) => p.label)).toEqual([
+      '9 projects',
       '3 open in your Inbox',
     ]);
-    expect(heroPills({ documents: 0, inbox: 1 })[0]!.label).toBe('0 documents');
+    expect(heroPills({ projects: 0, inbox: 1 })[0]!.label).toBe('0 projects');
   });
 
   it('draws a pill only once its count is known', () => {
-    expect(heroPills({ documents: undefined, inbox: undefined })).toEqual([]);
-    expect(heroPills({ documents: undefined, inbox: 0 }).map((p) => p.id)).toEqual(['inbox']);
-    expect(heroPills({ documents: 2, inbox: undefined }).map((p) => p.id)).toEqual(['documents']);
+    expect(heroPills({ projects: undefined, inbox: undefined })).toEqual([]);
+    expect(heroPills({ projects: undefined, inbox: 0 }).map((p) => p.id)).toEqual(['inbox']);
+    expect(heroPills({ projects: 2, inbox: undefined }).map((p) => p.id)).toEqual(['projects']);
   });
 });
 

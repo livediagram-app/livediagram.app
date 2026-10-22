@@ -6,7 +6,7 @@
 // (before the done column when the board ends with one). The section stays open, so several can be added in a row;
 // the one just added fades in. At 12 columns the picker gives way to a note. Each add is one element edit.
 import { useEffect, useMemo, useState } from 'react';
-import type { ShapeElement } from '@liveplanner/document';
+import type { ShapeElement } from '@liveplanner/project';
 import {
   PLAN_COLUMNS_MAX,
   missingBoardStatuses,
@@ -47,7 +47,7 @@ export function BoardColumnsSection({
   onClose,
 }: {
   element: ShapeElement;
-  // Whether the section is open: the document's statuses are worked out only while it is.
+  // Whether the section is open: the project's statuses are worked out only while it is.
   open?: boolean | undefined;
   // Closes whatever holds the section, as a row hands over to the column's own settings.
   onClose?: (() => void) | undefined;

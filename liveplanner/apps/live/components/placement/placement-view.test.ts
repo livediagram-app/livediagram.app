@@ -5,7 +5,7 @@ import { placementViewFor as viewFor, type PlacementSpaces } from './placement-v
 const placementViewFor = (placement: string, s: PlacementSpaces) =>
   viewFor(parsePlacement(placement), s);
 
-// Where the placement browser opens for a selection (docs/specs/006-document/save-locations.md,
+// Where the placement browser opens for a selection (docs/specs/006-project/save-locations.md,
 // "It opens where its selection is"): at the level that lists the selected folder.
 
 const FOLDERS: PickerFolder[] = [
@@ -29,7 +29,7 @@ const spaces = (over: Partial<PlacementSpaces> = {}): PlacementSpaces => ({
 const ids = (stack: PickerFolder[]) => stack.map((f) => f.id);
 
 describe('placementViewFor', () => {
-  it('opens the overview for the My Documents root', () => {
+  it('opens the overview for the My Projects root', () => {
     expect(placementViewFor('unsorted', spaces())).toEqual({ space: null, stack: [] });
   });
 
@@ -37,7 +37,7 @@ describe('placementViewFor', () => {
     expect(placementViewFor('team:t1', spaces())).toEqual({ space: null, stack: [] });
   });
 
-  it('opens My Documents at its root for a top-level folder', () => {
+  it('opens My Projects at its root for a top-level folder', () => {
     const view = placementViewFor('folder:loose', spaces());
     expect(view.space).toBe('personal-space');
     expect(ids(view.stack)).toEqual([]);
@@ -87,7 +87,7 @@ describe('placementViewFor', () => {
     expect(ids(placementViewFor('team:t1:folder:sprints', scoped).stack)).toEqual(['design']);
   });
 
-  it('never opens My Documents on a surface that does not offer it', () => {
+  it('never opens My Projects on a surface that does not offer it', () => {
     expect(placementViewFor('folder:workshops', spaces({ showPersonal: false }))).toEqual({
       space: 't1',
       stack: [],

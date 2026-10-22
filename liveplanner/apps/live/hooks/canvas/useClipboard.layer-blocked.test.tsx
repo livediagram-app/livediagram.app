@@ -1,14 +1,14 @@
 // @vitest-environment jsdom
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Element, StickyElement } from '@liveplanner/document';
+import type { Element, StickyElement } from '@liveplanner/project';
 import { serialiseElements } from '@/lib/clipboard-payload';
-import { blockedLayerMessage } from '@/app/document/[id]/useLayersState';
+import { blockedLayerMessage } from '@/app/project/[id]/useLayersState';
 import { useClipboard } from './useClipboard';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn(), titleCaseType: (s: string) => s }));
 
-// docs/specs/006-document/layers.md: while the active layer is hidden or locked,
+// docs/specs/006-project/layers.md: while the active layer is hidden or locked,
 // element creation is blocked. A paste creates elements, so it is refused, and
 // says why (a keystroke has nothing else on screen to show it was ignored).
 

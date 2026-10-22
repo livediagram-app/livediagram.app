@@ -1,74 +1,74 @@
 // account — owner-wide deletion + guest->authed owner-id migration.
-// These touch every table keyed (directly or via document_id) on an
+// These touch every table keyed (directly or via project_id) on an
 // owner, so they live together rather than under any one resource.
 
 import { deleteTimelineForOwner, migrateTimelineOwner } from './timeline';
 import { deleteCollabIndexForOwner, recordOwnerAlias } from './collab-index';
-import { deleteDocumentOpensForOwner, migrateDocumentOpens } from './document-opens';
-import { snapshotKeys } from './documents';
-import { documentRemovalStatements } from './document-removal';
+import { deleteProjectOpensForOwner, migrateProjectOpens } from './project-opens';
+import { snapshotKeys } from './projects';
+import { projectRemovalStatements } from './project-removal';
 import { purgeRooms } from '../room-purge-client';
 import { detachUserFromTeams } from './teams';
 import { migrateTagStatements } from './tags';
 import type { Env } from '../types';
 
 // R2 batch delete takes at most 1000 keys per call. An owner has no hard
-// cap on document count, so chunk the snapshot-key deletes to stay under
+// cap on project count, so chunk the snapshot-key deletes to stay under
 // it.
 const R2_DELETE_CHUNK = 1000;
 
 // Wipe every row belonging to a given owner: every owner-keyed table in
 // docs/specs/015-api/api.md "Owner-keyed data", AND the R2 snapshot objects
-// (docs/specs/006-document/document-snapshots.md). account-owner-columns.test.ts holds
+// (docs/specs/006-project/project-snapshots.md). account-owner-columns.test.ts holds
 // both functions here to that list against the real schema. Called from
 // DELETE /api/account when the user opts in via the "Delete account"
-// dialog. The documents go through documentRemovalStatements, which drops
-// the tabs (and their history) no other owner's document still holds;
-// share links and the other per-document rows cascade from `documents.id`.
+// dialog. The projects go through projectRemovalStatements, which drops
+// the tabs (and their history) no other owner's project still holds;
+// share links and the other per-project rows cascade from `projects.id`.
 // Folders carry their own owner_id and need their
 // own DELETE. Participants are owner-less in the schema but their id
 // IS the owner id, so a single id-match delete clears the display-
 // name / colour row too.
 //
-// Returns `{ documents, folders }` change counts for the
+// Returns `{ projects, folders }` change counts for the
 // caller's log line. Idempotent: re-running with the same owner id is a
 // no-op once the rows are gone.
 export async function deleteAccount(
   env: Env,
   ownerId: string,
-): Promise<{ documents: number; folders: number }> {
-  // Teams first (docs/specs/013-workspace/teams.md/35): transfer the user's team-library documents
+): Promise<{ projects: number; folders: number }> {
+  // Teams first (docs/specs/013-workspace/teams.md/35): transfer the user's team-library projects
   // to a remaining member, drop their memberships (promoting a new
   // admin when they were the last one), and delete teams they were the
-  // last joined member of. MUST run before the documents DELETE below —
+  // last joined member of. MUST run before the projects DELETE below —
   // that wipe would otherwise destroy shared team work, and the dead
   // Clerk id would linger as a ghost (or sole-admin-blocking) member.
   await detachUserFromTeams(env, ownerId);
-  // Document SVG snapshots (docs/specs/006-document/document-snapshots.md) live in R2 under thumb/<documentId>,
-  // keyed off the document id rather than carried on a D1 row, so the
+  // Project SVG snapshots (docs/specs/006-project/project-snapshots.md) live in R2 under thumb/<projectId>,
+  // keyed off the project id rather than carried on a D1 row, so the
   // cascade can't reach them. Enumerate the
-  // owner's document ids while the rows still exist, then bulk-delete
-  // their snapshot objects before the documents DELETE drops the ids.
-  const documentRows = await env.DB.prepare('SELECT id FROM documents WHERE owner_id = ?')
+  // owner's project ids while the rows still exist, then bulk-delete
+  // their snapshot objects before the projects DELETE drops the ids.
+  const projectRows = await env.DB.prepare('SELECT id FROM projects WHERE owner_id = ?')
     .bind(ownerId)
     .all<{ id: string }>();
-  const documentIds = (documentRows.results ?? []).map((r) => r.id);
+  const projectIds = (projectRows.results ?? []).map((r) => r.id);
   if (env.SNAPSHOTS) {
-    const thumbKeys = documentIds.flatMap(snapshotKeys);
+    const thumbKeys = projectIds.flatMap(snapshotKeys);
     for (let i = 0; i < thumbKeys.length; i += R2_DELETE_CHUNK) {
       await env.SNAPSHOTS.delete(thumbKeys.slice(i, i + R2_DELETE_CHUNK));
     }
   }
-  // Link-aware (docs/specs/006-document/tab-document-many-to-many.md): a tab
-  // shared into a document someone else owns stays there.
+  // Link-aware (docs/specs/006-project/tab-project-many-to-many.md): a tab
+  // shared into a project someone else owns stays there.
   const removal = await env.DB.batch(
-    documentRemovalStatements(env, { column: 'owner_id', value: ownerId }),
+    projectRemovalStatements(env, { column: 'owner_id', value: ownerId }),
   );
-  const documentsRes = removal[removal.length - 1]!;
+  const projectsRes = removal[removal.length - 1]!;
   // Their rooms' storage goes with them (the ledger keeps comment and idea text). Best effort.
-  await purgeRooms(env, documentIds);
+  await purgeRooms(env, projectIds);
   // Personal folders only. A team folder carries its creator's owner_id but
-  // belongs to the team (access is by membership), and teammates' documents
+  // belongs to the team (access is by membership), and teammates' projects
   // sit in it: deleting it dropped them out of the team library behind a
   // dangling folder_id. That includes teams this user LEFT earlier, which
   // detachUserFromTeams no longer sees.
@@ -105,38 +105,38 @@ export async function deleteAccount(
   // notify_email_claims (docs/specs/012-collaboration/comment-mentions.md "The email"): the claims of the
   // mention and action-assigned emails they sent. Hashes only, but keyed on their id.
   await env.DB.prepare('DELETE FROM notify_email_claims WHERE sender_id = ?').bind(ownerId).run();
-  // shared_with rows POINTING AT this owner's documents die with the
-  // documents (FK cascade), but the rows this owner accumulated by
-  // visiting OTHER people's documents are keyed on their owner_id and
+  // shared_with rows POINTING AT this owner's projects die with the
+  // projects (FK cascade), but the rows this owner accumulated by
+  // visiting OTHER people's projects are keyed on their owner_id and
   // need their own DELETE — same table migrateOwnerId already handles.
   await env.DB.prepare('DELETE FROM shared_with WHERE owner_id = ?').bind(ownerId).run();
   // favourites (docs/specs/013-workspace/favourites.md): the same split as
-  // shared_with. Stars on this owner's documents cascade; the stars they put on
-  // teammates' and other people's documents are theirs and go here.
+  // shared_with. Stars on this owner's projects cascade; the stars they put on
+  // teammates' and other people's projects are theirs and go here.
   await env.DB.prepare('DELETE FROM favourites WHERE owner_id = ?').bind(ownerId).run();
-  // tags (docs/specs/013-workspace/tags.md): every tag they made; the links, on anyone's documents, cascade.
+  // tags (docs/specs/013-workspace/tags.md): every tag they made; the links, on anyone's projects, cascade.
   await env.DB.prepare('DELETE FROM tags WHERE owner_id = ?').bind(ownerId).run();
   // form_reads (docs/specs/030-forms/forms.md "Hearing about responses"): what they had seen of other people's forms;
-  // reads of forms on their own documents cascade with the documents.
+  // reads of forms on their own projects cascade with the projects.
   await env.DB.prepare('DELETE FROM form_reads WHERE owner_id = ?').bind(ownerId).run();
   // placement_defaults (docs/specs/013-workspace/default-folders.md): no foreign key reaches them.
   await env.DB.prepare('DELETE FROM placement_defaults WHERE owner_id = ?').bind(ownerId).run();
   // agent_changesets (docs/specs/024-agents/agent-changesets.md, CS27): the ones they wrote on other
-  // people's documents; those on their own went with the documents. Parts follow by cascade.
+  // people's projects; those on their own went with the projects. Parts follow by cascade.
   await env.DB.prepare('DELETE FROM agent_changesets WHERE author_id = ?').bind(ownerId).run();
   // timeline (docs/specs/013-workspace/timeline.md §3.5): the feed, the events this owner authored,
   // and the scope-state row. Hard, not soft — soft delete is a
   // user-facing affordance in this product, never a retention strategy.
   await deleteTimelineForOwner(env, ownerId);
   // Activity (docs/specs/013-workspace/inbox.md): the alias rows + the backfill stamp. The index
-  // rows themselves went with the tabs documentRemovalStatements dropped above.
+  // rows themselves went with the tabs projectRemovalStatements dropped above.
   await deleteCollabIndexForOwner(env, ownerId);
   // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): this owner's opens. Other
-  // people's opens of this owner's documents went with the documents (foreign key cascade);
-  // the document_opened events went with deleteTimelineForOwner above.
-  await deleteDocumentOpensForOwner(env, ownerId);
+  // people's opens of this owner's projects went with the projects (foreign key cascade);
+  // the project_opened events went with deleteTimelineForOwner above.
+  await deleteProjectOpensForOwner(env, ownerId);
   return {
-    documents: documentsRes.meta.changes ?? 0,
+    projects: projectsRes.meta.changes ?? 0,
     folders: foldersRes.meta.changes ?? 0,
   };
 }
@@ -146,57 +146,57 @@ export async function deleteAccount(
 // `toOwnerId`. Called
 // from POST /api/migrate when a guest signs up: their localStorage
 // participant id moves to their Clerk userId so the new account sees
-// the documents, folders, shared-with-them list and editor preferences
+// the projects, folders, shared-with-them list and editor preferences
 // they built as a guest.
 //
-// shared_with's primary key is (owner_id, document_id), so a naive
+// shared_with's primary key is (owner_id, project_id), so a naive
 // UPDATE could PK-collide if the visitor accepted the same share
 // link both as a guest AND, later in the same session, as Clerk
 // (recordSharedAccess upserts a row each time). INSERT OR IGNORE
 // then DELETE handles both cases in one shot: copy guest rows to
-// the Clerk userId, skip rows where (clerkId, documentId) already
+// the Clerk userId, skip rows where (clerkId, projectId) already
 // exists, then drop every leftover guest row. The skipped Clerk
 // rows keep the role + last_seen they already had (which is the
 // more recent of the two paths the user actually used).
 //
 // Other tables (`share_links`, `tabs`) don't carry
-// their own owner_id, they link via `document_id` which is
-// owner-bound, so updating the documents cascade-fixes them
+// their own owner_id, they link via `project_id` which is
+// owner-bound, so updating the projects cascade-fixes them
 // implicitly.
 //
-// Returns `{ documents, folders, shared }`. Idempotent:
+// Returns `{ projects, folders, shared }`. Idempotent:
 // re-running with the same `fromOwnerId` is a no-op once the rows
 // have moved.
 export async function migrateOwnerId(
   env: Env,
   fromOwnerId: string,
   toOwnerId: string,
-): Promise<{ documents: number; folders: number; shared: number }> {
+): Promise<{ projects: number; folders: number; shared: number }> {
   // One batch: one round trip, and all or nothing, where it was a round trip per statement and a failure
   // part-way left a half-moved account. No foreign key reads an owner column, so only each table's own order
   // matters, and the batch keeps it: each INSERT OR IGNORE copy before its DELETE.
   const now = Date.now();
   const move = (sql: string, ...binds: unknown[]) => env.DB.prepare(sql).bind(...binds);
   const statements = {
-    documents: move('UPDATE documents SET owner_id = ? WHERE owner_id = ?', toOwnerId, fromOwnerId),
+    projects: move('UPDATE projects SET owner_id = ? WHERE owner_id = ?', toOwnerId, fromOwnerId),
     folders: move('UPDATE folders SET owner_id = ? WHERE owner_id = ?', toOwnerId, fromOwnerId),
     // tab_id carried too: a tab-scoped visit (docs/specs/013-workspace/tab-scoped-share-links.md) stays
     // scoped to its tab once its visitor signs up; a NULL would read as an All-tabs visit.
     shared: move(
-      `INSERT OR IGNORE INTO shared_with (owner_id, document_id, role, level, last_seen, tab_id, share_code)
-       SELECT ?, document_id, role, level, last_seen, tab_id, share_code
+      `INSERT OR IGNORE INTO shared_with (owner_id, project_id, role, level, last_seen, tab_id, share_code)
+       SELECT ?, project_id, role, level, last_seen, tab_id, share_code
        FROM shared_with
        WHERE owner_id = ?`,
       toOwnerId,
       fromOwnerId,
     ),
     sharedDrop: move('DELETE FROM shared_with WHERE owner_id = ?', fromOwnerId),
-    // A visit is to someone else's document. The guest may have visited one the account owns, and
+    // A visit is to someone else's project. The guest may have visited one the account owns, and
     // the account may have visited one the guest owned (now the account's): either way the visit
-    // would list the account's own document under its "Shared with you", so drop it.
+    // would list the account's own project under its "Shared with you", so drop it.
     sharedOwn: move(
       `DELETE FROM shared_with WHERE owner_id = ?1
-         AND document_id IN (SELECT id FROM documents WHERE owner_id = ?1)`,
+         AND project_id IN (SELECT id FROM projects WHERE owner_id = ?1)`,
       toOwnerId,
     ),
     // user_preferences (docs/specs/007-editor/user-preferences.md): same INSERT OR IGNORE pattern as
@@ -215,12 +215,12 @@ export async function migrateOwnerId(
     ),
     prefsDrop: move('DELETE FROM user_preferences WHERE owner_id = ?', fromOwnerId),
     // favourites (docs/specs/013-workspace/favourites.md): the primary key is
-    // (owner_id, document_id), and both identities may have starred the same
-    // document, so INSERT OR IGNORE then DELETE like shared_with. A collision
+    // (owner_id, project_id), and both identities may have starred the same
+    // project, so INSERT OR IGNORE then DELETE like shared_with. A collision
     // keeps the account's star and its original created_at.
     favourites: move(
-      `INSERT OR IGNORE INTO favourites (owner_id, document_id, created_at)
-       SELECT ?, document_id, created_at
+      `INSERT OR IGNORE INTO favourites (owner_id, project_id, created_at)
+       SELECT ?, project_id, created_at
        FROM favourites
        WHERE owner_id = ?`,
       toOwnerId,
@@ -271,7 +271,7 @@ export async function migrateOwnerId(
     ),
     participantDrop: move('DELETE FROM participants WHERE id = ?', fromOwnerId),
     // custom_themes (docs/specs/011-theme/custom-themes.md): move the guest's saved themes onto the
-    // authed identity so the documents that reference them keep their look
+    // authed identity so the projects that reference them keep their look
     // after sign-up. Plain UPDATE — the id is the PK (no per-owner unique
     // constraint to collide on), so no OR IGNORE needed.
     themes: move(
@@ -300,11 +300,11 @@ export async function migrateOwnerId(
   // read matches both. Cheaper and safer than touching every tab.
   await recordOwnerAlias(env, toOwnerId, fromOwnerId);
   // Explorer Home (docs/specs/013-workspace/explorer-home.md "Opens"): the guest's opens follow
-  // them, and a document opened under both identities keeps both histories.
-  const opens = await migrateDocumentOpens(env, fromOwnerId, toOwnerId);
+  // them, and a project opened under both identities keeps both histories.
+  const opens = await migrateProjectOpens(env, fromOwnerId, toOwnerId);
   console.info(`home: opens-migrated moved=${opens.moved} merged=${opens.merged}`);
   return {
-    documents: changes('documents'),
+    projects: changes('projects'),
     folders: changes('folders'),
     shared: changes('shared'),
   };

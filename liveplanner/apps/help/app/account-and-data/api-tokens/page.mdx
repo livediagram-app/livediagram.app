@@ -34,7 +34,7 @@ The token's secret is shown **once**, right after you create it. Copy it then wi
 
 ## What a token can do, and for how long
 
-- **Access:** a token has your account's full read + write access to documents and folders, including your [teams'](/help/collaboration/teams/) shared libraries. It can't **manage** teams (invites, roles, joining) or your account: those need you signed in to the app. Tokens created in Settings are always full read-write; a token minted when you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) can be read-only if you switch on **Read-only access** on the approval page, and such tokens show a **Read-only** badge in the list here.
+- **Access:** a token has your account's full read + write access to projects and folders, including your [teams'](/help/collaboration/teams/) shared libraries. It can't **manage** teams (invites, roles, joining) or your account: those need you signed in to the app. Tokens created in Settings are always full read-write; a token minted when you [connect an AI tool](/help/account-and-data/connect-ai-mcp/) can be read-only if you switch on **Read-only access** on the approval page, and such tokens show a **Read-only** badge in the list here.
 - **Lifetime:** every token lasts **six months**, then expires. There is no never-expires option. Rotate by creating a fresh token before the old one lapses.
 - **Limit:** you can have up to **10** tokens at once. Revoke one to free a slot. An expired token stays in the list until you revoke it, and Settings still counts it toward the ten, so revoke expired tokens to make room.
 
@@ -43,14 +43,14 @@ The token's secret is shown **once**, right after you create it. Copy it then wi
 Send the token as a **bearer header** to the API, which lives under `/api` on your liveplanner host (`https://liveplanner.app/api` on the hosted service):
 
 ```bash
-# List your documents
-curl https://liveplanner.app/api/documents \
+# List your projects
+curl https://liveplanner.app/api/projects \
   -H "Authorization: Bearer lvd_your_token_here"
 ```
 
-Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A few rules are particular to tokens: edits go through changesets rather than whole-tab saves, a token can't delete a document's last tab, and each token has its own rate limits. Keep the `Authorization` header on each request; there is no separate login step.
+Every request authenticated this way acts as your account, with the same read and write access you have in the editor. A few rules are particular to tokens: edits go through changesets rather than whole-tab saves, a token can't delete a project's last tab, and each token has its own rate limits. Keep the `Authorization` header on each request; there is no separate login step.
 
-For what you can call and how, see the [Developers](/help/developers/api-overview/) section: [Authentication](/help/developers/authentication/), [worked examples](/help/developers/working-with-documents/), and [errors and rate limits](/help/developers/errors-and-rate-limits/). The full machine-readable reference is published at `/api/openapi.json`.
+For what you can call and how, see the [Developers](/help/developers/api-overview/) section: [Authentication](/help/developers/authentication/), [worked examples](/help/developers/working-with-projects/), and [errors and rate limits](/help/developers/errors-and-rate-limits/). The full machine-readable reference is published at `/api/openapi.json`.
 
 ## Viewing and revoking tokens
 

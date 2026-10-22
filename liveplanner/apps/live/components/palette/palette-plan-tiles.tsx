@@ -75,7 +75,7 @@ export const PLAN_BOARD_TILES: {
   {
     preset: 'all-cards',
     caption: 'All Cards',
-    description: 'Every card in the document, a row per status: nothing lost between boards.',
+    description: 'Every card in the project, a row per status: nothing lost between boards.',
   },
 ];
 
@@ -98,7 +98,7 @@ export const PLAN_TILES: PaletteTileDef[] = [
 ];
 
 // A card tile for an item type (docs/specs/026-plan/item-types.md "Where types show"): the built-in
-// ones above, and the Cards category's tiles for a document's own catalogue.
+// ones above, and the Cards category's tiles for a project's own catalogue.
 export function planCardTile(t: ItemTypeDef): PaletteTileDef {
   return {
     id: `plan:card-${t.id}`,

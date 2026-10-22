@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { debugLog } from '@/lib/debug-log';
 
 // An element dialog (the link picker, the cell link picker, line data, code, Sankey Flows, Sequence, the image

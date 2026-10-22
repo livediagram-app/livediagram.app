@@ -22,7 +22,7 @@ export function TabLockIcon() {
 export const TabNotSharedIcon = lucideGlyph(lucideEyeOff, 12);
 
 export const FolderMenuIcon = lucideGlyph(lucideFolder, MENU_ICON_PX);
-// Add the tab to another document.
+// Add the tab to another project.
 export const MoveIcon = lucideGlyph(lucideFileInput, MENU_ICON_PX);
 // Clear the tab's contents.
 export const ClearIcon = lucideGlyph(lucideBrushCleaning, MENU_ICON_PX);

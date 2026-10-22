@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { templateTabName } from './template-tab-name';
 
 // docs/specs/007-editor/templates-by-mode.md "The tab's name".

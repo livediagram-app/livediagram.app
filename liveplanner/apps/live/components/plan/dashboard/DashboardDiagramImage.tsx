@@ -1,11 +1,11 @@
 'use client';
 
 // A Diagram slot's drawing (DashboardDiagramView): the tab drawn as the editor shows it (useTabSvg: the export
-// renderer, in this person's appearance, with its photos and the document's cards), handed to an image as SVG, so it
+// renderer, in this person's appearance, with its photos and the project's cards), handed to an image as SVG, so it
 // scales to fit the slot, never runs anything, and costs the page one element however big the diagram. Re-encoded
 // only when the drawing changes (useTabSvg defers a burst of edits).
 import { useMemo } from 'react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { useTabSvg } from '@/components/split/useTabSvg';
 
 export function DashboardDiagramImage({ tab }: { tab: Tab }) {

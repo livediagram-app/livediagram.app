@@ -1,6 +1,6 @@
 # Plan board
 
-A **Plan board** is one element on the canvas that frames the document's [items](items.md) as columns of cards:
+A **Plan board** is one element on the canvas that frames the project's [items](items.md) as columns of cards:
 a Kanban board, a sprint board, a retro. The board holds only its **set-up** (its columns, how it groups, what it
 shows); the cards on it are drawn from the item store. Moving a card changes the item, so every other board that
 shows the item, and every collaborator, sees it move.
@@ -78,11 +78,11 @@ Stored on the element, shared by everyone, undone like any element edit:
   **Review**; Sprint's **Sprint Backlog**, **In Progress**, **In Review**; Bug Triage's **Won't Fix**; Retro's
   **Went Well**, **To Improve**). Status ids are unchanged, so cards already in them stay put.
 - A name the person types (renaming a column, naming a new status in the column picker, the empty board's first
-  column) is saved in Title Case. A status picked from the ones the document already has keeps its name as it
+  column) is saved in Title Case. A status picked from the ones the project already has keeps its name as it
   is. A status with no name on the tab reads as its id in Title Case ("in-review~ab12" is "In Review").
 - A column's settings open with the caret in its name on a desktop. On a phone (a bottom sheet) focus stays off the
   name, so no keyboard rises over the settings, except for a column just added, which opens there to be named.
-- Names already stored in documents are not rewritten: an older board keeps "To do" until someone renames it.
+- Names already stored in projects are not rewritten: an older board keeps "To do" until someone renames it.
 
 Where each is set, so a setting lives with what it changes, never in one central panel:
 
@@ -104,7 +104,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   cards are in {Name}, on every board that shows it. Where should they go?", and two option cards, one picked:
   **Move to Another Column** (a menu of the board's other columns, the first picked; the default) or **Move to the
   Trash** ("You can restore them from the Trash."). **Delete Status** in it (a bin) moves the cards as picked,
-  then removes the column, and the state's column from every other board in the document; **Cancel** or Escape
+  then removes the column, and the state's column from every other board in the project; **Cancel** or Escape
   keeps it. Moving to the Trash moves every card of that state and announces "N cards moved to the Trash"; a card
   whose type leaves out the target column's state stays, as a move does. A state that holds no card is deleted
   at once. The board's last column cannot be removed. Each change applies as it is made. **+ Add Column After**
@@ -130,7 +130,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   (above). Under a hairline, the **column picker** (below) inline, its button reading **Add** (still named Add
   Column): a column it adds goes at the end, or before the done column when the board ends with it, and the section
   stays open so several can be added in a row; the row just added is tinted in the brand colour for a moment
-  (1.6 s) as it fades in. At 12 columns the picker gives way to "A board holds up to 12 columns." The document's
+  (1.6 s) as it fades in. At 12 columns the picker gives way to "A board holds up to 12 columns." The project's
   statuses are worked out only while the section is open. Each add is one board change, one undo step, with the
   picker's telemetry. Editor only: someone who may not edit sees no cog and no menu.
 - **Card types a board shows**: the Cards menu's **Card Types** row, a row per card type ticked on or off in an [option list](#option-lists) (none
@@ -156,7 +156,7 @@ Where each is set, so a setting lives with what it changes, never in one central
   (`aria-current="step"`); a done step's circle holds a tick, the line up to the current step is filled in the brand
   colour, and a done step is a button back to it (pointer, focus ring); a step ahead is muted and not a button. It
   fits a phone's width without cutting a name.
-  1. **Card Types**: an [option list](#option-lists), a row per card type of the document (its glyph on a tint of its colour, its name, a tick when
+  1. **Card Types**: an [option list](#option-lists), a row per card type of the project (its glyph on a tint of its colour, its name, a tick when
      on), none on to start (run again on a set-up board, the types it shows); **Select All** and **Clear**; under the list **Add New Card Type** (a dashed full-width button, while the catalogue has room) opens the type editor, and a type made there joins the list already ticked; a count ("Every card type, 5 in all", "3 of 5 card types").
      **Next: Columns** needs at least one. A hairline sits under the step tiles.
   2. **Columns**: the columns chosen so far, top to bottom as the board will show them left to right, each a row
@@ -166,7 +166,7 @@ Where each is set, so a setting lives with what it changes, never in one central
      it, Escape puts it back; Alt+Up and Alt+Down on a grip move it by keyboard. Its heading counts them with a count badge. Then **Add a New State**, a name field
      and **Add** (Enter adds too): a name matching an existing state uses it ("Uses the existing To Do state, so its
      cards show here."), one already chosen is refused ("That column is already on the board."). Then **Use an
-     Existing State**, an [option list](#option-lists) with a row per status the document has that is not chosen, listed exactly as
+     Existing State**, an [option list](#option-lists) with a row per status the project has that is not chosen, listed exactly as
      the column picker's Existing Statuses (the same statuses, order, colour swatch, "On Sprint, Roadmap" or "Not on
      any board", and card count of the card types chosen in step 1; named "Add {State}"), one to a row, with
      **Add All**. At 12 columns adding stops ("A board holds up to 12 columns."). **Back** returns to step 1 with
@@ -192,11 +192,11 @@ Where each is set, so a setting lives with what it changes, never in one central
 - **The column picker** is how a column is added to a board that has columns (a column's **+ Add Column After**, or
   the board's **Columns** section;
   a board with none uses Setup Board, above):
-  - **Existing statuses**: the statuses the document knows that this board has no column for. Known is: a
-    status any board in the document names as a column (on any tab; All Cards and Archive boards aside), a status
+  - **Existing statuses**: the statuses the project knows that this board has no column for. Known is: a
+    status any board in the project names as a column (on any tab; All Cards and Archive boards aside), a status
     a card is in (out of the Trash) though no board names it, and a card type's Default State that neither names.
     One per name (ignoring case, spacing and punctuation; a name this board already has as a column is left out
-    too). Ordered as the document's boards give them (the open tab's first, then tab, board and column order),
+    too). Ordered as the project's boards give them (the open tab's first, then tab, board and column order),
     then the ones only cards are in, by name, then the card types' Default States, in catalogue order. A status no
     board names reads as its id in Title Case.
   - **The field**: one field, **Add Column** beside it. With existing statuses it is labelled **Add a Column**
@@ -230,7 +230,7 @@ Where each is set, so a setting lives with what it changes, never in one central
     brand tint; row colour changes are instant under reduced motion.
 - **Every board shows every card**: there is no per-board filter by type or label; a board shows every item whose
   status is one of its columns, and counts the rest as not on it.
-- **One name, one status**: a document never has two statuses of the same name (compared as the column picker
+- **One name, one status**: a project never has two statuses of the same name (compared as the column picker
   compares them, ignoring case, spacing and punctuation). A board placed from the palette gives a column the status
   the tab's boards already have of that name, so its cards show there too, and a status of its own (the column's
   status and a short suffix, `todo~k3f9`) only to a name no status has yet. A board's first column, typed on an
@@ -239,8 +239,8 @@ Where each is set, so a setting lives with what it changes, never in one central
   status holds cards, or the board already has a column for that status, the rename is refused and the name put
   back, with a note under it: "A {Name} state already exists. Add it from Add Column, so its cards show here."
   Boards from a template keep the template's statuses, and come with no cards.
-  Whatever brings two states of one name into a document (a template's tab added beside a board, a pasted or
-  agent-written board, a document from before this rule), they **merge** into the first, in tab, board and
+  Whatever brings two states of one name into a project (a template's tab added beside a board, a pasted or
+  agent-written board, a project from before this rule), they **merge** into the first, in tab, board and
   column order, so every client keeps the same one: each board takes the kept state (a board holding both keeps
   the earlier column and drops the later), and the cards in the other, and a trashed card's state to restore
   to, move to it, as one write. It is done by someone who may edit, once every tab and the cards have loaded,
@@ -300,7 +300,7 @@ A board can group its rows by one field of its cards (`swimlaneBy: 'field'` with
 id), so a field added to a type (a Project's **Customer**) can set the rows straight away.
 
 - **Which fields**: every custom field of a kind that groups (Choice, Checkbox, Number, Date, Text, Card) on any type in
-  the document's catalogue, and the built-in **Labels**, **Estimate**, **Start Date** and **Due Date**. Long
+  the project's catalogue, and the built-in **Labels**, **Estimate**, **Start Date** and **Due Date**. Long
   text and Link never group (each value is its own row), nor do Description, Checklist, Votes and Title.
   Assignee, Type, Priority and Status keep their own tiles. A **Card** field (Parent among them) gives a row per
   linked card, named by its title with the linked card's colour dot when it has a Colour, in the linked cards' number
@@ -336,9 +336,9 @@ id), so a field added to a type (a Project's **Customer**) can set the rows stra
 
 ## All Cards
 
-- An **All Cards** board (the Boards category's All Cards tile) shows every card in the document that is not
+- An **All Cards** board (the Boards category's All Cards tile) shows every card in the project that is not
   archived, whatever its status, in its one column, a **swimlane per status**. A status row is named by the
-  column that has it on a board of the document (the open tab's boards first, then each other tab's, in board
+  column that has it on a board of the project (the open tab's boards first, then each other tab's, in board
   and column order), else by the status itself; every status
   a board names has a row, empty or not. Cards with no status sit under "No status".
 - With no cards and no statuses yet it shows a single "No status" row, never a nameless one; with every row shut,
@@ -378,7 +378,7 @@ In Plan mode:
   else (the canvas included, mouse, pen or touch) or a wheel or trackpad pan outside it closes it. There is no typed title: the new card opens at once in its panel with its title selected, so
   typing names it (see **Open an item**).
 - **Add New Card Type**: under the rows, the menu ends in **Add New Card Type**, for someone who may edit while the catalogue has room for another type. It closes the menu and opens the type editor
-  on a new type whose statuses are only this board's columns' (every other status of the document turned off), so
+  on a new type whose statuses are only this board's columns' (every other status of the project turned off), so
   its cards fit the board. Saving it adds it to this board's card types when the board takes a chosen few (a board
   that takes every type already shows it); closing the editor makes nothing. Telemetry: `Plan` · `Added` ·
   `CardType`, as any new type.
@@ -434,7 +434,7 @@ In Plan mode:
   - **Moving between cards** keeps the panel open: it changes card in place, without opening again, and each card
     starts on its own first tab.
   - **Labels** are coloured chips in one field (each label keeps its colour everywhere: a 12% tint of it, inked with
-    70% of it mixed toward the page's ink, dark in light mode and white in dark, which reads at 4.5:1 for every swatch), with the document's
+    70% of it mixed toward the page's ink, dark in light mode and white in dark, which reads at 4.5:1 for every swatch), with the project's
     other labels offered as it is typed in; Backspace in an empty field takes the last one off.
   - **Checklist**: a progress bar and "2 of 5" over its steps; each step's text is edited in place, ticked with
     a rounded box, and taken off with ×; **Add a step** keeps its place for the next.
@@ -653,7 +653,7 @@ for a moment at most ([Maximised board](#maximised-board)).
 - **An old board's stored flag** (`fillTab: true` on its set-up, from before Board tabs) is still read: such a board
   fills its tab as a Board tab's does. Nothing sets it any more, and nothing offers to turn it off; converting an old
   Plan tab makes it a Board tab ([Converting old Plan tabs](plan-tabs.md#converting-old-plan-tabs)).
-- **Filled**: whenever the tab is shown (opening the document, switching to the tab, a reload, a collaborator's or
+- **Filled**: whenever the tab is shown (opening the project, switching to the tab, a reload, a collaborator's or
   a share link's view), the board is drawn over the canvas area as a maximised board is (its header holding the top
   row where there is room), in Plan mode. The editor's header, tab bar, footer and panels stay, so the person can
   move between tabs; the board sits clear of them. It appears at once (no grow). There is no Maximise/Restore, no
@@ -677,7 +677,7 @@ for a moment at most ([Maximised board](#maximised-board)).
 ## CSV
 
 A board's cards go out to a CSV file from a **Board tab's** Export dialog (its **CSV** format,
-[Export](plan-tabs.md#export)) and come in from its tab menu's **Import CSV…**, in place of the document's Import
+[Export](plan-tabs.md#export)) and come in from its tab menu's **Import CSV…**, in place of the project's Import
 ([Board tab and Sheet tab](plan-tabs.md#board-tab-and-sheet-tab)). The files are read and written by the Sheet's CSV reader and writer
 ([CSV](../029-sheets/sheet.md#csv)): RFC 4180 quoting both ways, a comma (or a tab, when the first line holds one; a semicolon when it holds semicolons
 and no comma).
@@ -721,18 +721,18 @@ to import. Import CSV reads files up to 5 MB." Each row after it becomes a new c
 - A field the row's type does not offer is ignored, as is a value that does not fit its field.
 
 The rows go in as **one write and one undo step**, each card at the end of its column in file order. At most as many
-as the document still has room for (its card limit) are added; the rest are skipped. The board then says what
+as the project still has room for (its card limit) are added; the rest are skipped. The board then says what
 happened: "Added 12 cards", "Added 12 cards; skipped 3 rows", or why nothing was added ("No Title column in the
 file", "No cards to add"). Telemetry: `Plan` · `Imported` · `Csv` when a file is read, `Plan` · `Exported` · `Csv` on
 a download.
 
 ## Deleting a board
 
-A board's cards are the document's, so deleting a board leaves them. But when the delete takes the last board showing
+A board's cards are the project's, so deleting a board leaves them. But when the delete takes the last board showing
 some card types, an Editor is offered, optionally, to tidy those away too, as deleting a Sheet offers its cells:
 
 - **Which types**: those the deleted boards show (the types their Card Types name, every type when they name none) that
-  no other board in the document shows, on any tab, a Dashboard's included. An Archive board counts as showing every
+  no other board in the project shows, on any tab, a Dashboard's included. An Archive board counts as showing every
   type (it lists any card), as does a board not yet set up; while another board shows every type, nothing is offered.
 - **The question** ("Delete Its Cards Too?"): "No other board shows Task and Bug. Delete the Task and Bug card types
   too? Their 5 cards go to the Trash, where they can be restored." (one type: "Its"; no cards: "No cards use it.").
@@ -756,7 +756,7 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
   any element. Two presses at one spot within the double-press window count (`usePressWithoutDrag` with
   `requireDouble`), not the browser's `dblclick`, so a tap works as a click does. A press that travels past the press
   slop moves the card and counts for nothing.
-- When its item is not in the document's store (deleted, or the tab came from another document) it draws "Item
+- When its item is not in the project's store (deleted, or the tab came from another project) it draws "Item
   not found" in a dashed outline and offers to remove the card.
 
 ## A state no board names
@@ -817,7 +817,7 @@ some card types, an Editor is offered, optionally, to tidy those away too, as de
 
 - Both are general-tab elements: they exist in every mode and in exports, and only input differs by mode.
 - In exports, thumbnails and api or MCP images the board draws its header, columns and card faces from the
-  document's items, without the interactive controls.
+  project's items, without the interactive controls.
   - Each card face follows its type's Display at the board's card size, as the canvas does
     ([Item types](item-types.md) "Card display"): Minimal one line, Compact a title over one row, Detailed a header,
     the title on up to three lines, what sits under it and a footer. A built-in field shows only when the board's card

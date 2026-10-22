@@ -31,7 +31,7 @@ describe('status names', () => {
 describe('a placed board', () => {
   const random = () => 0.5;
 
-  it('takes the statuses the document already has by name, and its own for the rest', () => {
+  it('takes the statuses the project already has by name, and its own for the rest', () => {
     const board = freshBoardSetup('kanban', random, [['todo~zz', 'Todo']]);
     const todo = board.columns.find((c) => c.name === 'To Do')!;
     expect(todo.status).toBe('todo~zz');
@@ -45,7 +45,7 @@ describe('a placed board', () => {
   });
 });
 
-// docs/specs/026-plan/plan-board.md "One name, one state": a document's duplicate states merge into the first.
+// docs/specs/026-plan/plan-board.md "One name, one state": a project's duplicate states merge into the first.
 describe('merging duplicate states', () => {
   const names: [string, string][] = [
     ['todo', 'To Do'],

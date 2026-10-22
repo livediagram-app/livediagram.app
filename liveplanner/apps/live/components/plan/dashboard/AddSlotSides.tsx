@@ -13,7 +13,7 @@ import {
   DASHBOARD_SLOTS_MAX,
   insertDashboardRow,
   insertDashboardSlot,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useDashboard } from './dashboard-context';
 
 type Side = 'left' | 'right' | 'above' | 'below';

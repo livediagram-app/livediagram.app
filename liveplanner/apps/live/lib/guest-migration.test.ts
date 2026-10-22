@@ -16,7 +16,7 @@ const {
   subscribeGuestMigration,
 } = await import('./guest-migration');
 
-const MIGRATED = { documents: 1, folders: 0, shared: 0, images: 0 };
+const MIGRATED = { projects: 1, folders: 0, shared: 0, images: 0 };
 
 beforeEach(() => {
   localStorage.clear();
@@ -109,8 +109,8 @@ describe('settleGuestMigration', () => {
 
 // The React Compiler memoises a render-time `guestMigrationPending(userId)` on its
 // argument, so the hook can only see the pending state change through a store
-// notification: signing in with a guest document open otherwise held the editor
-// on "Opening your document" until a refresh.
+// notification: signing in with a guest project open otherwise held the editor
+// on "Opening your project" until a refresh.
 describe('subscribeGuestMigration', () => {
   it('notifies once the migration settles', async () => {
     setGuestIdentity('guest-1', 'sig-1');

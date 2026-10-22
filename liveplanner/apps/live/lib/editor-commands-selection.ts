@@ -1,11 +1,11 @@
-import { SHAPE_MARKERS, type ShapeMarker } from '@liveplanner/document';
+import { SHAPE_MARKERS, type ShapeMarker } from '@liveplanner/project';
 import type { CommandContext, CommandHandlers, EditorCommand } from './editor-commands';
 
 // COMMANDS THAT ACT ON WHAT IS SELECTED (docs/specs/007-editor/command-palette.md's search palette).
 //
 // Split out of buildEditorCommands, which was one 250-line function assembling
 // every command in the editor. This is the block that depends on the
-// SELECTION rather than on the document, the tab or the history: duplicate,
+// SELECTION rather than on the project, the tab or the history: duplicate,
 // delete, lock, reorder, rotate, note, comment, animation, and the status
 // markers.
 //

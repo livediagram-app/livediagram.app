@@ -10,18 +10,18 @@ vi.mock('next/dynamic', () => ({
     return null;
   },
 }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({
+vi.mock('@/app/project/[id]/EditorContext', () => ({
   useEditorContext: () => ({
     searchOpen: true,
-    documentList: [],
+    projectList: [],
     folders: [{ id: 'f 1', name: 'Plans' }],
-    sharedDocuments: [],
+    sharedProjects: [],
     teams: [],
     teamFolders: [],
-    teamDocuments: [],
+    teamProjects: [],
     tabs: [],
     activeId: 't1',
-    openDocument: vi.fn(),
+    openProject: vi.fn(),
     setActiveId: vi.fn(),
     setSelectedId: vi.fn(),
     isReadOnly: true,

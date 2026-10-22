@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { TabVote } from '@liveplanner/document';
+import type { TabVote } from '@liveplanner/project';
 import {
   clampTimerMinutes,
   dialAngle,

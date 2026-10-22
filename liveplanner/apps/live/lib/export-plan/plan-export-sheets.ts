@@ -8,7 +8,7 @@ import {
   type Element,
   type SheetRenderModel,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { renderFrameWindow, sheetContentSize, sheetFramesOf } from '@liveplanner/sheets';
 import type { SheetStore } from '@/components/sheets/sheet-store-client';
 import { sheetMetricShown } from '@/components/plan/dashboard/sheet-metric-shown';

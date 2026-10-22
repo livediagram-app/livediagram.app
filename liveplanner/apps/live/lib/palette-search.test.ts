@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { SHAPE_KINDS } from '@liveplanner/document';
+import { SHAPE_KINDS } from '@liveplanner/project';
 
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
 import { buildPaletteSearchItems } from '@/lib/palette-search';

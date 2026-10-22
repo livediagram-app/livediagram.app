@@ -1,20 +1,20 @@
 import { describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import type { DatabaseSync } from 'node:sqlite';
-import { DOCUMENT_CONVERSION_HEADER } from '@liveplanner/api-schema';
+import { PROJECT_CONVERSION_HEADER } from '@liveplanner/api-schema';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { upsertTab } from '../db/tabs';
-import { trashDocument } from '../db/trash';
+import { trashProject } from '../db/trash';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 import { handleShare } from './share';
 import { handleShared } from './shared';
 import { handleFavourites } from './favourites';
 
-// Every door onto a document, once it is in the Trash
-// (docs/specs/013-workspace/trash.md, "While a document is in the Trash").
-// A caller who could have opened it hears 410 `document_trashed`; anyone else
+// Every door onto a project, once it is in the Trash
+// (docs/specs/013-workspace/trash.md, "While a project is in the Trash").
+// A caller who could have opened it hears 410 `project_trashed`; anyone else
 // the 404 a never-existing id gets; the lists simply don't have it.
 
 const T0 = 1_700_000_000_000;
@@ -31,7 +31,7 @@ type Room = { broadcasts: unknown[] };
 function world(): SqliteD1 & Room {
   const room: Room = { broadcasts: [] };
   const db = sqliteD1({
-    DOCUMENT_ROOM: {
+    PROJECT_ROOM: {
       idFromName: (name: string) => `id:${name}`,
       get: () => ({
         fetch: async (url: string, init?: RequestInit) => {
@@ -43,7 +43,7 @@ function world(): SqliteD1 & Room {
       }),
     },
   } as unknown as Partial<Env>);
-  insert(db.sql, 'documents', {
+  insert(db.sql, 'projects', {
     id: 'A',
     owner_id: 'owner',
     name: 'A',
@@ -52,14 +52,14 @@ function world(): SqliteD1 & Room {
     saved_at: T0,
     created_at: T0,
   });
-  insert(db.sql, 'share_links', { code: 'code-A', document_id: 'A', role: 'edit', created_at: T0 });
+  insert(db.sql, 'share_links', { code: 'code-A', project_id: 'A', role: 'edit', created_at: T0 });
   insert(db.sql, 'shared_with', {
     owner_id: 'visitor',
-    document_id: 'A',
+    project_id: 'A',
     role: 'edit',
     last_seen: T0,
   });
-  insert(db.sql, 'favourites', { owner_id: 'owner', document_id: 'A', created_at: T0 });
+  insert(db.sql, 'favourites', { owner_id: 'owner', project_id: 'A', created_at: T0 });
   return Object.assign(db, room);
 }
 
@@ -78,7 +78,7 @@ function call(
   if (segment === 'share') return handleShare(ctx);
   if (segment === 'shared') return handleShared(ctx);
   if (segment === 'favourites') return handleFavourites(ctx);
-  return handleDocuments(ctx);
+  return handleProjects(ctx);
 }
 
 async function status(res: Promise<Response> | Response | undefined) {
@@ -88,37 +88,37 @@ async function status(res: Promise<Response> | Response | undefined) {
     : null;
 }
 
-const TRASHED = { status: 410, body: { error: 'document_trashed' } };
+const TRASHED = { status: 410, body: { error: 'project_trashed' } };
 
 async function trashed() {
   const db = world();
   await seedTab(db);
-  await trashDocument(db.env, 'A', T0);
+  await trashProject(db.env, 'A', T0);
   return db;
 }
 
-describe('a trashed document, to someone who could open it', () => {
+describe('a trashed project, to someone who could open it', () => {
   const doors: [string, string, Parameters<typeof makeTestRouteContext>[2]?][] = [
-    ['GET', '/api/documents/A'],
-    ['PUT', '/api/documents/A', { body: { name: 'renamed' } }],
-    ['GET', '/api/documents/A/tabs/t1'],
-    ['PUT', '/api/documents/A/tabs/t1', { body: { id: 't1', name: 't1', elements: [] } }],
-    ['DELETE', '/api/documents/A/tabs/t1'],
-    ['POST', '/api/documents/A/copy', { body: {} }],
-    ['PUT', '/api/documents/A/folder', { body: { folderId: null } }],
-    ['GET', '/api/documents/A/shared-tabs'],
-    ['GET', '/api/documents/A/share'],
-    ['POST', '/api/documents/A/room-ticket'],
+    ['GET', '/api/projects/A'],
+    ['PUT', '/api/projects/A', { body: { name: 'renamed' } }],
+    ['GET', '/api/projects/A/tabs/t1'],
+    ['PUT', '/api/projects/A/tabs/t1', { body: { id: 't1', name: 't1', elements: [] } }],
+    ['DELETE', '/api/projects/A/tabs/t1'],
+    ['POST', '/api/projects/A/copy', { body: {} }],
+    ['PUT', '/api/projects/A/folder', { body: { folderId: null } }],
+    ['GET', '/api/projects/A/shared-tabs'],
+    ['GET', '/api/projects/A/share'],
+    ['POST', '/api/projects/A/room-ticket'],
   ];
 
-  it.each(doors)('%s %s answers document_trashed to its owner', async (method, path, opts) => {
+  it.each(doors)('%s %s answers project_trashed to its owner', async (method, path, opts) => {
     const db = await trashed();
     expect(await status(call(db, method, path, { owner: 'owner', ...opts }))).toEqual(TRASHED);
   });
 
-  it('answers document_trashed to a share-link holder', async () => {
+  it('answers project_trashed to a share-link holder', async () => {
     const db = await trashed();
-    const res = call(db, 'GET', '/api/documents/A/tabs/t1', {
+    const res = call(db, 'GET', '/api/projects/A/tabs/t1', {
       owner: 'visitor',
       headers: { 'X-Share-Code': 'code-A' },
     });
@@ -135,39 +135,39 @@ describe('a trashed document, to someone who could open it', () => {
 
   it('refuses to be re-created over by its owner', async () => {
     const db = await trashed();
-    const res = call(db, 'POST', '/api/documents', {
+    const res = call(db, 'POST', '/api/projects', {
       owner: 'owner',
       body: { id: 'A', name: 'again', tabs: [] },
     });
     expect(await status(res)).toEqual(TRASHED);
-    expect(db.sql.prepare("SELECT name FROM documents WHERE id = 'A'").get()?.name).toBe('A');
+    expect(db.sql.prepare("SELECT name FROM projects WHERE id = 'A'").get()?.name).toBe('A');
   });
 });
 
-describe('a trashed document, to anyone else', () => {
+describe('a trashed project, to anyone else', () => {
   it('reads as missing', async () => {
     const db = await trashed();
-    expect((await call(db, 'GET', '/api/documents/A', { owner: 'stranger' })).status).toBe(404);
-    expect((await call(db, 'GET', '/api/documents/A/tabs/t1', { owner: 'stranger' })).status).toBe(
+    expect((await call(db, 'GET', '/api/projects/A', { owner: 'stranger' })).status).toBe(404);
+    expect((await call(db, 'GET', '/api/projects/A/tabs/t1', { owner: 'stranger' })).status).toBe(
       404,
     );
   });
 
   it('cannot be claimed by re-creating its id', async () => {
     const db = await trashed();
-    const res = call(db, 'POST', '/api/documents', {
+    const res = call(db, 'POST', '/api/projects', {
       owner: 'attacker',
       body: { id: 'A', name: 'mine now', tabs: [] },
     });
     expect((await res).status).toBe(403);
-    expect(db.sql.prepare("SELECT owner_id FROM documents WHERE id = 'A'").get()?.owner_id).toBe(
+    expect(db.sql.prepare("SELECT owner_id FROM projects WHERE id = 'A'").get()?.owner_id).toBe(
       'owner',
     );
   });
 
   it('refuses a realtime join, even with its share code', async () => {
     const db = await trashed();
-    const res = await call(db, 'GET', '/api/documents/A/ws?s=code-A&o=owner', {
+    const res = await call(db, 'GET', '/api/projects/A/ws?s=code-A&o=owner', {
       headers: { Upgrade: 'websocket' },
     });
     expect(res.status).toBe(404);
@@ -176,33 +176,33 @@ describe('a trashed document, to anyone else', () => {
   it('serves no thumbnail', async () => {
     const db = await trashed();
     expect(
-      (await call(db, 'GET', '/api/documents/A/thumbnail', { owner: 'owner' })).status,
+      (await call(db, 'GET', '/api/projects/A/thumbnail', { owner: 'owner' })).status,
     ).not.toBe(200);
   });
 });
 
 describe('the lists, while it is in the Trash', () => {
-  it('leave it out of the document list, Shared with you and Favourites', async () => {
+  it('leave it out of the project list, Shared with you and Favourites', async () => {
     const db = await trashed();
-    const list = await (await call(db, 'GET', '/api/documents', { owner: 'owner' })).json();
+    const list = await (await call(db, 'GET', '/api/projects', { owner: 'owner' })).json();
     const shared = await (await call(db, 'GET', '/api/shared', { owner: 'visitor' })).json();
     const stars = await (await call(db, 'GET', '/api/favourites', { owner: 'owner' })).json();
-    expect(list).toEqual({ documents: [] });
+    expect(list).toEqual({ projects: [] });
     expect(shared).toEqual({ shared: [] });
     expect(stars).toEqual({ ids: [] });
   });
 });
 
-describe('DELETE /api/documents/:id', () => {
-  it('moves the document to the Trash, keeping everything', async () => {
+describe('DELETE /api/projects/:id', () => {
+  it('moves the project to the Trash, keeping everything', async () => {
     const db = world();
     await seedTab(db);
 
-    const res = await call(db, 'DELETE', '/api/documents/A', { owner: 'owner' });
+    const res = await call(db, 'DELETE', '/api/projects/A', { owner: 'owner' });
 
     expect(res.status).toBe(204);
     expect(
-      db.sql.prepare("SELECT trashed_at FROM documents WHERE id = 'A'").get()?.trashed_at,
+      db.sql.prepare("SELECT trashed_at FROM projects WHERE id = 'A'").get()?.trashed_at,
     ).toEqual(expect.any(Number));
     expect(db.sql.prepare("SELECT COUNT(*) AS n FROM tabs WHERE id = 't1'").get()?.n).toBe(1);
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM share_links').get()?.n).toBe(1);
@@ -210,47 +210,47 @@ describe('DELETE /api/documents/:id', () => {
 
   it('ends the realtime sessions with the deleted state', async () => {
     const db = world();
-    await call(db, 'DELETE', '/api/documents/A', { owner: 'owner', waitUntil: (p) => void p });
-    await vi.waitFor(() => expect(db.broadcasts).toEqual([{ op: { kind: 'document-trashed' } }]));
+    await call(db, 'DELETE', '/api/projects/A', { owner: 'owner', waitUntil: (p) => void p });
+    await vi.waitFor(() => expect(db.broadcasts).toEqual([{ op: { kind: 'project-trashed' } }]));
   });
 
   it('deletes for good with ?permanent=true', async () => {
     const db = world();
     await seedTab(db);
 
-    const res = await call(db, 'DELETE', '/api/documents/A?permanent=true', { owner: 'owner' });
+    const res = await call(db, 'DELETE', '/api/projects/A?permanent=true', { owner: 'owner' });
 
     expect(res.status).toBe(204);
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM projects').get()?.n).toBe(0);
     expect(db.sql.prepare('SELECT COUNT(*) AS n FROM tabs').get()?.n).toBe(0);
   });
 
-  it('purges a document already in the Trash with ?permanent=true', async () => {
+  it('purges a project already in the Trash with ?permanent=true', async () => {
     const db = await trashed();
-    const res = await call(db, 'DELETE', '/api/documents/A?permanent=true', { owner: 'owner' });
+    const res = await call(db, 'DELETE', '/api/projects/A?permanent=true', { owner: 'owner' });
     expect(res.status).toBe(204);
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM projects').get()?.n).toBe(0);
   });
 
-  it('answers document_trashed for a document already in the Trash', async () => {
+  it('answers project_trashed for a project already in the Trash', async () => {
     const db = await trashed();
-    expect(await status(call(db, 'DELETE', '/api/documents/A', { owner: 'owner' }))).toEqual(
+    expect(await status(call(db, 'DELETE', '/api/projects/A', { owner: 'owner' }))).toEqual(
       TRASHED,
     );
   });
 
   it('bypasses the Trash when the owner takes it offline', async () => {
     const db = world();
-    const res = await call(db, 'DELETE', '/api/documents/A', {
+    const res = await call(db, 'DELETE', '/api/projects/A', {
       owner: 'owner',
-      headers: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
+      headers: { [PROJECT_CONVERSION_HEADER]: 'offline' },
     });
     expect(res.status).toBe(204);
-    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM documents').get()?.n).toBe(0);
+    expect(db.sql.prepare('SELECT COUNT(*) AS n FROM projects').get()?.n).toBe(0);
   });
 
-  it('sends a teammate’s Take Offline of a team document to the team Trash', async () => {
-    // From the team's side a teammate taking the document into their own
+  it('sends a teammate’s Take Offline of a team project to the team Trash', async () => {
+    // From the team's side a teammate taking the project into their own
     // browser is a deletion, the same reading the Timeline gives it.
     const db = world();
     insert(db.sql, 'teams', { id: 'team', name: 'Team', created_at: T0, updated_at: T0 });
@@ -263,29 +263,29 @@ describe('DELETE /api/documents/:id', () => {
       created_at: T0,
       updated_at: T0,
     });
-    db.sql.prepare("UPDATE documents SET team_id = 'team', owner_id = 'user_alice'").run();
+    db.sql.prepare("UPDATE projects SET team_id = 'team', owner_id = 'user_alice'").run();
 
-    const res = await call(db, 'DELETE', '/api/documents/A', {
+    const res = await call(db, 'DELETE', '/api/projects/A', {
       owner: 'user_bob',
       clerkUserId: 'user_bob',
-      headers: { [DOCUMENT_CONVERSION_HEADER]: 'offline' },
+      headers: { [PROJECT_CONVERSION_HEADER]: 'offline' },
     });
 
     expect(res.status).toBe(204);
     expect(
-      db.sql.prepare("SELECT trashed_at FROM documents WHERE id = 'A'").get()?.trashed_at,
+      db.sql.prepare("SELECT trashed_at FROM projects WHERE id = 'A'").get()?.trashed_at,
     ).toEqual(expect.any(Number));
   });
 
   it('still refuses a share-link visitor', async () => {
     const db = world();
-    const res = await call(db, 'DELETE', '/api/documents/A', {
+    const res = await call(db, 'DELETE', '/api/projects/A', {
       owner: 'visitor',
       headers: { 'X-Share-Code': 'code-A' },
     });
     expect(res.status).toBe(403);
     expect(
-      db.sql.prepare("SELECT trashed_at FROM documents WHERE id = 'A'").get()?.trashed_at,
+      db.sql.prepare("SELECT trashed_at FROM projects WHERE id = 'A'").get()?.trashed_at,
     ).toBe(null);
   });
 });

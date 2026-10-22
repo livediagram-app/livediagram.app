@@ -1,4 +1,4 @@
-// An item: one record in a document's item store (docs/specs/026-plan/items.md).
+// An item: one record in a project's item store (docs/specs/026-plan/items.md).
 // The canvas only frames items; a Plan board draws many, a Plan card one.
 
 import { CUSTOM_FIELD_ID_PATTERN } from './type-catalogue';
@@ -21,7 +21,7 @@ export type ItemPerson = {
 export interface Item {
   id: string;
   type: string;
-  // The number people say out loud ("#12"): per document, never reused.
+  // The number people say out loud ("#12"): per project, never reused.
   key: number;
   // Fractional ordering key within a column (rank.ts).
   rank: string;
@@ -49,7 +49,7 @@ export interface ItemCreate {
   place?: ItemPlace;
   // Only to restore a deleted item (undo); the store decides whether it is free.
   key?: number;
-  // Only to restore an item or carry one across (undo, an offline document's sync): votes are
+  // Only to restore an item or carry one across (undo, an offline project's sync): votes are
   // otherwise written by voting alone.
   votes?: Record<string, number>;
   // The same for its comment thread (a CommentThread, docs/specs/026-plan/items.md "Comments"), which is

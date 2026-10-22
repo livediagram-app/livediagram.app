@@ -4,7 +4,7 @@ import {
   TEXT_SCALE_MAX,
   TEXT_SCALE_MIN,
   type TextElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   hugCommittedText,
   hugResizedText,

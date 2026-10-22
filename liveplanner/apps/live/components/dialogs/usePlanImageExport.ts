@@ -12,7 +12,7 @@ import {
   type ResolvePlanArt,
   type SheetRenderModel,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { usePlan } from '@/components/plan/PlanContext';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { tabAsSeen } from '@/lib/export-as-seen';
@@ -58,7 +58,7 @@ const NO_CONTENTS = new Map<string, { width: number; height: number }>();
 
 export function usePlanImageExport(
   tab: Tab,
-  documentTabs: readonly Tab[] = NO_TABS,
+  projectTabs: readonly Tab[] = NO_TABS,
   scope: 'tab' | 'selection' = 'tab',
 ): PlanImageExport {
   const plan = usePlan();
@@ -80,7 +80,7 @@ export function usePlanImageExport(
     () =>
       whole
         ? planImageOf(tab, {
-            tabs: documentTabs,
+            tabs: projectTabs,
             now,
             // The editor's themes, the person's own among them.
             themeOf: getTheme,
@@ -94,7 +94,7 @@ export function usePlanImageExport(
               }),
           })
         : null,
-    [whole, tab, documentTabs, now, metrics, models, contents, planItems, planTypes],
+    [whole, tab, projectTabs, now, metrics, models, contents, planItems, planTypes],
   );
   const imageTab = image?.tab ?? tab;
   // The Sheets the image frames, each at its size: what the read below depends on. The figures it reads never change
@@ -137,7 +137,7 @@ export function usePlanImageExport(
         ]);
         if (!bridge) return { models: new Map(), metrics: new Map(), contents: NO_CONTENTS, key };
         const store = sheetStoreOf(bridge);
-        const tabs = documentTabs.length ? documentTabs : [tab];
+        const tabs = projectTabs.length ? projectTabs : [tab];
         await Promise.all(
           sheets
             .sheetTabsToLoad(imageRef.current, tab.dashboard, tabs)
@@ -161,9 +161,9 @@ export function usePlanImageExport(
     };
     // Read again when the Sheets framed, the layout or the tabs change; `tab` itself is read through them.
     // oxlint-disable-next-line react/exhaustive-deps
-  }, [needsSheets, bridge, sheetKey, tab.dashboard, documentTabs]);
+  }, [needsSheets, bridge, sheetKey, tab.dashboard, projectTabs]);
 
-  // A plan view's picture from the document's cards, and each placeholder's from the layout.
+  // A plan view's picture from the project's cards, and each placeholder's from the layout.
   const art = image?.art ?? NO_MAP;
   const surface = canvasSurface(imageTab.backgroundColor ?? EXPORT_BG);
   const data: PlanArtData = useMemo(

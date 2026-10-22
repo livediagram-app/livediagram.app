@@ -26,7 +26,7 @@ export function registerPrompts(server: McpServer): void {
             text:
               `Plan the following as a liveplanner project, then give me a link to open it:\n\n` +
               `${description}\n\n` +
-              `Pick a fitting template from list_templates and make the project with create_document, then ` +
+              `Pick a fitting template from list_templates and make the project with create_project, then ` +
               `add the real tasks as cards with change_items, in the columns they belong in.`,
           },
         },
@@ -52,7 +52,7 @@ export function registerPrompts(server: McpServer): void {
             text:
               `Put these tasks on a liveplanner board and give me a link:\n\n` +
               `${tasks}\n\n` +
-              `Make a project from the "kanban" template with create_document, then add one card per ` +
+              `Make a project from the "kanban" template with create_project, then add one card per ` +
               `task with change_items, setting the column, assignee and due date the list gives.`,
           },
         },
@@ -61,7 +61,7 @@ export function registerPrompts(server: McpServer): void {
   );
 
   server.registerPrompt(
-    'show_my_document',
+    'show_my_project',
     {
       title: 'Show my project',
       description: 'Find one of your projects by name and display it inline.',
@@ -76,8 +76,8 @@ export function registerPrompts(server: McpServer): void {
           content: {
             type: 'text',
             text:
-              `Find my liveplanner project matching "${name}" with find_documents, then ` +
-              `read_document it to show me the image and a link. If several match, list them ` +
+              `Find my liveplanner project matching "${name}" with find_projects, then ` +
+              `read_project it to show me the image and a link. If several match, list them ` +
               `and ask which one.`,
           },
         },

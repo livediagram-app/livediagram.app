@@ -4,7 +4,7 @@ import type {
   TextAlignY,
   TextRun,
   TextSize,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { LabelPadding } from './label-style';
 
 export type RichTextEditorProps = {

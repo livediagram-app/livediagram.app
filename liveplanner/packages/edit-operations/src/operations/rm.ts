@@ -11,7 +11,7 @@ import {
   type ElementId,
   type Endpoint,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { resolveSome } from '../selectors';
 import {
   type EditState,

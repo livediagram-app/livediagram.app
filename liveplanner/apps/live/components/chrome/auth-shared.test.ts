@@ -58,8 +58,8 @@ describe('resolvePostAuthDestination', () => {
   });
 
   it('keeps an ordinary in-app path with a query and hash', () => {
-    expect(resolvePostAuthDestination(params('redirect_url=/document/abc%3Fs%3Dx%23t%3D1'))).toBe(
-      '/document/abc?s=x#t=1',
+    expect(resolvePostAuthDestination(params('redirect_url=/project/abc%3Fs%3Dx%23t%3D1'))).toBe(
+      '/project/abc?s=x#t=1',
     );
   });
 
@@ -74,7 +74,7 @@ describe('resolvePostAuthDestination', () => {
   });
 
   it('returns a safe same-origin path as-is (clean routing, no basePath strip)', () => {
-    expect(resolvePostAuthDestination(params('redirect_url=/document/abc'))).toBe('/document/abc');
+    expect(resolvePostAuthDestination(params('redirect_url=/project/abc'))).toBe('/project/abc');
     expect(resolvePostAuthDestination(params('redirect_url=/explorer/recent'))).toBe(
       '/explorer/recent',
     );
@@ -93,7 +93,7 @@ describe('resolveOAuthCompleteUrl', () => {
       POST_AUTH_DEFAULT,
     );
     expect(resolveOAuthCompleteUrl(params('redirect_url=/sign-in'))).toBe(POST_AUTH_DEFAULT);
-    expect(resolveOAuthCompleteUrl(params('redirect_url=/document/abc'))).toBe('/document/abc');
+    expect(resolveOAuthCompleteUrl(params('redirect_url=/project/abc'))).toBe('/project/abc');
     expect(resolveOAuthCompleteUrl(params('redirect_url=/explorer/recent'))).toBe(
       '/explorer/recent',
     );
@@ -112,17 +112,17 @@ describe('authHrefWithReturn', () => {
     expect(authHrefWithReturn('/sign-in/', '/explorer/recent')).toBe(
       '/sign-in/?redirect_url=%2Fexplorer%2Frecent',
     );
-    // Query + hash survive so you land on the exact document tab.
-    expect(authHrefWithReturn('/get-started/', '/document/abc?x=1#t=t2')).toBe(
-      '/get-started/?redirect_url=%2Fdocument%2Fabc%3Fx%3D1%23t%3Dt2',
+    // Query + hash survive so you land on the exact project tab.
+    expect(authHrefWithReturn('/get-started/', '/project/abc?x=1#t=t2')).toBe(
+      '/get-started/?redirect_url=%2Fproject%2Fabc%3Fx%3D1%23t%3Dt2',
     );
   });
 
   it('round-trips through the resolver back to the original path', () => {
-    const href = authHrefWithReturn('/sign-in/', '/document/abc?x=1');
+    const href = authHrefWithReturn('/sign-in/', '/project/abc?x=1');
     const qs = href.slice(href.indexOf('?') + 1);
     expect(resolvePostAuthDestination(new URLSearchParams(qs), POST_AUTH_SIGNIN_DEFAULT)).toBe(
-      '/document/abc?x=1',
+      '/project/abc?x=1',
     );
   });
 
@@ -212,11 +212,11 @@ describe('sign-in default (POST_AUTH_SIGNIN_DEFAULT)', () => {
     // A protected-page bounce must return where it came from, not the
     // Explorer, even on the sign-in flow.
     expect(
-      resolvePostAuthDestination(params('redirect_url=/document/abc'), POST_AUTH_SIGNIN_DEFAULT),
-    ).toBe('/document/abc');
+      resolvePostAuthDestination(params('redirect_url=/project/abc'), POST_AUTH_SIGNIN_DEFAULT),
+    ).toBe('/project/abc');
     expect(
-      resolveOAuthCompleteUrl(params('redirect_url=/document/abc'), POST_AUTH_SIGNIN_DEFAULT),
-    ).toBe('/document/abc');
+      resolveOAuthCompleteUrl(params('redirect_url=/project/abc'), POST_AUTH_SIGNIN_DEFAULT),
+    ).toBe('/project/abc');
   });
 
   it('falls back to the Explorer for an unsafe / auth-loop redirect_url', () => {
@@ -265,7 +265,7 @@ describe('ssoCallbackUrl / ssoCallbackDestination', () => {
 });
 
 // The header's guest way out (docs/specs/014-identity/auth-and-guest-access.md "The look: Night Band"): back where
-// the visitor came from when that works without an account, else the new-document flow. Wrong here sends a guest
+// the visitor came from when that works without an account, else the new-project flow. Wrong here sends a guest
 // off-site (open redirect) or into a loop between a connect page and sign-in.
 describe('guestReturnHref', () => {
   it('returns to a safe redirect_url', () => {
@@ -274,7 +274,7 @@ describe('guestReturnHref', () => {
     );
   });
 
-  it('falls back to the new-document flow without one', () => {
+  it('falls back to the new-project flow without one', () => {
     expect(guestReturnHref(params(''))).toBe(POST_AUTH_DEFAULT);
   });
 

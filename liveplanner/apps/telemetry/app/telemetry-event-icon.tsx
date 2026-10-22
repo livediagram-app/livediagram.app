@@ -18,7 +18,7 @@ import {
   CommentGlyph,
   CopyGlyph,
   CylinderGlyph,
-  DocumentGlyph,
+  ProjectGlyph,
   DiamondGlyph,
   DotGlyph,
   DownloadGlyph,
@@ -116,7 +116,7 @@ const TYPE_GLYPH: Record<string, () => ReactElement> = {
   Front: LayersGlyph,
   Back: LayersGlyph,
   FormatPainter: BrushGlyph,
-  Document: DocumentGlyph,
+  Project: ProjectGlyph,
   Folder: FolderGlyph,
   Tab: TabGlyph,
   Element: ElementGlyph,
@@ -161,7 +161,7 @@ const ACTION_GLYPH: Record<string, () => ReactElement> = {
   SignedOut: SignOutGlyph,
 };
 const CATEGORY_GLYPH: Record<string, () => ReactElement> = {
-  Document: DocumentGlyph,
+  Project: ProjectGlyph,
   Element: ElementGlyph,
   Tab: TabGlyph,
   Theme: PaletteGlyph,

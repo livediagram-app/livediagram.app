@@ -1,33 +1,33 @@
 # Drag preview
 
 While someone moves, resizes or reshapes elements, the canvas shows the elements where the pointer
-puts them without changing the document. The document changes once, when the gesture ends. Everyone
+puts them without changing the project. The project changes once, when the gesture ends. Everyone
 else in the room sees the movement live, as a preview, and the real change when it lands. This keeps
 a drag's cost to what it moves, whatever the size of the board
 ([Canvas performance](canvas-performance.md)).
 
 ## The preview
 
-- **A gesture draws from a preview, not the document.** A move, a resize or an arrow reshape (a
+- **A gesture draws from a preview, not the project.** A move, a resize or an arrow reshape (a
   bend, a curve, an elbow, an end, a label) keeps the gesture's elements as they would be after it,
-  in a preview beside the document. The canvas draws an element from the preview when it has one,
-  else from the document. Nothing in the document changes until the gesture ends.
+  in a preview beside the project. The canvas draws an element from the preview when it has one,
+  else from the project. Nothing in the project changes until the gesture ends.
 - **It covers what the gesture changes:** the dragged elements, and every arrow whose drawing
   depends on them (pinned to them, or routed behind them). Nothing else is redrawn while it lasts:
   not the canvas, and not the layer that holds the elements, only each previewed element itself.
 - **Everything derived from the board stays as it was** while the preview lasts: the element index,
   the element grid, the arrow labels of arrows the drag does not touch, the Map (which already holds
   its drawing through a gesture, [Minimap](minimap.md)), the selection chrome (already hidden while
-  the selection moves). Alignment guides and snapping read the document, which is the board
+  the selection moves). Alignment guides and snapping read the project, which is the board
   without the dragged elements' movement, as they do today.
-- **On release the preview becomes the document in one change**: one undo step, one autosave,
+- **On release the preview becomes the project in one change**: one undo step, one autosave,
   one set of element ops to the room, as a drag makes today.
 - **What the release adds is part of that change.** A freshly drawn arrow's collision bow
   ([Arrow collision avoidance](arrow-collision-avoidance.md)) is applied to the preview before it
-  is written, not written after it: a later write through `commit` starts from the document as
+  is written, not written after it: a later write through `commit` starts from the project as
   last rendered, before the release has landed, and put a quick-connect arrow's end back at its
   start.
-- **A cancelled gesture leaves the document untouched**: Escape, the browser cancelling the
+- **A cancelled gesture leaves the project untouched**: Escape, the browser cancelling the
   pointer, or the canvas going away drops the preview, and nothing is written.
 
 ## Live movement for collaborators
@@ -43,22 +43,22 @@ a drag's cost to what it moves, whatever the size of the board
   change arrives (which follows the release by the autosave's wait), so the elements never jump back
   to where they started. Either way it also ends when the peer leaves, or after 2 s without a
   message. In every case the
-  canvas falls back to the document.
+  canvas falls back to the project.
 - **Only an editor's preview is drawn.** The room relays a preview only from an editor, and a
   collaborator draws one only from an editor: other presence travels from any role, and a preview
   must never let a viewer make others' elements appear to move.
 - **Two people dragging the same element** each see their own preview. Whoever releases last wins,
   as two edits to one element do today ([Realtime conflict
   resolution](../012-collaboration/realtime-conflict-resolution.md)).
-- **A real change arriving mid-gesture** for an element being dragged updates the document beneath
+- **A real change arriving mid-gesture** for an element being dragged updates the project beneath
   the preview; the release then writes the dragged result over it, as today.
 
 ## What does not change
 
 - Snapping, alignment guides, the Shift constraints,
   Shift-duplicate and the aspect lock behave as they do; they work from the preview instead of a
-  written document.
-- Keyboard nudges are not gestures: each writes the document at once, as today.
+  written project.
+- Keyboard nudges are not gestures: each writes the project at once, as today.
 
 ## Observability
 

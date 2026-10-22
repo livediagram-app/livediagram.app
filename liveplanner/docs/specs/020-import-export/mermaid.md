@@ -2,7 +2,7 @@
 
 **Status: no surface.** liveplanner's MCP server, CLI and public API take no Mermaid (nor a node/edge `graph`), and
 the CLI has no `mermaid` export format (removed 2026-10-22). The parser, the serialiser and the graph layout below
-remain in `packages/document`, reached by no agent surface; this spec describes them as built.
+remain in `packages/project`, reached by no agent surface; this spec describes them as built.
 
 Agents (the MCP server, the CLI and the public API) can hand liveplanner [Mermaid](https://mermaid.js.org/)
 text in place of a graph or elements, and the CLI's `export --format mermaid` writes a tab back out as
@@ -14,7 +14,7 @@ the diagram's structure, not just its labels.
 
 We support the diagram types that are **node/edge graphs at heart**, because
 they map onto liveplanner's model losslessly: `graphToElements`
-(packages/document, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
+(packages/project, [MCP server](../015-api/mcp-server.md) §4.7) turns a graph into laid-out shapes + pinned
 arrows.
 
 - **Flowcharts** (`graph TD`, `flowchart LR`, …) — read **and**
@@ -56,7 +56,7 @@ only the sweep direction differs).
 "…" }` is read too, with a name map onto the same vocabulary (`rect`,
   `rounded`, `stadium`, `circle`, `dbl-circ`, `diam`/`decision`,
   `hex`/`prepare`, `cyl`/`database`, `lean-r`/`lean-l`, `trap-b`/`trap-t`,
-  `doc`/`document`, `tri`/`triangle`; unknown names → square).
+  `doc`/`project`, `tri`/`triangle`; unknown names → square).
 - **Edges**: `A --> B`, with an optional label (`A -->|yes| B` or the inline
   form `A -- yes --> B`), chained (`A --> B --> C` = two edges), and fanned
   (`A & B --> C & D` = the cartesian product). Operators map onto the arrow
@@ -134,7 +134,7 @@ LR` line sets the layout direction (TB default).
   each). This replaced square boxes whose label held the name and every
   attribute on its own line, which read as a paragraph and did not survive a
   label cap (the MCP's, [MCP server](../015-api/mcp-server.md) §4.7, flattened
-  it to "SHARE_LINK text code text document_id…"). An alias in square brackets after the name (`BOOK_AUTHOR[Book
+  it to "SHARE_LINK text code text project_id…"). An alias in square brackets after the name (`BOOK_AUTHOR[Book
 author]`, `a["Customer account"]`), wherever the entity is named (its block, a relationship, a bare line), is
   the title shown; the name stays its id. Without one the title is the name.
 - **Every way Mermaid's own docs write them**: a name in double quotes (`"Order line"`, a bare line or either end
@@ -204,7 +204,7 @@ A loop through a group starts where the Mermaid starts it: the contracted layout
 graph wrote them (a group where its first member was), so the first-written node leads, not whichever group came
 first.
 
-## The engine lives in `packages/document`
+## The engine lives in `packages/project`
 
 Pure, tested, and shared by the MCP server, the CLI and the api's changesets:
 
@@ -233,7 +233,7 @@ triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
   at top level) are swept into rows below the laid-out graph instead of
   piling at the origin.
 - **`mermaidFromTab(tab)`** → a `flowchart TD` string (the CLI's export). Boxed nodes become
-  `id["label"]` with the bracket for their shape; a document or a triangle, which have no bracket, is written in the
+  `id["label"]` with the bracket for their shape; a project or a triangle, which have no bracket, is written in the
   attribute form the parser reads (`id@{ shape: doc, label: "…" }`, `tri`), a `}` in its label as `#125;`, so the
   shape survives a round trip; frames become `subgraph`
   blocks; arrows become `from --> to` with `|label|`, choosing the operator
@@ -256,7 +256,7 @@ triangle|circle|cross`); `GraphNode` carries an optional `link` URL —
 ## Limits
 
 A graph is laid out only within `GRAPH_LAYOUT_MAX_NODES` (500 nodes) and `GRAPH_LAYOUT_MAX_EDGES`
-(1 000 connections), `packages/document/src/graph-limits.ts`. The layered layout's crossing
+(1 000 connections), `packages/project/src/graph-limits.ts`. The layered layout's crossing
 reduction grows faster than linearly with the connections: a random 1 000-node / 1 000-edge graph
 took 2.5 s, and the 14 400 connections of one line `a0&...&a119 --> b0&...&b119` took 21 s. So:
 

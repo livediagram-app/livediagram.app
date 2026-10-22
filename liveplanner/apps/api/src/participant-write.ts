@@ -3,7 +3,7 @@
 // sends to the STORED tab through the participant content rule, and folds its dots and responses from the
 // room's ledger, then compare-and-swaps the row.
 //
-// Called ONLY from the document's room, on its tab write queue, so these writes never race each other. The
+// Called ONLY from the project's room, on its tab write queue, so these writes never race each other. The
 // compare-and-swap is the second line, against an editor's autosave and a linked tab's other room.
 
 import {
@@ -13,7 +13,7 @@ import {
   type ParticipantOpResult,
   type Tab,
   type TabLedger,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { getTabData, swapTabData } from './db';
 import { tabStatsOf } from './db/tab-stats';
 import { TabTooLargeError } from './limits';
@@ -27,7 +27,7 @@ export type ParticipantWriteResult =
   { ok: true; outcome: ParticipantOpResult } | ParticipantWriteFailure;
 
 type ParticipantOpRequest = {
-  documentId: string;
+  projectId: string;
   tabId: string;
   op: ElementOp;
   adderKey: string | null;
@@ -39,12 +39,12 @@ type StoredTab = Omit<Tab, 'id' | 'name'>;
 // `change` answers the new tab, or null to write nothing.
 async function swapTab<T>(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
   change: (tab: Tab) => { next: Tab | null; answer: T },
 ): Promise<{ ok: true; answer: T } | ParticipantWriteFailure> {
   for (let attempt = 0; attempt < TAB_CAS_MAX_ATTEMPTS; attempt++) {
-    const raw = await getTabData(env, documentId, tabId);
+    const raw = await getTabData(env, projectId, tabId);
     if (raw === null) return { ok: false, status: 404 };
     const data = JSON.parse(raw) as StoredTab;
     const { next, answer } = change({ ...data, id: tabId, name: '' });
@@ -55,7 +55,7 @@ async function swapTab<T>(
     try {
       swapped = await swapTabData(
         env,
-        documentId,
+        projectId,
         tabId,
         raw,
         nextData,
@@ -74,7 +74,7 @@ export async function writeParticipantOp(
   env: Env,
   req: ParticipantOpRequest,
 ): Promise<ParticipantWriteResult> {
-  const result = await swapTab(env, req.documentId, req.tabId, (tab) => {
+  const result = await swapTab(env, req.projectId, req.tabId, (tab) => {
     const outcome = applyParticipantOp(tab, req.op, req.adderKey);
     const next = outcome.result === 'applied' && outcome.changed ? outcome.tab : null;
     return { next, answer: outcome };
@@ -86,9 +86,9 @@ export async function writeParticipantOp(
 // The room's recorded answers for a tab into its stored row; `changed` is false when the row already held them.
 export async function writeParticipantAnswers(
   env: Env,
-  req: { documentId: string; tabId: string; ledger: TabLedger },
+  req: { projectId: string; tabId: string; ledger: TabLedger },
 ): Promise<{ ok: true; changed: boolean } | ParticipantWriteFailure> {
-  const result = await swapTab(env, req.documentId, req.tabId, (tab) => {
+  const result = await swapTab(env, req.projectId, req.tabId, (tab) => {
     const merged = mergeLedgerAnswersIntoTab(tab, req.ledger);
     return merged === tab ? { next: null, answer: false } : { next: merged, answer: true };
   });

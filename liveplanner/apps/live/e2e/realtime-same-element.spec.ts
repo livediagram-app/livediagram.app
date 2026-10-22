@@ -68,7 +68,7 @@ test('two peers dragging the same element at once end on the same position', asy
     width: 160,
     height: 100,
   });
-  const seeded = await page.request.post(`${apiBase}/documents`, {
+  const seeded = await page.request.post(`${apiBase}/projects`, {
     headers,
     data: {
       id,
@@ -83,15 +83,15 @@ test('two peers dragging the same element at once end on the same position', asy
     },
   });
   expect(seeded.ok()).toBe(true);
-  const share = await page.request.post(`${apiBase}/documents/${id}/share`, {
+  const share = await page.request.post(`${apiBase}/projects/${id}/share`, {
     headers,
     data: { role: 'edit' },
   });
   const code = ((await share.json()) as { link: { code: string } }).link.code;
 
-  const ownerPage = await openAs(browser, baseURL!, `/document/${id}`, owner);
+  const ownerPage = await openAs(browser, baseURL!, `/project/${id}`, owner);
   await ownerPage.locator(CANVAS).waitFor();
-  const peerPage = await openAs(browser, baseURL!, `/document/shared?s=${code}`, null);
+  const peerPage = await openAs(browser, baseURL!, `/project/shared?s=${code}`, null);
   await peerPage.getByRole('button', { name: /^join$/i }).click();
   await peerPage.locator(CANVAS).waitFor();
   for (const p of [ownerPage, peerPage]) {

@@ -13,7 +13,7 @@ import {
   THEMES,
   type Element,
   withArticle,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { fillSlotNames } from './colours';
 import { aliasesOf, ARROW_STYLES, BORDER_STYLES, TEXT_SIZES } from './fields';
 import { buildKind, NOT_ADDED, OTHER_KINDS } from './operations/add-kind';

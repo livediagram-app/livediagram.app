@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import type { TemplateKind } from '@liveplanner/templates';
 import { buildTemplate, buildTemplatedTab } from './template-builders';
 
@@ -92,7 +92,7 @@ describe('buildTemplate translation invariance', () => {
   const DX = 137;
   const DY = -421;
 
-  // 'blank' is intentionally empty (no seeded element, docs/specs/007-editor/new-document-route.md), so it has no
+  // 'blank' is intentionally empty (no seeded element, docs/specs/007-editor/new-project-route.md), so it has no
   // coordinates to shift — excluded from this invariance check (it stays in
   // ALL_KINDS above for the exhaustiveness assertion).
   it.each(
@@ -138,7 +138,7 @@ describe('buildTemplate translation invariance', () => {
   it.each(ALL_KINDS)('%s: returns a fresh array per call (no shared mutable state)', (kind) => {
     // Builders are documented as pure, returning "a fresh array of
     // Element". A future revision that memoised or returned a
-    // module-level constant would silently let one document's edits
+    // module-level constant would silently let one project's edits
     // leak into another template instantiation. Asserting distinct
     // references rules that out.
     const a = buildTemplate(kind, 0, 0);

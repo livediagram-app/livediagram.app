@@ -9,7 +9,7 @@ import {
   type ArrowElement,
   type BoxedElement,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { applied } from '../fixtures/outcomes';
 import { run } from '../fixtures/run';
 

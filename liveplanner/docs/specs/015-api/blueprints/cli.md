@@ -8,7 +8,7 @@ words of [Domain language](../../003-system-architecture/domain-language.md#agen
 agent presence are other blueprints' and are consumed through the interfaces they name:
 [Agent changesets](../../024-agents/blueprints/agent-changesets.md),
 [Edit operations](../../024-agents/blueprints/edit-operations.md),
-[Document views](../../024-agents/blueprints/document-views.md) and
+[Project views](../../024-agents/blueprints/project-views.md) and
 [Agent presence](../../024-agents/blueprints/agent-presence.md). The spec decides; this file only adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited as
 `CLIn`.
@@ -20,20 +20,20 @@ Scope, by file:
 | `packages/agent-verbs/{package.json,tsconfig.json,oxlint.config.ts,vitest.config.ts}`                        | New private package `@liveplanner/agent-verbs`, laid out like `packages/explorer-lens`; depends on zod 4                                                                                                                                                                                                                                                                                                                                        |
 | `packages/agent-verbs/src/define.ts`                                                                         | `Verb`, `defineVerb`, `VerbBehaviour`, `VerbContext`, `CliProjection`                                                                                                                                                                                                                                                                                                                                                                           |
 | `packages/agent-verbs/src/catalogue.ts`                                                                      | `VERBS`, `verbById`, `verbsOf`, `RESOURCES`, `RESOURCE_ALIASES`, `TOP_LEVEL`; `COMMAND_ALIASES` with `edit`                                                                                                                                                                                                                                                                                                                                     |
-| `packages/agent-verbs/src/verbs/{document,tab,edit,lifecycle,changeset,comment,presence}.ts`                 | The CLI's api verbs: schemas, descriptions, behaviour, handlers, compact text, CLI projections                                                                                                                                                                                                                                                                                                                                                  |
-| `packages/agent-verbs/src/verbs/shared.ts`                                                                   | `columns`, `day`, `minute`, `documentOf`, `tabOf`, `tabPath`, the list limits                                                                                                                                                                                                                                                                                                                                                                   |
+| `packages/agent-verbs/src/verbs/{project,tab,edit,lifecycle,changeset,comment,presence}.ts`                 | The CLI's api verbs: schemas, descriptions, behaviour, handlers, compact text, CLI projections                                                                                                                                                                                                                                                                                                                                                  |
+| `packages/agent-verbs/src/verbs/shared.ts`                                                                   | `columns`, `day`, `minute`, `projectOf`, `tabOf`, `tabPath`, the list limits                                                                                                                                                                                                                                                                                                                                                                   |
 | `packages/agent-verbs/src/verbs/mcp-tools.ts` (+ test), `src/mcp/{schema,output-schema}.ts`                  | One verb per existing MCP tool, with today's schema and tool name                                                                                                                                                                                                                                                                                                                                                                               |
 | `packages/agent-verbs/src/verbs/catalogues.ts` (+ test)                                                      | `template.ls`, `template.view`, `schema.view`; an unknown name refused with the nearest                                                                                                                                                                                                                                                                                                                                                         |
 | `packages/agent-verbs/src/verbs/local.ts`                                                                    | The CLI-only verbs, declared without `run` (CLI55)                                                                                                                                                                                                                                                                                                                                                                                              |
-| `packages/agent-verbs/src/addressing.ts`                                                                     | `parseDocumentUrl`, `resolveDocument`, `resolveTab`, `AddressError`, `AddressLog`                                                                                                                                                                                                                                                                                                                                                               |
+| `packages/agent-verbs/src/addressing.ts`                                                                     | `parseProjectUrl`, `resolveProject`, `resolveTab`, `AddressError`, `AddressLog`                                                                                                                                                                                                                                                                                                                                                               |
 | `packages/agent-verbs/src/refs.ts`                                                                           | `REF_MIN_PREFIX`, `shortestUniquePrefixes`                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `packages/agent-verbs/src/source-kind.ts` (+ test)                                                           | `classifySource(text)`: what a `-f` file holds and the body it becomes (CLI71)                                                                                                                                                                                                                                                                                                                                                                  |
 | `packages/agent-verbs/src/{argv-line,copies,write}.ts` (+ tests)                                             | `argvToOperationLine` (CLI23); `ReadCopies`, `baseFromCopy`, `readPlainTab`, `recordCopy`; `submitChangeset`, `writeFlags`                                                                                                                                                                                                                                                                                                                      |
 | `packages/agent-verbs/src/verbs/edit.ts` (+ test)                                                            | `changeset.apply`, the seven `element.*` verbs, `tab.diff`                                                                                                                                                                                                                                                                                                                                                                                      |
-| `packages/agent-verbs/src/verbs/lifecycle.ts` (+ test)                                                       | `document.create                                                                                                                                                                                                                                                                                                                                                                                                                                | rename | share | rm  | restore`, `tab.add | rename | rm` |
-| `apps/api/src/routes/document-seed.ts`                                                                       | `compileSeededTabs`: a create's template tabs through `applyReplace`, and the intent of the first                                                                                                                                                                                                                                                                                                                                               |
-| `packages/api-schema/src/document-source.ts` (+ test)                                                        | `DOCUMENT_SOURCES` (`ai`, `mcp`, `cli`), `isDocumentSource`, `isMadeByAiSource`                                                                                                                                                                                                                                                                                                                                                                 |
-| `packages/agent-verbs/src/find-documents.ts` (+ test)                                                        | Moved from `apps/mcp`; gains `listAllDocuments(api)`                                                                                                                                                                                                                                                                                                                                                                                            |
+| `packages/agent-verbs/src/verbs/lifecycle.ts` (+ test)                                                       | `project.create                                                                                                                                                                                                                                                                                                                                                                                                                                | rename | share | rm  | restore`, `tab.add | rename | rm` |
+| `apps/api/src/routes/project-seed.ts`                                                                       | `compileSeededTabs`: a create's template tabs through `applyReplace`, and the intent of the first                                                                                                                                                                                                                                                                                                                                               |
+| `packages/api-schema/src/project-source.ts` (+ test)                                                        | `PROJECT_SOURCES` (`ai`, `mcp`, `cli`), `isProjectSource`, `isMadeByAiSource`                                                                                                                                                                                                                                                                                                                                                                 |
+| `packages/agent-verbs/src/find-projects.ts` (+ test)                                                        | Moved from `apps/mcp`; gains `listAllProjects(api)`                                                                                                                                                                                                                                                                                                                                                                                            |
 | `packages/agent-verbs/src/guides/index.ts`                                                                   | `GUIDE_TOPICS`, `GUIDE_TOPIC_NAMES`, `isGuideTopic`, `GUIDE_TOPIC_MAX_TOKENS`: build, edit, views, comments, collaborate, workbench                                                                                                                                                                                                                                                                                                             |
 | `packages/agent-verbs/src/skill.ts`                                                                          | `SKILL_NAME`, `SKILL_DESCRIPTION`, `SKILL_DIRECTORIES`, `SKILL_FRONTMATTER_MAX_TOKENS`, `SKILL_BODY_MAX_TOKENS`, `renderSkill()`                                                                                                                                                                                                                                                                                                                |
 | `packages/agent-verbs/src/testing/fake-api.ts`                                                               | `fakeApi`, `contextOf` and the library fixtures the verb suites share                                                                                                                                                                                                                                                                                                                                                                           |
@@ -46,7 +46,7 @@ Scope, by file:
 | `packages/api-schema/src/api-token-format.ts` (+ test)                                                       | `API_TOKEN_PREFIX`, `isApiTokenFormat`, moved from `apps/api/src/auth/api-token.ts` (CLI63)                                                                                                                                                                                                                                                                                                                                                     |
 | `packages/api-schema/src/telemetry-schema.ts`                                                                | Category `Cli`                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `packages/licences/src/apps.ts`                                                                              | `DISTRIBUTED_APPS` names `cli`: its package carries its own notices                                                                                                                                                                                                                                                                                                                                                                             |
-| `packages/document/src/document-envelope.ts`, `export-tab-text.ts` (+ tests)                                 | Moved (`git mv`) from the editor's `lib/` (CLI64)                                                                                                                                                                                                                                                                                                                                                                                               |
+| `packages/project/src/project-envelope.ts`, `export-tab-text.ts` (+ tests)                                 | Moved (`git mv`) from the editor's `lib/` (CLI64)                                                                                                                                                                                                                                                                                                                                                                                               |
 | `packages/edit-operations/src/element-format.ts` (+ test)                                                    | `elementKindsText()`, `elementFormatText(kind)`, `addableKinds()`, `SHAPE_COMMON_FIELDS`, `SHAPE_KIND_FIELDS` (CLI73)                                                                                                                                                                                                                                                                                                                           |
 | `packages/icons/src/{search-rank,search}.ts` (+ test)                                                        | `matches`, `paletteRank` moved from `apps/live/lib/search.ts`; `searchIcons(query, limit)` on the `./search` subpath (CLI74)                                                                                                                                                                                                                                                                                                                    |
 | `packages/templates/src/template-catalogue.ts` (+ test)                                                      | `templateCatalogue()`, shared by the MCP's `list_templates` and `GET /api/templates`                                                                                                                                                                                                                                                                                                                                                            |
@@ -71,18 +71,18 @@ Scope, by file:
 | `apps/cli/src/telemetry.ts` (+ test)                                                                         | `sendCliUsed`, `reportApiFailure`, `telemetryOffReason`, `setTelemetry`, the notice once (`state.json`)                                                                                                                                                                                                                                                                                                                                         |
 | `apps/cli/src/update-check.ts` (planned)                                                                     | The npm check                                                                                                                                                                                                                                                                                                                                                                                                                                   |
 | `apps/telemetry/app/cli-commands.ts`, `apps/telemetry/app/catalogue/cli-commands.ts`                         | `CLI_COMMANDS` (one row a counted verb), `cliCommandSentence`; the CLI Commands stack (CLI56)                                                                                                                                                                                                                                                                                                                                                   |
-| `apps/api/src/routes/capabilities.ts`, `types.ts`, `wrangler.toml`                                           | `apiBase`, `authEnabled`, `oauthIssuer`, `documentFormat`, `cli`; vars `OAUTH_ISSUER`, `CLI_MIN_VERSION` (CLI10)                                                                                                                                                                                                                                                                                                                                |
+| `apps/api/src/routes/capabilities.ts`, `types.ts`, `wrangler.toml`                                           | `apiBase`, `authEnabled`, `oauthIssuer`, `projectFormat`, `cli`; vars `OAUTH_ISSUER`, `CLI_MIN_VERSION` (CLI10)                                                                                                                                                                                                                                                                                                                                |
 | `apps/api/src/routes/tokens.ts`                                                                              | `GET` and `DELETE /api/tokens/current`, reading the token's row from `listApiTokensByOwner`                                                                                                                                                                                                                                                                                                                                                     |
 | `apps/api/src/routes/catalogues.ts` (+ test), `index.ts`                                                     | `GET /api/templates[/:kind]`, `/api/schema[/:kind]`; dispatch of the two segments                                                                                                                                                                                                                                                                                                                                                               |
 | `apps/api/src/index.ts`                                                                                      | The token write choke point admits `DELETE /api/tokens/current` and the room-ticket mint                                                                                                                                                                                                                                                                                                                                                        |
-| `apps/api/src/openapi/{manifest,document}.ts`                                                                | The capabilities fields; `tokens/current`; the catalogue routes                                                                                                                                                                                                                                                                                                                                                                                 |
-| `apps/mcp/src/api.ts`, `render.ts`, `image-result.ts`                                                        | Wiring of the extracted packages; the schema resource reads `elementSchemaDoc` from `@liveplanner/document`                                                                                                                                                                                                                                                                                                                                     |
+| `apps/api/src/openapi/{manifest,project}.ts`                                                                | The capabilities fields; `tokens/current`; the catalogue routes                                                                                                                                                                                                                                                                                                                                                                                 |
+| `apps/mcp/src/api.ts`, `render.ts`, `image-result.ts`                                                        | Wiring of the extracted packages; the schema resource reads `elementSchemaDoc` from `@liveplanner/project`                                                                                                                                                                                                                                                                                                                                     |
 | `apps/mcp/src/oauth.ts`, `oauth-clients.ts`, `oauth-device.ts` (+ tests)                                     | Port-agnostic loopback, the built-in CLI client, the device grant; the session lookup returns `clientId`                                                                                                                                                                                                                                                                                                                                        |
 | `apps/mcp/src/tools.ts`, `tool-annotations.ts`, `verb-parity.test.ts`                                        | Each tool registered from its verb in `mcp-tools.ts`; the parity test                                                                                                                                                                                                                                                                                                                                                                           |
 | `apps/live/app/oauth/oauth-shell.tsx`, `apps/live/app/oauth/consent/page.tsx`                                | `OauthShell` and `OauthHelpLink` lifted out of the consent page; `Token·Created·Cli` for the CLI client                                                                                                                                                                                                                                                                                                                                         |
 | `apps/live/lib/mcp-consent-session.ts`                                                                       | `McpConsentSession` gains `clientId`                                                                                                                                                                                                                                                                                                                                                                                                            |
 | `apps/live/app/oauth/device/page.tsx`, `apps/live/lib/mcp-device-session.ts` (+ test)                        | The `/oauth/device` page and its trust boundary                                                                                                                                                                                                                                                                                                                                                                                                 |
-| `apps/live/lib/export-tab.ts`, the envelope's callers, `lib/search.ts`                                       | Import the moved modules from `@liveplanner/document` and `@liveplanner/icons`                                                                                                                                                                                                                                                                                                                                                                  |
+| `apps/live/lib/export-tab.ts`, the envelope's callers, `lib/search.ts`                                       | Import the moved modules from `@liveplanner/project` and `@liveplanner/icons`                                                                                                                                                                                                                                                                                                                                                                  |
 | `apps/telemetry/app/catalogue/connections.ts`, `computed-emitters.ts`, `event-explanations.ts`               | The `CLI Commands` stack, `CLI Sign-Ins` in API Token Activity, the computed sites, the sentences (CLI56)                                                                                                                                                                                                                                                                                                                                       |
 | `.github/workflows/ci.yml`, `.github/workflows/cli-publish.yml`                                              | Pack dry run on every PR; publish with provenance (CLI3)                                                                                                                                                                                                                                                                                                                                                                                        |
 | `README.md`, `docs/development/{architecture,local-development}.md`, `docs/specs/016-platform/deployment.md` | The app, the packages, the two api vars, the CLI on another host, the env token's host; `AGENTS.md`'s layout needs the operator's permission                                                                                                                                                                                                                                                                                                    |
@@ -94,7 +94,7 @@ Scope, by file:
 | Verb                | `Verb`, id `<resource>.<verb>` (`tab.view`)                             | One capability; a command and a tool are its projections                 |
 | Command             | `liveplanner <resource> <verb>`                                         | The CLI's front door to a verb                                           |
 | Tool                | the MCP's snake_case name                                               | The MCP's front door to a verb                                           |
-| Resource            | `RESOURCES` entry (`document`, `tab`, ...)                              | The first word; `doc` and `el` are its aliases                           |
+| Resource            | `RESOURCES` entry (`project`, `tab`, ...)                              | The first word; `doc` and `el` are its aliases                           |
 | Behaviour           | `VerbBehaviour`: `read`, `write`, `destructive`                         | As the MCP's `ToolBehaviour`, which becomes an alias of it               |
 | Local verb          | `Verb.local: true`                                                      | A verb whose handler needs Node and lives in `apps/cli/src/commands`     |
 | Profile             | `Profile { name, host }`                                                | A named host in `config.toml`                                            |
@@ -106,7 +106,7 @@ Scope, by file:
 | Read copy           | `ReadCopy`, `ReadCopies`, `recordCopy`, `baseFromCopy`                  | The plain tab as the CLI last read it at one revision                    |
 | Base                | `baseFromCopy(copy)` → `ChangesetBase`                                  | A read copy's revision and every element's fingerprint, sent with writes |
 | Source kind         | `SourceKind`: `elements`, `replace`, `operations`                       | What a `-f` file holds                                                   |
-| Pull file           | `PullFile`, `<slug>.liveplanner.json`                                   | One document on disk, with each tab's revision                           |
+| Pull file           | `PullFile`, `<slug>.liveplanner.json`                                   | One project on disk, with each tab's revision                           |
 | Preview             | `tab render`                                                            | A PNG or SVG file of a tab                                               |
 | Loopback login      | `loginWithBrowser`                                                      | OAuth with PKCE and a `127.0.0.1` redirect                               |
 | Device login        | `loginWithDevice`, `DeviceGrant`                                        | The RFC 8628 grant; the person approves at `/oauth/device`               |
@@ -118,9 +118,9 @@ Scope, by file:
 | Exit code           | `EXIT` (`done` 0 to `failure` 7)                                        | The process status, one of eight                                         |
 
 Banned: "subcommand" (a verb), "context" or "workspace" for a profile, "PAT" or "login token" (an API token),
-"diagram" or "board" for a document, "op" for an edit operation (that is a room `ElementOp`), "batch", "patch" or
+"diagram" or "board" for a project, "op" for an edit operation (that is a room `ElementOp`), "batch", "patch" or
 "commit" for a changeset, "mode" or "format" for a view, "handle" for a ref, "query" or "filter" for a selector,
-"bot" for an agent, "plugin", "snapshot" for a read copy (that is a document's SVG snapshot), "whole-tab save" for
+"bot" for an agent, "plugin", "snapshot" for a read copy (that is a project's SVG snapshot), "whole-tab save" for
 anything the CLI does.
 
 ## Behaviour and state
@@ -142,10 +142,10 @@ anything the CLI does.
    `authEnabled` or `authEnabled: false` makes every api verb exit 4 with the "no sign-in" line: the CLI does not act
    as a guest.
 6. **Floor.** `isBelow(CLI_VERSION, caps.minVersion)` in `runOnline`: a verb whose behaviour is `write` or `destructive` and that reaches the
-   api, below `cli.minVersion`, exits 1 (CLI13). Reads are never refused. A host `documentFormat` above the
-   bundled `DOCUMENT_FORMAT` refuses the verbs marked `files` (`pull`, `push`, `export`, `tab diff`, reads of a pull
+   api, below `cli.minVersion`, exits 1 (CLI13). Reads are never refused. A host `projectFormat` above the
+   bundled `PROJECT_FORMAT` refuses the verbs marked `files` (`pull`, `push`, `export`, `tab diff`, reads of a pull
    file) with exit 1 and the version to install; online commands carry on.
-7. **Address.** `<doc>` and `--tab` resolve through `resolveDocument` and `resolveTab` (below); elements are left to
+7. **Address.** `<project>` and `--tab` resolve through `resolveProject` and `resolveTab` (below); elements are left to
    the api, except the comment verbs' ref (below).
 8. **Run.** The handler calls the api through the client and returns the verb's output object.
 9. **Print.** `print(verb, output, mode)` writes the text, JSON or quiet form to stdout.
@@ -160,8 +160,8 @@ Invariants:
   (CLI66).
 - **I3** No secret reaches stdout, stderr or a debug line: `Authorization` is printed as `Bearer lvd_…`, tokens never.
 - **I4** The CLI never does a whole-tab save. Element and tab content is written by changesets (a new tab is a
-  `replace` changeset on a new tab id), a tab's name by `PUT .../tabs/:tabId/name`, a new document by
-  `POST /api/documents` compiling its tabs. `api` refuses `PUT /documents/:id/tabs/:tabId` locally (exit 2), and the
+  `replace` changeset on a new tab id), a tab's name by `PUT .../tabs/:tabId/name`, a new project by
+  `POST /api/projects` compiling its tabs. `api` refuses `PUT /projects/:id/tabs/:tabId` locally (exit 2), and the
   api would answer a token's tab `PUT` `405 use_changesets` regardless.
 - **I5** A profile contacts its own host and nothing else, except the npm update check.
 - **I6** The exit code is one of `EXIT`'s eight.
@@ -169,26 +169,26 @@ Invariants:
 
 ### Addressing
 
-`resolveDocument(api, input, host, log)`, in order, the union of matches deciding (`document restore` adds the
+`resolveProject(api, input, host, log)`, in order, the union of matches deciding (`project restore` adds the
 Trash):
 
 | Input                                            | Resolves to                                                                                                                          |
 | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
-| A path ending in `.liveplanner.json` that exists | That pull file, read-only: `document view`, `tab ls` and `tab view` render with `renderView` locally; any other verb exits 2 (CLI70) |
-| A URL whose path is `/document/<id>`             | That id, after `parseDocumentUrl`; another origin than the host exits 2 (CLI21)                                                      |
-| A URL whose path is `/document/shared?s=<code>`  | The document of `GET /api/share/<code>`; every request of the command carries `X-Share-Code: <code>`                                 |
-| A full id (a 36-character UUID)                  | `GET /api/documents/<id>` directly, no list                                                                                          |
+| A path ending in `.liveplanner.json` that exists | That pull file, read-only: `project view`, `tab ls` and `tab view` render with `renderView` locally; any other verb exits 2 (CLI70) |
+| A URL whose path is `/project/<id>`             | That id, after `parseProjectUrl`; another origin than the host exits 2 (CLI21)                                                      |
+| A URL whose path is `/project/shared?s=<code>`  | The project of `GET /api/share/<code>`; every request of the command carries `X-Share-Code: <code>`                                 |
+| A full id (a 36-character UUID)                  | `GET /api/projects/<id>` directly, no list                                                                                          |
 | Anything else                                    | The swept list: ids starting with it (at least 4 characters) and names equal to it ignoring case (CLI20)                             |
 
-The swept list is `listAllDocuments(api)`: `GET /api/documents`, `GET /api/teams`, `GET /api/teams/:id/library`
-each, as `find_documents` sweeps; a team failure degrades to personal, as today. `document restore` resolves against
+The swept list is `listAllProjects(api)`: `GET /api/projects`, `GET /api/teams`, `GET /api/teams/:id/library`
+each, as `find_projects` sweeps; a team failure degrades to personal, as today. `project restore` resolves against
 `GET /api/trash` instead. One match proceeds; none exits 3 with the nearest names; several exit 3 with the
 candidates. A share link's password is not sent: a password-protected link answers as the api does, exit 4.
 
-`resolveTab(document, input)`: absent is the first tab by `orderIndex`; else the tab whose name equals it ignoring
+`resolveTab(project, input)`: absent is the first tab by `orderIndex`; else the tab whose name equals it ignoring
 case, or whose id starts with it (at least 4 characters) (CLI22). None or several exit 3 with the tab list.
 
-Comment verbs take an element ref, resolved with `resolveRef` from `@liveplanner/document` (`element-refs.ts`)
+Comment verbs take an element ref, resolved with `resolveRef` from `@liveplanner/project` (`element-refs.ts`)
 over the plain tab: not found or ambiguous exits 3 with the candidates `resolveRef` names. `reply`, `resolve` and
 `reopen` act on the thread on that element through its last comment's id; an element with no thread exits 3
 (`no thread on <ref>`) (CLI78).
@@ -207,12 +207,12 @@ Changeset writes (`element *`, `changeset apply`, `tab add`, `push`) take the wr
    otherwise the latest read copy's `baseFromCopy`: `{ rev, elements }`, `elements` holding `elementFingerprint`
    (which leaves out `LIVE_ELEMENT_FIELDS`) of every element. The api checks the fingerprints of its `targets` only.
    No copy sends no base, and the api's `no_base` warning prints to stderr.
-3. `POST {apiBase}/documents/:id/tabs/:tabId/changesets[?dryRun=1]` with `{ operations | replace, base, strict,
+3. `POST {apiBase}/projects/:id/tabs/:tabId/changesets[?dryRun=1]` with `{ operations | replace, base, strict,
 summary }`.
 4. On `409 elements_held` with `--wait-held <s>`: retry every `HELD_RETRY_INTERVAL_MS` until `s` seconds have
    passed since the first attempt, then exit 5 (CLI25).
 5. Print the api's `text`: the result lines, then the footer `formatResultFooter` wrote, carrying the revert command
-   `liveplanner changeset revert <documentId> <changeset-id>` (CLI26); a dry run carries the engine's dry-run footer.
+   `liveplanner changeset revert <projectId> <changeset-id>` (CLI26); a dry run carries the engine's dry-run footer.
    Each of `warnings` prints to stderr.
 6. When the write landed with `rebasedOver` 0, read the plain tab and `recordCopy` it (CLI24); a rebased write keeps
    the older copy, so a later write over someone else's change conflicts rather than passes.
@@ -254,10 +254,10 @@ answers after it cannot write it back as pending, whatever KV's cross-region sta
 
 | From         | Event                                          | To           | Effect                                                                                                                                          |
 | ------------ | ---------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| idle         | start                                          | connecting   | `POST .../room-ticket`; `new WebSocket(<ws base>/documents/:id/ws?t=<ticket>)`                                                                  |
+| idle         | start                                          | connecting   | `POST .../room-ticket`; `new WebSocket(<ws base>/projects/:id/ws?t=<ticket>)`                                                                  |
 | connecting   | open                                           | open         | nothing sent, ever: no `hello`, so it is no session (CLI32)                                                                                     |
 | open         | `op` frame                                     | open         | `classifyRoomOp`; `wait` may finish, `watch` prints a line                                                                                      |
-| open         | close 4004                                     | stopped      | exit 3, "the document was moved to the Trash"                                                                                                   |
+| open         | close 4004                                     | stopped      | exit 3, "the project was moved to the Trash"                                                                                                   |
 | open         | other close or error                           | reconnecting | stderr `reconnecting…`; backoff `ROOM_RECONNECT_MIN_MS` doubling to `ROOM_RECONNECT_MAX_MS`                                                     |
 | reconnecting | reopened                                       | open         | stderr names the `tab diff` that shows what was missed                                                                                          |
 | connecting   | ticket answered `429`                          | reconnecting | retried with the backoff, never final; any other status below 500 ends the stream                                                               |
@@ -274,29 +274,29 @@ answers after it cannot write it back as pending, whatever KV's cross-region sta
 
 ### Read copies
 
-- `recordCopy(profile, documentId, tab, rev)` runs after every `tab view` (the view and the plain tab are read in
+- `recordCopy(profile, projectId, tab, rev)` runs after every `tab view` (the view and the plain tab are read in
   parallel; their `ETag` revisions must agree, else the plain read repeats once, else no copy is kept), `tab view
 --raw`, `tab diff`, `pull`, and a write with `rebasedOver` 0.
-- Copies are keyed `<profile>|<documentId>|<tabId>`, at most `READ_COPY_REVS_PER_TAB` revisions each and
+- Copies are keyed `<profile>|<projectId>|<tabId>`, at most `READ_COPY_REVS_PER_TAB` revisions each and
   `READ_COPY_MAX_BYTES` in all, evicted least recently used (CLI24, CLI76).
-- `tab diff <doc> [--tab] --since <rev>`: the read copy at `<rev>` is `before`; the plain tab read now is `after`;
-  `diffView(before, after, context)` from `@liveplanner/document-views` prints, and `after` is recorded. No copy at
+- `tab diff <project> [--tab] --since <rev>`: the read copy at `<rev>` is `before`; the plain tab read now is `after`;
+  `diffView(before, after, context)` from `@liveplanner/project-views` prints, and `after` is recorded. No copy at
   `<rev>` exits 3 (`no copy of rev <rev>; tab diff compares against a revision this CLI has read`) naming the
   revisions it holds (CLI79). The api serves no diff view.
 
 ### Pull and push
 
-- `pull <doc> [--to <dir>] [--svg] [--force]`: `documentOf` (a share link's code applies), then each tab with its `ETag`, in
+- `pull <project> [--to <dir>] [--svg] [--force]`: `projectOf` (a share link's code applies), then each tab with its `ETag`, in
   order; writes the pull file (CLI27) atomically (temporary file then rename) and records each tab's read copy; a tab
   answered without a revision exits 7. `--svg` adds `<slug>.<tab-slug>.svg` per tab from
   `GET .../tabs/:tabId/render.svg` (`apps/api/src/routes/tab-render-route.ts`, `renderTabSvg` in
   `apps/api/src/thumbnail.ts`), two tabs of one name told apart by `-<id8>`.
-- **CLI27a** Before writing, `pull` reads this document's file at the path it would write; when `isLocallyChanged`
+- **CLI27a** Before writing, `pull` reads this project's file at the path it would write; when `isLocallyChanged`
   (`apps/cli/src/sync/pull-file.ts`) finds a tab hashing other than its pulled record, or a tab added or gone, nothing is written and the pull exits 1 with `unpushed_changes`. `--force` skips
   the check and overwrites.
 - `push <file>`: parses the pull file (`parsePullFile`), refuses another host than the profile's (exit 2); for each
   tab whose elements hash (`tabHashes`) differs from the pulled one, submits `replace { elements }` with
-  `base { rev }` (the tab's pulled revision) and `strict: true`; a tab missing from the document, or from `liveplannerSync`, is created
+  `base { rev }` (the tab's pulled revision) and `strict: true`; a tab missing from the project, or from `liveplannerSync`, is created
   by `replace { elements, name }` with no base (`WriteFlags.base: null`); a `412 stale_tab` prints
   `! stale tab "<name>"` and moves on; finally rewrites the file's revisions and hashes for the tabs that landed, and
   writes nothing on `--dry-run` (CLI28). An answer of `nothing changed` keeps the pulled revision.
@@ -364,9 +364,9 @@ the CLI exits on its `status` as on the api's.
 ```
 
 Verbs and tools: each MCP tool is its own verb in `mcp-tools.ts`, holding today's tool name, input and output
-schemas (`documentId`, `tabId`, `mode`, ...), and the CLI's commands are their own verbs. Where a tool and a command
-do the same work they share handler helpers (`listAllDocuments`, `resolveDocument`, the api calls), never schemas.
-A verb with `mcp` and no `cli` is MCP-only (`read_document`, `list_trash`); with `cli` and no `mcp`, CLI-only.
+schemas (`projectId`, `tabId`, `mode`, ...), and the CLI's commands are their own verbs. Where a tool and a command
+do the same work they share handler helpers (`listAllProjects`, `resolveProject`, the api calls), never schemas.
+A verb with `mcp` and no `cli` is MCP-only (`read_project`, `list_trash`); with `cli` and no `mcp`, CLI-only.
 
 `buildParseOptions(verb)`: each input key not in `positionals` becomes `--<kebab-case key>` unless renamed; zod
 string, enum and number become `type: 'string'` (numbers coerced by zod), boolean `type: 'boolean'`, arrays
@@ -385,43 +385,43 @@ There is no `--token` flag; `parseArgs` refuses it as unknown (exit 2).
 
 ### Commands
 
-Positionals in `<>`, optional in `[]`. `<doc>` and `--tab` resolve as above. "Write flags" are `--dry-run`,
+Positionals in `<>`, optional in `[]`. `<project>` and `--tab` resolve as above. "Write flags" are `--dry-run`,
 `--summary <text>`, `--base <rev>`, `--strict`, `--wait-held <seconds>`. Exit codes beyond 0 and 2 follow
 `exitCodeForStatus` (CLI14).
 
 | Command                                                                                                                                 | Verb               | Api                                                                                                                    | stdout                                                                                                                                                     |
 | --------------------------------------------------------------------------------------------------------------------------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `document ls [query] [--limit n]`                                                                                                       | `document.ls`      | the sweep                                                                                                              | `<ref>  "<name>"  <library>  <YYYY-MM-DD>` (CLI60)                                                                                                         |
-| `document view <doc>`                                                                                                                   | `document.view`    | `GET /documents/:id?view=overview`                                                                                     | the overview view                                                                                                                                          |
-| `document create <name> [--tab <name>] [-f <file>\|--template <kind>]`                                                                  | `document.create`  | `POST /documents { id, name, source: 'cli', tabs: [{ id, name, template \| elements }] }`, compiled by the api (CLI75) | `+ document <ref> "<name>" · <n> tabs · <url>`                                                                                                             |
-| `document rename <doc> <name>`                                                                                                          | `document.rename`  | `PUT /documents/:id { name }`                                                                                          | `~ document <ref> "<old>"→"<new>"`                                                                                                                         |
-| `document share <doc> [--role <r>] [--expiry <e>]`                                                                                      | `document.share`   | `POST /documents/:id/share`; values and defaults of `share_document`                                                   | the link URL                                                                                                                                               |
-| `document rm <doc>`                                                                                                                     | `document.rm`      | `DELETE /documents/:id`                                                                                                | `- document <ref> "<name>" · in the Trash for 30 days · restore: liveplanner document restore <id>`                                                        |
-| `document restore <doc>`                                                                                                                | `document.restore` | `POST /trash/:id/restore`                                                                                              | `+ document <ref> "<name>" restored`                                                                                                                       |
-| `tab ls <doc>`                                                                                                                          | `tab.ls`           | `GET /documents/:id`                                                                                                   | `<n>  <ref>  "<name>"` per tab (CLI59)                                                                                                                     |
-| `tab view <doc> [--tab] [--view <name>] [--ref <ref>] [--text <text>] [--budget n] [--only <ref>] [--coarse] [--style] [--all] [--raw]` | `tab.view`         | `GET .../tabs/:tabId?view=…` (CLI69); `--raw` the plain tab                                                            | the view as served                                                                                                                                         |
-| `tab add <doc> <name> [-f <file>\|--template <kind>]` + write flags                                                                     | `tab.add`          | changeset `replace` on a new tab id (CLI58)                                                                            | `+ tab <id> "<name>"`, result lines and footer, its `undo: liveplanner tab rm <doc> <tab>` in place of the revert (a revert empties the tab but leaves it) |
-| `tab rename <doc> <tab> <name>`                                                                                                         | `tab.rename`       | `PUT /documents/:id/tabs/:tabId/name { name }`                                                                         | `~ tab <ref> "<old>"→"<new>"`                                                                                                                              |
-| `tab rm <doc> <tab>`                                                                                                                    | `tab.rm`           | `DELETE /documents/:id/tabs/:tabId`                                                                                    | `- tab <ref> "<name>"`                                                                                                                                     |
-| `tab diff <doc> [--tab] --since <rev>`                                                                                                  | `tab.diff`         | the plain tab; the diff is computed locally                                                                            | the diff view                                                                                                                                              |
-| `tab render <doc> [--tab] --png <file>\|--svg <file>`                                                                                   | `tab.render`       | `GET .../render.svg`                                                                                                   | `<path>  <w>×<h> · <size>`                                                                                                                                 |
-| `element add\|set\|rm\|move\|connect\|insert\|wrap <doc> [--tab] <words…>` + write flags                                                | `element.<op>`     | the changeset route                                                                                                    | result lines and footer                                                                                                                                    |
-| `changeset apply <doc> [--tab] -f <file>\|-` + write flags (`edit`)                                                                     | `changeset.apply`  | the changeset route                                                                                                    | result lines and footer                                                                                                                                    |
-| `changeset ls <doc> [--tab] [--limit n]`                                                                                                | `changeset.ls`     | `GET /documents/:id/changesets?tab=&limit=`                                                                            | `<id>  rev <n>  "<tab>"  <name>[ (agent)]  "<summary>"  +a ~c -r  <YYYY-MM-DD HH:MM>`                                                                      |
-| `changeset show <doc> <changeset>`                                                                                                      | `changeset.show`   | `GET /documents/:id/changesets/:changesetId`                                                                           | the summary line, then the changeset's result lines                                                                                                        |
-| `changeset revert <doc> <changeset>`                                                                                                    | `changeset.revert` | `POST /documents/:id/changesets/:cs/revert`                                                                            | result lines, then `kept <ref> (<reason>)` lines                                                                                                           |
-| `comment ls <doc> [--tab] [--status open\|resolved\|all]`                                                                               | `comment.ls`       | `GET /documents/:id/comments?status=`                                                                                  | the comments view's thread lines                                                                                                                           |
-| `comment add <doc> [--tab] <ref> <text>`                                                                                                | `comment.add`      | `POST .../tabs/:tabId/comments { elementId, text }` (201)                                                              | `+ comment <id> on <ref>`                                                                                                                                  |
-| `comment reply <doc> [--tab] <ref> <text>`                                                                                              | `comment.reply`    | `POST .../comments/:lastCommentId/reply { text }` (201)                                                                | `+ comment <id> on <ref>`                                                                                                                                  |
-| `comment resolve\|reopen <doc> [--tab] <ref>`                                                                                           | `comment.<verb>`   | `POST .../comments/:lastCommentId/<verb>` (204)                                                                        | `~ thread <ref> resolved\|open`                                                                                                                            |
-| `presence set <doc> [--tab] [--status <text>] [--focus <refs>] [--ttl <s>]`                                                             | `presence.set`     | `PUT .../presence` (`--focus` comma-separated, `--ttl` seconds sent as ms); `parseAgentPresenceRequest` first          | `presence on "<tab>" until <HH:MM:SS>`                                                                                                                     |
-| `presence clear <doc> [--tab]`                                                                                                          | `presence.clear`   | `DELETE .../presence`                                                                                                  | `presence cleared on "<tab>"`                                                                                                                              |
-| `wait <doc> --for comment\|change [--tab] [--timeout <s>]`                                                                              | `wait`             | the room stream                                                                                                        | the comment's thread lines, the change line, or the timeout line (CLI33)                                                                                   |
-| `watch <doc> [--tab]`                                                                                                                   | `watch`            | the room stream                                                                                                        | one line per event (CLI33); `--json` one object a line                                                                                                     |
-| `pull <doc> [--to <dir>] [--svg]`                                                                                                       | `pull`             | document, tabs, `render.svg`                                                                                           | the paths written                                                                                                                                          |
+| `project ls [query] [--limit n]`                                                                                                       | `project.ls`      | the sweep                                                                                                              | `<ref>  "<name>"  <library>  <YYYY-MM-DD>` (CLI60)                                                                                                         |
+| `project view <project>`                                                                                                                   | `project.view`    | `GET /projects/:id?view=overview`                                                                                     | the overview view                                                                                                                                          |
+| `project create <name> [--tab <name>] [-f <file>\|--template <kind>]`                                                                  | `project.create`  | `POST /projects { id, name, source: 'cli', tabs: [{ id, name, template \| elements }] }`, compiled by the api (CLI75) | `+ project <ref> "<name>" · <n> tabs · <url>`                                                                                                             |
+| `project rename <project> <name>`                                                                                                          | `project.rename`  | `PUT /projects/:id { name }`                                                                                          | `~ project <ref> "<old>"→"<new>"`                                                                                                                         |
+| `project share <project> [--role <r>] [--expiry <e>]`                                                                                      | `project.share`   | `POST /projects/:id/share`; values and defaults of `share_project`                                                   | the link URL                                                                                                                                               |
+| `project rm <project>`                                                                                                                     | `project.rm`      | `DELETE /projects/:id`                                                                                                | `- project <ref> "<name>" · in the Trash for 30 days · restore: liveplanner project restore <id>`                                                        |
+| `project restore <project>`                                                                                                                | `project.restore` | `POST /trash/:id/restore`                                                                                              | `+ project <ref> "<name>" restored`                                                                                                                       |
+| `tab ls <project>`                                                                                                                          | `tab.ls`           | `GET /projects/:id`                                                                                                   | `<n>  <ref>  "<name>"` per tab (CLI59)                                                                                                                     |
+| `tab view <project> [--tab] [--view <name>] [--ref <ref>] [--text <text>] [--budget n] [--only <ref>] [--coarse] [--style] [--all] [--raw]` | `tab.view`         | `GET .../tabs/:tabId?view=…` (CLI69); `--raw` the plain tab                                                            | the view as served                                                                                                                                         |
+| `tab add <project> <name> [-f <file>\|--template <kind>]` + write flags                                                                     | `tab.add`          | changeset `replace` on a new tab id (CLI58)                                                                            | `+ tab <id> "<name>"`, result lines and footer, its `undo: liveplanner tab rm <project> <tab>` in place of the revert (a revert empties the tab but leaves it) |
+| `tab rename <project> <tab> <name>`                                                                                                         | `tab.rename`       | `PUT /projects/:id/tabs/:tabId/name { name }`                                                                         | `~ tab <ref> "<old>"→"<new>"`                                                                                                                              |
+| `tab rm <project> <tab>`                                                                                                                    | `tab.rm`           | `DELETE /projects/:id/tabs/:tabId`                                                                                    | `- tab <ref> "<name>"`                                                                                                                                     |
+| `tab diff <project> [--tab] --since <rev>`                                                                                                  | `tab.diff`         | the plain tab; the diff is computed locally                                                                            | the diff view                                                                                                                                              |
+| `tab render <project> [--tab] --png <file>\|--svg <file>`                                                                                   | `tab.render`       | `GET .../render.svg`                                                                                                   | `<path>  <w>×<h> · <size>`                                                                                                                                 |
+| `element add\|set\|rm\|move\|connect\|insert\|wrap <project> [--tab] <words…>` + write flags                                                | `element.<op>`     | the changeset route                                                                                                    | result lines and footer                                                                                                                                    |
+| `changeset apply <project> [--tab] -f <file>\|-` + write flags (`edit`)                                                                     | `changeset.apply`  | the changeset route                                                                                                    | result lines and footer                                                                                                                                    |
+| `changeset ls <project> [--tab] [--limit n]`                                                                                                | `changeset.ls`     | `GET /projects/:id/changesets?tab=&limit=`                                                                            | `<id>  rev <n>  "<tab>"  <name>[ (agent)]  "<summary>"  +a ~c -r  <YYYY-MM-DD HH:MM>`                                                                      |
+| `changeset show <project> <changeset>`                                                                                                      | `changeset.show`   | `GET /projects/:id/changesets/:changesetId`                                                                           | the summary line, then the changeset's result lines                                                                                                        |
+| `changeset revert <project> <changeset>`                                                                                                    | `changeset.revert` | `POST /projects/:id/changesets/:cs/revert`                                                                            | result lines, then `kept <ref> (<reason>)` lines                                                                                                           |
+| `comment ls <project> [--tab] [--status open\|resolved\|all]`                                                                               | `comment.ls`       | `GET /projects/:id/comments?status=`                                                                                  | the comments view's thread lines                                                                                                                           |
+| `comment add <project> [--tab] <ref> <text>`                                                                                                | `comment.add`      | `POST .../tabs/:tabId/comments { elementId, text }` (201)                                                              | `+ comment <id> on <ref>`                                                                                                                                  |
+| `comment reply <project> [--tab] <ref> <text>`                                                                                              | `comment.reply`    | `POST .../comments/:lastCommentId/reply { text }` (201)                                                                | `+ comment <id> on <ref>`                                                                                                                                  |
+| `comment resolve\|reopen <project> [--tab] <ref>`                                                                                           | `comment.<verb>`   | `POST .../comments/:lastCommentId/<verb>` (204)                                                                        | `~ thread <ref> resolved\|open`                                                                                                                            |
+| `presence set <project> [--tab] [--status <text>] [--focus <refs>] [--ttl <s>]`                                                             | `presence.set`     | `PUT .../presence` (`--focus` comma-separated, `--ttl` seconds sent as ms); `parseAgentPresenceRequest` first          | `presence on "<tab>" until <HH:MM:SS>`                                                                                                                     |
+| `presence clear <project> [--tab]`                                                                                                          | `presence.clear`   | `DELETE .../presence`                                                                                                  | `presence cleared on "<tab>"`                                                                                                                              |
+| `wait <project> --for comment\|change [--tab] [--timeout <s>]`                                                                              | `wait`             | the room stream                                                                                                        | the comment's thread lines, the change line, or the timeout line (CLI33)                                                                                   |
+| `watch <project> [--tab]`                                                                                                                   | `watch`            | the room stream                                                                                                        | one line per event (CLI33); `--json` one object a line                                                                                                     |
+| `pull <project> [--to <dir>] [--svg]`                                                                                                       | `pull`             | project, tabs, `render.svg`                                                                                           | the paths written                                                                                                                                          |
 | `push <file>` + write flags                                                                                                             | `push`             | changesets                                                                                                             | per tab: its result lines, or `! stale <tab>`                                                                                                              |
-| `export --all --to <dir> [--format json,svg,png,md]`                                                                                    | `export`           | the sweep, documents, tabs, `render.svg`                                                                               | the paths written, then `<n> documents · <m> files`                                                                                                        |
-| `workbench open <doc>\|--workspace [--folder <f>] [--tab] --origin <origin>`                                                            | `workbench.open`   | `POST /workbench/tickets` (`scope: 'workspace', folderId?` with `--workspace`)                                         | the link; `--json` the ticket answer                                                                                                                       |
+| `export --all --to <dir> [--format json,svg,png,md]`                                                                                    | `export`           | the sweep, projects, tabs, `render.svg`                                                                               | the paths written, then `<n> projects · <m> files`                                                                                                        |
+| `workbench open <project>\|--workspace [--folder <f>] [--tab] --origin <origin>`                                                            | `workbench.open`   | `POST /workbench/tickets` (`scope: 'workspace', folderId?` with `--workspace`)                                         | the link; `--json` the ticket answer                                                                                                                       |
 | `workbench pair --origin <origin> [--name <name>] [--workspace]`                                                                        | `workbench.pair`   | `POST /workbench/pairing-requests` (`scope`), then its status                                                          | the approval link, then `paired <origin>`                                                                                                                  |
 | `folder ls`                                                                                                                             | `folder.ls`        | `GET /folders`, each team's `GET /teams/:id/library`                                                                   | `<id>  <path>  <library>` per folder, depth first (CLI86); `--json` `[{ id, path, library }]`                                                              |
 | `folder create <name> [--in <f>]`                                                                                                       | `folder.create`    | `POST /folders { id, name, parentId, teamId }`                                                                         | `+ folder <ref> "<path>"`; `--json` `{ id, path }` (CLI87)                                                                                                 |
@@ -433,8 +433,8 @@ Positionals in `<>`, optional in `[]`. `<doc>` and `--tab` resolve as above. "Wr
 | `auth login [--device\|--with-token]`, `auth status`, `auth logout`                                                                     | `auth.*`           | the OAuth server; `tokens/current`                                                                                     | `signed in to <host> as <name>`; the status lines; `signed out of <host>`                                                                                  |
 | `telemetry on\|off`                                                                                                                     | `telemetry.*`      | `POST /events` (the flip only)                                                                                         | `telemetry on\|off`                                                                                                                                        |
 
-- `document create` without `-f` or `--template` sends one tab with `elements: []`; `--tab` defaults to the
-  document's name (CLI75). `-f` holding edit operations exits 1 ("expected elements or a replace"). The id is the CLI's `crypto.randomUUID()`; the api derives the creation intent from the
+- `project create` without `-f` or `--template` sends one tab with `elements: []`; `--tab` defaults to the
+  project's name (CLI75). `-f` holding edit operations exits 1 ("expected elements or a replace"). The id is the CLI's `crypto.randomUUID()`; the api derives the creation intent from the
   tabs it compiles, and `source: 'cli'` is not counted by Made by AI.
 - `tab view` maps `--ref` to `ref` (required by `show`), `--text` to `q` (required by `find`) and `--all` to `all=1`
   (resolved threads in `comments`).
@@ -458,7 +458,7 @@ Positionals in `<>`, optional in `[]`. `<doc>` and `--tab` resolve as above. "Wr
 ### Output
 
 - **Text** is the verb's `text(output)`; each line ends in `\n`; no ANSI colour, ever (CLI47).
-- **`--json`** prints the output object as one compact JSON document. `--json a,b` keeps those keys of the object,
+- **`--json`** prints the output object as one compact JSON project. `--json a,b` keeps those keys of the object,
   or of each item of `listKey` for a list. An unknown field exits 2 listing the valid ones. View verbs ask the api
   with `json=1`.
 - **`-q`** prints `quiet(output)`, one ref or id a line; a list's footer goes to stderr.
@@ -468,7 +468,7 @@ Positionals in `<>`, optional in `[]`. `<doc>` and `--tab` resolve as above. "Wr
 - **Errors** go to stderr in `formatError`'s shape:
 
 ```text
-error: "Auth" matches 3 documents
+error: "Auth" matches 3 projects
   3f9c1a2b  "Auth flow"         personal
   7d02e1aa  "Auth flow v2"      Platform
   a11b0c3d  "Authentication"    personal
@@ -484,12 +484,12 @@ refusal prints the api's message.
 - **Top** (`liveplanner`, `liveplanner --help`), final copy, within `HELP_TOP_MAX_TOKENS`:
 
 ```text
-liveplanner: read, build, edit and discuss documents.
+liveplanner: read, build, edit and discuss projects.
 
 Usage: liveplanner <resource> <verb> [args] [flags]
 
 Resources
-  document (doc)  ls, view, create, rename, share, rm, restore
+  project (doc)  ls, view, create, rename, share, rm, restore
   tab             ls, view, add, rename, rm, diff, render, lint
   element (el)    add, set, rm, move, connect, insert, wrap
   item            ls, add, set, move, rm
@@ -497,11 +497,11 @@ Resources
   comment         ls, add, reply, resolve, reopen
   presence        set, clear
   wait, watch     block until, or stream, comments and changes
-  pull, push      one document to a file and back; export --all
+  pull, push      one project to a file and back; export --all
   template, schema, guide, skill, api, auth, telemetry
 
 Addressing
-  <doc>     name, id prefix or liveplanner URL     "Auth flow", 3f9c
+  <project>     name, id prefix or liveplanner URL     "Auth flow", 3f9c
   --tab     tab name or id prefix; the first tab when omitted
   elements  refs from a view, or selectors          146b, type:sticky
 
@@ -513,7 +513,7 @@ Output
   5 conflict, 6 rate limited, 7 network or server.
 
 Start
-  liveplanner document ls auth        find a document
+  liveplanner project ls auth        find a project
   liveplanner tab view "Auth flow"    its first tab, as an outline
   liveplanner edit "Auth flow" -f -   edit operations from stdin
   liveplanner guide build             build a project from scratch
@@ -529,7 +529,7 @@ More: liveplanner <resource> --help, liveplanner guide <topic>
   from `cli.positionals` and the flags; `Flags`, one line each with the zod `.describe()` text; `Examples`, the two
   of `cli.examples`; `Prints: <cli.prints>`. Write flags share one description each, kept in `WRITE_FLAG_TEXT`.
 - **Guide** (`liveplanner guide`) lists the six topics one line each; `guide <topic>` prints the topic, within
-  `GUIDE_TOPIC_MAX_TOKENS` (CLI49). The `edit` topic shows `element connect <doc> <a> <b>` and says why `->` is
+  `GUIDE_TOPIC_MAX_TOKENS` (CLI49). The `edit` topic shows `element connect <project> <a> <b>` and says why `->` is
   never typed unquoted. The `workbench` topic is the
   [workbench blueprint](../../013-workspace/blueprints/workbench-embeds.md#the-cli)'s.
 - **Skill**: `renderSkill()` gives frontmatter `name: liveplanner` and `description: SKILL_DESCRIPTION` (within
@@ -555,13 +555,13 @@ type CapabilitiesResponse = {
   apiBase?: string; // `${url.origin}/api` (CLI9)
   authEnabled?: boolean; // CLERK_JWKS_URL is set (CLI11)
   oauthIssuer?: string; // OAUTH_ISSUER, an https origin; absent when unset or invalid
-  documentFormat?: number; // DOCUMENT_FORMAT
+  projectFormat?: number; // PROJECT_FORMAT
   cli?: { minVersion: string }; // CLI_MIN_VERSION when it is x.y.z; absent otherwise
 };
 ```
 
 Optional so an older worker parses. The CLI treats an absent `apiBase` as `<host>/api`, an absent `authEnabled` as
-false, an absent `documentFormat` as equal to its own.
+false, an absent `projectFormat` as equal to its own.
 
 ### Token self-service (api)
 
@@ -697,7 +697,7 @@ file exits 7 naming it.
 
 ### The pull file
 
-The `liveplanner.document` envelope (`DocumentEnvelope`, schema version 1, from the moved `document-envelope.ts`),
+The `liveplanner.project` envelope (`ProjectEnvelope`, schema version 1, from the moved `project-envelope.ts`),
 so the editor's "Import a copy" reads it, plus one key the envelope parser ignores (CLI27):
 
 ```ts
@@ -707,7 +707,7 @@ type PullSync = {
   // hash: SHA-256 hex of the canonical JSON of the elements; settingsHash: of every other field (CLI28)
   tabs: Record<string, { rev: number; hash: string; settingsHash: string }>;
 };
-type PullFile = DocumentEnvelope & { liveplannerSync: PullSync };
+type PullFile = ProjectEnvelope & { liveplannerSync: PullSync };
 ```
 
 ### Telemetry
@@ -750,7 +750,7 @@ No D1 table, no migration. Local files (CLI5):
 | `<slug>.liveplanner.json`                             | content | The pull file; the person's to keep                                                                                                                                               |
 
 `StoredCredential = { host, token, tokenId, accountName, role, expiresAt }`. `<key hash>` is the first 16 hex of
-SHA-256 over `<profile>|<documentId>|<tabId>`. Every write is a temporary file in the same directory then
+SHA-256 over `<profile>|<projectId>|<tabId>`. Every write is a temporary file in the same directory then
 `rename`. An unreadable or wrong-version derived file is ignored and rewritten; a malformed `config.toml` or
 `credentials.json` exits 2 naming the file and the line. Server state: the device grant's three KV keys, TTL 600 s;
 nothing in D1.
@@ -759,13 +759,13 @@ nothing in D1.
 
 - **E1** `liveplanner.app` redirects to `www.liveplanner.app`: the capabilities `GET` follows it, and every later
   request goes to `apiBase` directly, so no `Authorization` header crosses a redirect.
-- **E2** `connect a -> b` unquoted in a shell redirects stdout to a file named `b`: `element connect <doc> <a> <b>`
+- **E2** `connect a -> b` unquoted in a shell redirects stdout to a file named `b`: `element connect <project> <a> <b>`
   takes the ends as two words and inserts the arrow (CLI23); the `edit` guide says so.
 - **E3** A word holding spaces (`label="Sign in"` arrives as `label=Sign in`) is re-quoted by `argvToOperationLine`.
 - **E4** A ref printed earlier is now ambiguous: the api's `target_ambiguous` text, exit 1, hint to re-read.
 - **E5** The read copy is far behind: the api rebases or conflicts as for any base; nothing local special-cases it.
 - **E6** A tab deleted since the read copy: `resolveTab` fails first, exit 3.
-- **E7** A document moved to the Trash: 410, exit 3, hint `liveplanner document restore <id>`.
+- **E7** A project moved to the Trash: 410, exit 3, hint `liveplanner project restore <id>`.
 - **E8** A token whose role does not admit the write: 403, exit 4, the api's message, hint
   `liveplanner auth status` (which shows the role).
 - **E9** The browser never returns (closed tab, wrong account): the loopback times out after `LOGIN_TIMEOUT_MS`,
@@ -788,7 +788,7 @@ nothing in D1.
 - **E21** `tab diff --since` a revision with no read copy: exit 3 naming the revisions held (CLI79).
 - **E22** The room's 256 KiB frame cap: ops arrive whole or as `refetch: true` changesets; `watch` prints those
   with their counts, no element lines.
-- **E23** Reconnect misses ops: stderr `may have missed changes: liveplanner tab diff <doc> --tab <t> --since <rev>`
+- **E23** Reconnect misses ops: stderr `may have missed changes: liveplanner tab diff <project> --tab <t> --since <rev>`
   with the latest read copy's revision.
 - **E24** `export` meets the token read limiter (120 a minute): 429 answers are retried after 60 s, up to three
   times per request, before exit 6.
@@ -814,7 +814,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
   debug lines redact `Authorization`.
 - **Credentials at rest.** The platform's store first, the token on the tool's stdin and never in its argv (`ps`
   shows only the profile name); the file at 0600 in a 0700 directory, written by temporary file and
-  rename so no partial file is ever readable. Read copies hold document content and get the same modes.
+  rename so no partial file is ever readable. Read copies hold project content and get the same modes.
 - **The loopback.** Bound to `127.0.0.1` only; `state` checked; one use; closed after the code; PKCE S256 with a
   32-byte verifier. The port-agnostic match applies to `http` loopback URIs only, and the hostname must equal the
   registered one (`127.0.0.1`, `[::1]` and `localhost` are distinct).
@@ -839,9 +839,9 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
 
 ## Performance and limits
 
-- **Requests per command.** A full id: capabilities (cached), one document read, the action. A name or prefix: the
+- **Requests per command.** A full id: capabilities (cached), one project read, the action. A name or prefix: the
   sweep, `2 + teams` reads. `tab view` reads the view and the plain tab in parallel; a changeset write adds one
-  plain read after landing. `export --all`: the sweep plus, per document, one read and per tab one read and one
+  plain read after landing. `export --all`: the sweep plus, per project, one read and per tab one read and one
   `render.svg`, `EXPORT_CONCURRENCY` at a time, under the token's 120 reads a minute.
 - **Start-up.** One ESM file; `@liveplanner/render-png`, the wasm and the font are loaded only by `tab render`,
   `pull --svg` and `export` with `png`. `--help` evaluates no handler module beyond the catalogue.
@@ -873,7 +873,7 @@ minted token revoked`, or `[oauth] handover revoke failed` when the revoke itsel
     token cap (409 `token_limit_reached`) "Your account has reached its limit of API tokens. Revoke one in Settings,
     under Account › API Tokens, then try again."; anything else "Something went wrong. Please try again."
 - **CLI notices** (stderr), final copy:
-  - telemetry: `liveplanner counts which commands succeed (the command's name only: never arguments, documents or
+  - telemetry: `liveplanner counts which commands succeed (the command's name only: never arguments, projects or
 hosts) and sends the count to <host>. Turn it off: liveplanner telemetry off, or LIVEPLANNER_TELEMETRY=0.`
   - update: `liveplanner <latest> is available (this is <current>): npm install -g @liveplanner/cli@latest, or
 npx @liveplanner/cli@latest`
@@ -892,16 +892,16 @@ npx @liveplanner/cli@latest`
 | Host without sign-in      | `<host> has no sign-in, so the CLI cannot act there`                       | none                                                                                            |
 | Host without OAuth server | `<host> has no sign-in server for the CLI`                                 | `create a token in Settings › API Tokens, then pipe it to: liveplanner auth login --with-token` |
 | Below the floor           | `<host> accepts writes from liveplanner <min> or later; this is <v>`       | `UPGRADE_HINT`: `npm install -g @liveplanner/cli@latest, or npx @liveplanner/cli@latest`        |
-| Newer document format     | `<host> stores documents newer than this liveplanner reads (<v>)`          | `UPGRADE_HINT`: `npm install -g @liveplanner/cli@latest, or npx @liveplanner/cli@latest`        |
+| Newer project format     | `<host> stores projects newer than this liveplanner reads (<v>)`          | `UPGRADE_HINT`: `npm install -g @liveplanner/cli@latest, or npx @liveplanner/cli@latest`        |
 | Unknown verb              | `unknown verb "<v>" for "<resource>"`, `  did you mean: <x>`               | `liveplanner <resource> --help`                                                                 |
 | Unknown flag              | `unknown flag <flag> for "<command>"`                                      | `liveplanner <command> --help`                                                                  |
-| Not found                 | `no <document\|tab> matches "<x>"`, nearest lines                          | `liveplanner document ls` / `liveplanner tab ls <doc>`                                          |
-| Ambiguous                 | `"<x>" matches <n> <documents\|tabs>`, candidates                          | the command with the first candidate's ref                                                      |
+| Not found                 | `no <project\|tab> matches "<x>"`, nearest lines                          | `liveplanner project ls` / `liveplanner tab ls <project>`                                          |
+| Ambiguous                 | `"<x>" matches <n> <projects\|tabs>`, candidates                          | the command with the first candidate's ref                                                      |
 | Unknown `-f` content      | `can't tell what <file> holds`                                             | `expected edit operations or elements: liveplanner guide edit`                                  |
-| Conflict                  | `<n> elements changed since rev <base> (now <rev>):`, `  <ref> (<reason>)` | `re-read: liveplanner tab view <doc> --tab <t>`                                                 |
+| Conflict                  | `<n> elements changed since rev <base> (now <rev>):`, `  <ref> (<reason>)` | `re-read: liveplanner tab view <project> --tab <t>`                                                 |
 | Held                      | `<n> elements are selected by people:`, `  <ref> (<name>)`                 | `retry later, or add --wait-held 30`                                                            |
-| Stale (`--strict`)        | `"<tab>" changed since rev <base> (now <rev>)`                             | `re-read: liveplanner tab view <doc> --tab <t>`                                                 |
-| Unpushed changes          | `<path> changed here and is not pushed; not overwritten`                   | `send it: liveplanner push <path>, or drop it: liveplanner pull "<doc>" --force`                |
+| Stale (`--strict`)        | `"<tab>" changed since rev <base> (now <rev>)`                             | `re-read: liveplanner tab view <project> --tab <t>`                                                 |
+| Unpushed changes          | `<path> changed here and is not pushed; not overwritten`                   | `send it: liveplanner push <path>, or drop it: liveplanner pull "<project>" --force`                |
 | Rate limited              | `<host> is rate limiting this token`                                       | `wait a minute, then retry`                                                                     |
 | Network                   | `could not reach <host> (<code>)`                                          | `check the connection, or choose another host with --host`                                      |
 | Server                    | `<host> failed (HTTP <status>)`                                            | `retry shortly`                                                                                 |
@@ -938,9 +938,9 @@ CLI lines print to stderr only under `LIVEPLANNER_DEBUG=1` (CLI44); server lines
 | `[cli] floor refused <current> < <min>`                                                  | cli, floor            |
 | `[cli] format refused <host format> > <bundled format>`                                  | cli, floor            |
 | `[cli] request <METHOD> <path> <status> <ms>`                                            | cli, every api call   |
-| `[cli] address <document\|tab\|ref> <file\|url\|exact\|prefix\|name\|first> <n> matches` | cli, addressing       |
+| `[cli] address <project\|tab\|ref> <file\|url\|exact\|prefix\|name\|first> <n> matches` | cli, addressing       |
 | `[cli] source <elements\|replace\|operations\|unknown>`                                  | cli, `-f`             |
-| `[cli] copy <hit\|miss\|recorded\|evicted> <documentId>/<tabId> rev <n>`                 | cli, read copies      |
+| `[cli] copy <hit\|miss\|recorded\|evicted> <projectId>/<tabId> rev <n>`                 | cli, read copies      |
 | `[cli] held retry <attempt>`                                                             | cli, `--wait-held`    |
 | `[cli] room <connecting\|open\|closed <code>\|reconnecting <ms>>`                        | cli, room stream      |
 | `[cli] telemetry <sent\|skipped <reason>\|timeout>`                                      | cli, telemetry        |
@@ -981,7 +981,7 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Exit codes 0 to 7 by answer                                                                   | `apps/cli/src/output/output.test.ts`                                                                                                                                            |
 | Never interactive when piped                                                                  | `apps/cli/src/main.test.ts` (stdin read only by `--with-token` and `--body -`; a terminal refused)                                                                              |
 | Never a whole-tab save                                                                        | `apps/cli/src/main.test.ts` (`api PUT` on a tab refused)                                                                                                                        |
-| `document create` compiles on the api with `source: 'cli'`                                    | `packages/agent-verbs/src/verbs/lifecycle.test.ts`, `apps/cli/src/writes.test.ts`, `apps/api/src/routes/document-create-seeded.test.ts`                                         |
+| `project create` compiles on the api with `source: 'cli'`                                    | `packages/agent-verbs/src/verbs/lifecycle.test.ts`, `apps/cli/src/writes.test.ts`, `apps/api/src/routes/project-create-seeded.test.ts`                                         |
 | `tab rename` through the name route                                                           | `packages/agent-verbs/src/verbs/lifecycle.test.ts`                                                                                                                              |
 | Writes print result lines, revision, changeset, lint, revert                                  | `apps/cli/src/writes.test.ts`                                                                                                                                                   |
 | `--dry-run`, `--summary`, `--base` from the read copy with fingerprints, `--strict`           | `packages/agent-verbs/src/write.test.ts`, `apps/cli/src/writes.test.ts`, `apps/cli/src/sync/read-copies.test.ts`                                                                |
@@ -1002,10 +1002,10 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | Profiles, flags, env, default host                                                            | `apps/cli/src/config/config.test.ts`                                                                                                                                            |
 | Capabilities fields; floor refuses writes, names the version; newer format                    | `apps/api/src/routes/capabilities.test.ts`, `apps/cli/src/config/config.test.ts`, `apps/cli/src/main.test.ts`                                                                   |
 | A profile for another host never contacts liveplanner.app                                     | `apps/cli/src/main.test.ts` (every request across a session of commands; telemetry joins it when built)                                                                         |
-| Pull file: document, tabs, revisions; `--svg`                                                 | `apps/cli/src/sync/pull-file.test.ts`, `apps/cli/src/commands/pull-push.test.ts`                                                                                                |
+| Pull file: project, tabs, revisions; `--svg`                                                 | `apps/cli/src/sync/pull-file.test.ts`, `apps/cli/src/commands/pull-push.test.ts`                                                                                                |
 | Pull refuses a file with unpushed changes; `--force` overwrites (CLI27a)                      | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                                       |
 | Push: changed tabs as based changesets; conflict names the tab; elements only                 | `apps/cli/src/commands/pull-push.test.ts`                                                                                                                                       |
-| Export every document, each format                                                            | `apps/cli/src/commands/export-views.test.ts`                                                                                                                                    |
+| Export every project, each format                                                            | `apps/cli/src/commands/export-views.test.ts`                                                                                                                                    |
 | Render prints path and size, never bytes; MCP and CLI draw alike                              | `apps/cli/src/commands/render.test.ts`; `packages/render-png/src/index.test.ts` (size, text drawn in Inter, bold in Inter Bold, one wasm initialisation, a failed load retried) |
 | `wait` blocks, prints, exits, settles a burst, times out; `watch` streams                     | `apps/cli/src/room/room-stream.test.ts`, `room-events.test.ts`, `apps/cli/src/commands/stream-commands.test.ts`                                                                 |
 | Any token role mints a room ticket                                                            | `apps/api/src/index.test.ts` (choke point)                                                                                                                                      |
@@ -1033,9 +1033,9 @@ WebSocket) with a fixed clock; none waits on a real timer or the network.
 | `SKILL_BODY_MAX_TOKENS`            | 1500                   | Research §4.2, CLI49                        | 1000 to 2500       |
 | `SCHEMA_KIND_MAX_TOKENS`           | 300                    | Research §4.2, CLI73                        | 200 to 500         |
 | `TOKEN_EXPIRY_WARN_DAYS`           | 14                     | Spec                                        | 7 to 30            |
-| `LIST_DEFAULT_LIMIT`               | 20                     | `find_documents`' default, CLI19            | 10 to 50           |
+| `LIST_DEFAULT_LIMIT`               | 20                     | `find_projects`' default, CLI19            | 10 to 50           |
 | `LIST_MAX_LIMIT`                   | 200                    | CLI19                                       | 50 to 500          |
-| `REF_MIN_PREFIX` (documents, tabs) | 4                      | The views' ref rule, CLI20                  | fixed by views     |
+| `REF_MIN_PREFIX` (projects, tabs) | 4                      | The views' ref rule, CLI20                  | fixed by views     |
 | `REQUEST_TIMEOUT_MS`               | 30000                  | CLI46                                       | 10000 to 120000    |
 | `CAPABILITIES_CACHE_TTL_MS`        | 3600000                | CLI8                                        | 600000 to 86400000 |
 | `HELD_RETRY_INTERVAL_MS`           | 2000                   | CLI25                                       | 500 to 10000       |

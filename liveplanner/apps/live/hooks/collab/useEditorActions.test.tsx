@@ -12,7 +12,7 @@ import {
   elementActions,
   type ElementAction,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 

@@ -25,7 +25,7 @@ import {
   rotationOf,
   finishSplitsFace,
   faceFinishOf,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { renderLabel } from '@/components/canvas/element-labels';
 import { ElementFaceRouter } from '@/components/canvas/ElementFaceRouter';
 import { elementAriaLabel, elementRole } from '@/lib/element-names';

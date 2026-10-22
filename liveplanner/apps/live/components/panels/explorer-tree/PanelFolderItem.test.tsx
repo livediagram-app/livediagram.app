@@ -15,11 +15,11 @@ const folder: PanelFolder = { id: 'f1', name: 'Specs', parentId: null };
 function tree(over: Partial<PanelTree> = {}): PanelTree {
   return {
     ownerId: 'me',
-    currentDocumentId: null,
-    exitingDocumentIds: new Set(),
+    currentProjectId: null,
+    exitingProjectIds: new Set(),
     expanded: {},
     onToggle: vi.fn(),
-    onOpenDocument: vi.fn(),
+    onOpenProject: vi.fn(),
     onRenameFolder: vi.fn(),
     pendingRenameFolderId: null,
     onRenameFolderCommitted: vi.fn(),
@@ -31,12 +31,12 @@ function tree(over: Partial<PanelTree> = {}): PanelTree {
 
 const node = (t: PanelTree) => (
   <PanelTreeProvider value={t}>
-    <ul aria-label="My Documents">
+    <ul aria-label="My Projects">
       <PanelFolderItem
         folder={folder}
         index={{
           foldersByParent: new Map([['f1', [{ id: 'f2', name: 'Drafts', parentId: 'f1' }]]]),
-          documentsByFolder: new Map(),
+          projectsByFolder: new Map(),
         }}
       />
     </ul>
@@ -80,7 +80,7 @@ describe('PanelFolderItem in the pane', () => {
   it('opens the folder in the pane and counts what it holds', () => {
     const onOpenFolder = vi.fn();
     render(node(tree({ onOpenFolder })));
-    expect(screen.getByText('1 folder · 0 documents')).toBeTruthy();
+    expect(screen.getByText('1 folder · 0 projects')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Specs' }));
     expect(onOpenFolder).toHaveBeenCalledWith('f1');
   });

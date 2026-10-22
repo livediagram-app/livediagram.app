@@ -2,7 +2,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook } from '@testing-library/react';
 import { ITEM_TYPES, type PlanBoardSetup } from '@liveplanner/items';
-import type { PlanViewRef, Tab } from '@liveplanner/document';
+import type { PlanViewRef, Tab } from '@liveplanner/project';
 import { usePlanSlice } from './usePlanSlice';
 
 // docs/specs/026-plan/plan-tabs.md "Names": only a change of a board's or chart's title renames its tab; any other

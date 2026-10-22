@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element, type ShapeElement, type Tab } from '@liveplanner/document';
+import { createShape, type Element, type ShapeElement, type Tab } from '@liveplanner/project';
 import {
   portalName,
   portalsOnTab,

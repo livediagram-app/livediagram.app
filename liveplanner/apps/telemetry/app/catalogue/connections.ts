@@ -44,7 +44,7 @@ export const WORKBENCHES_PAIRED: Metric = {
   action: 'Linked',
   type: 'Workbench',
   title: 'Workbenches Paired',
-  blurb: 'A token’s owner allowed a developer tool to open their documents.',
+  blurb: 'A token’s owner allowed a developer tool to open their projects.',
 };
 
 export const API_TOKEN_ACTIVITY: MetricStack = {
@@ -69,25 +69,25 @@ const mcpTool = (type: string, title: string, blurb: string): Metric => ({
 });
 
 export const MCP_TOOL_METRICS: readonly Metric[] = [
-  mcpTool('FindDocuments', 'Find Documents', 'Searching the user’s documents by name.'),
-  mcpTool('ReadDocument', 'Read Document', 'Reading one document’s tabs and elements.'),
-  mcpTool('ListTemplates', 'List Templates', 'Listing the templates a document can start from.'),
-  mcpTool('CreateDocument', 'Create Document', 'Making a new document.'),
-  mcpTool('AddTab', 'Add Tab', 'Adding a tab to an existing document.'),
-  mcpTool('UpdateDocument', 'Update Document', 'Editing a document’s elements.'),
-  mcpTool('ShareDocument', 'Share Document', 'Creating a share link for a document.'),
-  mcpTool('RenameDocument', 'Rename Document', 'Renaming a document.'),
+  mcpTool('FindProjects', 'Find Projects', 'Searching the user’s projects by name.'),
+  mcpTool('ReadProject', 'Read Project', 'Reading one project’s tabs and elements.'),
+  mcpTool('ListTemplates', 'List Templates', 'Listing the templates a project can start from.'),
+  mcpTool('CreateProject', 'Create Project', 'Making a new project.'),
+  mcpTool('AddTab', 'Add Tab', 'Adding a tab to an existing project.'),
+  mcpTool('UpdateProject', 'Update Project', 'Editing a project’s elements.'),
+  mcpTool('ShareProject', 'Share Project', 'Creating a share link for a project.'),
+  mcpTool('RenameProject', 'Rename Project', 'Renaming a project.'),
   mcpTool(
-    'DeleteDocument',
-    'Delete Document',
-    'Moving a document to the Trash, or deleting one tab.',
+    'DeleteProject',
+    'Delete Project',
+    'Moving a project to the Trash, or deleting one tab.',
   ),
-  mcpTool('ListTrash', 'List Trash', 'Listing the documents in the Trash.'),
-  mcpTool('RestoreDocument', 'Restore Document', 'Bringing a document back from the Trash.'),
+  mcpTool('ListTrash', 'List Trash', 'Listing the projects in the Trash.'),
+  mcpTool('RestoreProject', 'Restore Project', 'Bringing a project back from the Trash.'),
   mcpTool(
     'ListItems',
     'List Items',
-    'Reading a document’s Plan items: cards, tasks and their fields.',
+    'Reading a project’s Plan items: cards, tasks and their fields.',
   ),
   mcpTool('ChangeItems', 'Change Items', 'Adding, changing, moving or removing Plan items.'),
   mcpTool(
@@ -103,9 +103,9 @@ export const MCP_TOOL_METRICS: readonly Metric[] = [
   mcpTool(
     'ChangeCardTypes',
     'Change Card Types',
-    'Adding, editing or deleting a document’s card types.',
+    'Adding, editing or deleting a project’s card types.',
   ),
-  mcpTool('ListSheets', 'List Sheets', 'Listing a document’s sheets.'),
+  mcpTool('ListSheets', 'List Sheets', 'Listing a project’s sheets.'),
   mcpTool(
     'ReadSheet',
     'Read Sheet',
@@ -149,7 +149,7 @@ export const MCP_TOOL_CALLS: MetricStack = {
 };
 
 // Agent changesets (docs/specs/024-agents/agent-changesets.md "Observability and telemetry"):
-// how agents change documents, how often they meet a person's work, and how often people undo it.
+// how agents change projects, how often they meet a person's work, and how often people undo it.
 export const AGENT_APPLIED = chart(
   'Agent',
   'Applied',
@@ -197,18 +197,18 @@ export const AGENT_TOAST_SHOW = chart(
   { types: ['Toast'] },
 );
 
-// Document views (docs/specs/024-agents/document-views.md): which views agents read a document through.
+// Project views (docs/specs/024-agents/project-views.md): which views agents read a project through.
 export const AGENT_VIEWED = chart(
   'Agent',
   'Viewed',
   'Agent Views Read',
-  'A document read as text by an agent or a script: an outline, a graph, a layout and so on.',
+  'A project read as text by an agent or a script: an outline, a graph, a layout and so on.',
 );
 
 export const AGENT_CHANGESETS: MetricStack = {
   stack: true,
   title: 'Agent changes',
-  blurb: 'Agents changing documents, meeting people’s work, and being undone.',
+  blurb: 'Agents changing projects, meeting people’s work, and being undone.',
   headline: AGENT_APPLIED,
   members: [
     AGENT_APPLIED,

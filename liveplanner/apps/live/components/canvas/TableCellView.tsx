@@ -4,7 +4,7 @@ import {
   type ElementLink,
   type TableCellStyle,
   type TableElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { CellLinkIcon } from '@/components/canvas/table-icons';
 import { TableCellEditor } from '@/components/canvas/TableCellEditor';
 import { describeLink } from '@/lib/link-label';

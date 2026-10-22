@@ -11,7 +11,7 @@ import { workbenchNameOf, workbenchOpen, workbenchOriginOf, workbenchPair } from
 const ORIGIN = 'https://127.0.0.1:5175';
 const minted = {
   url: `https://liveplanner.app/embed/workbench?d=${DOC_A}#ticket=${'t'.repeat(22)}`,
-  documentId: DOC_A,
+  projectId: DOC_A,
   tabId: null,
   expiresAt: Date.UTC(2026, 9, 5, 8, 1),
 };
@@ -34,18 +34,18 @@ const refusalOf = async (work: Promise<unknown>) => {
 };
 
 describe('workbench open', () => {
-  it('mints a ticket for the whole document and prints its link', async () => {
+  it('mints a ticket for the whole project and prints its link', async () => {
     const { bodies, route } = mint((body) =>
-      Response.json({ ...minted, documentId: body.documentId }, { status: 201 }),
+      Response.json({ ...minted, projectId: body.projectId }, { status: 201 }),
     );
     const logs: string[] = [];
     const api = fakeApi({ ...library, '/workbench/tickets': route });
     const output = await workbenchOpen.run!(contextOf(api, [], logs), {
-      doc: 'Shop',
+      project: 'Shop',
       origin: ORIGIN,
     });
-    expect(output).toEqual({ ...minted, documentId: DOC_C });
-    expect(bodies).toEqual([{ method: 'POST', documentId: DOC_C, origin: ORIGIN }]);
+    expect(output).toEqual({ ...minted, projectId: DOC_C });
+    expect(bodies).toEqual([{ method: 'POST', projectId: DOC_C, origin: ORIGIN }]);
     expect(workbenchOpen.text!(output)).toEqual([minted.url]);
     expect(logs).toContain(`workbench open minted ${DOC_C}`);
   });
@@ -56,12 +56,12 @@ describe('workbench open', () => {
     );
     const api = fakeApi({ ...library, ...tabsOfA, '/workbench/tickets': route });
     const output = await workbenchOpen.run!(contextOf(api), {
-      doc: DOC_A,
+      project: DOC_A,
       tab: 'Details',
       origin: ORIGIN,
     });
     expect(output).toMatchObject({ tabId: 'tab-two-0000' });
-    expect(bodies[0]).toMatchObject({ documentId: DOC_A, tabId: 'tab-two-0000', origin: ORIGIN });
+    expect(bodies[0]).toMatchObject({ projectId: DOC_A, tabId: 'tab-two-0000', origin: ORIGIN });
   });
 
   it('refuses an unpaired workbench as not permitted, naming the pair command (WB23)', async () => {
@@ -74,7 +74,7 @@ describe('workbench open', () => {
     const logs: string[] = [];
     const api = fakeApi({ ...library, '/workbench/tickets': route });
     const refusal = await refusalOf(
-      workbenchOpen.run!(contextOf(api, [], logs), { doc: 'Shop', origin: ORIGIN }),
+      workbenchOpen.run!(contextOf(api, [], logs), { project: 'Shop', origin: ORIGIN }),
     );
     expect(refusal).toMatchObject({
       status: 403,
@@ -90,7 +90,7 @@ describe('workbench open', () => {
     const logs: string[] = [];
     const api = fakeApi({ ...library, '/workbench/tickets': route });
     const err = await workbenchOpen.run!(contextOf(api, [], logs), {
-      doc: 'Shop',
+      project: 'Shop',
       origin: ORIGIN,
     }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(ApiError);
@@ -105,23 +105,23 @@ describe('workbench open', () => {
         throw new TypeError('fetch failed');
       },
     });
-    const err = await workbenchOpen.run!(contextOf(api), { doc: 'Shop', origin: ORIGIN }).catch(
+    const err = await workbenchOpen.run!(contextOf(api), { project: 'Shop', origin: ORIGIN }).catch(
       (e: unknown) => e,
     );
     expect(err).toBeInstanceOf(TypeError);
   });
 
-  it('opens only your own documents: a share link is a usage error', async () => {
+  it('opens only your own projects: a share link is a usage error', async () => {
     const api = fakeApi({});
     const logs: string[] = [];
     const err = await workbenchOpen.run!(contextOf(api, [], logs), {
-      doc: 'https://liveplanner.app/document/shared?s=abc',
+      project: 'https://liveplanner.app/project/shared?s=abc',
       origin: ORIGIN,
     }).catch((e: unknown) => e);
     expect(err).toBeInstanceOf(AddressError);
     expect((err as AddressError).failure).toMatchObject({
       kind: 'usage',
-      message: 'a workbench opens your own documents, not a share link',
+      message: 'a workbench opens your own projects, not a share link',
     });
     expect(api.calls).toEqual([]);
     expect(logs).toContain('workbench open refused share-link');
@@ -132,7 +132,7 @@ describe('workbench open', () => {
     const logs: string[] = [];
     const refusal = await refusalOf(
       workbenchOpen.run!(contextOf(api, [], logs), {
-        doc: 'Shop',
+        project: 'Shop',
         origin: 'https://127.0.0.1:5175/',
       }),
     );
@@ -214,11 +214,11 @@ describe('workbench pair', () => {
         status: 'paired',
         origin: ORIGIN,
         name: 'Acme Editor',
-        scope: 'document',
+        scope: 'project',
       }),
     ).toEqual([`paired ${ORIGIN} as Acme Editor`]);
     expect(
-      workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: null, scope: 'document' }),
+      workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: null, scope: 'project' }),
     ).toEqual([`paired ${ORIGIN}`]);
     expect(
       workbenchPair.text!({ status: 'paired', origin: ORIGIN, name: null, scope: 'workspace' }),
@@ -278,7 +278,7 @@ describe('workbench open --workspace', () => {
     expect(refusal).toMatchObject({ status: 404, code: 'not_found' });
   });
 
-  it('names the workspace pairing when the token is paired for documents only', async () => {
+  it('names the workspace pairing when the token is paired for projects only', async () => {
     const { route } = mint(() =>
       Response.json({ error: 'pairing_required', pairingUrl: 'u', expiresAt: 1 }, { status: 428 }),
     );
@@ -296,10 +296,10 @@ describe('workbench open --workspace', () => {
   });
 
   it.each([
-    ['neither a document nor --workspace', { origin: ORIGIN }],
-    ['both a document and --workspace', { doc: 'Shop', workspace: true, origin: ORIGIN }],
+    ['neither a project nor --workspace', { origin: ORIGIN }],
+    ['both a project and --workspace', { project: 'Shop', workspace: true, origin: ORIGIN }],
     ['--tab with --workspace', { workspace: true, tab: 'Details', origin: ORIGIN }],
-    ['--folder without --workspace', { doc: 'Shop', folder: 'Minigames', origin: ORIGIN }],
+    ['--folder without --workspace', { project: 'Shop', folder: 'Minigames', origin: ORIGIN }],
   ])('refuses %s as a usage error', async (_why, input) => {
     const api = fakeApi({ ...library });
 

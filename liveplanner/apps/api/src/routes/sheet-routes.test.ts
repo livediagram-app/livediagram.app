@@ -5,7 +5,7 @@ import { emptyLayout, type SheetWrite } from '@liveplanner/sheets';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import * as db from '../db';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 
 // The sheet store's endpoints (docs/specs/029-sheets/sheet-store.md, blueprint sheet-store.md): gates incl.
 // tab-scoped links, every rejection, the rev guard, the json_each writes, caps, the relay, copies and seeds.
@@ -34,7 +34,7 @@ async function call<T = unknown>({
   const pending: Promise<unknown>[] = [];
   const ctx = makeTestRouteContext(
     method,
-    doc ? `/api/documents/${doc}${path}` : '/api/documents',
+    doc ? `/api/projects/${doc}${path}` : '/api/projects',
     {
       env: sql.env,
       owner,
@@ -43,7 +43,7 @@ async function call<T = unknown>({
       waitUntil: (p) => void pending.push(p),
     },
   );
-  const res = await handleDocuments(ctx);
+  const res = await handleProjects(ctx);
   await Promise.all(pending);
   const text = await res.text();
   return { status: res.status, body: (text ? JSON.parse(text) : null) as T };
@@ -77,7 +77,7 @@ beforeEach(() => {
   n = 7;
   sql = sqliteD1();
   relayed = [];
-  (sql.env as unknown as { DOCUMENT_ROOM: unknown }).DOCUMENT_ROOM = {
+  (sql.env as unknown as { PROJECT_ROOM: unknown }).PROJECT_ROOM = {
     idFromName: (x: string) => x,
     get: () => ({
       fetch: async (_url: string, init: RequestInit) => {
@@ -87,15 +87,15 @@ beforeEach(() => {
     }),
   };
   sql.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
+    INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
     INSERT INTO participants (id, name, color, created_at) VALUES ('owner', 'Webber', '#3b82f6', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'One', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Two', '{"elements":[]}', 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
-    INSERT INTO share_links (code, document_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'edit', 't2', 1);
+    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
+    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('VIEW', 'd1', 'view', NULL, 1);
+    INSERT INTO share_links (code, project_id, role, level, tab_id, created_at) VALUES ('PART', 'd1', 'view', 'participate', NULL, 1);
+    INSERT INTO share_links (code, project_id, role, tab_id, created_at) VALUES ('TAB2', 'd1', 'edit', 't2', 1);
   `);
 });
 
@@ -202,11 +202,11 @@ describe('creating and listing sheets', () => {
         .status,
     ).toBe(404);
   });
-  it('caps the sheets of a document', async () => {
+  it('caps the sheets of a project', async () => {
     for (let i = 0; i < 200; i++)
       sql.sql
         .prepare(
-          `INSERT INTO sheets (document_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by) VALUES ('d1', ?, 't1', ?, '{"rows":[],"cols":[]}', 0, 1, 1, '{}')`,
+          `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, created_at, updated_at, updated_by) VALUES ('d1', ?, 't1', ?, '{"rows":[],"cols":[]}', 0, 1, 1, '{}')`,
         )
         .run(`fill${String(i).padStart(4, '0')}`, `F${i}`);
     expect(await make()).toMatchObject({ status: 413, body: { error: 'sheets_full' } });
@@ -592,7 +592,7 @@ describe('writes', () => {
     sql.sql.prepare(`UPDATE sheets SET cell_bytes = 0 WHERE id = 'sheetA00'`).run();
     sql.sql
       .prepare(
-        `INSERT INTO sheets (document_id, id, tab_id, title, layout, rev, cell_count, created_at, updated_at, updated_by) VALUES ('d1', 'bigsheet', 't2', 'Big', '{"rows":[],"cols":[]}', 0, 200000, 1, 1, '{}')`,
+        `INSERT INTO sheets (project_id, id, tab_id, title, layout, rev, cell_count, created_at, updated_at, updated_by) VALUES ('d1', 'bigsheet', 't2', 'Big', '{"rows":[],"cols":[]}', 0, 200000, 1, 1, '{}')`,
       )
       .run();
     expect(
@@ -647,14 +647,14 @@ describe('deleting, copies and seeds', () => {
     expect(sql.sql.prepare('SELECT COUNT(*) AS n FROM sheet_cells').get()).toEqual({ n: 0 });
     expect((await call({ method: 'DELETE', path: '/sheets/sheetA00' })).status).toBe(404);
   });
-  it('copies a document with its sheets on the new tab ids', async () => {
+  it('copies a project with its sheets on the new tab ids', async () => {
     await make();
     const s = (await call<SheetsResponse>({ method: 'GET', path: '/sheets' })).body.sheets[0]!;
     await write('sheetA00', {
       kind: 'cells',
       cells: [{ r: s.layout.rows[0]!, c: s.layout.cols[0]!, i: { n: 9 } }],
     });
-    const copy = await db.copyDocument(sql.env, 'd1', 'd2', 'owner', 'Copy');
+    const copy = await db.copyProject(sql.env, 'd1', 'd2', 'owner', 'Copy');
     expect(copy).not.toBeNull();
     const copied = await db.listSheets(sql.env, 'd2');
     expect(copied).toHaveLength(1);
@@ -662,11 +662,11 @@ describe('deleting, copies and seeds', () => {
     expect(copied[0]!.tabId).not.toBe('t1');
     expect(copied[0]!.cells).toEqual([{ r: s.layout.rows[0], c: s.layout.cols[0], i: { n: 9 } }]);
     const tab = sql.sql
-      .prepare(`SELECT tab_id FROM document_tabs WHERE document_id = 'd2' AND order_index = 0`)
+      .prepare(`SELECT tab_id FROM project_tabs WHERE project_id = 'd2' AND order_index = 0`)
       .get() as { tab_id: string };
     expect(copied[0]!.tabId).toBe(tab.tab_id);
   });
-  it('seeds a new document’s sheets', async () => {
+  it('seeds a new project’s sheets', async () => {
     const l = layout();
     const cells = Array.from({ length: 6000 }, (_, i) => ({
       r: `seed${String(i).padStart(4, '0')}`,
@@ -701,9 +701,9 @@ describe('deleting, copies and seeds', () => {
     expect(badEntry.status).toBe(400);
   });
 
-  // docs/specs/029-sheets/sheet-store.md "Template starts": a template's Sheet is made with the document, from a
+  // docs/specs/029-sheets/sheet-store.md "Template starts": a template's Sheet is made with the project, from a
   // template the api compiles or from tabs a client built, and the stored element no longer carries the mark.
-  it('makes a template’s Sheets with the document, the mark dropped', async () => {
+  it('makes a template’s Sheets with the project, the mark dropped', async () => {
     const res = await call({
       path: '',
       doc: '',

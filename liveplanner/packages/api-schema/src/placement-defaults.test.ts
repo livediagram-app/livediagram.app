@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {} from '@liveplanner/document';
+import {} from '@liveplanner/project';
 import {
   PLACEMENT_DEFAULT_KEYS,
   TEMPLATE_FAMILIES,
@@ -78,7 +78,7 @@ describe('creationIntentOf', () => {
     });
   });
 
-  it('reads a document with no tab as the general tab', () => {
+  it('reads a project with no tab as the general tab', () => {
     expect(creationIntentOf(undefined)).toEqual({ mode: 'plan', tabKind: 'diagram' });
   });
 });

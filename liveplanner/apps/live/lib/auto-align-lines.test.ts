@@ -6,7 +6,7 @@ import {
   type Element,
   type ShapeElement,
   type ShapeKind,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { autoAlignElements } from './auto-align';
 import { LINK_TOLERANCE } from './auto-align-lines';
 

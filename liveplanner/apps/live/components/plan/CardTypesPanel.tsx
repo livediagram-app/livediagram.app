@@ -1,9 +1,9 @@
 'use client';
 
-// The Card Types panel (docs/specs/026-plan/item-types.md "The Card Types panel"): the document's item
+// The Card Types panel (docs/specs/026-plan/item-types.md "The Card Types panel"): the project's item
 // types, each with its glyph and colour, its name and how many items have it. A popover hanging above
 // its button in Plan mode's bottom-right cluster. Edit and Add New Card Type open the type editor, Duplicate opens it on a
-// new type filled from that one; Add Default Types adds any of the five default types the document lacks. One list:
+// new type filled from that one; Add Default Types adds any of the five default types the project lacks. One list:
 // no type is set apart from another. Someone who may only view sees the list.
 import { AddCardTypeButton } from './AddCardTypeButton';
 import { useMemo, useState } from 'react';
@@ -43,7 +43,7 @@ export function CardTypesPanel({
   if (!plan) return null;
   const { types, canEdit, itemTypes } = plan;
   const full = types.length >= ITEM_TYPES_MAX;
-  // Add Default Types shows only while the document lacks one of the five, and has room for it.
+  // Add Default Types shows only while the project lacks one of the five, and has room for it.
   const missingDefaults = full ? [] : defaultTypesToAdd(types);
   // One type's row: its edit (stretched over the row), Duplicate, and the pencil.
   const row = (t: (typeof types)[number]) => {
@@ -111,13 +111,13 @@ export function CardTypesPanel({
         {canEdit ? (
           <Tooltip
             label={
-              full ? 'The document has the most card types it can hold' : `Duplicate ${t.label}`
+              full ? 'The project has the most card types it can hold' : `Duplicate ${t.label}`
             }
           >
             <button
               type="button"
               aria-label={
-                full ? 'The document has the most card types it can hold' : `Duplicate ${t.label}`
+                full ? 'The project has the most card types it can hold' : `Duplicate ${t.label}`
               }
               aria-disabled={full || undefined}
               className={`relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-slate-400 transition ${
@@ -162,7 +162,7 @@ export function CardTypesPanel({
     >
       <div className="flex flex-col gap-2 px-3 pb-3">
         {/* One to a row in a bordered box, as Plan's option lists are (docs/specs/026-plan/plan-board.md "Option
-            lists"). A document starts with none: the default types arrive only through Add Default Types. */}
+            lists"). A project starts with none: the default types arrive only through Add Default Types. */}
         {types.length === 0 ? (
           <EmptyState
             icon={<PlanCardsIcon size={18} />}
@@ -170,7 +170,7 @@ export function CardTypesPanel({
             description={
               canEdit
                 ? 'Add a card type of your own, or add the default types: Project, Task, Note, Idea and Action.'
-                : 'This document has no card types yet.'
+                : 'This project has no card types yet.'
             }
           />
         ) : (
@@ -219,11 +219,11 @@ export function CardTypesPanel({
 }
 
 // What Add Default Types asks before it adds (docs/specs/026-plan/item-types.md "The type catalogue"): the types it
-// will add, by name, and that nothing the document has changes.
+// will add, by name, and that nothing the project has changes.
 export function addDefaultTypesMessage(labels: readonly string[]): string {
   const list =
     labels.length > 1
       ? `${labels.slice(0, -1).join(', ')} and ${labels.at(-1)}`
       : (labels[0] ?? '');
-  return `Add ${list} to this document’s card types? They go after the ones you have, and nothing you have changes.`;
+  return `Add ${list} to this project’s card types? They go after the ones you have, and nothing you have changes.`;
 }

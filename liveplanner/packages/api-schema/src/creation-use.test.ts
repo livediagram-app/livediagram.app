@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { readMarkUsed } from './creation-use';
 
-// Making a document is a use unless the caller says otherwise (docs/specs/013-workspace/explorer-home.md
-// "Making a document"; docs/specs/015-api/api.md "Marking a document used").
+// Making a project is a use unless the caller says otherwise (docs/specs/013-workspace/explorer-home.md
+// "Making a project"; docs/specs/015-api/api.md "Marking a project used").
 
 describe('readMarkUsed', () => {
   it('reads an absent field as a making that counts', () => {

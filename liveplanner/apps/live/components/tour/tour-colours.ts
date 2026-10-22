@@ -7,7 +7,7 @@ import {
   isLightColor,
   toneToContrast,
   type PlanPalette,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 const LIGHT_INK = '#ffffff';
 const DARK_INK = '#0f172a';

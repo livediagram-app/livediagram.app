@@ -24,12 +24,12 @@ import type {
   RunHeading,
   TextAlignX,
   TextAlignY,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { HoverCard } from '@liveplanner/ui';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { standardGroup } from '@/components/colour/colour-options';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
-import { useDocumentColours } from '@/hooks/ui/useDocumentColours';
+import { useProjectColours } from '@/hooks/ui/useProjectColours';
 
 // What the swatch shows while the selection has no colour of its own.
 const DEFAULT_TEXT_COLOUR = '#0f172a';
@@ -63,7 +63,7 @@ export function RichTextToolbar({
 }) {
   const toggles = runToggles('bold', 'italic', 'underline', 'strikethrough');
   const appearance = useCanvasSurface();
-  const yours = useDocumentColours();
+  const yours = useProjectColours();
 
   return (
     <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 shadow-lg shadow-slate-900/10 dark:border-slate-800 dark:bg-slate-900 dark:shadow-slate-950/40">

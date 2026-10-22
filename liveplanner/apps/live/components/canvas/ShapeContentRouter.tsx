@@ -1,4 +1,4 @@
-import { isChartShape } from '@liveplanner/document';
+import { isChartShape } from '@liveplanner/project';
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
 import { useFillsTab, usePlanTabKind } from '@/hooks/plan/plan-cover-store';
@@ -6,7 +6,7 @@ import { FillTabElementContext, FillTabPending } from '@/components/plan/FillTab
 import { DataChartView } from '@/components/canvas/DataChartView';
 import type { BoxedElementViewProps } from '@/components/canvas/BoxedElementView.types';
 
-// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
 // Plan pays nothing for it.
 const PlanCardView = dynamic(
   () => import('@/components/plan/PlanCardView').then((m) => m.PlanCardView),
@@ -75,7 +75,7 @@ export function ShapeContentRouter({
       </SheetLinkedChart>
     </OffDashboard>
   ) : element.type === 'shape' && element.shape === 'plan-board' ? (
-    // Plan board (docs/specs/026-plan/plan-board.md): columns of cards drawn from the document's
+    // Plan board (docs/specs/026-plan/plan-board.md): columns of cards drawn from the project's
     // items, through PlanContext.
     <OffDashboard id={element.id}>
       <PlanBoardView element={element} fontFamily={fontFamily} />
@@ -89,7 +89,7 @@ export function ShapeContentRouter({
       <PlanViewView element={element} fontFamily={fontFamily} chartPalette={chartPalette} />
     </OffDashboard>
   ) : element.type === 'shape' && element.shape === 'plan-sheet' ? (
-    // Sheet (docs/specs/029-sheets/sheet.md): a spreadsheet tab of the document's sheet store.
+    // Sheet (docs/specs/029-sheets/sheet.md): a spreadsheet tab of the project's sheet store.
     <OffDashboard id={element.id}>
       <PlanSheetView element={element} fontFamily={fontFamily} />
     </OffDashboard>

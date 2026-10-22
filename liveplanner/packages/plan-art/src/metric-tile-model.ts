@@ -12,7 +12,7 @@ import {
   type MetricKind,
   type PlanBoardSetup,
 } from '@liveplanner/items';
-import { PRIORITY_COLOURS } from '@liveplanner/document';
+import { PRIORITY_COLOURS } from '@liveplanner/project';
 import { OVERDUE_RED, PHASE_COLOURS } from './phase-colours';
 import {
   STALE_DAYS,

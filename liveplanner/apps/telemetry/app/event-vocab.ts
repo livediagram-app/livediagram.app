@@ -17,7 +17,7 @@ import { forAppearance } from './appearance-colours';
 // `categoryColor` accessor keeps a slate fallback for stray strings. In dark
 // it hands back the hue lifted to read on the dark card (appearance-colours).
 const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
-  Document: '#0ea5e9',
+  Project: '#0ea5e9',
   Element: '#10b981',
   Tab: '#f59e0b',
   Theme: '#8b5cf6',
@@ -40,7 +40,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Deep green, the funnel's colour: apart from Element's emerald and the
   // lime of Comment and Action.
   Cta: '#15803d',
-  // Distinct from Document's sky (#0ea5e9) and Session's slate: the
+  // Distinct from Project's sky (#0ea5e9) and Session's slate: the
   // Timeline sits next to both in the stacked bar.
   Timeline: '#0369a1',
   // Indigo-violet: the landing view, apart from the Timeline's deep sky and Activity's amber.
@@ -48,7 +48,7 @@ const CATEGORY_COLORS: Record<TelemetryCategory, string> = {
   // Amber, so the inbox reads apart from the Timeline's deep sky beside it.
   Activity: '#d97706',
   Token: '#d946ef',
-  // Warm stone: a quiet backstop, apart from Document's sky and Error's red.
+  // Warm stone: a quiet backstop, apart from Project's sky and Error's red.
   Trash: '#78716c',
   Mcp: '#f43f5e',
   // Terminal ink: the command line, darker than the stone greys of Trash and Draw.

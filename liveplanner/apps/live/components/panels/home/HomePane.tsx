@@ -11,7 +11,7 @@ import { ARRIVED_ON_HOME } from '@/app/explorer/entry-path';
 import { HOME_COPY } from '@/app/explorer/home/home-copy';
 import { useHome } from '@/app/explorer/home/useHome';
 import { useFirstRun } from '@/app/explorer/home/useFirstRun';
-import type { DocumentEntryFor } from '@/app/explorer/useDocumentEntryFor';
+import type { ProjectEntryFor } from '@/app/explorer/useProjectEntryFor';
 import { JumpBackIn } from './JumpBackIn';
 import { WhatHappened } from './WhatHappened';
 import { FOCUS_RING, MUTED } from './home-styles';
@@ -27,15 +27,15 @@ export function HomePane({
   onSeen,
   recentHref,
   onSeeMore,
-  documentMenus,
+  projectMenus,
 }: {
   ownerId: string;
   /** Home's read moved the unread mark: clear the sidebar badge. */
   onSeen: () => void;
   recentHref: string;
   onSeeMore: () => void;
-  /** Each Jump Back In document's Explorer ⋯ menu (explorer-home.md "Jump Back In"). */
-  documentMenus?: DocumentEntryFor;
+  /** Each Jump Back In project's Explorer ⋯ menu (explorer-home.md "Jump Back In"). */
+  projectMenus?: ProjectEntryFor;
 }) {
   const home = useHome(ownerId, onSeen);
   const { firstRun, offerSignIn } = useFirstRun();
@@ -78,7 +78,7 @@ export function HomePane({
         loading={loading}
         recentHref={recentHref}
         onSeeMore={onSeeMore}
-        documentMenus={documentMenus}
+        projectMenus={projectMenus}
       />
       <WhatHappened groups={home.whatHappened} loading={loading} lastSeenAt={home.lastSeenAt} />
     </div>

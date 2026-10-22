@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { CommentThread } from '@liveplanner/document';
+import type { CommentThread } from '@liveplanner/project';
 import type { Item } from '@liveplanner/items';
 
 // A card's comments in the editor (docs/specs/026-plan/items.md "Comments"): shown at once, settled on the
@@ -38,7 +38,7 @@ function setup() {
   const onMentioned = vi.fn();
   const hook = renderHook(() =>
     usePlanItems({
-      documentId: 'doc',
+      projectId: 'doc',
       ready: true,
       ownerId: 'owner-me',
       name: 'Me',
@@ -100,7 +100,7 @@ describe('usePlanItems comments', () => {
     });
     expect(thread(result.current.items.get('item-one')).comments.map((c) => c.id)).toEqual(['srv']);
     expect(api.writeItemComment).toHaveBeenCalledWith(
-      expect.objectContaining({ documentId: 'doc' }),
+      expect.objectContaining({ projectId: 'doc' }),
       'item-one',
       { kind: 'add', text: 'Hi' },
       expect.objectContaining({ ownerId: 'owner-me' }),

@@ -8,18 +8,18 @@ Scope, by file:
 
 | File                                                       | Role                                                                                                                           |
 | ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `packages/document/src/flowchart.ts`                       | Step types, sizes, membership, edges, anchor, lanes, direction, `decisionExitLabel`, `createFlowchartStart`                    |
-| `packages/document/src/flowchart-layout.ts`                | `layoutFlowchart`, `applyFlowchartLayout`: the unlaned and laned layouts                                                       |
-| `packages/document/src/flowchart-spread.ts`                | `spreadDecisionExits`, `FLOWCHART_CORNER_CLEARANCE`: a Decision's steps beyond its corners                                     |
-| `packages/document/src/flowchart-grow.ts`                  | `planFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`, `addFlowchartLane`, `moveStepToLane`, `relayoutFlowchart` |
-| `packages/document/src/auto-layout.ts`                     | `autoLayoutElements` takes `fixedSizeIds` (the layered positioning with sizes kept); exports `layerComponent`                  |
-| `packages/document/src/element-types.ts`                   | `flowchartId`, `flowDirection`, `flowLaneId` on `ShapeElement`                                                                 |
-| `packages/document/src/element-fields.ts`                  | The three fields in the shape's field list                                                                                     |
-| `packages/document/src/validate-shape.ts`                  | The three fields validated                                                                                                     |
-| `packages/document/src/duplicate.ts`                       | Copies remap the three ids                                                                                                     |
-| `packages/document/src/participant-content.ts`             | A Participant's growth may move the chart's steps, connectors and lanes                                                        |
-| `apps/live/app/document/[id]/useFlowchartGrowth.ts`        | Tab / Enter / toolbar / ring growth, Escape removal, one commit each                                                           |
-| `apps/live/app/document/[id]/useGrowthLanding.ts`          | Shared with mind growth: reveal, typed-ahead landing, Escape on an empty grown node                                            |
+| `packages/project/src/flowchart.ts`                       | Step types, sizes, membership, edges, anchor, lanes, direction, `decisionExitLabel`, `createFlowchartStart`                    |
+| `packages/project/src/flowchart-layout.ts`                | `layoutFlowchart`, `applyFlowchartLayout`: the unlaned and laned layouts                                                       |
+| `packages/project/src/flowchart-spread.ts`                | `spreadDecisionExits`, `FLOWCHART_CORNER_CLEARANCE`: a Decision's steps beyond its corners                                     |
+| `packages/project/src/flowchart-grow.ts`                  | `planFlowchartStep`, `retypeFlowchartStep`, `setFlowchartDirection`, `addFlowchartLane`, `moveStepToLane`, `relayoutFlowchart` |
+| `packages/project/src/auto-layout.ts`                     | `autoLayoutElements` takes `fixedSizeIds` (the layered positioning with sizes kept); exports `layerComponent`                  |
+| `packages/project/src/element-types.ts`                   | `flowchartId`, `flowDirection`, `flowLaneId` on `ShapeElement`                                                                 |
+| `packages/project/src/element-fields.ts`                  | The three fields in the shape's field list                                                                                     |
+| `packages/project/src/validate-shape.ts`                  | The three fields validated                                                                                                     |
+| `packages/project/src/duplicate.ts`                       | Copies remap the three ids                                                                                                     |
+| `packages/project/src/participant-content.ts`             | A Participant's growth may move the chart's steps, connectors and lanes                                                        |
+| `apps/live/app/project/[id]/useFlowchartGrowth.ts`        | Tab / Enter / toolbar / ring growth, Escape removal, one commit each                                                           |
+| `apps/live/app/project/[id]/useGrowthLanding.ts`          | Shared with mind growth: reveal, typed-ahead landing, Escape on an empty grown node                                            |
 | `apps/live/hooks/canvas/useFlowchartSetters.ts`            | Step type, direction, Add Lane, lane move, Tidy Flowchart from the menu and toolbar                                            |
 | `apps/live/lib/flowchart-dress.ts`                         | `dressFlowchartStep`, `dressFlowchartConnector`: the look a new step and connector take                                        |
 | `apps/live/components/palette/palette-tile-defs.tsx`       | `tools:flowchart` tile (component action `flowchart`)                                                                          |
@@ -33,7 +33,7 @@ Scope, by file:
 | ---------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Flowchart  | `flowchartId`                      | The chart; the id of its first step                                                                           |
 | Step       | `FlowchartStep` (a `ShapeElement`) | A shape of a step-type kind carrying `flowchartId`                                                            |
-| Step type  | `FlowchartStepType`                | `'terminator' \| 'process' \| 'decision' \| 'io' \| 'document' \| 'database' \| 'preparation' \| 'connector'` |
+| Step type  | `FlowchartStepType`                | `'terminator' \| 'process' \| 'decision' \| 'io' \| 'project' \| 'database' \| 'preparation' \| 'connector'` |
 | First step | `flowchartAnchor`                  | The step that never moves                                                                                     |
 | Connector  | an `ArrowElement`                  | A pinned arrow between two steps of one chart                                                                 |
 | Exit       | an outgoing connector              | Of a Decision: labelled Yes / No                                                                              |
@@ -44,7 +44,7 @@ Banned synonyms: "node" for a step (a mind node is a different element), "swimla
 lane), "orientation" for direction.
 
 `FLOWCHART_STEP_KIND: Record<FlowchartStepType, ShapeKind>`: terminator `stadium`, process `square`,
-decision `diamond`, io `parallelogram`, document `document`, database `cylinder`, preparation
+decision `diamond`, io `parallelogram`, project `project`, database `cylinder`, preparation
 `hexagon`, connector `circle`. `flowchartStepTypeOf(kind)` is its inverse; `undefined` for any other
 kind.
 
@@ -184,7 +184,7 @@ of the two (`'a flowchart direction'`), `flowLaneId` not a non-empty string (`'a
 
 ## Data and persistence
 
-The three fields are document data, persisted and synced as ordinary element fields. No migration:
+The three fields are project data, persisted and synced as ordinary element fields. No migration:
 absent fields mean "not a step". Duplicating steps (D172) makes **a new chart**: each source
 `flowchartId` maps to one fresh id, the copy of the source's anchor when it was copied, else the
 first copied step's new id; `flowLaneId` is remapped when the lane was copied and removed otherwise.

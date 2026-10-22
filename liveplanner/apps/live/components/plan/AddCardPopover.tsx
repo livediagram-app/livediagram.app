@@ -33,7 +33,7 @@ export function AddCardPopover({
 }: {
   // The Add card button the menu hangs from.
   anchor: HTMLElement | null;
-  // The types this board shows, in the document's order.
+  // The types this board shows, in the project's order.
   types: readonly ItemTypeDef[];
   onAdd: (card: NewCard) => void;
   // Create Card Type: absent, the row is not offered (a viewer, or a catalogue with no room).

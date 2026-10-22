@@ -1,5 +1,5 @@
-// Dashboards built from the work a document already holds (docs/specs/026-plan/plan-mode.md "Starting a board",
-// Dashboards): Start Planning reads the document's Board and Sheet tabs and offers ready-made layouts around them, each
+// Dashboards built from the work a project already holds (docs/specs/026-plan/plan-mode.md "Starting a board",
+// Dashboards): Start Planning reads the project's Board and Sheet tabs and offers ready-made layouts around them, each
 // a set of rows of slots that show a tab, a plan view (a metric or a chart) or nothing. A board whose cards have start
 // and due dates gets a timeline (its Gantt chart); one with estimates a sprint's health; one laned by priority or
 // taking bugs a triage view; one with votes a retro's summary; several boards a team overview; a board beside a sheet
@@ -11,7 +11,7 @@ import {
   type ItemTypeDef,
   type PlanViewId,
 } from '@liveplanner/items';
-import { tabKindOf, type Tab } from '@liveplanner/document';
+import { tabKindOf, type Tab } from '@liveplanner/project';
 
 type SuggestedSlot =
   | { span: number; tab: { tabId: string; of: 'board' | 'sheet' } }

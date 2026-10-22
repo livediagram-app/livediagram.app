@@ -3,13 +3,13 @@
 // text read as typed from A1), then a Sheet element framing it is placed beside what the tab holds, as add_board
 // places a board, in one changeset (live to anyone with the tab open). The first cells are checked against the
 // store's caps before the sheet is made, and a sheet whose filling or placing then fails is deleted, so a failed
-// call leaves no unplaced sheet holding cells of the document's budget and a retry starts clean.
+// call leaves no unplaced sheet holding cells of the project's budget and a retry starts clean.
 import { ApiError, type ApiClient } from '@liveplanner/api-client';
 import {
   CLIENT_HEADER,
   type ChangesetRequest,
   type ChangesetResponse,
-  type DocumentResponse,
+  type ProjectResponse,
   type SheetCreateRequest,
   type SheetResponse,
   type TabResponse,
@@ -19,7 +19,7 @@ import {
   SHEET_HEADER_H,
   SHEET_ROW_HEAD_W,
   createShape,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { placeBeside } from '@liveplanner/items';
 import {
   AGENT_LOCALE,
@@ -29,7 +29,7 @@ import {
   layoutIndex,
   sheetContentSize,
   splitCellKey,
-  documentCellCount,
+  projectCellCount,
   emptyLayout,
   emptySheet,
   makeSheetId,
@@ -155,29 +155,29 @@ function filledExtent(sheet: Sheet): string {
 
 export async function addSheet(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   input: AddSheetInput,
   client: 'mcp' | 'cli',
   rand: Rand = Math.random,
 ): Promise<AddSheetResult> {
   try {
-    const { document } = await api.json<DocumentResponse>(
-      `/documents/${encodeURIComponent(documentId)}`,
+    const { project } = await api.json<ProjectResponse>(
+      `/projects/${encodeURIComponent(projectId)}`,
     );
-    const tabs = [...document.tabs].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
+    const tabs = [...project.tabs].sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0));
     // The tab named, else the first tab holding a sheet, else the first tab.
-    const all = input.tabId ? null : await readSheets(api, documentId);
+    const all = input.tabId ? null : await readSheets(api, projectId);
     const tabId =
       input.tabId ?? tabs.find((t) => all?.some((s) => s.tabId === t.id))?.id ?? tabs[0]?.id;
-    if (!tabId) return { ok: false, code: 'tab_not_found', message: 'That document has no tabs.' };
+    if (!tabId) return { ok: false, code: 'tab_not_found', message: 'That project has no tabs.' };
     if (!tabs.some((t) => t.id === tabId))
       return {
         ok: false,
         code: 'tab_not_found',
         message: `No tab "${tabId}". Tabs: ${tabs.map((t) => `${t.name} (${t.id})`).join(', ')}.`,
       };
-    const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
-    const onTab = (all ?? (await readSheets(api, documentId, tabId))).filter(
+    const { tab } = await api.json<TabResponse>(tabPath(projectId, tabId));
+    const onTab = (all ?? (await readSheets(api, projectId, tabId))).filter(
       (s) => s.tabId === tabId,
     );
     const taken = onTab.map((s) => s.title);
@@ -191,19 +191,19 @@ export async function addSheet(
     const first = firstCells(input, onTab.map(sheetFromJson), blank, dark, rand);
     if ('ok' in first) return first;
     if (first.writes.length) {
-      const cells = documentCellCount(all ?? (await readSheets(api, documentId)));
+      const cells = projectCellCount(all ?? (await readSheets(api, projectId)));
       const over = capsRefusal(blank, first.writes, cells);
       if (over) return { ok: false, ...over };
     }
 
     // The sheet, blank, then its first cells as the editor fills a dropped CSV: one write a call, split when large.
     const create: SheetCreateRequest = { id: blank.id, tabId, title, layout };
-    const { sheet: made } = await api.json<SheetResponse>(sheetsPath(documentId), {
+    const { sheet: made } = await api.json<SheetResponse>(sheetsPath(projectId), {
       method: 'POST',
       headers: { [CLIENT_HEADER]: client },
       body: JSON.stringify(create),
     });
-    return await fillAndPlace(api, documentId, tabId, sheetFromJson(made), first, client);
+    return await fillAndPlace(api, projectId, tabId, sheetFromJson(made), first, client);
   } catch (err) {
     const refusal = apiRefusalOf(err);
     if (!refusal) throw err;
@@ -212,9 +212,9 @@ export async function addSheet(
 }
 
 // A sheet made by a call that then failed: nothing frames it, so it is deleted rather than left holding cells.
-async function deleteUnplaced(api: ApiClient, documentId: string, sheetId: string): Promise<void> {
+async function deleteUnplaced(api: ApiClient, projectId: string, sheetId: string): Promise<void> {
   try {
-    const res = await api.fetch(`${sheetsPath(documentId)}/${encodeURIComponent(sheetId)}`, {
+    const res = await api.fetch(`${sheetsPath(projectId)}/${encodeURIComponent(sheetId)}`, {
       method: 'DELETE',
     });
     console.info('[sheets] add_sheet failed; unplaced sheet deleted', { status: res.status });
@@ -227,7 +227,7 @@ async function deleteUnplaced(api: ApiClient, documentId: string, sheetId: strin
 // placing request that never answered: its element may have landed, and a frame with no sheet is worse.
 async function fillAndPlace(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   tabId: string,
   made: Sheet,
   first: FirstCells,
@@ -236,12 +236,12 @@ async function fillAndPlace(
   let sheet = made;
   try {
     for (const part of first.writes.flatMap((w) => splitWrite(w)))
-      sheet = await sendSheetWrite(api, documentId, sheet, part, client);
+      sheet = await sendSheetWrite(api, projectId, sheet, part, client);
   } catch (err) {
-    await deleteUnplaced(api, documentId, made.id);
+    await deleteUnplaced(api, projectId, made.id);
     throw err;
   }
-  const { tab } = await api.json<TabResponse>(tabPath(documentId, tabId));
+  const { tab } = await api.json<TabResponse>(tabPath(projectId, tabId));
   const { x, y } = placeBeside(tab.elements);
   // A Sheet as large as what it holds, so it shows every filled cell, within bounds; a blank one its usual size.
   const element = { ...createShape('plan-sheet', x, y), planSheet: { sheetId: sheet.id } };
@@ -269,13 +269,13 @@ async function fillAndPlace(
   };
   let answer: ChangesetResponse;
   try {
-    answer = await api.json<ChangesetResponse>(`${tabPath(documentId, tabId)}/changesets`, {
+    answer = await api.json<ChangesetResponse>(`${tabPath(projectId, tabId)}/changesets`, {
       method: 'POST',
       headers: { [CLIENT_HEADER]: client },
       body: JSON.stringify(body),
     });
   } catch (err) {
-    if (err instanceof ApiError) await deleteUnplaced(api, documentId, made.id);
+    if (err instanceof ApiError) await deleteUnplaced(api, projectId, made.id);
     throw err;
   }
   return {

@@ -89,7 +89,7 @@ export const MARKETING_PAGES = pagesOf(
 
 export const LIVE_PAGES = pagesOf(
   'Live',
-  'The Explorer, the New Document wizard, sign-in, and every document.',
+  'The Explorer, the New Project wizard, sign-in, and every project.',
 );
 
 export const HELP_PAGES = pagesOf(
@@ -373,7 +373,7 @@ export const NEW_VERSION_PROMPT: MetricStack = {
   stack: true,
   title: 'New Version Prompt',
   blurb:
-    'Editors left open across a deploy that changed the document format: offered a reload, then reloaded.',
+    'Editors left open across a deploy that changed the project format: offered a reload, then reloaded.',
   members: [NEW_VERSION_OFFERED, NEW_VERSION_RELOADED],
   headline: NEW_VERSION_RELOADED,
 };
@@ -452,28 +452,28 @@ export const PAGE_VIEWS_BY_APP: MetricStack = {
 };
 
 // The landing funnel (docs/specs/019-marketing/landing-funnel.md): arrivals at /new from a public page's call
-// to action, and the documents those visits created. The Pages tab splits them
+// to action, and the projects those visits created. The Pages tab splits them
 // by page and button against the page views before them.
 export const CTA_ARRIVALS = chart(
   'Cta',
   'Opened',
   'CTA Arrivals',
-  'Somebody followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Document page.',
+  'Somebody followed a call to action on a public page (the landing page, a feature or comparison page, the help centre) and reached the New Project page.',
 );
 
-export const CTA_DOCUMENTS = chart(
+export const CTA_PROJECTS = chart(
   'Cta',
   'Created',
-  'Documents from CTAs',
-  'Of those arrivals, the visits that went on to create a document. Counted once per arrival.',
+  'Projects from CTAs',
+  'Of those arrivals, the visits that went on to create a project. Counted once per arrival.',
 );
 
 export const CALLS_TO_ACTION: MetricStack = {
   stack: true,
   title: 'Calls to Action',
   blurb:
-    'How the public pages turn visitors into documents: arrivals from a call to action, and the documents they created.',
-  members: [CTA_ARRIVALS, CTA_DOCUMENTS],
-  headline: CTA_DOCUMENTS,
+    'How the public pages turn visitors into projects: arrivals from a call to action, and the projects they created.',
+  members: [CTA_ARRIVALS, CTA_PROJECTS],
+  headline: CTA_PROJECTS,
   seeAlso: { section: 'pages', label: 'See the Landing Funnel in Pages & Help' },
 };

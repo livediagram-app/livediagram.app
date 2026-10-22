@@ -9,19 +9,19 @@ import { CanvasModalCard } from './CanvasModalCard';
 import { IdentityNameRow } from './IdentityNameRow';
 import { SparkleIcon } from './template-picker-icons';
 
-// The visitor name prompt (docs/specs/007-editor/new-document-route.md): someone joining another person's document
+// The visitor name prompt (docs/specs/007-editor/new-project-route.md): someone joining another person's project
 // confirms the name others will see on their cursor and comments before they join. Join keeps the name typed, Cancel,
 // the X and Escape the one they had. A signed-in visitor's name is their account's, shown locked.
 export function IdentityPrompt({
   participant,
-  documentName,
+  projectName,
   lockedName,
   onJoin,
   onCancel,
 }: {
   participant: Participant;
-  // Greets the visitor by the document ("Welcome to 'API sketch'").
-  documentName?: string;
+  // Greets the visitor by the project ("Welcome to 'API sketch'").
+  projectName?: string;
   // The Clerk account's name: the input reads it, locked.
   lockedName?: string | null;
   onJoin: (name: string) => void;
@@ -39,9 +39,9 @@ export function IdentityPrompt({
   }, [participant.name, nameLocked]);
   useEscape(onCancel);
   const effectiveName = name.trim() || participant.name;
-  const title = documentName?.trim()
-    ? `Welcome to '${documentName.trim()}'`
-    : 'Welcome to this document';
+  const title = projectName?.trim()
+    ? `Welcome to '${projectName.trim()}'`
+    : 'Welcome to this project';
   return (
     <CanvasModalCard label="Confirm your name" width="sm:w-[26rem]">
       <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-6 pb-5 pt-6 dark:border-slate-800">
@@ -51,8 +51,8 @@ export function IdentityPrompt({
           </h2>
           <p className="mt-1 text-sm text-slate-500 dark:text-slate-300">
             {nameLocked
-              ? 'This is the name from your account; others will see it on this document.'
-              : 'Pick the name people will see while you collaborate on this document.'}
+              ? 'This is the name from your account; others will see it on this project.'
+              : 'Pick the name people will see while you collaborate on this project.'}
           </p>
         </div>
         <button

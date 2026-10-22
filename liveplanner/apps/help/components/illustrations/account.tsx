@@ -4,7 +4,7 @@
 
 import { Scene, Shape, Arrow, Panel, Button, Label, TextBar } from './primitives';
 
-/** A browser window holding a per-browser guest id that owns the documents it
+/** A browser window holding a per-browser guest id that owns the projects it
  *  created, with no sign-in required. */
 export function GuestIdentity() {
   return (
@@ -54,7 +54,7 @@ export function GuestIdentity() {
       <Label x={82} y={98} size={11} weight={600} tone="accent">
         liveplanner:v2:self-id
       </Label>
-      {/* The documents it owns */}
+      {/* The projects it owns */}
       <Label x={70} y={128} size={10} weight={700} tone="muted">
         OWNS
       </Label>
@@ -93,7 +93,7 @@ export function SignInCard() {
           liveplanner
         </Label>
         <Label x={210} y={56} anchor="middle" size={10} tone="muted">
-          Sign in to keep your documents
+          Sign in to keep your projects
         </Label>
         <Label x={210} y={69} anchor="middle" size={10} tone="muted">
           and work across multiple devices.
@@ -139,7 +139,7 @@ export function SignInCard() {
   );
 }
 
-/** Guest documents migrating from the per-browser id over to a new account on
+/** Guest projects migrating from the per-browser id over to a new account on
  *  sign-up. */
 export function MigrateOnSignUp() {
   return (

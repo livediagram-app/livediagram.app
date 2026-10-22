@@ -5,7 +5,7 @@ import { ITEM_STATUS_MAX } from './limits';
 import { isArchived, isTrashed, statusLabel } from './board';
 import type { PlanViewId } from './plan-views';
 
-// The most statuses a view names: every column of a document's boards fits several times over.
+// The most statuses a view names: every column of a project's boards fits several times over.
 export const PLAN_VIEW_STATUSES_MAX = 64;
 
 // The views that count by status and so take the setting.
@@ -42,7 +42,7 @@ export function cardsInStatuses(
   );
 }
 
-// The statuses to offer: those some live card holds, in the order the document's boards name them, then any
+// The statuses to offer: those some live card holds, in the order the project's boards name them, then any
 // other, each with its name as a column calls it.
 export function viewStatusOptions(
   items: Iterable<Item>,

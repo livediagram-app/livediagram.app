@@ -1,15 +1,15 @@
 # User preferences
 
 Per-user editor preference flags that toggle behaviour without
-changing document content. Most are exposed through a small
+changing project content. Most are exposed through a small
 Settings dialog launched from the footer (the **Application settings**
 gear button to the left
 of the dark-mode toggle); a small number are per-tool toggles
 that live next to the tool they affect (see the UI placement
 section below) rather than in Settings. Either way the
 persistence model is the same. Replaces the earlier
-per-document-settings shape: preferences are about the user's
-editor experience, not about any particular document, so they live
+per-project-settings shape: preferences are about the user's
+editor experience, not about any particular project, so they live
 once per account / device and apply everywhere.
 
 ## Where preferences live
@@ -98,7 +98,7 @@ blob. Don't fold panel placement into `UserPreferences`.
 ### Sign-up migration
 
 `POST /api/migrate` ([Auth + guest access](../014-identity/auth-and-guest-access.md)) moves `user_preferences.owner_id`
-along with the documents + folders + shared-with rows, so a guest
+along with the projects + folders + shared-with rows, so a guest
 who signs up keeps the settings they'd already chosen. Idempotent
 in the same shape as the existing migrations: a second call with
 the same `guestOwnerId` moves zero rows.
@@ -107,8 +107,8 @@ the same `guestOwnerId` moves zero rows.
 
 ### Renamed keys
 
-- **Renamed key.** `notifyDiagramJoin` became `notifyDocumentJoin` when the container became a
-  document. `upgradeLegacyPreferences`
+- **Renamed key.** `notifyDiagramJoin` became `notifyProjectJoin` when the container became a
+  project. `upgradeLegacyPreferences`
   (`packages/api-schema/src/legacy-preferences.ts`) renames it wherever an older copy can still
   arrive: the browser's cache on read, the server's copy before the merge, and the api's
   notification check. An opt-out is never lost; when both keys exist, the new one wins.
@@ -129,7 +129,7 @@ exactly like it did before. No required SaaS calls.
 type UserPreferences = {
   // When false, the live editor skips the auto-rebind that moves a
   // pinned arrow end to the side facing the other end once its drawn
-  // path runs through a shape after a move (packages/document's
+  // path runs through a shape after a move (packages/project's
   // `rebindArrowAnchorsAfterMove`, see ../008-canvas/arrow-anchors.md).
   // Defaults to ON.
   autoRebindArrows?: boolean;
@@ -228,8 +228,8 @@ type UserPreferences = {
   // toasts, not email.
   //
   // When false, suppress the "someone first opened one of my shared
-  // documents" email. Defaults to true (notify).
-  notifyDocumentJoin?: boolean;
+  // projects" email. Defaults to true (notify).
+  notifyProjectJoin?: boolean;
   // "Show my profile picture" (docs/specs/014-identity/profile-picture.md §4): whether signed-in
   // collaborators see this account's picture. Missing = SHOW_PROFILE_PICTURE_DEFAULT (on).
   showProfilePicture?: boolean;
@@ -258,7 +258,7 @@ type UserPreferences = {
   elementTourKinds?: ElementTourKind[];
   // Counts every element tour as answered while Power user mode is on; written by its preset.
   elementToursSeen?: boolean;
-  // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the document's tabs, not per user.
+  // DEAD (../004-interface-design/colour-picker.md "Custom colours"): Custom colours are kept with the project's tabs, not per user.
   // Nothing reads or writes this; it stays because it is already stored.
   customSwatches?: string[];
   // The quick style panel's custom swatches (../008-canvas/quick-style-panel.md
@@ -350,7 +350,7 @@ Missing key === undefined === default behaviour. Concretely:
   `--lvd-panel-opacity` custom property, on every surface: docked,
   popover (the cluster popovers), the Map, Quick style and the Toolbar
   strip. Buttons stay opaque. The **Explorer** is always fully opaque,
-  docked or as a popover: it is where documents are read and managed,
+  docked or as a popover: it is where projects are read and managed,
   and its menus open outside the panel, so a fade would set in just as
   one of them is in use. A touch screen (no
   hover) keeps every panel opaque, since nothing there would bring a
@@ -378,9 +378,9 @@ Missing key === undefined === default behaviour. Concretely:
   `planModeEnabled` went with the Settings › Experimental category (removed
   2026-10-06, [Editor modes](editor-modes.md#every-mode-always-offered)):
   every mode is always offered, and a stored `false` is dropped the same way.
-  `skipLocationStep` ("Always save new documents in <place> and skip this step") went with the New
-  Document wizard's Location step ([New document route](new-document-route.md#one-step-wizard)): the wizard
-  never asks where a document goes, so a stored place is dropped the same way and new documents follow the
+  `skipLocationStep` ("Always save new projects in <place> and skip this step") went with the New
+  Project wizard's Location step ([New project route](new-project-route.md#one-step-wizard)): the wizard
+  never asks where a project goes, so a stored place is dropped the same way and new projects follow the
   [default folders](../013-workspace/default-folders.md).
   `workshopTourSeen` (and its older name `facilitateTourSeen`), `avatarTourSeen` and the presenter settings'
   `presentation` went with Workshop mode's facilitation features (removed 2026-10-22): the Workshop and Avatar
@@ -400,17 +400,17 @@ Missing key === undefined === default behaviour. Concretely:
   itself bounded for everyone: chrome settles within 250ms and hovers
   within 150ms ([Motion](../004-interface-design/motion.md)); reduce
   motion is the stricter of the two and wins.
-- `notifyDocumentJoin` / `notifyInviteResponse` undefined / true → the
+- `notifyProjectJoin` / `notifyInviteResponse` undefined / true → the
   matching email notification is on (the default; [Account settings & email notifications](../014-identity/profile-and-email-notifications.md)). Setting
   either to `false` is the only state that suppresses its email. Read
   server-side by the api worker before sending; flipped from the
-  Settings dialog. Emit `UI`/`Toggled`/`NotifyDocumentJoin{On,Off}`
+  Settings dialog. Emit `UI`/`Toggled`/`NotifyProjectJoin{On,Off}`
   and `NotifyInviteResponse{On,Off}` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 - `notificationsEnabled` undefined / true → notifications on (the
   default). Setting it to `false` suppresses the success + info toasts
   the editor shows for consequential, otherwise-silent actions (a
-  document moved to a folder, duplicated, or deleted from a long list; a
-  tab linked into another document). **Error and warning toasts are never
+  project moved to a folder, duplicated, or deleted from a long list; a
+  tab linked into another project). **Error and warning toasts are never
   gated by this** ([Toasts](../004-interface-design/toasts.md)): a failure the user would otherwise never see still surfaces,
   so turning notifications off quiets the chatter without hiding
   breakage. The gate is read fresh on each toast push (a synchronous
@@ -545,7 +545,7 @@ and the dialog stays as the one complete, browsable index of them.
   Appearance), **Tours** (one switch per guided tour, see **Tours** below),
   **AI Tools** (assistant, with suggested prompts nested under it, and a
   **Manage API Tokens** link row that opens the API
-  Tokens sub-category), **Documents** (a **Default Folders** section with one row per
+  Tokens sub-category), **Projects** (a **Default Folders** section with one row per
   [default folder](../013-workspace/default-folders.md#settings) entry, with Change and Clear; those are not a
   preference, they read and write `/api/placement-defaults`), and an **Explorer** section with **Show Home Banner**
   (`homeBanner`, missing means shown; [Explorer Home](../013-workspace/explorer-home.md#hiding-the-banner))), **Account** (identity, Trash, delete account, see
@@ -635,7 +635,7 @@ and the dialog stays as the one complete, browsable index of them.
   A row nested under a parent row (`parent`) renders inside the same card,
   indented and faintly tinted, beneath it. What every row of a section shares
   is said **once**, in a **section note** under its heading (`sectionNotes` on
-  the category: Documents' Default Folders, the Tours' "offer again"), not
+  the category: Projects' Default Folders, the Tours' "offer again"), not
   repeated under each row. A row reused outside a group (a Plan panel's
   `SettingsRow`) draws the same cell inside a card of its own.
 

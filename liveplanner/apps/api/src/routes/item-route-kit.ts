@@ -1,7 +1,7 @@
 // The item routes' shared parts (item-routes.ts, item-patches-route.ts, item-comment-routes.ts): who the caller is
 // and what they reach, the refusals, the writer's signature and the room relay. A body is read by @liveplanner/items'
-// write checks (write-checks.ts), which an offline document runs too.
-import { isSafeColourValue, itemForRoom, itemForViewer } from '@liveplanner/document';
+// write checks (write-checks.ts), which an offline project runs too.
+import { isSafeColourValue, itemForRoom, itemForViewer } from '@liveplanner/project';
 import {
   isArchived,
   isTrashed,
@@ -13,7 +13,7 @@ import {
   type ItemPerson,
   type ItemRejection,
 } from '@liveplanner/items';
-import { getDocument, getParticipant, getTab, listItems } from '../db';
+import { getProject, getParticipant, getTab, listItems } from '../db';
 import { forbidden, json, notFound } from '../responses';
 import { relayItems } from '../room-client';
 import {
@@ -22,7 +22,7 @@ import {
   gateGrant,
   gateParticipate,
   gateRead,
-  missingDocument,
+  missingProject,
   requireOwner,
   type RouteContext,
 } from './context';
@@ -30,11 +30,11 @@ import {
 type Level = 'read' | 'participate' | 'edit';
 
 export type ItemCaller = {
-  documentId: string;
+  projectId: string;
   owner: string;
-  // The document, for the gates a comment delete checks (item-comment-routes.ts); absent on a new document's
+  // The project, for the gates a comment delete checks (item-comment-routes.ts); absent on a new project's
   // seed, which writes no comments.
-  doc?: NonNullable<Awaited<ReturnType<typeof getDocument>>>;
+  doc?: NonNullable<Awaited<ReturnType<typeof getProject>>>;
   // The item ids the caller may touch, when their grant is confined to one tab.
   scope: Set<string> | null;
   // The store as read to work out that scope, so a list does not read it twice.
@@ -52,7 +52,7 @@ export function rejected(error: ItemRejection, field?: string): Response {
 
 export const itemNotFound = () => json({ error: 'item_not_found' }, { status: 404 });
 
-// An item moved into a status its card type leaves out: statusExcluded against the document's types.
+// An item moved into a status its card type leaves out: statusExcluded against the project's types.
 export function excludedStatus(
   caller: ItemCaller,
   next: Item,
@@ -75,10 +75,10 @@ export async function isItemEditor(ctx: RouteContext, caller: ItemCaller): Promi
   const tabId = ctx.url.searchParams.get('tabId') ?? undefined;
   caller.editor =
     !!doc &&
-    ((await gateEdit(ctx, caller.documentId, doc.ownerId, doc.teamId)) ||
-      (!!tabId && (await gateEdit(ctx, caller.documentId, doc.ownerId, doc.teamId, tabId))));
+    ((await gateEdit(ctx, caller.projectId, doc.ownerId, doc.teamId)) ||
+      (!!tabId && (await gateEdit(ctx, caller.projectId, doc.ownerId, doc.teamId, tabId))));
   if (!caller.editor)
-    console.info('[items] items.retire.refused', { documentId: caller.documentId });
+    console.info('[items] items.retire.refused', { projectId: caller.projectId });
   return caller.editor;
 }
 
@@ -97,32 +97,32 @@ export const itemBusy = () => {
   );
 };
 
-// The caller and their reach: the whole document, or (a tab-scoped grant) the items one tab shows.
+// The caller and their reach: the whole project, or (a tab-scoped grant) the items one tab shows.
 export async function itemCaller(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   level: Level,
 ): Promise<ItemCaller | Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  const doc = await getDocument(ctx.env, documentId);
-  if (!doc) return missingDocument(ctx, documentId);
+  const doc = await getProject(ctx.env, projectId);
+  if (!doc) return missingProject(ctx, projectId);
   const gate = GATES[level];
-  if (await gate(ctx, documentId, doc.ownerId, doc.teamId))
-    return { documentId, owner, doc, scope: null };
+  if (await gate(ctx, projectId, doc.ownerId, doc.teamId))
+    return { projectId, owner, doc, scope: null };
   const tabId = ctx.url.searchParams.get('tabId');
   if (!tabId) {
-    // A whole-document grant that falls short of the level (a view link writing) is refused
+    // A whole-project grant that falls short of the level (a view link writing) is refused
     // outright; a grant confined to one tab must name it.
-    const grant = await gateGrant(ctx, documentId, doc.ownerId, doc.teamId);
+    const grant = await gateGrant(ctx, projectId, doc.ownerId, doc.teamId);
     return grant && grant.tabScope === null ? forbidden() : deniedOnTab(ctx, doc);
   }
-  if (!(await gate(ctx, documentId, doc.ownerId, doc.teamId, tabId))) return deniedOnTab(ctx, doc);
-  const tab = await getTab(ctx.env, documentId, tabId);
+  if (!(await gate(ctx, projectId, doc.ownerId, doc.teamId, tabId))) return deniedOnTab(ctx, doc);
+  const tab = await getTab(ctx.env, projectId, tabId);
   if (!tab) return notFound();
-  const items = await listItems(ctx.env, documentId);
+  const items = await listItems(ctx.env, projectId);
   return {
-    documentId,
+    projectId,
     owner,
     doc,
     scope: itemIdsShownOnTab(tab.elements, items),
@@ -141,13 +141,13 @@ export async function writer(ctx: RouteContext, owner: string): Promise<ItemPers
 
 export function relay(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   upserts: Item[],
   removed: string[],
   rev: number,
 ) {
   ctx.waitUntil?.(
-    relayItems(ctx.env, documentId, {
+    relayItems(ctx.env, projectId, {
       kind: 'items',
       upserts: upserts.map(itemForRoom),
       removed,

@@ -48,8 +48,8 @@ const EXPERIMENTAL_SETTINGS_UI = new Set([
   'Toggled|PlanModeOff',
 ]);
 
-// The New Document wizard's Location step and the editor's Quick Start (removed 2026-10-16,
-// docs/specs/007-editor/new-document-route.md "One-step wizard"): "Always save new documents in <place> and skip this
+// The New Project wizard's Location step and the editor's Quick Start (removed 2026-10-16,
+// docs/specs/007-editor/new-project-route.md "One-step wizard"): "Always save new projects in <place> and skip this
 // step" and Settings' Turn Off, the Quick Start shelf's expand toggle and its mode filter. Templates are picked on each
 // mode's start now, whose search reaches the other modes (UI·Used·StartOtherMode).
 const LOCATION_STEP_AND_QUICK_START_UI = new Set([
@@ -153,10 +153,10 @@ function isRetiredWorkshopEvent(category: string, action: string, type: string |
   return WORKSHOP_UI.has(`${action}|${t}`) || WORKSHOP_UI_PREFIXES.some((p) => t.startsWith(p));
 }
 
-// The New Document wizard itself (removed 2026-10-21, docs/specs/007-editor/new-document-route.md "Creating on
+// The New Project wizard itself (removed 2026-10-21, docs/specs/007-editor/new-project-route.md "Creating on
 // arrival"): its Escape / X back-out and the Start Blank link that skipped it. /new asks nothing now; a template link
 // carries on (UI·Used·TemplateLink).
-const NEW_DOCUMENT_WIZARD_UI = new Set(['Closed|NewDocument', 'Used|JustDraw']);
+const NEW_PROJECT_WIZARD_UI = new Set(['Closed|NewProject', 'Used|JustDraw']);
 // Pages mode (removed 2026-10-22, docs/specs/017-telemetry/telemetry.md "Retired features"): its pages, slide pages,
 // articles, logos, wireframes and infographics, their exports, tours and settings, and the agent tools that wrote
 // them. A form cover's moving background and Tab Windows carry on.
@@ -166,7 +166,7 @@ const PAGES_MODE_EVENTS = new Set([
   'Cli|Used|PageSet',
   'Cli|Used|ArticleGet',
   'Cli|Used|ArticleSet',
-  'Document|Exported|LogoKit',
+  'Project|Exported|LogoKit',
   'Editor|Changed|LeavePagesConfirmed',
   'Element|Changed|MirrorCopy',
   'Element|Changed|ShapesExcluded',
@@ -230,7 +230,7 @@ const PAGES_MODE_EVENTS = new Set([
 // exports (`PagesPNG`, `PagesPDFPages`, ...), the page kinds and wireframe frames, the article's inserts, formatting
 // and looks, the logo guides and mirror, and where Contents docked.
 const PAGES_MODE_FAMILIES =
-  /^(UI\|(Started|Ended)\|(Pages|Slide|Infographic|Article|Logo)Tour\w*|UI\|View\|PagesTourStep\w+|UI\|Toggled\|(Pages|Slides|Infographic|Article|Logo)TourSeen(On|Off)|Document\|Exported\|Pages(PNG|SVG|PDF|GIF)\w*|Tab\|Changed\|(PageKind|WireframeDevice|WireframeFrame|ArticleLook)\w+|Element\|(Added|Changed)\|Article[A-Z]\w*|UI\|(Toggled|Changed)\|Logo(Guide|Mirror)\w*|UI\|Changed\|Contents(Placement|Side)\w+)$/;
+  /^(UI\|(Started|Ended)\|(Pages|Slide|Infographic|Article|Logo)Tour\w*|UI\|View\|PagesTourStep\w+|UI\|Toggled\|(Pages|Slides|Infographic|Article|Logo)TourSeen(On|Off)|Project\|Exported\|Pages(PNG|SVG|PDF|GIF)\w*|Tab\|Changed\|(PageKind|WireframeDevice|WireframeFrame|ArticleLook)\w+|Element\|(Added|Changed)\|Article[A-Z]\w*|UI\|(Toggled|Changed)\|Logo(Guide|Mirror)\w*|UI\|Changed\|Contents(Placement|Side)\w+)$/;
 const isPagesModeEvent = (key: string) =>
   PAGES_MODE_EVENTS.has(key) || PAGES_MODE_FAMILIES.test(key);
 
@@ -308,7 +308,7 @@ function isRetiredEditorModeEvent(category: string, action: string, type: string
 
 // The Explorer's Timeline section (removed 2026-10-22, docs/specs/013-workspace/timeline.md): its
 // page arrivals, its card and stack menus and their Remove from Timeline, its sidebar rows and its
-// page view. A document's History and a team's Activity draw the same feed and keep the rest of the
+// page view. A project's History and a team's Activity draw the same feed and keep the rest of the
 // Timeline category (Changed, Selected, Loaded, Opened·Stack).
 const EXPLORER_TIMELINE = new Set([
   'Timeline|Opened|Landing',
@@ -397,7 +397,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (isRetiredDrawModeEvent(category, action, type)) return true;
   if (DIAGRAM_LINT_EVENTS.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredWorkshopEvent(category, action, type)) return true;
-  if (category === 'Document' && action === 'Reverted') return true;
+  if (category === 'Project' && action === 'Reverted') return true;
   if (EXPLORER_TIMELINE.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (isPagesModeEvent(`${category}|${action}|${type ?? ''}`)) return true;
   if (isRetiredEditorModeEvent(category, action, type)) return true;
@@ -405,7 +405,7 @@ export function isRetiredEvent(category: string, action: string, type: string | 
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))
     return true;
-  if (category === 'UI' && NEW_DOCUMENT_WIZARD_UI.has(`${action}|${type ?? ''}`)) return true;
+  if (category === 'UI' && NEW_PROJECT_WIZARD_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'Help') {
     return (
       ACTIVITY_PANEL_HELP_IDS.has(type ?? '') ||

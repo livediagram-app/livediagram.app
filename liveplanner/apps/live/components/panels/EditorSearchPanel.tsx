@@ -6,7 +6,7 @@ import { searchPanelSources } from '@/components/panels/search-panel-sources';
 import { buildPaletteSearchItems } from '@/lib/palette-search';
 import { HELP_SEARCH_ITEMS } from '@/lib/help-search';
 import { SETTINGS_SEARCH_ITEMS } from '@/lib/settings-search-items';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useEditorCommands } from '@/hooks/canvas/useEditorCommands';
 import { PALETTE_TILES } from '@/components/palette/palette-tile-defs';
 import { tileHandler } from '@/components/palette/PaletteTileGrid';
@@ -19,22 +19,22 @@ const SearchPanel = dynamic(
   { ssr: false },
 );
 
-// The editor's search panel (docs/specs/008-canvas/canvas-and-palette.md "Search panel" + docs/specs/007-editor/command-palette.md): searches documents, folders, shared +
-// team documents, tabs/elements, and exposes palette adds, commands, and help.
+// The editor's search panel (docs/specs/008-canvas/canvas-and-palette.md "Search panel" + docs/specs/007-editor/command-palette.md): searches projects, folders, shared +
+// team projects, tabs/elements, and exposes palette adds, commands, and help.
 // Reads everything from EditorContext (commands come from useEditorCommands,
 // itself context-driven), so EditorView just renders <EditorSearchPanel />.
 export function EditorSearchPanel() {
   const {
     searchOpen,
-    documentList,
+    projectList,
     folders,
-    sharedDocuments,
+    sharedProjects,
     teams,
     teamFolders,
-    teamDocuments,
+    teamProjects,
     tabs,
     activeId,
-    openDocument,
+    openProject,
     setActiveId,
     setSelectedId,
     isReadOnly,
@@ -50,20 +50,20 @@ export function EditorSearchPanel() {
   return (
     <SearchPanel
       {...searchPanelSources({
-        documents: documentList,
+        projects: projectList,
         folders,
-        shared: sharedDocuments,
+        shared: sharedProjects,
         teams,
-        teamDocuments,
+        teamProjects,
       })}
       teamFolders={teamFolders}
       tabs={tabs}
       currentTabId={activeId}
-      onSelectDocument={(id) => {
-        openDocument(id);
+      onSelectProject={(id) => {
+        openProject(id);
       }}
       onSelectShared={(id, shareCode) => {
-        openDocument(id, shareCode);
+        openProject(id, shareCode);
       }}
       onSelectFolder={(id) => {
         // A personal folder opens on the Explorer page, as picking it there does.

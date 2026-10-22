@@ -88,7 +88,7 @@ describe('FormConnectCard', () => {
     expect(track).toHaveBeenCalledWith('Form', 'Linked', 'ConnectChoose');
   });
 
-  it('offers no Choose Existing when the document has no board or sheet', () => {
+  it('offers no Choose Existing when the project has no board or sheet', () => {
     setup({}, { hasExisting: false });
     expect(screen.queryByRole('button', { name: /already have/ })).toBeNull();
   });

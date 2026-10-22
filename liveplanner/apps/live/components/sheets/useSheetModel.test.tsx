@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
-// One Sheet element's view of the sheet store (blueprint sheet-store.md "Editor slice"): the document's store,
+// One Sheet element's view of the sheet store (blueprint sheet-store.md "Editor slice"): the project's store,
 // attached to the room once while any Sheet draws from it; its tab loaded; a placed sheet made (titled, filled from a
-// dropped CSV); a copy made from a loaded sheet, a clipboard seed or on the server, refused across documents when
+// dropped CSV); a copy made from a loaded sheet, a clipboard seed or on the server, refused across projects when
 // too big to travel; and the Plan cards handed over when a formula reads them.
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { emptyLayout, type SheetJson } from '@liveplanner/sheets';
-import type { Element, ShapeElement } from '@liveplanner/document';
+import type { Element, ShapeElement } from '@liveplanner/project';
 import type { SheetPresenceOp } from '@liveplanner/api-schema';
 import { ApiError } from '@/lib/api/core';
 import * as api from '@/lib/api/sheets';
@@ -65,7 +65,7 @@ type Fake = SheetsBridge & {
 
 function bridge(over: Partial<SheetsBridge> = {}): Fake {
   const b: Fake = {
-    scope: { documentId: `doc${docSeq++}`, ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: `doc${docSeq++}`, ownerId: 'o', shareCode: null, tabId: null },
     activeTabId: 't1',
     self: by,
     canEdit: true,
@@ -352,7 +352,7 @@ describe('a copied sheet', () => {
     expect(theirs!.planSheet).toEqual({ sheetId: 'other0001', copyOf: 'x' });
   });
 
-  it('copies from a clipboard seed when the source is in another document', async () => {
+  it('copies from a clipboard seed when the source is in another project', async () => {
     const seed = sheetJson('seedSRC01', { title: 'Pasted' });
     seed.cells = [{ r: seed.layout.rows[1]!, c: seed.layout.cols[1]!, i: { s: 'hi' } }];
     stashSheetSeeds([seed]);
@@ -387,7 +387,7 @@ describe('a copied sheet', () => {
     expect(b.toast).not.toHaveBeenCalled();
   });
 
-  it('refuses a paste from another document of a sheet too big to travel, removing the element', async () => {
+  it('refuses a paste from another project of a sheet too big to travel, removing the element', async () => {
     createSheet.mockRejectedValueOnce(new ApiError('sheet create', 404, 'sheet_not_found'));
     const b = bridge();
     const el = element({ sheetId: 'sheetBIG1', copyOf: 'elsewhere1' });
@@ -405,7 +405,7 @@ describe('a copied sheet', () => {
     b.elements = [el];
     model(el, b);
     await waitFor(() =>
-      expect(b.toast).toHaveBeenCalledWith('This document holds the most sheets it can'),
+      expect(b.toast).toHaveBeenCalledWith('This project holds the most sheets it can'),
     );
     expect(b.toast).not.toHaveBeenCalledWith(SHEET_TOO_BIG_TO_PASTE);
     expect(b.elements.map((e) => e.id)).toEqual(['el1']);

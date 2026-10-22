@@ -8,35 +8,35 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 | File                                                          | Role                                                                                    |
 | ------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | `apps/api/migrations/0001_liveplanner_baseline.sql`                      | The `tab_stats` table                                                                   |
-| `packages/document/src/tab-stats.ts`                          | `tabStatsOf`, `TabStats`: one counting rule for the api and the browser                 |
-| `apps/api/src/db/tab-stats.ts`                                | `tabStatsOfData`, `tabStatsStatement`, `documentStatsSql`, `readDocumentStats`          |
+| `packages/project/src/tab-stats.ts`                          | `tabStatsOf`, `TabStats`: one counting rule for the api and the browser                 |
+| `apps/api/src/db/tab-stats.ts`                                | `tabStatsOfData`, `tabStatsStatement`, `projectStatsSql`, `readProjectStats`          |
 | `apps/api/src/tab-stats-backfill.ts`                          | `runTabStatsBackfill`: the cron's bounded count of tabs without stats                   |
-| `apps/api/src/db/tabs.ts`, `apps/api/src/db/documents.ts`     | Every tab write batches `tabStatsStatement`; the summary projection selects `doc_stats` |
+| `apps/api/src/db/tabs.ts`, `apps/api/src/db/projects.ts`     | Every tab write batches `tabStatsStatement`; the summary projection selects `doc_stats` |
 | `apps/api/src/participant-write.ts`                           | Hand `swapTabData` the next body's stats                                                |
-| `packages/api-schema/src/index.ts`                            | `DocumentStats`, `DocumentSummary.stats`                                                |
+| `packages/api-schema/src/index.ts`                            | `ProjectStats`, `ProjectSummary.stats`                                                |
 | `packages/ui/src/hint/*`, `packages/ui/src/useRowPreview.tsx` | Hint kind `preview`: delay, per-kind warm-up (`isHintWarm`), look; `useRowPreview`      |
 | `apps/live/app/explorer/useExplorerViewMode.ts`               | `ExplorerViewMode` gains `'details'`                                                    |
 | `apps/live/app/explorer/ViewToggle.tsx`                       | The third button                                                                        |
-| `apps/live/app/explorer/details/DetailsView.tsx`              | The table: header, folder rows, document rows                                           |
+| `apps/live/app/explorer/details/DetailsView.tsx`              | The table: header, folder rows, project rows                                           |
 | `apps/live/app/explorer/details/DetailsHeader.tsx`            | Sortable column headers                                                                 |
-| `apps/live/app/explorer/details/DetailsDocumentRow.tsx`       | One document row: drag source, preview, `⋯`                                             |
+| `apps/live/app/explorer/details/DetailsProjectRow.tsx`       | One project row: drag source, preview, `⋯`                                             |
 | `apps/live/app/explorer/details/DetailsFolderRow.tsx`         | One folder row: drop target, `⋯`                                                        |
 | `apps/live/app/explorer/details/details-columns.ts`           | `DETAILS_COLUMNS`, `sortDetailsEntries`, cell values                                    |
 | `apps/live/app/explorer/details/details-format.ts`            | `formatObjects`, `formatBytes`, `formatSize`, `formatDateTime`, `formatItems`           |
 | `apps/live/app/explorer/details/details-cells.tsx`            | `TypeCell`, `AccessCell`, `DateCell`, `NoValue`, `SHOWN_FROM_CLASS`                     |
-| `apps/live/app/explorer/explorer-view-props.ts`               | `documentEntryPropsFor`: the per-document bindings every view shares                    |
-| `apps/live/lib/offline/offline-stats.ts`                      | `offlineDocumentStats`: a document in this browser counted from its record              |
-| `apps/live/components/panels/TeamSharedDocuments.tsx`         | The team library's Details branch                                                       |
+| `apps/live/app/explorer/explorer-view-props.ts`               | `projectEntryPropsFor`: the per-project bindings every view shares                    |
+| `apps/live/lib/offline/offline-stats.ts`                      | `offlineProjectStats`: a project in this browser counted from its record              |
+| `apps/live/components/panels/TeamSharedProjects.tsx`         | The team library's Details branch                                                       |
 | `apps/live/app/explorer/details/useDetailsSort.ts`            | The device-local sort                                                                   |
 | `apps/live/app/explorer/details/useSnapshotPrefetch.ts`       | Asks for a row's snapshot as it nears the viewport                                      |
-| `apps/live/lib/document-space.ts`                             | `readerAccessOf`                                                                        |
+| `apps/live/lib/project-space.ts`                             | `readerAccessOf`                                                                        |
 
 ## Domain and naming
 
 | Term           | Identifier                     | Meaning                                                                     |
 | -------------- | ------------------------------ | --------------------------------------------------------------------------- |
 | tab stats      | `TabStats`, table `tab_stats`  | One tab's `mode`, `elementCount`, `commentCount`, `dataBytes`, `writtenAt`  |
-| document stats | `DocumentStats`                | `{ mode, elements, comments, bytes }`, summed over a document's linked tabs |
+| project stats | `ProjectStats`                | `{ mode, elements, comments, bytes }`, summed over a project's linked tabs |
 | not counted    | `stats: null`                  | No tabs, or a linked tab without a stats row; the cells show `–`            |
 | Details view   | `ExplorerViewMode` `'details'` | The third browse layout                                                     |
 | column         | `DetailsColumnId`              | `name`, `type`, `comments`, `access`, `size`, `created`, `updated`          |
@@ -48,7 +48,7 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
 
 ### Tab stats
 
-- `tabStatsOf(body, data)` (`@liveplanner/document`) is pure. `mode = 'plan'` (the one editor mode);
+- `tabStatsOf(body, data)` (`@liveplanner/project`) is pure. `mode = 'plan'` (the one editor mode);
   `elementCount = body.elements.length` (0 when not an array); `commentCount` sums
   `commentThread.comments.length` over the elements; `dataBytes` is the UTF-8 length of `data`.
 - `tabStatsOfData(data)` (api) parses a stored body and counts it; a body that is not a JSON object
@@ -57,14 +57,14 @@ The spec decides; this file adds engineering precision. Defaults are ledgered in
   `INSERT INTO tab_stats (...) VALUES (...) ON CONFLICT(tab_id) DO UPDATE SET` every column. It is
   placed in each batch **after** the `tabs` upsert (the foreign key needs the row):
   `tabWriteStatements`, `seedTabs` (per tab), `swapTabData` (with `nextStats`, guarded by
-  `ifStoredData` so it lands only when the swap does), `copyDocument` (re-derived from the copied body
+  `ifStoredData` so it lands only when the swap does), `copyProject` (re-derived from the copied body
   with `tabStatsOfData`).
 - `renameTab` writes no stats: a rename is not work in a mode.
-- `documentStatsSql(idSql)` is a scalar subquery over `document_tabs LEFT JOIN tab_stats`:
-  `NULL` when the document has no linked tab or any linked tab lacks a row, else
+- `projectStatsSql(idSql)` is a scalar subquery over `project_tabs LEFT JOIN tab_stats`:
+  `NULL` when the project has no linked tab or any linked tab lacks a row, else
   `json_object('mode', <mode of the row with the greatest written_at, ties by order_index>, 'elements',
 SUM, 'comments', SUM, 'bytes', SUM)`. It reads no `tabs` column, so no body.
-- `readDocumentStats(text)` parses that JSON; a value that fails to parse or carries a mode that
+- `readProjectStats(text)` parses that JSON; a value that fails to parse or carries a mode that
   `parseEditorMode` rejects is `null` with a warning `tab-stats: unreadable doc_stats`.
 
 ### Backfill
@@ -77,7 +77,7 @@ SUM, 'comments', SUM, 'bytes', SUM)`. It reads no `tabs` column, so no body.
 2. Each body counts through `tabStatsOfData`; a body that fails to parse counts as Diagram with no elements
    and no comments, its bytes measured, and warns `tab-stats: corrupt tab <id> counted empty`.
 3. One batch of `INSERT ... ON CONFLICT(tab_id) DO NOTHING`, `written_at` set to the tab's own
-   `updated_at` (never the run's time, which would make the backfilled tab the document's newest and
+   `updated_at` (never the run's time, which would make the backfilled tab the project's newest and
    so its Type). A write that landed since step 1
    already wrote the newer stats, which stay.
 4. A page shorter than the page size ends the loop: `left=none`; otherwise `left=more`.
@@ -97,7 +97,7 @@ cron runs it in `waitUntil` beside the other sweeps, its failure logged as
 - `useDetailsSort` reads `liveplanner:explorer-details-sort` (`"<column>:<asc|desc>"`); an unreadable
   value is the default `updated:desc`. `toggle(column)` returns the column's natural direction
   (`DETAILS_COLUMNS[column].natural`) when it is not the current column, else the opposite one.
-- `sortDetailsEntries(folders, documents, sort, ctx)` returns folders then documents, each sorted by
+- `sortDetailsEntries(folders, projects, sort, ctx)` returns folders then projects, each sorted by
   the column's key; a missing key (`–`) sorts last in both directions; ties fall back to name
   (locale compare, `sensitivity: 'base'`), then id. Folders without the column use name.
 - `ExplorerPane` picks `DetailsView` for `'details'` from the same `ExplorerViewProps`; the team
@@ -120,15 +120,15 @@ cron runs it in `waitUntil` beside the other sweeps, its failure logged as
 ## Interfaces and contracts
 
 ```ts
-export type DocumentStats = { mode: EditorMode; elements: number; comments: number; bytes: number };
-// DocumentSummary
-stats: DocumentStats | null;
+export type ProjectStats = { mode: EditorMode; elements: number; comments: number; bytes: number };
+// ProjectSummary
+stats: ProjectStats | null;
 ```
 
-- `GET /api/documents` and each team library list carry `stats` on every row. Shared-with-you rows
+- `GET /api/projects` and each team library list carry `stats` on every row. Shared-with-you rows
   (`SharedWithItem`) carry none; the client treats them as not counted.
-- `DocumentListItem` gains optional `createdAt` and `stats`. The team sweep copies both; offline rows
-  carry `offlineDocumentStats(record)`, cached per `id:savedAt`, with the first tab's mode (`D152`).
+- `ProjectListItem` gains optional `createdAt` and `stats`. The team sweep copies both; offline rows
+  carry `offlineProjectStats(record)`, cached per `id:savedAt`, with the first tab's mode (`D152`).
 
 ## Data and persistence
 
@@ -145,7 +145,7 @@ CREATE TABLE tab_stats (
 
 - Derived data: deleting every row loses nothing the backfill cannot rebuild.
 - The migration creates the table only (constant time); no statement reads a body.
-- A tab deleted cascades its row away. A document deleted keeps tabs other documents link, and their
+- A tab deleted cascades its row away. A project deleted keeps tabs other projects link, and their
   stats.
 - The Trash, restore and purge need nothing: stats follow tabs.
 
@@ -153,9 +153,9 @@ CREATE TABLE tab_stats (
 
 | Case                                 | Handling                                                   |
 | ------------------------------------ | ---------------------------------------------------------- |
-| Document with no tabs                | `stats: null`, cells `–`                                   |
+| Project with no tabs                | `stats: null`, cells `–`                                   |
 | Some tabs not yet counted            | `stats: null` until the backfill reaches them              |
-| A stored row of a retired mode       | Plan (`readDocumentStats` reads through `parseEditorMode`) |
+| A stored row of a retired mode       | Plan (`readProjectStats` reads through `parseEditorMode`) |
 | Corrupt tab body in the backfill     | Counted empty, warned                                      |
 | Write racing the backfill            | The write's row wins (`DO NOTHING`)                        |
 | Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)      |
@@ -166,12 +166,12 @@ CREATE TABLE tab_stats (
 ## Security and trust
 
 - Stats leave the api only on rows the caller may already list; they say nothing a reader of the
-  document could not count.
+  project could not count.
 - No new route, no new input.
 
 ## Performance and limits
 
-- The list reads, per document, its `document_tabs` rows and their `tab_stats` rows: narrow rows, no
+- The list reads, per project, its `project_tabs` rows and their `tab_stats` rows: narrow rows, no
   body, no overflow page.
 - A write adds one small statement to a batch it already sends.
 - The backfill parses at most `TAB_STATS_BACKFILL_PAGE_ROWS` bodies at once (each at most
@@ -203,13 +203,13 @@ CREATE TABLE tab_stats (
 - Numbers right-aligned with tabular figures; dates in `text-xs`.
 - `–` cells carry a `Tooltip` "Not counted yet".
 - The sorted header shows a 10 px chevron (up ascending, down descending).
-- A folder row a document is dragged over wears `DROP_TARGET_ROW` (an inset brand outline and a
+- A folder row a project is dragged over wears `DROP_TARGET_ROW` (an inset brand outline and a
   tint): a table row paints no box-shadow, so the ring other places wear would not show.
 - Empty, loading and error states are the pane's own, as for List and Cards.
 
 ## Accessibility
 
-- The table has an accessible name: "Folders and documents".
+- The table has an accessible name: "Folders and projects".
 - `aria-sort` on the sorted `th` only. The header button's name is the column's label; a sorted
   column's button adds ", sorted ascending" or ", sorted descending" visually hidden.
 - Rows keep the list's interactive parts: the name link, the `⋯` (reveal on hover, row focus or
@@ -238,14 +238,14 @@ CREATE TABLE tab_stats (
 
 | Rule                                                           | Test                                                          |
 | -------------------------------------------------------------- | ------------------------------------------------------------- |
-| Stats of a body: mode, elements, comments, bytes               | `packages/document/src/tab-stats.test.ts`                     |
+| Stats of a body: mode, elements, comments, bytes               | `packages/project/src/tab-stats.test.ts`                     |
 | A corrupt body counts empty                                    | `apps/api/src/db/tab-stats.test.ts`                           |
-| A document in this browser is counted, cached per save         | `apps/live/lib/offline/offline-stats.test.ts`                 |
+| A project in this browser is counted, cached per save         | `apps/live/lib/offline/offline-stats.test.ts`                 |
 | The snapshot prefetch asks once, near the viewport             | `apps/live/app/explorer/details/useSnapshotPrefetch.test.tsx` |
-| Reader access                                                  | `apps/live/lib/document-space.test.ts`                        |
+| Reader access                                                  | `apps/live/lib/project-space.test.ts`                        |
 | Warm-up per kind                                               | `packages/ui/src/hint/hint-registry.test.ts`                  |
 | Every write path leaves a matching stats row                   | `apps/api/src/db/tab-stats-writers.test.ts`                   |
-| Document stats sum, latest mode, null when uncounted           | `apps/api/src/db/tab-stats.test.ts`                           |
+| Project stats sum, latest mode, null when uncounted           | `apps/api/src/db/tab-stats.test.ts`                           |
 | Backfill counts, keeps a racing write, logs, stops             | `apps/api/src/tab-stats-backfill.test.ts`                     |
 | Preview delay, warm-up, focus                                  | `packages/ui/src/hint/useHint.test.tsx`                       |
 | Sort: natural direction, toggle, folders first, `–` last       | `apps/live/app/explorer/details/details-columns.test.ts`      |

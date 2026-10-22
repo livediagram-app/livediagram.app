@@ -15,7 +15,7 @@ import {
   Tooltip,
 } from '@liveplanner/ui';
 import { useRef, useState, useCallback } from 'react';
-import type { ElementAction } from '@liveplanner/document';
+import type { ElementAction } from '@liveplanner/project';
 import { useReposition } from '@/hooks/canvas/useReposition';
 import { initialsOf } from '@/lib/identity';
 import { formatRelativeTimeCompact, useRelativeNow } from '@/lib/relative-time';
@@ -36,7 +36,7 @@ type ActionPopoverProps = {
   onReopen: () => void;
   // Won't Do (docs/specs/026-plan/linked-boards.md "On the canvas"): closes it without it being done.
   onWontDo?: () => void;
-  // Present when the document has an Actions board: opens it on this action's card ("Where it went").
+  // Present when the project has an Actions board: opens it on this action's card ("Where it went").
   onOpenBoard?: () => void;
   onEdit: () => void;
   onDelete: () => void;

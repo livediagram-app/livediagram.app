@@ -5,7 +5,7 @@ import {
   initialExpanded,
   isLibraryView,
   LIBRARY_EXPAND_KEY,
-  MY_DOCUMENTS_EXPAND_KEY,
+  MY_PROJECTS_EXPAND_KEY,
   SIDEBAR_GROUP_TITLES,
   sidebarDivider,
   sidebarGroups,
@@ -17,7 +17,7 @@ const GUEST: SidebarLayoutInput = {
   signedIn: false,
   signInAvailable: true,
   pendingInvites: 0,
-  offlineDocuments: 0,
+  offlineProjects: 0,
   selected: 'inbox',
 };
 const SIGNED_IN: SidebarLayoutInput = { ...GUEST, signedIn: true };
@@ -39,21 +39,21 @@ describe('sidebarGroups', () => {
     expect(rowsOf(SIGNED_IN, 'overview')).toEqual(['home', 'inbox', 'shared']);
   });
 
-  it('gives a signed-in reader My Documents, teams and New Team last', () => {
-    expect(rowsOf(SIGNED_IN, 'spaces')).toEqual(['myDocuments', 'teams', 'newTeam']);
+  it('gives a signed-in reader My Projects, teams and New Team last', () => {
+    expect(rowsOf(SIGNED_IN, 'spaces')).toEqual(['myProjects', 'teams', 'newTeam']);
   });
 
   it('gives a guest the sign-in nudge instead of teams and New Team', () => {
-    expect(rowsOf(GUEST, 'spaces')).toEqual(['myDocuments', 'signInNudge']);
+    expect(rowsOf(GUEST, 'spaces')).toEqual(['myProjects', 'signInNudge']);
   });
 
   it('gives a guest on a deployment without sign-in neither teams nor the nudge', () => {
-    expect(rowsOf({ ...GUEST, signInAvailable: false }, 'spaces')).toEqual(['myDocuments']);
+    expect(rowsOf({ ...GUEST, signInAvailable: false }, 'spaces')).toEqual(['myProjects']);
   });
 
   it('shows Invites before New Team only while an invite is pending', () => {
     expect(rowsOf({ ...SIGNED_IN, pendingInvites: 2 }, 'spaces')).toEqual([
-      'myDocuments',
+      'myProjects',
       'teams',
       'invites',
       'newTeam',
@@ -68,12 +68,12 @@ describe('sidebarGroups', () => {
     expect(rowsOf({ ...GUEST, pendingInvites: 3 }, 'spaces')).not.toContain('invites');
   });
 
-  it('hides This Browser while it holds no documents', () => {
+  it('hides This Browser while it holds no projects', () => {
     expect(rowsOf(GUEST, 'more')).toEqual(['library', 'trash']);
   });
 
-  it('shows This Browser first in More while it holds documents', () => {
-    expect(rowsOf({ ...GUEST, offlineDocuments: 1 }, 'more')).toEqual([
+  it('shows This Browser first in More while it holds projects', () => {
+    expect(rowsOf({ ...GUEST, offlineProjects: 1 }, 'more')).toEqual([
       'thisBrowser',
       'library',
       'trash',
@@ -100,15 +100,15 @@ describe('sidebarGroups in the floating Explorer panel', () => {
   });
 
   it('shows the spaces but no Invites or New Team', () => {
-    expect(rowsOf(PANEL, 'spaces')).toEqual(['myDocuments', 'teams']);
+    expect(rowsOf(PANEL, 'spaces')).toEqual(['myProjects', 'teams']);
   });
 
   it('shows no sign-in nudge to a guest', () => {
-    expect(rowsOf({ ...GUEST, surface: 'panel' }, 'spaces')).toEqual(['myDocuments']);
+    expect(rowsOf({ ...GUEST, surface: 'panel' }, 'spaces')).toEqual(['myProjects']);
   });
 
-  it('shows This Browser while it holds documents', () => {
-    expect(rowsOf({ ...PANEL, offlineDocuments: 1 }, 'more')).toEqual([
+  it('shows This Browser while it holds projects', () => {
+    expect(rowsOf({ ...PANEL, offlineProjects: 1 }, 'more')).toEqual([
       'thisBrowser',
       'library',
       'trash',
@@ -138,8 +138,8 @@ describe('isLibraryView', () => {
 });
 
 describe('initialExpanded', () => {
-  it('opens My Documents by default', () => {
-    expect([...initialExpanded({ kind: 'inbox' })]).toEqual([MY_DOCUMENTS_EXPAND_KEY]);
+  it('opens My Projects by default', () => {
+    expect([...initialExpanded({ kind: 'inbox' })]).toEqual([MY_PROJECTS_EXPAND_KEY]);
   });
 
   it('also opens Library when a Library page is the current view', () => {
@@ -154,7 +154,7 @@ describe('initialExpanded', () => {
   });
 
   it('keeps the expand keys apart from folder and team ids', () => {
-    expect(MY_DOCUMENTS_EXPAND_KEY).toContain(':');
+    expect(MY_PROJECTS_EXPAND_KEY).toContain(':');
     expect(LIBRARY_EXPAND_KEY).toContain(':');
   });
 });

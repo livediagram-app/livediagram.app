@@ -1,28 +1,28 @@
 # Default folders
 
 Status: shipped. The server side (storage, the API, resolution on create, the intent every create
-caller sends, the intent recorded on the document) and the surfaces that set, show and clear a
+caller sends, the intent recorded on the project) and the surfaces that set, show and clear a
 default ([Surfaces](#surfaces)) are live.
 
 ## What
 
-A **default folder** is where a person's new documents land when they create one without choosing
+A **default folder** is where a person's new projects land when they create one without choosing
 a place. A person keeps one default per **default key**, and the key is chosen by how the new
-document opens and what it is made as: a document that opens in Diagram mode can land in "Diagrams",
+project opens and what it is made as: a project that opens in Diagram mode can land in "Diagrams",
 one that opens in Draw mode in "Sketches", and a retrospective in "Retros". Defaults belong to the
-person, not to a folder or a team: two teammates may send the same new documents to different places.
+person, not to a folder or a team: two teammates may send the same new projects to different places.
 
 ## Domain language
 
 | Term                 | Means                                                                                                      |
 | -------------------- | ---------------------------------------------------------------------------------------------------------- |
-| **default folder**   | The folder a person's new documents of one key land in when no place is chosen.                            |
+| **default folder**   | The folder a person's new projects of one key land in when no place is chosen.                            |
 | **default key**      | What a default is for: `<dimension>:<value>`, e.g. `mode:plan` (`PlacementDefaultKey`).                    |
-| **creation intent**  | What a new document is made as, captured once when it is created: opens in, tab kind and template family.  |
-| **opens in**         | The editor mode the document is made in (`EditorMode`): Plan, the one mode.                                |
+| **creation intent**  | What a new project is made as, captured once when it is created: opens in, tab kind and template family.  |
+| **opens in**         | The editor mode the project is made in (`EditorMode`): Plan, the one mode.                                |
 | **tab kind**         | What the first tab is (`TabKind`): the general `diagram` tab, or a specific kind such as `event-storming`. |
-| **template family**  | The family of templates the document was made from, when it has one: `retrospective` or `kanban`.          |
-| **explicit root**    | The root of My Documents, chosen on purpose (the placement picker's root tile): a place like any other.    |
+| **template family**  | The family of templates the project was made from, when it has one: `retrospective` or `kanban`.          |
+| **explicit root**    | The root of My Projects, chosen on purpose (the placement picker's root tile): a place like any other.    |
 | **dangling default** | A default whose folder is gone, no longer the person's to see, or in a team the person has left.           |
 
 - "Default" on its own is ambiguous here (default theme, default text size, the Default template); in
@@ -31,7 +31,7 @@ person, not to a folder or a team: two teammates may send the same new documents
 
 ## Default keys
 
-The list a person sets defaults from is titled **New documents that open as**, and holds, in this
+The list a person sets defaults from is titled **New projects that open as**, and holds, in this
 order:
 
 | Entry                 | Key                      |
@@ -45,7 +45,7 @@ order:
   `template` (the template family) and `mode` (opens in).
 - The keys are a **closed list** (`PLACEMENT_DEFAULT_KEYS`), generated from three closed lists. A key
   outside it is refused when set and ignored when read.
-  - **Mode keys** come from the editor modes (`EDITOR_MODES` in `@liveplanner/document`), one
+  - **Mode keys** come from the editor modes (`EDITOR_MODES` in `@liveplanner/project`), one
     `mode:<mode>` per mode in the modes' order: a new editor mode gains its key, and its entry in
     the list, with no other change.
   - **Template keys** come from the template families (`TEMPLATE_FAMILIES`): `retrospective`,
@@ -54,87 +54,87 @@ order:
 ## Creation intent
 
 - **Captured once, at creation**, and never re-derived: content drawn afterwards does not move a
-  document. The intent is recorded on the document ([Recorded intent](#recorded-intent)).
-  - `mode`: the editor mode the first tab opens in. `draw` for a tab that opens in Draw mode, including a stored legacy `kind: 'whiteboard'` tab ([Editor modes](../007-editor/editor-modes.md)); `diagram` otherwise, including a document with no tab.
+  project. The intent is recorded on the project ([Recorded intent](#recorded-intent)).
+  - `mode`: the editor mode the first tab opens in. `draw` for a tab that opens in Draw mode, including a stored legacy `kind: 'whiteboard'` tab ([Editor modes](../007-editor/editor-modes.md)); `diagram` otherwise, including a project with no tab.
   - `tabKind`: the first tab's kind, `diagram` (a legacy whiteboard tab included). Absent on the wire reads as `diagram`.
-  - `templateFamily`: by the **template** the document is made from. One exhaustive map from every
+  - `templateFamily`: by the **template** the project is made from. One exhaustive map from every
     template to its family, or none, decides it (`templateFamilyOf` in `@liveplanner/templates`):
     every retrospective format (Retrospective, Start / Stop / Continue, Mad / Sad / Glad, 4Ls,
     Sailboat) is `retrospective`, the Kanban template `kanban`, every other template none, the
     Incident postmortem and Lean coffee included. A new template is not complete until it is
-    mapped. Absent for an import, a blank document, or a template with no family.
+    mapped. Absent for an import, a blank project, or a template with no family.
 - **Sent on the create** as `intent: { mode, tabKind?, templateFamily? }` beside the placement
   ([Placement on create](folders.md#placement-on-create)).
 - **Who sends it:**
-  - every create that makes something new: the New Document wizard and its bypasses
-    (`/new?blank=1`, `/new?template=`) and the MCP `create_document` tool, which sends the intent of the first
+  - every create that makes something new: the New Project wizard and its bypasses
+    (`/new?blank=1`, `/new?template=`) and the MCP `create_project` tool, which sends the intent of the first
     tab it built and the template it used;
   - **Duplicate**, which sends the source's **recorded** intent unchanged, together with an explicit
     placement, so it is recorded and never routed ([Duplicate](#duplicate)).
-- **Who does not:** a create that keeps a place the document already has and has no recorded intent
+- **Who does not:** a create that keeps a place the project already has and has no recorded intent
   to carry. An Offline Mode sync keeps the folder it had in the browser and records unknown. A create without an intent never consults defaults.
 - An intent that is present but malformed (no known `mode`, a `tabKind` or `templateFamily` outside
   its list) refuses the create, `intent_invalid` (400), before anything is written.
 
 ## Recorded intent
 
-The creation intent is also **written on the document**, by the same insert that creates it, and
+The creation intent is also **written on the project**, by the same insert that creates it, and
 never re-derived or rewritten afterwards:
 
 | Column            | Field            | Holds                                          |
 | ----------------- | ---------------- | ---------------------------------------------- |
-| `opens_in`        | `opensIn`        | The editor mode the document opens in, or null |
+| `opens_in`        | `opensIn`        | The editor mode the project opens in, or null |
 | `tab_kind`        | `tabKind`        | The first tab's kind at creation, or null      |
 | `template_family` | `templateFamily` | The template family it was made from, or null  |
 
-- **Null `opensIn` means unknown**, never Diagram: the document was made before intents were
+- **Null `opensIn` means unknown**, never Diagram: the project was made before intents were
   recorded, or by a create that carries none (an Offline Mode sync, an API
-  script, the Duplicate of a document whose own intent is unknown). Its `tabKind` and
+  script, the Duplicate of a project whose own intent is unknown). Its `tabKind` and
   `templateFamily` are then unknown too.
 - **With a known `opensIn`**, `tabKind` is always known, and a null `templateFamily` means made from
   no family.
-- The first tab's kind is a column of its own because the document has no other honest record of
-  it: tabs are reordered, removed and shared between documents after creation.
-- The fields are on both the document summary and the document.
-- A copy made by `POST /api/documents/:id/copy` carries the source's recorded values, as Duplicate
+- The first tab's kind is a column of its own because the project has no other honest record of
+  it: tabs are reordered, removed and shared between projects after creation.
+- The fields are on both the project summary and the project.
+- A copy made by `POST /api/projects/:id/copy` carries the source's recorded values, as Duplicate
   does: they are a fact about the content, not derived again.
 - A stored value outside its list (one since retired) reads as null.
 - A stored opens-in of a retired editor mode (`diagram`, `draw`, `workshop`, `pages`, or an older name) reads as `plan`
   (`parseEditorMode`), and a stored default key of one (`mode:diagram`, ...) is no longer in force: it is left out of
   the person's defaults and never answers a create ([Editor mode](../007-editor/editor-modes.md#retired-modes)).
-- They feed the [Explorer filters](explorer-filters.md), one chip per dimension: **Opens in** (`opensIn`, one option per editor mode) and **Template** (`templateFamily`: Retrospectives, Kanban boards). A document with an unknown value matches no option of a chip; it shows whenever that chip is not set. Copy says "opens in" for a mode and never "type" (see [Domain language](../003-system-architecture/domain-language.md)).
+- They feed the [Explorer filters](explorer-filters.md), one chip per dimension: **Opens in** (`opensIn`, one option per editor mode) and **Template** (`templateFamily`: Retrospectives, Kanban boards). A project with an unknown value matches no option of a chip; it shows whenever that chip is not set. Copy says "opens in" for a mode and never "type" (see [Domain language](../003-system-architecture/domain-language.md)).
 
 ## Duplicate
 
 - A Duplicate lands **beside its source**: the source's own team and folder, sent as an explicit
-  placement, the root of My Documents included (as an explicit root). When the server refuses that
+  placement, the root of My Projects included (as an explicit root). When the server refuses that
   place (a team the person is not in, someone else's personal folder), the Duplicate is filed at the
-  explicit root of My Documents instead, saying so in its log.
+  explicit root of My Projects instead, saying so in its log.
 - It records the **source's recorded intent** (`opensIn`, `tabKind`, `templateFamily`), unchanged;
   an unknown one stays unknown.
 - It is **never routed by a default**: its placement is always explicit.
-- The server copy (`POST /api/documents/:id/copy`) agrees: it carries the same three values, and
-  files the copy at the root of the copier's My Documents, a place it chooses, never a default.
+- The server copy (`POST /api/projects/:id/copy`) agrees: it carries the same three values, and
+  files the copy at the root of the copier's My Projects, a place it chooses, never a default.
 
 ## Precedence
 
 A create's place is decided in this order; the first that answers wins:
 
 1. **Explicit placement**: a folder, a team (its root included), or the explicit root of My
-   documents.
+   projects.
 2. **Kind default**: the default for `kind:<tabKind>`, when the first tab is a specific kind.
-3. **Template default**: the default for `template:<templateFamily>`, when the document has one.
+3. **Template default**: the default for `template:<templateFamily>`, when the project has one.
 4. **Mode default**: the default for `mode:<mode>`.
-5. **The root of My Documents**.
+5. **The root of My Projects**.
 
 - **An absent placement is no choice.** A create whose body names no `folderId` (the key absent) and
   no team, and that carries an intent, consults the defaults.
 - **An explicit root is a choice.** `folderId: null`, present in the body, is the root of the chosen
-  space, chosen on purpose; with no team it is the explicit root of My Documents, and it always wins
+  space, chosen on purpose; with no team it is the explicit root of My Projects, and it always wins
   over a default. ([Placement on create](folders.md#placement-on-create) names the wire shape.)
 - **The wizard** sends a `/new?folder=` / `?team=` context as an explicit placement. Every other create from
   `/new` (a mode chosen, **Create**, **Skip**, a bypass link without context) sends no placement, so these
-  defaults decide ([The New Document wizard](#the-new-document-wizard)).
+  defaults decide ([The New Project wizard](#the-new-project-wizard)).
 - A re-commit of an id the person already owns keeps its stored place; defaults are not consulted.
 
 ## What a default may point at
@@ -142,7 +142,7 @@ A create's place is decided in this order; the first that answers wins:
 - **A personal folder of the person**, or **a team folder of a team the person has joined**. Team
   membership is checked against the verified account id (a Clerk session or an API token) only,
   never the guest `X-Owner-Id`, as for [Placement on create](folders.md#placement-on-create).
-- Not a space's root: the root of My Documents is where a document lands with no default, and a
+- Not a space's root: the root of My Projects is where a project lands with no default, and a
   team's root is reached by creating inside the team.
 - Setting a default checks the folder then: a folder that is missing, someone else's, or in a team
   the person has not joined is `folder_not_found` (the answer never reveals that someone else's
@@ -192,7 +192,7 @@ A create's place is decided in this order; the first that answers wins:
 | `default_folder_invalid` | 400    | The body is not an object whose `folderId` is a non-empty string      |
 | `folder_not_found`       | 404    | The folder is missing, someone else's, or in a team not joined        |
 | `rate_limited`           | 429    | The per-owner write rate limit is spent                               |
-| `intent_invalid`         | 400    | (on `POST /api/documents`) `intent` is present but not a valid intent |
+| `intent_invalid`         | 400    | (on `POST /api/projects`) `intent` is present but not a valid intent |
 
 ## Surfaces
 
@@ -220,7 +220,7 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
 
 - **Every folder menu** (the one shared folder menu of the Explorer page's rows and cards, the
   sidebar tree, the editor's Explorer panel and a team's library) carries **Use as Default for**,
-  which opens a submenu titled **New documents that open as** listing the five entries, each a
+  which opens a submenu titled **New projects that open as** listing the five entries, each a
   checkable item, checked when this folder is that key's default.
   - Choosing an unchecked entry makes this folder the key's default; a key points at one folder,
     so the folder that held it loses it.
@@ -229,10 +229,10 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
     click elsewhere closes it.
 - **Team folders** offer it only to a signed-in, joined member: the folder menus of a team's
   library, and of the editor panel's team tree, are theirs alone. A guest never sees a team folder.
-- **My Documents** carries the same submenu on its own menu (the sidebar's My Documents row, and
-  the editor panel's): the root is where a document lands without a default, so there an entry is
+- **My Projects** carries the same submenu on its own menu (the sidebar's My Projects row, and
+  the editor panel's): the root is where a project lands without a default, so there an entry is
   checked when its key has **no working default** (none, or a dangling one). Choosing an unchecked
-  entry clears that key's default, sending those documents back to the root; a checked entry is
+  entry clears that key's default, sending those projects back to the root; a checked entry is
   already the root's, and is shown checked and unavailable.
 - **A team's root** offers no submenu: it cannot be a default ([What a default may point
   at](#what-a-default-may-point-at)).
@@ -250,55 +250,55 @@ Each key has a label, the plural a sentence uses, and an icon, in list order:
   icons differ in shape, and the words are always there.
 - It takes space the row already holds after the name, so its appearance once the defaults load
   moves nothing on the row.
-- A dangling default marks nothing; the My Documents row shows no marker.
+- A dangling default marks nothing; the My Projects row shows no marker.
 
-### The New Document wizard
+### The New Project wizard
 
-The wizard never asks where a document goes ([New document route](../007-editor/new-document-route.md#one-step-wizard)):
+The wizard never asks where a project goes ([New project route](../007-editor/new-project-route.md#one-step-wizard)):
 it has no Location step and shows no folder browser.
 
-- **No context, no placement.** A document made from `/new` without a `/new?folder=` or `?team=` context carries no
+- **No context, no placement.** A project made from `/new` without a `/new?folder=` or `?team=` context carries no
   placement, only its intent, so the server's [precedence](#precedence) files it: the default for its kind, template
-  or mode, else the root of My Documents. A default the browser has not loaded yet is still honoured, as the server
+  or mode, else the root of My Projects. A default the browser has not loaded yet is still honoured, as the server
   resolves it.
-- **A context is explicit.** A `/new?folder=` or `?team=` link files the document there, in liveplanner, ahead of
+- **A context is explicit.** A `/new?folder=` or `?team=` link files the project there, in liveplanner, ahead of
   any default.
-- **Where to change it.** Settings > Documents > Default Folders ([Settings](#settings)), the folder menus' **Use as
-  Default for** and My Documents' own menu. The wizard itself sets nothing.
-- None of this applies to **This Browser**: an offline document has no folder ([Non-goals](#non-goals)).
+- **Where to change it.** Settings > Projects > Default Folders ([Settings](#settings)), the folder menus' **Use as
+  Default for** and My Projects' own menu. The wizard itself sets nothing.
+- None of this applies to **This Browser**: an offline project has no folder ([Non-goals](#non-goals)).
 
 ### A template picked after creation
 
-The wizard makes the chosen mode's blank, and the template is picked afterwards on the new document's start screen ([Template starts](../007-editor/start-diagramming.md)), so a template's own default can only answer then.
+The wizard makes the chosen mode's blank, and the template is picked afterwards on the new project's start screen ([Template starts](../007-editor/start-diagramming.md)), so a template's own default can only answer then.
 
 - **The wizard leaves a note** (`lib/placement-defaults/template-pick-handoff.ts`, this browser tab only): the
-  document it made, its first tab, and whether the person chose the folder themselves (a `/new?folder=` / `?team=`
+  project it made, its first tab, and whether the person chose the folder themselves (a `/new?folder=` / `?team=`
   context). It is written for a
-  cloud document made from a mode's blank, never for This Browser or a template link (`/new?template=`), which is
+  cloud project made from a mode's blank, never for This Browser or a template link (`/new?template=`), which is
   filed by its template at creation.
 - **The first template picked from a start screen** (Start Diagramming, Drawing, Facilitating, Making Pages, or
   Start Planning's templates) on that first tab takes the note. When the person did not choose the folder, the
   precedence is resolved again for the template's intent, as the server resolves it (kind, then template, then mode
-  default, `templatePickMoveTarget`), and the document **moves** to the default that answers, when it is somewhere
+  default, `templatePickMoveTarget`), and the project **moves** to the default that answers, when it is somewhere
   else. A toast says so: "Moved to **Boards**, your default folder for Kanban boards."
-- **Once per document:** the note is taken at the first pick, and dropped when the tab gains content any other
+- **Once per project:** the note is taken at the first pick, and dropped when the tab gains content any other
   way first.
-- **Only an Editor** picks from a start screen, so only an Editor's pick moves a document.
+- **Only an Editor** picks from a start screen, so only an Editor's pick moves a project.
 - **The recorded intent stays as created** ([Recorded intent](#recorded-intent)): the mode's blank. The move does
   not rewrite `templateFamily`, so the Explorer's **Template** filter does not see a template picked after
   creation.
-- A failure (a list that cannot be read, a refused move) leaves the document where it is, logged
+- A failure (a list that cannot be read, a refused move) leaves the project where it is, logged
   (`[default-folders] template pick move failed`); a move logs `[default-folders] moved on template pick key=<key>`.
 
 ### Settings
 
-- Settings holds a **Documents** category, for guests and accounts alike, led by **Default Folders**.
+- Settings holds a **Projects** category, for guests and accounts alike, led by **Default Folders**.
 - **Default Folders** has one row per entry, in list order, under one line saying what they share
-  ("Where each kind of new document is saved when you create it without choosing a place.") and the
+  ("Where each kind of new project is saved when you create it without choosing a place.") and the
   article's **Learn more**, said once rather than under every row.
 - A row names the entry, in the title case of every Settings label ("Whiteboards", "Kanban
-  Boards"), and beneath it where those documents go: the folder's name (a team folder adds its
-  team: "Workshops · Design team", with a small folder mark), or **My Documents** when there is
+  Boards"), and beneath it where those projects go: the folder's name (a team folder adds its
+  team: "Workshops · Design team", with a small folder mark), or **My Projects** when there is
   no default. Until the
   defaults and the folders have loaded it reads "Loading…"; if either cannot be read, "Couldn't
   load your default folders", with no buttons, never a guess.
@@ -306,8 +306,8 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
   picker](#the-default-folder-picker). **Clear** clears the default; it is shown only while there is one.
 - **A dangling default** reads "<folder> (deleted), using <place>", or "<folder> (no longer
   available), using <place>" for a team folder whose team is not among the reader's, where <place>
-  is where those documents go instead: the next working default of the
-  [precedence](#precedence) for that entry, else My Documents. A Clear is offered.
+  is where those projects go instead: the next working default of the
+  [precedence](#precedence) for that entry, else My Projects. A Clear is offered.
   - The folder's name comes from this browser's memory of the names of the reader's default
     folders, kept while they were visible. When the browser never saw it, the row reads "A deleted
     folder, using <place>".
@@ -317,10 +317,10 @@ The wizard makes the chosen mode's blank, and the template is picked afterwards 
 A dialog around the shared placement browser ([Folders](folders.md)), titled "Default folder for
 new <these>", opened by Settings' Change.
 
-- It opens with the key's current default selected, else the My Documents root.
-- Choosing the **My Documents root** clears the default. A team's root cannot be chosen: with it
+- It opens with the key's current default selected, else the My Projects root.
+- Choosing the **My Projects root** clears the default. A team's root cannot be chosen: with it
   selected, the dialog says "Choose a folder inside the team" and its button is unavailable.
-- Its button reads **Use this folder** (or **Use My Documents** at the root), and is unavailable
+- Its button reads **Use this folder** (or **Use My Projects** at the root), and is unavailable
   until the selection differs from the current default.
 - It offers the inline New Folder tile, as the move picker does.
 
@@ -363,11 +363,11 @@ new <these>", opened by Settings' Change.
 
 - A default for a space's root, per device, or per template (templates route only through their
   family).
-- Defaults for Offline Mode documents: a document made in the browser is filed where it is made.
-- Moving existing documents when a default changes.
+- Defaults for Offline Mode projects: a project made in the browser is filed where it is made.
+- Moving existing projects when a default changes.
 
 ## References
 
-[Folders](folders.md), [Team shared documents](team-shared-documents.md),
-[Dedicated route for new-document creation](../007-editor/new-document-route.md),
+[Folders](folders.md), [Team shared projects](team-shared-projects.md),
+[Dedicated route for new-project creation](../007-editor/new-project-route.md),
 [MCP server](../015-api/mcp-server.md), [Auth + guest access](../014-identity/auth-and-guest-access.md).

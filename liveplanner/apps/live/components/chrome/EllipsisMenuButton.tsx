@@ -17,7 +17,7 @@ export function EllipsisMenuButton({
   deleteWarning,
   canClearContent,
   locked,
-  otherDocuments,
+  otherProjects,
   folderNames,
   currentFolder,
   onMoveToFolder,
@@ -46,9 +46,9 @@ export function EllipsisMenuButton({
   deleteWarning?: string | undefined;
   canClearContent: boolean;
   locked: boolean;
-  // Viewer identity, forwarded to the menu's Add to Document thumbnails.
+  // Viewer identity, forwarded to the menu's Add to Project thumbnails.
   selfId: string;
-  otherDocuments: { id: string; name: string; savedAt?: number }[];
+  otherProjects: { id: string; name: string; savedAt?: number }[];
   folderNames: string[];
   currentFolder: string | null;
   onMoveToFolder: (folderName: string) => void;
@@ -58,7 +58,7 @@ export function EllipsisMenuButton({
   onClearContent: () => void;
   onImport: () => void;
   onExport: () => void;
-  onCopyTo: (targetDocumentId: string) => void;
+  onCopyTo: (targetProjectId: string) => void;
   onToggleLock: () => void;
   onDelete: () => void;
   planTab?: boolean;
@@ -97,7 +97,7 @@ export function EllipsisMenuButton({
             planTab={planTab}
             {...(dataRows ? { dataRows } : {})}
             selfId={selfId}
-            otherDocuments={otherDocuments}
+            otherProjects={otherProjects}
             folderNames={folderNames}
             currentFolder={currentFolder}
             onMoveToFolder={onMoveToFolder}

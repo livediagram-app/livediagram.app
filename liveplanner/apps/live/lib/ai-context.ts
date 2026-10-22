@@ -4,7 +4,7 @@
 // with a message saying so rather than "Something went wrong".
 
 import { AI_MAX_ELEMENTS } from '@liveplanner/api-schema';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 
 type AiContext = { ok: true; elements: Element[] } | { ok: false; message: string };
 

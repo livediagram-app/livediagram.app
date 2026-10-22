@@ -1,4 +1,4 @@
-// A document's tabs as the plan read names them (docs/specs/026-plan/plan-agents.md "Reading the plan": tabs): each
+// A project's tabs as the plan read names them (docs/specs/026-plan/plan-agents.md "Reading the plan": tabs): each
 // tab's id, name, kind and theme, and a Sheet tab's sheet ids in canvas order, read from the stored JSON in SQL so no tab
 // body leaves the database. A tab-scoped grant reads its own tab only.
 import type { PlanTabOutline } from '@liveplanner/api-schema';
@@ -9,22 +9,22 @@ type SheetRow = { tab_id: string; sheet_id: string };
 
 export async function tabOutlines(
   env: Env,
-  documentId: string,
+  projectId: string,
   onlyTab: string | null,
 ): Promise<PlanTabOutline[]> {
   const scope = onlyTab === null ? '' : ' AND t.id = ?';
-  const binds = onlyTab === null ? [documentId] : [documentId, onlyTab];
+  const binds = onlyTab === null ? [projectId] : [projectId, onlyTab];
   const [tabs, sheets] = await env.DB.batch([
     env.DB.prepare(
       `SELECT t.id, t.name, json_extract(t.data, '$.kind') AS kind, json_extract(t.data, '$.theme') AS theme
-         FROM tabs t JOIN document_tabs dt ON dt.tab_id = t.id
-        WHERE dt.document_id = ?${scope}
+         FROM tabs t JOIN project_tabs dt ON dt.tab_id = t.id
+        WHERE dt.project_id = ?${scope}
         ORDER BY dt.order_index, t.id`,
     ).bind(...binds),
     env.DB.prepare(
       `SELECT t.id AS tab_id, json_extract(e.value, '$.planSheet.sheetId') AS sheet_id
-         FROM tabs t JOIN document_tabs dt ON dt.tab_id = t.id, json_each(t.data, '$.elements') e
-        WHERE dt.document_id = ?${scope}
+         FROM tabs t JOIN project_tabs dt ON dt.tab_id = t.id, json_each(t.data, '$.elements') e
+        WHERE dt.project_id = ?${scope}
           AND json_extract(t.data, '$.kind') = 'sheet'
           AND json_extract(e.value, '$.shape') = 'plan-sheet'
           AND json_extract(e.value, '$.planSheet.sheetId') IS NOT NULL

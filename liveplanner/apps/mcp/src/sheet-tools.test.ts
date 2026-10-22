@@ -23,7 +23,7 @@ function api(opts: { refuseWrites?: string } = {}) {
         ? Response.json({ error: opts.refuseWrites }, { status: 413 })
         : Response.json({ applied: body.write, rev: writes.length, cells: [] });
     }
-    return Response.json({ document: LIVE_DOC });
+    return Response.json({ project: LIVE_DOC });
   };
   return { handler, writes };
 }
@@ -40,7 +40,7 @@ async function call(
   args: Record<string, unknown>,
 ) {
   const client = await connectTestClient(handler);
-  return (await client.callTool({ name, arguments: { documentId: 'd1', ...args } })) as Result;
+  return (await client.callTool({ name, arguments: { projectId: 'd1', ...args } })) as Result;
 }
 
 describe('the sheet tools', () => {
@@ -95,7 +95,7 @@ describe('the sheet tools', () => {
     expect((await call(handler, 'add_sheet', { csv: 'a', design })).content[0]!.text).toBe(words);
   });
 
-  it('refuse a new sheet on a tab the document lacks', async () => {
+  it('refuse a new sheet on a tab the project lacks', async () => {
     const { handler } = api();
     const result = await call(handler, 'add_sheet', { tabId: 'nope' });
     expect(result.isError).toBe(true);

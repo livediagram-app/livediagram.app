@@ -5,7 +5,7 @@
 // as a feed: no box, a quiet header with the count and Resolve, the comments at a comfortable size, and the composer
 // beside your own avatar. Anyone who may comment writes, resolves and reopens; editors delete any comment, others
 // their own.
-import { itemThread } from '@liveplanner/document';
+import { itemThread } from '@liveplanner/project';
 import type { Item } from '@liveplanner/items';
 import type { ItemCommentAction } from '@/lib/api/items';
 import {
@@ -16,7 +16,7 @@ import {
 import { usePlan } from './PlanContext';
 
 export type ItemCommentsContext = {
-  // Participate access: anyone who may read the document (as on the canvas).
+  // Participate access: anyone who may read the project (as on the canvas).
   canComment: boolean;
   // The author id on this person's own comments.
   selfId: string;

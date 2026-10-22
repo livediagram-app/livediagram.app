@@ -11,14 +11,14 @@
 //
 // The tabs render shared components (CanvasStyleControls,
 // ThemeCategoryBrowser) so they're identical to the palette accordion and the
-// New-document picker respectively. Follows the standard modal contract
+// New-project picker respectively. Follows the standard modal contract
 // (Portal + backdrop + Escape) used by SettingsDialog.
 
 import { useUiScale } from '@/components/providers/ui-scale';
 import { toSurfacePx, uiScaleStyle } from '@/lib/ui-scale';
 import { use, useRef, useState } from 'react';
 import { browser } from 'react-dom';
-import { resolveFinish, type BackgroundPattern, type Finish } from '@liveplanner/document';
+import { resolveFinish, type BackgroundPattern, type Finish } from '@liveplanner/project';
 import {
   useEscape,
   useFocusTrap,
@@ -33,7 +33,7 @@ import { HelpArticleLink } from '@/components/primitives/HelpArticleLink';
 import { BackBar } from '@/components/primitives/BackBar';
 import { AnimatedHeightBox } from '@/components/primitives/AnimatedHeightBox';
 import { CustomThemePicker } from '@/components/palette/CustomThemePicker';
-import type { TextSize } from '@liveplanner/document';
+import type { TextSize } from '@liveplanner/project';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import { FinishTab } from './FinishTab';
 import { TextTab } from './TextTab';

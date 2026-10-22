@@ -10,16 +10,16 @@ import {
 } from './panel-sections';
 
 // docs/specs/013-workspace/explorer-structure.md "The rail": every section a mode of the pane.
-const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserDocuments: true });
+const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserProjects: true });
 
 describe('the editor Explorer sections', () => {
-  it("lists the sidebar's groups, This Browser only while it holds documents", () => {
+  it("lists the sidebar's groups, This Browser only while it holds projects", () => {
     expect(groups.map((g) => g.sections.map(sectionKey))).toEqual([
       ['home', 'inbox', 'shared'],
       ['mine', 'team:t1'],
       ['browser', 'tags', 'library', 'trash'],
     ]);
-    const none = panelSectionGroups({ teams: [], hasBrowserDocuments: false });
+    const none = panelSectionGroups({ teams: [], hasBrowserProjects: false });
     expect(none[2]!.sections.map(sectionKey)).toEqual(['tags', 'library', 'trash']);
   });
 
@@ -32,7 +32,7 @@ describe('the editor Explorer sections', () => {
   });
 
   it('names each section, a team by its name', () => {
-    expect(sectionLabel({ kind: 'mine' })).toBe('My Documents');
+    expect(sectionLabel({ kind: 'mine' })).toBe('My Projects');
     expect(sectionLabel({ kind: 'team', id: 't1' }, () => 'Design guild')).toBe('Design guild');
     expect(sectionLabel({ kind: 'team', id: 't1' })).toBe('Team');
   });

@@ -1,8 +1,8 @@
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 
 // One generic way for a context-menu control to write a field of its own onto the selection, so a new element's
 // controls (accent edge, card slots, badge look, boundary style, concept rows) need no new setter threaded through
-// the editor state, host and menu props. Each control passes a pure mapper from @liveplanner/document.
+// the editor state, host and menu props. Each control passes a pure mapper from @liveplanner/project.
 //
 // - `preview` / `end`: a hover preview over the selection, reverted when the pointer leaves (useStylePreview).
 // - `commit`: one history step, from the pre-hover originals, with its telemetry type.

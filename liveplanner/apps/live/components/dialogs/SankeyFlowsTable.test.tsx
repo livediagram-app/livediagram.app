@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { useState } from 'react';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { SankeyFlowsTable } from './SankeyFlowsTable';
-import { withSankeyNodeLeftover, type SankeyNodeStyle } from '@liveplanner/document';
+import { withSankeyNodeLeftover, type SankeyNodeStyle } from '@liveplanner/project';
 import { rowsFromFlows, withTrailingBlank, type SankeyDraftRow } from '@/lib/sankey-flow-rows';
 
 // The Flows table (docs/specs/009-elements/sankey.md "The Flows dialog"): levels, groups, keyboard, reasons, paste.

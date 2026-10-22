@@ -2,7 +2,7 @@
 // confined to, the refusals, the writer, and the room relay (docs/specs/029-sheets/sheet-store.md "Who may do
 // what", "Live for everyone").
 import type { SheetError, SheetsRoomOp } from '@liveplanner/api-schema';
-import { getDocument } from '../db';
+import { getProject } from '../db';
 import { json } from '../responses';
 import { relaySheets } from '../room-client';
 import {
@@ -11,28 +11,28 @@ import {
   gateParticipate,
   gateGrant,
   gateRead,
-  missingDocument,
+  missingProject,
   requireOwner,
   type RouteContext,
 } from './context';
 import { forbidden } from '../responses';
 
 export type SheetCaller = {
-  documentId: string;
+  projectId: string;
   owner: string;
-  // The one tab a tab-scoped grant reaches, or null for the whole document.
+  // The one tab a tab-scoped grant reaches, or null for the whole project.
   scopeTab: string | null;
-  // The document's owner and team, for a second gate on the same caller (sheetCallerEdits).
+  // The project's owner and team, for a second gate on the same caller (sheetCallerEdits).
   ownerId: string;
   teamId: string | null;
 };
 
 // Whether a caller already admitted at participate also holds edit (docs/specs/013-workspace/share-roles.md): one
-// more gate, on the document the first one read, asked only for a write that changes a Sheet's shape.
+// more gate, on the project the first one read, asked only for a write that changes a Sheet's shape.
 export function sheetCallerEdits(ctx: RouteContext, caller: SheetCaller): Promise<boolean> {
   return gateEdit(
     ctx,
-    caller.documentId,
+    caller.projectId,
     caller.ownerId,
     caller.teamId,
     caller.scopeTab ?? undefined,
@@ -63,30 +63,30 @@ export const sheetBusy = () => {
   return sheetRejected('sheet_busy', 409);
 };
 
-// The caller and their reach: the whole document, or (a tab-scoped grant) the sheets of one tab, which the request
+// The caller and their reach: the whole project, or (a tab-scoped grant) the sheets of one tab, which the request
 // names as `?tabId=`.
 export async function sheetCaller(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   level: 'read' | 'participate' | 'edit',
 ): Promise<SheetCaller | Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  const doc = await getDocument(ctx.env, documentId);
-  if (!doc) return missingDocument(ctx, documentId);
+  const doc = await getProject(ctx.env, projectId);
+  if (!doc) return missingProject(ctx, projectId);
   const gate = GATES[level];
-  if (await gate(ctx, documentId, doc.ownerId, doc.teamId))
-    return { documentId, owner, scopeTab: null, ownerId: doc.ownerId, teamId: doc.teamId };
+  if (await gate(ctx, projectId, doc.ownerId, doc.teamId))
+    return { projectId, owner, scopeTab: null, ownerId: doc.ownerId, teamId: doc.teamId };
   const tabId = ctx.url.searchParams.get('tabId');
   if (!tabId) {
-    const grant = await gateGrant(ctx, documentId, doc.ownerId, doc.teamId);
+    const grant = await gateGrant(ctx, projectId, doc.ownerId, doc.teamId);
     return grant && grant.tabScope === null ? forbidden() : deniedOnTab(ctx, doc);
   }
-  if (!(await gate(ctx, documentId, doc.ownerId, doc.teamId, tabId))) return deniedOnTab(ctx, doc);
-  return { documentId, owner, scopeTab: tabId, ownerId: doc.ownerId, teamId: doc.teamId };
+  if (!(await gate(ctx, projectId, doc.ownerId, doc.teamId, tabId))) return deniedOnTab(ctx, doc);
+  return { projectId, owner, scopeTab: tabId, ownerId: doc.ownerId, teamId: doc.teamId };
 }
 
-export function relaySheet(ctx: RouteContext, documentId: string, op: SheetsRoomOp): void {
+export function relaySheet(ctx: RouteContext, projectId: string, op: SheetsRoomOp): void {
   const size = JSON.stringify(op).length;
   const sent: SheetsRoomOp =
     size > SHEET_RELAY_BYTES_MAX
@@ -99,5 +99,5 @@ export function relaySheet(ctx: RouteContext, documentId: string, op: SheetsRoom
           ...(op.wid ? { wid: op.wid } : {}),
         }
       : op;
-  ctx.waitUntil?.(relaySheets(ctx.env, documentId, sent));
+  ctx.waitUntil?.(relaySheets(ctx.env, projectId, sent));
 }

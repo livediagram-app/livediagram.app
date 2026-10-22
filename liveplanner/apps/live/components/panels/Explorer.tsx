@@ -2,7 +2,7 @@
 
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { ProductNavLinks } from '@liveplanner/ui';
-import { DocumentRowShell } from './DocumentRowShell';
+import { ProjectRowShell } from './ProjectRowShell';
 import { useIsMobileViewport } from '@/hooks/ui/useIsMobileViewport';
 import { MovablePanel } from '@/components/primitives/MovablePanel';
 import { MoveToFolderDialog } from '@/components/dialogs/MoveToFolderDialog';
@@ -23,10 +23,10 @@ import {
   PanelTreeProvider,
   type PanelTree,
 } from '@/components/panels/explorer-tree/PanelTreeContext';
-import { sharedToPaneDocument, type PaneDocument } from '@/app/explorer/views';
+import { sharedToPaneProject, type PaneProject } from '@/app/explorer/views';
 import { ExplorerRail } from '@/components/panels/explorer-panel/ExplorerRail';
 import { ExplorerPanelPane } from '@/components/panels/explorer-panel/ExplorerPanelPane';
-import { ExplorerCurrentDocument } from '@/components/panels/explorer-panel/ExplorerCurrentDocument';
+import { ExplorerCurrentProject } from '@/components/panels/explorer-panel/ExplorerCurrentProject';
 import { useExplorerPanelSection } from '@/components/panels/explorer-panel/useExplorerPanelSection';
 import {
   panelSectionGroups,
@@ -48,29 +48,29 @@ import { useExplorerRowDelete } from './useExplorerRowDelete';
 // props, so shallow prop equality holds while a shape is being dragged.
 function ExplorerImpl({
   position,
-  documents: liveDocs,
+  projects: liveDocs,
   ownerId,
   folders,
   loading,
-  currentDocumentId,
+  currentProjectId,
   onMoveTo,
   onReset,
-  onOpenDocument,
-  onNewDocument,
+  onOpenProject,
+  onNewProject,
   menuActions,
   onRenameCurrent,
-  onDeleteDocument,
-  onDuplicateDocument,
+  onDeleteProject,
+  onDuplicateProject,
   onCreateFolder,
   onRenameFolder,
   onDeleteFolder,
   onTeamFolders,
-  onMoveDocumentToFolder,
-  onMoveDocumentTo,
+  onMoveProjectToFolder,
+  onMoveProjectTo,
   shared = [],
   teams = [],
   teamFolders = [],
-  teamDocuments = [],
+  teamProjects = [],
   onDismissShared,
   dock,
   popoverOpen,
@@ -96,24 +96,24 @@ function ExplorerImpl({
   // tick before correcting.
   // Previously Explorer was hidden entirely on mobile (the canvas is
   // small enough that the panel ate the whole screen), but signed-out
-  // users had no other way to switch documents, so the panel now also
+  // users had no other way to switch projects, so the panel now also
   // shows on mobile, banner-collapsed at the very top of the viewport
   // above the Palette.
   const isMobile = useIsMobileViewport();
   // The stacked layout (section chips over the pane): on a phone, and in the corner panel that stands beside the
-  // new-document wizard and the status screens, which must stay narrow or it covers their card.
+  // new-project wizard and the status screens, which must stay narrow or it covers their card.
   const stacked = isMobile || !asPopover;
   // A phone's popover is a sheet down to the tab bar, which its chips and pane fill.
   const sheet = isMobile && !!asPopover;
   // Expansion state for each row of the tree (keyed by folder or team id, or
-  // a prefixed key such as `space:my-documents` for the fixed rows).
+  // a prefixed key such as `space:my-projects` for the fixed rows).
   // Team rows + team folders share this map too (ids are globally
   // unique). Defaults to all collapsed so the panel stays compact.
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
-  // When set, the document row whose Move dialog is open (`teamId` set =
-  // it's a team-library document, so the picker opens on that team and a
-  // pick routes through the scope-aware onMoveDocumentTo). Stored here
-  // (vs. in DocumentRow) so the modal doesn't nest inside row portals.
+  // When set, the project row whose Move dialog is open (`teamId` set =
+  // it's a team-library project, so the picker opens on that team and a
+  // pick routes through the scope-aware onMoveProjectTo). Stored here
+  // (vs. in ProjectRow) so the modal doesn't nest inside row portals.
   const [moveTarget, setMoveTarget] = useState<{ id: string; teamId: string | null } | null>(null);
   // Folder id newly created via the New folder button — used to drop
   // the row into rename mode immediately after the API returns.
@@ -127,10 +127,10 @@ function ExplorerImpl({
   });
   // Row delete lifecycle (exit animation, optimistic team-row hide + pruning, Undo) lives in useExplorerRowDelete.
   // A delete asks nothing first (docs/specs/013-workspace/trash.md "Deleting").
-  const { exitingDocumentIds, deletedTeamIds, deleteRow } = useExplorerRowDelete({
-    documents: liveDocs,
-    teamDocuments,
-    onDeleteDocument,
+  const { exitingProjectIds, deletedTeamIds, deleteRow } = useExplorerRowDelete({
+    projects: liveDocs,
+    teamProjects,
+    onDeleteProject,
   });
 
   // (Previously: `if (hideOnMobile) return null;` — Explorer now
@@ -138,29 +138,29 @@ function ExplorerImpl({
   // sits at the top of the canvas above the Palette.)
 
   // All derived collections below are useMemo'd against their real
-  // inputs (documents, folders, currentDocumentId): Explorer holds a
+  // inputs (projects, folders, currentProjectId): Explorer holds a
   // pile of internal state (accordion open flags, expandedFolders,
-  // moveTargetDocumentId, exitingDocumentIds) that re-renders the component
+  // moveTargetProjectId, exitingProjectIds) that re-renders the component
   // frequently without changing the underlying lists. Without these
   // memos every accordion toggle rebuilt foldersByParent +
-  // documentsByFolder + sorted both, and re-walked the folder tree
+  // projectsByFolder + sorted both, and re-walked the folder tree
   // just to render a different chevron.
   const {
     current,
     currentTeam,
     currentShared,
     foldersByTeam,
-    documentsByTeam,
+    projectsByTeam,
     foldersByParent,
-    documentsByFolder,
-    offlineDocuments,
+    projectsByFolder,
+    offlineProjects,
   } = useExplorerViewModel({
-    documents: liveDocs,
+    projects: liveDocs,
     folders,
-    currentDocumentId,
+    currentProjectId,
     shared,
     teamFolders,
-    teamDocuments,
+    teamProjects,
     deletedTeamIds,
   });
 
@@ -192,26 +192,26 @@ function ExplorerImpl({
 
   // The row callbacks still hand up an anchor, but the move flow is a centred modal
   // (docs/specs/013-workspace/folders.md) and the delete asks nothing, so neither reads it.
-  const openMovePicker = (documentId: string) => {
-    setMoveTarget({ id: documentId, teamId: null });
+  const openMovePicker = (projectId: string) => {
+    setMoveTarget({ id: projectId, teamId: null });
   };
 
   const tree: PanelTree = {
     ownerId,
-    currentDocumentId,
-    exitingDocumentIds,
+    currentProjectId,
+    exitingProjectIds,
     expanded: expandedFolders,
     onToggle: toggleFolder,
-    onOpenDocument,
-    onDeleteDocument: deleteRow ? (id: string) => deleteRow(id) : undefined,
-    onDuplicateDocument,
-    onMoveDocumentRequest: onMoveDocumentToFolder ? openMovePicker : undefined,
+    onOpenProject,
+    onDeleteProject: deleteRow ? (id: string) => deleteRow(id) : undefined,
+    onDuplicateProject,
+    onMoveProjectRequest: onMoveProjectToFolder ? openMovePicker : undefined,
     // A team row's move opens the picker for that team; the pick then routes through
-    // the scope-aware onMoveDocumentTo (docs/specs/013-workspace/team-shared-documents.md).
-    onMoveTeamDocumentRequest: onMoveDocumentTo
+    // the scope-aware onMoveProjectTo (docs/specs/013-workspace/team-shared-projects.md).
+    onMoveTeamProjectRequest: onMoveProjectTo
       ? (id, teamId) => setMoveTarget({ id, teamId })
       : undefined,
-    onMoveDocumentToFolder,
+    onMoveProjectToFolder,
     onDismissShared,
     favouriteIds,
     onToggleFavourite,
@@ -226,21 +226,21 @@ function ExplorerImpl({
     onCreateTeamChild: (teamId, parentId) => void handleCreateTeamChild(teamId, parentId),
   };
 
-  // Every document the reader can reach, by id: Home's rows carry its menu.
-  const documentsById = useMemo(() => {
-    const byId = new Map<string, PaneDocument>();
+  // Every project the reader can reach, by id: Home's rows carry its menu.
+  const projectsById = useMemo(() => {
+    const byId = new Map<string, PaneProject>();
     for (const d of liveDocs) byId.set(d.id, d);
-    for (const d of teamDocuments) byId.set(d.id, d);
-    for (const s of shared) if (!byId.has(s.id)) byId.set(s.id, sharedToPaneDocument(s));
+    for (const d of teamProjects) byId.set(d.id, d);
+    for (const s of shared) if (!byId.has(s.id)) byId.set(s.id, sharedToPaneProject(s));
     return byId;
-  }, [liveDocs, teamDocuments, shared]);
-  const paneTree: PanelTree = { ...tree, documentById: (id) => documentsById.get(id) };
+  }, [liveDocs, teamProjects, shared]);
+  const paneTree: PanelTree = { ...tree, projectById: (id) => projectsById.get(id) };
 
   // The rail's sections, and the one shown: remembered (Home on each opening of a phone's sheet), else Home.
   const divider = sidebarDivider(minimalChrome);
   const groups = useMemo(
-    () => panelSectionGroups({ teams, hasBrowserDocuments: offlineDocuments.length > 0 }),
-    [teams, offlineDocuments.length],
+    () => panelSectionGroups({ teams, hasBrowserProjects: offlineProjects.length > 0 }),
+    [teams, offlineProjects.length],
   );
   // Open, the panel reaches under the palette strip: the trays hanging from it step aside (PaletteTray).
   const shown = asPopover === true && popoverOpen === true;
@@ -254,7 +254,7 @@ function ExplorerImpl({
   const teamName = (id: string) => teams.find((t) => t.id === id)?.name;
   const badges: Record<string, number | undefined> = {
     shared: shared.length || undefined,
-    browser: offlineDocuments.length || undefined,
+    browser: offlineProjects.length || undefined,
   };
   // The folder open in the pane, while it is still in the space shown; else the space's root.
   const paneFolderId =
@@ -266,7 +266,7 @@ function ExplorerImpl({
           openFolder.id,
         )
       : null;
-  // New Folder in the folder open in the pane, or at the root of My Documents or of the team shown.
+  // New Folder in the folder open in the pane, or at the root of My Projects or of the team shown.
   const newFolder =
     section.kind === 'mine' && onCreateFolder
       ? () =>
@@ -280,39 +280,39 @@ function ExplorerImpl({
         : undefined;
 
   const currentCard = current ? (
-    <DocumentRowShell exiting={exitingDocumentIds.has(current.id)} enter={false}>
-      <ExplorerCurrentDocument
+    <ProjectRowShell exiting={exitingProjectIds.has(current.id)} enter={false}>
+      <ExplorerCurrentProject
         item={current}
         ownerId={ownerId}
-        onOpen={() => onOpenDocument(current.id)}
+        onOpen={() => onOpenProject(current.id)}
         onRename={onRenameCurrent}
         onDelete={deleteRow ? () => deleteRow(current.id) : undefined}
-        onDuplicate={onDuplicateDocument ? () => onDuplicateDocument(current.id) : undefined}
-        onMoveRequest={onMoveDocumentToFolder ? () => openMovePicker(current.id) : undefined}
+        onDuplicate={onDuplicateProject ? () => onDuplicateProject(current.id) : undefined}
+        onMoveRequest={onMoveProjectToFolder ? () => openMovePicker(current.id) : undefined}
       />
-    </DocumentRowShell>
+    </ProjectRowShell>
   ) : currentTeam ? (
-    <ExplorerCurrentDocument
+    <ExplorerCurrentProject
       item={currentTeam}
       ownerId={ownerId}
-      onOpen={() => onOpenDocument(currentTeam.id)}
+      onOpen={() => onOpenProject(currentTeam.id)}
       onRename={onRenameCurrent}
-      // Any joined member may delete a team document (docs/specs/013-workspace/team-shared-documents.md); the api
+      // Any joined member may delete a team project (docs/specs/013-workspace/team-shared-projects.md); the api
       // enforces team membership.
       onDelete={deleteRow ? () => deleteRow(currentTeam.id) : undefined}
       onMoveRequest={
-        onMoveDocumentTo
+        onMoveProjectTo
           ? () => setMoveTarget({ id: currentTeam.id, teamId: currentTeam.team.id })
           : undefined
       }
     />
   ) : currentShared ? (
-    <ExplorerCurrentDocument
+    <ExplorerCurrentProject
       item={{ ...currentShared, folderId: null, shareCode: null, ownerId: '' }}
       ownerId={ownerId}
-      // The share code authorises the thumbnail (docs/specs/006-document/document-snapshots.md).
+      // The share code authorises the thumbnail (docs/specs/006-project/project-snapshots.md).
       thumbnailShareCode={currentShared.shareCode}
-      onOpen={() => onOpenDocument(currentShared.id, currentShared.shareCode)}
+      onOpen={() => onOpenProject(currentShared.id, currentShared.shareCode)}
     />
   ) : null;
 
@@ -326,7 +326,7 @@ function ExplorerImpl({
       opaque
       position={position}
       // On mobile the panel becomes a full-width top banner (matches
-      // the Palette's banner pattern) so users can switch documents
+      // the Palette's banner pattern) so users can switch projects
       // without leaving the canvas. On desktop it stays in the
       // top-left corner.
       defaultCorner={isMobile ? 'top-banner' : 'top-left'}
@@ -345,7 +345,7 @@ function ExplorerImpl({
       headerActions={
         sheet ? undefined : (
           <ExplorerHeaderMenu
-            onNewDocument={onNewDocument}
+            onNewProject={onNewProject}
             actions={menuActions}
             helpArticle="explorerPanel"
           />
@@ -400,9 +400,9 @@ function ExplorerImpl({
               teamName={teamName}
               divider={divider}
               phone={stacked}
-              onNewDocument={onNewDocument}
-              onDropToMyDocuments={
-                onMoveDocumentToFolder ? (id) => onMoveDocumentToFolder(id, null) : undefined
+              onNewProject={onNewProject}
+              onDropToMyProjects={
+                onMoveProjectToFolder ? (id) => onMoveProjectToFolder(id, null) : undefined
               }
             />
             <PanelTreeProvider value={paneTree}>
@@ -410,8 +410,8 @@ function ExplorerImpl({
                 section={section}
                 teamName={teamName}
                 ownerId={ownerId}
-                currentDocumentId={currentDocumentId}
-                onOpenDocument={onOpenDocument}
+                currentProjectId={currentProjectId}
+                onOpenProject={onOpenProject}
                 onNewFolder={newFolder}
                 inFolder={paneFolderId !== null}
                 onLibraryChanged={onLibraryChanged ?? NOOP}
@@ -425,11 +425,11 @@ function ExplorerImpl({
                       tree={tree}
                       busy={loading}
                       shared={shared}
-                      ownIndex={{ foldersByParent, documentsByFolder }}
-                      offlineDocuments={offlineDocuments}
+                      ownIndex={{ foldersByParent, projectsByFolder }}
+                      offlineProjects={offlineProjects}
                       teams={teams}
                       foldersByTeam={foldersByTeam}
-                      documentsByTeam={documentsByTeam}
+                      projectsByTeam={projectsByTeam}
                       folderId={paneFolderId}
                       onOpenFolder={openInPane}
                     />
@@ -450,18 +450,18 @@ function ExplorerImpl({
 
       {/* Move-destination modal (docs/specs/013-workspace/folders.md), the same shared placement
           browser as the /explorer page. With the scope-aware
-          onMoveDocumentTo wired (signed-in sessions with teams), the picker
-          offers every space — My Documents plus each team — so a team document
+          onMoveProjectTo wired (signed-in sessions with teams), the picker
+          offers every space — My Projects plus each team — so a team project
           can be re-homed to the personal tree (and vice versa) right from
           the editor. Purely personal picks keep the optimistic
-          onMoveDocumentToFolder path. */}
-      {moveTarget && (onMoveDocumentToFolder || onMoveDocumentTo)
+          onMoveProjectToFolder path. */}
+      {moveTarget && (onMoveProjectToFolder || onMoveProjectTo)
         ? (() => {
             const teamRow = moveTarget.teamId
-              ? teamDocuments.find((d) => d.id === moveTarget.id)
+              ? teamProjects.find((d) => d.id === moveTarget.id)
               : undefined;
             const personalRow = liveDocs.find((d) => d.id === moveTarget.id);
-            const teamDests = onMoveDocumentTo
+            const teamDests = onMoveProjectTo
               ? teams.map((t) => ({
                   id: t.id,
                   name: t.name,
@@ -473,7 +473,7 @@ function ExplorerImpl({
             return (
               <MoveToFolderDialog
                 subjectName={teamRow?.name || personalRow?.name || 'Untitled'}
-                subjectKind="document"
+                subjectKind="project"
                 personalFolders={folders.map((f) => ({
                   id: f.id,
                   name: f.name,
@@ -514,9 +514,9 @@ function ExplorerImpl({
                 }}
                 onPick={(dest) => {
                   if (dest.teamId === null && moveTarget.teamId === null) {
-                    onMoveDocumentToFolder?.(moveTarget.id, dest.folderId);
+                    onMoveProjectToFolder?.(moveTarget.id, dest.folderId);
                   } else {
-                    onMoveDocumentTo?.(moveTarget.id, dest, moveTarget.teamId);
+                    onMoveProjectTo?.(moveTarget.id, dest, moveTarget.teamId);
                   }
                 }}
                 onClose={() => setMoveTarget(null)}

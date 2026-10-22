@@ -21,7 +21,7 @@ import {
   type ThemeDefinition,
   rederiveColorPresetForTheme,
   shapeColorPresets,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { fillValue, isHexColour, resolveColourValue } from './colours';
 import { kindOf } from './element-text';
 import { applyLabel } from './labels';
@@ -54,7 +54,7 @@ const LIVE_FIELDS: ReadonlySet<string> = new Set(LIVE_ELEMENT_FIELDS);
 // `addedBy` is the server's record of which Participant added an element (docs/specs/013-workspace/share-roles.md).
 const IDENTITY_FIELDS: ReadonlySet<string> = new Set(['id', 'type', 'addedBy']);
 const RAW_COLOURS: ReadonlySet<string> = new Set(['fillColor', 'strokeColor', 'textColor']);
-// A stroke's former point fields, which normalising packs (docs/specs/006-document/stroke-points.md).
+// A stroke's former point fields, which normalising packs (docs/specs/006-project/stroke-points.md).
 const FORMER_FIELDS: Readonly<Partial<Record<Element['type'], readonly string[]>>> = {
   freehand: ['points', 'pressures'],
 };

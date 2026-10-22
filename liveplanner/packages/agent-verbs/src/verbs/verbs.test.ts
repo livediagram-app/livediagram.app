@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { ChangesetSummary } from '@liveplanner/api-schema';
 import { contextOf, DOC_A, DOC_C, fakeApi, library, tabsOfA } from '../testing/fake-api';
 import { changesetLs, changesetRevert, changesetShow } from './changeset';
-import { documentLs, documentView } from './document';
+import { projectLs, projectView } from './project';
 import { columns } from './shared';
 import { tabLs, tabView } from './tab';
 
-const tabPath = `/documents/${DOC_A}/tabs/tab-one-0000`;
+const tabPath = `/projects/${DOC_A}/tabs/tab-one-0000`;
 
 describe('columns', () => {
   it('pads every column but the last to its widest cell', () => {
@@ -19,62 +19,62 @@ describe('columns', () => {
   });
 });
 
-describe('document ls', () => {
+describe('project ls', () => {
   it('lists newest first with refs, and narrows by a query', async () => {
     const ctx = contextOf(fakeApi(library));
-    const all = await documentLs.run!(ctx, documentLs.input.parse({}));
-    expect(all.documents.map((d) => [d.ref, d.name, d.updated])).toEqual([
+    const all = await projectLs.run!(ctx, projectLs.input.parse({}));
+    expect(all.projects.map((d) => [d.ref, d.name, d.updated])).toEqual([
       ['aaaa2', 'Auth flow v2', '2026-10-03'],
       ['bbbb', 'Shop', '2026-10-02'],
       ['aaaa1', 'Auth flow', '2026-10-01'],
     ]);
-    expect(documentLs.text!(all)).toEqual([
+    expect(projectLs.text!(all)).toEqual([
       'aaaa2  "Auth flow v2"  personal  2026-10-03',
       'bbbb   "Shop"          personal  2026-10-02',
       'aaaa1  "Auth flow"     personal  2026-10-01',
     ]);
-    expect(documentLs.quiet!(all)).toEqual(['aaaa2', 'bbbb', 'aaaa1']);
-    const some = await documentLs.run!(ctx, documentLs.input.parse({ query: 'AUTH', limit: '1' }));
+    expect(projectLs.quiet!(all)).toEqual(['aaaa2', 'bbbb', 'aaaa1']);
+    const some = await projectLs.run!(ctx, projectLs.input.parse({ query: 'AUTH', limit: '1' }));
     expect(some).toMatchObject({ more: 1, query: 'AUTH' });
-    expect(documentLs.text!(some).at(-1)).toBe('… 1 more; --limit 2, or narrow with a query');
+    expect(projectLs.text!(some).at(-1)).toBe('… 1 more; --limit 2, or narrow with a query');
   });
 
   it('says when nothing is there, or nothing matches', async () => {
-    const ctx = contextOf(fakeApi({ '/documents': { documents: [] }, '/teams': { teams: [] } }));
-    expect(documentLs.text!(await documentLs.run!(ctx, documentLs.input.parse({})))).toEqual([
-      'no documents',
+    const ctx = contextOf(fakeApi({ '/projects': { projects: [] }, '/teams': { teams: [] } }));
+    expect(projectLs.text!(await projectLs.run!(ctx, projectLs.input.parse({})))).toEqual([
+      'no projects',
     ]);
     expect(
-      documentLs.text!(await documentLs.run!(ctx, documentLs.input.parse({ query: 'x' }))),
-    ).toEqual(['no documents match "x"']);
+      projectLs.text!(await projectLs.run!(ctx, projectLs.input.parse({ query: 'x' }))),
+    ).toEqual(['no projects match "x"']);
   });
 
   it('refuses a limit out of range', () => {
-    expect(documentLs.input.safeParse({ limit: '0' }).success).toBe(false);
-    expect(documentLs.input.safeParse({ limit: '201' }).success).toBe(false);
+    expect(projectLs.input.safeParse({ limit: '0' }).success).toBe(false);
+    expect(projectLs.input.safeParse({ limit: '201' }).success).toBe(false);
   });
 });
 
-describe('document view', () => {
+describe('project view', () => {
   it('prints the overview view the api renders', async () => {
     const api = fakeApi({
       ...library,
-      [`/documents/${DOC_C}`]: { document: { id: DOC_C, name: 'Shop', tabs: [] } },
-      [`/documents/${DOC_C}?view=overview`]: { text: 'document Shop · 1 tab' },
+      [`/projects/${DOC_C}`]: { project: { id: DOC_C, name: 'Shop', tabs: [] } },
+      [`/projects/${DOC_C}?view=overview`]: { text: 'project Shop · 1 tab' },
     });
-    const out = await documentView.run!(contextOf(api), { doc: 'shop' });
-    expect(documentView.text!(out)).toEqual(['document Shop · 1 tab']);
+    const out = await projectView.run!(contextOf(api), { project: 'shop' });
+    expect(projectView.text!(out)).toEqual(['project Shop · 1 tab']);
   });
 
   it("sends a share link's code with the requests after it", async () => {
     const codes: string[] = [];
     const api = fakeApi({
-      '/share/abc123': { document: { id: DOC_C, name: 'Shop' } },
-      [`/documents/${DOC_C}`]: { document: { id: DOC_C, name: 'Shop', tabs: [] } },
-      [`/documents/${DOC_C}?view=overview`]: { text: 'document Shop' },
+      '/share/abc123': { project: { id: DOC_C, name: 'Shop' } },
+      [`/projects/${DOC_C}`]: { project: { id: DOC_C, name: 'Shop', tabs: [] } },
+      [`/projects/${DOC_C}?view=overview`]: { text: 'project Shop' },
     });
-    await documentView.run!(contextOf(api, codes), {
-      doc: 'https://liveplanner.app/document/shared?s=abc123',
+    await projectView.run!(contextOf(api, codes), {
+      project: 'https://liveplanner.app/project/shared?s=abc123',
     });
     expect(codes).toEqual(['abc123']);
   });
@@ -83,7 +83,7 @@ describe('document view', () => {
 describe('tab ls', () => {
   it('lists the tabs in order with refs', async () => {
     const out = await tabLs.run!(contextOf(fakeApi({ ...library, ...tabsOfA })), {
-      doc: 'Auth flow',
+      project: 'Auth flow',
     });
     expect(tabLs.text!(out)).toEqual(['1  tab-o  "Overview"', '2  tab-t  "Details"']);
     expect(tabLs.quiet!(out)).toEqual(['tab-o', 'tab-t']);
@@ -97,7 +97,7 @@ describe('tab view', () => {
     const out = await tabView.run!(
       contextOf(api),
       tabView.input.parse({
-        doc: 'Auth flow',
+        project: 'Auth flow',
         view: 'find',
         text: 'sign in',
         budget: '300',
@@ -114,15 +114,15 @@ describe('tab view', () => {
     const api = fakeApi({
       ...library,
       ...tabsOfA,
-      [`/documents/${DOC_A}/tabs/tab-two-0000`]: { nodes: [] },
+      [`/projects/${DOC_A}/tabs/tab-two-0000`]: { nodes: [] },
     });
     const out = await tabView.run!(
       contextOf(api),
-      tabView.input.parse({ doc: 'Auth flow', tab: 'details', json: true }),
+      tabView.input.parse({ project: 'Auth flow', tab: 'details', json: true }),
     );
     expect(tabView.json!(out)).toEqual({ nodes: [] });
     expect(tabView.text!(out)).toEqual(['{"nodes":[]}']);
-    expect(api.calls.at(-1)).toBe(`/documents/${DOC_A}/tabs/tab-two-0000?view=outline&json=1`);
+    expect(api.calls.at(-1)).toBe(`/projects/${DOC_A}/tabs/tab-two-0000?view=outline&json=1`);
   });
 });
 
@@ -140,11 +140,11 @@ const changeset = (over: Partial<ChangesetSummary>): ChangesetSummary => ({
 });
 
 describe('changeset ls', () => {
-  it('lists the changesets of a document, or of one tab', async () => {
+  it('lists the changesets of a project, or of one tab', async () => {
     const api = fakeApi({
       ...library,
       ...tabsOfA,
-      [`/documents/${DOC_A}/changesets?limit=20`]: {
+      [`/projects/${DOC_A}/changesets?limit=20`]: {
         changesets: [
           changeset({}),
           changeset({
@@ -157,11 +157,11 @@ describe('changeset ls', () => {
           }),
         ],
       },
-      [`/documents/${DOC_A}/changesets?limit=5&tab=tab-two-0000`]: { changesets: [] },
+      [`/projects/${DOC_A}/changesets?limit=5&tab=tab-two-0000`]: { changesets: [] },
     });
     const out = await changesetLs.run!(
       contextOf(api),
-      changesetLs.input.parse({ doc: 'Auth flow' }),
+      changesetLs.input.parse({ project: 'Auth flow' }),
     );
     expect(changesetLs.text!(out)).toEqual([
       'cs_8k2m4q7d1x  rev 4  "Overview"  Claude (agent)  "Add sign in"  +2 ~1 -0  2026-10-05 07:30',
@@ -170,7 +170,7 @@ describe('changeset ls', () => {
     expect(changesetLs.quiet!(out)).toEqual(['cs_8k2m4q7d1x', 'cs_2']);
     const none = await changesetLs.run!(
       contextOf(api),
-      changesetLs.input.parse({ doc: 'Auth flow', tab: 'Details', limit: 5 }),
+      changesetLs.input.parse({ project: 'Auth flow', tab: 'Details', limit: 5 }),
     );
     expect(changesetLs.text!(none)).toEqual(['no changesets']);
   });
@@ -181,19 +181,19 @@ describe('changeset show', () => {
     const api = fakeApi({
       ...library,
       ...tabsOfA,
-      [`/documents/${DOC_A}/changesets/cs_8k2m4q7d1x`]: {
+      [`/projects/${DOC_A}/changesets/cs_8k2m4q7d1x`]: {
         changeset: changeset({}),
         results: [],
         text: '+ n3 square "Sign in"',
       },
-      [`/documents/${DOC_A}/changesets/cs_9`]: {
+      [`/projects/${DOC_A}/changesets/cs_9`]: {
         changeset: changeset({ tabId: 'gone' }),
         results: [],
         text: '',
       },
     });
     const out = await changesetShow.run!(contextOf(api), {
-      doc: 'Auth flow',
+      project: 'Auth flow',
       changeset: 'cs_8k2m4q7d1x',
     });
     expect(changesetShow.text!(out)).toEqual([
@@ -201,13 +201,13 @@ describe('changeset show', () => {
       '+ n3 square "Sign in"',
     ]);
     expect(
-      (await changesetShow.run!(contextOf(api), { doc: 'Auth flow', changeset: 'cs_9' })).line,
+      (await changesetShow.run!(contextOf(api), { project: 'Auth flow', changeset: 'cs_9' })).line,
     ).toContain('"gone"');
   });
 });
 
 describe('changeset revert', () => {
-  const path = `/documents/${DOC_A}/changesets/cs_8k2m4q7d1x/revert`;
+  const path = `/projects/${DOC_A}/changesets/cs_8k2m4q7d1x/revert`;
 
   it('reverts one changeset as a new one, naming what it kept', async () => {
     const api = fakeApi({
@@ -220,7 +220,7 @@ describe('changeset revert', () => {
       },
     });
     const out = await changesetRevert.run!(contextOf(api), {
-      doc: 'Auth flow',
+      project: 'Auth flow',
       changeset: 'cs_8k2m4q7d1x',
     });
     expect(changesetRevert.text!(out)).toEqual([
@@ -237,7 +237,7 @@ describe('changeset revert', () => {
       [path]: { changeset: null, reverted: 0, kept: [{ id: 'n1', reason: 'gone' }] },
     });
     const out = await changesetRevert.run!(contextOf(api), {
-      doc: 'Auth flow',
+      project: 'Auth flow',
       changeset: 'cs_8k2m4q7d1x',
     });
     expect(changesetRevert.text!(out)).toEqual(['nothing to revert', 'kept n1 (gone)']);

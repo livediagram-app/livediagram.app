@@ -1,11 +1,11 @@
 import { makeTestRouteContext } from './test-route-context';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-// The scoped feeds read from the event record (docs/specs/013-workspace/timeline.md §6): a document's
+// The scoped feeds read from the event record (docs/specs/013-workspace/timeline.md §6): a project's
 // History and a team's Activity, and Home's unread count.
 //
-// The `scope` query parameter is the interesting part: a read must name one, and only a document or a team
-// the caller may see is served. A bug there would let a caller read another owner's document names and
+// The `scope` query parameter is the interesting part: a read must name one, and only a project or a team
+// the caller may see is served. A bug there would let a caller read another owner's project names and
 // comment text, so the authorisation cases below carry the weight of this file.
 
 const { store } = vi.hoisted(() => ({
@@ -17,7 +17,7 @@ const { store } = vi.hoisted(() => ({
 }));
 vi.mock('../db/timeline', () => store);
 
-const { db } = vi.hoisted(() => ({ db: { getMembership: vi.fn(), getDocument: vi.fn() } }));
+const { db } = vi.hoisted(() => ({ db: { getMembership: vi.fn(), getProject: vi.fn() } }));
 vi.mock('../db', () => db);
 
 const { gate } = vi.hoisted(() => ({ gate: { gateRead: vi.fn() } }));
@@ -45,8 +45,8 @@ beforeEach(() => {
   for (const fn of Object.values(store)) if (typeof fn === 'function') fn.mockReset();
   db.getMembership.mockReset();
   db.getMembership.mockResolvedValue(null);
-  db.getDocument.mockReset();
-  db.getDocument.mockResolvedValue({ id: 'd-1', ownerId: 'owner-1', teamId: null });
+  db.getProject.mockReset();
+  db.getProject.mockResolvedValue({ id: 'd-1', ownerId: 'owner-1', teamId: null });
   gate.gateRead.mockReset();
   gate.gateRead.mockResolvedValue(false);
   store.readTimeline.mockResolvedValue({ items: [] });
@@ -57,7 +57,7 @@ beforeEach(() => {
 describe('handleTimeline read', () => {
   it('400 when no owner resolves — a feed has to belong to someone', async () => {
     const res = await handleTimeline(
-      makeCtx('GET', '/api/timeline?scope=document:d-1', { owner: null }),
+      makeCtx('GET', '/api/timeline?scope=project:d-1', { owner: null }),
     );
     expect(res.status).toBe(400);
     expect(store.readTimeline).not.toHaveBeenCalled();
@@ -85,22 +85,22 @@ describe('handleTimeline read', () => {
     expect(store.readTimeline).not.toHaveBeenCalled();
   });
 
-  // A document's history is readable by exactly whoever can read the
-  // document — which includes a share-link visitor who is in nobody's
-  // user scope, so it defers to the document's own gate rather than
+  // A project's history is readable by exactly whoever can read the
+  // project — which includes a share-link visitor who is in nobody's
+  // user scope, so it defers to the project's own gate rather than
   // re-deriving one.
-  it('serves a document scope to anyone the document gate allows', async () => {
+  it('serves a project scope to anyone the project gate allows', async () => {
     gate.gateRead.mockResolvedValue(true);
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1'));
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=project:d-1'));
     expect(res.status).toBe(200);
     // Called with the whole RouteContext (it needs the share-code
-    // headers), so assert the document identity rather than the ctx.
+    // headers), so assert the project identity rather than the ctx.
     expect(gate.gateRead).toHaveBeenCalledWith(expect.anything(), 'd-1', 'owner-1', null);
   });
 
   // An owner id is a credential, and a share-link visitor can read a
-  // document's feed, so only the reader's own id survives the response.
-  it('nulls every actor id except the readers own in a document scope', async () => {
+  // project's feed, so only the reader's own id survives the response.
+  it('nulls every actor id except the readers own in a project scope', async () => {
     gate.gateRead.mockResolvedValue(true);
     store.readTimeline.mockResolvedValue({
       items: [
@@ -109,7 +109,7 @@ describe('handleTimeline read', () => {
         { id: 'e3', actorId: null },
       ],
     });
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1'));
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=project:d-1'));
     const body = (await res.json()) as { items: { id: string; actorId: string | null }[] };
     expect(body.items.map((e) => e.actorId)).toEqual([null, 'owner-1', null]);
   });
@@ -124,22 +124,22 @@ describe('handleTimeline read', () => {
     expect(body.items[0]!.actorId).toBe('someone');
   });
 
-  it('403s a document scope the gate refuses', async () => {
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1'));
+  it('403s a project scope the gate refuses', async () => {
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=project:d-1'));
     expect(res.status).toBe(403);
     expect(store.readTimeline).not.toHaveBeenCalled();
   });
 
   // A refusal, not a 404: a guessed id must not be probeable for
-  // existence through this endpoint any more than through the document's.
-  it('403s a document scope for an id that does not exist', async () => {
-    db.getDocument.mockResolvedValue(null);
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:missing'));
+  // existence through this endpoint any more than through the project's.
+  it('403s a project scope for an id that does not exist', async () => {
+    db.getProject.mockResolvedValue(null);
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=project:missing'));
     expect(res.status).toBe(403);
     expect(gate.gateRead).not.toHaveBeenCalled();
   });
 
-  // A team feed carries the team's document names and comment text, so
+  // A team feed carries the team's project names and comment text, so
   // membership is the whole gate.
   it('serves a team scope to a joined member', async () => {
     db.getMembership.mockResolvedValue({ status: 'joined', role: 'member' });
@@ -192,7 +192,7 @@ describe('handleTimeline read', () => {
     await handleTimeline(
       makeCtx(
         'GET',
-        '/api/timeline?scope=document:d-1&cursor=100:abc&from=50&to=200&sourceType=document&sourceType=team',
+        '/api/timeline?scope=project:d-1&cursor=100:abc&from=50&to=200&sourceType=project&sourceType=team',
       ),
     );
     expect(store.readTimeline).toHaveBeenCalledWith(
@@ -201,7 +201,7 @@ describe('handleTimeline read', () => {
         cursor: '100:abc',
         from: 50,
         to: 200,
-        sourceTypes: ['document', 'team'],
+        sourceTypes: ['project', 'team'],
       }),
     );
   });
@@ -210,34 +210,34 @@ describe('handleTimeline read', () => {
   it('caps the number of source-type filters', async () => {
     gate.gateRead.mockResolvedValue(true);
     const qs = Array.from({ length: 150 }, (_, i) => `sourceType=t${i}`).join('&');
-    await handleTimeline(makeCtx('GET', `/api/timeline?scope=document:d-1&${qs}`));
+    await handleTimeline(makeCtx('GET', `/api/timeline?scope=project:d-1&${qs}`));
     const opts = store.readTimeline.mock.calls[0]![1] as { sourceTypes: string[] };
     expect(opts.sourceTypes).toHaveLength(20);
   });
 
   it('caps an oversized limit rather than trusting the client', async () => {
     gate.gateRead.mockResolvedValue(true);
-    await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1&limit=99999'));
+    await handleTimeline(makeCtx('GET', '/api/timeline?scope=project:d-1&limit=99999'));
     expect(store.readTimeline).toHaveBeenCalledWith({}, expect.objectContaining({ limit: 200 }));
   });
 
   it('falls back to the default page size for a nonsense limit', async () => {
     gate.gateRead.mockResolvedValue(true);
-    await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1&limit=-4'));
+    await handleTimeline(makeCtx('GET', '/api/timeline?scope=project:d-1&limit=-4'));
     expect(store.readTimeline).toHaveBeenCalledWith({}, expect.objectContaining({ limit: 50 }));
   });
 
   it('returns the page plus the cursor', async () => {
     gate.gateRead.mockResolvedValue(true);
     store.readTimeline.mockResolvedValue({ items: [{ id: 'e1' }], nextCursor: '9:e1' });
-    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=document:d-1'));
+    const res = await handleTimeline(makeCtx('GET', '/api/timeline?scope=project:d-1'));
     expect(await res.json()).toEqual({ items: [{ id: 'e1', actorId: null }], nextCursor: '9:e1' });
   });
 
   // The unread mark belongs to Home (/api/home); a History or Activity read never moves it.
   it('never moves the unread mark', async () => {
     gate.gateRead.mockResolvedValue(true);
-    const ctx = makeCtx('GET', '/api/timeline?scope=document:d-1');
+    const ctx = makeCtx('GET', '/api/timeline?scope=project:d-1');
     const scheduled: Promise<unknown>[] = [];
     ctx.waitUntil = (p) => scheduled.push(p);
     await handleTimeline(ctx);

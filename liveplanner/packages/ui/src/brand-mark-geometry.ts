@@ -126,7 +126,7 @@ const BLEND: Record<PrismScheme, string> = { light: 'multiply', dark: 'screen' }
 // The mark as a standalone SVG document. `light` / `dark` write literal colours
 // (renderers without CSS variables or media queries: next/og's resvg, the PNG
 // script); `auto` follows the viewer's prefers-color-scheme, for favicons.
-// `idPrefix` keeps gradient ids unique when several marks share one document.
+// `idPrefix` keeps gradient ids unique when several marks share one project.
 export function brandMarkSvg({
   variant = 'compact',
   scheme = 'auto',

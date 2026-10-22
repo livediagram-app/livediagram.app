@@ -1,8 +1,8 @@
 'use client';
 
-// The visibility pill's legend (docs/specs/006-document/offline-mode.md "The visibility legend"): who can see
-// this document. A hero in the current state's tone draws its reach as rings around you, lit out to how far
-// the document goes; under it the audiences sit on one scale from Just You to the Team, the current stop
+// The visibility pill's legend (docs/specs/006-project/offline-mode.md "The visibility legend"): who can see
+// this project. A hero in the current state's tone draws its reach as rings around you, lit out to how far
+// the project goes; under it the audiences sit on one scale from Just You to the Team, the current stop
 // filled to, and hovering a stop shows that audience in the hero. This Browser stands apart below, the
 // deliberate opt-out; then, for someone who may share, Change Who Can See This opens Share. For the eye only:
 // the pill carries the current state's words for assistive technology and opens Share itself.
@@ -224,7 +224,7 @@ function ReachScale({
   );
 }
 
-// This Browser, apart from the scale: the document never leaves this browser.
+// This Browser, apart from the scale: the project never leaves this browser.
 function ThisBrowserRow({
   current,
   onPeek,
@@ -273,7 +273,7 @@ export function VisibilityLegend({
   // Centred under the pill (the header), or laid out by a host that places it (`floating`: the Explorer's card portals
   // it over the panel, whose scroll would clip it).
   align?: 'center' | 'floating';
-  // Opens Share; absent where the reader may not change who can see the document.
+  // Opens Share; absent where the reader may not change who can see the project.
   onManage?: () => void;
 }) {
   // A hovered stop shows its audience in the hero; leaving puts the current state back.

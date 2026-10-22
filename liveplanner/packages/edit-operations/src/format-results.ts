@@ -109,6 +109,6 @@ export function formatResultFooter(footer: ResultFooter): string {
   return [
     `rev ${footer.previousRev}→${footer.rev}${rebased}`,
     footer.changesetId,
-    `revert: liveplanner changeset revert ${footer.documentId} ${footer.changesetId}`,
+    `revert: liveplanner changeset revert ${footer.projectId} ${footer.changesetId}`,
   ].join(' · ');
 }

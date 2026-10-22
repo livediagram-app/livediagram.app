@@ -1,6 +1,6 @@
 import { useViewportStore } from '@/hooks/canvas/useViewportStore';
 import { ViewZoomControls } from '@/components/canvas/view-readers';
-import { votesSpentBy } from '@liveplanner/document';
+import { votesSpentBy } from '@liveplanner/project';
 import { participantKey } from '@/lib/identity';
 import { useVoteReviewOpener } from '@/hooks/canvas/useVoteReviewOpener';
 import { computeDrawGuides } from '@/components/canvas/canvas-draw-guides';
@@ -8,7 +8,7 @@ import { CanvasGuideOverlay } from '@/components/canvas/CanvasGuideOverlay';
 import { CanvasDrawPreview } from '@/components/canvas/CanvasDrawPreview';
 import { TopCenterChrome } from '@/components/chrome/TopCenterChrome';
 // Lazy-load the visitor name prompt the same way ExportTabDialog + ShareDialog already are. It is gated on
-// `showIdentityPrompt`, false on the common path (the owner opening their own document); for a visitor the empty
+// `showIdentityPrompt`, false on the common path (the owner opening their own project); for a visitor the empty
 // canvas underneath has already rendered, so the prompt fades in a frame later rather than blocking the route on its JS.
 import dynamic from 'next/dynamic';
 const IdentityPrompt = dynamic(
@@ -135,7 +135,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
     canRedo,
     canUndo,
     canvasTool,
-    documentName,
+    projectName,
     drawDrag,
     drawHover,
     elements,
@@ -320,7 +320,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
       {showIdentityPrompt ? (
         <IdentityPrompt
           participant={selfParticipant}
-          documentName={documentName}
+          projectName={projectName}
           lockedName={identityLockedName}
           onJoin={onConfirmIdentity}
           onCancel={onCancelIdentity}
@@ -502,7 +502,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                 onTogglePopover={(button) => handleDockButtonClick('collaborate', button, true)}
               />
             ) : null}
-            {/* Layers (docs/specs/006-document/layers.md) and the Theme & Canvas brush
+            {/* Layers (docs/specs/006-project/layers.md) and the Theme & Canvas brush
               (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
               pass no handler), one strip in every mode: see LayersThemeStrip. */}
             {!zenMode ? <LayersThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}

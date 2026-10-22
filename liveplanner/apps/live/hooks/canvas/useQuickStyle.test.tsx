@@ -2,7 +2,7 @@
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { resetAppearanceForTests, setAppearance } from '@liveplanner/ui';
-import { createShape, defaultScheme, PEN_INK, type Element, type Tab } from '@liveplanner/document';
+import { createShape, defaultScheme, PEN_INK, type Element, type Tab } from '@liveplanner/project';
 import { useQuickStyle } from './useQuickStyle';
 
 function setup(tab: Tab, selection: string[]) {

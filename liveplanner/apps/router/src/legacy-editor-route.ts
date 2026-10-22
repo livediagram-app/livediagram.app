@@ -1,8 +1,8 @@
-// The editor route was /diagram/<id> before the container became a document
+// The editor route was /diagram/<id> before the container became a project
 // (docs/specs/016-platform/router-app.md, "Legacy editor route"). Every old share link,
 // embed and bookmark is sent on for good, query string included.
 const LEGACY_EDITOR_PATH = '/diagram';
-const EDITOR_PATH = '/document';
+const EDITOR_PATH = '/project';
 
 export function legacyEditorRedirect(url: URL): Response | null {
   const { pathname } = url;
@@ -13,18 +13,18 @@ export function legacyEditorRedirect(url: URL): Response | null {
   return Response.redirect(next.toString(), 308);
 }
 
-// Renamed help articles: the ones about the container moved when it became a document,
+// Renamed help articles: the ones about the container moved when it became a project,
 // Whiteboards became Draw mode, whose pens, eraser, Highlighter, shape recognition and tour were then
 // retired (their articles land on the nearest article left), and the Activity Panel category went when the panel was removed (Undo and Redo moved to Canvas;
 // its other articles land on Undo), Facilitate mode became Workshop mode, and the Welcome Tour became the Diagram Tour. The old
 // addresses are links people have already shared (docs/specs/018-help/help-app.md, "Renamed articles").
 const LEGACY_HELP_ARTICLES: Readonly<Record<string, string>> = {
-  'tabs/add-to-diagram': 'tabs/add-to-document',
-  'troubleshooting/diagram-not-loading': 'troubleshooting/document-not-loading',
-  'collaboration/teams/team-shared-diagrams': 'collaboration/teams/team-shared-documents',
-  'search-panel/the-search-panel/search-diagrams': 'search-panel/the-search-panel/search-documents',
-  'getting-started/sharing-your-diagram': 'getting-started/sharing-your-document',
-  'developers/working-with-diagrams': 'developers/working-with-documents',
+  'tabs/add-to-diagram': 'tabs/add-to-project',
+  'troubleshooting/diagram-not-loading': 'troubleshooting/project-not-loading',
+  'collaboration/teams/team-shared-diagrams': 'collaboration/teams/team-shared-projects',
+  'search-panel/the-search-panel/search-diagrams': 'search-panel/the-search-panel/search-projects',
+  'getting-started/sharing-your-diagram': 'getting-started/sharing-your-project',
+  'developers/working-with-diagrams': 'developers/working-with-projects',
   'canvas/whiteboards': 'canvas/editor-modes',
   'canvas/draw-mode': 'canvas/editor-modes',
   'canvas/draw-mode/draw-tour': 'canvas/editor-modes',

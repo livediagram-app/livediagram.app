@@ -80,12 +80,12 @@ describe('formatBrowserIdentity', () => {
     ]);
   });
 
-  it('names the account when the caller knows it, and flags guest documents not yet moved', () => {
+  it('names the account when the caller knows it, and flags guest projects not yet moved', () => {
     expect(formatBrowserIdentity(guest, 'user_2abc')).toEqual([
       'Signed in: yes (user_2abc)',
       'Guest id in this browser: 6f1c2d3e… (signed: yes)',
       'Identity upgrade pending: no',
-      'Guest documents moved to the account: NOT YET (guest id still present)',
+      'Guest projects moved to the account: NOT YET (guest id still present)',
     ]);
   });
 

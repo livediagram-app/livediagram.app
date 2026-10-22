@@ -1,9 +1,9 @@
 import type { Page } from '@playwright/test';
-import { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER } from '@liveplanner/api-schema';
-import { expect, expectNoPageErrors, startBlankDocument, test } from './fixtures';
+import { PROJECT_FORMAT, PROJECT_FORMAT_HEADER } from '@liveplanner/api-schema';
+import { expect, expectNoPageErrors, startBlankProject, test } from './fixtures';
 
 // The new version prompt (docs/specs/016-platform/new-version-prompt.md), in dark mode: this build is
-// the "older editor", and the server is made "newer" by raising the document format number every
+// the "older editor", and the server is made "newer" by raising the project format number every
 // api response carries. The prompt offers a reload, reloads only once the edits are saved, never
 // over unsaved changes, and steps aside on "Not now".
 
@@ -18,7 +18,7 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
     if (failSaves && route.request().method() === 'PUT') {
       await route.fulfill({
         status: 503,
-        headers: { [DOCUMENT_FORMAT_HEADER]: String(DOCUMENT_FORMAT + 1) },
+        headers: { [PROJECT_FORMAT_HEADER]: String(PROJECT_FORMAT + 1) },
         body: '{"error":"unavailable"}',
       });
       return;
@@ -26,7 +26,7 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
     const response = await route.fetch();
     await route.fulfill({
       response,
-      headers: { ...response.headers(), [DOCUMENT_FORMAT_HEADER]: String(DOCUMENT_FORMAT + 1) },
+      headers: { ...response.headers(), [PROJECT_FORMAT_HEADER]: String(PROJECT_FORMAT + 1) },
     });
   });
 }
@@ -34,7 +34,7 @@ async function serveNewerFormat(page: Page, { failSaves = false } = {}) {
 async function openBoard(page: Page) {
   await page.setViewportSize({ width: 1600, height: 900 });
   await page.emulateMedia({ colorScheme: 'dark' });
-  await startBlankDocument(page);
+  await startBlankProject(page);
   await page.locator(CANVAS).waitFor({ timeout: 30_000 });
 }
 

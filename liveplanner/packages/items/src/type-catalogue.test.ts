@@ -45,7 +45,7 @@ const call = {
 const withCall = (types: unknown[] = [...ITEM_TYPES, call]) => ({ version: 1, types });
 
 describe('the type catalogue', () => {
-  it('is empty until a document stores its own', () => {
+  it('is empty until a project stores its own', () => {
     expect(typesOf(null)).toEqual([]);
     expect(typesOf(undefined)).toEqual([]);
     expect(typesOf(defaultCatalogue())).toEqual(ITEM_TYPES);
@@ -153,14 +153,14 @@ describe('the type catalogue', () => {
 });
 
 describe('a catalogue with no types', () => {
-  it('is kept: deleting every type leaves a document with none', () => {
+  it('is kept: deleting every type leaves a project with none', () => {
     const none = validateItemTypeCatalogue({ version: 1, types: [] });
     expect(none).toEqual({ ok: true, catalogue: { version: 1, types: [] } });
     expect(typesOf(readItemTypeCatalogue({ version: 1, types: [] }))).toEqual([]);
   });
 });
 
-describe('a document made before card types started empty', () => {
+describe('a project made before card types started empty', () => {
   it('reads as the default types when it has cards and never chose any', () => {
     expect(typesOf(legacyCatalogue(null, true))).toEqual(ITEM_TYPES);
     expect(legacyCatalogue(null, false)).toBeNull();
@@ -297,7 +297,7 @@ describe('a ready-made type’s Default State', () => {
   ]);
   const task = ITEM_TYPES.find((t) => t.id === 'task')!;
 
-  it('is the document’s state of its name, unless turned off, and never beats a chosen one', () => {
+  it('is the project’s state of its name, unless turned off, and never beats a chosen one', () => {
     expect(readyMadeDefaultStatus(task, names)).toBe('todo~a1');
     expect(readyMadeDefaultStatus({ id: 'project' }, names)).toBe('backlog~a1');
     expect(readyMadeDefaultStatus({ id: 'idea' }, names)).toBeUndefined();

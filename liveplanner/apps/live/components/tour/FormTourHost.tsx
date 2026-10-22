@@ -12,8 +12,8 @@ import {
   questionsOf,
   readForm,
 } from '@liveplanner/forms';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useSelectTab } from '@/app/document/[id]/useSelectTab';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
+import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { FORM_TOUR_RELAUNCH_EVENT } from '@/lib/form-tour';

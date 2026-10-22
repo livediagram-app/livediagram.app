@@ -1,7 +1,7 @@
 'use client';
 
 // A figure from a Sheet's source (docs/specs/026-plan/plan-tabs.md "Figures from a Sheet"), an Editor's: a popover of
-// the document's Sheets, then, for a Sheet Figure, its labelled numbers or a cell typed as A1 and an optional target the
+// the project's Sheets, then, for a Sheet Figure, its labelled numbers or a cell typed as A1 and an optional target the
 // same way; for a Column Summary or a Trend, the columns holding numbers (and a summary's stat). Each choice lands as
 // one step; the popover closes once the source is whole.
 import { useMemo, useState } from 'react';
@@ -14,7 +14,7 @@ import {
   numberColumns,
   type SheetCellRef,
 } from '@liveplanner/sheets';
-import type { SheetMetricContent } from '@liveplanner/document';
+import type { SheetMetricContent } from '@liveplanner/project';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';
 import { useSheetRead } from './useSheetReader';
 import {

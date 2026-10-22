@@ -40,7 +40,7 @@ An empty Plan tab shows **Start Planning** in the middle. Choose **Boards** in i
 | **Roadmap**        | Projects on Now, Next and Later.                                          |
 | **Bug Triage**     | Bugs from New to Fixed, a row per priority.                               |
 | **Weekly Planner** | A column a day, Monday to Friday.                                         |
-| **All Cards**      | Every card in the document, a row per status, so nothing gets lost.       |
+| **All Cards**      | Every card in the project, a row per status, so nothing gets lost.       |
 | **Archive**        | Every archived card, out of the way, ready to restore.                    |
 
 A board placed from the picker starts **empty**: its columns are its own, so cards from your other boards stay where they are. The exception is a column named like a status the tab already has (a second Kanban's **Done**, say): it takes that status, so its cards show on the new board too. Boards from a [Plan template](/help/canvas/plan-mode/#plan-templates) are set up for their job, share columns between tabs where the work hands over, and come with no cards either.
@@ -51,7 +51,7 @@ A board placed from the picker starts **empty**: its columns are its own, so car
   <PlanColumnSettingsScene />
 </Figure>
 
-Add a column from the board's cog (**Columns**, below) or from a column's own **+ Add Column After**. Either way the picker lists under **Existing Statuses** every status your document already has that this board lacks: the ones other boards use, and any your cards are in. Each shows its colour, the boards it is on, and how many of its cards would appear on this board. Pick one (or press **Add All**) and the cards already in it show straight away. Type to narrow the list, use the arrow keys and Enter, or type a new name and press **Add Column** (**Add** in the board's cog): if the name matches a status you already have, that status is used rather than a near-duplicate, and you are told so.
+Add a column from the board's cog (**Columns**, below) or from a column's own **+ Add Column After**. Either way the picker lists under **Existing Statuses** every status your project already has that this board lacks: the ones other boards use, and any your cards are in. Each shows its colour, the boards it is on, and how many of its cards would appear on this board. Pick one (or press **Add All**) and the cards already in it show straight away. Type to narrow the list, use the arrow keys and Enter, or type a new name and press **Add Column** (**Add** in the board's cog): if the name matches a status you already have, that status is used rather than a near-duplicate, and you are told so.
 
 Hover a column's head and press its cog (always there on a touch screen). Along the top, a toolbar holds **Move Left** and **Move Right** on the left and **Remove** on the right. Below it you can:
 
@@ -111,7 +111,7 @@ The header holds **widgets**: Item Count, Completion, Filter, Only Mine, People,
 - **Narrow the board:** press a person in People, a type in Card Types, a priority, Unassigned or the overdue count; press again to see everything. Item Count reads "3 of 14 · Show all" while the board is narrowed. **Filter** and **Only Mine** are yours alone and aren't saved.
 - **Stale Cards** counts cards not done that nobody has changed in 14 days. **Due Soon** counts overdue cards and those due in the next 7 days.
 
-A board holds each widget once. Only people who can edit the document add, move or remove widgets; everyone can use them.
+A board holds each widget once. Only people who can edit the project add, move or remove widgets; everyone can use them.
 
 ## Voting and Hidden Writing
 
@@ -142,7 +142,7 @@ Press **Maximise Board** at the right of a board's header to fill the canvas wit
 
 ## Delete a Board
 
-Select a board and press Delete (or use the trash button or the right-click menu); on a Board tab, delete the tab. A board's cards belong to the document, not the board, so they stay: find them with the **Find a Card** button or on an **All Cards** board.
+Select a board and press Delete (or use the trash button or the right-click menu); on a Board tab, delete the tab. A board's cards belong to the project, not the board, so they stay: find them with the **Find a Card** button or on an **All Cards** board.
 
 When the board is the last one showing some card types, you're asked **Delete Its Cards Too?**, naming them, for example "No other board shows Task and Bug. Delete the Task and Bug card types too? Their 5 cards go to the Trash, where they can be restored."
 
@@ -151,10 +151,10 @@ When the board is the last one showing some card types, you're asked **Delete It
 
 The board is deleted either way. Nothing is asked when:
 
-- another board in the document, on any tab or a Dashboard, shows the same card types (an Archive board, or one that takes every type, counts as showing them all);
+- another board in the project, on any tab or a Dashboard, shows the same card types (an Archive board, or one that takes every type, counts as showing them all);
 - you **Cut** the board, so you can paste it back;
-- some of the document's tabs haven't loaded yet, since a board on one of them could still show those types.
+- some of the project's tabs haven't loaded yet, since a board on one of them could still show those types.
 
-Deleting a tab with boards on it asks the same about their card types, then deletes the tab. One **Undo** brings the board or tab back; restore the cards from the Trash. Only people who can edit the document can delete a board.
+Deleting a tab with boards on it asks the same about their card types, then deletes the tab. One **Undo** brings the board or tab back; restore the cards from the Trash. Only people who can edit the project can delete a board.
 
 </ArticleLayout>

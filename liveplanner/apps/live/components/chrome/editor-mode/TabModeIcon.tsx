@@ -5,7 +5,7 @@ import {
   lucideLayoutGrid,
   lucideSquareKanban,
 } from '@liveplanner/icons/lucide';
-import { isPlanTabKind, type PlanTabKind, type Tab } from '@liveplanner/document';
+import { isPlanTabKind, type PlanTabKind, type Tab } from '@liveplanner/project';
 import type { CSSProperties } from 'react';
 
 // A Plan kind's own glyph (docs/specs/026-plan/plan-tabs.md "Tab kinds"): what the tab is tells them apart.

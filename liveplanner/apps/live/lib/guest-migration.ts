@@ -9,7 +9,7 @@ import { debugLog } from '@/lib/debug-log';
 import { createListeners } from '@/lib/listeners';
 
 // Guest → account migration (docs/specs/014-identity/auth-and-guest-access.md).
-// Owner data waits for it: until it settles, the guest's documents still
+// Owner data waits for it: until it settles, the guest's projects still
 // belong to the guest id, and a read as the Clerk userId 404s. One run per
 // page load, shared by every component that mounts useClerkApiBootstrap.
 
@@ -24,7 +24,7 @@ const settledFor = new Set<string>();
 // components read it with useSyncExternalStore, and settling notifies them. A forced re-render
 // is not enough: the React Compiler memoises `guestMigrationPending(clerkUserId)` on its
 // argument, so a re-render with the same user kept the stale "pending" and the editor never
-// loaded the document. The guest id is part of the state, so its changes notify too.
+// loaded the project. The guest id is part of the state, so its changes notify too.
 const listeners = createListeners();
 export function subscribeGuestMigration(onChange: () => void): () => void {
   const unsubscribe = listeners.subscribe(onChange);

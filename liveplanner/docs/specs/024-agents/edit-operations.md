@@ -31,25 +31,25 @@ editing an existing tab use the same operations; a full rebuild uses `replace`. 
   ([MCP server](../015-api/mcp-server.md) §4.7). It is still a changeset: previewed, based,
   attributed and revertable.
 - **Ids** given with `id=` name the new element, so later operations in the same changeset can refer to it. An id is
-  a slug id (`^[a-z][a-z0-9_-]{0,23}$`, as [Document views](document-views.md#refs) defines it). Without one, a new
+  a slug id (`^[a-z][a-z0-9_-]{0,23}$`, as [Project views](project-views.md#refs) defines it). Without one, a new
   element takes the slug of its label, or of its kind when it has none (`arrow`, `arrow-2`).
 - **Fields** are named by the aliases below or by any stored field of the element's type, as the
   [element format](../015-api/mcp-server.md) names it. Fields that travel live between people (comment threads,
   responses, ideas) are not changed by edit operations; comments have their own endpoints. A named `x`, `y`,
   `width` or `height` is a stored, absolute coordinate.
-- **Values** use the document's vocabulary: `shape=stadium` (off-vocabulary shapes coerced as the MCP does),
+- **Values** use the project's vocabulary: `shape=stadium` (off-vocabulary shapes coerced as the MCP does),
   `fill=green` (a theme slot: `theme`, the theme's own colour, or one of the six hues the quick style panel offers
   for that theme, which follow a theme change; a hex value is accepted with the warning `colour_overrides_theme`,
   a sticky's colours excepted, which take the sticky palette's names), `text=sm`, `note="…"`, `line=angled`. A shape's
   label over 40 characters keeps the heading and moves the full text into the note; an arrow's
   label is cut; a sticky's or a text's label is its content and is kept whole. Every style key a
-  [view](document-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
+  [view](project-views.md) prints (`stroke=`, `text-color=`, `border=`, `font=` beside `fill=`, `text=`, `line=`)
   writes back unchanged.
 - **Closed vocabularies.** A stored field with a closed list of values (`textSize`, `textAlignX`, `textAlignY`,
   `iconPosition`, `arrowStyle`, `arrowEnds`, `arrowheadShape`, `strokeStyle`, `borderRadius`, `iconWeight`, `font` (the editor's
   faces: a family name such as "serif" drew in the tab's font in silence), and the diagram-building kinds'
   `accentEdge`, `cardMedia`, `chipLook`, `attachAt`, `boundaryStyle`, `pyramidVariant`;
-  `ELEMENT_FIELD_VALUES` in `@liveplanner/document`) refuses a value off it as `invalid_value`, naming the values it
+  `ELEMENT_FIELD_VALUES` in `@liveplanner/project`) refuses a value off it as `invalid_value`, naming the values it
   takes (a `textSize` may also be a pixel number, as a Step number stores one), as the MCP's whole-element check does: `textSize=xl` used to be stored and drawn as tiny overlapping text.
 - **Locks.** A changeset on a locked tab is refused, and so is an operation that changes a locked element or an
   element on a locked layer (`element_locked`).
@@ -83,7 +83,7 @@ labels; several matches are refused with the candidates. `selected` with nothing
 `layout` act on many by nature: `wrap`'s members are each ref or quoted label given, plus whatever its other tokens
 match together.
 
-**Membership** is the smallest frame or lane holding an element's centre, the rule [views](document-views.md) nest
+**Membership** is the smallest frame or lane holding an element's centre, the rule [views](project-views.md) nest
 by; it decides `in:`, what `wrap` would capture, what a moved frame carries and the membership lines of a result.
 The editor's drag carries by the same rule ([Canvas and palette](../008-canvas/canvas-and-palette.md)), so an agent's
 `move` and a person's drag take the same elements along.
@@ -198,12 +198,12 @@ there are, in its expectation and its hint, rather than the hint for quoting a v
 
 ## Where the engine lives
 
-One pure engine, `@liveplanner/edit-operations`, on top of `@liveplanner/document`:
+One pure engine, `@liveplanner/edit-operations`, on top of `@liveplanner/project`:
 
 - `applyEditOperations(tab, operations, options) → { tab, results, elementOps, inverse, warnings, targets, createdIds } | { errors }`,
   and `applyReplace` beside it for a `replace` body, with the same answer. `targets` are the existing elements the
   operations resolved, which the changeset fingerprints and checks for holds; `createdIds` are the elements it
   created.
-- Refs, slug ids, kind words, membership and the content origin come from `@liveplanner/document`, shared with the
+- Refs, slug ids, kind words, membership and the content origin come from `@liveplanner/project`, shared with the
   views and the lint, as do the label cap and the MCP's normalisation.
 - The api runs it for every changeset; the CLI runs it only to parse and to print.

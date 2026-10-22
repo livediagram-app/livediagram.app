@@ -1,17 +1,17 @@
 # Live image share link
 
-> **Status: implemented, as part of [Document SVG snapshots](../006-document/document-snapshots.md).** The
+> **Status: implemented, as part of [Project SVG snapshots](../006-project/project-snapshots.md).** The
 > endpoint and Share-dialog option below shipped, but two design points here are
-> now superseded by [Document SVG snapshots](../006-document/document-snapshots.md) — read it for the authoritative behaviour:
+> now superseded by [Project SVG snapshots](../006-project/project-snapshots.md) — read it for the authoritative behaviour:
 >
 > - **Not re-rendered per request.** The image serves a **cached SVG snapshot**
->   from R2, refreshed render-on-read when the document has been saved since
+>   from R2, refreshed render-on-read when the project has been saved since
 >   (`thumb_rendered_at`). Cheaper, and "live" within the cache window + last
->   save. The cache is shared with the Explorer thumbnail ([Document SVG snapshots](../006-document/document-snapshots.md)) — one
+>   save. The cache is shared with the Explorer thumbnail ([Project SVG snapshots](../006-project/project-snapshots.md)) — one
 >   artifact, two delivery paths.
 > - **Renderer already shared.** The "main work" below (extracting the renderer
 >   into a new package) is moot: `renderElementsToSvg` already lives DOM-free in
->   `@liveplanner/document` (`packages/document/src/svg-render.ts`) and powers the
+>   `@liveplanner/project` (`packages/project/src/svg-render.ts`) and powers the
 >   MCP worker ([MCP server](../015-api/mcp-server.md)), so the worker imports it directly. No `@liveplanner/render`
 >   package was created.
 >
@@ -20,15 +20,15 @@
 > The same drawing, fitted onto a 1200 x 630 PNG, is what a pasted share link previews with in a chat app:
 > [Share-link previews](share-link-previews.md).
 
-A share option that serves the document as a **live image**: an `<img>`-able URL
-that serves the current document as SVG, so it can be embedded in a README / wiki
+A share option that serves the project as a **live image**: an `<img>`-able URL
+that serves the current project as SVG, so it can be embedded in a README / wiki
 / site and stay up to date — no editor chrome, just the content (like the SVG
 export).
 
 ## Confirmed decisions
 
-- **Scope: tied to a share link.** The image URL embeds a document's share code,
-  so only documents the owner has explicitly shared expose an image. The URL is
+- **Scope: tied to a share link.** The image URL embeds a project's share code,
+  so only projects the owner has explicitly shared expose an image. The URL is
   effectively public to anyone who has it (an `<img>` can't send a password or
   auth header), which matches a share link's existing semantics.
   - **Password-protected shares** ([Share password](share-password.md)) get **no** image URL — an `<img>`
@@ -45,7 +45,7 @@ export).
 
 1. Resolve `<code>` through `getShareLink` (the single authority — expiry +
    role). 404 if missing / revoked / expired.
-2. If the document has a share password, 404 (no image for gated shares).
+2. If the project has a share password, 404 (no image for gated shares).
 3. Load the rendered tab (default: the first tab; `?tab=<id>` selects another). A tab-scoped link ([Tab-scoped share links](tab-scoped-share-links.md)) always renders its own tab, and a `?tab=` naming any other is a 404.
 4. Render it to SVG and return `Content-Type: image/svg+xml` with a short
    `Cache-Control` (e.g. `max-age=30, stale-while-revalidate=300`) so embeds
@@ -62,7 +62,7 @@ the live editor's export and the api worker. What moves: `renderTabToSvg`,
 `describeBoxedExport`, `contentBounds`, the `svg*` helpers, the label-wrap,
 `arrowHeadRefs`, the iso matrix, `backgroundPatternTile`, and `framesFirst`. The
 label-measure helper already degrades to a character-width estimate when there's
-no `document`, so it runs in the Worker.
+no `project`, so it runs in the Worker.
 
 **Label fidelity rules** (the renderer mirrors the editor's DOM layout):
 labels inset by the element's **padding preset** and wrap to the remaining
@@ -93,8 +93,8 @@ A **Live image** menu on each pass in the Share dialog (owner, non-password, sha
 a menu off the `.../image.svg` URL to copy the raw URL, a Markdown
 `![](...)` snippet, or an HTML `<img>` snippet (the same `ShareCopyMenu`
 the Embed control uses). The menu also carries a **per-tab picker** (a
-`<select>`, shown when the document has more than one tab) that threads
+`<select>`, shown when the project has more than one tab) that threads
 `?tab=<id>` into the copied URL / snippets; see
-[Document SVG snapshots](../006-document/document-snapshots.md#share-dialog) for the caching detail
+[Project SVG snapshots](../006-project/project-snapshots.md#share-dialog) for the caching detail
 (a non-default tab renders on read, uncached). Out of scope for v1: a
 PNG variant (Worker rasterization) and themed cache invalidation.

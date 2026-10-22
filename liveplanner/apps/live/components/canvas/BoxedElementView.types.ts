@@ -1,6 +1,6 @@
 import type { RemoteSelector } from '@/lib/presence-rows';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { BoxedElement, TextRun } from '@liveplanner/document';
+import type { BoxedElement, TextRun } from '@liveplanner/project';
 import type { DragMode } from '@/lib/canvas';
 
 export type BoxedElementViewProps = {
@@ -30,7 +30,7 @@ export type BoxedElementViewProps = {
   // Shift-click on an element fires this with the element id so the
   // page can toggle membership in the marquee multi-selection.
   onShiftSelect?: (id: string) => void;
-  // Whole-layer opacity (docs/specs/006-document/layers.md), multiplied over the element's own
+  // Whole-layer opacity (docs/specs/006-project/layers.md), multiplied over the element's own
   // `opacity`. Undefined = 1 (kept undefined at full opacity so the
   // memoised view's props stay stable).
   layerOpacity?: number;
@@ -47,18 +47,18 @@ export type BoxedElementViewProps = {
   // edit toolbar (docs/specs/008-canvas/canvas-and-palette.md). They operate on the current selection (= the
   // editing element). Optional so read-only paths can omit them.
   onSetTextAlign?: (
-    x: import('@liveplanner/document').TextAlignX,
-    y: import('@liveplanner/document').TextAlignY,
+    x: import('@liveplanner/project').TextAlignX,
+    y: import('@liveplanner/project').TextAlignY,
   ) => void;
   // Theme-derived default slice colours for pie charts (docs/specs/009-elements/pie-chart.md).
   chartPalette?: readonly string[];
   onCancelEdit: () => void;
-  onFollowLink: (link: import('@liveplanner/document').ElementLink) => void;
+  onFollowLink: (link: import('@liveplanner/project').ElementLink) => void;
   // Session button (docs/specs/012-collaboration/session-button.md): press it to start the tool it carries. Absent
   // on a surface with no session to run; `sessionStartBlocked` is the softer
   // case — there IS a session, but this viewer may not start things (view
   // role), so the face renders inert and explains rather than lying.
-  onPressSessionButton?: (element: import('@liveplanner/document').ShapeElement) => void;
+  onPressSessionButton?: (element: import('@liveplanner/project').ShapeElement) => void;
   sessionStartBlocked?: boolean;
   // What the tab's timer is doing, so a timer button can say "Pause" /
   // "Continue" instead of always promising a fresh countdown.
@@ -66,13 +66,13 @@ export type BoxedElementViewProps = {
   // The tab's live timer, so a Timer session element can BE the timer rather
   // than a button that starts one elsewhere (docs/specs/012-collaboration/session-button.md). Null when none is
   // running; absent on a surface with no session behind it.
-  tabTimer?: import('@liveplanner/document').TabTimer | null;
+  tabTimer?: import('@liveplanner/project').TabTimer | null;
   // Comment panel (docs/specs/012-collaboration/comment-pin.md): who I am, and the thread mutators for THIS
   // element. All keyed by element id already, so the panel drives the same
   // comment machinery the anchored popover does.
   commentSelfId?: string;
   commentActions?: {
-    add?: (text: string, mentions: import('@liveplanner/document').CommentMention[]) => void;
+    add?: (text: string, mentions: import('@liveplanner/project').CommentMention[]) => void;
     remove?: (commentId: string) => void;
     resolve?: () => void;
     unresolve?: () => void;
@@ -92,8 +92,8 @@ export type BoxedElementViewProps = {
   };
   // Per-element session settings from the element's own `…` menu (docs/specs/012-collaboration/session-button.md).
   onSetSessionConfig?: (
-    element: import('@liveplanner/document').ShapeElement,
-    config: import('@liveplanner/document').SessionButtonConfig,
+    element: import('@liveplanner/project').ShapeElement,
+    config: import('@liveplanner/project').SessionButtonConfig,
   ) => void;
   // The `…` on a Behaviours element's face opens that element's own context
   // menu beside it (docs/specs/008-canvas/canvas-and-palette.md), rather than a second copy of its settings form.
@@ -112,7 +112,7 @@ export type BoxedElementViewProps = {
   // one, returning the result to animate towards. `shared` says whether this
   // viewer's roll is written back, so the face can tell its own landing apart
   // from one that arrived from a peer.
-  onRollPicker?: (element: import('@liveplanner/document').ShapeElement) => {
+  onRollPicker?: (element: import('@liveplanner/project').ShapeElement) => {
     candidates: import('@/lib/picker').PickerCandidate[];
     shared: boolean;
     roll: () => import('@/lib/picker').PickerCandidate | null;
@@ -147,7 +147,7 @@ export type BoxedElementViewProps = {
   // dots"); `voteMax` is the highest dot count on the tab (for the
   // winner highlight once revealed). cast/retract are omitted for
   // read-only viewers, who watch but can't vote.
-  vote?: import('@liveplanner/document').TabVote;
+  vote?: import('@liveplanner/project').TabVote;
   // Whether THIS element can take a dot in the running vote: the kind
   // rule AND the vote's layer scope (docs/specs/012-collaboration/vote-layer-scope.md). Resolved by the caller,
   // which has the tab's layers; false also drives the dimming.
@@ -168,7 +168,7 @@ export type BoxedElementViewProps = {
   // True when the tab as a whole is locked. Shows the LockBadge on
   // every element regardless of its own per-element lock state.
   tabLocked: boolean;
-  // This document's tabs (id + name), so a link badge's hover card can
+  // This project's tabs (id + name), so a link badge's hover card can
   // name the tab/element it points at (docs/specs/008-canvas/canvas-and-palette.md). Stable reference.
   tabSummaries: { id: string; name: string }[];
   // True for view-role share visitors (session read-only). Shape / text

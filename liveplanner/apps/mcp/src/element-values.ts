@@ -1,11 +1,11 @@
 // Whole elements checked before they are written (docs/specs/015-api/mcp-server.md §4.4 "Values checked"): the
 // fields an edit operation's `set` refuses, refused the same way when the model sends a whole element
-// (create_document, add_tab, update_document's replace and its ops `add`). A field the element type does not have,
+// (create_project, add_tab, update_project's replace and its ops `add`). A field the element type does not have,
 // a text size off the scale and an icon id that names no icon all used to be stored and drawn wrong in silence
 // (a question mark for the icon, tiny text for the size).
 
 import { withArticle } from '@liveplanner/items';
-import { ELEMENT_FIELD_NAMES, fieldValueIssue, type Element } from '@liveplanner/document';
+import { ELEMENT_FIELD_NAMES, fieldValueIssue, type Element } from '@liveplanner/project';
 import { iconsLike, isIconId } from '@liveplanner/icons/search';
 
 // The fields shown beside an unknown one: those sharing its words, else none.

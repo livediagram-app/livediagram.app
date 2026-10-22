@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { runsPlainText, type TextRun } from '@liveplanner/document';
+import { runsPlainText, type TextRun } from '@liveplanner/project';
 import { canonicalNote, noteFieldsEqual } from './note-value';
 
 describe('canonicalNote', () => {

@@ -2,11 +2,11 @@ import type { Page } from '@playwright/test';
 import { apiBase, darkVisitor } from './audit-screens';
 import { expect, mintSignedGuest, ownerHeaders, test } from './fixtures';
 
-// Tags (docs/specs/013-workspace/tags.md): tag a document from its menu, make a tag from the picker, see the chips on
+// Tags (docs/specs/013-workspace/tags.md): tag a project from its menu, make a tag from the picker, see the chips on
 // its row, and find it grouped on the Tags page and under the sidebar's Tags row.
 
-async function seedDocument(page: Page, owner: string, origin: string, name: string) {
-  const res = await page.request.post(`${apiBase}/documents`, {
+async function seedProject(page: Page, owner: string, origin: string, name: string) {
+  const res = await page.request.post(`${apiBase}/projects`, {
     headers: ownerHeaders(owner, { Origin: origin }),
     data: {
       id: crypto.randomUUID(),
@@ -26,12 +26,12 @@ async function seedTag(page: Page, owner: string, origin: string, name: string, 
 }
 
 test.describe('tags', () => {
-  test('tag a document from its menu and find it on the Tags page', async ({ page, baseURL }) => {
+  test('tag a project from its menu and find it on the Tags page', async ({ page, baseURL }) => {
     const owner = await mintSignedGuest(page.request);
     const origin = new URL(baseURL!).origin;
     await darkVisitor(page, owner);
-    await seedDocument(page, owner, origin, 'Roadmap');
-    await seedDocument(page, owner, origin, 'Retro');
+    await seedProject(page, owner, origin, 'Roadmap');
+    await seedProject(page, owner, origin, 'Retro');
     await seedTag(page, owner, origin, 'Design', 'blue');
 
     await page.goto('/explorer/all');
@@ -95,7 +95,7 @@ test.describe('tags', () => {
     void baseURL;
     await darkVisitor(page, owner);
     await page.goto('/explorer/tags');
-    await expect(page.getByText('Group related documents with tags')).toBeVisible({
+    await expect(page.getByText('Group related projects with tags')).toBeVisible({
       timeout: 30_000,
     });
     await page.getByRole('button', { name: 'New Tag' }).last().click();

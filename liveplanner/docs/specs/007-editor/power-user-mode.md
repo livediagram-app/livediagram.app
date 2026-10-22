@@ -119,7 +119,7 @@ Minimal chrome meets WCAG 2.2 AA:
   hover card where it already has one (the hover card's title is the name), otherwise a Tooltip (500 ms hover, instant on
   keyboard focus, long press on touch), per [Tooltips, hover cards and popovers](../004-interface-design/tooltips-hover-cards-popovers.md).
   Palette tiles use a Tooltip.
-- **Non-interactive labels stay in the document.** A panel title keeps its text as visually hidden text; the selection
+- **Non-interactive labels stay in the project.** A panel title keeps its text as visually hidden text; the selection
   toolbar names itself with the kind (`role="toolbar"`, `aria-label` "Selected Square"); the "Tabs" label was never
   announced (the tab strip carries its own names).
 - **No layout shift.** Hiding happens at render, from the preference, never after paint: nothing moves on its own.
@@ -162,8 +162,8 @@ switches between Light and Dark instead of cycling through System, so the everyd
 The mode is offered **once**, ever, to people whose use suggests they would want it.
 
 - **When.** After **20 editing sessions on separate days**, or after **50 keyboard shortcuts** used, whichever comes
-  first. An editing session is opening a document you can edit; a day is a local calendar day, and a day counts once
-  however many documents are opened on it. A keyboard shortcut is a key press the editor's shortcut handler acts on
+  first. An editing session is opening a project you can edit; a day is a local calendar day, and a day counts once
+  however many projects are opened on it. A keyboard shortcut is a key press the editor's shortcut handler acts on
   (Delete, V, Cmd-Z, ...).
 - **Where the counting lives.** The counts are device-local and never synced: they describe how this device is used,
   and syncing a keystroke counter would cost a write per shortcut. Whether the offer has been made is synced, so it is

@@ -1,6 +1,6 @@
 // Scenes for the Flowcharts article (docs/specs/009-elements/flowchart.md): growing a chart from the
 // keyboard, with a Decision's Yes and No leaving by its corners, and a chart in swimlanes. Labels are
-// the editor's: FLOWCHART_STEP_LABEL (packages/document/src/flowchart.ts) and the toolbar's Add Step /
+// the editor's: FLOWCHART_STEP_LABEL (packages/project/src/flowchart.ts) and the toolbar's Add Step /
 // Add Branch.
 
 import { Arrow, Label, Scene, Shape } from './primitives';

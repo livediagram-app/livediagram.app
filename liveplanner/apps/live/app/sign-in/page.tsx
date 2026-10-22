@@ -6,7 +6,7 @@
 //
 // Per docs/specs/014-identity/auth-and-guest-access.md, this page is never required to use the editor — the
 // editor stays open to guests forever. Sign-in only unlocks per-account
-// persistence (documents travel across devices) and team workspaces.
+// persistence (projects travel across devices) and team workspaces.
 // Authenticated users get redirected straight to the editor; guests
 // can sign in here when they want to bind their session to an account.
 
@@ -226,7 +226,7 @@ function SignInContent() {
     <AuthCard
       title={showCodeStep ? 'Check your email' : 'Welcome back'}
       subtitle={
-        showCodeStep ? undefined : 'Sign in to keep your documents with you on every device.'
+        showCodeStep ? undefined : 'Sign in to keep your projects with you on every device.'
       }
       guestHref={guestReturnHref(searchParams)}
       error={error}

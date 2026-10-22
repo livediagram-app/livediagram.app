@@ -2,7 +2,7 @@
 // dropdown's chip or arrow, and the invalid mark. Pure parts for SheetCells, which stays pointer-free: the presses
 // on a box, chip or arrow are the grid pointer's (useSheetPointer, via ruleTargetAt).
 import type { CSSProperties, ReactNode } from 'react';
-import { bestInk } from '@liveplanner/document';
+import { bestInk } from '@liveplanner/project';
 import { lucideGlyph } from '@liveplanner/ui';
 import { lucideCheck, lucideChevronDown } from '@liveplanner/icons/lucide';
 import {

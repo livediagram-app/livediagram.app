@@ -17,7 +17,7 @@ import {
   type ElementId,
   type RefTable,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { lockedIds } from './locks';
 import type { Naming } from './element-text';
 import type { Fit } from './labels';

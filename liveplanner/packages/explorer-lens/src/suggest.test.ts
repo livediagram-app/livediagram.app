@@ -98,13 +98,13 @@ describe('suggestTokens', () => {
     expect(ids('template:x')).toEqual([]);
   });
 
-  it('offers my documents, shared, then teams by name, never showing an id', () => {
+  it('offers my projects, shared, then teams by name, never showing an id', () => {
     const spaces = (['mine', 'shared', 'team:T1', 'team:T2'] as const).map((space) =>
       subject({ space }),
     );
     const suggestions = suggestTokens('space:', 6, { ...context, subjects: spaces });
     expect(suggestions.map((s) => [s.insert, s.label, s.name])).toEqual([
-      ['space:mine', 'My Documents', 'My Documents, Space'],
+      ['space:mine', 'My Projects', 'My Projects, Space'],
       ['space:shared', 'Shared With Me', 'Shared With Me, Space'],
       ['space:team:T1', 'Acme', 'Acme, Space'],
       ['space:team:T2', 'Zeta', 'Zeta, Space'],

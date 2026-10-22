@@ -46,7 +46,7 @@ const CATEGORIES = [
   'Accessibility',
   'Tours',
   'AI Tools',
-  'Documents',
+  'Projects',
   'Account',
   'Privacy',
 ] as const;

@@ -23,7 +23,7 @@ import {
   chartsInSheet,
   type Element,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { DataChartView } from '@/components/canvas/DataChartView';
 import { useSheetsBridgeContext } from '@/hooks/sheets/useSheetsBridge';
 import { useSheetCharts } from './sheet-charts-context';

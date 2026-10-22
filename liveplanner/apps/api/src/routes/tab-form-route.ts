@@ -1,13 +1,13 @@
-// POST /api/documents/<id>/tabs/<tabId>/form: an agent's form write (docs/specs/030-forms/forms.md "Agents"), for
+// POST /api/projects/<id>/tabs/<tabId>/form: an agent's form write (docs/specs/030-forms/forms.md "Agents"), for
 // the MCP, the CLI and any script: `{ form, rev? }`, the form whole. Gated like a changeset: an Editor of the tab, a
 // read-only token refused.
-import { getDocument } from '../db';
+import { getProject } from '../db';
 import { afterChangeset } from '../changesets/after';
 import { frontDoorOf } from '../changesets/front-door';
 import { writeAgentForm } from '../forms/agent-form-write';
 import { forbidden, json } from '../responses';
 import { authorOf, refreshAfterWrite } from './changesets';
-import { gateEdit, missingDocument, readBody, requireOwner, type RouteContext } from './context';
+import { gateEdit, missingProject, readBody, requireOwner, type RouteContext } from './context';
 
 export async function handleTabForm(
   ctx: RouteContext,
@@ -16,9 +16,9 @@ export async function handleTabForm(
 ): Promise<Response> {
   const owner = requireOwner(ctx);
   if (owner instanceof Response) return owner;
-  const document = await getDocument(ctx.env, id);
-  if (!document) return missingDocument(ctx, id);
-  if (!(await gateEdit(ctx, id, document.ownerId, document.teamId, tabId))) return forbidden();
+  const project = await getProject(ctx.env, id);
+  if (!project) return missingProject(ctx, id);
+  if (!(await gateEdit(ctx, id, project.ownerId, project.teamId, tabId))) return forbidden();
   const body = await readBody(ctx);
   if (body instanceof Response) return body;
   const result = await writeAgentForm(ctx.env, id, tabId, body);

@@ -2,7 +2,7 @@ import { FileIcon } from '@/lib/chrome-icons';
 // The small "N articles" / "N guides" tally in the bottom-right corner of a
 // card. CategoryCard and FeatureArticleCard each carried their own copy: the
 // same wrapper, the same pill classes, and the same fourteen lines of inline
-// document SVG, differing only in the noun. A second copy of an icon is how
+// project SVG, differing only in the noun. A second copy of an icon is how
 // two cards drift apart, so it lives here once.
 //
 // Renders nothing at zero, which is what both callers wanted and both

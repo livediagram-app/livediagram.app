@@ -7,7 +7,7 @@ import { capabilities, fakeIo, NOW, TOKEN, type Route } from './testing/fake-io'
 const CONFIG = '/home/agent/.config/liveplanner/config.toml';
 const STATE = '/home/agent/.cache/liveplanner/state.json';
 
-// A host with one document; `/api/events` records what is counted.
+// A host with one project; `/api/events` records what is counted.
 function host(answer: (url: URL) => Response | undefined = () => undefined) {
   const events: unknown[] = [];
   const route: Route = async (request, url) => {
@@ -18,8 +18,8 @@ function host(answer: (url: URL) => Response | undefined = () => undefined) {
     }
     const custom = answer(url);
     if (custom) return custom;
-    if (url.pathname === '/api/documents')
-      return Response.json({ documents: [{ id: 'd1', name: 'A', savedAt: NOW, ownerId: 'u' }] });
+    if (url.pathname === '/api/projects')
+      return Response.json({ projects: [{ id: 'd1', name: 'A', savedAt: NOW, ownerId: 'u' }] });
     if (url.pathname === '/api/teams') return Response.json({ teams: [] });
     return undefined;
   };
@@ -36,11 +36,11 @@ describe('the usage count', () => {
   it('counts a command that succeeded, by its verb, and says once what is counted', async () => {
     const { events, route } = host();
     const io = fakeIo({ env: on(), routes: [capabilities, route] });
-    expect(await run(['document', 'ls'], io)).toBe(0);
-    expect(await run(['doc', 'ls', '-q'], io)).toBe(0);
+    expect(await run(['project', 'ls'], io)).toBe(0);
+    expect(await run(['project', 'ls', '-q'], io)).toBe(0);
     expect(events).toEqual([
-      { category: 'Cli', action: 'Used', type: 'DocumentLs' },
-      { category: 'Cli', action: 'Used', type: 'DocumentLs' },
+      { category: 'Cli', action: 'Used', type: 'ProjectLs' },
+      { category: 'Cli', action: 'Used', type: 'ProjectLs' },
     ]);
     expect(io.err()).toBe(`${telemetryNotice('https://liveplanner.app')}\n`);
     expect(io.fileMap.get(STATE)?.mode).toBe(0o600);
@@ -52,13 +52,13 @@ describe('the usage count', () => {
     io.files.write = async () => {
       throw new Error('EROFS');
     };
-    expect(await run(['document', 'ls'], io)).toBe(0);
-    expect(events).toEqual([{ category: 'Cli', action: 'Used', type: 'DocumentLs' }]);
+    expect(await run(['project', 'ls'], io)).toBe(0);
+    expect(events).toEqual([{ category: 'Cli', action: 'Used', type: 'ProjectLs' }]);
   });
 
   it('counts nothing for help, a usage error, a refusal or a command with no host', async () => {
     const { events, route } = host((url) =>
-      url.pathname === '/api/documents/x'
+      url.pathname === '/api/projects/x'
         ? Response.json({ error: 'forbidden' }, { status: 403 })
         : undefined,
     );
@@ -66,38 +66,38 @@ describe('the usage count', () => {
     await run(['--help'], io);
     await run(['tab', 'vew'], io);
     await run(['guide'], io);
-    await run(['api', 'GET', '/documents/x'], io);
+    await run(['api', 'GET', '/projects/x'], io);
     expect(events).toEqual([]);
   });
 
   it('reports a failing api by status, a network failure as Internal, and a 4xx never', async () => {
     const { events, route } = host((url) =>
-      url.pathname === '/api/documents' ? new Response('', { status: 503 }) : undefined,
+      url.pathname === '/api/projects' ? new Response('', { status: 503 }) : undefined,
     );
     const io = fakeIo({ env: on(), routes: [capabilities, route] });
-    expect(await run(['document', 'ls'], io)).toBe(7);
+    expect(await run(['project', 'ls'], io)).toBe(7);
     const down: Route = (request, url) => {
-      if (url.pathname === '/api/documents') throw new TypeError('fetch failed');
+      if (url.pathname === '/api/projects') throw new TypeError('fetch failed');
       return route(request, url);
     };
-    expect(await run(['document', 'ls'], fakeIo({ env: on(), routes: [capabilities, down] }))).toBe(
+    expect(await run(['project', 'ls'], fakeIo({ env: on(), routes: [capabilities, down] }))).toBe(
       7,
     );
     const missing = host((url) =>
-      url.pathname === '/api/documents'
+      url.pathname === '/api/projects'
         ? Response.json({ error: 'x' }, { status: 404 })
         : undefined,
     );
-    await run(['document', 'ls'], fakeIo({ env: on(), routes: [capabilities, missing.route] }));
+    await run(['project', 'ls'], fakeIo({ env: on(), routes: [capabilities, missing.route] }));
     const refused = new Error('no');
     const odd: Route = (request, url) => {
-      if (url.pathname === '/api/documents') throw refused;
+      if (url.pathname === '/api/projects') throw refused;
       return route(request, url);
     };
-    await run(['document', 'ls'], fakeIo({ env: on(), routes: [capabilities, odd] }));
+    await run(['project', 'ls'], fakeIo({ env: on(), routes: [capabilities, odd] }));
     expect(events).toEqual([
-      { category: 'Error', action: 'Api', type: 'Http503.DocumentLs' },
-      { category: 'Error', action: 'Api', type: 'Internal.DocumentLs' },
+      { category: 'Error', action: 'Api', type: 'Http503.ProjectLs' },
+      { category: 'Error', action: 'Api', type: 'Internal.ProjectLs' },
     ]);
     expect(missing.events).toEqual([]);
   });
@@ -111,13 +111,13 @@ describe('the usage count', () => {
     expect(telemetryOffReason(io({ DO_NOT_TRACK: '' }), { profiles: {} })).toBeNull();
     expect(telemetryOffReason(io({}), { profiles: {}, telemetry: false })).toBe('config');
     const { events, route } = host((url) =>
-      url.pathname === '/api/documents' ? new Response('', { status: 500 }) : undefined,
+      url.pathname === '/api/projects' ? new Response('', { status: 500 }) : undefined,
     );
     const quiet = fakeIo({
       env: { LIVEPLANNER_TOKEN: TOKEN, DO_NOT_TRACK: '1' },
       routes: [capabilities, route],
     });
-    await run(['document', 'ls'], quiet);
+    await run(['project', 'ls'], quiet);
     expect(events).toEqual([]);
   });
 
@@ -133,7 +133,7 @@ describe('the usage count', () => {
     expect(io.fileMap.get(CONFIG)?.data).toBe(
       'telemetry = false\n# mine\n[profiles.work]\nhost = "https://w.example"\n',
     );
-    await run(['document', 'ls'], io);
+    await run(['project', 'ls'], io);
     expect(await run(['telemetry', 'on'], io)).toBe(0);
     expect(io.fileMap.get(CONFIG)?.data).toContain('telemetry = true\n');
     expect(events).toEqual([

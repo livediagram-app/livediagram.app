@@ -7,7 +7,7 @@
 // quadratic step would cost sixteen.
 import { describe, expect, it } from 'vitest';
 import { cpuMsOf } from '@liveplanner/vitest-config/cpu-time';
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 import { applyEditOperations } from './apply';
 import { containersBehindMembers } from './finalise';
 import { createState, noteTarget } from './state';

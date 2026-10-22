@@ -1,11 +1,11 @@
-// Lazy sweep of every joined team's shared library (docs/specs/013-workspace/team-shared-documents.md), one
+// Lazy sweep of every joined team's shared library (docs/specs/013-workspace/team-shared-projects.md), one
 // fetch per team, consumed by four surfaces:
 //   - the explorer sidebar's team subtrees (a team renders as a
 //     collapsible folder tree on every route — it needs each team's
 //     folders to decide whether to show the expand chevron),
 //   - the search panel's Folders group (team folders, docs/specs/008-canvas/canvas-and-palette.md),
 //   - the move modal's team destinations,
-//   - the explorer's Recent list (team documents ride alongside the
+//   - the explorer's Recent list (team projects ride alongside the
 //     personal ones, badged "Team").
 // The caller passes `enabled` (today: any signed-in member with at
 // least one team, because the sidebar always needs the data); guests
@@ -15,7 +15,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Folder } from '@liveplanner/api-schema';
-import { apiGetTeamLibrary, type DocumentListItem } from '@/lib/api-client';
+import { apiGetTeamLibrary, type ProjectListItem } from '@/lib/api-client';
 
 // `path` stays for the search panel's flat "Marketing / Q3" labels;
 // `name` + `parentId` let tree consumers (the sidebar + move modal)
@@ -28,7 +28,7 @@ export type TeamFolderRow = {
   teamId: string;
   teamName: string;
 };
-export type TeamDocumentRow = DocumentListItem & { team: { id: string; name: string } };
+export type TeamProjectRow = ProjectListItem & { team: { id: string; name: string } };
 
 // Breadcrumb path per folder ("Marketing / Q3") from the flat
 // parentId list. Cycle-guarded the same way the explorer's
@@ -54,10 +54,10 @@ export function useTeamLibrariesSweep(
   ownerId: string | null,
   teams: { id: string; name: string }[],
   opts: { enabled: boolean },
-): { teamFolders: TeamFolderRow[]; teamDocuments: TeamDocumentRow[]; refresh: () => void } {
+): { teamFolders: TeamFolderRow[]; teamProjects: TeamProjectRow[]; refresh: () => void } {
   const { enabled } = opts;
   const [teamFolders, setTeamFolders] = useState<TeamFolderRow[]>([]);
-  const [teamDocuments, setTeamDocuments] = useState<TeamDocumentRow[]>([]);
+  const [teamProjects, setTeamProjects] = useState<TeamProjectRow[]>([]);
   // One sweep per (owner, team-id set, nonce) while enabled; re-arms
   // when the team list changes so a freshly joined team's library
   // appears, and when `refresh` bumps the nonce after a mutation
@@ -88,7 +88,7 @@ export function useTeamLibrariesSweep(
               teamId: team.id,
               teamName: team.name,
             })),
-            documents: lib.documents.map((d): TeamDocumentRow => ({
+            projects: lib.projects.map((d): TeamProjectRow => ({
               id: d.id,
               name: d.name,
               folderId: d.folderId,
@@ -108,7 +108,7 @@ export function useTeamLibrariesSweep(
             })),
           };
         } catch {
-          return { folders: [] as TeamFolderRow[], documents: [] as TeamDocumentRow[] };
+          return { folders: [] as TeamFolderRow[], projects: [] as TeamProjectRow[] };
         }
       }),
     ).then((perTeam) => {
@@ -120,12 +120,12 @@ export function useTeamLibrariesSweep(
       // empty until an unrelated nonce bump.
       sweptKeyRef.current = key;
       setTeamFolders(perTeam.flatMap((t) => t.folders));
-      setTeamDocuments(perTeam.flatMap((t) => t.documents));
+      setTeamProjects(perTeam.flatMap((t) => t.projects));
     });
     return () => {
       cancelled = true;
     };
   }, [enabled, ownerId, teams, sweepNonce]);
 
-  return { teamFolders, teamDocuments, refresh };
+  return { teamFolders, teamProjects, refresh };
 }

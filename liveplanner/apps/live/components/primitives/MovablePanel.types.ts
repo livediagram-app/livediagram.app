@@ -74,7 +74,7 @@ export type MovablePanelProps = {
   // The help article this panel is explained by (docs/specs/018-help/contextual-help-links.md). Rendered as the
   // `?` chrome button beside reset / collapse, in BOTH the desktop header and
   // the popover's header band, so the help we already wrote is reachable from
-  // the feature it documents rather than only by searching for it.
+  // the feature it projects rather than only by searching for it.
   //
   // Declared here rather than left to each panel's own headerActions so every
   // panel gets the same affordance in the same place — a help button that

@@ -62,7 +62,7 @@ export const STILL_STUCK = { category: 'troubleshooting', contact: 'contact' } a
 /** The chips under the hero's search: the articles most readers come for, by `categorySlug/slug`. */
 export const POPULAR_TOPICS: { label: string; path: string }[] = [
   { label: 'Your first diagram', path: 'getting-started/your-first-diagram' },
-  { label: 'Sharing', path: 'getting-started/sharing-your-document' },
+  { label: 'Sharing', path: 'getting-started/sharing-your-project' },
   { label: 'Keyboard shortcuts', path: 'tips-and-tricks/keyboard-shortcuts' },
   { label: 'Templates', path: 'canvas/templates' },
   { label: 'Exporting', path: 'account-and-data/exporting-diagrams' },

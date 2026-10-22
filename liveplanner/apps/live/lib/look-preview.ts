@@ -2,7 +2,7 @@
 // diagram with the look applied (theme colours, finish, font, canvas colour and pattern), drawn by the tab exporter so
 // the card shows exactly what the tab will. Several cards share one page, so the exporter's fixed pattern id is made
 // unique per look.
-import type { ArrowElement, Element, Tab } from '@liveplanner/document';
+import type { ArrowElement, Element, Tab } from '@liveplanner/project';
 import { animatedPatternStill } from '@/lib/animated-pattern-still';
 import { EXPORT_PATTERN_COLOR, renderTabToSvg } from '@/lib/export-tab';
 import { FINISH_PREVIEW_ELEMENTS } from '@/lib/finish-preview';

@@ -83,7 +83,7 @@ export const HELP_ARTICLES = {
   home: 'explorer/home',
   // The Inbox's article keeps the slug it had as Activity, so links already out there keep working.
   inbox: 'explorer/activity',
-  recentDocuments: 'explorer/recent',
+  recentProjects: 'explorer/recent',
   sharedWithYou: 'explorer/shared-with-you',
   folders: 'explorer/folders',
   defaultFolders: 'explorer/folders/default-folders',
@@ -102,7 +102,7 @@ export const HELP_ARTICLES = {
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
   // Load recovery (docs/specs/007-editor/load-recovery.md).
-  documentNotLoading: 'troubleshooting/document-not-loading',
+  projectNotLoading: 'troubleshooting/project-not-loading',
 } as const;
 
 export type HelpArticleKey = keyof typeof HELP_ARTICLES;
@@ -189,7 +189,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   connectAiTool: {
     title: 'Learn about connecting AI tools',
-    description: 'Drive your documents from Claude, Cursor, and other AI tools over MCP.',
+    description: 'Drive your projects from Claude, Cursor, and other AI tools over MCP.',
   },
   exportingDiagrams: {
     title: 'Learn about exporting',
@@ -201,7 +201,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   trash: {
     title: 'Learn about the Trash',
-    description: 'How long deleted documents wait, and how to restore one.',
+    description: 'How long deleted projects wait, and how to restore one.',
   },
   importTabs: {
     title: 'Learn about importing tabs',
@@ -226,7 +226,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   customThemes: {
     title: 'Learn about custom themes',
-    description: 'Build your own palette and reuse it across documents.',
+    description: 'Build your own palette and reuse it across projects.',
   },
   choosingAFinish: {
     title: 'Learn about finishes',
@@ -238,11 +238,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   links: {
     title: 'Learn about links',
-    description: 'Linking elements to tabs, documents, and web addresses.',
+    description: 'Linking elements to tabs, projects, and web addresses.',
   },
   comments: {
     title: 'Learn about comments',
-    description: 'Tips and tricks for discussing a document right on the canvas.',
+    description: 'Tips and tricks for discussing a project right on the canvas.',
   },
   assignedActions: {
     title: 'Learn about assigned actions',
@@ -280,21 +280,21 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about the Inbox',
     description: 'Open actions assigned to you or by you, and comment threads you are in.',
   },
-  recentDocuments: {
+  recentProjects: {
     title: 'Learn about Recent',
-    description: 'Your most recently opened documents, personal and team, in one list.',
+    description: 'Your most recently opened projects, personal and team, in one list.',
   },
   tags: {
     title: 'Learn about tags',
-    description: 'Coloured labels that group related documents across folders and teams.',
+    description: 'Coloured labels that group related projects across folders and teams.',
   },
   sharedWithYou: {
     title: 'Learn about Shared With Me',
-    description: 'Documents other people have shared with you, collected here.',
+    description: 'Projects other people have shared with you, collected here.',
   },
   folders: {
     title: 'Learn about folders',
-    description: 'Tips for organising documents into a nestable tree of folders.',
+    description: 'Tips for organising projects into a nestable tree of folders.',
   },
   defaultFolders: {
     title: 'Learn about default folders',
@@ -334,11 +334,11 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
   },
   offlineMode: {
     title: 'Learn about Offline Mode',
-    description: 'Documents saved only in this browser, and how to sync them.',
+    description: 'Projects saved only in this browser, and how to sync them.',
   },
   livePresence: {
     title: 'Learn about live presence',
-    description: 'Who is in the document, where they are, and following them.',
+    description: 'Who is in the project, where they are, and following them.',
   },
   keyboardShortcuts: {
     title: 'Learn about keyboard shortcuts',
@@ -348,9 +348,9 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about guest vs account',
     description: 'What changes when you sign in, and what stays the same.',
   },
-  documentNotLoading: {
+  projectNotLoading: {
     title: 'Learn about loading problems',
-    description: 'Steps to try when a document will not open.',
+    description: 'Steps to try when a project will not open.',
   },
 };
 

@@ -1,5 +1,5 @@
-// Making a document is a use of it, unless its caller says otherwise (docs/specs/013-workspace/explorer-home.md
-// "Making a document"; docs/specs/015-api/api.md "Marking a document used"). The create body's
+// Making a project is a use of it, unless its caller says otherwise (docs/specs/013-workspace/explorer-home.md
+// "Making a project"; docs/specs/015-api/api.md "Marking a project used"). The create body's
 // `markUsed` says which, read here by the api worker.
 
 /** The 400 message for a `markUsed` that is not a boolean. */

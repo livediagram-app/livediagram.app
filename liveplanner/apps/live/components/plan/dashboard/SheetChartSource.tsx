@@ -1,6 +1,6 @@
 'use client';
 
-// Choose a Chart (docs/specs/026-plan/plan-tabs.md "Sheet Chart"), an Editor's: a popover of the document's Sheets,
+// Choose a Chart (docs/specs/026-plan/plan-tabs.md "Sheet Chart"), an Editor's: a popover of the project's Sheets,
 // then, for the Sheet picked, the charts already drawn from it (a copy of one fills the slot) or a new one over a
 // range typed as A1, of a type (Bar, Line, Pie). A choice hands the slot its chart element and closes the picker.
 import { useMemo, useState } from 'react';
@@ -9,7 +9,7 @@ import {
   CHART_TYPES,
   type ChartType,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import { lucideChartColumn } from '@liveplanner/icons/lucide';
 import { AnchoredPopover } from '@/components/primitives/AnchoredPopover';

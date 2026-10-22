@@ -4,7 +4,7 @@
 import { resultJson } from '../mcp-client.mjs';
 import { formsOf, questionAbout, questionsOf, replied } from '../checks.mjs';
 
-// The run's form: the one with the most questions (a run makes one; a setup document holds none).
+// The run's form: the one with the most questions (a run makes one; a setup project holds none).
 const form = (snap) =>
   formsOf(snap).sort((a, b) => questionsOf(b).length - questionsOf(a).length)[0] ?? null;
 const asks = (snap, words) => {
@@ -98,18 +98,18 @@ export default [
     level: 'medium',
     async setup(client) {
       const made = resultJson(
-        await client.call('create_document', { name: 'Bugs', tabs: [{ template: 'bug-triage' }] }),
+        await client.call('create_project', { name: 'Bugs', tabs: [{ template: 'bug-triage' }] }),
       );
-      if (!made?.documentId) throw new Error('Q2 setup: the Bugs document was not made');
-      return [made.documentId];
+      if (!made?.projectId) throw new Error('Q2 setup: the Bugs project was not made');
+      return [made.projectId];
     },
     prompt:
       'We need a bug report form customers can fill in. Reports should land on our Bugs board as Bug cards, with severity and the browser they used as card fields, and the summary as the card title.',
     checks: [
       [
-        'the form is in the Bugs document',
+        'the form is in the Bugs project',
         ({ snap }) =>
-          (snap.documents ?? []).some(
+          (snap.projects ?? []).some(
             (d) => d.name === 'Bugs' && (d.tabs ?? []).some((t) => t.form),
           ),
       ],
@@ -354,8 +354,8 @@ export default [
       [
         'the test made a card on the Bugs board',
         ({ run, snap }) => {
-          // The boards the setup's Bugs document holds, by the tab name try_form names them with.
-          const tabs = (snap.documents ?? [])
+          // The boards the setup's Bugs project holds, by the tab name try_form names them with.
+          const tabs = (snap.projects ?? [])
             .filter((d) => d.name === 'Bugs')
             .flatMap((d) => d.items?.boards ?? [])
             .map((b) => b.tab);

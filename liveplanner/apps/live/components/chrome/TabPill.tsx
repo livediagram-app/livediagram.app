@@ -1,6 +1,6 @@
 import type { ComponentProps, Dispatch, SetStateAction } from 'react';
 import { NameEditor } from '@/components/primitives/NameEditor';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import type { Participant } from '@/lib/identity';
 import { legibleTabAccent } from '@/lib/tab-accent';
 import { TabLockIcon } from '@/components/chrome/tab-bar-icons';

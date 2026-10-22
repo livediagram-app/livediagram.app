@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { apiLoadSelf, apiSaveSelf } from './self';
 
-// /new hands the new document to the editor in place (docs/specs/007-editor/new-document-route.md), and
+// /new hands the new project to the editor in place (docs/specs/007-editor/new-project-route.md), and
 // both load the participant: the editor must reuse the one /new just read and saved rather than
-// asking the server again on every new document.
+// asking the server again on every new project.
 
 describe('the participant the page already knows', () => {
   let calls: string[];

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import type { AlignmentGuide, DistributionGuide } from '@liveplanner/document';
+import type { AlignmentGuide, DistributionGuide } from '@liveplanner/project';
 import { sameDistGuides, sameGuides, sameTargets } from '@/lib/drag-geometry';
 import type { SnapTarget } from '@/components/canvas/Canvas.types';
 import { createListeners } from '@/lib/listeners';

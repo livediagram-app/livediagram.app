@@ -7,7 +7,7 @@ import {
   type EditRejection,
   type JsonValue,
 } from '@liveplanner/api-schema';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { describeElement, kindOf, labelOf, quoteCut } from './element-text';
 import { nearestName } from './nearest';
 import {

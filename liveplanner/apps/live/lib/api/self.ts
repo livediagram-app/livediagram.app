@@ -44,10 +44,10 @@ async function selfHeaders(id: string): Promise<HeadersInit> {
 
 const loadSelfOnce = dedupeInFlight(_apiLoadSelf, (id) => id);
 
-// The participant this page last loaded or saved, briefly. /new hands the new document to the
-// editor IN PLACE (docs/specs/007-editor/new-document-route.md), so the editor's identity bootstrap
+// The participant this page last loaded or saved, briefly. /new hands the new project to the
+// editor IN PLACE (docs/specs/007-editor/new-project-route.md), so the editor's identity bootstrap
 // asked again for the participant /new had just read and written: one wasted round trip on every
-// new document. A reload is a new page and starts empty, and presence carries any live change.
+// new project. A reload is a new page and starts empty, and presence carries any live change.
 const RECENT_SELF_MS = 30_000;
 let recentSelf: { participant: Participant; at: number } | null = null;
 function rememberSelf(participant: Participant) {
@@ -63,7 +63,7 @@ export async function apiLoadSelf(id: string): Promise<Participant | null> {
   return loaded;
 }
 
-// Account self-deletion (Clerk-only). Wipes the caller's documents,
+// Account self-deletion (Clerk-only). Wipes the caller's projects,
 // folders, and participant row server-side; the caller is expected
 // to follow up with Clerk's `user.delete()` to drop the Clerk
 // account itself. Order matters — backend first, then Clerk — so a
@@ -72,7 +72,7 @@ export async function apiLoadSelf(id: string): Promise<Participant | null> {
 // on any non-2xx so the caller can decide whether to proceed with
 // the Clerk delete.
 export async function apiDeleteAccount(): Promise<{
-  documents: number;
+  projects: number;
   folders: number;
 } | null> {
   // ownerId arg is unused server-side for this endpoint (the
@@ -84,7 +84,7 @@ export async function apiDeleteAccount(): Promise<{
     headers: await apiHeaders(''),
   });
   if (!res.ok) return null;
-  const body = (await res.json()) as { deleted: { documents: number; folders: number } };
+  const body = (await res.json()) as { deleted: { projects: number; folders: number } };
   return body.deleted;
 }
 
@@ -99,15 +99,15 @@ export async function apiDeleteAccount(): Promise<{
 // requires a verified Bearer token: there is no `X-Owner-Id`
 // fallback, because the whole point is to bind orphan guest data
 // to a Clerk account. Returns
-// `{ migrated: { documents, folders, shared } }`.
+// `{ migrated: { projects, folders, shared } }`.
 export async function apiMigrateGuestData(
   guestOwnerId: string,
   guestSignature: string | null,
-): Promise<{ documents: number; folders: number; shared: number } | null> {
+): Promise<{ projects: number; folders: number; shared: number } | null> {
   const res = await apiFetch(`${API_BASE}/migrate`, {
     method: 'POST',
     // `apiHeaders` reads the registered token provider; the Clerk
-    // Bearer will be on every call from the editor / new-document
+    // Bearer will be on every call from the editor / new-project
     // pages after they've set the provider. ownerId is unused
     // server-side for this endpoint but the helper still expects
     // it; pass the guest id to keep signatures uniform.
@@ -120,7 +120,7 @@ export async function apiMigrateGuestData(
   });
   if (!res.ok) return null;
   const body = (await res.json()) as {
-    migrated: { documents: number; folders: number; shared: number };
+    migrated: { projects: number; folders: number; shared: number };
   };
   return body.migrated;
 }

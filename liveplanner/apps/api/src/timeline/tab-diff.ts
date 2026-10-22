@@ -1,7 +1,7 @@
 // What changed on a tab, for timeline emission (docs/specs/013-workspace/timeline.md §4.3).
 //
 // Comments and assigned actions live INSIDE element JSON
-// (packages/document), not in tables — there is no comments table to
+// (packages/project), not in tables — there is no comments table to
 // hang a trigger off, and no actions table either. So the only place
 // that can tell "a comment was added" is the save that added it, by
 // diffing the incoming elements against the stored ones.
@@ -22,7 +22,7 @@ import {
   type Comment,
   type Element,
   type ElementAction,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 type ThreadView = { comments?: Comment[]; resolved?: boolean };
 
@@ -144,7 +144,7 @@ export function newActions(next: Element[], prev: Element[]): ElementAction[] {
 
 // Actions whose status flipped to 'done' in this save. An action that
 // arrived already done (assigned and completed in one save, or a
-// duplicated document carrying a finished action across) is not a
+// duplicated project carrying a finished action across) is not a
 // completion moment and is excluded.
 export function completedActions(next: Element[], prev: Element[]): ElementAction[] {
   const previousStatus = new Map<string, string>();

@@ -23,10 +23,10 @@ const dispatch = (path: string, env: Env) =>
   router.fetch(new Request(`https://liveplanner.app${path}`), env);
 
 describe('legacyEditorRedirect', () => {
-  it('permanently redirects /diagram/<id> to /document/<id>, keeping the query', () => {
+  it('permanently redirects /diagram/<id> to /project/<id>, keeping the query', () => {
     const res = legacyEditorRedirect(new URL('https://liveplanner.app/diagram/abc-123?t=tab1'))!;
     expect(res.status).toBe(308);
-    expect(res.headers.get('location')).toBe('https://liveplanner.app/document/abc-123?t=tab1');
+    expect(res.headers.get('location')).toBe('https://liveplanner.app/project/abc-123?t=tab1');
   });
 
   it('redirects a share link and the bare segment', () => {
@@ -34,14 +34,14 @@ describe('legacyEditorRedirect', () => {
       legacyEditorRedirect(
         new URL('https://liveplanner.app/diagram/shared?s=CODE1234'),
       )!.headers.get('location'),
-    ).toBe('https://liveplanner.app/document/shared?s=CODE1234');
+    ).toBe('https://liveplanner.app/project/shared?s=CODE1234');
     expect(
       legacyEditorRedirect(new URL('https://liveplanner.app/diagram'))!.headers.get('location'),
-    ).toBe('https://liveplanner.app/document');
+    ).toBe('https://liveplanner.app/project');
   });
 
   it('leaves look-alike and current paths alone', () => {
-    for (const path of ['/diagrams', '/diagramx/1', '/document/abc', '/help/diagram']) {
+    for (const path of ['/diagrams', '/diagramx/1', '/project/abc', '/help/diagram']) {
       expect(legacyEditorRedirect(new URL(`https://liveplanner.app${path}`)), path).toBeNull();
     }
   });
@@ -57,29 +57,29 @@ describe('router dispatch of the legacy editor route', () => {
 
   it('still serves the current editor route from the live worker', async () => {
     const { env, urls } = envWithLive();
-    await dispatch('/document/abc-123', env);
-    expect(urls).toEqual(['https://liveplanner.app/document/abc-123']);
+    await dispatch('/project/abc-123', env);
+    expect(urls).toEqual(['https://liveplanner.app/project/abc-123']);
   });
 });
 
 describe('legacyHelpRedirect', () => {
   it('sends every renamed help article to its new address, for good', () => {
     const cases: [string, string][] = [
-      ['/help/tabs/add-to-diagram/', '/help/tabs/add-to-document/'],
-      ['/help/troubleshooting/diagram-not-loading/', '/help/troubleshooting/document-not-loading/'],
+      ['/help/tabs/add-to-diagram/', '/help/tabs/add-to-project/'],
+      ['/help/troubleshooting/diagram-not-loading/', '/help/troubleshooting/project-not-loading/'],
       [
         '/help/collaboration/teams/team-shared-diagrams/',
-        '/help/collaboration/teams/team-shared-documents/',
+        '/help/collaboration/teams/team-shared-projects/',
       ],
       [
         '/help/search-panel/the-search-panel/search-diagrams/',
-        '/help/search-panel/the-search-panel/search-documents/',
+        '/help/search-panel/the-search-panel/search-projects/',
       ],
       [
         '/help/getting-started/sharing-your-diagram/',
-        '/help/getting-started/sharing-your-document/',
+        '/help/getting-started/sharing-your-project/',
       ],
-      ['/help/developers/working-with-diagrams', '/help/developers/working-with-documents'],
+      ['/help/developers/working-with-diagrams', '/help/developers/working-with-projects'],
       // Whiteboarding became Draw mode (docs/specs/007-editor/editor-modes.md "Naming in the interface"),
       // whose own articles were retired with its tools.
       ['/help/canvas/whiteboards/', '/help/canvas/editor-modes/'],
@@ -113,7 +113,7 @@ describe('legacyHelpRedirect', () => {
     for (const path of [
       '/help/getting-started/your-first-diagram/',
       '/help/account-and-data/exporting-diagrams/',
-      '/help/tabs/add-to-document/',
+      '/help/tabs/add-to-project/',
       '/help/canvas/editor-modes/',
     ]) {
       expect(legacyHelpRedirect(new URL(`https://liveplanner.app${path}`)), path).toBeNull();

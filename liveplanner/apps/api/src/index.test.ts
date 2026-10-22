@@ -6,7 +6,7 @@ vi.mock('./auth/clerk', () => ({ getClerkIdentity: async () => null }));
 const { resolveApiTokenMock } = vi.hoisted(() => ({ resolveApiTokenMock: vi.fn() }));
 vi.mock('./db', () => ({
   resolveApiToken: resolveApiTokenMock,
-  listDocumentsByOwner: async () => [],
+  listProjectsByOwner: async () => [],
   deleteOldEvents: async () => {},
 }));
 
@@ -38,18 +38,18 @@ function get(path: string, headers: Record<string, string> = {}): Request {
 describe('worker §4 guest X-Owner-Id signature gate', () => {
   beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
   it('401s an unsigned X-Owner-Id on an owner-scoped route when enforcing', async () => {
-    const res = await worker.fetch(get('/api/documents', { 'X-Owner-Id': 'guest-1' }), env());
+    const res = await worker.fetch(get('/api/projects', { 'X-Owner-Id': 'guest-1' }), env());
     expect(res.status).toBe(401);
   });
 
   it('401s an X-Owner-Id carrying a Clerk sub with no signature (signed-up Bearer-only)', async () => {
-    const res = await worker.fetch(get('/api/documents', { 'X-Owner-Id': 'user_abc' }), env());
+    const res = await worker.fetch(get('/api/projects', { 'X-Owner-Id': 'user_abc' }), env());
     expect(res.status).toBe(401);
   });
 
   it('401s an invalid signature', async () => {
     const res = await worker.fetch(
-      get('/api/documents', { 'X-Owner-Id': 'guest-1', 'X-Owner-Sig': 'bogus' }),
+      get('/api/projects', { 'X-Owner-Id': 'guest-1', 'X-Owner-Sig': 'bogus' }),
       env(),
     );
     expect(res.status).toBe(401);
@@ -58,14 +58,14 @@ describe('worker §4 guest X-Owner-Id signature gate', () => {
   it('lets a validly signed X-Owner-Id through the gate', async () => {
     const sig = (await signOwnerId(SECRET, 'guest-1'))!;
     const res = await worker.fetch(
-      get('/api/documents', { 'X-Owner-Id': 'guest-1', 'X-Owner-Sig': sig }),
+      get('/api/projects', { 'X-Owner-Id': 'guest-1', 'X-Owner-Sig': sig }),
       env(),
     );
     expect(res.status).not.toBe(401);
   });
 
   it('does not gate when no X-Owner-Id is presented (public reads still resolve)', async () => {
-    const res = await worker.fetch(get('/api/documents'), env());
+    const res = await worker.fetch(get('/api/projects'), env());
     expect(res.status).not.toBe(401);
   });
 });
@@ -83,14 +83,14 @@ describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
 
   it('401s a Clerk sub presented as the guest header, with the gate disarmed', async () => {
     const res = await worker.fetch(
-      get('/api/documents', { 'X-Owner-Id': 'user_2abcDEF' }),
+      get('/api/projects', { 'X-Owner-Id': 'user_2abcDEF' }),
       noEnforcement(),
     );
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ error: 'account_id_not_a_guest_credential' });
   });
 
-  it('covers every owner-scoped resource, not just documents', async () => {
+  it('covers every owner-scoped resource, not just projects', async () => {
     for (const seg of ['folders', 'custom-themes', 'preferences', 'shared', 'timeline']) {
       const res = await worker.fetch(
         get(`/api/${seg}`, { 'X-Owner-Id': 'user_2abcDEF' }),
@@ -100,7 +100,7 @@ describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
     }
   });
 
-  // The share resolver compares the header with the document owner, so a
+  // The share resolver compares the header with the project owner, so a
   // harvested Clerk sub must not reach it either.
   it('refuses a Clerk sub as the guest header on the share resolver', async () => {
     const res = await worker.fetch(
@@ -126,7 +126,7 @@ describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
 
   it('lets a real guest UUID through (the shape the server actually mints)', async () => {
     const res = await worker.fetch(
-      get('/api/documents', { 'X-Owner-Id': crypto.randomUUID() }),
+      get('/api/projects', { 'X-Owner-Id': crypto.randomUUID() }),
       noEnforcement(),
     );
     expect(res.status).not.toBe(401);
@@ -142,7 +142,7 @@ describe('worker refusal of a Clerk account id in X-Owner-Id', () => {
       readOnly: false,
     });
     const res = await worker.fetch(
-      get('/api/documents', { Authorization: `Bearer lvd_${'a'.repeat(40)}` }),
+      get('/api/projects', { Authorization: `Bearer lvd_${'a'.repeat(40)}` }),
       noEnforcement(),
     );
     expect(res.status).not.toBe(401);
@@ -163,7 +163,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
 
   const RO = { Authorization: `Bearer ${LVD}` };
   const req = (method: string) =>
-    new Request('https://api.test/api/documents', { method, headers: RO });
+    new Request('https://api.test/api/projects', { method, headers: RO });
 
   it('403s a POST from a read-only token', async () => {
     const res = await worker.fetch(req('POST'), env());
@@ -173,7 +173,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
 
   it('403s a PUT from a read-only token', async () => {
     const res = await worker.fetch(
-      new Request('https://api.test/api/documents/d1', { method: 'PUT', headers: RO }),
+      new Request('https://api.test/api/projects/d1', { method: 'PUT', headers: RO }),
       env(),
     );
     expect(res.status).toBe(403);
@@ -181,7 +181,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
 
   it('403s a DELETE from a read-only token', async () => {
     const res = await worker.fetch(
-      new Request('https://api.test/api/documents/d1', { method: 'DELETE', headers: RO }),
+      new Request('https://api.test/api/projects/d1', { method: 'DELETE', headers: RO }),
       env(),
     );
     expect(res.status).toBe(403);
@@ -190,7 +190,7 @@ describe('read-only API token enforcement (docs/specs/015-api/mcp-server.md §4.
   it('403s the share-link list, which holds every code and the password', async () => {
     // A read-only token must not be able to lift an edit link.
     const res = await worker.fetch(
-      new Request('https://api.test/api/documents/d1/share', { headers: RO }),
+      new Request('https://api.test/api/projects/d1/share', { headers: RO }),
       env(),
     );
     expect(res.status).toBe(403);
@@ -253,7 +253,7 @@ describe('worker refusal of an unknown API token', () => {
   beforeEach(() => resolveApiTokenMock.mockResolvedValue(null));
 
   it('401s an lvd_ bearer that resolves to no live token, on owner-scoped and token routes alike', async () => {
-    for (const path of ['/api/documents', '/api/tokens/current', '/api/teams']) {
+    for (const path of ['/api/projects', '/api/tokens/current', '/api/teams']) {
       const res = await worker.fetch(
         get(path, { Authorization: `Bearer ${TOKEN}` }),
         noEnforcement(),
@@ -266,7 +266,7 @@ describe('worker refusal of an unknown API token', () => {
 
   it('refuses it even beside a guest header, so a dead token never falls back to a guest', async () => {
     const res = await worker.fetch(
-      get('/api/documents', { Authorization: `Bearer ${TOKEN}`, 'X-Owner-Id': 'guest-1' }),
+      get('/api/projects', { Authorization: `Bearer ${TOKEN}`, 'X-Owner-Id': 'guest-1' }),
       noEnforcement(),
     );
     expect(res.status).toBe(401);
@@ -275,7 +275,7 @@ describe('worker refusal of an unknown API token', () => {
   it('refuses a token cut short or mistyped as a token, not as a request with no credential', async () => {
     for (const bearer of ['lvd_', 'lvd_notreal', `lvd_${'x'.repeat(12)}`]) {
       const res = await worker.fetch(
-        get('/api/documents', { Authorization: `Bearer ${bearer}`, 'X-Owner-Id': 'guest-1' }),
+        get('/api/projects', { Authorization: `Bearer ${bearer}`, 'X-Owner-Id': 'guest-1' }),
         noEnforcement(),
       );
       expect(res.status, bearer).toBe(401);
@@ -285,7 +285,7 @@ describe('worker refusal of an unknown API token', () => {
 
   it('leaves a bearer that is not token-shaped to the Clerk path', async () => {
     const res = await worker.fetch(
-      get('/api/documents', { Authorization: 'Bearer eyJ.jwt.sig' }),
+      get('/api/projects', { Authorization: 'Bearer eyJ.jwt.sig' }),
       noEnforcement(),
     );
     expect(res.status).not.toBe(401);
@@ -300,7 +300,7 @@ describe('worker room-ticket throttle', () => {
   it('429s a mint once the per-network bucket is spent, keyed on the /64', async () => {
     const limit = vi.fn(async () => ({ success: false }));
     const res = await worker.fetch(
-      new Request('https://api.test/api/documents/d1/room-ticket', {
+      new Request('https://api.test/api/projects/d1/room-ticket', {
         method: 'POST',
         headers: { 'X-Owner-Id': crypto.randomUUID(), 'CF-Connecting-IP': '2001:db8:0:1::9' },
       }),
@@ -337,7 +337,7 @@ describe('worker invite-decline throttle', () => {
   });
 });
 
-// docs/specs/013-workspace/workbench-embeds.md: a `Bearer lvw_` is a person's editor on one document, confined at
+// docs/specs/013-workspace/workbench-embeds.md: a `Bearer lvw_` is a person's editor on one project, confined at
 // the front door before any route runs.
 describe('workbench sessions at the front door', () => {
   const LVW = `lvw_${'w'.repeat(43)}`;
@@ -346,8 +346,8 @@ describe('workbench sessions at the front door', () => {
     ownerId: 'user_1',
     tokenId: 'tok1',
     pairingId: 'pair1',
-    scope: 'document',
-    documentId: 'doc1',
+    scope: 'project',
+    projectId: 'doc1',
     folderId: null,
     tabId: null,
     origin: 'https://w.example',
@@ -373,7 +373,7 @@ describe('workbench sessions at the front door', () => {
 
   it('401s a session cut short or mistyped, without looking it up', async () => {
     resolveWorkbenchSessionMock.mockClear();
-    const res = await call('GET', '/api/documents/doc1', {
+    const res = await call('GET', '/api/projects/doc1', {
       Authorization: 'Bearer lvw_short',
       'X-Owner-Id': 'guest-1',
     });
@@ -389,7 +389,7 @@ describe('workbench sessions at the front door', () => {
       sessionPrefix: 'abcdef12',
     });
 
-    const res = await call('GET', '/api/documents/doc1', { 'X-Owner-Id': 'guest-1' });
+    const res = await call('GET', '/api/projects/doc1', { 'X-Owner-Id': 'guest-1' });
 
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ error: 'invalid_session' });
@@ -400,10 +400,10 @@ describe('workbench sessions at the front door', () => {
     });
   });
 
-  it('confines the library, answers another document as absent, and refuses an ambient share code', async () => {
-    const library = await call('GET', '/api/documents');
-    const other = await call('GET', '/api/documents/doc2');
-    const ambient = await call('GET', '/api/documents/doc1', { 'X-Share-Code': 'CODE2345' });
+  it('confines the library, answers another project as absent, and refuses an ambient share code', async () => {
+    const library = await call('GET', '/api/projects');
+    const other = await call('GET', '/api/projects/doc2');
+    const ambient = await call('GET', '/api/projects/doc1', { 'X-Share-Code': 'CODE2345' });
 
     expect([library.status, other.status, ambient.status]).toEqual([403, 404, 403]);
     expect(await library.json()).toEqual({ error: 'workbench_confined' });
@@ -415,7 +415,7 @@ describe('workbench sessions at the front door', () => {
       workbench: { ...SESSION, level: 'view' },
     });
 
-    const res = await call('PUT', '/api/documents/doc1/tabs/t1');
+    const res = await call('PUT', '/api/projects/doc1/tabs/t1');
 
     expect(res.status).toBe(403);
     expect(await res.json()).toEqual({ error: 'workbench_read_only' });

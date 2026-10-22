@@ -15,7 +15,7 @@ import {
   type BoxedElement,
   type Element,
   type Endpoint,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { describeElement } from '../element-text';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';

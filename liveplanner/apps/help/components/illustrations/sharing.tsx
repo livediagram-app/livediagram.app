@@ -169,7 +169,7 @@ function ActivePass({
         label="Embed"
         active={open === 'embed'}
       />
-      {/* A password hides Live image (ActiveSharePass): it can't serve a protected document. */}
+      {/* A password hides Live image (ActiveSharePass): it can't serve a protected project. */}
       {password ? null : (
         <MenuButton x={m.image} y={rowY} label="Live image" active={open === 'image'} />
       )}
@@ -204,7 +204,7 @@ function LinkField({
         />
       )}
       <Label x={x + 8} y={y + 12} size={10} tone="muted">
-        liveplanner.app/document/shared?s=…
+        liveplanner.app/project/shared?s=…
       </Label>
       {struck ? (
         <line
@@ -398,7 +398,7 @@ function ShareCard({
         strokeWidth={2}
       />
       <Label x={x + 16} y={y + 20} size={13} weight={700} tone="strong">
-        Share This Document
+        Share This Project
       </Label>
       {status ? (
         <g>
@@ -605,10 +605,10 @@ export function SharePasswordGate() {
       <circle cx={210} cy={42} r={18} className="fill-brand-100" />
       <Lock x={203} y={33} className="stroke-brand-600" />
       <Label x={210} y={78} anchor="middle" size={13} weight={700} tone="strong">
-        This document is password-protected
+        This project is password-protected
       </Label>
       <Label x={210} y={98} anchor="middle" size={10} tone="body">
-        Enter the password Aria set to open this document.
+        Enter the password Aria set to open this project.
       </Label>
       <rect
         x={94}
@@ -625,7 +625,7 @@ export function SharePasswordGate() {
       <Label x={210} y={158} anchor="middle" size={10} weight={500} className="fill-rose-500">
         That password didn&apos;t match. Try again.
       </Label>
-      <Button x={94} y={174} w={232} h={30} label="Open document" variant="primary" />
+      <Button x={94} y={174} w={232} h={30} label="Open project" variant="primary" />
     </Scene>
   );
 }
@@ -691,7 +691,7 @@ export function ShareLifetimes() {
   );
 }
 
-/** The Opens dropdown in the composer's fine print, open on the document's tabs. */
+/** The Opens dropdown in the composer's fine print, open on the project's tabs. */
 export function ShareOpensRow() {
   const x = 14;
   const w = 392;
@@ -774,7 +774,7 @@ export function ShareOpensRow() {
 }
 
 /** A pass's Embed or Live image menu, open: the copy formats it offers (and, for the live image
- *  on a multi-tab document, the Tab picker). */
+ *  on a multi-tab project, the Tab picker). */
 function ShareCopyMenu({ variant }: { variant: 'embed' | 'image' }) {
   const x = 14;
   const w = 392;

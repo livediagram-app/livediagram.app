@@ -1,8 +1,8 @@
 'use client';
 
 // The ⋯ menu a Jump Back In card or tile carries (docs/specs/013-workspace/explorer-home.md "Jump Back In"): the
-// document's own Explorer menu (DocumentEntryMenu), from a ⋯ button that sits beside the card's link (a button can't
-// sit inside one) or a right-click anywhere on the card. Without an entry (a document the Explorer has not loaded)
+// project's own Explorer menu (ProjectEntryMenu), from a ⋯ button that sits beside the card's link (a button can't
+// sit inside one) or a right-click anywhere on the card. Without an entry (a project the Explorer has not loaded)
 // it draws only its children: no button, and the browser's own right-click. The menu opens beside the card, out of its
 // way, when there is room.
 
@@ -10,11 +10,11 @@ import { useState, type ReactNode } from 'react';
 import { EllipsisTriggerButton } from '@/components/primitives/EllipsisTriggerButton';
 import { InlineRenameInput } from '@/components/primitives/InlineRenameInput';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
-import { DocumentEntryMenu } from '@/app/explorer/document-row-shared';
-import type { DocumentEntryProps } from '@/app/explorer/explorer-view-props';
+import { ProjectEntryMenu } from '@/app/explorer/project-row-shared';
+import type { ProjectEntryProps } from '@/app/explorer/explorer-view-props';
 
-/** Resolves a Jump Back In document to its Explorer menu, or null when the Explorer has not loaded it. */
-export type JumpBackInMenuFor = (documentId: string) => DocumentEntryProps | null;
+/** Resolves a Jump Back In project to its Explorer menu, or null when the Explorer has not loaded it. */
+export type JumpBackInMenuFor = (projectId: string) => ProjectEntryProps | null;
 
 // Readable over a thumbnail: a frosted chip rather than the row button's bare glyph. Shown while the card is hovered
 // or holds keyboard focus (the reveal covers hover and the button's own focus; focus-within covers the card's link).
@@ -29,8 +29,8 @@ export function JumpBackInMenu({
   className,
   children,
 }: {
-  entry: DocumentEntryProps | null;
-  /** The document's name as shown, for the button's label. */
+  entry: ProjectEntryProps | null;
+  /** The project's name as shown, for the button's label. */
   name: string;
   /** Where the button sits on this card. */
   buttonClassName: string;
@@ -56,7 +56,7 @@ export function JumpBackInMenu({
         />
       ) : null}
       {entry && menu.open ? (
-        <DocumentEntryMenu
+        <ProjectEntryMenu
           entry={entry}
           anchor={menu.triggerRef.current}
           beside={card}
@@ -72,13 +72,13 @@ export function JumpBackInRename({
   entry,
   className,
 }: {
-  entry: DocumentEntryProps;
+  entry: ProjectEntryProps;
   className: string;
 }) {
   return (
     <InlineRenameInput
-      initial={entry.document.name}
-      ariaLabel={`Rename ${entry.document.name}`}
+      initial={entry.project.name}
+      ariaLabel={`Rename ${entry.project.name}`}
       onCommit={entry.onCommitRename}
       onCancel={entry.onCancelRename}
       className={className}

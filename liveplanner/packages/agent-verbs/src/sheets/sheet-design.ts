@@ -28,7 +28,7 @@ import {
   type StarterCell,
   type AgentValue,
 } from '@liveplanner/sheets';
-import { isLightColor, type ChartPaletteId, type ChartType } from '@liveplanner/document';
+import { isLightColor, type ChartPaletteId, type ChartType } from '@liveplanner/project';
 import { formatPatchOf, type SheetFormatInput } from './sheet-change-build';
 import { buildRuleChange } from './sheet-rule-change';
 import { designCharts, seriesNote, type SheetChartOut } from './sheet-charts';

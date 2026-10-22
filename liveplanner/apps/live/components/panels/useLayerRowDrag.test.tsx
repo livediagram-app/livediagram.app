@@ -2,11 +2,11 @@
 import { act, renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import type { PointerEvent as ReactPointerEvent } from 'react';
-import type { Layer } from '@liveplanner/document';
+import type { Layer } from '@liveplanner/project';
 
 import { useLayerRowDrag } from './useLayerRowDrag';
 
-// docs/specs/006-document/layers.md "The Layers panel": drag a row onto another to take its slot,
+// docs/specs/006-project/layers.md "The Layers panel": drag a row onto another to take its slot,
 // with an insertion line on the edge it lands.
 
 const LAYERS: Layer[] = [

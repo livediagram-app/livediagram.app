@@ -18,7 +18,7 @@ function arrange(roomOk = true): {
   const db = sqliteD1();
   const env = {
     ...db.env,
-    DOCUMENT_ROOM: {
+    PROJECT_ROOM: {
       idFromName: (name: string) => name,
       get: (doc: string) => ({
         fetch: async (_url: string, init: RequestInit) => {
@@ -28,7 +28,7 @@ function arrange(roomOk = true): {
       }),
     },
   } as unknown as Env;
-  db.sql.exec(`INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at)
+  db.sql.exec(`INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at)
                VALUES ('doc1', 'u1', 'A', 0, 1, 1), ('doc2', 'u1', 'B', 0, 1, 1)`);
   db.sql
     .exec(`INSERT INTO api_tokens (id, owner_id, token_hash, name, created_at, expires_at, revoked)
@@ -40,7 +40,7 @@ function arrange(roomOk = true): {
   const session = (id: string, pairing: string, doc: string, token = 'tok1') =>
     `('${id}', 'h${id}', 'u1', '${token}', '${pairing}', '${doc}', NULL, 'https://a.example', 'edit', 1, ${NOW})`;
   db.sql.exec(`INSERT INTO workbench_sessions
-                 (id, secret_hash, owner_id, token_id, pairing_id, document_id, tab_id, origin, role, created_at, expires_at)
+                 (id, secret_hash, owner_id, token_id, pairing_id, project_id, tab_id, origin, role, created_at, expires_at)
                VALUES ${session('s1aaaaaaaa', P1, 'doc1')}, ${session('s2bbbbbbbb', P1, 'doc2')},
                       ${session('s3cccccccc', P2, 'doc1')}, ${session('s4dddddddd', 'p3', 'doc1', 'tok2')}`);
   db.sql
@@ -73,15 +73,15 @@ describe('endWorkbenchAccess', () => {
     ]);
     expect(log).toHaveBeenCalledWith('[workbench] session-ended', {
       reason: 'unpaired',
-      scope: 'document',
-      documentId: 'doc1',
+      scope: 'project',
+      projectId: 'doc1',
       tokenId: 'tok1',
       sessionPrefix: 's1aaaaaa',
     });
     expect(log).toHaveBeenCalledWith('[workbench] unpaired', {
       tokenId: 'tok1',
       pairingId: P1,
-      scope: 'document',
+      scope: 'project',
       reason: 'unpaired',
       rooms: 2,
       unreached: 0,
@@ -131,9 +131,9 @@ describe('endWorkbenchAccess, workspace scope', () => {
     vi.spyOn(console, 'log').mockImplementation(() => {});
     db.sql.exec(`UPDATE workbench_pairings SET scope = 'workspace' WHERE id = 'p3';
       INSERT INTO workbench_sessions
-        (id, secret_hash, owner_id, token_id, pairing_id, scope, document_id, origin, role, created_at, expires_at)
+        (id, secret_hash, owner_id, token_id, pairing_id, scope, project_id, origin, role, created_at, expires_at)
       VALUES ('s5eeeeeeee', 'h5', 'u1', 'tok2', 'p3', 'workspace', NULL, 'https://a.example', 'edit', 1, ${NOW});
-      INSERT INTO workbench_session_rooms (session_id, document_id)
+      INSERT INTO workbench_session_rooms (session_id, project_id)
       VALUES ('s5eeeeeeee', 'doc1'), ('s5eeeeeeee', 'doc2');`);
 
     await endWorkbenchAccess(env, { tokenId: 'tok2' }, 'revoked');
@@ -142,7 +142,7 @@ describe('endWorkbenchAccess, workspace scope', () => {
     expect(console.log).toHaveBeenCalledWith('[workbench] session-ended', {
       reason: 'revoked',
       scope: 'workspace',
-      documentId: null,
+      projectId: null,
       tokenId: 'tok2',
       sessionPrefix: 's5eeeeee',
     });

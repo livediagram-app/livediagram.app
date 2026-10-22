@@ -3,7 +3,7 @@
 // Add to Slot's pictures of the written cards (docs/specs/026-plan/plan-tabs.md "Cards"), in slot-previews.tsx's
 // style and the tab's colours: a Title bare on the page, a Status as its light and line, a Checklist as ticked rows, a
 // Key Date as its count, Links as labelled rows. Decorative: the card's name says what it is.
-import type { FormMetricKind, SheetMetricKind } from '@liveplanner/document';
+import type { FormMetricKind, SheetMetricKind } from '@liveplanner/project';
 import type { DashboardCardKind } from '@/hooks/plan/dashboard-drop';
 import { AMBER, Bar, BLUE, Frame, GREEN, RED, type P } from './slot-previews';
 

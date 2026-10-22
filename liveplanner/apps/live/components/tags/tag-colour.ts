@@ -6,7 +6,7 @@ import {
   penColourHex,
   type Appearance,
   type StandardColourName,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 const isStandard = (v: string): v is StandardColourName =>
   (STANDARD_COLOUR_NAMES as readonly string[]).includes(v);

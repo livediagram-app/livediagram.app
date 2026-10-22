@@ -46,8 +46,8 @@ function boundKeys(): Set<string> {
   return keys;
 }
 
-// Keys the article documents, as single-character inline code: `V`, `7`.
-function documentedKeys(): Set<string> {
+// Keys the article projects, as single-character inline code: `V`, `7`.
+function projectedKeys(): Set<string> {
   const src = readFileSync(ARTICLE, 'utf8');
   return new Set([...src.matchAll(/`([A-Z0-9])`/g)].map((m) => m[1]!));
 }
@@ -77,16 +77,16 @@ describe('the Keyboard Shortcuts article covers what the editor binds', () => {
     // Twenty-eight bindings when this landed, twenty once Plan was the only mode. A collapse toward zero means
     // the table shape changed and every assertion below passes vacuously.
     expect(boundKeys().size).toBeGreaterThan(15);
-    expect(documentedKeys().size).toBeGreaterThan(15);
+    expect(projectedKeys().size).toBeGreaterThan(15);
   });
 
-  it('documents every plain key in the lookup tables', () => {
-    const documented = documentedKeys();
+  it('projects every plain key in the lookup tables', () => {
+    const documented = projectedKeys();
     const missing = [...boundKeys()].filter((k) => !documented.has(k)).sort();
     expect(missing).toEqual([]);
   });
 
-  it('documents every modifier chord the shortcuts dialog lists', () => {
+  it('projects every modifier chord the shortcuts dialog lists', () => {
     // The article claimed to be "the full shortcut reference" while naming no
     // chord at all: undo, copy, paste, group and zoom were in the product and
     // in the dialog, and nowhere in the help centre.

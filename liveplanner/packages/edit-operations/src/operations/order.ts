@@ -3,7 +3,7 @@
 // directly before x. Finalise then keeps every container behind its members.
 
 import type { EditRejection } from '@liveplanner/api-schema';
-import type { ElementId } from '@liveplanner/document';
+import type { ElementId } from '@liveplanner/project';
 import { resolveOne } from '../selectors';
 import { refsOf, refuseLocked, reorder, touch, type EditState } from '../state';
 import type { OrderOperation } from '../types';

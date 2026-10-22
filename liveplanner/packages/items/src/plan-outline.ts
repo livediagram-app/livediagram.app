@@ -1,4 +1,4 @@
-// A document's plan as agents read it (docs/specs/026-plan/plan-agents.md "Reading the plan"): its Plan boards in
+// A project's plan as agents read it (docs/specs/026-plan/plan-agents.md "Reading the plan"): its Plan boards in
 // tab then canvas order, the statuses they name (each once, the first board's name winning) and the card types.
 // Pure: the api's plan route builds it from tab bodies, and the editor names its statuses the same way.
 import type { PlanBoardSetup } from './board';

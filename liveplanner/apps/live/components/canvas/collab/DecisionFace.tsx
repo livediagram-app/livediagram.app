@@ -18,7 +18,7 @@ import {
   DEFAULT_DECISION_STATUS,
   type DecisionStatus,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { Glyph } from '@liveplanner/ui';
 import { CollabPanel, tint } from './collab-chrome';
 

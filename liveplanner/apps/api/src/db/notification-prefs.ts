@@ -11,7 +11,7 @@ import type { Env } from '../types';
 // Both flags default to true: a missing key / row / corrupt blob means
 // "notify" (the toggles are opt-OUT, mirroring docs/specs/007-editor/user-preferences.md's notificationsEnabled).
 type NotificationPrefs = {
-  notifyDocumentJoin: boolean;
+  notifyProjectJoin: boolean;
   notifyInviteResponse: boolean;
   notifyComments: boolean;
   notifyTips: boolean;
@@ -22,7 +22,7 @@ type NotificationPrefs = {
 };
 
 const DEFAULTS: NotificationPrefs = {
-  notifyDocumentJoin: true,
+  notifyProjectJoin: true,
   notifyInviteResponse: true,
   notifyComments: true,
   notifyTips: true,
@@ -48,7 +48,7 @@ export async function getNotificationPrefs(env: Env, ownerId: string): Promise<N
     return {
       // Only an explicit `false` opts out; anything else (missing,
       // true, or a non-boolean a misbehaving client wrote) means notify.
-      notifyDocumentJoin: blob.notifyDocumentJoin !== false,
+      notifyProjectJoin: blob.notifyProjectJoin !== false,
       notifyInviteResponse: blob.notifyInviteResponse !== false,
       notifyComments: blob.notifyComments !== false,
       notifyTips: blob.notifyTips !== false,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createArrow, createShape, type ShapeElement, type Tab } from '@liveplanner/document';
+import { createArrow, createShape, type ShapeElement, type Tab } from '@liveplanner/project';
 import { settleChipsInTabs } from './settle-tabs';
 
 const tab = (id: string, elements: Tab['elements']) => ({ id, name: id, elements }) as Tab;

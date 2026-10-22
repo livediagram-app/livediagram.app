@@ -1,9 +1,9 @@
 // @vitest-environment jsdom
 // docs/specs/026-plan/plan-tabs.md "Cards", Links: the links read as rows, and Add Link opens a form straight under
-// them: Label takes focus, the address lists the document's tabs, Enter adds, Escape cancels.
+// them: Label takes focus, the address lists the project's tabs, Enter adds, Escape cancels.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DashboardLink, Tab } from '@liveplanner/document';
+import type { DashboardLink, Tab } from '@liveplanner/project';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardLinksCard } from './DashboardLinksCard';
 
@@ -75,7 +75,7 @@ describe('Add Link', () => {
     expect(saved(setSlotContent)).toMatchObject([{ label: 'Site', url: 'https://example.com/' }]);
   });
 
-  it('lists the document’s tabs under the address, picked with the arrow keys and Enter', () => {
+  it('lists the project’s tabs under the address, picked with the arrow keys and Enter', () => {
     const { setSlotContent } = show([]);
     open();
     const address = screen.getByRole('combobox', { name: 'Address' });

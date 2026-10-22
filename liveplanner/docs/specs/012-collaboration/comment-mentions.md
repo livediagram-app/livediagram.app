@@ -5,19 +5,19 @@ mention shows as a chip in the thread, puts the thread on the teammate's
 [Inbox](../013-workspace/inbox.md), and, if their settings allow, emails them.
 
 It is the comment-thread sibling of [Assigned actions](assigned-actions.md): the same
-people can be named (the document's team), the same Inbox collects it,
+people can be named (the project's team), the same Inbox collects it,
 and the same kind of best-effort, server-verified email carries it.
 
 ## Who can be mentioned
 
-The **members of the team whose library holds the document**, joined and
+The **members of the team whose library holds the project**, joined and
 invited, except yourself. That is exactly the Assign Action picker's rule
 ([Assigned actions](assigned-actions.md) §2), for the same reason: a mention should reach someone
-who can open the document and read the thread, and a teammate on another team
+who can open the project and read the thread, and a teammate on another team
 almost certainly cannot.
 
-- On a **personal document** or for a **guest** there is nobody to mention.
-  Typing `@` then shows one quiet row, "Mention teammates on a team document",
+- On a **personal project** or for a **guest** there is nobody to mention.
+  Typing `@` then shows one quiet row, "Mention teammates on a team project",
   and nothing is inserted.
 - An **invited** member (no account yet) can be mentioned. They are keyed by
   their membership row, like an invited assignee, and get the email at their
@@ -63,7 +63,7 @@ list is sanitised (shape, caps, string fields only; anything malformed is
 dropped); on an **existing** comment it is locked to what was stored, so
 nobody can retarget someone else's mention. A forged mention can at worst put
 a thread on the named person's Inbox, and that page only ever lists
-documents they can already open (the library scoping, [Inbox](../013-workspace/inbox.md) §4).
+projects they can already open (the library scoping, [Inbox](../013-workspace/inbox.md) §4).
 
 ## Reading a mention
 
@@ -77,23 +77,23 @@ written.
 The thread index (`collab_threads`) gains `mentioned_ids`: the distinct user
 ids and member ids mentioned anywhere in the thread. The Inbox's
 thread query includes a thread when the reader is **mentioned** in it, as
-well as when they commented or own the document, still scoped to documents they
+well as when they commented or own the project, still scoped to projects they
 can open. The thread row carries `mentionsYou`, and its hint reads
-**Mentioned You** (it wins over "Your document"). A resolved thread leaves the
+**Mentioned You** (it wins over "Your project"). A resolved thread leaves the
 page as every thread does.
 
 A Plan card's thread ([Items](../026-plan/items.md) "Comments") lists the same way, read straight from the
 item store rather than the index (the thread lives in the item, not in tab JSON): it is included when the reader
-is mentioned in it, commented in it, or owns the document, and carries the same `mentionsYou` hint
+is mentioned in it, commented in it, or owns the project, and carries the same `mentionsYou` hint
 ([Inbox](../013-workspace/inbox.md) §2.5).
 
 ## The email
 
 After a comment with mentions is added, the author's editor asks the api to
-notify: `POST /api/teams/<teamId>/notify-mention` with `{ documentId,
-commentText, mentions: [{ userId?, memberId? }] }` for a comment on the canvas, or `{ documentId, itemId,
+notify: `POST /api/teams/<teamId>/notify-mention` with `{ projectId,
+commentText, mentions: [{ userId?, memberId? }] }` for a comment on the canvas, or `{ projectId, itemId,
 commentId }` for a comment on a Plan card. A card's comment is stored before the request goes (the card comment
-add answers the new comment's `commentId`), so the server reads it: `itemId` must name an item of that document,
+add answers the new comment's `commentId`), so the server reads it: `itemId` must name an item of that project,
 and `commentId` a comment on it written by the caller within the last 24 hours (`NOTIFY_EMAIL_DEDUPE_MS`), else
 `404`; a card request without `commentId` is `400`. The email quotes that stored comment's text and goes to its
 stored mentions; a body's `commentText` and `mentions` are ignored for a card. The email's button then opens the
@@ -104,19 +104,19 @@ failure is swallowed, the response is `202`.
 The server decides everything that matters:
 
 - The caller is a **joined** member of the team, and the team is the
-  document's team (`documents.team_id`), and the caller can access the document.
+  project's team (`projects.team_id`), and the caller can access the project.
   Otherwise `404`, never probing.
 - Each mention resolves to a member of that team (joined or invited) other
   than the caller; anything else is skipped silently. At most 20.
 - The author name comes from the caller's verified identity (participant
-  profile, else email), and the document name from the document row, never the
+  profile, else email), and the project name from the project row, never the
   body.
 - Each recipient's **"Someone Mentions Me in a Comment"** preference
   (`notifyMentions`, default on) is honoured; an invited member with no
   account has no preferences and is emailed at their invite address.
 - On the canvas, `commentText` is required, at most 5000 characters; the email
   quotes the first 280, cut at a word with an ellipsis.
-- Each email is **claimed** before it goes (`notify_email_claims`): a hash of the author, document, card, recipient and, for a card, the
+- Each email is **claimed** before it goes (`notify_email_claims`): a hash of the author, project, card, recipient and, for a card, the
   stored comment's id (on the canvas, the body's text) is sent at most once per 24 hours
   (`NOTIFY_EMAIL_DEDUPE_MS`), so a replayed request emails nobody twice, and one
   author's action-assigned and mention emails together are capped at 60 an hour
@@ -131,9 +131,9 @@ The server decides everything that matters:
   (both reach D1 only with the next tab save), so a client that rewords each
   request gets past the dedupe, and the hourly cap is the bound.
 
-The email reads **"{author} mentioned you in {document}"**, quotes the
-comment, and has one button, **Open the document** (for a card's comment, **Open the card**, linking
-`/document/<id>#item=<itemId>`). It is sent only when email is
+The email reads **"{author} mentioned you in {project}"**, quotes the
+comment, and has one button, **Open the project** (for a card's comment, **Open the card**, linking
+`/project/<id>#item=<itemId>`). It is sent only when email is
 configured (`RESEND_API_KEY`, [Transactional & lifecycle email (Resend)](../014-identity/transactional-email.md)).
 
 ## Setting
@@ -148,6 +148,6 @@ not sent), alongside the existing `Comment · Added`.
 
 ## Not in scope
 
-- Mentioning people outside the document's team, or everyone (`@here`).
+- Mentioning people outside the project's team, or everyone (`@here`).
 - In-app notifications beyond the Inbox.
 - Editing a comment's mentions after sending (comments are not editable).

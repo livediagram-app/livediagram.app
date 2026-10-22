@@ -51,14 +51,14 @@ describe('registerTool answers fixable errors', () => {
 describe('deleteRefusal', () => {
   it('says why, by status and what was deleted', () => {
     expect(deleteRefusal(410, false)).toContain('already in the Trash');
-    expect(deleteRefusal(403, true)).toContain('view this document but not change it');
-    expect(deleteRefusal(404, true)).toContain('read_document lists its tabs');
-    expect(deleteRefusal(404, false)).toContain('find_documents');
+    expect(deleteRefusal(403, true)).toContain('view this project but not change it');
+    expect(deleteRefusal(404, true)).toContain('read_project lists its tabs');
+    expect(deleteRefusal(404, false)).toContain('find_projects');
     expect(deleteRefusal(409, true)).toContain('last one');
     // Any other status is named, never blamed on the last tab.
     expect(deleteRefusal(401, true)).not.toContain('last one');
     expect(deleteRefusal(503, true)).toContain('503');
-    expect(deleteRefusal(400, false)).toContain('Check the document id');
+    expect(deleteRefusal(400, false)).toContain('Check the project id');
   });
 });
 
@@ -74,12 +74,12 @@ describe('templateNote', () => {
 });
 
 describe('loadTab', () => {
-  it('names the tabs there are when asked for one the document lacks', async () => {
+  it('names the tabs there are when asked for one the project lacks', async () => {
     const env = {
       API: {
         fetch: async () =>
           Response.json({
-            document: { id: 'd', tabs: [{ id: 't1', name: 'Board', orderIndex: 0 }] },
+            project: { id: 'd', tabs: [{ id: 't1', name: 'Board', orderIndex: 0 }] },
           }),
       },
     } as unknown as Env;

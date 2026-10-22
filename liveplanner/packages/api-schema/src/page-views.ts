@@ -5,10 +5,10 @@
 // router can't disagree about who serves a path.
 
 // The live app's top-level page route segments. These serve at clean URLs
-// (`/document`, `/explorer`, ...), and the router forwards them to the live
+// (`/project`, `/explorer`, ...), and the router forwards them to the live
 // worker (docs/specs/016-platform/router-app.md). Marketing owns every other first segment.
 export const LIVE_ROUTE_SEGMENTS: ReadonlySet<string> = new Set([
-  'document',
+  'project',
   'embed',
   'explorer',
   // A form link's page, /form/<code> (docs/specs/030-forms/forms.md "Filling in a form").
@@ -50,7 +50,7 @@ function looksLikeId(segment: string): boolean {
 /**
  * Reduce a browser pathname to the page it is, for a `Page·View` event.
  * An id, and everything after it, is dropped: what follows an id is about
- * that one thing, not a different page. So every document is `/document`.
+ * that one thing, not a different page. So every project is `/project`.
  * Returns null when the path can't be expressed safely: deny-by-default, so
  * an odd path is lost rather than leaked. The query string and hash are never
  * part of a pathname, so they cannot reach here.
@@ -66,9 +66,9 @@ export function pageViewPath(pathname: string): string | null {
     .toLowerCase()
     .split('/')
     .filter((s) => s !== '');
-  // Every `/document/...` URL is the editor on one document (docs/specs/007-editor/new-document-route.md), and
-  // whatever follows the segment is the document's id.
-  if (segments[0] === 'document') segments = ['document'];
+  // Every `/project/...` URL is the editor on one project (docs/specs/007-editor/new-project-route.md), and
+  // whatever follows the segment is the project's id.
+  if (segments[0] === 'project') segments = ['project'];
   // A form link's page (docs/specs/030-forms/forms.md): whatever follows is the form's code, never recorded.
   if (segments[0] === 'form') segments = ['form'];
   const last = segments[segments.length - 1];

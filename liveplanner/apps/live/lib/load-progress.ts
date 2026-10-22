@@ -1,4 +1,4 @@
-// The document load's progress and its watchdog (docs/specs/007-editor/load-recovery.md). The identity
+// The project load's progress and its watchdog (docs/specs/007-editor/load-recovery.md). The identity
 // bootstrap reports each step it reaches; the watchdog ends a load that has not finished within
 // LOAD_TIMEOUT_MS, the first time in a tab by reloading once ("self-healing"), after that by showing the
 // load-error screen. The diagnostics report reads the step, so support can see where a load stopped.
@@ -9,13 +9,13 @@ import { getOnline } from './online-status';
 import { claimReloadIn } from './reload-guard';
 import { createListeners } from '@/lib/listeners';
 
-export type LoadStep = 'identity' | 'participant' | 'document' | 'share' | 'first-tab' | 'done';
+export type LoadStep = 'identity' | 'participant' | 'project' | 'share' | 'first-tab' | 'done';
 
 /** The steps as telemetry type parts, PascalCase. */
 const STEP_TOKEN: Record<LoadStep, string> = {
   identity: 'Identity',
   participant: 'Participant',
-  document: 'Document',
+  project: 'Project',
   share: 'Share',
   'first-tab': 'FirstTab',
   done: 'Done',
@@ -76,7 +76,7 @@ type WatchdogDeps = {
 
 /**
  * Start timing a load. Returns `finish`, which the load calls once it ends, however it ends: before
- * the deadline it disarms the watchdog; after it (a late load) it reports `DocumentLoad.Late` and
+ * the deadline it disarms the watchdog; after it (a late load) it reports `ProjectLoad.Late` and
  * returns true so the caller can clear the load-error screen the watchdog put up.
  */
 export function armLoadWatchdog(
@@ -95,11 +95,11 @@ export function armLoadWatchdog(
     const step = progress.step;
     set({ timedOut: true });
     console.warn(`[load] timed out after ${LOAD_TIMEOUT_MS} ms at step ${step ?? 'unknown'}`);
-    warn(`DocumentLoad.TimedOut.${loadStepToken(step)}`);
+    warn(`ProjectLoad.TimedOut.${loadStepToken(step)}`);
     // Offline, a reload only swaps in the browser's own error page: go to the load-error screen,
     // which reloads by itself once the connection is back (docs/specs/007-editor/load-recovery.md "Offline").
     if ((deps.online ?? getOnline)() && claimAutoReload(deps)) {
-      warn('DocumentLoad.AutoReload');
+      warn('ProjectLoad.AutoReload');
       set({ healing: true });
       reloadTimer = setTimeout(
         deps.reload ?? (() => window.location.reload()),
@@ -117,7 +117,7 @@ export function armLoadWatchdog(
       // The step stays where the load reached: a failed load's diagnostics name it (the success path sets 'done').
       if (!fired) return false;
       console.warn('[load] finished after its watchdog');
-      warn('DocumentLoad.Late');
+      warn('ProjectLoad.Late');
       // A late load still wins: the self-healing reload not yet run would throw away the load that just landed.
       if (reloadTimer !== null) {
         clearTimeout(reloadTimer);

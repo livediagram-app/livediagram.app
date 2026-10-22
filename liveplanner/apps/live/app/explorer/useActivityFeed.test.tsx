@@ -20,8 +20,8 @@ const NO_LOCAL = { actions: [], threads: [], cards: [], cardThreads: [] };
 import { useActivityFeed } from './useActivityFeed';
 
 const place = {
-  documentId: 'd1',
-  documentName: 'Payments',
+  projectId: 'd1',
+  projectName: 'Payments',
   teamId: null,
   via: 'own' as const,
   shareCode: null,
@@ -55,14 +55,14 @@ const thread: ActivityThread = {
   latest: { text: 'hi', authorName: 'A', authorColor: '#a', at: 3 },
   firstAt: 3,
   youCommented: true,
-  onYourDocument: false,
+  onYourProject: false,
   mentionsYou: false,
 };
 
 function card(id: string, updatedAt: number): ActivityCard {
   return {
-    documentId: 'd2',
-    documentName: 'Roadmap',
+    projectId: 'd2',
+    projectName: 'Roadmap',
     teamId: 'tm',
     via: 'team',
     shareCode: null,
@@ -142,7 +142,7 @@ describe('useActivityFeed', () => {
     expect(result.current.youAssigned.map((a) => a.id)).toEqual(['theirs']);
   });
 
-  // docs/specs/013-workspace/inbox.md §2.6: this browser's documents in This Browser list among the server's rows,
+  // docs/specs/013-workspace/inbox.md §2.6: this browser's projects in This Browser list among the server's rows,
   // in the same order, marked local, and count toward the badge's list.
   it('merges rows in This Browser in among the server rows, marked local', async () => {
     apiListActivity.mockResolvedValue({

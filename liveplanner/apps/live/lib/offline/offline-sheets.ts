@@ -1,7 +1,7 @@
-// An offline document's sheet store (docs/specs/029-sheets/sheet-store.md "Offline documents"): the sheets live in
-// the document's own record, and every write is the same pure transition the api applies (@liveplanner/sheets
+// An offline project's sheet store (docs/specs/029-sheets/sheet-store.md "Offline projects"): the sheets live in
+// the project's own record, and every write is the same pure transition the api applies (@liveplanner/sheets
 // applySheetWrite), validated the same way, serialised with the record's other writes. Loaded only for an offline
-// document (lib/api/sheets.ts), as it carries the engine.
+// project (lib/api/sheets.ts), as it carries the engine.
 
 import { debugLog } from '@/lib/debug-log';
 import type {
@@ -10,7 +10,7 @@ import type {
   SheetWriteResponse,
 } from '@liveplanner/api-schema';
 import {
-  DOCUMENT_SHEETS_MAX,
+  PROJECT_SHEETS_MAX,
   applySheetWrite,
   cellKey,
   cellToJson,
@@ -28,17 +28,17 @@ import {
   offlineGetRecord,
   offlineUpdateRecord,
   serializeOfflineWrite,
-  type OfflineDocumentRecord,
+  type OfflineProjectRecord,
 } from './offline-store';
 
 // Rewrite a live record's sheets in one transaction (offlineUpdateRecord): `change` answers the
 // new sheet list and what the caller returns, or throws to write nothing.
 async function updateSheets<T>(
-  documentId: string,
+  projectId: string,
   change: (sheets: SheetJson[]) => { sheets: SheetJson[] | null; answer: T },
 ): Promise<T> {
   let out = null as { answer: T } | null;
-  await offlineUpdateRecord(documentId, (rec: OfflineDocumentRecord | undefined) => {
+  await offlineUpdateRecord(projectId, (rec: OfflineProjectRecord | undefined) => {
     if (!rec || rec.trashedAt !== undefined) throw new ApiError('sheet write', 404, 'not_found');
     const next = change(rec.sheets ?? []);
     out = { answer: next.answer };
@@ -49,10 +49,10 @@ async function updateSheets<T>(
 }
 
 export async function offlineFetchSheets(
-  documentId: string,
+  projectId: string,
   which: { tabId: string } | { ids: readonly string[] } | null,
 ): Promise<SheetJson[]> {
-  const sheets = (await offlineGetRecord(documentId))?.sheets ?? [];
+  const sheets = (await offlineGetRecord(projectId))?.sheets ?? [];
   if (!which) return sheets;
   if ('tabId' in which) return sheets.filter((s) => s.tabId === which.tabId);
   const ids = new Set(which.ids);
@@ -60,12 +60,12 @@ export async function offlineFetchSheets(
 }
 
 export async function offlineCreateSheet(
-  documentId: string,
+  projectId: string,
   create: SheetCreateRequest,
   by: SheetPerson,
 ): Promise<SheetJson> {
   return serializeOfflineWrite(async () => {
-    const { sheet, wrote } = await updateSheets(documentId, (sheets) => {
+    const { sheet, wrote } = await updateSheets(projectId, (sheets) => {
       const id = create.id ?? makeSheetId();
       const stored = sheets.find((s) => s.id === id);
       // A restore (the editor's undo) of a sheet still here keeps it, as the api does.
@@ -75,7 +75,7 @@ export async function offlineCreateSheet(
       const lower = create.title.toLowerCase();
       if (sheets.some((s) => s.tabId === create.tabId && s.title.toLowerCase() === lower))
         throw new ApiError('sheet create', 409, 'sheet_title_taken');
-      if (sheets.length >= DOCUMENT_SHEETS_MAX)
+      if (sheets.length >= PROJECT_SHEETS_MAX)
         throw new ApiError('sheet create', 413, 'sheets_full');
       const now = Date.now();
       const source = create.copyOf ? sheets.find((s) => s.id === create.copyOf) : undefined;
@@ -102,14 +102,14 @@ export async function offlineCreateSheet(
 }
 
 export async function offlineWriteSheet(
-  documentId: string,
+  projectId: string,
   sheetId: string,
   request: SheetWriteRequest,
   by: SheetPerson,
 ): Promise<SheetWriteResponse> {
   const write = request.write;
   return serializeOfflineWrite(async () => {
-    const landed = await updateSheets(documentId, (sheets) => {
+    const landed = await updateSheets(projectId, (sheets) => {
       const at = sheets.findIndex((s) => s.id === sheetId);
       if (at < 0) throw new ApiError('sheet write', 404, 'sheet_not_found');
       const sheet = sheetFromJson(sheets[at]!);
@@ -151,11 +151,11 @@ export async function offlineWriteSheet(
   });
 }
 
-// An offline document has no reference index: the editor deletes a sheet with its element only once it has found
+// An offline project has no reference index: the editor deletes a sheet with its element only once it has found
 // nothing else references it (sheet-references.ts), so a delete when unreferenced deletes at once.
-export async function offlineDeleteSheet(documentId: string, sheetId: string): Promise<void> {
+export async function offlineDeleteSheet(projectId: string, sheetId: string): Promise<void> {
   return serializeOfflineWrite(() =>
-    updateSheets(documentId, (sheets) => {
+    updateSheets(projectId, (sheets) => {
       if (!sheets.some((s) => s.id === sheetId))
         throw new ApiError('sheet delete', 404, 'sheet_not_found');
       return { sheets: sheets.filter((s) => s.id !== sheetId), answer: undefined };

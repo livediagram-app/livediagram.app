@@ -3,7 +3,7 @@
 // only, cached five minutes; each answer logs `[catalogues] <segment> <status>`.
 
 import type { TemplateCatalogueResponse } from '@liveplanner/api-schema';
-import { renderView } from '@liveplanner/document-views';
+import { renderView } from '@liveplanner/project-views';
 import { addableKinds, elementFormatText, elementKindsText } from '@liveplanner/edit-operations';
 import { buildTemplateTab, templateCatalogue, templateKindOf } from '@liveplanner/templates';
 import { json, methodNotAllowed, notFound, textPlain } from '../responses';

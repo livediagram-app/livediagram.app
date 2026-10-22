@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { type Tab, tabToJsonText } from '@liveplanner/document';
+import { type Tab, tabToJsonText } from '@liveplanner/project';
 import { parseImportedTab } from './import-tab';
 import { mergeImportedTab } from './import-merge';
 

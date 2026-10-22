@@ -20,7 +20,7 @@ describe('useTeamPeople', () => {
     expect(listTeams).not.toHaveBeenCalled();
   });
 
-  it('asks once signed in, on a document with Plan content', async () => {
+  it('asks once signed in, on a project with Plan content', async () => {
     renderHook(() => useTeamPeople('user_1', true, true));
     await waitFor(() => expect(listTeams).toHaveBeenCalledWith('user_1'));
   });

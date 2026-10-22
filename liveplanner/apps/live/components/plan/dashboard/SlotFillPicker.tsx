@@ -1,13 +1,13 @@
 'use client';
 
 // Add to Slot (docs/specs/026-plan/plan-tabs.md "Filling a slot"): an empty slot's own way to fill it, without the
-// palette. A popover of what a slot takes, from the palette's own tiles so the two never drift (the document's Board
+// palette. A popover of what a slot takes, from the palette's own tiles so the two never drift (the project's Board
 // and Sheet tabs, a new board of each preset, a Sheet, the metrics, the visualisations, figures and charts from a
 // Sheet, and the cards), offering only what looks good at this slot's size (SLOT_FIT). It opens on its categories
 // (the palette's ToolsCategoryGrid); one opens to its tiles, each drawn as it would look there, under the breadcrumb
 // back (Escape and Backspace go back too). Picking one fills this slot (placeItem, one step) and closes it.
 import { useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { EditorContext } from '@/app/project/[id]/EditorContext';
 import {
   isPlanViewId,
   type MetricKind,
@@ -59,12 +59,12 @@ type Section = { title: SlotCategory; tiles: PaletteTileDef[] };
 export function slotFillSections(
   tabTiles: PaletteTileDef[],
   size: SlotSize | null = null,
-  // Whether the document has a form: Form Metrics are offered only then.
+  // Whether the project has a form: Form Metrics are offered only then.
   hasForms = false,
 ): { sections: Section[]; tooBig: SlotFitKind[] } {
   const sticky = tileById('tools:sticky');
   const all: Section[] = [
-    { title: 'This Document’s Tabs', tiles: tabTiles },
+    { title: 'This Project’s Tabs', tiles: tabTiles },
     { title: 'New Board', tiles: tilesForCategory('plan-boards') },
     { title: 'New Sheet', tiles: tilesForCategory('plan-sheets') },
     { title: 'Card Metrics', tiles: tilesForCategory('plan-metrics') },
@@ -177,7 +177,7 @@ export function SlotFillPicker({
 }) {
   const tabs = usePlanTabList();
   const palette = planPalette(useCanvasSurface(), {});
-  // Form Metrics only while the document has a form (docs/specs/026-plan/plan-tabs.md "Form Metrics").
+  // Form Metrics only while the project has a form (docs/specs/026-plan/plan-tabs.md "Form Metrics").
   const hasForms = useContext(EditorContext)?.tabs.some((t) => t.kind === 'form') ?? false;
   const { sections, tooBig } = useMemo(
     () => slotFillSections(dashboardTabTiles(tabs), size, hasForms),

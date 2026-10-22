@@ -14,7 +14,7 @@ const { track, useHome, wide } = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/telemetry', () => ({ track }));
 vi.mock('@/app/explorer/home/useHome', () => ({ useHome }));
-vi.mock('@/components/panels/DocumentThumbnail', () => ({ DocumentThumbnail: () => <span /> }));
+vi.mock('@/components/panels/ProjectThumbnail', () => ({ ProjectThumbnail: () => <span /> }));
 vi.mock('./HomeWelcome', () => ({
   HomeWelcome: (p: { offerSignIn: boolean }) => (
     <div data-home-welcome="" data-offer-sign-in={String(p.offerSignIn)} />
@@ -123,11 +123,11 @@ describe('HomePane', () => {
     const explorer = {
       ownerId: 'me',
       loading: false,
-      documents: [],
+      projects: [],
       shared: [],
-      teamDocuments: [],
-      offlineDocuments: [],
-      failedReads: { documents: false, shared: false },
+      teamProjects: [],
+      offlineProjects: [],
+      failedReads: { projects: false, shared: false },
       clerkUserId: null,
     } as unknown as ExplorerStateValue;
     const { container } = render(

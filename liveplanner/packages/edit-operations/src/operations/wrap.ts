@@ -18,7 +18,7 @@ import {
   type Element,
   type ElementId,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { describeElement } from '../element-text';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';

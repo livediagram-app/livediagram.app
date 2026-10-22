@@ -1,4 +1,4 @@
-import { SHAPE_DEFAULT_SIZE } from '@liveplanner/document';
+import { SHAPE_DEFAULT_SIZE } from '@liveplanner/project';
 import { PALETTE_DND_MIME } from '@/lib/icons';
 import { setPaletteDragPreview, suppressNativeDragImage } from '@/lib/palette-drag-preview';
 import type { PaletteTileDef } from './palette-tile-defs';

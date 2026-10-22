@@ -5,7 +5,7 @@
 // value), and the empty group last, as long as their cards against the most, split Not Started, In Progress and
 // Done. The rows share the view's height and the bars thicken, and labels grow, where there is room.
 import { useMemo } from 'react';
-import { plural } from '@liveplanner/document';
+import { plural } from '@liveplanner/project';
 import {
   STATUS_PHASES,
   STATUS_PHASE_LABELS,

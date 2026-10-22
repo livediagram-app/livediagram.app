@@ -1,11 +1,11 @@
 // A board an agent makes brings its card types (docs/specs/026-plan/plan-agents.md "Adding a board",
-// docs/specs/026-plan/item-types.md "The type catalogue"), as placing it in the editor does: the ones the document
-// lacks join its card types (in a fresh document, they become them).
+// docs/specs/026-plan/item-types.md "The type catalogue"), as placing it in the editor does: the ones the project
+// lacks join its card types (in a fresh project, they become them).
 // Nothing is read or written when no Plan board is among the elements, nor written when nothing changes. A refused
 // save leaves the board as made, with nothing brought. The save names the catalogue's revision it read; when another
 // change landed first, the card types are read again and brought to them (CARD_TYPES_SAVE_ATTEMPTS).
 import type { ApiClient } from '@liveplanner/api-client';
-import type { DocumentResponse, ItemTypesRequest } from '@liveplanner/api-schema';
+import type { ProjectResponse, ItemTypesRequest } from '@liveplanner/api-schema';
 import {
   boardTypeIdsOf,
   catalogueWithBoardTypes,
@@ -17,20 +17,20 @@ import { CARD_TYPES_SAVE_ATTEMPTS, isCardTypesStale, itemTypesPath } from './pla
 
 type BoardLike = Parameters<typeof catalogueWithBoardTypes>[1][number];
 
-// What the caller has just read: the document's stored catalogue (null: not chosen).
+// What the caller has just read: the project's stored catalogue (null: not chosen).
 interface KnownCardTypes {
   stored: ItemTypeCatalogue | null;
-  // The catalogue's revision as read (the document's `itemTypesRev`); absent saves whatever is stored.
+  // The catalogue's revision as read (the project's `itemTypesRev`); absent saves whatever is stored.
   rev?: number;
 }
 
-async function readKnown(api: ApiClient, documentId: string): Promise<KnownCardTypes> {
-  const { document } = await api.json<DocumentResponse>(
-    `/documents/${encodeURIComponent(documentId)}`,
+async function readKnown(api: ApiClient, projectId: string): Promise<KnownCardTypes> {
+  const { project } = await api.json<ProjectResponse>(
+    `/projects/${encodeURIComponent(projectId)}`,
   );
   return {
-    stored: document.itemTypes ?? null,
-    ...(document.itemTypesRev !== undefined ? { rev: document.itemTypesRev } : {}),
+    stored: project.itemTypes ?? null,
+    ...(project.itemTypesRev !== undefined ? { rev: project.itemTypesRev } : {}),
   };
 }
 
@@ -38,7 +38,7 @@ async function readKnown(api: ApiClient, documentId: string): Promise<KnownCardT
 // access); anything else throws.
 async function saved(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   next: ItemTypeCatalogue,
   rev: number | undefined,
 ): Promise<boolean | 'stale'> {
@@ -47,7 +47,7 @@ async function saved(
     ...(rev !== undefined ? { expectedRev: rev } : {}),
   };
   try {
-    await api.json(itemTypesPath(documentId), { method: 'PUT', body: JSON.stringify(body) });
+    await api.json(itemTypesPath(projectId), { method: 'PUT', body: JSON.stringify(body) });
     return true;
   } catch (err) {
     if (isCardTypesStale(err)) return 'stale';
@@ -56,27 +56,27 @@ async function saved(
   }
 }
 
-// The ids of the types the document gained.
+// The ids of the types the project gained.
 export async function bringBoardCardTypes(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   elements: readonly BoardLike[],
   known?: KnownCardTypes,
 ): Promise<string[]> {
   if (boardTypeIdsOf(elements).length === 0) return [];
-  let read = known ?? (await readKnown(api, documentId));
+  let read = known ?? (await readKnown(api, projectId));
   for (let attempt = 1; ; attempt += 1) {
     const { stored, rev } = read;
     const next = catalogueWithBoardTypes(stored, elements);
     if (next === null) return [];
-    const ok = await saved(api, documentId, next, rev);
+    const ok = await saved(api, projectId, next, rev);
     if (ok === true) return gained(stored, next);
     if (ok === false || attempt >= CARD_TYPES_SAVE_ATTEMPTS) return [];
-    read = await readKnown(api, documentId);
+    read = await readKnown(api, projectId);
   }
 }
 
-// The ids the document gained.
+// The ids the project gained.
 function gained(stored: ItemTypeCatalogue | null, next: ItemTypeCatalogue): string[] {
   const had = new Set(typesOf(stored).map((t) => t.id));
   return next.types.filter((t) => !had.has(t.id)).map((t) => t.id);

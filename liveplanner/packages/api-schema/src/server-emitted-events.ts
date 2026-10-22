@@ -1,10 +1,10 @@
 // The telemetry pairs only the api worker writes (docs/specs/017-telemetry/telemetry.md). Each one is
 // counted server-side because the server is the only party that can count it
 // honestly: an email sent from a cron (Email·Sent), a first visit to a shared
-// document (Document·Joined, once per visitor and document), a new Clerk session
+// project (Project·Joined, once per visitor and project), a new Clerk session
 // or account (Session·SignedIn / SignedUp, once per authentication whatever
-// the method), a realtime room first holding two people (Document·Used, the
-// Multiplayer count, once per session by the document room rather than once
+// the method), a realtime room first holding two people (Project·Used, the
+// Multiplayer count, once per session by the project room rather than once
 // per participant).
 //
 // POST /api/events drops these, so an old cached editor bundle that still
@@ -13,8 +13,8 @@
 // editor's telemetry manifest.
 export const SERVER_EMITTED_EVENT_PAIRS: readonly string[] = [
   'Agent·Present',
-  'Document·Joined',
-  'Document·Used',
+  'Project·Joined',
+  'Project·Used',
   'Email·Sent',
   'Session·SignedIn',
   'Session·SignedUp',

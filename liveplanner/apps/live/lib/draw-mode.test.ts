@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { EMBED_PROVIDERS } from '@liveplanner/document';
+import { EMBED_PROVIDERS } from '@liveplanner/project';
 import {
   drawBannerMessage,
   drawIntentCursor,

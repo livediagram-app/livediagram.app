@@ -16,7 +16,7 @@
 
 import type { Selection } from '@/lib/selection-store';
 import { useRef, useState } from 'react';
-import { createFreehand, type Element, type Tab, withVariantColours } from '@liveplanner/document';
+import { createFreehand, type Element, type Tab, withVariantColours } from '@liveplanner/project';
 import { getTheme } from '@/lib/themes';
 import { track, titleCaseType } from '@/lib/telemetry';
 import { isTechIconId } from '@/lib/tech-icons';

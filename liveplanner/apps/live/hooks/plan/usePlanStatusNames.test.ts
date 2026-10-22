@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element, type Tab } from '@liveplanner/document';
+import { createShape, type Element, type Tab } from '@liveplanner/project';
 import { presetSetup } from '@liveplanner/items';
 import { renderHook } from '@testing-library/react';
 import {
   STATUS_SIGNATURE_CACHE_MAX,
-  documentBoardSetups,
-  documentStatusSignatures,
+  projectBoardSetups,
+  projectStatusSignatures,
   statusColumnsOf,
   usePlanStatuses,
 } from './usePlanStatusNames';
@@ -31,8 +31,8 @@ describe('statusColumnsOf', () => {
   });
 });
 
-// docs/specs/026-plan/plan-templates.md "Hand-offs": the document's statuses, the open tab's first.
-describe('document-wide statuses', () => {
+// docs/specs/026-plan/plan-templates.md "Hand-offs": the project's statuses, the open tab's first.
+describe('project-wide statuses', () => {
   const board = (columns: { status: string; name: string }[], doneColumnId?: string) =>
     ({
       ...createShape('plan-board', 0, 0),
@@ -61,7 +61,7 @@ describe('document-wide statuses', () => {
   ];
 
   it('reads the open tab’s boards first, then the others in tab order', () => {
-    expect(documentBoardSetups(tabs, 'b')).toEqual([
+    expect(projectBoardSetups(tabs, 'b')).toEqual([
       sprint.type === 'shape' && sprint.planBoard,
       backlog.type === 'shape' && backlog.planBoard,
     ]);
@@ -125,16 +125,16 @@ describe('document-wide statuses', () => {
   });
 
   it('reuses the signatures while every tab’s boards are the same, and keeps the cache bounded', () => {
-    const a = documentStatusSignatures(tabs, 'a');
-    expect(documentStatusSignatures([...tabs], 'a')).toBe(a);
+    const a = projectStatusSignatures(tabs, 'a');
+    expect(projectStatusSignatures([...tabs], 'a')).toBe(a);
     // A tab whose elements changed is read afresh.
     const changed = [{ ...tabs[0]!, elements: [...tabs[0]!.elements] }, ...tabs.slice(1)];
-    const b = documentStatusSignatures(changed, 'a');
+    const b = projectStatusSignatures(changed, 'a');
     expect(b).not.toBe(a);
     expect(b).toEqual(a);
     for (let i = 0; i <= STATUS_SIGNATURE_CACHE_MAX; i++)
-      documentStatusSignatures([{ ...tabs[0]!, elements: [] }, ...tabs.slice(1)], 'a');
-    expect(documentStatusSignatures(tabs, 'a')).not.toBe(a);
+      projectStatusSignatures([{ ...tabs[0]!, elements: [] }, ...tabs.slice(1)], 'a');
+    expect(projectStatusSignatures(tabs, 'a')).not.toBe(a);
   });
 });
 

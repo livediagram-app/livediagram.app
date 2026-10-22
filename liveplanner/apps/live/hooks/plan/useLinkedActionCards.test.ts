@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { Element, ElementAction, Tab } from '@liveplanner/document';
+import type { Element, ElementAction, Tab } from '@liveplanner/project';
 import {
   EMPTY_ITEM_STORE,
   LINKED_AT_FIELD,
@@ -175,7 +175,7 @@ describe('useLinkedActionCards', () => {
       open: null,
       itemId: null,
     });
-    // A second ask on the same document adds nothing.
+    // A second ask on the same project adds nothing.
     await act(async () => {
       h.result.current.noteActionAdded('t1');
       await Promise.resolve();
@@ -204,7 +204,7 @@ describe('useLinkedActionCards', () => {
       tabs: [canvas([action('a1')]), { id: 'tb', name: 'Actions', elements: [], kind: 'board' }],
       unloaded: ['tb'],
     });
-    // The hook's own read of Board tabs, for a document that has actions.
+    // The hook's own read of Board tabs, for a project that has actions.
     expect(h.spies.loadTabs).toHaveBeenCalledWith(['tb']);
   });
 

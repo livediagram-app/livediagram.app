@@ -2,7 +2,7 @@
 
 // The toolbar's Font (docs/specs/029-sheets/sheet.md "Formatting"): a button naming the active cell's font in its own
 // face, left of Font Size, opening the Font menu (SheetToolbarMenus). Unset, the sheet's font: Default.
-import { FONTS, resolveFontStack } from '@liveplanner/document';
+import { FONTS, resolveFontStack } from '@liveplanner/project';
 import { ChevronDownIcon, Tooltip } from '@liveplanner/ui';
 
 // The button's width on the toolbar: room for the longest name (Permanent Marker) at 12px, and the chevron.

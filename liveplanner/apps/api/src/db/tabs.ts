@@ -1,7 +1,7 @@
-// tabs — one row per tab, linked to documents through the
-// document_tabs many-to-many table (docs/specs/006-document/tab-document-many-to-many.md).
+// tabs — one row per tab, linked to projects through the
+// project_tabs many-to-many table (docs/specs/006-project/tab-project-many-to-many.md).
 
-import { capElementActions, drawnCount, type Tab } from '@liveplanner/document';
+import { capElementActions, drawnCount, type Tab } from '@liveplanner/project';
 import { rowToTab, type TabRow } from '../tab-row';
 import { MAX_TAB_BYTES, TabTooLargeError, byteLength, logTabRefused } from '../limits';
 
@@ -20,110 +20,110 @@ import { tabStatsOf, tabStatsStatement, type TabStats } from './tab-stats';
 import { collabIndexStatements } from './collab-index';
 import { sheetRefIds, sheetRefReplaceStatements, sheetSettleStatements } from './sheet-refs';
 
-// Whether `tabId` is a tab that exists but is not one of `documentId`'s: a save must never adopt it. A save
+// Whether `tabId` is a tab that exists but is not one of `projectId`'s: a save must never adopt it. A save
 // upserts by tab id, so without this a tab id seen elsewhere (a share link) could
-// overwrite that tab and link it into the caller's own document. Linking an existing tab has its own route.
+// overwrite that tab and link it into the caller's own project. Linking an existing tab has its own route.
 export async function tabBelongsElsewhere(
   env: Env,
   tabId: string,
-  documentId: string,
+  projectId: string,
 ): Promise<boolean> {
   const row = await env.DB.prepare(
     `SELECT 1 AS found FROM tabs t
       WHERE t.id = ?
-        AND NOT EXISTS (SELECT 1 FROM document_tabs dt WHERE dt.tab_id = t.id AND dt.document_id = ?)`,
+        AND NOT EXISTS (SELECT 1 FROM project_tabs dt WHERE dt.tab_id = t.id AND dt.project_id = ?)`,
   )
-    .bind(tabId, documentId)
+    .bind(tabId, projectId)
     .first<{ found: number }>();
   return row !== null;
 }
 
-export async function getTab(env: Env, documentId: string, tabId: string): Promise<TabDTO | null> {
-  // Resolve via the document_tabs link table (docs/specs/006-document/tab-document-many-to-many.md) so a
-  // linked tab surfaces from every document that contains it. The link
-  // also carries the per-document order_index, so the returned summary's
-  // position is correct for whichever document the caller asked about.
+export async function getTab(env: Env, projectId: string, tabId: string): Promise<TabDTO | null> {
+  // Resolve via the project_tabs link table (docs/specs/006-project/tab-project-many-to-many.md) so a
+  // linked tab surfaces from every project that contains it. The link
+  // also carries the per-project order_index, so the returned summary's
+  // position is correct for whichever project the caller asked about.
   const row = await env.DB.prepare(
-    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+    `SELECT t.id, dt.project_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
        FROM tabs t
-       JOIN document_tabs dt ON dt.tab_id = t.id
-      WHERE t.id = ? AND dt.document_id = ?`,
+       JOIN project_tabs dt ON dt.tab_id = t.id
+      WHERE t.id = ? AND dt.project_id = ?`,
   )
-    .bind(tabId, documentId)
+    .bind(tabId, projectId)
     .first<TabRow>();
   return row ? rowToTab(row) : null;
 }
 
-// The document's tabs that hold a comment thread, in tab order (agent-presence PR21): the thread listing reads them
+// The project's tabs that hold a comment thread, in tab order (agent-presence PR21): the thread listing reads them
 // one at a time rather than every body at once.
-export async function tabIdsWithComments(env: Env, documentId: string): Promise<string[]> {
+export async function tabIdsWithComments(env: Env, projectId: string): Promise<string[]> {
   const { results } = await env.DB.prepare(
-    `SELECT dt.tab_id FROM document_tabs dt JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.document_id = ?
+    `SELECT dt.tab_id FROM project_tabs dt JOIN tabs t ON t.id = dt.tab_id
+      WHERE dt.project_id = ?
         AND (instr(t.data, '"commentThread"') > 0 OR instr(t.data, '"cellComments"') > 0)
       ORDER BY dt.order_index, dt.tab_id`,
   )
-    .bind(documentId)
+    .bind(projectId)
     .all<{ tab_id: string }>();
   return results.map((r) => r.tab_id);
 }
 
-// A page of the document's tabs that hold a Plan board, in tab order, bodies included: the plan route
+// A page of the project's tabs that hold a Plan board, in tab order, bodies included: the plan route
 // (docs/specs/026-plan/plan-agents.md "Cost") never parses a tab without a board.
 export async function tabBodiesWithBoards(
   env: Env,
-  documentId: string,
+  projectId: string,
   offset: number,
   limit: number,
 ): Promise<TabDTO[]> {
   const { results } = await env.DB.prepare(
-    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+    `SELECT t.id, dt.project_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
        FROM tabs t
-       JOIN document_tabs dt ON dt.tab_id = t.id
-      WHERE dt.document_id = ? AND instr(t.data, '"plan-board"') > 0
+       JOIN project_tabs dt ON dt.tab_id = t.id
+      WHERE dt.project_id = ? AND instr(t.data, '"plan-board"') > 0
       ORDER BY dt.order_index, t.id
       LIMIT ? OFFSET ?`,
   )
-    .bind(documentId, limit, offset)
+    .bind(projectId, limit, offset)
     .all<TabRow>();
   return results.map(rowToTab);
 }
 
-// A page of a document's tabs in order, bodies included: `overview` reads a document this way so it
-// never holds more than `limit` bodies at once (docs/specs/024-agents/blueprints/document-views.md, VW47).
+// A page of a project's tabs in order, bodies included: `overview` reads a project this way so it
+// never holds more than `limit` bodies at once (docs/specs/024-agents/blueprints/project-views.md, VW47).
 export async function tabBodiesInOrder(
   env: Env,
-  documentId: string,
+  projectId: string,
   offset: number,
   limit: number,
 ): Promise<TabDTO[]> {
   const { results } = await env.DB.prepare(
-    `SELECT t.id, dt.document_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
+    `SELECT t.id, dt.project_id, t.name, dt.order_index, t.data, t.updated_at, t.rev, dt.folder
        FROM tabs t
-       JOIN document_tabs dt ON dt.tab_id = t.id
-      WHERE dt.document_id = ?
+       JOIN project_tabs dt ON dt.tab_id = t.id
+      WHERE dt.project_id = ?
       ORDER BY dt.order_index, t.id
       LIMIT ? OFFSET ?`,
   )
-    .bind(documentId, limit, offset)
+    .bind(projectId, limit, offset)
     .all<TabRow>();
   return results.map(rowToTab);
 }
 
-// The raw `tabs.data` JSON for a document's first tab (lowest
-// order_index in the document_tabs link), or null when the document has
-// no tabs. Used by the SVG snapshot render-cache (docs/specs/006-document/document-snapshots.md), which needs
+// The raw `tabs.data` JSON for a project's first tab (lowest
+// order_index in the project_tabs link), or null when the project has
+// no tabs. Used by the SVG snapshot render-cache (docs/specs/006-project/project-snapshots.md), which needs
 // only the element body — never the full TabDTO hydration — so this
 // reads the single `data` column rather than going through getTab.
-// The `empty` column of a document list (docs/specs/006-document/document-snapshots.md): the element
-// count of the document's first tab, or of `scopeTabSql`'s tab when that is not null. Reads the
+// The `empty` column of a project list (docs/specs/006-project/project-snapshots.md): the element
+// count of the project's first tab, or of `scopeTabSql`'s tab when that is not null. Reads the
 // count each tab write binds, never a tab body. NULL = no tab, -1 = not yet known.
-export function firstTabCountSql(documentIdSql: string, scopeTabSql: string | null = null): string {
+export function firstTabCountSql(projectIdSql: string, scopeTabSql: string | null = null): string {
   const scope = scopeTabSql ? ` AND (${scopeTabSql} IS NULL OR dt.tab_id = ${scopeTabSql})` : '';
   return `(SELECT COALESCE(t.element_count, -1)
-             FROM document_tabs dt
+             FROM project_tabs dt
              JOIN tabs t ON t.id = dt.tab_id
-            WHERE dt.document_id = ${documentIdSql}${scope}
+            WHERE dt.project_id = ${projectIdSql}${scope}
             ORDER BY dt.order_index ASC
             LIMIT 1) AS first_tab_count`;
 }
@@ -136,29 +136,29 @@ export function isEmptyCount(firstTabCount: number | null | undefined): boolean 
 // A stored tab body with its id and its element count (null until known).
 export type StoredTabBody = { id: string; data: string; elementCount: number | null };
 
-// The document's first tab, or `tabId`'s tab when given, as the snapshot renderer reads it.
+// The project's first tab, or `tabId`'s tab when given, as the snapshot renderer reads it.
 export async function getTabBody(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string | null = null,
 ): Promise<StoredTabBody | null> {
   const row = await env.DB.prepare(
     `SELECT t.id, t.data, t.element_count
-       FROM document_tabs dt
+       FROM project_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.document_id = ?${tabId === null ? '' : ' AND dt.tab_id = ?'}
+      WHERE dt.project_id = ?${tabId === null ? '' : ' AND dt.tab_id = ?'}
       ORDER BY dt.order_index ASC
       LIMIT 1`,
   )
-    .bind(...(tabId === null ? [documentId] : [documentId, tabId]))
+    .bind(...(tabId === null ? [projectId] : [projectId, tabId]))
     .first<{ id: string; data: string; element_count: number | null }>();
   return row ? { id: row.id, data: row.data, elementCount: row.element_count ?? null } : null;
 }
 
-// How much the document's first tab has to draw (drawnCount): its stored count, or a parse of its body while the count is
+// How much the project's first tab has to draw (drawnCount): its stored count, or a parse of its body while the count is
 // not yet known. Zero with no tab or an unreadable body. Needs no snapshot store, unlike a render.
-export async function firstTabElementCount(env: Env, documentId: string): Promise<number> {
-  const body = await getTabBody(env, documentId);
+export async function firstTabElementCount(env: Env, projectId: string): Promise<number> {
+  const body = await getTabBody(env, projectId);
   if (!body) return 0;
   if (body.elementCount !== null) return body.elementCount;
   try {
@@ -176,26 +176,26 @@ export async function stampTabElementCount(env: Env, tabId: string, count: numbe
     .run();
 }
 
-// The raw `tabs.data` JSON for a SPECIFIC tab in a document, or null when
-// that tab isn't part of the document. Resolved through the document_tabs
-// link (like getTab) so a tab id only renders for a document that
-// actually contains it — a share code for document A can never coax out
-// a tab that lives only in document B. Backs the per-tab live image
+// The raw `tabs.data` JSON for a SPECIFIC tab in a project, or null when
+// that tab isn't part of the project. Resolved through the project_tabs
+// link (like getTab) so a tab id only renders for a project that
+// actually contains it — a share code for project A can never coax out
+// a tab that lives only in project B. Backs the per-tab live image
 // (docs/specs/013-workspace/live-image-share.md); mirrors getFirstTabData but keyed by tab id instead of the
 // lowest order_index.
 export async function getTabData(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
 ): Promise<string | null> {
   const row = await env.DB.prepare(
     `SELECT t.data
-       FROM document_tabs dt
+       FROM project_tabs dt
        JOIN tabs t ON t.id = dt.tab_id
-      WHERE dt.document_id = ? AND dt.tab_id = ?
+      WHERE dt.project_id = ? AND dt.tab_id = ?
       LIMIT 1`,
   )
-    .bind(documentId, tabId)
+    .bind(projectId, tabId)
     .first<{ data: string }>();
   return row?.data ?? null;
 }
@@ -207,14 +207,14 @@ type TabRevWrite = { advance: true } | { expected: number };
 
 // The statements of one tab write. Splits the live-app's Tab type into columns + a `data` JSON
 // blob (everything except id + name) so list queries can return summaries without parsing element
-// trees. The body goes to `tabs` (RETURNING its new `rev`, always first), this document's position
-// to its `document_tabs` link (docs/specs/006-document/tab-document-many-to-many.md), the
-// document's `saved_at`, and the collaboration and sheet reference indexes, replaced in the SAME
+// trees. The body goes to `tabs` (RETURNING its new `rev`, always first), this project's position
+// to its `project_tabs` link (docs/specs/006-project/tab-project-many-to-many.md), the
+// project's `saved_at`, and the collaboration and sheet reference indexes, replaced in the SAME
 // batch as the blob they mirror so they can never drift. Exported so a changeset batches its
 // record beside the write: a lost compare-and-swap then aborts the whole batch.
 export function tabWriteStatements(
   env: Env,
-  documentId: string,
+  projectId: string,
   input: Tab,
   orderIndex: number,
   revision: TabRevWrite,
@@ -241,20 +241,20 @@ export function tabWriteStatements(
        RETURNING rev`,
     ).bind(id, name, data, now, drawnCount(tab), insertRev),
     env.DB.prepare(
-      `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
+      `INSERT INTO project_tabs (project_id, tab_id, order_index, added_at)
        VALUES (?, ?, ?, ?)
-       ON CONFLICT (document_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
-    ).bind(documentId, id, orderIndex, now),
+       ON CONFLICT (project_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
+    ).bind(projectId, id, orderIndex, now),
     // The Details view's numbers (docs/specs/013-workspace/explorer-details-view.md), from the body
     // just stored, after the tabs upsert, which the row's FK needs.
     tabStatsStatement(env, id, tabStatsOf(rest, data), now),
     // The Explorer's "Updated X ago" line. Pure metadata write — no element JSON.
-    env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(now, documentId),
+    env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?').bind(now, projectId),
     // The collaboration index (docs/specs/013-workspace/inbox.md §2.1), after the tabs
     // upsert, which the rows' FK needs.
     ...collabIndexStatements(env, id, tab.elements),
     // The sheet reference index (docs/specs/029-sheets/sheet-store.md "Deleting a sheet"), after the tabs and
-    // document_tabs upserts, which the rows' FK and the settling triggers read. A write whose
+    // project_tabs upserts, which the rows' FK and the settling triggers read. A write whose
     // references are unchanged touches no row, so the triggers cost it nothing.
     ...sheetRefReplaceStatements(env, id, sheetRefIds(tab.elements)),
   ];
@@ -277,12 +277,12 @@ export function isTabRevStale(err: unknown): boolean {
 // extra serial D1 hops were once the largest latency item on a save. Answers the new revision.
 export async function upsertTab(
   env: Env,
-  documentId: string,
+  projectId: string,
   input: Tab,
   orderIndex: number,
 ): Promise<number> {
   const results = await env.DB.batch(
-    tabWriteStatements(env, documentId, input, orderIndex, { advance: true }),
+    tabWriteStatements(env, projectId, input, orderIndex, { advance: true }),
   );
   return revFromBatch(results);
 }
@@ -291,13 +291,13 @@ export async function upsertTab(
 // `tab_rev_stale` (isTabRevStale) and writes nothing when the tab moved since (CS3, CS4).
 export async function upsertTabAtRev(
   env: Env,
-  documentId: string,
+  projectId: string,
   input: Tab,
   orderIndex: number,
   expectedRev: number,
 ): Promise<number> {
   const results = await env.DB.batch(
-    tabWriteStatements(env, documentId, input, orderIndex, { expected: expectedRev }),
+    tabWriteStatements(env, projectId, input, orderIndex, { expected: expectedRev }),
   );
   return revFromBatch(results);
 }
@@ -313,17 +313,17 @@ export async function renameTab(env: Env, tabId: string, name: string): Promise<
   return row?.rev ?? null;
 }
 
-// Bulk-seed a fresh document's tabs in one batch (create path). The
+// Bulk-seed a fresh project's tabs in one batch (create path). The
 // per-tab upsertTab does three sequential writes each (tab body,
 // link row, and a redundant saved_at bump), so seeding K tabs that
 // way costs ~3K serial round trips. Here we collect every insert and
 // submit one batch, then bump saved_at exactly once. Same ON CONFLICT
 // semantics as upsertTab so a retried create stays idempotent.
-// `savedAt`: the document's last-modified date after seeding, its own when a create carried one
-// (docs/specs/015-api/api.md "Document dates"); absent, now.
+// `savedAt`: the project's last-modified date after seeding, its own when a create carried one
+// (docs/specs/015-api/api.md "Project dates"); absent, now.
 export async function seedTabs(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabs: Tab[],
   savedAt?: number,
 ): Promise<void> {
@@ -349,134 +349,134 @@ export async function seedTabs(
            rev = tabs.rev + 1`,
       ).bind(id, name, data, now, drawnCount(tab)),
       env.DB.prepare(
-        `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
+        `INSERT INTO project_tabs (project_id, tab_id, order_index, added_at)
          VALUES (?, ?, ?, ?)
-         ON CONFLICT (document_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
-      ).bind(documentId, id, idx, now),
+         ON CONFLICT (project_id, tab_id) DO UPDATE SET order_index = excluded.order_index`,
+      ).bind(projectId, id, idx, now),
       tabStatsStatement(env, id, tabStatsOf(rest, data), now),
     ];
   });
   stmts.push(
-    env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?').bind(
+    env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?').bind(
       savedAt ?? now,
-      documentId,
+      projectId,
     ),
   );
   // Index rows for every seeded tab (docs/specs/013-workspace/inbox.md §2.1): a JSON import or a
   // copy from a share link can carry actions and threads in on create.
   for (const tab of capped) {
     stmts.push(...collabIndexStatements(env, tab.id, tab.elements));
-    // A seed's sheets come after its tabs (routes/documents.ts), so they find these references on create.
+    // A seed's sheets come after its tabs (routes/projects.ts), so they find these references on create.
     stmts.push(...sheetRefReplaceStatements(env, tab.id, sheetRefIds(tab.elements)));
   }
   await env.DB.batch(stmts);
 }
 
-// Which of `tabIds` already name a tab that is NOT in `documentId`: a create
-// seeding one of those would write into a tab another document holds, so the
-// create re-mints it (docs/specs/006-document/offline-mode.md, "Shared tabs fork").
-// A tab already in this document is a retried create and keeps its id.
+// Which of `tabIds` already name a tab that is NOT in `projectId`: a create
+// seeding one of those would write into a tab another project holds, so the
+// create re-mints it (docs/specs/006-project/offline-mode.md, "Shared tabs fork").
+// A tab already in this project is a retried create and keeps its id.
 export async function tabIdsHeldElsewhere(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabIds: string[],
 ): Promise<Set<string>> {
   if (tabIds.length === 0) return new Set();
   const rows = await env.DB.prepare(
     `SELECT id FROM tabs
       WHERE id IN (SELECT value FROM json_each(?))
-        AND NOT EXISTS (SELECT 1 FROM document_tabs dt WHERE dt.document_id = ? AND dt.tab_id = tabs.id)`,
+        AND NOT EXISTS (SELECT 1 FROM project_tabs dt WHERE dt.project_id = ? AND dt.tab_id = tabs.id)`,
   )
-    .bind(JSON.stringify(tabIds), documentId)
+    .bind(JSON.stringify(tabIds), projectId)
     .all<{ id: string }>();
   return new Set((rows.results ?? []).map((r) => r.id));
 }
 
-// Remove the tab from this document (drops the `document_tabs` link
+// Remove the tab from this project (drops the `project_tabs` link
 // row). The underlying `tabs` row only goes away when no other
-// document still references it: linked tabs (per docs/specs/006-document/tab-document-many-to-many.md) survive
-// an unlink from one of their containing documents so the body
+// project still references it: linked tabs (per docs/specs/006-project/tab-project-many-to-many.md) survive
+// an unlink from one of their containing projects so the body
 // stays readable from the rest. Legacy single-link tabs end up
 // fully deleted, matching the prior contract.
 //
-// Answers the tab's stored body as it was unlinked (null when this document did not hold it), read
+// Answers the tab's stored body as it was unlinked (null when this project did not hold it), read
 // by the unlink itself so a comment written a moment before cannot slip between a read and the
-// delete: the caller retracts the tab's comment events from this document's feed with it.
+// delete: the caller retracts the tab's comment events from this project's feed with it.
 export async function deleteTabRow(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
 ): Promise<string | null> {
   const unlinked = await env.DB.prepare(
-    `DELETE FROM document_tabs WHERE document_id = ? AND tab_id = ?
-      RETURNING (SELECT t.data FROM tabs t WHERE t.id = document_tabs.tab_id) AS data`,
+    `DELETE FROM project_tabs WHERE project_id = ? AND tab_id = ?
+      RETURNING (SELECT t.data FROM tabs t WHERE t.id = project_tabs.tab_id) AS data`,
   )
-    .bind(documentId, tabId)
+    .bind(projectId, tabId)
     .first<{ data: string | null }>();
-  const remaining = await env.DB.prepare('SELECT COUNT(*) AS n FROM document_tabs WHERE tab_id = ?')
+  const remaining = await env.DB.prepare('SELECT COUNT(*) AS n FROM project_tabs WHERE tab_id = ?')
     .bind(tabId)
     .first<{ n: number }>();
   if ((remaining?.n ?? 0) === 0) {
     await env.DB.prepare('DELETE FROM tabs WHERE id = ?').bind(tabId).run();
   }
   // The tab's references are gone (by the FK cascade, or by the unlink the reference join reads), with the link
-  // the triggers would find the document by, so the document's sheets settle here.
-  await env.DB.batch(sheetSettleStatements(env, documentId, Date.now()));
+  // the triggers would find the project by, so the project's sheets settle here.
+  await env.DB.batch(sheetSettleStatements(env, projectId, Date.now()));
   return unlinked?.data ?? null;
 }
 
-// Link an existing tab into another document (docs/specs/006-document/tab-document-many-to-many.md). Inserts a
-// `document_tabs` row at the end of the target document's order,
+// Link an existing tab into another project (docs/specs/006-project/tab-project-many-to-many.md). Inserts a
+// `project_tabs` row at the end of the target project's order,
 // idempotent on conflict so re-linking the same pair returns 200
 // without double-counting. The `tabs` row itself is untouched: the
-// tab body lives in one place and edits propagate to every document
+// tab body lives in one place and edits propagate to every project
 // that references it. Returns true when a fresh link was created,
 // false when the link already existed (idempotent path).
-export async function linkTabToDocument(
+export async function linkTabToProject(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
 ): Promise<boolean> {
   const existing = await env.DB.prepare(
-    'SELECT 1 AS present FROM document_tabs WHERE document_id = ? AND tab_id = ?',
+    'SELECT 1 AS present FROM project_tabs WHERE project_id = ? AND tab_id = ?',
   )
-    .bind(documentId, tabId)
+    .bind(projectId, tabId)
     .first<{ present: number }>();
   if (existing) return false;
   const count = await env.DB.prepare(
-    'SELECT COUNT(*) AS n FROM document_tabs WHERE document_id = ?',
+    'SELECT COUNT(*) AS n FROM project_tabs WHERE project_id = ?',
   )
-    .bind(documentId)
+    .bind(projectId)
     .first<{ n: number }>();
   const orderIndex = count?.n ?? 0;
   const now = Date.now();
   await env.DB.prepare(
-    `INSERT INTO document_tabs (document_id, tab_id, order_index, added_at)
+    `INSERT INTO project_tabs (project_id, tab_id, order_index, added_at)
      VALUES (?, ?, ?, ?)
-     ON CONFLICT (document_id, tab_id) DO NOTHING`,
+     ON CONFLICT (project_id, tab_id) DO NOTHING`,
   )
-    .bind(documentId, tabId, orderIndex, now)
+    .bind(projectId, tabId, orderIndex, now)
     .run();
-  await env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?')
-    .bind(now, documentId)
+  await env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?')
+    .bind(now, projectId)
     .run();
   return true;
 }
 
 // The link endpoint's authorisation check in one query: is this tab
-// linked into at least one document owned by `ownerId`? Replaces the
-// old "list every containing document id, then getDocument() each in a
-// loop" pattern (N full document hydrations to read one column). The
+// linked into at least one project owned by `ownerId`? Replaces the
+// old "list every containing project id, then getProject() each in a
+// loop" pattern (N full project hydrations to read one column). The
 // JOIN + LIMIT 1 stops at the first owned match.
-export async function tabLinkedToOwnedDocument(
+export async function tabLinkedToOwnedProject(
   env: Env,
   tabId: string,
   ownerId: string,
 ): Promise<boolean> {
   const row = await env.DB.prepare(
     `SELECT 1 AS present
-       FROM document_tabs dt
-       JOIN documents d ON d.id = dt.document_id
+       FROM project_tabs dt
+       JOIN projects d ON d.id = dt.project_id
       WHERE dt.tab_id = ? AND d.owner_id = ? AND d.trashed_at IS NULL
       LIMIT 1`,
   )
@@ -485,35 +485,35 @@ export async function tabLinkedToOwnedDocument(
   return row !== null;
 }
 
-// How many of this document's tabs are shared (also linked into another
-// document), and across how many other documents: what deleting or taking the
-// document offline leaves behind (docs/specs/006-document/tab-document-many-to-many.md,
+// How many of this project's tabs are shared (also linked into another
+// project), and across how many other projects: what deleting or taking the
+// project offline leaves behind (docs/specs/006-project/tab-project-many-to-many.md,
 // "Shared-tab notice").
-export async function sharedTabsSummary(env: Env, documentId: string): Promise<SharedTabsSummary> {
+export async function sharedTabsSummary(env: Env, projectId: string): Promise<SharedTabsSummary> {
   const row = await env.DB.prepare(
-    `SELECT COUNT(DISTINCT dt.tab_id) AS tabs, COUNT(DISTINCT o.document_id) AS documents
-       FROM document_tabs dt
-       JOIN document_tabs o ON o.tab_id = dt.tab_id AND o.document_id <> dt.document_id
-      WHERE dt.document_id = ?`,
+    `SELECT COUNT(DISTINCT dt.tab_id) AS tabs, COUNT(DISTINCT o.project_id) AS projects
+       FROM project_tabs dt
+       JOIN project_tabs o ON o.tab_id = dt.tab_id AND o.project_id <> dt.project_id
+      WHERE dt.project_id = ?`,
   )
-    .bind(documentId)
+    .bind(projectId)
     .first<SharedTabsSummary>();
-  return { tabs: row?.tabs ?? 0, documents: row?.documents ?? 0 };
+  return { tabs: row?.tabs ?? 0, projects: row?.projects ?? 0 };
 }
 
-// Look up every document id that links the given tab. Used by the
+// Look up every project id that links the given tab. Used by the
 // link endpoint's auth check (caller must own at least one of
 // them) and would also drive a future "this tab is shared with N
-// documents" indicator.
-export async function documentsContainingTab(env: Env, tabId: string): Promise<string[]> {
-  const rows = await env.DB.prepare('SELECT document_id FROM document_tabs WHERE tab_id = ?')
+// projects" indicator.
+export async function projectsContainingTab(env: Env, tabId: string): Promise<string[]> {
+  const rows = await env.DB.prepare('SELECT project_id FROM project_tabs WHERE tab_id = ?')
     .bind(tabId)
-    .all<{ document_id: string }>();
-  return (rows.results ?? []).map((r) => r.document_id);
+    .all<{ project_id: string }>();
+  return (rows.results ?? []).map((r) => r.project_id);
 }
 
-// One position in a reorder request: the tab id plus its per-document
-// folder (docs/specs/006-document/tab-folders.md). Folder rides this path — never the per-tab content
+// One position in a reorder request: the tab id plus its per-project
+// folder (docs/specs/006-project/tab-folders.md). Folder rides this path — never the per-tab content
 // PUT — so a content save can't clobber membership. `null`/omitted =
 // loose. A plain `string` is accepted for the legacy (pre-folder)
 // payload shape and treated as loose.
@@ -544,26 +544,26 @@ export function normalizeReorderEntry(entry: ReorderEntry): { id: string; folder
 // Update tab order + folder membership. Caller passes the entries in
 // their new positions; we rewrite every order_index (and folder) in
 // one batch. Cheap given the < 20-tab scale we see in practice (see
-// docs/specs/006-document/per-tab-storage.md "Risk"). Empty / whitespace folder names normalise to NULL
+// docs/specs/006-project/per-tab-storage.md "Risk"). Empty / whitespace folder names normalise to NULL
 // so a blank folder can never persist.
 export async function reorderTabs(
   env: Env,
-  documentId: string,
+  projectId: string,
   entries: ReorderEntry[],
 ): Promise<void> {
   const now = Date.now();
-  // Order and folder live on the link, per document
-  // (docs/specs/006-document/tab-document-many-to-many.md): moving a tab here
-  // leaves its place in every other document, and its body, untouched.
+  // Order and folder live on the link, per project
+  // (docs/specs/006-project/tab-project-many-to-many.md): moving a tab here
+  // leaves its place in every other project, and its body, untouched.
   const batch = entries.map((entry, idx) => {
     const { id: tabId, folder } = normalizeReorderEntry(entry);
     return env.DB.prepare(
-      'UPDATE document_tabs SET order_index = ?, folder = ? WHERE document_id = ? AND tab_id = ?',
-    ).bind(idx, folder, documentId, tabId);
+      'UPDATE project_tabs SET order_index = ?, folder = ? WHERE project_id = ? AND tab_id = ?',
+    ).bind(idx, folder, projectId, tabId);
   });
   if (batch.length > 0) await env.DB.batch(batch);
-  await env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?')
-    .bind(now, documentId)
+  await env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?')
+    .bind(now, projectId)
     .run();
 }
 
@@ -578,7 +578,7 @@ export async function reorderTabs(
 // index (docs/specs/013-workspace/inbox.md) has nothing to mirror.
 export async function swapTabData(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
   expectedData: string,
   nextData: string,
@@ -596,23 +596,23 @@ export async function swapTabData(
     tabStatsStatement(env, tabId, nextStats, now, nextData),
   ]);
   if ((res?.meta?.changes ?? 0) === 0) return false;
-  await env.DB.prepare('UPDATE documents SET saved_at = ? WHERE id = ?')
-    .bind(now, documentId)
+  await env.DB.prepare('UPDATE projects SET saved_at = ? WHERE id = ?')
+    .bind(now, projectId)
     .run();
   return true;
 }
 
-// Does the document link this tab? A workbench ticket naming a tab the document lacks is refused
+// Does the project link this tab? A workbench ticket naming a tab the project lacks is refused
 // (docs/specs/013-workspace/blueprints/workbench-embeds.md "The ticket mint").
-export async function documentLinksTab(
+export async function projectLinksTab(
   env: Env,
-  documentId: string,
+  projectId: string,
   tabId: string,
 ): Promise<boolean> {
   const row = await env.DB.prepare(
-    'SELECT 1 AS present FROM document_tabs WHERE document_id = ? AND tab_id = ?',
+    'SELECT 1 AS present FROM project_tabs WHERE project_id = ? AND tab_id = ?',
   )
-    .bind(documentId, tabId)
+    .bind(projectId, tabId)
     .first<{ present: number }>();
   return row !== null;
 }

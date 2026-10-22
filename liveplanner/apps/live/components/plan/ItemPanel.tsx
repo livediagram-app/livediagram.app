@@ -56,12 +56,12 @@ const TAB_CLASS =
 
 type ItemPanelProps = {
   item: Item;
-  // The document's item types (docs/specs/026-plan/item-types.md).
+  // The project's item types (docs/specs/026-plan/item-types.md).
   types: readonly ItemTypeDef[];
   // The statuses this tab's boards use, by name, for the status picker.
   statuses: readonly { status: string; name: string }[];
   people: readonly ItemPerson[];
-  // Every label the document's items carry (the labels field's suggestions).
+  // Every label the project's items carry (the labels field's suggestions).
   labels: readonly string[];
   canEdit: boolean;
   // Archive, Trash and the type editor (ItemPanelMenu); absent: as canEdit.

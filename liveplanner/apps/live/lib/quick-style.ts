@@ -24,7 +24,7 @@ import {
   type TextAlignX,
   type TextElement,
   type ThemeDefinition,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { applySwatchOverrides, type ShownSwatch, type SwatchOverrides } from './swatch-overrides';
 
 export type QuickStyleTarget = ShapeElement | ArrowElement | TextElement;

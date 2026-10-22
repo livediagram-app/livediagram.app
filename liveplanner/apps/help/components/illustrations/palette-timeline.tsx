@@ -3,7 +3,7 @@
 import { Label, Scene } from './primitives';
 
 // The Timeline as dropping one draws it (docs/specs/009-elements/concept-graphics.md "Timeline"): the numbers are
-// `timelineLayout(380, 170, 4)` from @liveplanner/document, pinned here so the figure is what the editor draws;
+// `timelineLayout(380, 170, 4)` from @liveplanner/project, pinned here so the figure is what the editor draws;
 // rerun that call and paste its numbers if the layout ever changes. The spine and arrowhead in the accent, a dot per
 // milestone in the accent and ringed in the paper, a stem out to its when (in the accent) and its name.
 const TIMELINE = {

@@ -1,5 +1,5 @@
 // /api/forms/:code: a form link's public doors (docs/specs/030-forms/forms.md "Filling in a form"). Anyone with the
-// code reads the form and sends a response; nothing here reads or answers the document itself. Every miss (unknown,
+// code reads the form and sends a response; nothing here reads or answers the project itself. Every miss (unknown,
 // suspended, trashed, tab gone) is the same 404, so a code tells nobody what lies behind it.
 import {
   FORM_REPORT_NOTE_MAX,
@@ -7,7 +7,7 @@ import {
   type FormReportReason,
   type PublicFormResponse,
 } from '@liveplanner/api-schema';
-import { formLook } from '@liveplanner/document';
+import { formLook } from '@liveplanner/project';
 import { FORM_CODE_PATTERN, closedMessageOf, closedReason, publicForm } from '@liveplanner/forms';
 import { typesOf } from '@liveplanner/items';
 import { clientIp, clientNetwork } from '../client-ip';
@@ -86,7 +86,7 @@ async function fileReport(ctx: RouteContext, code: string): Promise<Response> {
     now,
   );
   if (added) {
-    console.info('[forms] form.reported', { documentId: opened.doc.id, reason });
+    console.info('[forms] form.reported', { projectId: opened.doc.id, reason });
     // The reason is a preset value (FORM_REPORT_REASONS), never the note.
     const { env } = ctx;
     const type = REASON_TYPES[reason as FormReportReason];
@@ -94,7 +94,7 @@ async function fileReport(ctx: RouteContext, code: string): Promise<Response> {
   }
   if (distinct >= FORM_REPORTS_TO_SUSPEND && (await suspendFormLink(ctx.env, code, now))) {
     const suspensions = await countSuspendedFormLinks(ctx.env, opened.doc.id);
-    console.warn('[forms] form.suspended', { documentId: opened.doc.id, suspensions });
+    console.warn('[forms] form.suspended', { projectId: opened.doc.id, suspensions });
     ctx.waitUntil?.(
       notifyFormSuspended(
         ctx.env,

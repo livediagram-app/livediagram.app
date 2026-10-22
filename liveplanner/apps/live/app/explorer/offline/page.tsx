@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
 import { ExplorerPane } from '../ExplorerPane';
-import { viewDocumentTitle } from '../view-titles';
+import { viewProjectTitle } from '../view-titles';
 
-// /explorer/offline — documents saved only in this browser (docs/specs/006-document/offline-mode.md): a
+// /explorer/offline — projects saved only in this browser (docs/specs/006-project/offline-mode.md): a
 // view the app gathers, no folder row behind it. The layout's ExplorerShell
 // provides the chrome + state; this page only pins the route and the tab
 // title (docs/specs/013-workspace/folders.md, routes.ts).
 export const metadata: Metadata = {
-  title: viewDocumentTitle('offline'),
+  title: viewProjectTitle('offline'),
 };
 
 export default function Page() {

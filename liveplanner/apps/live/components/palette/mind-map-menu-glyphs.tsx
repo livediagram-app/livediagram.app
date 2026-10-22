@@ -2,7 +2,7 @@
 // named, because "Balanced" and "Bubble" mean nothing until you see the arrangement: each flow glyph is the branch
 // pattern its flow produces, and each spacing glyph three nodes at that spacing's gap.
 import type { ReactNode } from 'react';
-import type { MindFlow, MindSpacing } from '@liveplanner/document';
+import type { MindFlow, MindSpacing } from '@liveplanner/project';
 
 const glyph = (children: ReactNode) => (
   <svg viewBox="0 0 24 24" width="18" height="18" fill="none" aria-hidden>

@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DatabaseSync } from 'node:sqlite';
-import { parseStrokePoints } from '@liveplanner/document';
+import { parseStrokePoints } from '@liveplanner/project';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 
 // Every tab the api receives runs the stored-tab migration before validation
-// (docs/specs/015-api/api.md "The persistence boundary", docs/specs/006-document/stroke-points.md
+// (docs/specs/015-api/api.md "The persistence boundary", docs/specs/006-project/stroke-points.md
 // "Migration of stored strokes"): a stroke in the former `{ nx, ny }` shape, from a browser loaded
 // before a deploy or an API-token script, is stored packed, never refused.
 
@@ -28,7 +28,7 @@ const legacyStroke = {
 };
 
 function call(db: SqliteD1, method: string, path: string, body?: unknown) {
-  return handleDocuments(makeTestRouteContext(method, path, { env: db.env, owner: 'owner', body }));
+  return handleProjects(makeTestRouteContext(method, path, { env: db.env, owner: 'owner', body }));
 }
 
 function storedElements(sql: DatabaseSync, tabId: string): Record<string, unknown>[] {
@@ -50,10 +50,10 @@ function expectPacked(el: Record<string, unknown>) {
 afterEach(() => vi.restoreAllMocks());
 
 describe('stroke points on the way in', () => {
-  it('packs a former-shape stroke in a created document', async () => {
+  it('packs a former-shape stroke in a created project', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = sqliteD1();
-    const res = await call(db, 'POST', '/api/documents', {
+    const res = await call(db, 'POST', '/api/projects', {
       id: 'D',
       name: 'Board',
       tabs: [{ id: 't1', name: 'Board', elements: [legacyStroke] }],
@@ -65,8 +65,8 @@ describe('stroke points on the way in', () => {
   it('packs a former-shape stroke in a saved tab', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const db = sqliteD1();
-    await call(db, 'POST', '/api/documents', { id: 'D', name: 'Board' });
-    const res = await call(db, 'PUT', '/api/documents/D/tabs/t1', {
+    await call(db, 'POST', '/api/projects', { id: 'D', name: 'Board' });
+    const res = await call(db, 'PUT', '/api/projects/D/tabs/t1', {
       id: 't1',
       name: 'Board',
       elements: [legacyStroke],
@@ -77,8 +77,8 @@ describe('stroke points on the way in', () => {
 
   it('still refuses a stroke that is neither shape', async () => {
     const db = sqliteD1();
-    await call(db, 'POST', '/api/documents', { id: 'D', name: 'Board' });
-    const res = await call(db, 'PUT', '/api/documents/D/tabs/t1', {
+    await call(db, 'POST', '/api/projects', { id: 'D', name: 'Board' });
+    const res = await call(db, 'PUT', '/api/projects/D/tabs/t1', {
       id: 't1',
       name: 'Board',
       elements: [
@@ -90,12 +90,12 @@ describe('stroke points on the way in', () => {
 
   it('refuses a body that is not a tab without throwing', async () => {
     const db = sqliteD1();
-    await call(db, 'POST', '/api/documents', { id: 'D', name: 'Board' });
+    await call(db, 'POST', '/api/projects', { id: 'D', name: 'Board' });
     const withNull = { id: 't1', name: 'B', elements: [legacyStroke, null] };
-    expect((await call(db, 'PUT', '/api/documents/D/tabs/t1', withNull)).status).toBe(400);
-    expect((await call(db, 'PUT', '/api/documents/D/tabs/t1', null)).status).toBe(400);
-    expect((await call(db, 'PUT', '/api/documents/D/tabs/t1', 'tab')).status).toBe(400);
-    const created = await call(db, 'POST', '/api/documents', { id: 'E', name: 'B', tabs: [null] });
+    expect((await call(db, 'PUT', '/api/projects/D/tabs/t1', withNull)).status).toBe(400);
+    expect((await call(db, 'PUT', '/api/projects/D/tabs/t1', null)).status).toBe(400);
+    expect((await call(db, 'PUT', '/api/projects/D/tabs/t1', 'tab')).status).toBe(400);
+    const created = await call(db, 'POST', '/api/projects', { id: 'E', name: 'B', tabs: [null] });
     expect(created.status).toBe(400);
   });
 });

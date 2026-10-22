@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isBoxed, isValidElement, type Element } from '@liveplanner/document';
+import { isBoxed, isValidElement, type Element } from '@liveplanner/project';
 import {
   ARROW_NEIGHBOURS,
   REFERENCE_AREA,

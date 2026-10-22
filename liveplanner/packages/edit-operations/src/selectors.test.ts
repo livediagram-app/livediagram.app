@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { EditRejection } from '@liveplanner/api-schema';
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 import { reachableFrom } from './graph-walk';
 import { refused } from './fixtures/outcomes';
 import { elementOf, run } from './fixtures/run';

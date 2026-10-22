@@ -5,7 +5,7 @@
 
 import { act, renderHook } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import type { ShapeElement } from '@liveplanner/document';
+import type { ShapeElement } from '@liveplanner/project';
 import { useChartAnim } from './chart';
 import { setConceptTourPreview } from './concept-tour-preview';
 

@@ -4,7 +4,7 @@
 // rejections of the edit-operations engine travel inside a changeset's answer, so their wire
 // shapes live here too and the engine re-exports them.
 
-import type { Element, ElementOp, Finish, Tab } from '@liveplanner/document';
+import type { Element, ElementOp, Finish, Tab } from '@liveplanner/project';
 import { MAX_TAB_BYTES } from './tab-size';
 import { TRASH_RETENTION_DAYS } from './trash';
 
@@ -279,7 +279,7 @@ export const CHANGESET_ERROR_CODES = [
 // The room op
 // ---------------------------------------------------------------------
 
-// One changeset, sequenced by the document's room in one log slot. `elementOps` is absent and
+// One changeset, sequenced by the project's room in one log slot. `elementOps` is absent and
 // `refetch` set when they exceed CHANGESET_RELAY_MAX_BYTES; `touched` then names every id. `tab`
 // carries a created tab's non-element fields (CS23). `agentKey` is a one-way digest of the token
 // id, present only for an agent's changeset (CS22). `prevRev` is the tab's previous changeset

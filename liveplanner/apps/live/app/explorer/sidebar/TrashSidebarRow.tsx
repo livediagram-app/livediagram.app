@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { TrashIcon } from '@/components/primitives/explorer-icons';
 import {
-  DOCUMENT_DRAG_MIME,
+  PROJECT_DRAG_MIME,
   FOLDER_DRAG_MIME,
   explorerDragKind,
 } from '@/components/panels/explorer-drag-mime';
@@ -14,10 +14,10 @@ import { trackSidebar } from './sidebar-telemetry';
 import { SidebarRow } from './SidebarRow';
 
 // The sidebar's Trash row (docs/specs/013-workspace/explorer-structure.md "Dragging to the Trash"): it opens the Trash,
-// and while a document or folder is dragged anywhere on the page it wakes as a target, the way Plan mode's Trash takes
+// and while a project or folder is dragged anywhere on the page it wakes as a target, the way Plan mode's Trash takes
 // a card. Dashed with "Drop to Trash" while the drag is elsewhere; filled with the brand colour, its bin's lid tipped
 // and "Let go to trash it" while the drag is over it; one short bounce as it swallows the drop. A drop goes through
-// the item's own Delete: a document to the Trash (with its Undo toast), a folder through Delete Folder (with its
+// the item's own Delete: a project to the Trash (with its Undo toast), a folder through Delete Folder (with its
 // confirmation, the bounce waiting on it: a cancelled folder is not swallowed). Never red: the Trash is undoable. Motion settles within the 250 ms budget; under reduced motion only
 // the colours and words change.
 
@@ -32,11 +32,11 @@ const OVER_ROW =
   'border-brand-700 bg-brand-700 shadow-[0_10px_24px_-10px_color-mix(in_oklab,var(--color-brand-700)_70%,transparent)] motion-safe:scale-[1.03] dark:border-brand-600 dark:bg-brand-600';
 
 export function TrashSidebarRow() {
-  const { selected, go, folders, folderActions, deleteDocument } = useExplorer();
+  const { selected, go, folders, folderActions, deleteProject } = useExplorer();
   const dragging = useExplorerDragging();
   const [over, setOver] = useState(false);
   const [gulp, setGulp] = useState(false);
-  // Enters minus leaves while a drag is over the row or any of its children (useDocumentDropTarget's count).
+  // Enters minus leaves while a drag is over the row or any of its children (useProjectDropTarget's count).
   const depth = useRef(0);
 
   // A drag that ends anywhere leaves the row as it was.
@@ -62,12 +62,12 @@ export function TrashSidebarRow() {
     e.preventDefault();
     depth.current = 0;
     setOver(false);
-    if (kind === 'document') {
-      const id = e.dataTransfer.getData(DOCUMENT_DRAG_MIME);
+    if (kind === 'project') {
+      const id = e.dataTransfer.getData(PROJECT_DRAG_MIME);
       if (!id) return;
-      trackSidebar('TrashDropDocument');
+      trackSidebar('TrashDropProject');
       setGulp(true);
-      void deleteDocument(id);
+      void deleteProject(id);
       return;
     }
     const folder = folders.find((f) => f.id === e.dataTransfer.getData(FOLDER_DRAG_MIME));

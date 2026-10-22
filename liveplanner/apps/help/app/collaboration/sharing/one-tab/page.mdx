@@ -7,19 +7,19 @@ import { ShareOpensRow } from '@/components/illustrations/sharing';
 export const metadata = helpMetadata({
   title: 'Sharing One Tab',
   description:
-    'Scope a share link to a single tab, so the person you send it to sees that tab and nothing else in the document.',
+    'Scope a share link to a single tab, so the person you send it to sees that tab and nothing else in the project.',
   path: '/help/collaboration/sharing/one-tab/',
 });
 
-<ArticleLayout title="Sharing One Tab" description="Scope a share link to one tab; the rest of the document stays private." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "one-tab")}>
+<ArticleLayout title="Sharing One Tab" description="Scope a share link to one tab; the rest of the project stays private." categoryTitle="Collaboration" categorySlug="collaboration" parentArticle={{ title: "Sharing and Embeds", slug: "sharing" }} subArticles={getSubArticles("sharing").filter((a) => a.slug !== "one-tab")}>
 
-A share link normally opens the whole document, every tab of it. Sometimes you only want to show one: the roadmap to a client, but not the pricing tab next to it. A link scoped to one tab does exactly that, without copying the tab into a new document.
+A share link normally opens the whole project, every tab of it. Sometimes you only want to show one: the roadmap to a client, but not the pricing tab next to it. A link scoped to one tab does exactly that, without copying the tab into a new project.
 
 ## Scoping a new link
 
-When a document has more than one tab, the **Share** dialog gains an **Opens** dropdown just above **Valid**. Leave it on **All tabs** for an ordinary link, or pick the tab you want to share (tabs are listed in tab bar order), then **Create Pass**. The role still applies: a one-tab link can be an **Editor**, **Participant** or **Viewer** pass.
+When a project has more than one tab, the **Share** dialog gains an **Opens** dropdown just above **Valid**. Leave it on **All tabs** for an ordinary link, or pick the tab you want to share (tabs are listed in tab bar order), then **Create Pass**. The role still applies: a one-tab link can be an **Editor**, **Participant** or **Viewer** pass.
 
-<Figure caption="On a document with several tabs, Opens picks which tab a new pass opens, or All tabs.">
+<Figure caption="On a project with several tabs, Opens picks which tab a new pass opens, or All tabs.">
   <ShareOpensRow />
 </Figure>
 
@@ -27,13 +27,13 @@ You can make as many links as you like, each scoped differently: one tab to one 
 
 ## What the visitor sees
 
-Someone opening a one-tab link lands straight on that tab, whichever tab the document was last left on. The other tabs stay in their tab bar as **Not shared** pills, so they know the document has more, but without names or folders, and nothing happens when they press one (hovering says "This tab isn't shared with you"). An element link, search result or keyboard shortcut that points at another tab only shows the message "That tab isn't shared with you".
+Someone opening a one-tab link lands straight on that tab, whichever tab the project was last left on. The other tabs stay in their tab bar as **Not shared** pills, so they know the project has more, but without names or folders, and nothing happens when they press one (hovering says "This tab isn't shared with you"). An element link, search result or keyboard shortcut that points at another tab only shows the message "That tab isn't shared with you".
 
-<Figure caption="A visitor on a one-tab link: the shared Roadmap tab, with the rest of the document shown as Not shared pills.">
+<Figure caption="A visitor on a one-tab link: the shared Roadmap tab, with the rest of the project shown as Not shared pills.">
   <OneTabShare />
 </Figure>
 
-The other tabs are private, not just hidden. Their content never reaches the visitor's browser: not their shapes, not their names, not their comments, not their live edits. With an **Editor** pass the visitor can change their tab, but not rename, add, reorder, lock or delete tabs, use tab folders, rename the document, or open the slide deck (a deck spans tabs).
+The other tabs are private, not just hidden. Their content never reaches the visitor's browser: not their shapes, not their names, not their comments, not their live edits. With an **Editor** pass the visitor can change their tab, but not rename, add, reorder, lock or delete tabs, use tab folders, rename the project, or open the slide deck (a deck spans tabs).
 
 The scope follows the link everywhere it goes:
 
@@ -43,10 +43,10 @@ The scope follows the link everywhere it goes:
 
 ## Changing a link's tabs
 
-On a document with more than one tab, every pass in the Share dialog shows which tabs it opens, beside **Opens**. Change it there at any time: widen a one-tab link to **All tabs**, narrow an All-tabs link to one tab, or move it to another tab. The link's URL stays the same, and anyone using it right now reloads into the new choice.
+On a project with more than one tab, every pass in the Share dialog shows which tabs it opens, beside **Opens**. Change it there at any time: widen a one-tab link to **All tabs**, narrow an All-tabs link to one tab, or move it to another tab. The link's URL stays the same, and anyone using it right now reloads into the new choice.
 
 <Tip>
-  Deleting the tab a link is scoped to deletes that link too. Anyone using it leaves the document,
+  Deleting the tab a link is scoped to deletes that link too. Anyone using it leaves the project,
   just as if you had revoked it.
 </Tip>
 

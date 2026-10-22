@@ -10,7 +10,7 @@ import {
   verbById,
   verbsOf,
 } from './catalogue';
-import { estimateTokens } from '@liveplanner/document-views';
+import { estimateTokens } from '@liveplanner/project-views';
 import { GUIDE_TOPIC_MAX_TOKENS, GUIDE_TOPIC_NAMES, GUIDE_TOPICS, isGuideTopic } from './guides';
 import {
   renderSkill,
@@ -167,7 +167,7 @@ describe('the guides and the skill', () => {
       'liveplanner presence clear',
     ])
       expect(text, command).toContain(command);
-    // The tail of a long selection reads the live selection (document-views "show selected").
+    // The tail of a long selection reads the live selection (project-views "show selected").
     expect(text).toContain('… and 14 more');
     expect(text).toContain('--view show --ref selected');
   });
@@ -216,18 +216,18 @@ describe('the verbs the CLI handles', () => {
     ]);
     expect([pull.text!({ paths: ['a'] }), pull.quiet!({ paths: ['a'] })]).toEqual([['a'], ['a']]);
     expect(tabRender.text!({ lines: ['p'] })).toEqual(['p']);
-    expect(exportAll.text!({ paths: ['a'], documents: 1, exit: 0 })).toEqual([
+    expect(exportAll.text!({ paths: ['a'], projects: 1, exit: 0 })).toEqual([
       'a',
-      '1 document · 1 file',
+      '1 project · 1 file',
     ]);
-    expect(exportAll.text!({ paths: ['a', 'b'], documents: 2, exit: 0 })).toEqual([
+    expect(exportAll.text!({ paths: ['a', 'b'], projects: 2, exit: 0 })).toEqual([
       'a',
       'b',
-      '2 documents · 2 files',
+      '2 projects · 2 files',
     ]);
     expect([
-      exportAll.quiet!({ paths: ['a'], documents: 1, exit: 0 }),
-      exportAll.exitCode!({ paths: [], documents: 0, exit: 6 }),
+      exportAll.quiet!({ paths: ['a'], projects: 1, exit: 0 }),
+      exportAll.exitCode!({ paths: [], projects: 0, exit: 6 }),
     ]).toEqual([['a'], 6]);
     expect(
       authStatus.text!({

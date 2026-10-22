@@ -44,7 +44,7 @@ Google sign-in, short of calling Google on their behalf.
 
 ### How Clerk's image URLs name their source (observed, undocumented)
 
-Clerk does not document how to tell a picture the person **uploaded** from
+Clerk does not project how to tell a picture the person **uploaded** from
 the copy of their Google picture Clerk made at sign-up: `hasImage` is true
 for both. The URLs do tell them apart. Every `img.clerk.com` URL's path is
 one base64url-encoded JSON object naming the image it serves, and across the
@@ -208,7 +208,7 @@ initials underneath keep their existing contrast.
   open your share links without signing in see your initials.
 - `https:` on `img.clerk.com` only. Every image is requested with
   `referrerpolicy="no-referrer"`, so Clerk's host never learns which
-  document is open.
+  project is open.
 - The live app sends no `Content-Security-Policy` today (its worker defers
   CSP to a dedicated cycle). When one lands, `img-src` must allow
   `https://img.clerk.com`, as Clerk's CSP guide says.

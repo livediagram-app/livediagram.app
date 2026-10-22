@@ -6,9 +6,9 @@ import {
   type Element,
   type ShapeElement,
   type StickyElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
-import type { ThemeDefinition } from '@liveplanner/document';
+import type { ThemeDefinition } from '@liveplanner/project';
 import {
   applyStyleMemory,
   forgetStyleKinds,

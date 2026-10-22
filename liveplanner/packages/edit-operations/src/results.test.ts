@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ResultLine } from '@liveplanner/api-schema';
-import { getBuiltInTheme, type Element } from '@liveplanner/document';
+import { getBuiltInTheme, type Element } from '@liveplanner/project';
 import { formatResultFooter, formatResultLines } from './format-results';
 import { addedLine, buildResultLines, removedLine } from './results';
 import { checkoutFlow } from './fixtures/checkout-flow';
@@ -44,7 +44,7 @@ describe('formatResultLines', () => {
       rev: 42,
       rebasedOver: 0,
       changesetId: 'cs_8k2m4q7d1x',
-      documentId: 'd-auth',
+      projectId: 'd-auth',
     });
     expect([...formatResultLines(results), footer].join('\n')).toBe(
       [
@@ -145,7 +145,7 @@ describe('formatResultFooter', () => {
       dryRun: false as const,
       previousRev: 41,
       changesetId: 'cs_1',
-      documentId: 'd1',
+      projectId: 'd1',
     };
     expect(formatResultFooter({ ...write, rev: 44, rebasedOver: 3 })).toBe(
       'rev 41→44 · rebased over 3 writes · cs_1 · revert: liveplanner changeset revert d1 cs_1',

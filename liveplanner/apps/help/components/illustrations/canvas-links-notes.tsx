@@ -132,7 +132,7 @@ export function NotePopoverScene() {
 
 // --- Links -------------------------------------------------------------------------------------
 
-/** The Link element dialog: External URL, Tab or Document, the web address, and Save link. */
+/** The Link element dialog: External URL, Tab or Project, the web address, and Save link. */
 export function LinkElementDialogScene() {
   return (
     <Scene w={420} h={226}>
@@ -141,7 +141,7 @@ export function LinkElementDialogScene() {
         <Tabs
           x={112}
           y={98}
-          items={['External URL', 'Tab', 'Document']}
+          items={['External URL', 'Tab', 'Project']}
           active={0}
           tabW={90}
           h={24}

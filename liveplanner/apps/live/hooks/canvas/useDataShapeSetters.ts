@@ -22,7 +22,7 @@ import {
   type Element,
   type ProgressAnim,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 import { useChartSetters } from '@/hooks/canvas/useChartSetters';
 import { useMindMapSetters } from '@/hooks/canvas/useMindMapSetters';

@@ -4,7 +4,7 @@
 // tab's elements change), published to the store before paint, and the read the editor's keyboard takes (the covered
 // check).
 import { useLayoutEffect, useMemo } from 'react';
-import { isPlanTabKind, type Tab } from '@liveplanner/document';
+import { isPlanTabKind, type Tab } from '@liveplanner/project';
 import { fillTabElementOf } from '@/components/plan/fill-tab';
 import { isCanvasCovered, setPlanCover } from './plan-cover-store';
 import { planTabEntries, setPlanTabList } from './plan-tab-list-store';
@@ -28,7 +28,7 @@ export function usePlanCoverWiring({
   useLayoutEffect(() => {
     setPlanCover({ fillTabId, fillTabKind, planKind });
   }, [fillTabId, fillTabKind, planKind]);
-  // Gone with the editor: no cover lingers for the next document.
+  // Gone with the editor: no cover lingers for the next project.
   useLayoutEffect(
     () => () => setPlanCover({ fillTabId: null, fillTabKind: null, planKind: null }),
     [],

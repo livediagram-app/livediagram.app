@@ -38,7 +38,7 @@ describe('AuthCard messages', () => {
 describe('AuthCard on the Night Band frame', () => {
   it('titles the page with its one h1, and the pitch with an h2', () => {
     render(
-      <AuthCard title="Welcome back" subtitle="Sign in to keep your documents." error="">
+      <AuthCard title="Welcome back" subtitle="Sign in to keep your projects." error="">
         <span />
       </AuthCard>,
     );

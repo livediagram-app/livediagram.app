@@ -1,6 +1,6 @@
-import {} from '@liveplanner/document';
+import {} from '@liveplanner/project';
 
-import type { SessionTool, ShapeKind } from '@liveplanner/document';
+import type { SessionTool, ShapeKind } from '@liveplanner/project';
 import {
   PickerIcon,
   TemperatureIcon,
@@ -61,7 +61,7 @@ type PaletteTileAction =
       session?: SessionTool;
       // Plan board preset, or a Plan card's item type (docs/specs/026-plan/plan-mode.md "The palette").
       plan?: string;
-      // A creation-time variant of the kind (packages/document shape-variants.ts).
+      // A creation-time variant of the kind (packages/project shape-variants.ts).
       variant?: string;
     }
   | { type: 'text' }
@@ -98,7 +98,7 @@ export const PALETTE_TILES: PaletteTileDef[] = [
   {
     // Page (docs/specs/009-elements/page-element.md). Sits first in Write: it is the largest writing
     // surface, and the group reads shortest-to-longest from there. Called
-    // Page, not Document, so the palette and the selection toolbar agree —
+    // Page, not Project, so the palette and the selection toolbar agree —
     // and so it never collides with the Shapes tab's flowchart "document".
     id: 'tools:page',
     blurb: 'A paper-shaped page for prose',

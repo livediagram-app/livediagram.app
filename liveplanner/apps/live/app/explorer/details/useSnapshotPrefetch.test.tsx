@@ -37,7 +37,7 @@ function Row({ request }: { request: ThumbnailRequest | null }) {
   return <div ref={ref} />;
 }
 
-const req: ThumbnailRequest = { ownerId: 'me', documentId: 'd1', version: 3, shareCode: null };
+const req: ThumbnailRequest = { ownerId: 'me', projectId: 'd1', version: 3, shareCode: null };
 
 describe('useSnapshotPrefetch', () => {
   it('asks for the snapshot once the row nears the viewport, then stops watching', () => {

@@ -19,7 +19,7 @@ import {
   moveDashboardSlot,
   type DashboardLayout,
   type DashboardSlot,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useDashboard } from './dashboard-context';
 import { swapSlotsWithMotion } from './slot-swap-motion';
 
@@ -101,7 +101,7 @@ export function SlotToolbar({
         }
       : sheetId && releaseSheets
         ? {
-            question: 'Delete this sheet’s cells too? Kept, they stay in this document.',
+            question: 'Delete this sheet’s cells too? Kept, they stay in this project.',
             keep: 'Keep Its Cells',
             remove: 'Delete the Sheet Too',
           }

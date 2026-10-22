@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Element, ThemeDefinition } from '@liveplanner/document';
-import { PEN_INK } from '@liveplanner/document';
+import type { Element, ThemeDefinition } from '@liveplanner/project';
+import { PEN_INK } from '@liveplanner/project';
 import { buildDressedDrawnArrow } from './draw-commit';
 import { drawnArrowAsShown } from './drawn-arrow-preview';
 

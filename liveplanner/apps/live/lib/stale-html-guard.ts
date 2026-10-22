@@ -9,7 +9,7 @@
 //
 // A string in a plain module (not 'use client', nothing browser-only imported), as the other boot
 // scripts are: the layout is a server component. ES5-safe and self-contained; every global is
-// reached by name (window, document, location, sessionStorage, performance, fetch, Date, console,
+// reached by name (window, project, location, sessionStorage, performance, fetch, Date, console,
 // console), so a test can run it against stubs. Both of its lines are warnings, always shown: a reload
 // is a recovery worth seeing (docs/specs/003-system-architecture/console-logging.md).
 import { BUILD_ID_HEADER } from '@liveplanner/api-schema';

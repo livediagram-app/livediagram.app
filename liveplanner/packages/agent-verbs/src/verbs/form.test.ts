@@ -16,17 +16,17 @@ const LINK = {
 
 function ctxWith(input = '', planOf = plan) {
   const writes: string[] = [];
-  const base = `/documents/${DOC_A}`;
+  const base = `/projects/${DOC_A}`;
   const routes: Record<string, unknown> = {
     ...library,
-    // The library lists on a GET; a new document is made on a POST.
-    '/documents': (r: Request) =>
+    // The library lists on a GET; a new project is made on a POST.
+    '/projects': (r: Request) =>
       r.method === 'POST'
-        ? Response.json({ document: { id: 'new' } }, { status: 201 })
-        : Response.json((library as Record<string, unknown>)['/documents']),
+        ? Response.json({ project: { id: 'new' } }, { status: 201 })
+        : Response.json((library as Record<string, unknown>)['/projects']),
     [`${base}/item-types`]: { ok: true },
     [base]: {
-      document: {
+      project: {
         id: DOC_A,
         name: 'Auth flow',
         tabs: planOf.tabs!.map((t, i) => ({ id: t.id, name: t.name, orderIndex: i })),
@@ -67,7 +67,7 @@ function ctxWith(input = '', planOf = plan) {
 describe('form get', () => {
   it('prints the state, where responses go and each question with its id', async () => {
     const { ctx } = ctxWith();
-    const out = await formGet.run!(ctx, formGet.input.parse({ doc: DOC_A }));
+    const out = await formGet.run!(ctx, formGet.input.parse({ project: DOC_A }));
     expect(formGet.text!(out)).toEqual([
       'Bug Report  closed  4 responses  https://liveplanner.app/form/AbCdEfGhIjKlMnOpQrStUv',
       'responses: Bug cards in New on Bugs',
@@ -83,7 +83,7 @@ describe('form get', () => {
 describe('form change and share', () => {
   it('applies changes read from stdin', async () => {
     const { ctx, writes } = ctxWith('[{"op":"set_form","heading":"Crash Report"}]');
-    const out = await formChange.run!(ctx, formChange.input.parse({ doc: DOC_A, changes: '-' }));
+    const out = await formChange.run!(ctx, formChange.input.parse({ project: DOC_A, changes: '-' }));
     expect(formChange.text!(out)[0]).toBe('~ changed the form');
     expect(writes).toEqual(['POST form']);
   });
@@ -91,13 +91,13 @@ describe('form change and share', () => {
   it('refuses changes that are not JSON, as a usage error', async () => {
     const { ctx } = ctxWith('not json');
     await expect(
-      formChange.run!(ctx, formChange.input.parse({ doc: DOC_A, changes: '-' })),
+      formChange.run!(ctx, formChange.input.parse({ project: DOC_A, changes: '-' })),
     ).rejects.toBeInstanceOf(VerbRefusal);
   });
 
   it('opens a closed form again', async () => {
     const { ctx, writes } = ctxWith();
-    const out = await formShare.run!(ctx, formShare.input.parse({ doc: DOC_A, action: 'publish' }));
+    const out = await formShare.run!(ctx, formShare.input.parse({ project: DOC_A, action: 'publish' }));
     expect(writes).toEqual(['PUT form-link']);
     expect(out.lines).toEqual(['opened again: the same link takes responses']);
   });
@@ -106,7 +106,7 @@ describe('form change and share', () => {
 describe('the form verbs, every path', () => {
   it('prints a sheet form, a form going nowhere, sections with rules, and problems', () => {
     const base = {
-      documentId: DOC_A,
+      projectId: DOC_A,
       tabId: 'form',
       heading: 'RSVP',
       state: 'not_published',
@@ -158,30 +158,30 @@ describe('the form verbs, every path', () => {
   it('refuses as the engine refuses: not found for an unknown Form tab, else a refusal', async () => {
     const { ctx } = ctxWith();
     await expect(
-      formGet.run!(ctx, formGet.input.parse({ doc: DOC_A, tab: 'Nope' })),
+      formGet.run!(ctx, formGet.input.parse({ project: DOC_A, tab: 'Nope' })),
     ).rejects.toMatchObject({ status: 404 });
     await expect(
       formShare.run!(
         ctx,
-        formShare.input.parse({ doc: DOC_A, action: 'delete_link', tab: 'Bugs' }),
+        formShare.input.parse({ project: DOC_A, action: 'delete_link', tab: 'Bugs' }),
       ),
     ).rejects.toMatchObject({ status: 400 });
   });
 
-  it('hints at making a form, not reading one, when the document has no Form tab', async () => {
+  it('hints at making a form, not reading one, when the project has no Form tab', async () => {
     const { ctx } = ctxWith('', { ...plan, tabs: plan.tabs!.filter((t) => t.kind !== 'form') });
-    await expect(formGet.run!(ctx, formGet.input.parse({ doc: DOC_A }))).rejects.toMatchObject({
+    await expect(formGet.run!(ctx, formGet.input.parse({ project: DOC_A }))).rejects.toMatchObject({
       status: 404,
       code: 'form_tab_none',
-      hint: 'make one with: liveplanner form add <doc> --starter contact',
+      hint: 'make one with: liveplanner form add <project> --starter contact',
     });
   });
 
-  it('adds a form to a document from a starter, or from a file of add_form input', async () => {
+  it('adds a form to a project from a starter, or from a file of add_form input', async () => {
     const { ctx } = ctxWith('{"questions":[{"type":"short","prompt":"Name"}]}');
     const fromFile = await formAdd.run!(
       ctx,
-      formAdd.input.parse({ doc: DOC_A, from: '-', name: 'Lunch' }),
+      formAdd.input.parse({ project: DOC_A, from: '-', name: 'Lunch' }),
     );
     expect(fromFile.heading).toBe('Lunch');
     expect(formAdd.quiet!(fromFile)).toEqual([fromFile.tabId]);
@@ -194,7 +194,7 @@ describe('the form verbs, every path', () => {
 describe('form try', () => {
   it('sends answers read from stdin as a counted preview of a published form', async () => {
     const { ctx, writes } = ctxWith('{"Summary": "Crash on save", "Severity": "High"}');
-    const out = await formTry.run!(ctx, formTry.input.parse({ doc: DOC_A, answers: '-' }));
+    const out = await formTry.run!(ctx, formTry.input.parse({ project: DOC_A, answers: '-' }));
     expect(writes).toEqual(['POST form-preview']);
     expect(formTry.text!(out)).toEqual([
       expect.stringMatching(
@@ -207,10 +207,10 @@ describe('form try', () => {
   it('refuses a wrong answer, with the fix, sending nothing', async () => {
     const { ctx, writes } = ctxWith('{"Severity": "Medium"}');
     await expect(
-      formTry.run!(ctx, formTry.input.parse({ doc: DOC_A, answers: '-' })),
+      formTry.run!(ctx, formTry.input.parse({ project: DOC_A, answers: '-' })),
     ).rejects.toMatchObject({ code: 'invalid_answers' });
     await expect(
-      formTry.run!(ctx, formTry.input.parse({ doc: DOC_A, answers: '-' })),
+      formTry.run!(ctx, formTry.input.parse({ project: DOC_A, answers: '-' })),
     ).rejects.toBeInstanceOf(VerbRefusal);
     expect(writes).toEqual([]);
   });
@@ -218,14 +218,14 @@ describe('form try', () => {
   it('refuses answers that are not JSON', async () => {
     const { ctx } = ctxWith('Summary: x');
     await expect(
-      formTry.run!(ctx, formTry.input.parse({ doc: DOC_A, answers: '-' })),
+      formTry.run!(ctx, formTry.input.parse({ project: DOC_A, answers: '-' })),
     ).rejects.toMatchObject({ code: 'usage' });
   });
 
   it('prints a row, uncounted, after what it left out', () => {
     expect(
       formTry.text!({
-        documentId: 'd',
+        projectId: 'd',
         tabId: 'form',
         made: 'row',
         number: null,
@@ -243,11 +243,11 @@ describe('form try', () => {
   it('names an unknown Form tab as not found, and prints a card it made by its id', async () => {
     const { ctx } = ctxWith('{"Summary": "x"}');
     await expect(
-      formTry.run!(ctx, formTry.input.parse({ doc: DOC_A, answers: '-', tab: 'Nope' })),
+      formTry.run!(ctx, formTry.input.parse({ project: DOC_A, answers: '-', tab: 'Nope' })),
     ).rejects.toMatchObject({ status: 404, code: 'form_tab_unknown' });
     expect(
       formTry.quiet!({
-        documentId: 'd',
+        projectId: 'd',
         tabId: 'form',
         made: 'card',
         number: null,

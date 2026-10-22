@@ -1,0 +1,50 @@
+import { ArticleLayout } from '@/components/ArticleLayout';
+import { helpMetadata } from '@/lib/seo';
+import { AddToProjectMenu } from '@/components/illustrations/tabs';
+
+export const metadata = helpMetadata({
+  title: 'Add a Tab to Another Project',
+  description:
+    'Add the active tab to another project you own, straight from the tab menu. Both projects share the same live tab, so an edit in one shows up in the other.',
+  path: '/help/tabs/add-to-project/',
+});
+
+<ArticleLayout
+  title="Add a Tab to Another Project"
+  description="Reuse a tab elsewhere: add the active tab to another of your projects, and edits made in either place appear in both."
+  categoryTitle="Tabs"
+  categorySlug="tabs"
+>
+
+Sometimes a tab you built in one project belongs in another too: a glossary, a shared timeline, an architecture board two projects both rely on. **Add to Project** adds the active tab to another project you own, without leaving the editor.
+
+## Adding a tab to another project
+
+<Step n={1}>Open the tab's menu (the **⋯** button on the active tab, or right-click the tab).</Step>
+<Step n={2}>Choose **Add to Project**.</Step>
+<Step n={3}>
+  In the **Add to Project** dialog, pick the destination. Each project shows as a tile with a
+  preview of its canvas, and the filter box at the top narrows a long list. A message confirms when
+  the tab has been added.
+</Step>
+
+The option is greyed out when there is nowhere to add the tab to: if this is your only project, until you create another, in a [project in This Browser](/help/privacy-and-security/offline-mode/), and on a [Plan](/help/canvas/plan-mode/) tab, whose cards belong to this project's items. It isn't offered to Viewers or Participants, or on a link shared for [one tab](/help/collaboration/sharing/one-tab/).
+
+<Figure caption="Add to Project opens a dialog of your other projects, each with a preview of its canvas, and a filter box to narrow the list.">
+  <AddToProjectMenu />
+</Figure>
+
+## One tab, shared between projects
+
+Add to Project doesn't make a copy: it is the same tab in both places. Edit its elements, restyle it, or rename it from either project and the change lands in the other as well. If the other project is already open in another window, reload it to see the latest edits.
+
+Two things stay per-project, so each project can organise the shared tab its own way: the tab's position in the tab bar, and which [tab folder](/help/tabs/tab-folders/) (if any) it sits in.
+
+Removing the tab from one project doesn't touch the others; the tab and its contents are only deleted for good when you remove it from the last project containing it. Deleting a whole project works the same way: a tab it shares stays, with its history, in every other project it is in, and the delete confirmation tells you how many tabs that is before you go ahead.
+
+<Tip>
+  Prefer an independent copy you can tailor per project? Use **Duplicate** in the same menu first,
+  then add the duplicate to the other project.
+</Tip>
+
+</ArticleLayout>

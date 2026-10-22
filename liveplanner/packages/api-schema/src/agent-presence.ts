@@ -1,5 +1,5 @@
 // Agent presence (docs/specs/024-agents/agent-presence.md "Presence", blueprint "REST" and "Room"): an agent's
-// presence on one tab, set by `PUT .../tabs/:tabId/presence` or refreshed by its changesets, kept by the document's
+// presence on one tab, set by `PUT .../tabs/:tabId/presence` or refreshed by its changesets, kept by the project's
 // room and sent to editors in the `presence` frame's `agents`. The request rule lives here so the CLI checks a
 // request with the rule the api applies; resolving focus refs stays in the api.
 
@@ -41,7 +41,7 @@ export type AgentPresence = {
   id: string;
   name: string;
   color: string;
-  // The level the gates resolve for its token on the document (PR27).
+  // The level the gates resolve for its token on the project (PR27).
   role: ShareRole;
   tabId: string;
   status?: string;

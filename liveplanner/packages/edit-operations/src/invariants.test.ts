@@ -8,7 +8,7 @@ import {
   isContainer,
   type Element,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { checkoutFlow } from './fixtures/checkout-flow';
 import { applied } from './fixtures/outcomes';
 import { flowWith, run } from './fixtures/run';

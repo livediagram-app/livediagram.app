@@ -173,14 +173,14 @@ function SearchOverlay({
 
 // --- Reusable result icons ---------------------------------------------------
 // One glyph per result kind, after the editor's own (search-panel-icons.tsx):
-// a document, a folder, people for a team, a panel for a tab, a circle for an
+// a project, a folder, people for a team, a panel for a tab, a circle for an
 // element, a plus-in-a-box for Add to canvas, a bolt for an action, sliders for
 // a setting, and a question mark for help.
 
 const GLYPH = 'fill-none stroke-slate-500';
 
-/** A document glyph: a small framed canvas with two nodes. */
-function DocumentIcon() {
+/** A project glyph: a small framed canvas with two nodes. */
+function ProjectIcon() {
   return (
     <g>
       <rect
@@ -294,15 +294,15 @@ function HelpIcon() {
 
 // --- Scenes ------------------------------------------------------------------
 
-/** Mixed results across documents, tabs, elements, actions and help: search at a glance. */
+/** Mixed results across projects, tabs, elements, actions and help: search at a glance. */
 export function SearchOverview() {
   return (
     <SearchOverlay
       query="check"
       groups={[
         {
-          title: 'Documents',
-          rows: [{ icon: <DocumentIcon />, label: 'Checkout flow', active: true }],
+          title: 'Projects',
+          rows: [{ icon: <ProjectIcon />, label: 'Checkout flow', active: true }],
         },
         {
           title: 'Tabs',
@@ -324,22 +324,22 @@ export function SearchOverview() {
   );
 }
 
-/** Results limited to documents, folders, and shared documents. */
-export function SearchDocuments() {
+/** Results limited to projects, folders, and shared projects. */
+export function SearchProjects() {
   return (
     <SearchOverlay
       query="onboarding"
       groups={[
         {
-          title: 'Documents',
-          rows: [{ icon: <DocumentIcon />, label: 'Onboarding flow', active: true }],
+          title: 'Projects',
+          rows: [{ icon: <ProjectIcon />, label: 'Onboarding flow', active: true }],
         },
         {
           title: 'Shared with You',
           rows: [{ icon: <SharedIcon />, label: 'Onboarding v2' }],
         },
         {
-          title: 'My Documents',
+          title: 'My Projects',
           rows: [{ icon: <FolderIcon />, label: 'Onboarding' }],
         },
       ]}
@@ -347,7 +347,7 @@ export function SearchDocuments() {
   );
 }
 
-/** Results showing teams plus their shared folders and documents. */
+/** Results showing teams plus their shared folders and projects. */
 export function SearchTeams() {
   return (
     <SearchOverlay
@@ -358,7 +358,7 @@ export function SearchTeams() {
           rows: [
             { icon: <TeamIcon />, label: 'Platform team', active: true },
             { icon: <FolderIcon />, label: 'Architecture / Services', meta: 'in Platform team' },
-            { icon: <DocumentIcon />, label: 'Platform overview', meta: 'in Platform team' },
+            { icon: <ProjectIcon />, label: 'Platform overview', meta: 'in Platform team' },
           ],
         },
       ]}
@@ -388,15 +388,15 @@ export function SearchTabsAndElements() {
   );
 }
 
-/** Palette results under Add to canvas, below an ordinary document match. */
+/** Palette results under Add to canvas, below an ordinary project match. */
 export function SearchAddToCanvas() {
   return (
     <SearchOverlay
       query="cylinder"
       groups={[
         {
-          title: 'Documents',
-          rows: [{ icon: <DocumentIcon />, label: 'Storage cylinder demo', active: true }],
+          title: 'Projects',
+          rows: [{ icon: <ProjectIcon />, label: 'Storage cylinder demo', active: true }],
         },
         {
           title: 'Add to canvas',

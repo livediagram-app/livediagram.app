@@ -22,7 +22,7 @@ Derived from [Finish](../finish.md). Defaults in [DEFAULTS.md](DEFAULTS.md) (D-f
 
 ## Interfaces and contracts
 
-### `packages/document/src/finish.ts`
+### `packages/project/src/finish.ts`
 
 ```ts
 export type Finish = 'flexible' | 'professional' | 'sketch' | 'marker';
@@ -74,7 +74,7 @@ export function finishHatches(element: Element, fill: string, backdrop?: boolean
 // finishHatchesKind, not a backdrop, fill not transparent
 ```
 
-### `packages/document/src/sketch.ts` (pure geometry, no DOM)
+### `packages/project/src/sketch.ts` (pure geometry, no DOM)
 
 ```ts
 type Pt = { x: number; y: number };
@@ -114,7 +114,7 @@ export function pathEndTangents(
 - **Arrowhead.** Two one-pass sketch lines from `tip` back to `tip - dir * L ± normal * L / 2`.
 - Every output is deterministic for the same input and seed; numbers are rounded to 2 decimals.
 
-### `packages/document/src/marker.ts` (pure geometry, no DOM)
+### `packages/project/src/marker.ts` (pure geometry, no DOM)
 
 Marker draws the outlines `sketch.ts` builds (`SketchOutline`, exported for it, with `sketchPoint` for path text),
 with its own pen. Seeded from `sketchSeed(id)` through `sketchRandom`, each function on its own stream
@@ -166,7 +166,7 @@ len * 0.04)`; the bow is `±min(len * MARKER_BOW_SHARE, MARKER_BOW_MAX_PX)`. Emi
   span too short for a stroke draws a dab. An area under 2 px across draws nothing (`nibPx` 0).
 - Every output is deterministic for the same input and seed; numbers are written in tenths (`sketchPoint`).
 
-### `packages/document/src/marker-element.ts` and `hand-drawn.ts`
+### `packages/project/src/marker-element.ts` and `hand-drawn.ts`
 
 - `markerElementPaint(el, fill, backdrop)` returns `{ drawing: MarkerDrawing, strokePx, dash }` or null:
   - `MarkerDrawing = { pen: 'marker'; ink: MarkerLayers; details: string; solid: string; streaks: MarkerLayers;
@@ -189,7 +189,7 @@ nibPx: number }`.
 heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFill` false, `inkOpacity` 1, one
   pass while `flowing`; Marker: `inkOpacity` `MARKER_INK_OPACITY`). The canvas and the export call only these two.
 
-### `packages/document/src/sketch-element.ts` and `sketch-backdrop.ts`
+### `packages/project/src/sketch-element.ts` and `sketch-backdrop.ts`
 
 - `sketchElement(el, { strokePx, radiusPx, fill, backdrop })` returns the `SketchDrawing` layers (`strokes`,
   `details`, `hatch`, `solid`); `sketchElementPaint(el, finish, fill, backdrop)` resolves stroke, dash and radius as an
@@ -230,7 +230,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - Lettering: `CanvasElementsLayer`, `text-hug-measure` and `useTextStyleSetters` resolve fonts with `elementFontId`.
 - Mind connectors: `deriveArrowViewFrame(arrow, index, finish)` / `arrowViewGeometry(..., finish)` (finish from
   `resolveFinish(el.finish, tabFinish)` in `CanvasElementsLayer` and `previewArrowGeometry`) draw through
-  `finishArrowEnds` (`packages/document/src/mind-connector-route.ts`, blueprint in
+  `finishArrowEnds` (`packages/project/src/mind-connector-route.ts`, blueprint in
   [Mind node](../../009-elements/blueprints/mind-node.md)); a routed frame has no curve, elbow or anchor handles,
   and `beginArrowBend` refuses a routed connector.
 - New arrows: `applyCollisionAvoidance(els, arrowId, tabFinish)` gives an untouched arrow
@@ -267,7 +267,7 @@ heads, sketchedHeads, headFill, inkOpacity }`; Sketch: `lineOver` empty, `headFi
 - Lettering of faces: the `BoxedElementView` wrapper sets `fontFamily` to the element's resolved stack when there is
   one, so words a face writes itself inherit it.
 
-### Exports (`packages/document/src/svg-render*.ts`)
+### Exports (`packages/project/src/svg-render*.ts`)
 
 `svgArrow` resolves its ends and drawn arrow through `finishArrowEnds(arrow, elements, finish)`, so a Professional
 mind connector exports on the same bracket as the canvas. `renderElementsToSvg` resolves each element's finish from `tab.finish`; `svgBoxed` and `svgArrow` take it and draw
@@ -369,7 +369,7 @@ is. `svgChecklistShape`, `svgLegendShape` and the empty tab window letter in the
 
 ### Agents
 
-`packages/agent-verbs/src/mcp/schema.ts`: `finishField = z.enum(FINISHES).optional()` on `create_document` and
+`packages/agent-verbs/src/mcp/schema.ts`: `finishField = z.enum(FINISHES).optional()` on `create_project` and
 `add_tab`, passed through like `theme`; `finish` added to the element format allowlists for shape, arrow, text,
 sticky and table.
 
@@ -481,25 +481,25 @@ per command letter.
 
 | Rule                                                         | Test                                                                                                     |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------- |
-| resolve order, unknown values, Professional fallbacks, font  | `packages/document/src/finish.test.ts`                                                                   |
-| determinism, seeds differ, outlines, hatching bounds/caps    | `packages/document/src/sketch.test.ts`                                                                   |
-| budgets                                                      | `packages/document/src/sketch.perf.test.ts`                                                              |
-| export draws sketch strokes / hatching / Professional radius | `packages/document/src/svg-render-finish.test.ts`                                                        |
+| resolve order, unknown values, Professional fallbacks, font  | `packages/project/src/finish.test.ts`                                                                   |
+| determinism, seeds differ, outlines, hatching bounds/caps    | `packages/project/src/sketch.test.ts`                                                                   |
+| budgets                                                      | `packages/project/src/sketch.perf.test.ts`                                                              |
+| export draws sketch strokes / hatching / Professional radius | `packages/project/src/svg-render-finish.test.ts`                                                        |
 | variant drops shadow / peel / border per finish              | `apps/live/components/canvas/element-variant.test.ts`                                                    |
 | menu rows commit, preview, Follow Tab clears                 | `apps/live/components/palette/FinishSection.test.tsx`                                                    |
-| backdrops: what sits on a shape, order, finish, speed        | `packages/document/src/sketch-backdrop.test.ts`                                                          |
+| backdrops: what sits on a shape, order, finish, speed        | `packages/project/src/sketch-backdrop.test.ts`                                                          |
 | Professional new arrows angled; avoidance per finish         | `apps/live/hooks/canvas/arrow-avoidance-apply.test.ts`                                                   |
 | which palette tiles take the finish                          | `apps/live/components/palette/palette-tile-finish.test.ts`                                               |
 | applyFinishToEl                                              | `apps/live/lib/style-presets.test.ts`                                                                    |
 | preview draws each finish, stable, in the tab's font         | `apps/live/lib/finish-preview.test.ts`                                                                   |
 | dialog tab sets, previews, Apply to All clears               | `apps/live/components/dialogs/CanvasThemeDialog.test.tsx`, `apps/live/hooks/canvas/useTabCanvas.test.ts` |
-| Participant cannot write `finish`                            | `packages/document/src/participant-content.leak.test.ts`                                                 |
-| which elements split their face                              | `packages/document/src/finish.test.ts`                                                                   |
-| Marker: finish rules, font, widths, icon weight, sticky      | `packages/document/src/finish.test.ts`                                                                   |
-| Marker: strokes, layers, gestures, pins, trim, heads, rows   | `packages/document/src/marker.test.ts`                                                                   |
-| Marker: budgets                                              | `packages/document/src/marker.perf.test.ts`                                                              |
-| one door to both pens; Marker in the export; backdrops       | `packages/document/src/hand-drawn.test.ts`                                                               |
-| export split, body placement, tab window frame, defs, fonts  | `packages/document/src/svg-render-sketch.test.ts`                                                        |
+| Participant cannot write `finish`                            | `packages/project/src/participant-content.leak.test.ts`                                                 |
+| which elements split their face                              | `packages/project/src/finish.test.ts`                                                                   |
+| Marker: finish rules, font, widths, icon weight, sticky      | `packages/project/src/finish.test.ts`                                                                   |
+| Marker: strokes, layers, gestures, pins, trim, heads, rows   | `packages/project/src/marker.test.ts`                                                                   |
+| Marker: budgets                                              | `packages/project/src/marker.perf.test.ts`                                                              |
+| one door to both pens; Marker in the export; backdrops       | `packages/project/src/hand-drawn.test.ts`                                                               |
+| export split, body placement, tab window frame, defs, fonts  | `packages/project/src/svg-render-sketch.test.ts`                                                        |
 | ink copy, settle and longest wait, single render             | `apps/live/components/canvas/SketchFace.test.tsx`                                                        |
 | WebKit is told by `GestureEvent`                             | `apps/live/lib/live-filter-cost.test.ts`                                                                 |
 
@@ -548,5 +548,5 @@ per command letter.
 
 ## Assets and external resources
 
-Caveat and Permanent Marker are already in the font catalogue (`packages/document/src/fonts.ts`, Google Fonts, OFL
+Caveat and Permanent Marker are already in the font catalogue (`packages/project/src/fonts.ts`, Google Fonts, OFL
 and Apache 2.0). No new asset.

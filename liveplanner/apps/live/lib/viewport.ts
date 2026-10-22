@@ -4,7 +4,7 @@
 // the state plumbing and `getBoundingClientRect` measurement; the
 // formulas land here.
 
-import type { Rect } from '@liveplanner/document';
+import type { Rect } from '@liveplanner/project';
 
 // Padding (in canvas-space pixels) kept between the elements'
 // bounding box and the viewport edges when fit-to-screen runs. 60

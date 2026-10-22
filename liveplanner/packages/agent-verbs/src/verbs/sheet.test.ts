@@ -29,10 +29,10 @@ function ctxWith(input = '', sheets = [costs()]) {
     Object.assign(server.routes, {
       ...library,
       ...tabsOfA,
-      [`/documents/${DOC_A}/tabs/${ONE}`]: {
+      [`/projects/${DOC_A}/tabs/${ONE}`]: {
         tab: { id: ONE, elements: [], rev: 2 },
       },
-      [`/documents/${DOC_A}/tabs/${ONE}/changesets`]: { changeset: { id: 'cs', rev: 3 } },
+      [`/projects/${DOC_A}/tabs/${ONE}/changesets`]: { changeset: { id: 'cs', rev: 3 } },
     }),
   );
   const notices: string[] = [];
@@ -43,7 +43,7 @@ function ctxWith(input = '', sheets = [costs()]) {
 describe('sheet ls and get', () => {
   it('lists the sheets, one a line', async () => {
     const { ctx } = ctxWith();
-    const out = await sheetLs.run!(ctx, sheetLs.input.parse({ doc: DOC_A }));
+    const out = await sheetLs.run!(ctx, sheetLs.input.parse({ project: DOC_A }));
     expect(sheetLs.text!(out)).toEqual(['Costs  Overview  A1:B3  sheet_costs1']);
     expect(sheetLs.quiet!(out)).toEqual(['sheet_costs1']);
     expect(sheetLs.text!({ sheets: [] })).toEqual(['no sheets']);
@@ -51,7 +51,7 @@ describe('sheet ls and get', () => {
 
   it('says a blank sheet is empty', async () => {
     const { ctx } = ctxWith('', [sheetJson({ id: 'sheet_blank1', tabId: ONE, title: 'Blank' })]);
-    const out = await sheetLs.run!(ctx, sheetLs.input.parse({ doc: DOC_A, tab: ONE }));
+    const out = await sheetLs.run!(ctx, sheetLs.input.parse({ project: DOC_A, tab: ONE }));
     expect(sheetLs.text!(out)).toEqual(['Blank  Overview  empty  sheet_blank1']);
   });
 
@@ -60,7 +60,7 @@ describe('sheet ls and get', () => {
     const { ctx } = ctxWith('', [
       sheetJson({ id: 'sheet_long01', tabId: ONE, title: 'Long' }, rows),
     ]);
-    const out = await sheetGet.run!(ctx, sheetGet.input.parse({ doc: DOC_A, sheet: 'Long' }));
+    const out = await sheetGet.run!(ctx, sheetGet.input.parse({ project: DOC_A, sheet: 'Long' }));
     expect(out.note).toMatch(/^Stopped at A\d+/);
     expect(sheetGet.text!(out).at(-1)).toBe(out.note);
   });
@@ -69,7 +69,7 @@ describe('sheet ls and get', () => {
     const { ctx } = ctxWith();
     const out = await sheetGet.run!(
       ctx,
-      sheetGet.input.parse({ doc: DOC_A, sheet: 'Costs', range: 'A2:B3' }),
+      sheetGet.input.parse({ project: DOC_A, sheet: 'Costs', range: 'A2:B3' }),
     );
     expect(sheetGet.text!(out)).toEqual([
       'A2  Rent',
@@ -83,7 +83,7 @@ describe('sheet ls and get', () => {
 
   it('refuses a sheet it cannot find, with the next command', async () => {
     const { ctx } = ctxWith();
-    const refused = sheetGet.run!(ctx, sheetGet.input.parse({ doc: DOC_A, sheet: 'Budget' }));
+    const refused = sheetGet.run!(ctx, sheetGet.input.parse({ project: DOC_A, sheet: 'Budget' }));
     await expect(refused).rejects.toBeInstanceOf(VerbRefusal);
     await expect(refused).rejects.toMatchObject({
       status: 404,
@@ -97,7 +97,7 @@ describe('sheet set', () => {
     const { ctx, server } = ctxWith();
     const out = await sheetSet.run!(
       ctx,
-      sheetSet.input.parse({ doc: DOC_A, sheet: 'Costs', at: 'C1', values: ['Yearly', '=B2*12'] }),
+      sheetSet.input.parse({ project: DOC_A, sheet: 'Costs', at: 'C1', values: ['Yearly', '=B2*12'] }),
     );
     expect(sheetSet.text!(out)).toEqual(['~ sheet "Costs": set C1:D1']);
     expect(sheetSet.quiet!(out)).toEqual(['sheet_costs1']);
@@ -108,7 +108,7 @@ describe('sheet set', () => {
     const { ctx } = ctxWith('a,b\n1,2');
     const out = await sheetSet.run!(
       ctx,
-      sheetSet.input.parse({ doc: DOC_A, sheet: 'Costs', at: 'A5', values: [], csv: '-' }),
+      sheetSet.input.parse({ project: DOC_A, sheet: 'Costs', at: 'A5', values: [], csv: '-' }),
     );
     expect(out.applied).toEqual(['set A5:B6']);
   });
@@ -118,13 +118,13 @@ describe('sheet set', () => {
     await expect(
       sheetSet.run!(
         ctx,
-        sheetSet.input.parse({ doc: DOC_A, sheet: 'Costs', at: 'A1', values: [] }),
+        sheetSet.input.parse({ project: DOC_A, sheet: 'Costs', at: 'A1', values: [] }),
       ),
     ).rejects.toMatchObject({ code: 'usage' });
     await expect(
       sheetSet.run!(
         ctx,
-        sheetSet.input.parse({ doc: DOC_A, sheet: 'Costs', at: 'A1', values: ['=('] }),
+        sheetSet.input.parse({ project: DOC_A, sheet: 'Costs', at: 'A1', values: ['=('] }),
       ),
     ).rejects.toMatchObject({ code: 'formula_invalid', status: 400 });
   });
@@ -136,7 +136,7 @@ describe('sheet add', () => {
     const { ctx, notices } = ctxWith(wide);
     const out = await sheetAdd.run!(
       ctx,
-      sheetAdd.input.parse({ doc: DOC_A, title: 'Costs', csv: 'wide.csv' }),
+      sheetAdd.input.parse({ project: DOC_A, title: 'Costs', csv: 'wide.csv' }),
     );
     expect(sheetAdd.text!(out)).toEqual([`+ sheet "Costs 2": ${out.filled}`]);
     expect(sheetAdd.quiet!(out)).toEqual([out.sheetId]);
@@ -146,7 +146,7 @@ describe('sheet add', () => {
 
   it('puts a blank sheet on the tab named, with no notice', async () => {
     const { ctx, notices } = ctxWith();
-    const out = await sheetAdd.run!(ctx, sheetAdd.input.parse({ doc: DOC_A, tab: ONE }));
+    const out = await sheetAdd.run!(ctx, sheetAdd.input.parse({ project: DOC_A, tab: ONE }));
     expect(out).toMatchObject({ tabId: ONE, title: 'Sheet 1', filled: null });
     expect(notices).toEqual([]);
   });
@@ -154,7 +154,7 @@ describe('sheet add', () => {
   it('refuses an unknown tab', async () => {
     const { ctx } = ctxWith();
     await expect(
-      sheetAdd.run!(ctx, sheetAdd.input.parse({ doc: DOC_A, tab: 'nope' })),
+      sheetAdd.run!(ctx, sheetAdd.input.parse({ project: DOC_A, tab: 'nope' })),
     ).rejects.toMatchObject({
       code: 'tab_not_found',
     });
@@ -165,7 +165,7 @@ describe('sheet rows and columns', () => {
   it('inserts and deletes rows and columns by number and letter', async () => {
     const { ctx } = ctxWith();
     const run = async (verb: typeof sheetInsertRows, input: Record<string, unknown>) =>
-      verb.text!(await verb.run!(ctx, verb.input.parse({ doc: DOC_A, sheet: 'Costs', ...input })));
+      verb.text!(await verb.run!(ctx, verb.input.parse({ project: DOC_A, sheet: 'Costs', ...input })));
     expect(await run(sheetInsertRows, { where: '2', count: '2', after: true })).toEqual([
       '~ sheet "Costs": inserted 2 rows after row 2',
     ]);
@@ -176,7 +176,7 @@ describe('sheet rows and columns', () => {
     expect(await run(sheetRmCols, { where: 'B' })).toEqual(['~ sheet "Costs": deleted column B']);
     const out = await sheetRmRows.run!(
       ctx,
-      sheetRmRows.input.parse({ doc: DOC_A, sheet: 'Costs', where: '9' }),
+      sheetRmRows.input.parse({ project: DOC_A, sheet: 'Costs', where: '9' }),
     );
     expect(sheetRmRows.quiet!(out as never)).toEqual(['sheet_costs1']);
   });
@@ -186,13 +186,13 @@ describe('sheet rows and columns', () => {
     await expect(
       sheetInsertRows.run!(
         ctx,
-        sheetInsertRows.input.parse({ doc: DOC_A, sheet: 'Costs', where: '2', count: '0' }),
+        sheetInsertRows.input.parse({ project: DOC_A, sheet: 'Costs', where: '2', count: '0' }),
       ),
     ).rejects.toMatchObject({ code: 'usage' });
     await expect(
       sheetInsertRows.run!(
         ctx,
-        sheetInsertRows.input.parse({ doc: DOC_A, sheet: 'Costs', where: 'two' }),
+        sheetInsertRows.input.parse({ project: DOC_A, sheet: 'Costs', where: 'two' }),
       ),
     ).rejects.toMatchObject({ code: 'range_invalid' });
   });

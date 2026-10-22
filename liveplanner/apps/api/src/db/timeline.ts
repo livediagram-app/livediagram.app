@@ -1,4 +1,4 @@
-// timeline — the event record behind Home, a document's History and a team's Activity
+// timeline — the event record behind Home, a project's History and a team's Activity
 // (docs/specs/013-workspace/timeline.md).
 //
 // Every event is written inline on the write path that caused it.
@@ -9,12 +9,12 @@
 // already compute the future-dated expiry warnings.
 //
 // Emit is fire-and-forget from every call site (wrapped in waitUntil):
-// a missing timeline row is cosmetic, a failed document save is not.
+// a missing timeline row is cosmetic, a failed project save is not.
 
 import { HOME_OPENED_EVENT_TYPE } from '@liveplanner/api-schema';
 import type { TimelineEvent, TimelineScopeRef } from '@liveplanner/api-schema';
 import type { Env } from '../types';
-import { VISIBLE_DOCUMENTS_CTES } from './document-visibility';
+import { VISIBLE_PROJECTS_CTES } from './project-visibility';
 
 export type TimelineEventDraft = {
   actorId: string | null;
@@ -30,7 +30,7 @@ export type TimelineEventDraft = {
 };
 
 // The dedupe key for an event that should collapse to one row per
-// actor per UTC day, such as the coalesced document-editing event.
+// actor per UTC day, such as the coalesced project-editing event.
 // UTC rather than local because the row is shared by an
 // audience in many timezones; the day boundary has to be the same for
 // all of them or the same save writes two rows.
@@ -41,8 +41,8 @@ export function dedupeKeyForDay(actorId: string | null, at: number): string {
 // The dedupe key for an event that can happen to the same source MORE
 // THAN ONCE and should be a fresh row each time: a rename, a move, a
 // role change. With the default '' key the UNIQUE index treats the
-// second rename of a document as a retry of the first and UPSERTS it —
-// so a document renamed three times in a day showed one card, not a
+// second rename of a project as a retry of the first and UPSERTS it —
+// so a project renamed three times in a day showed one card, not a
 // stack of three, and a rename this month silently moved last month's
 // card to today. '' stays right for events that genuinely happen once
 // per source (created, a tombstone, an invite), where a retry or a
@@ -132,8 +132,8 @@ type TimelineRow = {
   description: string | null;
   occurred_at: number;
   snapshot: string;
-  // The document's name NOW, when the event is about one that still exists.
-  current_document_name?: string | null;
+  // The project's name NOW, when the event is about one that still exists.
+  current_project_name?: string | null;
 };
 
 function rowToEvent(row: TimelineRow): TimelineEvent {
@@ -148,12 +148,12 @@ function rowToEvent(row: TimelineRow): TimelineEvent {
     // still worth showing — title and description carry the meaning,
     // the snapshot only enriches it. Fall through with {}.
   }
-  // An entry names its document as it is called NOW, not as it was called
+  // An entry names its project as it is called NOW, not as it was called
   // when the event happened: a rename is not a timeline moment, so older
-  // entries follow it instead (docs/specs/013-workspace/timeline.md §4.2). A document that is
+  // entries follow it instead (docs/specs/013-workspace/timeline.md §4.2). A project that is
   // gone, or one the reader can no longer open, keeps the name it had.
-  if (row.current_document_name)
-    snapshot = { ...snapshot, documentName: row.current_document_name };
+  if (row.current_project_name)
+    snapshot = { ...snapshot, projectName: row.current_project_name };
   return {
     id: row.id,
     sourceType: row.source_type,
@@ -169,7 +169,7 @@ function rowToEvent(row: TimelineRow): TimelineEvent {
 
 type ReadTimelineOptions = {
   scope: TimelineScopeRef;
-  // Who is reading, for the current-name override: only a document the reader can still open
+  // Who is reading, for the current-name override: only a project the reader can still open
   // shows its live name. Defaults to the scope's owner for a user scope; a team scope without
   // one keeps every snapshot name.
   readerId?: string | null;
@@ -194,21 +194,21 @@ type ReadTimelineResult = {
 // share a millisecond (a team invite fans out to twelve people in one
 // request), and ordering by occurred_at alone would make the page
 // boundary non-deterministic.
-// An event about a document in the Trash is hidden, not swept
+// An event about a project in the Trash is hidden, not swept
 // (docs/specs/013-workspace/trash.md): a restore brings the history back, and
-// the purge sweeps it (documentsTimelineSweepStatement). Matches the same two
+// the purge sweeps it (projectsTimelineSweepStatement). Matches the same two
 // references the sweep does, each a primary-key probe.
 // Renames are not timeline moments (docs/specs/013-workspace/timeline.md §4.2): entries show each
-// document's current name instead. Nothing records them any more; this keeps
+// project's current name instead. Nothing records them any more; this keeps
 // the ones written before that out of every feed and count.
 // A person's own opens (docs/specs/013-workspace/explorer-home.md "Opens") sit in their user scope
 // for Home's Timeline column, and are not part of this feed either (docs/specs/013-workspace/timeline.md
 // §4.2): nothing renders them here, and an open is never news to anyone.
-const NOT_IN_FEED = `e.event_type NOT IN ('document_renamed', '${HOME_OPENED_EVENT_TYPE}')`;
+const NOT_IN_FEED = `e.event_type NOT IN ('project_renamed', '${HOME_OPENED_EVENT_TYPE}')`;
 
-const NOT_IN_TRASH = `NOT (e.source_type = 'document' AND EXISTS (
-  SELECT 1 FROM documents td
-   WHERE td.id IN (e.source_id, json_extract(e.snapshot, '$.documentId'))
+const NOT_IN_TRASH = `NOT (e.source_type = 'project' AND EXISTS (
+  SELECT 1 FROM projects td
+   WHERE td.id IN (e.source_id, json_extract(e.snapshot, '$.projectId'))
      AND td.trashed_at IS NOT NULL))`;
 
 export async function readTimeline(
@@ -216,7 +216,7 @@ export async function readTimeline(
   opts: ReadTimelineOptions,
 ): Promise<ReadTimelineResult> {
   const readerId = opts.readerId ?? (opts.scope.scopeType === 'user' ? opts.scope.scopeId : null);
-  // ?1 and ?2 are VISIBLE_DOCUMENTS_CTES' own binds (the reader, now).
+  // ?1 and ?2 are VISIBLE_PROJECTS_CTES' own binds (the reader, now).
   const binds: unknown[] = [readerId ?? '', Date.now(), opts.scope.scopeType, opts.scope.scopeId];
   // A membership dismissed from the personal feed while it had one (the feed and its Remove are gone; the column
   // stays) is still a row, so the re-emit path can't resurrect it, but it is not part of any read.
@@ -245,11 +245,11 @@ export async function readTimeline(
     where += ` AND e.source_type IN (${placeholders.join(', ')})`;
   }
 
-  // The live name is a read of the documents table, so it follows the reader's access, not the
-  // event's: a document the reader has lost (left the team, link revoked) keeps its snapshot name.
-  // A document feed already passed that document's own read gate, so it is its own visible set.
+  // The live name is a read of the projects table, so it follows the reader's access, not the
+  // event's: a project the reader has lost (left the team, link revoked) keeps its snapshot name.
+  // A project feed already passed that project's own read gate, so it is its own visible set.
   const nameVisible =
-    opts.scope.scopeType === 'document'
+    opts.scope.scopeType === 'project'
       ? 'cd.id = ?4'
       : readerId
         ? 'cd.id IN (SELECT id FROM visible)'
@@ -257,12 +257,12 @@ export async function readTimeline(
 
   // Fetch one extra row to learn whether another page exists, rather
   // than running a second COUNT over the same predicate. The page is cut
-  // first and only its rows are joined to their document and checked
+  // first and only its rows are joined to their project and checked
   // against the visible set, so neither costs anything per event the
   // ORDER BY passes over.
   binds.push(opts.limit + 1);
   const res = await env.DB.prepare(
-    `WITH ${VISIBLE_DOCUMENTS_CTES},
+    `WITH ${VISIBLE_PROJECTS_CTES},
      page AS (
        SELECT e.id, e.actor_id, e.source_type, e.source_id, e.event_type,
               e.title, e.description, e.occurred_at, e.snapshot
@@ -272,11 +272,11 @@ export async function readTimeline(
         ORDER BY e.occurred_at DESC, e.id DESC
         LIMIT ?${binds.length}
      )
-     SELECT e.*, CASE WHEN ${nameVisible} THEN cd.name END AS current_document_name
+     SELECT e.*, CASE WHEN ${nameVisible} THEN cd.name END AS current_project_name
        FROM page e
-       LEFT JOIN documents cd
-         ON cd.id = COALESCE(json_extract(e.snapshot, '$.documentId'),
-                             CASE WHEN e.source_type = 'document' THEN e.source_id END)
+       LEFT JOIN projects cd
+         ON cd.id = COALESCE(json_extract(e.snapshot, '$.projectId'),
+                             CASE WHEN e.source_type = 'project' THEN e.source_id END)
       ORDER BY e.occurred_at DESC, e.id DESC`,
   )
     .bind(...binds)
@@ -393,16 +393,16 @@ export async function countUnseen(
 // timeline_event_scopes.event_id takes the memberships with them.
 //
 // Call this BEFORE emitting the entity's own `*_deleted` tombstone, so
-// the tombstone survives: a deleted document collapses from a run of
+// the tombstone survives: a deleted project collapses from a run of
 // bubbles to exactly one row saying it was deleted, which is the row
 // that answers "what happened to it?" (docs/specs/013-workspace/timeline.md §3.5). Every future
 // entity's delete path should call this rather than writing the DELETE
 // inline.
 //
-// Two predicates, because "about a document" is wider than "keyed on the
-// document id". A comment event's source_id is the COMMENT's id, an
-// action's is the ACTION's, a share link's is `<documentId>:<role>` —
-// they all describe a document without being keyed on one. Matching only
+// Two predicates, because "about a project" is wider than "keyed on the
+// project id". A comment event's source_id is the COMMENT's id, an
+// action's is the ACTION's, a share link's is `<projectId>:<role>` —
+// they all describe a project without being keyed on one. Matching only
 // source_id left those behind, each rendering a bubble that linked to a
 // 404. The second clause reads the `<sourceType>Id` the emitters put in
 // every snapshot for exactly this purpose.
@@ -428,7 +428,7 @@ export async function countUnseen(
 //
 // Self-healing by design rather than exhaustive: the daily sweep re-emits
 // whatever is still inside its window, so retracting slightly too much (one of
-// two expiring links on a document — the warning is per document, not per link)
+// two expiring links on a project — the warning is per project, not per link)
 // costs at most a day of silence and never leaves a false deadline standing.
 export async function retractTimelineWarning(
   env: Env,
@@ -461,35 +461,35 @@ export async function markTimelineEventsDeletedBySource(
 // A deleted comment takes its words off every feed (docs/specs/013-workspace/timeline.md §4.3):
 // its `comment_added` event, and the `comment_resolved` event of each thread whose opening
 // comment it was, since that event's description is the opening comment's text. Pinned to the
-// document through the snapshot, so an id from another document can never reach its rows.
+// project through the snapshot, so an id from another project can never reach its rows.
 // Both clauses probe the (source_type, source_id, ...) unique index.
 export async function deleteCommentEvents(
   env: Env,
-  documentId: string,
+  projectId: string,
   commentIds: readonly string[],
   threadKeys: readonly string[],
 ): Promise<void> {
   if (commentIds.length === 0 && threadKeys.length === 0) return;
   await env.DB.prepare(
     `DELETE FROM timeline_events
-      WHERE source_type = 'document'
+      WHERE source_type = 'project'
         AND ((event_type = 'comment_added' AND source_id IN (SELECT value FROM json_each(?2)))
           OR (event_type = 'comment_resolved' AND source_id IN (SELECT value FROM json_each(?3))))
-        AND json_extract(snapshot, '$.documentId') = ?1`,
+        AND json_extract(snapshot, '$.projectId') = ?1`,
   )
-    .bind(documentId, JSON.stringify(commentIds), JSON.stringify(threadKeys))
+    .bind(projectId, JSON.stringify(commentIds), JSON.stringify(threadKeys))
     .run();
 }
 
-// markTimelineEventsDeletedBySource for a set of documents at once, as one
+// markTimelineEventsDeletedBySource for a set of projects at once, as one
 // statement for the Trash purge's batch (docs/specs/013-workspace/trash.md):
-// the events of a purged document go with it, the way a hard delete sweeps them.
-export function documentsTimelineSweepStatement(env: Env, ids: string[]): D1PreparedStatement {
+// the events of a purged project go with it, the way a hard delete sweeps them.
+export function projectsTimelineSweepStatement(env: Env, ids: string[]): D1PreparedStatement {
   return env.DB.prepare(
     `DELETE FROM timeline_events
-      WHERE source_type = 'document'
+      WHERE source_type = 'project'
         AND (source_id IN (SELECT value FROM json_each(?1))
-             OR json_extract(snapshot, '$.documentId') IN (SELECT value FROM json_each(?1)))`,
+             OR json_extract(snapshot, '$.projectId') IN (SELECT value FROM json_each(?1)))`,
   ).bind(JSON.stringify(ids));
 }
 

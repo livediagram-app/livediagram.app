@@ -1,5 +1,5 @@
 // Timeline wire format (docs/specs/013-workspace/timeline.md): the event record behind Home, a
-// document's History and a team's Activity.
+// project's History and a team's Activity.
 //
 // The api worker emits these; the live app's scoped feeds and Home consume
 // them. Kept in its own module rather than piled into index.ts: the
@@ -10,10 +10,10 @@
 // owner id (a Clerk `sub`, or a guest participant id per docs/specs/014-identity/auth-and-guest-access.md).
 //
 // Widened with `(string & {})` rather than closed, because the whole
-// point of the scope model is that a later per-document or per-team feed
+// point of the scope model is that a later per-project or per-team feed
 // is a new value plus a renderer — no schema change, no migration
 // (docs/specs/013-workspace/timeline.md §3.4). The union members still autocomplete.
-export type TimelineScopeType = 'user' | 'document' | 'team' | (string & {});
+export type TimelineScopeType = 'user' | 'project' | 'team' | (string & {});
 
 export type TimelineScopeRef = {
   scopeType: TimelineScopeType;
@@ -37,9 +37,9 @@ export function parseScope(raw: string): TimelineScopeRef | null {
 
 // What kind of thing an event is ABOUT. Drives the bubble's icon,
 // colour, and which filter chip hides it.
-export type TimelineSourceType = 'document' | 'team' | 'account' | (string & {});
+export type TimelineSourceType = 'project' | 'team' | 'account' | (string & {});
 
-// What HAPPENED. Distinct from the source type: one document produces
+// What HAPPENED. Distinct from the source type: one project produces
 // many of these over its life.
 //
 // A runtime array, not a bare union, so the renderers' classification maps can
@@ -53,18 +53,18 @@ export type TimelineSourceType = 'document' | 'team' | 'account' | (string & {})
 // the whole point: an unclassified event renders in a colour that says the
 // wrong thing about what happened.
 export const TIMELINE_EVENT_TYPES = [
-  // Document lifecycle + the coalesced editing event (docs/specs/013-workspace/timeline.md §4.2)
-  'document_created',
-  'document_renamed',
-  'document_duplicated',
-  // No `document_deleted`: a deleted document is swept from the feed and
+  // Project lifecycle + the coalesced editing event (docs/specs/013-workspace/timeline.md §4.2)
+  'project_created',
+  'project_renamed',
+  'project_duplicated',
+  // No `project_deleted`: a deleted project is swept from the feed and
   // leaves nothing behind (docs/specs/013-workspace/timeline.md §3.5).
-  'document_moved',
-  'document_edited',
-  'document_offline',
-  'document_synced',
-  'document_opened_by_visitor',
-  'document_copied_by_visitor',
+  'project_moved',
+  'project_edited',
+  'project_offline',
+  'project_synced',
+  'project_opened_by_visitor',
+  'project_copied_by_visitor',
   'folder_created',
   'folder_deleted',
   // Collaboration (§4.3)
@@ -83,12 +83,12 @@ export const TIMELINE_EVENT_TYPES = [
   'team_member_left',
   'team_member_removed',
   'team_role_changed',
-  'team_document_added',
+  'team_project_added',
   // Pulled back OUT of a team library into somebody's personal files, which
-  // also transfers ownership to the mover (docs/specs/013-workspace/team-shared-documents.md). Distinct from
-  // `document_moved`: the team loses the document, and if the mover was not the
+  // also transfers ownership to the mover (docs/specs/013-workspace/team-shared-projects.md). Distinct from
+  // `project_moved`: the team loses the project, and if the mover was not the
   // owner the owner loses it too.
-  'team_document_removed',
+  'team_project_removed',
   'team_renamed',
   'team_deleted',
   'team_invite_link_enabled',
@@ -158,32 +158,32 @@ export const TIMELINE_PAGE_MAX = 200;
 export const TIMELINE_RETENTION_MS = 365 * 24 * 60 * 60 * 1000;
 
 // Comment text rides along in the description so the feed is readable
-// without opening the document, truncated so one essay can't dominate a
+// without opening the project, truncated so one essay can't dominate a
 // day. Deliberately wider than docs/specs/014-identity/transactional-email.md's email policy (which never
 // includes comment text): an email leaves the product's auth boundary,
-// the Timeline sits behind the same gate as the document itself.
+// the Timeline sits behind the same gate as the project itself.
 export const TIMELINE_COMMENT_MAX = 240;
 
-// An Offline Mode conversion (docs/specs/006-document/offline-mode.md), declared by the editor on the request
+// An Offline Mode conversion (docs/specs/006-project/offline-mode.md), declared by the editor on the request
 // that performs it, so the feed can say what actually happened.
 //
 // It has to be declared because the two conversions reuse ordinary endpoints
 // and are indistinguishable from them at the boundary: "Take offline" is a
-// plain DELETE /documents/:id, and "Sync document" is a plain POST /documents. So
-// the worker recorded them as a deletion and `document_created` — a Timeline
-// that told the owner a document they had just moved into this browser was
-// gone, and that one they had just uploaded was newly *created*. Both `document_offline` and `document_synced` already
+// plain DELETE /projects/:id, and "Sync project" is a plain POST /projects. So
+// the worker recorded them as a deletion and `project_created` — a Timeline
+// that told the owner a project they had just moved into this browser was
+// gone, and that one they had just uploaded was newly *created*. Both `project_offline` and `project_synced` already
 // existed above, with tones, icons, renderers and a docs/specs/013-workspace/timeline.md table entry;
 // nothing had ever emitted them.
 //
 // Header name + values live here, next to the event types they select, because
 // this is a two-sided contract and the alternative is the client and the worker
 // each holding a copy of the string.
-export const DOCUMENT_CONVERSION_HEADER = 'X-Document-Conversion';
+export const PROJECT_CONVERSION_HEADER = 'X-Project-Conversion';
 
-export type DocumentConversion = 'offline' | 'sync';
+export type ProjectConversion = 'offline' | 'sync';
 
 /** Reads the conversion a request declares, or null when it declares none. */
-export function readDocumentConversion(value: string | null): DocumentConversion | null {
+export function readProjectConversion(value: string | null): ProjectConversion | null {
   return value === 'offline' || value === 'sync' ? value : null;
 }

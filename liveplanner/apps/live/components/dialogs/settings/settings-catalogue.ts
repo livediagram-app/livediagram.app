@@ -36,7 +36,7 @@ import { DEFAULT_KEY_ENTRIES } from '@/lib/placement-defaults/default-key-entrie
 // One email notification switch (docs/specs/014-identity/profile-and-email-notifications.md): only
 // where the deployment sends email AND the reader is signed in, since a guest has no address.
 type EmailKey =
-  | 'notifyDocumentJoin'
+  | 'notifyProjectJoin'
   | 'notifyInviteResponse'
   | 'notifyComments'
   | 'notifyActionAssigned'
@@ -232,7 +232,7 @@ export type SettingsTrashRowSpec = RowBase & { kind: 'trash' };
 export type SettingsPresetSummaryRowSpec = RowBase & { kind: 'presetSummary' };
 
 // One default folder entry (docs/specs/013-workspace/default-folders.md "Settings"): where new
-// documents of that key go, with Change and Clear. Not a preference: it reads and writes
+// projects of that key go, with Change and Clear. Not a preference: it reads and writes
 // `/api/placement-defaults` through the page's store, so it carries no read/write pair.
 export type SettingsPlacementDefaultRowSpec = RowBase & {
   kind: 'placementDefault';
@@ -266,7 +266,7 @@ export type SettingsCategorySpec = {
   parent?: SettingsIconId;
   // Only rendered when the api worker advertises AI capability (docs/specs/007-editor/ai-assistance.md).
   requiresAi?: boolean;
-  // A line under a section's heading, for what every row in it shares (Documents' Default Folders,
+  // A line under a section's heading, for what every row in it shares (Projects' Default Folders,
   // the Tours' "offer again"), said once rather than under each row.
   sectionNotes?: Record<string, { note: string; helpArticle?: HelpArticleKey }>;
   rows: SettingsRowSpec[];
@@ -909,11 +909,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
     ],
   },
   {
-    id: 'documents',
-    label: 'Documents',
+    id: 'projects',
+    label: 'Projects',
     sectionNotes: {
       'Default Folders': {
-        note: 'Where each kind of new document is saved when you create it without choosing a place.',
+        note: 'Where each kind of new project is saved when you create it without choosing a place.',
         helpArticle: 'defaultFolders',
       },
     },
@@ -927,7 +927,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         // Settings labels are title case ("Kanban Boards"); the entries' own labels are sentence case.
         label: titleCase(entry.label),
         keywords:
-          'default folder where new documents go save location place file automatically always save placement',
+          'default folder where new projects go save location place file automatically always save placement',
         description: `Where new ${entry.noun} go when you create one without choosing a place.`,
       })),
       {
@@ -958,7 +958,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords:
           'account profile identity name email signed in sign in avatar picture photo google joined',
         description:
-          'Your name, email and picture come from your account. Signed out, your documents belong to this browser.',
+          'Your name, email and picture come from your account. Signed out, your projects belong to this browser.',
         helpArticle: 'guestVsAccount',
       },
       {
@@ -980,8 +980,8 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'Your Data',
         label: 'Trash',
         keywords:
-          'trash bin recycle deleted undo undelete restore recover get back document diagram permanently empty',
-        description: 'Deleted documents wait here for 30 days, ready to restore.',
+          'trash bin recycle deleted undo undelete restore recover get back project diagram permanently empty',
+        description: 'Deleted projects wait here for 30 days, ready to restore.',
         helpArticle: 'trash',
       },
       {
@@ -991,7 +991,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         label: 'Delete Account',
         keywords: 'delete account remove wipe erase close cancel data gdpr',
         description:
-          'Removes your documents, folders, and the account itself, everywhere. There is no undo.',
+          'Removes your projects, folders, and the account itself, everywhere. There is no undo.',
       },
     ],
   },
@@ -1007,7 +1007,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         section: 'In the Editor',
         label: 'In-Editor Notifications',
         description:
-          'A brief note when something happens off screen, like moving a document to a folder. Errors and warnings always show.',
+          'A brief note when something happens off screen, like moving a project to a folder. Errors and warnings always show.',
         read: (p) => p.notificationsEnabled !== false,
         write: (p, v) => ({ ...p, notificationsEnabled: v }),
         event: { category: 'UI', on: 'NotificationsOn', off: 'NotificationsOff' },
@@ -1024,20 +1024,20 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         note: 'Sign in to choose which emails you get.',
         signIn: true,
         description:
-          'We can email you when someone joins one of your documents, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
+          'We can email you when someone joins one of your projects, comments on it, assigns you an action, and for a few other moments. Which ones is an account setting.',
         available: (ctx) => ctx.emailEnabled && !ctx.signedIn,
       },
-      emailSwitch('notifyDocumentJoin', {
-        event: { category: 'UI', on: 'NotifyDocumentJoinOn', off: 'NotifyDocumentJoinOff' },
+      emailSwitch('notifyProjectJoin', {
+        event: { category: 'UI', on: 'NotifyProjectJoinOn', off: 'NotifyProjectJoinOff' },
         keywords: 'email join collaborator opened',
-        label: 'Someone Joins My Document',
-        description: 'A new person opens one of your shared documents.',
+        label: 'Someone Joins My Project',
+        description: 'A new person opens one of your shared projects.',
       }),
       emailSwitch('notifyComments', {
         event: { category: 'UI', on: 'NotifyCommentsOn', off: 'NotifyCommentsOff' },
         keywords: 'email comment reply feedback',
-        label: 'Someone Comments on My Document',
-        description: 'Someone leaves a comment on a document you own.',
+        label: 'Someone Comments on My Project',
+        description: 'Someone leaves a comment on a project you own.',
       }),
       emailSwitch('notifyMentions', {
         event: { category: 'UI', on: 'NotifyMentionsOn', off: 'NotifyMentionsOff' },
@@ -1050,7 +1050,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         keywords: 'email form response survey submission answer',
         label: 'Someone Fills In My Form',
         description:
-          'Someone responds to a form in a document you own (at most one email every 15 minutes per form).',
+          'Someone responds to a form in a project you own (at most one email every 15 minutes per form).',
       }),
       emailSwitch('notifyActionAssigned', {
         event: { category: 'UI', on: 'NotifyActionAssignedOn', off: 'NotifyActionAssignedOff' },
@@ -1074,7 +1074,7 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         event: { category: 'UI', on: 'NotifyMilestonesOn', off: 'NotifyMilestonesOff' },
         keywords: 'email milestone achievement celebrate',
         label: 'Milestones',
-        description: 'A note when you hit one, like sharing your first document.',
+        description: 'A note when you hit one, like sharing your first project.',
       }),
     ],
   },
@@ -1146,9 +1146,9 @@ export function visibleCategories(
 }
 
 // What a workbench's Settings leave out (docs/specs/013-workspace/blueprints/workbench-embeds.md,
-// Surface table): the account and everything beyond the one document. A category nested under one
+// Surface table): the account and everything beyond the one project. A category nested under one
 // goes with it, so nothing is left without its parent.
-const WORKBENCH_HIDDEN_CATEGORIES = new Set(['ai', 'documents', 'account', 'tokens']);
+const WORKBENCH_HIDDEN_CATEGORIES = new Set(['ai', 'projects', 'account', 'tokens']);
 
 function hiddenInWorkbench(category: SettingsCategorySpec): boolean {
   return (

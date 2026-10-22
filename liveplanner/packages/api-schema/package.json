@@ -17,7 +17,7 @@
     "clean": "rm -rf node_modules .turbo"
   },
   "dependencies": {
-    "@liveplanner/document": "workspace:*",
+    "@liveplanner/project": "workspace:*",
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/items": "workspace:*",
     "@liveplanner/sheets": "workspace:*"

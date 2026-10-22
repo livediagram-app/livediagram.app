@@ -5,7 +5,7 @@ import { ExplorerRail } from './ExplorerRail';
 import { panelSectionGroups, type PanelSection } from './panel-sections';
 
 // docs/specs/013-workspace/explorer-structure.md "The rail" and "Keyboard and ARIA".
-const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserDocuments: true });
+const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserProjects: true });
 
 function show(
   over: { phone?: boolean; selected?: PanelSection; divider?: 'titles' | 'separators' } = {},
@@ -40,14 +40,14 @@ describe('ExplorerRail', () => {
       'Home',
       'Inbox',
       'Shared With Me (2)',
-      'My Documents',
+      'My Projects',
       'Design guild',
       'This Browser (3)',
       'Tags',
       'Library',
       'Trash',
     ]);
-    expect(screen.getByRole('button', { name: 'My Documents' }).getAttribute('aria-current')).toBe(
+    expect(screen.getByRole('button', { name: 'My Projects' }).getAttribute('aria-current')).toBe(
       'true',
     );
   });

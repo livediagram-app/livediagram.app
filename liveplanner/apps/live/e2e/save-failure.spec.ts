@@ -3,18 +3,18 @@ import {
   expect,
   dismissQuickTour,
   expectNoPageErrors,
-  startBlankDocument,
+  startBlankProject,
   paletteTile,
 } from './fixtures';
 
-// A failed autosave names its real cause (docs/specs/006-document/per-tab-storage.md). Production showed
+// A failed autosave names its real cause (docs/specs/006-project/per-tab-storage.md). Production showed
 // `Http401.SaveTab` reading as "Check your connection" on a wired fibre line.
 // The worker's exact 401 is replayed on the tab PUT, since no Clerk session
 // exists in the e2e stack; lifting it proves the next edit saves again.
 test('a save refused as unauthenticated says so, then recovers', async ({ page, pageErrors }) => {
-  await startBlankDocument(page);
+  await startBlankProject(page);
   const canvas = page.locator('[data-canvas-a11y-root]');
-  const tabWrites = '**/api/documents/*/tabs/*';
+  const tabWrites = '**/api/projects/*/tabs/*';
 
   await page.route(tabWrites, (route) =>
     route.request().method() === 'PUT'
@@ -36,7 +36,7 @@ test('a save refused as unauthenticated says so, then recovers', async ({ page, 
   await page.unroute(tabWrites);
   await dismissQuickTour(page);
   const saved = page.waitForResponse(
-    (r) => r.request().method() === 'PUT' && /\/api\/documents\/[^/]+\/tabs\//.test(r.url()),
+    (r) => r.request().method() === 'PUT' && /\/api\/projects\/[^/]+\/tabs\//.test(r.url()),
   );
   await (await paletteTile(page, 'Add Square')).click();
   await canvas.click({ position: { x: 560, y: 300 } });

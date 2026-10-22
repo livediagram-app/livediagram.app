@@ -43,7 +43,7 @@ describe('the sheet face', () => {
       <SheetFace
         palette={palette}
         title="Sheet"
-        message="This sheet is no longer in this document"
+        message="This sheet is no longer in this project"
         action={{ label: 'Remove', run }}
       />,
     );

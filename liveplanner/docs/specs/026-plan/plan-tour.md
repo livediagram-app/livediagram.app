@@ -85,7 +85,7 @@ recorded as tour content (`plan-tour-content` in localStorage) while it exists, 
 - **Never over Start Planning.** An empty Plan tab shows Start Planning, so the tour is offered only once the tab
   has a board or Sheet (see [Where it appears](#where-it-appears)).
 - **It changes nothing.** The tour adds no element, card, row or cell, moves nothing, selects no cell and writes
-  nothing, so there is nothing to take away, nothing in the document's history, and nothing a collaborator
+  nothing, so there is nothing to take away, nothing in the project's history, and nothing a collaborator
   sees. Undo after the tour is exactly as before it.
 - The one thing it opens is a card's panel (the Boards track's **The Card Panel**, on the board's first card),
   which is the person's own view, saved nowhere, and closed on leaving the step or the tour.
@@ -122,7 +122,7 @@ Six steps, on the tour's own example card (below).
    through, left to right.
 2. **Add Cards**: adds the example card, **Your First Card**, to the board's first column and highlights it.
 3. **Move Work Along**: moves the example card to the next column and highlights it there; drag a card on as the work
-   moves on, and everyone in the document sees it move.
+   moves on, and everyone in the project sees it move.
 4. **The Card Panel**: opens the example card's panel and highlights it. Everything about a piece of work is here,
    saved as it is typed.
 5. **The Board Header**: highlights the board's header. Its widgets count and filter the board; more come from
@@ -137,7 +137,7 @@ Six steps, on the tour's own example card (below).
 Five steps.
 
 1. **Your Sheet**: a centred card, no ring; it brings the Sheet on screen. A sheet is a spreadsheet in the
-   document: cells, formulas and charts.
+   project: cells, formulas and charts.
 2. **Type Into Cells**: highlights cell A1 alone (scrolled out of view, the step is left out). A click selects a
    cell and typing fills it; Enter moves down, Tab across, and numbers, dates and percentages are read as typed.
 3. **Formulas**: highlights the formula bar, which shows the selected cell's value or formula; the tour selects

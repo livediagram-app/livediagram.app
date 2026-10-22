@@ -1,5 +1,5 @@
 // Canvas basics illustrations (docs/specs/018-help/help-app.md): the palette strip and dock on the
-// canvas, the multi-selection toolbar, the New Document template step, the element menu's
+// canvas, the multi-selection toolbar, the New Project template step, the element menu's
 // Font tiles, and the Colours, Text and Canvas panels of the Tab Style dialog plus the custom-theme builder.
 // Each draws the real surface with its real labels: ToolbarPalette.tsx, CanvasChrome.tsx,
 // MultiSelectionToolbar.tsx, TemplatePickerHeader.tsx / TemplatePickerBrowse.tsx,

@@ -8,7 +8,7 @@ import {
   withChipLook,
   type ChipLook,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { Glyph } from '@liveplanner/ui';
 import { MenuAccordionSection, MenuActionButton } from '@/components/primitives/PortalMenu';
 import { DataMenuGlyph } from '@/components/palette/context-menu-data-rows';

@@ -258,7 +258,7 @@ export function formStarter(id: StarterId): FormStarter {
 // The glyph a card type made for a form takes.
 const FORM_TYPE_GLYPH = 'checklist';
 
-// The card type a starter's responses are made as: the ready-made one (the document's own copy when it has it),
+// The card type a starter's responses are made as: the ready-made one (the project's own copy when it has it),
 // else a new type named after the form. Its id is the caller's (unique in the catalogue).
 export function starterBaseType(
   starter: FormStarter,

@@ -1,12 +1,12 @@
 import type { Metadata } from 'next';
 import { ExplorerPane } from '../ExplorerPane';
-import { viewDocumentTitle } from '../view-titles';
+import { viewProjectTitle } from '../view-titles';
 
-// /explorer/favourites — the documents this user starred, personal and team
+// /explorer/favourites — the projects this user starred, personal and team
 // alike (docs/specs/013-workspace/favourites.md). The layout's ExplorerShell provides the chrome + state;
 // this page only pins the route and the tab title (docs/specs/013-workspace/folders.md, routes.ts).
 export const metadata: Metadata = {
-  title: viewDocumentTitle('favourites'),
+  title: viewProjectTitle('favourites'),
 };
 
 export default function Page() {

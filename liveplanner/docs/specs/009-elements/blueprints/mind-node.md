@@ -8,29 +8,29 @@ Scope, by file:
 
 | File                                                         | Role                                                                                                                               |
 | ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/mind-map.ts`                          | Tree walks, free placement (`nextMindChildPosition`), `makeRoom`, root sibling                                                     |
-| `packages/document/src/mind-flow.ts`                         | `MindFlow`, per-flow free placement, gaps, `mindConnectorAnchors`                                                                  |
-| `packages/document/src/mind-layout.ts`                       | `layoutMindTree`, `isMindTreeTidy`, `reanchorMindConnectors`                                                                       |
-| `packages/document/src/mind-grow.ts`                         | `planMindGrowth`, `relayoutMindMap`, `mindStyleSource`, `applyMindMoves`                                                           |
-| `packages/document/src/mind-fit.ts`                          | `fitMindNodeHeight`: grow a node taller, re-lay a tidy map around it                                                               |
-| `packages/document/src/mind-outline-text.ts`                 | `mindOutlineText`, `mindOutlineEntryText`, `mindOutlineLines`, `parseMindOutline`, `mindOutlineNodeText`: outline to and from text |
-| `packages/document/src/mind-outline-marks.ts`                | `mindNodeMarks`, `mindMarkdownToMarks`, `mindMarksToMarkdown`, `restyleMindNode`, `mindRichTextFor`: bold / italic / underline     |
-| `packages/document/src/mind-outline.ts`                      | `summariseMindOutline`, `applyMindOutline`: match nodes, apply, re-lay out on a structure change                                   |
-| `packages/document/src/mind-connector-route.ts`              | `finishMindConnectorRoute`, `finishRoutedArrow`, `finishArrowEnds`: Professional's bracket routing                                 |
-| `packages/document/src/anchor-choice.ts`                     | `bestAnchorTowards`: the bubble flow's connector faces                                                                             |
-| `packages/document/src/shape-factory.ts`                     | `SHAPE_DEFAULT_SIZE['mind-node']` (250 × 80)                                                                                       |
-| `packages/document/src/element-types.ts`                     | `mindParentId`, `mindFlow`                                                                                                         |
-| `packages/document/src/validate.ts`                          | `mindParentId` is a string; `mindFlow` a known flow                                                                                |
-| `packages/document/src/duplicate.ts`                         | Re-parents copied children onto copied parents                                                                                     |
-| `packages/document/src/svg-render.ts`                        | The export's corner radius                                                                                                         |
-| `apps/live/app/document/[id]/useMindGrowth.ts`               | `canGrowMindNode`, `growMindNode`, `abandonMindNode`: one commit each                                                              |
-| `apps/live/app/document/[id]/useGrowthLanding.ts`            | Shared with flowchart growth: reveal, typed-ahead landing, Escape on an empty grown node                                           |
-| `apps/live/app/document/[id]/useMindOutline.ts`              | `MindOutlineApi`: the open root, `canEdit`, `save` as one commit                                                                   |
+| `packages/project/src/mind-map.ts`                          | Tree walks, free placement (`nextMindChildPosition`), `makeRoom`, root sibling                                                     |
+| `packages/project/src/mind-flow.ts`                         | `MindFlow`, per-flow free placement, gaps, `mindConnectorAnchors`                                                                  |
+| `packages/project/src/mind-layout.ts`                       | `layoutMindTree`, `isMindTreeTidy`, `reanchorMindConnectors`                                                                       |
+| `packages/project/src/mind-grow.ts`                         | `planMindGrowth`, `relayoutMindMap`, `mindStyleSource`, `applyMindMoves`                                                           |
+| `packages/project/src/mind-fit.ts`                          | `fitMindNodeHeight`: grow a node taller, re-lay a tidy map around it                                                               |
+| `packages/project/src/mind-outline-text.ts`                 | `mindOutlineText`, `mindOutlineEntryText`, `mindOutlineLines`, `parseMindOutline`, `mindOutlineNodeText`: outline to and from text |
+| `packages/project/src/mind-outline-marks.ts`                | `mindNodeMarks`, `mindMarkdownToMarks`, `mindMarksToMarkdown`, `restyleMindNode`, `mindRichTextFor`: bold / italic / underline     |
+| `packages/project/src/mind-outline.ts`                      | `summariseMindOutline`, `applyMindOutline`: match nodes, apply, re-lay out on a structure change                                   |
+| `packages/project/src/mind-connector-route.ts`              | `finishMindConnectorRoute`, `finishRoutedArrow`, `finishArrowEnds`: Professional's bracket routing                                 |
+| `packages/project/src/anchor-choice.ts`                     | `bestAnchorTowards`: the bubble flow's connector faces                                                                             |
+| `packages/project/src/shape-factory.ts`                     | `SHAPE_DEFAULT_SIZE['mind-node']` (250 × 80)                                                                                       |
+| `packages/project/src/element-types.ts`                     | `mindParentId`, `mindFlow`                                                                                                         |
+| `packages/project/src/validate.ts`                          | `mindParentId` is a string; `mindFlow` a known flow                                                                                |
+| `packages/project/src/duplicate.ts`                         | Re-parents copied children onto copied parents                                                                                     |
+| `packages/project/src/svg-render.ts`                        | The export's corner radius                                                                                                         |
+| `apps/live/app/project/[id]/useMindGrowth.ts`               | `canGrowMindNode`, `growMindNode`, `abandonMindNode`: one commit each                                                              |
+| `apps/live/app/project/[id]/useGrowthLanding.ts`            | Shared with flowchart growth: reveal, typed-ahead landing, Escape on an empty grown node                                           |
+| `apps/live/app/project/[id]/useMindOutline.ts`              | `MindOutlineApi`: the open root, `canEdit`, `save` as one commit                                                                   |
 | `apps/live/lib/mind-dress.ts`                                | `dressMindNode`, `dressMindConnector`: one look for growth and outline saves                                                       |
 | `apps/live/lib/mind-label-fit.ts`                            | `mindLabelFontPx`, `mindLabelPadding`, `mindLabelHeight`, `fitMindLabel`: the height a label needs                                 |
 | `apps/live/components/canvas/text-hug-measure.ts`            | `measureLabelBlock`, `measureDrawnMindLabel`: the DOM measure of a label's lines                                                   |
 | `apps/live/components/canvas/useMindLabelFit.ts`             | The live height while typing, drawn by `BoxedElementView` until the commit                                                         |
-| `apps/live/app/document/[id]/useSelectionEditing.ts`         | `commitLabel` grows a mind node to fit in the label's commit                                                                       |
+| `apps/live/app/project/[id]/useSelectionEditing.ts`         | `commitLabel` grows a mind node to fit in the label's commit                                                                       |
 | `apps/live/components/dialogs/shortcut-sections.ts`          | The Keyboard settings rows for Tab, Enter and Shift+Enter on a mind node                                                           |
 | `apps/live/components/dialogs/MindOutlineDialog.tsx`         | The Edit Outline dialog: rows, help link, count line, remove question                                                              |
 | `apps/live/components/dialogs/MindOutlineRows.tsx`           | The row editor: bullets, guides, keys, toolbar, caret placement                                                                    |
@@ -65,7 +65,7 @@ Scope, by file:
 | Parent pointer | `mindParentId`                              | The owning node's id; absent or dangling means a root             |
 | Root           | `mindRootOf(elements, node)`                | The topmost node reachable by parent pointers                     |
 | Tree / map     | `mindTrees` (internal), `treeIds`           | A root and every node under it                                    |
-| Children       | `mindChildren(elements, id)`                | Direct children, document order                                   |
+| Children       | `mindChildren(elements, id)`                | Direct children, project order                                   |
 | Subtree        | `mindSubtree(elements, id)`                 | Every node under `id`, excluding it                               |
 | Flow           | `MindFlow`: `tree balanced downward bubble` | The shape a map grows in, stored on the root                      |
 | Tidy map       | `isMindTreeTidy(elements, rootId, flow)`    | Every node within `MIND_TIDY_TOLERANCE` of its laid-out slot      |
@@ -150,7 +150,7 @@ Every plan is a pure function of the element list; the editor applies it in one 
 - **Sibling order** is read from the drawing in `orderFlow` (`orderKeyFor`): centre `y` for tree,
   leftward and balanced, centre `x` for downward and upward, and for bubble the clockwise angle around the root from
   the seam opposite the parent's direction (`BUBBLE_SEAM`, west for the root's children). Ties
-  keep document order (`D140`). A hinted node goes after `hint.after`, else at the end.
+  keep project order (`D140`). A hinted node goes after `hint.after`, else at the end.
 - **Stacked flows** (`stackLayout(…, axis, dir, gaps)`): levels run along `x` (tree `+1`, leftward
   `-1`, balanced both) or `y` (downward `+1`, upward `-1`), one `gaps.child` / `gaps.level` apart; a
   subtree's span across the axis is the larger of its own extent and its children's spans plus
@@ -351,12 +351,12 @@ Invariants:
 ## Interfaces and contracts
 
 ```ts
-// packages/document/src/element-types.ts (ShapeElement)
+// packages/project/src/element-types.ts (ShapeElement)
 mindParentId?: ElementId;
 mindFlow?: MindFlow;
 mindSpacing?: MindSpacing;
 
-// packages/document/src/mind-flow.ts
+// packages/project/src/mind-flow.ts
 export type MindFlow = 'tree' | 'leftward' | 'balanced' | 'downward' | 'upward' | 'bubble';
 export const MIND_FLOWS: readonly MindFlow[]; // the Branching order: each mirror after its original
 export const isVerticalMindFlow: (flow: MindFlow) => boolean; // downward, upward
@@ -368,7 +368,7 @@ export type MindGaps = { child: number; sibling: number; level: number };
 export function mindGaps(spacing?: MindSpacing): MindGaps; // whole pixels
 export function isMindSpacing(value: string | undefined): value is MindSpacing;
 
-// packages/document/src/mind-map.ts
+// packages/project/src/mind-map.ts
 export function mindSpacingOf(elements: Element[], node: ShapeElement): MindSpacing;
 export function withMindBranches(
   elements: Element[],
@@ -396,7 +396,7 @@ export function mindConnectorAnchors(
   child: ShapeElement,
 ): [Anchor, Anchor];
 
-// packages/document/src/mind-connector-route.ts
+// packages/project/src/mind-connector-route.ts
 export type MindConnectorRoute =
   | { style: 'angled'; corners: Point[] } // absolute, from-to order; [] when the ends line up
   | { style: 'straight'; corners: [] }; // bubble
@@ -421,7 +421,7 @@ export function finishRoutedArrow(arrow, elements, finish): ArrowElement;
 export function finishArrowEnds(arrow, elements, finish): { arrow: ArrowElement; from: Point; to: Point };
 // routed: the drawn arrow and the raw anchors (no fan); else the arrow and its fanned ends.
 
-// packages/document/src/mind-map.ts
+// packages/project/src/mind-map.ts
 export type MindShift = { id: ElementId; dy: number };
 export function makeRoom(
   elements: Element[],
@@ -437,7 +437,7 @@ export function growMindSibling(elements: Element[], node: ShapeElement): MindGr
 export function mindRootOf(elements: Element[], node: ShapeElement): ShapeElement;
 export function mindFlowOf(elements: Element[], node: ShapeElement): MindFlow;
 
-// packages/document/src/mind-layout.ts
+// packages/project/src/mind-layout.ts
 export const MIND_TIDY_TOLERANCE = 1;
 export type MindOrderHint = { id: ElementId; after?: ElementId };
 export type MindLayout = Map<ElementId, { x: number; y: number }>;
@@ -450,7 +450,7 @@ export function layoutMindTree(
 ): MindLayout;
 export function isMindTreeTidy(elements: Element[], rootId: ElementId, flow: MindFlow): boolean;
 
-// packages/document/src/mind-grow.ts
+// packages/project/src/mind-grow.ts
 export type MindMove = { id: ElementId; x: number; y: number };
 export type MindGrowthPlan = {
   node: ShapeElement;
@@ -560,7 +560,7 @@ listener only reads keys while a growth it opened is pending, and lets modified 
 - Shape: CSS box with `BORDER_RADIUS_PX[borderRadius]` when set, else 12px
   (`element-variant.ts`); export `rx` is the same, capped at half the shorter side.
 - The Radius control offers mind nodes: `'mind-node'` is in `RADIUS_SHAPES`, so
-  `supportsBorderRadius` (`packages/document/src/colors.ts`) is true for it, which shows the Border
+  `supportsBorderRadius` (`packages/project/src/colors.ts`) is true for it, which shows the Border
   category's Radius grid (single and multi-selection menus) and a whiteboard's Corners row. The grid
   highlights `shownBorderRadius(el)`: the node's own preset, else `'md'` (12px, the default).
 - Toolbar: Add child and Add sibling after Edit text, each naming its shortcut in its hover card.
@@ -609,53 +609,53 @@ Abandon, the canvas key guards and `makeRoom` emit nothing [GA1].
 
 | Rule                                                  | Test                                                                                                     | File                                                                                                                                                           |
 | ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Children / subtree walks, cycle-safe (I3)             | mindChildren; mindSubtree (terminates on a cycle)                                                        | `packages/document/src/mind-map.test.ts`                                                                                                                       |
-| Free: first child right, centred [QA14]               | puts a first child to the right, vertically centred on the parent                                        | `packages/document/src/mind-map.test.ts`                                                                                                                       |
-| Free: stack against the subtree                       | stacks a second child; clears a GRANDCHILD                                                               | `packages/document/src/mind-map.test.ts`                                                                                                                       |
-| Free: cousin in own tree gives way (I1)               | gives way to a cousin in the same tree, which cannot be moved                                            | `packages/document/src/mind-map.test.ts`                                                                                                                       |
-| Root sibling at the end of the column                 | growMindSibling (six cases)                                                                              | `packages/document/src/mind-map.test.ts`                                                                                                                       |
-| Make room: whole tree, cascade, own tree fixed        | making room (four cases)                                                                                 | `packages/document/src/mind-map.test.ts`                                                                                                                       |
-| Tidy growth: centred, root fixed, sibling after       | planMindGrowth: a tidy map stays tidy (five cases)                                                       | `packages/document/src/mind-grow.test.ts`                                                                                                                      |
-| Growth is one plan (I2)                               | lands the growth as moves in the same plan, not a second step                                            | `packages/document/src/mind-grow.test.ts`                                                                                                                      |
-| Hand-arranged map: free placement                     | planMindGrowth: a hand-arranged map (two cases)                                                          | `packages/document/src/mind-grow.test.ts`                                                                                                                      |
-| Level look and connector look                         | planMindGrowth: the level look (five cases)                                                              | `packages/document/src/mind-grow.test.ts`                                                                                                                      |
-| Connector faces by flow; root has none                | planMindGrowth: connectors (three cases)                                                                 | `packages/document/src/mind-grow.test.ts`                                                                                                                      |
-| Tidy Map and a flow change                            | relayoutMindMap (two cases)                                                                              | `packages/document/src/mind-grow.test.ts`                                                                                                                      |
-| A drag carries the branch                             | withMindSubtrees (two cases)                                                                             | `packages/document/src/mind-grow.test.ts`                                                                                                                      |
-| Tidy layout per flow, fixed point (I5)                | layoutMindTree: tree flow; other flows                                                                   | `packages/document/src/mind-layout.test.ts`                                                                                                                    |
-| Tidiness check                                        | isMindTreeTidy (three cases)                                                                             | `packages/document/src/mind-layout.test.ts`                                                                                                                    |
-| Re-anchoring                                          | reanchorMindConnectors (three cases)                                                                     | `packages/document/src/mind-layout.test.ts`                                                                                                                    |
-| Six flows, read from the root (I4)                    | mind flows; layoutMindTree: mirrored flows (four cases)                                                  | `packages/document/src/mind-flow.test.ts`                                                                                                                      |
-| Edit Outline: write, parse, match, apply              | mindOutlineText; parseMindOutline; applyMindOutline                                                      | `packages/document/src/mind-outline.test.ts`                                                                                                                   |
+| Children / subtree walks, cycle-safe (I3)             | mindChildren; mindSubtree (terminates on a cycle)                                                        | `packages/project/src/mind-map.test.ts`                                                                                                                       |
+| Free: first child right, centred [QA14]               | puts a first child to the right, vertically centred on the parent                                        | `packages/project/src/mind-map.test.ts`                                                                                                                       |
+| Free: stack against the subtree                       | stacks a second child; clears a GRANDCHILD                                                               | `packages/project/src/mind-map.test.ts`                                                                                                                       |
+| Free: cousin in own tree gives way (I1)               | gives way to a cousin in the same tree, which cannot be moved                                            | `packages/project/src/mind-map.test.ts`                                                                                                                       |
+| Root sibling at the end of the column                 | growMindSibling (six cases)                                                                              | `packages/project/src/mind-map.test.ts`                                                                                                                       |
+| Make room: whole tree, cascade, own tree fixed        | making room (four cases)                                                                                 | `packages/project/src/mind-map.test.ts`                                                                                                                       |
+| Tidy growth: centred, root fixed, sibling after       | planMindGrowth: a tidy map stays tidy (five cases)                                                       | `packages/project/src/mind-grow.test.ts`                                                                                                                      |
+| Growth is one plan (I2)                               | lands the growth as moves in the same plan, not a second step                                            | `packages/project/src/mind-grow.test.ts`                                                                                                                      |
+| Hand-arranged map: free placement                     | planMindGrowth: a hand-arranged map (two cases)                                                          | `packages/project/src/mind-grow.test.ts`                                                                                                                      |
+| Level look and connector look                         | planMindGrowth: the level look (five cases)                                                              | `packages/project/src/mind-grow.test.ts`                                                                                                                      |
+| Connector faces by flow; root has none                | planMindGrowth: connectors (three cases)                                                                 | `packages/project/src/mind-grow.test.ts`                                                                                                                      |
+| Tidy Map and a flow change                            | relayoutMindMap (two cases)                                                                              | `packages/project/src/mind-grow.test.ts`                                                                                                                      |
+| A drag carries the branch                             | withMindSubtrees (two cases)                                                                             | `packages/project/src/mind-grow.test.ts`                                                                                                                      |
+| Tidy layout per flow, fixed point (I5)                | layoutMindTree: tree flow; other flows                                                                   | `packages/project/src/mind-layout.test.ts`                                                                                                                    |
+| Tidiness check                                        | isMindTreeTidy (three cases)                                                                             | `packages/project/src/mind-layout.test.ts`                                                                                                                    |
+| Re-anchoring                                          | reanchorMindConnectors (three cases)                                                                     | `packages/project/src/mind-layout.test.ts`                                                                                                                    |
+| Six flows, read from the root (I4)                    | mind flows; layoutMindTree: mirrored flows (four cases)                                                  | `packages/project/src/mind-flow.test.ts`                                                                                                                      |
+| Edit Outline: write, parse, match, apply              | mindOutlineText; parseMindOutline; applyMindOutline                                                      | `packages/project/src/mind-outline.test.ts`                                                                                                                   |
 | Edit Outline dialog: rows, keys, paste, save, confirm | MindOutlineDialog (eight cases)                                                                          | `apps/live/components/dialogs/MindOutlineDialog.test.tsx`                                                                                                      |
 | Row model: split, join, indent, outdent, move, paste  | outline-rows                                                                                             | `apps/live/lib/outline-rows.test.ts`                                                                                                                           |
-| Bold / italic / underline in an outline               | mind-outline-marks                                                                                       | `packages/document/src/mind-outline-marks.test.ts`                                                                                                             |
+| Bold / italic / underline in an outline               | mind-outline-marks                                                                                       | `packages/project/src/mind-outline-marks.test.ts`                                                                                                             |
 | Tidy Map says what it did                             | Tidy Map (two cases)                                                                                     | `apps/live/hooks/canvas/useMindMapSetters.test.ts`                                                                                                             |
 | Commands hidden at rest, shown when selected          | ElementIndicators                                                                                        | `apps/live/components/canvas/ElementIndicators.test.tsx`                                                                                                       |
 | Typing ahead                                          | applyHandoffKey; beginMindHandoff / claimMindHandoff                                                     | `apps/live/lib/mind-handoff.test.ts`                                                                                                                           |
 | Toolbar buttons on a mind node only                   | SelectionPopover mind-node growth (two cases)                                                            | `apps/live/components/canvas/SelectionPopover.test.tsx`                                                                                                        |
 | Traversal stands aside for plain Tab only             | useCanvasA11y Tab ownership                                                                              | `apps/live/hooks/canvas/useCanvasA11y.tab-ownership.test.tsx`                                                                                                  |
-| Copy re-parents children                              | re-parents a copied mind child onto its copied parent; leaves a mind parent OUTSIDE the copied set alone | `packages/document/src/factories.test.ts`                                                                                                                      |
+| Copy re-parents children                              | re-parents a copied mind child onto its copied parent; leaves a mind parent OUTSIDE the copied set alone | `packages/project/src/factories.test.ts`                                                                                                                      |
 | Duplicate re-parents                                  | re-parents a copied mind-map child onto the copied parent                                                | `apps/live/hooks/canvas/useElementDuplication.test.tsx`                                                                                                        |
-| Export rounds the node                                | rounds a mind node the way the canvas does                                                               | `packages/document/src/svg-render.test.ts`                                                                                                                     |
-| Professional: bracket per flow, picks win, export     | finishMindConnectorRoute; finishArrowEnds; svgArrow under a finish                                       | `packages/document/src/mind-connector-route.test.ts`                                                                                                           |
-| Professional routing stays linear                     | mind connector routing cost (two cases)                                                                  | `packages/document/src/mind-connector-route.perf.test.ts`                                                                                                      |
+| Export rounds the node                                | rounds a mind node the way the canvas does                                                               | `packages/project/src/svg-render.test.ts`                                                                                                                     |
+| Professional: bracket per flow, picks win, export     | finishMindConnectorRoute; finishArrowEnds; svgArrow under a finish                                       | `packages/project/src/mind-connector-route.test.ts`                                                                                                           |
+| Professional routing stays linear                     | mind connector routing cost (two cases)                                                                  | `packages/project/src/mind-connector-route.perf.test.ts`                                                                                                      |
 | Professional frame has no handles                     | deriveArrowViewFrame in a finish                                                                         | `apps/live/components/canvas/arrow-view-frame.test.ts`                                                                                                         |
-| Radius control offered; unset shows Medium            | supportsBorderRadius is true for a mind node; shownBorderRadius                                          | `packages/document/src/colors.test.ts`                                                                                                                         |
+| Radius control offered; unset shows Medium            | supportsBorderRadius is true for a mind node; shownBorderRadius                                          | `packages/project/src/colors.test.ts`                                                                                                                         |
 | Canvas Tab / Enter grow, guards                       | none [GA14]                                                                                              |                                                                                                                                                                |
 | Editor Enter / Tab commit then grow; Shift+Enter line | a mind node's label editor (five cases)                                                                  | `apps/live/components/canvas/RichTextEditor.mind-keys.test.tsx`                                                                                                |
 | Escape in the editor                                  | none [GA14]                                                                                              |                                                                                                                                                                |
-| Grow to fit: never shrinks, re-tidies, hand map stays | fitMindNodeHeight (six cases)                                                                            | `packages/document/src/mind-fit.test.ts`                                                                                                                       |
+| Grow to fit: never shrinks, re-tidies, hand map stays | fitMindNodeHeight (six cases)                                                                            | `packages/project/src/mind-fit.test.ts`                                                                                                                       |
 | Grow to fit: geometry and measure                     | mind label geometry; fitMindLabel; measureDrawnMindLabel                                                 | `apps/live/lib/mind-label-fit.test.ts`, `apps/live/components/canvas/text-hug-measure.test.ts`                                                                 |
 | Grow to fit while typing                              | useMindLabelFit (four cases)                                                                             | `apps/live/components/canvas/useMindLabelFit.test.ts`                                                                                                          |
-| Grow to fit on commit; newline kept                   | committing a mind node label (three cases)                                                               | `apps/live/app/document/[id]/useSelectionEditing.commit-label.test.ts`                                                                                         |
-| Growth plans against the tab in the commit            | places the new node against the map as it stands in the commit                                           | `apps/live/app/document/[id]/useMindGrowth.test.tsx`                                                                                                           |
+| Grow to fit on commit; newline kept                   | committing a mind node label (three cases)                                                               | `apps/live/app/project/[id]/useSelectionEditing.commit-label.test.ts`                                                                                         |
+| Growth plans against the tab in the commit            | places the new node against the map as it stands in the commit                                           | `apps/live/app/project/[id]/useMindGrowth.test.tsx`                                                                                                           |
 | Shift+Enter has a Keyboard settings row               | the mind node keys                                                                                       | `apps/live/components/dialogs/shortcut-sections.test.ts`                                                                                                       |
 | Ring leads with the two options                       | none [GA14]                                                                                              |                                                                                                                                                                |
 | Flow set and relayout once per root                   | none [GA14]                                                                                              |                                                                                                                                                                |
 | Abandon removes the leaf, re-tidies                   | none [GA14]                                                                                              |                                                                                                                                                                |
-| Delete takes the branch; locked stays; Cut copies it  | deleting a mind node (three cases); withMindBranches (seven cases); copying a mind node (two cases)      | `apps/live/hooks/canvas/useElementSelectionActions.test.ts`; `packages/document/src/mind-map.test.ts`; `apps/live/hooks/canvas/useClipboard.mind-cut.test.tsx` |
-| Spacing scales the gaps; Comfortable is the original  | layoutMindTree: spacing (three cases); mind spacing (three cases)                                        | `packages/document/src/mind-layout.test.ts`; `packages/document/src/mind-flow.test.ts`                                                                         |
+| Delete takes the branch; locked stays; Cut copies it  | deleting a mind node (three cases); withMindBranches (seven cases); copying a mind node (two cases)      | `apps/live/hooks/canvas/useElementSelectionActions.test.ts`; `packages/project/src/mind-map.test.ts`; `apps/live/hooks/canvas/useClipboard.mind-cut.test.tsx` |
+| Spacing scales the gaps; Comfortable is the original  | layoutMindTree: spacing (three cases); mind spacing (three cases)                                        | `packages/project/src/mind-layout.test.ts`; `packages/project/src/mind-flow.test.ts`                                                                         |
 | Spacing pick stores on the root and re-lays out       | Spacing                                                                                                  | `apps/live/hooks/canvas/useMindMapSetters.test.ts`                                                                                                             |
 | Mind Map menu: Outline, Branching, Spacing            | MindMapMenuSections (six cases)                                                                          | `apps/live/components/palette/MindMapMenuSections.test.tsx`                                                                                                    |
 | Templates are tidy, live maps                         | none [GA14]                                                                                              |                                                                                                                                                                |

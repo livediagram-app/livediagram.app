@@ -1,6 +1,6 @@
 // An item store as a value (docs/specs/026-plan/blueprints/item-store.md): the items, the store's
 // revision and the next key, with every write applied as a pure transition. The editor applies
-// writes optimistically through it, and an offline document's store is written by it, so a write
+// writes optimistically through it, and an offline project's store is written by it, so a write
 // lands the same way in the browser as in the api.
 
 import type { Item, ItemCreate, ItemMove, ItemPatch, ItemPerson } from './item';
@@ -277,7 +277,7 @@ export function itemAsCreate(item: Item): ItemCreate {
   };
 }
 
-// A whole store as the creates that rebuild it in order (an offline document's sync): each column's
+// A whole store as the creates that rebuild it in order (an offline project's sync): each column's
 // items in rank order, so appending them one by one keeps every column as it was.
 export function storeAsCreates(items: readonly Item[]): ItemCreate[] {
   return [...items]

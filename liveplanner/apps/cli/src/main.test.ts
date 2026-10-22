@@ -16,20 +16,20 @@ const current = {
 };
 
 const library: Route = (_, url) => {
-  if (url.pathname === '/api/documents')
+  if (url.pathname === '/api/projects')
     return Response.json({
-      documents: [{ id: DOC, name: 'Auth flow', savedAt: NOW, ownerId: 'u1' }],
+      projects: [{ id: DOC, name: 'Auth flow', savedAt: NOW, ownerId: 'u1' }],
     });
   if (url.pathname === '/api/teams') return Response.json({ teams: [] });
-  if (url.pathname === `/api/documents/${DOC}`)
+  if (url.pathname === `/api/projects/${DOC}`)
     return Response.json({
-      document: {
+      project: {
         id: DOC,
         name: 'Auth flow',
         tabs: [{ id: 'tab1-0000', name: 'Overview', orderIndex: 0 }],
       },
     });
-  if (url.pathname === `/api/documents/${DOC}/tabs/tab1-0000` && url.searchParams.get('json'))
+  if (url.pathname === `/api/projects/${DOC}/tabs/tab1-0000` && url.searchParams.get('json'))
     return Response.json({ nodes: [] });
   return undefined;
 };
@@ -55,14 +55,14 @@ describe('run', () => {
     expect((await cli([], io)).out).toContain('Usage: liveplanner <resource> <verb>');
     expect((await cli(['tab'], fakeIo())).out).toContain('liveplanner tab: ');
     expect((await cli(['tab', 'view', '--help'], fakeIo())).out).toContain(
-      'Usage: liveplanner tab view <doc>',
+      'Usage: liveplanner tab view <project>',
     );
     expect(await cli(['--version'], fakeIo())).toMatchObject({ code: 0, out: `${CLI_VERSION}\n` });
     expect(io.requests).toEqual([]);
   });
 
   it('reads with the token, the CLI headers, and the compact text on stdout', async () => {
-    const { code, out, err, io } = await cli(['document', 'ls']);
+    const { code, out, err, io } = await cli(['project', 'ls']);
     expect({ code, out, err }).toEqual({
       code: 0,
       out: `aaaa  "Auth flow"  personal  2026-10-05\n`,
@@ -77,9 +77,9 @@ describe('run', () => {
   });
 
   it('picks fields of each listed row, and asks the api for JSON when a verb takes --json', async () => {
-    const ls = await cli(['document', 'ls', 'auth', '--json=id,name']);
+    const ls = await cli(['project', 'ls', 'auth', '--json=id,name']);
     expect(ls.code).toBe(0);
-    expect(JSON.parse(ls.out)).toHaveProperty('documents', [{ id: DOC, name: 'Auth flow' }]);
+    expect(JSON.parse(ls.out)).toHaveProperty('projects', [{ id: DOC, name: 'Auth flow' }]);
     const view = await cli(['tab', 'view', 'auth flow', '--json']);
     expect(view.io.requests.some((r) => /view=outline&json=1$/.test(r.url))).toBe(true);
   });
@@ -87,34 +87,34 @@ describe('run', () => {
   it("sends a share link's code with every request after it resolves", async () => {
     const share: Route = (_, url) =>
       url.pathname === '/api/share/abc'
-        ? Response.json({ document: { id: DOC, name: 'Auth flow' } })
+        ? Response.json({ project: { id: DOC, name: 'Auth flow' } })
         : undefined;
     const io = signedIn({ routes: [capabilities, share, library, tokens] });
     expect(
-      (await cli(['tab', 'ls', 'https://liveplanner.app/document/shared?s=abc'], io)).code,
+      (await cli(['tab', 'ls', 'https://liveplanner.app/project/shared?s=abc'], io)).code,
     ).toBe(0);
     expect(io.requests.at(-1)!.headers.get('X-Share-Code')).toBe('abc');
     expect(io.requests[1]!.headers.get('X-Share-Code')).toBeNull();
   });
 
-  it('refuses usage with exit 2, a missing document with exit 3, as text or JSON on stderr', async () => {
+  it('refuses usage with exit 2, a missing project with exit 3, as text or JSON on stderr', async () => {
     expect(await cli(['tab', 'vew'])).toMatchObject({ code: 2, out: '' });
     const missing = await cli(['tab', 'ls', 'nope']);
     expect(missing).toMatchObject({
       code: 3,
       out: '',
-      err: 'error: no document matches "nope"\nhint: liveplanner document ls\n',
+      err: 'error: no project matches "nope"\nhint: liveplanner project ls\n',
     });
     const json = await cli(['tab', 'ls', 'nope', '--json']);
     expect(JSON.parse(json.err)).toEqual({
       error: 'not_found',
-      message: 'no document matches "nope"',
-      hint: 'liveplanner document ls',
+      message: 'no project matches "nope"',
+      hint: 'liveplanner project ls',
     });
   });
 
   it('needs a credential and a host with sign-in', async () => {
-    const none = await cli(['document', 'ls'], fakeIo({ routes: [capabilities] }));
+    const none = await cli(['project', 'ls'], fakeIo({ routes: [capabilities] }));
     expect(none).toMatchObject({
       code: 4,
       err: expect.stringContaining('not signed in to https://liveplanner.app'),
@@ -123,7 +123,7 @@ describe('run', () => {
       env: { LIVEPLANNER_TOKEN: TOKEN },
       routes: [() => Response.json({ aiEnabled: false })],
     });
-    expect(await cli(['document', 'ls'], guestOnly)).toMatchObject({
+    expect(await cli(['project', 'ls'], guestOnly)).toMatchObject({
       code: 4,
       err: expect.stringContaining('has no sign-in'),
     });
@@ -138,7 +138,7 @@ describe('run', () => {
         },
       ],
     });
-    expect(await cli(['document', 'ls'], io)).toMatchObject({
+    expect(await cli(['project', 'ls'], io)).toMatchObject({
       code: 7,
       err: expect.stringContaining('could not reach https://diagrams.example (fetch failed)'),
     });
@@ -151,18 +151,18 @@ describe('run', () => {
         : undefined;
     const routes = [floor, library, tokens];
     const io = fakeIo({ env: { LIVEPLANNER_TOKEN: TOKEN }, routes });
-    expect((await cli(['api', 'POST', '/documents'], io)).code).toBe(1);
+    expect((await cli(['api', 'POST', '/projects'], io)).code).toBe(1);
     expect(io.err()).toContain('accepts writes from liveplanner 99.0.0 or later');
     expect(
       (
         await cli(
-          ['api', 'GET', '/documents'],
+          ['api', 'GET', '/projects'],
           fakeIo({ env: { LIVEPLANNER_TOKEN: TOKEN }, routes }),
         )
       ).code,
     ).toBe(0);
     expect(
-      (await cli(['document', 'ls'], fakeIo({ env: { LIVEPLANNER_TOKEN: TOKEN }, routes }))).code,
+      (await cli(['project', 'ls'], fakeIo({ env: { LIVEPLANNER_TOKEN: TOKEN }, routes }))).code,
     ).toBe(0);
   });
 
@@ -174,10 +174,10 @@ describe('run', () => {
       '[cli] profile default host https://liveplanner.app source default',
       '[cli] capabilities miss',
       '[cli] credential env',
-      '[cli] request GET /api/documents 200 0',
+      '[cli] request GET /api/projects 200 0',
       '[cli] request GET /api/teams 200 0',
-      '[cli] address document name 1 matches',
-      `[cli] request GET /api/documents/${DOC} 200 0`,
+      '[cli] address project name 1 matches',
+      `[cli] request GET /api/projects/${DOC} 200 0`,
       '[cli] exit 0',
       '[cli] telemetry skipped env',
     ]);
@@ -206,7 +206,7 @@ describe('a profile on another host', () => {
     };
     const io = fakeIo({ env: { LIVEPLANNER_TOKEN: TOKEN }, routes: [selfHost], files });
     for (const argv of [
-      ['document', 'ls'],
+      ['project', 'ls'],
       ['tab', 'ls', 'Auth flow'],
       ['tab', 'view', 'Auth flow'],
       ['auth', 'status'],
@@ -267,17 +267,17 @@ describe('the local verbs', () => {
   });
 
   it('refuse a bad method, a URL, a whole-tab save and a missing body file', async () => {
-    expect((await cli(['api', 'FETCH', '/documents'])).err).toContain(
+    expect((await cli(['api', 'FETCH', '/projects'])).err).toContain(
       'FETCH is not one of GET, POST, PUT, PATCH, DELETE',
     );
     expect((await cli(['api', 'GET', 'https://evil.example/x'])).err).toContain('is a URL');
     expect((await cli(['api', 'GET', '//evil.example/x'])).err).toContain('is a URL');
-    expect((await cli(['api', 'PUT', '/documents//tabs/main'])).code).toBe(2);
-    expect(await cli(['api', 'PUT', '/documents/d/tabs/t'])).toMatchObject({
+    expect((await cli(['api', 'PUT', '/projects//tabs/main'])).code).toBe(2);
+    expect(await cli(['api', 'PUT', '/projects/d/tabs/t'])).toMatchObject({
       code: 2,
       err: expect.stringContaining('never saves a whole tab'),
     });
-    expect((await cli(['api', 'POST', '/documents', '--body', 'nope.json'])).err).toContain(
+    expect((await cli(['api', 'POST', '/projects', '--body', 'nope.json'])).err).toContain(
       'no file nope.json',
     );
   });

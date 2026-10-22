@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-// The editor header's badge for a document saved only in this browser reads "This Browser", matching
-// the Explorer's pill (docs/specs/006-document/offline-mode.md#this-browser-badge--explorer).
+// The editor header's badge for a project saved only in this browser reads "This Browser", matching
+// the Explorer's pill (docs/specs/006-project/offline-mode.md#this-browser-badge--explorer).
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -14,7 +14,7 @@ import { SharedBadge } from './SharedBadge';
 afterEach(cleanup);
 
 describe('SharedBadge', () => {
-  it('reads This Browser for a document in this browser, never Offline', () => {
+  it('reads This Browser for a project in this browser, never Offline', () => {
     render(<SharedBadge shareable={false} offline />);
     const badge = screen.getByText(THIS_BROWSER_LABEL).closest('[tabindex]') as HTMLElement;
     expect(badge.textContent).toContain('This Browser');
@@ -51,7 +51,7 @@ describe('SharedBadge', () => {
   });
 });
 
-// docs/specs/006-document/offline-mode.md "The visibility legend": the reach scale, the hover preview and
+// docs/specs/006-project/offline-mode.md "The visibility legend": the reach scale, the hover preview and
 // Change Who Can See This.
 describe('SharedBadge legend', () => {
   it('marks the current audience on the scale', () => {

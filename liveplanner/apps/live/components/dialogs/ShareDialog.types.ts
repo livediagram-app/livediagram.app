@@ -4,11 +4,11 @@ import type { Participant } from '@/lib/identity';
 export type ShareDialogProps = {
   participant: Participant;
   links: ShareLink[];
-  // Whether the document has a share password (docs/specs/013-workspace/share-password.md). The
+  // Whether the project has a share password (docs/specs/013-workspace/share-password.md). The
   // password itself is never shown: the api keeps only its hash.
   sharePasswordSet: boolean;
   shareUrlFor: (code: string) => string;
-  // The document's tabs, in bar order, for the Live image control's
+  // The project's tabs, in bar order, for the Live image control's
   // per-tab picker (docs/specs/013-workspace/live-image-share.md) and the link scope pickers
   // (docs/specs/013-workspace/tab-scoped-share-links.md). The first entry is the default the cached
   // snapshot renders; picking another appends `?tab=<id>` to the image
@@ -34,20 +34,20 @@ export type ShareDialogProps = {
   // Re-arm an expiring link for another round of its creation-time
   // duration (docs/specs/013-workspace/share-link-expiry.md). Only rendered on inactive (expired) rows.
   onExtendLink: (code: string) => Promise<void> | void;
-  // Set (or clear, with null) the document's share password. Resolves to
+  // Set (or clear, with null) the project's share password. Resolves to
   // whether a password is now set on success (`false` = cleared) and
   // `undefined` on FAILURE, so the dialog never reflects a write that didn't land.
   onSetPassword: (password: string | null) => Promise<boolean | undefined> | void;
-  // Offline Mode (docs/specs/006-document/offline-mode.md): an offline document lives only in this browser, so
+  // Offline Mode (docs/specs/006-project/offline-mode.md): an offline project lives only in this browser, so
   // it has nothing to share yet. When true the dialog shows a gate asking the
   // owner to sync it to their account first; `onSyncToCloud` performs that
   // conversion (offline -> cloud), after which the real share options apply.
   offline?: boolean;
   onSyncToCloud?: () => Promise<void>;
-  // Whether the reader is known yet, so Sync Document can run (a document in This Browser opens before it is,
-  // docs/specs/006-document/offline-mode.md "Instant open").
+  // Whether the reader is known yet, so Sync Project can run (a project in This Browser opens before it is,
+  // docs/specs/006-project/offline-mode.md "Instant open").
   syncReady?: boolean;
-  // The document sits in a team library: the status line says every member can open it.
-  teamDocument?: boolean;
+  // The project sits in a team library: the status line says every member can open it.
+  teamProject?: boolean;
   onClose: () => void;
 };

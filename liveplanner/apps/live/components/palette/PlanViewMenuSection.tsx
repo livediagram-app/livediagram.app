@@ -6,7 +6,7 @@
 // Date action that clears it (plan-views.md "Row order").
 // Each change is one element edit, through PlanContext.
 import type { ComponentProps } from 'react';
-import type { ShapeElement } from '@liveplanner/document';
+import type { ShapeElement } from '@liveplanner/project';
 import { PlanIcon } from '@liveplanner/ui';
 import { MenuFlyoutSection } from '@/components/primitives/MenuFlyoutSection';
 import { MenuAccordionSection, MenuActionRow } from '@/components/primitives/PortalMenu';

@@ -7,10 +7,10 @@
 // arrows move through every swatch, Enter or Space picks.
 import { useContext, useId, useRef, useState, type FocusEvent } from 'react';
 import { Tooltip } from '@liveplanner/ui';
-import { isHexColour } from '@liveplanner/document';
+import { isHexColour } from '@liveplanner/project';
 import { onMouseHover, useRevertOnUnmount } from '@/components/primitives/hover-preview';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
-import { YOUR_COLOURS_MAX } from '@/lib/document-colours';
+import { EditorContext } from '@/app/project/[id]/EditorContext';
+import { YOUR_COLOURS_MAX } from '@/lib/project-colours';
 import { CustomColourEditor } from './CustomColourEditor';
 import { MoreColoursGlyph } from './MoreColoursGlyph';
 import { ColourSwatch } from './ColourSwatch';
@@ -40,7 +40,7 @@ export type ColourPickerProps = {
   theme?: readonly ColourOption[];
   // The standard colours: one row ("Colours"), or a soft and a strong row.
   standard?: readonly ColourGroup[];
-  // Custom colours: the document's custom colours, newest first.
+  // Custom colours: the project's custom colours, newest first.
   yours?: readonly string[];
   // The custom colour editor's hard-to-see warning, for a canvas line or text.
   boardWarning?: boolean;
@@ -67,7 +67,7 @@ export function ColourPicker({
   // + takes focus back when the editor closes, so it never drops to the page (where Escape would reach
   // the canvas and drop the tool in hand, rather than close the surface the picker sits in).
   const plusRef = useRef<HTMLButtonElement>(null);
-  // A colour picked with + becomes one of the document's custom colours (none outside the editor).
+  // A colour picked with + becomes one of the project's custom colours (none outside the editor).
   const addCustomColour = useContext(EditorContext)?.addCustomColour;
   const headingId = useId();
   useRevertOnUnmount(onPreviewEnd ?? NOOP);

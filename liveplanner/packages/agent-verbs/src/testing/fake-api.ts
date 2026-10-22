@@ -70,10 +70,10 @@ export const DOC_A = 'aaaa1111-0000-4000-8000-000000000001';
 export const DOC_B = 'aaaa2222-0000-4000-8000-000000000002';
 export const DOC_C = 'bbbb0000-0000-4000-8000-000000000003';
 
-// A personal library of three documents and no teams.
+// A personal library of three projects and no teams.
 export const library = {
-  '/documents': {
-    documents: [
+  '/projects': {
+    projects: [
       { id: DOC_A, name: 'Auth flow', savedAt: Date.UTC(2026, 9, 1), ownerId: 'u' },
       { id: DOC_B, name: 'Auth flow v2', savedAt: Date.UTC(2026, 9, 3), ownerId: 'u' },
       { id: DOC_C, name: 'Shop', savedAt: Date.UTC(2026, 9, 2), ownerId: 'u' },
@@ -83,8 +83,8 @@ export const library = {
 };
 
 export const tabsOfA = {
-  [`/documents/${DOC_A}`]: {
-    document: {
+  [`/projects/${DOC_A}`]: {
+    project: {
       id: DOC_A,
       name: 'Auth flow',
       tabs: [

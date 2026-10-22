@@ -21,25 +21,25 @@ export const VOTE_REVIEWS_ENDED = chart(
   { types: ['VoteReview'] },
 );
 
-export const TEAM_DOCUMENTS_MOVED = chart(
+export const TEAM_PROJECTS_MOVED = chart(
   'Team',
   'Moved',
-  'Team Documents Moved',
-  'A document moved within a team library.',
+  'Team Projects Moved',
+  'A project moved within a team library.',
 );
 
 export const SHARE_LINKS_COPIED = chart(
   'UI',
   'Copied',
   'Share Links Copied',
-  'A document share link, embed code or live image copied. (Team invite links are in Team Activity.)',
+  'A project share link, embed code or live image copied. (Team invite links are in Team Activity.)',
   {
     typeIn: (t) => t !== 'TeamInviteLink' && t !== 'Diagnostics' && t !== 'Diagnostics.Help',
   },
 );
 
 export const SHARE_SETTINGS = chart(
-  'Document',
+  'Project',
   'Shared',
   'Share Link Settings',
   'A password or an expiry set on a share link.',
@@ -47,7 +47,7 @@ export const SHARE_SETTINGS = chart(
 );
 
 export const SHARE_LINKS_REMOVED = chart(
-  'Document',
+  'Project',
   'Removed',
   'Share Links Removed',
   'A share link switched off.',
@@ -66,21 +66,21 @@ export const TIMELINE_LOADS = chart(
   'Timeline',
   'Loaded',
   'History Loads',
-  "More of a document's History or a team's Activity loaded, or a failed load retried.",
+  "More of a project's History or a team's Activity loaded, or a failed load retried.",
 );
 
 export const TIMELINE_VIEW_SWITCHED = chart(
   'Timeline',
   'Changed',
   'History View Switched',
-  "A document's History or a team's Activity switched between its list and calendar.",
+  "A project's History or a team's Activity switched between its list and calendar.",
 );
 
 export const TIMELINE_FILTERED = chart(
   'Timeline',
   'Selected',
   'History Filtered',
-  "A document's History or a team's Activity narrowed to everyone, others, or a kind of event.",
+  "A project's History or a team's Activity narrowed to everyone, others, or a kind of event.",
 );
 
 export const COMMENTS_DELETED = chart(
@@ -103,7 +103,7 @@ export const EMBEDS_VIEWED = chart(
   'Session',
   'Opened',
   'Embeds Viewed',
-  'A document opened inside another site through its embed.',
+  'A project opened inside another site through its embed.',
   { types: ['Embed'] },
 );
 
@@ -111,7 +111,7 @@ export const WORKBENCH_SESSIONS = chart(
   'Session',
   'Opened',
   'Workbench Sessions',
-  'A document opened inside a developer tool’s frame, signed in.',
+  'A project opened inside a developer tool’s frame, signed in.',
   { types: ['Workbench'] },
 );
 
@@ -147,7 +147,7 @@ export const TEAM_REMOVALS = chart(
   'Team',
   'Removed',
   'Team Removals',
-  'A member removed, an invite withdrawn, a document or an invite link taken out of a team, or someone leaving.',
+  'A member removed, an invite withdrawn, a project or an invite link taken out of a team, or someone leaving.',
   { rising: 'neutral' },
 );
 
@@ -174,23 +174,23 @@ export const LIVE_IMAGE_TABS = chart(
 // started vs revealed, dots cast vs retracted, timers started vs finished.
 
 export const MULTIPLAYER_SESSIONS: Metric = {
-  category: 'Document',
+  category: 'Project',
   action: 'Used',
   type: 'Multiplayer',
   title: 'Multiplayer Sessions',
   blurb:
-    'A document was open with at least one other person live in the room. Counted once per document per visit, however many people turn up.',
+    'A project was open with at least one other person live in the room. Counted once per project per visit, however many people turn up.',
 };
 
 export const EDIT_LINKS_SHARED: Metric = {
-  category: 'Document',
+  category: 'Project',
   action: 'Shared',
   type: 'Edit',
   title: 'Edit Links Shared',
 };
 
 export const VIEW_LINKS_SHARED: Metric = {
-  category: 'Document',
+  category: 'Project',
   action: 'Shared',
   type: 'View',
   title: 'View Links Shared',
@@ -198,37 +198,37 @@ export const VIEW_LINKS_SHARED: Metric = {
 
 // Participant links (docs/specs/013-workspace/share-roles.md): take part and write, never reshape the board.
 export const PARTICIPATE_LINKS_SHARED: Metric = {
-  category: 'Document',
+  category: 'Project',
   action: 'Shared',
   type: 'Participate',
   title: 'Participant Links Shared',
 };
 
 export const PARTICIPANTS_JOINED: Metric = {
-  category: 'Document',
+  category: 'Project',
   action: 'Joined',
   type: 'Participate',
   title: 'Participants Joined',
   blurb:
-    'People who came into a document through a Participant link. Counted once per person per document, not on every revisit.',
+    'People who came into a project through a Participant link. Counted once per person per project, not on every revisit.',
 };
 
 export const COLLABORATORS_JOINED: Metric = {
-  category: 'Document',
+  category: 'Project',
   action: 'Joined',
   type: 'Edit',
   title: 'Collaborators Joined',
   blurb:
-    'People who came into a document through an edit link. Counted once per person per document, not on every revisit.',
+    'People who came into a project through an edit link. Counted once per person per project, not on every revisit.',
 };
 
 export const VIEWERS_JOINED: Metric = {
-  category: 'Document',
+  category: 'Project',
   action: 'Joined',
   type: 'View',
   title: 'Viewers Joined',
   blurb:
-    'People who came into a document through a view-only link. Counted once per person per document, not on every revisit.',
+    'People who came into a project through a view-only link. Counted once per person per project, not on every revisit.',
 };
 
 export const COMMENTS_ADDED: Metric = {
@@ -309,12 +309,12 @@ export const INVITES_DECLINED_FROM_EMAIL: Metric = {
     "The recipient turned an invitation down from the email's Decline link, without signing in.",
 };
 
-export const DOCUMENTS_SHARED_TO_A_TEAM: Metric = {
+export const PROJECTS_SHARED_TO_A_TEAM: Metric = {
   category: 'Team',
   action: 'Added',
-  type: 'Document',
-  title: 'Documents Shared to a Team',
-  blurb: "A document was moved into a team's shared library for everyone on the team.",
+  type: 'Project',
+  title: 'Projects Shared to a Team',
+  blurb: "A project was moved into a team's shared library for everyone on the team.",
 };
 
 export const VOTES_STARTED: Metric = {
@@ -487,15 +487,15 @@ export const TEAM_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Team Activity',
   blurb:
-    'Teams made, the invite funnel (sent, accepted, declined), and documents shared to a team.',
+    'Teams made, the invite funnel (sent, accepted, declined), and projects shared to a team.',
   members: [
     TEAMS_CREATED,
     INVITES_SENT,
     INVITES_ACCEPTED,
     INVITES_DECLINED,
     INVITES_DECLINED_FROM_EMAIL,
-    DOCUMENTS_SHARED_TO_A_TEAM,
-    TEAM_DOCUMENTS_MOVED,
+    PROJECTS_SHARED_TO_A_TEAM,
+    TEAM_PROJECTS_MOVED,
     INVITE_LINKS_SHARED,
     TEAM_CHANGES,
     TEAM_REMOVALS,
@@ -564,7 +564,7 @@ export const TIMELINE_STACKS_EXPANDED = chart(
   'Timeline',
   'Opened',
   'Stacks Expanded',
-  "A stacked run of changes in a document's History or a team's Activity opened up to show each one.",
+  "A stacked run of changes in a project's History or a team's Activity opened up to show each one.",
   { types: ['Stack'] },
 );
 
@@ -582,7 +582,7 @@ export const ACTIVITY_THREADS = chart(
   "An action, a Plan card or a comment thread opened from the Explorer's Inbox.",
 );
 
-// Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, documents opened
+// Explorer Home (docs/specs/013-workspace/explorer-home.md): arrivals by type, projects opened
 // from each part of Home, summaries expanded, and failed reads retried.
 export const HOME_LANDINGS = chart(
   'Home',
@@ -604,22 +604,22 @@ export const HOME_WELCOMES = chart(
   'Home',
   'Opened',
   'First-Run Homes',
-  'Home shown to someone with no documents yet, offering blanks and popular templates to start from.',
+  'Home shown to someone with no projects yet, offering blanks and popular templates to start from.',
   { types: ['Welcome'] },
 );
 
-export const HOME_DOCUMENTS_OPENED = chart(
+export const HOME_PROJECTS_OPENED = chart(
   'Home',
   'Selected',
-  'Documents Opened from Home',
-  'A document opened from Jump Back In (most used or recent) or What Happened, See More followed, or a start taken from the first-run Home.',
+  'Projects Opened from Home',
+  'A project opened from Jump Back In (most used or recent) or What Happened, See More followed, or a start taken from the first-run Home.',
 );
 
 export const HOME_GROUPS_EXPANDED = chart(
   'Home',
   'Opened',
   'Home Summaries Expanded',
-  "A summary of several people's work on one document opened up to every action.",
+  "A summary of several people's work on one project opened up to every action.",
   { types: ['Group'] },
 );
 
@@ -629,12 +629,12 @@ export const TIMELINE_AND_ACTIVITY: MetricStack = {
   stack: true,
   title: 'Home & Activity',
   blurb:
-    "Keeping up with what changed: Explorer Home, the Explorer's Inbox, and a document's History or a team's Activity.",
+    "Keeping up with what changed: Explorer Home, the Explorer's Inbox, and a project's History or a team's Activity.",
   members: [
     HOME_LANDINGS,
     HOME_VISITS,
     HOME_WELCOMES,
-    HOME_DOCUMENTS_OPENED,
+    HOME_PROJECTS_OPENED,
     HOME_GROUPS_EXPANDED,
     HOME_LOADS,
     TIMELINE_STACKS_EXPANDED,

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, hexToRgb, hueName, planPalette, rgbToHex } from '@liveplanner/document';
+import { contrastRatio, hexToRgb, hueName, planPalette, rgbToHex } from '@liveplanner/project';
 import {
   BANNER_FROM_CONTRAST,
   BANNER_INK,

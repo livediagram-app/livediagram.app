@@ -2,7 +2,7 @@
 // identity fill so dark mode deepens the colour under the white text (docs/specs/004-interface-design/
 // color-scheme.md "Dark palette rules"), and optically centred.
 import { GlyphDisc, IDENTITY_FILL, identityVars } from '@liveplanner/ui';
-import { initialsOf } from '@liveplanner/document';
+import { initialsOf } from '@liveplanner/project';
 import type { ItemPerson } from '@liveplanner/items';
 
 export function PersonDisc({ person, label }: { person: ItemPerson; label?: string }) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type {
-  WorkbenchDocumentSessionResponse,
+  WorkbenchProjectSessionResponse,
   WorkbenchWorkspaceSessionResponse,
 } from '@liveplanner/api-schema';
 import {
@@ -15,10 +15,10 @@ import {
 // every transition of the phase table.
 
 const TICKET = 'Ab3_-xYz0123456789abcd';
-const SESSION: WorkbenchDocumentSessionResponse = {
+const SESSION: WorkbenchProjectSessionResponse = {
   session: `lvw_${'a'.repeat(43)}`,
-  scope: 'document',
-  documentId: 'doc-1',
+  scope: 'project',
+  projectId: 'doc-1',
   folderId: null,
   tabId: null,
   origin: 'https://127.0.0.1:5175',
@@ -26,13 +26,13 @@ const SESSION: WorkbenchDocumentSessionResponse = {
   expiresAt: 10_000,
   person: { id: 'user_1', name: 'Webber', color: '#0ea5e9', pictureUrl: null },
 };
-const RENEWED: WorkbenchDocumentSessionResponse = { ...SESSION, session: `lvw_${'b'.repeat(43)}` };
+const RENEWED: WorkbenchProjectSessionResponse = { ...SESSION, session: `lvw_${'b'.repeat(43)}` };
 
 const redeeming: WorkbenchPhase = {
   phase: 'redeeming',
   ticket: TICKET,
-  scope: 'document',
-  documentId: 'doc-1',
+  scope: 'project',
+  projectId: 'doc-1',
 };
 const binding: WorkbenchPhase = { phase: 'binding', session: SESSION };
 const mounted: WorkbenchPhase = { phase: 'mounted', session: SESSION, name: 'Acme Editor' };
@@ -49,8 +49,8 @@ describe('workbenchTransition', () => {
       run(INITIAL_WORKBENCH_PHASE, {
         type: 'read',
         ticket: TICKET,
-        scope: 'document',
-        documentId: 'doc-1',
+        scope: 'project',
+        projectId: 'doc-1',
       }),
     ).toEqual(redeeming);
   });
@@ -60,8 +60,8 @@ describe('workbenchTransition', () => {
       run(INITIAL_WORKBENCH_PHASE, {
         type: 'read',
         ticket: null,
-        scope: 'document',
-        documentId: 'doc-1',
+        scope: 'project',
+        projectId: 'doc-1',
       }),
     ).toEqual({
       phase: 'refused',
@@ -69,20 +69,20 @@ describe('workbenchTransition', () => {
     });
   });
 
-  it('binds a session for the address’s document', () => {
+  it('binds a session for the address’s project', () => {
     expect(run(redeeming, { type: 'redeemed', session: SESSION })).toEqual(binding);
   });
 
-  it('refuses a session for another document', () => {
+  it('refuses a session for another project', () => {
     expect(
-      run(redeeming, { type: 'redeemed', session: { ...SESSION, documentId: 'doc-2' } }),
+      run(redeeming, { type: 'redeemed', session: { ...SESSION, projectId: 'doc-2' } }),
     ).toEqual({
       phase: 'refused',
       cause: 'mismatch',
     });
     expect(
       run(
-        { ...redeeming, documentId: null },
+        { ...redeeming, projectId: null },
         {
           type: 'redeemed',
           session: SESSION,
@@ -113,15 +113,15 @@ describe('workbenchTransition', () => {
     });
   });
 
-  it('swaps a renewed session for the same document and origin', () => {
+  it('swaps a renewed session for the same project and origin', () => {
     expect(run(mounted, { type: 'renewed', session: RENEWED })).toEqual({
       ...mounted,
       session: RENEWED,
     });
   });
 
-  it('keeps the session when a renewal names another document or origin', () => {
-    expect(run(mounted, { type: 'renewed', session: { ...RENEWED, documentId: 'doc-2' } })).toBe(
+  it('keeps the session when a renewal names another project or origin', () => {
+    expect(run(mounted, { type: 'renewed', session: { ...RENEWED, projectId: 'doc-2' } })).toBe(
       mounted,
     );
     expect(
@@ -145,7 +145,7 @@ describe('workbenchTransition', () => {
     { phase: 'failed' },
   ];
   const events: WorkbenchEvent[] = [
-    { type: 'read', ticket: TICKET, scope: 'document', documentId: 'doc-1' },
+    { type: 'read', ticket: TICKET, scope: 'project', projectId: 'doc-1' },
     { type: 'redeemed', session: SESSION },
     { type: 'redeem-refused' },
     { type: 'redeem-failed' },
@@ -180,7 +180,7 @@ describe('workbenchTransition, workspace scope', () => {
   const WORKSPACE: WorkbenchWorkspaceSessionResponse = {
     ...SESSION,
     scope: 'workspace',
-    documentId: null,
+    projectId: null,
     folderId: 'f1',
     tabId: null,
   };
@@ -188,7 +188,7 @@ describe('workbenchTransition, workspace scope', () => {
     phase: 'redeeming',
     ticket: TICKET,
     scope: 'workspace',
-    documentId: null,
+    projectId: null,
   };
 
   it('reads a workspace address into redeeming', () => {
@@ -197,7 +197,7 @@ describe('workbenchTransition, workspace scope', () => {
         type: 'read',
         ticket: TICKET,
         scope: 'workspace',
-        documentId: null,
+        projectId: null,
       }),
     ).toEqual(redeemingWorkspace);
   });

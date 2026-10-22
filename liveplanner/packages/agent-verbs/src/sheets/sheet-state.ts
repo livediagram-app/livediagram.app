@@ -1,29 +1,29 @@
-// What every sheet tool reads first (docs/specs/029-sheets/sheet-store.md "Agents"): the document's sheets, the one a
+// What every sheet tool reads first (docs/specs/029-sheets/sheet-store.md "Agents"): the project's sheets, the one a
 // call names (by title or id, never row or column ids), and a workbook over its tab's sheets so values are worked
 // out by the engine the editor uses, Plan cards included when a formula reads them.
 import type { ApiClient } from '@liveplanner/api-client';
-import type { DocumentResponse, ItemsResponse, SheetsResponse } from '@liveplanner/api-schema';
+import type { ProjectResponse, ItemsResponse, SheetsResponse } from '@liveplanner/api-schema';
 import { cardSourceOf, readItemTypeCatalogue, typesOf } from '@liveplanner/items';
 import { AGENT_LOCALE, sheetFromJson, Workbook, type SheetJson } from '@liveplanner/sheets';
 import { itemsPath } from '../verbs/shared';
 
-export const sheetsPath = (documentId: string) =>
-  `/documents/${encodeURIComponent(documentId)}/sheets`;
+export const sheetsPath = (projectId: string) =>
+  `/projects/${encodeURIComponent(projectId)}/sheets`;
 
-export const sheetWritesPath = (documentId: string, sheetId: string) =>
-  `${sheetsPath(documentId)}/${encodeURIComponent(sheetId)}/writes`;
+export const sheetWritesPath = (projectId: string, sheetId: string) =>
+  `${sheetsPath(projectId)}/${encodeURIComponent(sheetId)}/writes`;
 
 // A refusal a sheet tool words itself, with what there is.
 export type SheetRefusal = { ok: false; code: string; message: string };
 
-// Every sheet of the document, cells included (one request), or one tab's.
+// Every sheet of the project, cells included (one request), or one tab's.
 export async function readSheets(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   tabId?: string,
 ): Promise<SheetJson[]> {
   const query = tabId ? `?tabId=${encodeURIComponent(tabId)}` : '';
-  return (await api.json<SheetsResponse>(`${sheetsPath(documentId)}${query}`)).sheets;
+  return (await api.json<SheetsResponse>(`${sheetsPath(projectId)}${query}`)).sheets;
 }
 
 const listed = (sheets: readonly SheetJson[]) =>
@@ -40,7 +40,7 @@ export function resolveSheet(
     return {
       ok: false,
       code: 'sheet_not_found',
-      message: 'This document has no sheets. Put one on a tab with add_sheet.',
+      message: 'This project has no sheets. Put one on a tab with add_sheet.',
     };
   const byId = sheets.find((s) => s.id === wanted);
   if (byId) return { ok: true, sheet: byId };
@@ -62,11 +62,11 @@ export function resolveSheet(
   };
 }
 
-// The workbook of a tab's sheets (references reach only the tab's sheets), with the document's Plan cards when a
+// The workbook of a tab's sheets (references reach only the tab's sheets), with the project's Plan cards when a
 // formula on the tab reads them.
 export async function workbookFor(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   sheets: readonly SheetJson[],
   tabId: string,
 ): Promise<Workbook> {
@@ -75,11 +75,11 @@ export async function workbookFor(
     locale: AGENT_LOCALE,
   });
   if (wb.usesCards()) {
-    const [{ items }, { document }] = await Promise.all([
-      api.json<ItemsResponse>(itemsPath(documentId)),
-      api.json<DocumentResponse>(`/documents/${encodeURIComponent(documentId)}`),
+    const [{ items }, { project }] = await Promise.all([
+      api.json<ItemsResponse>(itemsPath(projectId)),
+      api.json<ProjectResponse>(`/projects/${encodeURIComponent(projectId)}`),
     ]);
-    wb.setCards(cardSourceOf(items, typesOf(readItemTypeCatalogue(document.itemTypes ?? null))));
+    wb.setCards(cardSourceOf(items, typesOf(readItemTypeCatalogue(project.itemTypes ?? null))));
   }
   return wb;
 }

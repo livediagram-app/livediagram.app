@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic';
 import type { ReactNode } from 'react';
-import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@liveplanner/document';
+import { BORDER_STROKE_PX, DEFAULT_BORDER_STROKE } from '@liveplanner/project';
 import {
   PADDING_PX,
   defaultFillColor,
@@ -10,7 +10,7 @@ import {
   carriesSharedSettingsMenu,
   elementKindLabel,
   isCollabPanelShape,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { ElementSettingsButton } from '@/components/canvas/ElementEllipsisMenu';
 import { CollabSettingsSlot } from '@/components/canvas/collab/collab-chrome';
 import { CommentPanelFace } from '@/components/canvas/CommentPanelFace';

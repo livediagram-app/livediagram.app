@@ -18,13 +18,13 @@ import {
   SHEET_LOOKS,
   SHEET_ROWS_MAX,
 } from '@liveplanner/sheets';
-import { CHART_PALETTES, CHART_TYPES, type ChartPaletteId } from '@liveplanner/document';
+import { CHART_PALETTES, CHART_TYPES, type ChartPaletteId } from '@liveplanner/project';
 import { BORDER_COLOUR_DEFAULT } from '../sheets/sheet-shape-change';
 import { DESIGN_ACCENT_DEFAULT } from '../sheets/sheet-design';
 import { SHEET_CHART_SIZE } from '../sheets/sheet-charts';
 
-const url = z.string().describe('Link that opens the document in the liveplanner editor.');
-const documentId = z.string().describe('The document (from find_documents).');
+const url = z.string().describe('Link that opens the project in the liveplanner editor.');
+const projectId = z.string().describe('The project (from find_projects).');
 const sheetArg = z
   .string()
   .describe('The sheet, by its title ("Budget") or id. list_sheets lists them.');
@@ -547,12 +547,12 @@ const sheetChange = z.discriminatedUnion('op', [
 ]);
 
 export const listSheetsShape = {
-  documentId,
+  projectId,
   tabId: z.string().optional().describe('Only this tab’s sheets.'),
 };
 
 export const readSheetShape = {
-  documentId,
+  projectId,
   sheet: sheetArg,
   range: rangeArg
     .optional()
@@ -563,7 +563,7 @@ export const readSheetShape = {
 };
 
 export const changeSheetShape = {
-  documentId,
+  projectId,
   sheet: sheetArg,
   changes: z
     .array(sheetChange)
@@ -576,7 +576,7 @@ export const changeSheetShape = {
 };
 
 export const addSheetShape = {
-  documentId,
+  projectId,
   tabId: z
     .string()
     .optional()

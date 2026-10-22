@@ -1,4 +1,4 @@
-// A change to a document's type catalogue (docs/specs/026-plan/item-types.md "Storage and sync") kept as the
+// A change to a project's type catalogue (docs/specs/026-plan/item-types.md "Storage and sync") kept as the
 // catalogue before and after it, so it can be made again to whatever catalogue is current: when another editor's
 // change landed first (the api's `item_types_stale`), when an earlier change of one's own is still on its way, and
 // when it is undone after later changes. Only the types it added, changed or deleted move; every other type stays

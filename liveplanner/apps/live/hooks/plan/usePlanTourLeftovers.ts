@@ -2,11 +2,11 @@
 
 // Tidies what an older Plan tour left behind (docs/specs/026-plan/plan-tour.md): the tour once placed an example
 // board or Sheet and example cards, recording them, and a tour cut short (a reload, a closed window) left them on the
-// document. On the next visit to that document its board or Sheet goes once the document has loaded, its cards once
+// project. On the next visit to that project its board or Sheet goes once the project has loaded, its cards once
 // the item store has, with no history (tickTabs, writeQuiet), so Undo never brings them back. The tour today runs on
 // the person's own board or Sheet and places nothing.
 import { useEffect, useRef, useState } from 'react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { useLatest } from '@/hooks/ui/useLatest';
 import { debugLog } from '@/lib/debug-log';
 import { readLeftover, writeLeftover } from '@/lib/plan-tour';
@@ -17,7 +17,7 @@ import type { PlanItems } from './usePlanItems';
 export const LEFTOVER_SHEET_RETRY_MS = 2000;
 
 export function usePlanTourLeftovers(opts: {
-  documentId: string | null;
+  projectId: string | null;
   hydrated: boolean;
   tickTabs: (map: (tabs: Tab[]) => Tab[]) => void;
   planItems: Pick<PlanItems, 'items' | 'status' | 'writeQuiet'>;
@@ -30,17 +30,17 @@ export function usePlanTourLeftovers(opts: {
   const warnedRef = useRef(false);
   // Bumped to try a leftover sheet again (no Sheet had drawn to take it).
   const [attempt, setAttempt] = useState(0);
-  const { hydrated, documentId } = opts;
+  const { hydrated, projectId } = opts;
   const itemsReady = opts.planItems.status === 'ready';
   useEffect(() => {
     if (
       !hydrated ||
-      !documentId ||
+      !projectId ||
       (sweptBoardRef.current && (sweptItemsRef.current || !itemsReady))
     )
       return;
     const leftover = readLeftover();
-    if (!leftover || leftover.documentId !== documentId) {
+    if (!leftover || leftover.projectId !== projectId) {
       sweptBoardRef.current = true;
       sweptItemsRef.current = true;
       return;
@@ -80,5 +80,5 @@ export function usePlanTourLeftovers(opts: {
     // The record goes once everything it names has.
     if (sweptBoardRef.current && sweptItemsRef.current) writeLeftover(null);
     return () => window.clearTimeout(retry);
-  }, [hydrated, itemsReady, documentId, liveRef, attempt]);
+  }, [hydrated, itemsReady, projectId, liveRef, attempt]);
 }

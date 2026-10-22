@@ -8,9 +8,9 @@ Scope, by file:
 
 | File                                                         | Role                                                                       |
 | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
-| `packages/document/src/shape-marker.ts`                      | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
-| `packages/document/src/element-types.ts`                     | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
-| `packages/document/src/collab-shapes.ts`                     | `supportsMarkers`: the menu gate, beside `hasOwnFace`                      |
+| `packages/project/src/shape-marker.ts`                      | `ShapeMarker`, `SHAPE_MARKERS` (offer order)                               |
+| `packages/project/src/element-types.ts`                     | `ShapeElement.marker`, `ShapeElement.markerSize`                           |
+| `packages/project/src/collab-shapes.ts`                     | `supportsMarkers`: the menu gate, beside `hasOwnFace`                      |
 | `apps/live/components/canvas/ShapeMarker.tsx`                | `ShapeMarkerGlyph`, `MARKER_LABELS`, the circle fills                      |
 | `apps/live/components/canvas/shape-inline-icon-layout.tsx`   | `ShapeInlineIconLayout`: marker + label group, `MARKER_FIXED_PX`           |
 | `apps/live/components/canvas/BoxedElementView.tsx`           | Resolves `marker` (none for self-drawing shapes)                           |
@@ -162,7 +162,7 @@ Telemetry `track('Element', 'Changed', 'Marker' | 'MarkerSize')` from `commitSty
 | Not offered for non-shapes (palette)         | does not offer markers for a non-shape boxed element                                    | `apps/live/lib/editor-commands.test.ts`          |
 | Self-drawing shapes never draw a marker      | none [GE11]                                                                             |                                                  |
 | Marker sits left of the label, centred alone | none [GE11]                                                                             |                                                  |
-| Menu gate: no self-drawing or own-face kind  | is off for kinds with their own face and for self-drawing kinds; is on for plain shapes | `packages/document/src/collab-shapes.test.ts`    |
+| Menu gate: no self-drawing or own-face kind  | is off for kinds with their own face and for self-drawing kinds; is on for plain shapes | `packages/project/src/collab-shapes.test.ts`    |
 | Menu shown only with text; multi-select      | none [GE11]                                                                             |                                                  |
 | Export draws the marker                      | none [QE11]                                                                             |                                                  |
 

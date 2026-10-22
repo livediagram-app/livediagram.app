@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, render } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createShape } from '@liveplanner/document';
+import { createShape } from '@liveplanner/project';
 import {
   beginCanvasGesture,
   resetCanvasGesturesForTests,

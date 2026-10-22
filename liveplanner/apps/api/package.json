@@ -20,8 +20,8 @@
   },
   "dependencies": {
     "@liveplanner/api-schema": "workspace:*",
-    "@liveplanner/document": "workspace:*",
-    "@liveplanner/document-views": "workspace:*",
+    "@liveplanner/project": "workspace:*",
+    "@liveplanner/project-views": "workspace:*",
     "@liveplanner/edit-operations": "workspace:*",
     "@liveplanner/forms": "workspace:*",
     "@liveplanner/icons": "workspace:*",

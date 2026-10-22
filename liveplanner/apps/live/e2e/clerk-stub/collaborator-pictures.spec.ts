@@ -3,7 +3,7 @@ import { expect, test } from '../fixtures';
 import { freshUserId, installClerkStub, STUB_PICTURE_SVG, type StubUser } from './clerk-stub';
 
 // Pictures between people (docs/specs/014-identity/profile-picture.md §5, §6), end to end: a real
-// document, a real realtime room and the api verifying each stub account's session token. Ann has
+// project, a real realtime room and the api verifying each stub account's session token. Ann has
 // a picture. Bob, signed in, opens her share link and sees it on her presence avatar and her
 // cursor; her comment shows her initials (comment authors' pictures are not looked up). An anonymous visitor on the same link sees her initials, and their browser is
 // never even given the URL. Ann turning the switch off takes it off Bob's screen at once.
@@ -54,7 +54,7 @@ async function personPage(browser: Browser, baseURL: string, who: StubUser | nul
 }
 
 async function joinShared(page: Page, code: string): Promise<void> {
-  await page.goto(`/document/shared?s=${code}`);
+  await page.goto(`/project/shared?s=${code}`);
   const join = page.getByRole('button', { name: /^join$/i });
   if (await join.isVisible({ timeout: 5_000 }).catch(() => false)) await join.click();
   await page.locator(CANVAS).waitFor();
@@ -71,7 +71,7 @@ test('signed-in collaborators see the picture; anonymous visitors see initials',
   // Fresh accounts every run: the stack's D1 keeps Ann's switch from the last one.
   const ANN_ID = freshUserId('ann');
   const BOB_ID = freshUserId('bob');
-  // Arrange: Ann's participant row, a document holding her comment, and an edit link.
+  // Arrange: Ann's participant row, a project holding her comment, and an edit link.
   const auth = { Authorization: `Bearer ${await tokenFor(page, ANN_ID)}` };
   const origin = { Origin: new URL(baseURL!).origin };
   expect(
@@ -83,7 +83,7 @@ test('signed-in collaborators see the picture; anonymous visitors see initials',
     ).ok(),
   ).toBe(true);
   const id = crypto.randomUUID();
-  const created = await page.request.post('/api/documents', {
+  const created = await page.request.post('/api/projects', {
     headers: { ...auth, ...origin },
     data: {
       id,
@@ -121,15 +121,15 @@ test('signed-in collaborators see the picture; anonymous visitors see initials',
     },
   });
   expect(created.ok()).toBe(true);
-  const share = await page.request.post(`/api/documents/${id}/share`, {
+  const share = await page.request.post(`/api/projects/${id}/share`, {
     headers: { ...auth, ...origin },
     data: { role: 'edit' },
   });
   const code = ((await share.json()) as { link: { code: string } }).link.code;
 
-  // Ann opens her document: her picture is published to her participant record.
+  // Ann opens her project: her picture is published to her participant record.
   const ann = await personPage(browser, baseURL!, { ...ANN, id: ANN_ID });
-  await ann.page.goto(`/document/${id}`);
+  await ann.page.goto(`/project/${id}`);
   await ann.page.locator(CANVAS).waitFor();
   const bobAuth = { Authorization: `Bearer ${await tokenFor(page, BOB_ID)}` };
   await expect

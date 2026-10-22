@@ -5,20 +5,20 @@ import { CrossTabLink } from '@/components/illustrations/tabs';
 export const metadata = helpMetadata({
   title: 'Linking Across Tabs',
   description:
-    'Link an element to another tab in the same document, so a document with many tabs becomes navigable like a small site.',
+    'Link an element to another tab in the same project, so a project with many tabs becomes navigable like a small site.',
   path: '/help/tabs/linking-tabs/',
 });
 
-<ArticleLayout title="Linking Across Tabs" description="Turn any element into a jump point: link it to another tab, another document, or an external address." categoryTitle="Tabs" categorySlug="tabs">
+<ArticleLayout title="Linking Across Tabs" description="Turn any element into a jump point: link it to another tab, another project, or an external address." categoryTitle="Tabs" categorySlug="tabs">
 
-A document spread across many tabs is far more useful when you can move between them from the canvas itself. Any shape, sticky, text box or other boxed element (except a video or embed, whose link is its address) can carry a **link**, and that link can point at another tab in the same document. Follow it, and the editor jumps you there. It turns a multi-tab document into something you navigate like a small site.
+A project spread across many tabs is far more useful when you can move between them from the canvas itself. Any shape, sticky, text box or other boxed element (except a video or embed, whose link is its address) can carry a **link**, and that link can point at another tab in the same project. Follow it, and the editor jumps you there. It turns a multi-tab project into something you navigate like a small site.
 
 ## What an element can link to
 
 A single link on an element can target any one of these:
 
-- **A tab** in this document. Following the link switches to that tab.
-- **Another document.** Following it opens that document.
+- **A tab** in this project. Following the link switches to that tab.
+- **Another project.** Following it opens that project.
 - **An external URL.** Following it opens the address in a new browser tab.
 
 A linked element carries a small link badge (unless your [element indicators](/help/canvas/element-indicators/) are set to Off). Hover it and its card reads **Follow link** and names the target (for example `Goes to tab "DB internals"`), so you can tell where a link leads before you click it. Click the badge to follow the link.
@@ -36,7 +36,7 @@ A linked element carries a small link badge (unless your [element indicators](/h
 
 <Step n={2}>
   In the **Link element** dialog, switch to **Tab** and pick the target tab. The tab you are on is
-  marked "current". The **Document** list offers your eight most recent other documents, and
+  marked "current". The **Project** list offers your eight most recent other projects, and
   **External URL** takes a web address.
 </Step>
 
@@ -57,7 +57,7 @@ Some patterns this enables:
 - **Mindmap deep-dives.** A leaf branch links to its own tab for deeper structure.
 - **Cross-references.** A process step links to the tab where a related decision is written up, with no duplicated content.
 
-Anyone who can open the document can follow links, including on a view-only share link; adding or editing links needs edit access.
+Anyone who can open the project can follow links, including on a view-only share link; adding or editing links needs edit access.
 
 <Tip>
   For an external address, only http, https, and mailto links are allowed, and https:// is added if

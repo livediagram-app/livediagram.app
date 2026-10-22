@@ -1,14 +1,14 @@
 // The Plan board's colours (docs/specs/026-plan/plan-board.md "Theme and style") come from
-// @liveplanner/document, shared with the SVG export; this module adds the editor's own bits.
+// @liveplanner/project, shared with the SVG export; this module adds the editor's own bits.
 import type { CSSProperties } from 'react';
 import {
   liftAccent,
   planOwnColoursOf,
   planPresetColours,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
-export { PRIORITY_COLOURS, accentOn, planPalette, type PlanPalette } from '@liveplanner/document';
+export { PRIORITY_COLOURS, accentOn, planPalette, type PlanPalette } from '@liveplanner/project';
 
 // A board's or card's own colours, as planPalette reads them (its preset included).
 export const planOwnColours = (el: ShapeElement) => planOwnColoursOf(el);

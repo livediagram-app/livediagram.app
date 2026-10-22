@@ -18,7 +18,7 @@
 //
 // Pure: same input, same output; idempotent on its own output.
 
-import { isBoxed, type BoxedElement, type Element, type ElementId } from '@liveplanner/document';
+import { isBoxed, type BoxedElement, type Element, type ElementId } from '@liveplanner/project';
 
 const GRID = 10;
 // How far apart two lines may be and still count as one (a few px of hand drift), and the wider

@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardTabPreview } from './DashboardTabPreview';
 
 // docs/specs/026-plan/plan-tabs.md "Dashboard tab": a Board tab shown in a slot whose content arrives after the
 // Dashboard opens (a reload on the Dashboard: every other tab is a placeholder, with no kind and no elements, until its
-// lazy fetch lands, docs/specs/006-document/per-tab-storage.md). The board must draw once it arrives.
+// lazy fetch lands, docs/specs/006-project/per-tab-storage.md). The board must draw once it arrives.
 afterEach(cleanup);
 
 vi.mock('next/dynamic', () => ({ default: () => () => null }));

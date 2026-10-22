@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
-import { createShape } from '@liveplanner/document';
+import { createShape } from '@liveplanner/project';
 import { renderLabel } from './element-labels';
 
 // docs/specs/008-canvas/canvas-and-palette.md "Labels": right-to-left text reads right to left. jsdom does no bidi

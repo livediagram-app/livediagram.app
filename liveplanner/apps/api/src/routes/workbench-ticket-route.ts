@@ -1,6 +1,6 @@
 // POST /api/workbench/tickets (docs/specs/013-workspace/blueprints/workbench-embeds.md "The ticket mint", "The
-// workspace mint"): a paired token mints a single-use, one-minute ticket that opens one session, on one document
-// (the document scope) or in the person's whole workspace (the workspace scope). An origin the token is not paired
+// workspace mint"): a paired token mints a single-use, one-minute ticket that opens one session, on one project
+// (the project scope) or in the person's whole workspace (the workspace scope). An origin the token is not paired
 // with for the asked scope answers 428 with the pairing URL; the person approves it once in their own browser.
 
 import {
@@ -20,7 +20,7 @@ import {
   generateWorkbenchTicket,
   hashWorkbenchSecret,
 } from '../auth/workbench-session';
-import { documentLinksTab } from '../db/tabs';
+import { projectLinksTab } from '../db/tabs';
 import {
   findWorkbenchPairing,
   insertWorkbenchTicket,
@@ -30,7 +30,7 @@ import {
 import { appBaseUrl } from '../email/client';
 import { badRequest, forbidden, json, notFound, rateLimited } from '../responses';
 import { readBody, type RouteContext } from './context';
-import { ownerDocumentAccess, ownerReachesFolder } from './workbench-access';
+import { ownerProjectAccess, ownerReachesFolder } from './workbench-access';
 
 const ID_MAX = 64;
 
@@ -53,24 +53,24 @@ export async function workbenchRateLimited(ctx: RouteContext, tokenId: string): 
 
 // What the body asks for, or the 400 that refuses it.
 type MintRequest =
-  | { scope: 'document'; documentId: string; tabId: string | null }
+  | { scope: 'project'; projectId: string; tabId: string | null }
   | { scope: 'workspace'; folderId: string | null };
 
 function readMintRequest(body: Record<string, unknown>): MintRequest | Response {
-  const scope = body.scope ?? 'document';
+  const scope = body.scope ?? 'project';
   if (scope === 'workspace') {
-    if (body.documentId !== undefined || body.tabId !== undefined)
-      return invalidValue('a workspace ticket names no document');
+    if (body.projectId !== undefined || body.tabId !== undefined)
+      return invalidValue('a workspace ticket names no project');
     if (body.folderId !== undefined && !isId(body.folderId))
       return invalidValue('invalid folderId');
     return { scope, folderId: body.folderId ?? null };
   }
-  if (scope !== 'document') return invalidValue('invalid scope');
-  if (body.documentId === undefined) return invalidValue('invalid documentId');
-  if (!isId(body.documentId)) return badRequest('invalid documentId');
+  if (scope !== 'project') return invalidValue('invalid scope');
+  if (body.projectId === undefined) return invalidValue('invalid projectId');
+  if (!isId(body.projectId)) return badRequest('invalid projectId');
   if (body.tabId !== undefined && !isId(body.tabId)) return badRequest('invalid tabId');
-  if (body.folderId !== undefined) return invalidValue('a document ticket names no folder');
-  return { scope, documentId: body.documentId, tabId: body.tabId ?? null };
+  if (body.folderId !== undefined) return invalidValue('a project ticket names no folder');
+  return { scope, projectId: body.projectId, tabId: body.tabId ?? null };
 }
 
 export async function mintWorkbenchTicket(ctx: RouteContext): Promise<Response> {
@@ -129,7 +129,7 @@ export async function mintWorkbenchTicket(ctx: RouteContext): Promise<Response> 
     if (asked.folderId !== null && !(await ownerReachesFolder(ctx.env, ownerId, asked.folderId)))
       return refused('not_found', asked.scope, notFound());
     const minted = await insertTicket(ctx, pairing, ownerId, {
-      reach: { scope: 'workspace', documentId: null, folderId: asked.folderId },
+      reach: { scope: 'workspace', projectId: null, folderId: asked.folderId },
       tabId: null,
       role: capWorkbenchRole('edit', ceiling),
       now,
@@ -145,21 +145,21 @@ export async function mintWorkbenchTicket(ctx: RouteContext): Promise<Response> 
     return json(answer, { status: 201 });
   }
 
-  const { documentId, tabId } = asked;
-  const access = await ownerDocumentAccess(ctx.env, documentId, ownerId);
+  const { projectId, tabId } = asked;
+  const access = await ownerProjectAccess(ctx.env, projectId, ownerId);
   if (access instanceof Response) return refused('not_found', asked.scope, access);
-  if (tabId !== null && !(await documentLinksTab(ctx.env, documentId, tabId)))
+  if (tabId !== null && !(await projectLinksTab(ctx.env, projectId, tabId)))
     return refused('not_found', asked.scope, notFound());
 
   const minted = await insertTicket(ctx, pairing, ownerId, {
-    reach: { scope: 'document', documentId, folderId: null },
+    reach: { scope: 'project', projectId, folderId: null },
     tabId,
     role: capWorkbenchRole(access.role, ceiling),
     now,
   });
   const answer: WorkbenchTicketResponse = {
-    url: `${appBaseUrl(ctx.env)}/embed/workbench?d=${encodeURIComponent(documentId)}#ticket=${minted.ticket}`,
-    documentId,
+    url: `${appBaseUrl(ctx.env)}/embed/workbench?d=${encodeURIComponent(projectId)}#ticket=${minted.ticket}`,
+    projectId,
     tabId,
     expiresAt: minted.expiresAt,
   };
@@ -189,7 +189,7 @@ async function insertTicket(
   });
   console.log('[workbench] ticket-minted', {
     scope: reach.scope,
-    documentId: reach.documentId,
+    projectId: reach.projectId,
     folderId: reach.folderId,
     tokenId: pairing.tokenId,
     role,

@@ -1,8 +1,8 @@
-// The editor's own list row after a save (docs/specs/006-document/document-snapshots.md): it says
+// The editor's own list row after a save (docs/specs/006-project/project-snapshots.md): it says
 // `empty` the way the server list will, judged only from a first tab the editor really holds.
 
 import { describe, expect, it } from 'vitest';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { emptyAfterSave } from './list-row-empty';
 
 const tab = (id: string, n: number) =>
@@ -34,7 +34,7 @@ describe('emptyAfterSave', () => {
     expect(emptyAfterSave([form], new Set(['a']), true)).toBe(false);
   });
 
-  it('calls a document with no tab empty', () => {
+  it('calls a project with no tab empty', () => {
     expect(emptyAfterSave([], new Set(), false)).toBe(true);
   });
 });

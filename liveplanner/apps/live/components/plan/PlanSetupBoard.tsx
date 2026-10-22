@@ -35,9 +35,9 @@ export function PlanSetupBoard({
 }: {
   palette: PlanPalette;
   canEdit: boolean;
-  // The document's card types, offered in step 1 (none picked to start, unless run again on a set-up board).
+  // The project's card types, offered in step 1 (none picked to start, unless run again on a set-up board).
   types: readonly ItemTypeDef[];
-  // The document's statuses, offered as existing states in step 2 (pickableStatuses).
+  // The project's statuses, offered as existing states in step 2 (pickableStatuses).
   statusNames: ReadonlyMap<string, string>;
   onSetUp: (columns: SetupColumn[], typeIds: string[], layout: SetupLayout) => void;
   // The board's layout as it is (setupLayoutOf): what step 3 starts from, and what skipping it keeps.

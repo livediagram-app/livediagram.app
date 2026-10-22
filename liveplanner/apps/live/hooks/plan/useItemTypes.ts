@@ -1,6 +1,6 @@
 'use client';
 
-// The document's item types in the editor (docs/specs/026-plan/item-types.md): the catalogue the
+// The project's item types in the editor (docs/specs/026-plan/item-types.md): the catalogue the
 // cards, panels and palette read, and the changes the Card Types panel makes. `stored` is the catalogue
 // as the api last had it, with its revision; each change is kept as the catalogue before and after it
 // (CatalogueChange) and shown at once over `stored`, while it is saved in turn, naming the revision it
@@ -40,7 +40,7 @@ import type { ItemUndoStep } from './item-undo-journal';
 const ITEM_TYPES_SAVE_ATTEMPTS = 3;
 
 export type ItemTypesSlice = {
-  // The catalogue shown (stored, with this editor's unsaved changes), or null while the document's card types are
+  // The catalogue shown (stored, with this editor's unsaved changes), or null while the project's card types are
   // not chosen (none).
   catalogue: ItemTypeCatalogue | null;
   types: readonly ItemTypeDef[];
@@ -50,7 +50,7 @@ export type ItemTypesSlice = {
   // Types added together, as one change; any whose id the catalogue already has is skipped, and the catalogue's
   // cap holds.
   addTypes: (defs: readonly ItemTypeDef[]) => void;
-  // Any of the five default types the document lacks, after its types (Add Default Types); one change.
+  // Any of the five default types the project lacks, after its types (Add Default Types); one change.
   addDefaultTypes: () => void;
   // The whole catalogue a board's types leave (catalogueWithBoardTypes), as one change.
   saveCatalogue: (next: ItemTypeCatalogue) => void;
@@ -63,7 +63,7 @@ const applied = (stored: ItemTypeCatalogue | null, pending: readonly Pending[]) 
   pending.reduce((c, p) => rebaseCatalogueChange(c, p.change), stored);
 
 export function useItemTypes(opts: {
-  documentId: string | null;
+  projectId: string | null;
   ownerId: string;
   shareCode: string | null;
   // The catalogue as the api last had it, and its setter (seeded on load).
@@ -79,17 +79,17 @@ export function useItemTypes(opts: {
   const pendingRef = useRef<readonly Pending[]>([]);
   const nextId = useRef(0);
   // The stored catalogue at its newest, read by the saves between renders: a save's answer lands here at once, a
-  // newer seed or room op on the next commit. A different document's seed always lands.
-  const storedRef = useRef<{ documentId: string | null; value: SavedItemTypes }>({
-    documentId: opts.documentId,
+  // newer seed or room op on the next commit. A different project's seed always lands.
+  const storedRef = useRef<{ projectId: string | null; value: SavedItemTypes }>({
+    projectId: opts.projectId,
     value: stored,
   });
-  const documentId = opts.documentId;
+  const projectId = opts.projectId;
   useInsertionEffect(() => {
     const held = storedRef.current;
-    if (held.documentId !== documentId || stored.itemTypesRev >= held.value.itemTypesRev)
-      storedRef.current = { documentId, value: stored };
-  }, [documentId, stored]);
+    if (held.projectId !== projectId || stored.itemTypesRev >= held.value.itemTypesRev)
+      storedRef.current = { projectId, value: stored };
+  }, [projectId, stored]);
   // Saves run one at a time, so each names the revision the one before it left.
   const queue = useRef<Promise<void>>(Promise.resolve());
 
@@ -99,7 +99,7 @@ export function useItemTypes(opts: {
   const keepStored = useCallback(
     (next: SavedItemTypes) => {
       if (next.itemTypesRev < storedRef.current.value.itemTypesRev) return;
-      storedRef.current = { documentId: storedRef.current.documentId, value: next };
+      storedRef.current = { projectId: storedRef.current.projectId, value: next };
       setStored(next);
     },
     [setStored],
@@ -112,7 +112,7 @@ export function useItemTypes(opts: {
   // Sends one change, made again to the stored catalogue each time another change landed first.
   const send = useCallback(
     async (entry: Pending): Promise<void> => {
-      const { documentId: doc, ownerId, shareCode, onError } = latest.current;
+      const { projectId: doc, ownerId, shareCode, onError } = latest.current;
       const done = () => setPendingNow(pendingRef.current.filter((p) => p.id !== entry.id));
       if (!doc) return done();
       for (let attempt = 1; attempt <= ITEM_TYPES_SAVE_ATTEMPTS; attempt += 1) {
@@ -120,7 +120,7 @@ export function useItemTypes(opts: {
         const next = rebaseCatalogueChange(base.itemTypes, entry.change);
         try {
           const saved = await saveItemTypes(
-            { ownerId, documentId: doc, shareCode },
+            { ownerId, projectId: doc, shareCode },
             next,
             base.itemTypesRev,
           );

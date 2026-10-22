@@ -8,7 +8,7 @@ import { trustedHtml } from './trusted-types';
 // The two copies had diverged on the thing that matters: marketing replaced
 // every `<` with its unicode escape, help did not. Without it, a payload string
 // containing `</script>` closes the surrounding script tag and the rest of the
-// JSON lands in the document as markup. Help's payloads are built from the
+// JSON lands in the project as markup. Help's payloads are built from the
 // article registry rather than from user input, so nothing exploited it, but
 // one app being hardened and the other not is the drift worth removing. The
 // escaping version is the one kept.

@@ -3,7 +3,7 @@
 // Card Types name, or every type when it names none; an Archive board counts as showing every type (it lists any
 // card). Pure: the guard reads the tabs and asks.
 import { normaliseBoardSetup } from '@liveplanner/items';
-import type { Element, Tab } from '@liveplanner/document';
+import type { Element, Tab } from '@liveplanner/project';
 
 const isBoard = (el: Element) => el.type === 'shape' && el.shape === 'plan-board';
 
@@ -15,7 +15,7 @@ function shownBy(el: Element): ReadonlySet<string> | 'all' {
 }
 
 // The card types (of `typeIds`, in that order) the boards among `targetIds` on the active tab show and no other board
-// in the document does. Empty when the delete takes no board, or another board shows every type.
+// in the project does. Empty when the delete takes no board, or another board shows every type.
 export function typesOrphanedBy(
   tabs: readonly Tab[],
   activeTabId: string,

@@ -39,7 +39,7 @@ describe('recordSharedAccess (docs/specs/014-identity/profile-and-email-notifica
   });
 
   it('reports a repeat visit while still refreshing role and last_seen', async () => {
-    // The email and the Document·Joined count fire once per person, but the
+    // The email and the Project·Joined count fire once per person, but the
     // row has to keep up with a link that was re-issued at a different role.
     const db = fakeD1(({ sql }) => (sql.includes('INSERT OR IGNORE') ? { changes: 0 } : {}));
     expect(await recordSharedAccess(db.env, 'visitor-1', 'diag-1', 'view', null, 'CODE2345')).toBe(
@@ -95,7 +95,7 @@ describe('hasSharedAccess (docs/specs/012-collaboration/assigned-actions.md acce
     expect(await hasSharedAccess(absent.env, 'visitor-1', 'diag-1')).toBe(false);
   });
 
-  it('asks about this visitor and this document only', async () => {
+  it('asks about this visitor and this project only', async () => {
     const db = fakeD1(() => ({ first: null }));
     await hasSharedAccess(db.env, 'visitor-1', 'diag-1');
     expect(db.one('FROM shared_with').bindings.slice(0, 2)).toEqual(['visitor-1', 'diag-1']);
@@ -122,7 +122,7 @@ describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared wit
 
   // docs/specs/013-workspace/tab-scoped-share-links.md: the code handed back must carry exactly the scope the
   // visitor was given. An All-tabs code for a visitor who was shown one tab
-  // would open the rest of the document to them.
+  // would open the rest of the project to them.
   it('hands back a code of the granted scope, never a broader one', async () => {
     const db = fakeD1(() => ({ all: [sharedRow({ tab_id: 'tab-2' })] }));
     const [item] = await listSharedWith(db.env, 'visitor-1');
@@ -147,7 +147,7 @@ describe('listSharedWith (docs/specs/008-canvas/canvas-and-palette.md Shared wit
     expect(await listSharedWith(db.env, 'visitor-1')).toEqual([]);
   });
 
-  it('excludes unshareable documents and orders by the visitor’s last look', async () => {
+  it('excludes unshareable projects and orders by the visitor’s last look', async () => {
     const db = fakeD1(() => ({ all: [] }));
     await listSharedWith(db.env, 'visitor-1');
     const query = db.one('FROM shared_with s');
@@ -167,7 +167,7 @@ describe('dropSharedAccess', () => {
 });
 
 describe('dropVisitsThroughLinks (docs/specs/013-workspace/share-roles.md Share links)', () => {
-  it('deletes the visits on this document that came in through the deleted links', async () => {
+  it('deletes the visits on this project that came in through the deleted links', async () => {
     const db = fakeD1();
     await dropVisitsThroughLinks(db.env, 'diag-1', ['code-1', 'code-2']);
     const del = db.one('DELETE FROM shared_with');

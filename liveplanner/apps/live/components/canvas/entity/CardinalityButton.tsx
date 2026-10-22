@@ -7,7 +7,7 @@ import {
   ER_GLYPHS,
   type CardinalityPreset,
   type ErShape,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { Divider } from '@/components/canvas/SelectionPopoverButton';
 import {
   noFocusSteal,

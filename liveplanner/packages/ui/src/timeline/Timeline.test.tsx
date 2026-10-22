@@ -11,14 +11,14 @@ const ME = 'me';
 function event(id: string): TimelineEvent {
   return {
     id,
-    sourceType: 'document',
+    sourceType: 'project',
     sourceId: id,
-    eventType: 'document_created',
-    title: 'Document Created',
+    eventType: 'project_created',
+    title: 'Project Created',
     description: null,
     occurredAt: 1_700_000_000_000,
     actorId: ME,
-    snapshot: { documentId: id, documentName: id },
+    snapshot: { projectId: id, projectName: id },
   };
 }
 

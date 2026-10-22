@@ -8,7 +8,7 @@ import type { AiMode } from '@liveplanner/api-schema';
 
 // ---------------------------------------------------------------------------
 // Schema — single source of truth for what the model can produce.
-// Keep ShapeKind in sync with packages/document/src/index.ts.
+// Keep ShapeKind in sync with packages/project/src/index.ts.
 // ---------------------------------------------------------------------------
 const SCHEMA = `
 ELEMENT TYPES (output only these):

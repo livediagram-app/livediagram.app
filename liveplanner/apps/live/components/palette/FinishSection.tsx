@@ -7,7 +7,7 @@
 // both read the same.
 
 import type { ReactNode } from 'react';
-import { FINISHES, isFinish, type Finish } from '@liveplanner/document';
+import { FINISHES, isFinish, type Finish } from '@liveplanner/project';
 import { Glyph, LinkIcon } from '@liveplanner/ui';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { OptionRows, type OptionRow } from '@/components/plan/OptionRows';

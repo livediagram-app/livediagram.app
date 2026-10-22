@@ -5,7 +5,7 @@ import { HoverCard } from '@liveplanner/ui';
 import { SparkleIcon } from '@/components/primitives/explorer-icons';
 
 // The Made by AI badge (docs/specs/013-workspace/explorer-filters.md "Dimensions"): every row and
-// card of a document an AI made carries it, so what the Made by AI filter reads is visible. A
+// card of a project an AI made carries it, so what the Made by AI filter reads is visible. A
 // sparkle and the words, never colour alone; built like the This Browser pill, in violet.
 
 export const MADE_BY_AI_LABEL = 'Made by AI';
@@ -17,7 +17,7 @@ const MADE_BY_AI_DESCRIPTION =
 const PILL =
   'optical-edges inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-full px-1.5 py-px text-[10px] font-semibold leading-4 bg-violet-50 text-violet-800 ring-1 ring-violet-600 dark:bg-violet-500/15 dark:text-violet-200 dark:ring-violet-400';
 
-/** Whether a listed document was made by AI: the AI assistant or the MCP made it (a CLI document is not). */
+/** Whether a listed project was made by AI: the AI assistant or the MCP made it (a CLI project is not). */
 export function isMadeByAi(doc: { source?: string | null }): boolean {
   return isMadeByAiSource(doc.source);
 }

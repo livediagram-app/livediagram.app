@@ -23,13 +23,13 @@ describe('transport', () => {
       async () => 'lvd_new',
     );
 
-    const answer = await api.json('/documents', { method: 'POST', body: '{"a":1}' });
+    const answer = await api.json('/projects', { method: 'POST', body: '{"a":1}' });
 
     expect(answer).toEqual({ ok: true, body: 'sent' });
     expect(io.requests.map(bearer)).toEqual(['Bearer lvd_old', 'Bearer lvd_new']);
     expect(await io.requests[1]!.text()).toBe('{"a":1}');
     expect(logs).toContain('credential refreshed');
-    await api.json('/documents');
+    await api.json('/projects');
     expect(io.requests.map(bearer).at(-1)).toBe('Bearer lvd_new');
   });
 
@@ -40,7 +40,7 @@ describe('transport', () => {
     const gone = transport(io, API, () => {}).forCredential('lvd_old', async () => null);
 
     for (const api of [same, none, gone])
-      await expect(api.json('/documents')).rejects.toMatchObject({ status: 401 });
+      await expect(api.json('/projects')).rejects.toMatchObject({ status: 401 });
     expect(io.requests).toHaveLength(3);
   });
 
@@ -48,7 +48,7 @@ describe('transport', () => {
     const io = fakeIo({ routes: [host] });
     const api = transport(io, API, () => {}).forCredential('lvd_old', async () => 'lvd_new');
 
-    const answers = await Promise.all([api.json('/documents'), api.json('/documents')]);
+    const answers = await Promise.all([api.json('/projects'), api.json('/projects')]);
 
     expect(answers).toEqual([
       { ok: true, body: null },

@@ -25,7 +25,7 @@ test('a folder move the api refuses says so', async ({ page, pageErrors, baseURL
   await page.getByRole('button', { name: 'Menu for Projects' }).click();
   await page.getByRole('menu').last().getByText('Change Folder', { exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Move to folder' });
-  await dialog.getByRole('radio', { name: /^My Documents/ }).click();
+  await dialog.getByRole('radio', { name: /^My Projects/ }).click();
   await dialog.getByRole('radio', { name: /^Archive/ }).click();
 
   const moves: string[] = [];

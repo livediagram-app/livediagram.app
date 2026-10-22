@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import { CHANGESET_MAX_OPERATIONS } from '@liveplanner/api-schema';
-import { elementFingerprint, type Element } from '@liveplanner/document';
+import { elementFingerprint, type Element } from '@liveplanner/project';
 import { createShareLink } from '../db/share';
 import { sqliteD1, type SqliteD1 } from '../test-sqlite-d1';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
-import { handleDocuments } from './documents';
+import { handleProjects } from './projects';
 
 // The changeset routes end to end on real SQLite (docs/specs/024-agents/agent-changesets.md; blueprint
 // "Testing"): submit, list, one, revert, with a recording room.
@@ -52,7 +52,7 @@ const settled = () => Promise.all(pending.splice(0));
 
 function call(db: SqliteD1, method: string, path: string, body?: unknown, who: Who = {}) {
   const owner = who.owner ?? OWNER;
-  return handleDocuments(
+  return handleProjects(
     makeTestRouteContext(method, path, {
       env: db.env,
       owner,
@@ -72,13 +72,13 @@ async function setUp(
 ) {
   const r = room(selections);
   const db = sqliteD1({
-    DOCUMENT_ROOM: r.binding,
+    PROJECT_ROOM: r.binding,
     TELEMETRY_ENABLED: 'true',
   } as unknown as Partial<Env>);
   db.sql.exec(
     `INSERT INTO participants (id, name, color, created_at) VALUES ('${OWNER}', 'Webber', '#123456', 1)`,
   );
-  const created = await call(db, 'POST', '/api/documents', {
+  const created = await call(db, 'POST', '/api/projects', {
     id: 'D',
     name: 'Board',
     tabs: [{ id: 't1', name: 'Board', elements }],
@@ -88,7 +88,7 @@ async function setUp(
 }
 
 const submit = (db: SqliteD1, body: unknown, who: Who = { token: true }, query = '') =>
-  call(db, 'POST', `/api/documents/D/tabs/t1/changesets${query}`, body, who);
+  call(db, 'POST', `/api/projects/D/tabs/t1/changesets${query}`, body, who);
 const stored = (db: SqliteD1, tab = 't1') =>
   (
     JSON.parse(db.sql.prepare('SELECT data FROM tabs WHERE id = ?').get(tab)!.data as string) as {
@@ -154,7 +154,7 @@ describe('submitting a changeset', () => {
     expect(relay.op.agentKey).toMatch(/^[0-9a-f]{12}$/);
     expect(console.info).toHaveBeenCalledWith(
       '[changeset] applied',
-      expect.objectContaining({ documentId: 'D', rev: 2, agent: true }),
+      expect.objectContaining({ projectId: 'D', rev: 2, agent: true }),
     );
     await settled();
     expect(events(db)).toContainEqual({ action: 'Applied', type: 'Mcp' });
@@ -168,13 +168,13 @@ describe('submitting a changeset', () => {
     expect(records(db)[0]).toMatchObject({ token_id: null, removed: 1 });
   });
 
-  it("creates a tab with a replace on an id the document lacks, and refuses another document's tab", async () => {
+  it("creates a tab with a replace on an id the project lacks, and refuses another project's tab", async () => {
     quiet();
     const { db, room: r } = await setUp();
     const res = await call(
       db,
       'POST',
-      '/api/documents/D/tabs/t2/changesets',
+      '/api/projects/D/tabs/t2/changesets',
       { replace: { template: 'kanban', name: 'Detail' } },
       { token: true },
     );
@@ -189,7 +189,7 @@ describe('submitting a changeset', () => {
     };
     expect(relay.op.tab).toMatchObject({ name: 'Detail' });
 
-    await call(db, 'POST', '/api/documents', {
+    await call(db, 'POST', '/api/projects', {
       id: 'E',
       name: 'Other',
       tabs: [{ id: 'theirs', name: 'T', elements: [] }],
@@ -197,7 +197,7 @@ describe('submitting a changeset', () => {
     const taken = await call(
       db,
       'POST',
-      '/api/documents/D/tabs/theirs/changesets',
+      '/api/projects/D/tabs/theirs/changesets',
       { replace: { elements: [] } },
       { token: true },
     );
@@ -358,7 +358,7 @@ describe('held elements', () => {
     expect((await submit(db, { operations: [{ op: 'rm', target: 'a' }] })).status).toBe(200);
     expect(console.warn).toHaveBeenCalledWith(
       '[changeset] selections-unreachable',
-      expect.objectContaining({ documentId: 'D' }),
+      expect.objectContaining({ projectId: 'D' }),
     );
   });
 });
@@ -417,7 +417,7 @@ describe('the history and one changeset', () => {
       await submit(db, { operations: [{ op: 'rm', target: 'b' }], summary: 'drop b' })
     ).json()) as { changeset: { id: string }; text: string };
     await submit(db, { operations: [{ op: 'set', target: 'a', fields: { label: 'z' } }] });
-    const mine = (await (await call(db, 'GET', '/api/documents/D/changesets')).json()) as {
+    const mine = (await (await call(db, 'GET', '/api/projects/D/changesets')).json()) as {
       changesets: { id: string; tokenId?: string }[];
     };
     expect(mine.changesets).toHaveLength(2);
@@ -429,15 +429,15 @@ describe('the history and one changeset', () => {
     });
     await createShareLink(db.env, 'D', 'VIEWCODE', 'view');
     const theirs = (await (
-      await call(db, 'GET', '/api/documents/D/changesets?limit=1', undefined, {
+      await call(db, 'GET', '/api/projects/D/changesets?limit=1', undefined, {
         owner: 'guest',
         headers: { 'X-Share-Code': 'VIEWCODE' },
       })
     ).json()) as { changesets: Record<string, unknown>[] };
     expect(theirs.changesets).toHaveLength(1);
     expect(theirs.changesets[0]).not.toHaveProperty('tokenId');
-    expect((await call(db, 'GET', '/api/documents/D/changesets?limit=0')).status).toBe(400);
-    const one = await call(db, 'GET', `/api/documents/D/changesets/${first.changeset.id}`);
+    expect((await call(db, 'GET', '/api/projects/D/changesets?limit=0')).status).toBe(400);
+    const one = await call(db, 'GET', `/api/projects/D/changesets/${first.changeset.id}`);
     expect(await one.json()).toMatchObject({
       changeset: { id: first.changeset.id },
       text: first.text,
@@ -455,7 +455,7 @@ describe('reverting', () => {
     const res = await call(
       db,
       'POST',
-      `/api/documents/D/changesets/${cs.changeset.id}/revert`,
+      `/api/projects/D/changesets/${cs.changeset.id}/revert`,
       undefined,
       { headers: { 'X-Liveplanner-Client': 'editor' } },
     );
@@ -470,7 +470,7 @@ describe('reverting', () => {
     expect(r.calls.filter((c) => c.url.endsWith('/mutation'))).toHaveLength(2);
     await settled();
     expect(events(db)).toContainEqual({ action: 'Reverted', type: 'Editor' });
-    const again = await call(db, 'POST', `/api/documents/D/changesets/${cs.changeset.id}/revert`);
+    const again = await call(db, 'POST', `/api/projects/D/changesets/${cs.changeset.id}/revert`);
     expect(await again.json()).toMatchObject({
       changeset: null,
       reverted: 0,
@@ -485,7 +485,7 @@ describe('reverting', () => {
       await submit(db, { operations: [{ op: 'set', target: 'a', fields: { label: 'agent' } }] })
     ).json()) as { changeset: { id: string } };
     await submit(db, { operations: [{ op: 'set', target: 'a', fields: { label: 'person' } }] }, {});
-    const res = await call(db, 'POST', `/api/documents/D/changesets/${cs.changeset.id}/revert`);
+    const res = await call(db, 'POST', `/api/projects/D/changesets/${cs.changeset.id}/revert`);
     expect(await res.json()).toMatchObject({
       changeset: null,
       kept: [{ id: 'a', reason: 'changed' }],
@@ -499,16 +499,16 @@ describe('reverting', () => {
       await call(
         db,
         'POST',
-        '/api/documents/D/tabs/t2/changesets',
+        '/api/projects/D/tabs/t2/changesets',
         { replace: { elements: [box('x')] } },
         { token: true },
       )
     ).json()) as { changeset: { id: string } };
-    await call(db, 'POST', `/api/documents/D/changesets/${cs.changeset.id}/revert`);
+    await call(db, 'POST', `/api/projects/D/changesets/${cs.changeset.id}/revert`);
     expect(stored(db, 't2')).toEqual([]);
   });
 
-  it('refuses a viewer, and answers 404 for a changeset swept or of another document', async () => {
+  it('refuses a viewer, and answers 404 for a changeset swept or of another project', async () => {
     quiet();
     const { db } = await setUp();
     const cs = (await (await submit(db, { operations: [{ op: 'rm', target: 'b' }] })).json()) as {
@@ -518,14 +518,14 @@ describe('reverting', () => {
     const viewer = await call(
       db,
       'POST',
-      `/api/documents/D/changesets/${cs.changeset.id}/revert`,
+      `/api/projects/D/changesets/${cs.changeset.id}/revert`,
       undefined,
       { owner: 'g', headers: { 'X-Share-Code': 'VIEWCODE' } },
     );
     expect(viewer.status).toBe(403);
     db.sql.exec('DELETE FROM agent_changesets');
     expect(
-      (await call(db, 'POST', `/api/documents/D/changesets/${cs.changeset.id}/revert`)).status,
+      (await call(db, 'POST', `/api/projects/D/changesets/${cs.changeset.id}/revert`)).status,
     ).toBe(404);
   });
 });
@@ -568,7 +568,7 @@ describe('agent presence after a changeset (docs/specs/024-agents/agent-presence
     const res = await call(
       db,
       'POST',
-      `/api/documents/D/changesets/${written.changeset.id}/revert`,
+      `/api/projects/D/changesets/${written.changeset.id}/revert`,
       undefined,
       { token: true },
     );

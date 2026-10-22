@@ -21,7 +21,7 @@ import type { ReactNode } from 'react';
 // string omit it, the rest restate the answer sans markup. faq-content.test.tsx renders every JSX answer and fails
 // if its text drifts from `aText`, so the structured data stays a faithful image of the page.
 //
-// The copy says "project" for what the code calls a document: a person reads projects, each a stack of Board,
+// The copy says "project" for what the code calls a project: a person reads projects, each a stack of Board,
 // Sheet, Dashboard and Form tabs.
 
 export type FaqItem = { q: string; a: ReactNode; aText?: string };

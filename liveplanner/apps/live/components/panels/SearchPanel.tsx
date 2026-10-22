@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ThisBrowserPill } from '@/components/primitives/ThisBrowserPill';
 import { CloseIcon, NoMatches, SearchIcon, useEscape, useFocusTrap } from '@liveplanner/ui';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import {
   buildSearchResults,
   type CommandSearchItem,
@@ -18,51 +18,51 @@ import { titleCaseType, track } from '@/lib/telemetry';
 import { SearchResultIcon } from './search-panel-icons';
 import { useModalGuard } from '@/hooks/ui/useModalGuard';
 import type {
-  SearchPanelDocument,
+  SearchPanelProject,
   SearchPanelFolder,
   SearchPanelShared,
   SearchPanelTeam,
-  SearchPanelTeamDocument,
+  SearchPanelTeamProject,
   SearchPanelTeamFolder,
 } from './search-panel-sources';
 
 // Global search panel: triggered from a footer button, blurs the
 // canvas behind it, pops up near the top-centre. The scope is
 // contextual (docs/specs/008-canvas/canvas-and-palette.md "Search panel"):
-//   - Always: documents (user's list) + folders.
-//   - When supplied: "Shared with you" documents + teams (docs/specs/013-workspace/teams.md).
-//   - When inside a document: also tabs + elements on the current
-//     document (table text matches by cell).
-// Selection navigates to the right surface (open the document /
+//   - Always: projects (user's list) + folders.
+//   - When supplied: "Shared with you" projects + teams (docs/specs/013-workspace/teams.md).
+//   - When inside a project: also tabs + elements on the current
+//     project (table text matches by cell).
+// Selection navigates to the right surface (open the project /
 // switch tabs / select the element / jump to the team). Esc +
 // outside-click close; Enter on the first match picks it.
 
 type SearchPanelProps = {
-  documents: SearchPanelDocument[];
+  projects: SearchPanelProject[];
   folders: SearchPanelFolder[];
-  // Documents shared with the current owner. Optional so surfaces
+  // Projects shared with the current owner. Optional so surfaces
   // without the list (or guests with an empty one) can omit it.
   shared?: SearchPanelShared[];
   // Teams the signed-in user belongs to (docs/specs/013-workspace/teams.md). Optional: guests
   // have none.
   teams?: SearchPanelTeam[];
-  // Team-library folders (docs/specs/013-workspace/team-shared-documents.md), rendered in the Teams group with
+  // Team-library folders (docs/specs/013-workspace/team-shared-projects.md), rendered in the Teams group with
   // an "in <team>" suffix. Optional: guests have none.
   teamFolders?: SearchPanelTeamFolder[];
-  // Team-library documents (docs/specs/013-workspace/team-shared-documents.md), also in the Teams group with an
+  // Team-library projects (docs/specs/013-workspace/team-shared-projects.md), also in the Teams group with an
   // "in <team>" suffix. Optional: guests have none.
-  teamDocuments?: SearchPanelTeamDocument[];
-  // When the user is inside a document editor these provide the
+  teamProjects?: SearchPanelTeamProject[];
+  // When the user is inside a project editor these provide the
   // tab + element scope. Omitted on routes (e.g. the dashboard)
-  // where only documents + folders should match.
+  // where only projects + folders should match.
   tabs?: Tab[];
   // Tab id where the element matches' active state should apply
   // (the current tab — so the user knows whether a hit is on
   // their current view).
   currentTabId?: string;
-  onSelectDocument: (id: string) => void;
-  // Receives the document id AND its share code: a non-owner can only
-  // open the document on the visitor URL the code builds.
+  onSelectProject: (id: string) => void;
+  // Receives the project id AND its share code: a non-owner can only
+  // open the project on the visitor URL the code builds.
   onSelectShared?: (id: string, shareCode: string) => void;
   onSelectFolder?: (id: string) => void;
   onSelectTeam?: (id: string) => void;
@@ -102,15 +102,15 @@ type SearchPanelProps = {
 // `lib/search.ts`; the panel just renders.
 
 export function SearchPanel({
-  documents: liveDocs,
+  projects: liveDocs,
   folders,
   shared,
   teams,
   teamFolders,
-  teamDocuments,
+  teamProjects,
   tabs,
   currentTabId,
-  onSelectDocument,
+  onSelectProject,
   onSelectShared,
   onSelectFolder,
   onSelectTeam,
@@ -173,12 +173,12 @@ export function SearchPanel({
     () =>
       buildSearchResults({
         query,
-        documents: liveDocs,
+        projects: liveDocs,
         folders,
         shared,
         teams,
         teamFolders,
-        teamDocuments,
+        teamProjects,
         tabs,
         currentTabId,
         paletteItems,
@@ -193,7 +193,7 @@ export function SearchPanel({
       shared,
       teams,
       teamFolders,
-      teamDocuments,
+      teamProjects,
       tabs,
       currentTabId,
       paletteItems,
@@ -229,7 +229,7 @@ export function SearchPanel({
       onClose();
       return;
     }
-    if (item.kind === 'document') onSelectDocument(item.id);
+    if (item.kind === 'project') onSelectProject(item.id);
     else if (item.kind === 'shared' && onSelectShared) onSelectShared(item.id, item.shareCode);
     else if (item.kind === 'folder' && item.team && onSelectTeamFolder)
       onSelectTeamFolder(item.team.id, item.id);
@@ -301,8 +301,8 @@ export function SearchPanel({
             aria-activedescendant={flatItems.length > 0 ? optionId(activeIndex) : undefined}
             placeholder={
               tabs
-                ? 'Search documents, folders, teams, tabs, elements, help...'
-                : 'Search documents, folders, teams, help...'
+                ? 'Search projects, folders, teams, tabs, elements, help...'
+                : 'Search projects, folders, teams, help...'
             }
             className="flex-1 bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 dark:text-slate-100 dark:placeholder:text-slate-400"
           />
@@ -337,8 +337,8 @@ export function SearchPanel({
                 className="py-6"
                 things={
                   tabs
-                    ? 'documents, tabs, elements or help articles'
-                    : 'documents, folders or help articles'
+                    ? 'projects, tabs, elements or help articles'
+                    : 'projects, folders or help articles'
                 }
                 query={query}
                 onClear={() => setQuery('')}
@@ -388,7 +388,7 @@ export function SearchPanel({
                           {item.kind === 'element' ? item.label : item.name}
                         </span>
                         {/* A plain label: a link cannot sit inside this result button. */}
-                        {item.kind === 'document' && item.localOnly ? (
+                        {item.kind === 'project' && item.localOnly ? (
                           <ThisBrowserPill asLabel />
                         ) : null}
                         {item.kind === 'element' ? (
@@ -404,7 +404,7 @@ export function SearchPanel({
                             in {item.categoryLabel}
                           </span>
                         ) : null}
-                        {(item.kind === 'folder' || item.kind === 'document') && item.team ? (
+                        {(item.kind === 'folder' || item.kind === 'project') && item.team ? (
                           <span className="shrink-0 text-[10px] text-slate-500 dark:text-slate-400">
                             in {item.team.name}
                           </span>

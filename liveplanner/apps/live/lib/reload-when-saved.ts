@@ -28,7 +28,7 @@ export function reloadWhenSaved(opts: {
         return;
       }
       if (waited >= waitMs) {
-        console.warn('[document-format] reload waiting for unsaved changes', { waitedMs: waited });
+        console.warn('[project-format] reload waiting for unsaved changes', { waitedMs: waited });
         resolve('unsaved');
         return;
       }

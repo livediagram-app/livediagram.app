@@ -16,8 +16,8 @@ vi.mock('@/app/explorer/views', () => ({ SkeletonRows: () => <div>loading rows</
 import { ActivityPane } from './ActivityPane';
 
 const place = {
-  documentId: 'd1',
-  documentName: 'Payments',
+  projectId: 'd1',
+  projectName: 'Payments',
   teamId: 'tm',
   via: 'team' as const,
   shareCode: null,
@@ -41,8 +41,8 @@ const action = (id: string, mine: boolean): ActivityAction => ({
 });
 
 const card = (over: Partial<ActivityCard> = {}): ActivityCard => ({
-  documentId: 'd2',
-  documentName: 'Roadmap',
+  projectId: 'd2',
+  projectName: 'Roadmap',
   teamId: null,
   via: 'own',
   shareCode: null,
@@ -64,7 +64,7 @@ const thread = (over: Partial<ActivityThread> = {}): ThreadRow => ({
   latest: { text: 'Any news?', authorName: 'Priya', authorColor: '#336699', at: 4 },
   firstAt: 1,
   youCommented: false,
-  onYourDocument: true,
+  onYourProject: true,
   mentionsYou: false,
   ...over,
 });
@@ -100,15 +100,15 @@ describe('ActivityPane', () => {
     );
     expect(screen.getByText('Assigned to You')).toBeTruthy();
     expect(linkTo('#12 Wire the form').getAttribute('href')).toBe(
-      '/document/d2#t=tp&el=b1&item=it1',
+      '/project/d2#t=tp&el=b1&item=it1',
     );
     expect(screen.getByText('Task')).toBeTruthy();
     expect(screen.getByText('Sprint 14 · Plan')).toBeTruthy();
-    // A type the document added reads as a plain card, and a card no board shows says so.
+    // A type the project added reads as a plain card, and a card no board shows says so.
     expect(screen.getByText('Card')).toBeTruthy();
     expect(screen.getByText('Not on a board')).toBeTruthy();
-    expect(linkTo('#3 Loose').getAttribute('href')).toBe('/document/d2#item=it2');
-    expect(linkTo('Action a1').getAttribute('href')).toBe('/document/d1#t=t1&el=e-a1&open=action');
+    expect(linkTo('#3 Loose').getAttribute('href')).toBe('/project/d2#item=it2');
+    expect(linkTo('Action a1').getAttribute('href')).toBe('/project/d1#t=t1&el=e-a1&open=action');
 
     fireEvent.click(linkTo('#12 Wire the form'));
     expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'Card');
@@ -127,20 +127,20 @@ describe('ActivityPane', () => {
     );
     expect(screen.getByText('You Assigned')).toBeTruthy();
     expect(screen.getByText('Open Comment Threads')).toBeTruthy();
-    expect(screen.getByText('Your document')).toBeTruthy();
+    expect(screen.getByText('Your project')).toBeTruthy();
     expect(screen.getByText('Mentioned You')).toBeTruthy();
     fireEvent.click(linkTo('Pay'));
     expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'Thread');
   });
 
-  // docs/specs/013-workspace/inbox.md §1, §2.6: a row from a document saved only in this browser says so, as a
+  // docs/specs/013-workspace/inbox.md §1, §2.6: a row from a project saved only in this browser says so, as a
   // label inside the row's link; a cloud row carries no pill.
   it('marks a row in This Browser with the This Browser pill, and no other row', () => {
     render(
       <ActivityPane
         feed={feed({
           assignedToMe: [
-            { kind: 'action', ...action('local', true), documentName: 'Retro', local: true },
+            { kind: 'action', ...action('local', true), projectName: 'Retro', local: true },
             { kind: 'action', ...action('cloud', true) },
           ],
         })}
@@ -149,7 +149,7 @@ describe('ActivityPane', () => {
     const local = linkTo('Action local');
     expect(local.textContent).toContain('This Browser');
     expect(local.querySelector('a')).toBeNull();
-    expect(local.getAttribute('href')).toBe('/document/d1#t=t1&el=e-local&open=action');
+    expect(local.getAttribute('href')).toBe('/project/d1#t=t1&el=e-local&open=action');
     expect(linkTo('Action cloud').textContent).not.toContain('This Browser');
     expect(screen.getAllByText('This Browser')).toHaveLength(1);
   });
@@ -157,8 +157,8 @@ describe('ActivityPane', () => {
   it("lists a card's comment thread as a card row that opens the card", () => {
     const cardThread: ThreadRow = {
       kind: 'card',
-      documentId: 'd2',
-      documentName: 'Roadmap',
+      projectId: 'd2',
+      projectName: 'Roadmap',
       teamId: null,
       via: 'own',
       shareCode: null,
@@ -171,14 +171,14 @@ describe('ActivityPane', () => {
       latest: { text: 'Over to you', authorName: 'Priya', authorColor: '#336699', at: 9 },
       firstAt: 9,
       youCommented: false,
-      onYourDocument: false,
+      onYourProject: false,
       mentionsYou: true,
     };
     render(<ActivityPane feed={feed({ threads: [cardThread] })} />);
     expect(screen.getByText('Over to you')).toBeTruthy();
     expect(screen.getByText('Mentioned You')).toBeTruthy();
     expect(screen.getByText('Sprint 14 · Plan')).toBeTruthy();
-    expect(linkTo('#7 Ship it').getAttribute('href')).toBe('/document/d2#t=tp&el=b1&item=it7');
+    expect(linkTo('#7 Ship it').getAttribute('href')).toBe('/project/d2#t=tp&el=b1&item=it7');
     fireEvent.click(linkTo('#7 Ship it'));
     expect(track).toHaveBeenCalledWith('Activity', 'Selected', 'CardThread');
   });
@@ -203,8 +203,8 @@ describe('Form Responses', () => {
         feed={feed({
           formResponses: [
             {
-              documentId: 'd1',
-              documentName: 'Ops',
+              projectId: 'd1',
+              projectName: 'Ops',
               teamId: null,
               via: 'own',
               tabId: 'form-tab',
@@ -219,6 +219,6 @@ describe('Form Responses', () => {
     );
     expect(screen.getByText('Form Responses')).toBeTruthy();
     const row = screen.getByRole('link', { name: /3 new responses to Bug Report/ });
-    expect(row.getAttribute('href')).toBe('/document/d1#t=board-tab');
+    expect(row.getAttribute('href')).toBe('/project/d1#t=board-tab');
   });
 });

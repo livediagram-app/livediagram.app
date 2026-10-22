@@ -84,16 +84,16 @@ describe('what each ranking leaves out', () => {
 describe('error predicates', () => {
   it('reads a server crash in both the old and the located form', () => {
     expect(isServerCrash('Internal')).toBe(true); // before #112
-    expect(isServerCrash('Internal.Put.Documents.Tabs')).toBe(true);
+    expect(isServerCrash('Internal.Put.Projects.Tabs')).toBe(true);
     expect(isServerCrash('Internal.Get.Unknown')).toBe(true);
   });
 
   it('keeps caller-observed failures out of the server crash count', () => {
     expect(isServerCrash('Http500')).toBe(false);
     expect(isServerCrash('Http500.SaveTab')).toBe(false);
-    expect(isServerCrash('Network.Put.Documents.Tabs')).toBe(false);
+    expect(isServerCrash('Network.Put.Projects.Tabs')).toBe(false);
     // The MCP worker's call to the api never completed: seen by the caller.
-    expect(isServerCrash('Internal.FindDocuments')).toBe(false);
+    expect(isServerCrash('Internal.FindProjects')).toBe(false);
     expect(isServerCrash(null)).toBe(false);
   });
 
@@ -102,7 +102,7 @@ describe('error predicates', () => {
     expect(isRecovery('StaleChunkReload')).toBe(true);
     expect(isRecovery('Uncaught.Explorer.ChunkLoadError')).toBe(false);
     expect(isRecovery('Uncaught')).toBe(false);
-    expect(isRecovery('Uncaught.Document.TypeError')).toBe(false);
+    expect(isRecovery('Uncaught.Project.TypeError')).toBe(false);
     expect(isRecovery('Render.Canvas.Other')).toBe(false);
   });
 });

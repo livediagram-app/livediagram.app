@@ -13,7 +13,7 @@ describe('access-ended notes', () => {
     expect(takeAccessEnded()).toBeNull();
   });
 
-  it('answers only for the document it names, when asked about one', () => {
+  it('answers only for the project it names, when asked about one', () => {
     noteAccessEnded('doc-1', 'changed');
     expect(takeAccessEnded('doc-2')).toBeNull();
     noteAccessEnded('doc-1', 'changed');

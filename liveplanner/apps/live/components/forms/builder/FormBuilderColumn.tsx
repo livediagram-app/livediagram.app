@@ -25,7 +25,7 @@ export function FormBuilderColumn({
   problem = null,
 }: {
   scrollRef: React.RefObject<HTMLDivElement | null>;
-  // Whether the document already has a board or sheet the form could send its responses to.
+  // Whether the project already has a board or sheet the form could send its responses to.
   hasDestinations: boolean;
   // Why its board or sheet no longer takes responses, for the connect box to say.
   problem?: DestinationProblem | null;

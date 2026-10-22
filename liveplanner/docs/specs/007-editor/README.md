@@ -3,10 +3,10 @@
 Follow the references below only as needed; never upfront.
 
 - ./live-app.md - when working on Live app: The diagram editor app (clean routes, no `/live` prefix)
-- ./load-recovery.md - when working on a document that will not load: the load's watchdog and time limits, the opening screen's self-healing reload, the load-error screen's recovery card (Copy Diagnostics, Repair This Browser), what a repair clears and keeps, and the help centre's Repair page
+- ./load-recovery.md - when working on a project that will not load: the load's watchdog and time limits, the opening screen's self-healing reload, the load-error screen's recovery card (Copy Diagnostics, Repair This Browser), what a repair clears and keeps, and the help centre's Repair page
 - ./start-diagramming.md - when working on the start panel an empty tab shows (StartPanel, drawing Start Planning): the panel, Best Match, its keyboard, when it shows, search handed over from /new, its look
-- ./new-document-route.md - when working on Dedicated route for new-document creation: The welcome / create-new flow at `/new`, split from the editor
-- ./templates-by-mode.md - when working on which templates are Plan's (isPlanTemplate), the blanks, Popular, and the names a template gives its tab and document
+- ./new-project-route.md - when working on Dedicated route for new-project creation: The welcome / create-new flow at `/new`, split from the editor
+- ./templates-by-mode.md - when working on which templates are Plan's (isPlanTemplate), the blanks, Popular, and the names a template gives its tab and project
 - ./user-preferences.md - when working on User preferences: Per-user editor preference flags (footer settings dialog)
 - ./ai-assistance.md - when working on AI Assistance: Optional AI assistant (Build / Clean / Ask / Review) on the canvas
 - ./split-view.md - when working on Side by side tabs: dragging a tab to the right edge to open it beside the active tab, each tab keeping its side under one header, the editor following a click or a resting pointer between panes with no view jump, the live other pane, the drop zone and ghost, resizing, persistence

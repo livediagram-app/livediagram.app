@@ -1,5 +1,5 @@
 import { bytesToBase64 } from '@liveplanner/api-schema';
-import { googleFontsHref } from '@liveplanner/document';
+import { googleFontsHref } from '@liveplanner/project';
 
 // Webfonts, EMBEDDED, for an image export (docs/specs/004-interface-design/fonts.md).
 //

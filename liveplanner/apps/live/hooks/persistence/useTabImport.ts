@@ -12,7 +12,7 @@ import {
   savableElements,
   type Element,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { mergeImportedTab } from '@/lib/import-merge';
 import type { ImportedPlanItems, ImportOutcome } from '@/lib/import-tab';
 import type { PlanTabImportResult } from '@/hooks/plan/usePlanTabImport';
@@ -20,7 +20,7 @@ import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 
 // Re-mint element ids (and remap pinned-arrow endpoints) so imported elements can't collide with anything already on
-// the document, with the old-to-new maps of the element ids and of the Sheets copied with them. Shared with
+// the project, with the old-to-new maps of the element ids and of the Sheets copied with them. Shared with
 // remintTabElements, which a Duplicate goes through too.
 export function remintElements(elements: Element[]): {
   elements: Element[];
@@ -81,7 +81,7 @@ type TabImportDeps = {
   setImportError: (message: string | null) => void;
   // Frames the tab once the imported content has rendered (useTabEntryEffects).
   requestFit: () => void;
-  // Adds a JSON export's Plan items to the document (usePlanTabImport, docs/specs/026-plan/items.md).
+  // Adds a JSON export's Plan items to the project (usePlanTabImport, docs/specs/026-plan/items.md).
   importPlanItems: (plan: ImportedPlanItems) => Promise<PlanTabImportResult>;
 };
 
@@ -89,7 +89,7 @@ type TabImportDeps = {
 export function planCardsFailure(failed: number): { title: string; message: string } {
   return {
     title: 'Plan Cards',
-    message: `${failed === 1 ? '1 card' : `${failed} cards`} couldn't be added to this document. The tab was imported without them.`,
+    message: `${failed === 1 ? '1 card' : `${failed} cards`} couldn't be added to this project. The tab was imported without them.`,
   };
 }
 
@@ -143,7 +143,7 @@ export function useTabImport({
     }
     replaceActiveTabContent(remintTabElements(result.tab));
     track('Tab', 'Imported', 'JSON');
-    // The tab's boards and cards draw from the document's items: the file's come in after the tab.
+    // The tab's boards and cards draw from the project's items: the file's come in after the tab.
     const landed = result.plan ? await importPlanItems(result.plan) : null;
     if (landed && landed.failed > 0) {
       return { status: 'done', failures: [planCardsFailure(landed.failed)] };

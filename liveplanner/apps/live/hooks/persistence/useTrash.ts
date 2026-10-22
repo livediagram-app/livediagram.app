@@ -3,19 +3,19 @@
 // The Trash view's state and actions (docs/specs/013-workspace/trash.md):
 // one listing over the cloud Trash and this browser's, and Restore / Delete
 // permanently / Empty Trash with their telemetry and toasts. `onChanged` lets
-// the host refresh the lists a restore puts a document back into.
+// the host refresh the lists a restore puts a project back into.
 import { useCallback, useEffect, useState } from 'react';
 import {
   apiEmptyTrash,
   apiListTrash,
-  apiPurgeDocument,
-  apiRestoreDocument,
+  apiPurgeProject,
+  apiRestoreProject,
   type TrashListing,
 } from '@/lib/api-client';
 import { track } from '@/lib/telemetry';
 import type { TrashGroup } from '@/lib/trash-groups';
 import type { useToast } from '@/hooks/ui/useToast';
-import { documentRestoredMessage } from '@/lib/document-toast-copy';
+import { projectRestoredMessage } from '@/lib/project-toast-copy';
 import { toastName } from '@/lib/toast-name';
 
 export type TrashController = {
@@ -71,13 +71,13 @@ export function useTrash(
       if (!ownerId) return;
       const name = group.rows.find((r) => r.id === id)?.name;
       try {
-        await apiRestoreDocument(ownerId, id);
+        await apiRestoreProject(ownerId, id);
         drop([id]);
         track('Trash', 'Restored', group.telemetryType);
-        toast.success(documentRestoredMessage(name));
+        toast.success(projectRestoredMessage(name));
         onChanged();
       } catch {
-        toast.error(`Could not restore ${toastName(name) ?? 'that document'}. Try again.`);
+        toast.error(`Could not restore ${toastName(name) ?? 'that project'}. Try again.`);
         load();
       }
     },
@@ -89,11 +89,11 @@ export function useTrash(
       if (!ownerId) return;
       const name = group.rows.find((r) => r.id === id)?.name;
       try {
-        await apiPurgeDocument(ownerId, id);
+        await apiPurgeProject(ownerId, id);
         drop([id]);
         track('Trash', 'Deleted', group.telemetryType);
       } catch {
-        toast.error(`Could not delete ${toastName(name) ?? 'that document'}. Try again.`);
+        toast.error(`Could not delete ${toastName(name) ?? 'that project'}. Try again.`);
         load();
       }
     },

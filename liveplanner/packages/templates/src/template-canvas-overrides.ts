@@ -1,7 +1,7 @@
 // The tab-level settings a template ships with (templateCanvasOverrides): its backdrop. Its own module, apart from the
 // template catalogue in templates.ts: the editor reads the catalogue (a template's title) on every load, and these
 // stay out of that first load.
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import type { TemplateKind } from './templates';
 
 // Tab-level overrides a template ships with, applied on top of whatever theme is selected. Plan's boards, Sheets and

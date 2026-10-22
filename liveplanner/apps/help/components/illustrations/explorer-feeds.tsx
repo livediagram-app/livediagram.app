@@ -1,5 +1,5 @@
 // Explorer feed illustrations (docs/specs/018-help/help-app.md): Home (Jump Back In and What
-// happened), a document's History feed and its stacking, the Inbox, Recent, Shared With Me,
+// happened), a project's History feed and its stacking, the Inbox, Recent, Shared With Me,
 // and the Spaces group of the sidebar with its teams. Drawn from the real labels in apps/live
 // (sidebar-structure.ts, home-copy.ts, ActivityPane.tsx, views.tsx, the @liveplanner/ui timeline).
 // Composed from the shared primitives plus the Explorer parts, so the house style holds.
@@ -42,7 +42,7 @@ function SectionHeading({ y, title, link }: { y: number; title: string; link?: s
   );
 }
 
-/** A small document snapshot: a box or two joined by a line, on a pale well. */
+/** A small project snapshot: a box or two joined by a line, on a pale well. */
 function Snapshot({
   x,
   y,
@@ -192,7 +192,7 @@ function FeedCard({
   reason: string;
   meta?: string;
   tone: Tone;
-  /** A document snapshot motif, or a glyph drawn on the tone's tint. */
+  /** A project snapshot motif, or a glyph drawn on the tone's tint. */
   preview: { motif: number } | { glyph: ReactNode };
   isNew?: boolean;
   /** A card with nothing left to open (a deleted folder) is dimmed. */
@@ -271,7 +271,7 @@ function BigGlyph({ kind, tone }: { kind: 'team' | 'folder' | 'pencil'; tone: To
   );
 }
 
-/** The row of the Inbox: kind glyph, title (and hint), the document chip and where, the person. */
+/** The row of the Inbox: kind glyph, title (and hint), the project chip and where, the person. */
 function InboxRow({
   y,
   kind,
@@ -384,7 +384,7 @@ function InboxSectionTitle({ y, title, count }: { y: number; title: string; coun
   );
 }
 
-/** A small folder chip beside a document's name on Recent. */
+/** A small folder chip beside a project's name on Recent. */
 function FolderChip({ x, y, label }: { x: number; y: number; label: string }) {
   const w = label.length * 5.6 + 24;
   return (
@@ -448,7 +448,7 @@ export function HomeOverview() {
   );
 }
 
-/** A document's History: the header's Cards / Calendar switch and Filter, the day rail, and one day's
+/** A project's History: the header's Cards / Calendar switch and Filter, the day rail, and one day's
  *  cards, each coloured by what happened (green made, amber changed, red removed). */
 export function TimelineFeed() {
   return (
@@ -546,7 +546,7 @@ export function TimelineStack() {
         x={x}
         y={y}
         w={w}
-        subject="Documents Updated"
+        subject="Projects Updated"
         reason="5 events · click to expand"
         tone="create"
         preview={{ glyph: <BigGlyph kind="pencil" tone="create" /> }}
@@ -634,11 +634,11 @@ export function InboxSections() {
   );
 }
 
-/** Recent: Home › Recent, newest first, each row naming where the document lives. */
+/** Recent: Home › Recent, newest first, each row naming where the project lives. */
 export function RecentView() {
   const rows: { name: string; chip?: string; meta: string }[] = [
     { name: 'Q3 roadmap', chip: 'Planning', meta: '4m ago' },
-    { name: 'Onboarding flow', chip: 'My Documents', meta: '1h ago' },
+    { name: 'Onboarding flow', chip: 'My Projects', meta: '1h ago' },
     { name: 'Incident runbook', chip: 'Platform team', meta: 'yesterday' },
     { name: 'Hiring plan', meta: '2 days ago' },
   ];
@@ -774,7 +774,7 @@ export function SharedWithMeTable() {
   );
 }
 
-/** The sidebar's Spaces group when signed in: My Documents, each team (expandable to its shared
+/** The sidebar's Spaces group when signed in: My Projects, each team (expandable to its shared
  *  folders, with a member count), Invites while one waits, and New Team. */
 export function TeamSpacesSidebar() {
   const x = 100;
@@ -804,7 +804,7 @@ export function TeamSpacesSidebar() {
         SPACES
       </Label>
       {chevron(x + w - 18, 49, false)}
-      <SidebarRow x={x} y={38} w={w - 20} label="My Documents" glyph="folder" />
+      <SidebarRow x={x} y={38} w={w - 20} label="My Projects" glyph="folder" />
       {chevron(x + w - 18, 73, true)}
       <SidebarRow x={x} y={62} w={w - 20} label="Platform team" glyph="team" count={5} active />
       <SidebarRow x={x} y={86} w={w - 20} label="Roadmaps" glyph="folder" indent={16} />

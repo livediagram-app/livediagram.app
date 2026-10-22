@@ -7,7 +7,7 @@ const { db } = vi.hoisted(() => ({
   db: {
     acceptTeamMember: vi.fn(),
     addTeamMember: vi.fn(),
-    getDocumentMeta: vi.fn(),
+    getProjectMeta: vi.fn(),
     readItem: vi.fn(),
     getParticipant: vi.fn(),
     hasSharedAccess: vi.fn(),
@@ -23,7 +23,7 @@ const { db } = vi.hoisted(() => ({
     getTeamInviteLink: vi.fn(),
     getTeamMember: vi.fn(),
     joinTeamByInviteToken: vi.fn(),
-    listDocumentsByTeam: vi.fn(),
+    listProjectsByTeam: vi.fn(),
     listFoldersByTeam: vi.fn(),
     listTeamMembers: vi.fn(),
     listTeamsByUser: vi.fn(),
@@ -144,10 +144,10 @@ describe('API-token callers (docs/specs/015-api/public-api-and-tokens.md §3.4: 
     db.getTeam.mockResolvedValue(team);
     db.getMembership.mockResolvedValue(member({ role: 'member' }));
     db.listFoldersByTeam.mockResolvedValue([]);
-    db.listDocumentsByTeam.mockResolvedValue([{ id: 'd1', name: 'Team doc' }]);
+    db.listProjectsByTeam.mockResolvedValue([{ id: 'd1', name: 'Team doc' }]);
     const res = await handleTeams(makeCtx('GET', '/api/teams/t1/library', asToken));
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({ folders: [], documents: [{ id: 'd1', name: 'Team doc' }] });
+    expect(await res.json()).toEqual({ folders: [], projects: [{ id: 'd1', name: 'Team doc' }] });
   });
 
   it('401s every mutation — token holders cannot manage teams', async () => {
@@ -647,8 +647,8 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
   });
 
   it("hands a removed member's team work to the team before the row goes", async () => {
-    // Every access gate honours owner_id before membership, so documents left
-    // owned by the removed member would stay open to them (docs/specs/013-workspace/team-shared-documents.md).
+    // Every access gate honours owner_id before membership, so projects left
+    // owned by the removed member would stay open to them (docs/specs/013-workspace/team-shared-projects.md).
     db.getMembership.mockResolvedValue(member());
     db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
     await handleTeams(makeCtx('DELETE', '/api/teams/t1/members/m2'));
@@ -658,9 +658,9 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
     );
   });
 
-  // docs/specs/013-workspace/team-shared-documents.md: a member who leaves or is removed loses their
-  // open realtime sessions on the team's documents too.
-  it("ends a departing member's realtime sessions on the team's documents", async () => {
+  // docs/specs/013-workspace/team-shared-projects.md: a member who leaves or is removed loses their
+  // open realtime sessions on the team's projects too.
+  it("ends a departing member's realtime sessions on the team's projects", async () => {
     roomAccess.closeMemberTeamSessions.mockClear();
     db.getMembership.mockResolvedValue(member());
     db.getTeamMember.mockResolvedValue(member({ id: 'm2', userId: 'user-2', role: 'member' }));
@@ -705,7 +705,7 @@ describe('DELETE /api/teams/:id/members/:memberId (remove / leave)', () => {
 describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned-actions.md)', () => {
   const get = (qs: string, opts: Parameters<typeof makeCtx>[2] = {}) =>
     handleTeams(makeCtx('GET', `/api/teams/t1/access-check?${qs}`, opts));
-  const QS = 'assigneeUserId=user-2&documentId=d1';
+  const QS = 'assigneeUserId=user-2&projectId=d1';
 
   const membershipByUser = (overrides: Record<string, TeamMember | null> = {}) => {
     db.getMembership.mockImplementation(async (_env: Env, teamId: string, userId: string) => {
@@ -721,11 +721,11 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
   beforeEach(() => {
     db.getTeam.mockResolvedValue(team);
     membershipByUser();
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
+    db.getProjectMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
     db.hasSharedAccess.mockResolvedValue(false);
   });
 
-  it('false for a personal document the assignee has never opened', async () => {
+  it('false for a personal project the assignee has never opened', async () => {
     const res = await get(QS);
     expect(res.status).toBe(200);
     expect(await res.json()).toEqual({ canAccess: false });
@@ -738,8 +738,8 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
     expect(await (await get(QS)).json()).toEqual({ canAccess: true });
   });
 
-  it('true when the assignee is a joined member of the document-library team', async () => {
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'x', teamId: 't9', name: 'Q3' });
+  it('true when the assignee is a joined member of the project-library team', async () => {
+    db.getProjectMeta.mockResolvedValue({ id: 'd1', ownerId: 'x', teamId: 't9', name: 'Q3' });
     membershipByUser({
       't9:user-1': member({ role: 'member' }),
       't9:user-2': member({ id: 'm2', userId: 'user-2', role: 'member' }),
@@ -747,20 +747,20 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
     expect(await (await get(QS)).json()).toEqual({ canAccess: true });
   });
 
-  it('true when the assignee owns the document', async () => {
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-2', teamId: null, name: 'Q3' });
+  it('true when the assignee owns the project', async () => {
+    db.getProjectMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-2', teamId: null, name: 'Q3' });
     db.hasSharedAccess.mockImplementation(
       async (_env: Env, ownerId: string) => ownerId === 'user-1',
     );
     expect(await (await get(QS)).json()).toEqual({ canAccess: true });
   });
 
-  it('400 on missing params, 404 on a non-member assignee or unreachable document', async () => {
+  it('400 on missing params, 404 on a non-member assignee or unreachable project', async () => {
     expect((await get('assigneeUserId=user-2')).status).toBe(400);
     membershipByUser({ 't1:user-2': null });
     expect((await get(QS)).status).toBe(404);
     membershipByUser();
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'x', teamId: null, name: 'Q3' });
+    db.getProjectMeta.mockResolvedValue({ id: 'd1', ownerId: 'x', teamId: null, name: 'Q3' });
     expect((await get(QS)).status).toBe(404);
   });
 
@@ -771,7 +771,7 @@ describe('GET /api/teams/:id/access-check (docs/specs/012-collaboration/assigned
 });
 
 describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assigned-actions.md)', () => {
-  const body = { assigneeUserId: 'user-2', documentId: 'd1', actionName: 'Review the copy' };
+  const body = { assigneeUserId: 'user-2', projectId: 'd1', actionName: 'Review the copy' };
   const post = (b: unknown = body, opts: Parameters<typeof makeCtx>[2] = {}) =>
     handleTeams(makeCtx('POST', '/api/teams/t1/notify-action', { body: b, ...opts }));
 
@@ -788,11 +788,11 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
   beforeEach(() => {
     db.getTeam.mockResolvedValue(team);
     membershipByUser();
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
+    db.getProjectMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
     db.getParticipant.mockResolvedValue({ id: 'user-1', name: 'Sam', color: '#f00' });
   });
 
-  it('202 + dispatches the email with server-derived names for the document owner', async () => {
+  it('202 + dispatches the email with server-derived names for the project owner', async () => {
     const res = await post();
     expect(res.status).toBe(202);
     expect(notifyActionAssigned).toHaveBeenCalledWith(
@@ -801,16 +801,16 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
         assigneeUserId: 'user-2',
         assigneeFallbackEmail: 'me@example.com',
         assignerName: 'Sam',
-        document: { id: 'd1', name: 'Q3' },
+        project: { id: 'd1', name: 'Q3' },
         actionName: 'Review the copy',
       }),
     );
   });
 
-  it('ignores a body-supplied document name (name comes from D1)', async () => {
-    await post({ ...body, documentName: 'Spoofed' });
+  it('ignores a body-supplied project name (name comes from D1)', async () => {
+    await post({ ...body, projectName: 'Spoofed' });
     const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
-    expect(input.document.name).toBe('Q3');
+    expect(input.project.name).toBe('Q3');
   });
 
   it('401 for a token caller (mutations need the interactive session)', async () => {
@@ -832,7 +832,7 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
   });
 
   it('400 on a missing action name', async () => {
-    const res = await post({ assigneeUserId: 'user-2', documentId: 'd1' });
+    const res = await post({ assigneeUserId: 'user-2', projectId: 'd1' });
     expect(res.status).toBe(400);
   });
 
@@ -859,7 +859,7 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     ]);
     const res = await post({
       assigneeMemberId: 'm3',
-      documentId: 'd1',
+      projectId: 'd1',
       actionName: 'Review the copy',
     });
     expect(res.status).toBe(202);
@@ -869,14 +869,14 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     );
   });
 
-  it('404 when the document does not exist', async () => {
-    db.getDocumentMeta.mockResolvedValue(null);
+  it('404 when the project does not exist', async () => {
+    db.getProjectMeta.mockResolvedValue(null);
     const res = await post();
     expect(res.status).toBe(404);
   });
 
-  it('404 when the caller cannot access the document', async () => {
-    db.getDocumentMeta.mockResolvedValue({
+  it('404 when the caller cannot access the project', async () => {
+    db.getProjectMeta.mockResolvedValue({
       id: 'd1',
       ownerId: 'someone-else',
       teamId: null,
@@ -888,8 +888,8 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     expect(notifyActionAssigned).not.toHaveBeenCalled();
   });
 
-  it('allows a joined member of the document’s team-library team', async () => {
-    db.getDocumentMeta.mockResolvedValue({
+  it('allows a joined member of the project’s team-library team', async () => {
+    db.getProjectMeta.mockResolvedValue({
       id: 'd1',
       ownerId: 'someone-else',
       teamId: 't1',
@@ -900,8 +900,8 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     expect(notifyActionAssigned).toHaveBeenCalled();
   });
 
-  it('allows a caller who reached the document through a share link (shared_with)', async () => {
-    db.getDocumentMeta.mockResolvedValue({
+  it('allows a caller who reached the project through a share link (shared_with)', async () => {
+    db.getProjectMeta.mockResolvedValue({
       id: 'd1',
       ownerId: 'someone-else',
       teamId: null,
@@ -925,10 +925,10 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assignerUserId).toBe('user-1');
   });
 
-  // docs/specs/012-collaboration/assigned-actions.md §4: the email names the document only to an
+  // docs/specs/012-collaboration/assigned-actions.md §4: the email names the project only to an
   // assignee who can open it.
-  it('marks a document the assignee cannot open, so the email leaves its name out', async () => {
-    // The caller's own personal document; the assignee never opened it.
+  it('marks a project the assignee cannot open, so the email leaves its name out', async () => {
+    // The caller's own personal project; the assignee never opened it.
     db.hasSharedAccess.mockResolvedValue(false);
     await post();
     const input = vi.mocked(notifyActionAssigned).mock.calls[0]![1];
@@ -936,33 +936,33 @@ describe('POST /api/teams/:id/notify-action (docs/specs/012-collaboration/assign
     expect(db.hasSharedAccess).toHaveBeenCalledWith({}, 'user-2', 'd1');
   });
 
-  it('lets the email name the document for an assignee who reached it through a share link', async () => {
+  it('lets the email name the project for an assignee who reached it through a share link', async () => {
     db.hasSharedAccess.mockImplementation(async (_env: Env, who: string) => who === 'user-2');
     await post();
     expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assigneeCanOpen).toBe(true);
   });
 
-  it('counts the document in this team’s library as open to an invited assignee too', async () => {
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: 't1', name: 'Q3' });
+  it('counts the project in this team’s library as open to an invited assignee too', async () => {
+    db.getProjectMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: 't1', name: 'Q3' });
     db.listTeamMembers.mockResolvedValue([
       member({ id: 'm3', userId: null, status: 'invited', email: 'c@x.com' }),
     ]);
-    await post({ assigneeMemberId: 'm3', documentId: 'd1', actionName: 'Review the copy' });
+    await post({ assigneeMemberId: 'm3', projectId: 'd1', actionName: 'Review the copy' });
     expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assigneeCanOpen).toBe(true);
   });
 
-  it('names no document to an invited assignee outside its library', async () => {
+  it('names no project to an invited assignee outside its library', async () => {
     db.listTeamMembers.mockResolvedValue([
       member({ id: 'm3', userId: null, status: 'invited', email: 'c@x.com' }),
     ]);
-    await post({ assigneeMemberId: 'm3', documentId: 'd1', actionName: 'Review the copy' });
+    await post({ assigneeMemberId: 'm3', projectId: 'd1', actionName: 'Review the copy' });
     expect(vi.mocked(notifyActionAssigned).mock.calls[0]![1].assigneeCanOpen).toBe(false);
   });
 });
 
 describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comment-mentions.md)', () => {
   const body = {
-    documentId: 'd1',
+    projectId: 'd1',
     commentText: 'Can you look, @priya?',
     mentions: [{ userId: 'user-2', memberId: 'm2' }],
   };
@@ -980,7 +980,7 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
       userId === 'user-1' ? member() : null,
     );
     db.listTeamMembers.mockResolvedValue(members);
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: 't1', name: 'Q3' });
+    db.getProjectMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: 't1', name: 'Q3' });
     db.getParticipant.mockResolvedValue({ id: 'user-1', name: 'Sam', color: '#f00' });
   });
 
@@ -998,7 +998,7 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
         recipientUserId: 'user-2',
         recipientFallbackEmail: 'priya@x.com',
         authorName: 'Sam',
-        document: { id: 'd1', name: 'Q3' },
+        project: { id: 'd1', name: 'Q3' },
         commentText: 'Can you look, @priya?',
       }),
     );
@@ -1023,8 +1023,8 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
     expect(notifyMentioned).toHaveBeenCalledOnce();
   });
 
-  it('404 when the document is not in this team’s library', async () => {
-    db.getDocumentMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
+  it('404 when the project is not in this team’s library', async () => {
+    db.getProjectMeta.mockResolvedValue({ id: 'd1', ownerId: 'user-1', teamId: null, name: 'Q3' });
     const res = await post();
     expect(res.status).toBe(404);
     expect(notifyMentioned).not.toHaveBeenCalled();
@@ -1061,7 +1061,7 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
       },
     },
   });
-  const cardBody = { documentId: 'd1', itemId: 'item0001', commentId: 'c1' };
+  const cardBody = { projectId: 'd1', itemId: 'item0001', commentId: 'c1' };
 
   it("emails a card's stored comment, so the email opens the card", async () => {
     db.readItem.mockResolvedValue(cardComment());
@@ -1091,7 +1091,7 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
     expect(notifyMentioned).not.toHaveBeenCalled();
   });
 
-  it('404 for a card that is not in the document, 400 for a malformed card or missing comment id', async () => {
+  it('404 for a card that is not in the project, 400 for a malformed card or missing comment id', async () => {
     db.readItem.mockResolvedValue(null);
     expect((await post(cardBody)).status).toBe(404);
     expect(notifyMentioned).not.toHaveBeenCalled();
@@ -1101,7 +1101,7 @@ describe('POST /api/teams/:id/notify-mention (docs/specs/012-collaboration/comme
   });
 
   it('400 on a missing or oversized body', async () => {
-    expect((await post({ documentId: 'd1', mentions: [] })).status).toBe(400);
+    expect((await post({ projectId: 'd1', mentions: [] })).status).toBe(400);
     expect((await post({ ...body, commentText: 'x'.repeat(5001) })).status).toBe(400);
     expect(
       (await post({ ...body, mentions: Array.from({ length: 21 }, () => ({ userId: 'user-2' })) }))

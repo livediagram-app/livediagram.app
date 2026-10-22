@@ -23,20 +23,20 @@ board of the template shows some, and every plan view on its Dashboard has somet
   own fields (a Request's Requested By, a Key Result's Baseline, Target and Current) and votes. A card a template links
   to another (a Story's Project, a Candidate's Role, a Key Result's Objective, an Onboarding Task's New Starter, a Launch
   Check's Workstream) names the card made with it.
-- **Dates count from today.** Start and Due are days from the day the document is made, so a Gantt chart, a due chip
+- **Dates count from today.** Start and Due are days from the day the project is made, so a Gantt chart, a due chip
   and a Calendar never open stale: a project started two weeks ago and due in three.
 - **Archived examples.** Team Retro's **Past Retros** board shows two archived notes from the sprint before.
 - **They are marked.** Every example card carries the `example` flag ([Items](items.md#example-cards)), so the
-  document knows which cards a template made however they have since moved.
-- **Where they are made.** Only where a **person** makes the template: the New Document wizard (the cards ride the
-  create, or an Offline Mode document's first item write) and a start screen on an empty tab (the cards are one write,
-  one undo step, after the tabs land). **Agents** (the MCP's `create_document` and `add_tab`, the api's seeded create)
+  project knows which cards a template made however they have since moved.
+- **Where they are made.** Only where a **person** makes the template: the New Project wizard (the cards ride the
+  create, or an Offline Mode project's first item write) and a start screen on an empty tab (the cards are one write,
+  one undo step, after the tabs land). **Agents** (the MCP's `create_project` and `add_tab`, the api's seeded create)
   get the set-up alone: an agent fills a board with real cards, and examples would be cards it then had to find and
   delete.
-- **Clearing them.** While the document holds an example card that is not in the Trash, every board showing one
+- **Clearing them.** While the project holds an example card that is not in the Trash, every board showing one
   carries a one-line notice under its header: an info glyph, **"Example cards show how this board runs."**, and two
   buttons, **Clear Example Cards** and **Keep Them**.
-  - **Clear Example Cards** sends every example card of the document (every board, every tab) to the Trash as one
+  - **Clear Example Cards** sends every example card of the project (every board, every tab) to the Trash as one
     write and one undo step, and announces "N example cards moved to the Trash". The Trash restores any of them.
   - **Keep Them** takes the flag off every example card, one write and one undo step: they are ordinary cards from
     then on.
@@ -60,19 +60,19 @@ board of the template shows some, and every plan view on its Dashboard has somet
 | **template tab**    | One tab a template makes, named by the template (Roadmap, Backlog...)                      | page, sheet                |
 | **hand-off**        | A status two boards of a template share, so a card leaving one board arrives on the other  | link, sync                 |
 | **dashboard tab**   | A template tab of plan views and no board, reading every card                              | report tab                 |
-| **ready-made type** | A card type defined in code that a board brings into the document when it is made (a Role) | preset type, built-in type |
+| **ready-made type** | A card type defined in code that a board brings into the project when it is made (a Role) | preset type, built-in type |
 
 ## How a template with tabs is made
 
 - **Every Plan template but Blank Plan and the spreadsheet templates makes several tabs**, in the order below; those
   make one, as do the blank and the form templates.
 - **Where a person makes one**:
-  - **The New Document wizard** makes the document with all the template's tabs, named as the template names
+  - **The New Project wizard** makes the project with all the template's tabs, named as the template names
     them; the first is the one that opens.
   - **A start screen on an empty tab** (Start Planning, or another start's search) puts the first template tab on
     that tab (renaming it to the template tab's name) and adds the others straight after it, in order. The tab it was
     picked on stays the active one.
-  - **Agents**: the MCP's `create_document` and the api's seeded create (the CLI's `--template`) add all the
+  - **Agents**: the MCP's `create_project` and the api's seeded create (the CLI's `--template`) add all the
     template's tabs where the template is named; the first takes the name given, the rest the template's names.
     A name given that is one of the template's later tabs (an agent naming the tab it wanted) leaves the first its
     template name instead, so no two tabs share a name; with no name given the first takes its template name (Tab 1
@@ -91,9 +91,9 @@ board of the template shows some, and every plan view on its Dashboard has somet
   name, so the status reads the same wherever it shows.
 - The board where a card leaves counts it as on the board while it sits in the hand-off column; once the next
   board moves it on, it is "not on this board" there, which is what the first board's header says.
-- Statuses, their names and their [phases](plan-views.md#what-a-plan-view-reads) are the **document's**: the
+- Statuses, their names and their [phases](plan-views.md#what-a-plan-view-reads) are the **project's**: the
   open tab's boards first, then every other tab's in tab order. A card's status picker offers every column of
-  the document, so a card on the Sprint tab can be sent back to the Backlog's.
+  the project, so a card on the Sprint tab can be sent back to the Backlog's.
 
 ## Layout of a template tab
 
@@ -114,14 +114,14 @@ The catalogue below still lists, per tab, the metrics, charts and rail it brings
   Objective. Every card type a board can bring is a **ready-made type**: one catalogue in code
   (`READY_MADE_CARD_TYPES`, below), shared by the templates and the board presets, so two templates that need the
   same kind of card (Kanban's requests, Feedback's) bring the same type.
-- **A template's boards choose the document's card types.** A document made from a template has exactly the
+- **A template's boards choose the project's card types.** A project made from a template has exactly the
   ready-made types its boards take, in the order they name them, and no others: a Hiring Pipeline has Role,
   Candidate and Onboarding Task, never a Project or a Note
-  ([Item types](item-types.md#the-type-catalogue)). Added to a document that already has card types or cards
-  (a start screen on a new tab), its boards add each type they take that the document lacks, after the ones it has.
-  Either way it is one change, on every path that makes the tabs: the New Document wizard (the document is created
+  ([Item types](item-types.md#the-type-catalogue)). Added to a project that already has card types or cards
+  (a start screen on a new tab), its boards add each type they take that the project lacks, after the ones it has.
+  Either way it is one change, on every path that makes the tabs: the New Project wizard (the project is created
   with them), a start screen (every tab it adds, not only the one it lands on), and agents (the MCP's
-  `create_document` and `add_tab`, the api's seeded create). A document that already has a type of that id keeps
+  `create_project` and `add_tab`, the api's seeded create). A project that already has a type of that id keeps
   its own. The [Plan mode](plan-mode.md#no-palette) rule holds: only a board being made brings types, so a type
   someone deleted stays deleted.
 - **Hand-offs carry the type**: a board receiving a hand-off takes every type the board handing off takes, so a
@@ -158,7 +158,7 @@ its Detailed cards add Under the Title.
 ## The templates
 
 Colours: **green** `#16a34a`, **amber** `#d97706`, **red** `#dc2626`. A board's card types are named in its row,
-each a [ready-made type](#ready-made-card-types); the document has those and no others. A hand-off is marked ⇄.
+each a [ready-made type](#ready-made-card-types); the project has those and no others. A hand-off is marked ⇄.
 
 ### Blank Plan
 
@@ -324,11 +324,11 @@ templates, and bring no card types. Whether the Sheet fills its tab is decided p
 
 - Each makes one tab, which keeps the name it would have had, as any template of one tab; the Sheet is titled as the
   table says.
-- **The sheet is made with the document.** The template's Sheet element names its start (`start` on the element,
+- **The sheet is made with the project.** The template's Sheet element names its start (`start` on the element,
   [Sheet store](../029-sheets/sheet-store.md#template-starts)); every path that makes the tabs makes the sheet
-  from it there and then: the New Document wizard (stored with the document, cloud or This Browser), a start screen (as
-  it adds the tabs), and agents (the MCP's `create_document` and `add_tab`, the api's seeded create). So the sheet
-  is there for everyone, an agent's `read_sheet` included, the moment the document is.
+  from it there and then: the New Project wizard (stored with the project, cloud or This Browser), a start screen (as
+  it adds the tabs), and agents (the MCP's `create_project` and `add_tab`, the api's seeded create). So the sheet
+  is there for everyone, an agent's `read_sheet` included, the moment the project is.
 - The eight added with the template catalogue's categories (Invoice, Expense Report, Loan Calculator, Sales Pipeline,
   Inventory, Guest List, Grade Book, Habit Tracker) each make the sheet template of the same name, filling its tab;
   the four Money sheets and the Sales Pipeline sit in the picker's **Finance** category, the rest in

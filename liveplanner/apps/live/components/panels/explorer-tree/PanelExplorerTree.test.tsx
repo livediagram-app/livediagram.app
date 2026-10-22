@@ -1,12 +1,12 @@
 // @vitest-environment jsdom
 
-// The editor's Explorer pane's rows for a section that holds documents (docs/specs/013-workspace/explorer-structure.md
+// The editor's Explorer pane's rows for a section that holds projects (docs/specs/013-workspace/explorer-structure.md
 // "The pane").
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { DocumentListItem, SharedWithItem } from '@/lib/api-client';
+import type { ProjectListItem, SharedWithItem } from '@/lib/api-client';
 import { THIS_BROWSER_DESCRIPTION } from '@/components/primitives/ThisBrowserPill';
 import { PanelExplorerTree, type PanelTreeSection } from './PanelExplorerTree';
 import type { PanelTree } from './PanelTreeContext';
@@ -14,7 +14,7 @@ import type { PanelTree } from './PanelTreeContext';
 const { track } = vi.hoisted(() => ({ track: vi.fn() }));
 vi.mock('@/lib/telemetry', () => ({ track }));
 
-const doc = (id: string, name: string, over: Partial<DocumentListItem> = {}) =>
+const doc = (id: string, name: string, over: Partial<ProjectListItem> = {}) =>
   ({
     id,
     name,
@@ -24,7 +24,7 @@ const doc = (id: string, name: string, over: Partial<DocumentListItem> = {}) =>
     source: null,
     empty: true,
     ...over,
-  }) as DocumentListItem;
+  }) as ProjectListItem;
 
 const PLAN = doc('d1', 'Plan', { folderId: 'f1' });
 const NOTES = doc('d2', 'Loose notes');
@@ -35,23 +35,23 @@ function Harness({
   offline = [LOCAL],
   teams = [] as { id: string; name: string }[],
   shared = [] as SharedWithItem[],
-  teamDocs = [] as DocumentListItem[],
+  teamDocs = [] as ProjectListItem[],
 }: {
   section: PanelTreeSection;
-  offline?: DocumentListItem[];
+  offline?: ProjectListItem[];
   teams?: { id: string; name: string }[];
   shared?: SharedWithItem[];
-  teamDocs?: DocumentListItem[];
+  teamDocs?: ProjectListItem[];
 }) {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [folderId, setFolderId] = useState<string | null>(null);
   const tree: PanelTree = {
     ownerId: 'me',
-    currentDocumentId: 'd1',
-    exitingDocumentIds: new Set(),
+    currentProjectId: 'd1',
+    exitingProjectIds: new Set(),
     expanded,
     onToggle: (key) => setExpanded((p) => ({ ...p, [key]: !p[key] })),
-    onOpenDocument: vi.fn(),
+    onOpenProject: vi.fn(),
     pendingRenameFolderId: null,
     onRenameFolderCommitted: vi.fn(),
     onCreateChild: vi.fn(),
@@ -60,20 +60,20 @@ function Harness({
   return (
     <PanelExplorerTree
       section={section}
-      rootLabel="My Documents"
+      rootLabel="My Projects"
       tree={tree}
       shared={shared}
       ownIndex={{
         foldersByParent: new Map([[null, [{ id: 'f1', name: 'Projects', parentId: null }]]]),
-        documentsByFolder: new Map([
+        projectsByFolder: new Map([
           [null, [NOTES]],
           ['f1', [PLAN]],
         ]),
       }}
-      offlineDocuments={offline}
+      offlineProjects={offline}
       teams={teams}
       foldersByTeam={new Map()}
-      documentsByTeam={new Map(teams.map((t) => [t.id, teamDocs]))}
+      projectsByTeam={new Map(teams.map((t) => [t.id, teamDocs]))}
       folderId={folderId}
       onOpenFolder={setFolderId}
     />
@@ -104,7 +104,7 @@ afterEach(() => {
 });
 
 describe('PanelExplorerTree', () => {
-  it('shows My Documents as its folders, then its documents, a folder opening in place under the back bar', () => {
+  it('shows My Projects as its folders, then its projects, a folder opening in place under the back bar', () => {
     render(<Harness section={{ kind: 'mine' }} />);
     expect(rows()).toEqual(['Projects', 'Loose notes']);
     expect(screen.queryByText('Unsorted')).toBeNull();
@@ -112,14 +112,14 @@ describe('PanelExplorerTree', () => {
     expect(rows()).toEqual(['Plan']);
     expect(row('Plan').getAttribute('aria-current')).toBe('true');
     // The import and export screens' back bar: back to the root, the folder as its chip.
-    const back = screen.getByRole('button', { name: /^My Documents/ });
+    const back = screen.getByRole('button', { name: /^My Projects/ });
     expect(back.textContent).toContain('Projects');
     fireEvent.click(back);
     expect(rows()).toEqual(['Projects', 'Loose notes']);
     expect(assign).not.toHaveBeenCalled();
   });
 
-  it('marks a document in this browser This Browser, with what it means', () => {
+  it('marks a project in this browser This Browser, with what it means', () => {
     render(<Harness section={{ kind: 'browser' }} />);
     expect(rows()).toEqual([`Workshop notes. ${THIS_BROWSER_DESCRIPTION}`]);
     expect(screen.getByText('This Browser')).toBeTruthy();
@@ -133,7 +133,7 @@ describe('PanelExplorerTree', () => {
     expect(rows()).toEqual(['Their board']);
   });
 
-  it("shows a team's root documents", () => {
+  it("shows a team's root projects", () => {
     render(
       <Harness
         section={{ kind: 'team', id: 't1' }}

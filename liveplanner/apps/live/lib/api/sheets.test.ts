@@ -1,6 +1,6 @@
-// The sheet store's client (docs/specs/029-sheets/sheet-store.md): a cloud document's calls go to the api with the
+// The sheet store's client (docs/specs/029-sheets/sheet-store.md): a cloud project's calls go to the api with the
 // owner id and share code, a tab-scoped session names its tab on every call, named sheets are read 50 a call, and a
-// refusal maps to an ApiError with its code. An offline document never reaches the network.
+// refusal maps to an ApiError with its code. An offline project never reaches the network.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import type { SheetJson } from '@liveplanner/sheets';
@@ -58,15 +58,15 @@ afterEach(() => {
 
 const cloud: SheetsScope = {
   ownerId: 'owner-1',
-  documentId: 'doc 1',
+  projectId: 'doc 1',
   shareCode: null,
   tabId: null,
 };
 const shared: SheetsScope = { ...cloud, shareCode: 'share-9', tabId: 'tab-x' };
 const header = (c: Call, name: string) => new Headers(c.init.headers).get(name);
-const base = `${API_BASE}/documents/doc%201/sheets`;
+const base = `${API_BASE}/projects/doc%201/sheets`;
 
-describe('fetchSheets on a cloud document', () => {
+describe('fetchSheets on a cloud project', () => {
   it("reads a tab's sheets with the owner id", async () => {
     respond(() => Response.json({ sheets: [sheet('sheetAAAA')] }));
     const out = await fetchSheets(cloud, { tabId: 't1' });
@@ -113,8 +113,8 @@ describe('fetchSheets on a cloud document', () => {
   });
 });
 
-describe('fetchAllSheets on a cloud document', () => {
-  it('reads every sheet of the document', async () => {
+describe('fetchAllSheets on a cloud project', () => {
+  it('reads every sheet of the project', async () => {
     respond(() => Response.json({ sheets: [sheet('sheetAAAA'), sheet('sheetBBBB', 't2')] }));
     expect((await fetchAllSheets(cloud)).map((s) => s.id)).toEqual(['sheetAAAA', 'sheetBBBB']);
     expect(calls[0]!.url).toBe(base);
@@ -126,7 +126,7 @@ describe('fetchAllSheets on a cloud document', () => {
   });
 });
 
-describe('writing on a cloud document', () => {
+describe('writing on a cloud project', () => {
   it('creates a sheet with a JSON body', async () => {
     respond(() => Response.json({ sheet: sheet('sheetAAAA') }, { status: 201 }));
     const create = { id: 'sheetAAAA', tabId: 't1', title: 'Sheet 1' };
@@ -204,8 +204,8 @@ describe('sheetAsCreate', () => {
   });
 });
 
-describe('an offline document', () => {
-  const offline: SheetsScope = { ownerId: 'o', documentId: 'd1', shareCode: null, tabId: null };
+describe('an offline project', () => {
+  const offline: SheetsScope = { ownerId: 'o', projectId: 'd1', shareCode: null, tabId: null };
 
   it('goes to the local store for every call, never the network', async () => {
     await offlinePutRecord(testRecord());

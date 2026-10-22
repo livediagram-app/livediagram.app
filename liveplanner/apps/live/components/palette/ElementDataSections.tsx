@@ -36,7 +36,7 @@ import {
   type EntityField,
   type LegendItem,
   type PieSlice,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { ProgressMenuGlyph, ToolsMenuGlyph } from '@/components/palette/context-menu-icons';
 import { MenuAccordionSection } from '@/components/primitives/PortalMenu';
 import { MindMapMenuSections } from './MindMapMenuSections';
@@ -76,7 +76,7 @@ import type { EditorContextMenuProps } from './EditorContextMenu.types';
 import { useContextMenuScaffold } from './useContextMenuScaffold';
 import { ChartPalettePresets } from './StylePresets';
 
-// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a document without
+// Plan's UI loads only when it is drawn (docs/specs/026-plan/plan-mode.md "Cost"), so a project without
 // Plan pays nothing for it.
 // A Sankey's sections (docs/specs/009-elements/sankey.md "The menu") load only when a Sankey's menu opens.
 const SankeyMenuSections = dynamic(

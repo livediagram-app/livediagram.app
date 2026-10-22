@@ -44,7 +44,7 @@ async function makeStore(over: Partial<SheetJson> = {}) {
   };
   const toast = vi.fn();
   const store = new SheetStore({
-    scope: { documentId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
     self: () => by,
     locale: 'en-GB',
     pushUndo: () => {},

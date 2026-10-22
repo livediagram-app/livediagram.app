@@ -16,7 +16,7 @@ import {
   type Element,
   type Finish,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { ApiError, apiJson } from './api';
 import { idsOf, resolveArrowEnds } from './arrow-ends';
 import { elementsIssue } from './element-values';
@@ -26,14 +26,14 @@ import type { Env } from './env';
 export async function submitChangeset(
   env: Env,
   token: string,
-  documentId: string,
+  projectId: string,
   tabId: string,
   body: ChangesetRequest,
 ): Promise<ChangesetResponse> {
   return apiJson<ChangesetResponse>(
     env,
     token,
-    `/documents/${encodeURIComponent(documentId)}/tabs/${encodeURIComponent(tabId)}/changesets`,
+    `/projects/${encodeURIComponent(projectId)}/tabs/${encodeURIComponent(tabId)}/changesets`,
     {
       method: 'POST',
       headers: { [CLIENT_HEADER]: 'mcp' },
@@ -57,14 +57,14 @@ export function mcpResultText(
   return `${plain}\n@x,y above are from the content's top-left: an element's x, y = @x ${plus(ox)}, @y ${plus(oy)}.`;
 }
 
-// One op of `update_document`'s ops mode, as the model sends it.
+// One op of `update_project`'s ops mode, as the model sends it.
 type McpOp = {
   op: 'add' | 'update' | 'remove';
   element?: Record<string, unknown>;
   elementId?: string;
 };
 
-// The element an op's `elementId` names: its id, or a ref as read_document prints it (a unique prefix,
+// The element an op's `elementId` names: its id, or a ref as read_project prints it (a unique prefix,
 // `id:"…"`), resolved as the api resolves it.
 function namedIn(current: Tab): (elementId: string) => Element | undefined {
   const byId = new Map<string, Element>(current.elements.map((e) => [e.id, e]));
@@ -136,7 +136,7 @@ export function mcpOpsToEditOperations(ops: readonly McpOp[], current: Tab): unk
   return out;
 }
 
-// The base of an ops changeset: the revision the model read (`read_document`'s `rev`, else the
+// The base of an ops changeset: the revision the model read (`read_project`'s `rev`, else the
 // tab as loaded now) and the fingerprint of every existing element its ops name, by id or ref, taken
 // from the tab as loaded now, so a person's change since is overwritten only on the fields the ops set.
 export function baseFor(ops: readonly McpOp[], current: Tab & { rev: number }, rev?: number) {
@@ -199,7 +199,7 @@ export function changesetErrorText(err: ApiError): string {
     }
     if (body.conflicts?.length) {
       const what = body.conflicts.map((c) => `${c.id} ${c.reason}`).join(', ');
-      return `changeset_conflict: changed since you read it: ${what}. Read the tab again (read_document) and redo the edit.`;
+      return `changeset_conflict: changed since you read it: ${what}. Read the tab again (read_project) and redo the edit.`;
     }
     return [body.error, body.message].filter(Boolean).join(': ') || `api ${err.status}`;
   } catch {

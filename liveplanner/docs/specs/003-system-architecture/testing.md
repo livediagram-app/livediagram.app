@@ -50,7 +50,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
 - **No magic globals.** `describe` / `it` / `expect` are imported from
   `vitest`. This keeps test files lint-clean and explicit (`globals: false`).
 - **Prefer pure-function tests.** The highest-value, lowest-cost units are the
-  pure helpers: the document data model, the wire-format serializers, and the
+  pure helpers: the project data model, the wire-format serializers, and the
   canvas geometry. Those are tested first.
 - **Speed budgets are CPU time, not wall-clock.** A test asserting that work
   is fast (a linear scan, a converter) measures it with
@@ -64,7 +64,7 @@ export default defineProject({ test: { environment: 'jsdom' } });
   inlines before hydration (appearance, reduce motion, the stale-HTML guard), so its test runs that
   very string with `runInlineScript(source, globals)` from
   `@liveplanner/vitest-config/inline-script`: a classic script in its own realm whose globals are
-  the stubs it is handed (`document`, `localStorage`, a clock, `URL`) and nothing of the test's,
+  the stubs it is handed (`project`, `localStorage`, a clock, `URL`) and nothing of the test's,
   never through `new Function`.
 - **A stubbed fetch reads what it was sent** through `@liveplanner/vitest-config/sent-request`:
   `sentJson(init)` and `sentText(init)` read a string body, `sentForm(init)` a form, and
@@ -130,7 +130,7 @@ workspaces never collide. Only first-party TypeScript source under `src/` and
 and `hooks/`, where most of its source lives. Fixtures beside the code
 (goldens, model weights) are never parsed as source. Test files and type-only `.d.ts` are
 excluded. `index.ts` is intentionally **not** excluded — in this repo a
-package's `index.ts` is its implementation (e.g. `@liveplanner/document`), not
+package's `index.ts` is its implementation (e.g. `@liveplanner/project`), not
 a barrel of re-exports.
 
 There is no repo-wide percentage gate: the bar for most code is "logic has
@@ -144,11 +144,11 @@ functions and lines** by per-glob thresholds in `apps/api/vitest.config.ts`:
 | `src/auth/**`                                                                        | Decides WHO a request is — Clerk verification, guest-id signatures, api tokens, the read/edit gates                         |
 | `src/api-token-row.ts`, `src/db/api-tokens.ts`, `src/routes/tokens.ts`               | Mint, resolve and revoke the credentials that act as an account                                                             |
 | `src/db/share.ts`, `src/db/shared.ts`, `src/db/ws-tickets.ts`                        | Share links, the "shared with you" record, and the one-time realtime room tickets                                           |
-| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/document-share-routes.ts` | The only unauthenticated read path into a document, and the owner-only routes that grant it                                 |
-| `src/db/document-removal.ts`                                                         | Decide which tabs and index rows a document delete drops with it, and so whether work another document still shows survives |
+| `src/routes/share.ts`, `src/routes/shared.ts`, `src/routes/project-share-routes.ts` | The only unauthenticated read path into a project, and the owner-only routes that grant it                                 |
+| `src/db/project-removal.ts`                                                         | Decide which tabs and index rows a project delete drops with it, and so whether work another project still shows survives |
 
 The rest of the worker fails visibly. These fail by serving the right response
-to the **wrong person**, or by deleting work another document still shows: an outcome no amount of production monitoring
+to the **wrong person**, or by deleting work another project still shows: an outcome no amount of production monitoring
 notices, because nothing errors. The thresholds are per-glob rather than
 per-directory-average, so a new module added under `src/auth/` is held to the
 bar on the commit that introduces it instead of being averaged away by its
@@ -250,7 +250,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
   named workspace. This section records the SHAPE of coverage, not counts or
   filenames: `pnpm test` reports the counts, which change with every feature.
   A workspace that gains its first test file joins this list in the same change.
-  - `packages/document`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps, Mermaid import/export (flowchart, state, ER), graph authoring, freehand strokes, rich text, tables, comments + mentions, element ops and deltas, sessions (timer, votes), tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
+  - `packages/project`: the data model end to end: element factories + defaults, geometry / anchor / snap math, arrow path + avoidance + endpoint-spread + auto-rebind and crossing swaps, arrow labels, layer mutations, auto-layout (clusters, styles, lanes, crossings), mind maps, Mermaid import/export (flowchart, state, ER), graph authoring, freehand strokes, rich text, tables, comments + mentions, element ops and deltas, sessions (timer, votes), tab kinds, names, themes, element shadows, the headless SVG renderer's fidelity and coverage, validation.
   - `apps/live`: the lib layer's helpers (api client + Offline Mode store,
     auto-align, canvas geometry + backgrounds, export/import,
     search, templates + theme catalogues, user preferences, telemetry policy,
@@ -264,10 +264,10 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
     `optical-guard.test.ts` (no untrimmed text in a centring circle or pill;
     [Optical alignment](../004-interface-design/optical-alignment.md)), and every
     UI workspace's `motion-budget.test.ts` ([Motion](../004-interface-design/motion.md)).
-  - `apps/api`: auth guards (Clerk, guest signatures, document access, tokens),
+  - `apps/api`: auth guards (Clerk, guest signatures, project access, tokens),
     every defensive D1 row mapper, the D1 modules against real SQLite
-    (cascades, migrations), the `DocumentRoom` Durable Object's rules, ledger
-    and multiplayer paths, every route family (documents, tabs, share, images,
+    (cascades, migrations), the `ProjectRoom` Durable Object's rules, ledger
+    and multiplayer paths, every route family (projects, tabs, share, images,
     thumbnails, folders, teams, trash, timeline, activity, tokens, OAuth, unfurl,
     events, AI incl. the photo reader), the Timeline's writers and its catalogue
     against its spec, the image reference index, email lifecycle, the OpenAPI
@@ -325,7 +325,7 @@ inputs (`turbo.json`), so a docs-only change never replays a cached pass of thos
 
 - **Hooks and components** in `apps/live` and `packages/ui` render in tests, and the
   environment is opted into **per file** rather than per workspace. A test
-  that needs a document opens with a docblock:
+  that needs a project opens with a docblock:
 
   ```ts
   // @vitest-environment jsdom

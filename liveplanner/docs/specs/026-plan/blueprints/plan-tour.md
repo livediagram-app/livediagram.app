@@ -137,13 +137,13 @@ open; `closeCard` calls `plan.closeItem()` when one is open. Nothing else in the
 
 ### Leftovers (`usePlanTourLeftovers`)
 
-`usePlanTourLeftovers`, composed in `useEditorState`, sweeps what the old tour left: once the document has hydrated,
-a leftover record for this document has its element (and sheet, through `releaseSheets`) removed with no history.
+`usePlanTourLeftovers`, composed in `useEditorState`, sweeps what the old tour left: once the project has hydrated,
+a leftover record for this project has its element (and sheet, through `releaseSheets`) removed with no history.
 When `releaseSheets` returns false (no Sheet has drawn to take it), the element and the record stay, `[plan-tour]
 content.failed` is logged once, and the sweep tries again after `LEFTOVER_SHEET_RETRY_MS` (2000, a cheap check; the
 sheet goes soon after the first Sheet draws). Once the items are ready, its items go too (`writeQuiet` deletes,
 `[plan-tour] content.swept`); the record is cleared only once both the element and the items are swept. A record for
-another document is kept. Nothing writes a record any more.
+another project is kept. Nothing writes a record any more.
 
 ## Interfaces and contracts
 
@@ -170,7 +170,7 @@ another document is kept. Nothing writes a record any more.
 ## Data and persistence
 
 - `planTourTracks` and `planTourSeen`: synced preferences, per person.
-- The tour writes no document data: no element, item, cell or history entry. The subject is held in component
+- The tour writes no project data: no element, item, cell or history entry. The subject is held in component
   state for the run only.
 - The leftover record in `localStorage` is only read and cleared (the old tour's).
 
@@ -187,7 +187,7 @@ another document is kept. Nothing writes a record any more.
 | A Sheet's toolbar or cog not shown to this person | Its step finds no target and is skipped             |
 | Diagram tour on screen                            | The Plan tour waits for `activeTour()` to clear     |
 | Locked tab                                        | No offer                                            |
-| A leftover record from the old tour               | Swept on the next visit to that document, as before |
+| A leftover record from the old tour               | Swept on the next visit to that project, as before |
 
 ## Security and trust
 
@@ -240,7 +240,7 @@ surface is fixed-position over the canvas.
 | Relaunch offers in Plan only                                            | `PlanTourHost.test.tsx`                                  |
 | One kind skips the choice; both ask; the track runs on the subject      | `PlanTourHost.test.tsx`, `TourStage.test.tsx`            |
 | A board with no cards leaves out the card steps                         | `PlanTourHost.test.tsx`, `plan-tour-steps.test.ts`       |
-| Runs to the end without changing the document or sending content events | `PlanTourHost.test.tsx`                                  |
+| Runs to the end without changing the project or sending content events | `PlanTourHost.test.tsx`                                  |
 | Ends as skipped on another tab or the subject deleted                   | `PlanTourHost.test.tsx`                                  |
 | Steps, selectors on the subject, nothing prepared but the card panel    | `plan-tour-steps.test.ts`                                |
 | Welcome bodies per offer, Title Case step titles                        | `plan-tour-steps.test.ts`                                |

@@ -1,13 +1,13 @@
 'use client';
 
 // A Links card (docs/specs/026-plan/plan-tabs.md "Cards"): a heading over labelled links, to a site (opened in a new
-// browser tab, only http, https or mailto: safeLinkUrl) or to a tab of this document (opened here). Each link is a row:
+// browser tab, only http, https or mailto: safeLinkUrl) or to a tab of this project (opened here). Each link is a row:
 // its kind's icon (a globe, an envelope, or the tab's own icon), its label and, muted under it, the host or "Tab in this
-// document". An Editor adds one with Add Link, whose form opens straight under the links (AddLinkForm), and removes
+// project". An Editor adds one with Add Link, whose form opens straight under the links (AddLinkForm), and removes
 // one by its ×, shown on hover (always on a touch screen); each change is one step. Everything under the heading
 // scrolls when the slot is short, top-aligned.
 import { useState } from 'react';
-import { DASHBOARD_LINKS_MAX, type DashboardLink } from '@liveplanner/document';
+import { DASHBOARD_LINKS_MAX, type DashboardLink } from '@liveplanner/project';
 import { linkLabelOf } from '@liveplanner/plan-art';
 import { CompactEmptyState, lucideGlyph } from '@liveplanner/ui';
 import {
@@ -143,7 +143,7 @@ export function DashboardLinksCard({
             icon={<LinkGlyph />}
             title="No links yet"
             description={
-              canEdit ? 'Add Link puts a site or a tab of this document here.' : undefined
+              canEdit ? 'Add Link puts a site or a tab of this project here.' : undefined
             }
           />
         ) : null}

@@ -2,7 +2,7 @@
 
 // A tag's own menu (docs/specs/013-workspace/tags.md "Making, renaming, recolouring and deleting"): its ⋯ (or a
 // right-click on the section heading or sidebar row it sits on) opens Rename, Change Colour and Delete. Change Colour
-// opens the colour picker from the same anchor; Delete asks first, saying how many documents it comes off.
+// opens the colour picker from the same anchor; Delete asks first, saying how many projects it comes off.
 
 import { useState } from 'react';
 import type { Tag } from '@liveplanner/api-schema';
@@ -16,15 +16,15 @@ import {
 } from '@/components/primitives/PortalMenu';
 import { ConfirmPopover } from '@/components/primitives/ConfirmPopover';
 import { useRowMenu } from '@/components/primitives/useRowMenu';
-import { useDocumentTags } from './DocumentTagsProvider';
+import { useProjectTags } from './ProjectTagsProvider';
 import { LazyTagColourPopover, LazyTagDialog } from './tag-lazy';
 
-/** What Delete asks, naming the documents it comes off (spec "Making, renaming, recolouring and deleting"). */
-export function deleteTagMessage(name: string, documents: number): string {
+/** What Delete asks, naming the projects it comes off (spec "Making, renaming, recolouring and deleting"). */
+export function deleteTagMessage(name: string, projects: number): string {
   const off =
-    documents === 0
-      ? "It isn't on any documents."
-      : `It comes off its ${documents === 1 ? 'one document' : `${documents} documents`}. The documents stay.`;
+    projects === 0
+      ? "It isn't on any projects."
+      : `It comes off its ${projects === 1 ? 'one project' : `${projects} projects`}. The projects stay.`;
   return `Delete the tag ${name}? ${off}`;
 }
 
@@ -37,7 +37,7 @@ export function useTagActionsMenu(
     reveal?: boolean;
   } = {},
 ) {
-  const { updateTag, deleteTag, documentsFor } = useDocumentTags();
+  const { updateTag, deleteTag, projectsFor } = useProjectTags();
   const menu = useRowMenu();
   const [open, setOpen] = useState<'rename' | 'colour' | 'delete' | null>(null);
   const anchor = menu.triggerRef.current;
@@ -92,7 +92,7 @@ export function useTagActionsMenu(
       {open === 'delete' && anchor ? (
         <ConfirmPopover
           anchor={anchor}
-          message={deleteTagMessage(tag.name, documentsFor(tag.id).size)}
+          message={deleteTagMessage(tag.name, projectsFor(tag.id).size)}
           confirmLabel="Delete Tag"
           onConfirm={() => {
             setOpen(null);

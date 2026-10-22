@@ -5,11 +5,11 @@ import { openSearchWithPrefetch } from '@/lib/open-search';
 import { pastePointer } from '@/lib/canvas-pointer';
 import { dropThenDisarm } from '@/lib/palette-drop';
 import { describeOne } from '@/lib/element-names';
-import { canvasSurface, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/document';
+import { canvasSurface, DEFAULT_BACKGROUND_COLOR } from '@liveplanner/project';
 import { createStockColourProjector } from '@/lib/stock-colour-projector';
 import { drawnArrowAsShown } from '@/lib/drawn-arrow-preview';
 import { useMemo, useState } from 'react';
-import { isBoxed, isVoteHost, threadAt } from '@liveplanner/document';
+import { isBoxed, isVoteHost, threadAt } from '@liveplanner/project';
 import { commentPersisters } from '@/lib/comment-persistence';
 import { elementMenuAnchor } from '@/lib/context-menu-anchor';
 import { useElementMenuOpener } from '@/hooks/canvas/element-menu-opener';
@@ -25,7 +25,7 @@ import { resolveViewBackdrop } from '@/lib/view-backdrop';
 import { useAppearance } from '@/hooks/ui/useAppearance';
 import { useIsLandscapePhone } from '@/hooks/ui/useIsMobileViewport';
 import { Canvas } from '@/components/canvas/Canvas';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { useSessionTools } from '@/components/chrome/useSessionTools';
 import { useStableCollab } from '@/components/canvas/element-layer-props';
 import { canEditSankey } from '@/lib/sankey-edit';
@@ -137,18 +137,18 @@ export function EditorCanvasHost() {
     commitLabel,
     createFolder,
     deleteCurvePoint,
-    deleteDocument,
-    refreshOwnDocuments,
+    deleteProject,
+    refreshOwnProjects,
     deleteFolder,
     deleteMultiSelected,
     deleteSelected,
-    documentId,
-    documentList,
-    documentListLoading,
-    documentName,
-    dismissSharedDocument,
+    projectId,
+    projectList,
+    projectListLoading,
+    projectName,
+    dismissSharedProject,
     dropPaletteItem,
-    duplicateDocument,
+    duplicateProject,
     duplicateMultiSelected,
     contextMenu,
     duplicateSelected,
@@ -168,7 +168,7 @@ export function EditorCanvasHost() {
     hydrated,
     identityOnlyScreenOpen,
     isOwner,
-    canShareDocument,
+    canShareProject,
     setSearchOpen,
     setShareDialogOpen,
     setSettingsOpen,
@@ -180,17 +180,17 @@ export function EditorCanvasHost() {
     livePresence,
     lockedByOther,
     mapPosition,
-    moveDocumentToFolder,
-    moveDocumentTo,
+    moveProjectToFolder,
+    moveProjectTo,
     narrowMultiSelection,
-    newDocument,
+    newProject,
     openActionPopover,
     openAssignActionDialog,
     completeAction,
     reopenAction,
     linkedActions,
     openComments,
-    openDocument,
+    openProject,
     openNote,
     pauseTimer,
     pendingDraw,
@@ -228,8 +228,8 @@ export function EditorCanvasHost() {
     setCanvasThemeTab,
     setCommentsPanelPosition,
     setContextMenu,
-    setDocumentList,
-    setDocumentName,
+    setProjectList,
+    setProjectName,
     setEditingId,
     setExportOpen,
     setExportScope,
@@ -252,14 +252,14 @@ export function EditorCanvasHost() {
     setTextAlignSelected,
     setViewportOffset,
     setViewportZoom,
-    sharedDocuments,
+    sharedProjects,
     shiftDupGhostIds,
     snapGuideStore,
     spawnConnectSelected,
     startTimer,
     startVote,
     tabSummaries,
-    teamDocuments,
+    teamProjects,
     teamFolders,
     teams,
     refreshTeamLibraries,
@@ -291,7 +291,7 @@ export function EditorCanvasHost() {
   // the editor re-rendered. It recomputes only when its real input changes.
   const explorerTeams = useMemo(() => teams.map((t) => ({ id: t.id, name: t.name })), [teams]);
   // Team-library folder mutations for the Explorer panel's team tree
-  // (docs/specs/013-workspace/team-shared-documents.md) - see useTeamFolderActions.
+  // (docs/specs/013-workspace/team-shared-projects.md) - see useTeamFolderActions.
   const viewerId = selfParticipant?.id ?? null;
   const onTeamFolders = useTeamFolderActions({
     clerkUserId,
@@ -327,7 +327,7 @@ export function EditorCanvasHost() {
   // How a comment change made on a Comment panel is kept: shared with the anchored popover.
   const commentPersist = commentPersisters({
     readOnly: isReadOnly,
-    documentId,
+    projectId,
     tabId: activeTab.id,
     selfId: selfParticipant.id,
     shareCode: sessionShareCode,
@@ -354,7 +354,7 @@ export function EditorCanvasHost() {
       drawn: backdrop.backgroundColor,
     },
   );
-  // Lazy per-tab load gate (docs/specs/006-document/per-tab-storage.md): show a blocking loader / error over
+  // Lazy per-tab load gate (docs/specs/006-project/per-tab-storage.md): show a blocking loader / error over
   // the canvas while the active tab's content is still being fetched, so
   // the user never edits a blank placeholder whose autosave would
   // overwrite the real server row. Derived once in useEditorState (it also
@@ -402,7 +402,7 @@ export function EditorCanvasHost() {
   // entirely for a view-role visitor. Held stable while nothing a face shows changes, so a render here
   // does not re-render every element (docs/specs/008-canvas/canvas-performance.md).
   const collab = useStableCollab({
-    // The document-write key, not the owner id — see CollabApi.selfKey.
+    // The project-write key, not the owner id — see CollabApi.selfKey.
     selfKey: participantKey(selfParticipant),
     // Taking part is a Participant's too (docs/specs/013-workspace/share-roles.md); running stays an Editor's.
     respond: can.takePart ? collabElements.respond : undefined,
@@ -430,7 +430,7 @@ export function EditorCanvasHost() {
           takePart={can.takePart}
           canMove={can.move}
           canResize={can.resize}
-          documentName={documentName}
+          projectName={projectName}
           tabBackgroundPattern={backdrop.backgroundPattern ?? 'grid'}
           tabBackgroundColor={backdrop.backgroundColor}
           tabBackgroundOpacity={backdrop.backgroundOpacity ?? 1}
@@ -570,14 +570,14 @@ export function EditorCanvasHost() {
           onCancelDraw={cancelDrawShape}
           onUndo={undo}
           onRedo={redo}
-          documentList={documentList}
+          projectList={projectList}
           folders={folders}
-          sharedDocuments={sharedDocuments}
+          sharedProjects={sharedProjects}
           teams={explorerTeams}
           teamFolders={teamFolders}
-          teamDocuments={teamDocuments}
-          onDismissShared={(id) => void dismissSharedDocument(id)}
-          documentListLoading={documentListLoading}
+          teamProjects={teamProjects}
+          onDismissShared={(id) => void dismissSharedProject(id)}
+          projectListLoading={projectListLoading}
           mapPosition={mapPosition}
           onMoveMap={(x, y) =>
             // Equality-guarded so a drag tick that resolves to the same spot
@@ -670,14 +670,14 @@ export function EditorCanvasHost() {
               : (id, done, actionId) =>
                   done ? completeAction(id, actionId) : reopenAction(id, actionId)
           }
-          currentDocumentId={documentId}
-          onOpenDocument={openDocument}
-          onNewDocument={newDocument}
+          currentProjectId={projectId}
+          onOpenProject={openProject}
+          onNewProject={newProject}
           explorerMenuActions={{
-            // The header's Share gate: the owner, or a joined member of the document's team
-            // (docs/specs/013-workspace/folders.md, docs/specs/013-workspace/team-shared-documents.md).
+            // The header's Share gate: the owner, or a joined member of the project's team
+            // (docs/specs/013-workspace/folders.md, docs/specs/013-workspace/team-shared-projects.md).
             onShare:
-              canShareDocument && hydrated
+              canShareProject && hydrated
                 ? () => {
                     setShareDialogOpen(true);
                     track('UI', 'Opened', 'Share');
@@ -694,24 +694,24 @@ export function EditorCanvasHost() {
             },
           }}
           onRenameCurrent={(next) => {
-            const prev = documentName.trim();
+            const prev = projectName.trim();
             const nextTrim = next.trim();
-            setDocumentName(next);
-            if (nextTrim && documentId)
-              setDocumentList((prev) =>
-                prev.map((d) => (d.id === documentId ? { ...d, name: nextTrim } : d)),
+            setProjectName(next);
+            if (nextTrim && projectId)
+              setProjectList((prev) =>
+                prev.map((d) => (d.id === projectId ? { ...d, name: nextTrim } : d)),
               );
-            if (nextTrim && nextTrim !== prev) track('Document', 'Renamed');
+            if (nextTrim && nextTrim !== prev) track('Project', 'Renamed');
           }}
-          onDeleteDocument={(id) => void deleteDocument(id)}
-          onLibraryChanged={refreshOwnDocuments}
-          onDuplicateDocument={(id) => void duplicateDocument(id)}
+          onDeleteProject={(id) => void deleteProject(id)}
+          onLibraryChanged={refreshOwnProjects}
+          onDuplicateProject={(id) => void duplicateProject(id)}
           onCreateFolder={createFolder}
           onRenameFolder={renameFolder}
           onDeleteFolder={(id) => void deleteFolder(id)}
           onTeamFolders={onTeamFolders}
-          onMoveDocumentToFolder={moveDocumentToFolder}
-          onMoveDocumentTo={moveDocumentTo}
+          onMoveProjectToFolder={moveProjectToFolder}
+          onMoveProjectTo={moveProjectTo}
           onDeselect={() => {
             // Clicking empty canvas also cancels an armed arrow-connect, and
             // wraps up the Format tool — restoring the pre-Format tool — so a
@@ -843,7 +843,7 @@ export function EditorCanvasHost() {
           // participant row, so there's no 403, and they should set a name before others see them in presence.
           showIdentityPrompt={identityOnlyScreenOpen}
           hydrated={hydrated}
-          // Visitor on someone else's document + signed in → lock the
+          // Visitor on someone else's project + signed in → lock the
           // identity input to their Clerk name. Owner branch never
           // shows the identity prompt so `lockedName` is moot there;
           // pure guests pass null and keep the editable name field.

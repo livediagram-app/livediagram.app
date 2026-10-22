@@ -53,7 +53,7 @@ async function namedText(
 export const templateLs = defineVerb({
   id: 'template.ls',
   summary: 'The template library',
-  description: 'Lists the templates a document or tab can start from: kind, title and category.',
+  description: 'Lists the templates a project or tab can start from: kind, title and category.',
   behaviour: 'read',
   input: z.object({}),
   output: z.object({

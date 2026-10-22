@@ -58,7 +58,7 @@ The planner is real:
 - **Hybrid Clerk auth** ([Auth + guest access](../014-identity/auth-and-guest-access.md)): guests get everything without
   signing in; a signed-in person's projects travel under their account, adding cross-device sync. Guest projects
   migrate on first sign-in. Without Clerk keys the api and the live app degrade to pure guest mode.
-- **Offline Mode** ([Offline Mode](../006-document/offline-mode.md)): a project saved only in this browser
+- **Offline Mode** ([Offline Mode](../006-project/offline-mode.md)): a project saved only in this browser
   (IndexedDB), convertible either way.
 - **Export**: a tab as PNG, SVG, PDF, Markdown, CSV (a Board or Sheet tab) or a portable JSON file, and a JSON export
   imported back into a tab ([Export fidelity](../020-import-export/export-fidelity.md)).
@@ -88,7 +88,7 @@ only small per-browser state, under `liveplanner:*` keys:
 ## Next
 
 - **Finish the fork**: trim the element kinds, palette, templates and tours to what Plan uses and drop the modules
-  nothing reaches (including the diagram lint); rename "document" to **project** in code, tables, routes, MCP tools and
+  nothing reaches (including the diagram lint); rename "project" to **project** in code, tables, routes, MCP tools and
   CLI verbs ([Domain language](../003-system-architecture/domain-language.md)); finish the help centre around Plan.
 - **Run and verify**: walk every Plan flow on the local stack, and measure the project page's first-load JS against
   livediagram's.
@@ -104,7 +104,7 @@ These are the meaningful gaps between launch and "full product":
 - **Access levels, the rest** ([Share roles](../013-workspace/share-roles.md#later)): token levels, ownership as
   separate powers, server-derived collaboration keys and a look-only Viewer.
 - **Finer-grained team permissions**: every member of a team can edit every project in its shared library
-  ([Team shared documents](../013-workspace/team-shared-documents.md)).
+  ([Team shared projects](../013-workspace/team-shared-projects.md)).
 - **Per-person grants beyond teams and share links**: a project is private, shared via a link with a role, or part of a
   team's library; there are no per-project per-person grants outside those.
 - **Same-field concurrent edits are last-writer-wins.** Different cards, cells and elements merge

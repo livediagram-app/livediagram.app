@@ -18,7 +18,7 @@ import {
   type CommentMention,
   createElementGridTracker,
   type ElementIndex,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { PointerEvent as ReactPointerEvent } from 'react';
 import { type QuickConnectDirection } from '@/lib/canvas';
 import { ArrowDefs } from '@/components/canvas/arrow-defs';
@@ -41,7 +41,7 @@ import {
   SheetChartsContext,
   type SheetChartsValue,
 } from '@/components/sheets/sheet-charts-context';
-import { sheetDrawnChartIds } from '@liveplanner/document';
+import { sheetDrawnChartIds } from '@liveplanner/project';
 
 // What a drawn arrow resolves its ends against on a board with no arrows yet.
 const EMPTY_ELEMENT_INDEX: ElementIndex = new Map();
@@ -278,14 +278,14 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
     () => (hasArrows ? buildElementIndex(elements) : null),
     [hasArrows, elements],
   );
-  // Paint order (docs/specs/006-document/layers.md + docs/specs/008-canvas/canvas-and-palette.md): layer bands bottom -> top, keeping
+  // Paint order (docs/specs/006-project/layers.md + docs/specs/008-canvas/canvas-and-palette.md): layer bands bottom -> top, keeping
   // array order within each band with frames hoisted to the front of
   // THEIR band (a frame is a section backdrop that must sit behind its
   // contents so they stay clickable). Hidden layers' elements drop out
   // here entirely — no DOM, so no hit-testing either. Same banding the
   // exporters use. Each element carries its band's opacity so per-layer
   // opacity multiplies over the element's own. While a Layers-panel row
-  // is hovered (`layerPreviewId`, docs/specs/006-document/layers.md hover-solo) ONLY that band
+  // is hovered (`layerPreviewId`, docs/specs/006-project/layers.md hover-solo) ONLY that band
   // renders — hidden or not — at full band opacity so the preview is
   // legible. Memoised for the same reason as the index (stable identity
   // when inputs are).
@@ -409,7 +409,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
   );
   // A drag in progress, ours or a collaborator's (docs/specs/008-canvas/drag-preview.md): each element
   // it changes, and each arrow depending on them, reads its own preview entry (PreviewedElement), so a
-  // preview frame renders those and not this layer; the maps above stay as built from the document.
+  // preview frame renders those and not this layer; the maps above stay as built from the project.
   // The layer renders for a preview only when it adds or removes elements, which changes the list.
   const { store: previewStore, structure: previewStructure } = useLayerDragPreview({
     tabId: props.activeTabId ?? '',
@@ -460,7 +460,7 @@ export function CanvasElementsLayer(props: CanvasElementsLayerProps) {
       <CardVoteProvider value={cardVote}>
         <SelectionGripsContext.Provider value={gripHosts}>
           {/* Shared arrowhead defs. Multiple per-arrow <svg>s below
-            all reference url(#arrowhead) — defs are document-scoped
+            all reference url(#arrowhead) — defs are project-scoped
             in SVG so a single defs node lets every arrow render
             with the same marker. */}
           {hasArrows ? (

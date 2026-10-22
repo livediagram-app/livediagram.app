@@ -50,13 +50,13 @@ function ctxWith(input = '', extra: Record<string, unknown> = {}) {
   const api = fakeApi({
     ...library,
     ...tabsOfA,
-    [`/documents/${DOC_A}/plan`]: PLAN,
-    [`/documents/${DOC_A}/items`]: { items: [], rev: 0 },
-    [`/documents/${DOC_A}/item-types`]: (r: Request) => keep(r, { itemTypes: null }),
-    [`/documents/${DOC_A}/tabs/${TAB}`]: {
+    [`/projects/${DOC_A}/plan`]: PLAN,
+    [`/projects/${DOC_A}/items`]: { items: [], rev: 0 },
+    [`/projects/${DOC_A}/item-types`]: (r: Request) => keep(r, { itemTypes: null }),
+    [`/projects/${DOC_A}/tabs/${TAB}`]: {
       tab: { id: TAB, elements: [BOARD_EL], rev: 3 },
     },
-    [`/documents/${DOC_A}/tabs/${TAB}/changesets`]: (r: Request) =>
+    [`/projects/${DOC_A}/tabs/${TAB}/changesets`]: (r: Request) =>
       keep(r, { changeset: { id: 'cs', rev: 4 } }),
     ...extra,
   });
@@ -68,7 +68,7 @@ describe('board add', () => {
     const { ctx, sent } = ctxWith();
     const out = await boardAdd.run!(
       ctx,
-      boardAdd.input.parse({ doc: DOC_A, columns: 'Ideas, Doing ,Shipped', title: 'Roadmap' }),
+      boardAdd.input.parse({ project: DOC_A, columns: 'Ideas, Doing ,Shipped', title: 'Roadmap' }),
     );
     expect(boardAdd.text!(out)).toEqual(['+ board "Roadmap": Ideas · Doing · Shipped']);
     expect(boardAdd.quiet!(out)).toEqual([out.elementId]);
@@ -80,7 +80,7 @@ describe('board add', () => {
   it('refuses an unknown card type', async () => {
     const { ctx } = ctxWith();
     await expect(
-      boardAdd.run!(ctx, boardAdd.input.parse({ doc: DOC_A, types: 'Epic' })),
+      boardAdd.run!(ctx, boardAdd.input.parse({ project: DOC_A, types: 'Epic' })),
     ).rejects.toBeInstanceOf(VerbRefusal);
   });
 });
@@ -88,7 +88,7 @@ describe('board add', () => {
 describe('type ls and apply', () => {
   it('lists the card types', async () => {
     const { ctx } = ctxWith();
-    const out = await typeLs.run!(ctx, { doc: DOC_A });
+    const out = await typeLs.run!(ctx, { project: DOC_A });
     expect(typeLs.quiet!(out)).toEqual(ITEM_TYPES.map((t) => t.id));
     expect(typeLs.text!(out)[1]).toMatch(/^task\s+"Task"/);
   });
@@ -97,7 +97,7 @@ describe('type ls and apply', () => {
     const { ctx, sent } = ctxWith(
       '[{"op":"add","name":"Bug","custom":[{"name":"Severity","kind":"text"}]}]',
     );
-    const out = await typeApply.run!(ctx, { doc: DOC_A, file: 'types.json' });
+    const out = await typeApply.run!(ctx, { project: DOC_A, file: 'types.json' });
     expect(typeApply.text!(out)).toEqual(['+ Bug (bug): Severity (f-severity)']);
     expect(typeApply.quiet!(out)).toEqual(out.applied);
     expect(sent).toHaveLength(1);
@@ -105,11 +105,11 @@ describe('type ls and apply', () => {
 
   it('refuses a file that is not a list of changes, and a change it cannot make', async () => {
     const bad = ctxWith('[{"op":"rename"}]').ctx;
-    await expect(typeApply.run!(bad, { doc: DOC_A, file: '-' })).rejects.toMatchObject({
+    await expect(typeApply.run!(bad, { project: DOC_A, file: '-' })).rejects.toMatchObject({
       code: 'usage',
     });
     const refused = ctxWith('[{"op":"delete","type":"Epic"}]').ctx;
-    await expect(typeApply.run!(refused, { doc: DOC_A, file: '-' })).rejects.toMatchObject({
+    await expect(typeApply.run!(refused, { project: DOC_A, file: '-' })).rejects.toMatchObject({
       code: 'type_unknown',
     });
   });
@@ -120,14 +120,14 @@ describe('board set', () => {
     const { ctx, sent } = ctxWith();
     const out = await boardSet.run!(
       ctx,
-      boardSet.input.parse({ doc: DOC_A, board: 'sprint', columns: 'To Do, Done', types: 'Task' }),
+      boardSet.input.parse({ project: DOC_A, board: 'sprint', columns: 'To Do, Done', types: 'Task' }),
     );
     expect(boardSet.text!(out)).toEqual(['~ board "Sprint": To Do · Done (takes Task)']);
     expect(boardSet.quiet!(out)).toEqual(['b1']);
     expect(sent[0]).toMatchObject({ operations: [{ op: 'set', target: 'id:"b1"' }] });
     const every = await boardSet.run!(
       ctx,
-      boardSet.input.parse({ doc: DOC_A, board: 'b1', types: 'all', title: 'S2' }),
+      boardSet.input.parse({ project: DOC_A, board: 'b1', types: 'all', title: 'S2' }),
     );
     expect(boardSet.text!(every)).toEqual(['~ board "S2": To Do (takes every type)']);
     expect(boardSet.text!({ ...every, takes: [] })).toEqual([
@@ -138,13 +138,13 @@ describe('board set', () => {
   it('refuses a board it cannot find', async () => {
     const { ctx } = ctxWith();
     await expect(
-      boardSet.run!(ctx, boardSet.input.parse({ doc: DOC_A, board: 'Roadmap' })),
+      boardSet.run!(ctx, boardSet.input.parse({ project: DOC_A, board: 'Roadmap' })),
     ).rejects.toMatchObject({
       code: 'board_unknown',
       status: 404,
     });
     await expect(
-      boardSet.run!(ctx, boardSet.input.parse({ doc: DOC_A, board: 'Sprint', columns: 'A,a' })),
+      boardSet.run!(ctx, boardSet.input.parse({ project: DOC_A, board: 'Sprint', columns: 'A,a' })),
     ).rejects.toMatchObject({ code: 'board_invalid' });
   });
 });
@@ -154,7 +154,7 @@ describe('verb edges', () => {
     const { ctx } = ctxWith();
     const out = await boardAdd.run!(
       ctx,
-      boardAdd.input.parse({ doc: DOC_A, tab: TAB, preset: 'todo' }),
+      boardAdd.input.parse({ project: DOC_A, tab: TAB, preset: 'todo' }),
     );
     expect(out.tabId).toBe(TAB);
   });
@@ -167,12 +167,12 @@ describe('verb edges', () => {
       custom: [{ id: 'f-sev', label: 'Severity', kind: 'text' }],
     };
     const { ctx } = ctxWith('', {
-      [`/documents/${DOC_A}/plan`]: { ...PLAN, types: [...ITEM_TYPES, custom] },
+      [`/projects/${DOC_A}/plan`]: { ...PLAN, types: [...ITEM_TYPES, custom] },
     });
-    const ls = await typeLs.run!(ctx, { doc: DOC_A });
+    const ls = await typeLs.run!(ctx, { project: DOC_A });
     expect(typeLs.text!(ls).at(-1)).toContain('Severity:text (f-sev)');
     const notJson = ctxWith('not json').ctx;
-    await expect(typeApply.run!(notJson, { doc: DOC_A, file: '-' })).rejects.toMatchObject({
+    await expect(typeApply.run!(notJson, { project: DOC_A, file: '-' })).rejects.toMatchObject({
       code: 'usage',
     });
     expect(typeApply.text!({ applied: ['- Bug (bug)'], trashed: ['#3'] })).toEqual([

@@ -78,7 +78,7 @@ export const ACTIONS_MOVED_TO_TEAM = chart(
   'Action',
   'Moved',
   'Actions Moved to a Team',
-  'An action’s document moved into a team so the assignee can reach it.',
+  'An action’s project moved into a team so the assignee can reach it.',
 );
 
 export const ACTIONS_REOPENED = chart(
@@ -182,7 +182,7 @@ export const ANIMATED_BACKGROUNDS = chart(
   { types: ['PageBackgroundAnimated', 'PageBackgroundAnimatedSpeed'] },
 );
 
-// Layers (docs/specs/006-document/layers.md): made, used, and looked at.
+// Layers (docs/specs/006-project/layers.md): made, used, and looked at.
 export const LAYERS_CREATED: Metric = {
   category: 'Layer',
   action: 'Added',
@@ -244,7 +244,7 @@ export const LAYERS_FEATURE: MetricStack = {
 };
 
 // ---- Editing tab -------------------------------------------------------------
-// Tools that organise the work rather than draw it. Tab folders (docs/specs/006-document/tab-folders.md) are
+// Tools that organise the work rather than draw it. Tab folders (docs/specs/006-project/tab-folders.md) are
 // typed rather than bare because the bare Tab/Folder events belong to
 // different subjects: see the type note in docs/specs/017-telemetry/telemetry.md's Folder entry.
 
@@ -305,7 +305,7 @@ export const ACTIONS_BOARDS_MADE: Metric = {
   type: 'Board',
   title: 'Actions Boards Made',
   blurb:
-    'Documents that got an Actions board: a board tab where every action in the document has a card, kept in step with the canvas.',
+    'Projects that got an Actions board: a board tab where every action in the project has a card, kept in step with the canvas.',
 };
 
 export const FOLDERS_CREATED: Metric = {
@@ -313,7 +313,7 @@ export const FOLDERS_CREATED: Metric = {
   action: 'Created',
   typeIn: (type) => type !== 'Tab',
   title: 'Folders Created',
-  blurb: 'Folders of documents, in your own Explorer or a team library.',
+  blurb: 'Folders of projects, in your own Explorer or a team library.',
 };
 
 export const FOLDERS_RE_PARENTED: Metric = {
@@ -329,7 +329,7 @@ export const TAB_FOLDERS_CREATED: Metric = {
   action: 'Created',
   type: 'Tab',
   title: 'Tab Folders Created',
-  blurb: 'A collapsible folder of tab pills created inside one document.',
+  blurb: 'A collapsible folder of tab pills created inside one project.',
 };
 
 export const TABS_FILED: Metric = {
@@ -341,14 +341,14 @@ export const TABS_FILED: Metric = {
     'A tab filed into a tab folder, by the ellipsis menu or by a drag (both report identically).',
 };
 
-export const DOCUMENTS_FILED: Metric = {
-  category: 'Document',
+export const PROJECTS_FILED: Metric = {
+  category: 'Project',
   action: 'Moved',
-  // The Offline Mode conversions are Document·Moved too, charted in their own
+  // The Offline Mode conversions are Project·Moved too, charted in their own
   // stack (Taken Offline, Saved to Cloud).
   typeIn: (type) => type !== 'TakenOffline' && type !== 'SavedToCloud',
-  title: 'Documents Filed',
-  blurb: 'A document moved into a folder, or back to the top level.',
+  title: 'Projects Filed',
+  blurb: 'A project moved into a folder, or back to the top level.',
 };
 
 export const NOTES: MetricStack = {
@@ -402,12 +402,12 @@ export const EXPLORER_FILTERS_PICKED = chart(
   { rising: 'good' },
 );
 
-// Tags (docs/specs/013-workspace/tags.md "Telemetry"): coloured labels people put on their documents. Never a name.
+// Tags (docs/specs/013-workspace/tags.md "Telemetry"): coloured labels people put on their projects. Never a name.
 export const TAGS_CREATED = chart(
   'Explorer',
   'Created',
   'Tags Made',
-  'A tag made, from the tag picker on a document or New Tag on the Tags page.',
+  'A tag made, from the tag picker on a project or New Tag on the Tags page.',
   { types: ['Tag'], rising: 'good' },
 );
 
@@ -415,7 +415,7 @@ export const TAGS_APPLIED = chart(
   'Explorer',
   'Added',
   'Tags Put On or Taken Off',
-  'A tag ticked on or off a document in the tag picker.',
+  'A tag ticked on or off a project in the tag picker.',
   { actionIn: ['Added', 'Removed'], types: ['Tag'], rising: 'good' },
 );
 
@@ -423,7 +423,7 @@ export const TAGS_EDITED = chart(
   'Explorer',
   'Renamed',
   'Tags Renamed, Recoloured or Deleted',
-  'A tag renamed or recoloured, or deleted (which takes it off every document).',
+  'A tag renamed or recoloured, or deleted (which takes it off every project).',
   { actionIn: ['Renamed', 'Changed', 'Deleted'], types: ['Tag', 'TagColour'], rising: 'neutral' },
 );
 
@@ -432,7 +432,7 @@ export const DEFAULT_FOLDERS_SET = chart(
   'Folder',
   'Changed',
   'Default Folders Set',
-  'A folder chosen as where new documents of one kind land: from a folder menu, the New Document wizard or Settings.',
+  'A folder chosen as where new projects of one kind land: from a folder menu, the New Project wizard or Settings.',
   { rising: 'good' },
 );
 
@@ -440,7 +440,7 @@ export const DEFAULT_FOLDERS_CLEARED = chart(
   'Folder',
   'Cleared',
   'Default Folders Cleared',
-  'A default folder cleared, so new documents of that kind land in My Documents again.',
+  'A default folder cleared, so new projects of that kind land in My Projects again.',
   { rising: 'neutral' },
 );
 
@@ -448,13 +448,13 @@ export const ORGANISATION: MetricStack = {
   stack: true,
   title: 'Organisation',
   blurb:
-    'Folders made and nested, tab folders, tabs and documents filed, tags, default folders, the Explorer sidebar and its filters.',
+    'Folders made and nested, tab folders, tabs and projects filed, tags, default folders, the Explorer sidebar and its filters.',
   members: [
     FOLDERS_CREATED,
     FOLDERS_RE_PARENTED,
     TAB_FOLDERS_CREATED,
     TABS_FILED,
-    DOCUMENTS_FILED,
+    PROJECTS_FILED,
     FOLDERS_DELETED,
     FOLDERS_RENAMED,
     TABS_UNFILED,
@@ -671,7 +671,7 @@ export const POWER_USER_OFFERED = opened(
 // on the Visitors tab.
 export const NEW_VERSION_OFFERED = opened(
   'New Version Offered',
-  'An open editor heard the server serves a newer document format, and offered a reload.',
+  'An open editor heard the server serves a newer project format, and offered a reload.',
   (t) => t === 'NewVersionPrompt',
 );
 
@@ -715,11 +715,11 @@ export const ACTION_SIGN_IN_NUDGE = opened(
   (t) => t === 'ActionSignInNudge',
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving projects in This Browser
 // after signing in"); charted with Offline Mode on the Dashboard.
 export const LOCAL_MOVE_OFFERED = opened(
   'Move Prompt Shown',
-  'Someone signed in with documents kept only in this browser and was offered to move them to the account.',
+  'Someone signed in with projects kept only in this browser and was offered to move them to the account.',
   (t) => t === 'LocalMovePrompt',
 );
 
@@ -755,7 +755,7 @@ export const TEMPLATES_USED = chart(
   'Template',
   'Used',
   'Templates Used',
-  'A template picked to start a document or seed a tab.',
+  'A template picked to start a project or seed a tab.',
 );
 
 export const THEMES_CHOSEN = chart(

@@ -13,7 +13,7 @@ import {
   type Anchor,
   type Element,
   type ShapeKind,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 // docs/specs/008-canvas/blueprints/DEFAULTS.md D65.
 export const REFERENCE_SEED = 1;

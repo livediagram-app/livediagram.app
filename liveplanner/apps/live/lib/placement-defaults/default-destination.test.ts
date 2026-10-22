@@ -9,7 +9,7 @@ import {
   workingDefault,
 } from './default-destination';
 
-// Where a person's new documents go, read on the client
+// Where a person's new projects go, read on the client
 // (docs/specs/013-workspace/default-folders.md "Surfaces", "Precedence", "Dangling defaults").
 
 const index = buildDefaultFolderIndex(
@@ -116,7 +116,7 @@ describe('destinationOf', () => {
     });
   });
 
-  it('is dangling when deleted, naming where those documents go instead', () => {
+  it('is dangling when deleted, naming where those projects go instead', () => {
     const d = defaults([
       ['template:kanban', 'gone'],
       ['mode:plan', 'workshops'],

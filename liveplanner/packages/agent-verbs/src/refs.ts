@@ -1,4 +1,4 @@
-// Short names for documents and tabs (docs/specs/015-api/blueprints/cli.md CLI20): the shortest prefix of each
+// Short names for projects and tabs (docs/specs/015-api/blueprints/cli.md CLI20): the shortest prefix of each
 // id unique among its neighbours, at least REF_MIN_PREFIX characters, as the views name elements.
 
 export const REF_MIN_PREFIX = 4;

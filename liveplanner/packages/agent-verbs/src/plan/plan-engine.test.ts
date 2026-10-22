@@ -84,15 +84,15 @@ function api(
   const made = (r: Request) =>
     record(r, { item: item(9, 'new999', { title: 'New', status: 'todo~x' }), rev: 2 });
   const fake = fakeApi({
-    [`/documents/${D}/items`]: (r: Request) =>
+    [`/projects/${D}/items`]: (r: Request) =>
       r.method === 'GET' ? Response.json({ items: ITEMS, rev: 1 }) : made(r),
-    [`/documents/${D}/plan`]: plan,
-    [`/documents/${D}/items/aaa111`]: made,
-    [`/documents/${D}/items/aaa111/move`]: made,
-    [`/documents/${D}/items/ccc333`]: made,
-    [`/documents/${D}/item-types`]: (r: Request) => record(r, { itemTypes: null }),
-    [`/documents/${D}`]: {
-      document: {
+    [`/projects/${D}/plan`]: plan,
+    [`/projects/${D}/items/aaa111`]: made,
+    [`/projects/${D}/items/aaa111/move`]: made,
+    [`/projects/${D}/items/ccc333`]: made,
+    [`/projects/${D}/item-types`]: (r: Request) => record(r, { itemTypes: null }),
+    [`/projects/${D}`]: {
+      project: {
         id: D,
         // The catalogue the plan above reads (chosen: it has Bug).
         itemTypes: { version: 1, types: (plan as { types?: unknown }).types },
@@ -102,7 +102,7 @@ function api(
         ],
       },
     },
-    [`/documents/${D}/tabs/t1`]: {
+    [`/projects/${D}/tabs/t1`]: {
       tab: {
         id: 't1',
         name: 'Board',
@@ -132,12 +132,12 @@ function api(
         rev: 7,
       },
     },
-    [`/documents/${D}/tabs/t2`]: {
+    [`/projects/${D}/tabs/t2`]: {
       tab: { id: 't2', name: 'Other', elements: [], rev: 1 },
     },
-    [`/documents/${D}/tabs/t1/changesets`]: (r: Request) =>
+    [`/projects/${D}/tabs/t1/changesets`]: (r: Request) =>
       record(r, { changeset: { id: 'cs1', rev: 8 } }),
-    [`/documents/${D}/tabs/t2/changesets`]: (r: Request) =>
+    [`/projects/${D}/tabs/t2/changesets`]: (r: Request) =>
       record(r, { changeset: { id: 'cs2', rev: 2 } }),
     ...over,
   });
@@ -177,7 +177,7 @@ describe('planListing', () => {
     const withSev = [
       item(7, 'fff777', { title: 'Sev', status: 'done~x', 'f-sev': 'S2', 'f-gone': 1 }, 'bug'),
     ];
-    const { api: a } = api({ [`/documents/${D}/items`]: { items: withSev, rev: 1 } });
+    const { api: a } = api({ [`/projects/${D}/items`]: { items: withSev, rev: 1 } });
     const listing = planListing(await readPlanState(a, D));
     expect(listing.items[0]!.fields).toEqual({
       title: 'Sev',
@@ -192,7 +192,7 @@ describe('planListing', () => {
       item(3, 'aaa333', { title: 'Epic' }, 'project'),
       item(4, 'bbb444', { title: 'Child', parent: 'aaa333' }),
     ];
-    const { api: a } = api({ [`/documents/${D}/items`]: { items: linked, rev: 1 } });
+    const { api: a } = api({ [`/projects/${D}/items`]: { items: linked, rev: 1 } });
     const listing = planListing(await readPlanState(a, D));
     expect(listing.items.find((i) => i.ref === '#4')!.fields['Parent']).toBe('#3 Epic');
   });
@@ -227,7 +227,7 @@ describe('resolveListingFilter', () => {
     expect(listing.items.map((i) => i.ref)).toEqual(['#1', '#2']);
   });
 
-  it('refuses a card type the document lacks, naming the ones it has', async () => {
+  it('refuses a card type the project lacks, naming the ones it has', async () => {
     const { api: a } = api({}, { boards: [BOARD()], statuses: STATUSES, types: ITEM_TYPES });
     expect(resolveListingFilter(await readPlanState(a, D), { type: 'Epic' })).toMatchObject({
       ok: false,
@@ -253,7 +253,7 @@ describe('resolveListingFilter', () => {
 describe('applyItemChanges', () => {
   it('says what landed when the api fails part way, so a retry does not make it twice', async () => {
     const { api: a } = api({
-      [`/documents/${D}/items/aaa111`]: () => Response.json({ error: 'boom' }, { status: 503 }),
+      [`/projects/${D}/items/aaa111`]: () => Response.json({ error: 'boom' }, { status: 503 }),
     });
     const state = await readPlanState(a, D);
     const result = await applyItemChanges(
@@ -328,7 +328,7 @@ describe('applyItemChanges', () => {
 
   it("turns the api's refusal into words and lets a 5xx throw", async () => {
     const { api: refusing } = api({
-      [`/documents/${D}/items/aaa111/move`]: () =>
+      [`/projects/${D}/items/aaa111/move`]: () =>
         Response.json({ error: 'status_excluded' }, { status: 400 }),
     });
     const r = await applyItemChanges(
@@ -339,7 +339,7 @@ describe('applyItemChanges', () => {
     );
     expect(r.refusal!.message).toContain('card type does not use that column');
     const { api: down } = api({
-      [`/documents/${D}/items/aaa111`]: () => new Response('x', { status: 503 }),
+      [`/projects/${D}/items/aaa111`]: () => new Response('x', { status: 503 }),
     });
     await expect(
       applyItemChanges(
@@ -350,7 +350,7 @@ describe('applyItemChanges', () => {
       ),
     ).rejects.toBeInstanceOf(ApiError);
     const { api: gone } = api({
-      [`/documents/${D}/items/aaa111`]: () => new Response('nope', { status: 404 }),
+      [`/projects/${D}/items/aaa111`]: () => new Response('nope', { status: 404 }),
     });
     const del = await applyItemChanges(
       gone,
@@ -397,10 +397,10 @@ describe('changeCardTypes', () => {
 
   it("reports the api's refusal of the save", async () => {
     const { api: a } = api({
-      [`/documents/${D}/item-types`]: () => new Response('{"error":"forbidden"}', { status: 403 }),
+      [`/projects/${D}/item-types`]: () => new Response('{"error":"forbidden"}', { status: 403 }),
     });
     const r = await changeCardTypes(a, D, [{ op: 'add', name: 'Risk' }]);
-    expect(r.refusal!.message).toContain('view this document but not change it');
+    expect(r.refusal!.message).toContain('view this project but not change it');
   });
 
   // docs/specs/026-plan/item-types.md "Storage and sync": a save names the revision it read; when an editor's change
@@ -410,9 +410,9 @@ describe('changeCardTypes', () => {
     let types: unknown[] = [...ITEM_TYPES, BUG];
     const puts: { itemTypes: { types: { id: string }[] }; expectedRev: number }[] = [];
     const { api: a } = api({
-      [`/documents/${D}/plan`]: () =>
+      [`/projects/${D}/plan`]: () =>
         Response.json({ boards: [BOARD()], statuses: STATUSES, types, itemTypesRev: rev }),
-      [`/documents/${D}/item-types`]: async (r: Request) => {
+      [`/projects/${D}/item-types`]: async (r: Request) => {
         const body = (await r.json()) as (typeof puts)[number];
         puts.push(body);
         if (puts.length === 1) {
@@ -437,7 +437,7 @@ describe('changeCardTypes', () => {
 
   it('gives up with a refusal when the card types keep changing', async () => {
     const { api: a } = api({
-      [`/documents/${D}/item-types`]: () =>
+      [`/projects/${D}/item-types`]: () =>
         Response.json(
           { error: 'item_types_stale', itemTypes: null, itemTypesRev: 9 },
           { status: 409 },
@@ -465,31 +465,31 @@ describe('addBoard', () => {
     expect(body.base.rev).toBe(7);
     expect(body.operations[0]!.element.x).toBeGreaterThan(100);
     expect(body.operations[0]!.element.planBoard.addTypes).toEqual(['bug']);
-    // The document has Bug already: nothing is brought, nothing more is written.
+    // The project has Bug already: nothing is brought, nothing more is written.
     expect(r.brought).toEqual([]);
     expect(seen).toHaveLength(1);
   });
 
-  // docs/specs/026-plan/plan-agents.md "Adding a board": a preset brings the types the document lacks.
-  it('brings the preset’s card types the document lacks, saved once after the board', async () => {
+  // docs/specs/026-plan/plan-agents.md "Adding a board": a preset brings the types the project lacks.
+  it('brings the preset’s card types the project lacks, saved once after the board', async () => {
     const { api: a, seen } = api();
     const r = await addBoard(a, D, { preset: 'sprint' }, 'mcp');
     if (!r.ok) throw new Error(r.message);
     expect(r.takes).toEqual(['Story', 'Task', 'Bug']);
     expect(r.brought).toEqual(['Story']);
     expect(seen.map((s) => `${s.method} ${s.path}`)).toEqual([
-      `POST /documents/${D}/tabs/t1/changesets`,
-      `PUT /documents/${D}/item-types`,
+      `POST /projects/${D}/tabs/t1/changesets`,
+      `PUT /projects/${D}/item-types`,
     ]);
     const saved = (seen[1]!.body as { itemTypes: { types: { id: string }[] } }).itemTypes;
     expect(saved.types.map((t) => t.id)).toEqual([...ITEM_TYPES.map((t) => t.id), 'bug', 'story']);
   });
 
   // docs/specs/026-plan/item-types.md "Storage and sync": the types a board brings are saved against the revision read.
-  it('saves the brought card types against the revision the document was read at', async () => {
+  it('saves the brought card types against the revision the project was read at', async () => {
     const { api: a, seen } = api({
-      [`/documents/${D}`]: {
-        document: {
+      [`/projects/${D}`]: {
+        project: {
           id: D,
           itemTypes: { version: 1, types: [...ITEM_TYPES, BUG] },
           itemTypesRev: 3,
@@ -522,7 +522,7 @@ describe('addBoard', () => {
       code: 'board_invalid',
     });
     const { api: empty } = api(
-      { [`/documents/${D}`]: { document: { id: D, tabs: [] } } },
+      { [`/projects/${D}`]: { project: { id: D, tabs: [] } } },
       { boards: [], statuses: [], types: ITEM_TYPES },
     );
     expect(await addBoard(empty, D, {}, 'mcp')).toMatchObject({ ok: false, code: 'tab_unknown' });
@@ -571,7 +571,7 @@ describe('change lines', () => {
 
   it('clears a value a removed field left behind, by its key', async () => {
     const left = [item(1, 'aaa111', { title: 'Old', status: 'todo~x', 'f-browser': 'Safari' })];
-    const { api: a, seen } = api({ [`/documents/${D}/items`]: { items: left, rev: 1 } });
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items: left, rev: 1 } });
     const r = await applyItemChanges(
       a,
       D,
@@ -591,13 +591,13 @@ describe('change lines', () => {
       await readPlanState(a, D),
     );
     expect(r.applied[0]).toContain('; set priority = "high", assignee = Robin; cleared due');
-    expect(r.applied[0]).toContain('Robin is a new name on this document');
+    expect(r.applied[0]).toContain('Robin is a new name on this project');
   });
 
   it('warns when no board with the column takes the card type', async () => {
     const { api: a } = api(
       {
-        [`/documents/${D}/items`]: (r: Request) =>
+        [`/projects/${D}/items`]: (r: Request) =>
           r.method === 'GET'
             ? Response.json({ items: ITEMS, rev: 1 })
             : Response.json({
@@ -620,7 +620,7 @@ describe('change lines', () => {
   it('warns when the only board with the column takes no type at all', async () => {
     const { api: a } = api(
       {
-        [`/documents/${D}/items`]: (r: Request) =>
+        [`/projects/${D}/items`]: (r: Request) =>
           r.method === 'GET'
             ? Response.json({ items: ITEMS, rev: 1 })
             : Response.json({
@@ -731,7 +731,7 @@ describe('changeBoard', () => {
       message: expect.stringContaining('add_board'),
     });
     const { api: stale } = api({
-      [`/documents/${D}/tabs/t1`]: { tab: { id: 't1', elements: [], rev: 1 } },
+      [`/projects/${D}/tabs/t1`]: { tab: { id: 't1', elements: [], rev: 1 } },
     });
     expect(await changeBoard(stale, D, { board: 'Sprint' }, 'mcp')).toMatchObject({
       ok: false,
@@ -743,21 +743,21 @@ describe('changeBoard', () => {
 describe('api refusals mid-write', () => {
   it('reports a refused changeset for add_board and change_board', async () => {
     const refuse = () => Response.json({ error: 'forbidden' }, { status: 403 });
-    const { api: a } = api({ [`/documents/${D}/tabs/t1/changesets`]: refuse });
+    const { api: a } = api({ [`/projects/${D}/tabs/t1/changesets`]: refuse });
     expect(await addBoard(a, D, {}, 'mcp')).toMatchObject({ ok: false, code: 'forbidden' });
     expect(await changeBoard(a, D, { board: 'Sprint', title: 'X' }, 'mcp')).toMatchObject({
       ok: false,
       code: 'forbidden',
     });
     const { api: down } = api({
-      [`/documents/${D}/tabs/t1/changesets`]: () => new Response('', { status: 502 }),
+      [`/projects/${D}/tabs/t1/changesets`]: () => new Response('', { status: 502 }),
     });
     await expect(addBoard(down, D, {}, 'mcp')).rejects.toBeInstanceOf(ApiError);
   });
 
   it('says which cards went to the Trash before a refusal', async () => {
     const { api: a } = api({
-      [`/documents/${D}/items/ccc333`]: () =>
+      [`/projects/${D}/items/ccc333`]: () =>
         Response.json({ error: 'forbidden' }, { status: 403 }),
     });
     const r = await changeCardTypes(a, D, [{ op: 'delete', type: 'Bug' }]);
@@ -813,7 +813,7 @@ describe('every branch of the engine', () => {
     const lineFor = async (fields: Item['fields'], type = 'task', boards = [BOARD()]) => {
       const { api: a } = api(
         {
-          [`/documents/${D}/items`]: (r: Request) =>
+          [`/projects/${D}/items`]: (r: Request) =>
             r.method === 'GET' ? Response.json({ items: ITEMS, rev: 1 }) : answer(fields, type)(),
         },
         plan(boards),
@@ -837,7 +837,7 @@ describe('every branch of the engine', () => {
         assignee: { id: 'n-robin', name: 'Robin', color: '#2563eb' },
       }),
     ];
-    const { api: a, seen } = api({ [`/documents/${D}/items`]: { items: withRobin, rev: 1 } });
+    const { api: a, seen } = api({ [`/projects/${D}/items`]: { items: withRobin, rev: 1 } });
     const state = await readPlanState(a, D);
     const r = await applyItemChanges(
       a,
@@ -857,7 +857,7 @@ describe('every branch of the engine', () => {
 
   it('answers a dry changeset, widens a board, names unknown types, and lets a 5xx throw', async () => {
     const { api: a, seen } = api({
-      [`/documents/${D}/tabs/t1/changesets`]: (r: Request) =>
+      [`/projects/${D}/tabs/t1/changesets`]: (r: Request) =>
         r.text().then(() => Response.json({ changeset: null })),
     });
     expect(await addBoard(a, D, { preset: 'todo' }, 'mcp')).toMatchObject({
@@ -881,11 +881,11 @@ describe('every branch of the engine', () => {
       ),
     );
     const todo = await addBoard(noAction, D, { preset: 'todo' }, 'mcp');
-    // The document lacked Action: the board brings it, named as it is made.
+    // The project lacked Action: the board brings it, named as it is made.
     expect(todo.ok && todo.takes).toEqual(['Action']);
     expect(todo.ok && todo.brought).toEqual(['Action']);
     const { api: down } = api({
-      [`/documents/${D}/tabs/t1/changesets`]: () => new Response('', { status: 503 }),
+      [`/projects/${D}/tabs/t1/changesets`]: () => new Response('', { status: 503 }),
     });
     await expect(
       changeBoard(down, D, { board: 'Sprint', title: 'X' }, 'mcp'),
@@ -919,7 +919,7 @@ describe('every branch of the engine', () => {
         rev: 7,
       },
     };
-    const { api: a } = api({ [`/documents/${D}/tabs/t1`]: tab });
+    const { api: a } = api({ [`/projects/${D}/tabs/t1`]: tab });
     expect(await changeBoard(a, D, { board: 'Sprint', title: 'S2' }, 'mcp')).toMatchObject({
       ok: true,
       takes: ['ghost'],
@@ -929,8 +929,8 @@ describe('every branch of the engine', () => {
   it('trashes a statusless card without a trashedFrom, and lets a 5xx save or trash throw', async () => {
     const loose = [item(4, 'hhh444', { title: 'Loose bug' }, 'bug')];
     const { api: a, seen } = api({
-      [`/documents/${D}/items`]: { items: loose, rev: 1 },
-      [`/documents/${D}/items/hhh444`]: (r: Request) =>
+      [`/projects/${D}/items`]: { items: loose, rev: 1 },
+      [`/projects/${D}/items/hhh444`]: (r: Request) =>
         r
           .text()
           .then(
@@ -943,13 +943,13 @@ describe('every branch of the engine', () => {
     await changeCardTypes(a, D, [{ op: 'delete', type: 'Bug' }]);
     expect(seen.find((s) => s.path === 'hhh444')!.body).toEqual({ set: { status: TRASH_STATUS } });
     const { api: putDown } = api({
-      [`/documents/${D}/item-types`]: () => new Response('', { status: 500 }),
+      [`/projects/${D}/item-types`]: () => new Response('', { status: 500 }),
     });
     await expect(changeCardTypes(putDown, D, [{ op: 'add', name: 'Risk' }])).rejects.toBeInstanceOf(
       ApiError,
     );
     const { api: trashDown } = api({
-      [`/documents/${D}/items/ccc333`]: () => new Response('', { status: 500 }),
+      [`/projects/${D}/items/ccc333`]: () => new Response('', { status: 500 }),
     });
     await expect(
       changeCardTypes(trashDown, D, [{ op: 'delete', type: 'Bug' }]),

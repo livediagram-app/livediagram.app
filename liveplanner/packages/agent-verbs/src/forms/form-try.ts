@@ -26,7 +26,7 @@ import type { BoardRef, FormWorld } from './form-world';
 
 type FormTryDone = {
   ok: true;
-  documentId: string;
+  projectId: string;
   tabId: string;
   // A card on a board, or a row in a sheet.
   made: 'card' | 'row';
@@ -112,12 +112,12 @@ function boardWhere(
 
 export async function tryForm(
   api: ApiClient,
-  documentId: string,
+  projectId: string,
   tabRef: string | undefined,
   given: Readonly<Record<string, unknown>>,
 ): Promise<FormTryResult> {
   return guarded(async (): Promise<FormTryResult> => {
-    const read = await readingOf(api, documentId, tabRef);
+    const read = await readingOf(api, projectId, tabRef);
     if (!read.ok) return read;
     const { form, tab, world, link } = read;
     const body = bodyOf(form, given);
@@ -145,10 +145,10 @@ export async function tryForm(
         ? 'its sheet'
         : (target?.where ?? 'its board');
     const done = (
-      fields: Omit<FormTryDone, 'ok' | 'documentId' | 'tabId' | 'where' | 'lines'>,
+      fields: Omit<FormTryDone, 'ok' | 'projectId' | 'tabId' | 'where' | 'lines'>,
     ) => ({
       ok: true as const,
-      documentId,
+      projectId,
       tabId: tab.id,
       where,
       lines,
@@ -159,7 +159,7 @@ export async function tryForm(
     if (link?.link || form.sheet) {
       let sent: FormResponseAccepted;
       try {
-        sent = await api.json<FormResponseAccepted>(`${tabPath(documentId, tab.id)}/form-preview`, {
+        sent = await api.json<FormResponseAccepted>(`${tabPath(projectId, tab.id)}/form-preview`, {
           method: 'POST',
           body: JSON.stringify(body),
         });
@@ -178,11 +178,11 @@ export async function tryForm(
       return done({ made: form.sheet ? 'row' : 'card', number, title, itemId: null });
     }
 
-    // Unpublished, to a board: the card the editor's Preview makes itself, numbered by nothing, on a board the document
+    // Unpublished, to a board: the card the editor's Preview makes itself, numbered by nothing, on a board the project
     // still has.
     if (!target) return nowhere;
     const card = responseCard(form, tab.id, checked.answers, type!, null, true);
-    const { item } = await api.json<ItemResponse>(itemsPath(documentId), {
+    const { item } = await api.json<ItemResponse>(itemsPath(projectId), {
       method: 'POST',
       body: JSON.stringify({
         type: card.type,

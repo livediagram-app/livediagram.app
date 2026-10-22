@@ -74,16 +74,16 @@ export function SettingsIdentityRow({ row }: { row: SettingsIdentityRowSpec }) {
   );
 }
 
-const GUEST_IDENTITY = 'Your documents live in this browser. Sign in to keep them across devices.';
+const GUEST_IDENTITY = 'Your projects live in this browser. Sign in to keep them across devices.';
 
 // Delete account. Signed-in only, and not because of the UI: the api's
 // DELETE /api/account is Clerk-only by design (docs/specs/014-identity/profile-and-email-notifications.md), since the whole
 // point is wiping data bound to a VERIFIED identity. A guest's owner id is an
-// unverified header, so honouring it would let anyone wipe anyone's documents.
+// unverified header, so honouring it would let anyone wipe anyone's projects.
 // The row still renders for guests, saying why, rather than vanishing, so the
 // answer to "can I delete my data?" is in the panel either way.
 export const DELETE_ACCOUNT_SIGNED_IN =
-  'Permanently removes your documents (the Trash included), folders and account, everywhere. There is no undo: you type your email to confirm.';
+  'Permanently removes your projects (the Trash included), folders and account, everywhere. There is no undo: you type your email to confirm.';
 export const DELETE_ACCOUNT_GUEST =
   'Available once you sign in: a guest browser has no verified account to delete.';
 

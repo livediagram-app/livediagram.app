@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isValidTab } from '@liveplanner/document';
+import { isValidTab } from '@liveplanner/project';
 import {
   buildTemplateTab,
   buildTemplateTabs,

@@ -122,7 +122,7 @@ export async function pairWorkbench(
 ): Promise<Paired> {
   const origin = workbenchOriginOf(input.origin, 'pair', log);
   const name = workbenchNameOf(input.name, log);
-  const scope: WorkbenchScope = input.workspace ? 'workspace' : 'document';
+  const scope: WorkbenchScope = input.workspace ? 'workspace' : 'project';
   const created = await api.json<WorkbenchPairingRequestCreated>('/workbench/pairing-requests', {
     method: 'POST',
     body: JSON.stringify({

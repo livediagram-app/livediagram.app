@@ -8,7 +8,7 @@ import {
   type IconAnimation,
   type TextAlignX,
   type TextAlignY,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { Glyph } from '@liveplanner/ui';
 
 import { iconBandClass } from '@/components/primitives/icon-band';
@@ -143,7 +143,7 @@ export function IconGlyph({
   strokeWidth?: number;
   hasLabel?: boolean;
   // The label's alignment; the glyph takes the opposite band (see
-  // iconBandBounds in @liveplanner/document, whose numbers the CSS mirrors).
+  // iconBandBounds in @liveplanner/project, whose numbers the CSS mirrors).
   labelAlignX?: TextAlignX;
   labelAlignY?: TextAlignY;
   animation?: IconAnimation;

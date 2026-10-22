@@ -1,4 +1,4 @@
-import type { ShapeKind } from '@liveplanner/document';
+import type { ShapeKind } from '@liveplanner/project';
 import type { AddShapeOptions, PendingDraw } from '@/lib/draw-mode';
 import { tileCaption } from './tile-caption';
 import { IconButton } from '@/components/palette/palette-controls';

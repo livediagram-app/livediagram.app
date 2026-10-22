@@ -96,7 +96,7 @@ export const categories: Category[] = [
     slug: 'privacy-and-security',
     title: 'Privacy and Security',
     description:
-      'Know exactly how your documents are stored, what we collect, and how to keep shared links safe.',
+      'Know exactly how your projects are stored, what we collect, and how to keep shared links safe.',
     articleCount: 4,
   },
   {
@@ -149,7 +149,7 @@ export const categories: Category[] = [
     slug: 'explorer',
     title: 'Explorer',
     description:
-      'Organise everything you build: how the Explorer keeps your documents, folders, teams, and assets easy to find and manage.',
+      'Organise everything you build: how the Explorer keeps your projects, folders, teams, and assets easy to find and manage.',
     articleCount: 14,
     kind: 'feature',
     groups: ['Your Library', 'Activity', 'Assets and Imports'],
@@ -190,7 +190,7 @@ export const categories: Category[] = [
     slug: 'tabs',
     title: 'Tabs',
     description:
-      'Keep a whole project in one document: organise, link, and move between multiple boards with tabs.',
+      'Keep a whole project in one project: organise, link, and move between multiple boards with tabs.',
     articleCount: 9,
     kind: 'feature',
   },
@@ -214,7 +214,7 @@ export const categories: Category[] = [
     slug: 'search-panel',
     title: 'Search Panel',
     description:
-      'Find anything in seconds: jump to any document, folder, team, tab, or element, and add new elements to the canvas.',
+      'Find anything in seconds: jump to any project, folder, team, tab, or element, and add new elements to the canvas.',
     articleCount: 1,
     kind: 'feature',
   },
@@ -273,7 +273,7 @@ export const articles: Article[] = [
     slug: 'tab-bar',
     title: 'The Tab Bar',
     description:
-      'Switch between the boards in a document, add new ones, and group them into folders.',
+      'Switch between the boards in a project, add new ones, and group them into folders.',
     keywords: 'tabs boards pages switch bottom bar sheets add rename',
     category: 'User Interface',
     categorySlug: 'user-interface',
@@ -292,7 +292,7 @@ export const articles: Article[] = [
     title: 'Settings',
     description: 'Every preference toggle, what it does, and which device it follows you to.',
     keywords:
-      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new documents go plan email api tokens trash delete profile picture',
+      'settings preferences options config configure gear cog toggles panel opacity toolbar minimap welcome tour notifications toasts reduce motion animation accessibility ai assistant telemetry anonymous usage events privacy sync account device per device defaults turn off keyboard shortcuts hotkeys keybindings ui scale element indicators badges dock position draw default folders where new projects go plan email api tokens trash delete profile picture',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -309,9 +309,9 @@ export const articles: Article[] = [
   {
     slug: 'title-bar',
     title: 'The Title Bar',
-    description: 'Rename the document, see who can see it, preview as a viewer, and Share or Copy.',
+    description: 'Rename the project, see who can see it, preview as a viewer, and Share or Copy.',
     keywords:
-      'header top bar document name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account',
+      'header top bar project name rename visibility private shared team public local only role pill editing viewing participating owner preview read only share copy make a copy account',
     category: 'User Interface',
     categorySlug: 'user-interface',
   },
@@ -351,7 +351,7 @@ export const articles: Article[] = [
     title: 'Your First Diagram',
     description: 'Create a diagram and add your first shapes in under a minute.',
     keywords:
-      'start begin new create tutorial beginner basics quickstart onboarding wizard document template location',
+      'start begin new create tutorial beginner basics quickstart onboarding wizard project template location',
     category: 'Getting Started',
     categorySlug: 'getting-started',
   },
@@ -372,8 +372,8 @@ export const articles: Article[] = [
     categorySlug: 'getting-started',
   },
   {
-    slug: 'sharing-your-document',
-    title: 'Sharing Your Document',
+    slug: 'sharing-your-project',
+    title: 'Sharing Your Project',
     description: 'Hand a link to anyone and edit together in real time.',
     keywords: 'share link collaborate invite send url realtime together diagram',
     category: 'Getting Started',
@@ -445,9 +445,9 @@ export const articles: Article[] = [
   {
     slug: 'copy-and-paste',
     title: 'Copy and Paste',
-    description: 'Move elements between tabs, documents and windows through the system clipboard.',
+    description: 'Move elements between tabs, projects and windows through the system clipboard.',
     keywords:
-      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between documents diagrams another document another tab second window screenshot paste image offset reconnect arrows system clipboard',
+      'copy paste cut clipboard cmd c cmd v cmd x ctrl c ctrl v ctrl x between projects diagrams another project another tab second window screenshot paste image offset reconnect arrows system clipboard',
     category: 'Tips and Tricks',
     categorySlug: 'tips-and-tricks',
   },
@@ -464,7 +464,7 @@ export const articles: Article[] = [
   {
     slug: 'guest-identity',
     title: 'How Guest Identity Works',
-    description: 'The per-browser id that owns your documents when you are not signed in.',
+    description: 'The per-browser id that owns your projects when you are not signed in.',
     keywords: 'anonymous browser id localstorage owner identity without account',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
@@ -473,7 +473,7 @@ export const articles: Article[] = [
     slug: 'signing-in',
     title: 'Signing In',
     description:
-      'Create an account, sign in, migrate your guest documents, and use your Google picture.',
+      'Create an account, sign in, migrate your guest projects, and use your Google picture.',
     keywords:
       'login log in sign up register email code google oauth account create migrate avatar profile picture photo initials hide collaborators',
     category: 'Account and Data',
@@ -491,7 +491,7 @@ export const articles: Article[] = [
   {
     slug: 'deleting-your-data',
     title: 'Deleting Your Data',
-    description: 'How to delete a document or your whole account, and what each removes.',
+    description: 'How to delete a project or your whole account, and what each removes.',
     keywords: 'delete remove erase gdpr clear account wipe forget close trash',
     category: 'Account and Data',
     categorySlug: 'account-and-data',
@@ -499,7 +499,7 @@ export const articles: Article[] = [
   {
     slug: 'trash',
     title: 'Trash',
-    description: 'Deleted documents wait 30 days: restore one, or delete it for good.',
+    description: 'Deleted projects wait 30 days: restore one, or delete it for good.',
     keywords:
       'trash bin recycle deleted undo undelete restore recover get back permanently empty blank unused automatic automatically clean up cleanup thirty days',
     category: 'Account and Data',
@@ -516,7 +516,7 @@ export const articles: Article[] = [
   {
     slug: 'connect-ai-mcp',
     title: 'Connect an AI Tool (MCP)',
-    description: 'Connect Claude or any MCP client to find, view, create, and edit your documents.',
+    description: 'Connect Claude or any MCP client to find, view, create, and edit your projects.',
     keywords:
       'claude chatgpt cursor model context protocol ai integration assistant llm connector trash restore plan items read-only',
     category: 'Account and Data',
@@ -560,9 +560,9 @@ export const articles: Article[] = [
     categorySlug: 'developers',
   },
   {
-    slug: 'working-with-documents',
-    title: 'Working with Documents',
-    description: 'Worked examples: list, read, create, and update documents, tabs, and folders.',
+    slug: 'working-with-projects',
+    title: 'Working with Projects',
+    description: 'Worked examples: list, read, create, and update projects, tabs, and folders.',
     keywords:
       'examples curl crud create update list read api requests diagrams outline view text agent',
     category: 'Developers',
@@ -575,8 +575,8 @@ export const articles: Article[] = [
     keywords:
       'changeset edit operations ops line form json selector placement flags lint findings vocabulary cli mcp agent',
     category: 'Developers',
-    categorySlug: 'developers/working-with-documents',
-    parentSlug: 'working-with-documents',
+    categorySlug: 'developers/working-with-projects',
+    parentSlug: 'working-with-projects',
   },
   {
     slug: 'plan-sheets-images',
@@ -585,8 +585,8 @@ export const articles: Article[] = [
     keywords:
       'items cards plan board card types sheets cells spreadsheet pages article render svg copy custom themes api',
     category: 'Developers',
-    categorySlug: 'developers/working-with-documents',
-    parentSlug: 'working-with-documents',
+    categorySlug: 'developers/working-with-projects',
+    parentSlug: 'working-with-projects',
   },
   {
     slug: 'errors-and-rate-limits',
@@ -600,7 +600,7 @@ export const articles: Article[] = [
     slug: 'cli',
     title: 'The liveplanner CLI',
     description:
-      'Read, build, edit and discuss documents from a terminal: install, sign in, the commands, and profiles.',
+      'Read, build, edit and discuss projects from a terminal: install, sign in, the commands, and profiles.',
     keywords:
       'cli command line terminal shell npm npx install agent coding agent script automation device code login sign in token keychain export pull push profile',
     category: 'Developers',
@@ -610,7 +610,7 @@ export const articles: Article[] = [
     slug: 'workbenches',
     title: 'Diagrams in Your Developer Tools',
     description:
-      'Draw in a document inside a developer tool beside your agent, and talk about what you select.',
+      'Draw in a project inside a developer tool beside your agent, and talk about what you select.',
     keywords:
       'workbench spinner vs code vscode ide editor embed frame iframe pair pairing selection select agent coding agent live view developer tool workspace explorer folder whole workspace',
     category: 'Developers',
@@ -680,7 +680,7 @@ export const articles: Article[] = [
   {
     slug: 'data-privacy',
     title: 'Data Privacy',
-    description: 'Where your documents live and how they are handled.',
+    description: 'Where your projects live and how they are handled.',
     keywords: 'storage stored cloudflare security where data location safe',
     category: 'Privacy and Security',
     categorySlug: 'privacy-and-security',
@@ -689,7 +689,7 @@ export const articles: Article[] = [
   {
     slug: 'offline-mode',
     title: 'Offline Mode',
-    description: 'Save a document only in this browser, and move it to or from your account.',
+    description: 'Save a project only in this browser, and move it to or from your account.',
     keywords:
       'local only pill this browser private no sync device localstorage disconnect save location clear site data lost guest default start move to account after sign in share upload',
     category: 'Privacy and Security',
@@ -728,9 +728,9 @@ export const articles: Article[] = [
   },
   // ---- Troubleshooting ----
   {
-    slug: 'document-not-loading',
-    title: 'A Document Will Not Load',
-    description: 'What to check when a document is blank or stuck loading.',
+    slug: 'project-not-loading',
+    title: 'A Project Will Not Load',
+    description: 'What to check when a project is blank or stuck loading.',
     keywords:
       'blank stuck loading error broken empty spinner wont open 404 diagram opening taking longer than usual colleague works for others',
     category: 'Troubleshooting',
@@ -739,7 +739,7 @@ export const articles: Article[] = [
   {
     slug: 'repair-this-browser',
     title: 'Repair This Browser',
-    description: 'Clear stuck settings and caches, keeping your documents.',
+    description: 'Clear stuck settings and caches, keeping your projects.',
     keywords:
       'reset clear cache cookies local storage stuck loading fix diagnostics support repair browser data',
     category: 'Troubleshooting',
@@ -855,7 +855,7 @@ export const articles: Article[] = [
     title: 'Shapes',
     description: 'Squares, circles, cylinders and more, with morphing and markers.',
     keywords:
-      'square circle rectangle box diamond triangle ellipse cylinder morph node hexagon trapezoid stadium parallelogram pill speech bubble cloud star document',
+      'square circle rectangle box diamond triangle ellipse cylinder morph node hexagon trapezoid stadium parallelogram pill speech bubble cloud star project',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -885,7 +885,7 @@ export const articles: Article[] = [
     description:
       'Page, Text, Sticky note, Annotation and Pointer note: the elements made of words.',
     keywords:
-      'write writing text words wordy prose page document label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader',
+      'write writing text words wordy prose page project label caption title heading sticky note post-it annotation marker remark comment copy typing type compose pointer note leader',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Everyday Elements',
@@ -946,7 +946,7 @@ export const articles: Article[] = [
     title: 'Flowcharts',
     description: 'Tab adds the next step, Enter a parallel one: a flowchart that lays itself out.',
     keywords:
-      'flowchart flow chart process diagram step steps decision diamond yes no branch merge loop start end terminator input output parallelogram document database preparation connector iso 5807 tab enter keyboard auto layout tidy swimlane swim lane lanes cross functional direction down right workflow',
+      'flowchart flow chart process diagram step steps decision diamond yes no branch merge loop start end terminator input output parallelogram project database preparation connector iso 5807 tab enter keyboard auto layout tidy swimlane swim lane lanes cross functional direction down right workflow',
     category: 'Palette',
     categorySlug: 'palette',
     group: 'Diagram Kits',
@@ -1236,7 +1236,7 @@ export const articles: Article[] = [
     title: 'Templates',
     description: 'Start from a ready-made template instead of a blank canvas.',
     keywords:
-      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands town hall auditorium pub quiz quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief document write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw pages plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
+      'wardley map value chain evolution threat model threat modelling stride security trust boundary threat register service blueprint frontstage backstage line of visibility metric tree north star kpi tree driver model what if value proposition canvas jobs pains gains working backwards pr faq press release amazon family tree genealogy ancestry value stream map vsm lead time flow efficiency kaizen virtual office office rooms coworking cowork team pod all hands town hall auditorium pub quiz quiz night trivia icebreaker icebreakers two truths and a lie would you rather bingo find someone who games starter blank slide deck blank article blank infographic blank logo empty slide empty page artboard kanban flowchart swot gantt sankey flow diagram wireframe prebuilt scaffold quick start retro sailboat postmortem risk stakeholder persona agenda objectives crazy 8s opportunity tree article brief project write writing standup stand-up hiring pipeline recruiting content calendar editorial project planner bug tracker okrs key results product launch go no-go feedback board feature requests onboarding new wizard mode filter draw pages plan popular blank category categories finance budget invoice expense report loan calculator mortgage sales pipeline crm spreadsheet sheet inventory guest list rsvp grade book habit tracker meetings workshops presentations timelines roadmaps search words blank spreadsheet empty sheet blank slate',
     category: 'Canvas',
     categorySlug: 'canvas',
     group: 'Basics',
@@ -1363,7 +1363,7 @@ export const articles: Article[] = [
   {
     slug: 'using-tabs',
     title: 'Tabs',
-    description: 'Multiple boards in one document: add, name, reorder, and switch between them.',
+    description: 'Multiple boards in one project: add, name, reorder, and switch between them.',
     keywords:
       'boards pages multiple sheets add rename reorder switch delete duplicate tab menu new tab quick start',
     category: 'Tabs',
@@ -1381,7 +1381,7 @@ export const articles: Article[] = [
     slug: 'linking-tabs',
     title: 'Linking Across Tabs',
     description:
-      'Turn an element into a jump point to another tab, another document, or a web address.',
+      'Turn an element into a jump point to another tab, another project, or a web address.',
     keywords: 'jump navigation cross reference hyperlink go to connect boards',
     category: 'Tabs',
     categorySlug: 'tabs',
@@ -1405,10 +1405,10 @@ export const articles: Article[] = [
     categorySlug: 'tabs',
   },
   {
-    slug: 'add-to-document',
-    title: 'Add a Tab to Another Document',
-    description: 'Add the active tab to another document you own; both share the same live tab.',
-    keywords: 'reuse share tab sync across documents diagrams move copy live',
+    slug: 'add-to-project',
+    title: 'Add a Tab to Another Project',
+    description: 'Add the active tab to another project you own; both share the same live tab.',
+    keywords: 'reuse share tab sync across projects diagrams move copy live',
     category: 'Tabs',
     categorySlug: 'tabs',
   },
@@ -1491,7 +1491,7 @@ export const articles: Article[] = [
     description:
       "The full-page library: the sidebar's Overview, Spaces and More, views, and folders.",
     keywords:
-      'library home dashboard files my documents my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
+      'library home dashboard files my projects my diagrams list manage browse sidebar overview spaces more keyboard navigation tree',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1500,7 +1500,7 @@ export const articles: Article[] = [
     slug: 'tags',
     title: 'Tags',
     description:
-      'Coloured labels you put on your documents to group related ones together, across folders and teams.',
+      'Coloured labels you put on your projects to group related ones together, across folders and teams.',
     keywords:
       'tag tags label labels labelling categorise categorize group grouping colour color code coded organise organize project client status filter chip chips rename delete',
     category: 'Explorer',
@@ -1511,9 +1511,9 @@ export const articles: Article[] = [
     slug: 'explorer-panel',
     title: 'Explorer Panel',
     description:
-      'The compact in-editor Explorer: the same Overview, Spaces and More, opening documents in place.',
+      'The compact in-editor Explorer: the same Overview, Spaces and More, opening projects in place.',
     keywords:
-      'sidebar overview spaces more tree keyboard switch documents diagrams files library in editor menu button hamburger popover open more menu new share export',
+      'sidebar overview spaces more tree keyboard switch projects diagrams files library in editor menu button hamburger popover open more menu new share export',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1535,7 +1535,7 @@ export const articles: Article[] = [
     description:
       'The Explorer\u2019s landing view: what you use most and last, what happened, and every history.',
     keywords:
-      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand landing start banner greeting activity history document history team activity whats new latest events log notifications updates recent changes calendar month view stacked grouped collapse day colour color red amber green unread unseen new badge since last visit who did what other people filter local time board sheet dashboard form',
+      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand landing start banner greeting activity history project history team activity whats new latest events log notifications updates recent changes calendar month view stacked grouped collapse day colour color red amber green unread unseen new badge since last visit who did what other people filter local time board sheet dashboard form',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
@@ -1544,17 +1544,17 @@ export const articles: Article[] = [
     slug: 'activity',
     title: 'Inbox',
     description:
-      'What is outstanding for you across every document: open actions and comment threads.',
+      'What is outstanding for you across every project: open actions and comment threads.',
     keywords:
-      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross document all documents cross diagram all diagrams local only offline this browser',
+      'activity inbox to do todo tasks my actions assigned to me assigned by me outstanding waiting open threads unresolved comments replies pending work queue what needs me badge count cross project all projects cross diagram all diagrams local only offline this browser',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',
   },
   {
     slug: 'recent',
-    title: 'Recent Documents',
-    description: 'The documents that changed most recently, across every folder, team and share.',
+    title: 'Recent Projects',
+    description: 'The projects that changed most recently, across every folder, team and share.',
     keywords:
       'history last opened latest edited previously hide exclude remove clutter show restore visible folder location where filed root breadcrumb diagrams filter newest twelve',
     category: 'Explorer',
@@ -1564,7 +1564,7 @@ export const articles: Article[] = [
   {
     slug: 'shared-with-you',
     title: 'Shared With Me',
-    description: 'Documents other people have shared with you, collected in one place.',
+    description: 'Projects other people have shared with you, collected in one place.',
     keywords:
       'shared with me received from others incoming shares collaborations dismiss role owner',
     category: 'Explorer',
@@ -1574,7 +1574,7 @@ export const articles: Article[] = [
   {
     slug: 'folders',
     title: 'Folders',
-    description: 'Group documents into a nestable tree, and move them between folders.',
+    description: 'Group projects into a nestable tree, and move them between folders.',
     keywords: 'organise organize directory nest move tree group files',
     category: 'Explorer',
     categorySlug: 'explorer',
@@ -1585,16 +1585,16 @@ export const articles: Article[] = [
     title: 'Default Folders',
     description: 'Choose the folder new diagrams, whiteboards and boards land in automatically.',
     keywords:
-      'default folder where new documents go automatic placement file whiteboards retrospectives kanban diagrams use as default settings documents new document wizard pages plan',
+      'default folder where new projects go automatic placement file whiteboards retrospectives kanban diagrams use as default settings projects new project wizard pages plan',
     category: 'Explorer',
     categorySlug: 'explorer/folders',
     parentSlug: 'folders',
   },
   {
     slug: 'filters',
-    title: 'Search and Filter Documents',
+    title: 'Search and Filter Projects',
     description:
-      'Narrow any document list with words, chips or typed filters like made-by:ai, and share it as a link.',
+      'Narrow any project list with words, chips or typed filters like made-by:ai, and share it as a link.',
     keywords:
       'search find filter filters chips narrow refine query token tokens made by ai generated opens in mode diagram draw template retrospective kanban edited date last week recent people me others owner space team shared unsorted unfiled root lens results pages plan',
     category: 'Explorer',
@@ -1603,11 +1603,11 @@ export const articles: Article[] = [
   },
   {
     slug: 'personal-space',
-    title: 'My Documents and Folders',
+    title: 'My Projects and Folders',
     description:
-      'Your own library: the folders you create, and your unfiled documents at its root.',
+      'Your own library: the folders you create, and your unfiled projects at its root.',
     keywords:
-      'my documents personal space library my work your documents your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
+      'my projects personal space library my work your projects your diagrams own files root folder organise organize unsorted unfiled made by ai generated favourite favorite star starred bookmark pin quick access',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Your Library',
@@ -1615,7 +1615,7 @@ export const articles: Article[] = [
   {
     slug: 'team-spaces',
     title: 'Team Spaces',
-    description: 'Each team as a space beside My documents, its shared folders, and your invites.',
+    description: 'Each team as a space beside My projects, its shared folders, and your invites.',
     keywords: 'teams team spaces shared workspace invites membership group new team',
     category: 'Explorer',
     categorySlug: 'explorer',
@@ -1644,7 +1644,7 @@ export const articles: Article[] = [
   {
     slug: 'teams',
     title: 'Teams',
-    description: 'Invite members, assign roles, and share documents across a team.',
+    description: 'Invite members, assign roles, and share projects across a team.',
     keywords: 'workspace organisation organization members invite group company',
     category: 'Collaboration',
     categorySlug: 'collaboration',
@@ -1998,7 +1998,7 @@ export const articles: Article[] = [
     title: 'Pages',
     description: 'A paper-sized surface for the prose a label cannot hold.',
     keywords:
-      'page document doc paper sheet a4 prose writing write rich text brief memo report notes longform masthead heading subtitle word processor',
+      'page project doc paper sheet a4 prose writing write rich text brief memo report notes longform masthead heading subtitle word processor',
     category: 'Palette',
     categorySlug: 'palette/tools',
     parentSlug: 'tools',
@@ -2201,8 +2201,8 @@ export const articles: Article[] = [
     parentSlug: 'teams',
   },
   {
-    slug: 'team-shared-documents',
-    title: 'Team Shared Documents',
+    slug: 'team-shared-projects',
+    title: 'Team Shared Projects',
     description: 'A per-team folder tree every member can manage.',
     keywords: 'shared library folder team files workspace common diagrams',
     category: 'Collaboration',
@@ -2242,7 +2242,7 @@ export const articles: Article[] = [
   {
     slug: 'embeds',
     title: 'Embeds',
-    description: 'Drop a live document into another page, read-only or editable by link role.',
+    description: 'Drop a live project into another page, read-only or editable by link role.',
     keywords: 'iframe embed website notion confluence wiki blog integrate',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
@@ -2251,7 +2251,7 @@ export const articles: Article[] = [
   {
     slug: 'live-image',
     title: 'Live Image',
-    description: 'Copy an always-current image of a document for READMEs and docs.',
+    description: 'Copy an always-current image of a project for READMEs and docs.',
     keywords: 'readme badge always current screenshot png url auto updating',
     category: 'Collaboration',
     categorySlug: 'collaboration/sharing',
@@ -2435,9 +2435,9 @@ export const articles: Article[] = [
     categorySlug: 'search-panel',
   },
   {
-    slug: 'search-documents',
-    title: 'Finding Documents and Folders',
-    description: 'Search across your documents, folders, and the documents shared with you.',
+    slug: 'search-projects',
+    title: 'Finding Projects and Folders',
+    description: 'Search across your projects, folders, and the projects shared with you.',
     keywords: 'find lookup locate files library open diagrams',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -2446,7 +2446,7 @@ export const articles: Article[] = [
   {
     slug: 'search-teams',
     title: 'Searching Teams',
-    description: 'Find teams and their shared folders and documents from the search panel.',
+    description: 'Find teams and their shared folders and projects from the search panel.',
     keywords: 'find team shared folders lookup locate',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',
@@ -2456,7 +2456,7 @@ export const articles: Article[] = [
     slug: 'search-tabs-and-elements',
     title: 'Finding Tabs and Elements',
     description:
-      'Inside a document, jump to any tab or element, including text inside table cells.',
+      'Inside a project, jump to any tab or element, including text inside table cells.',
     keywords: 'find jump locate text label shape board lookup',
     category: 'Search Panel',
     categorySlug: 'search-panel/the-search-panel',

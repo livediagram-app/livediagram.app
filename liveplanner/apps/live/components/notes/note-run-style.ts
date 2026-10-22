@@ -7,7 +7,7 @@
 // a shape with its own text fields), so every unset delta falls back to the
 // fixed body style below.
 
-import { RUN_XS_PX, type RunHeading, type RunSize, type TextRun } from '@liveplanner/document';
+import { RUN_XS_PX, type RunHeading, type RunSize, type TextRun } from '@liveplanner/project';
 import { isSafeFollowUrl } from '@/lib/url-safety';
 
 // Body size, in px. Small enough to fit a real paragraph in the popover,

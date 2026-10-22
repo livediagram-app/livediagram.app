@@ -5,7 +5,7 @@ import {
   isBoxed,
   isVotableInVote,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { ArrowLabels } from '@/hooks/canvas/useArrowLabelLayouts';
 import type {
   LayerDrawn,
@@ -21,7 +21,7 @@ import type { BoxedShared } from './sheet-chart-renderer';
 
 // Every element of the canvas in paint order (arrows and boxed views interleaved, so `bringToFront` /
 // `sendToBack` reorder arrows relative to boxes), each a PreviewedElement drawn from its drag preview
-// entry or the document. Memoised: every prop is identity-stable across editor renders that change
+// entry or the project. Memoised: every prop is identity-stable across editor renders that change
 // nothing it draws, so a press or a release that renders the editor (a drag beginning or ending) does
 // not walk the board's element views (docs/specs/008-canvas/canvas-performance.md "A move re-renders
 // what moved").

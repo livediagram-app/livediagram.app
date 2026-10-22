@@ -141,9 +141,9 @@ describe('untitledNameForTemplate', () => {
     expect(untitledNameForTemplate('kanban')).toBe('Untitled Kanban Board');
     expect(untitledNameForTemplate('bug-triage')).toBe('Untitled Bug Tracker');
   });
-  it('keeps "Untitled document" for blank or no template', () => {
-    expect(untitledNameForTemplate('blank')).toBe('Untitled document');
-    expect(untitledNameForTemplate(null)).toBe('Untitled document');
+  it('keeps "Untitled project" for blank or no template', () => {
+    expect(untitledNameForTemplate('blank')).toBe('Untitled project');
+    expect(untitledNameForTemplate(null)).toBe('Untitled project');
   });
 });
 

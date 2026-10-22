@@ -186,7 +186,7 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
-- **Project** is what a person makes: a named set of Board, Sheet, Dashboard and Form tabs, with its items, sharing and history. Copy, help, email and agent descriptions say project, never "document", "file" or "board" (code identifiers, tables and routes still say document until their rename lands).
+- **Project** is what a person makes: a named set of Board, Sheet, Dashboard and Form tabs, with its items, sharing and history. Copy, help, email and agent descriptions say project, never "document", "file" or "board", and so do code identifiers, tables and routes.
 - **Mode** is how a tab is worked on; there is one, **Plan**, shared by everyone on the tab and never a type of project or tab.
 - **Kind** is what a tab is: a Board, Sheet, Dashboard or Form tab (a fresh tab is the general kind until Start Planning sets one).
 - **Template** is what a project was made from; a template family (Retrospectives, Kanban) is never a kind.
@@ -206,7 +206,7 @@ apps/
   cli/          # the liveplanner command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
-  document/       # project data model (Tab, Element types + element helpers)
+  project/       # project data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
@@ -217,7 +217,7 @@ packages/
   plan-art/       # Plan tab images (Board, Sheet, Dashboard as laid out) for editor exports + MCP previews (pure)
   items/          # items, item types, fields, ranks, writes and the Plan board projection (pure)
   sheets/         # the Sheet engine: A1 addressing, formulas, recalculation, writes, CSV (pure)
-  document-views/ # read-only text views of a tab (outline, layout, ...) for agents and scripts
+  project-views/ # read-only text views of a tab (outline, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   api-client/     # the api client the MCP server and the CLI share (fetch, timeouts, ApiError)
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides

@@ -11,5 +11,5 @@ Follow the references below only as needed; never upfront.
 - ./plan-tour.md - when working on the Plan tour: the first-time guided tour of Plan mode, offered once a board or Sheet is open and run on it without changing it, its Boards and Spreadsheets tracks, its Settings row and telemetry
 - ./plan-agents.md - when working on how agents (MCP, CLI) read the plan, name columns, types and fields, and change card types
 - ./linked-boards.md - when working on linked boards: the Actions board that collects every action, linked cards kept in step with the canvas, Won't Do
-- ./items.md - when working on items and the item store: fields, item types, writes, access, live sync, undo, offline documents, copies, limits
+- ./items.md - when working on items and the item store: fields, item types, writes, access, live sync, undo, offline projects, copies, limits
 - ./blueprints/README.md - when implementing Plan mode, the Plan board or the item store: file-level contracts, constants, defaults and tests

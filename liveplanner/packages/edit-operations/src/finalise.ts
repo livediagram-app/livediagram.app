@@ -22,7 +22,7 @@ import {
   type Tab,
   settleDiagramKeys,
   tagColoursOf,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { kindOf } from './element-text';
 import { ROUTE_KEYS, rerouted } from './operations/connect';
 import { sameValue } from './equality';

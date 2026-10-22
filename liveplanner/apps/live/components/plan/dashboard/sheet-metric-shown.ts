@@ -10,7 +10,7 @@ import {
   sparklineOf,
   summarise,
 } from '@liveplanner/sheets';
-import type { SheetMetricContent } from '@liveplanner/document';
+import type { SheetMetricContent } from '@liveplanner/project';
 import type { SheetRead } from './useSheetReader';
 import type { SheetMetricShown } from '@liveplanner/plan-art';
 

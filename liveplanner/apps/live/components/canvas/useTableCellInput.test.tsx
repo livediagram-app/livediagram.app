@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { createTable } from '@liveplanner/document';
+import { createTable } from '@liveplanner/project';
 import { useTableCellInput } from './useTableCellInput';
 
 // A selected cell's keys (docs/specs/008-canvas/canvas-and-palette.md "Selected-cell keyboard layer"): a printable key

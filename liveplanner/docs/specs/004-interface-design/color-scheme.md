@@ -186,7 +186,7 @@ Steel: a deep navy ground and the vivid violet accent, so the Explorer reads as 
 connect pages wear it too ([Night Band](../014-identity/auth-and-guest-access.md#the-look-night-band)). The editor, its
 Explorer panel and every other page keep Steel.
 
-- **How.** While the Explorer (or an account or connect page) is mounted, the document root carries `data-palette="midnight"`; under `.dark` that
+- **How.** While the Explorer (or an account or connect page) is mounted, the project root carries `data-palette="midnight"`; under `.dark` that
   attribute retargets the same tokens Steel does (selector `.dark[data-palette='midnight']`, which outranks `.dark`).
   Menus, dialogs and tooltips opened from the Explorer portal to the body and so follow it too. The attribute is set
   before the first paint and removed when the page unmounts (`useMidnightPalette`, `apps/live/hooks/ui/`).
@@ -219,7 +219,7 @@ Explorer panel and every other page keep Steel.
   ([Usage rules](#usage-rules)).
 - **Muted text in light mode** is `slate-500` on white or `slate-50` (4.8:1, 4.6:1) and `slate-600` on `slate-100` or a
   tint, never `slate-400` (2.6:1), which stays for icons, placeholders and disabled controls. The public sites
-  (marketing, help, telemetry), the New Document wizard and the editor's small and uppercase labels follow
+  (marketing, help, telemetry), the New Project wizard and the editor's small and uppercase labels follow
   it (issue #863), held by
   `apps/live/label-contrast.test.ts`, which fails a class string pairing a small size (`text-xs`, `text-sm`,
   `text-[9px]` to `text-[13px]`) or `uppercase` with a light-mode `text-slate-400`. Dark mode keeps `slate-400`.
@@ -227,7 +227,7 @@ Explorer panel and every other page keep Steel.
   it reads at 4.5:1 on the pill's own surface, white or `slate-800` (`legibleColor`, `apps/live/lib/tab-accent.ts`).
 - Never rely on color alone to convey status; pair semantic colors with an icon or label.
 - **Contrast guard (dark mode).** A Playwright audit (`apps/live/e2e/contrast-audit.spec.ts`) walks every visible
-  text node on the New Document wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
+  text node on the New Project wizard, the editor, its dialogs and panels, and the Explorer in dark mode, composites
   the real background under it, and fails below 4.5:1 (3:1 for large text: 24px, or 18.66px bold). It has no
   allow-list. It covers **dark mode only**: light mode's colours are owned by Thomas
   ([@tommcclean](https://github.com/tommcclean)) under issue #74.

@@ -48,7 +48,7 @@ type Point = { x: number; y: number };
 async function seed(page: Page, baseURL: string, owner: string, tab: Tab): Promise<string> {
   const id = crypto.randomUUID();
   const elements = buildReferenceBoard();
-  const res = await page.request.post(`${apiBase}/documents`, {
+  const res = await page.request.post(`${apiBase}/projects`, {
     headers: ownerHeaders(owner, { Origin: new URL(baseURL).origin }),
     data: {
       id,
@@ -121,7 +121,7 @@ async function openBoard(browser: Browser, owner: string, id: string, throttle: 
   const page = await ctx.newPage();
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Emulation.setCPUThrottlingRate', { rate: throttle });
-  await page.goto(`/document/${id}`);
+  await page.goto(`/project/${id}`);
   await page.locator('[data-canvas-a11y-root]').waitFor({ timeout: 60_000 });
   await page.locator('[data-element-id="ref-0"]').first().waitFor({ timeout: 60_000 });
   const ms = await settledOpenMs(page);
@@ -140,7 +140,7 @@ async function settledOpenMs(page: Page): Promise<number> {
     const { from, busy, now } = await page.evaluate(() => {
       const tab = performance
         .getEntriesByType('resource')
-        .filter((e) => /\/documents\/[^/]+\/tabs\/[^/?]+$/.test(new URL(e.name).pathname))
+        .filter((e) => /\/projects\/[^/]+\/tabs\/[^/?]+$/.test(new URL(e.name).pathname))
         .map((e) => (e as PerformanceResourceTiming).responseEnd)
         .sort((a, b) => a - b)[0];
       return {

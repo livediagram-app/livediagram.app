@@ -1,5 +1,5 @@
-// A document's type catalogue on the wire (docs/specs/026-plan/item-types.md "Storage and sync"):
-// PUT /documents/:id/item-types for a cloud document, the record for an offline one. The save names
+// A project's type catalogue on the wire (docs/specs/026-plan/item-types.md "Storage and sync"):
+// PUT /projects/:id/item-types for a cloud project, the record for an offline one. The save names
 // the catalogue's revision it changed; the answer is the catalogue as stored (normalised) with its new
 // revision, which the editor keeps. A revision that moved on throws ItemTypesStaleError with what is stored.
 
@@ -25,24 +25,24 @@ export class ItemTypesStaleError extends Error {
 }
 
 export async function saveItemTypes(
-  scope: { ownerId: string; documentId: string; shareCode: string | null },
+  scope: { ownerId: string; projectId: string; shareCode: string | null },
   itemTypes: ItemTypeCatalogue | null,
   expectedRev: number,
 ): Promise<SavedItemTypes> {
-  if (await isOfflineId(scope.documentId)) {
-    // The same check the api makes, so an offline document never holds what a sync would refuse.
+  if (await isOfflineId(scope.projectId)) {
+    // The same check the api makes, so an offline project never holds what a sync would refuse.
     let stored: ItemTypeCatalogue | null = null;
     if (itemTypes) {
       const checked = validateItemTypeCatalogue(itemTypes);
       if (!checked.ok) throw new Error(`item types refused: ${checked.reason}`);
       stored = checked.catalogue;
     }
-    await offlineSaveItemTypes(scope.documentId, stored, Date.now());
-    // Only this editor writes an offline document: its revision is only ever the next one.
+    await offlineSaveItemTypes(scope.projectId, stored, Date.now());
+    // Only this editor writes an offline project: its revision is only ever the next one.
     return { itemTypes: stored, itemTypesRev: expectedRev + 1 };
   }
   const res = await apiFetch(
-    `${API_BASE}/documents/${encodeURIComponent(scope.documentId)}/item-types`,
+    `${API_BASE}/projects/${encodeURIComponent(scope.projectId)}/item-types`,
     {
       method: 'PUT',
       headers: await apiHeaders(scope.ownerId, { share: scope.shareCode, body: true }),

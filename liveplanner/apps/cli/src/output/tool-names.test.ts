@@ -17,8 +17,8 @@ describe('the CLI words for MCP tools', () => {
   });
 
   it('writes a tool in a message as the command', () => {
-    expect(inCliWords('That document has no Form tab. Make one with add_form.')).toBe(
-      'That document has no Form tab. Make one with liveplanner form add.',
+    expect(inCliWords('That project has no Form tab. Make one with add_form.')).toBe(
+      'That project has no Form tab. Make one with liveplanner form add.',
     );
     expect(inCliWords('read_form lists its problems; not_a_form_tab stays')).toBe(
       'liveplanner form get lists its problems; not_a_form_tab stays',

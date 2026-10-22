@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
-import { penColourHex, standardColours } from '@liveplanner/document';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { penColourHex, standardColours } from '@liveplanner/project';
+import { EditorContext } from '@/app/project/[id]/EditorContext';
 import { getTheme, themePresetColors } from '@/lib/themes';
 import { ColourPicker, type ColourPickerProps } from './ColourPicker';
 import { noColour, stableColours, standardGroup } from './colour-options';
@@ -164,7 +164,7 @@ describe('ColourPicker', () => {
     view.unmount();
     expect(onPreviewEnd).toHaveBeenCalledTimes(2);
   });
-  it('keeps Custom colours in place while a hover preview reorders the document', () => {
+  it('keeps Custom colours in place while a hover preview reorders the project', () => {
     const props = { label: 'Fill', onPick: vi.fn(), standard: [] };
     const { rerender } = render(
       <ColourPicker {...props} value="#111111" yours={['#222222', '#333333']} />,
@@ -224,7 +224,7 @@ describe('the Theme Palette', () => {
 });
 
 describe('a colour picked with +', () => {
-  it('joins the document’s custom colours, then is picked', () => {
+  it('joins the project’s custom colours, then is picked', () => {
     const addCustomColour = vi.fn();
     const onPick = vi.fn();
     render(

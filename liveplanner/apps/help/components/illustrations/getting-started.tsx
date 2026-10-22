@@ -1,15 +1,15 @@
 // Getting-started-category illustrations (docs/specs/018-help/help-app.md): beginner walkthroughs for
-// the new-document welcome flow, quick-connecting arrows,
+// the new-project welcome flow, quick-connecting arrows,
 // guest vs account, and the essential keyboard shortcuts. Composed only from
 // the shared primitives so the house style holds.
 
 import { Scene, Shape, Arrow, Dialog, Button, Label, Avatar } from './primitives';
 
-/** The New Document wizard, its one question: "What are you making today?", the
+/** The New Project wizard, its one question: "What are you making today?", the
  *  five mode cards, three then two at one height (Diagram first and chosen),
  *  each with its number key, and the footer's Skip and Create. Choosing a card
- *  creates the document there and then. */
-export function NewDocumentWelcome() {
+ *  creates the project there and then. */
+export function NewProjectWelcome() {
   return (
     <Scene w={420} h={270} bg="plain">
       <Dialog
@@ -17,7 +17,7 @@ export function NewDocumentWelcome() {
         y={10}
         w={360}
         h={252}
-        title="New Document"
+        title="New Project"
         sceneW={420}
         sceneH={270}
         scrim={false}
@@ -100,11 +100,11 @@ export function NewDocumentWelcome() {
             </g>
           );
         })}
-        {/* Footer: Open Existing Document at the left; Skip creates a Blank Diagram straight
-            away; Create makes the chosen mode's document. */}
+        {/* Footer: Open Existing Project at the left; Skip creates a Blank Diagram straight
+            away; Create makes the chosen mode's project. */}
         <line x1={30} y1={224} x2={390} y2={224} className="stroke-slate-200" strokeWidth={1} />
         <Label x={42} y={243} size={9.5} weight={600} tone="accent">
-          Open Existing Document
+          Open Existing Project
         </Label>
         <Button x={250} y={231} w={56} h={22} label="Skip" />
         <Button x={314} y={231} w={64} h={22} label="Create" variant="primary" />

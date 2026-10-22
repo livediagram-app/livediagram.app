@@ -2,7 +2,7 @@
 // lane goes; what it held stays where it is; arrows pinned to it go with it, as `rm` removes them.
 
 import type { EditRejection } from '@liveplanner/api-schema';
-import { isContainer } from '@liveplanner/document';
+import { isContainer } from '@liveplanner/project';
 import { resolveOne } from '../selectors';
 import { refsOf, type EditState } from '../state';
 import type { UnwrapOperation } from '../types';

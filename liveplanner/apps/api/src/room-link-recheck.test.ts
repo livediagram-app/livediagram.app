@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { DocumentRoom } from './document-room';
+import { ProjectRoom } from './project-room';
 import { rescopeShareLink, deleteShareLink } from './db/share';
 import { recheckAdmittedLink, shareLinkChange } from './room-link-recheck';
 import { sqliteD1 } from './test-sqlite-d1';
@@ -11,19 +11,19 @@ import { sqliteD1 } from './test-sqlite-d1';
 function arrange() {
   const db = sqliteD1();
   db.sql.exec(`
-    INSERT INTO documents (id, owner_id, name, saved_at, created_at, shareable)
+    INSERT INTO projects (id, owner_id, name, saved_at, created_at, shareable)
       VALUES ('d1', 'owner', 'Plan', 1, 1, 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t1', 'Roadmap', '{"elements":[]}', 1);
     INSERT INTO tabs (id, name, data, updated_at) VALUES ('t2', 'Pricing', '{"elements":[]}', 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
-    INSERT INTO document_tabs (document_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
-    INSERT INTO share_links (code, document_id, role, created_at, tab_id)
+    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't1', 0, 1);
+    INSERT INTO project_tabs (project_id, tab_id, order_index, added_at) VALUES ('d1', 't2', 1, 1);
+    INSERT INTO share_links (code, project_id, role, created_at, tab_id)
       VALUES ('SCOPED2345', 'd1', 'view', 1, 't2');
   `);
   return db;
 }
 
-const admitted = { shareCode: 'SCOPED2345', tabScope: 't2', documentId: 'd1' };
+const admitted = { shareCode: 'SCOPED2345', tabScope: 't2', projectId: 'd1' };
 
 describe('shareLinkChange', () => {
   it('is nothing while the link opens what the session holds', () => {
@@ -59,9 +59,9 @@ describe('recheckAdmittedLink', () => {
     });
   });
 
-  it('finds a revoke, and a link that names another document as none', async () => {
+  it('finds a revoke, and a link that names another project as none', async () => {
     const { env } = arrange();
-    expect(await recheckAdmittedLink(env, { ...admitted, documentId: 'd2' })).toEqual({
+    expect(await recheckAdmittedLink(env, { ...admitted, projectId: 'd2' })).toEqual({
       kind: 'share-revoked',
       code: 'SCOPED2345',
     });
@@ -74,7 +74,7 @@ describe('recheckAdmittedLink', () => {
 
   it('counts a link whose tab was deleted as revoked', async () => {
     const db = arrange();
-    db.sql.exec(`DELETE FROM document_tabs WHERE tab_id = 't2'`);
+    db.sql.exec(`DELETE FROM project_tabs WHERE tab_id = 't2'`);
     expect((await recheckAdmittedLink(db.env, admitted))?.kind).toBe('share-revoked');
   });
 });
@@ -122,10 +122,10 @@ function room(env: ReturnType<typeof arrange>['env'] | undefined) {
     blockConcurrencyWhile: (fn: () => Promise<void>) => fn(),
     waitUntil: () => {},
   };
-  return new DocumentRoom(state as unknown as DurableObjectState, env);
+  return new ProjectRoom(state as unknown as DurableObjectState, env);
 }
 
-const join = (r: DocumentRoom, ws: Socket, tabScope: string | null, code: string | null) =>
+const join = (r: ProjectRoom, ws: Socket, tabScope: string | null, code: string | null) =>
   r.acceptSession(
     ws as unknown as WebSocket,
     'view',
@@ -138,7 +138,7 @@ const join = (r: DocumentRoom, ws: Socket, tabScope: string | null, code: string
     'd1',
   );
 
-describe('DocumentRoom.recheckJoinedLink', () => {
+describe('ProjectRoom.recheckJoinedLink', () => {
   it('tells a session that joined on a since-widened link, then closes it', async () => {
     const { env } = arrange();
     const r = room(env);

@@ -18,7 +18,7 @@ describe('TabBar in a workbench', () => {
       <TabBar
         {...props({
           onOpenSearch: () => {},
-          workbenchLink: (labelled) => <a href="/document/d">{labelled ? 'Open' : ''}</a>,
+          workbenchLink: (labelled) => <a href="/project/d">{labelled ? 'Open' : ''}</a>,
         })}
       />,
     );

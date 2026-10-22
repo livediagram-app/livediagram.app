@@ -31,7 +31,7 @@ test('a Sheet tab takes a formula, works it out, keeps it, and fills the tab', a
   const sheetId = 'e2esheet01';
   const headers = ownerHeaders(owner, { Origin: new URL(baseURL!).origin });
   const now = Date.now();
-  const seeded = await page.request.post(`${apiBase}/documents`, {
+  const seeded = await page.request.post(`${apiBase}/projects`, {
     headers,
     data: {
       id,
@@ -86,7 +86,7 @@ test('a Sheet tab takes a formula, works it out, keeps it, and fills the tab', a
     { o: owner, sig: guestSigFor(owner) },
   );
   await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto(`/document/${id}`);
+  await page.goto(`/project/${id}`);
   await page.locator(CANVAS).waitFor();
   await dismissQuickTour(page);
 
@@ -101,7 +101,7 @@ test('a Sheet tab takes a formula, works it out, keeps it, and fills the tab', a
   // The sheet store keeps the formula as typed.
   await expect
     .poll(async () => {
-      const res = await page.request.get(`${apiBase}/documents/${id}/sheets`, { headers });
+      const res = await page.request.get(`${apiBase}/projects/${id}/sheets`, { headers });
       const body = (await res.json()) as { sheets: { id: string; cells: { i?: unknown }[] }[] };
       return JSON.stringify(body.sheets.find((s) => s.id === sheetId)?.cells ?? []);
     })

@@ -12,10 +12,10 @@
 import { useSelectionOf } from '@/hooks/canvas/useSelectionStore';
 import { EMPTY_SELECTION, type Selection } from '@/lib/selection-store';
 import { useCallback, useMemo } from 'react';
-import { isBoxed, renumberSteps, supportsRotation, takesAttachments } from '@liveplanner/document';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { isBoxed, renumberSteps, supportsRotation, takesAttachments } from '@liveplanner/project';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import type { CanvasTool } from '@/components/palette/palette.types';
-import { useIsOfflineDocument } from '@/hooks/persistence/useIsOfflineDocument';
+import { useIsOfflineProject } from '@/hooks/persistence/useIsOfflineProject';
 import {
   buildEditorCommands,
   type CommandContext,
@@ -41,8 +41,8 @@ const INERT_HANDLERS: CommandHandlers = {
   addComment: noop,
   editNote: noop,
   createTab: noop,
-  renameDocument: noop,
-  deleteDocument: noop,
+  renameProject: noop,
+  deleteProject: noop,
   renameTab: noop,
   openTheme: noop,
   openCanvasOptions: noop,
@@ -75,8 +75,8 @@ export function useEditorCommands(open: boolean): {
   );
   const {
     isReadOnly,
-    canShareDocument,
-    documentId,
+    canShareProject,
+    projectId,
     activeTab,
     deleteSelected,
     deleteMultiSelected,
@@ -93,10 +93,10 @@ export function useEditorCommands(open: boolean): {
     openComments,
     openNote,
     addTab,
-    deleteDocument,
+    deleteProject,
     setShareDialogOpen,
     setCanvasThemeTab,
-    requestRenameDocument,
+    requestRenameProject,
     requestRenameTab,
     undo,
     redo,
@@ -117,9 +117,9 @@ export function useEditorCommands(open: boolean): {
     workbenchMode,
   } = ctx;
 
-  // Offline documents (docs/specs/006-document/offline-mode.md) have nothing on the server to share, so the
+  // Offline projects (docs/specs/006-project/offline-mode.md) have nothing on the server to share, so the
   // Share command is withheld the same way the header hides its button.
-  const isOffline = useIsOfflineDocument(documentId);
+  const isOffline = useIsOfflineProject(projectId);
 
   const isMulti = multiSelectedIds.size > 0;
   const selectionCount = isMulti ? multiSelectedIds.size : selectedId ? 1 : 0;
@@ -153,7 +153,7 @@ export function useEditorCommands(open: boolean): {
       hasAnimation,
       tabHasSteps,
       marker,
-      canShare: canShareDocument,
+      canShare: canShareProject,
       isOffline,
       workbench: workbenchMode,
       canvasTool,
@@ -176,7 +176,7 @@ export function useEditorCommands(open: boolean): {
       hasAnimation,
       tabHasSteps,
       marker,
-      canShareDocument,
+      canShareProject,
       isOffline,
       workbenchMode,
       canvasTool,
@@ -210,11 +210,11 @@ export function useEditorCommands(open: boolean): {
       if (selectedId && singleTakesAttachments) openNote(selectedId);
     },
     createTab: addTab,
-    renameDocument: requestRenameDocument,
-    // deleteDocument confirms internally and (for the current document)
-    // redirects to /explorer; it needs the document's own id.
-    deleteDocument: () => {
-      if (documentId) void deleteDocument(documentId);
+    renameProject: requestRenameProject,
+    // deleteProject confirms internally and (for the current project)
+    // redirects to /explorer; it needs the project's own id.
+    deleteProject: () => {
+      if (projectId) void deleteProject(projectId);
     },
     renameTab: requestRenameTab,
     // Replicate the telemetry the menu/header entry points fire, since the

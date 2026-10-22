@@ -3,9 +3,9 @@
 **Status: built (Viewer, Participant, Editor links); token levels, ownership powers and collaboration keys still
 ahead ([Later](#later)).**
 
-Everyone who reaches a document without owning it, by a share link or an embed, does so at one of three **access
+Everyone who reaches a project without owning it, by a share link or an embed, does so at one of three **access
 levels**: **Viewer**, **Participant** or **Editor**. **Ownership** is not a level: it is a set of powers over the
-document, held apart from editing. The research behind this is in `docs/research/access-levels/`.
+project, held apart from editing. The research behind this is in `docs/research/access-levels/`.
 
 ## Why
 
@@ -44,7 +44,7 @@ A Participant changes the board's **content**, never its **shape**.
 | On a Plan board: add a card, edit its fields, move it between columns (an Actions board's linked card too: its action follows once an Editor's editor heals, [Linked boards](../026-plan/linked-boards.md)) | Columns, card types, custom fields, board settings; delete, trash or archive a card; restore one with its votes; clear or keep a template's example cards                                                                                                                                                        |
 | On a Sheet: write cells' values, pick from dropdowns and tick checkboxes (checked by the Sheet's validation rules)                                                                                          | Cells' formats, rows and columns, the Sheet's title, its validation and format rules, adding or removing a Sheet                                                                                                                                                                                                 |
 | Undo and redo its own changes (the room puts back any part it may not make)                                                                                                                                 | Undo or redo anyone else's                                                                                                                                                                                                                                                                                       |
-| Nothing about tabs                                                                                                                                                                                          | Add, rename, reorder or delete tabs; change a tab's mode, theme, canvas or finish; tidy a tab's layout ([Tidy Up](../008-canvas/layout-cleanup.md#the-tidy-up-button)); rename the document                                                                                                                      |
+| Nothing about tabs                                                                                                                                                                                          | Add, rename, reorder or delete tabs; change a tab's mode, theme, canvas or finish; tidy a tab's layout ([Tidy Up](../008-canvas/layout-cleanup.md#the-tidy-up-button)); rename the project                                                                                                                      |
 
 - **"It added"** means the server recorded the Participant as the element's adder when the element was created.
   An element an Editor added, or one added before this level existed, belongs to nobody a Participant can claim.
@@ -70,7 +70,7 @@ A Participant changes the board's **content**, never its **shape**.
 
 ## Building a new feature
 
-Every feature a shared document can reach states, in its own spec, what an Editor, a Participant and a Viewer may do
+Every feature a shared project can reach states, in its own spec, what an Editor, a Participant and a Viewer may do
 with it, and is gated and tested to match ([Gate a feature by share role](../../instructions/gate-a-feature-by-share-role.md)).
 The defaults: a Viewer only looks; a Participant takes part and adds content but never reshapes the board, runs the
 session or changes settings; the rest is an Editor's. The role tests (the participant rule's leak test, the editor
@@ -87,7 +87,7 @@ capabilities, the Participant palette, the room) keep a new feature from widenin
 
 ## Ownership
 
-Ownership is a set of powers, held by the document's **owner**: its creator, or whoever moved it into their own
+Ownership is a set of powers, held by the project's **owner**: its creator, or whoever moved it into their own
 library. Sharing (creating, revoking and rescoping links, the share password) stays with the owner; delete, Trash
 and moves stay with the owner and joined team members. No level grants any of them. The full ownership model is
 [Later](#later).
@@ -98,26 +98,26 @@ and moves stay with the owner and joined team members. No level grants any of th
   **Participant** ("Adds stickies, writes and votes. Can't reshape the board.") and **Viewer** ("Watches, pans and
   zooms. Can't comment, vote or change a thing."). A pass's header band prints `EDITOR`, `PARTICIPANT` or `VIEWER`, each with a
   glyph and a colour that meets WCAG 2.2 AA against its word ([Live app](../007-editor/live-app.md#share-dialog)).
-- `POST /api/documents/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
+- `POST /api/projects/:id/share` takes `role: 'view' | 'participate' | 'edit'`; an omitted role is `edit`, as today.
 - The editor's role pill reads Editing, Participating or Viewing.
-- **A visit is through one link.** Opening a document through a share link records that link with the visit
-  (`shared_with.share_code`). Shared with you, Home and every leg that reads a past visit open the document through
+- **A visit is through one link.** Opening a project through a share link records that link with the visit
+  (`shared_with.share_code`). Shared with you, Home and every leg that reads a past visit open the project through
   that same link only while it is live. **Revoking a link** (or deleting the tab it is scoped to) ends every visit it
-  granted: those people lose the document from Shared with you, and from the copy and activity legs, even when
+  granted: those people lose the project from Shared with you, and from the copy and activity legs, even when
   another link of the same level is still live; a newer link reaches them only if they open it. A visit recorded
   before links were recorded keeps the older rule (the oldest live link of its level and scope) until its next open.
 - **Losing access is explained, never silent.** A session open on a revoked pass leaves for the Explorer, which shows
-  a warning toast ("The link you opened that document with was revoked, so it is no longer open to you."). A session
+  a warning toast ("The link you opened that project with was revoked, so it is no longer open to you."). A session
   ended by an access change (a team removal, a share password, [API](../015-api/api.md) "Access changes end the
   sessions they affect") reloads into the access check, and a refusal then reads **No Longer Shared With You** ("Your
-  access to this document was removed while you had it open. Ask its owner to share it with you again.") instead of
+  access to this project was removed while you had it open. Ask its owner to share it with you again.") instead of
   "doesn't exist or isn't yours". The editor notes the reason in `sessionStorage` just before it goes and the first
   page after takes it once (`apps/live/lib/access-notice.ts`, honoured for a minute).
 - The collaborators list badges each person Editor, Participant or Viewer; "Shared with you" chips read Edit,
   Participate or View.
 - **Embeds look only below Editor**: an embed of a Participant link renders as a Viewer, since an embed has no
   identity screen to put a name on what it adds ([Embeds](embeds.md)).
-- The MCP's `share_document` creates a **Participant** link when no level is named.
+- The MCP's `share_project` creates a **Participant** link when no level is named.
 
 ## Integrity
 
@@ -128,7 +128,7 @@ and moves stay with the owner and joined team members. No level grants any of th
   to everyone.
 - **A Participant's answers persist without an editor.** Each content write also folds the room's recorded answers
   (dots, responses) into the stored tab, and the editor flushes one after an answer.
-- **The adder is stamped by the server**, never read from the request, from the caller's identity on the document.
+- **The adder is stamped by the server**, never read from the request, from the caller's identity on the project.
   A copy is nobody's addition: duplicating or pasting an element never carries its adder along.
 - **Peers take only what a Participant changed.** The room relays a Participant's update as the fields it changed,
   never the stored element whole, so an Editor's change that has not been saved yet is never undone by it.
@@ -150,7 +150,7 @@ and moves stay with the owner and joined team members. No level grants any of th
 
 ## Telemetry
 
-`Document·Shared` and `Document·Joined` take the type `Participate` beside `Edit` and `View`
+`Project·Shared` and `Project·Joined` take the type `Participate` beside `Edit` and `View`
 ([Telemetry](../017-telemetry/telemetry.md)).
 
 ## Later

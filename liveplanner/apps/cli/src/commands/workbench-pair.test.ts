@@ -124,7 +124,7 @@ describe('workbench pair', () => {
           tokenId: 't',
           origin: ORIGIN,
           name: 'Acme Editor',
-          scope: 'document',
+          scope: 'project',
           pairedAt: NOW,
         },
       },
@@ -139,7 +139,7 @@ describe('workbench pair', () => {
     expect(await pair(io, '--json')).toBe(0);
     expect(io.out().split('\n')).toEqual([
       JSON.stringify({ status: 'pending', pairingUrl: PAIRING_URL, expiresAt: EXPIRES }),
-      JSON.stringify({ status: 'paired', origin: ORIGIN, name: null, scope: 'document' }),
+      JSON.stringify({ status: 'paired', origin: ORIGIN, name: null, scope: 'project' }),
       '',
     ]);
   });
@@ -258,7 +258,7 @@ describe('workbench pair', () => {
           tokenId: 't',
           origin: ORIGIN,
           name: null,
-          scope: 'document',
+          scope: 'project',
           pairedAt: NOW,
         },
       },

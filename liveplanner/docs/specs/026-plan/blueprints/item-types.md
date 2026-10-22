@@ -25,7 +25,7 @@ src/type-catalogue.ts  ItemTypeCatalogue, limits, PLAN_TYPE_COLOURS, BUILT_IN_FI
                        newItemTypeId, newCustomFieldId, defaultNewTitle, validateItemTypeCatalogue,
                        readItemTypeCatalogue, builtInCatalogue
 src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3` on a clash; shared with
-                       @liveplanner/document's agent element ids)
+                       @liveplanner/project's agent element ids)
 ```
 
 - `validateItemTypeCatalogue(input)`: version 1; 1 to `ITEM_TYPES_MAX` types; each `id` matches
@@ -43,22 +43,22 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
 
 ## Data and persistence
 
-- `documents.item_types TEXT NULL` and `documents.item_types_rev INTEGER NOT NULL DEFAULT 0`, in the baseline
+- `projects.item_types TEXT NULL` and `projects.item_types_rev INTEGER NOT NULL DEFAULT 0`, in the baseline
   migration.
-- `db/documents.ts`: `DocumentDTO.itemTypes` read through `readItemTypeCatalogue`, `DocumentDTO.itemTypesRev`
+- `db/projects.ts`: `ProjectDTO.itemTypes` read through `readItemTypeCatalogue`, `ProjectDTO.itemTypesRev`
   (0 when absent); written by the create's INSERT (copy, sync, Drive; the revision starts at 0) and by
-  `setDocumentItemTypes(env, id, catalogue | null, expectedRev?)`, one guarded UPDATE raising `item_types_rev` and
-  returning it, or null when `expectedRev` is given and no longer stored; `copyDocument` copies the column. Never in
+  `setProjectItemTypes(env, id, catalogue | null, expectedRev?)`, one guarded UPDATE raising `item_types_rev` and
+  returning it, or null when `expectedRev` is given and no longer stored; `copyProject` copies the column. Never in
   a meta upsert's UPDATE.
-- Offline: `OfflineDocumentRecord.itemTypes?`; `offlineSaveItemTypes(id, catalogue, now)`; `recordToDocument`
+- Offline: `OfflineProjectRecord.itemTypes?`; `offlineSaveItemTypes(id, catalogue, now)`; `recordToProject`
   reads it back. Duplicate (both paths), Sync to Cloud, Take Offline and the Drive envelope
-  (`DocumentEnvelope.document.itemTypes?`, still version 1) carry it.
+  (`ProjectEnvelope.project.itemTypes?`, still version 1) carry it.
 
 ## Interfaces and contracts
 
 | Method | Path                             | Gate                 | Body               | Answer              |
 | ------ | -------------------------------- | -------------------- | ------------------ | ------------------- |
-| PUT    | `/api/documents/{id}/item-types` | edit, whole document | `ItemTypesRequest` | `ItemTypesResponse` |
+| PUT    | `/api/projects/{id}/item-types` | edit, whole project | `ItemTypesRequest` | `ItemTypesResponse` |
 
 - `ItemTypesRequest = { itemTypes, expectedRev? }`; `ItemTypesResponse = { itemTypes, itemTypesRev }`.
 - 400 `{ error: 'item_types_invalid', reason }` for a catalogue that fails; 400 for no `itemTypes` key, bad JSON or
@@ -71,8 +71,8 @@ src/slug.ts            slugText, cutSlug, uniqueSlug (accents folded, `-2`, `-3`
 
 ## Editor
 
-- `editor-persistence`: `documentItemTypes` state, the catalogue as stored with its revision (`SavedItemTypes
-{ itemTypes, itemTypesRev }`), seeded by `seed-fetched-document`.
+- `editor-persistence`: `projectItemTypes` state, the catalogue as stored with its revision (`SavedItemTypes
+{ itemTypes, itemTypesRev }`), seeded by `seed-fetched-project`.
 - `packages/items/src/type-catalogue-change.ts`: `CatalogueChange { before, after }`, `rebaseCatalogueChange(current,
 change)` (exactly `after` on `before`; otherwise deleted types removed, changed ones replaced, added ones placed after
   the type they follow in `after`, first when they lead, last when that type is gone; never empty) and
@@ -87,7 +87,7 @@ change)` (exactly `after` on `before`; otherwise deleted types removed, changed 
   only that change with "Couldn’t save the card types". Each change is one undo step: undo makes
   `inverseCatalogueChange(change)`, redo the change, each as a new pending change without a step.
 - Agents (`packages/agent-verbs`): `changeCardTypes` reads the plan, applies its changes and saves naming
-  `plan.itemTypesRev`; `bringBoardCardTypes` names the document's `itemTypesRev`. A stale refusal reads again and
+  `plan.itemTypesRev`; `bringBoardCardTypes` names the project's `itemTypesRev`. A stale refusal reads again and
   applies again, up to `CARD_TYPES_SAVE_ATTEMPTS` (3), then answers the `item_types_stale` refusal.
 - `PlanContext`: `types`, `itemTypes`, `editType(id | 'new')`; `usePlanSlice` holds `editingTypeId`.
 - Parent: `PARENT_FIELD_ID` (`'parent'`) and `PARENT_FIELD` (`{ id: 'parent', label: 'Parent', kind: 'card',
@@ -191,7 +191,7 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 
 ## Security and trust
 
-- Only whole-document editors write the catalogue; it holds names and colours, no content, so tab-scoped
+- Only whole-project editors write the catalogue; it holds names and colours, no content, so tab-scoped
   sessions hear it. The api validates every write; the editor validates before saving (same function).
 
 ## Performance and limits
@@ -202,7 +202,7 @@ statusName)` ("{Type} cards can't be {Status}") live beside it.
 
 - Panel rows are focusable list items named "<Name>, N items"; Enter or Space opens the editor. Swatches and
   glyphs are radio groups with names ("Cyan", "Chat glyph"). The editor's problems are named in text beside
-  Save. Copy: "Card Types", "+ Add Type", "Add Default Types", its confirm "Add {list} to this document’s card types? They go after the ones you have, and nothing you have changes." with "Add Types", "New Card Type", "Edit Card Type",
+  Save. Copy: "Card Types", "+ Add Type", "Add Default Types", its confirm "Add {list} to this project’s card types? They go after the ones you have, and nothing you have changes." with "Add Types", "New Card Type", "Edit Card Type",
   "+ Add Field", "Built-In Fields", "New Custom Field", "Add Custom Field", "Show on card", "Delete",
   "Keep as Item".
 
@@ -264,7 +264,7 @@ a board takes (Kanban: Tasks and Actions, Sprint: Stories, Tasks and Bugs, Bug T
 - `catalogueWithBoardTypes(stored, elements)`: `typesOf(stored)` (empty for null) with the missing ones after,
   capped at `ITEM_TYPES_MAX`; null when nothing changes.
 - `typesOf(null)` is `[]`; `validateItemTypeCatalogue` takes 0 to `ITEM_TYPES_MAX` types. `legacyCatalogue(stored,
-hasCards)` answers `defaultCatalogue()` for a null catalogue with cards (offline records in `recordToDocument` and
+hasCards)` answers `defaultCatalogue()` for a null catalogue with cards (offline records in `recordToProject` and
   `offline-items`, exported tabs in `parseImportedTab`, and the api's create with carried items).
 - `READY_MADE_DEFAULT_STATE_NAMES` / `readyMadeDefaultStatus` name a Default State for every ready-made type.
 - The editor: `usePresetCardTypes({ catalogue, itemsReady, saveCatalogue, ... })` applies it to boards

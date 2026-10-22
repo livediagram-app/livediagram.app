@@ -37,10 +37,10 @@ was found and measured at the time; it is not a spec.
 ## 1. An experiment on the real engine
 
 To ground the rest, a 15-node, 16-edge e-commerce architecture was run through the MCP's own
-`layoutGraph` (`packages/document/src/graph-input.ts`), rendered with `renderElementsToSvg`
-(`packages/document`) and rasterised with `@resvg/resvg-wasm` and the embedded Inter, exactly
+`layoutGraph` (`packages/project/src/graph-input.ts`), rendered with `renderElementsToSvg`
+(`packages/project`) and rasterised with `@resvg/resvg-wasm` and the embedded Inter, exactly
 as the MCP does. Crossings and box hits were counted with the existing `arrowPolyline`,
-`pathsCross` and `pathPassesThrough` (`packages/document/src/arrow-path-hits.ts`).
+`pathsCross` and `pathPassesThrough` (`packages/project/src/arrow-path-hits.ts`).
 
 Nodes: web app, mobile app, CDN, API gateway, auth, orders, payments, inventory,
 notifications, event bus, orders DB, inventory DB, Redis cache, Stripe, email provider.
@@ -130,18 +130,18 @@ flows**, then show the result and report its faults in words.
 
 What liveplanner has, by file:
 
-- `packages/document/src/graph-authoring.ts`: `graphToElements`; node id becomes element id;
+- `packages/project/src/graph-authoring.ts`: `graphToElements`; node id becomes element id;
   boxes sized to labels (`labelBoxSize`); entity nodes from `fields`.
-- `packages/document/src/auto-layout*.ts`: layered flow with barycentre crossing reduction
+- `packages/project/src/auto-layout*.ts`: layered flow with barycentre crossing reduction
   (`reduceCrossings`, `countCrossings`), long-edge lanes, tree, mindmap; `nodesLookUnplaced`
   to respect a placement the model made on purpose.
-- `packages/document/src/auto-layout-clusters.ts`: `layoutClusteredGraph`, groups as frames.
-- `packages/document/src/graph-input.ts`: label cap of 40 with overflow into the note, layout choice,
+- `packages/project/src/auto-layout-clusters.ts`: `layoutClusteredGraph`, groups as frames.
+- `packages/project/src/graph-input.ts`: label cap of 40 with overflow into the note, layout choice,
   line style, Mermaid via the editor's own `parseMermaid`.
 - `packages/templates`: 68 hand-tuned templates materialised server-side.
-- `packages/document/src/svg-render*.ts` and `apps/mcp/src/render.ts`: one SVG renderer for
+- `packages/project/src/svg-render*.ts` and `apps/mcp/src/render.ts`: one SVG renderer for
   editor export, MCP preview and api snapshots; resvg rasterisation.
-- `packages/document/src/arrow-path-hits.ts`: path-through-shape and path-crossing geometry,
+- `packages/project/src/arrow-path-hits.ts`: path-through-shape and path-crossing geometry,
   written for arrow rebinding, directly reusable for a lint.
 
 What is missing for the CLI: layout hints (same rank, order within a rank, an edge that does
@@ -160,7 +160,7 @@ for human-arranged tabs, where the global layout must not run.
 
 Templates are the right start for anything that is not a node graph: retrospectives, kanban,
 story maps, personas, swimlane journeys. The MCP already does `list_templates` → create with
-`template` → `update_document` ops. The CLI should mirror it, with two additions:
+`template` → `update_project` ops. The CLI should mirror it, with two additions:
 
 - `template list` stays metadata only (kind, title, one line), grouped by category; about 15
   tokens a row, so all 68 cost about 1,000 tokens. A `--category` filter keeps it smaller.
@@ -464,12 +464,12 @@ $ liveplanner graph render arch.yaml -o /tmp/arch.png
 
 A multimodal agent opens the PNG and sees clients on the left, the gateway fanning out to
 auth, orders and inventory, each database beside its service, and the `OrderPlaced` label on
-its own edge. It creates the document:
+its own edge. It creates the project:
 
 ```bash
 $ liveplanner doc create "Shop architecture" --tab Overview -f arch.yaml
 created shop-architecture (d_7Kq2) · tab Overview (t_1) · 15 nodes · lint clean
-https://liveplanner.app/document/d_7Kq2
+https://liveplanner.app/project/d_7Kq2
 ```
 
 Total feedback cost of the loop: two lint reports and a comparison (about 300 tokens) plus one
@@ -533,7 +533,7 @@ These are product decisions, not research conclusions:
 - MermaidSeqBench, arXiv 2511.14967: <https://arxiv.org/abs/2511.14967>
 - GenAI-DrawIO-Creator, arXiv 2601.05162: <https://arxiv.org/abs/2601.05162>
 - Anthropic image token estimate (width × height / 750): Claude vision documentation
-- In-repo: `packages/document/src/graph-input.ts`, `apps/mcp/src/render.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
-  `apps/mcp/src/prompts.ts`, `packages/document/src/graph-authoring.ts`, `auto-layout*.ts`,
+- In-repo: `packages/project/src/graph-input.ts`, `apps/mcp/src/render.ts`, `packages/agent-verbs/src/mcp/schema.ts`,
+  `apps/mcp/src/prompts.ts`, `packages/project/src/graph-authoring.ts`, `auto-layout*.ts`,
   `arrow-path-hits.ts`, `mermaid-serialise.ts`, `packages/icons/src/tech-icon-ids.ts`,
   `packages/templates/src/templates.ts`

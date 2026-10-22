@@ -9,12 +9,12 @@ file adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS
 | `apps/api/src/routes/folders.ts`                                                                    | `DELETE /api/folders/:id`: authorise, delete, log          |
 | `apps/live/lib/folder-delete-confirmation.ts`                                                       | The confirmation's words                                   |
 | `apps/live/hooks/persistence/useFolders.ts`                                                         | Optimistic: subfolders to the parent                       |
-| `apps/live/hooks/persistence/useDocumentListActions.ts`                                             | Confirm; optimistic: documents to the parent               |
-| `apps/live/hooks/ui/useTeamFolderActions.ts`, `apps/live/components/panels/TeamSharedDocuments.tsx` | Team folders: the same confirmation                        |
+| `apps/live/hooks/persistence/useProjectListActions.ts`                                             | Confirm; optimistic: projects to the parent               |
+| `apps/live/hooks/ui/useTeamFolderActions.ts`, `apps/live/components/panels/TeamSharedProjects.tsx` | Team folders: the same confirmation                        |
 
 ## Domain and naming
 
-- **Parent**: the deleted folder's `parent_id`; null is the root of its space (My Documents, or the
+- **Parent**: the deleted folder's `parent_id`; null is the root of its space (My Projects, or the
   team's root). "Move up" in copy, never "promote" or "fall to Unsorted".
 
 ## Behaviour and state
@@ -23,7 +23,7 @@ file adds engineering precision. Defaults are ledgered in [DEFAULTS.md](DEFAULTS
 
 1. `UPDATE folders SET parent_id = (SELECT parent_id FROM folders WHERE id = ?1), updated_at = ?2
 WHERE parent_id = ?1`
-2. `UPDATE documents SET folder_id = (SELECT parent_id FROM folders WHERE id = ?1) WHERE
+2. `UPDATE projects SET folder_id = (SELECT parent_id FROM folders WHERE id = ?1) WHERE
 folder_id = ?1` (live and trashed rows alike)
 3. `DELETE FROM folders WHERE id = ?1`
 
@@ -32,7 +32,7 @@ folder between the read and the write cannot strand its contents. Statements 1 a
 folder row still exists. `deleteFolder` returns `{ parentId }`, read once before the batch for the
 log only.
 
-Invariants: no document or folder is left pointing at a deleted folder; a subfolder's own children
+Invariants: no project or folder is left pointing at a deleted folder; a subfolder's own children
 are untouched; team and owner columns are untouched (a team folder's parent is a folder of the same
 team, by the folder routes' scope rule).
 
@@ -43,7 +43,7 @@ caller may not manage. No body change.
 
 ## Data and persistence
 
-No migration. `folders.parent_id` and `documents.folder_id` keep their `ON DELETE SET NULL`, a
+No migration. `folders.parent_id` and `projects.folder_id` keep their `ON DELETE SET NULL`, a
 backstop that the explicit statements make unreachable.
 
 ## Errors and edge cases
@@ -51,7 +51,7 @@ backstop that the explicit statements make unreachable.
 | Case                             | Handling                                              |
 | -------------------------------- | ----------------------------------------------------- |
 | Top-level folder                 | Contents to the space root (parent null)              |
-| Folder holding trashed documents | They move up too; a restore lands in the parent       |
+| Folder holding trashed projects | They move up too; a restore lands in the parent       |
 | Folder that is a default folder  | The default dangles and is kept (spec)                |
 | Batch fails                      | Nothing changes; the route answers 500 via the worker |
 
@@ -61,12 +61,12 @@ Unchanged: personal folders by ownership, team folders by joined membership of a
 
 ## Performance and limits
 
-Two indexed updates (`folders.parent_id`, `documents.folder_id`) and two point deletes per delete.
+Two indexed updates (`folders.parent_id`, `projects.folder_id`) and two point deletes per delete.
 
 ## Presentation and UX
 
-Confirmation: title `Delete "<name>"?`; message "Its documents and subfolders move to <parent>.",
-<parent> = the parent folder's name in quotes, "My Documents", or "the team's root" (`D122`); plus the
+Confirmation: title `Delete "<name>"?`; message "Its projects and subfolders move to <parent>.",
+<parent> = the parent folder's name in quotes, "My Projects", or "the team's root" (`D122`); plus the
 default-folder line when the folder is one of the reader's defaults; confirm label **Delete folder**.
 
 ## Observability

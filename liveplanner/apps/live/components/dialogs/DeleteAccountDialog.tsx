@@ -7,7 +7,7 @@
 //
 // Delete sequence:
 //
-//   1. POST DELETE /api/account — wipes the caller's documents +
+//   1. POST DELETE /api/account — wipes the caller's projects +
 //      folders + participant row on the backend. Returns the change
 //      counts on success.
 //   2. Clerk's `user.delete()` — drops the Clerk account itself.
@@ -150,7 +150,7 @@ export function DeleteAccountDialog({
               Delete Account
             </h2>
             <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              This permanently removes your documents (including any in the Trash), folders, and
+              This permanently removes your projects (including any in the Trash), folders, and
               participant record from the liveplanner server, then deletes your account. This cannot
               be undone.
             </p>

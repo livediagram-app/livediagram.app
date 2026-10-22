@@ -3,7 +3,7 @@ import { expect, test } from '../fixtures';
 import { arrange, open, type Setup, WEBBER } from './agent-session';
 import { freshUserId, installClerkStub } from './clerk-stub';
 
-// Agent presence end to end (docs/specs/024-agents/agent-presence.md): Webber has his own unshared document open
+// Agent presence end to end (docs/specs/024-agents/agent-presence.md): Webber has his own unshared project open
 // while his agent works on it with an API token. The agent shows itself with a status line and a focus; his stack
 // shows it on his own avatar, a ring marks what it is looking at, a short ttl takes it away, and the comments it
 // writes through the REST thread verbs land live.
@@ -13,14 +13,14 @@ test.use({ colorScheme: 'dark', viewport: { width: 1440, height: 860 } });
 const agent = (s: Setup) => ({ Authorization: `Bearer ${s.token}`, 'X-Liveplanner-Client': 'cli' });
 
 function setPresence(page: Page, s: Setup, data: unknown) {
-  return page.request.put(`/api/documents/${s.id}/tabs/${s.tabId}/presence`, {
+  return page.request.put(`/api/projects/${s.id}/tabs/${s.tabId}/presence`, {
     headers: agent(s),
     data,
   });
 }
 
 function comments(page: Page, s: Setup, path: string, data?: unknown) {
-  return page.request.post(`/api/documents/${s.id}/tabs/${s.tabId}/comments${path}`, {
+  return page.request.post(`/api/projects/${s.id}/tabs/${s.tabId}/comments${path}`, {
     headers: agent(s),
     ...(data === undefined ? {} : { data }),
   });

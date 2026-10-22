@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { elementFingerprint, type Element, type Tab } from '@liveplanner/document';
+import { elementFingerprint, type Element, type Tab } from '@liveplanner/project';
 vi.mock('./image-result', () => ({
   imageResult: (value: Record<string, unknown>) => ({
     content: [{ type: 'text', text: JSON.stringify(value) }],
@@ -87,7 +87,7 @@ describe('mcpOpsToEditOperations', () => {
     ).toMatch(/^ops\[1\]: element 1: "points" takes 1 to/);
   });
 
-  it('pins an added arrow by the refs read_document prints, and to an element added in the same call', () => {
+  it('pins an added arrow by the refs read_project prints, and to an element added in the same call', () => {
     const ops = mcpOpsToEditOperations(
       [
         {
@@ -162,7 +162,7 @@ describe('mcpOpsToEditOperations', () => {
     ]);
   });
 
-  it('takes a ref as read_document prints it, and passes a word naming nothing as given', () => {
+  it('takes a ref as read_project prints it, and passes a word naming nothing as given', () => {
     const uuid = '7f3a2c91-0000-4000-8000-000000000001';
     const withUuid: Tab = { ...tab, elements: [...tab.elements, box(uuid), box('frame')] };
     expect(
@@ -257,7 +257,7 @@ describe('changesetErrorText', () => {
           }),
         ),
       ),
-    ).toContain('read_document');
+    ).toContain('read_project');
   });
 });
 
@@ -273,12 +273,12 @@ describe('the tools on changesets', () => {
       if (custom) return custom;
       if (path.endsWith('/events')) return new Response(null, { status: 204 });
       if (/\/tabs\/[^/]+$/.test(path)) return Response.json({ tab });
-      return Response.json({ document: { id: 'd1', name: 'D', tabs: [{ id: 't1', name: 'T' }] } });
+      return Response.json({ project: { id: 'd1', name: 'D', tabs: [{ id: 't1', name: 'T' }] } });
     });
     return { client, sent };
   }
 
-  it('update_document ops submits one based changeset as the MCP client, and no whole-tab save', async () => {
+  it('update_project ops submits one based changeset as the MCP client, and no whole-tab save', async () => {
     const { client, sent } = await connect((path) =>
       path.endsWith('/changesets')
         ? Response.json({
@@ -291,11 +291,11 @@ describe('the tools on changesets', () => {
         : undefined,
     );
     const result = await client.callTool({
-      name: 'update_document',
-      arguments: { documentId: 'd1', mode: 'ops', rev: 6, ops: [{ op: 'remove', elementId: 'b' }] },
+      name: 'update_project',
+      arguments: { projectId: 'd1', mode: 'ops', rev: 6, ops: [{ op: 'remove', elementId: 'b' }] },
     });
     expect(result.isError).not.toBe(true);
-    const submitted = sent.find((s) => s.path === '/documents/d1/tabs/t1/changesets')!;
+    const submitted = sent.find((s) => s.path === '/projects/d1/tabs/t1/changesets')!;
     expect(submitted).toMatchObject({
       method: 'POST',
       body: {
@@ -320,8 +320,8 @@ describe('the tools on changesets', () => {
         : undefined,
     );
     const result = await client.callTool({
-      name: 'update_document',
-      arguments: { documentId: 'd1', mode: 'ops', ops: [{ op: 'remove', elementId: 'b' }] },
+      name: 'update_project',
+      arguments: { projectId: 'd1', mode: 'ops', ops: [{ op: 'remove', elementId: 'b' }] },
     });
     expect(result.isError).toBe(true);
     expect(JSON.stringify(result.content)).toContain('held by Bea');

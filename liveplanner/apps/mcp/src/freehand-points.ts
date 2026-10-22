@@ -1,10 +1,10 @@
 // A hand-drawn stroke as a model writes it (docs/specs/015-api/mcp-server.md "Hand-drawn strokes"): a freehand
 // element given `points` as canvas coordinates, `[[x, y], ...]`, the way a line is naturally described. The
-// stored form is a box and the points packed inside it (docs/specs/006-document/stroke-points.md), which no
+// stored form is a box and the points packed inside it (docs/specs/006-project/stroke-points.md), which no
 // model can write by hand, so the stroke's box is taken from its points and the points are packed by the
 // shared codec, through the stored-tab migration every entry point runs.
 
-import { isRecord, MAX_FREEHAND_POINTS, migrateIncomingElements } from '@liveplanner/document';
+import { isRecord, MAX_FREEHAND_POINTS, migrateIncomingElements } from '@liveplanner/project';
 
 type Rec = Record<string, unknown>;
 

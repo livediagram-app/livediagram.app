@@ -8,9 +8,9 @@ import { getParticipant, migrateOwnerId } from '../db';
 import { badRequest, forbidden, json, missingAuth, notFound } from '../responses';
 import { readOptionalBody, type RouteContext } from './context';
 
-const ZERO = { documents: 0, folders: 0, shared: 0 };
+const ZERO = { projects: 0, folders: 0, shared: 0 };
 
-// Moves every `owner_id` row (documents, folders, prefs, shared
+// Moves every `owner_id` row (projects, folders, prefs, shared
 // list) from a source owner to a target owner. Two flows:
 //
 //  1. Sign-up (guest → Clerk): the live app calls this once Clerk reports
@@ -78,7 +78,7 @@ export async function handleMigrate(ctx: RouteContext): Promise<Response> {
   // Once enforcement is armed an unsigned source must prove possession, with
   // one exception: an id that existed before this deployment signed anything
   // (its participant row predates GUEST_SIGNING_LIVE_AT) can still move onto a
-  // signed id, so a legacy guest who returns keeps their documents. Such an id
+  // signed id, so a legacy guest who returns keeps their projects. Such an id
   // is no more exposed than it was before enforcement; every id minted signed
   // is refused here without its signature.
   if (

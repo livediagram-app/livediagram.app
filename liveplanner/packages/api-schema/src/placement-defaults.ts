@@ -1,6 +1,6 @@
 // Default folders (docs/specs/013-workspace/default-folders.md, blueprint
-// docs/specs/013-workspace/blueprints/default-folders.md): where a person's new documents land when
-// no place is chosen, keyed by what the document is made as. The api resolves and stores them; the
+// docs/specs/013-workspace/blueprints/default-folders.md): where a person's new projects land when
+// no place is chosen, keyed by what the project is made as. The api resolves and stores them; the
 // editor and the MCP server send the creation intent; all read the keys and the intent from here.
 //
 // Two honest dimensions, most specific first: the template family it was made from (a
@@ -14,12 +14,12 @@ import {
   parseEditorMode,
   type EditorMode,
   type TabKind,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 /** The dimensions of a default key, most specific first: the order a create's keys are tried in. */
 export const DEFAULT_KEY_DIMENSIONS = ['template', 'mode'] as const;
 
-/** The tab kinds a document can be created with. The legacy `whiteboard` kind is not one: a
+/** The tab kinds a project can be created with. The legacy `whiteboard` kind is not one: a
  *  whiteboard is a general tab that opens in Draw mode. */
 export const CREATION_TAB_KINDS = ['diagram'] as const satisfies readonly TabKind[];
 export type CreationTabKind = (typeof CREATION_TAB_KINDS)[number];
@@ -29,7 +29,7 @@ export type CreationTabKind = (typeof CREATION_TAB_KINDS)[number];
 export const TEMPLATE_FAMILIES = ['retrospective', 'kanban'] as const;
 export type TemplateFamily = (typeof TEMPLATE_FAMILIES)[number];
 
-/** What a new document is made as, captured once when it is created: the create body's `intent`. */
+/** What a new project is made as, captured once when it is created: the create body's `intent`. */
 export type CreationIntent = {
   mode: EditorMode;
   tabKind: CreationTabKind;
@@ -38,7 +38,7 @@ export type CreationIntent = {
 
 export type PlacementDefaultKey = `mode:${EditorMode}` | `template:${TemplateFamily}`;
 
-/** The default keys, `<dimension>:<value>`, in the order the "New documents that open as" list
+/** The default keys, `<dimension>:<value>`, in the order the "New projects that open as" list
  *  shows them: one per editor mode and per template family, all generated. */
 export const PLACEMENT_DEFAULT_KEYS: readonly PlacementDefaultKey[] = [
   ...EDITOR_MODES.map((mode) => `mode:${mode}` as const),
@@ -86,8 +86,8 @@ export function placementDefaultTelemetryType(key: PlacementDefaultKey): string 
 }
 
 /**
- * The creation intent of a new document, from its first tab and the family of the template it was
- * made from. Structural; the tab kind is read the way the document model reads it.
+ * The creation intent of a new project, from its first tab and the family of the template it was
+ * made from. Structural; the tab kind is read the way the project model reads it.
  */
 export function creationIntentOf(
   _tab: { kind?: string } | undefined,

@@ -6,13 +6,13 @@
 // No Theme Palette: a tag belongs to no tab.
 
 import type { ReactNode } from 'react';
-import { isHexColour } from '@liveplanner/document';
+import { isHexColour } from '@liveplanner/project';
 import { useAppearance } from '@liveplanner/ui';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+import { EditorContext } from '@/app/project/[id]/EditorContext';
 import { ColourSwatchButton } from '@/components/colour/ColourSwatchButton';
 import { ColourPopover } from '@/components/colour/ColourPopover';
 import { standardGroup } from '@/components/colour/colour-options';
-import { useDocumentTags } from './DocumentTagsProvider';
+import { useProjectTags } from './ProjectTagsProvider';
 import { tagColourHex } from './tag-colour';
 
 export const TAG_NO_THEME: readonly never[] = [];
@@ -20,7 +20,7 @@ export const TAG_NO_THEME: readonly never[] = [];
 // The picker's colours for a tag: the standard row, and the custom colours other tags use, newest tag first.
 export function useTagColourOptions() {
   const { appearance } = useAppearance();
-  const { tags } = useDocumentTags();
+  const { tags } = useProjectTags();
   const yours = [...tags]
     .sort((a, b) => b.createdAt - a.createdAt)
     .map((t) => t.colour)
@@ -32,7 +32,7 @@ export function useTagColourOptions() {
   };
 }
 
-// The editor's context is held off: a colour picked here is a tag's, not one of the open document's custom colours,
+// The editor's context is held off: a colour picked here is a tag's, not one of the open project's custom colours,
 // and the tab's theme is not offered.
 export function TagColourIsolation({ children }: { children: ReactNode }) {
   return <EditorContext.Provider value={null}>{children}</EditorContext.Provider>;

@@ -99,7 +99,7 @@ const TEMPLATE_GLYPHS: Record<SheetTemplateId, ReturnType<typeof G>> = {
 
 type StartRow = { id: SetupStart; label: string; hint: string; icon: ReactNode };
 
-// The starts that are not templates: nothing, the document's cards, a file.
+// The starts that are not templates: nothing, the project's cards, a file.
 const BASICS: readonly StartRow[] = [
   { id: 'blank', label: 'Blank', hint: 'An empty grid', icon: <BlankGlyph /> },
   {
@@ -136,7 +136,7 @@ export function SheetSetupStart({
   palette: PlanPalette;
   start: SetupStart;
   onStart: (s: SetupStart) => void;
-  // Plan Cards is offered when the document has live cards.
+  // Plan Cards is offered when the project has live cards.
   plan: Pick<PlanContextValue, 'items' | 'types' | 'statusNames'> | undefined;
   live: readonly Item[];
 }) {

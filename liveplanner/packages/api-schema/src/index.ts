@@ -9,48 +9,48 @@
 // hazard; defining the shapes once means the typechecker catches it.
 //
 // Naming convention: bare nouns (`LiveDoc`, `Folder`, `ShareLink`).
-// The api worker re-exports some under its own aliases (`DocumentDTO` etc.);
+// The api worker re-exports some under its own aliases (`ProjectDTO` etc.);
 // new code should prefer the canonical names here.
 
 import type { AccessLevel } from './access-levels';
-import type { DocumentSource } from './document-source';
-import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@liveplanner/document';
+import type { ProjectSource } from './project-source';
+import type { BackgroundPattern, EditorMode, ShapeKind, Tab } from '@liveplanner/project';
 import type { CreationTabKind, TemplateFamily } from './placement-defaults';
 import type { ItemTypeCatalogue } from '@liveplanner/items';
 
 // ---------------------------------------------------------------------
-// Documents
+// Projects
 // ---------------------------------------------------------------------
 
-// Full document payload returned by `GET /api/documents/:id`. After
-// per-tab storage (docs/specs/006-document/per-tab-storage.md), `tabs` is a list of `TabSummary`
+// Full project payload returned by `GET /api/projects/:id`. After
+// per-tab storage (docs/specs/006-project/per-tab-storage.md), `tabs` is a list of `TabSummary`
 // (metadata only) — element content is fetched separately via
-// `GET /api/documents/:id/tabs/:tabId`.
+// `GET /api/projects/:id/tabs/:tabId`.
 export type LiveDoc = {
   id: string;
   ownerId: string;
   name: string;
   tabs: TabSummary[];
   // Sharing state. `shareable` is the on/off switch the owner toggles
-  // via POST/DELETE /api/documents/:id/share. `shareCode` is the short
+  // via POST/DELETE /api/projects/:id/share. `shareCode` is the short
   // code that goes into the share URL; null when never shared,
   // rotated when re-shared after a revoke.
   shareable: boolean;
   shareCode: string | null;
-  // Folder placement. null means the document sits at the root of its
+  // Folder placement. null means the project sits at the root of its
   // space. See docs/specs/013-workspace/folders.md.
   folderId: string | null;
-  // Team library placement (docs/specs/013-workspace/team-shared-documents.md). null = the owner's personal
+  // Team library placement (docs/specs/013-workspace/team-shared-projects.md). null = the owner's personal
   // tree; non-null = this team's shared library (where folderId then
   // refers to one of THAT team's folders, or null for the team's
   // root). Joined members of the team get edit access.
   teamId: string | null;
   // Provenance (docs/specs/013-workspace/folders.md). null = made by a person; non-null = generated
-  // (see DocumentSource). Set on create, never rewritten by meta updates.
-  source: DocumentSource | null;
-  // The document's type catalogue (docs/specs/026-plan/item-types.md): its own item types, or null
+  // (see ProjectSource). Set on create, never rewritten by meta updates.
+  source: ProjectSource | null;
+  // The project's type catalogue (docs/specs/026-plan/item-types.md): its own item types, or null
   // (or absent, from an older client or record) for the built-in ones. Written only by
-  // PUT /documents/:id/item-types.
+  // PUT /projects/:id/item-types.
   itemTypes?: ItemTypeCatalogue | null;
   // The catalogue's revision (ItemTypesRequest `expectedRev`): 0 until its first write.
   itemTypesRev?: number;
@@ -60,13 +60,13 @@ export type LiveDoc = {
   // participants table so visitors can render "Owner: <name>" without
   // waiting for the owner to come online in the realtime room. Null
   // when the owner has no participant row yet (e.g. Clerk-authed
-  // owners who never set a name on a document); the UI falls back to
+  // owners who never set a name on a project); the UI falls back to
   // hiding the badge in that case.
   ownerName: string | null;
   ownerColor: string | null;
 } & RecordedIntent;
 
-// The creation intent recorded on a document when it was created, written once by the create and
+// The creation intent recorded on a project when it was created, written once by the create and
 // never re-derived (docs/specs/013-workspace/default-folders.md "Recorded intent"). A null `opensIn`
 // is unknown (made before intents were recorded, or by a create without one), never Diagram, and
 // the other two are then unknown too; with a known `opensIn`, `tabKind` is known and a null
@@ -77,51 +77,51 @@ export type RecordedIntent = {
   templateFamily: TemplateFamily | null;
 };
 
-// Lightweight list projection — drops `tabs` so listing 100 documents
+// Lightweight list projection — drops `tabs` so listing 100 projects
 // doesn't ship 100 tab arrays.
-export type DocumentSummary = {
+export type ProjectSummary = {
   id: string;
   ownerId: string;
   name: string;
   shareable: boolean;
   shareCode: string | null;
   folderId: string | null;
-  // Team library placement (docs/specs/013-workspace/team-shared-documents.md) — see LiveDoc.teamId.
+  // Team library placement (docs/specs/013-workspace/team-shared-projects.md) — see LiveDoc.teamId.
   teamId: string | null;
   // Provenance (docs/specs/013-workspace/folders.md) — see LiveDoc.source.
-  source: DocumentSource | null;
+  source: ProjectSource | null;
   savedAt: number;
   createdAt: number;
   // Nothing drawn: the first tab has no elements, or there is no tab
-  // (docs/specs/006-document/document-snapshots.md). Its row shows the empty sketch and asks for no thumbnail.
+  // (docs/specs/006-project/project-snapshots.md). Its row shows the empty sketch and asks for no thumbnail.
   empty: boolean;
   // What the Details view shows (docs/specs/013-workspace/explorer-details-view.md), summed over the
-  // document's tabs; null when it has no tab or one of its tabs is not counted yet.
-  stats: DocumentStats | null;
+  // project's tabs; null when it has no tab or one of its tabs is not counted yet.
+  stats: ProjectStats | null;
 } & RecordedIntent;
 
-// A document's tab stats (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come
+// A project's tab stats (docs/specs/013-workspace/explorer-details-view.md "Where the numbers come
 // from"): the mode of the tab written last, and elements, comments and stored bytes over every tab.
-export type DocumentStats = {
+export type ProjectStats = {
   mode: EditorMode;
   elements: number;
   comments: number;
   bytes: number;
 };
 
-// A document's shared tabs: how many of its tabs are also linked into another
-// document, and how many other documents hold them. What the delete and Take
+// A project's shared tabs: how many of its tabs are also linked into another
+// project, and how many other projects hold them. What the delete and Take
 // Offline confirmations say stays behind
-// (docs/specs/006-document/tab-document-many-to-many.md, "Shared-tab notice").
+// (docs/specs/006-project/tab-project-many-to-many.md, "Shared-tab notice").
 export type SharedTabsSummary = {
   tabs: number;
-  documents: number;
+  projects: number;
 };
 
 // One row of the "Shared with you" list (shared_with):
-// a document a non-owner has previously opened via a share link. The api
+// a project a non-owner has previously opened via a share link. The api
 // worker (`listSharedWith` in db/shared.ts) builds this by joining
-// shared_with → documents → participants; the live editor's Explorer
+// shared_with → projects → participants; the live editor's Explorer
 // renders it. Canonical home here so the worker's emit and the client's
 // read can't drift apart (consistency review #7) — both import this one
 // type instead of redeclaring the shape on each side.
@@ -132,7 +132,7 @@ export type SharedWithItem = {
   // The role the visitor was granted on the share link they used.
   role: ShareRole;
   // Still-live share code for that same role, so the client can rebuild
-  // the openable `/document/<id>?s=<code>` URL — without it the link
+  // the openable `/project/<id>?s=<code>` URL — without it the link
   // lands on the owner-only path and 404s. The worker filters out rows
   // whose share was revoked (no code left), so this is never null here.
   shareCode: string;
@@ -144,7 +144,7 @@ export type SharedWithItem = {
   // the UI shows an "Unknown owner" placeholder.
   ownerName: string | null;
   ownerColor: string | null;
-  // Nothing drawn on the tab this visitor sees (the scoped tab, else the first); see DocumentSummary.empty.
+  // Nothing drawn on the tab this visitor sees (the scoped tab, else the first); see ProjectSummary.empty.
   empty: boolean;
 };
 
@@ -152,18 +152,18 @@ export type SharedWithItem = {
 // Tabs
 // ---------------------------------------------------------------------
 
-// One row of `LiveDoc.tabs`. Stored in D1 with id + document_id + name
+// One row of `LiveDoc.tabs`. Stored in D1 with id + project_id + name
 // + order_index as columns and the rest of the payload as a JSON
-// `data` column. The summary projection is what list / document
+// `data` column. The summary projection is what list / project
 // responses ship; the full payload (below) is fetched per-tab on
 // demand so the editor only ever holds the tabs the user opens.
 export type TabSummary = {
   id: string;
-  documentId: string;
+  projectId: string;
   name: string;
   orderIndex: number;
   updatedAt: number;
-  // Per-document folder name (docs/specs/006-document/tab-folders.md), read from the document_tabs
+  // Per-project folder name (docs/specs/006-project/tab-folders.md), read from the project_tabs
   // link row. Optional / omitted = the tab is loose (no folder). The
   // TabBar groups contiguous same-folder tabs under one chip.
   folder?: string;
@@ -172,17 +172,17 @@ export type TabSummary = {
   outOfScope?: true;
 };
 
-// Full tab payload returned by `GET /api/documents/:id/tabs/:tabId`:
+// Full tab payload returned by `GET /api/projects/:id/tabs/:tabId`:
 // the editor's `Tab` (elements + comments + theme + canvas) plus the
-// row's audit metadata. `folder` here is the per-document membership
-// from the document_tabs link (docs/specs/006-document/tab-folders.md), distinct from anything in the
+// row's audit metadata. `folder` here is the per-project membership
+// from the project_tabs link (docs/specs/006-project/tab-folders.md), distinct from anything in the
 // tab body — it is never stored in the `tabs.data` blob.
 //
 // `rev` (docs/specs/024-agents/agent-changesets.md "The tab revision") advances with every write
 // of the tab: an editor save, a changeset, a revert, a rename. The read also carries it as a weak ETag.
 export type TabRecord = Tab & {
   rev: number;
-  documentId: string;
+  projectId: string;
   orderIndex: number;
   updatedAt: number;
 };
@@ -192,7 +192,7 @@ export type TabRecord = Tab & {
 // ---------------------------------------------------------------------
 
 // A folder row. `parentId === null` means the folder lives at the
-// tree root. `teamId` (docs/specs/013-workspace/team-shared-documents.md): null = a personal folder gated on
+// tree root. `teamId` (docs/specs/013-workspace/team-shared-projects.md): null = a personal folder gated on
 // `ownerId`; non-null = a folder in that team's shared library,
 // gated on joined membership (ownerId then records the creator for
 // audit only).
@@ -393,7 +393,7 @@ export const SHARE_LINK_EXPIRY_MS: Record<Exclude<ShareLinkExpiry, 'never'>, num
 
 export type ShareLink = {
   code: string;
-  documentId: string;
+  projectId: string;
   role: ShareRole;
   createdAt: number;
   // Expiry (docs/specs/013-workspace/share-link-expiry.md). `expiry` is the duration chosen at creation —
@@ -440,7 +440,7 @@ export type ParticipantPresence = {
   id: string;
   name: string;
   color: string;
-  // Server-resolved role inside this document. Set by the api worker
+  // Server-resolved role inside this project. Set by the api worker
   // at WebSocket upgrade time before the request reaches the Durable
   // Object — derived from owner-id match (always 'edit') or the
   // share-code the visitor used to join. Optional so existing
@@ -459,7 +459,7 @@ export type ParticipantPresence = {
   // "Presence"), remembered from the same tab-focus ops so a late joiner sees it too. Undefined with
   // no split.
   besideTabId?: string;
-  // The id this participant WRITES INTO THE DOCUMENT for anything recorded
+  // The id this participant WRITES INTO THE PROJECT for anything recorded
   // per person — today the `responses` on a temperature check
   // (docs/specs/012-collaboration/participant-responses.md).
   //
@@ -474,7 +474,7 @@ export type ParticipantPresence = {
   // (`liveplanner:v2:collab-key`), relayed VERBATIM: unlike `id` and `role`
   // it is claimed, not verified. That is deliberate and costs nothing — it is
   // not a credential and grants nothing, and any edit-role peer could already
-  // write any participant id straight into the document. Optional, so an
+  // write any participant id straight into the project. Optional, so an
   // older client's hello still parses (the roster falls back to `id`, which
   // simply matches nothing — the behaviour before this field existed).
   key?: string;
@@ -496,8 +496,8 @@ export { base64ToBytes, bytesToBase64, bytesToBase64Url, randomBase64Url } from 
 // the telemetry dashboard can't drift (see ./title-case.ts).
 export { headlineCase, titleCase } from './title-case';
 export { objectOrEmpty } from './request-body';
-// The document format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
-export { DOCUMENT_FORMAT, DOCUMENT_FORMAT_HEADER, parseDocumentFormat } from './document-format';
+// The project format number an editor compares (docs/specs/016-platform/new-version-prompt.md).
+export { PROJECT_FORMAT, PROJECT_FORMAT_HEADER, parseProjectFormat } from './project-format';
 // The live build id a running editor compares (docs/specs/016-platform/stale-builds.md).
 export { BUILD_ID_HEADER, parseBuildId } from './build-id';
 
@@ -542,12 +542,12 @@ export type AiRequest = {
 export type CapabilitiesResponse = {
   aiEnabled: boolean;
   // For the CLI (docs/specs/015-api/blueprints/cli.md "Capabilities"), each optional so an older worker parses:
-  // where the api answers, whether sign-in exists, the OAuth server, the stored document format, and the
+  // where the api answers, whether sign-in exists, the OAuth server, the stored project format, and the
   // oldest CLI accepted for writes.
   apiBase?: string;
   authEnabled?: boolean;
   oauthIssuer?: string;
-  documentFormat?: number;
+  projectFormat?: number;
   cli?: { minVersion: string };
   // True only when the deployment has Resend configured (docs/specs/014-identity/transactional-email.md). The
   // live app hides the email-notification toggles (docs/specs/014-identity/profile-and-email-notifications.md) when false,
@@ -588,9 +588,9 @@ export * from './responses';
 export * from './trash';
 export { upgradeLegacyPreferences } from './legacy-preferences';
 export * from './profile-picture';
-// A document's own dates on create (docs/specs/015-api/api.md "Document dates"): the worker's
+// A project's own dates on create (docs/specs/015-api/api.md "Project dates"): the worker's
 // check, and the editor's before it sends an imported board's dates.
-export * from './document-dates';
+export * from './project-dates';
 // A tab's size cap, D1's row cap less headroom (docs/specs/015-api/api.md "Tab size"): the worker
 // enforces it, the editor checks it before sending.
 export * from './tab-size';
@@ -600,7 +600,7 @@ export * from './tags';
 export {
   PLACEMENT_REJECTIONS,
   isPlacementRejection,
-  type DocumentPlacement,
+  type ProjectPlacement,
   type PlacementRejection,
 } from './placement';
 
@@ -612,10 +612,10 @@ export * from './home';
 export * from './drag-preview';
 // Within reach: N most used plus N recent (docs/specs/004-interface-design/within-reach.md).
 export * from './within-reach';
-// Making a document is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).
+// Making a project is a use, a bulk import is not (docs/specs/013-workspace/explorer-home.md).
 export * from './creation-use';
-// Document views and ref refusals (docs/specs/024-agents/document-views.md).
-export * from './document-views';
+// Project views and ref refusals (docs/specs/024-agents/project-views.md).
+export * from './project-views';
 export * from './ref-errors';
 // Returning visitor (docs/specs/019-marketing/returning-visitor.md).
 export * from './recent-diagrams';
@@ -631,11 +631,11 @@ export type CurrentTokenResponse = {
   expiresAt: number | null;
 };
 export * from './api-token-format';
-export * from './document-source';
+export * from './project-source';
 export * from './catalogues';
 export * from './comment-threads';
 export * from './agent-presence';
-export * from './document-paths';
+export * from './project-paths';
 // Share-link previews (docs/specs/013-workspace/share-link-previews.md).
 export * from './share-preview';
 export * from './http-errors';

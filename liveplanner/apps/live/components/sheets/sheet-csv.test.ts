@@ -43,7 +43,7 @@ async function makeStore(title = 'Sheet 1', rows = 6, cols = 4) {
     updatedBy: by,
   };
   const store = new SheetStore({
-    scope: { documentId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
+    scope: { projectId: 'd1', ownerId: 'o', shareCode: null, tabId: null },
     self: () => by,
     locale: 'en-GB',
     pushUndo: () => {},

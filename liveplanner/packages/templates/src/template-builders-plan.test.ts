@@ -5,7 +5,7 @@ import {
   normaliseBoardSetup,
   presetSetup,
 } from '@liveplanner/items';
-import { isValidElement, type Element } from '@liveplanner/document';
+import { isValidElement, type Element } from '@liveplanner/project';
 import { describe, expect, it } from 'vitest';
 import {
   PLAN_TEMPLATE_KINDS,

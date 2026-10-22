@@ -3,7 +3,7 @@
 // Who a card can be assigned to (docs/specs/026-plan/items.md "Who may do what"): the joined members of the
 // teams you are part of. Named as items name people (hashed ids, docs/specs/026-plan/blueprints/
 // item-store.md "Security and trust"), so the person picked is the one the api signs their writes as.
-// Fetched once a document has Plan content (docs/specs/026-plan/plan-mode.md "Cost"), and only when signed in:
+// Fetched once a project has Plan content (docs/specs/026-plan/plan-mode.md "Cost"), and only when signed in:
 // a guest has no teams, so asking would only earn a 401 the browser logs on every load.
 import { useEffect, useState } from 'react';
 import { itemPersonId, type ItemPerson } from '@liveplanner/items';

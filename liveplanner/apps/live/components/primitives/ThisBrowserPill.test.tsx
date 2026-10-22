@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The This Browser pill (docs/specs/006-document/offline-mode.md#this-browser-pill).
+// The This Browser pill (docs/specs/006-project/offline-mode.md#this-browser-pill).
 
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -24,7 +24,7 @@ describe('ThisBrowserPill', () => {
     expect(document.getElementById(id!)?.textContent).toBe(THIS_BROWSER_DESCRIPTION);
   });
 
-  it('warns that clearing the browser loses the document', () => {
+  it('warns that clearing the browser loses the project', () => {
     expect(THIS_BROWSER_DESCRIPTION).toMatch(/only in this browser/);
     expect(THIS_BROWSER_DESCRIPTION).toMatch(/site data/);
   });

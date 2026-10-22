@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ArrowElement, Element, ShapeElement, Tab } from '@liveplanner/document';
+import type { ArrowElement, Element, ShapeElement, Tab } from '@liveplanner/project';
 // Aliased to a non-`use` name: this factory takes no React state of its
 // own (it just closes over the passed deps), so calling it outside a
 // component is fine — the alias keeps react-hooks/rules-of-hooks quiet.

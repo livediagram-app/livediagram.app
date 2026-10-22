@@ -1,12 +1,12 @@
 // The element-schema MCP resource (docs/specs/015-api/mcp-server.md §4.5) + the tools' zod input shapes.
-// Element types + anchors come from packages/document (single source of truth);
+// Element types + anchors come from packages/project (single source of truth);
 // the design rules are curated guidance. The element STRUCTURE is carried inline
 // on every tool argument that takes elements (ELEMENT_SCHEMA_HINT) so the whole
 // format is available from the tool definition itself, with no second lookup to
 // make. It states that completeness as a fact about the tools rather than as a
 // rule for the caller: a description that tells a model how to behave, or steers
 // it away from other tools, is a connector-listing flag (docs/specs/015-api/mcp-server.md §4.15).
-// isValidTab in the document package stays the runtime guard, so
+// isValidTab in the project package stays the runtime guard, so
 // the structure still lives in one authoritative place (this string is guidance,
 // not a second validator).
 import { z } from 'zod';
@@ -43,7 +43,7 @@ import {
   STICKY_PRESETS,
   THEMES,
   truncateName,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 export const SCHEMA_RESOURCE_URI = 'liveplanner://schema/elements';
 
@@ -54,7 +54,7 @@ const themeIds = THEMES.map((t) => t.id).join(', ');
 
 // The content fields of the kinds that carry content (docs/specs/015-api/mcp-server.md §4.7a), as
 // facts. One copy, shared by the tool argument and the schema resource; the
-// vocabularies come from packages/document so they can't drift.
+// vocabularies come from packages/project so they can't drift.
 const stickyPairs = STICKY_PRESETS.map((p) => `${p.name.toLowerCase()} ${p.fill}/${p.text}`).join(
   ', ',
 );
@@ -190,9 +190,9 @@ export function elementSchemaDoc(): string {
   return `# liveplanner element schema
 
 A tab is { name, elements: Element[] }. Every element needs a unique string "id".
-A document has one or more tabs, each its own canvas. create_document makes a
-document with one or more tabs at once; add_tab appends another tab to an existing
-document (e.g. an overview tab, then a detail tab zooming into one subsystem).
+A project has one or more tabs, each its own canvas. create_project makes a
+project with one or more tabs at once; add_tab appends another tab to an existing
+project (e.g. an overview tab, then a detail tab zooming into one subsystem).
 
 ## Element types
 ${types}
@@ -238,7 +238,7 @@ YOU decide the layout; the server does not override a real arrangement.
   describes, not in a loose pile.
 
 ## Themes (the look)
-Set "theme" on create_document / add_tab to one of these presets and the server
+Set "theme" on create_project / add_tab to one of these presets and the server
 paints the whole diagram + canvas with it (you still omit per-element colours):
   ${themeIds}
 Defaults to "brand", the Default scheme: the plain, un-themed canvas, which
@@ -249,7 +249,7 @@ cream; dark backdrops = midnight / plum / abyss / espresso (or leave it on
 "brand", which is dark for a reader in dark mode); multi-colour (each branch a
 different hue) = rainbow / pastel / tropical / autumn / jewel; uml = standard
 UML notation colours. Pick one that fits the subject; one scheme applies to all
-tabs in a create_document call.
+tabs in a create_project call.
 
 ## Design rules (diagrams that read well)
 - Nodes are SHAPES, not text. Use type "shape" (shape: "square" by default,
@@ -271,11 +271,10 @@ tabs in a create_document call.
 // with what you send, and where the format is written down), not as rules for
 // the calling model (docs/specs/015-api/mcp-server.md §4.15).
 export const SERVER_INSTRUCTIONS = `Tools to find, read, create, add tabs to, change, share, rename, delete (to the Trash) and restore the user's liveplanner projects. A project holds tabs: Board tabs of cards, Sheet tabs (spreadsheets), Dashboard tabs and Form tabs.
-The tool names say "document": a document is a project.
 list_templates lists the Plan templates (kanban, project-planner, bug-triage, budget-planner, ...):
-pass a kind as "template" on create_document or add_tab to start a project or a tab from it. A "dashboard" on
-create_document or add_tab makes a Dashboard tab over the project's Board and Sheet tabs by name: metrics, Gantts,
-calendars, workload charts and notes, drawn live from the cards. update_document changes a tab's elements, or rebuilds
+pass a kind as "template" on create_project or add_tab to start a project or a tab from it. A "dashboard" on
+create_project or add_tab makes a Dashboard tab over the project's Board and Sheet tabs by name: metrics, Gantts,
+calendars, workload charts and notes, drawn live from the cards. update_project changes a tab's elements, or rebuilds
 a Dashboard tab whole; the element format is documented inline on each tool's element argument.
 Plan boards hold cards (items), which have their own tools:
 list_items reads a project's boards, their columns by name, its cards and its
@@ -292,7 +291,7 @@ and add_sheet puts a new Sheet on a tab, blank or from rows or CSV text.
 Form tabs hold forms (like Google Forms): questions anyone fills in from a link,
 without an account, each response a card on a Board tab or a row in a sheet.
 add_form makes one (from a starter or questions, in a project of its own when
-no documentId is given), change_form changes it, read_form reads it with its
+no projectId is given), change_form changes it, read_form reads it with its
 link, state and anything stopping it being published, share_form publishes,
 closes or deletes its link, and try_form fills it in as a test response. Asked for a form, survey, sign-up or RSVP, make a
 form; its responses are read with list_items (cards) or read_sheet (rows).`;
@@ -320,7 +319,7 @@ const dashboardField = z
       .union([z.array(z.string()), z.literal('every')])
       .optional()
       .describe(
-        'The Board and Sheet tabs it shows, by name (in create_document, other tabs of the same call), or "every"; ' +
+        'The Board and Sheet tabs it shows, by name (in create_project, other tabs of the same call), or "every"; ' +
           'two to a row.',
       ),
     metrics: z
@@ -375,7 +374,7 @@ const templateField = z
       'kind from list_templates (e.g. "kanban", "project-planner", "bug-triage"). The server ' +
       'materialises its curated layout ("layout" is ignored for a template tab) and paints ' +
       'it with the chosen theme. Personalise the placeholder labels afterwards with ' +
-      'update_document mode "ops". Provide template OR elements, not both.',
+      'update_project mode "ops". Provide template OR elements, not both.',
   );
 
 const themeField = z
@@ -397,20 +396,20 @@ const finishField = z
       'can carry its own "finish" too.',
   );
 
-export const findDocumentsShape = {
-  query: z.string().optional().describe('Only documents whose name contains this text.'),
+export const findProjectsShape = {
+  query: z.string().optional().describe('Only projects whose name contains this text.'),
   limit: z.number().int().min(1).max(50).optional().describe('Max results (default 20).'),
 };
 
-// What read_document fits every view to unless told otherwise (docs/specs/024-agents/document-views.md
+// What read_project fits every view to unless told otherwise (docs/specs/024-agents/project-views.md
 // "Budgets", VW45).
-export const READ_DOCUMENT_DEFAULT_BUDGET = 8000;
+export const READ_PROJECT_DEFAULT_BUDGET = 8000;
 
-// The longest edit-operations text update_document takes: room for a few hundred lines.
+// The longest edit-operations text update_project takes: room for a few hundred lines.
 const EDITS_MAX_CHARS = 40_000;
 
-export const readDocumentShape = {
-  documentId: z.string().describe('The document id (from find_documents).'),
+export const readProjectShape = {
+  projectId: z.string().describe('The project id (from find_projects).'),
   tabId: z.string().optional().describe('Which tab to read; defaults to the first.'),
   view: z
     .enum(TAB_VIEW_NAMES)
@@ -427,7 +426,7 @@ export const readDocumentShape = {
     .max(VIEW_BUDGET_MAX)
     .optional()
     .describe(
-      `Fit the view to about this many tokens (default ${READ_DOCUMENT_DEFAULT_BUDGET}); the last line says what was left out and how to see it.`,
+      `Fit the view to about this many tokens (default ${READ_PROJECT_DEFAULT_BUDGET}); the last line says what was left out and how to see it.`,
     ),
   only: z
     .string()
@@ -463,7 +462,7 @@ export const readDocumentShape = {
     .describe('Also attach a PNG preview of the tab (costs about a thousand tokens).'),
 };
 
-// A document or tab name (docs/specs/006-document/name-length.md). Shortened with
+// A project or tab name (docs/specs/006-project/name-length.md). Shortened with
 // the same truncateName the api worker applies, so the name a tool reports back
 // is the one stored; the cap is stated for the model in the description.
 const nameField = (what: string, schema: z.ZodString = z.string()) =>
@@ -474,7 +473,7 @@ const nameField = (what: string, schema: z.ZodString = z.string()) =>
     )
     .transform(truncateName);
 
-export const createDocumentTab = z.object({
+export const createProjectTab = z.object({
   name: nameField(
     'Name of the tab. Optional with a template (its own first tab name is used); otherwise "Tab n".',
   ).optional(),
@@ -484,22 +483,22 @@ export const createDocumentTab = z.object({
   theme: z
     .string()
     .optional()
-    .describe('This tab’s theme, one of the theme ids above; the document’s theme when left out.'),
+    .describe('This tab’s theme, one of the theme ids above; the project’s theme when left out.'),
 });
 
-export const createDocumentShape = {
-  name: nameField('Name for the new document.'),
+export const createProjectShape = {
+  name: nameField('Name for the new project.'),
   // `tabs` is preferred; `tab` is accepted as an alias for a single tab so a
   // client with a stale cached schema (or one that just sends `tab`) still works
   // — provide one or the other.
   tabs: z
-    .array(createDocumentTab)
+    .array(createProjectTab)
     .min(1)
     .max(20)
     .optional()
     .describe(
       'One or more tabs, each its own canvas. Preferred — pass several to create a multi-tab ' +
-        'document in one call (e.g. an overview tab plus a detail tab per subsystem).',
+        'project in one call (e.g. an overview tab plus a detail tab per subsystem).',
     ),
   // The alias is checked against the tab shape by the tool, not listed here a second time: the shape carries the
   // whole element format, and a definition twice its size is one a client's tool search ranks out of sight.
@@ -510,21 +509,21 @@ export const createDocumentShape = {
   layout: layoutField,
   theme: themeField,
   finish: finishField,
-  // Making a document is a use (docs/specs/015-api/mcp-server.md §4.3).
+  // Making a project is a use (docs/specs/015-api/mcp-server.md §4.3).
   markUsed: z
     .boolean()
     .optional()
     .describe(
-      "Whether this document joins the user's Jump back in (their most used and recent documents) " +
-        'at once. Default true. Pass false when making many documents in one go, so a batch ' +
+      "Whether this project joins the user's Jump back in (their most used and recent projects) " +
+        'at once. Default true. Pass false when making many projects in one go, so a batch ' +
         "never pushes the user's own work out of reach.",
     ),
 };
 
 export const addTabShape = {
-  documentId: z
+  projectId: z
     .string()
-    .describe('The document to add a tab to (from find_documents / read_document).'),
+    .describe('The project to add a tab to (from find_projects / read_project).'),
   name: nameField('Name of the new tab.'),
   elements: elementArray.optional(),
   template: templateField,
@@ -534,8 +533,8 @@ export const addTabShape = {
   finish: finishField,
 };
 
-export const updateDocumentShape = {
-  documentId: z.string().describe('The document to edit (from find_documents / read_document).'),
+export const updateProjectShape = {
+  projectId: z.string().describe('The project to edit (from find_projects / read_project).'),
   tabId: z.string().optional().describe('Which tab to edit; defaults to the first.'),
   mode: z
     .enum(['replace', 'ops', 'edits'])
@@ -549,7 +548,7 @@ export const updateDocumentShape = {
     .min(0)
     .optional()
     .describe(
-      'ops mode: the tab revision read_document returned. An element a person changed since is then a ' +
+      'ops mode: the tab revision read_project returned. An element a person changed since is then a ' +
         'conflict, never silently overwritten; read again and redo the edit.',
     ),
   elements: elementArray
@@ -577,7 +576,7 @@ export const updateDocumentShape = {
           .string()
           .optional()
           .describe(
-            'update / remove: the existing element to change, by its id or the ref read_document prints.',
+            'update / remove: the existing element to change, by its id or the ref read_project prints.',
           ),
       }),
     )
@@ -606,8 +605,8 @@ export const updateDocumentShape = {
     ),
 };
 
-export const shareDocumentShape = {
-  documentId: z.string().describe('The document to share (from find_documents / read_document).'),
+export const shareProjectShape = {
+  projectId: z.string().describe('The project to share (from find_projects / read_project).'),
   role: z
     .enum(['view', 'participate', 'edit'])
     .optional()
@@ -622,31 +621,31 @@ export const shareDocumentShape = {
     .describe('When the link stops working. Defaults to "never" (until revoked).'),
 };
 
-export const deleteDocumentShape = {
-  documentId: z.string().describe('The document to delete (from find_documents / read_document).'),
+export const deleteProjectShape = {
+  projectId: z.string().describe('The project to delete (from find_projects / read_project).'),
   tabId: z
     .string()
     .optional()
     .describe(
-      'Delete only this ONE tab instead of the whole document. A document must keep at ' +
+      'Delete only this ONE tab instead of the whole project. A project must keep at ' +
         'least one tab, so deleting the last remaining tab is refused. A tab is deleted ' +
         'outright; it does not go to the Trash.',
     ),
 };
 
-// The Trash (docs/specs/013-workspace/trash.md): restore one document by id.
-export const restoreDocumentShape = {
-  documentId: z.string().describe('The document to restore (from list_trash).'),
+// The Trash (docs/specs/013-workspace/trash.md): restore one project by id.
+export const restoreProjectShape = {
+  projectId: z.string().describe('The project to restore (from list_trash).'),
 };
 
 // Listing the Trash takes no arguments: it is everything the user may restore.
 export const listTrashShape = {};
 
-export const renameDocumentShape = {
-  documentId: z.string().describe('The document to rename (from find_documents / read_document).'),
+export const renameProjectShape = {
+  projectId: z.string().describe('The project to rename (from find_projects / read_project).'),
   name: nameField('The new name.', z.string().min(1)),
   tabId: z
     .string()
     .optional()
-    .describe('Rename this tab within the document instead of the document itself.'),
+    .describe('Rename this tab within the project instead of the project itself.'),
 };

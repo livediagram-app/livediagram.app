@@ -33,7 +33,7 @@ The CLI never prompts. Another liveplanner host (a staging or local stack) is re
 ## Start
 
 ```bash
-liveplanner document ls auth            # find a document
+liveplanner project ls auth            # find a project
 liveplanner tab view "Auth flow"        # its first tab, as an outline
 liveplanner edit "Auth flow" -f ops.txt # change it with edit operations
 liveplanner guide edit                  # how edit operations read
@@ -44,7 +44,7 @@ install --to ~/.claude/skills` gives a coding agent the skill that says when to 
 
 ## Privacy
 
-The CLI counts which commands succeed (the command's name only: never arguments, documents or hosts) and sends the
+The CLI counts which commands succeed (the command's name only: never arguments, projects or hosts) and sends the
 count to the host it talks to. Turn it off with `liveplanner telemetry off`, `LIVEPLANNER_TELEMETRY=0` or
 `DO_NOT_TRACK=1`.
 

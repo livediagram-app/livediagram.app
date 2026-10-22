@@ -4,9 +4,9 @@ Status: accepted
 
 ## Problem
 
-A person opening a document can sit on the opening screen ("Opening your
-document", [New document route](new-document-route.md) "The opening screen")
-forever while a colleague opens the same document fine. Nothing in the load
+A person opening a project can sit on the opening screen ("Opening your
+project", [New project route](new-project-route.md) "The opening screen")
+forever while a colleague opens the same project fine. Nothing in the load
 ever gave up: no step had a time limit, and a step that threw outside the
 handled branches left the screen up with no error. The only way out was the
 Refresh button, which re-runs the same load against the same browser state.
@@ -15,7 +15,7 @@ Support had nothing to go on either: the person could only say "it spins".
 Three per-browser causes survive a refresh:
 
 - **IndexedDB never answers.** Every load first asks the offline store whether
-  the id is an Offline Mode document ([Offline mode](../006-document/offline-mode.md)), and a browser
+  the id is an Offline Mode project ([Offline mode](../006-project/offline-mode.md)), and a browser
   whose IndexedDB `open` never settles held that question open forever.
 - **A sign-in session that never hands out a token.** A signed-in load awaits
   the session token on every request, with no limit.
@@ -39,8 +39,8 @@ screen. It never stays on the opening screen indefinitely.
   timeout), only the newer load's result is kept.
 - **The offline-store check gives up.** Opening the offline store waits at
   most **4 seconds**. A store that does not open in time (or reports
-  `blocked`) counts as having no offline documents, for the rest of that page
-  load, so the cloud load continues. An offline document in that browser
+  `blocked`) counts as having no offline projects, for the rest of that page
+  load, so the cloud load continues. An offline project in that browser
   cannot open until its IndexedDB recovers, which was already true.
 - **The session token gives up.** Asking the sign-in session for a token waits
   at most **10 seconds** per attempt. A signed-in load with no token fails
@@ -62,7 +62,7 @@ The opening screen escalates on its own:
 
 ## The recovery card
 
-The load-error screen ("Couldn't load document") carries, beneath its Retry
+The load-error screen ("Couldn't load project") carries, beneath its Retry
 button, a recovery card. It shows for every load error, timed out or not:
 
 - **Copy Diagnostics** copies a plain-text report (below) for the person to
@@ -72,20 +72,20 @@ button, a recovery card. It shows for every load error, timed out or not:
   clears liveplanner's saved settings and caches in this browser." and what is
   kept, with **Repair and Reload** and **Cancel**. Inline rather than a modal,
   so the same component serves the editor and the help page.
-- **Troubleshooting steps** links to the "A Document Will Not Load" help
+- **Troubleshooting steps** links to the "A Project Will Not Load" help
   article.
 - When copying is refused (no clipboard permission), the report shows in a
   read-only text box to copy by hand.
 
 The card shows under "Still not loading?" in the full app only; an embed's
 load-error card keeps just Retry. The load-error message reads "We couldn't
-load this document: it didn't finish loading. Check your connection and try
+load this project: it didn't finish loading. Check your connection and try
 again.", since a timed-out load is not always the server's silence.
 
 ## Diagnostics
 
 A plain-text report, built when the button is pressed (never on page load),
-holding identifiers and states only, never document content:
+holding identifiers and states only, never project content:
 
 - the time (ISO) and the page path, with the share code replaced by
   "share link: yes" (a share code is a credential);
@@ -98,11 +98,11 @@ holding identifiers and states only, never document content:
   - **Guest id in this browser:** only its first 8 characters (a full guest id
     is an `X-Owner-Id` credential) and whether it is signed, or "none".
   - **Identity upgrade pending:** yes or no.
-  - When signed in with a guest id still present: "Guest documents moved to
-    the account: NOT YET". Signing in moves a guest's documents and then
+  - When signed in with a guest id still present: "Guest projects moved to
+    the account: NOT YET". Signing in moves a guest's projects and then
     clears the guest id, so one still there means the move has not happened,
-    the usual cause of "my documents went missing after I signed in";
-- the load: the step it reached (`identity`, `participant`, `document`,
+    the usual cause of "my projects went missing after I signed in";
+- the load: the step it reached (`identity`, `participant`, `project`,
   `share`, `first-tab`, `done`), how long it has run, and whether it timed out;
 - the browser: the user agent, online state, and the results of the browser
   checks (below).
@@ -118,17 +118,17 @@ Repair clears what is safe to lose and keeps what would lose work or identity.
 
 **Cleared:** every `localStorage` and `sessionStorage` key starting with
 `liveplanner:` or `liveplanner-` that is not kept below. This covers editor
-preferences, panel layout, dismissed banners and tours, the recent-documents
+preferences, panel layout, dismissed banners and tours, the recent-projects
 cache, cached share passwords, and the stale-build reload guards.
 
 **Kept, always:**
 
 - the guest identity: `self-id`, `self-sig`, `pending-signed-id`,
   `name-confirmed` (all under `liveplanner:v2:`). Losing the guest id loses
-  every document a guest owns;
+  every project a guest owns;
 - `collab-key` and its secret half `collab-secret`, the per-browser keys that
   past answers and votes are matched against;
-- the offline store (IndexedDB `liveplanner-offline`): Offline Mode documents
+- the offline store (IndexedDB `liveplanner-offline`): Offline Mode projects
   exist nowhere else;
 - cookies and the sign-in provider's own storage: repair never signs anyone
   out.
@@ -137,8 +137,8 @@ The kept list lives in one shared module, so the editor's Repair button and the
 help centre's Repair page clear exactly the same set, and a test fails if a
 guest-identity key is not on it.
 
-There is no "wipe everything" button. A full wipe destroys a guest's documents
-and Offline Mode documents, and the problems a wipe would fix are covered by
+There is no "wipe everything" button. A full wipe destroys a guest's projects
+and Offline Mode projects, and the problems a wipe would fix are covered by
 the repair plus signing out.
 
 ## Repair page in the help centre
@@ -149,9 +149,9 @@ It lives there, not only in the editor, because every app shares one origin:
 the help page can repair the editor's storage even when the editor itself
 cannot start. The page lists what is cleared and kept, runs the browser checks
 and the identity lines on open and shows both, and offers Copy Diagnostics
-(identity and browser checks, as it has no load) and Repair This Browser. After a repair it says "Done. Open your document
-again." with a link to the Explorer. The "A Document Will Not Load" article
-gains two sections: "Stuck on "Opening your document"" (the escalation above)
+(identity and browser checks, as it has no load) and Repair This Browser. After a repair it says "Done. Open your project
+again." with a link to the Explorer. The "A Project Will Not Load" article
+gains two sections: "Stuck on "Opening your project"" (the escalation above)
 and "It opens for a colleague but not for you" (account first, then the share
 link, the repair, another browser or network).
 
@@ -159,13 +159,13 @@ link, the repair, another browser or network).
 
 ([Telemetry](../017-telemetry/telemetry.md))
 
-- `Error·Warning·DocumentLoad.Slow`: the 10-second message showed.
-- `Error·Warning·DocumentLoad.TimedOut.<Step>`: the watchdog fired, with the
-  step the load reached (`Identity`, `Participant`, `Document`, `Share`,
+- `Error·Warning·ProjectLoad.Slow`: the 10-second message showed.
+- `Error·Warning·ProjectLoad.TimedOut.<Step>`: the watchdog fired, with the
+  step the load reached (`Identity`, `Participant`, `Project`, `Share`,
   `FirstTab`).
-- `Error·Warning·DocumentLoad.AutoReload`: the self-healing reload ran.
-- `Error·Warning·DocumentLoad.Late`: a load finished after its watchdog.
-- `Error·Client·DocumentLoad.<ErrorName>`: the load threw.
+- `Error·Warning·ProjectLoad.AutoReload`: the self-healing reload ran.
+- `Error·Warning·ProjectLoad.Late`: a load finished after its watchdog.
+- `Error·Client·ProjectLoad.<ErrorName>`: the load threw.
 - `Error·Warning·OfflineStore.Unavailable`: the offline store did not open in
   time.
 - `Error·Warning·SessionToken.TimedOut`: a token request gave up.
@@ -188,7 +188,7 @@ the server, which the rest of this spec covers.
   straight to the load-error screen; reloading cannot help until the
   connection is back.
 - **Load-error screen.** While offline its card reads eyebrow "Offline", title
-  "You're offline", message "This document will open as soon as you
+  "You're offline", message "This project will open as soon as you
   reconnect." The recovery card stays below it. When the connection comes back
   the page reloads on its own, once; a card shown while online never reloads
   itself.
@@ -212,10 +212,10 @@ the server, which the rest of this spec covers.
   the canvas stack shows "Couldn’t save your changes. Retrying, so keep this tab open." in the offline banner's
   place, so the gaps between the failure toasts are not silent. It goes as soon as a save lands. Offline, the
   offline banner says it instead. Viewers never see it (they save nothing).
-- **A document that did not load is never written.** The load-error and Not
-  found paths still hand the editor the document id, and its empty default tab
+- **A project that did not load is never written.** The load-error and Not
+  found paths still hand the editor the project id, and its empty default tab
   used to look like an unsaved change: on reconnect it was saved into the real
-  document as a second "Tab 1". The autosave treats both states as read-only.
+  project as a second "Tab 1". The autosave treats both states as read-only.
 - **Reconnecting saves at once.** A failed save waiting on its retry timer (5 s
   to 60 s) is retried as soon as the browser comes back online.
 - **A code chunk that fails to load while offline is not a stale build.** The

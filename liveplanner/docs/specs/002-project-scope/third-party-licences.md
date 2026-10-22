@@ -84,7 +84,7 @@ reach a deployed artefact, and nothing else.
   focus ring, each scrollable text box focusable and labelled, AA contrast in light and dark.
 - **Links.** The shared site footer (marketing, help centre, telemetry) links "Licences". In the
   editor, the Explorer panel's ⋯ menu has a "Licences" row, opening the page in a new
-  tab so the open document stays put.
+  tab so the open project stays put.
 
 ## Keeping it current
 

@@ -7,7 +7,7 @@ import {
   joinNouns,
 } from './default-key-entries';
 
-// The entries of "New documents that open as" (docs/specs/013-workspace/default-folders.md
+// The entries of "New projects that open as" (docs/specs/013-workspace/default-folders.md
 // "Entry names"): one per key, in the keys' order, with the words a sentence uses.
 
 describe('DEFAULT_KEY_ENTRIES', () => {
@@ -41,7 +41,7 @@ describe('joinNouns', () => {
 });
 
 describe('defaultFolderDescription', () => {
-  it('says which new documents a folder receives, in list order', () => {
+  it('says which new projects a folder receives, in list order', () => {
     expect(defaultFolderDescription(['mode:plan'])).toBe('Default folder for new Projects');
     expect(defaultFolderDescription(['template:retrospective', 'mode:plan'])).toBe(
       'Default folder for new Projects and retrospectives',

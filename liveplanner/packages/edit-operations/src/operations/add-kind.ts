@@ -25,7 +25,7 @@ import {
   type ElementId,
   type TextSize,
   type ThemeDefinition,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { writeFieldsOnto } from '../fields';
 import { newElementId } from '../ids';
 import { layerLockOf } from '../locks';

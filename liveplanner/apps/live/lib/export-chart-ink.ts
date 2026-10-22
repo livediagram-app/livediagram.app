@@ -1,4 +1,4 @@
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { getTheme, themeChartPalette } from '@/lib/themes';
 
 // What an image export draws its charts in, so they come out as the canvas draws them: the tab

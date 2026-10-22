@@ -25,10 +25,10 @@ function targetOf(flags: PictureFlags): { path: string; format: 'png' | 'svg' } 
 export async function renderTab(
   io: CliIo,
   ctx: VerbContext,
-  input: { doc: string; tab?: string } & PictureFlags,
+  input: { project: string; tab?: string } & PictureFlags,
 ): Promise<{ lines: string[] }> {
   const target = targetOf(input);
-  const { document, tab } = await tabOf(ctx, input.doc, input.tab);
-  const { body } = await ctx.api.text(`${tabPath(document.id, tab.id)}/render.svg`);
+  const { project, tab } = await tabOf(ctx, input.project, input.tab);
+  const { body } = await ctx.api.text(`${tabPath(project.id, tab.id)}/render.svg`);
   return { lines: [pictureLine(await writePicture(io, target.path, body, target.format))] };
 }

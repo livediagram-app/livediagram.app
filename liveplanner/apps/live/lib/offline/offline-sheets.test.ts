@@ -1,7 +1,7 @@
-// An offline document's sheet store (docs/specs/029-sheets/sheet-store.md "Offline documents"): the sheets live in
+// An offline project's sheet store (docs/specs/029-sheets/sheet-store.md "Offline projects"): the sheets live in
 // the record, every write is the api's own transition, and refusals are the api's.
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { DOCUMENT_SHEETS_MAX, SHEET_SIZED_AXES_MAX, type SheetJson } from '@liveplanner/sheets';
+import { PROJECT_SHEETS_MAX, SHEET_SIZED_AXES_MAX, type SheetJson } from '@liveplanner/sheets';
 import { __setOfflineBackend, offlineGetRecord, offlinePutRecord } from './offline-store';
 import { memBackend, testRecord } from './offline-test-utils';
 import {
@@ -150,8 +150,8 @@ describe('offlineCreateSheet', () => {
     });
   });
 
-  it('refuses a document already holding the most sheets', async () => {
-    const sheets = Array.from({ length: DOCUMENT_SHEETS_MAX }, (_, i) =>
+  it('refuses a project already holding the most sheets', async () => {
+    const sheets = Array.from({ length: PROJECT_SHEETS_MAX }, (_, i) =>
       stored(`sheet${String(i).padStart(4, '0')}`, 't1'),
     );
     await offlinePutRecord(testRecord({ sheets }));

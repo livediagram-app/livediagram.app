@@ -3,9 +3,9 @@
 // browser's local Trash. Each group is one Empty Trash scope. Pure.
 
 import {
-  EMPTY_DOCUMENT_STALE_DAYS,
+  EMPTY_PROJECT_STALE_DAYS,
   trashDaysLeft,
-  type TrashedDocument,
+  type TrashedProject,
 } from '@liveplanner/api-schema';
 import type { TrashListing } from './api/trash';
 
@@ -18,7 +18,7 @@ export type TrashGroup = {
   scope: TrashScope;
   // The Trash telemetry `type` for actions in this group.
   telemetryType: 'Personal' | 'Team' | 'Local';
-  rows: TrashedDocument[];
+  rows: TrashedProject[];
 };
 
 export function trashGroups(listing: TrashListing): TrashGroup[] {
@@ -28,13 +28,13 @@ export function trashGroups(listing: TrashListing): TrashGroup[] {
   if (personal.length > 0) {
     groups.push({
       key: 'personal',
-      title: 'Your documents',
+      title: 'Your projects',
       scope: { kind: 'personal' },
       telemetryType: 'Personal',
       rows: personal,
     });
   }
-  const teams = new Map<string, TrashedDocument[]>();
+  const teams = new Map<string, TrashedProject[]>();
   for (const r of cloud) {
     if (r.teamId === null) continue;
     teams.set(r.teamId, [...(teams.get(r.teamId) ?? []), r]);
@@ -61,8 +61,8 @@ export function trashGroups(listing: TrashListing): TrashGroup[] {
 }
 
 // A row's lead: when it went in, and, for one the empty clean-up moved, why
-// (docs/specs/013-workspace/empty-document-cleanup.md "In the Trash").
-export function trashedOnLabel(row: Pick<TrashedDocument, 'trashedAt' | 'reason'>): string {
+// (docs/specs/013-workspace/empty-project-cleanup.md "In the Trash").
+export function trashedOnLabel(row: Pick<TrashedProject, 'trashedAt' | 'reason'>): string {
   const on = new Date(row.trashedAt).toLocaleDateString(undefined, {
     day: 'numeric',
     month: 'short',
@@ -70,23 +70,23 @@ export function trashedOnLabel(row: Pick<TrashedDocument, 'trashedAt' | 'reason'
   return row.reason === 'empty' ? `Moved here ${on} because it was empty` : `Deleted ${on}`;
 }
 
-// The deleted card's label and heading. A document the clean-up moved was not
+// The deleted card's label and heading. A project the clean-up moved was not
 // deleted by anyone, so someone who may restore it reads that it is in the
 // Trash; anyone else, who learns no reason, reads that it was deleted.
-export function trashedCardHeading(row: Pick<TrashedDocument, 'reason'> | null): {
+export function trashedCardHeading(row: Pick<TrashedProject, 'reason'> | null): {
   label: string;
   title: string;
 } {
   return row?.reason === 'empty'
-    ? { label: 'In the Trash', title: 'This document is in the Trash' }
-    : { label: 'Deleted', title: 'This document was deleted' };
+    ? { label: 'In the Trash', title: 'This project is in the Trash' }
+    : { label: 'Deleted', title: 'This project was deleted' };
 }
 
 // The deleted card's lead for someone who may restore it, with the days left.
-export function trashedCardLead(row: Pick<TrashedDocument, 'trashedAt' | 'reason'>, now: number) {
+export function trashedCardLead(row: Pick<TrashedProject, 'trashedAt' | 'reason'>, now: number) {
   const where =
     row.reason === 'empty'
-      ? `It was empty for ${EMPTY_DOCUMENT_STALE_DAYS} days, so it moved to the Trash`
+      ? `It was empty for ${EMPTY_PROJECT_STALE_DAYS} days, so it moved to the Trash`
       : 'It is in the Trash';
   return `${where} (${daysLeftLabel(row.trashedAt, now).toLowerCase()}).`;
 }

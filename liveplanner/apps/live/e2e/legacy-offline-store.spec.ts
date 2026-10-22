@@ -1,9 +1,9 @@
 import { test, expect, expectNoPageErrors } from './fixtures';
 
-// A browser that saved offline documents before the container became a document holds them in
-// version 1 of IndexedDB, in the `diagrams` object store (docs/specs/006-document/offline-mode.md,
-// "Store rename"). Opening the app moves them to `documents` and they stay listed and openable.
-test('offline documents saved before the rename survive the store upgrade', async ({
+// A browser that saved offline projects before the container became a project holds them in
+// version 1 of IndexedDB, in the `diagrams` object store (docs/specs/006-project/offline-mode.md,
+// "Store rename"). Opening the app moves them to `projects` and they stay listed and openable.
+test('offline projects saved before the rename survive the store upgrade', async ({
   page,
   pageErrors,
 }) => {
@@ -50,6 +50,6 @@ test('offline documents saved before the rename survive the store upgrade', asyn
         };
       }),
   );
-  expect(stores).toEqual(['documents']);
+  expect(stores).toEqual(['projects']);
   expectNoPageErrors(pageErrors);
 });

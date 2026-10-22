@@ -8,7 +8,7 @@ import { useEffect, useRef, type RefObject } from 'react';
 // (close the account menu) and MovablePanel (collapse the mobile
 // banner), and the extraction was driven by their accidentally-
 // divergent open-coded implementations: window+capture vs
-// document+bubble, `target as Node` cast vs `instanceof Node`
+// project+bubble, `target as Node` cast vs `instanceof Node`
 // guard, an accident of order, not intent. Any modal / popover that
 // dismisses on an outside press should reach for it rather than
 // rebuilding the listener from scratch. It lives in @liveplanner/ui because

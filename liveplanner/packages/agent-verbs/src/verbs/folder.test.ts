@@ -57,7 +57,7 @@ describe('folder create', () => {
     return { bodies, route };
   }
 
-  it('makes a folder at the top of My Documents and prints its id and path', async () => {
+  it('makes a folder at the top of My Projects and prints its id and path', async () => {
     const { bodies, route } = recorder();
     const api = fakeApi({ ...library, '/folders': route });
 
@@ -88,7 +88,7 @@ describe('folder create', () => {
       ...library,
       '/teams': { teams: [{ id: 't1', name: 'Studio' }] },
       '/teams/t1/library': {
-        documents: [],
+        projects: [],
         folders: [
           { id: 'f0000003-studio', name: 'Art', parentId: null, teamId: 't1', ownerId: 'u' },
         ],

@@ -48,7 +48,7 @@ export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; co
           {feed.assignedToMe.map((row) =>
             row.kind === 'card' ? (
               <ActivityCardRow
-                key={`card:${row.documentId}:${row.id}`}
+                key={`card:${row.projectId}:${row.id}`}
                 card={row}
                 onOpen={() => track('Activity', 'Selected', 'Card')}
               />
@@ -66,7 +66,7 @@ export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; co
         <ActivitySection title="Form Responses" count={feed.formResponses.length}>
           {feed.formResponses.map((f) => (
             <ActivityFormResponsesRow
-              key={`form:${f.documentId}:${f.tabId}`}
+              key={`form:${f.projectId}:${f.tabId}`}
               form={f}
               onOpen={() => track('Activity', 'Selected', 'FormResponses')}
             />
@@ -89,7 +89,7 @@ export function ActivityPane({ feed, compact = false }: { feed: ActivityFeed; co
           {feed.threads.map((t) =>
             t.kind === 'card' ? (
               <ActivityCardThreadRow
-                key={`card:${t.documentId}:${t.id}`}
+                key={`card:${t.projectId}:${t.id}`}
                 thread={t}
                 onOpen={() => track('Activity', 'Selected', 'CardThread')}
               />

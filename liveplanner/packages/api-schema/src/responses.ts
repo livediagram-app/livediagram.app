@@ -1,25 +1,25 @@
 // Response envelopes: the `{ <noun>: payload }` wrappers the api worker puts
 // around the canonical types in ./index.ts. Named once here so every consumer
 // of the wire (the live editor's api client, the MCP server's tools) reads
-// the same shape instead of spelling `{ document: LiveDoc }` inline at each
+// the same shape instead of spelling `{ project: LiveDoc }` inline at each
 // call site, where a renamed key would drift silently.
 
-import type { LiveDoc, DocumentSummary, Folder, ShareLink, TabRecord, TeamListItem } from './index';
-import type { TeamRecentDocument } from './recent-diagrams';
+import type { LiveDoc, ProjectSummary, Folder, ShareLink, TabRecord, TeamListItem } from './index';
+import type { TeamRecentProject } from './recent-diagrams';
 
-// GET / PUT /api/documents/:id, POST /api/documents (+ copy).
-export type DocumentResponse = { document: LiveDoc };
-// GET /api/documents/:id/tabs/:tabId.
+// GET / PUT /api/projects/:id, POST /api/projects (+ copy).
+export type ProjectResponse = { project: LiveDoc };
+// GET /api/projects/:id/tabs/:tabId.
 export type TabResponse = { tab: TabRecord };
-// GET /api/documents: the caller's personal library. With `?include=team-recent` it also carries the
-// newest documents of the teams they have joined (docs/specs/019-marketing/returning-visitor.md).
-export type DocumentListResponse = {
-  documents: DocumentSummary[];
-  teamRecent?: TeamRecentDocument[];
+// GET /api/projects: the caller's personal library. With `?include=team-recent` it also carries the
+// newest projects of the teams they have joined (docs/specs/019-marketing/returning-visitor.md).
+export type ProjectListResponse = {
+  projects: ProjectSummary[];
+  teamRecent?: TeamRecentProject[];
 };
-// POST /api/documents/:id/share (+ extend).
+// POST /api/projects/:id/share (+ extend).
 export type ShareLinkResponse = { link: ShareLink };
 // GET /api/teams: the teams the caller belongs to (docs/specs/013-workspace/teams.md).
 export type TeamsResponse = { teams: TeamListItem[] };
-// GET /api/teams/:id/library: a team's shared folders + documents (docs/specs/013-workspace/team-shared-documents.md).
-export type TeamLibraryResponse = { folders: Folder[]; documents: DocumentSummary[] };
+// GET /api/teams/:id/library: a team's shared folders + projects (docs/specs/013-workspace/team-shared-projects.md).
+export type TeamLibraryResponse = { folders: Folder[]; projects: ProjectSummary[] };

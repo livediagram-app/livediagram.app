@@ -5,7 +5,7 @@ import type { PlacementLookups } from './placement-types';
 import { judgeDefaultFolder } from './default-folder';
 
 // Placement on create (docs/specs/013-workspace/folders.md "Placement on create",
-// blueprint docs/specs/013-workspace/blueprints/document-placement.md).
+// blueprint docs/specs/013-workspace/blueprints/project-placement.md).
 
 const guest = { ownerId: 'guest-uuid', verifiedUserId: null };
 const alice = { ownerId: 'user_alice', verifiedUserId: 'user_alice' };
@@ -113,7 +113,7 @@ describe('judgeFolder', () => {
     );
   });
 
-  it('names a mismatch for a joined team folder asked for in My Documents', () => {
+  it('names a mismatch for a joined team folder asked for in My Projects', () => {
     expect(judgeFolder({ ownerId: 'user_bob', teamId: 't2' }, personal, alice, true)).toBe(
       'folder_scope_mismatch',
     );
@@ -352,7 +352,7 @@ describe('resolvePlacement with default folders', () => {
     });
   });
 
-  it('files a document with no template default in its mode default', async () => {
+  it('files a project with no template default in its mode default', async () => {
     const l = lookups({
       getPlacementDefaults: defaults([['mode:plan', 'f-diagrams']]),
       getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
@@ -364,7 +364,7 @@ describe('resolvePlacement with default folders', () => {
     });
   });
 
-  it('files at an explicit root of My Documents without reading the defaults', async () => {
+  it('files at an explicit root of My Projects without reading the defaults', async () => {
     const l = lookups({ getPlacementDefaults: defaults([['mode:plan', 'f-diagrams']]) });
     const explicitRoot = { teamId: null, folderId: null, chosen: true };
     expect(await resolvePlacement(explicitRoot, alice, l, plan)).toEqual({

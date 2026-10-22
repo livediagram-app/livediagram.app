@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { Button, CloseIcon, DialogHeader } from '@liveplanner/ui';
-import { CODE_LANGUAGES, CODE_MAX_LENGTH, type CodeLanguage } from '@liveplanner/document';
+import { CODE_LANGUAGES, CODE_MAX_LENGTH, type CodeLanguage } from '@liveplanner/project';
 import { Dialog } from '@/components/dialogs/Dialog';
 
 // The code block's edit modal (docs/specs/009-elements/code-block.md): a monospace textarea + a language

@@ -1,7 +1,7 @@
-// What a Links card's address field means (docs/specs/026-plan/plan-tabs.md "Cards", Links): a tab of this document
+// What a Links card's address field means (docs/specs/026-plan/plan-tabs.md "Cards", Links): a tab of this project
 // (picked from its list, or its name typed in full), else a web or mail address (safeLinkUrl), else a problem to show.
 // Pure, so the form (AddLinkForm) only draws.
-import { safeLinkUrl, type DashboardLink } from '@liveplanner/document';
+import { safeLinkUrl, type DashboardLink } from '@liveplanner/project';
 
 export const LINK_ADDRESS_PROBLEM = 'Enter a web address, an email (mailto:) or a tab’s name';
 
@@ -39,7 +39,7 @@ export function matchingTabs<T extends TabLike>(tabs: readonly T[], query: strin
 
 // The muted line under a link's label: a site's host (an email's address), or where a tab link goes.
 export function linkDetail(link: DashboardLink): string {
-  if (link.tabId) return 'Tab in this document';
+  if (link.tabId) return 'Tab in this project';
   const url = link.url ?? '';
   // An email: its address, unless that is already the label (an unlabelled one shows it), then just "Email".
   if (url.startsWith('mailto:')) return link.label ? url.slice(7) : 'Email';

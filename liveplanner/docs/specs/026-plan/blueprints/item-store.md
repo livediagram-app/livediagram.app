@@ -27,7 +27,7 @@ src/rank.ts          rankBetween(a, b), rankAfter(a), rankBefore(b), compareRank
 src/apply.ts         makeItem, applyPatch, applyMove, applyTally (shared by api and offline store), rankInColumn,
                      itemPlacer (ranks a batch of creates: one sort per column, not one per create)
 src/write-checks.ts  readItemPlace, readItemCreate, readItemPatch, readItemMove, statusExcluded, readItemWrite,
-                     writtenItemsRefusal: the api's body checks, run by an offline document on its own writes
+                     writtenItemsRefusal: the api's body checks, run by an offline project on its own writes
 src/board.ts         PlanBoardSetup, PlanColumn, SwimlaneBy, projectBoard
 src/tab-items.ts     itemIdsShownOnTab(elements, items)
 src/board-status-picks.ts the column picker's statuses: pickableStatuses(names, items, types), missingStatuses(setup,
@@ -203,7 +203,7 @@ The baseline migration, `apps/api/migrations/0001_liveplanner_baseline.sql`:
 
 ```sql
 CREATE TABLE items (
-  document_id TEXT NOT NULL REFERENCES documents(id) ON DELETE CASCADE,
+  project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   id TEXT NOT NULL,
   type TEXT NOT NULL,
   item_key INTEGER NOT NULL,
@@ -212,18 +212,18 @@ CREATE TABLE items (
   rev INTEGER NOT NULL,
   created_at INTEGER NOT NULL, updated_at INTEGER NOT NULL,
   created_by TEXT NOT NULL, updated_by TEXT NOT NULL,   -- JSON ItemPerson
-  PRIMARY KEY (document_id, id)
+  PRIMARY KEY (project_id, id)
 );
-CREATE UNIQUE INDEX items_document_key ON items(document_id, item_key);
-ALTER TABLE documents ADD COLUMN items_rev INTEGER NOT NULL DEFAULT 0;
-ALTER TABLE documents ADD COLUMN items_next_key INTEGER NOT NULL DEFAULT 1;
+CREATE UNIQUE INDEX items_project_key ON items(project_id, item_key);
+ALTER TABLE projects ADD COLUMN items_rev INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE projects ADD COLUMN items_next_key INTEGER NOT NULL DEFAULT 1;
 ```
 
 - Field classification: `fields` is user content (never logged); `created_by`/`updated_by` display identity;
   the rest structural.
-- Cascade removes items on hard delete (`documentRemovalStatements` needs no new statement).
-- `copyDocument` copies items verbatim to the new document id and copies `items_rev`/`items_next_key`.
-- Writes: one D1 `batch` per write: `UPDATE documents SET items_rev = items_rev + 1 [, items_next_key = ...]
+- Cascade removes items on hard delete (`projectRemovalStatements` needs no new statement).
+- `copyProject` copies items verbatim to the new project id and copies `items_rev`/`items_next_key`.
+- Writes: one D1 `batch` per write: `UPDATE projects SET items_rev = items_rev + 1 [, items_next_key = ...]
 WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by `rev = ?` (update) or
   `INSERT` (create). A lost `rev` race retries up to `ITEM_WRITE_RETRIES` from a fresh read, then `409 item_busy`.
 - `apps/api/src/db/items.ts`: `getItemStoreHead`, `listItems`, `readItem`, `readItems`, `insertItems`,
@@ -231,7 +231,7 @@ WHERE id = ? RETURNING items_rev, items_next_key`, then the row write guarded by
 
 ## Interfaces and contracts: REST
 
-All under `/documents/:id/items`, auth `guest-or-clerk`, token-usable, registered in `openapi/manifest.ts`
+All under `/projects/:id/items`, auth `guest-or-clerk`, token-usable, registered in `openapi/manifest.ts`
 (tag `Items`), DTOs in `packages/api-schema/src/items.ts` (`ItemsResponse { items, rev }`, `ItemResponse { item, rev }`).
 
 | Method | Path                  | Gate | Body                                                         | Answers             |
@@ -251,9 +251,9 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
   stored elements; writes require `tabId` (query) and the target id in that set (create: always allowed into the
   tab's scope).
 - Rejections: `400 { error: ItemRejection }`, `404 item_not_found`, `409 item_exists` (create with a taken id),
-  `409 item_busy`, `413 items_full`, plus the document gates' 403/404/410.
+  `409 item_busy`, `413 items_full`, plus the project gates' 403/404/410.
 - `ItemCreate.key` is honoured only when `< items_next_key` and free; otherwise the store assigns one.
-- `POST /documents` create body accepts `items?: ItemCreate[]` (sync to cloud), written in the
+- `POST /projects` create body accepts `items?: ItemCreate[]` (sync to cloud), written in the
   same request after the tabs.
 - The patch is a POST: the api's CORS admits GET, POST, PUT and DELETE only.
 - `/items/patches` changes many items at once (a type's or a removed column's cards sent to the Trash): every id
@@ -276,17 +276,17 @@ Comment writes (below, "Comments") add four more under `/items/:itemId/comments`
   column as it then is.
 - Routes live in `apps/api/src/routes/item-routes.ts` (`/items/patches` in `item-patches-route.ts`, the parts they
   share, such as the caller, refusals and relay, in `item-route-kit.ts`), dispatched from
-  `document-subresource-routes.ts`; `db/items.ts` holds `readItems` and `updateItemsAtRev` for the many-item write.
+  `project-subresource-routes.ts`; `db/items.ts` holds `readItems` and `updateItemsAtRev` for the many-item write.
 
 ## Comments
 
 A card's thread (spec items.md "Comments") is the canvas's `CommentThread` in `fields.comments`.
 
-- **Ops** (`packages/document/src/comment-thread.ts`, pure, type-only imports): `threadWithComment(thread,
+- **Ops** (`packages/project/src/comment-thread.ts`, pure, type-only imports): `threadWithComment(thread,
 comment, max)` (append unless present or full, `resolved: false`), `threadWithoutComment(thread, id)` (the last
   takes the thread: `undefined`), `threadResolved(thread, resolved)`. Each returns the same thread when nothing
   changes. `applyElementDelta`'s comment cases call them.
-- **Item writes** (`packages/document/src/item-comments.ts`; `@liveplanner/document` already reads items, the
+- **Item writes** (`packages/project/src/item-comments.ts`; `@liveplanner/project` already reads items, the
   reverse would cycle): `ItemCommentChange = add { comment } | remove { commentId } | resolve { resolved }`;
   `applyItemComment(item, change, ctx)` returns `{ ok, item }` (rev + 1, `updatedAt/By`) or a refusal:
   `comments_full` (count ≥ `ITEM_COMMENTS_MAX`, or the thread past `ITEM_COMMENTS_BYTES`), `comment_not_found`,
@@ -314,7 +314,7 @@ comment, max)` (append unless present or full, `resolved: false`), `threadWithou
   colour and id from the caller, token id for an agent); a post answers `ItemCommentAddResponse` (`ItemResponse`
   plus the new comment's `commentId`, which a mention's notify request names, comment-mentions.md "The email")
   and runs `afterCommentPosted` (timeline, owner email);
-  a resolve records `recordCommentResolved` keyed `<doc>:item:<itemId>`. Refusals: 400 text, 403 another's
+  a resolve records `recordCommentResolved` keyed `<project>:item:<itemId>`. Refusals: 400 text, 403 another's
   comment, `404 comment_not_found`, `404 item_not_found`, `413 comments_full`, 409 `item_busy`.
 
 - **Every item answer** (list, create, bulk, patch, move, vote, comment) is `itemForViewer(item, caller.owner)`;
@@ -364,19 +364,19 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
     resync and reconnect (`onRoomJoined`) refetch.
 - `apps/live/hooks/plan/usePlanSlice.ts` composes the board actions into `PlanContext`; `usePlanPresence` sends
   and hears `plan-presence`.
-- Offline record: `OfflineDocumentRecord.items?`, `itemsRev?`, `itemsNextKey?`.
+- Offline record: `OfflineProjectRecord.items?`, `itemsRev?`, `itemsNextKey?`.
 - Sync to cloud sends `storeAsCreates(items)` (column order kept, votes carried); Take offline fetches the store
   first and aborts without it; Duplicate copies it (cloud: the create body; offline: the new record); the Drive
-  mirror's `DocumentEnvelope.document.items` (optional, so the file stays version 1).
-- Tab JSON export: `tabToJsonText(tab, plan?)` (`@liveplanner/document`, `export-tab-text.ts`) adds
+  mirror's `ProjectEnvelope.project.items` (optional, so the file stays version 1).
+- Tab JSON export: `tabToJsonText(tab, plan?)` (`@liveplanner/project`, `export-tab-text.ts`) adds
   `ExportedTabEnvelope.items` from `tabExportItems(tab, items)` (`export-tab-plan.ts`: `itemIdsShownOnTab`, the Trash
   dropped, `votes` and `comments` stripped from `fields`, key order) and `itemTypes` (the stored catalogue, only with
   items). `TabPlanData = { items, types, catalogue }` is what every text export takes; the Export dialog builds it
   from `usePlan()` once per item or type change and memoises the open format's text.
-- Tab JSON import: `parseImportedTab` reads `items` through `isItemLike` (shared with `parseDocumentEnvelope`) and
+- Tab JSON import: `parseImportedTab` reads `items` through `isItemLike` (shared with `parseProjectEnvelope`) and
   `itemTypes` through `readItemTypeCatalogue`, as `ImportResult.plan`. `useTabImport` lands the tab, then calls
   `importPlanItems` (`hooks/plan/usePlanTabImport.ts`): `planTabItemsImport(incoming, catalogue, existing, types)`
-  (`@liveplanner/items`, `tab-import.ts`) returns the file's types its fresh items use and the document lacks, the
+  (`@liveplanner/items`, `tab-import.ts`) returns the file's types its fresh items use and the project lacks, the
   fresh items as `storeAsCreates` without `key`, and the skipped count; `itemTypes.addTypes(types)` then one undoable
   `write({ kind: 'create', creates })`. A refused write returns `failed: creates.length`, reported as the `Plan Cards`
   failure line (`planCardsFailure`) on the import's report. Logged as `[plan-tab-import]`.
@@ -387,7 +387,7 @@ refetches. Presence on cards is a separate ephemeral op, `plan-presence` (`{ tab
 
 ## Undo
 
-`useDocumentHistory` keeps two counters beside its snapshots: `depth` (steps behind the present, uncapped) and
+`useProjectHistory` keeps two counters beside its snapshots: `depth` (steps behind the present, uncapped) and
 `branch` (raised by every new step, which clears redo). `useItemUndo` wraps the history's undo and redo with a
 journal (`hooks/plan/item-undo-journal.ts`, pure): each item step records the depth it was made at; undo runs the
 item step when the depth still matches (no canvas step since), else the canvas's; redo mirrors it by the redo
@@ -403,7 +403,7 @@ replays the write with the keys the first write was given. Votes push nothing.
 | Card points at a missing item                   | "Item not found" face                                                 |
 | Move relative to a neighbour that was deleted   | Falls back to the column end                                          |
 | Undo patch after someone else changed the field | Writes the old value anyway (last write wins), as canvas undo         |
-| Create at the cap                               | `413 items_full`; toast "This document holds 2,000 items"             |
+| Create at the cap                               | `413 items_full`; toast "This project holds 2,000 items"             |
 | Comment on a full thread                        | `413 comments_full`; toast "This card holds the most comments it can" |
 | Delete a comment already gone                   | `404 comment_not_found`; the store refetches                          |
 | Resolve a resolved thread                       | 204, nothing written or relayed                                       |
@@ -414,7 +414,7 @@ replays the write with the keys the first write was given. Votes push nothing.
 
 ## Security and trust
 
-- Every write passes the document gate; tab-scoped links are confined by `itemIdsShownOnTab`.
+- Every write passes the project gate; tab-scoped links are confined by `itemIdsShownOnTab`.
 - Items never change from a client socket; `items` is a system op.
 - Field values are validated and bounded; text is drawn as text, never HTML.
 - Vote budget is a facilitation aid enforced in the editor only (stated, not a trust boundary).
@@ -467,11 +467,11 @@ include `fields` or comment text.
 | Agent verbs and tools                          | `agent-verbs/src/verbs/item.test.ts`, `apps/mcp/src/output-schema.test.ts`                                                                                                            |
 | Offline store                                  | `apps/live/lib/offline/offline-items.test.ts`                                                                                                                                         |
 | Comments field: read-only, budget, restore     | `packages/items/src/comments-field.test.ts`                                                                                                                                           |
-| Thread ops, item writes, redaction, restore    | `packages/document/src/item-comments.test.ts`                                                                                                                                         |
+| Thread ops, item writes, redaction, restore    | `packages/project/src/item-comments.test.ts`                                                                                                                                         |
 | Comment routes: gates, own/edit delete, relay  | `apps/api/src/routes/item-comment-routes.test.ts`                                                                                                                                     |
 | Editor comment writes, room merge, refusals    | `apps/live/hooks/plan/usePlanItems.comments.test.ts`, `apps/live/lib/api/items-comments.test.ts`                                                                                      |
 | Panel thread and card count                    | `apps/live/components/plan/ItemComments.test.tsx`                                                                                                                                     |
-| Tab export: items, catalogue, Markdown, layout | `packages/document/src/export-tab-plan.test.ts`, `apps/live/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                         |
+| Tab export: items, catalogue, Markdown, layout | `packages/project/src/export-tab-plan.test.ts`, `apps/live/components/dialogs/ExportTabDialog.plan.test.tsx`                                                                         |
 | Tab import: parse, plan, land, report          | `apps/live/lib/import-tab.test.ts`, `packages/items/src/tab-import.test.ts`, `apps/live/hooks/plan/usePlanTabImport.test.ts`, `apps/live/hooks/persistence/useTabImport.plan.test.ts` |
 
 ## Constants and configuration

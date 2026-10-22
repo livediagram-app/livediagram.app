@@ -6,7 +6,7 @@ import {
   type Element,
   type MindFlow,
   type MindSpacing,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 

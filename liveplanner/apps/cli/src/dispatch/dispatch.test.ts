@@ -23,8 +23,8 @@ const verb = (id: string): Verb => verbById(id)!;
 describe('didYouMean', () => {
   it('names the nearest word within two edits, or nothing', () => {
     expect(didYouMean('vew', ['ls', 'view', 'diff'])).toBe('view');
-    expect(didYouMean('documnet', ['document', 'tab'])).toBe('document');
-    expect(didYouMean('zzzzzz', ['document', 'tab'])).toBeNull();
+    expect(didYouMean('projcet', ['project', 'tab'])).toBe('project');
+    expect(didYouMean('zzzzzz', ['project', 'tab'])).toBeNull();
   });
 });
 
@@ -36,7 +36,6 @@ describe('route', () => {
       verb: { id: 'guide' },
       rest: ['edit'],
     });
-    expect(route(['doc'])).toEqual({ kind: 'resource', resource: 'document' });
     expect(route(['tab', 'view', 'x'])).toMatchObject({
       kind: 'verb',
       verb: { id: 'tab.view' },
@@ -67,7 +66,7 @@ describe('route', () => {
 describe('fieldsOf', () => {
   it("reads each key's kind, whether it is required, its values and its description", () => {
     const fields = fieldsOf(verb('tab.view').input);
-    expect(fields.find((f) => f.key === 'doc')).toMatchObject({ kind: 'string', required: true });
+    expect(fields.find((f) => f.key === 'project')).toMatchObject({ kind: 'string', required: true });
     expect(fields.find((f) => f.key === 'view')).toMatchObject({
       kind: 'enum',
       required: false,
@@ -143,27 +142,27 @@ describe('parseVerbArgs', () => {
         '--coarse',
       ]),
     ).toEqual({
-      doc: 'Auth flow',
+      project: 'Auth flow',
       tab: 'Overview',
       view: 'outline',
       budget: 300,
       coarse: true,
     });
     expect(parseVerbArgs(verb('auth.login'), ['--with-token'])).toEqual({ withToken: true });
-    expect(parseVerbArgs(verb('document.ls'), [])).toEqual({ limit: 20 });
+    expect(parseVerbArgs(verb('project.ls'), [])).toEqual({ limit: 20 });
   });
 
   it('refuses an unknown flag, an extra word, a missing argument and a bad value', () => {
-    expect(failureOf(() => parseVerbArgs(verb('document.ls'), ['--token', 'x']))).toMatchObject({
+    expect(failureOf(() => parseVerbArgs(verb('project.ls'), ['--token', 'x']))).toMatchObject({
       exit: 2,
-      message: 'unknown flag --token for "document ls"',
-      hint: 'liveplanner document ls --help',
+      message: 'unknown flag --token for "project ls"',
+      hint: 'liveplanner project ls --help',
     });
     expect(failureOf(() => parseVerbArgs(verb('tab.ls'), ['a', 'b']))).toMatchObject({
       message: 'unexpected "b"',
     });
     expect(failureOf(() => parseVerbArgs(verb('tab.ls'), []))).toMatchObject({
-      message: 'missing <doc>',
+      message: 'missing <project>',
     });
     expect(failureOf(() => parseVerbArgs(verb('changeset.show'), ['doc']))).toMatchObject({
       message: 'missing <changeset>',
@@ -171,7 +170,7 @@ describe('parseVerbArgs', () => {
     expect(
       failureOf(() => parseVerbArgs(verb('tab.view'), ['d', '--view', 'nope'])).message,
     ).toMatch(/^--view: /);
-    expect(failureOf(() => parseVerbArgs(verb('document.ls'), ['--limit', '0'])).message).toMatch(
+    expect(failureOf(() => parseVerbArgs(verb('project.ls'), ['--limit', '0'])).message).toMatch(
       /^--limit: /,
     );
   });
@@ -198,7 +197,7 @@ describe('a verb without a CLI projection', () => {
 
 describe('flag problems', () => {
   it('name a valued flag without its value, a switch given one, and a short flag the verb lacks', () => {
-    expect(failureOf(() => parseVerbArgs(verb('document.ls'), ['--limit']))).toMatchObject({
+    expect(failureOf(() => parseVerbArgs(verb('project.ls'), ['--limit']))).toMatchObject({
       message: '--limit needs a value',
     });
     expect(failureOf(() => parseVerbArgs(verb('tab.view'), ['d', '--coarse=1']))).toMatchObject({
@@ -222,7 +221,7 @@ describe('rest positionals and short flags', () => {
         '--dry-run',
       ]),
     ).toEqual({
-      doc: 'Auth flow',
+      project: 'Auth flow',
       tab: 'Main',
       words: ['n3', 'label=Sign in'],
       dryRun: true,
@@ -258,6 +257,6 @@ describe('repeated flags', () => {
     expect(fieldsOf(set.input).find((f) => f.key === 'clear')).toMatchObject({ kind: 'list' });
     expect(
       parseVerbArgs(set, ['3f9c', '#4', '--clear', 'labels', '--clear', 'due', '--type', 'bug']),
-    ).toEqual({ doc: '3f9c', item: '#4', fields: [], clear: ['labels', 'due'], type: 'bug' });
+    ).toEqual({ project: '3f9c', item: '#4', fields: [], clear: ['labels', 'due'], type: 'bug' });
   });
 });

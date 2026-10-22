@@ -2,7 +2,7 @@
 
 Derived from [Default folders](../default-folders.md), with the resolver of
 [Folders → Placement on create](../folders.md#placement-on-create) and its blueprint
-[document-placement.md](document-placement.md). The spec decides; this file only adds engineering
+[project-placement.md](project-placement.md). The spec decides; this file only adds engineering
 precision. Defaults applied where the spec is silent are ledgered in [DEFAULTS.md](DEFAULTS.md) and cited
 as `Dn`.
 
@@ -10,12 +10,12 @@ Scope, by file:
 
 | File                                                      | Role                                                                                                            |
 | --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `packages/document/src/editor-mode.ts`                    | `EDITOR_MODES` (read off `EDITOR_MODE_CATALOGUE`), `EditorMode`, `DEFAULT_EDITOR_MODE`, `isEditorMode` (`D27`)  |
+| `packages/project/src/editor-mode.ts`                    | `EDITOR_MODES` (read off `EDITOR_MODE_CATALOGUE`), `EditorMode`, `DEFAULT_EDITOR_MODE`, `isEditorMode` (`D27`)  |
 | `packages/api-schema/src/placement-defaults.ts`           | Dimensions, keys, intent, `creationIntentOf`, `readCreationIntent`, telemetry values                            |
 | `packages/templates/src/template-families.ts`             | `templateFamilyOf`: the one exhaustive template to template family map                                          |
-| `apps/api/migrations/0001_liveplanner_baseline.sql`       | The `placement_defaults` table (`D17`); `documents.opens_in`, `documents.tab_kind`, `documents.template_family` |
-| `apps/api/src/document-intent-row.ts`                     | `readRecordedIntent`: stored text to the lists, else null                                                       |
-| `apps/api/src/db/documents.ts`                            | The create insert writes the record; reads expose it; the copy carries it                                       |
+| `apps/api/migrations/0001_liveplanner_baseline.sql`       | The `placement_defaults` table (`D17`); `projects.opens_in`, `projects.tab_kind`, `projects.template_family` |
+| `apps/api/src/project-intent-row.ts`                     | `readRecordedIntent`: stored text to the lists, else null                                                       |
+| `apps/api/src/db/projects.ts`                            | The create insert writes the record; reads expose it; the copy carries it                                       |
 | `apps/api/src/db/placement-defaults.ts`                   | `listPlacementDefaults`, `setPlacementDefault`, `clearPlacementDefault`                                         |
 | `apps/api/src/db/account.ts`                              | Account deletion and owner migration statements                                                                 |
 | `apps/api/src/placement/placement-types.ts`               | `RequestedPlacement`, `PlacementCaller`, `PlacementLookups`, `PlacementOutcome`, steps                          |
@@ -25,16 +25,16 @@ Scope, by file:
 | `apps/api/src/placement/placement-log.ts`                 | The `placement:` and `placement-defaults:` fingerprints                                                         |
 | `apps/api/src/placement/placement-response.ts`            | `intentRejected()`                                                                                              |
 | `apps/api/src/routes/placement-defaults.ts`               | `GET` / `PUT` / `DELETE /api/placement-defaults[/:key]`                                                         |
-| `apps/api/src/routes/documents.ts`                        | `POST /api/documents` reads `intent`, resolves, records                                                         |
+| `apps/api/src/routes/projects.ts`                        | `POST /api/projects` reads `intent`, resolves, records                                                         |
 | `apps/api/src/index.ts`, `auth/guest-rest.ts`             | Dispatch case; owner-scoped segment                                                                             |
 | `packages/api-schema/src/error-telemetry.ts`              | `placement-defaults` in `API_ROUTE_RESOURCES`                                                                   |
 | `apps/api/src/openapi/manifest.ts`                        | The three routes; the create body's `folderId` semantics and `intent`                                           |
 | `apps/live/lib/api/placement-defaults.ts`                 | `apiListPlacementDefaults`, `apiSetPlacementDefault`, `apiClearPlacementDefault`                                |
-| `apps/live/lib/api/documents.ts`                          | `apiCreateDocument` sends `folderId` when not `undefined` (null included) and `intent`                          |
+| `apps/live/lib/api/projects.ts`                          | `apiCreateProject` sends `folderId` when not `undefined` (null included) and `intent`                          |
 | `apps/live/app/new/page.tsx` (`createByDefault`)          | The wizard's placement: the `/new?folder=` / `?team=` context, else none                                        |
 | `apps/live/app/new/page.tsx`                              | The wizard and its bypasses send the first tab's intent and the template's family                               |
-| `apps/live/lib/duplicate-document.ts`                     | Duplicate: beside the source, the source's recorded intent, root on refusal                                     |
-| `apps/mcp/src/tools.ts`, `apps/mcp/src/created-folder.ts` | `create_document` sends the intent; reports the folder it landed in                                             |
+| `apps/live/lib/duplicate-project.ts`                     | Duplicate: beside the source, the source's recorded intent, root on refusal                                     |
+| `apps/mcp/src/tools.ts`, `apps/mcp/src/created-folder.ts` | `create_project` sends the intent; reports the folder it landed in                                             |
 
 ## Domain and naming
 
@@ -43,14 +43,14 @@ Scope, by file:
 | Default folder   | `PlacementDefault` `{ key, folderId }`, row of `placement_defaults`                                      | One person's folder for one key                             |
 | Default key      | `PlacementDefaultKey`, `PLACEMENT_DEFAULT_KEYS`, column `default_key`                                    | `<dimension>:<value>`, closed list of five                  |
 | Dimension        | `DEFAULT_KEY_DIMENSIONS = ['kind', 'template', 'mode']`                                                  | Most specific first; the precedence between keys            |
-| Creation intent  | `CreationIntent` `{ mode: EditorMode, tabKind: CreationTabKind, templateFamily?: TemplateFamily }`       | What a new document is made as; body field `intent`         |
+| Creation intent  | `CreationIntent` `{ mode: EditorMode, tabKind: CreationTabKind, templateFamily?: TemplateFamily }`       | What a new project is made as; body field `intent`         |
 | Opens in         | `EditorMode`, `EDITOR_MODES`; column `opens_in`, field `opensIn`                                         | The editor mode the first tab opens in                      |
 | Tab kind         | `CreationTabKind`, `CREATION_TAB_KINDS = ['diagram']`; `tab_kind`, `tabKind`                             | The first tab's kind at creation                            |
 | Specific kind    | `SpecificTabKind`, `SPECIFIC_TAB_KINDS` (every creatable kind but `diagram`)                             | The kinds that have a `kind:` key                           |
-| Template family  | `TemplateFamily`, `TEMPLATE_FAMILIES = ['retrospective', 'kanban']`; `template_family`, `templateFamily` | The family of templates a document was made from            |
+| Template family  | `TemplateFamily`, `TEMPLATE_FAMILIES = ['retrospective', 'kanban']`; `template_family`, `templateFamily` | The family of templates a project was made from            |
 | Recorded intent  | `RecordedIntent` `{ opensIn, tabKind, templateFamily }`, each nullable                                   | What the create insert wrote; null `opensIn` = unknown      |
 | Chosen placement | `RequestedPlacement.chosen`                                                                              | The body names a team or carries the `folderId` key         |
-| Explicit root    | `{ teamId: null, folderId: null, chosen: true }`                                                         | The root of My Documents, chosen on purpose                 |
+| Explicit root    | `{ teamId: null, folderId: null, chosen: true }`                                                         | The root of My Projects, chosen on purpose                 |
 | Dangling default | `DefaultSkipReason`                                                                                      | `folder_missing` / `folder_not_visible` / `team_not_joined` |
 | Via              | `via: 'explicit' \| 'default' \| 'root'`, log `via=default key=<key>`                                    | Which step decided; `root` only when nothing was chosen     |
 
@@ -65,7 +65,7 @@ kind in an intent (a whiteboard is `mode: 'draw'`, `tabKind: 'diagram'`).
 1. `mode`: `draw` when `kind === 'whiteboard'` (legacy) or `opensIn === 'draw'`, else `diagram`.
 2. `templateFamily`: the argument, left out when null.
 
-Callers pass `templateFamilyOf(templateKind)` where a template made the document (the wizard and its
+Callers pass `templateFamilyOf(templateKind)` where a template made the project (the wizard and its
 bypasses, MCP template tabs) and nothing otherwise (imports, MCP element or graph tabs).
 
 `templateFamilyOf` reads a `Record<TemplateKind, TemplateFamily | null>`, so a new template kind that is
@@ -94,7 +94,7 @@ non-empty string → itself; anything else invalid. `chosen = teamId !== null ||
 
 `resolvePlacement(requested, caller, lookups, intent)`, steps in order, first non-null wins:
 
-1. Team judgement, unchanged ([document-placement.md](document-placement.md)).
+1. Team judgement, unchanged ([project-placement.md](project-placement.md)).
 2. `explicitFolder`: null unless `requested.chosen`. A folder is judged as before (`via: 'explicit'`); a
    chosen root answers `{ teamId, folderId: null }`, `via: 'explicit'`.
 3. `defaultFolder`: null unless `intent !== null` (and, by step 2, nothing chosen). Reads
@@ -111,37 +111,37 @@ Invariants: a skip never rejects; a chosen placement never reads `placement_defa
 never reads it; kind before template before mode. Outcome placements carry `teamId` and `folderId`
 only.
 
-Route order in `POST /api/documents`: body id/name → dates → `parsePlacement` → `readCreationIntent`
+Route order in `POST /api/projects`: body id/name → dates → `parsePlacement` → `readCreationIntent`
 (`intent_invalid`) → tabs → clash → … → resolve (genuine create only) → insert, recording the intent.
 
-**Duplicate** (`duplicateDocument(ownerId, sourceId, placement?)`): loads the source document; the
+**Duplicate** (`duplicateProject(ownerId, sourceId, placement?)`): loads the source project; the
 placement is the argument, else the source's own `{ teamId, folderId }`, always sent with the
 `folderId` key (null included), so always chosen; the intent is the source's recorded one when its
 `opensIn` is known (`{ mode: opensIn, tabKind, templateFamily? }`), else none. A refusal whose code is
 `team_forbidden`, `folder_not_found` or `folder_scope_mismatch` retries once at the explicit root of My
-documents (`{ folderId: null }`), logging `[duplicate] placement refused reason=<code>, filed at the
+projects (`{ folderId: null }`), logging `[duplicate] placement refused reason=<code>, filed at the
 root`.
 
 **Wizard** (`createByDefault` in `apps/live/app/new/page.tsx`): every create from `/new` (a mode chosen, Create, Skip
 and the bypass links) reads `?folder=` / `?team=` once (`placementParams`), `undefined` when missing, and sends them as
 given; without a context it sends no `teamId` / `folderId`, so the server's precedence decides (`D115`). There is no
-Location step and no client-side resolution ([New document route](../../007-editor/new-document-route.md#one-step-wizard)).
+Location step and no client-side resolution ([New project route](../../007-editor/new-project-route.md#one-step-wizard)).
 
 ## Recorded intent
 
-- `documents.opens_in TEXT`, `documents.tab_kind TEXT`, `documents.template_family TEXT`: nullable, no default;
+- `projects.opens_in TEXT`, `projects.tab_kind TEXT`, `projects.template_family TEXT`: nullable, no default;
   a null reads unknown.
-- `upsertDocumentMeta` takes `opensIn` / `tabKind` / `templateFamily` and writes them in the INSERT
+- `upsertProjectMeta` takes `opensIn` / `tabKind` / `templateFamily` and writes them in the INSERT
   only; the `ON CONFLICT` update never sets them.
-- `POST /api/documents` records `intent.mode`, `intent.tabKind`, `intent.templateFamily ?? null` when
+- `POST /api/projects` records `intent.mode`, `intent.tabKind`, `intent.templateFamily ?? null` when
   an intent is present, else null, null, null.
-- `copyDocument` inserts the three columns read from the source row in the same statement
+- `copyProject` inserts the three columns read from the source row in the same statement
   (`INSERT … SELECT`), never recomputed.
-- `DOCUMENT_COLS` and `DOCUMENT_SUMMARY_COLS` gain the three columns; `readRecordedIntent(row)` maps
+- `PROJECT_COLS` and `PROJECT_SUMMARY_COLS` gain the three columns; `readRecordedIntent(row)` maps
   them: `opensIn` through `isEditorMode`, `tabKind` and `templateFamily` through their lists; when
-  `opensIn` reads null, all three are null (`D28`). `LiveDoc` and `DocumentSummary` carry
+  `opensIn` reads null, all three are null (`D28`). `LiveDoc` and `ProjectSummary` carry
   `opensIn: EditorMode | null`, `tabKind: CreationTabKind | null`,
-  `templateFamily: TemplateFamily | null`. An Offline Mode document and summary carry null, null, null.
+  `templateFamily: TemplateFamily | null`. An Offline Mode project and summary carry null, null, null.
 
 ## Interfaces and contracts
 
@@ -152,12 +152,12 @@ Location step and no client-side resolution ([New document route](../../007-edit
 - **`DELETE /api/placement-defaults/:key`** → 204 whether or not a row existed;
   `default_key_invalid` first.
 - Other methods or deeper paths → 404 `not_found`. No resolved owner → the shared `missingAuth()`.
-- **Live client:** `apiCreateDocument(owner, { …, teamId?, folderId?, intent? })` puts `teamId` in the
+- **Live client:** `apiCreateProject(owner, { …, teamId?, folderId?, intent? })` puts `teamId` in the
   body when a string, `folderId` when not `undefined` (null included), `intent` when set. The
   placement-default functions throw `ApiError` with the token as `code`.
-- **MCP:** `create_document` body gains `intent: creationIntentOf(tabs[0], templateFamilyOf(<the first
-input tab's template kind, or null>))`; output `folder` is `"My Documents"` when the created
-  `document.folderId` is null, else the folder's name (`D24`).
+- **MCP:** `create_project` body gains `intent: creationIntentOf(tabs[0], templateFamilyOf(<the first
+input tab's template kind, or null>))`; output `folder` is `"My Projects"` when the created
+  `project.folderId` is null, else the folder's name (`D24`).
 
 ## Data and persistence
 
@@ -180,7 +180,7 @@ updated_at = excluded.updated_at`.
 - Account deletion: `DELETE FROM placement_defaults WHERE owner_id = ?`.
 - Owner migration: `INSERT OR IGNORE … SELECT ?, default_key, folder_id, updated_at … WHERE
 owner_id = ?` then `DELETE … WHERE owner_id = <guest>`: the account's row for a key wins.
-- The recorded intent columns follow their document (deleted, migrated and trashed with it).
+- The recorded intent columns follow their project (deleted, migrated and trashed with it).
 
 ## Errors and edge cases
 
@@ -195,7 +195,7 @@ owner_id = ?` then `DELETE … WHERE owner_id = <guest>`: the account's row for 
 | `teamId: null` alone                                             | No choice, as absent                                               |
 | `intent` a string, no `mode`, unknown `tabKind`/`templateFamily` | 400 `intent_invalid`, nothing written                              |
 | Re-commit of an owned id with an intent                          | Stored place and record kept, `placement: skipped reason=existing` |
-| Duplicate of a document with an unknown intent                   | No intent sent; the copy records unknown                           |
+| Duplicate of a project with an unknown intent                   | No intent sent; the copy records unknown                           |
 | Duplicate refused beside its source                              | Retried once at the explicit root, `[duplicate]` warning           |
 | PUT unknown key, e.g. `board:kanban`                             | 400 `default_key_invalid`                                          |
 | PUT `{}` / `{ folderId: 3 }` / `{ folderId: "" }`                | 400 `default_folder_invalid`                                       |
@@ -233,27 +233,27 @@ owner_id = ?` then `DELETE … WHERE owner_id = <guest>`: the account's row for 
 | `placement-defaults: cleared key=<key>`                                                             | api, info    |
 | `placement-defaults: rejected reason=<default_key_invalid/default_folder_invalid/folder_not_found>` | api, warn    |
 | `[duplicate] placement refused reason=<code>, filed at the root`                                    | editor, warn |
-| `[mcp] create_document folder lookup failed status=<n>`                                             | mcp, warn    |
+| `[mcp] create_project folder lookup failed status=<n>`                                             | mcp, warn    |
 
 ## Testing
 
 | Rule                                                                         | Test                                                                                             |
 | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| Editor modes are one list                                                    | `packages/document/src/editor-mode.test.ts`                                                      |
+| Editor modes are one list                                                    | `packages/project/src/editor-mode.test.ts`                                                      |
 | Keys, intent derivation and parsing, key order, telemetry values             | `packages/api-schema/src/placement-defaults.test.ts`                                             |
 | Template to template family map                                              | `apps/live/lib/template-families.test.ts`                                                        |
 | Chosen or not; explicit root; default step; kind before template before mode | `apps/api/src/placement/resolve-placement.test.ts`                                               |
 | Routes: every answer and rejection, encoded keys, logs (real SQLite)         | `apps/api/src/routes/placement-defaults.test.ts`                                                 |
-| Create lands in the default; explicit root wins; dangling; intent_invalid    | `apps/api/src/routes/document-create-default-folder.test.ts`                                     |
-| Placement on create, chosen roots logged as explicit                         | `apps/api/src/routes/document-create-placement.test.ts`                                          |
-| Recorded intent written once, read back, unknown for legacy rows, copied     | `apps/api/src/routes/document-create-intent.test.ts`, `apps/api/src/document-intent-row.test.ts` |
+| Create lands in the default; explicit root wins; dangling; intent_invalid    | `apps/api/src/routes/project-create-default-folder.test.ts`                                     |
+| Placement on create, chosen roots logged as explicit                         | `apps/api/src/routes/project-create-placement.test.ts`                                          |
+| Recorded intent written once, read back, unknown for legacy rows, copied     | `apps/api/src/routes/project-create-intent.test.ts`, `apps/api/src/project-intent-row.test.ts` |
 | Store order, replace, clear; sign-up keeps the account's row                 | `apps/api/src/db/placement-defaults.test.ts`                                                     |
 | Deletion and migration of every owner-keyed column                           | `apps/api/src/db/account-owner-columns.test.ts`                                                  |
 | Dispatch, route labels, OpenAPI parity                                       | `apps/api/src/route-resources.test.ts`, `apps/api/src/openapi/*.test.ts`                         |
 | Client functions; the create body's absent versus null `folderId`            | `apps/live/lib/api/placement-defaults.test.ts`, `apps/live/lib/api-client.test.ts`               |
-| Wizard placement: the context, else none (server decides)                    | `apps/live/app/new/useNewDocumentLocation.test.tsx`, e2e `apps/live/e2e/default-folders.spec.ts` |
-| Duplicate beside its source, record-only, root on refusal                    | `apps/live/lib/duplicate-document.test.ts`                                                       |
-| MCP create sends the intent and names the folder                             | `apps/mcp/src/create-document-placement.test.ts`                                                 |
+| Wizard placement: the context, else none (server decides)                    | `apps/live/app/new/useNewProjectLocation.test.tsx`, e2e `apps/live/e2e/default-folders.spec.ts` |
+| Duplicate beside its source, record-only, root on refusal                    | `apps/live/lib/duplicate-project.test.ts`                                                       |
+| MCP create sends the intent and names the folder                             | `apps/mcp/src/create-project-placement.test.ts`                                                 |
 
 ## Constants and configuration
 
@@ -296,7 +296,7 @@ section is silent are `D105` to `D120` and `D123` to `D125`.
 | `apps/live/lib/placement-defaults/default-folder-names.ts`                                                                              | This Browser's memory of default folders' names (`D113`)                                                                                                  |
 | `apps/live/lib/folder-delete-confirmation.ts`                                                                                           | `folderDeleteConfirmation`: where the contents go, the default-folder line                                                                                |
 | `apps/live/hooks/persistence/usePlacementDefaults.ts`                                                                                   | `usePlacementDefaults(ownerId)`, `useFolderDefaultKeys(folderId)`                                                                                         |
-| `apps/live/hooks/persistence/useDefaultFolderMenus.ts`                                                                                  | `useDefaultFolderIndex(lists)`, `useDefaultFolderMenus(ownerId, lists)`: the menu bundles for a folder and for My Documents; notes default folders' names |
+| `apps/live/hooks/persistence/useDefaultFolderMenus.ts`                                                                                  | `useDefaultFolderIndex(lists)`, `useDefaultFolderMenus(ownerId, lists)`: the menu bundles for a folder and for My Projects; notes default folders' names |
 | `apps/live/hooks/persistence/usePlacementOptions.ts`                                                                                    | Moved from `app/new`: folders, teams and team folders for a picker, inline create, and `ready` / `failed`                                                 |
 | `apps/live/components/placement/default-key-icons.tsx`                                                                                  | `DEFAULT_KEY_ICONS`, `DefaultKeyIcon`                                                                                                                     |
 | `apps/live/components/placement/DefaultFolderMarker.tsx`                                                                                | The marker; `useDefaultFolderDescription(folderId)` for a tree row's description                                                                          |
@@ -307,16 +307,16 @@ section is silent are `D105` to `D120` and `D123` to `D125`.
 | `apps/live/app/explorer/folder-actions-menu.tsx`                                                                                        | `defaults?: DefaultFolderMenu` renders the submenu before Delete                                                                                          |
 | `apps/live/app/explorer/folder-row.tsx`, `explorer-folder-cards.tsx`                                                                    | Marker; `menuHandlers` passes `defaults`                                                                                                                  |
 | `apps/live/app/explorer/useExplorerState.ts`                                                                                            | `folderActions` bundles `defaults`; exposes `rootDefaults`                                                                                                |
-| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`, `useMyDocumentsMenu.tsx`                                                              | My Documents' `⋯` and right-click menu, shared with the panel                                                                                             |
+| `apps/live/app/explorer/sidebar/SpacesGroup.tsx`, `useMyProjectsMenu.tsx`                                                              | My Projects' `⋯` and right-click menu, shared with the panel                                                                                             |
 | `apps/live/app/explorer/sidebar/SidebarFolderSubtree.tsx`, `TeamFolderSubtree.tsx`                                                      | `FolderLabel` (name, then marker); the marker's words as the row's description                                                                            |
-| `apps/live/components/panels/explorer-tree/*`                                                                                           | `PanelTree.defaultFolders`; panel folder rows and My Documents                                                                                            |
-| `apps/live/components/panels/TeamSharedDocuments.tsx`                                                                                   | Team library folder menus carry `defaults`                                                                                                                |
+| `apps/live/components/panels/explorer-tree/*`                                                                                           | `PanelTree.defaultFolders`; panel folder rows and My Projects                                                                                            |
+| `apps/live/components/panels/TeamSharedProjects.tsx`                                                                                   | Team library folder menus carry `defaults`                                                                                                                |
 | `apps/live/components/placement/placement-view.ts`, `usePlacementView.ts`                                                               | The browser opens where its selection is: `placementViewFor`, followed until the reader moves (`D125`)                                                    |
 | `apps/live/components/dialogs/settings/SettingsPlacementDefaultRow.tsx`                                                                 | One Settings row                                                                                                                                          |
-| `apps/live/components/dialogs/settings/settings-catalogue.ts`, `settings-icons.tsx`                                                     | The `documents` category (its folder glyph on a lime tile), one `placementDefault` row per key                                                            |
-| `apps/live/components/dialogs/SettingsDialog.tsx`, `apps/live/components/dialogs/settings/SettingsCategoryPane.tsx`                     | `ownerId` loads the defaults; the pane fetches the folder lists only for a pane with Documents rows                                                       |
+| `apps/live/components/dialogs/settings/settings-catalogue.ts`, `settings-icons.tsx`                                                     | The `projects` category (its folder glyph on a lime tile), one `placementDefault` row per key                                                            |
+| `apps/live/components/dialogs/SettingsDialog.tsx`, `apps/live/components/dialogs/settings/SettingsCategoryPane.tsx`                     | `ownerId` loads the defaults; the pane fetches the folder lists only for a pane with Projects rows                                                       |
 | `apps/live/app/explorer/useExplorerState.ts` (settings link)                                                                            | The `?settings=` deep link is read once hydrated                                                                                                          |
-| `apps/live/hooks/persistence/useDocumentListActions.ts`, `useFolders.ts`, `hooks/ui/useTeamFolderActions.ts`, `TeamSharedDocuments.tsx` | One confirmation; optimistic move-up                                                                                                                      |
+| `apps/live/hooks/persistence/useProjectListActions.ts`, `useFolders.ts`, `hooks/ui/useTeamFolderActions.ts`, `TeamSharedProjects.tsx` | One confirmation; optimistic move-up                                                                                                                      |
 
 ### Domain and naming (surfaces)
 
@@ -360,7 +360,7 @@ templateFamily: f }` (`D112`).
 - `destinationOf(key, defaults, index)`: no stored default → `root`; working → `folder`; else
   `dangling` with `reason: 'deleted'` (a personal id, or a team folder of a listed team, not in the
   index) or `'unavailable'` (remembered as a team folder whose team is not listed), and
-  `fallback = resolveDefaultFor(representativeIntent(key))` over the other keys (null = My Documents).
+  `fallback = resolveDefaultFor(representativeIntent(key))` over the other keys (null = My Projects).
 - `folderDefaultKeys(folderId, defaults)`: the keys stored for this folder, in list order.
 
 **Menus** (`useDefaultFolderMenus`):
@@ -372,7 +372,7 @@ templateFamily: f }` (`D112`).
 - Both are `undefined` until the store is `ready`, so a menu opened before the load shows no
   submenu rather than wrong checks.
 
-**Browser view** (`usePlacementView`, `placementViewFor`; spec [Save locations](../../006-document/save-locations.md), "It opens where its selection is"):
+**Browser view** (`usePlacementView`, `placementViewFor`; spec [Save locations](../../006-project/save-locations.md), "It opens where its selection is"):
 
 - `PlacementView = { space: string | null; stack: PickerFolder[] }`: `space` null is the overview,
   `'personal-space'` or a team id a space; `stack` the folders opened, root inward.
@@ -392,7 +392,7 @@ templateFamily: f }` (`D112`).
   A placement changed from outside the browser (`at` no longer matching) unpins it.
 
 **Folder delete (client):** the confirmation is `folderDeleteConfirmation({ name, parentName,
-scope, defaultKeys })`; the optimistic update moves the folder's subfolders and documents to its
+scope, defaultKeys })`; the optimistic update moves the folder's subfolders and projects to its
 `parentId`, as the api does.
 
 ### Interfaces and contracts (surfaces)
@@ -405,7 +405,7 @@ scope, defaultKeys })`; the optimistic update moves the folder's subfolders and 
 - `MenuCheckRow { label, icon, checked, disabled?, onToggle }`: `role="menuitemcheckbox"`,
   `aria-checked`, `aria-disabled` when disabled; a check glyph in a fixed 16px slot whether checked
   or not, then the entry's icon, then the label.
-- `SettingsDialog` gains `ownerId?: string | null`, handed to the Documents rows; the store's own
+- `SettingsDialog` gains `ownerId?: string | null`, handed to the Projects rows; the store's own
   owner is used when absent.
 - `SettingsPlacementDefaultRowSpec = RowBase & { kind: 'placementDefault'; placementKey }`.
 - `DefaultFolderPickerDialog { entry, current: string | null, folders, teams, teamFolders,
@@ -414,7 +414,7 @@ onCreateFolder?, onPick(folderId: string | null), onClose }`.
 ### Presentation and UX (surfaces)
 
 - Menu row: **Use as Default for** with the folder-check icon, after Change Folder, before the Delete
-  separator. Its flyout: a `MenuHeader` "New documents that open as", then the five `MenuCheckRow`s.
+  separator. Its flyout: a `MenuHeader` "New projects that open as", then the five `MenuCheckRow`s.
 - Marker: `inline-flex shrink-0 items-center gap-0.5` icons at 12px in `text-slate-500
 dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tree row inside the
   label's flex box (the label truncates, the marker does not).
@@ -423,7 +423,7 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
   row's link. Dangling destination in amber-700 /
   amber-300 with the reason in words. While the store loads, the destination reads "Loading…"; a
   failed load reads "Couldn't load your default folders" and offers no buttons (`D120`).
-- Folder delete confirmation: title `Delete "<name>"?`, message "Its documents and subfolders move to
+- Folder delete confirmation: title `Delete "<name>"?`, message "Its projects and subfolders move to
   <parent>." plus the default-folder line, confirm **Delete folder**.
 
 ### Accessibility (surfaces)
@@ -476,7 +476,7 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 | Working default, resolution, destinations, dangling fallback | `apps/live/lib/placement-defaults/default-destination.test.ts`                                   |
 | Name memory per owner                                        | `apps/live/lib/placement-defaults/default-folder-names.test.ts`                                  |
 | Folder delete wording                                        | `apps/live/lib/folder-delete-confirmation.test.ts`                                               |
-| Menu checks for a folder and for My Documents                | `apps/live/hooks/persistence/useDefaultFolderMenus.test.tsx`                                     |
+| Menu checks for a folder and for My Projects                | `apps/live/hooks/persistence/useDefaultFolderMenus.test.tsx`                                     |
 | Submenu renders, toggles, ARIA                               | `apps/live/components/placement/UseAsDefaultMenu.test.tsx`                                       |
 | Marker icons, +N, words                                      | `apps/live/components/placement/DefaultFolderMarker.test.tsx`                                    |
 | The browser opens at the selected folder's level, then pins  | `apps/live/components/placement/placement-view.test.ts`, `PlacementBrowser.test.tsx`             |
@@ -502,9 +502,9 @@ dark:text-slate-400`, then `+N` at 10px semibold; after the count badge; in a tr
 
 ## The wizard's Location step (retired)
 
-The New Document wizard's Location step, its pre-selected default with **Change default**, **Always save <these> here**
-and "Always save new documents in <place> and skip this step" (with its Settings row) were removed on 2026-10-16
-([New document route](../../007-editor/new-document-route.md#one-step-wizard)). Nothing here resolves a default in
+The New Project wizard's Location step, its pre-selected default with **Change default**, **Always save <these> here**
+and "Always save new projects in <place> and skip this step" (with its Settings row) were removed on 2026-10-16
+([New project route](../../007-editor/new-project-route.md#one-step-wizard)). Nothing here resolves a default in
 the browser any more: `/new` sends a context or nothing, and the server's precedence decides. The stored
 `skipLocationStep` preference is dropped on read (`upgradeLegacyPreferences`, `RETIRED` in
 `packages/api-schema/src/legacy-preferences.ts`), and its telemetry is retired ([Telemetry → Retired

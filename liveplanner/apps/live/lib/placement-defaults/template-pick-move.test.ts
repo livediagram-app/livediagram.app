@@ -17,7 +17,7 @@ const defaults = new Map<PlacementDefaultKey, string>([
   ['mode:plan', 'plans'],
 ]);
 const kanban = { mode: 'plan', tabKind: 'diagram', templateFamily: 'kanban' } as const;
-const handoff = { documentId: 'd', tabId: 't', placementChosen: false };
+const handoff = { projectId: 'd', tabId: 't', placementChosen: false };
 const at = (over: Partial<Parameters<typeof templatePickMoveTarget>[0]> = {}) =>
   templatePickMoveTarget({
     handoff,
@@ -29,7 +29,7 @@ const at = (over: Partial<Parameters<typeof templatePickMoveTarget>[0]> = {}) =>
   });
 
 describe('templatePickMoveTarget', () => {
-  it("moves a document filed by its mode's default to the template's default", () => {
+  it("moves a project filed by its mode's default to the template's default", () => {
     expect(at()?.folder.id).toBe('boards');
     expect(at()?.key).toBe('template:kanban');
   });
@@ -38,7 +38,7 @@ describe('templatePickMoveTarget', () => {
     expect(at({ current: { folderId: 'boards', teamId: null } })).toBeNull();
   });
 
-  it('leaves a folder the person chose, and a document the wizard did not just make', () => {
+  it('leaves a folder the person chose, and a project the wizard did not just make', () => {
     expect(at({ handoff: { ...handoff, placementChosen: true } })).toBeNull();
     expect(at({ handoff: null })).toBeNull();
   });

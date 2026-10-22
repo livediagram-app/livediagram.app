@@ -7,7 +7,7 @@
 // at most every MAP_REDRAW_MIN_MS (docs/specs/008-canvas/blueprints/DEFAULTS.md D69).
 
 import { useEffect, useRef, useState } from 'react';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { ELEMENT_GESTURES, useCanvasGesture } from '@/lib/canvas-gesture';
 import { debugLog } from '@/lib/debug-log';
 

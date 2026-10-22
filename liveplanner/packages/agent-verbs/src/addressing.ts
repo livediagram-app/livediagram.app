@@ -1,16 +1,16 @@
-// How a command names a document and a tab (docs/specs/015-api/blueprints/cli.md "Addressing"): a pasted URL,
+// How a command names a project and a tab (docs/specs/015-api/blueprints/cli.md "Addressing"): a pasted URL,
 // a full id, an id prefix or a name; a tab by name or id prefix, the first by default. None or several refuse
 // with the nearest names or the candidates, never a guess.
 
 import type { ApiClient } from '@liveplanner/api-client';
-import { listAllDocuments, type FoundDocument } from './find-documents';
+import { listAllProjects, type FoundProject } from './find-projects';
 import { REF_MIN_PREFIX, shortestUniquePrefixes } from './refs';
 
 export type AddressCandidate = { ref: string; name: string; detail: string };
 
 export type AddressFailure = {
   kind: 'not-found' | 'ambiguous' | 'usage';
-  what: 'document' | 'tab';
+  what: 'project' | 'tab';
   input: string;
   candidates: AddressCandidate[];
   message: string;
@@ -33,15 +33,15 @@ type AddressLog = (line: string) => void;
 
 const silent: AddressLog = () => {};
 
-type DocumentUrl = { id: string } | { shareCode: string };
+type ProjectUrl = { id: string } | { shareCode: string };
 
-// A full document id: a UUID. Matched by shape, not length alone, so a 36-character name still
+// A full project id: a UUID. Matched by shape, not length alone, so a 36-character name still
 // resolves by name.
 const FULL_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// A pasted liveplanner URL: `/document/<id>` or a share link `/document/shared?s=<code>`; null when the input
+// A pasted liveplanner URL: `/project/<id>` or a share link `/project/shared?s=<code>`; null when the input
 // is not a URL. A URL on another origin than the host is a usage error (CLI21).
-export function parseDocumentUrl(input: string, host: string): DocumentUrl | null {
+export function parseProjectUrl(input: string, host: string): ProjectUrl | null {
   let url: URL;
   try {
     url = new URL(input);
@@ -55,70 +55,70 @@ export function parseDocumentUrl(input: string, host: string): DocumentUrl | nul
   if (!sameSite(url.origin, hostOrigin))
     throw refuse({
       kind: 'usage',
-      what: 'document',
+      what: 'project',
       input,
       candidates: [],
       message: `${url.origin} is not the host this profile uses (${hostOrigin})`,
       hint: `--host ${url.origin}`,
     });
   const parts = url.pathname.split('/').filter(Boolean);
-  if (parts[0] !== 'document' || !parts[1])
+  if (parts[0] !== 'project' || !parts[1])
     throw refuse({
       kind: 'usage',
-      what: 'document',
+      what: 'project',
       input,
       candidates: [],
-      message: `${input} is not a document link`,
-      hint: 'liveplanner document ls',
+      message: `${input} is not a project link`,
+      hint: 'liveplanner project ls',
     });
   if (parts[1] === 'shared') {
     const code = url.searchParams.get('s');
     if (!code)
       throw refuse({
         kind: 'usage',
-        what: 'document',
+        what: 'project',
         input,
         candidates: [],
         message: `${input} has no share code`,
-        hint: 'liveplanner document ls',
+        hint: 'liveplanner project ls',
       });
     return { shareCode: code };
   }
   return { id: decodeURIComponent(parts[1]) };
 }
 
-export type ResolvedDocument = { id: string; name: string; shareCode?: string };
+export type ResolvedProject = { id: string; name: string; shareCode?: string };
 
-const nearest = (all: readonly FoundDocument[], input: string) => {
+const nearest = (all: readonly FoundProject[], input: string) => {
   const q = input.toLowerCase();
   return all
     .filter((d) => d.name.toLowerCase().includes(q) || q.includes(d.name.toLowerCase()))
     .slice(0, 5);
 };
 
-export async function resolveDocument(
+export async function resolveProject(
   api: ApiClient,
   input: string,
   host: string,
   log: AddressLog = silent,
-): Promise<ResolvedDocument> {
-  const url = parseDocumentUrl(input, host);
+): Promise<ResolvedProject> {
+  const url = parseProjectUrl(input, host);
   if (url && 'shareCode' in url) {
-    log('address document url 1 matches');
-    const shared = await api.json<{ document: { id: string; name: string } }>(
+    log('address project url 1 matches');
+    const shared = await api.json<{ project: { id: string; name: string } }>(
       `/share/${encodeURIComponent(url.shareCode)}`,
     );
-    return { id: shared.document.id, name: shared.document.name, shareCode: url.shareCode };
+    return { id: shared.project.id, name: shared.project.name, shareCode: url.shareCode };
   }
   const id = url?.id ?? (FULL_ID.test(input) ? input : null);
   if (id) {
-    log(`address document ${url ? 'url' : 'exact'} 1 matches`);
-    const { document } = await api.json<{ document: { id: string; name: string } }>(
-      `/documents/${encodeURIComponent(id)}`,
+    log(`address project ${url ? 'url' : 'exact'} 1 matches`);
+    const { project } = await api.json<{ project: { id: string; name: string } }>(
+      `/projects/${encodeURIComponent(id)}`,
     );
-    return { id: document.id, name: document.name };
+    return { id: project.id, name: project.name };
   }
-  const all = await listAllDocuments(api);
+  const all = await listAllProjects(api);
   const lower = input.toLowerCase();
   const matches = all.filter(
     (d) =>
@@ -126,9 +126,9 @@ export async function resolveDocument(
   );
   // Every address is tried as a name; `prefix` only when an id prefix is what matched.
   const how = matches.some((d) => d.name.toLowerCase() !== lower) ? 'prefix' : 'name';
-  log(`address document ${how} ${matches.length} matches`);
+  log(`address project ${how} ${matches.length} matches`);
   const refs = shortestUniquePrefixes(all.map((d) => d.id));
-  const candidate = (d: FoundDocument) => ({
+  const candidate = (d: FoundProject) => ({
     ref: refs.get(d.id)!,
     name: d.name,
     detail: d.library,
@@ -137,31 +137,31 @@ export async function resolveDocument(
   if (matches.length === 0)
     throw refuse({
       kind: 'not-found',
-      what: 'document',
+      what: 'project',
       input,
       candidates: nearest(all, input).map(candidate),
-      message: `no document matches "${input}"`,
-      hint: 'liveplanner document ls',
+      message: `no project matches "${input}"`,
+      hint: 'liveplanner project ls',
     });
   const listed = matches.map(candidate);
   throw refuse({
     kind: 'ambiguous',
-    what: 'document',
+    what: 'project',
     input,
     candidates: listed,
-    message: `"${input}" matches ${matches.length} documents`,
+    message: `"${input}" matches ${matches.length} projects`,
     hint: listed[0]!.ref,
   });
 }
 
-// A tab as a document lists it; `folder` is its folder in this document, when it is in one.
+// A tab as a project lists it; `folder` is its folder in this project, when it is in one.
 export type TabSummary = { id: string; name: string; orderIndex: number; folder?: string };
 
 // A tab by name (ignoring case) or id prefix; the first tab by order when none is named.
 export function resolveTab(
   tabs: readonly TabSummary[],
   input: string | undefined,
-  doc: string,
+  projectRef: string,
   log: AddressLog = silent,
 ): TabSummary {
   const ordered = [...tabs].sort((a, b) => a.orderIndex - b.orderIndex);
@@ -179,8 +179,8 @@ export function resolveTab(
       what: 'tab',
       input: '',
       candidates: [],
-      message: `${doc} has no tabs`,
-      hint: `liveplanner tab add ${doc} <name>`,
+      message: `${projectRef} has no tabs`,
+      hint: `liveplanner tab add ${projectRef} <name>`,
     });
   }
   const lower = input.toLowerCase();
@@ -203,6 +203,6 @@ export function resolveTab(
     input,
     candidates,
     message,
-    hint: `liveplanner tab ls ${doc}`,
+    hint: `liveplanner tab ls ${projectRef}`,
   });
 }

@@ -2,8 +2,8 @@ import type { Page } from '@playwright/test';
 import { expect } from '../fixtures';
 import type { StubUser } from './clerk-stub';
 
-// What the agent specs share (docs/specs/024-agents/): Webber, signed in, with his own unshared document holding one
-// square, his participant row, and an API token for his agent; and opening that document until its room greets the
+// What the agent specs share (docs/specs/024-agents/): Webber, signed in, with his own unshared project holding one
+// square, his participant row, and an API token for his agent; and opening that project until its room greets the
 // editor.
 
 export const CANVAS = '[data-canvas-a11y-root]';
@@ -18,7 +18,7 @@ export const WEBBER: StubUser = {
 
 export type Setup = { id: string; tabId: string; token: string; session: Record<string, string> };
 
-// Webber's personal document with one square, his participant row, and an API token for his agent.
+// Webber's personal project with one square, his participant row, and an API token for his agent.
 export async function arrange(page: Page, baseURL: string, userId: string): Promise<Setup> {
   const jwt = await (await page.request.get(`/e2e/token?sub=${userId}`)).text();
   const session = { Authorization: `Bearer ${jwt}`, Origin: new URL(baseURL).origin };
@@ -28,7 +28,7 @@ export async function arrange(page: Page, baseURL: string, userId: string): Prom
   });
   const id = crypto.randomUUID();
   const tabId = crypto.randomUUID();
-  const created = await page.request.post('/api/documents', {
+  const created = await page.request.post('/api/projects', {
     headers: session,
     data: {
       id,
@@ -64,29 +64,29 @@ export async function arrange(page: Page, baseURL: string, userId: string): Prom
 }
 
 export async function agentSubmits(page: Page, s: Setup, body: unknown) {
-  return page.request.post(`/api/documents/${s.id}/tabs/${s.tabId}/changesets`, {
+  return page.request.post(`/api/projects/${s.id}/tabs/${s.tabId}/changesets`, {
     headers: { Authorization: `Bearer ${s.token}`, 'X-Liveplanner-Client': 'cli' },
     data: body,
   });
 }
 
 export async function storedIds(page: Page, s: Setup): Promise<string[]> {
-  const res = await page.request.get(`/api/documents/${s.id}/tabs/${s.tabId}`, {
+  const res = await page.request.get(`/api/projects/${s.id}/tabs/${s.tabId}`, {
     headers: { Authorization: `Bearer ${s.token}` },
   });
   const { tab } = (await res.json()) as { tab: { elements: { id: string }[] } };
   return tab.elements.map((e) => e.id);
 }
 
-// Opens the document and waits for its room to greet the editor: from then on a changeset is relayed
+// Opens the project and waits for its room to greet the editor: from then on a changeset is relayed
 // live (one that lands before is caught up by the join check, without a toast).
 export async function open(page: Page, s: Setup) {
   await page.addInitScript(() => {
     localStorage.setItem('liveplanner:v2:name-confirmed', '1');
     localStorage.setItem('liveplanner:user-preferences:v1', JSON.stringify({ planTourSeen: true }));
   });
-  const socket = page.waitForEvent('websocket', (ws) => ws.url().includes(`/documents/${s.id}/ws`));
-  await page.goto(`/document/${s.id}`);
+  const socket = page.waitForEvent('websocket', (ws) => ws.url().includes(`/projects/${s.id}/ws`));
+  await page.goto(`/project/${s.id}`);
   const ws = await socket;
   await ws.waitForEvent('framereceived', (f) => String(f.payload).includes('"kind":"presence"'));
   await page.locator(CANVAS).waitFor();

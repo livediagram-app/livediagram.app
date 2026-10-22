@@ -194,7 +194,7 @@ export function readPastedHtml(html: string): PastedCell[][] | null {
   let row: PastedCell[] | null = null;
   let cell: {
     text: string;
-    /** The cell's own style, then each inline span's, in document order. */
+    /** The cell's own style, then each inline span's, in project order. */
     styles: string[];
     tags: Set<string>;
     colspan: number;

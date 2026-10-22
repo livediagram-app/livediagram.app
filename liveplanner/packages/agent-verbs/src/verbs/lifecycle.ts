@@ -1,14 +1,14 @@
-// The verbs that make, name, share and remove documents and tabs (docs/specs/015-api/cli.md "Commands"). A new
-// document is compiled by POST /api/documents and a new tab is a `replace` changeset on a new tab id (CLI58,
+// The verbs that make, name, share and remove projects and tabs (docs/specs/015-api/cli.md "Commands"). A new
+// project is compiled by POST /api/projects and a new tab is a `replace` changeset on a new tab id (CLI58,
 // CLI75), so the CLI never writes a tab whole; names change through their own routes.
 
 import { z } from 'zod';
 import { ApiError } from '@liveplanner/api-client';
 import type {
   ChangesetReplaceBody,
-  DocumentResponse,
+  ProjectResponse,
   ShareLink,
-  TrashedDocument,
+  TrashedProject,
 } from '@liveplanner/api-schema';
 import { TRASH_RETENTION_DAYS } from '@liveplanner/api-schema';
 import { resolveTab } from '../addressing';
@@ -16,15 +16,15 @@ import { defineVerb, VerbRefusal, type VerbContext } from '../define';
 import { shortestUniquePrefixes } from '../refs';
 import { classifySource } from '../source-kind';
 import { submitChangeset, writeFlags, type WriteFlags } from '../write';
-import { documentOf } from './shared';
+import { projectOf } from './shared';
 
-const docArg = z.string().describe('A name, id prefix or liveplanner URL');
+const projectArg = z.string().describe('A name, id prefix or liveplanner URL');
 const sourceFlags = {
   file: z.string().optional().describe('An elements file to fill it from, or - for stdin'),
   template: z.string().optional().describe('A template kind to build it from'),
 };
 
-// A document ref in what a lifecycle verb prints: eight characters of its id, unique in practice and short.
+// A project ref in what a lifecycle verb prints: eight characters of its id, unique in practice and short.
 const REF_LENGTH = 8;
 const refOf = (id: string) => id.slice(0, REF_LENGTH);
 // A request whose answer has no body worth reading (204): its failure still throws the api's error.
@@ -33,7 +33,7 @@ async function send(ctx: VerbContext, path: string, init: RequestInit): Promise<
   if (!res.ok) throw new ApiError(res.status, await res.text());
 }
 
-const docPath = (id: string) => `/documents/${encodeURIComponent(id)}`;
+const docPath = (id: string) => `/projects/${encodeURIComponent(id)}`;
 
 // What a new tab is made from: a file's elements, a template, or nothing (an empty tab).
 async function replaceSourceOf(
@@ -74,18 +74,18 @@ const lineOutput = z.object({ text: z.string(), id: z.string() });
 const lineText = ({ text }: { text: string }) => [text];
 const quietId = ({ id }: { id: string }) => [id];
 
-export const documentCreate = defineVerb({
-  id: 'document.create',
+export const projectCreate = defineVerb({
+  id: 'project.create',
   summary: 'Create a project, empty or from a template or elements',
   description:
     'Creates a project with one tab, compiled by the api from --template or -f (elements); empty without either. Prints its ref, name and link.',
   behaviour: 'write',
   input: z.object({
-    name: z.string().min(1).describe('The new document\u2019s name'),
+    name: z.string().min(1).describe('The new project\u2019s name'),
     tab: z
       .string()
       .optional()
-      .describe('The first tab\u2019s name; the document\u2019s name by default'),
+      .describe('The first tab\u2019s name; the project\u2019s name by default'),
     ...sourceFlags,
   }),
   output: lineOutput,
@@ -94,18 +94,18 @@ export const documentCreate = defineVerb({
     const source = await replaceSourceOf(
       ctx,
       input,
-      `liveplanner document create ${JSON.stringify(input.name)}, then liveplanner edit`,
+      `liveplanner project create ${JSON.stringify(input.name)}, then liveplanner edit`,
     );
     const { theme: _t, layout: _l, name: _n, ...tabSource } = source;
     const tab = { id: ctx.newId(), name: input.tab ?? input.name, ...tabSource };
-    const { document } = await ctx.api.json<DocumentResponse>('/documents', {
+    const { project } = await ctx.api.json<ProjectResponse>('/projects', {
       method: 'POST',
       body: JSON.stringify({ id, name: input.name, source: 'cli', tabs: [tab] }),
     });
-    const tabs = document.tabs.length;
+    const tabs = project.tabs.length;
     return {
-      id: document.id,
-      text: `+ document ${refOf(document.id)} ${JSON.stringify(document.name)} · ${tabs} tab${tabs === 1 ? '' : 's'} · ${ctx.host}/document/${document.id}`,
+      id: project.id,
+      text: `+ project ${refOf(project.id)} ${JSON.stringify(project.name)} · ${tabs} tab${tabs === 1 ? '' : 's'} · ${ctx.host}/project/${project.id}`,
     };
   },
   text: lineText,
@@ -114,51 +114,51 @@ export const documentCreate = defineVerb({
     positionals: ['name'],
     flags: { file: { short: 'f' } },
     examples: [
-      'liveplanner document create "Sprint 14" --template kanban',
-      'liveplanner document create "Retro" --template start-stop-continue',
+      'liveplanner project create "Sprint 14" --template kanban',
+      'liveplanner project create "Retro" --template start-stop-continue',
     ],
-    prints: '+ document <ref> "<name>" · <n> tabs · <link>',
+    prints: '+ project <ref> "<name>" · <n> tabs · <link>',
   },
 });
 
-export const documentRename = defineVerb({
-  id: 'document.rename',
-  summary: 'Rename a document',
-  description: 'Gives a document a new name.',
+export const projectRename = defineVerb({
+  id: 'project.rename',
+  summary: 'Rename a project',
+  description: 'Gives a project a new name.',
   behaviour: 'write',
-  input: z.object({ doc: docArg, name: z.string().min(1).describe('The new name') }),
+  input: z.object({ project: projectArg, name: z.string().min(1).describe('The new name') }),
   output: lineOutput,
   run: async (ctx, input) => {
-    const found = await documentOf(ctx, input.doc);
-    const { document } = await ctx.api.json<DocumentResponse>(docPath(found.id), {
+    const found = await projectOf(ctx, input.project);
+    const { project } = await ctx.api.json<ProjectResponse>(docPath(found.id), {
       method: 'PUT',
       body: JSON.stringify({ name: input.name }),
     });
     return {
       id: found.id,
-      text: `~ document ${refOf(found.id)} ${JSON.stringify(found.name)}→${JSON.stringify(document.name)}`,
+      text: `~ project ${refOf(found.id)} ${JSON.stringify(found.name)}→${JSON.stringify(project.name)}`,
     };
   },
   text: lineText,
   quiet: quietId,
   cli: {
-    positionals: ['doc', 'name'],
+    positionals: ['project', 'name'],
     examples: [
-      'liveplanner document rename "Auth flow" "Sign-in flow"',
-      'liveplanner document rename 3f9c "Sign-in flow"',
+      'liveplanner project rename "Auth flow" "Sign-in flow"',
+      'liveplanner project rename 3f9c "Sign-in flow"',
     ],
-    prints: '~ document <ref> "<old>"→"<new>"',
+    prints: '~ project <ref> "<old>"→"<new>"',
   },
 });
 
-export const documentShare = defineVerb({
-  id: 'document.share',
+export const projectShare = defineVerb({
+  id: 'project.share',
   summary: 'Make a share link',
   description:
-    'Creates a share link to a document: view (default) lets people open and read it, participate also lets them comment, add stickies, write and vote without reshaping it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
+    'Creates a share link to a project: view (default) lets people open and read it, participate also lets them comment, add stickies, write and vote without reshaping it, edit lets them change anything; none needs sign-in. Expires never (default), in a week, a month or six months.',
   behaviour: 'write',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     role: z
       .enum(['view', 'participate', 'edit'])
       .default('view')
@@ -175,65 +175,65 @@ export const documentShare = defineVerb({
     expiresAt: z.number().nullable(),
   }),
   run: async (ctx, input) => {
-    const found = await documentOf(ctx, input.doc);
+    const found = await projectOf(ctx, input.project);
     const { link } = await ctx.api.json<{ link: ShareLink }>(`${docPath(found.id)}/share`, {
       method: 'POST',
       body: JSON.stringify({ role: input.role, expiry: input.expiry }),
     });
-    const url = `${ctx.host}/document/shared?s=${encodeURIComponent(link.code)}`;
+    const url = `${ctx.host}/project/shared?s=${encodeURIComponent(link.code)}`;
     return { text: url, url, role: link.role, expiresAt: link.expiresAt };
   },
   text: lineText,
   quiet: ({ url }) => [url],
   cli: {
-    positionals: ['doc'],
+    positionals: ['project'],
     examples: [
-      'liveplanner document share "Auth flow"',
-      'liveplanner document share 3f9c --role edit --expiry week',
+      'liveplanner project share "Auth flow"',
+      'liveplanner project share 3f9c --role edit --expiry week',
     ],
     prints: 'the link',
   },
 });
 
-export const documentRm = defineVerb({
-  id: 'document.rm',
-  summary: `Move a document to the Trash for ${TRASH_RETENTION_DAYS} days`,
-  description: `Moves a document to the Trash, where it can be restored for ${TRASH_RETENTION_DAYS} days.`,
+export const projectRm = defineVerb({
+  id: 'project.rm',
+  summary: `Move a project to the Trash for ${TRASH_RETENTION_DAYS} days`,
+  description: `Moves a project to the Trash, where it can be restored for ${TRASH_RETENTION_DAYS} days.`,
   behaviour: 'destructive',
-  input: z.object({ doc: docArg }),
+  input: z.object({ project: projectArg }),
   output: lineOutput,
   run: async (ctx, input) => {
-    const found = await documentOf(ctx, input.doc);
+    const found = await projectOf(ctx, input.project);
     await send(ctx, docPath(found.id), { method: 'DELETE' });
     return {
       id: found.id,
-      text: `- document ${refOf(found.id)} ${JSON.stringify(found.name)} · in the Trash for ${TRASH_RETENTION_DAYS} days · restore: liveplanner document restore ${found.id}`,
+      text: `- project ${refOf(found.id)} ${JSON.stringify(found.name)} · in the Trash for ${TRASH_RETENTION_DAYS} days · restore: liveplanner project restore ${found.id}`,
     };
   },
   text: lineText,
   quiet: quietId,
   cli: {
-    positionals: ['doc'],
-    examples: ['liveplanner document rm "Old draft"', 'liveplanner document rm 3f9c'],
-    prints: '- document <ref> "<name>" · in the Trash · the restore command',
+    positionals: ['project'],
+    examples: ['liveplanner project rm "Old draft"', 'liveplanner project rm 3f9c'],
+    prints: '- project <ref> "<name>" · in the Trash · the restore command',
   },
 });
 
-export const documentRestore = defineVerb({
-  id: 'document.restore',
-  summary: 'Bring a document back from the Trash',
+export const projectRestore = defineVerb({
+  id: 'project.restore',
+  summary: 'Bring a project back from the Trash',
   description:
-    'Restores a document from the Trash to its folder, or the root of its space when that folder is gone.',
+    'Restores a project from the Trash to its folder, or the root of its space when that folder is gone.',
   behaviour: 'write',
-  input: z.object({ doc: z.string().describe('A name or id prefix of a document in the Trash') }),
+  input: z.object({ project: z.string().describe('A name or id prefix of a project in the Trash') }),
   output: lineOutput,
   run: async (ctx, input) => {
-    const { trash } = await ctx.api.json<{ trash: TrashedDocument[] }>('/trash');
-    const lower = input.doc.toLowerCase();
+    const { trash } = await ctx.api.json<{ trash: TrashedProject[] }>('/trash');
+    const lower = input.project.toLowerCase();
     const matches = trash.filter(
       (d) =>
-        d.id === input.doc ||
-        (input.doc.length >= 4 && d.id.startsWith(input.doc)) ||
+        d.id === input.project ||
+        (input.project.length >= 4 && d.id.startsWith(input.project)) ||
         d.name.toLowerCase() === lower,
     );
     const refs = shortestUniquePrefixes(trash.map((d) => d.id));
@@ -242,8 +242,8 @@ export const documentRestore = defineVerb({
         status: 404,
         code: matches.length ? 'ambiguous' : 'not_found',
         message: matches.length
-          ? `"${input.doc}" matches ${matches.length} documents in the Trash`
-          : `nothing in the Trash matches "${input.doc}"`,
+          ? `"${input.project}" matches ${matches.length} projects in the Trash`
+          : `nothing in the Trash matches "${input.project}"`,
         lines: (matches.length ? matches : trash.slice(0, 5)).map(
           (d) => `${refs.get(d.id)}  ${JSON.stringify(d.name)}  ${d.teamName ?? 'personal'}`,
         ),
@@ -253,15 +253,15 @@ export const documentRestore = defineVerb({
     await ctx.api.json(`/trash/${encodeURIComponent(doc!.id)}/restore`, { method: 'POST' });
     return {
       id: doc!.id,
-      text: `+ document ${refOf(doc!.id)} ${JSON.stringify(doc!.name)} restored`,
+      text: `+ project ${refOf(doc!.id)} ${JSON.stringify(doc!.name)} restored`,
     };
   },
   text: lineText,
   quiet: quietId,
   cli: {
-    positionals: ['doc'],
-    examples: ['liveplanner document restore "Old draft"', 'liveplanner document restore 3f9c2a71'],
-    prints: '+ document <ref> "<name>" restored',
+    positionals: ['project'],
+    examples: ['liveplanner project restore "Old draft"', 'liveplanner project restore 3f9c2a71'],
+    prints: '+ project <ref> "<name>" restored',
   },
 });
 
@@ -272,7 +272,7 @@ export const tabAdd = defineVerb({
     'Adds a tab to a project as one changeset on a new tab, filled from --template or -f (elements); empty without either. Prints the tab, the result lines and the tab rm that undoes it.',
   behaviour: 'write',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     name: z.string().min(1).describe('The new tab\u2019s name'),
     ...sourceFlags,
     ...writeFlags,
@@ -283,17 +283,17 @@ export const tabAdd = defineVerb({
     changeset: z.object({ id: z.string(), rev: z.number() }).nullable(),
   }),
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
+    const project = await projectOf(ctx, input.project);
     const source = await replaceSourceOf(
       ctx,
       input,
-      `liveplanner tab add ${JSON.stringify(input.doc)} ${JSON.stringify(input.name)}, then liveplanner edit`,
+      `liveplanner tab add ${JSON.stringify(input.project)} ${JSON.stringify(input.name)}, then liveplanner edit`,
     );
     const target = {
-      documentId: document.id,
+      projectId: project.id,
       tabId: ctx.newId(),
       tabName: input.name,
-      doc: input.doc,
+      project: input.project,
     };
     // A new tab was read at revision 0 by definition: the base says so, and no copy is needed.
     const response = await submitChangeset(
@@ -305,7 +305,7 @@ export const tabAdd = defineVerb({
     // Reverting the changeset takes the tab's elements back but leaves the tab, so the footer names what removes it.
     const footer = response.text.replace(
       /revert: liveplanner changeset revert \S+ \S+$/m,
-      `undo: liveplanner tab rm ${document.id} ${target.tabId}`,
+      `undo: liveplanner tab rm ${project.id} ${target.tabId}`,
     );
     return {
       // The tab first, as `tab rename` names it: an empty tab has no element lines, so this is all that says which.
@@ -317,7 +317,7 @@ export const tabAdd = defineVerb({
   text: lineText,
   quiet: ({ changeset }) => (changeset ? [changeset.id] : []),
   cli: {
-    positionals: ['doc', 'name'],
+    positionals: ['project', 'name'],
     flags: { file: { short: 'f' } },
     examples: [
       'liveplanner tab add "Sprint 14" Roadmap --template project-planner',
@@ -334,16 +334,16 @@ export const tabRename = defineVerb({
   description: 'Gives a tab a new name.',
   behaviour: 'write',
   input: z.object({
-    doc: docArg,
+    project: projectArg,
     tab: z.string().describe('The tab, by name or id prefix'),
     name: z.string().min(1).describe('The new name'),
   }),
   output: lineOutput,
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
-    const tab = resolveTab(document.tabs, input.tab, input.doc, ctx.log);
+    const project = await projectOf(ctx, input.project);
+    const tab = resolveTab(project.tabs, input.tab, input.project, ctx.log);
     const { tab: renamed } = await ctx.api.json<{ tab: { name: string } }>(
-      `${docPath(document.id)}/tabs/${encodeURIComponent(tab.id)}/name`,
+      `${docPath(project.id)}/tabs/${encodeURIComponent(tab.id)}/name`,
       {
         method: 'PUT',
         body: JSON.stringify({ name: input.name }),
@@ -357,7 +357,7 @@ export const tabRename = defineVerb({
   text: lineText,
   quiet: quietId,
   cli: {
-    positionals: ['doc', 'tab', 'name'],
+    positionals: ['project', 'tab', 'name'],
     examples: [
       'liveplanner tab rename "Auth flow" Overview Summary',
       'liveplanner tab rename 3f9c tab-2 "Data model"',
@@ -369,14 +369,14 @@ export const tabRename = defineVerb({
 export const tabRm = defineVerb({
   id: 'tab.rm',
   summary: 'Delete a tab',
-  description: 'Deletes one tab of a document; the other tabs stay.',
+  description: 'Deletes one tab of a project; the other tabs stay.',
   behaviour: 'destructive',
-  input: z.object({ doc: docArg, tab: z.string().describe('The tab, by name or id prefix') }),
+  input: z.object({ project: projectArg, tab: z.string().describe('The tab, by name or id prefix') }),
   output: lineOutput,
   run: async (ctx, input) => {
-    const document = await documentOf(ctx, input.doc);
-    const tab = resolveTab(document.tabs, input.tab, input.doc, ctx.log);
-    await send(ctx, `${docPath(document.id)}/tabs/${encodeURIComponent(tab.id)}`, {
+    const project = await projectOf(ctx, input.project);
+    const tab = resolveTab(project.tabs, input.tab, input.project, ctx.log);
+    await send(ctx, `${docPath(project.id)}/tabs/${encodeURIComponent(tab.id)}`, {
       method: 'DELETE',
     });
     return { id: tab.id, text: `- tab ${tab.id} ${JSON.stringify(tab.name)}` };
@@ -384,7 +384,7 @@ export const tabRm = defineVerb({
   text: lineText,
   quiet: quietId,
   cli: {
-    positionals: ['doc', 'tab'],
+    positionals: ['project', 'tab'],
     examples: ['liveplanner tab rm "Auth flow" Scratch', 'liveplanner tab rm 3f9c tab-2'],
     prints: '- tab <id> "<name>"',
   },

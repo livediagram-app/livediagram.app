@@ -1,5 +1,5 @@
 import { useEffect, useEffectEvent, useState, type RefObject } from 'react';
-import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@liveplanner/document';
+import { snapResizeBounds, snapToAlignment, snapToArrowPoint } from '@liveplanner/project';
 import { ARROW_SNAP_THRESHOLD_PX, pointerToCanvas, snapLeadingAxis } from '@/lib/canvas';
 import type { CanvasProps } from '@/components/canvas/Canvas.types';
 import { isPlanCardIntent } from '@/lib/draw-mode';

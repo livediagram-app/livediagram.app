@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-// The green pill on a list's leading row ("Most used", "Most documents"). Emerald-700 on emerald-50 reads at
+// The green pill on a list's leading row ("Most used", "Most projects"). Emerald-700 on emerald-50 reads at
 // WCAG AA (about 5.5:1) at its 10px size; emerald-600 fell short (3.5:1).
 export function LeaderTag({ children }: { children: ReactNode }) {
   return (

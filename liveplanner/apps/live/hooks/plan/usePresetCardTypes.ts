@@ -1,17 +1,17 @@
 'use client';
 
 // A board brings its card types (docs/specs/026-plan/item-types.md "The type catalogue", plan-mode.md "The palette"):
-// it adds the ones it names that the document lacks, so in a fresh document the first boards choose them (a Kanban
-// board's document has Task and Action); a Blank board brings none. Only a board that appears while the document is
+// it adds the ones it names that the project lacks, so in a fresh project the first boards choose them (a Kanban
+// board's project has Task and Action); a Blank board brings none. Only a board that appears while the project is
 // open counts (placed here, by a template, or by someone else): the boards it opened with never add a type back, so a
 // type someone deleted stays deleted.
 //
 // The effect reads the open tab only. A template's tabs bring theirs as they are made, every tab at once
 // (docs/specs/026-plan/plan-templates.md "Card types a template uses"): Quick Start hands their elements to `bring`.
-// Nothing is decided before the document's items are read (an old document with cards reads as the default types,
+// Nothing is decided before the project's items are read (an old project with cards reads as the default types,
 // legacyCatalogue): a `bring` made earlier (a Plan template picked outside Plan mode) waits for them.
 import { useCallback, useEffect, useRef, type RefObject } from 'react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { catalogueWithBoardTypes, type ItemTypeCatalogue } from '@liveplanner/items';
 import { debugLog } from '@/lib/debug-log';
 import { useLatest } from '@/hooks/ui/useLatest';
@@ -57,13 +57,13 @@ export function usePresetCardTypes({
 }: {
   tabs: readonly Tab[];
   activeId: string;
-  // Plan in play, the document's types read, and this person may change them.
+  // Plan in play, the project's types read, and this person may change them.
   enabled: boolean;
-  // The document's types read and this person may change them, in any mode (a template is made from any).
+  // The project's types read and this person may change them, in any mode (a template is made from any).
   canBring: boolean;
-  // The document's items are read.
+  // The project's items are read.
   itemsReady: boolean;
-  // The stored catalogue, null while the document's card types are not chosen.
+  // The stored catalogue, null while the project's card types are not chosen.
   catalogue: ItemTypeCatalogue | null;
   saveCatalogue: (next: ItemTypeCatalogue) => void;
 }): { bring: (elements: Elements) => void } {

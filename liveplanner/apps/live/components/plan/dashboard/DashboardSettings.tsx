@@ -16,7 +16,7 @@ import {
   setDashboardBackground,
   type DashboardBackground,
   type DashboardLayout,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { TextInput, lucideGlyph } from '@liveplanner/ui';
 import {
   lucideEraser,

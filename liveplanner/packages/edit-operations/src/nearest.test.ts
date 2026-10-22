@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { checkoutFlow } from './fixtures/checkout-flow';
 import { editDistanceWithin, nearestElements, nearestName } from './nearest';
 

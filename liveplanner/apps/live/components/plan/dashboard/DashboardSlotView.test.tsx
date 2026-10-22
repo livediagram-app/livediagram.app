@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DashboardSlot, Tab } from '@liveplanner/document';
+import type { DashboardSlot, Tab } from '@liveplanner/project';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { DashboardSlotView } from './DashboardSlotView';
 
@@ -123,7 +123,7 @@ describe('a Sheet Chart from Add to Slot', () => {
     fireEvent.click(screen.getByRole('button', { name: /^From a Sheet/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Add Sheet Chart' }));
     expect(screen.getByRole('heading', { name: 'Sheet' })).toBeTruthy();
-    expect(screen.getByText('No sheets in this document yet.')).toBeTruthy();
+    expect(screen.getByText('No sheets in this project yet.')).toBeTruthy();
     expect(v.actions.placeItem).not.toHaveBeenCalled();
     vi.restoreAllMocks();
   });

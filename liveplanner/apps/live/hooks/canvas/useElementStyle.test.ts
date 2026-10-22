@@ -8,7 +8,7 @@ import {
   DEFAULT_ANIMATION_SPEED,
   type Element,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useElementStyle } from './useElementStyle';
 
 // useElementStyle builds plain handler closures from its deps (no internal
@@ -330,7 +330,7 @@ describe('useElementStyle arrow style presets (docs/specs/010-palette/style-pres
   });
 });
 
-describe('useElementStyle bring to front / send to back as layer moves (docs/specs/006-document/layers.md)', () => {
+describe('useElementStyle bring to front / send to back as layer moves (docs/specs/006-project/layers.md)', () => {
   it('bring to front mints a top layer holding the selection', () => {
     const a = createShape('square', 0, 0);
     const b = createShape('square', 200, 0);

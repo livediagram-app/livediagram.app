@@ -43,7 +43,7 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'contact-form': null,
 };
 
-/** The family a document made from this template belongs to; null for no template or no family. */
+/** The family a project made from this template belongs to; null for no template or no family. */
 export function templateFamilyOf(kind: TemplateKind | null): TemplateFamily | null {
   return kind === null ? null : TEMPLATE_FAMILY[kind];
 }

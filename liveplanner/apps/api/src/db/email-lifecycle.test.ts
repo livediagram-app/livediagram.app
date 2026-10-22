@@ -74,7 +74,7 @@ describe('send attempts', () => {
     expect(row.last_attempt_at).not.toBeNull();
   });
 
-  it('keeps a failing zero-document signup out of the activation nudge too', async () => {
+  it('keeps a failing zero-project signup out of the activation nudge too', async () => {
     const db = sqliteD1();
     db.sql
       .prepare(
@@ -98,8 +98,8 @@ describe('send attempts', () => {
   });
 });
 
-// docs/specs/014-identity/transactional-email.md #7: win-back reads the owner's newest document save, so it runs
-// against the real schema (it once read a `documents.updated_at` that never existed and threw every day).
+// docs/specs/014-identity/transactional-email.md #7: win-back reads the owner's newest project save, so it runs
+// against the real schema (it once read a `projects.updated_at` that never existed and threw every day).
 describe('dueForWinback', () => {
   const CUTOFF = 1_000;
 
@@ -113,7 +113,7 @@ describe('dueForWinback', () => {
     savedAt.forEach((at, i) =>
       db.sql
         .prepare(
-          'INSERT INTO documents (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
+          'INSERT INTO projects (id, owner_id, name, shareable, saved_at, created_at) VALUES (?, ?, ?, 0, ?, ?)',
         )
         .run(`d${i}`, 'user_a', 'D', at, 1),
     );
@@ -127,7 +127,7 @@ describe('dueForWinback', () => {
     ]);
   });
 
-  it('skips an owner who saved after the cutoff, and one with no documents', async () => {
+  it('skips an owner who saved after the cutoff, and one with no projects', async () => {
     expect(await dueForWinback(withOwner([10, CUTOFF + 1]).env, CUTOFF, 10)).toEqual([]);
     expect(await dueForWinback(withOwner([]).env, CUTOFF, 10)).toEqual([]);
   });

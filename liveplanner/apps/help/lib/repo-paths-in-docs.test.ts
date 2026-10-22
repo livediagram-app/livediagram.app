@@ -39,7 +39,7 @@ const WORKSPACE_ROOTS = [
   'apps/telemetry/',
   'apps/router/src/',
   'apps/router/',
-  'packages/document/',
+  'packages/project/',
   'packages/api-schema/',
   'packages/icons/',
   'packages/ui/',

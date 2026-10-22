@@ -49,7 +49,7 @@ A new Show Me surface is added to this table, and its own spec says its steps.
   can type, pick or press as the tour goes, and what they do is kept. A step never changes anything on its own
   beyond opening the tab, section or selection it is about.
 - **Only what is there.** Steps whose control the surface cannot show right now (a second tab's picker on a
-  one-tab document, a box on a photo where nothing was found) are left out when the tour starts, so the count
+  one-tab project, a box on a photo where nothing was found) are left out when the tour starts, so the count
   is right from the first step; a target that still never appears skips its step.
 - **Escape belongs to the tour** while it runs over a dialog or an overlay (the card type editor, the Share dialog):
   it never closes the surface under it. The surface stops closing on Escape for the duration; the tour's own Skip

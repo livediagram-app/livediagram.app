@@ -12,7 +12,7 @@ import type {
   PlanStatusName,
 } from '@liveplanner/items';
 
-// The item shapes the api documents, re-exported so the OpenAPI generator finds them here.
+// The item shapes the api projects, re-exported so the OpenAPI generator finds them here.
 export type {
   Item,
   ItemCreate,
@@ -32,7 +32,7 @@ export type {
   PlanStatusName,
 } from '@liveplanner/items';
 
-// GET /api/documents/:id/items[?tabId=]: the store, or the items one tab shows.
+// GET /api/projects/:id/items[?tabId=]: the store, or the items one tab shows.
 export type ItemsResponse = { items: Item[]; rev: number };
 
 // One item as written: POST /items, PATCH /items/:itemId, POST .../move, POST .../vote.
@@ -49,29 +49,29 @@ type ItemUndoFlag = {
   undo?: true;
 };
 
-// POST /api/documents/:id/items/:itemId: the change, optionally marked as an undo or redo.
+// POST /api/projects/:id/items/:itemId: the change, optionally marked as an undo or redo.
 export type ItemPatchRequest = ItemPatch & ItemUndoFlag;
 
-// POST /api/documents/:id/items/:itemId/move: the move, optionally marked as an undo or redo.
+// POST /api/projects/:id/items/:itemId/move: the move, optionally marked as an undo or redo.
 export type ItemMoveRequest = ItemMove & ItemUndoFlag;
 
-// POST /api/documents/:id/items/bulk: template seeds and an offline document's items.
+// POST /api/projects/:id/items/bulk: template seeds and an offline project's items.
 export type ItemsBulkRequest = { items: ItemCreate[] };
 
-// POST /api/documents/:id/items/patches: up to 200 items changed in one write (a card type's or a removed column's
+// POST /api/projects/:id/items/patches: up to 200 items changed in one write (a card type's or a removed column's
 // cards to the Trash), optionally marked as an undo or redo.
 export type ItemsPatchRequest = { items: (ItemPatch & { id: string })[] } & ItemUndoFlag;
 
-// POST /api/documents/:id/items/tally: a session vote's tally, up to 200 cards, added when its host ends it.
+// POST /api/projects/:id/items/tally: a session vote's tally, up to 200 cards, added when its host ends it.
 export type ItemsTallyRequest = { items: { id: string; votes: Record<string, number> }[] };
 
 // The room op every item write sends (system kind). `upserts` and `removed` are empty for a
 // session scoped to one tab: it refetches the items its tab shows.
 export type ItemsRoomOp = { kind: 'items'; upserts: Item[]; removed: string[]; rev: number };
 
-// PUT /api/documents/:id/item-types (docs/specs/026-plan/item-types.md "Storage and sync"): the
-// document's type catalogue, whole, or null to go back to the built-in types. `expectedRev` names the
-// catalogue's revision the change was made to (the document's `itemTypesRev`); when it has moved on the
+// PUT /api/projects/:id/item-types (docs/specs/026-plan/item-types.md "Storage and sync"): the
+// project's type catalogue, whole, or null to go back to the built-in types. `expectedRev` names the
+// catalogue's revision the change was made to (the project's `itemTypesRev`); when it has moved on the
 // write is refused, 409 `item_types_stale` with the stored catalogue and revision (ItemTypesStale), so the
 // caller re-applies its change to them. Left out, the write lands whatever is stored. The answer is the
 // catalogue as stored, with its new revision.
@@ -91,7 +91,7 @@ export type ItemTypesRoomOp = {
   itemTypesRev?: number;
 };
 
-// GET /api/documents/:id/plan (docs/specs/026-plan/plan-agents.md "Reading the plan"): the document's Plan boards
+// GET /api/projects/:id/plan (docs/specs/026-plan/plan-agents.md "Reading the plan"): the project's Plan boards
 // with their columns, the statuses they name (each once) and the card types, for agents. A tab-scoped link passes
 // tabId and gets that tab's boards.
 // A tab as the plan read names it (docs/specs/026-plan/plan-agents.md "Reading the plan": tabs).

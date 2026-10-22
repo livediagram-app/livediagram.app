@@ -24,8 +24,8 @@ import {
   type DashboardContent,
   type ShapeColorPreset,
   type ThemeDefinition,
-} from '@liveplanner/document';
-import { EditorContext } from '@/app/document/[id]/EditorContext';
+} from '@liveplanner/project';
+import { EditorContext } from '@/app/project/[id]/EditorContext';
 import { getTheme } from '@/lib/themes';
 import { useDashboard } from './dashboard-context';
 

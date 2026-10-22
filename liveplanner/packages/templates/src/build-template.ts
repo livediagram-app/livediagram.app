@@ -6,7 +6,7 @@
 // materialises these directly (docs/specs/015-api/mcp-server.md §4.5).
 
 import { isFormTemplateKind } from './form-templates';
-import { settleChips, type Element, type Tab } from '@liveplanner/document';
+import { settleChips, type Element, type Tab } from '@liveplanner/project';
 import type { TemplateKind } from './templates';
 import { buildPlanTemplate, isPlanTemplateKind, planTemplateTabs } from './template-builders-plan';
 

@@ -4,7 +4,7 @@
 // not touched, so it is never normalised (E1, I2).
 
 import type { EditRejection } from '@liveplanner/api-schema';
-import type { ArrowElement, Element } from '@liveplanner/document';
+import type { ArrowElement, Element } from '@liveplanner/project';
 import { sameValue } from '../equality';
 import { writeFieldsOnto } from '../fields';
 import { fitToLabel } from '../labels';

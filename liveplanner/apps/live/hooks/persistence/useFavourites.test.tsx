@@ -12,7 +12,7 @@ vi.mock('@/lib/api-client', () => ({
 
 afterEach(() => vi.clearAllMocks());
 
-// Per-user document favourites (docs/specs/013-workspace/favourites.md).
+// Per-user project favourites (docs/specs/013-workspace/favourites.md).
 describe('useFavourites', () => {
   it('loads the stars for the owner', async () => {
     apiListFavourites.mockResolvedValue(['d1']);

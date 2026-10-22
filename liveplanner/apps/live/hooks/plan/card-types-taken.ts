@@ -11,7 +11,7 @@ import {
   typeIn,
   type CardTypesTaken,
 } from '@liveplanner/items';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { usePlan } from '@/components/plan/PlanContext';
 import { createListeners } from '@/lib/listeners';
 

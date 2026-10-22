@@ -6,13 +6,13 @@ import { TeamMembers, TeamSharedTree } from '@/components/illustrations/collabor
 export const metadata = helpMetadata({
   title: 'Teams',
   description:
-    'Group signed-in users into a team, invite teammates by email, and share a folder tree of documents every member can manage.',
+    'Group signed-in users into a team, invite teammates by email, and share a folder tree of projects every member can manage.',
   path: '/help/collaboration/teams/',
 });
 
-<ArticleLayout title="Teams" description="Group signed-in people into a team with roles, invites, and a shared library of documents everyone can manage." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("teams")}>
+<ArticleLayout title="Teams" description="Group signed-in people into a team with roles, invites, and a shared library of projects everyone can manage." categoryTitle="Collaboration" categorySlug="collaboration" subArticles={getSubArticles("teams")}>
 
-A team is a named group of signed-in people, managed from the Explorer. Each member has a role, either Admin or Member, and every team gets a shared library of documents that all members can open and edit. Teams are not a paid tier: liveplanner is free, so the roles are about who may manage the team, not about unlocking features.
+A team is a named group of signed-in people, managed from the Explorer. Each member has a role, either Admin or Member, and every team gets a shared library of projects that all members can open and edit. Teams are not a paid tier: liveplanner is free, so the roles are about who may manage the team, not about unlocking features.
 
 ## What a team is
 
@@ -20,7 +20,7 @@ A team has a name (up to 80 characters) and an optional organisation, plus a lis
 
 Teams need a signed-in account because they are keyed to your account identity and invites are matched by email. The canvas itself always works without an account, and a share link can still be handed to a guest who edits without signing in.
 
-In the Explorer sidebar, every team you have joined is a space under **Spaces**, beside My Documents, with **New Team** as the last row and an **Invites** row while invitations are waiting for you. Open a team to see its page: the member list, the invite controls (for Admins), and the shared library. The **⋯** button at the top (**Team actions**) holds **Edit Team**, **Leave Team** and **Delete Team**, depending on your role.
+In the Explorer sidebar, every team you have joined is a space under **Spaces**, beside My Projects, with **New Team** as the last row and an **Invites** row while invitations are waiting for you. Open a team to see its page: the member list, the invite controls (for Admins), and the shared library. The **⋯** button at the top (**Team actions**) holds **Edit Team**, **Leave Team** and **Delete Team**, depending on your role.
 
 ## Roles and invites
 
@@ -34,18 +34,18 @@ You can add people by email address or by turning on a shareable invite link. Se
 
 ## The shared library
 
-Every team has its own folder tree of documents, shown as a **Team documents** card on the team page. Any joined member can create, rename, duplicate, move, and delete documents there, so the work belongs to the whole team rather than to one person. Team documents also turn up in your Recent list, marked **Team**. See [Team Shared Documents](/help/collaboration/teams/team-shared-documents/) for how placement and ownership work.
+Every team has its own folder tree of projects, shown as a **Team projects** card on the team page. Any joined member can create, rename, duplicate, move, and delete projects there, so the work belongs to the whole team rather than to one person. Team projects also turn up in your Recent list, marked **Team**. See [Team Shared Projects](/help/collaboration/teams/team-shared-projects/) for how placement and ownership work.
 
-Inside a team document, members can [mention](/help/collaboration/comments/#mentioning-a-teammate) each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other.
+Inside a team project, members can [mention](/help/collaboration/comments/#mentioning-a-teammate) each other in comments and [assign actions](/help/collaboration/assigned-actions/) to each other.
 
-<Figure caption="The Team documents card holds the team's shared folders and documents, which every member can manage.">
+<Figure caption="The Team projects card holds the team's shared folders and projects, which every member can manage.">
   <TeamSharedTree />
 </Figure>
 
 ## Leaving or deleting a team
 
-- **Leave Team** in the **⋯** menu takes you out. Documents you created in the team library stay with the team (another member, the longest-standing Admin, takes them over), and if you have one of its documents open, you lose access straight away.
-- **Delete Team** (Admins only) asks you to confirm, then removes the team and its member list for everyone. Its documents are not lost: each one moves back to the root of its owner's My Documents.
+- **Leave Team** in the **⋯** menu takes you out. Projects you created in the team library stay with the team (another member, the longest-standing Admin, takes them over), and if you have one of its projects open, you lose access straight away.
+- **Delete Team** (Admins only) asks you to confirm, then removes the team and its member list for everyone. Its projects are not lost: each one moves back to the root of its owner's My Projects.
 
 <Tip>
   If your invite does not appear, make sure you are signed in with the same email address it was
@@ -54,10 +54,10 @@ Inside a team document, members can [mention](/help/collaboration/comments/#ment
 
 <FeatureGrid>
   <Feature slug="explorer" title="Explorer">
-    Browse and organise all your documents and teams in one place.
+    Browse and organise all your projects and teams in one place.
   </Feature>
   <Feature slug="sharing" title="Sharing and Embeds">
-    Hand any document to people outside your team with a share link.
+    Hand any project to people outside your team with a share link.
   </Feature>
 </FeatureGrid>
 

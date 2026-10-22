@@ -1,12 +1,12 @@
 // The sheet store's endpoints (docs/specs/029-sheets/sheet-store.md, blueprint sheet-store.md "Interfaces and
-// contracts"): list, create (blank, filled or a copy) and delete under /api/documents/:id/sheets, and each sheet's
+// contracts"): list, create (blank, filled or a copy) and delete under /api/projects/:id/sheets, and each sheet's
 // writes (sheet-write-route.ts). People and agents use the same doors; every change reaches the room as an
 // ordered `sheets` op.
 
 import type { SheetCreateRequest, SheetResponse, SheetsResponse } from '@liveplanner/api-schema';
 import {
-  DOCUMENT_CELLS_MAX,
-  DOCUMENT_SHEETS_MAX,
+  PROJECT_CELLS_MAX,
+  PROJECT_SHEETS_MAX,
   SHEET_CELLS_MAX,
   SHEET_TITLE_MAX,
   SHEET_WRITE_CELLS_MAX,
@@ -23,7 +23,7 @@ import {
 import {
   copySheetStatements,
   deleteSheetStatement,
-  documentSheetTotals,
+  projectSheetTotals,
   getTab,
   insertSheetStatements,
   listSheetHeads,
@@ -45,15 +45,15 @@ import { writeSheet } from './sheet-write-route';
 
 const IDS_PER_GET_MAX = 50;
 
-async function list(ctx: RouteContext, documentId: string): Promise<Response> {
-  const caller = await sheetCaller(ctx, documentId, 'read');
+async function list(ctx: RouteContext, projectId: string): Promise<Response> {
+  const caller = await sheetCaller(ctx, projectId, 'read');
   if (caller instanceof Response) return caller;
   const tabId = ctx.url.searchParams.get('tabId') ?? undefined;
   const idsParam = ctx.url.searchParams.get('ids');
   const ids = idsParam ? idsParam.split(',').filter(Boolean) : undefined;
   if (ids && (ids.length > IDS_PER_GET_MAX || !ids.every(isSheetId)))
     return sheetRejected('write_invalid');
-  let sheets = await listSheets(ctx.env, documentId, ids ? { ids } : tabId ? { tabId } : {});
+  let sheets = await listSheets(ctx.env, projectId, ids ? { ids } : tabId ? { tabId } : {});
   if (caller.scopeTab) sheets = sheets.filter((s) => s.tabId === caller.scopeTab);
   const body: SheetsResponse = { sheets };
   return json(body);
@@ -101,7 +101,7 @@ function readCreate(raw: unknown, maxCells = SHEET_WRITE_CELLS_MAX): ReadCreate 
   };
 }
 
-// Make a sheet (the route, and a new document's seed). Returns the stored sheet, or a refusal.
+// Make a sheet (the route, and a new project's seed). Returns the stored sheet, or a refusal.
 async function makeSheet(
   ctx: RouteContext,
   caller: SheetCaller,
@@ -109,27 +109,27 @@ async function makeSheet(
   by: SheetPerson,
   checkTab = true,
 ): Promise<SheetJson | Response> {
-  const { documentId } = caller;
+  const { projectId } = caller;
   if (caller.scopeTab && create.tabId !== caller.scopeTab)
     return sheetRejected('tab_not_found', 404);
-  if (checkTab && !(await getTab(ctx.env, documentId, create.tabId)))
+  if (checkTab && !(await getTab(ctx.env, projectId, create.tabId)))
     return sheetRejected('tab_not_found', 404);
   const id = create.id ?? makeSheetId();
-  if (await readSheetHead(ctx.env, documentId, id)) return sheetRejected('sheet_exists', 409);
-  const heads = await listSheetHeads(ctx.env, documentId, create.tabId);
+  if (await readSheetHead(ctx.env, projectId, id)) return sheetRejected('sheet_exists', 409);
+  const heads = await listSheetHeads(ctx.env, projectId, create.tabId);
   if (titleTaken(heads, create.title)) return sheetRejected('sheet_title_taken', 409);
-  const totals = await documentSheetTotals(ctx.env, documentId);
-  if (totals.sheets >= DOCUMENT_SHEETS_MAX) return sheetRejected('sheets_full', 413);
+  const totals = await projectSheetTotals(ctx.env, projectId);
+  if (totals.sheets >= PROJECT_SHEETS_MAX) return sheetRejected('sheets_full', 413);
   const now = Date.now();
   if (create.copyOf) {
-    const source = await readSheetHead(ctx.env, documentId, create.copyOf);
+    const source = await readSheetHead(ctx.env, projectId, create.copyOf);
     if (!source || (caller.scopeTab && source.tabId !== caller.scopeTab)) return sheetNotFound();
-    if (totals.cells + source.cellCount > DOCUMENT_CELLS_MAX)
+    if (totals.cells + source.cellCount > PROJECT_CELLS_MAX)
       return sheetRejected('sheets_full', 413);
     await ctx.env.DB.batch(
       copySheetStatements(
         ctx.env,
-        documentId,
+        projectId,
         create.copyOf,
         { id, tabId: create.tabId, title: create.title, by },
         now,
@@ -155,12 +155,12 @@ async function makeSheet(
     }
     if (!check.ok)
       return sheetRejected(check.error, check.error === 'sheet_full' ? 413 : 400, check.at);
-    if (totals.cells + sheet.cells.length > DOCUMENT_CELLS_MAX)
+    if (totals.cells + sheet.cells.length > PROJECT_CELLS_MAX)
       return sheetRejected('sheets_full', 413);
-    await ctx.env.DB.batch(insertSheetStatements(ctx.env, documentId, sheet, now));
+    await ctx.env.DB.batch(insertSheetStatements(ctx.env, projectId, sheet, now));
   }
-  const [stored] = await listSheets(ctx.env, documentId, { ids: [id] });
-  relaySheet(ctx, documentId, {
+  const [stored] = await listSheets(ctx.env, projectId, { ids: [id] });
+  relaySheet(ctx, projectId, {
     kind: 'sheets',
     sheetId: id,
     tabId: create.tabId,
@@ -168,15 +168,15 @@ async function makeSheet(
     created: true,
   });
   console.info('[sheets] sheets.created', {
-    documentId,
+    projectId,
     copy: !!create.copyOf,
     agent: ctx.token !== null,
   });
   return stored!;
 }
 
-async function create(ctx: RouteContext, documentId: string): Promise<Response> {
-  const caller = await sheetCaller(ctx, documentId, 'edit');
+async function create(ctx: RouteContext, projectId: string): Promise<Response> {
+  const caller = await sheetCaller(ctx, projectId, 'edit');
   if (caller instanceof Response) return caller;
   const read = readCreate(await readBody(ctx));
   if ('error' in read) return read.error;
@@ -196,41 +196,41 @@ async function keepRestored(
   create: SheetCreateRequest,
 ): Promise<SheetResponse | null> {
   if (!create.id || (caller.scopeTab && create.tabId !== caller.scopeTab)) return null;
-  const head = await readSheetHead(ctx.env, caller.documentId, create.id);
+  const head = await readSheetHead(ctx.env, caller.projectId, create.id);
   if (!head || head.tabId !== create.tabId) return null;
-  await ctx.env.DB.batch([sheetKeepStatement(ctx.env, caller.documentId, create.id)]);
-  const [stored] = await listSheets(ctx.env, caller.documentId, { ids: [create.id] });
-  console.info('[sheets] sheets.restored', { documentId: caller.documentId, kept: true });
+  await ctx.env.DB.batch([sheetKeepStatement(ctx.env, caller.projectId, create.id)]);
+  const [stored] = await listSheets(ctx.env, caller.projectId, { ids: [create.id] });
+  console.info('[sheets] sheets.restored', { projectId: caller.projectId, kept: true });
   return stored ? { sheet: stored } : null;
 }
 
-async function remove(ctx: RouteContext, documentId: string, sheetId: string): Promise<Response> {
-  const caller = await sheetCaller(ctx, documentId, 'edit');
+async function remove(ctx: RouteContext, projectId: string, sheetId: string): Promise<Response> {
+  const caller = await sheetCaller(ctx, projectId, 'edit');
   if (caller instanceof Response) return caller;
-  const head = await readSheetHead(ctx.env, documentId, sheetId);
+  const head = await readSheetHead(ctx.env, projectId, sheetId);
   if (!head || (caller.scopeTab && head.tabId !== caller.scopeTab)) return sheetNotFound();
   if (ctx.url.searchParams.get('whenUnreferenced') === 'true') {
     // Deleted with its element: now if nothing references it, else by the tab write that removes the last reference
-    // (sheet-refs.ts), which needs no relay: nothing in the document shows it then.
+    // (sheet-refs.ts), which needs no relay: nothing in the project shows it then.
     const results = await ctx.env.DB.batch(
-      sheetDeleteWhenUnreferencedStatements(ctx.env, documentId, sheetId),
+      sheetDeleteWhenUnreferencedStatements(ctx.env, projectId, sheetId),
     );
     const deleted = ((results[1] as { results?: unknown[] } | undefined)?.results?.length ?? 0) > 0;
     if (!deleted) {
-      console.info('[sheets] sheets.delete.deferred', { documentId });
+      console.info('[sheets] sheets.delete.deferred', { projectId });
       return noContent();
     }
   } else {
-    await ctx.env.DB.batch([deleteSheetStatement(ctx.env, documentId, sheetId)]);
+    await ctx.env.DB.batch([deleteSheetStatement(ctx.env, projectId, sheetId)]);
   }
-  relaySheet(ctx, documentId, {
+  relaySheet(ctx, projectId, {
     kind: 'sheets',
     sheetId,
     tabId: head.tabId,
     rev: head.rev + 1,
     deleted: true,
   });
-  console.info('[sheets] sheets.deleted', { documentId, agent: ctx.token !== null });
+  console.info('[sheets] sheets.deleted', { projectId, agent: ctx.token !== null });
   return noContent();
 }
 
@@ -238,25 +238,25 @@ async function remove(ctx: RouteContext, documentId: string, sheetId: string): P
 export async function handleSheetRoutes(ctx: RouteContext): Promise<Response | null> {
   const { segments, request } = ctx;
   if (segments[3] !== 'sheets') return null;
-  const documentId = segments[2]!;
+  const projectId = segments[2]!;
   const method = request.method;
   if (segments.length === 4) {
-    if (method === 'GET') return list(ctx, documentId);
-    if (method === 'POST') return create(ctx, documentId);
+    if (method === 'GET') return list(ctx, projectId);
+    if (method === 'POST') return create(ctx, projectId);
     return methodNotAllowed();
   }
   const sheetId = segments[4]!;
   if (segments.length === 5)
-    return method === 'DELETE' ? remove(ctx, documentId, sheetId) : methodNotAllowed();
+    return method === 'DELETE' ? remove(ctx, projectId, sheetId) : methodNotAllowed();
   if (segments.length === 6 && segments[5] === 'writes')
-    return method === 'POST' ? writeSheet(ctx, documentId, sheetId) : methodNotAllowed();
+    return method === 'POST' ? writeSheet(ctx, projectId, sheetId) : methodNotAllowed();
   return null;
 }
 
-// A document create's seed sheets (an offline document's, a duplicate's), read before anything is written.
+// A project create's seed sheets (an offline project's, a duplicate's), read before anything is written.
 export function readSeedSheets(raw: unknown): SheetCreateRequest[] | Response {
   if (raw === undefined) return [];
-  if (!Array.isArray(raw) || raw.length > DOCUMENT_SHEETS_MAX)
+  if (!Array.isArray(raw) || raw.length > PROJECT_SHEETS_MAX)
     return sheetRejected('sheets_full', 413);
   const out: SheetCreateRequest[] = [];
   for (const entry of raw) {
@@ -268,16 +268,16 @@ export function readSeedSheets(raw: unknown): SheetCreateRequest[] | Response {
   return out;
 }
 
-// Writes a new document's seed sheets. Their tab ids are the new document's (the client made them); no room is
+// Writes a new project's seed sheets. Their tab ids are the new project's (the client made them); no room is
 // open yet, so the relay reaches nobody.
 export async function seedSheets(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   owner: string,
   creates: SheetCreateRequest[],
 ): Promise<Response | null> {
-  // The new document's own maker: its owner, and no team yet.
-  const caller: SheetCaller = { documentId, owner, scopeTab: null, ownerId: owner, teamId: null };
+  // The new project's own maker: its owner, and no team yet.
+  const caller: SheetCaller = { projectId, owner, scopeTab: null, ownerId: owner, teamId: null };
   const by = await writer(ctx, owner);
   for (const c of creates) {
     const made = await makeSheet(ctx, caller, c, by, false);

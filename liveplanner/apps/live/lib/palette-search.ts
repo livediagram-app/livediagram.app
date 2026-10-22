@@ -2,7 +2,7 @@
 // results (docs/specs/026-plan/plan-mode.md "The palette"). Built here, not in lib/search.ts, so the search matcher
 // stays catalogue-agnostic and the Explorer (which never adds elements) doesn't pull the tile data into its bundle.
 
-import type { ShapeKind } from '@liveplanner/document';
+import type { ShapeKind } from '@liveplanner/project';
 
 import { tileKeywords } from '@/lib/palette-tile-keywords';
 import type { PaletteSearchItem } from '@/lib/search';

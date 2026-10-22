@@ -60,11 +60,11 @@ export function SettingsCategoryPane({
   offeredRowKeys?: ReadonlySet<string>;
   // Section to scroll to and focus the heading of (settingsSectionId).
   focusSectionId?: string | null;
-  // Who is reading: the Documents rows list their folders (docs/specs/013-workspace/default-folders.md).
+  // Who is reading: the Projects rows list their folders (docs/specs/013-workspace/default-folders.md).
   owner?: { ownerId: string; clerkUserId: string | null } | null;
 }) {
   const isMobile = useIsMobileViewport();
-  // The folders the Documents rows choose from and name, fetched only for a pane that shows them.
+  // The folders the Projects rows choose from and name, fetched only for a pane that shows them.
   const showsDefaults = category.rows.some((r) => r.kind === 'placementDefault');
   const placementLists = usePlacementOptions({
     selfId: owner?.ownerId ?? 'pending',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Comment, Element, ShapeElement } from '@liveplanner/document';
+import type { Comment, Element, ShapeElement } from '@liveplanner/project';
 import {
   findCommentHost,
   hasNewComments,

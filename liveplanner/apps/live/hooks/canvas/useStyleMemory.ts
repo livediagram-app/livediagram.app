@@ -1,11 +1,11 @@
 'use client';
 
 // Style memory's state and storage (docs/specs/008-canvas/quick-style-panel.md "Style memory"): read once
-// per document from this browser, written back at most every 250 ms. Never
-// synced and never in the document. The logic is pure, in lib/style-memory.
+// per project from this browser, written back at most every 250 ms. Never
+// synced and never in the project. The logic is pure, in lib/style-memory.
 
 import { useEffect, useRef } from 'react';
-import type { Element, ThemeDefinition } from '@liveplanner/document';
+import type { Element, ThemeDefinition } from '@liveplanner/project';
 import { readLocalStorageSafe, writeLocalStorageSafe } from '@/lib/local-storage-safe';
 import {
   applyStyleMemory,
@@ -30,10 +30,10 @@ export type StyleMemoryApi = {
 };
 
 export function useStyleMemory({
-  documentId,
+  projectId,
   theme,
 }: {
-  documentId: string | null;
+  projectId: string | null;
   theme: ThemeDefinition;
 }): StyleMemoryApi {
   const memoryRef = useRef<StyleMemory>({});
@@ -41,17 +41,17 @@ export function useStyleMemory({
   const pending = useRef<ReturnType<typeof setTimeout> | null>(null);
   const warnedWrite = useRef(false);
 
-  // Read synchronously on the first call for a document, so an element drawn in
+  // Read synchronously on the first call for a project, so an element drawn in
   // the same tick as the load already sees it.
   const ensureLoaded = (): boolean => {
-    if (!documentId) return false;
-    if (loadedFor.current !== documentId) {
-      const raw = readLocalStorageSafe(styleMemoryKey(documentId));
+    if (!projectId) return false;
+    if (loadedFor.current !== projectId) {
+      const raw = readLocalStorageSafe(styleMemoryKey(projectId));
       memoryRef.current = parseStyleMemory(raw);
       if (raw !== null && Object.keys(memoryRef.current).length === 0 && raw !== '{}') {
-        console.warn('[style-memory] unreadable', styleMemoryKey(documentId));
+        console.warn('[style-memory] unreadable', styleMemoryKey(projectId));
       }
-      loadedFor.current = documentId;
+      loadedFor.current = projectId;
     }
     return true;
   };
@@ -76,8 +76,8 @@ export function useStyleMemory({
     pending.current = setTimeout(flush, STYLE_MEMORY_WRITE_DEBOUNCE_MS);
   };
 
-  // A document switch or unmount writes what is pending for the old one.
-  useEffect(() => () => flush(), [documentId]);
+  // A project switch or unmount writes what is pending for the old one.
+  useEffect(() => () => flush(), [projectId]);
 
   const commit = (next: StyleMemory, log: string, detail: unknown) => {
     if (next === memoryRef.current) return;

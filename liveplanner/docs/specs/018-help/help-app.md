@@ -30,7 +30,7 @@ The **`@liveplanner/help-registry` package** is the single source of truth for c
 
 Categories fall into two kinds. The **support** categories carry standalone articles; the **feature** categories (`kind: 'feature'`) carry the in-depth feature guides and are grouped under a separate "Editor Guides" heading on the home page and listed on the `/features` index. Each feature category has a card-grid index page at `/help/<slug>/` (shared `FeatureCategoryIndex` component), and within it each feature has its own landing page plus optional sub-articles.
 
-**Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The liveplanner API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Documents_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
+**Developers.** A support category for the public REST API ([Public API and API tokens](../015-api/public-api-and-tokens.md)). Standalone articles — _The liveplanner API_ (overview + base URL), _Authentication_ (bearer API tokens vs the guest path), _Working with Projects_ (worked `curl` examples), and _Errors and Rate Limits_ — that tell an integrator how to call the API a token unlocks. The human-facing companion to the machine-readable `GET /api/openapi.json` ([API documentation (OpenAPI)](../015-api/api-documentation.md)), which the articles link out to rather than duplicate.
 
 **Policies.** A support category, not a feature one. It is the home for the hosted service's legal pages: the **Terms of Service**, the **Privacy Policy** and **Reporting a Vulnerability** (the vulnerability disclosure policy, [Vulnerability disclosure](../002-project-scope/vulnerability-disclosure.md), which the marketing `/security` route, `/.well-known/security.txt` and the repo's `SECURITY.md` all point at). The Terms and Privacy Policy govern the hosted service at liveplanner.app. These were standalone marketing routes (`/terms`, `/privacy`); they now live as help articles under `/help/policies/`, and the old marketing routes stay alive as thin client redirects so historical links keep resolving. (The Privacy Policy previously sat in `privacy-and-security`; it moved here so the two policies sit together, and the old help URL redirects to the new one.)
 
@@ -44,7 +44,7 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 | `developers`           | Developers           | code      | support |
 | `troubleshooting`      | Troubleshooting      | wrench    | support |
 | `supported-devices`    | Supported Devices    | devices   | support |
-| `policies`             | Policies             | document  | support |
+| `policies`             | Policies             | project  | support |
 | `contact`              | Contact              | mail      | support |
 | `explorer`             | Explorer             | folder    | feature |
 | `palette`              | Palette              | palette   | feature |
@@ -56,13 +56,13 @@ Categories fall into two kinds. The **support** categories carry standalone arti
 
 The feature categories group the feature guides by area:
 
-- **Explorer** — the document library (explorer/14, teams/32+35): The Explorer overview, Home, Recent, Shared With Me, My Documents and folders, Team Spaces, and Saved Themes, one guide per sidebar row.
+- **Explorer** — the project library (explorer/14, teams/32+35): The Explorer overview, Home, Recent, Shared With Me, My Projects and folders, Team Spaces, and Saved Themes, one guide per sidebar row.
 - **Palette** — the palette strip, in three sub-categories grouped on the index (see "Sub-category grouping" below): **Selection Modes** (one guide per tool-picker mode: Select, Hand, Format Painter, Isometric), **Elements** (one guide per palette tab: Shapes (+ shape markers, style presets 48), Arrows (+ arrow styles, curve/elbow handles, arrow-to-arrow), Tools (+ drawing, images, data elements 46+51+52+53), Components, Devices, Icons, Technology 41), and **Palette Settings** (one guide per palette setting: Auto-Attach Arrows, Alignment Guides, Panel Opacity, Quick-add on Hover, Toolbar Layout).
 - **Canvas** — the infinite canvas (09), selecting many elements (multi-select), links and link cards (40), annotations (38), themes (29+42+44), templates, text and fonts (28), Undo and Redo.
-- **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Document, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
+- **Tabs** — multiple canvases (13+17+30): Tabs, Tab Folders, Linking Across Tabs, Add a Tab to Another Project, Importing (27), Exporting, and Cleanup (47), one guide per tab-menu action.
 - **Collaboration** — comments, live presence (07: live cursors / selections / per-tab presence), teams (32+35), sharing and embeds (24+33+34), session tools (39).
 - **Tools** — AI assistance (25), zen mode (26), appearance / light-dark-system (07), layout cleanup (47).
-- **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding documents/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
+- **Search Panel** — the global search (09): an overview landing plus sub-articles for each thing search does, finding projects/folders, teams, tabs and elements, adding palette items to the canvas, and the Create-new-tab action.
 
 Where a feature's name would equal its category slug, the landing slug is distinguished (`the-canvas`, `the-explorer`, `using-tabs`) so a feature slug never equals a category slug (which would break the breadcrumb's parent link).
 
@@ -103,7 +103,7 @@ it arrives with its own registry entry.
 The **support** categories work the same way one level simpler. Their cards render
 through `ArticleCard`, which takes its glyph from `SUPPORT_ARTICLE_ICONS`
 (`lib/articleIcons.tsx`) and its tone from the brand, so there is no paired hue
-map to keep in step — and it falls back to a generic document glyph rather than a
+map to keep in step — and it falls back to a generic project glyph rather than a
 per-category one. That fallback had 13 of the 40 icon-showing support cards on it,
 a third of them identical, so those are drawn too. (Getting Started is the
 exception by design: its cards lead with a numbered step badge instead of an
@@ -130,7 +130,7 @@ a category at a time: a batch that shares a family reads as a set. And **look at
 them rendered before shipping** — valid path geometry is not the same as a
 legible 24px glyph. Three of the Palette thirteen had to be redrawn only after
 seeing them: a chair that read as a table, a button whose pointer swallowed it,
-and a sticker using the folded corner that already means a document here. The
+and a sticker using the folded corner that already means a project here. The
 Canvas batch cost two more, both from colliding with a glyph already in the set —
 a magnet drawn as a shield, and a drop shadow that read first as "duplicate" and
 then, hatched, as the motion lines on `animations`. `shadows` is the one glyph
@@ -156,7 +156,7 @@ triangle, the tick, the burst, the mosaic and the die.
 
 Applied up front, that rule is also what made the Search Panel's six the first
 batch to need no redraw at all: six articles about one control, and not one of
-them draws a magnifier. They draw what you find — documents in a folder, a team,
+them draws a magnifier. They draw what you find — projects in a folder, a team,
 a tab and the element inside it, a shape landing on the canvas, a new tab.
 
 The Explorer's five raised the mirror-image problem and it is worth naming: a
@@ -224,7 +224,7 @@ The system has three layers, all under `apps/help`:
   their subject, never after the batch of work that produced them.
 - **`components/illustrations/<area>-parts.tsx`** — an area's own building
   blocks, when it grows enough of them to interleave with its scenes (the
-  Explorer's sidebar row and document card; the palette's per-mode glyphs and
+  Explorer's sidebar row and project card; the palette's per-mode glyphs and
   shared mode-row). Distinct from `primitives.tsx`, which is the house style
   every area shares: these are wanted by one area only. The split exists so an
   `<area>.tsx` reads as a uniform list of complete scenes rather than
@@ -246,16 +246,16 @@ the same surface recurs rather than redrawn.
 
 ## Renamed articles
 
-Six articles about the container moved when it became a document ([Document](../006-document/document.md)), **Whiteboards** and **Draw mode** land on **Editor modes** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the Highlighter, Shape Recognition and Eraser guides on their categories, the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **; each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
+Six articles about the container moved when it became a project ([Project](../006-project/project.md)), **Whiteboards** and **Draw mode** land on **Editor modes** ([Editor modes](../007-editor/editor-modes.md#naming-in-the-interface)), the Highlighter, Shape Recognition and Eraser guides on their categories, the **Activity Panel** category went with the panel on 2026-10-03 (Undo and Redo moved to Canvas; its other articles and the category page land on Undo), **The Welcome Tour** became **The Diagram Tour** when the tour became Diagram mode's alone ([Diagram tour](../007-editor/editor-tour.md)), and **; each old address answers a permanent `308` from the router ([Router app, Legacy editor route](../016-platform/router-app.md#legacy-editor-route)):
 
 | Old address                                            | New address                                             |
 | ------------------------------------------------------ | ------------------------------------------------------- |
-| `/help/tabs/add-to-diagram/`                           | `/help/tabs/add-to-document/`                           |
-| `/help/troubleshooting/diagram-not-loading/`           | `/help/troubleshooting/document-not-loading/`           |
-| `/help/collaboration/teams/team-shared-diagrams/`      | `/help/collaboration/teams/team-shared-documents/`      |
-| `/help/search-panel/the-search-panel/search-diagrams/` | `/help/search-panel/the-search-panel/search-documents/` |
-| `/help/getting-started/sharing-your-diagram/`          | `/help/getting-started/sharing-your-document/`          |
-| `/help/developers/working-with-diagrams/`              | `/help/developers/working-with-documents/`              |
+| `/help/tabs/add-to-diagram/`                           | `/help/tabs/add-to-project/`                           |
+| `/help/troubleshooting/diagram-not-loading/`           | `/help/troubleshooting/project-not-loading/`           |
+| `/help/collaboration/teams/team-shared-diagrams/`      | `/help/collaboration/teams/team-shared-projects/`      |
+| `/help/search-panel/the-search-panel/search-diagrams/` | `/help/search-panel/the-search-panel/search-projects/` |
+| `/help/getting-started/sharing-your-diagram/`          | `/help/getting-started/sharing-your-project/`          |
+| `/help/developers/working-with-diagrams/`              | `/help/developers/working-with-projects/`              |
 | `/help/canvas/whiteboards/`                            | `/help/canvas/editor-modes/`                            |
 | `/help/canvas/draw-mode/`                              | `/help/canvas/editor-modes/`                            |
 | `/help/canvas/draw-mode/draw-tour/`                    | `/help/canvas/editor-modes/`                            |
@@ -282,7 +282,7 @@ The help centre's header is the shared `SiteHeader` from `@liveplanner/ui`, the 
 
 One rule for every public page, shared with the marketing site ([Marketing site](../019-marketing/marketing-site.md) "SEO and metadata"): per-page metadata comes from `pageMetadata` in `@liveplanner/ui`, which help wraps as `helpMetadata({ title, description, path })` only to name itself (`siteName: 'liveplanner Help'`).
 
-- **The title passes through as given.** Link previews (`og:title`, `twitter:title`) carry the bare article title, with the site name beside it. The document `<title>` still reads "<Title> | liveplanner": the root layout's `title.template` adds the suffix to every child segment, and the help home (the root index, which the template doesn't reach) spells it out as `Help | liveplanner`.
+- **The title passes through as given.** Link previews (`og:title`, `twitter:title`) carry the bare article title, with the site name beside it. The project `<title>` still reads "<Title> | liveplanner": the root layout's `title.template` adds the suffix to every child segment, and the help home (the root index, which the template doesn't reach) spells it out as `Help | liveplanner`.
 - **Canonical and `og:url` are the page's path**, `/help/<categorySlug>/<slug>/`, resolved against the shared origin; `seo-canonical.test.ts` checks every article's path matches its route.
 - **Every article and category landing has its own card**: `og:type` article, Twitter `summary_large_image`, with a 1200x630 PNG at `/help/og/<route>.png` (`lib/help-cards.ts`, rendered at build time by `app/og/[...card]/route.tsx` through the shared `renderSocialCard` in `@liveplanner/ui`, the one marketing's cards use). The card shows the top category as its kicker (Help Topic on a landing), the title, the registry's card description through `cardSubtitle` (two lines, ending on a whole word) and "Help Centre" in its footer beside the liveplanner.app pill. Pages outside the registry (the home, the features index) carry the brand card marketing generates (`/opengraph-image`, `/twitter-image`).
 - **The sitemap dates each page by its last commit** (`lib/article-dates.ts`): one `git log` pass over `app/` at build time, along the first-parent line with merges diffed against it (liveplanner arrives in the workspace through subtree merges, which a plain log lists no files for), page files only, and a landing dated by its newest article. A shallow clone, or no git, leaves `lastModified` out rather than claim every page changed today; the deploy build fetches full history without file contents (`fetch-depth: 0`, `filter: blob:none`) for this.

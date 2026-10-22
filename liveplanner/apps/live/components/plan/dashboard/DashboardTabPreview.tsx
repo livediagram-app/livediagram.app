@@ -11,7 +11,7 @@ import {
   tabKindOf,
   type DashboardTabOf,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { getTheme } from '@/lib/themes';
 import { PlanBoardView } from '@/components/plan/PlanBoardView';
 import { PlanSheetView } from '@/components/sheets/PlanSheetView';

@@ -2,7 +2,7 @@
 // docs/specs/026-plan/plan-tabs.md "Editing": a slot's toolbar across the top of its cog.
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { DashboardLayout, DashboardSlot, Tab } from '@liveplanner/document';
+import type { DashboardLayout, DashboardSlot, Tab } from '@liveplanner/project';
 import { DashboardContext, type DashboardContextValue } from './dashboard-context';
 import { SlotToolbar } from './SlotToolbar';
 

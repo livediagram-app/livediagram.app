@@ -13,7 +13,7 @@ import {
   DEFAULT_BACKGROUND_COLOR,
   type Finish,
   type TextSize,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { useCanvasSurface } from '@/components/canvas/CanvasSurfaceContext';
 import { finishPreviewSvg } from '@/lib/finish-preview';
 import { resolveTabBackdrop } from '@/lib/themes';

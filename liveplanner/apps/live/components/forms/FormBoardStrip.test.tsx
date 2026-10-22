@@ -2,7 +2,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sentUrl } from '@liveplanner/vitest-config/sent-request';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { Tab } from '@liveplanner/document';
+import type { Tab } from '@liveplanner/project';
 import { formsFeeding } from '@/hooks/forms/forms-feeding';
 import { FormBoardStrip } from './FormBoardStrip';
 import { FormBoardContext, type FormBoardValue } from './form-board-context';
@@ -43,7 +43,7 @@ afterEach(() => {
 
 const value = (over: Partial<FormBoardValue> = {}): FormBoardValue => ({
   forms: [{ tabId: 'f1', heading: 'Bug Report' }],
-  documentId: 'd1',
+  projectId: 'd1',
   ownerId: 'me',
   share: null,
   online: true,

@@ -1,4 +1,4 @@
-// PUT /api/documents/<id>/tabs/<tabId>: the editor's whole-tab autosave and nothing else's
+// PUT /api/projects/<id>/tabs/<tabId>: the editor's whole-tab autosave and nothing else's
 // (docs/specs/024-agents/agent-changesets.md "Whole-tab saves and tab renames"; blueprint "The tab
 // PUT"). A token is refused; the save is merged with every recorded changeset its editor had not
 // seen and with the room's collaboration ledger, then written at the revision it read.
@@ -9,7 +9,7 @@ import {
   TAB_SAVE_CAS_ATTEMPTS,
   parseChangesetSeen,
 } from '@liveplanner/api-schema';
-import { isValidTab, migrateIncomingTab, type Tab } from '@liveplanner/document';
+import { isValidTab, migrateIncomingTab, type Tab } from '@liveplanner/project';
 import { mergeChangesetsIntoSave } from '../changesets/merge-on-save';
 import { hasNewComments, rewriteCommentAuthors } from '../comments';
 import {
@@ -27,25 +27,25 @@ import { capStoredName } from '../names';
 import { badRequest, conflict, json, payloadTooLarge } from '../responses';
 import { applyRoomLedger, fetchRoomLedger } from '../room-client';
 import { recordTabSave } from '../timeline';
-import type { TabSaveDocument } from '../db/tab-save-document';
+import type { TabSaveProject } from '../db/tab-save-project';
 import { readBody, type RouteContext } from './context';
 
 // Fields of the stored record, not of the tab body; a client echoing them back never stores them
 // (CS32).
-const RECORD_FIELDS = ['rev', 'documentId', 'orderIndex', 'updatedAt'] as const;
+const RECORD_FIELDS = ['rev', 'projectId', 'orderIndex', 'updatedAt'] as const;
 
 // A token never does a whole-tab save (CS45): answered before anything is read.
 export function refuseTokenTabPut(
   ctx: RouteContext,
-  documentId: string,
+  projectId: string,
   tabId: string,
 ): Response | null {
   if (!ctx.token) return null;
-  console.info('[changeset] whole-tab-refused', { documentId, tabId, tokenId: ctx.token.id });
+  console.info('[changeset] whole-tab-refused', { projectId, tabId, tokenId: ctx.token.id });
   return json(
     {
       error: 'use_changesets',
-      message: `Agents and scripts write tabs with changesets: POST /api/documents/${documentId}/tabs/${tabId}/changesets`,
+      message: `Agents and scripts write tabs with changesets: POST /api/projects/${projectId}/tabs/${tabId}/changesets`,
     },
     { status: 405 },
   );
@@ -54,18 +54,18 @@ export function refuseTokenTabPut(
 // The caller has passed the edit gate for this tab.
 export async function handleTabPut(
   ctx: RouteContext,
-  existing: TabSaveDocument,
+  existing: TabSaveProject,
   tabId: string,
   owner: string,
 ): Promise<Response> {
   const { request, env } = ctx;
   const id = existing.id;
-  // A former stored shape (freehand points before docs/specs/006-document/stroke-points.md,
+  // A former stored shape (freehand points before docs/specs/006-project/stroke-points.md,
   // from a browser loaded before a deploy) is migrated, not refused.
   const read = await readBody(ctx);
   if (read instanceof Response) return read;
   const received = migrateIncomingTab(read) as Tab;
-  // Structural schema gate (shared with the app, @liveplanner/document): discriminant, required
+  // Structural schema gate (shared with the app, @liveplanner/project): discriminant, required
   // fields, endpoints, array bounds + unique ids.
   if (!isValidTab(received)) return badRequest('invalid tab');
   // Byte cap on the single tab (the body cap bounds the whole request; this bounds one tab's
@@ -75,7 +75,7 @@ export async function handleTabPut(
   const seenHeader = request.headers.get(CHANGESET_SEEN_HEADER);
   const seen = parseChangesetSeen(seenHeader);
   if (seenHeader !== null && seen === null) {
-    console.warn('[changeset] seen-invalid', { documentId: id, tabId, length: seenHeader.length });
+    console.warn('[changeset] seen-invalid', { projectId: id, tabId, length: seenHeader.length });
   }
 
   for (let attempt = 1; attempt <= TAB_SAVE_CAS_ATTEMPTS; attempt += 1) {
@@ -87,21 +87,21 @@ export async function handleTabPut(
       mergeUnseenChangesets(ctx, incoming, seen),
       fetchRoomLedger(env, id, tabId, request.headers.get('X-Room-Cursor')),
     ]);
-    // A new tab id must be new: an id that already names another document's tab is refused, never overwritten
-    // (docs/specs/006-document/per-tab-storage.md). Checked only when this document has no such tab, so the
+    // A new tab id must be new: an id that already names another project's tab is refused, never overwritten
+    // (docs/specs/006-project/per-tab-storage.md). Checked only when this project has no such tab, so the
     // common autosave pays nothing.
     if (!existingTab && (await tabBelongsElsewhere(env, tabId, id))) {
-      console.warn("[tabs] refused a save onto another document's tab", { documentId: id, tabId });
+      console.warn("[tabs] refused a save onto another project's tab", { projectId: id, tabId });
       return conflict('tab_id_taken');
     }
     const ledger = applyRoomLedger(merge.tab, fetchedLedger);
     const commentAuthors = ledger.commentAuthors;
     // A copy: each attempt starts again from the save as sent.
     const body: Tab = { ...ledger.tab };
-    // The name cap (docs/specs/006-document/name-length.md): a new or changed name is shortened;
+    // The name cap (docs/specs/006-project/name-length.md): a new or changed name is shortened;
     // an autosave echoing the stored name unchanged keeps it.
     body.name = capStoredName(body.name, existingTab?.name ?? null, 'tab');
-    // Data-loss backstop (docs/specs/006-document/per-tab-storage.md): refuse to blank a tab that
+    // Data-loss backstop (docs/specs/006-project/per-tab-storage.md): refuse to blank a tab that
     // holds content unless the editor marks the empty write intentional (`X-Allow-Empty: 1`, set
     // only when it had the tab's content authoritatively loaded).
     if (
@@ -114,7 +114,7 @@ export async function handleTabPut(
     }
     const orderIndex = existingTab?.orderIndex ?? existing.tabCount;
     // Newly added comments carry the resolved owner's participant record, never the client's claim
-    // (docs/specs/014-identity/auth-and-guest-access.md). getDocument already joined the owner's
+    // (docs/specs/014-identity/auth-and-guest-access.md). getProject already joined the owner's
     // row: reused when the writer IS the owner, the common autosave case.
     const writerParticipant =
       owner === existing.ownerId && existing.ownerName !== null
@@ -147,7 +147,7 @@ export async function handleTabPut(
       if (!written) return payloadTooLarge();
     } catch (err) {
       if (!isTabRevStale(err)) throw err;
-      console.warn('[changeset] lost-race', { documentId: id, tabId, attempt, write: 'save' });
+      console.warn('[changeset] lost-race', { projectId: id, tabId, attempt, write: 'save' });
       continue;
     }
     logMerge(id, tabId, merge);
@@ -178,7 +178,7 @@ export async function handleTabPut(
         ...sanitised,
         id: tabId,
         name: body.name,
-        documentId: id,
+        projectId: id,
         orderIndex,
         updatedAt: Date.now(),
         rev,
@@ -212,10 +212,10 @@ async function mergeUnseenChangesets(
   return outcome;
 }
 
-function logMerge(documentId: string, tabId: string, merge: MergeOutcome): void {
+function logMerge(projectId: string, tabId: string, merge: MergeOutcome): void {
   if (merge.merged > 0) {
     console.info('[changeset] merged-on-save', {
-      documentId,
+      projectId,
       tabId,
       records: merge.records,
       elements: merge.merged,
@@ -223,7 +223,7 @@ function logMerge(documentId: string, tabId: string, merge: MergeOutcome): void 
   }
   if (merge.superseded > 0) {
     console.info('[changeset] superseded-on-save', {
-      documentId,
+      projectId,
       tabId,
       elements: merge.superseded,
     });

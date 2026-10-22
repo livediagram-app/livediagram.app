@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { documentIdsIn, metricsOf, parseTranscript } from './transcript.mjs';
+import { projectIdsIn, metricsOf, parseTranscript } from './transcript.mjs';
 
 const DOC = '981c336f-c993-4206-a00c-8d1cc03822ff';
 const line = (o: unknown) => JSON.stringify(o);
@@ -49,7 +49,7 @@ const transcript = [
           type: 'tool_result',
           tool_use_id: 't2',
           content: [
-            { type: 'text', text: `{"documentId":"${DOC}"}` },
+            { type: 'text', text: `{"projectId":"${DOC}"}` },
             { type: 'image', source: { type: 'base64', data: 'AA' } },
           ],
         },
@@ -96,12 +96,12 @@ describe('parseTranscript', () => {
     expect(run.calls[0].error).toBe('Give a starter or questions, not both.');
     expect(run.calls[1].images).toBe(1);
     // A successful result's text is kept for checks; a refusal's is not.
-    expect(run.calls[1].result).toBe(`{"documentId":"${DOC}"}`);
+    expect(run.calls[1].result).toBe(`{"projectId":"${DOC}"}`);
     expect(run.calls[0].result).toBeNull();
   });
 
-  it('finds the documents a successful result names', () => {
-    expect(run.documentIds).toEqual([DOC]);
+  it('finds the projects a successful result names', () => {
+    expect(run.projectIds).toEqual([DOC]);
   });
 
   it('reads the model, session, reply and usage', () => {
@@ -150,12 +150,12 @@ describe('metricsOf', () => {
   });
 });
 
-describe('documentIdsIn', () => {
-  it('reads ids from documentId fields and document links', () => {
+describe('projectIdsIn', () => {
+  it('reads ids from projectId fields and project links', () => {
     const other = '11111111-2222-3333-4444-555555555555';
     expect(
-      documentIdsIn(`"documentId": "${DOC}" https://liveplanner.app/document/${other}`),
+      projectIdsIn(`"projectId": "${DOC}" https://liveplanner.app/project/${other}`),
     ).toEqual([DOC, other]);
-    expect(documentIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
+    expect(projectIdsIn(`"tabId":"${DOC}"`)).toEqual([]);
   });
 });

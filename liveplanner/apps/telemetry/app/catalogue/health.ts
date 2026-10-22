@@ -46,7 +46,7 @@ export const REALTIME_RESYNCS: Metric = {
   typeIn: (type) => kindOf(type) === 'RealtimeResync',
   title: 'Realtime Resyncs',
   blurb:
-    'Not an exception: the editor noticed it had missed live updates and refetched the document to catch up. A rising line means the realtime room is dropping updates.',
+    'Not an exception: the editor noticed it had missed live updates and refetched the project to catch up. A rising line means the realtime room is dropping updates.',
 };
 
 export const STALE_CHUNK_RELOADS: Metric = {
@@ -67,7 +67,7 @@ export const WARNINGS: Metric = {
   typeIn: () => true,
   title: 'Warnings',
   blurb:
-    'Not a failure: a degradation the author was carried through, such as a slow document load. A rising line means a fallback is doing more of the work.',
+    'Not a failure: a degradation the author was carried through, such as a slow project load. A rising line means a fallback is doing more of the work.',
 };
 
 // Headed by the errors someone actually hit, each once: failed requests plus
@@ -107,7 +107,7 @@ export const BROWSER_REPAIRS = chart(
   'UI',
   'Cleared',
   'Browser Repairs',
-  "A browser's liveplanner settings and caches cleared to get a document loading again.",
+  "A browser's liveplanner settings and caches cleared to get a project loading again.",
   { rising: 'bad' },
 );
 
@@ -116,7 +116,7 @@ export const LOAD_RECOVERY: MetricStack = {
   stack: true,
   title: 'Load Recovery',
   blurb:
-    'Diagnostics copied and browsers repaired when a document would not load. A rising line means people are getting stuck opening documents.',
+    'Diagnostics copied and browsers repaired when a project would not load. A rising line means people are getting stuck opening projects.',
   members: [DIAGNOSTICS_COPIED, BROWSER_REPAIRS],
   headline: BROWSER_REPAIRS,
 };

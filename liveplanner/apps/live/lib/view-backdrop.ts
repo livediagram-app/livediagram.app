@@ -2,7 +2,7 @@
 // theme's canvas, or the custom colour), on a blank canvas while the tab's pattern is still its theme's, since boards,
 // sheets and dashboards carry the page; a pattern someone picked always shows. Exports and thumbnails use the tab's
 // backdrop (resolveTabBackdrop).
-import type { Appearance, Tab } from '@liveplanner/document';
+import type { Appearance, Tab } from '@liveplanner/project';
 import { getResolvedAppearance } from '@liveplanner/ui';
 import { getTheme, resolveTabBackdrop, type ResolvedBackdrop } from './themes';
 

@@ -2,16 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { formatRelativeTime } from '@liveplanner/ui';
-import { offlineIdCount, offlineListDocuments } from '@/lib/offline/offline-store';
+import { offlineIdCount, offlineListProjects } from '@/lib/offline/offline-store';
 import { saveOfflineToCloud } from '@/lib/offline/offline-convert';
 import { dismissLocalMove, shouldOfferLocalMove } from '@/lib/offline/local-move-dismissal';
 import { track } from '@/lib/telemetry';
 import { debugLog } from '@/lib/debug-log';
 import type { ImportChecklistRow } from '@/components/dialogs/ImportChecklist';
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
-// after signing in"): once auth settles signed in, offer to move its documents in This Browser
-// into the account. Move runs Sync Document on each ticked one in turn; a failure stays
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving projects in This Browser
+// after signing in"): once auth settles signed in, offer to move its projects in This Browser
+// into the account. Move runs Sync Project on each ticked one in turn; a failure stays
 // This Browser and is named; Not Now is remembered until the count grows.
 
 type LocalMovePhase =
@@ -35,9 +35,9 @@ export function useLocalMovePrompt(opts: {
     if (!enabled || !authLoaded || !clerkUserId) return;
     let live = true;
     // The cached id count first (an upper bound, the local Trash included): most people hold no
-    // documents in This Browser, and they never pay for reading every record.
+    // projects in This Browser, and they never pay for reading every record.
     void offlineIdCount()
-      .then((upTo) => (shouldOfferLocalMove(clerkUserId, upTo) ? offlineListDocuments() : []))
+      .then((upTo) => (shouldOfferLocalMove(clerkUserId, upTo) ? offlineListProjects() : []))
       .then((docs) => {
         if (!live || !shouldOfferLocalMove(clerkUserId, docs.length)) return;
         const now = Date.now();
@@ -87,9 +87,9 @@ export function useLocalMovePrompt(opts: {
       setPhase({ kind: 'moving', done: i, total: picked.length });
       try {
         await saveOfflineToCloud(row.key, clerkUserId);
-        track('Document', 'Moved', 'SavedToCloud');
+        track('Project', 'Moved', 'SavedToCloud');
       } catch (err) {
-        console.warn('[local-move] a document stayed This Browser', err);
+        console.warn('[local-move] a project stayed This Browser', err);
         failed.push(row.name);
       }
     }

@@ -7,8 +7,8 @@
 // the worker-only `Env` binding shape that has nowhere else to live.
 
 export type {
-  LiveDoc as DocumentDTO,
-  DocumentSummary,
+  LiveDoc as ProjectDTO,
+  ProjectSummary,
   TabSummary as TabSummaryDTO,
   TabRecord as TabDTO,
   Folder as FolderDTO,
@@ -27,7 +27,7 @@ export type {
 // wire format (purely a server-side capability handle).
 export type Env = {
   DB: D1Database;
-  DOCUMENT_ROOM: DurableObjectNamespace;
+  PROJECT_ROOM: DurableObjectNamespace;
   // The live build id: the deploy's commit, the same one baked into the editor build as
   // NEXT_PUBLIC_BUILD_ID (docs/specs/016-platform/stale-builds.md). Unset (local dev, a deployment that
   // sets neither) leaves it off the server release signal.
@@ -70,7 +70,7 @@ export type Env = {
   // legacy exception.
   GUEST_SIGNING_LIVE_AT?: string;
   // R2 bucket caching each project's SVG snapshot (`thumb/<id>`) and share card
-  // (docs/specs/006-document/document-snapshots.md). Optional so a deploy without R2 still runs:
+  // (docs/specs/006-project/project-snapshots.md). Optional so a deploy without R2 still runs:
   // unbound, the snapshot doors answer 404 and the Explorer row keeps its icon.
   SNAPSHOTS?: R2Bucket;
   // Cloudflare Workers Rate Limiting API binding. Caps per-owner
@@ -81,7 +81,7 @@ export type Env = {
   WRITE_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for the anonymous telemetry ingest (docs/specs/017-telemetry/telemetry.md),
   // SEPARATE from WRITE_RATE_LIMITER so it never competes with users'
-  // real document writes. Keyed on CF-Connecting-IP. Optional: absent
+  // real project writes. Keyed on CF-Connecting-IP. Optional: absent
   // (a deployment without it) falls through to "allow", same as the write limiter.
   EVENTS_RATE_LIMITER?: { limit: (input: { key: string }) => Promise<{ success: boolean }> };
   // Per-IP limiter for share-code resolution (GET /api/share/<code>),

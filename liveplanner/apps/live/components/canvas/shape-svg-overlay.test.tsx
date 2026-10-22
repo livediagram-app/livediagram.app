@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-// The canvas side of the shared shape geometry table (@liveplanner/document
+// The canvas side of the shared shape geometry table (@liveplanner/project
 // shape-geometry.ts). The export side is pinned in the package
 // (shape-geometry.test.ts); this pins the overlay to the same data, so a
 // silhouette edited here instead of in the table fails rather than drifting.
@@ -8,7 +8,7 @@
 import { cleanup, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { SHAPE_GEOMETRY_KINDS, shapeGeometry, type ShapeKind } from '@liveplanner/document';
+import { SHAPE_GEOMETRY_KINDS, shapeGeometry, type ShapeKind } from '@liveplanner/project';
 import { ShapeSvgOverlay } from './shape-svg-overlay';
 
 afterEach(cleanup);

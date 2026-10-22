@@ -78,7 +78,7 @@ GUEST_SIG_ENFORCE_AFTER = ""
 # from an older CLI.
 OAUTH_ISSUER = "https://mcp.liveplanner.app"
 
-# D1 database holding documents + participants. The local binding name
+# D1 database holding projects + participants. The local binding name
 # (`DB`) is what `src/db.ts` reads via the Env type. The `database_name`
 # is the Cloudflare-side name (must be created via `wrangler d1 create
 # liveplanner` or the dashboard). `database_id` is filled in after the
@@ -92,7 +92,7 @@ database_id = "00000000-0000-4000-8000-000000000001"
 migrations_dir = "migrations"
 
 # R2 bucket caching each project's SVG snapshot (`thumb/<id>`, the Explorer thumbnail and
-# live image) and share card (docs/specs/006-document/document-snapshots.md). The binding
+# live image) and share card (docs/specs/006-project/project-snapshots.md). The binding
 # name `SNAPSHOTS` is what `src/types.ts` reads via the Env type. The bucket must be created
 # out of band via `wrangler r2 bucket create liveplanner-snapshots` (production) or the
 # dashboard. Leaving the binding absent locally only turns the snapshot doors off: they
@@ -119,7 +119,7 @@ simple = { limit = 300, period = 60 }
 
 # Per-IP limiter for the anonymous telemetry ingest (POST /api/events,
 # docs/specs/017-telemetry/telemetry.md). Separate namespace from the write limiter so abuse of the
-# public events endpoint can never eat into a user's document-write
+# public events endpoint can never eat into a user's project-write
 # budget. 120 batches / 60s per IP is generous for a real editor
 # session (which flushes a handful of batches a minute) while bounding
 # how fast one source can flood D1 / inflate the public dashboard.
@@ -131,22 +131,17 @@ type = "ratelimit"
 namespace_id = "1002"
 simple = { limit = 120, period = 60 }
 
-# Durable Object for per-document realtime (presence + broadcast). One
-# instance per document id; clients connect via WebSocket through the
-# `/api/documents/<id>/ws` endpoint.
+# Durable Object for per-project realtime (presence + broadcast). One
+# instance per project id; clients connect via WebSocket through the
+# `/api/projects/<id>/ws` endpoint.
 [[durable_objects.bindings]]
-name = "DOCUMENT_ROOM"
-class_name = "DocumentRoom"
+name = "PROJECT_ROOM"
+class_name = "ProjectRoom"
 
+# liveplanner has never been deployed, so the room starts as ProjectRoom with no rename history.
 [[migrations]]
 tag = "v1"
-new_classes = ["DiagramRoom"]
-
-# The class was DiagramRoom until the container became a document
-# (docs/specs/006-document/document.md). A rename keeps every room's storage.
-[[migrations]]
-tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+new_classes = ["ProjectRoom"]
 
 # Scheduled jobs the worker handles via the `scheduled` export. One
 # entry per cron; each fires the same handler with `event.cron` set
@@ -163,7 +158,7 @@ renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
 crons = ["0 3 * * *"]
 
 # Per-IP rate limiter for the AI assistance endpoint (POST /api/ai,
-# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into document-write
+# docs/specs/007-editor/ai-assistance.md). Separate namespace so AI abuse never eats into project-write
 # or telemetry budgets. 20 requests / 60s per IP is generous for a
 # real user session while bounding runaway OpenAI spend. Absent binding
 # → helper allows, so a deployment without it still works without this feature.
@@ -215,7 +210,7 @@ namespace_id = "1008"
 simple = { limit = 60, period = 60 }
 
 # Per-token limiter for workbench ticket mints and pairing requests (docs/specs/013-workspace/workbench-embeds.md,
-# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few documents, never a stream.
+# WORKBENCH_TICKETS_PER_MINUTE), keyed workbench-ticket:<token id>. A workbench opens a few projects, never a stream.
 # Separate namespace. Absent binding → allow (a deployment without it).
 [[unsafe.bindings]]
 name = "WORKBENCH_TICKET_RATE_LIMITER"
@@ -462,19 +457,15 @@ namespace_id = "1012"
 simple = { limit = 20, period = 60 }
 
 # A different script is a different Durable Object namespace, so staging's
-# DOCUMENT_ROOM instances are separate from production's for free. The class
+# PROJECT_ROOM instances are separate from production's for free. The class
 # still needs its own migration tag in this environment.
 [[env.staging.durable_objects.bindings]]
-name = "DOCUMENT_ROOM"
-class_name = "DocumentRoom"
+name = "PROJECT_ROOM"
+class_name = "ProjectRoom"
 
 [[env.staging.migrations]]
 tag = "v1"
-new_classes = ["DiagramRoom"]
-
-[[env.staging.migrations]]
-tag = "v2"
-renamed_classes = [{ from = "DiagramRoom", to = "DocumentRoom" }]
+new_classes = ["ProjectRoom"]
 
 # The daily 03:00 UTC sweeps (retention + the docs/specs/014-identity/transactional-email.md email crons) run on
 # staging too, against staging's own data. Restated rather than inherited so

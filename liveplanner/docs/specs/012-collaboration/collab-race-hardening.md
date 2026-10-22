@@ -72,7 +72,7 @@ The dot-vote pattern for every field many people write at once. A new room
 op, `{ kind: 'el-delta', tabId, elementId, delta }` (a MUTATION: sequenced,
 logged for catch-up, refused from a view-role sender), carries ONE change,
 applied by the sender and every receiver through the same pure
-`applyElementDelta` (`packages/document/src/element-deltas.ts`):
+`applyElementDelta` (`packages/project/src/element-deltas.ts`):
 
 - `response`: one participant's answer set, or withdrawn with `null`, keyed
   by `participantKey` (the temperature check).
@@ -123,7 +123,7 @@ reload showed fewer marks than the room had seen.
 
 **The room keeps a ledger.** For every `el-delta` and `vote` op it
 sequences, the Durable Object records the change in a small per-element
-ledger in its own storage (`packages/document/src/collab-ledger.ts`, pure;
+ledger in its own storage (`packages/project/src/collab-ledger.ts`, pure;
 the DO only stores it):
 
 - answers: each participant's LATEST cast or withdraw in the element's
@@ -142,7 +142,7 @@ answers or dots. One storage key per element, and
 a ledger that would outgrow the storage value limit stops recording rather
 than failing.
 
-**A save is merged with it.** When a tab PUT arrives for a document with a
+**A save is merged with it.** When a tab PUT arrives for a project with a
 room carrying the room cursor its snapshot was taken at
 (`X-Room-Cursor: <epoch>:<seq>`), the api reads the room's ledger for that tab
 (`GET /ledger` on the DO stub, internal only) and merges into the incoming tab
@@ -156,8 +156,8 @@ than the incoming element's is ignored: the save carries a clear the
 ledger hasn't seen a delta for yet.
 
 If the room can't be reached, the save goes through unmerged, as before.
-Every server-stored document has a room, since an agent is a second writer
-even on a personal one ([Agent changesets](../024-agents/agent-changesets.md#rooms-for-personal-documents));
+Every server-stored project has a room, since an agent is a second writer
+even on a personal one ([Agent changesets](../024-agents/agent-changesets.md#rooms-for-personal-projects));
 an agent's changesets merge into a save by their own rule, not through this ledger.
 
 **Comments joined the ledger in phase 5**, once the room stamped their
@@ -217,7 +217,7 @@ and the next save from anybody repairs it.
   lets the author's own save (the only copy carrying their id) claim it. A
   comment that already has an author id is never re-claimed.
 - **Ops sent while the socket is down are held, not dropped.** The room
-  client keeps an outbox of document ops (bounded at 500)
+  client keeps an outbox of project ops (bounded at 500)
   and flushes it, in order, right after the reconnect's hello and sync.
   Cursors, selections and other presence ops are not held.
 
@@ -240,7 +240,7 @@ room never sends a sender its own op back: it is last-writer-wins on every OTHER
 The set-up now moves the way the other multi-writer fields do:
 
 - **A `board` delta carries the change, not the set-up.** `planBoardPatch(before, after)`
-  (`packages/document/src/plan-board-patch.ts`) names only what changed: the top-level fields set
+  (`packages/project/src/plan-board-patch.ts`) names only what changed: the top-level fields set
   or cleared, each column's changed fields (by column id), columns added (whole) and removed (by
   id), and the new column order when it moved. Applied through `applyPlanBoardPatch`, so edits to
   different fields, or to different columns, or a field and a column, commute: every peer lands on
@@ -302,7 +302,7 @@ a write again sends nothing, so it starts no further one, and only a peer still 
 
 ## Tab lists
 
-A peer's `document-meta` op carries the tab list as of their last save. On screen it keeps what this editor has not
+A peer's `project-meta` op carries the tab list as of their last save. On screen it keeps what this editor has not
 saved yet (`keepUnsavedTabChanges`, judged against the save baseline as it was before the op): a tab added here and
 not yet saved stays, after the tab it followed, and a tab deleted here and not yet saved stays deleted. Replacing the
 screen with the list dropped a new tab before its first save, and brought a deleted one back as an empty placeholder

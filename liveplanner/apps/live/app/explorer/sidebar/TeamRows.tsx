@@ -13,7 +13,7 @@ import { teamFolderPath } from '../routes';
 import { assignAppLocation } from '@/lib/app-location';
 
 // One root-level row per team (docs/specs/013-workspace/teams.md), expanding to the
-// team's folder tree (docs/specs/013-workspace/team-shared-documents.md), built from the
+// team's folder tree (docs/specs/013-workspace/team-shared-projects.md), built from the
 // lazy library sweep.
 export function TeamRows() {
   const { teamFolders, teams } = useExplorer();
@@ -45,7 +45,7 @@ function TeamRow({
 }) {
   const { selected, go, expanded, toggleExpand } = useExplorer();
   const rootFolders = byParent.get(null) ?? [];
-  // A dropped document moves to the team's root; resting on the row opens or closes it.
+  // A dropped project moves to the team's root; resting on the row opens or closes it.
   const drop = useExplorerDropTarget(
     { teamId: t.id, folderId: null },
     { onLongHover: rootFolders.length > 0 ? () => toggleExpand(t.id) : undefined },

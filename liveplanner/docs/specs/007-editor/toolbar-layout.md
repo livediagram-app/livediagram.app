@@ -40,7 +40,7 @@ A strip shows one category at a time, so finding an element means knowing which 
   order. The image-upload tiles are left out where the editor has none, as everywhere else.
 - **Two sections:**
   - **Plan's elements** first, as the palette's tile grid, drawn from every tile Plan's layout offers (Plan's Cards
-    follow the document's item types, as on the strip).
+    follow the project's item types, as on the strip).
   - **More Elements**, below, as an accordion with a count: the matching tiles of every other category, and the
     markers. **Closed by default** each time the popover opens, so the rest is one deliberate click away, never
     hidden. Opened, it stays open while typing. It is absent when nothing outside Plan's palette matches.
@@ -159,7 +159,7 @@ so a new page load starts on the mode's landing (Plan's Cards, or Boards while t
 - While a board, Sheet or view filling the tab (or maximised) has its own name in the box, that name shows instead,
   so the box never shows two.
 - A click (a tap) on it renames the tab in place, for someone who may change the
-  document's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
+  project's tabs: Enter or leaving saves, Escape puts it back; up to 60 characters.
 - Every name in the box renames on a single click, whichever it is (the tab's, a board's, a Sheet's, a chart's, a
   Dashboard's): in the box a click has nothing else to do. In an element's own header a press moves the element, so
   there a double-click renames, as before.
@@ -327,7 +327,7 @@ their bottom-row buttons. What changes to fit the width:
 ## Decided in review
 
 - **The strip opens on the mode's landing every time** (Plan's)
-  ([Editor modes](editor-modes.md#the-palette-per-mode)). It does not remember the last category across documents.
+  ([Editor modes](editor-modes.md#the-palette-per-mode)). It does not remember the last category across projects.
 - **Twelve tiles is enough** on desktop (raised from ten, which cut Shapes and
   Popular short). Below that, the strip shows as many as fit, **measured**
   rather than estimated (`useStripTileLimit`): its own chrome (the pickers,

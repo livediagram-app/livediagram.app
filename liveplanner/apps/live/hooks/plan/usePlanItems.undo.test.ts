@@ -42,7 +42,7 @@ describe('usePlanItems undo', () => {
     const steps: ItemUndoStep[] = [];
     const { result } = renderHook(() =>
       usePlanItems({
-        documentId: 'doc',
+        projectId: 'doc',
         ready: true,
         ownerId: 'owner-me',
         name: 'Me',
@@ -86,7 +86,7 @@ describe('usePlanItems undo', () => {
     const onError = vi.fn();
     const { result } = renderHook(() =>
       usePlanItems({
-        documentId: 'doc',
+        projectId: 'doc',
         ready: true,
         ownerId: 'owner-me',
         name: 'Me',

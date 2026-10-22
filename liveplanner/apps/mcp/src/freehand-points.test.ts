@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { describeStrokePoints, MAX_FREEHAND_POINTS } from '@liveplanner/document';
+import { describeStrokePoints, MAX_FREEHAND_POINTS } from '@liveplanner/project';
 import { packFreehandPoints } from './freehand-points';
 
 describe('packFreehandPoints', () => {

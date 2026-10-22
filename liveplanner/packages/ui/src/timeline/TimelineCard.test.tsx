@@ -12,14 +12,14 @@ import type { TimelineEvent } from './types';
 function event(over: Partial<TimelineEvent> = {}): TimelineEvent {
   return {
     id: 'e1',
-    sourceType: 'document',
+    sourceType: 'project',
     sourceId: 'd1',
-    eventType: 'document_created',
-    title: 'Document Created',
+    eventType: 'project_created',
+    title: 'Project Created',
     description: null,
     occurredAt: new Date(2026, 8, 21, 7, 22).getTime(),
     actorId: 'me',
-    snapshot: { documentId: 'd1', documentName: 'Payments' },
+    snapshot: { projectId: 'd1', projectName: 'Payments' },
     ...over,
   };
 }
@@ -30,12 +30,12 @@ describe('TimelineCard', () => {
   it('titles the card with the subject and gives the stored category as the reason', () => {
     render(<TimelineCard event={event()} rendered={{ icon, subject: 'Payments' }} />);
     expect(screen.getByText('Payments')).toBeTruthy();
-    expect(screen.getByText('Document Created')).toBeTruthy();
+    expect(screen.getByText('Project Created')).toBeTruthy();
   });
 
   it('falls back to the stored title as the subject', () => {
     render(<TimelineCard event={event()} rendered={{ icon }} />);
-    expect(screen.getAllByText('Document Created')).toHaveLength(2);
+    expect(screen.getAllByText('Project Created')).toHaveLength(2);
   });
 
   it('shows the glyph box when there is no preview, and the preview when there is', () => {
@@ -113,13 +113,13 @@ describe('TimelineCard', () => {
     const { container } = render(
       <TimelineCard
         event={event()}
-        rendered={{ icon, subject: 'Payments', label: 'Document Created', onClick }}
+        rendered={{ icon, subject: 'Payments', label: 'Project Created', onClick }}
         slots={{ menu: <button type="button">Menu</button> }}
       />,
     );
     const card = container.querySelector('[data-timeline-event="e1"]')!;
     expect(card.getAttribute('role')).toBeNull();
-    const open = screen.getByRole('button', { name: 'Payments, Document Created' });
+    const open = screen.getByRole('button', { name: 'Payments, Project Created' });
     expect(open.querySelector('button')).toBeNull();
     expect(open.contains(screen.getByText('Menu'))).toBe(false);
     fireEvent.click(open);

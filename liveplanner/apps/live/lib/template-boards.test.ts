@@ -5,7 +5,7 @@ import {
   isPlanTemplate,
 } from '@liveplanner/templates';
 import { describe, expect, it } from 'vitest';
-import type { Element } from '@liveplanner/document';
+import type { Element } from '@liveplanner/project';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the Plan templates (docs/specs/026-plan/plan-templates.md). Each test maps to a sentence of that

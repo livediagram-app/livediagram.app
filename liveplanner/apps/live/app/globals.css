@@ -51,7 +51,7 @@
 
 /*
  * Editor fade-in (docs/specs/004-interface-design/motion.md "Editor arrival"): the editor's floating
- * chrome fades in as it mounts rather than popping into place, most visibly as a document opens.
+ * chrome fades in as it mounts rather than popping into place, most visibly as a project opens.
  * Opacity only, so a panel's own position is untouched; `fade-in` has no `to`, so a translucent
  * panel settles at its own opacity. In the components layer, so a surface's own entrance utility (a
  * panel's pop-in, a banner's fade) still wins. Reduced motion collapses it with every other
@@ -379,9 +379,9 @@
 }
 
 /*
- * Explorer document-row enter / exit. Used by the Explorer to make
+ * Explorer project-row enter / exit. Used by the Explorer to make
  * add + delete feel responsive when the list has many similarly-
- * named documents. Max-height collapse + horizontal translate +
+ * named projects. Max-height collapse + horizontal translate +
  * fade gives a real sense of motion; the row above slides up into
  * the gap as the deleted row collapses out.
  *

@@ -14,7 +14,7 @@ import {
   type ShapeElement,
   stampTabKind,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   METRIC_KINDS,
   PLAN_VISUALISATIONS,

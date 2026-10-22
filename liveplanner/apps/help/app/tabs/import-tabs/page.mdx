@@ -16,7 +16,7 @@ export const metadata = helpMetadata({
   categorySlug="tabs"
 >
 
-**Import** brings content into the active tab from a liveplanner tab export. It is the counterpart to [exporting](/help/tabs/export-tabs/): export a tab from one document as **JSON**, import it into a tab somewhere else.
+**Import** brings content into the active tab from a liveplanner tab export. It is the counterpart to [exporting](/help/tabs/export-tabs/): export a tab from one project as **JSON**, import it into a tab somewhere else.
 
 ## Importing a JSON export
 
@@ -26,9 +26,9 @@ Open the tab's menu (the **⋯** button on the active tab, or right-click the ta
   <ImportMenu />
 </Figure>
 
-The JSON restores the tab's elements exactly, the highest-fidelity round trip. Plan cards in the file are added to this document, along with any card types it doesn't have yet; cards the document already holds are left as they are, so importing a tab back into its own document never doubles them. If some cards can't be added, the dialog says so before it closes; the rest of the tab is imported.
+The JSON restores the tab's elements exactly, the highest-fidelity round trip. Plan cards in the file are added to this project, along with any card types it doesn't have yet; cards the project already holds are left as they are, so importing a tab back into its own project never doubles them. If some cards can't be added, the dialog says so before it closes; the rest of the tab is imported.
 
-On a [Dashboard](/help/canvas/plan-mode/dashboards/) tab, Import takes a Dashboard's own JSON export only (**Export** › **JSON** on a Dashboard tab): it replaces the dashboard's rows, slots and what they hold, one step to undo. Anything else (a file that isn't JSON, or a tab that isn't a Dashboard) is turned away with a message, and the dashboard is left as it was. A slot that showed one of the document's other tabs reads as deleted when the file comes from another document; clear it or fill it again.
+On a [Dashboard](/help/canvas/plan-mode/dashboards/) tab, Import takes a Dashboard's own JSON export only (**Export** › **JSON** on a Dashboard tab): it replaces the dashboard's rows, slots and what they hold, one step to undo. Anything else (a file that isn't JSON, or a tab that isn't a Dashboard) is turned away with a message, and the dashboard is left as it was. A slot that showed one of the project's other tabs reads as deleted when the file comes from another project; clear it or fill it again.
 
 Dropping a `.json` file straight onto the canvas doesn't import it: a small note points you to **Import** in the tab menu, since importing replaces the tab.
 

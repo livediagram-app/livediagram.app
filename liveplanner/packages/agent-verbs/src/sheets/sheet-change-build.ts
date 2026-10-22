@@ -37,7 +37,7 @@ import { buildRuleChange, type SheetRuleChange } from './sheet-rule-change';
 import { buildShapeChange, type SheetShapeChange } from './sheet-shape-change';
 import { buildDesign, type SheetDesignInput } from './sheet-design';
 import { buildChartChange, type SheetChartChange, type SheetChartOut } from './sheet-charts';
-import { plural } from '@liveplanner/document';
+import { plural } from '@liveplanner/project';
 
 // How a cell looks, in words; null clears that part (false clears a flag).
 export interface SheetFormatInput {

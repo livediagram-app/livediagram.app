@@ -41,8 +41,8 @@
 /features/infographics/ /features/boards 301
 /features/slides /features/boards 301
 /features/slides/ /features/boards 301
-/features/documents /features/boards 301
-/features/documents/ /features/boards 301
+/features/projects /features/boards 301
+/features/projects/ /features/boards 301
 
 # Retired comparison pages (docs/specs/019-marketing/comparison-pages.md "Retired comparisons"). liveplanner
 # compares itself with planners now, so each old diagram-tool comparison moves permanently to the hub.

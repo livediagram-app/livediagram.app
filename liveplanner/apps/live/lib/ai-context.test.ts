@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { createShape, type Element } from '@liveplanner/document';
+import { createShape, type Element } from '@liveplanner/project';
 import { aiContextElements } from './ai-context';
 
 const els = (n: number): Element[] =>

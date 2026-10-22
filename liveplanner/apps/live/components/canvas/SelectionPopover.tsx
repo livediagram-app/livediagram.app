@@ -18,7 +18,7 @@ import {
 import dynamic from 'next/dynamic';
 import type { CardinalityToolbar } from '@/components/canvas/entity/CardinalityButton';
 import { Divider, PopoverButton } from '@/components/canvas/SelectionPopoverButton';
-import type { Rect } from '@liveplanner/document';
+import type { Rect } from '@liveplanner/project';
 
 // A relationship's Cardinality group shows only on a selected arrow between two entities: loaded then.
 const CardinalityButton = dynamic(
@@ -60,7 +60,7 @@ type SelectionPopoverProps = {
   // live only in the right-click context menu). Omitted in read-only /
   // view-role mode.
   onDuplicate?: () => void;
-  // Intra-LAYER z-order (docs/specs/006-document/layers.md gained no z-nudge until now): stack this
+  // Intra-LAYER z-order (docs/specs/006-project/layers.md gained no z-nudge until now): stack this
   // element in front of / behind its band-mates WITHOUT moving it between
   // layers, which is what the element menu's Bring to Front does.
   onBringToFront?: () => void;

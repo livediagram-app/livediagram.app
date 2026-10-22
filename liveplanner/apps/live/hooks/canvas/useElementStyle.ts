@@ -31,7 +31,7 @@ import {
   type Padding,
   type ShapeElement,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { track } from '@/lib/telemetry';
 import { useArrowStyleSetters } from './useArrowStyleSetters';
 import { useDataShapeSetters } from './useDataShapeSetters';
@@ -62,7 +62,7 @@ type EditorElementStyleDeps = {
   // History-aware element mutator (snapshots + emits the log).
   commit: (mapElements: (els: Element[]) => Element[]) => void;
   // History-aware ACTIVE-TAB mutator, for the layer-aware Bring to
-  // Front / Send to Back (docs/specs/006-document/layers.md): they restack `tab.layers` as well
+  // Front / Send to Back (docs/specs/006-project/layers.md): they restack `tab.layers` as well
   // as the elements array, which element-level `commit` can't reach.
   commitActiveTab: (mapTab: (t: Tab) => Tab) => void;
   // Non-history tab mutator + per-burst checkpoint for the high-
@@ -157,7 +157,7 @@ export function useElementStyle(deps: EditorElementStyleDeps) {
     track('Element', 'Toggled', 'AspectLock');
   };
 
-  // Bring to Front / Send to Back are LAYER moves (docs/specs/006-document/layers.md): the
+  // Bring to Front / Send to Back are LAYER moves (docs/specs/006-project/layers.md): the
   // selection lands on the top (resp. bottom) layer, minting a fresh
   // edge layer when the current one holds anything else and pruning any
   // layer the move emptied. These two buttons are how layers accrue for

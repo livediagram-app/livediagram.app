@@ -146,7 +146,7 @@ function forward(
 // api's JSON included.
 //
 // A 101 is returned UNTOUCHED. The realtime room answers
-// `/api/documents/<id>/ws` with a WebSocket upgrade, and a Response carrying a
+// `/api/projects/<id>/ws` with a WebSocket upgrade, and a Response carrying a
 // `webSocket` cannot be reconstructed — `new Response(body, res)` drops the
 // socket and takes realtime collab down on staging alone, on one path, which
 // is precisely the sort of breakage that survives a smoke test. Crawlers do
@@ -207,7 +207,7 @@ async function route(request: Request, env: Env): Promise<Response> {
   }
   const legacyEditor = legacyEditorRedirect(url);
   if (legacyEditor) return legacyEditor;
-  // Clean live-app page routes (/document, /explorer, /new, ...) and
+  // Clean live-app page routes (/project, /explorer, /new, ...) and
   // its root-served icon: forwarded AS-IS (no strip — the worker's
   // files are already `/live`-free).
   if (isLivePageRoute(url.pathname)) {

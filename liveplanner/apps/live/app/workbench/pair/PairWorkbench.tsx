@@ -1,7 +1,7 @@
 'use client';
 
 // The pairing page (docs/specs/013-workspace/workbench-embeds.md "Pairing"; blueprint "The pairing page"): a
-// workbench asked to open the person's documents with one of their tokens, and they answer here, signed in, in
+// workbench asked to open the person's projects with one of their tokens, and they answer here, signed in, in
 // their own browser. One read after auth settles, one answer; focus follows the heading at each state.
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -235,24 +235,24 @@ function PendingRequest({
     <OauthShell>
       <Heading state={pendingState(step)}>Allow this workbench?</Heading>
       {/* The spec's two questions (docs/specs/013-workspace/workbench-embeds.md "Pairing", step 3): the whole
-          workspace is asked for in its own words, never as one more document. */}
+          workspace is asked for in its own words, never as one more project. */}
       <p className={BODY}>
         Allow {request.name ? <strong className={STRONG}>{request.name}</strong> : 'a workbench'} at{' '}
         <code className={MONO}>{request.origin}</code> to open{' '}
         {request.scope === 'workspace' ? (
           <>
             <strong className={STRONG}>your whole workspace</strong>, and to create, move, share and
-            trash documents and folders in it,
+            trash projects and folders in it,
           </>
         ) : (
-          'your documents'
+          'your projects'
         )}{' '}
         with {token}?
       </p>
       <p className={BODY}>
         {request.scope === 'workspace'
-          ? 'It works in your Explorer and your documents, as you, inside that tool.'
-          : 'It opens one document at a time, as you, inside that tool.'}{' '}
+          ? 'It works in your Explorer and your projects, as you, inside that tool.'
+          : 'It opens one project at a time, as you, inside that tool.'}{' '}
         You can unpair it any time in Settings, under API Tokens.
       </p>
       {failed ? (

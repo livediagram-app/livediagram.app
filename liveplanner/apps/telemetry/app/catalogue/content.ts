@@ -1,4 +1,4 @@
-// What gets made: documents, tabs, elements added and edited, undo, export and import (docs/specs/017-telemetry/telemetry.md).
+// What gets made: projects, tabs, elements added and edited, undo, export and import (docs/specs/017-telemetry/telemetry.md).
 // Part of the metric catalogue: import from ../metric-catalogue.
 
 import { PALETTE_TELEMETRY_TYPES, SHEET_CHANGE_KINDS } from '@liveplanner/api-schema';
@@ -65,8 +65,8 @@ export const LINKS_ADDED = chart(
   'Element',
   'Linked',
   'Links Added',
-  'A link put on an element or a table cell: a web address, another document, or another tab.',
-  { types: ['Url', 'Document', 'Tab'] },
+  'A link put on an element or a table cell: a web address, another project, or another tab.',
+  { types: ['Url', 'Project', 'Tab'] },
 );
 
 export const LINKS_REMOVED = chart(
@@ -89,7 +89,7 @@ export const TABS_LINKED = chart(
   'Tab',
   'Linked',
   'Tabs Linked',
-  'A tab linked into another document, so both documents share it and edits in either show in both.',
+  'A tab linked into another project, so both projects share it and edits in either show in both.',
 );
 
 export const TABS_LOCKED = chart(
@@ -100,83 +100,83 @@ export const TABS_LOCKED = chart(
   { actionIn: ['Unlocked'] },
 );
 
-// Document lifecycle.
-export const DOCUMENTS_LOADED: Metric = {
-  category: 'Document',
+// Project lifecycle.
+export const PROJECTS_LOADED: Metric = {
+  category: 'Project',
   action: 'Loaded',
   type: null,
-  title: 'Documents Loaded',
+  title: 'Projects Loaded',
   blurb:
-    'A document was opened, counted on every open (including a page refresh), not just the first time. Includes the first open of every new document, straight after it is created.',
+    'A project was opened, counted on every open (including a page refresh), not just the first time. Includes the first open of every new project, straight after it is created.',
 };
 
-export const DOCUMENTS_CREATED: Metric = {
-  category: 'Document',
+export const PROJECTS_CREATED: Metric = {
+  category: 'Project',
   action: 'Created',
   allTypes: true,
-  title: 'Documents Created',
-  blurb: 'New documents from the New Document wizard, stored in the cloud or in This Browser.',
+  title: 'Projects Created',
+  blurb: 'New projects from the New Project wizard, stored in the cloud or in This Browser.',
 };
 
-export const DOCUMENTS_RENAMED: Metric = {
-  category: 'Document',
+export const PROJECTS_RENAMED: Metric = {
+  category: 'Project',
   action: 'Renamed',
   type: null,
-  title: 'Documents Renamed',
+  title: 'Projects Renamed',
 };
 
-export const DOCUMENTS_DELETED: Metric = {
+export const PROJECTS_DELETED: Metric = {
   rising: 'neutral',
-  category: 'Document',
+  category: 'Project',
   action: 'Deleted',
   type: null,
-  title: 'Documents Deleted',
+  title: 'Projects Deleted',
 };
 
-export const DOCUMENTS_DUPLICATED: Metric = {
-  category: 'Document',
+export const PROJECTS_DUPLICATED: Metric = {
+  category: 'Project',
   action: 'Duplicated',
   allTypes: true,
-  title: 'Documents Duplicated',
-  blurb: 'A document copied from the Explorer, or a shared document cloned into your own account.',
+  title: 'Projects Duplicated',
+  blurb: 'A project copied from the Explorer, or a shared project cloned into your own account.',
 };
 
-// Offline Mode (docs/specs/006-document/offline-mode.md): a document kept only in this browser, and the two
-// conversions between the stores. Created in This Browser is a subset of Documents
-// Created, so it sits in Document Actions outside the headline as well as
+// Offline Mode (docs/specs/006-project/offline-mode.md): a project kept only in this browser, and the two
+// conversions between the stores. Created in This Browser is a subset of Projects
+// Created, so it sits in Project Actions outside the headline as well as
 // heading its own stack.
 export const CREATED_OFFLINE = chart(
-  'Document',
+  'Project',
   'Created',
   'Created in This Browser',
-  'A new document kept only in this browser (Offline Mode), never sent to the server. Part of Documents Created.',
+  'A new project kept only in this browser (Offline Mode), never sent to the server. Part of Projects Created.',
   { types: ['Offline'] },
 );
 
 export const TAKEN_OFFLINE = chart(
-  'Document',
+  'Project',
   'Moved',
   'Taken Offline',
-  'A cloud document converted to Offline Mode with Take Offline, so it now lives only in this browser.',
+  'A cloud project converted to Offline Mode with Take Offline, so it now lives only in this browser.',
   { types: ['TakenOffline'] },
 );
 
 export const SAVED_TO_CLOUD = chart(
-  'Document',
+  'Project',
   'Moved',
   'Saved to Cloud',
-  'A document in This Browser synced up to the server with Sync Document, so it can be shared.',
+  'A project in This Browser synced up to the server with Sync Project, so it can be shared.',
   { types: ['SavedToCloud'], rising: 'neutral' },
 );
 
-// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving documents in This Browser
+// The move prompt after signing in (docs/specs/014-identity/auth-and-guest-access.md "Moving projects in This Browser
 // after signing in"): offered (homed with the other opens, features.ts), taken, or put off.
-// Each document it moves is a Saved to Cloud.
+// Each project it moves is a Saved to Cloud.
 export const LOCAL_MOVE_ACCEPTED = chart(
   'UI',
   'Selected',
   'Move Prompt Accepted',
-  'Move, pressed on that prompt. Each document it moved also counts in Saved to Cloud.',
+  'Move, pressed on that prompt. Each project it moved also counts in Saved to Cloud.',
   { types: ['LocalMovePrompt'] },
 );
 
@@ -184,7 +184,7 @@ export const LOCAL_MOVE_DISMISSED = chart(
   'UI',
   'Closed',
   'Move Prompt Put Off',
-  'Not Now on that prompt: asked again only when there are more documents to move.',
+  'Not Now on that prompt: asked again only when there are more projects to move.',
   { types: ['LocalMovePrompt'], rising: 'neutral' },
 );
 
@@ -192,7 +192,7 @@ export const OFFLINE_MODE: MetricStack = {
   stack: true,
   title: 'Offline Mode',
   blurb:
-    'Documents kept only in this browser (where a guest starts): made there, taken offline from the cloud, synced back up, and the offer to move them after signing in.',
+    'Projects kept only in this browser (where a guest starts): made there, taken offline from the cloud, synced back up, and the offer to move them after signing in.',
   members: [
     CREATED_OFFLINE,
     TAKEN_OFFLINE,
@@ -210,7 +210,7 @@ export const TABS_LOADED: Metric = {
   type: null,
   title: 'Tabs Loaded',
   blurb:
-    "A tab's content was fetched for viewing, counted each time (the first tab when a document opens, then each tab switched to).",
+    "A tab's content was fetched for viewing, counted each time (the first tab when a project opens, then each tab switched to).",
 };
 
 export const TABS_CREATED: Metric = {
@@ -245,7 +245,7 @@ export const TABS_DUPLICATED: Metric = {
 // Exports sit in the Export & Import stack below.
 
 export const EXPORTS: Metric = {
-  category: 'Document',
+  category: 'Project',
   action: 'Exported',
   allTypes: true,
   title: 'Exports',
@@ -253,30 +253,30 @@ export const EXPORTS: Metric = {
     'A tab or selection exported, across every format (PNG, SVG, PDF, JSON, Markdown). For the text formats, copying to the clipboard counts as an export too.',
 };
 
-// The document + tab lifecycle as stacks (Dashboard). Loaded is the opens
-// signal (every open, including a page refresh and a new document's first),
+// The project + tab lifecycle as stacks (Dashboard). Loaded is the opens
+// signal (every open, including a page refresh and a new project's first),
 // read against the once-per-object Created beside it. It is a different unit
-// from the changes, and counts every new document a second time, so neither
+// from the changes, and counts every new project a second time, so neither
 // head adds it in: each totals the changes made.
-export const DOCUMENT_ACTIONS: MetricStack = {
+export const PROJECT_ACTIONS: MetricStack = {
   stack: true,
-  title: 'Document Actions',
+  title: 'Project Actions',
   blurb:
-    'Documents opened, made, renamed, deleted and duplicated, and how new ones were started: a template link, or in This Browser (both part of Documents Created).',
+    'Projects opened, made, renamed, deleted and duplicated, and how new ones were started: a template link, or in This Browser (both part of Projects Created).',
   members: [
-    DOCUMENTS_LOADED,
-    DOCUMENTS_CREATED,
-    DOCUMENTS_RENAMED,
-    DOCUMENTS_DELETED,
-    DOCUMENTS_DUPLICATED,
+    PROJECTS_LOADED,
+    PROJECTS_CREATED,
+    PROJECTS_RENAMED,
+    PROJECTS_DELETED,
+    PROJECTS_DUPLICATED,
     TEMPLATE_LINKS,
     CREATED_OFFLINE,
   ],
-  headline: [DOCUMENTS_CREATED, DOCUMENTS_RENAMED, DOCUMENTS_DELETED, DOCUMENTS_DUPLICATED],
+  headline: [PROJECTS_CREATED, PROJECTS_RENAMED, PROJECTS_DELETED, PROJECTS_DUPLICATED],
 };
 
 // The Trash (docs/specs/013-workspace/trash.md): the backstop behind every
-// document delete. Whether anyone comes back for a deleted document is the
+// project delete. Whether anyone comes back for a deleted project is the
 // question, so restores lead; each chart counts every Trash (Personal, Team,
 // Local).
 export const TRASH_OPENED = chart(
@@ -286,18 +286,18 @@ export const TRASH_OPENED = chart(
   'The Trash opened from Settings.',
 );
 
-export const DOCUMENTS_RESTORED = chart(
+export const PROJECTS_RESTORED = chart(
   'Trash',
   'Restored',
-  'Documents Restored',
-  'A deleted document brought back from the Trash, from the Trash itself or from its deleted page.',
+  'Projects Restored',
+  'A deleted project brought back from the Trash, from the Trash itself or from its deleted page.',
 );
 
-export const DOCUMENTS_DELETED_FOR_GOOD = chart(
+export const PROJECTS_DELETED_FOR_GOOD = chart(
   'Trash',
   'Deleted',
   'Deleted for Good',
-  'A document in the Trash deleted permanently, ahead of its 30 days.',
+  'A project in the Trash deleted permanently, ahead of its 30 days.',
   { rising: 'neutral' },
 );
 
@@ -305,7 +305,7 @@ export const TRASH_EMPTIED = chart(
   'Trash',
   'Cleared',
   'Trash Emptied',
-  'Empty Trash on one group: your documents, a team, or this browser.',
+  'Empty Trash on one group: your projects, a team, or this browser.',
   { rising: 'neutral' },
 );
 
@@ -314,8 +314,8 @@ export const TRASH: MetricStack = {
   stack: true,
   title: 'Trash',
   blurb:
-    'Deleted documents wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
-  members: [DOCUMENTS_RESTORED, TRASH_OPENED, DOCUMENTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
+    'Deleted projects wait 30 days in the Trash. Opening it, restoring from it, deleting for good, and emptying it.',
+  members: [PROJECTS_RESTORED, TRASH_OPENED, PROJECTS_DELETED_FOR_GOOD, TRASH_EMPTIED],
 };
 
 const TAB_CHANGES = [
@@ -337,7 +337,7 @@ export const TAB_ACTIONS: MetricStack = {
   stack: true,
   title: 'Tab Actions',
   blurb:
-    'Tabs opened, then everything done to one: made, renamed, deleted, duplicated, restyled, auto-arranged, reordered, linked into another document, locked and cleared.',
+    'Tabs opened, then everything done to one: made, renamed, deleted, duplicated, restyled, auto-arranged, reordered, linked into another project, locked and cleared.',
   headline: TAB_CHANGES,
   members: [
     TABS_LOADED,
@@ -661,13 +661,13 @@ export const DATA_MODELS: MetricStack = {
   ],
 };
 
-// Undo and redo. (Document·Reverted, the removed Activity panel's per-entry revert, is a
+// Undo and redo. (Project·Reverted, the removed Activity panel's per-entry revert, is a
 // retired event: dropped before any chart, see retired-events.ts.)
-export const UNDOS = chart('Document', 'Undone', 'Undos', 'A change undone.', {
+export const UNDOS = chart('Project', 'Undone', 'Undos', 'A change undone.', {
   rising: 'neutral',
 });
 
-export const REDOS = chart('Document', 'Redone', 'Redos', 'An undo redone.', { rising: 'neutral' });
+export const REDOS = chart('Project', 'Redone', 'Redos', 'An undo redone.', { rising: 'neutral' });
 
 export const UNDO_AND_REDO: MetricStack = {
   stack: true,
@@ -1018,7 +1018,7 @@ export const FORMS_NOT_TAKING_OPENED = chart(
   'Form',
   'Opened',
   'Not Taking Responses Pressed',
-  "A published form's red Not Taking Responses warning pressed, by why it takes none: suspended, paused, switched off, past its Close On time, at its Response Limit, or its document full.",
+  "A published form's red Not Taking Responses warning pressed, by why it takes none: suspended, paused, switched off, past its Close On time, at its Response Limit, or its project full.",
   {
     types: [
       'NotTakingSuspended',
@@ -1034,8 +1034,8 @@ export const FORMS_NOT_TAKING_OPENED = chart(
 export const FORMS_SYNCED_TO_SHARE = chart(
   'Form',
   'Moved',
-  'Documents Synced to Share a Form',
-  'A document in This Browser synced from Share Form, so its form could be published.',
+  'Projects Synced to Share a Form',
+  'A project in This Browser synced from Share Form, so its form could be published.',
   { types: ['SyncedToShare'] },
 );
 

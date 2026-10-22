@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test';
 import { expect, test, pageOwnerHeaders } from './fixtures';
 
 // Stale HTML after a deploy (docs/specs/016-platform/stale-builds.md), the way people meet it: open
-// the Explorer, open a document (a full page load), a deploy lands, press back. Back is a history
+// the Explorer, open a project (a full page load), a deploy lands, press back. Back is a history
 // traversal, for which browsers reuse a cached page even when it is stale, so the Explorer's page
 // can come back naming chunk files the deploy removed: a white screen with its styles refused.
 //
@@ -13,8 +13,8 @@ import { expect, test, pageOwnerHeaders } from './fixtures';
 // while the Explorer first loads, the stack serves its build assets `no-store`
 // (POST /__e2e/assets-out-of-cache, until the deploy): the browser keeps the page, not its chunks.
 
-// A document of this guest's, listed at the root of the Explorer's My Documents.
-async function seedDocument(page: Page, name: string): Promise<string> {
+// A project of this guest's, listed at the root of the Explorer's My Projects.
+async function seedProject(page: Page, name: string): Promise<string> {
   // The guest's signed id is minted asynchronously; seed under the final one.
   await expect
     .poll(() => page.evaluate(() => localStorage.getItem('liveplanner:v2:self-sig')))
@@ -23,7 +23,7 @@ async function seedDocument(page: Page, name: string): Promise<string> {
   return page.evaluate(
     async ({ docName, headers }) => {
       const id = crypto.randomUUID();
-      const res = await fetch('/api/documents', {
+      const res = await fetch('/api/projects', {
         method: 'POST',
         headers,
         body: JSON.stringify({
@@ -74,22 +74,22 @@ test('back after a deploy brings the Explorer back, never a white screen', async
   // The page's own colour, styles applied: an unstyled page would be transparent (white).
   const styled = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   expect(styled).not.toBe('rgba(0, 0, 0, 0)');
-  const id = await seedDocument(page, 'History board');
+  const id = await seedProject(page, 'History board');
   await page.reload();
   const row = page.getByRole('link', { name: /History board/ }).first();
   await expect(row).toBeVisible({ timeout: 30_000 });
 
-  // Open the document: a full page load (a document route is never a client transition here).
+  // Open the project: a full page load (a project route is never a client transition here).
   const opened = page.waitForRequest(
-    (r) => r.resourceType() === 'document' && new URL(r.url()).pathname === `/document/${id}`,
+    (r) => r.resourceType() === 'project' && new URL(r.url()).pathname === `/project/${id}`,
   );
   await row.click();
   await opened;
   await expect(page.locator('[data-canvas-a11y-root]')).toBeVisible({ timeout: 30_000 });
-  // The document page done loading, as someone sees it before they press back: once it has rendered
+  // The project page done loading, as someone sees it before they press back: once it has rendered
   // and the page is idle, it fetches the code of the surfaces it loads on demand
   // (docs/specs/016-platform/web-performance.md), and a deploy landing mid-fetch would refuse that
-  // code on the document page, not the Explorer's this test is about.
+  // code on the project page, not the Explorer's this test is about.
   await page.evaluate(
     () => new Promise((done) => requestIdleCallback(() => done(null), { timeout: 5_000 })),
   );

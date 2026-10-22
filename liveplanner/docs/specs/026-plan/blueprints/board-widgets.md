@@ -99,7 +99,7 @@ apps/live/components/plan/widgets/BoardWidgetPicker.tsx  the + popover: the widg
 
 - `boardItems(projection)` reads the cards an unfiltered projection placed (so archived cards stay off an
   ordinary board's counts and All Cards and Archive boards count what they show), memoised on the setup and items; widget stats are linear in the board's items (≤ the
-  document's item cap). At most `BOARD_WIDGET_KINDS.length` (10) widgets per board.
+  project's item cap). At most `BOARD_WIDGET_KINDS.length` (10) widgets per board.
 
 ## Testing
 

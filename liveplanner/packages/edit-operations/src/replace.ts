@@ -1,6 +1,6 @@
 // `applyReplace` (docs/specs/024-agents/blueprints/edit-operations.md "Replace"): the other changeset
 // body, a whole tab from a template, a dashboard, a form or raw elements, built exactly as the MCP's
-// `update_document` replace and `add_tab` build it, and answered with the same outcome as operations.
+// `update_project` replace and `add_tab` build it, and answered with the same outcome as operations.
 // An existing tab keeps every tab field and swaps its elements (no theme repaint, EO41); a new tab is
 // built whole.
 
@@ -18,7 +18,7 @@ import {
   tabKindOf,
   type Element,
   type Tab,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import {
   buildDashboardTab,
   buildTemplateTab,
@@ -187,7 +187,7 @@ export function applyReplace(
     return refuse(
       invalidBody(
         'dashboard: only a Dashboard tab is rebuilt as one',
-        'add a new Dashboard with add_tab, or in create_document',
+        'add a new Dashboard with add_tab, or in create_project',
       ),
     );
   // A changeset writes and relays elements, so a form lands as a new tab; a Form tab's form changes through its route.

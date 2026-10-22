@@ -1,7 +1,7 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 import { PendingFormStart } from '@/components/forms/PendingFormStart';
 import { useEverTrue } from '@/hooks/ui/useEverTrue';
 

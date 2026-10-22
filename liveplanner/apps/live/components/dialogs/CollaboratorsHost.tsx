@@ -2,8 +2,8 @@
 
 import dynamic from 'next/dynamic';
 
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
-import { useSelectTab } from '@/app/document/[id]/useSelectTab';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
+import { useSelectTab } from '@/app/project/[id]/useSelectTab';
 
 const CollaboratorsDialog = dynamic(
   () => import('@/components/dialogs/CollaboratorsDialog').then((m) => m.CollaboratorsDialog),

@@ -5,8 +5,8 @@ browser, a device code or a token kept in the system's keychain, and is counted 
 article is `/help/developers/cli/` (Developers). Ahead: the update check.
 
 `liveplanner` is a command-line front door to the api, built first for **agents** (a coding agent in a repo, a chat
-agent changing a diagram while a person talks to it) and second for people (scripts, pulling documents to files).
-With it an agent reads, builds, edits, comments on and reasons about documents, paying for context only when it
+agent changing a diagram while a person talks to it) and second for people (scripts, pulling projects to files).
+With it an agent reads, builds, edits, comments on and reasons about projects, paying for context only when it
 asks. It sits beside the [MCP server](mcp-server.md), not in place of it: the two are front doors to one set of
 verbs, and the api owns every write ([Agents](../024-agents/README.md)). The research behind it is in
 `docs/research/agent-cli/`.
@@ -15,45 +15,45 @@ verbs, and the api owns every write ([Agents](../024-agents/README.md)). The res
 
 - **Remote-first.** Every command acts on the api. Local files are an explicit `pull`, `push` or `export`.
 - **The api owns meaning.** Writes are [changesets](../024-agents/agent-changesets.md) compiled by the api; reads are
-  [views](../024-agents/document-views.md) rendered by the api. The CLI parses, sends and prints, so an old install
+  [views](../024-agents/project-views.md) rendered by the api. The CLI parses, sends and prints, so an old install
   never writes the old way.
 - **Context costs only when asked.** No definitions up front; short help; compact text by default.
 - **Never interactive when piped.** A command whose stdin or stdout is not a terminal never prompts.
 - **No whole-tab saves.** The CLI never writes a tab with the editor's whole-tab `PUT`. Tab content changes only by
   changesets, a new tab is a `replace` changeset on a new tab id, a tab is renamed through its name route
-  (`PUT /api/documents/:id/tabs/:tabId/name`), and a new document is compiled by `POST /api/documents`.
+  (`PUT /api/projects/:id/tabs/:tabId/name`), and a new project is compiled by `POST /api/projects`.
 
 ## Commands
 
-Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
+Resource, then verb. `doc` and `el` are accepted for `project` and `element`.
 
 | Command                                                                         | Does                                                                                                                                                                       |
 | ------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `document ls [query]`                                                           | Documents in the personal library and joined teams, newest first                                                                                                           |
-| `folder ls [--json]` / `folder create <name> [--in <f>]`                        | The person's folders as paths with their ids; a new folder, at the top of My documents or inside another                                                                   |
-| `document view <doc>`                                                           | The overview view                                                                                                                                                          |
-| `document create <name> [--tab <name>] [-f <file>\|--template <kind>]`          | A new project from elements or a template, compiled by the api                                                                                                             |
-| `document rename\|share\|rm\|restore <doc>`                                     | As the MCP's verbs; `rm` moves to the Trash, there is no permanent delete                                                                                                  |
-| `tab ls <doc>`                                                                  | The document's tabs                                                                                                                                                        |
-| `tab view <doc> [--tab <t>] [--view <name>] [--budget <n>]`                     | A view; the outline by default; `show` takes `--ref`, `find` `--text`                                                                                                      |
-| `tab add\|rename\|rm <doc> ...`                                                 | Tab lifecycle; `add` takes `-f` or `--template`                                                                                                                            |
-| `tab diff <doc> [--tab <t>] --since <rev>`                                      | The diff view, computed by the CLI from its copy of the tab at that rev                                                                                                    |
-| `tab render <doc> [--tab <t>] --png <file>\|--svg <file>`                       | A preview image; prints the path and its size, never image bytes                                                                                                           |
-| `element add\|set\|rm\|move\|connect\|insert\|wrap <doc> ...`                   | One [edit operation](../024-agents/edit-operations.md) as a changeset                                                                                                      |
-| `item ls\|add\|set\|move\|rm <doc> ...`                                         | [Items](../026-plan/items.md) by number (`#12`); columns, types, fields by name                                                                                            |
-| `board add\|set <doc> ...`                                                      | Add a Plan board, or change one's title, columns or card types ([Plan for agents](../026-plan/plan-agents.md#adding-a-board))                                              |
-| `type ls\|apply <doc> ...`                                                      | Card types, and changes to them from a JSON file ([Plan for agents](../026-plan/plan-agents.md))                                                                           |
-| `sheet ls\|get\|set\|add\|insert-rows\|insert-cols\|rm-rows\|rm-cols <doc> ...` | Sheets: list, read cells by A1, set cells (or `--csv`), put one on a tab, insert or delete rows and columns ([Sheet store](../029-sheets/sheet-store.md#agents))           |
-| `form get\|add\|change\|share <doc> ...`                                        | Forms: read one, add one from a starter or `--from` JSON, change it from a JSON file of changes, publish, close or delete its link ([Forms](../030-forms/forms.md#agents)) |
-| `changeset apply <doc> [--tab <t>] -f <file>\|-` (`edit`)                       | Many edit operations, or a `replace`, as one changeset                                                                                                                     |
-| `changeset ls\|show\|revert <doc> [<changeset>]`                                | Recent changesets and their revert                                                                                                                                         |
-| `comment ls\|add\|reply\|resolve\|reopen <doc> ...`                             | Threads ([Agent presence](../024-agents/agent-presence.md#comments)), by element ref                                                                                       |
-| `presence set\|clear <doc> [--tab <t>] [--status ..] [--focus ..]`              | The agent's presence                                                                                                                                                       |
-| `wait <doc> --for comment\|change [--timeout <s>]`                              | Blocks until it happens, prints it, exits                                                                                                                                  |
-| `watch <doc>`                                                                   | Streams changes, one line each, until interrupted                                                                                                                          |
-| `pull <doc> [--to <dir>] [--force]` / `push <file>`                             | Sync one document to a file and back                                                                                                                                       |
-| `export --all --to <dir> [--format json,svg,png,md]`                            | Every document to files                                                                                                                                                    |
-| `workbench open <doc>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`     | A single-use link that opens the document, or the whole workspace (on Home, or a folder), live in a paired workbench                                                       |
+| `project ls [query]`                                                           | Projects in the personal library and joined teams, newest first                                                                                                           |
+| `folder ls [--json]` / `folder create <name> [--in <f>]`                        | The person's folders as paths with their ids; a new folder, at the top of My projects or inside another                                                                   |
+| `project view <project>`                                                           | The overview view                                                                                                                                                          |
+| `project create <name> [--tab <name>] [-f <file>\|--template <kind>]`          | A new project from elements or a template, compiled by the api                                                                                                             |
+| `project rename\|share\|rm\|restore <project>`                                     | As the MCP's verbs; `rm` moves to the Trash, there is no permanent delete                                                                                                  |
+| `tab ls <project>`                                                                  | The project's tabs                                                                                                                                                        |
+| `tab view <project> [--tab <t>] [--view <name>] [--budget <n>]`                     | A view; the outline by default; `show` takes `--ref`, `find` `--text`                                                                                                      |
+| `tab add\|rename\|rm <project> ...`                                                 | Tab lifecycle; `add` takes `-f` or `--template`                                                                                                                            |
+| `tab diff <project> [--tab <t>] --since <rev>`                                      | The diff view, computed by the CLI from its copy of the tab at that rev                                                                                                    |
+| `tab render <project> [--tab <t>] --png <file>\|--svg <file>`                       | A preview image; prints the path and its size, never image bytes                                                                                                           |
+| `element add\|set\|rm\|move\|connect\|insert\|wrap <project> ...`                   | One [edit operation](../024-agents/edit-operations.md) as a changeset                                                                                                      |
+| `item ls\|add\|set\|move\|rm <project> ...`                                         | [Items](../026-plan/items.md) by number (`#12`); columns, types, fields by name                                                                                            |
+| `board add\|set <project> ...`                                                      | Add a Plan board, or change one's title, columns or card types ([Plan for agents](../026-plan/plan-agents.md#adding-a-board))                                              |
+| `type ls\|apply <project> ...`                                                      | Card types, and changes to them from a JSON file ([Plan for agents](../026-plan/plan-agents.md))                                                                           |
+| `sheet ls\|get\|set\|add\|insert-rows\|insert-cols\|rm-rows\|rm-cols <project> ...` | Sheets: list, read cells by A1, set cells (or `--csv`), put one on a tab, insert or delete rows and columns ([Sheet store](../029-sheets/sheet-store.md#agents))           |
+| `form get\|add\|change\|share <project> ...`                                        | Forms: read one, add one from a starter or `--from` JSON, change it from a JSON file of changes, publish, close or delete its link ([Forms](../030-forms/forms.md#agents)) |
+| `changeset apply <project> [--tab <t>] -f <file>\|-` (`edit`)                       | Many edit operations, or a `replace`, as one changeset                                                                                                                     |
+| `changeset ls\|show\|revert <project> [<changeset>]`                                | Recent changesets and their revert                                                                                                                                         |
+| `comment ls\|add\|reply\|resolve\|reopen <project> ...`                             | Threads ([Agent presence](../024-agents/agent-presence.md#comments)), by element ref                                                                                       |
+| `presence set\|clear <project> [--tab <t>] [--status ..] [--focus ..]`              | The agent's presence                                                                                                                                                       |
+| `wait <project> --for comment\|change [--timeout <s>]`                              | Blocks until it happens, prints it, exits                                                                                                                                  |
+| `watch <project>`                                                                   | Streams changes, one line each, until interrupted                                                                                                                          |
+| `pull <project> [--to <dir>] [--force]` / `push <file>`                             | Sync one project to a file and back                                                                                                                                       |
+| `export --all --to <dir> [--format json,svg,png,md]`                            | Every project to files                                                                                                                                                    |
+| `workbench open <project>\|--workspace [--folder <f>] [--tab <t>] --origin <o>`     | A single-use link that opens the project, or the whole workspace (on Home, or a folder), live in a paired workbench                                                       |
 | `workbench pair --origin <origin> [--name <name>] [--workspace]`                | Pairs the token with a workbench, approved once in the browser; `--workspace` asks for the whole workspace                                                                 |
 | `template ls\|view`, `schema [kind]`                                            | The catalogues and the element format, from the api                                                                                                                        |
 | `guide [topic]`                                                                 | How-tos: `build`, `edit`, `views`, `comments`, `collaborate`, `workbench`                                                                                                  |
@@ -61,7 +61,7 @@ Resource, then verb. `doc` and `el` are accepted for `document` and `element`.
 | `api <method> <path> [--body <file>\|-]`                                        | Any api route, authenticated; the escape hatch                                                                                                                             |
 | `auth login\|status\|logout`                                                    | Credentials                                                                                                                                                                |
 
-**Addressing.** `<doc>` is a document name, an id prefix, or a pasted liveplanner URL; an ambiguous one is refused
+**Addressing.** `<project>` is a project name, an id prefix, or a pasted liveplanner URL; an ambiguous one is refused
 with the candidates. A share-link URL acts through that link: each request of the command carries its code. A
 pulled file's path reads its views offline. `--tab` takes a tab name or id prefix and defaults to the first tab.
 Elements are [refs and selectors](../024-agents/edit-operations.md#selectors); the comment verbs take the ref of the
@@ -82,7 +82,7 @@ every element, so the api can tell whether what the changeset targets changed si
 **Waiting.** `wait --for change` treats a burst of edits as one change. When `--timeout` passes, `wait` prints that
 nothing new happened and exits 0.
 
-**Provenance.** A document the CLI creates records `source: 'cli'`. Made by AI does not count it: a person directing
+**Provenance.** A project the CLI creates records `source: 'cli'`. Made by AI does not count it: a person directing
 an agent through the CLI is designing their own diagram.
 
 ## Help
@@ -116,7 +116,7 @@ an agent through the CLI is designing their own diagram.
 | 0    | Done                                                             |
 | 1    | Rejected: the input was understood and refused (`invalid_value`) |
 | 2    | Usage: the command line does not parse                           |
-| 3    | Not found or ambiguous: a document, tab or ref                   |
+| 3    | Not found or ambiguous: a project, tab or ref                   |
 | 4    | Not signed in, or not permitted by the token's role              |
 | 5    | Conflict or held: re-read, then retry                            |
 | 6    | Rate limited                                                     |
@@ -154,21 +154,21 @@ In order of precedence:
 - `~/.config/liveplanner/config.toml` names profiles, each a `host`; `--host`, `--profile`, `LIVEPLANNER_HOST` and
   `LIVEPLANNER_PROFILE` choose one. The default is `https://liveplanner.app`.
 - The CLI learns a host from `GET /api/capabilities`: the api base, whether sign-in and the OAuth server exist, the
-  document format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
-  writes and names the version to install. Against a host storing a newer document format than it reads, the CLI
+  project format and the oldest CLI version it accepts (`cli.minVersion`). Below that version the CLI refuses
+  writes and names the version to install. Against a host storing a newer project format than it reads, the CLI
   refuses the commands that work on local files (`pull`, `push`, `export`, `tab diff`) the same way.
 - A profile for another host (staging, local development) never contacts liveplanner.app.
 
 ## Local files
 
-- `pull <doc>` writes `<slug>.liveplanner.json`: the document, its tabs and each tab's revision. `--svg` adds a
+- `pull <project>` writes `<slug>.liveplanner.json`: the project, its tabs and each tab's revision. `--svg` adds a
   picture per tab. A pull never drops edits not yet pushed: when the file there changed since its pull, it is
   refused, naming `push`, and kept; `--force` drops those edits and pulls anyway.
 - `push <file>` sends each changed tab as a changeset based on the pulled revision. A tab changed on the server
   since is refused as a conflict, naming it; the person pulls again. Nothing is overwritten blindly. Only elements
   are pushed: a changed tab name, theme or background, and a tab gone from the file, are named as not pushed, and
   nothing on the server is deleted.
-- `export --all` writes every document, read-only, for backups and docs.
+- `export --all` writes every project, read-only, for backups and docs.
 - A developer tool frames the editor through `workbench open`
   ([Workbench embeds](../013-workspace/workbench-embeds.md)).
 
@@ -202,7 +202,7 @@ test fails when a verb is exposed by neither, or a tool's schema drifts from its
   never.
 - Sent to the active profile's api only. Off with `LIVEPLANNER_TELEMETRY=0`, `DO_NOT_TRACK=1` or `telemetry off`
   (which sends its own `UI·Toggled·TelemetryOff` first). The first run says on stderr what is counted.
-- No device id, arguments, document ids or host names.
+- No device id, arguments, project ids or host names.
 - A sign-in through the CLI counts as `Token·Created·Cli`, beside the MCP's `Token·Created·MCP`.
 
 ## Limits

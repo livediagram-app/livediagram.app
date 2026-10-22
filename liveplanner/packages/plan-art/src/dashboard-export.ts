@@ -22,7 +22,7 @@ import {
   type Element,
   type Tab,
   type ThemeDefinition,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { box, inPlanFont, r2, type Rect } from './plan-art-kit';
 import { cardArt, slotMessageArt, type SheetMetricArt } from './dashboard-card-art';
 
@@ -36,7 +36,7 @@ const ROW_W = DASHBOARD_EXPORT_WIDTH - EXPORT_MARGIN * 2;
 export type DashboardExportInput = {
   // The Dashboard, as seen (its backdrop resolved for the viewer's appearance).
   tab: Tab;
-  // The document's tabs, for the slots that show one.
+  // The project's tabs, for the slots that show one.
   tabs: readonly Tab[];
   now: Date;
   // Each figure from a Sheet, by slot id, read now.

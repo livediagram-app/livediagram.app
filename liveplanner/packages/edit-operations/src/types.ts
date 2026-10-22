@@ -3,7 +3,7 @@
 // @liveplanner/api-schema, where the changeset response carries them.
 
 import type { EditRejection, EditWarning, JsonValue, ResultLine } from '@liveplanner/api-schema';
-import type { ElementId, ElementOp, Finish, Tab, ThemeDefinition } from '@liveplanner/document';
+import type { ElementId, ElementOp, Finish, Tab, ThemeDefinition } from '@liveplanner/project';
 import type { PlacementRelation } from './vocabulary';
 import type { DashboardSpec } from '@liveplanner/templates';
 
@@ -167,6 +167,6 @@ export type ResultFooter =
       rev: number;
       rebasedOver: number;
       changesetId: string;
-      // The document the changeset belongs to: the revert command names it (CLI26).
-      documentId: string;
+      // The project the changeset belongs to: the revert command names it (CLI26).
+      projectId: string;
     };

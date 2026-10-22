@@ -13,7 +13,7 @@ describe('the public surface', () => {
       'removeTerm',
       'applyLens',
       'matchesLens',
-      'documentSubject',
+      'projectSubject',
       'sharedSubject',
       'suggestTokens',
       'acceptSuggestion',

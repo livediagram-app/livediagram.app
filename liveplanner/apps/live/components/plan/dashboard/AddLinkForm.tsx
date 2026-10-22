@@ -6,7 +6,7 @@
 // focus as it opens; Enter adds, Escape cancels.
 import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Button, TextInput } from '@liveplanner/ui';
-import { DASHBOARD_LINK_LABEL_MAX, type DashboardLink, type Tab } from '@liveplanner/document';
+import { DASHBOARD_LINK_LABEL_MAX, type DashboardLink, type Tab } from '@liveplanner/project';
 import { LinkAddressField } from './LinkAddressField';
 import { resolveLinkAddress } from './link-address';
 

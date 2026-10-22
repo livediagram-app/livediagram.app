@@ -7,7 +7,7 @@ import {
   type ShapeKind,
   type ShapePart,
   type ShapePartRole,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import type { CSSProperties, SVGAttributes } from 'react';
 
 // Shape-shape SVG primitives, used by both BoxedElementView (the
@@ -117,11 +117,11 @@ export function ShapeSvgOverlay({
   // screen pixels on all four sides (see laptopGeometry in the table).
   // Defaults to a typical landscape ratio for callers that don't pass it.
   aspect?: number;
-  // An actor's figure rect in element px (actor-figure.ts in @liveplanner/document), clear of its
+  // An actor's figure rect in element px (actor-figure.ts in @liveplanner/project), clear of its
   // name; absent fills the box.
   figure?: { x: number; y: number; width: number; height: number };
 }) {
-  // The geometry lives in the shared table (@liveplanner/document
+  // The geometry lives in the shared table (@liveplanner/project
   // shape-geometry.ts), the same data the headless export draws from, so
   // the canvas and an exported image can't disagree about a silhouette.
   // Browser is NOT in it: it is a CSS-rendered rounded rectangle (see

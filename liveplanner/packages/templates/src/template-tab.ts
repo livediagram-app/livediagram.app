@@ -1,9 +1,9 @@
 // Template tabs for the authoring paths outside the editor (docs/specs/015-api/mcp-server.md §4.5,
 // docs/specs/024-agents/edit-operations.md): the MCP's `template` argument and a changeset's
-// `replace` body. Here rather than in @liveplanner/document because the catalogue lives here and
-// this package already imports the document one (the reverse would be a cycle).
+// `replace` body. Here rather than in @liveplanner/project because the catalogue lives here and
+// this package already imports the project one (the reverse would be a cycle).
 
-import { buildTab, stampTabKind, type Tab } from '@liveplanner/document';
+import { buildTab, stampTabKind, type Tab } from '@liveplanner/project';
 import { buildTemplate, templateTabs } from './build-template';
 import { TEMPLATES, templateKindOf, type TemplateKind } from './templates';
 import { formTemplateStarter, isFormTemplateKind } from './form-templates';

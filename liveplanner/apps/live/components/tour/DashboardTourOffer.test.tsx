@@ -9,7 +9,7 @@ import { useDashboardTour, useDashboardTourOffer } from './DashboardTour';
 const track = vi.hoisted(() => vi.fn());
 vi.mock('@/lib/telemetry', () => ({ track }));
 const ctx = vi.hoisted(() => ({ current: null as Record<string, unknown> | null }));
-vi.mock('@/app/document/[id]/EditorContext', () => ({
+vi.mock('@/app/project/[id]/EditorContext', () => ({
   useOptionalEditorContext: () => ctx.current,
 }));
 const modal = vi.hoisted(() => ({ open: false }));
@@ -82,7 +82,7 @@ describe('useDashboardTourOffer', () => {
 
   it.each([
     ['a Viewer or a covered dashboard', false, {}],
-    ['a read-only document', true, { isReadOnly: true }],
+    ['a read-only project', true, { isReadOnly: true }],
     ['an embed', true, { embedMode: true }],
     ['before the synced preferences are in', true, { prefsSettled: false }],
     ['once answered', true, { userPreferences: { planTourTracks: ['dashboards'] } }],

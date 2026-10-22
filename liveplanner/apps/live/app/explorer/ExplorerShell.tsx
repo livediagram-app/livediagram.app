@@ -21,7 +21,7 @@ import { isPowerUserMode } from '@/lib/power-user-mode';
 import { useDismissibleBanner } from '@/hooks/ui/useDismissibleBanner';
 import { useSearchShortcut } from '@/hooks/ui/useSearchShortcut';
 import { CustomThemeProvider } from '@/components/primitives/CustomThemeProvider';
-import { DocumentTagsProvider } from '@/components/tags/DocumentTagsProvider';
+import { ProjectTagsProvider } from '@/components/tags/ProjectTagsProvider';
 import { AreaErrorBoundary } from '@/components/primitives/AreaErrorBoundary';
 import { ExplorerProvider, useExplorer } from './ExplorerContext';
 import { ExplorerSidebar } from './sidebar/ExplorerSidebar';
@@ -85,12 +85,12 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
           the rest of the Explorer uses. */}
       <CustomThemeProvider ownerId={state.ownerId}>
         {/* The reader's tags (docs/specs/013-workspace/tags.md): the sidebar's Tags rows, the Tags page, every
-            row's chips and every document menu's Tags read the one list. */}
-        <DocumentTagsProvider ownerId={state.ownerId}>
+            row's chips and every project menu's Tags read the one list. */}
+        <ProjectTagsProvider ownerId={state.ownerId}>
           <ShellChrome>{children}</ShellChrome>
-        </DocumentTagsProvider>
+        </ProjectTagsProvider>
       </CustomThemeProvider>
-      {/* Moving this browser's documents in This Browser after signing in
+      {/* Moving this browser's projects in This Browser after signing in
           (docs/specs/014-identity/auth-and-guest-access.md). */}
       {surface.guestPrompts ? <LocalMovePrompt /> : null}
     </ExplorerProvider>
@@ -99,12 +99,12 @@ export function ExplorerShell({ children }: { children: ReactNode }) {
 
 function ShellChrome({ children }: { children: ReactNode }) {
   const {
-    documents: liveDocs,
+    projects: liveDocs,
     folders,
     shared,
     teams,
     teamFolders,
-    teamDocuments,
+    teamProjects,
     go,
     mobileNavOpen,
     setMobileNavOpen,
@@ -123,7 +123,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
     setMoveTarget,
     movePersonalFolders,
     moveTeamDests,
-    moveDocumentTo,
+    moveProjectTo,
     moveFolderToParent,
     createMoveFolder,
     teamsEnabled,
@@ -162,7 +162,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
   const { dismissed: bannerDismissed, dismiss: dismissBanner } =
     useDismissibleBanner(SIGNIN_BANNER_DISMISS_KEY);
   const showSignInBanner = surface.guestPrompts && clerkEnabled && !clerkUserId && !bannerDismissed;
-  // Arrived here because a pass was revoked under an open document: say so (lib/access-notice.ts).
+  // Arrived here because a pass was revoked under an open project: say so (lib/access-notice.ts).
   useAccessEndedToast();
 
   return (
@@ -299,21 +299,21 @@ function ShellChrome({ children }: { children: ReactNode }) {
         )}
       </div>
 
-      {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-documents.md): the shared
-          placement browser (docs/specs/006-document/offline-mode.md's Save In UI) for every document
+      {/* Move-destination modal (docs/specs/013-workspace/folders.md + docs/specs/013-workspace/team-shared-projects.md): the shared
+          placement browser (docs/specs/006-project/offline-mode.md's Save In UI) for every project
           (personal or team) and for folder re-parenting. It offers
-          "My Documents" plus each team as a space (for document moves);
-          `moveDocumentTo` routes the pick from the subject's current
+          "My Projects" plus each team as a space (for project moves);
+          `moveProjectTo` routes the pick from the subject's current
           placement. Folder moves are personal-only, so they pass no
           teams. The New Folder tile creates in the picked scope. */}
       {moveTarget
         ? (() => {
             const teamRow =
-              moveTarget.kind === 'document'
-                ? teamDocuments.find((d) => d.id === moveTarget.id)
+              moveTarget.kind === 'project'
+                ? teamProjects.find((d) => d.id === moveTarget.id)
                 : undefined;
             const personalRow =
-              moveTarget.kind === 'document'
+              moveTarget.kind === 'project'
                 ? liveDocs.find((d) => d.id === moveTarget.id)
                 : undefined;
             const folderRow =
@@ -331,14 +331,14 @@ function ShellChrome({ children }: { children: ReactNode }) {
                 subjectName={subjectName}
                 subjectKind={moveTarget.kind}
                 personalFolders={movePersonalFolders}
-                teams={moveTarget.kind === 'document' ? moveTeamDests : undefined}
+                teams={moveTarget.kind === 'project' ? moveTeamDests : undefined}
                 currentTeamId={currentTeamId}
                 currentFolderId={currentFolderId}
                 onCreateFolder={createMoveFolder}
-                // A document can be moved into a team made on the spot;
+                // A project can be moved into a team made on the spot;
                 // folder moves stay personal, and guests have no teams.
                 onCreateTeam={
-                  teamsEnabled && moveTarget.kind === 'document'
+                  teamsEnabled && moveTarget.kind === 'project'
                     ? async (name) => {
                         const team = await hookCreateTeam({ name });
                         return team ? { id: team.id, name: team.name } : null;
@@ -348,7 +348,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
                 onPick={(dest) => {
                   if (moveTarget.kind === 'folder')
                     moveFolderToParent(moveTarget.id, dest.folderId);
-                  else moveDocumentTo(moveTarget.id, dest);
+                  else moveProjectTo(moveTarget.id, dest);
                 }}
                 onClose={() => setMoveTarget(null)}
               />
@@ -369,14 +369,14 @@ function ShellChrome({ children }: { children: ReactNode }) {
       />
       {searchOpen ? (
         <SearchPanel
-          {...searchPanelSources({ documents: liveDocs, folders, shared, teams, teamDocuments })}
+          {...searchPanelSources({ projects: liveDocs, folders, shared, teams, teamProjects })}
           teamFolders={teamFolders}
-          onSelectDocument={(id) => {
-            assignAppLocation(`/document/${id}`);
+          onSelectProject={(id) => {
+            assignAppLocation(`/project/${id}`);
           }}
           onSelectShared={(id, shareCode) => {
-            // Non-owners can only open the document on the visitor URL.
-            assignAppLocation(`/document/${id}?s=${encodeURIComponent(shareCode)}`);
+            // Non-owners can only open the project on the visitor URL.
+            assignAppLocation(`/project/${id}?s=${encodeURIComponent(shareCode)}`);
           }}
           onSelectFolder={(id) => {
             go({ kind: 'folder', id });
@@ -388,7 +388,7 @@ function ShellChrome({ children }: { children: ReactNode }) {
           }}
           onSelectTeamFolder={(teamId, folderId) => {
             // Full load rather than go(): the team page reads the
-            // folder deep-link param at mount (docs/specs/013-workspace/team-shared-documents.md).
+            // folder deep-link param at mount (docs/specs/013-workspace/team-shared-projects.md).
             assignAppLocation(teamFolderPath(teamId, folderId));
           }}
           helpItems={HELP_SEARCH_ITEMS}

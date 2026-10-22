@@ -1,4 +1,4 @@
-import { migrateStoredTab, type Tab } from '@liveplanner/document';
+import { migrateStoredTab, type Tab } from '@liveplanner/project';
 
 // How an imported tab lands on top of the tab receiving it.
 //
@@ -27,7 +27,7 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
       : {}),
     // A Form tab's form travels too (docs/specs/030-forms/forms.md "restored from a file"): without it the tab came in as
     // a Form tab with no form. Its link stays the original's; the copy is unpublished, its destination chosen again
-    // when the document does not hold it.
+    // when the project does not hold it.
     ...(imported.kind === 'form' && imported.form ? { form: imported.form } : {}),
     layers: imported.layers ?? receiving.layers,
     theme: imported.theme ?? receiving.theme,
@@ -36,7 +36,7 @@ function mergeFields(receiving: Tab, imported: Tab): Tab {
     backgroundOpacity: imported.backgroundOpacity ?? receiving.backgroundOpacity,
     patternColor: imported.patternColor ?? receiving.patternColor,
     backgroundPatternScale: imported.backgroundPatternScale ?? receiving.backgroundPatternScale,
-    // Tab-level typography rides the export too (docs/specs/006-document/per-tab-storage.md): without these an
+    // Tab-level typography rides the export too (docs/specs/006-project/per-tab-storage.md): without these an
     // exported tab using a tab font came back rendering in the default face.
     font: imported.font ?? receiving.font,
     defaultTextSize: imported.defaultTextSize ?? receiving.defaultTextSize,

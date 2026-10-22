@@ -29,7 +29,7 @@ const BY_CODE: Readonly<Record<string, string>> = {
   form_not_ready: 'the form is not ready to publish: read_form lists its problems.',
   form_destination_missing: 'responses have nowhere to go: set respondsTo with change_form.',
   form_suspensions:
-    "this document's form links were suspended twice after reports, so it cannot publish another.",
+    "this project's form links were suspended twice after reports, so it cannot publish another.",
   form_already_published: 'the form already has a link: read_form gives it.',
   form_closed:
     'the board, column, card type or sheet its responses go to is gone: read_form lists the problem.',
@@ -40,10 +40,10 @@ const BY_CODE: Readonly<Record<string, string>> = {
 
 const BY_STATUS: Readonly<Record<number, string>> = {
   401: 'the token is not accepted: sign in again.',
-  403: 'you may view this document but not change it (or not this part of it).',
-  404: 'no such document or item, or it is not shared with you. find_documents lists them.',
-  410: 'that document is in the Trash: restore it with restore_document first.',
-  413: 'that is more than the document can hold.',
+  403: 'you may view this project but not change it (or not this part of it).',
+  404: 'no such project or item, or it is not shared with you. find_projects lists them.',
+  410: 'that project is in the Trash: restore it with restore_project first.',
+  413: 'that is more than the project can hold.',
   // A burst past the per-token limit (docs/specs/015-api/public-api-and-tokens.md §3.5): the window is a minute.
   429: 'too many calls in the last minute (the limit is per token). Wait about a minute, then make the same call again.',
 };

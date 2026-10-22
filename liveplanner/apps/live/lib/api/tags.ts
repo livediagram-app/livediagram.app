@@ -1,8 +1,8 @@
 // Tag calls (docs/specs/013-workspace/tags.md "API"): list / create / update / delete a tag, and put one on or take
-// it off a document. Owner-scoped, guests included (apiHeaders attaches the Clerk token when signed in, else
+// it off a project. Owner-scoped, guests included (apiHeaders attaches the Clerk token when signed in, else
 // X-Owner-Id).
 //
-// An offline document's tags live on its offline record, never on the server (the spec's "An offline document's tags
+// An offline project's tags live on its offline record, never on the server (the spec's "An offline project's tags
 // live in the browser"), so the link calls dispatch on isOfflineId and the list merges the two, as favourites do.
 import {
   TAG_ERRORS,
@@ -12,7 +12,7 @@ import {
   type TagsList,
 } from '@liveplanner/api-schema';
 import { dedupeInFlight } from '../dedupe';
-import { isOfflineId, offlineListTagLinks, offlineSetDocumentTag } from '../offline/offline-store';
+import { isOfflineId, offlineListTagLinks, offlineSetProjectTag } from '../offline/offline-store';
 import { API_BASE, ApiError, apiFetch, apiHeaders, expectOk, expectOkVoid } from './core';
 
 const tagUrl = (id: string) => `${API_BASE}/tags/${encodeURIComponent(id)}`;
@@ -73,22 +73,22 @@ export async function apiDeleteTag(ownerId: string, id: string): Promise<void> {
   await expectOkVoid(res, 'delete tag');
 }
 
-// Put a tag on (`on`) or take it off a document. An offline document keeps it on its record.
-export async function apiSetDocumentTag(
+// Put a tag on (`on`) or take it off a project. An offline project keeps it on its record.
+export async function apiSetProjectTag(
   ownerId: string,
   tagId: string,
-  documentId: string,
+  projectId: string,
   on: boolean,
 ): Promise<void> {
-  if (await isOfflineId(documentId)) {
-    await offlineSetDocumentTag(documentId, tagId, on);
+  if (await isOfflineId(projectId)) {
+    await offlineSetProjectTag(projectId, tagId, on);
     return;
   }
-  const res = await apiFetch(`${tagUrl(tagId)}/documents/${encodeURIComponent(documentId)}`, {
+  const res = await apiFetch(`${tagUrl(tagId)}/projects/${encodeURIComponent(projectId)}`, {
     method: on ? 'PUT' : 'DELETE',
     headers: await apiHeaders(ownerId),
   });
-  await expectOkVoid(res, on ? 'tag document' : 'untag document');
+  await expectOkVoid(res, on ? 'tag project' : 'untag project');
 }
 
 const TAG_SAVE_FAILED = "Couldn't save that tag change. Try again.";

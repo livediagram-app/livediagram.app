@@ -13,7 +13,7 @@ import {
   type RunBoolKey,
   type RunHeading,
   type TextRun,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 // The base an unset run delta falls back to.
 export type RunDefaults = {

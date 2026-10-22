@@ -10,7 +10,7 @@ import {
   type ConceptAnim,
   type ConceptShape,
   type ShapeElement,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 import { Glyph } from '@liveplanner/ui';
 import { BorderGrid } from '@/components/palette/context-menu-rows';
 import { SizeButton } from '@/components/palette/palette-controls';

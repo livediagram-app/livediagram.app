@@ -25,7 +25,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Action·Opened',
   'Action·Resolved',
   'Action·Unresolved',
-  // Activity (docs/specs/013-workspace/inbox.md): the Explorer's cross-document inbox. 'Opened'
+  // Activity (docs/specs/013-workspace/inbox.md): the Explorer's cross-project inbox. 'Opened'
   // once per visit, 'Selected' with type 'Action' | 'Thread' | 'Card' on a row
   // click, 'Loaded'/'Retry' after a failed read.
   'Activity·Loaded',
@@ -42,24 +42,24 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Comment·Resolved',
   'Comment·Unresolved',
   // Landing funnel (docs/specs/019-marketing/landing-funnel.md): a public-page CTA brought somebody to /new
-  // ('Opened'), and that visit created a document ('Created'). `type` is the
+  // ('Opened'), and that visit created a project ('Created'). `type` is the
   // CTA's source from the closed CTA_SOURCES table.
   'Cta·Created',
   'Cta·Opened',
-  'Document·Created',
-  'Document·Deleted',
-  'Document·Duplicated',
-  'Document·Exported',
-  'Document·Loaded',
-  'Document·Moved',
-  'Document·Redone',
-  'Document·Removed',
-  'Document·Renamed',
-  'Document·Shared',
-  'Document·Undone',
+  'Project·Created',
+  'Project·Deleted',
+  'Project·Duplicated',
+  'Project·Exported',
+  'Project·Loaded',
+  'Project·Moved',
+  'Project·Redone',
+  'Project·Removed',
+  'Project·Renamed',
+  'Project·Shared',
+  'Project·Undone',
   // Explorer filters (docs/specs/013-workspace/explorer-filters.md "Telemetry"): a facet gained a value.
   'Explorer·Selected',
-  // Tags (docs/specs/013-workspace/tags.md "Telemetry"): a tag made, put on or taken off a document, renamed,
+  // Tags (docs/specs/013-workspace/tags.md "Telemetry"): a tag made, put on or taken off a project, renamed,
   // recoloured, deleted. Never its name.
   'Explorer·Added',
   'Explorer·Changed',
@@ -201,7 +201,7 @@ export const EMITTED_EVENT_PAIRS: readonly string[] = [
   'Token·Linked',
   'Token·Removed',
   // Trash (docs/specs/013-workspace/trash.md): opened from Settings, and a
-  // document restored / deleted for good / a group emptied, typed by which Trash.
+  // project restored / deleted for good / a group emptied, typed by which Trash.
   'Trash·Cleared',
   'Trash·Deleted',
   'Trash·Opened',

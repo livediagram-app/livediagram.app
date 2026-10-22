@@ -1,10 +1,10 @@
-// /api/shared — documents a non-owner has accessed via a share link.
+// /api/shared — projects a non-owner has accessed via a share link.
 
 import { dropSharedAccess, listSharedWith } from '../db';
 import { json, missingAuth, notFound } from '../responses';
 import type { RouteContext } from './context';
 
-// List documents a non-owner has previously accessed via a
+// List projects a non-owner has previously accessed via a
 // share link. Used by the Explorer's "Shared with you"
 // accordion. Per-owner; pure-guest path works because
 // shared_with rows are keyed off the resolved owner string.
@@ -19,13 +19,13 @@ export async function handleShared(ctx: RouteContext): Promise<Response> {
       return json({ shared });
     }
   }
-  // /api/shared/<documentId> — dismiss / un-link.
+  // /api/shared/<projectId> — dismiss / un-link.
   if (segments.length === 3) {
-    const documentId = segments[2]!;
+    const projectId = segments[2]!;
     if (request.method === 'DELETE') {
       const owner = resolveOwner();
       if (!owner) return missingAuth();
-      await dropSharedAccess(env, owner, documentId);
+      await dropSharedAccess(env, owner, projectId);
       return json({ ok: true });
     }
   }

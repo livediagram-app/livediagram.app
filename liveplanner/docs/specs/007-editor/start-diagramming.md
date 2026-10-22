@@ -52,7 +52,7 @@ palette, so this does not arise there today.
 
 ## Default folders
 
-A template picked here on a document `/new` just made goes to that template's default folder, unless the document was
+A template picked here on a project `/new` just made goes to that template's default folder, unless the project was
 made into a folder on purpose (a `/new?folder=` or `?team=` link, [Default folders](../013-workspace/default-folders.md)
 "A template picked after creation"). The move loads only at the pick (`useTemplatePickMove`, a dynamic import of
 `move-on-template-pick.ts`).
@@ -73,7 +73,7 @@ the ones shown. They are kept for the browser tab only and read once (`start-que
   (another empty tab's) arrives whole, without the rise.
 - **On a phone** the panel is a sheet risen from the bottom (`animate-sheet-up`), full width below the top bar,
   standing on the tab bar, with the grab handle every phone sheet has; dragged, it settles back, as it cannot close.
-  The tab bar stays in reach, so a new tab's start never leaves the document's other tabs out of reach. Where the bar
+  The tab bar stays in reach, so a new tab's start never leaves the project's other tabs out of reach. Where the bar
   stands is measured, as the toast stack measures its floor (`useChromeFloor`).
 - **On a short window** (under 500px tall, whatever the pointer: a phone held sideways, or a laptop zoomed to 200%,
   720×450) the panel clears less above and lies over the bottom cluster (the overlay layer), standing on the tab bar

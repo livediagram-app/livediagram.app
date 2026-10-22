@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import type { SessionToolsProps } from '@/components/chrome/session-tools-props';
-import { useEditorContext } from '@/app/document/[id]/EditorContext';
+import { useEditorContext } from '@/app/project/[id]/EditorContext';
 
 // The session-tools bundle (session-tools-props.ts) read off the editor, for the bottom-right
 // cluster's Session strip (docs/specs/012-collaboration/session-tools.md "The Session strip").

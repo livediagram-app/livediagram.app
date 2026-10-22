@@ -3,7 +3,7 @@
 // else's on the left. Consecutive comments by one author group under one
 // name, the way a chat does, so a three-part remark reads as one voice.
 
-import type { Comment } from '@liveplanner/document';
+import type { Comment } from '@liveplanner/project';
 import { Glyph, GlyphDisc, IDENTITY_FILL, identityVars } from '@liveplanner/ui';
 import { AuthorDisc } from '@/components/primitives/AuthorDisc';
 import { relativeSince } from '@/lib/relative-time';

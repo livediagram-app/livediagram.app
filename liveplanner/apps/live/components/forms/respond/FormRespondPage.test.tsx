@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { sentJson } from '@liveplanner/vitest-config/sent-request';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { PublicFormResponse } from '@liveplanner/api-schema';
-import { formLook } from '@liveplanner/document';
+import { formLook } from '@liveplanner/project';
 import { FormRespondPage } from './FormRespondPage';
 
 // A form link's page (docs/specs/030-forms/forms.md "Filling in a form"): its states, a response sent and each

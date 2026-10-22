@@ -13,7 +13,7 @@ import {
   withReadableLabelInks,
   type CanvasSurface,
   type Element,
-} from '@liveplanner/document';
+} from '@liveplanner/project';
 
 const NO_THEME_MAP: ReadonlyMap<string, string> = new Map();
 

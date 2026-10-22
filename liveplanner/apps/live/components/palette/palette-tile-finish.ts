@@ -2,7 +2,7 @@
 // so every tile draws its glyph in the finish that element will land in, and the whole palette previews the tab.
 // Professional squares and thins a line glyph; Sketch wobbles every glyph through the shared sketch filter
 // (SketchFilterDefs); Marker draws a line glyph bold with round ends, a felt-tip's line.
-import type { Finish } from '@liveplanner/document';
+import type { Finish } from '@liveplanner/project';
 
 /** The id of the one SVG filter Sketch tiles are drawn through. */
 export const SKETCH_TILE_FILTER_ID = 'lvd-sketch-tile';
