@@ -1,6 +1,7 @@
 # liveplanner
 
-Monorepo for the liveplanner product. Multiple apps share code through internal packages.
+Monorepo for liveplanner, a free, real-time planner for teams: a **project** holds Board, Sheet, Dashboard and Form
+tabs that people plan together, live. Multiple apps share code through internal packages.
 
 ## Before you start
 
@@ -185,17 +186,18 @@ Whenever you add, remove or rename a help article, follow [`docs/instructions/re
 
 See [Domain language](docs/specs/003-system-architecture/domain-language.md).
 
-- **Mode** is how a tab is worked on (Diagram, Draw); the tab's, shared by everyone on it, never a type of document or tab.
-- **Kind** is what a tab is: the general diagram tab, or one of Plan's Board, Sheet, Dashboard and Form tabs.
-- **Template** is what a document was made from; a template family (Retrospectives, Kanban) is never a kind.
-- **This Browser** names a document saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
+- **Project** is what a person makes: a named set of Board, Sheet, Dashboard and Form tabs, with its items, sharing and history. Copy, help, email and agent descriptions say project, never "document", "file" or "board" (code identifiers, tables and routes still say document until their rename lands).
+- **Mode** is how a tab is worked on; there is one, **Plan**, shared by everyone on the tab and never a type of project or tab.
+- **Kind** is what a tab is: a Board, Sheet, Dashboard or Form tab (a fresh tab is the general kind until Start Planning sets one).
+- **Template** is what a project was made from; a template family (Retrospectives, Kanban) is never a kind.
+- **This Browser** names a project saved only in this browser, its place, pill and badge alike; never "Local Only" or "Local Browser".
 
 ## Repo layout
 
 ```
 apps/
   marketing/    # static marketing site (Next.js, /)
-  live/         # the diagram editor app (Next.js, clean routes)
+  live/         # the planner app: Explorer and the project editor (Next.js, clean routes)
   telemetry/    # public anonymous-events dashboard (Next.js, /telemetry)
   help/         # help centre (Next.js export + MDX, /help)
   api/          # Cloudflare Worker REST + WebSocket API (D1 + Durable Objects, /api)
@@ -204,7 +206,7 @@ apps/
   cli/          # the liveplanner command line for agents and scripts (Node, one esbuild bundle)
 packages/
   ui/             # shared UI primitives (Brand, SiteHeader, Button, TextInput, Select, Tooltip, hooks) + chrome icons (src/icons)
-  document/       # document data model (Tab, Element types + element helpers)
+  document/       # project data model (Tab, Element types + element helpers)
   icons/          # icon catalogues (line-art + Technology + stickers) + SVG markup builders + xmlEscape
   templates/      # template catalogue + pure element builders (editor template starts + MCP)
   template-previews/ # per-template preview SVGs (editor template starts + marketing template gallery)
@@ -215,7 +217,7 @@ packages/
   plan-art/       # Plan tab images (Board, Sheet, Dashboard as laid out) for editor exports + MCP previews (pure)
   items/          # items, item types, fields, ranks, writes and the Plan board projection (pure)
   sheets/         # the Sheet engine: A1 addressing, formulas, recalculation, writes, CSV (pure)
-  document-views/ # read-only text views of a tab (outline, graph, layout, ...) for agents and scripts
+  document-views/ # read-only text views of a tab (outline, layout, ...) for agents and scripts
   api-schema/     # wire-format DTOs the api worker emits + the live editor consumes
   api-client/     # the api client the MCP server and the CLI share (fetch, timeouts, ApiError)
   agent-verbs/    # the verbs the CLI routes to: schemas, handlers, compact text, addressing, guides
@@ -247,7 +249,8 @@ Workspaces are managed with **pnpm** (`pnpm-workspace.yaml`). Tasks are orchestr
 See [Business model + licence](docs/specs/002-project-scope/business-model-and-licence.md).
 
 - The codebase is **proprietary** (all rights reserved, every `package.json` is `UNLICENSED`) and its source is **not public**. Never add open-source, contributing, forking or self-hosting wording, or links to the repository, to anything users see.
-- liveplanner is free to use at liveplanner.app. **No paid tier and no plan to introduce one.** No trackers, no ads.
+- liveplanner is free to use. **No paid tier and no plan to introduce one.** No trackers, no ads.
+- liveplanner is **not deployed yet**: Cloudflare ids in the wrangler configs are placeholders and the deploy, CLI publish and MCP registry workflows are manual-only. Never deploy, publish or touch a remote Cloudflare resource from an agent session.
 - Optional integrations degrade, never break: Clerk auth is optional, and when unset the api worker and live frontend degrade to pure-guest mode.
 - No "Pro features" flags, no billing integration. If we ship it, every user gets it.
 
@@ -264,13 +267,13 @@ See [Secrets policy](docs/specs/002-project-scope/secrets-policy.md). **No secre
 
 See [Auth + guest access](docs/specs/014-identity/auth-and-guest-access.md).
 
-- **The canvas always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
+- **The planner always works without signing in.** Friction-free engagement is the acquisition strategy. Never put a sign-in wall in front of the editor.
 - **Hybrid identity** — the api accepts two equivalent ways of identifying the owner of a request:
   - **Guest path**: a per-browser participant id (`liveplanner:v2:self-id` in `localStorage`) carried as `X-Owner-Id`. Default for unsigned visitors. Full feature set (persistence, share links, real-time collab).
   - **Authed path**: a Clerk session JWT in `Authorization: Bearer <token>`, verified via `CLERK_JWKS_URL`.
   - The api worker uses the `sub` claim as the owner id.
 - The two paths coexist forever — a signed-in user can still hand a share link to a guest who edits without auth.
-- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (custom UI; email-code or Google OAuth). On sign-up, guest documents migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
+- Sign-in lives at `/sign-in/` and sign-up at `/get-started/` (custom UI; email-code or Google OAuth). On sign-up, a guest's projects migrate from the localStorage id to the Clerk user id via `POST /api/migrate`.
 
 ## Core principle: reuse over duplication
 
@@ -320,7 +323,7 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 
 ## Guidelines
 
-- **Every feature decides its share roles.** When specifying or building anything a shared document can reach, state what an Editor, a Participant and a Viewer may do with it, gate it on the session's `can`, never on `isReadOnly` alone, and lock it with tests: follow [`docs/instructions/gate-a-feature-by-share-role.md`](docs/instructions/gate-a-feature-by-share-role.md).
+- **Every feature decides its share roles.** When specifying or building anything a shared project can reach, state what an Editor, a Participant and a Viewer may do with it, gate it on the session's `can`, never on `isReadOnly` alone, and lock it with tests: follow [`docs/instructions/gate-a-feature-by-share-role.md`](docs/instructions/gate-a-feature-by-share-role.md).
 - Don't add SSR, Next.js API routes, or Node-only runtime code to a frontend app — it will break Cloudflare Pages deploys.
 - Put any logic shared by two or more apps in `packages/` rather than copying it.
 - **One colour picker.** Anything that lets someone choose a colour uses the shared picker in `apps/live/components/colour/` (see [Colour picker](docs/specs/004-interface-design/colour-picker.md#the-rule-for-new-work)); never build a new swatch grid, custom colour editor or `<input type="color">`. If no skin fits, extend the picker.
@@ -331,5 +334,5 @@ See [Deployment](docs/specs/016-platform/deployment.md) and [Staging environment
 - **Track key new functionality** via the anonymous-events schema ([spec](docs/specs/017-telemetry/telemetry.md)).
 - A feature that meaningfully changes user behaviour gets a one-liner `track(category, action, type)` in its handler.
 - Reuse the closed `TELEMETRY_CATEGORIES` / `TELEMETRY_ACTIONS` enums; extend them only when no existing pair fits.
-- The `type` is a preset enum value (e.g., `Square`, `DrawToAddOn`), never user content.
+- The `type` is a preset enum value (e.g., `Board`, `Keyboard`, `Card`), never user content.
 - Settings flips fire BEFORE the change is persisted so an opt-out event still reaches the wire.
