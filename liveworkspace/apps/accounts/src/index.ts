@@ -6,7 +6,14 @@ import { AUTH_BASE_PATH, SEND_CODE_PATH, SIGN_IN_CODE_PATH } from './auth-option
 import { getAuth } from './auth.ts';
 import { registerClient } from './clients.ts';
 import type { Env } from './env.ts';
-import { CONSENT_SCRIPT, consentPage, SIGN_IN_SCRIPT, signInPage, STYLES } from './pages.ts';
+import {
+  CONSENT_SCRIPT,
+  consentPage,
+  SIGN_IN_SCRIPT,
+  signInPage,
+  signUpPage,
+  STYLES,
+} from './pages.ts';
 import { overCodeLimit } from './rate-limit.ts';
 
 const ASSETS: Record<string, { body: string; type: string }> = {
@@ -36,6 +43,7 @@ export default {
     if (request.method === 'GET') {
       if (pathname === '/') return Response.redirect(new URL('/sign-in', url).toString(), 302);
       if (pathname === '/sign-in') return signInPage(env.TURNSTILE_SITE_KEY);
+      if (pathname === '/sign-up') return signUpPage(env.TURNSTILE_SITE_KEY);
       if (pathname === '/consent') return consentPage();
       if (pathname === '/health') return new Response('ok');
       const file = asset(pathname);

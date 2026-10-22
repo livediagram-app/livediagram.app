@@ -30,6 +30,8 @@ export interface AuthorizeUrlOptions {
   // The app's API resource; it becomes the access token's audience.
   resource: string;
   scope?: string;
+  // `create` opens the accounts site's registration page instead of sign-in.
+  prompt?: 'create' | 'login';
 }
 
 export interface TokenSet {
@@ -72,6 +74,7 @@ export function authorizeUrl(options: AuthorizeUrlOptions): string {
     code_challenge: options.codeChallenge,
     code_challenge_method: 'S256',
     resource: options.resource,
+    ...(options.prompt && { prompt: options.prompt }),
   }).toString();
   return url.toString();
 }

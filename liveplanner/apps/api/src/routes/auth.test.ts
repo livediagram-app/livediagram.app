@@ -40,7 +40,13 @@ function tokenResponse(over: Record<string, unknown> = {}) {
     JSON.stringify({
       access_token: 'access-1',
       refresh_token: 'refresh-2',
-      id_token: jwt({ sub: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace' }),
+      id_token: jwt({
+        sub: 'user_abc',
+        email: 'ada@example.com',
+        given_name: 'Ada',
+        family_name: 'Lovelace',
+        name: 'Ada Lovelace',
+      }),
       expires_in: 3600,
       ...over,
     }),
@@ -80,6 +86,13 @@ describe('GET /api/auth/sign-in', () => {
     expect(location.searchParams.get('resource')).toBe('https://lp.example/api');
     expect(location.searchParams.get('code_challenge_method')).toBe('S256');
     expect(location.searchParams.get('state')).toBeTruthy();
+    expect(location.searchParams.has('prompt')).toBe(false);
+  });
+
+  it('asks for the registration page from /get-started', async () => {
+    const res = await call('/api/auth/sign-in?return_to=%2Fnew&screen=sign-up');
+    const location = new URL(res.headers.get('Location')!);
+    expect(location.searchParams.get('prompt')).toBe('create');
   });
 
   it('keeps the verifier in an HttpOnly cookie scoped to /api/auth', async () => {
@@ -187,7 +200,13 @@ describe('POST /api/auth/token', () => {
     expect(body).toMatchObject({
       signedIn: true,
       accessToken: 'access-1',
-      user: { id: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace', picture: null },
+      user: {
+        id: 'user_abc',
+        email: 'ada@example.com',
+        givenName: 'Ada',
+        familyName: 'Lovelace',
+        name: 'Ada Lovelace',
+      },
     });
     expect(typeof body.expiresAt).toBe('number');
     expect(cookieValue(res, 'lp_refresh')).toBe('refresh-3');

@@ -48,8 +48,9 @@ const DEFAULT_RETURN = '/explorer/home';
 export type AuthUser = {
   id: string;
   email: string | null;
+  givenName: string | null;
+  familyName: string | null;
   name: string | null;
-  picture: string | null;
 };
 
 type Configured = {
@@ -149,8 +150,9 @@ function userOf(tokens: TokenSet): AuthUser | null {
   return {
     id: payload.sub,
     email: text(payload.email),
+    givenName: text(payload.given_name),
+    familyName: text(payload.family_name),
     name: text(payload.name),
-    picture: text(payload.picture),
   };
 }
 
@@ -178,6 +180,8 @@ async function signIn(request: Request, env: Env, config: Configured): Promise<R
   const { verifier, challenge } = await createPkcePair();
   const state = randomState();
   const returnTo = safeReturnPath(url.searchParams.get('return_to'));
+  // /get-started asks for the accounts site's registration page rather than its sign-in.
+  const prompt = url.searchParams.get('screen') === 'sign-up' ? 'create' : undefined;
   const to = authorizeUrl({
     accountsUrl: config.accountsUrl,
     clientId: config.clientId,
@@ -185,6 +189,7 @@ async function signIn(request: Request, env: Env, config: Configured): Promise<R
     state,
     codeChallenge: challenge,
     resource: config.resource,
+    prompt,
   });
   return redirect(to, [
     cookie(PKCE_COOKIE, encodePkce({ state, verifier, returnTo }), PKCE_MAX_AGE_SECONDS, 'Lax'),

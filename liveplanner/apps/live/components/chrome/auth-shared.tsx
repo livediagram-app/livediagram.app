@@ -207,8 +207,10 @@ export function guestReturnHref(searchParams: { get: (key: string) => string | n
 // brings the browser back to `destination` once it is done
 // (apps/api/src/routes/auth.ts). A full-page visit, never a fetch: the accounts
 // site's own cookie can only be read there.
-export function accountsSignInUrl(destination: string): string {
-  return `${API_BASE}/auth/sign-in?return_to=${encodeURIComponent(destination)}`;
+// `signUp` opens the accounts site's registration page instead of its sign-in.
+export function accountsSignInUrl(destination: string, signUp = false): string {
+  const screen = signUp ? '&screen=sign-up' : '';
+  return `${API_BASE}/auth/sign-in?return_to=${encodeURIComponent(destination)}${screen}`;
 }
 
 // ---------------------------------------------------------------------

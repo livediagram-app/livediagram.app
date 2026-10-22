@@ -7,7 +7,7 @@ It replaces Clerk. It runs on Cloudflare Workers + D1, using [Better Auth](https
 with its email-code (`emailOTP`) and OAuth 2.1 / OpenID Connect provider plugins.
 
 ```
-apps/accounts          the Worker at accounts.liveworkspace.app: sign-in page, codes, tokens, JWKS
+apps/accounts          the Worker at accounts.liveworkspace.app: sign-in and registration pages, codes, tokens, JWKS
 packages/auth-client   what each app imports: sign-in redirect, code swap, refresh, token check
 docs/                  adding an app, moving off Clerk
 ```
@@ -32,6 +32,21 @@ cookie. Each app sends the browser to the accounts site and gets it back with a 
    (`/api/auth/jwks`), the same way it checks `CLERK_JWKS_URL` today. There's no per-request call.
 5. Signing in to a second app repeats step 1, finds the accounts cookie, and goes straight back
    with no code. That's single sign-on across all the apps.
+
+## The sign-in and registration pages
+
+`/sign-in` and `/sign-up` are livediagram's account pages, in liveworkspace's slate: the wordmark,
+the card, and beside it what an account adds (`src/pages.ts`). Both ask for an email, then a
+6-digit code. Registration also asks for a **first and last name**, stored as `givenName` and
+`familyName` on the account (with `name` the two joined). Someone who signs in with a code to an
+address that has no name yet is asked for one after the code, before going back to the app.
+
+An app's "Create account" opens `/sign-up` by sending `prompt=create` to the authorize endpoint.
+Once the account is made, the page tells the provider with `POST /oauth2/continue`
+(`created: true`), which then returns to the app.
+
+The ID token carries `name`, `given_name`, `family_name`, `email` and `email_verified`. Better
+Auth's provider normally sends these only from `/userinfo`, so `customIdTokenClaims` adds them.
 
 Access tokens last an hour and name the app's API as their audience, so a livediagram token is
 refused by liveplanner. They carry `sub` (the account id), `email` and `email_verified`.
@@ -100,6 +115,7 @@ Other checks, from the repo root: `corepack pnpm test`, `corepack pnpm typecheck
   `clientPrivileges` refuses everything without the admin token. Dynamic registration stays off.
 - **Account ids** keep Clerk's `user_` prefix (`src/ids.ts`). Imported accounts keep their exact
   Clerk id, and livediagram's guard against an account id sent as a guest id keeps working.
+- **Names** are trimmed and cut to 80 characters whenever an account is created or updated.
 - **The sign-in pages** can't be framed, send no Referer (the URL carries the signed OAuth
   request), and load scripts only from this origin and Turnstile.
 

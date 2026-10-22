@@ -24,11 +24,13 @@ const PROBLEMS: Record<string, string> = {
   failed: 'Signing in did not finish. Please try again.',
 };
 
-function Handoff({ defaultDestination }: { defaultDestination: string }) {
+type HandoffProps = { defaultDestination: string; signUp?: boolean };
+
+function Handoff({ defaultDestination, signUp = false }: HandoffProps) {
   const searchParams = useSearchParams();
   const destination = resolvePostAuthDestination(searchParams, defaultDestination);
   const problem = PROBLEMS[searchParams.get('error') ?? ''] ?? null;
-  const to = accountsSignInUrl(destination);
+  const to = accountsSignInUrl(destination, signUp);
 
   useEffect(() => {
     // replace, so Back from the accounts site skips this interstitial.
@@ -37,7 +39,11 @@ function Handoff({ defaultDestination }: { defaultDestination: string }) {
 
   if (!problem) return <RedirectingCard />;
   return (
-    <AuthCard title="Sign in" error={problem} guestHref={guestReturnHref(searchParams)}>
+    <AuthCard
+      title={signUp ? 'Create your account' : 'Sign in'}
+      error={problem}
+      guestHref={guestReturnHref(searchParams)}
+    >
       <a href={to} className={buttonClassName({ size: 'md', className: 'w-full shadow-sm' })}>
         <ButtonContent>Try again</ButtonContent>
       </a>
@@ -45,11 +51,11 @@ function Handoff({ defaultDestination }: { defaultDestination: string }) {
   );
 }
 
-export function AuthHandoff({ defaultDestination }: { defaultDestination: string }) {
+export function AuthHandoff({ defaultDestination, signUp }: HandoffProps) {
   if (!signInEnabled) return <AuthDisabledNotice />;
   return (
     <Suspense fallback={<RedirectingCard />}>
-      <Handoff defaultDestination={defaultDestination} />
+      <Handoff defaultDestination={defaultDestination} signUp={signUp} />
     </Suspense>
   );
 }

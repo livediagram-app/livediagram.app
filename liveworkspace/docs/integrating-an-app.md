@@ -95,6 +95,12 @@ const refreshCookie = (value: string) =>
 
 (`cookie(request, name)` is whatever cookie reader the app already has.)
 
+For a "Create account" button, pass `prompt: 'create'` to `authorizeUrl`. The accounts site then
+opens its registration page (first name, last name, email, code) instead of sign-in. Everything
+after that is the same.
+
+Who signed in comes from the ID token: `sub`, `email`, `name`, `given_name` and `family_name`.
+
 In the browser, keep the access token in memory. Call `POST /auth/token` on load and again a
 minute before `expiresAt`, then send the token as `Authorization: Bearer …` exactly as with Clerk.
 Refresh tokens rotate, and two tabs refreshing at once is fine: the accounts Worker replays the

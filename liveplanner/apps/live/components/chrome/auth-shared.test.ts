@@ -184,6 +184,12 @@ describe('accountsSignInUrl', () => {
       `/api/auth/sign-in?return_to=${encodeURIComponent(consent)}`,
     );
   });
+
+  it('asks for the registration page when signing up', () => {
+    expect(accountsSignInUrl('/new', true)).toBe(
+      '/api/auth/sign-in?return_to=%2Fnew&screen=sign-up',
+    );
+  });
 });
 
 // The header's guest way out (docs/specs/014-identity/auth-and-guest-access.md "The look: Night Band"): back where

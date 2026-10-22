@@ -14,7 +14,13 @@ vi.mock('@/lib/recent-diagrams-snapshot', () => ({ forgetRecentDiagrams: vi.fn(a
 
 const { AccountsBridge, namesOf, resetAccountsSessionForTests } = await import('./AccountsBridge');
 
-const USER = { id: 'user_abc', email: 'ada@example.com', name: 'Ada Lovelace', picture: null };
+const USER = {
+  id: 'user_abc',
+  email: 'ada@example.com',
+  givenName: 'Ada',
+  familyName: 'Lovelace',
+  name: 'Ada Lovelace',
+};
 const fetchMock = vi.fn<typeof fetch>();
 
 function signedIn(token: string, expiresInMs = 3_600_000) {
@@ -122,8 +128,28 @@ describe('AccountsBridge', () => {
 });
 
 describe('namesOf', () => {
-  const base = { id: 'u', email: 'grace.hopper@example.com', picture: null };
-  it("splits the account's name at its first space", () => {
+  const base = {
+    id: 'u',
+    email: 'grace.hopper@example.com',
+    givenName: null,
+    familyName: null,
+  };
+  it('uses the first and last name the accounts site asked for', () => {
+    expect(
+      namesOf({ ...base, givenName: 'Grace', familyName: 'Brewster Hopper', name: 'ignored' }),
+    ).toEqual({
+      firstName: 'Grace',
+      lastName: 'Brewster Hopper',
+      fullName: 'Grace Brewster Hopper',
+    });
+    expect(namesOf({ ...base, givenName: ' ', familyName: 'Hopper', name: null })).toEqual({
+      firstName: 'Hopper',
+      lastName: null,
+      fullName: 'Hopper',
+    });
+  });
+
+  it("splits the account's whole name at its first space when it has no first and last", () => {
     expect(namesOf({ ...base, name: 'Grace Brewster Hopper' })).toEqual({
       firstName: 'Grace',
       lastName: 'Brewster Hopper',

@@ -1,6 +1,7 @@
 // Walks the whole sign-in flow against a local `pnpm dev`, the way an app would:
-// redirect to /oauth2/authorize, request a code, sign in with it, swap the code for
-// tokens, verify the access token, sign in again without a code, and refresh.
+// redirect to /oauth2/authorize, register with a code and a name, swap the code for
+// tokens, verify them, sign in again without a code, refresh, and give a nameless
+// account its name after the code.
 //
 //   pnpm dev   (in another terminal; .dev.vars from .dev.vars.example)
 //   ADMIN_TOKEN=local-admin-token node scripts/e2e-local.ts
@@ -22,6 +23,7 @@ const ACCOUNTS = process.env.ACCOUNTS_URL ?? 'http://localhost:8787';
 const RESOURCE = 'http://localhost/api';
 const REDIRECT = 'http://localhost:3000/auth/callback';
 const EMAIL = process.env.E2E_EMAIL ?? `e2e+${Date.now()}@example.com`;
+const NAMELESS_EMAIL = `e2e-nameless+${Date.now()}@example.com`;
 const devLog = process.env.DEV_LOG;
 if (!devLog) throw new Error('Set DEV_LOG to the file `pnpm dev` writes its output to');
 
@@ -75,7 +77,7 @@ const credentials = {
   clientSecret: client.client_secret,
 };
 
-async function startSignIn() {
+async function startSignIn(prompt?: 'create') {
   const pkce = await createPkcePair();
   const state = randomState();
   const response = await browser(
@@ -86,25 +88,62 @@ async function startSignIn() {
       state,
       codeChallenge: pkce.challenge,
       resource: RESOURCE,
+      prompt,
     }),
   );
   return { pkce, state, response };
 }
 
-// 1. Not signed in: the provider sends the browser to the sign-in page.
-const first = await startSignIn();
+async function requestCode(email: string): Promise<string> {
+  const logBefore = readFileSync(devLog!, 'utf8').length;
+  const send = await browser(`${ACCOUNTS}/api/auth/email-otp/send-verification-otp`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-captcha-response': 'XXXX.DUMMY.TOKEN.XXXX' },
+    body: JSON.stringify({ email, type: 'sign-in' }),
+  });
+  assert(send.ok, `code requested (${send.status} ${send.ok ? '' : await send.clone().text()})`);
+  let code: string | undefined;
+  for (let i = 0; i < 20 && !code; i++) {
+    const log = readFileSync(devLog!, 'utf8').slice(logBefore);
+    // The local simulation logs where it saved the message; the code is in its subject.
+    const saved = log.match(/(\/[^\s'"]+\.eml)/)?.[1];
+    const text = saved ? readFileSync(saved, 'utf8') : log;
+    code = text.match(/\b(\d{6}) is your liveworkspace sign-in code/)?.[1];
+    if (!code) await sleep(250);
+  }
+  assert(code, 'the code email was sent');
+  return code;
+}
+
+// The signed OAuth query a sign-in page posts back, rebuilt from the URL it was sent to.
+function oauthQueryOf(pageUrl: URL): string {
+  const out = new URLSearchParams();
+  const names = new Set(pageUrl.searchParams.getAll('ba_param'));
+  for (const [k, v] of pageUrl.searchParams) {
+    if (k === 'sig' || k === 'ba_param' || names.has(k)) out.append(k, v);
+  }
+  return out.toString();
+}
+
+function jwtClaims(token: string | null): Record<string, unknown> {
+  const payload = token?.split('.')[1] ?? '';
+  return JSON.parse(Buffer.from(payload, 'base64url').toString('utf8')) as Record<string, unknown>;
+}
+
+// 1. Not signed in: "Create account" in the app sends the browser to the registration page.
+const first = await startSignIn('create');
 const signInUrl = (await redirectOf(first.response))!;
-assert(signInUrl?.pathname === '/sign-in', 'authorize redirects to /sign-in');
-assert(signInUrl.searchParams.has('sig'), 'the sign-in URL carries a signed OAuth query');
+assert(signInUrl?.pathname === '/sign-up', 'authorize with prompt=create redirects to /sign-up');
+assert(signInUrl.searchParams.has('sig'), 'the sign-up URL carries a signed OAuth query');
 
 const page = await browser(signInUrl.toString());
+const pageHtml = await page.text();
 assert(
-  page.status === 200 && (await page.text()).includes('Email me a code'),
-  'sign-in page renders',
+  page.status === 200 && pageHtml.includes('Create account') && pageHtml.includes('given-name'),
+  'registration page renders, asking for a first and a last name',
 );
 
 // 2. Request a code. Turnstile's test secret accepts its dummy token.
-const logBefore = readFileSync(devLog, 'utf8').length;
 const noCaptcha = await browser(`${ACCOUNTS}/api/auth/email-otp/send-verification-otp`, {
   method: 'POST',
   headers: { 'content-type': 'application/json' },
@@ -116,33 +155,11 @@ assert(
   `sending without Turnstile is refused (${noCaptchaBody})`,
 );
 
-const send = await browser(`${ACCOUNTS}/api/auth/email-otp/send-verification-otp`, {
-  method: 'POST',
-  headers: { 'content-type': 'application/json', 'x-captcha-response': 'XXXX.DUMMY.TOKEN.XXXX' },
-  body: JSON.stringify({ email: EMAIL, type: 'sign-in' }),
-});
-assert(send.ok, `code requested (${send.status} ${send.ok ? '' : await send.clone().text()})`);
+const code = await requestCode(EMAIL);
 
-let code: string | undefined;
-for (let i = 0; i < 20 && !code; i++) {
-  const log = readFileSync(devLog, 'utf8').slice(logBefore);
-  // The local simulation logs where it saved the message; the code is in its subject.
-  const saved = log.match(/(\/[^\s'"]+\.eml)/)?.[1];
-  const text = saved ? readFileSync(saved, 'utf8') : log;
-  code = text.match(/\b(\d{6}) is your liveworkspace sign-in code/)?.[1];
-  if (!code) await sleep(250);
-}
-assert(code, 'the code email was sent');
-
-// 3. A wrong code is refused; the right one signs in and returns to the app with a code.
-const oauthQuery = (() => {
-  const out = new URLSearchParams();
-  const names = new Set(signInUrl.searchParams.getAll('ba_param'));
-  for (const [k, v] of signInUrl.searchParams) {
-    if (k === 'sig' || k === 'ba_param' || names.has(k)) out.append(k, v);
-  }
-  return out.toString();
-})();
+// 3. A wrong code is refused; the right one registers, with the names typed on the page, and
+// returns to the app with a code.
+const oauthQuery = oauthQueryOf(signInUrl);
 const wrong = await browser(`${ACCOUNTS}/api/auth/sign-in/email-otp`, {
   method: 'POST',
   headers: { 'content-type': 'application/json', accept: 'application/json' },
@@ -157,14 +174,31 @@ assert(!wrong.ok, `a wrong code is refused (${wrong.status})`);
 const signIn = await browser(`${ACCOUNTS}/api/auth/sign-in/email-otp`, {
   method: 'POST',
   headers: { 'content-type': 'application/json', accept: 'application/json' },
-  body: JSON.stringify({ email: EMAIL, otp: code, oauth_query: oauthQuery }),
+  body: JSON.stringify({
+    email: EMAIL,
+    otp: code,
+    oauth_query: oauthQuery,
+    givenName: ' Ada ',
+    familyName: 'Lovelace',
+    name: 'Ada Lovelace',
+  }),
 });
 const signInBody = (await signIn.json()) as { url?: string };
 assert(
-  signIn.ok && signInBody.url,
-  `signing in returns a redirect URL (${JSON.stringify(signInBody).slice(0, 120)})`,
+  signIn.ok && signInBody.url?.startsWith('/sign-up'),
+  'registering keeps the request on /sign-up until the page says the account was made',
 );
-const callback = new URL(signInBody.url!);
+const created = await browser(`${ACCOUNTS}/api/auth/oauth2/continue`, {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', accept: 'application/json' },
+  body: JSON.stringify({ created: true, oauth_query: oauthQuery }),
+});
+const createdBody = (await created.json()) as { url?: string };
+assert(
+  created.ok && createdBody.url,
+  `continuing returns a redirect URL (${JSON.stringify(createdBody).slice(0, 120)})`,
+);
+const callback = new URL(createdBody.url!);
 assert(callback.origin + callback.pathname === REDIRECT, 'it points at the app callback');
 assert(callback.searchParams.get('state') === first.state, 'state round-trips');
 
@@ -178,6 +212,14 @@ const tokens = await exchangeCode(credentials, {
 assert(
   tokens.accessToken && tokens.refreshToken && tokens.idToken,
   'token swap returns access, refresh and id tokens',
+);
+const idClaims = jwtClaims(tokens.idToken);
+assert(
+  idClaims.given_name === 'Ada' &&
+    idClaims.family_name === 'Lovelace' &&
+    idClaims.name === 'Ada Lovelace' &&
+    idClaims.email === EMAIL.toLowerCase(),
+  `the id token carries the names and email (${JSON.stringify(idClaims)})`,
 );
 
 const discovery = (await (await fetch(`${ACCOUNTS}/.well-known/openid-configuration`)).json()) as {
@@ -237,5 +279,45 @@ const selfRegister = await browser(`${ACCOUNTS}/api/auth/oauth2/create-client`, 
   body: JSON.stringify({ redirect_uris: ['https://evil.example/cb'] }),
 });
 assert(!selfRegister.ok, `accounts can't register clients (${selfRegister.status})`);
+
+// 8. Signing in as someone with no name yet: the page asks for one after the code, and the
+// names saved then are in the ID token the app gets from that same sign-in.
+jar.clear();
+const nameless = await startSignIn();
+const namelessPage = (await redirectOf(nameless.response))!;
+assert(namelessPage?.pathname === '/sign-in', 'without prompt=create, authorize opens /sign-in');
+const namelessCode = await requestCode(NAMELESS_EMAIL);
+const namelessSignIn = await browser(`${ACCOUNTS}/api/auth/sign-in/email-otp`, {
+  method: 'POST',
+  headers: { 'content-type': 'application/json', accept: 'application/json' },
+  body: JSON.stringify({
+    email: NAMELESS_EMAIL,
+    otp: namelessCode,
+    oauth_query: oauthQueryOf(namelessPage),
+  }),
+});
+const namelessBody = (await namelessSignIn.json()) as { url?: string };
+assert(namelessSignIn.ok && namelessBody.url, 'a new address signs in with just a code');
+const session = (await (await browser(`${ACCOUNTS}/api/auth/get-session`)).json()) as {
+  user?: { givenName?: string | null };
+} | null;
+assert(session?.user && !session.user.givenName, 'its session shows it has no name yet');
+const named = await browser(`${ACCOUNTS}/api/auth/update-user`, {
+  method: 'POST',
+  headers: { 'content-type': 'application/json' },
+  body: JSON.stringify({ givenName: 'Grace', familyName: 'Hopper', name: 'Grace Hopper' }),
+});
+assert(named.ok, `the name step saves the names (${named.status})`);
+const namelessTokens = await exchangeCode(credentials, {
+  code: new URL(namelessBody.url!).searchParams.get('code')!,
+  redirectUri: REDIRECT,
+  codeVerifier: nameless.pkce.verifier,
+  resource: RESOURCE,
+});
+const namelessClaims = jwtClaims(namelessTokens.idToken);
+assert(
+  namelessClaims.given_name === 'Grace' && namelessClaims.name === 'Grace Hopper',
+  `that sign-in's id token carries the new name (${JSON.stringify(namelessClaims)})`,
+);
 
 console.log('\nall good');

@@ -20,8 +20,9 @@ import { DEFERRED_AUTH_DEFAULT, type DeferredAuthState } from './deferred-auth';
 type SessionUser = {
   id: string;
   email: string | null;
+  givenName: string | null;
+  familyName: string | null;
   name: string | null;
-  picture: string | null;
 };
 type Session = { accessToken: string; expiresAt: number; user: SessionUser };
 
@@ -75,13 +76,22 @@ async function endSession(): Promise<void> {
   );
 }
 
-// The name the app shows: the account's own, split at its first space, else the email's local part.
-// An account made by signing in with a code has no name until one is set at the accounts site.
+// The name the app shows: the first and last name the accounts site asked for, else its whole name
+// split at the first space, else the email's local part.
 export function namesOf(user: SessionUser): {
   firstName: string | null;
   lastName: string | null;
   fullName: string | null;
 } {
+  const given = user.givenName?.trim() || null;
+  const family = user.familyName?.trim() || null;
+  if (given || family) {
+    return {
+      firstName: given ?? family,
+      lastName: given ? family : null,
+      fullName: [given, family].filter(Boolean).join(' '),
+    };
+  }
   const name = user.name?.trim();
   if (name) {
     const space = name.indexOf(' ');

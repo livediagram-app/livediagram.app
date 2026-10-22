@@ -11,6 +11,9 @@ export const AUTH_BASE_PATH = '/api/auth';
 export const SEND_CODE_PATH = '/email-otp/send-verification-otp';
 export const SIGN_IN_CODE_PATH = '/sign-in/email-otp';
 
+// Longer names are cut to this on the way in; it keeps a name from swamping the apps' layouts.
+export const NAME_MAX_LENGTH = 80;
+
 export interface AuthConfig {
   baseUrl: string;
   secret: string;
@@ -33,6 +36,20 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
     // The Worker's CODE_*_LIMITER bindings do this job (src/index.ts). Better Auth's
     // limiter keeps its counts in isolate memory here, which an attacker spreads across.
     rateLimit: { enabled: false },
+    // First and last name, as the registration page asks for them. `name` stays the two
+    // joined, so anything reading Better Auth's own field shows the whole name.
+    user: {
+      additionalFields: {
+        givenName: { type: 'string', required: false, input: true },
+        familyName: { type: 'string', required: false, input: true },
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: { before: async (user) => ({ data: withNames(user) }) },
+        update: { before: async (user) => ({ data: withNames(user) }) },
+      },
+    },
     advanced: {
       ipAddress: { ipAddressHeaders: ['cf-connecting-ip'] },
       database: {
@@ -60,6 +77,8 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
       jwt(),
       oauthProvider({
         loginPage: '/sign-in',
+        // An app sends `prompt=create` from its "Create account" button.
+        signup: { page: '/sign-up' },
         consentPage: '/consent',
         scopes: ['openid', 'profile', 'email', 'offline_access'],
         resources: config.resources,
@@ -81,6 +100,9 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
         clientReference: () => 'liveworkspace',
         customAccessTokenClaims: ({ user }) =>
           user ? { email: user.email, email_verified: user.emailVerified } : {},
+        // The provider sends profile and email claims only from /userinfo. The apps read who
+        // signed in from the ID token they already have, so the claims go in it as well.
+        customIdTokenClaims: ({ user, scopes }) => idTokenClaims(user, scopes),
       }),
     ],
   } satisfies BetterAuthOptions;
@@ -89,4 +111,40 @@ export function authOptions(config: AuthConfig, database: BetterAuthOptions['dat
 async function isAdmin(headers: Headers, adminToken: string): Promise<boolean> {
   const sent = headers.get(ADMIN_HEADER);
   return Boolean(adminToken && sent && (await sameSecret(sent, adminToken)));
+}
+
+type NamedUser = { name?: string | null; givenName?: unknown; familyName?: unknown };
+
+const cleanName = (value: unknown): string | undefined =>
+  typeof value === 'string' ? value.trim().slice(0, NAME_MAX_LENGTH) : undefined;
+
+// Trims and caps the names. An update carries only the fields it changes, so `name` is
+// rebuilt from the two halves only when both are there.
+export function withNames<T extends NamedUser>(user: T): T {
+  const givenName = cleanName(user.givenName);
+  const familyName = cleanName(user.familyName);
+  const name =
+    givenName !== undefined && familyName !== undefined
+      ? [givenName, familyName].filter(Boolean).join(' ')
+      : cleanName(user.name);
+  return {
+    ...user,
+    ...(givenName !== undefined && { givenName }),
+    ...(familyName !== undefined && { familyName }),
+    ...(name !== undefined && { name }),
+  };
+}
+
+type ClaimUser = NamedUser & { email: string; emailVerified: boolean };
+
+export function idTokenClaims(user: ClaimUser, scopes: string[]): Record<string, unknown> {
+  const text = (value: unknown) => (typeof value === 'string' && value ? value : undefined);
+  return {
+    ...(scopes.includes('profile') && {
+      name: text(user.name),
+      given_name: text(user.givenName),
+      family_name: text(user.familyName),
+    }),
+    ...(scopes.includes('email') && { email: user.email, email_verified: user.emailVerified }),
+  };
 }

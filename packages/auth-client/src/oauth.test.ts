@@ -53,6 +53,21 @@ describe('authorizeUrl', () => {
       resource: 'https://livediagram.app/api',
     });
   });
+
+  it('asks for the registration page with prompt=create', () => {
+    const url = new URL(
+      authorizeUrl({
+        accountsUrl: credentials.accountsUrl,
+        clientId: 'client-1',
+        redirectUri: 'https://livediagram.app/auth/callback',
+        state: 'st',
+        codeChallenge: 'ch',
+        resource: 'https://livediagram.app/api',
+        prompt: 'create',
+      }),
+    );
+    expect(url.searchParams.get('prompt')).toBe('create');
+  });
 });
 
 describe('exchangeCode', () => {
