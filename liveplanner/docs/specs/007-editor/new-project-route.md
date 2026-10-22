@@ -297,13 +297,14 @@ project"**; everything else stays put.
   (`slate-50` / `slate-950`) with the editor's dot grid faded out towards the
   edges and two slowly drifting, blurred brand-tinted glows behind the
   centre. Dark-aware like every screen ([Editor app](editor-app.md)).
-- **Centrepiece:** the shared `DiagramBuildAnimation`, a small live diagram
-  being drawn by a collaborator cursor labelled "You": the cursor places a
-  card, drags a connector that draws under it to the next card, and so on
-  until three cards are wired; a pulse of light then runs along each
-  connector before the whole diagram dissolves and the loop restarts. The
-  cards are white (dark: slate) with a coloured accent each, and the
-  connectors blend from their source colour to their target colour.
+- **Centrepiece:** `BoardBuildAnimation`, liveplanner's own loader: a small
+  three-column board (To do, Doing, Done) whose cards settle in, then a
+  collaborator cursor labelled "You" picks a card up from To do and carries it
+  to Doing while the cards below close the gap, moves the Doing card on to
+  Done where it gets its tick, and presses "+ Add card" for a fresh card; the
+  column counts keep up, then the cards dissolve and the loop restarts. The
+  cards are white (dark: slate) with a coloured accent each. livediagram keeps
+  its diagram loader; each app's loader shows that app's own work.
 - **Continuity:** the loop's phase is measured from the first time the
   animation mounts in the project, so a remount (the creating stage giving
   way to the editor's load) continues the drawing where it was instead of
@@ -313,15 +314,14 @@ project"**; everything else stays put.
   "This is taking longer than usual." with a Refresh button. Past that, the
   load's watchdog takes over: one self-healing reload, then the load-error
   screen with its recovery card ([Load recovery](load-recovery.md)).
-- **Reduced motion:** the drawing sits finished, the cursor, pulses, glows
+- **Reduced motion:** the board sits at rest; the cursor, glows
   and bar are still.
-- `DiagramBuildAnimation` stays a bare illustration (no surface of its own),
-  so a card can compose it inside its own (the Clerk-era sso-callback card
-  did).
+- `BoardBuildAnimation` stays a bare illustration (no surface of its own),
+  so a card can compose it inside its own.
 - **The family:** a loading Sheet shows its sibling `SheetBuildAnimation`
   ([Sheet](../029-sheets/sheet.md#the-sheet-element), "Loading"), the same
   cursor, timing and colours typing data into a small table, with the same
-  label and bar. The two share `build-animation-kit` (the ease, the cursor,
+  label and bar. They share `build-animation-kit` (the ease, the cursor,
   the loop's phase) and the bar is the shared `LoadingSweep`, so they stay
   alike.
 
