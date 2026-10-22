@@ -54,6 +54,9 @@ vi.mock('next/dynamic', () => ({
     };
   },
 }));
+// The page prefetches both chunks on mount, unawaited: stubbed, so neither import outlives the file.
+vi.mock('./WorkspaceFrame', () => ({ WorkspaceFrame: () => null }));
+vi.mock('../../document/[id]/editor-page', () => ({ default: () => null }));
 vi.mock('@/components/chrome/LoadErrorCard', () => ({
   LoadErrorCard: ({ embed }: { embed: boolean }) => <p>load error {String(embed)}</p>,
 }));
