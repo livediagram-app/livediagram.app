@@ -337,9 +337,9 @@ Component props:
 ## Presentation and UX
 
 - Hero (`HomeHero`), rendered by `ExplorerShell` between the header and `main` when `selected.kind === 'home'`: a
-  `section` named by its `h1`, full width, `border-b border-slate-200`, ground `bg-sky-50/70` under a dotted grid
-  (`radial-gradient(#cfe0f1 1px, transparent 1px)` at 22 px; dark: `bg-slate-900`, dots `#1c2752`, and a 900 × 520
-  radial `rgba(37,99,235,0.30)` glow centred on the top edge). Inner box `max-w-7xl px-4 sm:px-6 pt-6 pb-12
+  `section` named by its `h1`, full width, `border-b border-slate-200`, ground `bg-rose-50/70` under a dotted grid
+  (`radial-gradient(#f1cfd5 1px, transparent 1px)` at 22 px; dark: `bg-slate-900`, dots `#1c2752`, and a 900 × 520
+  radial `rgba(225,29,72,0.30)` glow centred on the top edge). Inner box `max-w-7xl px-4 sm:px-6 pt-6 pb-12
 lg:pb-14`, a `flex flex-wrap items-center gap-10`; left column `flex-[999_1_32rem] min-w-0 flex-col gap-5`, right
   column `hidden lg:block flex-[1_1_22rem] h-72 relative` (`aria-hidden`).
   - Top row: the menu button (`sm:hidden`, 40 px, the pane header's hamburger) then the pills (`flex flex-wrap gap-2`),
@@ -350,21 +350,21 @@ font-medium text-slate-700` (dark `border-slate-700 bg-slate-800 text-slate-200`
   - Greeting `h1`: `text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold leading-[1.02] tracking-[-0.04em]
 text-[#17153a] dark:text-white max-w-3xl`.
   - Lead: `text-[17px] leading-relaxed text-slate-600 dark:text-slate-300 max-w-xl`.
-  - Search: `LensField size="hero"` inside `max-w-2xl`: `h-[60px] rounded-[18px] border-2 border-sky-200 bg-white
-pl-[18px] pr-2 shadow-[0_0_0_6px_rgba(125,211,252,0.22),0_18px_40px_-20px_rgba(2,132,199,0.45)]`, focus
-    `border-sky-400`; dark `border-sky-400/40 bg-slate-800 shadow-[0_0_0_6px_rgba(56,189,248,0.12)]`; text 16 px;
+  - Search: `LensField size="hero"` inside `max-w-2xl`: `h-[60px] rounded-[18px] border-2 border-rose-200 bg-white
+pl-[18px] pr-2 shadow-[0_0_0_6px_rgba(253,164,175,0.22),0_18px_40px_-20px_rgba(225,29,72,0.45)]`, focus
+    `border-rose-400`; dark `border-rose-400/40 bg-slate-800 shadow-[0_0_0_6px_rgba(251,113,133,0.12)]`; text 16 px;
     the search glyph 18 px. `trailing`: New Document, `h-11 rounded-xl px-[18px] text-[15px] font-semibold` on the
     solid brand fill (`SOLID_BRAND` light, `SOLID_BRAND_DARK_CONTROL` dark) with the plus glyph.
   - Sheets: three `DocumentThumbnail`s in white 6 px framed sheets, `rounded-2xl`, `shadow-[0_14px_34px_-14px_
 rgba(15,23,42,0.35)]`: back left `left-[6%] top-12 w-[58%] h-40 -rotate-[8deg]`, back right `right-[2%] top-8
-w-[58%] h-40 rotate-[7deg]`, front `left-[20%] top-20 w-[62%] h-44` with a sky shadow. Dark: frames
+w-[58%] h-40 rotate-[7deg]`, front `left-[20%] top-20 w-[62%] h-44` with a rose shadow. Dark: frames
     `border-slate-700 bg-slate-800`.
 - First run (`useFirstRun`): `HomePane` renders `HomeWelcome` (`next/dynamic`, `ssr: false`, `GridSkeleton` while it
   loads) in place of both sections. Start Blank `ul grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3`, cards
   `CARD_SURFACE rounded-[18px] p-2 pb-3` with a 96 px `TemplatePicture`, title `text-sm font-semibold`, description
   `line-clamp-2 text-xs`; Popular Templates `grid-cols-2 lg:grid-cols-4 gap-4`, 128 px pictures, title `text-[15px]`,
   Browse All Templates as the section's quiet link; Already Have Work? `grid sm:grid-cols-2 gap-4`: the sign-in card
-  (`bg-[#0b1230] rounded-[20px] p-5`, the prism, a 180 px sky glow, a white `Sign In` button). The hero, on `heroFirstRun`: static pills
+  (`bg-[#0b1230] rounded-[20px] p-5`, the prism, a 180 px rose glow, a white `Sign In` button). The hero, on `heroFirstRun`: static pills
   (`PILL`, no link), the welcome greeting and lead, `WelcomeSearch` in the hero field's look (`HERO_FIELD_LOOK`),
   `HeroTemplateFan` (`next/dynamic`) in the sheets' places. The remembered answer lives in `localStorage`
   (`livedesign:v2:home-has-documents`: `{ ownerId, has }`), written once the lists load.
@@ -379,8 +379,8 @@ dark:text-slate-400`, 10 px above its list; Recent's 16 px below Most Used's lis
 - Large card (`JumpBackInCard size="large"`): `flex flex-col gap-2.5 rounded-[18px] border border-slate-200 bg-white
 p-2 pb-3 shadow-[0_1px_2px_rgba(15,23,42,0.04)]` (dark `border-slate-700 bg-slate-800`); thumbnail `h-32 w-full
 rounded-xl border border-slate-100` (dark `border-slate-700`); name `text-[15px] font-semibold truncate`; quiet line
-  `text-[12.5px]` muted. Hover: `border-sky-300 shadow-[0_0_0_4px_rgba(125,211,252,0.25),0_18px_36px_-16px_
-rgba(2,132,199,0.45)] -translate-y-0.5` (`motion-safe:` on the transform), `duration-micro`.
+  `text-[12.5px]` muted. Hover: `border-rose-300 shadow-[0_0_0_4px_rgba(253,164,175,0.25),0_18px_36px_-16px_
+rgba(225,29,72,0.45)] -translate-y-0.5` (`motion-safe:` on the transform), `duration-micro`.
 - Compact card (`size="compact"`): `flex items-center gap-3 rounded-[14px] border p-2` with the same colours; the
   thumbnail `h-11 w-16 shrink-0 rounded-lg`; name `text-sm font-semibold truncate`; quiet line `text-xs` muted.
 - Lists: Most Used `grid grid-cols-2 gap-4 lg:grid-cols-4`, Recent `grid grid-cols-2 gap-2.5 lg:grid-cols-4`. Their

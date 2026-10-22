@@ -171,9 +171,9 @@ sighting with a changed address (§4), resets the count to zero.
   it reaches `sendEmail` through the spread every caller already writes,
   instead of being re-stated (and forgotten) at each call site.
   **Branding.** Every builder renders through one shell, so every email looks
-  the same: a brand-gradient band across the top of the card (sky-400 to
-  blue-700, flat `#0ea5e9` where a client drops gradients), the logo mark beside
-  the "live"/"diagram" wordmark in the header, a brand-50 page behind the card,
+  the same: a brand-gradient band across the top of the card (rose-400 to
+  pink-700, flat brand-700 `#be123c` where a client drops gradients), the logo mark beside
+  the "live"/"pages" wordmark in the header, a brand-50 page behind the card,
   and a footer under the card with the lockup again, the tagline ("Diagram,
   draw and make pages together, live. Free and open source.") and a link to the
   site. Both lockups link to `APP_BASE_URL`. The mark is a transparent 64px PNG

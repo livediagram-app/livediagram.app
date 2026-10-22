@@ -40,31 +40,31 @@ function block(css: string, selector: string): Record<string, string> {
 }
 
 const STEEL: Record<string, string> = {
-  '50': '#eef3fa',
-  '100': '#dbe6f4',
-  '200': '#bcd0ea',
-  '300': '#9bb9de',
-  '400': '#8fb3e0',
-  '500': '#5b86bf',
-  '600': '#3a6599',
-  '700': '#2f5484',
-  '800': '#26446b',
-  '900': '#1d3553',
-  '950': '#142538',
+  '50': '#faeef0',
+  '100': '#f4dbdf',
+  '200': '#eabcc4',
+  '300': '#de9ba6',
+  '400': '#e08f9d',
+  '500': '#bf5b6c',
+  '600': '#993a4a',
+  '700': '#842f3e',
+  '800': '#6b2632',
+  '900': '#531d26',
+  '950': '#38141a',
 };
 // Light mode's ramp, which the dark palette must not touch (light-palette.test.ts guards its fills).
-const SKY: Record<string, string> = {
-  '50': '#f0f9ff',
-  '100': '#e0f2fe',
-  '200': '#bae6fd',
-  '300': '#7dd3fc',
-  '400': '#38bdf8',
-  '500': '#0ea5e9',
-  '600': '#0284c7',
-  '700': '#0369a1',
-  '800': '#075985',
-  '900': '#0c4a6e',
-  '950': '#082f49',
+const ROSE: Record<string, string> = {
+  '50': '#fff1f2',
+  '100': '#ffe4e6',
+  '200': '#fecdd3',
+  '300': '#fda4af',
+  '400': '#fb7185',
+  '500': '#f43f5e',
+  '600': '#e11d48',
+  '700': '#be123c',
+  '800': '#9f1239',
+  '900': '#881337',
+  '950': '#4c0519',
 };
 
 describe('the dark palette tokens', () => {
@@ -84,7 +84,7 @@ describe('the dark palette tokens', () => {
 
   it('leaves the light ramp exactly as it was', () => {
     const light = block(THEME_CSS, '@theme');
-    for (const [stop, hex] of Object.entries(SKY)) {
+    for (const [stop, hex] of Object.entries(ROSE)) {
       expect(light[`--color-brand-${stop}`], `brand-${stop}`).toBe(hex);
     }
   });
@@ -147,8 +147,8 @@ describe('the Explorer Midnight tokens', () => {
 describe('the wordmark', () => {
   const brand = readFileSync(`${REPO}packages/ui/src/Brand.tsx`, 'utf8');
 
-  it('lights its "live" half sky in dark mode, and is brand-700 in light (#74)', () => {
-    expect(brand).toMatch(/'text-brand-700 dark:text-sky-400'/);
+  it('lights its "live" half rose in dark mode, and is brand-700 in light (#74)', () => {
+    expect(brand).toMatch(/'text-brand-700 dark:text-rose-400'/);
   });
 });
 

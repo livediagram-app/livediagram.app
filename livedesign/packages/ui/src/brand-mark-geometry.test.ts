@@ -64,12 +64,12 @@ describe('brandMarkSvg', () => {
 });
 
 describe('brandLogoSvg', () => {
-  it('sets "live" in the accent and "diagram" in ink, per scheme', () => {
+  it('sets "live" in the accent and "design" in ink, per scheme', () => {
     expect(brandLogoSvg('light')).toContain(
-      '<tspan fill="#0284c7">live</tspan><tspan fill="#0f172a">design</tspan>',
+      '<tspan fill="#be123c">live</tspan><tspan fill="#0f172a">design</tspan>',
     );
     expect(brandLogoSvg('dark')).toContain(
-      '<tspan fill="#38bdf8">live</tspan><tspan fill="#f1f5f9">design</tspan>',
+      '<tspan fill="#fb7185">live</tspan><tspan fill="#f1f5f9">design</tspan>',
     );
   });
 

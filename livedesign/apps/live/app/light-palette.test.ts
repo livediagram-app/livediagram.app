@@ -12,8 +12,8 @@ import { parseSourceFiles } from '@livedesign/source-ast';
 import { describe, expect, it } from 'vitest';
 
 // White text on a solid brand fill, in light mode (docs/specs/004-interface-design/color-scheme.md, Usage
-// rules): the fill is brand-700, hovering to brand-800. On the sky ramp white reads 2.8:1 on brand-500 and
-// 4.1:1 on brand-600, both under WCAG 2.2 AA's 4.5:1, and nothing fails a build when a new button is painted
+// rules): the fill is brand-700, hovering to brand-800. On the rose ramp white reads 2.2:1 on brand-500 and
+// 4.0:1 on brand-600, both under WCAG 2.2 AA's 4.5:1, and nothing fails a build when a new button is painted
 // `bg-brand-500 text-white`. So this reads the source of every app and package, the way dark-palette.test.ts
 // does for the dark half.
 
@@ -56,9 +56,24 @@ describe('the light brand ramp under white text', () => {
     expect(whiteOn(brand['800']!)).toBeGreaterThanOrEqual(4.5);
   });
 
-  it('fails AA on brand-500 and brand-600, which is why neither carries white text', () => {
+  // A banner's 90% white copy sits on brand-700 (color-scheme.md), so the fill holds white at 5.9:1, not just
+  // 4.5:1. Tailwind's rose-700 holds it at 6.3:1.
+  it("holds white at 5.9:1 on the fill, so a banner's 90% white copy still clears AA", () => {
+    expect(whiteOn(brand['700']!)).toBeGreaterThanOrEqual(5.9);
+  });
+
+  // brand-600 is the focus outline (menus.md, Accessibility), held to 3:1 on the grounds it is drawn over. Tailwind's
+  // rose-600 holds it at 3.9:1 on slate-100 and brand-100.
+  it('holds the brand-600 focus outline at 3:1 on white, slate-100 and brand-100', () => {
+    for (const ground of ['#ffffff', '#f1f5f9', brand['100']!]) {
+      expect(ratio(brand['600']!, ground), ground).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  // Rose's brand-600 holds white at 4.7:1, but it stays the focus outline only (color-scheme.md), so only
+  // brand-500 is held below AA here.
+  it('fails AA on brand-500, which is why it carries no white text', () => {
     expect(whiteOn(brand['500']!)).toBeLessThan(4.5);
-    expect(whiteOn(brand['600']!)).toBeLessThan(4.5);
   });
 });
 
@@ -71,9 +86,9 @@ describe('light brand ink', () => {
     }
   });
 
-  it('fails AA in brand-500 and brand-600 on white, which is why neither is text', () => {
+  // brand-600 reads at 4.7:1 on white, but light brand ink stays brand-700 (color-scheme.md).
+  it('fails AA in brand-500 on white, which is why it is not text', () => {
     expect(ratio(brand['500']!, '#ffffff')).toBeLessThan(4.5);
-    expect(ratio(brand['600']!, '#ffffff')).toBeLessThan(4.5);
   });
 });
 

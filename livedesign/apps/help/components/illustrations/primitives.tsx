@@ -2,7 +2,7 @@
 //
 // Every illustration in `components/illustrations/*` is composed from these
 // primitives so the whole help centre reads as one coherent window into the
-// real editor: white panels with slate borders, sky-blue (`brand`) accents,
+// real editor: white panels with slate borders, rose (`brand`) accents,
 // muted slate "text" bars, and the same shapes / arrows / cursors the canvas
 // draws. Keeping the kit here (rather than re-spelling rects per scene) is the
 // no-duplication rule applied to artwork: a tweak to the house style lands in

@@ -82,11 +82,11 @@ export function HomeHero({ active = true }: { active?: boolean }) {
     <section
       aria-labelledby={HEADING_ID}
       data-home-hero=""
-      className="relative overflow-hidden border-b border-slate-200 bg-sky-50/70 bg-[radial-gradient(#cfe0f1_1px,transparent_1px)] bg-[length:22px_22px] dark:border-slate-800 dark:bg-slate-900 dark:bg-[radial-gradient(#1c2752_1px,transparent_1px)]"
+      className="relative overflow-hidden border-b border-slate-200 bg-rose-50/70 bg-[radial-gradient(#f1e5cf_1px,transparent_1px)] bg-[length:22px_22px] dark:border-slate-800 dark:bg-slate-900 dark:bg-[radial-gradient(#1c2752_1px,transparent_1px)]"
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[-260px] hidden h-[520px] w-[900px] -translate-x-1/3 rounded-full bg-[radial-gradient(closest-side,rgba(37,99,235,0.30),transparent)] dark:block"
+        className="pointer-events-none absolute left-1/2 top-[-260px] hidden h-[520px] w-[900px] -translate-x-1/3 rounded-full bg-[radial-gradient(closest-side,rgba(225,29,72,0.30),transparent)] dark:block"
       />
       <div className="relative mx-auto flex w-full max-w-7xl flex-wrap items-center gap-10 px-4 pb-12 pt-6 sm:px-6 lg:pb-14">
         <div className="flex min-w-0 flex-[999_1_32rem] flex-col gap-5">

@@ -38,11 +38,12 @@ The sidebar shares Home's front-page language ([Explorer Home](explorer-home.md#
   a team indigo, Invites rose. New Team and the rows of More (This Browser, Tags, Library, Trash) keep a bare slate
   icon, so the places and views people go to most read first. Nested rows (folders, a team's folders, the Library
   pages, tags) keep a bare icon too.
-- **The current row** is a raised pill: white, a hairline sky edge and a soft sky shadow, its label in semibold deep
-  sky, and its tile filled solid sky with a white icon (a bare icon turns sky). In dark mode it is a glass pill: a
-  faint sky wash fading to the right with a sky hairline inside its edge, its label white.
+- **The current row** is a raised pill in the brand's rose: white, a hairline rose edge and a soft rose shadow, its
+  label in semibold deep rose, and its tile filled solid rose with a white icon (a bare icon turns rose). In dark
+  mode it is a glass pill: a faint rose wash fading to the right with a rose hairline inside its edge, its label
+  white.
 - **Group titles** are 11 px, semibold, uppercase, widely tracked, slate-500 (4.5:1 on the page; slate-400 in dark).
-- **The sign-in nudge** is a deep navy card in both appearances, the brand prism and a soft sky glow in its corner,
+- **The sign-in nudge** is a deep navy card in both appearances, the brand prism and a soft rose glow in its corner,
   its title white and its line a pale slate.
 
 The editor's Explorer panel ([below](#the-editors-explorer)) keeps its own look.
@@ -124,7 +125,7 @@ The sidebar's **Trash** row takes a document or a folder dragged onto it, the wa
   a folder row in the sidebar. A folder carries its own drag type, so a folder dropped on a folder is no drop: folders
   are not moved by dragging.
 - **The Trash wakes while anything drags.** As soon as a document or folder is picked up, the Trash row becomes a
-  target: a dashed sky edge round the row and its label reads **Drop to Trash**, so it can be found mid-drag.
+  target: a dashed rose edge round the row and its label reads **Drop to Trash**, so it can be found mid-drag.
 - **Over it, it opens up.** With the drag over it, the row fills with the solid brand colour, its label turns white
   and reads **Let go to trash it**, and its bin tips its lid (a small turn and grow). Never red: putting something in
   the Trash is undoable, not a warning.

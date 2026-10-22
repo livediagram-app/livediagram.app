@@ -63,7 +63,7 @@ also into `apps/marketing/public/`), rasterised by Playwright's Chromium. A test
 
 ## Guidance
 
-- **Brand color** is sky blue `#0EA5E9` ("livedesign blue"); the logo has its own sky-to-indigo prism palette. Page background
+- **Brand color** is rose `#f43f5e` ("livedesign rose"); the logo has its own rose-to-pink prism palette. Page background
   `#F8FAFC`, canvas white. Full palette in [Theme](../../docs/specs/004-interface-design/color-scheme.md).
 - **Show, don't tell.** Screenshots should feature a real diagram with visible
   multiplayer cursors, since "no sign-in, real-time" is the pitch.

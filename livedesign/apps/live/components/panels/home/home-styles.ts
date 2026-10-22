@@ -39,8 +39,8 @@ export const GROUP_LABEL =
 const PANEL_SURFACE =
   'border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)] dark:border-slate-700 dark:bg-slate-800';
 
-/** A card's surface at rest; it lifts to a sky edge on hover. */
-export const CARD_SURFACE = `${PANEL_SURFACE} transition duration-micro hover:border-sky-300 hover:shadow-[0_0_0_4px_rgba(125,211,252,0.25),0_18px_36px_-16px_rgba(2,132,199,0.45)] motion-safe:hover:-translate-y-0.5 dark:hover:border-sky-400/60`;
+/** A card's surface at rest; it lifts to a rose edge on hover. */
+export const CARD_SURFACE = `${PANEL_SURFACE} transition duration-micro hover:border-rose-300 hover:shadow-[0_0_0_4px_rgba(253,164,175,0.25),0_18px_36px_-16px_rgba(225,29,72,0.45)] motion-safe:hover:-translate-y-0.5 dark:hover:border-sky-400/60`;
 
 /** A most used card: 200 px high, its thumbnail 128 px. */
 export const LARGE_CARD = 'h-[12.5rem]';
@@ -78,7 +78,7 @@ export const SHEET_FRAME =
 
 /** The three places, the front sheet first, then back left and back right. */
 export const SHEET_PLACES = [
-  'left-[20%] top-20 z-10 h-44 w-[62%] shadow-[0_24px_50px_-18px_rgba(2,132,199,0.5)]',
+  'left-[20%] top-20 z-10 h-44 w-[62%] shadow-[0_24px_50px_-18px_rgba(225,29,72,0.5)]',
   'left-[6%] top-12 h-40 w-[58%] -rotate-[8deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
   'right-[2%] top-8 h-40 w-[58%] rotate-[7deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
 ] as const;

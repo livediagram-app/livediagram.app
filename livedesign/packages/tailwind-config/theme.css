@@ -37,17 +37,20 @@
 }
 
 @theme {
-  --color-brand-50: #f0f9ff;
-  --color-brand-100: #e0f2fe;
-  --color-brand-200: #bae6fd;
-  --color-brand-300: #7dd3fc;
-  --color-brand-400: #38bdf8;
-  --color-brand-500: #0ea5e9;
-  --color-brand-600: #0284c7;
-  --color-brand-700: #0369a1;
-  --color-brand-800: #075985;
-  --color-brand-900: #0c4a6e;
-  --color-brand-950: #082f49;
+  /* livedesign rose (docs/specs/004-interface-design/color-scheme.md). Tailwind's rose as it stands: brand-600, the
+   * focus ring, holds 3:1 on white, slate-100 and brand-100 (3.9:1 on the tints), and brand-700, the fill under white
+   * text and all light brand ink, holds white at 6.3:1, past the 5.9:1 sky-700 set. */
+  --color-brand-50: #fff1f2;
+  --color-brand-100: #ffe4e6;
+  --color-brand-200: #fecdd3;
+  --color-brand-300: #fda4af;
+  --color-brand-400: #fb7185;
+  --color-brand-500: #f43f5e;
+  --color-brand-600: #e11d48;
+  --color-brand-700: #be123c;
+  --color-brand-800: #9f1239;
+  --color-brand-900: #881337;
+  --color-brand-950: #4c0519;
 
   /* Illustrated empty-state motion (the shared `EmptyState` in
    * @livedesign/ui): a gently floating icon badge over a softly
@@ -258,7 +261,7 @@
 
 /* The dark palette, Steel (docs/specs/004-interface-design/color-scheme.md). Dark mode is its own
  * palette, not the light one with the lights off: blue-slate surfaces one hue with the dark canvas,
- * and an accent drawn from that hue. Tokens only, so every slate-* / brand-* utility keeps its name,
+ * and the product accent (livedesign rose) muted to the same saturation and lightness. Tokens only, so every slate-* / brand-* utility keeps its name,
  * and light mode keeps every colour above. A themed tab's tint (useEditorAccent) is written with a
  * more specific selector, so it outranks this base whatever order the stylesheets load in. */
 /* The painted appearance tells the UA too (docs/specs/004-interface-design/appearance.md), so native
@@ -273,22 +276,22 @@
   --color-slate-900: #131b26;
   --color-slate-800: #16202e;
 
-  --color-brand-50: #eef3fa;
-  --color-brand-100: #dbe6f4;
-  --color-brand-200: #bcd0ea;
-  --color-brand-300: #9bb9de;
-  --color-brand-400: #8fb3e0;
-  --color-brand-500: #5b86bf;
-  --color-brand-600: #3a6599;
-  --color-brand-700: #2f5484;
-  --color-brand-800: #26446b;
-  --color-brand-900: #1d3553;
-  --color-brand-950: #142538;
+  --color-brand-50: #faeef0;
+  --color-brand-100: #f4dbdf;
+  --color-brand-200: #eabcc4;
+  --color-brand-300: #de9ba6;
+  --color-brand-400: #e08f9d;
+  --color-brand-500: #bf5b6c;
+  --color-brand-600: #993a4a;
+  --color-brand-700: #842f3e;
+  --color-brand-800: #6b2632;
+  --color-brand-900: #531d26;
+  --color-brand-950: #38141a;
 }
 
 /* Explorer: Midnight (docs/specs/004-interface-design/color-scheme.md "Explorer: Midnight"). The Explorer pages set
  * `data-palette="midnight"` on the root while mounted; in dark mode it retargets Steel's tokens to the marketing
- * site's night section: a deep navy ground and the sky accent. The compound selector outranks `.dark`. */
+ * site's night section: a deep navy ground and the rose accent. The compound selector outranks `.dark`. */
 .dark[data-palette='midnight'] {
   --color-slate-950: #070b1a;
   --color-slate-900: #0a0f24;
@@ -301,17 +304,17 @@
   --color-slate-200: #dde4f3;
   --color-slate-100: #eef2fb;
 
-  --color-brand-50: #f0f9ff;
-  --color-brand-100: #e0f2fe;
-  --color-brand-200: #bae6fd;
-  --color-brand-300: #7dd3fc;
-  --color-brand-400: #38bdf8;
-  --color-brand-500: #0ea5e9;
-  --color-brand-600: #0369a1;
-  --color-brand-700: #075985;
-  --color-brand-800: #0c4a6e;
-  --color-brand-900: #0b3a5a;
-  --color-brand-950: #082f49;
+  --color-brand-50: #fff1f2;
+  --color-brand-100: #ffe4e6;
+  --color-brand-200: #fecdd3;
+  --color-brand-300: #fda4af;
+  --color-brand-400: #fb7185;
+  --color-brand-500: #f43f5e;
+  --color-brand-600: #be123c;
+  --color-brand-700: #9f1239;
+  --color-brand-800: #881337;
+  --color-brand-900: #5f0918;
+  --color-brand-950: #4c0519;
 }
 
 @keyframes empty-float {

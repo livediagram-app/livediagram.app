@@ -142,7 +142,7 @@ body {
     padding: 0.5rem 0 !important;
   }
   a {
-    color: #0369a1 !important;
+    color: #be123c !important;
     text-decoration: underline !important;
   }
   a[href]::after {
@@ -161,7 +161,7 @@ body {
     color: #333 !important;
   }
   .section-number {
-    background: #0ea5e9 !important;
+    background: #be123c !important;
     color: white !important;
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;

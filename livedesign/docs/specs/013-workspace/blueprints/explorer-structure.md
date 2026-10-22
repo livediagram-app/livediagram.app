@@ -202,10 +202,11 @@ keystroke and per render (tens to low hundreds of nodes). No new fetch.
   under its 700 ink in light (`bg-sky-100 text-sky-700`), its 400 at 15 % under its 300 ink in dark
   (`dark:bg-sky-400/15 dark:text-sky-300`). Tones: `home`, `myDocuments` sky; `inbox` violet; `timeline` amber;
   `shared` emerald; `team` indigo; `invites` rose. A row without a tone keeps the bare `text-slate-400` icon.
-- Current row (`SIDEBAR_CURRENT`): `bg-white border border-sky-200 shadow-[0_6px_18px_-8px_rgba(2,132,199,0.35)]`,
-  label `font-semibold text-sky-900`; its tile `bg-sky-600 text-white`, a bare icon `text-sky-600`. Dark:
-  `bg-gradient-to-r from-sky-400/[0.18] to-sky-400/[0.04] ring-1 ring-inset ring-sky-400/35 border-transparent
-shadow-none`, label `text-white`, tile `bg-sky-500 text-white`. Every other row carries a transparent 1 px border
+- Current row (`SIDEBAR_CURRENT`): `bg-white border border-rose-200 shadow-[0_6px_18px_-8px_rgba(225,29,72,0.35)]`,
+  label `font-semibold text-rose-900`; its tile `bg-rose-700 text-white`, a bare icon `text-rose-700`. Dark:
+  `bg-gradient-to-r from-rose-400/[0.18] to-rose-400/[0.04] ring-1 ring-inset ring-rose-400/35 border-transparent
+shadow-none`, label `text-white`, tile `bg-rose-600 text-white`. The tile sits a step deeper than the brand's
+  600/500 so its white icon keeps 3:1 (5.0:1 and 3.2:1). Every other row carries a transparent 1 px border
   so selecting moves nothing.
 - Group title: 11 px semibold uppercase, `tracking-[0.1em]`, `text-slate-500 dark:text-slate-400`, `px-2.5 pb-2`;
   first group without top margin; `mt-6` between groups.
@@ -218,9 +219,9 @@ shadow-none`, label `text-white`, tile `bg-sky-500 text-white`. Every other row 
   On a phone the chips (`h-11`, rounded-full) sit over the pane in `max-h-[max(14rem,calc(100dvh-25rem))]`, the picked
   chip scrolled into view.
 - Sign-in nudge: last in Spaces, `relative overflow-hidden rounded-2xl bg-[#0b1230] p-4 mt-3` (dark adds
-  `ring-1 ring-sky-400/30`), an `aria-hidden` 120 px radial `rgba(56,189,248,0.45)` glow at the top-right corner, the
+  `ring-1 ring-rose-400/30`), an `aria-hidden` 120 px radial `rgba(251,113,133,0.45)` glow at the top-right corner, the
   title row (the brand prism mark at 18 px, `text-sm font-semibold text-white`), the line `text-[12.5px] leading-normal
-text-[#a9b8d0]`; focus ring `outline-sky-400`.
+text-[#a9b8d0]`; focus ring `outline-rose-400`.
 - Container: the `aside`'s sticky box has no border, background, shadow or padding beyond `px-1 py-1`.
 - New Team: a row with `PlusIcon`, label "New Team".
 - Header search: the lens field left of the account control; below `sm` its own row under the header.

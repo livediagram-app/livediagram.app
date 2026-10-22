@@ -39,7 +39,7 @@ const SIZES = {
   },
   hero: {
     wrap: 'relative w-full',
-    box: 'h-[60px] gap-3 rounded-[18px] border-2 border-sky-200 bg-white pl-[18px] pr-2 text-base shadow-[0_0_0_6px_rgba(125,211,252,0.22),0_18px_40px_-20px_rgba(2,132,199,0.45)] focus-within:border-sky-400 dark:border-sky-400/40 dark:bg-slate-800 dark:shadow-[0_0_0_6px_rgba(56,189,248,0.12)] dark:focus-within:border-sky-400',
+    box: 'h-[60px] gap-3 rounded-[18px] border-2 border-rose-200 bg-white pl-[18px] pr-2 text-base shadow-[0_0_0_6px_rgba(253,164,175,0.22),0_18px_40px_-20px_rgba(225,29,72,0.45)] focus-within:border-rose-400 dark:border-rose-400/40 dark:bg-slate-800 dark:shadow-[0_0_0_6px_rgba(251,113,133,0.12)] dark:focus-within:border-rose-400',
     glyph: 18,
     input: 'text-base',
   },

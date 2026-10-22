@@ -27,7 +27,7 @@ export function Hero() {
             Free and open source
           </li>
           <li className={`${BADGE} max-sm:hidden`}>
-            <span aria-hidden className="h-2 w-2 rounded-full bg-sky-500" />
+            <span aria-hidden className="h-2 w-2 rounded-full bg-rose-500" />
             No sign-up to start
           </li>
         </ul>

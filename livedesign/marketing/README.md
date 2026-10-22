@@ -34,5 +34,5 @@ marketing/
   they are.
 - **Free means free.** MIT-licensed, self-hostable, no paid tier, no plan for
   one. Say so where the format allows.
-- **Brand color** is sky blue, `#0EA5E9` ("livedesign blue"). See
+- **Brand color** is rose, `#f43f5e` ("livedesign rose"); text and fills in it use `#be123c`. See
   [Theme](../docs/specs/004-interface-design/color-scheme.md).

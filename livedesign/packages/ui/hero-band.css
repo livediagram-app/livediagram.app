@@ -1,27 +1,27 @@
 /* The landing hero's band (docs/specs/019-marketing/marketing-site.md "Hero"), which the help centre's page
    headers wear too (docs/specs/018-help/help-pages.md "Shared look"): its colours, drawn from
    the brand mark's prism (packages/ui/src/brand-prism.ts), in one place for light and dark. Light is the
-   prism's pale sky ground with its indigo ink; dark is the page's deepest slate with the prism's sky
-   for accents. The primary button is the header's brand-700 in light and the prism's primary blue in dark
-   (white on either clears 4.5:1). */
+   prism's pale rose ground with its deep rose ink; dark is the page's deepest slate with the prism's light
+   rose for accents. The primary button is the header's brand-700 in light and the same deepened rose in dark
+   (white on it clears 4.5:1, where it would not on the prism's own rose or pink). */
 .hero-band {
-  --hero-bg: #f0f9ff;
-  --hero-dots: #bae6fd;
-  --hero-ink: #1e1b4b;
+  --hero-bg: #fff1f2;
+  --hero-dots: #fecdd3;
+  --hero-ink: #4c0519;
   --hero-muted: #475569;
-  --hero-ring: rgb(56 189 248 / 0.45);
-  --hero-ring-focus: rgb(37 99 235 / 0.55);
+  --hero-ring: rgb(251 191 36 / 0.45);
+  --hero-ring-focus: rgb(217 119 6 / 0.55);
   /* The header's primary (Button's `primary`), so the two read as one action colour. */
   --hero-cta: var(--color-brand-700);
   --hero-cta-hover: var(--color-brand-800);
   --hero-chip-bg: #ffffff;
-  --hero-chip-border: #bae6fd;
-  --hero-chip-border-hover: #38bdf8;
-  --hero-chip-text: #1e1b4b;
-  --hero-icon: #0284c7;
-  --hero-link: #1d4ed8;
-  --hero-thumb: #e0f2fe;
-  --hero-card-shadow: rgb(30 27 75 / 0.22);
+  --hero-chip-border: #fecdd3;
+  --hero-chip-border-hover: #fb7185;
+  --hero-chip-text: #4c0519;
+  --hero-icon: #e11d48;
+  --hero-link: #be123c;
+  --hero-thumb: #ffe4e6;
+  --hero-card-shadow: rgb(69 26 3 / 0.22);
 }
 
 :where(.dark, .dark *):not(:where(.light, .light *)) .hero-band,
@@ -31,16 +31,16 @@
   --hero-dots: #1e293b;
   --hero-ink: #ffffff;
   --hero-muted: #cbd5e1;
-  --hero-ring: rgb(56 189 248 / 0.35);
-  --hero-ring-focus: rgb(56 189 248 / 0.6);
-  --hero-cta: #2563eb;
-  --hero-cta-hover: #1d4ed8;
+  --hero-ring: rgb(251 191 36 / 0.35);
+  --hero-ring-focus: rgb(251 191 36 / 0.6);
+  --hero-cta: #be123c;
+  --hero-cta-hover: #9f1239;
   --hero-chip-bg: #0f172a;
   --hero-chip-border: #334155;
   --hero-chip-border-hover: #64748b;
   --hero-chip-text: #f1f5f9;
-  --hero-icon: #38bdf8;
-  --hero-link: #7dd3fc;
+  --hero-icon: #fb7185;
+  --hero-link: #fda4af;
   --hero-thumb: #1e293b;
   --hero-card-shadow: rgb(0 0 0 / 0.7);
 }

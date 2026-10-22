@@ -138,7 +138,7 @@ export function SidebarRow({
             tone ? 'py-1.5 pointer-coarse:py-2.5' : 'py-2 pointer-coarse:py-3'
           } ${renaming ? '' : 'cursor-pointer'} ${
             selected
-              ? 'font-semibold text-sky-900 dark:text-white'
+              ? 'font-semibold text-rose-900 dark:text-white'
               : 'font-medium text-slate-700 dark:text-slate-200'
           }`}
         >
@@ -152,7 +152,7 @@ export function SidebarRow({
           ) : (
             <span
               className={`shrink-0 pointer-coarse:[&_svg]:size-[17px] ${
-                selected ? 'text-sky-600 dark:text-sky-300' : 'text-slate-400'
+                selected ? 'text-rose-700 dark:text-rose-300' : 'text-slate-400'
               }`}
             >
               {icon}

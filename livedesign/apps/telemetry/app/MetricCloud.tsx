@@ -114,7 +114,7 @@ export function MetricCloud({
     action !== undefined ? 'types' : category !== undefined ? 'actions' : 'categories';
   // The level's own hue for the backdrop glow: brand at the top, the
   // category's colour once inside one.
-  const glow = category === undefined ? '#0ea5e9' : categoryColor(category);
+  const glow = category === undefined ? '#f43f5e' : categoryColor(category);
 
   return (
     <div className="relative mt-6 overflow-hidden rounded-3xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900">

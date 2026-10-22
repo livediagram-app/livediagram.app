@@ -3,12 +3,12 @@ import type { PrismScheme } from './brand-prism';
 
 // The horizontal lockup (mark + "livedesign" wordmark) as a standalone SVG,
 // for marketing/media/logo/. The wordmark follows the spec's split: "live" in
-// the accent (brand-600 light, sky-400 dark), "design" in ink. It is set as
+// the accent (brand-700 light, rose-400 dark), "design" in ink. It is set as
 // live text in the system UI stack the apps use, so it renders in the viewer's
 // font; outline it in a design tool before print use.
 const WORDMARK = {
-  light: { accent: '#0284c7', ink: '#0f172a' },
-  dark: { accent: '#38bdf8', ink: '#f1f5f9' },
+  light: { accent: '#be123c', ink: '#0f172a' },
+  dark: { accent: '#fb7185', ink: '#f1f5f9' },
 } as const;
 
 // Lockup box: the 270-unit mark, a 24-unit gap, then the wordmark.
