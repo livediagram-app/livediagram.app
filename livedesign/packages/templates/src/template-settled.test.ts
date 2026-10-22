@@ -25,7 +25,7 @@ describe('template and layout output', () => {
       orientation: 'landscape',
       size: 'a4',
     };
-    const unsettled = (['infographic', 'slide', 'logo'] as const).flatMap((kind) =>
+    const unsettled = (['infographic', 'logo'] as const).flatMap((kind) =>
       layoutCatalogueFor(kind)
         .layouts.filter((l) => {
           const els = buildPageLayout(l.id, page as Parameters<typeof buildPageLayout>[1]);

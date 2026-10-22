@@ -27,7 +27,6 @@ export type BackgroundCopyEdits = {
 
 /** The pages of a kind, as Apply to All names them in its button and its notice. */
 export const KIND_PAGES: Record<PageKind, { one: string; many: string }> = {
-  slide: { one: 'slide', many: 'Slides' },
   infographic: { one: 'infographic page', many: 'Infographic Pages' },
   logo: { one: 'logo page', many: 'Logo Pages' },
   wireframe: { one: 'wireframe page', many: 'Wireframe Pages' },

@@ -40,8 +40,8 @@ describe('page changes', () => {
       pages: [
         {
           op: 'add',
-          kind: 'slide',
-          size: 'slide',
+          kind: 'logo',
+          size: 'logo',
           orientation: 'landscape',
           name: 'Cover',
           background: { gradient: ['#000000', '#ffffff'], angle: -90, pattern: 'none' },
@@ -61,8 +61,8 @@ describe('page changes', () => {
       pages: [
         {
           op: 'add',
-          kind: 'slide',
-          size: 'slide',
+          kind: 'logo',
+          size: 'logo',
           orientation: 'landscape',
           name: 'Cover',
           background: { gradient: ['#000000', '#ffffff'], angle: 270, pattern: 'none' },
@@ -85,12 +85,12 @@ describe('page changes', () => {
     expect(at('x')).toMatchObject({ code: 'invalid_value', change: 1 });
     expect(at({ op: 'fly' }).message).toContain('"op" is one of');
     expect(at({ op: 'add', kind: 'poster' }).message).toContain('"kind"');
-    expect(at({ op: 'add', kind: 'slide', size: 'huge' }).message).toContain('"size"');
-    expect(at({ op: 'add', kind: 'slide', orientation: 'up' }).message).toContain('"orientation"');
-    expect(at({ op: 'add', kind: 'slide', name: 3 }).message).toContain('"name" is text');
-    expect(at({ op: 'add', kind: 'slide', name: 'x'.repeat(61) }).message).toContain('at most 60');
-    expect(at({ op: 'add', kind: 'slide', at: 0 }).message).toContain('"at"');
-    expect(at({ op: 'add', kind: 'slide', colour: 'x' }).message).toContain('takes no "colour"');
+    expect(at({ op: 'add', kind: 'logo', size: 'huge' }).message).toContain('"size"');
+    expect(at({ op: 'add', kind: 'logo', orientation: 'up' }).message).toContain('"orientation"');
+    expect(at({ op: 'add', kind: 'logo', name: 3 }).message).toContain('"name" is text');
+    expect(at({ op: 'add', kind: 'logo', name: 'x'.repeat(61) }).message).toContain('at most 60');
+    expect(at({ op: 'add', kind: 'logo', at: 0 }).message).toContain('"at"');
+    expect(at({ op: 'add', kind: 'logo', colour: 'x' }).message).toContain('takes no "colour"');
     expect(at({ op: 'set', page: 0, name: 'x' }).message).toContain('page place');
     expect(at({ op: 'set', page: '', name: 'x' }).message).toContain('"page" names a page');
     expect(at({ op: 'set', page: 1 }).message).toContain('at least one');

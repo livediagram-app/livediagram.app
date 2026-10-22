@@ -25,7 +25,6 @@ export {
 } from './template-builders-plan';
 export { isSpreadsheetPlanTemplate, planTemplateTabCount } from './plan-template-catalogue';
 export * from './page-layouts';
-export * from './slide-layouts';
 export * from './logo-layouts';
 export * from './layout-catalogue';
 export { buildPageLayout, buildPageLayoutOver } from './page-layout-build';

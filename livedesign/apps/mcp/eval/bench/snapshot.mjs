@@ -3,7 +3,7 @@
 import { resultJson, resultText } from './mcp-client.mjs';
 
 // The outline's first line: `tab 6cb1 "Name" · 0 elements · kind=form (read_form) · mode=plan · rev 1`, or for an
-// Pages tab `tab 3be5 "Deck" · 53 elements: 53 boxes · mode=pages · 6 pages: 6 slide (view pages) · rev 5`.
+// Pages tab `tab 3be5 "Flow" · 53 elements: 53 boxes · mode=pages · 6 pages: 6 wireframe (view pages) · rev 5`.
 export function parseTabHeader(line) {
   const kind = /kind=([\w-]+)/.exec(line)?.[1] ?? null;
   const pages = /· (\d+) pages?: ([^(]+)\(/.exec(line);

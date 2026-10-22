@@ -60,7 +60,6 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   journey: null,
   fishbone: null,
   pyramid: null,
-  'slide-deck': null,
   flywheel: null,
   'logo-design': null,
   gantt: null,
@@ -119,7 +118,6 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'objectives-planner': null,
   whiteboard: null,
   'blank-illustration': null,
-  'blank-slide-deck': null,
   'blank-infographic': null,
   'blank-logo': null,
   'blank-wireframe-phone': null,
@@ -148,10 +146,6 @@ const TEMPLATE_FAMILY: Record<TemplateKind, TemplateFamily | null> = {
   'how-it-works': null,
   versus: null,
   'social-carousel': null,
-  'launch-keynote': null,
-  'quarterly-review': null,
-  'team-welcome': null,
-  'workshop-kickoff': null,
 };
 
 /** The family a document made from this template belongs to; null for no template or no family. */

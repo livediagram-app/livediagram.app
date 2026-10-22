@@ -63,14 +63,14 @@ describe('logo pages', () => {
     const [p] = pagesOf({ pages: [{ id: 'a', orientation: 'portrait', size: 'logo' }] });
     expect(p!.size).toBeUndefined();
     const [s] = pagesOf({
-      pages: [{ id: 's', orientation: 'portrait', size: 'logo', kind: 'slide' }],
+      pages: [{ id: 's', orientation: 'portrait', size: 'logo', kind: 'infographic' }],
     });
-    expect(s!.size).toBe('slide');
+    expect(s!.size).toBeUndefined();
   });
 
   it('offer only the artboard, and no other kind offers it', () => {
     expect(pageSizesFor('logo')).toEqual(['logo']);
-    for (const kind of ['infographic', 'slide'] as const) {
+    for (const kind of ['infographic', 'wireframe'] as const) {
       expect(pageSizesFor(kind)).not.toContain('logo');
     }
   });
@@ -124,13 +124,10 @@ describe('logo pages', () => {
 
 // docs/specs/007-editor/pages-mode.md "Sizes": no two size tiles of one shape.
 describe('pageSizeChoices', () => {
-  it('never offers a slide size on an infographic page, unless it is still on one', () => {
+  it("offers an infographic page its kind's sizes, keeping one it is still on", () => {
     const landscape = { orientation: 'landscape' as const };
     expect(pageSizeChoices(landscape)).toContain('wide');
-    expect(pageSizeChoices(landscape)).not.toContain('slide');
-    // A page made on the Slide size keeps that tile, in Widescreen's place (one 16:9 tile).
-    expect(pageSizeChoices({ ...landscape, size: 'slide' })).toContain('slide');
-    expect(pageSizeChoices({ ...landscape, size: 'slide' })).not.toContain('wide');
+    expect(pageSizeChoices({ ...landscape, size: 'logo' })).toContain('logo');
     expect(pageSizeChoices({ orientation: 'portrait' })).toEqual(pageSizesFor('infographic'));
   });
 

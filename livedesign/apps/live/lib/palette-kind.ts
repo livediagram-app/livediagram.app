@@ -1,17 +1,16 @@
 // The palette's kind in Pages mode (docs/specs/007-editor/pages-mode.md "The palette's kind"): which
 // categories the palette offers, in what order (each kind's layout, palette-layouts.ts). Design for
-// an infographic page, Slide, Wireframe and Logo for theirs. Always the kind of the page someone is
+// an infographic page, Wireframe and Logo for theirs. Always the kind of the page someone is
 // on: it is never shown or chosen.
 import type { PageKind } from '@livedesign/document';
 import { useCurrentPageKind } from './current-page-kind';
 
-export type PaletteKind = 'design' | 'slide' | 'wireframe' | 'logo';
+export type PaletteKind = 'design' | 'wireframe' | 'logo';
 
-// The category each kind opens on: Popular for Design and Slide (the bar has no Popular, so the
-// strip keeps what it shows), Elements for Wireframe, Draw for Logo.
+// The category each kind opens on: Popular for Design (the bar has no Popular, so the strip keeps
+// what it shows), Elements for Wireframe, Draw for Logo.
 export const PALETTE_KIND_LANDING: Readonly<Record<PaletteKind, string>> = {
   design: 'popular',
-  slide: 'popular',
   wireframe: 'wireframe',
   logo: 'draw',
 };

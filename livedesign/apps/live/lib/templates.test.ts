@@ -25,7 +25,7 @@ import { getTheme } from './themes';
 
 // The catalogue's shape (count + default/extra split + no kind
 // drift) is load-bearing across both the picker and the marketing
-// site. docs/specs/019-marketing/marketing-site.md pins "143 templates (11 default + 132 extra)" and
+// site. docs/specs/019-marketing/marketing-site.md pins "137 templates (11 default + 126 extra)" and
 // docs/specs/008-canvas/canvas-and-palette.md catalogues the picker UX. These tests pin the array so
 // either the spec or the catalogue can't silently drift away from
 // the other.
@@ -55,7 +55,6 @@ describe('TEMPLATES catalogue', () => {
     'journey',
     'fishbone',
     'pyramid',
-    'slide-deck',
     'flywheel',
     'logo-design',
     'wireframe-mobile-app',
@@ -119,7 +118,6 @@ describe('TEMPLATES catalogue', () => {
     'floor-plan',
     'whiteboard',
     'blank-illustration',
-    'blank-slide-deck',
     'blank-infographic',
     'blank-logo',
     'blank-wireframe-phone',
@@ -139,10 +137,6 @@ describe('TEMPLATES catalogue', () => {
     'how-it-works',
     'versus',
     'social-carousel',
-    'launch-keynote',
-    'quarterly-review',
-    'team-welcome',
-    'workshop-kickoff',
     'paper-prototype',
     'journey-doodle',
     'pre-mortem',
@@ -182,21 +176,21 @@ describe('TEMPLATES catalogue', () => {
   ];
 
   // Hidden templates are buildable but never listed, so every user-facing
-  // count (docs/specs/019-marketing/marketing-site.md's "143 templates", the picker grids, the MCP catalogue)
+  // count (docs/specs/019-marketing/marketing-site.md's "137 templates", the picker grids, the MCP catalogue)
   // is over the listed subset. The mechanism is generic; nothing ships
   // hidden today (the docs/specs/007-editor/guided-tour-sample.md guided-tour sample used it until the
   // interactive tour, docs/specs/007-editor/editor-tour.md, superseded it).
   const listed = TEMPLATES.filter((t) => !t.hidden);
 
-  it('lists exactly 143 templates (11 default + 132 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
-    expect(listed).toHaveLength(143);
+  it('lists exactly 137 templates (11 default + 126 extra, matches docs/specs/019-marketing/marketing-site.md and docs/specs/008-canvas/canvas-and-palette.md)', () => {
+    expect(listed).toHaveLength(137);
   });
 
-  it('splits cleanly into 11 default + 132 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
+  it('splits cleanly into 11 default + 126 extra (`extra` is catalogue metadata; the picker browses by category)', () => {
     const defaults = listed.filter((t) => !t.extra);
     const extras = listed.filter((t) => t.extra);
     expect(defaults).toHaveLength(11);
-    expect(extras).toHaveLength(132);
+    expect(extras).toHaveLength(126);
   });
 
   it('ships no hidden templates (the flag is generic; docs/specs/007-editor/guided-tour-sample.md was retired by docs/specs/007-editor/editor-tour.md)', () => {
@@ -237,7 +231,6 @@ describe('TEMPLATES catalogue', () => {
         kind === 'whiteboard' ||
         kind === 'blank-illustration' ||
         // One empty page of a chosen kind.
-        kind === 'blank-slide-deck' ||
         kind === 'blank-infographic' ||
         kind === 'blank-logo' ||
         kind.startsWith('blank-wireframe-') ||
@@ -304,30 +297,6 @@ describe('templateCanvasOverrides', () => {
   it('gives clean radial layouts a blank backdrop', () => {
     expect(templateCanvasOverrides('venn')).toEqual({ backgroundPattern: 'blank' });
     expect(templateCanvasOverrides('flywheel')).toEqual({ backgroundPattern: 'blank' });
-  });
-
-  it('opens the slide deck in Pages on six 16:9 slide pages, keeping its layers', () => {
-    // canvas-and-palette.md "Templates on pages": a plain surround, the pages are the paper.
-    const o = templateCanvasOverrides('slide-deck');
-    expect(o).toMatchObject({
-      backgroundPattern: 'blank',
-      opensIn: 'pages',
-      layers: templateLayers('slide-deck'),
-    });
-    expect(o.pages).toHaveLength(6);
-    expect(
-      o.pages!.every(
-        (p) => p.size === 'slide' && p.orientation === 'landscape' && p.kind === 'slide',
-      ),
-    ).toBe(true);
-    expect(o.pages!.map((p) => p.id)).toEqual([
-      'page-1',
-      'page-2',
-      'page-3',
-      'page-4',
-      'page-5',
-      'page-6',
-    ]);
   });
 
   it('opens the logo exploration on Logo pages, and timelines get ruled lines', () => {
@@ -466,7 +435,6 @@ describe('layered templates (docs/specs/006-document/layers.md)', () => {
     // Frames: the footer (deck name + page number) of the five content slides; the slides
     // themselves are pages. Content: the title slide's nine pieces, each other
     // slide's kicker + headline, and its body (pains 9, steps 5, traction 3, team 12, ask 5).
-    'slide-deck': { names: ['Frames', 'Content'], scaffold: 10, content: 63 },
     // Frames: six panel cards, their number chips and the how-to.
     storyboard: { names: ['Frames', 'Content'], scaffold: 13, content: 41 },
     // Title, caption, the two spine runs (done, to come) and the three-entry
@@ -722,20 +690,7 @@ describe('buildTemplatedTab', () => {
 // again here, they're covered above against the blank + flowchart
 // templates.
 
-describe('slide deck and flywheel templates', () => {
-  it('slide-deck drops a six-slide pitch with speaker notes', () => {
-    const tab = buildTemplatedTab('slide-deck', 'brand', 'tab-1', 'slides');
-    // Built from standard primitives, no device shape.
-    expect(tab.elements.some((el) => el.type === 'shape' && el.shape === 'monitor')).toBe(false);
-    const labels = tab.elements
-      .map((el) => ('label' in el ? el.label : undefined))
-      .filter((l): l is string => Boolean(l));
-    for (const kicker of ['The problem', 'The solution', 'Traction', 'The team', 'The ask'])
-      expect(labels).toContain(kicker);
-    // Reading order rides the page numbers, not arrows.
-    expect(tab.elements.filter((el) => el.type === 'arrow')).toHaveLength(0);
-  });
-
+describe('flywheel template', () => {
   it('flywheel is one Cycle of four stages round Momentum', () => {
     const tab = buildTemplatedTab('flywheel', 'brand', 'tab-1', 'fly');
     const cycles = tab.elements.filter(

@@ -12,9 +12,15 @@ import type { Deck, Slide } from './slide-deck';
 import type { Page } from './page';
 import type { Tab } from './index';
 
-// docs/specs/007-editor/pages-mode.md "Slides": slide pages are in the deck, in page order.
+// docs/specs/012-collaboration/presentation-mode.md "The deck follows the pages": every page is in the deck, in page
+// order, whatever its kind.
 
-const slidePage = (id: string): Page => ({ id, orientation: 'landscape', kind: 'slide' });
+const slidePage = (id: string): Page => ({
+  id,
+  orientation: 'portrait',
+  size: 'logo',
+  kind: 'logo',
+});
 const infoPage = (id: string): Page => ({
   id,
   orientation: 'portrait',
@@ -33,10 +39,10 @@ const elementSlide = (id: string, tabId: string): Slide => ({ id, tabId, element
 const pagesOf = (deck: Deck) => deck.slides.map((s) => s.pageId ?? s.id);
 
 describe('deckFollowingPages', () => {
-  it('puts every slide page of a new deck in, in page order, and nothing else', () => {
+  it('puts every page of a new deck in, in page order, whatever its kind', () => {
     const tab = deckTab('t', [slidePage('a'), infoPage('i'), slidePage('b'), slidePage('c')]);
     const deck = deckFollowingPages({ slides: [] }, [tab]);
-    expect(pagesOf(deck)).toEqual(['a', 'b', 'c']);
+    expect(pagesOf(deck)).toEqual(['a', 'i', 'b', 'c']);
     expect(deck.slides[0]).toEqual({
       id: pageSlideIdFor('t', 'a'),
       tabId: 't',
@@ -62,16 +68,16 @@ describe('deckFollowingPages', () => {
     expect(after.slides[2]).toBe(before.slides[0]);
   });
 
-  it("adds a new slide page's slide in the tab's run", () => {
+  it("adds a new page's slide in the tab's run", () => {
     const before: Deck = { slides: [pageSlide('t', 'a'), elementSlide('x', 'other')] };
     const tab = deckTab('t', [slidePage('a'), slidePage('new')]);
     expect(pagesOf(deckFollowingPages(before, [tab]))).toEqual(['a', 'new', 'x']);
   });
 
-  it('orders a page slide of an infographic page with the rest, but never adds one', () => {
+  it('orders the page slides of every kind together, adding the missing ones', () => {
     const before: Deck = { slides: [pageSlide('t', 'b'), pageSlide('t', 'i')] };
     const tab = deckTab('t', [infoPage('i'), slidePage('b'), infoPage('j')]);
-    expect(pagesOf(deckFollowingPages(before, [tab]))).toEqual(['i', 'b']);
+    expect(pagesOf(deckFollowingPages(before, [tab]))).toEqual(['i', 'b', 'j']);
   });
 
   it('keeps a duplicated slide beside its page, and drops a slide of a deleted page', () => {
@@ -132,11 +138,11 @@ describe('deckFollowingPages', () => {
 });
 
 describe('deckPagesKey', () => {
-  it('changes with the pages and their kinds, not with anything else', () => {
+  it('changes with the pages and their order, not with anything else', () => {
     const one = deckPagesKey([deckTab('t', [slidePage('a'), infoPage('b')])]);
-    expect(deckPagesKey([deckTab('t', [slidePage('a'), infoPage('b')])])).toBe(one);
+    expect(deckPagesKey([deckTab('t', [slidePage('a'), slidePage('b')])])).toBe(one);
     expect(deckPagesKey([deckTab('t', [infoPage('b'), slidePage('a')])])).not.toBe(one);
-    expect(deckPagesKey([deckTab('t', [slidePage('a'), slidePage('b')])])).not.toBe(one);
+    expect(deckPagesKey([deckTab('t', [slidePage('a')])])).not.toBe(one);
     expect(deckPagesKey([deckTab('t', [slidePage('a')], 'diagram')])).toBe('');
   });
 });
@@ -188,7 +194,7 @@ describe('pageMoveForDeckOrder', () => {
 });
 
 describe('slidePageOwnSlideIds', () => {
-  it("holds a slide page's only slide, not a copy's pair, another page's, or an unfollowed tab's", () => {
+  it("holds a page's only slide, not a copy's pair, a gone page's, or an unfollowed tab's", () => {
     const tab = deckTab('t', [slidePage('a'), infoPage('i'), slidePage('b')]);
     const deck: Deck = {
       slides: [
@@ -200,13 +206,13 @@ describe('slidePageOwnSlideIds', () => {
         elementSlide('x', 't'),
       ],
     };
-    expect([...slidePageOwnSlideIds(deck, [tab])]).toEqual(['s-t-a']);
+    expect([...slidePageOwnSlideIds(deck, [tab])]).toEqual(['s-t-a', 's-t-i']);
     expect(slidePageOwnSlideIds(deck, [deckTab('t', [slidePage('a')], 'diagram')]).size).toBe(0);
   });
 });
 
 // A deleted page's slides are remembered for the session, so the page coming back (an undo, a peer's) brings them
-// back as they were: hidden, copied, added for a page that is not a slide page.
+// back as they were: hidden or copied.
 describe('GoneSlides', () => {
   const tabWith = (pages: Page[]) => deckTab('t', pages);
 
@@ -238,16 +244,19 @@ describe('GoneSlides', () => {
     expect(once.slides.map((s) => s.id)).toEqual(['s-t-i', 's-t-b']);
   });
 
-  it('leaves a slide deleted by hand after it came back deleted', () => {
+  it('leaves a copy deleted by hand after it came back deleted', () => {
     const gone = new GoneSlides();
-    const start: Deck = { slides: [pageSlide('t', 'i'), pageSlide('t', 'b')] };
+    const start: Deck = {
+      slides: [pageSlide('t', 'i'), pageSlide('t', 'i', { id: 'copy' }), pageSlide('t', 'b')],
+    };
     const pages = [infoPage('i'), slidePage('b')];
     const deleted = deckFollowingPages(start, [tabWith([slidePage('b')])], gone);
     const back = deckFollowingPages(deleted, [tabWith(pages)], gone);
-    // The person deletes the infographic page's slide by hand; a later change to the pages keeps it gone.
-    const byHand: Deck = { slides: back.slides.filter((s) => s.id !== 's-t-i') };
+    expect(back.slides.map((s) => s.id)).toEqual(['s-t-i', 'copy', 's-t-b']);
+    // The person deletes the copy by hand; a later change to the pages keeps it gone.
+    const byHand: Deck = { slides: back.slides.filter((s) => s.id !== 'copy') };
     const later = deckFollowingPages(byHand, [tabWith([...pages, slidePage('c')])], gone);
-    expect(later.slides.map((s) => s.pageId)).toEqual(['b', 'c']);
+    expect(later.slides.map((s) => s.id)).toEqual(['s-t-i', 's-t-b', pageSlideIdFor('t', 'c')]);
   });
 
   it(`forgets the oldest past ${GONE_SLIDES_MAX} slides`, () => {

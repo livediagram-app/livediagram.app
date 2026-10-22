@@ -71,7 +71,7 @@ const editor = (over: Record<string, unknown> = {}) => {
     activeTab: {
       id: 'tab1',
       locked: false,
-      pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide' }],
+      pages: [{ id: 'p1', orientation: 'landscape', kind: 'infographic' }],
     },
     userPreferences: { tourSeen: true },
     setUserPreferences,
@@ -92,7 +92,7 @@ beforeEach(() => {
   sessionStorage.clear();
   track.mockReset();
   dom.hidden = [];
-  dom.page = { pageId: 'p1', kind: 'slide' };
+  dom.page = { pageId: 'p1', kind: 'infographic' };
   // The + after the last page, read from the document for where the Add step points.
   const plus = document.createElement('button');
   plus.dataset.tourId = 'add-page';
@@ -124,8 +124,8 @@ describe('PagesTourHost offer', () => {
     await wait(1);
     expect(offered()).toBe(true);
     expect(stage.engine?.active).toBe(true);
-    expect(stage.engine?.step?.title).toBe('Getting started with Slides?');
-    expect(stage.helpHref).toBe('/help/canvas/pages-mode/slide-pages/');
+    expect(stage.engine?.step?.title).toBe('Getting started with Infographics?');
+    expect(stage.helpHref).toBe('/help/canvas/pages-mode/infographic-layouts/');
   });
 
   it('waits for the person to enter Pages', async () => {
@@ -145,7 +145,7 @@ describe('PagesTourHost offer', () => {
       {
         userPreferences: {
           tourSeen: true,
-          pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],
+          pagesTourKinds: ['infographic', 'logo'],
         },
       },
     ],
@@ -195,7 +195,7 @@ describe('PagesTourHost offer', () => {
     editor({
       userPreferences: {
         tourSeen: true,
-        pagesTourKinds: ['slide', 'infographic', 'article', 'logo'],
+        pagesTourKinds: ['infographic', 'logo'],
       },
     });
     const { rerender } = render(<PagesTourHost />);
@@ -229,7 +229,7 @@ describe('PagesTourHost end', () => {
     await start();
     act(() => stage.engine!.skip());
     expect(writeUserPreferences).toHaveBeenCalledWith(
-      { tourSeen: true, pagesTourKinds: ['slide'] },
+      { tourSeen: true, pagesTourKinds: ['infographic'] },
       'me',
     );
     expect(track).toHaveBeenCalledWith('UI', 'Closed', 'PagesTourOffer');
@@ -241,23 +241,23 @@ describe('PagesTourHost end', () => {
     expect(track).toHaveBeenCalledWith('UI', 'Started', 'PagesTour');
     // Every anchored step finds no target in this harness and is skipped, so Next runs to the end.
     await wait(30000);
-    expect(track).toHaveBeenCalledWith('UI', 'View', 'PagesTourStepSlideLayouts');
+    expect(track).toHaveBeenCalledWith('UI', 'View', 'PagesTourStepInfographicPageName');
     expect(stage.engine?.step?.id).toBe('outro');
     act(() => stage.engine!.next());
     expect(track).toHaveBeenCalledWith('UI', 'Ended', 'PagesTourCompleted');
     expect(writeUserPreferences).toHaveBeenCalledWith(
-      { tourSeen: true, pagesTourKinds: ['slide'] },
+      { tourSeen: true, pagesTourKinds: ['infographic'] },
       'me',
     );
   });
 
   it('adds the last kind answered to the list', async () => {
     await start({
-      userPreferences: { pagesTourKinds: ['infographic', 'article', 'logo'] },
+      userPreferences: { pagesTourKinds: ['logo'] },
     });
     act(() => stage.engine!.skip());
     expect(writeUserPreferences).toHaveBeenCalledWith(
-      { pagesTourKinds: ['infographic', 'article', 'logo', 'slide'] },
+      { pagesTourKinds: ['logo', 'infographic'] },
       'me',
     );
   });
@@ -269,7 +269,7 @@ describe('PagesTourHost end', () => {
 
   it('names the page kind on its welcome card, never the mode', async () => {
     await start();
-    expect(stage.eyebrow).toBe('Slides tour');
+    expect(stage.eyebrow).toBe('Infographic tour');
   });
 
   it('runs the track of the tour page’s kind', async () => {
@@ -285,15 +285,15 @@ describe('PagesTourHost end', () => {
     expect(stage.helpHref).toBe('/help/canvas/pages-mode/logo-pages/');
   });
 
-  it('counts the slide’s steps on screen', async () => {
+  it('counts the infographic’s steps on screen', async () => {
     await start();
-    expect(stage.engine!.countableSteps).toBe(7);
+    expect(stage.engine!.countableSteps).toBe(6);
   });
 
   it('leaves out a step whose control is not on screen', async () => {
     dom.hidden = ['data-tour-id="slides"'];
     await start();
-    expect(stage.engine!.countableSteps).toBe(3);
+    expect(stage.engine!.countableSteps).toBe(5);
   });
 
   // docs/specs/007-editor/start-diagramming.md "The tours wait".
@@ -328,25 +328,25 @@ describe('PagesTourHost end', () => {
 
 describe('PagesTourHost per kind', () => {
   it('offers nothing while every kind on the tab is seen', async () => {
-    editor({ userPreferences: { pagesTourKinds: ['slide'] } });
+    editor({ userPreferences: { pagesTourKinds: ['infographic'] } });
     render(<PagesTourHost />);
     await wait(2000);
     expect(offered()).toBe(false);
   });
 
   it('offers a new kind’s track when a page of it arrives', async () => {
-    editor({ userPreferences: { pagesTourKinds: ['slide'] } });
+    editor({ userPreferences: { pagesTourKinds: ['infographic'] } });
     const { rerender } = render(<PagesTourHost />);
     await wait(2000);
     expect(offered()).toBe(false);
     dom.page = { pageId: 'p2', kind: 'logo' };
     editor({
-      userPreferences: { pagesTourKinds: ['slide'] },
+      userPreferences: { pagesTourKinds: ['infographic'] },
       activeTab: {
         id: 'tab1',
         locked: false,
         pages: [
-          { id: 'p1', orientation: 'landscape', kind: 'slide' },
+          { id: 'p1', orientation: 'landscape', kind: 'infographic' },
           { id: 'p2', orientation: 'landscape', kind: 'logo' },
         ],
       },
@@ -362,7 +362,7 @@ describe('PagesTourHost per kind', () => {
       activeTab: {
         id: 'tab1',
         locked: false,
-        pages: [null, 5, { id: 'p1', orientation: 'landscape', kind: 'slide' }],
+        pages: [null, 5, { id: 'p1', orientation: 'landscape', kind: 'infographic' }],
       },
     });
     expect(() => render(<PagesTourHost />)).not.toThrow();

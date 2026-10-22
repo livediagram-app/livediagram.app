@@ -119,14 +119,14 @@ describe('a page’s frame', () => {
 });
 
 describe('markup over the paper', () => {
-  // A slide's animated background's opening frame goes over its gradient and under its pattern
+  // A page's animated background's opening frame goes over its gradient and under its pattern
   // (docs/specs/007-editor/pages-mode.md "Animated backgrounds").
   it('sits over the fill and under the pattern', () => {
     const [page] = layOutPages([
       {
         id: 's',
         orientation: 'landscape',
-        kind: 'slide',
+        kind: 'infographic',
         background: {
           fill: { kind: 'gradient', from: '#000000', to: '#ffffff', angle: 90 },
           pattern: 'dots',

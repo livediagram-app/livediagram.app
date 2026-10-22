@@ -54,15 +54,16 @@ export function FormHeaderCard({ sections }: { sections: number }) {
   // A hovered choice, shown on the band until it is picked or left (as on a slide).
   const [preview, setPreview] = useState<Partial<PageBackground> | null>(null);
   const shownCover = preview ? patchedCover(form.cover, preview) : form.cover;
-  // The tab theme's own gradients lead the Gradient choices, as on a slide.
+  // The tab theme's own gradients lead the Gradient choices, as on a page.
   // Read as the colour picker reads it (useThemeColours): no editor around it (a test) is the default theme.
   const themeId = useContext(EditorContext)?.activeTab?.theme;
   const themePresets = useMemo(() => themeBackgroundPresets(getTheme(themeId)), [themeId]);
-  // The cover as the slide's Background section reads a page: a wide slide wearing it.
+  // The cover as a wireframe screen's Background section reads a page (its categories, motion
+  // included), wearing it.
   const coverPage: Page = {
     id: 'form-cover',
     orientation: 'landscape',
-    kind: 'slide',
+    kind: 'wireframe',
     ...(form.cover ? { background: form.cover } : {}),
   };
   return (

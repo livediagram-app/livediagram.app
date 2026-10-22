@@ -128,13 +128,11 @@ const edited = (before: Tab, out: PageEdit<Tab>): Tab | null =>
 // Telemetry for a kind chosen on the first page, and for a page of a kind added.
 const KIND_CHOSEN_EVENT: Record<PageKind, string> = {
   infographic: 'PageKindInfographic',
-  slide: 'PageKindSlide',
   logo: 'PageKindLogo',
   wireframe: 'PageKindWireframe',
 };
 const KIND_ADDED_EVENT: Record<PageKind, string> = {
   infographic: 'PageAdded',
-  slide: 'SlidePageAdded',
   logo: 'LogoPageAdded',
   wireframe: 'WireframePageAdded',
 };
@@ -250,7 +248,7 @@ export function pageEdits({
   // was on it before stays on it, scaled down as one where it no longer fits
   // (withContentFittedToPage).
 
-  // A page in a slide size (every slide page) has no turn: it is landscape only.
+  // A page without a turn (pageHasOrientation: a logo's artboard, a device's screen) refuses one.
   const setOrientation = (pageId: string, next: PageOrientation) => {
     if (refusedLocked(pageId, 'orientation')) return;
     const target = page(pageId);
@@ -265,9 +263,8 @@ export function pageEdits({
     onGoTo(pageId);
     debugLog('[page] orientation set', { tabId, pageId, orientation: next });
   };
-  // A page takes only the sizes its kind offers (pageSizesFor): a slide page a slide size, a logo
-  // page keeps its artboard, the artboard being the logo
-  // kind's alone.
+  // A page takes only the sizes its kind offers (pageSizesFor): a logo page keeps its artboard, the
+  // artboard being the logo kind's alone.
   const setSize = (pageId: string, size: PageSizeId) => {
     if (refusedLocked(pageId, 'size')) return;
     const target = page(pageId);
@@ -358,7 +355,7 @@ export function pageEdits({
     if (kind === 'wireframe' && device) track('Tab', 'Changed', WIREFRAME_DEVICE_EVENT[device]);
     commitTab((t) => {
       const chosen = withPageKindChosen(t, pageId, kind, device);
-      return kind === 'infographic' || kind === 'slide' ? themed(chosen, pageId) : chosen;
+      return kind === 'infographic' ? themed(chosen, pageId) : chosen;
     });
     debugLog('[page] first page kind chosen', { tabId, pageId, kind });
   };
@@ -376,7 +373,7 @@ export function pageEdits({
     const id = nextPageId(current);
     commitTab((t) => {
       const added = edited(t, pageAdded(t, kind, id, device));
-      return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
+      return kind === 'infographic' ? themed(added, id) : added;
     });
     onGoTo(id);
     debugLog('[page] page added', { tabId, count: current.length + 1 });
@@ -405,7 +402,7 @@ export function pageEdits({
     const id = nextPageId(current);
     commitTab((t) => {
       const added = edited(t, pageAddedLike(t, pageId, id));
-      return kind === 'infographic' || kind === 'slide' ? themed(added, id) : added;
+      return kind === 'infographic' ? themed(added, id) : added;
     });
     onGoTo(id);
     debugLog('[page] page added like another', { tabId, from: pageId, kind });
@@ -530,8 +527,8 @@ export function pageEdits({
   const tidied = (t: Tab, pageId: string): Tab | null => {
     const pages = layOutPages(pagesOf(t));
     const target = pages.find((p) => p.id === pageId);
-    // An infographic or slide page; a logo page tidies its drawn lines.
-    if (!target || (pageKindOf(target) !== 'infographic' && target.kind !== 'slide')) return null;
+    // An infographic page; a logo page tidies its drawn lines.
+    if (!target || pageKindOf(target) !== 'infographic') return null;
     const next = tidyPageElements(t.elements, {
       ids: elementIdsOnPage(t.elements, pages, pageId),
       rect: target.rect,

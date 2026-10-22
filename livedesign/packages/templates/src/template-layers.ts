@@ -95,7 +95,6 @@ export function templateLayers(kind: TemplateKind): Layer[] | undefined {
     // Tier lanes stay put while components and their wiring move.
     case 'system-architecture':
       return layered('Tiers', 'Components');
-    case 'slide-deck':
     case 'storyboard':
       return layered('Frames', 'Content');
     case 'timeline':

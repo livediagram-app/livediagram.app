@@ -8,11 +8,7 @@ import {
   planBoardWidthFor,
   planViewSize,
 } from '@livedesign/items';
-import {
-  defaultSessionConfig,
-  isFixedSizeShape,
-  REACTION_PAD_LABEL,
-} from '@livedesign/document';
+import { defaultSessionConfig, isFixedSizeShape, REACTION_PAD_LABEL } from '@livedesign/document';
 import { ARROW_SNAP_THRESHOLD_PX, inheritedSizeFor } from '@/lib/canvas';
 import {
   createComponent,

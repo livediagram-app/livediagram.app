@@ -60,13 +60,13 @@ const TAB_LABEL: Record<PagePanelTab, string> = {
 
 // The page's tabs: Page while it has a size or orientation to choose (a logo page has neither),
 // Background (not on an infographic page, whose Background sits beside its cog), then a logo page's
-// Layouts (an infographic or slide page's Layouts sit beside its cog).
+// Layouts (an infographic or wireframe page's Layouts sit beside its cog).
 export function pagePanelTabs(page: LaidOutPage): PagePanelTab[] {
   // A wireframe page's size is its device (docs/specs/007-editor/wireframe-pages.md); its
   // Background and Layouts sit beside its cog, as an infographic page's.
   if (page.kind === 'wireframe') return ['device'];
   const hasPage = pageSizeChoices(page).length > 1 || pageHasOrientation(page);
-  // An infographic page's Background, and an infographic or slide page's Layouts, are beside its
+  // An infographic page's Background, and an infographic or wireframe page's Layouts, are beside its
   // cog (PageBackgroundButton, PageLayoutsButton), so not here too.
   const kind = pageKindOf(page);
   return [
@@ -442,7 +442,7 @@ function PageActions({
   onClose: () => void;
 }) {
   const { duplicatePage, removePage } = edit;
-  const noun = page.kind === 'slide' ? 'slide' : 'page';
+  const noun = 'page';
   return (
     <div className="mt-1 flex gap-1 border-t border-slate-100 px-2 pt-1.5 dark:border-slate-800">
       {page.size === 'fit' && (

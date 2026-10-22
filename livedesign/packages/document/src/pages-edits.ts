@@ -10,7 +10,6 @@ import {
   layOutPages,
   MAX_PAGES,
   newLogoPage,
-  newSlidePage,
   newWireframePage,
   PAGE_NAME_MAX,
   pageHasOrientation,
@@ -106,7 +105,7 @@ function reshaped<T extends PagesTab>(tab: T, pageId: string, patch: (p: Page) =
   return withContentFittedToPage(withPages(tab, next), ids, pageId);
 }
 
-/** A page turned. A page in a slide size, or the logo artboard, has no turn. */
+/** A page turned. The logo artboard has no turn. */
 export function pageTurned<T extends PagesTab>(
   tab: T,
   pageId: string,
@@ -194,7 +193,7 @@ const room = (pages: readonly Page[], more = 1) => pages.length + more <= MAX_PA
 
 /**
  * A new page of a kind after the last: an infographic page takes the last infographic page's size
- * and orientation (else A4 portrait; A4 after a Fit to Content page); a slide the last slide's size (else 16:9), landscape; a logo page the
+ * and orientation (else A4 portrait; A4 after a Fit to Content page); a logo page the
  * 1024 artboard. All on the plain paper.
  */
 export function pageAdded<T extends PagesTab>(
@@ -210,10 +209,7 @@ export function pageAdded<T extends PagesTab>(
   // logo page takes its fill alone, since it takes no pattern.
   const carried = carriedBackground(pages[pages.length - 1]?.background, kind);
   let page: Page;
-  if (kind === 'slide') {
-    const lastSlide = [...pages].reverse().find((p) => p.kind === 'slide');
-    page = newSlidePage(id, lastSlide?.size);
-  } else if (kind === 'logo') {
+  if (kind === 'logo') {
     page = newLogoPage(id);
   } else if (kind === 'wireframe') {
     // The last wireframe page's device and frame (docs/specs/007-editor/wireframe-pages.md
@@ -221,9 +217,7 @@ export function pageAdded<T extends PagesTab>(
     const lastWireframe = [...pages].reverse().find((p) => p.kind === 'wireframe');
     page = newWireframePage(id, device ?? lastWireframe?.device, lastWireframe?.frameLook);
   } else {
-    const model = [...pages]
-      .reverse()
-      .find((p) => p.kind !== 'slide' && p.kind !== 'logo' && p.kind !== 'wireframe');
+    const model = [...pages].reverse().find((p) => p.kind !== 'logo' && p.kind !== 'wireframe');
     const size = model?.size === 'fit' ? undefined : model?.size;
     page = { id, orientation: model?.orientation ?? 'portrait', ...(size ? { size } : {}) };
   }

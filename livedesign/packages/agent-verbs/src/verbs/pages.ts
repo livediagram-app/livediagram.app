@@ -85,15 +85,12 @@ export const pageLs = defineVerb({
   text: ({ text }) => [text],
   cli: {
     positionals: ['doc'],
-    examples: ['livedesign page ls "Pitch deck"', 'livedesign page ls 3f9c --tab Slides'],
+    examples: ['livedesign page ls "Brand kit"', 'livedesign page ls 3f9c --tab Logos'],
     prints: 'the pages view as the api serves it',
   },
 });
 
-const sizeArg = z
-  .string()
-  .optional()
-  .describe('A page size id: a4, letter, a3, square, slide, logo, ...');
+const sizeArg = z.string().optional().describe('A page size id: a4, letter, a3, square, logo, ...');
 
 export const pageSet = defineVerb({
   id: 'page.set',
@@ -105,7 +102,10 @@ export const pageSet = defineVerb({
     doc: docArg,
     tab: tabFlag,
     changes: z.string().optional().describe('A JSON file of page changes, or - for stdin'),
-    add: z.enum(['infographic', 'slide', 'logo']).optional().describe('Add a page of this kind'),
+    add: z
+      .enum(['infographic', 'logo', 'wireframe'])
+      .optional()
+      .describe('Add a page of this kind'),
     page: z.string().optional().describe('The page to change: its id, place or name'),
     name: z.string().optional().describe('Name the page'),
     size: sizeArg,
@@ -135,7 +135,7 @@ export const pageSet = defineVerb({
   cli: {
     positionals: ['doc'],
     examples: [
-      'livedesign page set "Pitch deck" --add slide --layout slide-title',
+      'livedesign page set "Brand kit" --add logo --layout logo-icon-above',
       'livedesign page set 3f9c --changes changes.json',
     ],
     prints: 'what changed, then each page: place, kind, size, rectangle, name',
@@ -167,7 +167,7 @@ async function changesFrom(ctx: VerbContext, source: string): Promise<PageChange
 }
 
 type ChangeFlags = {
-  add?: 'infographic' | 'slide' | 'logo';
+  add?: 'infographic' | 'logo' | 'wireframe';
   page?: string;
   name?: string;
   size?: string;

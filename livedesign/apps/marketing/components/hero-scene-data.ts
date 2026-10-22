@@ -114,7 +114,7 @@ export const HERO_SCENE_DATA: HeroSceneData[] = [
   {
     key: 'slides',
     word: 'Present',
-    build: '/new?mode=pages&q=slide',
+    build: '/new?mode=pages',
     short: 'Slides',
     title: 'Board update',
     label: 'Slides: build a deck from ready-made layouts, then present it full screen',

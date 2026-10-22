@@ -35,8 +35,6 @@ const SIZE_TILE: Record<PageSizeId, { label: string; hint: string }> = {
   square: { label: 'Square', hint: 'Square post (1:1)' },
   social: { label: 'Post', hint: 'Portrait post (4:5) for Instagram and LinkedIn' },
   wide: { label: 'Story', hint: 'Story (9:16), or a wide 16:9 page turned landscape' },
-  slide: { label: 'Slide', hint: 'Slide (16:9), always landscape' },
-  'slide-classic': { label: 'Classic', hint: 'Classic slide (4:3), always landscape' },
   logo: { label: 'Logo', hint: 'Logo artboard (1024 x 1024)' },
   device: { label: 'Device', hint: 'A wireframe page is its device' },
   fit: { label: 'Fit', hint: 'Sized around the board it was made for' },
@@ -74,8 +72,7 @@ export const tileClass = (active: boolean) =>
 
 export function SizeSection({ page, onSize }: { page: Page; onSize: (size: PageSizeId) => void }) {
   const current = page.size ?? 'a4';
-  // A slide page offers only the slide sizes; the tiles sit four to a row. A logo page has its
-  // one artboard, so no choice to show. Fit to Content is offered only on a page already in it,
+  // The tiles sit four to a row. A logo page has its one artboard, so no choice to show. Fit to Content is offered only on a page already in it,
   // first, and no two tiles share a shape (docs/specs/007-editor/pages-mode.md "Sizes").
   const sizes = pageSizeChoices(page);
   if (sizes.length < 2) return null;
@@ -88,9 +85,7 @@ export function SizeSection({ page, onSize }: { page: Page; onSize: (size: PageS
               type="button"
               role="radio"
               aria-checked={current === id}
-              aria-label={
-                PAGE_SIZES[id][PAGE_SIZES[id].landscapeOnly ? 'landscape' : page.orientation]
-              }
+              aria-label={PAGE_SIZES[id][page.orientation]}
               onClick={() => onSize(id)}
               className={tileClass(current === id)}
             >

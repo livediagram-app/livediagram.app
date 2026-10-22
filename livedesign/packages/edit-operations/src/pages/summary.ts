@@ -7,7 +7,7 @@ import { pageHasOrientation, pageSizeLabel, PAGE_SIZES, type Page } from '@lived
 
 export { describeBackground, pageSummaries } from '@livedesign/api-schema';
 
-/** A page's label in lines and lists: `2 Cover (slide)`, `3 (logo)`. */
+/** A page's label in lines and lists: `2 Cover (wireframe)`, `3 (logo)`. */
 export function pageLabel(page: PageSummary): string {
   return `${page.place}${page.name ? ` ${page.name}` : ''} (${page.kind})`;
 }

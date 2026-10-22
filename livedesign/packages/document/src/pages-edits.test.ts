@@ -107,9 +107,9 @@ describe('turning and resizing', () => {
     expect(ok(pageTurned(turned, 'p1', 'landscape'))).toBe(turned);
   });
 
-  it('refuses to turn a slide or a logo, or a locked page', () => {
-    const tab = tabOf([a4('s', { kind: 'slide', size: 'slide', orientation: 'landscape' })]);
-    expect(pageTurned(tab, 's', 'portrait')).toEqual({ refused: 'no_orientation' });
+  it('refuses to turn a logo, or a locked page', () => {
+    const tab = tabOf([a4('s', { kind: 'logo', size: 'logo' })]);
+    expect(pageTurned(tab, 's', 'landscape')).toEqual({ refused: 'no_orientation' });
     expect(pageTurned(tabOf([a4('p', { locked: true })]), 'p', 'landscape')).toEqual({
       refused: 'locked',
     });
@@ -125,7 +125,7 @@ describe('turning and resizing', () => {
     expect(back.size).toBeUndefined();
     expect(ok(pageResized(tabOf([a4('p1')]), 'p1', 'a4')).pages).toEqual([a4('p1')]);
     expect(pageResized(tabOf([a4('p1')]), 'p1', 'fit')).toEqual({ refused: 'size_not_offered' });
-    expect(pageResized(tabOf([a4('p1', { kind: 'infographic' })]), 'p1', 'slide')).toEqual({
+    expect(pageResized(tabOf([a4('p1', { kind: 'infographic' })]), 'p1', 'logo')).toEqual({
       refused: 'size_not_offered',
     });
     expect(pageResized(tabOf([a4('p1', { locked: true })]), 'p1', 'a3')).toEqual({
@@ -192,7 +192,7 @@ describe('adding', () => {
   it('carries the last page’s background onto a new page of any kind, a logo without pattern', () => {
     const fill = { kind: 'gradient' as const, from: '#fde68a', to: '#fca5a5', angle: 160 };
     const tab = tabOf([a4('p', { background: { fill, pattern: 'dots' } })]);
-    for (const kind of ['infographic', 'slide'] as const) {
+    for (const kind of ['infographic', 'wireframe'] as const) {
       expect(pagesOf(ok(pageAdded(tab, kind, 'n')))[1]!.background).toEqual({
         fill,
         pattern: 'dots',
@@ -202,18 +202,11 @@ describe('adding', () => {
       fill,
     });
     // The paper carries nothing over.
-    expect(pagesAfter(pageAdded(tabOf([a4('p')]), 'slide', 'n'))[1]!.background).toBe(undefined);
+    expect(pagesAfter(pageAdded(tabOf([a4('p')]), 'logo', 'n'))[1]!.background).toBe(undefined);
   });
 
-  it('adds a slide in the last slide size, and a logo artboard', () => {
-    const tab = tabOf([
-      a4('s', { kind: 'slide', size: 'slide-classic', orientation: 'landscape' }),
-    ]);
-    expect(pagesAfter(pageAdded(tab, 'slide', 'n'))[1]).toMatchObject({
-      kind: 'slide',
-      size: 'slide-classic',
-      orientation: 'landscape',
-    });
+  it('adds a logo artboard', () => {
+    const tab = tabOf([a4('s')]);
     expect(pagesAfter(pageAdded(tab, 'logo', 'n'))[1]).toMatchObject({
       kind: 'logo',
       size: 'logo',
@@ -222,8 +215,8 @@ describe('adding', () => {
 
   it('refuses past the page limit or on an id already there', () => {
     const full = tabOf(Array.from({ length: MAX_PAGES }, (_, i) => a4(`p${i}`)));
-    expect(pageAdded(full, 'slide', 'n')).toEqual({ refused: 'page_limit' });
-    expect(pageAdded(tabOf([a4('p')]), 'slide', 'p')).toEqual({ refused: 'page_limit' });
+    expect(pageAdded(full, 'logo', 'n')).toEqual({ refused: 'page_limit' });
+    expect(pageAdded(tabOf([a4('p')]), 'logo', 'p')).toEqual({ refused: 'page_limit' });
   });
 });
 

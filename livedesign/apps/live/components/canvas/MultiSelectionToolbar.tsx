@@ -1,12 +1,5 @@
 import type { Element } from '@livedesign/document';
-import {
-  DuplicateIcon,
-  EllipsisIcon,
-  LockIcon,
-  TrashIcon,
-  HoverCard,
-  Glyph,
-} from '@livedesign/ui';
+import { DuplicateIcon, EllipsisIcon, LockIcon, TrashIcon, HoverCard, Glyph } from '@livedesign/ui';
 import type { CombineOp } from '@/lib/combine/combine';
 import { CombineMenuButton } from '@/components/canvas/CombineMenu';
 import { buildFilterGroups, SelectionFilterMenu } from '@/components/canvas/SelectionFilterMenu';

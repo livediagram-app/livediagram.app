@@ -25,7 +25,7 @@ function and a test here; nothing here adds design.
 | CLI verbs       | `page.ls`, `page.set` (`pagesVerbs`)                                                                                                                                                          | `packages/agent-verbs/src/verbs/pages.ts`                                     |
 | view            | `pages` in `TAB_VIEW_NAMES`, rendered by `pagesView`                                                                                                                                          | `packages/document-views/src/pages.ts`                                        |
 
-Banned synonyms: "slide deck" for a tab of slides (it is a tab of slide pages),
+Banned synonyms: "slide deck" for a tab of pages (it is a tab of pages; the deck presents them),
 "template" for a layout.
 
 ## Behaviour and state
@@ -51,21 +51,21 @@ Banned synonyms: "slide deck" for a tab of slides (it is a tab of slide pages),
 2. `switched = opensInOf(tab) !== 'pages'`; if so `tab = withEditorModeSwitched(tab, 'pages')`.
 3. For each change `i` in order, against the current `tab`:
    - resolve `page` (`resolvePage`: id, then integer place 1..n, then name by `nameKey`) else `page_unknown` listing
-     `1 Cover (slide), 2 (slide)`;
+     `1 Cover (infographic), 2 (infographic)`;
    - `add`: if the only page is unchosen and empty
      (`offersPageKindChoice`) → `withPageKindChosen`; else if the only page is of `kind`, unnamed and empty → that
      page; else `pageAdded(tab, kind, newId(), device)`; then
      `name`, `size`, `orientation`, `background` through `pageRenamed`, `pageResized`, `pageTurned`,
      `pageBackgroundSet`, `at` through `pageMovedTo`, `layout` through `pageLaidOut`. Line:
-     `Added page 3 (slide, Slide (16:9)) from layout Title Slide: name "Cover".`;
+     `Added page 3 (infographic, A4) from layout Report Cover: name "Cover".`;
    - `set`: `locked: false` first (so an unlock-and-edit works), then name, size, orientation and background
      through their edits, then `locked: true`. Line: `Set page 2: size A3, background #0f172a`;
    - `layout`: id checked against `layoutCatalogueFor(kind).layouts` else `layout_unknown` naming them; then
-     `pageLaidOut(tab, pageId, buildPageLayout(id, laidOutPage))`, exactly as the page panel places it. Line: `Laid out page 1 as Title (replaced 4 elements)`;
+     `pageLaidOut(tab, pageId, buildPageLayout(id, laidOutPage))`, exactly as the page panel places it. Line: `Laid out page 1 as Report Cover (replaced 4 elements)`;
    - `move`: `to` clamped to 1..units; `pageMovedTo`. Line: `Moved page 4 to 1`;
    - `duplicate`: `pageDuplicated`. Line: `Duplicated page 2 as page 3`;
    - `apply_background_to_all`: `pageBackgroundSpread` (no ink memory, as `set`); refused `no_other_pages` with
-     no other page of the kind. Line: `Gave 34 other slide pages the background of page 1` plus `; 2 locked kept
+     no other page of the kind. Line: `Gave 34 other infographic pages the background of page 1` plus `; 2 locked kept
 their own` when it skipped any;
    - `delete`: a page an earlier `add` in this call took as its blank (the first two `add` branches; kept in
      `tookBlank`, page id to that change's 1-based number) deletes nothing. Line: `Page 1 was the empty first page,
@@ -88,7 +88,7 @@ which change 1 made the page it added; nothing deleted.`; otherwise `pageRemoved
 `PageChange` (strict, unknown keys refused `invalid_value`):
 
 ```ts
-| { op: 'add'; kind: 'infographic' | 'slide' | 'logo' | 'wireframe'; size?: PageSizeId; orientation?: PageOrientation;
+| { op: 'add'; kind: 'infographic' | 'logo' | 'wireframe'; size?: PageSizeId; orientation?: PageOrientation;
     name?: string; background?: PageBackgroundInput; layout?: string; at?: number }
 | { op: 'set'; page: PageRef; name?: string; size?: PageSizeId; orientation?: PageOrientation;
     background?: PageBackgroundInput; locked?: boolean }
@@ -125,15 +125,15 @@ tab, `409 tab_busy`, `413 tab_too_large`.
   description, generated from `layoutCatalogueFor`.
 - `read_document` `view` enum gains `pages`.
 - The server instructions (`packages/agent-verbs/src/mcp/schema.ts`) gain a paragraph: what Pages tabs hold,
-  which page makes what (a deck → slides, a logo → a logo page), how a document
+  which page makes what (a poster → an infographic page, a logo → a logo page, a screen → a wireframe page), how a document
   for pages starts (`create_document` with template `blank-illustration`), and that a layout's sample text is
   found in the `pages` view and replaced with `update_document`.
 
 ### CLI
 
 - `page ls <doc> [--tab]` → the `pages` view.
-- `page set <doc> [--tab] --changes <file|->` (a JSON list, or one change) or flags for one change (`--add slide
---layout slide-title`, `--page 2 --name Cover`, `--page 2 --delete`, `--move`, `--duplicate`, `--background-to-all`, `--size`,
+- `page set <doc> [--tab] --changes <file|->` (a JSON list, or one change) or flags for one change (`--add infographic
+--layout report-cover`, `--page 2 --name Cover`, `--page 2 --delete`, `--move`, `--duplicate`, `--background-to-all`, `--size`,
   `--orientation`).
 - `page` is a named-only resource in the top-level help (its 500-token budget).
 
@@ -154,7 +154,7 @@ tab, `409 tab_busy`, `413 tab_too_large`.
 | Fresh tab whose only page is unchosen and empty               | first `add` takes that page                                          |
 | Only page already of the kind added, unnamed and empty        | first `add` of that kind takes that page (its fields and layout set) |
 | Size not offered / `fit`                                      | `size_not_offered` with the kind's sizes                             |
-| Turn a slide or logo                                          | `no_orientation`                                                     |
+| Turn a logo page                                              | `no_orientation`                                                     |
 | Pattern on a logo page                                        | `pattern_not_offered`                                                |
 | `apply_background_to_all` with no other page of the kind      | `no_other_pages`                                                     |
 | Layout of another kind                                        | `layout_unknown` with the kind's layouts                             |

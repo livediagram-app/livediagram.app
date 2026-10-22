@@ -64,7 +64,7 @@ frame turns with it (the iPhone's Dynamic Island and the Android camera then sit
 ## The screen
 
 - **Background**: the page's background paints the screen alone: the Background swatches,
-  gradients, patterns (a **Grid** pattern reads as a layout grid), pictures and, as on a slide, the
+  gradients, patterns (a **Grid** pattern reads as a layout grid), pictures and the
   **Animated** backgrounds ([Pages](pages-mode.md) "Animated backgrounds"), moving inside the screen
   and still as it opens in an export. The plain paper is white (the dark canvas theme's sheet colour in the dark editor).
 - **Clipping**: what is on the page is cut off at the screen's edge and its rounded corners, never

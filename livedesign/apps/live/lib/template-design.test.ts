@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { layOutPages, type Element } from '@livedesign/document';
-import { templateCanvasOverrides } from '@livedesign/templates';
+import type { Element } from '@livedesign/document';
 import { buildTemplate } from './template-builders';
 
 // Structure pins for the design starters redesigned together
-// (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the slide deck, the storyboard and
-// the floor plan. Each test maps to a
-// sentence of that spec.
+// (docs/specs/008-canvas/canvas-and-palette.md "Templates"): the storyboard and the floor plan.
+// Each test maps to a sentence of that spec.
 
 type Shape = Extract<Element, { type: 'shape' }>;
 type Box = { x: number; y: number; width: number; height: number };
@@ -19,42 +17,6 @@ const inside = (a: Box, b: Box) =>
   a.y >= b.y - 0.5 &&
   a.x + a.width <= b.x + b.width + 0.5 &&
   a.y + a.height <= b.y + b.height + 0.5;
-const centre = (b: Box) => ({ x: b.x + b.width / 2, y: b.y + b.height / 2 });
-const contains = (b: Box, p: { x: number; y: number }) =>
-  p.x >= b.x && p.x <= b.x + b.width && p.y >= b.y && p.y <= b.y + b.height;
-
-describe('slide deck template', () => {
-  // The slides are pages (canvas-and-palette.md "Templates on pages"), not drawn cards.
-  const els = buildTemplate('slide-deck', 0, 0);
-  const slides = layOutPages(templateCanvasOverrides('slide-deck').pages!).map((p) => p.rect);
-  const onSlide = (i: number) => els.filter((el) => contains(slides[i]!, centre(el as Box)));
-
-  it('lays six 16:9 slides in a row, read left to right', () => {
-    expect(slides).toHaveLength(6);
-    for (const s of slides) expect(s.width / s.height).toBeCloseTo(16 / 9, 1);
-    for (let i = 1; i < slides.length; i++) expect(slides[i]!.x).toBeGreaterThan(slides[i - 1]!.x);
-    expect(shapesOf(els, 'square').some((s) => s.width === 520)).toBe(false);
-    expect(els.filter((el) => el.type === 'arrow')).toHaveLength(0);
-  });
-
-  it('follows the pitch arc, one kicker per slide, with a page number on each after the title', () => {
-    const kickers = ['The problem', 'The solution', 'Traction', 'The team', 'The ask'];
-    kickers.forEach((kicker, i) => expect(labels(onSlide(i + 1))).toContain(kicker));
-    for (let n = 2; n <= 6; n++) expect(labels(onSlide(n - 1))).toContain(`${n} / 6`);
-  });
-
-  it('builds each body from the element that suits it', () => {
-    for (const kind of ['step', 'stat-row', 'line-chart', 'pie-chart', 'icon', 'sticker'])
-      expect(shapesOf(els, kind).length, kind).toBeGreaterThan(0);
-  });
-
-  it('carries no element notes on its slides', () => {
-    for (let i = 0; i < slides.length; i++) {
-      const noted = onSlide(i).filter((el) => (el as { note?: string }).note);
-      expect(noted, `slide ${i + 1}`).toHaveLength(0);
-    }
-  });
-});
 
 describe('storyboard template', () => {
   const els = buildTemplate('storyboard', 0, 0);

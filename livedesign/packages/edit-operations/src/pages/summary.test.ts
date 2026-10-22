@@ -52,7 +52,9 @@ describe('sizes and labels', () => {
       flow: null,
       elements: 0,
     } as const;
-    expect(pageLabel({ ...base, place: 2, name: 'Cover', kind: 'slide' })).toBe('2 Cover (slide)');
+    expect(pageLabel({ ...base, place: 2, name: 'Cover', kind: 'wireframe' })).toBe(
+      '2 Cover (wireframe)',
+    );
     expect(pageLabel({ ...base, place: 3, name: null, kind: 'logo' })).toBe('3 (logo)');
   });
 });

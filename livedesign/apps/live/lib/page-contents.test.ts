@@ -6,18 +6,18 @@ import { contentsDropUnit } from './page-contents';
 // docs/specs/007-editor/pages-mode.md "Contents".
 const pages = layOutPages([
   { id: 'a', orientation: 'portrait', kind: 'infographic', name: 'Cover' },
-  { id: 'b', orientation: 'landscape', kind: 'slide', size: 'slide' },
+  { id: 'b', orientation: 'landscape', kind: 'infographic', size: 'wide' },
   { id: 'c', orientation: 'portrait', kind: 'infographic', size: 'square', locked: true },
   { id: 'd', orientation: 'portrait', kind: 'logo', size: 'logo' },
 ] as Page[]);
 
 describe('the Contents list', () => {
-  const rows = contentsRows(pages, { inDeck: (id) => id === 'b' });
+  const rows = contentsRows(pages);
 
   it('numbers each page, names it, and says what it is', () => {
     expect(rows.map((r) => [r.number, r.name, r.line])).toEqual([
       [1, 'Cover', 'Infographic · A4 Portrait'],
-      [2, 'Page 2', 'Slide · In the deck'],
+      [2, 'Page 2', 'Infographic · Widescreen (16:9)'],
       [3, 'Page 3', 'Infographic · Square'],
       [4, 'Page 4', 'Logo'],
     ]);
@@ -26,7 +26,7 @@ describe('the Contents list', () => {
   });
 
   it('finds pages by name, kind or number, every word', () => {
-    expect(filterContents(rows, 'slide').map((r) => r.id)).toEqual(['b']);
+    expect(filterContents(rows, 'widescreen').map((r) => r.id)).toEqual(['b']);
     expect(filterContents(rows, '3').map((r) => r.id)).toEqual(['c']);
     expect(filterContents(rows, 'cover portrait').map((r) => r.id)).toEqual(['a']);
     expect(filterContents(rows, '  ')).toHaveLength(4);

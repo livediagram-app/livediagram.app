@@ -33,11 +33,9 @@ export type FaqCategory = {
 const ICON = 18;
 // Written out rather than read from @livedesign/templates: this module ships in the FAQ's client bundle, and the
 // catalogue is ~15 KB for one number. faq-content.test.tsx pins it to TEMPLATES.length.
-export const TEMPLATE_COUNT = 143;
+export const TEMPLATE_COUNT = 137;
 // The template categories, pinned to TEMPLATE_CATEGORIES.length by faq-content.test.tsx the same way.
 export const TEMPLATE_CATEGORY_COUNT = 14;
-// Pages mode's slide layouts, pinned to the catalogue by faq-content.test.tsx like the template count.
-export const SLIDE_LAYOUT_COUNT = 61;
 // Pages mode's infographic page layouts and logo layouts, pinned the same way.
 export const PAGE_LAYOUT_COUNT = 92;
 export const LOGO_LAYOUT_COUNT = 25;
@@ -334,7 +332,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
       },
       {
         q: 'Can I present from it?',
-        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. For designed slides, Pages adds 16:9 or 4:3 slide pages started from one of ${SLIDE_LAYOUT_COUNT} layouts, which join the same deck. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.`,
+        a: `Yes. Presentation mode builds a slide deck from elements across your tabs and runs it full screen. Slides point at the real elements, so editing a shape updates every slide it appears on. Every page of a design joins the same deck, in order. Each slide can carry presenter notes and a time budget, transitions slide or fade between them, and a laser pointer and spotlight help you guide the room.`,
       },
       {
         q: 'Can I undo a mistake?',

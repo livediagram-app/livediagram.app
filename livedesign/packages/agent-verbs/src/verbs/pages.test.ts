@@ -16,14 +16,14 @@ const DRAWN = [{ id: 'box', type: 'shape', shape: 'square', x: 0, y: 0, width: 1
 const ANSWER: PagesAnswer = {
   tab: { id: ONE, rev: 5 },
   switched: false,
-  lines: ['Added page 2 (slide, Slide (16:9)).'],
+  lines: ['Added page 2 (logo, 1024 x 1024).'],
   pages: [
     {
       place: 1,
       id: 'page-1',
       name: 'Cover',
-      kind: 'slide',
-      size: 'slide',
+      kind: 'logo',
+      size: 'logo',
       orientation: null,
       rect: { x: -960, y: -540, width: 1920, height: 1080 },
       background: null,
@@ -100,9 +100,9 @@ describe('which tab', () => {
 describe('the calls', () => {
   it('sends page changes and answers what the api did', async () => {
     const { api, sent } = setUp();
-    const done = await changePages(api, DOC_A, { changes: [{ op: 'add', kind: 'slide' }] }, 'mcp');
+    const done = await changePages(api, DOC_A, { changes: [{ op: 'add', kind: 'logo' }] }, 'mcp');
     expect(done).toMatchObject({ ok: true, documentId: DOC_A, tabId: ONE, tab: { rev: 5 } });
-    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'slide' }] }]);
+    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'logo' }] }]);
   });
 
   it('passes the api’s refusal through with its change', async () => {
@@ -116,7 +116,7 @@ describe('the calls', () => {
 
   it('reads a refusal without a message as the generic words, and lets a 5xx throw', async () => {
     const bare = setUp(undefined, () => new Response('nope', { status: 403 }));
-    const add = { tabId: ONE, changes: [{ op: 'add', kind: 'slide' }] as PageChange[] };
+    const add = { tabId: ONE, changes: [{ op: 'add', kind: 'logo' }] as PageChange[] };
     expect(await changePages(bare.api, DOC_A, add, 'mcp')).toMatchObject({
       ok: false,
       code: 'http_403',
@@ -133,7 +133,7 @@ describe('the calls with no tab to act on', () => {
       [ONE]: { id: ONE, elements: DRAWN },
     });
     expect(
-      await changePages(api, DOC_A, { changes: [{ op: 'add', kind: 'slide' }] }, 'mcp'),
+      await changePages(api, DOC_A, { changes: [{ op: 'add', kind: 'logo' }] }, 'mcp'),
     ).toMatchObject({
       code: 'tab_needed',
     });
@@ -163,8 +163,8 @@ describe('page ls and page set', () => {
   it('makes one change from the flags', async () => {
     const cases: [Record<string, unknown>, unknown][] = [
       [
-        { add: 'slide', layout: 'slide-title', name: 'Cover' },
-        { op: 'add', kind: 'slide', name: 'Cover', layout: 'slide-title' },
+        { add: 'logo', layout: 'logo-icon-above', name: 'Cover' },
+        { op: 'add', kind: 'logo', name: 'Cover', layout: 'logo-icon-above' },
       ],
       [
         { page: '2', delete: true },
@@ -196,8 +196,8 @@ describe('page ls and page set', () => {
       const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, ...flags }));
       expect(sent).toEqual([{ pages: [change] }]);
       expect(pageSet.text!(out)).toEqual([
-        '~ Added page 2 (slide, Slide (16:9)).',
-        '1  slide  slide  -960,-540 1920x1080  Cover',
+        '~ Added page 2 (logo, 1024 x 1024).',
+        '1  logo  logo  -960,-540 1920x1080  Cover',
       ]);
       expect(pageSet.quiet!(out)).toEqual(['page-1']);
     }
@@ -208,7 +208,7 @@ describe('page ls and page set', () => {
     const { ctx, sent } = setUp(undefined, () => Response.json(unnamed));
     const out = await pageSet.run!(ctx, pageSet.input.parse({ doc: DOC_A, add: 'logo' }));
     expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'logo' }] }]);
-    expect(pageSet.text!(out)[1]).toBe('1  slide  slide  -960,-540 1920x1080');
+    expect(pageSet.text!(out)[1]).toBe('1  logo  logo  -960,-540 1920x1080');
   });
 
   it('takes a JSON list of changes, on the tab named', async () => {

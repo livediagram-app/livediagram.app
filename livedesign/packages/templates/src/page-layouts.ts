@@ -2,7 +2,7 @@
 // onto ONE Infographic page, to start from and then edit. Pure builders: the page's content box (the
 // page less its margins) in, ordinary elements out, laid out in proportions of the box so a layout
 // fits every size and orientation. Elements carry no colours of their own: the tab's theme paints
-// them, and a dark page inks them light. A "wide" box (landscape, a slide) gets a side-by-side
+// them, and a dark page inks them light. A "wide" box (landscape) gets a side-by-side
 // arrangement where a stack would be squashed.
 import type { Element } from '@livedesign/document';
 import { heading, kit, verticalSteps, type Kit, type LayoutBox } from './page-layout-kit';
@@ -38,14 +38,12 @@ import { SOCIAL_SET_LAYOUTS, type SocialSetLayoutId } from './page-layouts-set-s
 import { EXPLAINERS_SET_LAYOUTS, type ExplainersSetLayoutId } from './page-layouts-set-explainers';
 import type { LogoLayoutId } from './logo-layouts';
 import type { WireframeLayoutId } from './wireframe-layouts';
-import type { SlideLayoutId } from './slide-layouts';
 
 export type { LayoutBox } from './page-layout-kit';
 
-// Every layout's id: the infographic layouts', the slide layouts' (SlideLayoutId) and the logo
-// layouts' (LogoLayoutId).
+// Every layout's id: the infographic layouts', the logo layouts' (LogoLayoutId) and the wireframe
+// layouts' (WireframeLayoutId).
 export type PageLayoutId =
-  | SlideLayoutId
   | LogoLayoutId
   | WireframeLayoutId
   | CoversSetLayoutId

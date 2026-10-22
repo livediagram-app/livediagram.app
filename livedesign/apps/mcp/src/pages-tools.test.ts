@@ -53,9 +53,9 @@ async function call(
 describe('the Pages tools', () => {
   it('change pages on the first Pages tab and answer the pages', async () => {
     const { handler, sent } = api(() => done());
-    const out = await call(handler, 'change_pages', { changes: [{ op: 'add', kind: 'slide' }] });
+    const out = await call(handler, 'change_pages', { changes: [{ op: 'add', kind: 'logo' }] });
     expect(out.isError).toBeFalsy();
-    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'slide' }] }]);
+    expect(sent).toEqual([{ pages: [{ op: 'add', kind: 'logo' }] }]);
     expect(out.structuredContent).toMatchObject({ tabId: 't1', rev: 4, lines: ['Wrote it.'] });
   });
 
@@ -65,7 +65,7 @@ describe('the Pages tools', () => {
     );
     const out = await call(handler, 'change_pages', {
       changes: [
-        { op: 'add', kind: 'slide' },
+        { op: 'add', kind: 'logo' },
         { op: 'delete', page: 9 },
       ],
     });

@@ -10,10 +10,11 @@ vi.mock('@/lib/telemetry', () => ({ track: vi.fn() }));
 // Background tab and the Format tool's page painting, each one edit with its notice.
 
 const dusk = { kind: 'gradient' as const, from: '#1e1b4b', to: '#4c1d95', angle: 160 };
-const slide = (id: string, extra: Partial<Page> = {}): Page => ({
+const screen = (id: string, extra: Partial<Page> = {}): Page => ({
   id,
-  orientation: 'landscape',
-  kind: 'slide',
+  orientation: 'portrait',
+  kind: 'wireframe',
+  device: 'iphone',
   ...extra,
 });
 
@@ -42,21 +43,21 @@ function harness(pages: Page[], tabId = 'deck', mayEdit = () => true) {
 beforeEach(() => vi.mocked(track).mockClear());
 
 describe('Apply to All', () => {
-  it('paints every other slide in one commit, tracked, and says so', () => {
-    const h = harness([slide('a', { background: { fill: dusk } }), slide('b'), slide('c')]);
+  it('paints every other screen in one commit, tracked, and says so', () => {
+    const h = harness([screen('a', { background: { fill: dusk } }), screen('b'), screen('c')]);
     expect(h.edits().applyToAllReach('a')).toBe(2);
     h.edits().applyBackgroundToAll('a');
     expect(h.commitTabs).toHaveBeenCalledTimes(1);
     expect(h.backgrounds()).toEqual({ a: { fill: dusk }, b: { fill: dusk }, c: { fill: dusk } });
     expect(track).toHaveBeenCalledWith('Tab', 'Changed', 'PageBackgroundAppliedToAll');
-    expect(h.toastInfo).toHaveBeenCalledWith('Background applied to 2 slides.');
+    expect(h.toastInfo).toHaveBeenCalledWith('Background applied to 2 wireframe pages.');
   });
 
   it('counts each page’s reach as the other pages of its kind', () => {
     const pages: Page[] = [
-      slide('s1'),
-      slide('s2'),
-      slide('s3'),
+      screen('s1'),
+      screen('s2'),
+      screen('s3'),
       { id: 'i1', orientation: 'portrait', kind: 'infographic' },
       { id: 'l1', orientation: 'portrait', kind: 'logo', size: 'logo' },
       { id: 'l2', orientation: 'portrait', kind: 'logo', size: 'logo' },
@@ -74,7 +75,7 @@ describe('Apply to All', () => {
 
   it('says and counts nothing for someone who may no longer edit', () => {
     const h = harness(
-      [slide('a', { background: { fill: dusk } }), slide('b')],
+      [screen('a', { background: { fill: dusk } }), screen('b')],
       'deck',
       () => false,
     );
@@ -85,21 +86,21 @@ describe('Apply to All', () => {
     expect(track).not.toHaveBeenCalled();
   });
 
-  it('names the locked slides it left', () => {
+  it('names the locked pages it left', () => {
     const h = harness([
-      slide('a', { background: { fill: dusk } }),
-      slide('b', { locked: true }),
-      slide('c'),
+      screen('a', { background: { fill: dusk } }),
+      screen('b', { locked: true }),
+      screen('c'),
     ]);
     h.edits().applyBackgroundToAll('a');
     expect(h.toastInfo).toHaveBeenCalledWith(
-      'Background applied to 1 slide. 1 locked slide kept its own.',
+      'Background applied to 1 wireframe page. 1 locked wireframe page kept its own.',
     );
     expect(h.backgrounds().b).toBeUndefined();
   });
 
   it('reaches nothing, and does nothing, with no other page of the kind', () => {
-    const h = harness([slide('a'), { id: 'i', orientation: 'portrait' }]);
+    const h = harness([screen('a'), { id: 'i', orientation: 'portrait' }]);
     expect(h.edits().applyToAllReach('a')).toBe(0);
     h.edits().applyBackgroundToAll('a');
     expect(h.commitTabs).not.toHaveBeenCalled();
@@ -109,7 +110,7 @@ describe('Apply to All', () => {
 
 describe('painting one page from another', () => {
   it('copies the background in one commit, tracked', () => {
-    const h = harness([slide('a', { background: { fill: dusk, pattern: 'dots' } }), slide('b')]);
+    const h = harness([screen('a', { background: { fill: dusk, pattern: 'dots' } }), screen('b')]);
     expect(h.edits().copyBackground('a', 'b')).toBe(true);
     expect(h.commitTabs).toHaveBeenCalledTimes(1);
     expect(h.backgrounds().b).toEqual({ fill: dusk, pattern: 'dots' });
@@ -117,7 +118,7 @@ describe('painting one page from another', () => {
   });
 
   it('refuses a locked page with a notice, writing nothing', () => {
-    const h = harness([slide('a', { background: { fill: dusk } }), slide('b', { locked: true })]);
+    const h = harness([screen('a', { background: { fill: dusk } }), screen('b', { locked: true })]);
     expect(h.edits().copyBackground('a', 'b')).toBe(false);
     expect(h.commitTabs).not.toHaveBeenCalled();
     expect(h.toastInfo).toHaveBeenCalledWith(
@@ -127,7 +128,7 @@ describe('painting one page from another', () => {
 
   it('refuses a picture onto a logo page', () => {
     const h = harness([
-      slide('a', { background: { fill: { kind: 'image', imageId: 'img-1' } } }),
+      screen('a', { background: { fill: { kind: 'image', imageId: 'img-1' } } }),
       { id: 'l', orientation: 'portrait', kind: 'logo', size: 'logo' },
     ]);
     expect(h.edits().copyBackground('a', 'l')).toBe(false);
@@ -135,7 +136,7 @@ describe('painting one page from another', () => {
   });
 
   it('is no edit onto the source itself', () => {
-    const h = harness([slide('a', { background: { fill: dusk } })]);
+    const h = harness([screen('a', { background: { fill: dusk } })]);
     expect(h.edits().copyBackground('a', 'a')).toBe(false);
     expect(h.commitTabs).not.toHaveBeenCalled();
   });
@@ -143,15 +144,15 @@ describe('painting one page from another', () => {
 
 describe('appliedToAllMessage', () => {
   it('counts in the kind’s own words', () => {
-    expect(appliedToAllMessage('slide', 35, 0)).toBe('Background applied to 35 slides.');
+    expect(appliedToAllMessage('logo', 35, 0)).toBe('Background applied to 35 logo pages.');
     expect(appliedToAllMessage('infographic', 1, 0)).toBe(
       'Background applied to 1 infographic page.',
     );
-    expect(appliedToAllMessage('slide', 3, 2)).toBe(
-      'Background applied to 3 slides. 2 locked slides kept their own.',
+    expect(appliedToAllMessage('logo', 3, 2)).toBe(
+      'Background applied to 3 logo pages. 2 locked logo pages kept their own.',
     );
-    expect(appliedToAllMessage('slide', 0, 2)).toBe(
-      'Every other slide is locked: 2 locked slides kept their own.',
+    expect(appliedToAllMessage('logo', 0, 2)).toBe(
+      'Every other logo page is locked: 2 locked logo pages kept their own.',
     );
   });
 });

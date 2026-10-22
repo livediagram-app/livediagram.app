@@ -295,12 +295,11 @@ const camel = (id: string) =>
     .split('-')
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join('');
-const PAGES_TOUR_STEP_SOURCE: string[] = (['slide', 'infographic', 'logo'] as const).flatMap(
-  (kind) =>
-    [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
-      .map((m) => m[1]!)
-      .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
-      .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
+const PAGES_TOUR_STEP_SOURCE: string[] = (['infographic', 'logo'] as const).flatMap((kind) =>
+  [...read(`live/components/tour/${kind}-tour-steps.ts`).matchAll(/^ +id: '([a-z-]+)',/gm)]
+    .map((m) => m[1]!)
+    .filter((id, i, ids) => id !== 'welcome' && ids.indexOf(id) === i)
+    .map((id) => `PagesTourStep${camel(`${kind}-${id}`)}`),
 );
 
 // Plan items name their type (titleCaseType of an item type id); set-up changes name the part.

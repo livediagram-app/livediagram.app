@@ -13,7 +13,7 @@ describe('PageNavigatorClusterStrip', () => {
 
   it('shows the place of the page someone is on and goes to its neighbours', () => {
     const onGo = vi.fn();
-    act(() => setCurrentPageKind('slide', 'b'));
+    act(() => setCurrentPageKind('logo', 'b'));
     render(<PageNavigatorClusterStrip pageIds={['a', 'b', 'c']} onGo={onGo} />);
     expect(screen.getByRole('group', { name: 'Page 2 of 3' }).textContent).toContain('2 of 3');
     fireEvent.click(screen.getByRole('button', { name: 'Next page' }));
@@ -28,7 +28,7 @@ describe('PageNavigatorClusterStrip', () => {
     expect(screen.getByRole('button', { name: 'Previous page' }).hasAttribute('disabled')).toBe(
       true,
     );
-    act(() => setCurrentPageKind('slide', 'b'));
+    act(() => setCurrentPageKind('logo', 'b'));
     expect(screen.getByRole('button', { name: 'Next page' }).hasAttribute('disabled')).toBe(true);
   });
 });

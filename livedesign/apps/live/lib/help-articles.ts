@@ -128,7 +128,6 @@ export const HELP_ARTICLES = {
   logoPages: 'canvas/pages-mode/logo-pages',
   wireframePages: 'canvas/pages-mode/wireframe-pages',
   // Each page kind's Show Me links its own article (docs/specs/007-editor/pages-tour.md).
-  slidePages: 'canvas/pages-mode/slide-pages',
   infographicLayouts: 'canvas/pages-mode/infographic-layouts',
   keyboardShortcuts: 'tips-and-tricks/keyboard-shortcuts',
   guestVsAccount: 'getting-started/guest-vs-account',
@@ -481,10 +480,7 @@ export const HELP_LINK_COPY: Record<HelpArticleKey, { title: string; description
     title: 'Learn about wireframe pages',
     description: 'Device frames, ready-made screens, the Elements palette and mockup export.',
   },
-  slidePages: {
-    title: 'Learn about slide pages',
-    description: 'Slide layouts, backgrounds, the deck and presenting.',
-  },
+
   infographicLayouts: {
     title: 'Learn about infographic layouts',
     description: 'Starting a page from a layout, its theme, and making it your own.',

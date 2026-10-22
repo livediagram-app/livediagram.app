@@ -1,6 +1,6 @@
 'use client';
 
-// An infographic or slide page's Tidy, its icon alone, left of the lock and cog in the title bar
+// An infographic page's Tidy, its icon alone, left of the lock and cog in the title bar
 // (docs/specs/007-editor/pages-mode.md "Tidy"), shown only while a press would change
 // something: a press aligns and spaces what is on the page, one edit (pageEdits.tidyPage, the pure lib/page-tidy.ts). On a desktop pointer,
 // hovering it shows the tidied page in place; leaving it puts the page back. An Editor's alone: the

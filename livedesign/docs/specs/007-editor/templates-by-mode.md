@@ -14,8 +14,8 @@ what starts there. A search on a start also finds the other modes' templates, ea
   canvas overrides (`templateCanvasOverrides`) take `opensIn` from it, so the mode a card shows and
   the mode the tab opens in can never disagree.
 - Draw templates: Blank Whiteboard and the eight [Draw templates](#draw-templates) below.
-- Pages templates: Blank Illustration, the three [blanks of a page kind](#blanks-of-a-page-kind),
-  Slide deck, Logo design, Group card and the
+- Pages templates: Blank Illustration, the two [blanks of a page kind](#blanks-of-a-page-kind),
+  Logo design, Group card and the
   eight [Pages templates](#pages-templates) below.
 - Plan templates: Blank Plan and the twenty-two [Plan templates](../026-plan/plan-templates.md), Kanban Board
   among them. Plan templates open on a worked example of cards: each but Blank Plan sets up a way of working across
@@ -38,13 +38,13 @@ what starts there. A search on a start also finds the other modes' templates, ea
 Popular opens with one blank per mode, in mode order. Each blank also leads its mode's Recommended in that mode's
 start ([Template starts](start-diagramming.md)), and is what the New Document wizard creates for the mode chosen:
 
-| Template           | Kind id              | Opens in | What it makes                                                                    |
-| ------------------ | -------------------- | -------- | -------------------------------------------------------------------------------- |
-| Blank Diagram      | `blank`              | Diagram  | An empty canvas (was "Blank Canvas").                                            |
-| Blank Whiteboard   | `whiteboard`         | Draw     | An empty board to draw on (was "Whiteboard").                                    |
-| Blank Session      | `blank-session`      | Workshop | An empty tab in Workshop, named "Untitled Session".                              |
-| Blank Illustration | `blank-illustration` | Pages    | One empty page that asks what it is for (Infographic, Slide, Logo or Wireframe). |
-| Blank Plan         | `blank-plan`         | Plan     | An empty Plan tab that opens on Start Planning.                                  |
+| Template           | Kind id              | Opens in | What it makes                                                             |
+| ------------------ | -------------------- | -------- | ------------------------------------------------------------------------- |
+| Blank Diagram      | `blank`              | Diagram  | An empty canvas (was "Blank Canvas").                                     |
+| Blank Whiteboard   | `whiteboard`         | Draw     | An empty board to draw on (was "Whiteboard").                             |
+| Blank Session      | `blank-session`      | Workshop | An empty tab in Workshop, named "Untitled Session".                       |
+| Blank Illustration | `blank-illustration` | Pages    | One empty page that asks what it is for (Infographic, Logo or Wireframe). |
+| Blank Plan         | `blank-plan`         | Plan     | An empty Plan tab that opens on Start Planning.                           |
 
 **Blank Spreadsheet** (`blank-spreadsheet`, Plan) is a sixth blank beside them (`EXTRA_BLANK_TEMPLATES`): one tab
 holding an empty Sheet that fills it, made from the `blank-spreadsheet` start, an empty grid with no template, no
@@ -56,13 +56,12 @@ shelf lists it after Blank Plan ([Marketing site](../019-marketing/marketing-sit
 
 ### Blanks of a page kind
 
-Blank Illustration's one page asks what it is for. Three more Pages blanks have already answered, for someone
-who knows they are making a deck, an infographic or a logo (`EXTRA_BLANK_TEMPLATES`, beside Blank
+Blank Illustration's one page asks what it is for. Two more Pages blanks have already answered, for someone
+who knows they are making an infographic or a logo (`EXTRA_BLANK_TEMPLATES`, beside Blank
 Spreadsheet):
 
 | Template          | Kind id             | What it makes                            |
 | ----------------- | ------------------- | ---------------------------------------- |
-| Blank Slide Deck  | `blank-slide-deck`  | One empty 16:9 slide page.               |
 | Blank Infographic | `blank-infographic` | One empty A4 portrait infographic page.  |
 | Blank Logo        | `blank-logo`        | One empty logo page (the 1024 artboard). |
 
@@ -71,20 +70,18 @@ Spreadsheet):
   `blankPageTemplateOverrides`), so a blank of a kind and a chosen Blank Illustration are the same page.
 - **No kind choice.** The page has a kind, so it never asks What Is This Page For? and Start Making Pages does not
   show over it ([Template starts](start-diagramming.md) "When it shows").
-- **Its layouts are offered as usual.** The empty slide, infographic or logo page shows its in-page **Start From a
-  Layout** card with its own kind's layouts (slide layouts on a slide, logo layouts on a logo page), as any empty
+- **Its layouts are offered as usual.** The empty infographic or logo page shows its in-page **Start From a
+  Layout** card with its own kind's layouts (logo layouts on a logo page), as any empty
   page of that kind does ([Pages](pages-mode.md)).
 - **Blanks like the others** (`isBlankTemplate`): in no category and on no category shelf, the tab keeps its name, a
   `/new?template=` link to one opens with the start closed. None is a mode's blank, so none leads Recommended or is
-  what the wizard creates. One is recommended: **Blank Slide Deck** takes the Slide Deck's place in Pages mode's
-  Popular (so in Start Making Pages' Recommended, after Blank Illustration), since a deck is most often
-  built from its own slides; the others are found in their groups or by search.
-- **Each leads its group in Start Making Pages**: Blank Slide Deck first in **Slides**, Blank Infographic in
-  **Infographics**, Blank Logo in **Logos** ([Template starts](start-diagramming.md)).
-  **Slides** holds decks alone; the Social Carousel, made to post rather than present, is in **Posters and Social**
+  what the wizard creates. They are found in their groups or by search, and Start Making Pages' Recommended
+  leads with Blank Infographic in Blank Illustration's place ([Template starts](start-diagramming.md)).
+- **Each leads its group in Start Making Pages**: Blank Infographic in **Infographics**, Blank Logo in **Logos**
+  ([Template starts](start-diagramming.md)). The Social Carousel, made to post, is in **Posters and Social**
   (posters, cards and social posts to print, pin up or share).
-- The landing page's **Blank Slate** shelf lists them after Blank Illustration, in that order (Slide Deck,
-  Infographic, Logo).
+- The landing page's **Blank Slate** shelf lists them after Blank Illustration, in that order (Infographic,
+  Logo).
 
 - The kind ids of the first two are unchanged, so `/new?template=blank` and
   `/new?template=whiteboard` links keep working.
@@ -247,24 +244,3 @@ unchanged; only the mode they open in moved from Diagram.
   start gave the document itself (a template's) is kept.
 - It is the document's name like any other: saved with it, shown in the header and the Explorer at once, and changed
   by renaming. No telemetry: it is not a person's rename.
-
-## Slide deck templates
-
-Besides the **Slide Deck** (a six-slide seed pitch), four decks are built from the slide layouts
-(`template-builders-layout-decks.ts`), six 16:9 slide pages each, every page one slide layout with
-its sample text replaced by the deck's own; no element carries a note. Each opens and
-closes on an animated background in colours of its own (custom colours, so they keep through a theme
-change) and sets the slides between on a soft still gradient, so they read and print plainly:
-
-- **Launch Keynote** (Aurora): a launch for a made-up notes app, Lumen: Keynote Title, Opening
-  Question, Three Points, Three Big Numbers, Process Flow, Call to Action.
-- **Quarterly Review** (Mesh): a support team's quarter: Keynote Title, Agenda Grid, Big Chart, Goals
-  Progress, Now Next Later, Questions.
-- **Team Welcome** (Bokeh): a new joiner's first morning: Keynote Title, About the Speaker (their
-  manager), Objectives (the first week), Four Ideas (how we work), Milestones, Contact (their buddy).
-- **Workshop Kickoff** (Waves): a design workshop's opening: Keynote Title, Objectives, Agenda Grid,
-  Process Flow (how each round runs), Key Takeaway (the one rule), Call to Action.
-
-They sit in Start Making Pages' **Slides** group after the Slide Deck, and in the Presentations
-category. A test pins each slide's text to its layout one for one, so a layout change that adds or
-drops a line fails until the deck follows.

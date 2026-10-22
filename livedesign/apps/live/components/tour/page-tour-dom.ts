@@ -72,27 +72,6 @@ export const SLIDES_BUTTON =
 export const SLIDE_DECK = '[data-tour-id="slide-deck"]';
 let deckOpened = false;
 
-// The deck's steps run back to back: each step's end lets go of the deck a moment later, and the next deck step's start
-// keeps it, so it stays open between them and still closes when the tour leaves it (another step, or the tour ends).
-const DECK_HANDOVER_MS = 120;
-let deckRelease: ReturnType<typeof setTimeout> | null = null;
-
-/** Opens the deck for a step, or keeps it open from the step before. */
-export async function holdSlideDeck(): Promise<void> {
-  if (deckRelease) clearTimeout(deckRelease);
-  deckRelease = null;
-  await openSlideDeck();
-}
-
-/** Lets go of the deck as a step ends: it closes unless the next step holds it. */
-export function releaseSlideDeck(): void {
-  if (deckRelease) clearTimeout(deckRelease);
-  deckRelease = setTimeout(() => {
-    deckRelease = null;
-    closeSlideDeck();
-  }, DECK_HANDOVER_MS);
-}
-
 export async function openSlideDeck(): Promise<void> {
   if (deckOpened) return;
   deckOpened = true;

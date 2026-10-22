@@ -735,8 +735,8 @@ checked, on every element path (`freehand-points.ts`), and an ops update giving 
 starts from the `whiteboard` template, a tab in Draw mode, and that any box may carry a small `rotation`.
 
 **Found by search.** A client that searches tools by text finds a tool by its name, description and schema, and
-ranks long ones down or leaves the largest out. So `create_document` leads with what it makes (a slide deck among
-them, and how to start one), `change_pages` says it is for slides, and the single-`tab` alias
+ranks long ones down or leaves the largest out. So `create_document` leads with what it makes (pages of infographics,
+logos and wireframes among them, and how to start one), `change_pages` says it is for those pages, and the single-`tab` alias
 is checked against the tab shape by the tool rather than repeating that shape (the whole element format) in the
 schema: the definition halved, from about 41 KB to 21 KB, the size of `update_document` and `add_tab`.
 
@@ -869,7 +869,7 @@ Pages are named by id, place (`2`) or name. The tool goes through one api route
 not, and reach open editors at once.
 
 - **`change_pages`** (destructive, as it deletes and replaces page content): up to 50 page changes in order,
-  `add` `{ kind, size, orientation, name, background, layout, at }` (infographic, slide or logo), `set`
+  `add` `{ kind, size, orientation, name, background, layout, at }` (infographic, logo or wireframe), `set`
   `{ page, name, size, orientation, background, locked }`, `layout` `{ page, layout }`, `move` `{ page, to }`,
   `duplicate` `{ page }`, `delete` `{ page }` and `apply_background_to_all` `{ page }` (every other page of its kind
   takes its background), written as one edit; a refusal writes nothing and names the
@@ -1148,7 +1148,7 @@ The output literals that named the container changed with it: `renamed`, `delete
 
 - **Previews**: `read_document` with `image` draws a Pages tab as its pages, each as the editor exports it
   (`svg-render-pages.ts` over `page-frame.ts`): its background, gradient, pattern or picture, the elements
-  reaching onto it cut at its edges, in rows (two slides or three tall pages to a row) with each page's place and name
+  reaching onto it cut at its edges, in rows (two wide pages or three tall pages to a row) with each page's place and name
   under it; `page` (an id, place or name) draws one page alone at its own size. An emoji icon, sticker or reaction pad, which needs a colour-emoji font a Worker lacks,
   draws from its Twemoji SVG (release 15.1.0 on jsDelivr, CC-BY 4.0, in `THIRD_PARTY_NOTICES.md`), fetched by its
   code points when the preview is made (`preview-emoji.ts`: at most `PREVIEW_EMOJI_MAX` (40) a preview, within

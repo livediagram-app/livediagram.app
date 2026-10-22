@@ -33,13 +33,12 @@ export * from './feature-art/infographics';
 export * from './feature-art/infographics-export';
 export * from './feature-art/logo';
 // The mode categories (docs/specs/019-marketing/marketing-site.md "Story beats"): Draw's markers and
-// erasers, Plan's boards, and Pages mode's slide pages.
+// erasers and Plan's boards.
 export * from './feature-art/whiteboard';
 export * from './feature-art/whiteboard-pen';
 export * from './feature-art/plan';
 export * from './feature-art/plan-views';
 export * from './feature-art/plan-dashboard';
-export * from './feature-art/slide-layouts';
 // Sheets on a Plan tab, two tabs side by side, and boards brought in from other tools.
 export * from './feature-art/sheet';
 // Forms (docs/specs/030-forms/forms.md): built in place, shared by link, responses landing.

@@ -95,7 +95,6 @@ describe('the shelves, as the template step lays them out', () => {
       'whiteboard',
       'blank-session',
       'blank-illustration',
-      'blank-slide-deck',
       'blank-logo',
       'blank-wireframe-phone',
       'blank-plan',

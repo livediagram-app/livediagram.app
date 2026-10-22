@@ -1263,18 +1263,11 @@ export const SETTINGS_CATEGORIES: SettingsCategorySpec[] = [
         {
           label: 'Pages Tours',
           event: { category: 'UI', on: 'PagesTourSeenOff', off: 'PagesTourSeenOn' },
-          keywords: 'tour walkthrough onboarding tutorial pages slides infographic logo all replay',
-          description: 'Every Pages tour at once: slides, infographics and logos.',
+          keywords: 'tour walkthrough onboarding tutorial pages infographic logo all replay',
+          description: 'Every Pages tour at once: infographics and logos.',
           helpArticle: 'pagesTour',
         },
       ),
-      tourTrackSwitch('pagesTourSeen', 'pagesTourKinds', PAGES_TOUR_KINDS, pagesKindSeen, 'slide', {
-        label: 'Slides Tour',
-        event: { category: 'UI', on: 'SlidesTourSeenOff', off: 'SlidesTourSeenOn' },
-        keywords: 'tour walkthrough onboarding tutorial pages slides deck present replay',
-        description: 'On a slide: layouts, backgrounds, the deck and presenting.',
-        helpArticle: 'pagesTour',
-      }),
       tourTrackSwitch(
         'pagesTourSeen',
         'pagesTourKinds',

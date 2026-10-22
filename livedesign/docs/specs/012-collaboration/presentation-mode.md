@@ -52,6 +52,45 @@ A whole Plan board can be a slide too: **Add to Slides** in the board's own **�
   "Board added to the slides" to a screen reader, as a card does.
 - Adding one sends `UI · Added · BoardSlide`.
 
+### The deck follows the pages
+
+On a Pages tab every **page is a slide**: a page is one finished visual, which is what a slide is,
+so a tab's pages are its deck without anyone building it. Each page joins the deck on its own, in
+page order, and the deck keeps following the pages as they change.
+
+- **Every page is in the deck.** Every page of a Pages tab has a page slide, whoever made the
+  page: a template, Add Page, a duplicate, an agent, a peer or an undo. A template opens ready to
+  present. The pass is `deckFollowingPages` (`packages/document/src/slide-deck-pages.ts`), run
+  whenever a loaded Pages tab's pages change (`deckPagesKey`), never on an element edit, and only
+  once the document and its stored deck have loaded, so it builds on the stored deck. An Editor's
+  pass is saved; a Viewer or Participant sees the same deck without writing it. A page's own slide
+  is named by its tab and page (`pageSlideIdFor`), so two editors adding it at once write the same
+  slide.
+- **In page order.** A tab's page slides run in its page order: move a page and its slide moves
+  with it. The slots those slides take in the deck keep their places among the other slides
+  (another tab's, an element slide, a card); only which page fills which slot follows the pages,
+  and a new page's slide joins the tab's run (its last slot, or the deck's end for a tab with none
+  yet). The other way round too: dragging a page's slide in the Slide Deck moves its page in the
+  tab (`pageMoveForDeckOrder`): just after the page whose slide now comes before it, else before
+  the page whose slide comes after it; nothing moves while it already sits between them.
+- **Hidden, never deleted.** A page's own slide has no Delete (the deck would put it straight
+  back); **Hide** leaves it out of the show, from the Slide Deck or the page's own deck button
+  ([Pages](../007-editor/pages-mode.md) "Slides"). `slidePageOwnSlideIds` names those slides.
+- **Copies delete.** To show a page twice, the Slide Deck's page picker adds it again (**Add as
+  slide**), or a page slide is duplicated: a copy runs with its page in page order, and deletes as
+  any slide does.
+- **A deleted page leaves the deck with it.** The pass removes every slide of a page its tab no
+  longer has: its own slide and its copies. Only on a tab whose pages have loaded, so a tab still
+  loading never loses its slides, and a page's id is never reused, so a missing id is a deleted
+  page. The session remembers the slides it removed (`GoneSlides`, at most `GONE_SLIDES_MAX` =
+  200), and the page coming back, by an undo or a peer's undo, brings them back as they were,
+  hidden ones hidden and copies too, into the tab's run in page order. A slide handed back is
+  forgotten, so one deleted by hand after it came back stays deleted. A reload forgets the memory:
+  a page coming back then gets a fresh slide, as any new page does.
+- **Cost**: the pass reads each tab's pages once per pages array and leaves the deck object as it
+  is when nothing changed, so an element edit costs a lookup; finding the own slides is one pass
+  over the deck and the tabs' pages (about 0.1 ms at the 100-page cap).
+
 ### Why not layers
 
 Layers ([Layers](../006-document/layers.md)) were the obvious candidate and were considered in detail: they are already an ordered list of element groups with a management panel, drag-reorder, per-band preview thumbnails, and a local render override (hover-solo) that is exactly the "show these bands only, without touching persisted state" mechanism a presentation needs. Reusing them would have been cheap.
@@ -80,7 +119,7 @@ type Slide = {
   // A page slide: a page of the tab, of any kind, resolved live
   // (what is on the page now, framed to the page; elementIds empty). While it presents,
   // the canvas shows that page's sheet alone. See
-  // docs/specs/007-editor/pages-mode.md "Slides".
+  // "The deck follows the pages" above and docs/specs/007-editor/pages-mode.md "Slides".
   pageId?: string;
   // An item slide: a Plan card, presented full screen and resolved live
   // (elementIds empty). See Item slides above.
@@ -133,13 +172,13 @@ The **Slide Deck panel** is the seventh tool panel, on exactly the contract the 
 
 - **The slide list**, in deck order, each row with its position, name, tab, member count, and a **preview thumbnail** from the shared headless SVG renderer (`useSlideThumbnails`, the same renderer the Layers panel rows, the Map and the exports use). One difference from the layer previews and the reason it is its own hook: every layer preview shares ONE viewBox, the tab's content bounds, so each band shows where its elements sit. Slides cannot, because a deck spans tabs and two tabs share no coordinate space, so each slide is framed to its own bounds — which is also what the presentation does when it runs.
 - **New slide from selection** — the primary authoring path. Select elements on the canvas, press the button; the slide takes the active tab. Also **Add selection to slide** for growing one, which is offered only while you are on that slide's own tab (a slide holds one tab's elements, so adding from another tab is not a thing to disallow politely, it is a thing that cannot be expressed).
-- **An empty deck stays empty.** No seeded slides, no "one per tab" starter. A generated deck is a deck you have to read and prune before you can trust it, and pruning somebody else's guesses is slower than making the three slides you meant. The one exception is not a guess: a **slide page** is a slide by what it is, so every slide page is in the deck, in its tab's page order ([Pages](../007-editor/pages-mode.md) "Slides"). A Slide Deck template therefore opens ready to present.
+- **An empty deck stays empty.** No seeded slides, no "one per tab" starter. A generated deck is a deck you have to read and prune before you can trust it, and pruning somebody else's guesses is slower than making the three slides you meant. The one exception is not a guess: a **page** is a slide by what it is, so every page of a Pages tab is in the deck, in its tab's page order ("The deck follows the pages"). A Pages template therefore opens ready to present.
 - **Remove from slide** — the other half of adding. Membership is edited for the life of the deck, not just when a slide is created.
 - **Every verb lives in the row's `…` menu**, built from the shared menu furniture the Explorer's rows and the tab context menu use, in the same shape: a quick-action icon **toolbar** (rename, notes, duplicate, with delete pinned right), then labelled accordion categories — **Selection** (add / remove what you have selected, with a line above the buttons saying what they act on; not offered on a page slide, which is whatever is on its page) and **Visibility** (hide this slide from the run, or show it again). A menu that looks like this one and like nothing else in the app is a menu people have to learn twice.
 - **Deleting a slide asks first**, in a ConfirmPopover anchored to the row's own menu button. The elements survive, but the arrangement does not, and the arrangement is what you spent the time on. The confirm says so: "The elements stay on the canvas." ("The element stays", for one), or for a page slide "The page stays."
 - **Hidden slides** are skipped by `presentableSlides`, which is the ONE place the run is decided — so the count on the Present button, the `7 / 23` in the HUD, and what advancing lands on can never disagree about the deck's length. The row shows a struck-through name and an eye marker, so a hidden slide is visible in the panel and invisible in the show. A row itself does ONE thing — press it to open that slide — because a panel the width of the palette cannot carry five controls per row and stay legible.
-- **Reorder** by dragging rows. A slide page's slide dragged out of its page order moves its page in the tab, since a tab's page slides follow its page order ([Pages](../007-editor/pages-mode.md) "Slides"). The order does NOT change while you drag: a caret shows where the row will land and the move commits on release, the way the tab bar reorders ([Tab folders](../006-document/tab-folders.md)). Reordering live reshuffled the list under the pointer, which moved the very row you were aiming at. Pointer events rather than HTML5 dnd, so it works on touch.
-- **Rename** inline, **delete**, and **duplicate** a slide. A slide page's only slide has no Delete: the deck would put it straight back, and **Hide** leaves it out of the show.
+- **Reorder** by dragging rows. A page's slide dragged out of its page order moves its page in the tab, since a tab's page slides follow its page order ("The deck follows the pages"). The order does NOT change while you drag: a caret shows where the row will land and the move commits on release, the way the tab bar reorders ([Tab folders](../006-document/tab-folders.md)). Reordering live reshuffled the list under the pointer, which moved the very row you were aiming at. Pointer events rather than HTML5 dnd, so it works on touch.
+- **Rename** inline, **delete**, and **duplicate** a slide. A page's own slide has no Delete: the deck would put it straight back, and **Hide** leaves it out of the show. A copy of it deletes.
 - **Presenter notes** opened from the row's `…` menu, written in a text area under the list, with the slide's optional **time budget** beside them — the two things you decide about a slide while writing the talk rather than while giving it (see Pacing). Here rather than on the canvas, because a note is about the slide rather than about anything on it, and behind the menu rather than always-on so the panel never grows a text area you did not ask for.
 - Selecting a row **switches to that slide's tab and highlights its members on the canvas**. This is how you check a slide without presenting, and it is why a slide names its tab rather than inferring one. A page slide has no members to highlight: its row frames its page instead, as the page's own label does ([Pages](../007-editor/pages-mode.md) "Slides").
 - **Present** — enters the full-screen deck at slide 1, with a badge carrying the slide count.
@@ -165,7 +204,9 @@ while that load runs the button reads **Starting** and is disabled. Its hover ca
 
 ### The Pages popover
 
-Over Pages mode's **Slides** button the panel is a roomy popover, 420 px wide, its list as tall as
+Over Pages mode's **Slides** button (in the bottom-right cluster, shown whenever the tab has
+pages, as every page is in the deck: [Pages](../007-editor/pages-mode.md) "Chrome in Pages mode")
+the panel is a roomy popover, 420 px wide, its list as tall as
 the screen allows:
 
 - **Header**: "Slide Deck", a badge with the slide count and the shown slides' planned minutes
@@ -179,7 +220,7 @@ the screen allows:
   starts the presentation at that slide. A press on the row opens the slide; drag reorders; the
   `…` menu holds the rest, as before.
 - **Empty state**: a deck glyph in a disc, "Build your deck", and a line naming the ways in: on a Pages tab,
-  "Slide pages join the deck on their own. For any other page, pick it below and press **Add as slide**."
+  "Pages join the deck on their own. To present one twice, pick it below and press **Add as slide**."
 - **Present**: a full-width accent button with the count of slides it will show.
 
 The corner panel in the other modes keeps its compact rows (small picture beside the number) and

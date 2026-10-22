@@ -166,10 +166,10 @@ describe('carryPageContent', () => {
     expect((huge[0] as TextElement).textScale).toBeCloseTo(0.8, 1);
   });
 
-  it('carries into slide and logo layouts too', () => {
+  it('carries into logo layouts too', () => {
     const page = relabel(build('title'), 'Your big headline', 'Q3 Results');
-    const slide = carryPageContent(page, pageLayoutById('slide-title').build(TALL));
-    expect(labels(slide)).toContain('Q3 Results');
+    const logo = carryPageContent(page, pageLayoutById('logo-icon-above').build(TALL));
+    expect(labels(logo)).toContain('Q3 Results');
   });
 
   it('stays within budget: placeholders warm in under 400 ms, a carry in under 20 ms', () => {

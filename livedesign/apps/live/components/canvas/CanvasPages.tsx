@@ -189,17 +189,13 @@ export function CanvasPages({
         // A locked page offers nothing to add (docs/specs/007-editor/pages-mode.md
         // "Locking a page"): no Layouts, no layout invite, no kind choice.
         const locked = page.locked === true;
-        // An infographic or slide page's Layouts and Background sit beside its cog, always; a
+        // An infographic or wireframe page's Layouts and Background sit beside its cog, always; a
         // locked page offers neither.
         const pageButtons =
-          !!edit &&
-          !locked &&
-          (page.kind === 'slide' ||
-            page.kind === 'wireframe' ||
-            pageKindOf(page) === 'infographic');
+          !!edit && !locked && (page.kind === 'wireframe' || pageKindOf(page) === 'infographic');
         // A wireframe page's Device, first beside its Layouts (PageDeviceButton).
         const deviceButton = pageButtons && page.kind === 'wireframe';
-        // An infographic or slide page's Tidy, left of its Background, shown only while it would
+        // An infographic or wireframe page's Tidy, left of its Background, shown only while it would
         // change something.
         const tidyButton = pageButtons && edit.canTidy?.(page.id) === true;
         // A logo page's empty artboard invites its layouts (its panel's Layouts tab).
@@ -210,18 +206,15 @@ export function CanvasPages({
           !bare &&
           !locked &&
           offersPageKindChoice(pages, page.id, edit.contentCount(page.id));
-        // A slide page's deck button sits beside its cog (PageDeckButton); any other page shows it
-        // once the deck has a slide of it, so its eye is there wherever the page is presented.
-        const deckButton =
-          !!edit &&
-          !!view.deck &&
-          !mobile &&
-          (page.kind === 'slide' || !!view.deck.slideOf(page.id));
+        // Every page's deck button sits beside its cog (PageDeckButton): every page is in the deck
+        // (docs/specs/012-collaboration/presentation-mode.md "The deck follows the pages"), so its eye
+        // is there wherever the page is presented.
+        const deckButton = !!edit && !!view.deck && !mobile;
         // Add Notes beside it once the deck has a slide of the page (PageNotesButton).
         const notesButton = deckButton && !!view.deck!.slideOf(page.id);
         const logoButtons = !!edit && page.kind === 'logo' && !!view.logo;
         // The title bar's fixed buttons (the cog, the lock, the deck button, a logo page's own and
-        // an infographic or slide page's): the invite and the label share what they leave.
+        // an infographic or wireframe page's): the invite and the label share what they leave.
         const buttons = {
           edit: !!edit,
           locked,
@@ -380,7 +373,7 @@ export function CanvasPages({
                     frameTheme={view.frameTheme}
                   />
                 ) : null}
-                {/* An infographic or slide page's Layouts (PageLayoutsButton). */}
+                {/* An infographic or wireframe page's Layouts (PageLayoutsButton). */}
                 {pageButtons ? (
                   <PageLayoutsButton
                     page={page}
@@ -393,7 +386,7 @@ export function CanvasPages({
                     }
                   />
                 ) : null}
-                {/* An infographic or slide page's Background (PageBackgroundButton). */}
+                {/* An infographic or wireframe page's Background (PageBackgroundButton). */}
                 {pageButtons ? (
                   <PageBackgroundButton
                     page={page}
@@ -407,7 +400,7 @@ export function CanvasPages({
                     }}
                   />
                 ) : null}
-                {/* An infographic or slide page's Tidy, its icon alone, left of the lock and cog
+                {/* An infographic or wireframe page's Tidy, its icon alone, left of the lock and cog
                     (PageTidyUpButton), while it would change something. */}
                 {tidyButton ? <PageTidyUpButton pageId={page.id} edit={edit} /> : null}
                 {/* The page's lock, before the cog (PageLockButton). */}

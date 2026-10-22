@@ -101,7 +101,7 @@ const CATEGORY_LIST: readonly CategoryInfo[] = [
     id: 'presentations',
     label: 'Presentations',
     searchWords: 'content',
-    description: 'Slide decks, posters, carousels and social posts.',
+    description: 'Posters, carousels, logos and social posts.',
   },
   {
     id: 'technical',
@@ -131,7 +131,6 @@ type BlankKind =
   | 'blank'
   | 'whiteboard'
   | 'blank-illustration'
-  | 'blank-slide-deck'
   | 'blank-infographic'
   | 'blank-logo'
   | 'blank-wireframe-phone'
@@ -252,16 +251,11 @@ const TEMPLATE_CATEGORY: Record<Exclude<TemplateKind, BlankKind>, TemplateCatego
   'floor-plan': 'design',
   'service-blueprint': 'design',
   // Presentations and Content: pages made to be read or shared.
-  'slide-deck': 'presentations',
   'how-it-works': 'presentations',
   'data-story': 'presentations',
   'year-in-review': 'presentations',
   versus: 'presentations',
   'social-carousel': 'presentations',
-  'launch-keynote': 'presentations',
-  'quarterly-review': 'presentations',
-  'team-welcome': 'presentations',
-  'workshop-kickoff': 'presentations',
   'event-poster': 'presentations',
   'logo-design': 'presentations',
   // Design: the wireframe flows sit with the other wireframes.

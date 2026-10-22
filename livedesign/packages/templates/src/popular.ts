@@ -43,7 +43,8 @@ export const POPULAR_BY_MODE: Readonly<Record<PopularChoice, readonly TemplateKi
   ],
   pages: [
     'blank-illustration',
-    'blank-slide-deck',
+    'logo-design',
+    'wireframe-mobile-app',
     'event-poster',
     'year-in-review',
     'social-carousel',

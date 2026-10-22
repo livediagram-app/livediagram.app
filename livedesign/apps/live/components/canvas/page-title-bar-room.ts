@@ -22,7 +22,7 @@ type TitleBarButtons = {
   // A slide in the deck: its Add Notes.
   notes: boolean;
   logo: boolean;
-  // An infographic or slide page's Layout and Background.
+  // An infographic or wireframe page's Layout and Background.
   page: boolean;
   tidy: boolean;
   // A wireframe page's Device.

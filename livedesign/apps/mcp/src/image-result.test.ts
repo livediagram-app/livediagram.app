@@ -73,11 +73,11 @@ describe('tabPreview', () => {
           y: 40,
           width: 100,
           height: 60,
-          label: 'On slide',
+          label: 'On the page',
         },
       ],
       opensIn: 'pages',
-      pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' }],
+      pages: [{ id: 'p1', orientation: 'landscape', kind: 'logo', size: 'logo' }],
     } as never;
     const blocks = await tabPreview(tab);
     expect(blocks).toMatchObject([{ type: 'image', mimeType: 'image/png' }]);
@@ -131,7 +131,7 @@ describe('tabPreview', () => {
       name: 'Deck',
       opensIn: 'pages',
       elements: [shot('a', 40), shot('b', 480)],
-      pages: [{ id: 'p1', orientation: 'landscape', kind: 'slide', size: 'slide' }],
+      pages: [{ id: 'p1', orientation: 'landscape', kind: 'logo', size: 'logo' }],
     } as never;
     const blocks = await tabPreview(tab, { env: {} as never, token: 't' });
     expect(blocks.map((b) => b.type)).toEqual(['text', 'image']);

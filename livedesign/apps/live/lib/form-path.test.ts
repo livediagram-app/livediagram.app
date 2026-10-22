@@ -16,8 +16,6 @@ describe('form paths', () => {
     expect(isFormPath('/form')).toBe(true);
     expect(isFormPath(`/form/${CODE}`)).toBe(true);
     expect(isFormPath('/formal')).toBe(false);
-    expect(formUrlFor('https://livedesign.app', CODE)).toBe(
-      `https://livedesign.app/form/${CODE}`,
-    );
+    expect(formUrlFor('https://livedesign.app', CODE)).toBe(`https://livedesign.app/form/${CODE}`);
   });
 });

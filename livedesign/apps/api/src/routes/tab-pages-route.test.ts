@@ -82,8 +82,8 @@ describe('page changes', () => {
     const { db, room } = await setUp();
     const res = await call(db, {
       pages: [
-        { op: 'add', kind: 'slide' },
-        { op: 'add', kind: 'slide', name: 'Two' },
+        { op: 'add', kind: 'logo' },
+        { op: 'add', kind: 'logo', name: 'Two' },
       ],
     });
     expect(res.status).toBe(200);
@@ -91,8 +91,8 @@ describe('page changes', () => {
     expect(body.switched).toBe(true);
     expect(body.lines[0]).toBe('Switched the tab to Pages.');
     expect(body.pages.map((p) => [p.place, p.kind, p.name])).toEqual([
-      [1, 'slide', null],
-      [2, 'slide', 'Two'],
+      [1, 'logo', null],
+      [2, 'logo', 'Two'],
     ]);
     expect(body.changesetId).toBeNull();
     const tab = stored(db);
@@ -112,7 +112,7 @@ describe('page changes', () => {
     const { db } = await setUp(204, { opensIn: 'illustrate' });
     const res = await call(
       db,
-      { pages: [{ op: 'add', kind: 'slide' }] },
+      { pages: [{ op: 'add', kind: 'logo' }] },
       { path: '/api/documents/D/tabs/t1/illustrate' },
     );
     expect(res.status).toBe(200);
@@ -124,8 +124,8 @@ describe('page changes', () => {
   it('lands a layout’s elements as a changeset, relayed before the pages', async () => {
     vi.spyOn(console, 'info').mockImplementation(() => {});
     const { db, room } = await setUp();
-    const layout = layoutCatalogueFor('slide').layouts[0]!.id;
-    const res = await call(db, { pages: [{ op: 'add', kind: 'slide', layout }] });
+    const layout = layoutCatalogueFor('logo').layouts[0]!.id;
+    const res = await call(db, { pages: [{ op: 'add', kind: 'logo', layout }] });
     const body = (await res.json()) as PagesAnswer;
     expect(body.changesetId).toMatch(/^cs_/);
     expect(body.pages[0]!.elements).toBeGreaterThan(0);

@@ -33,7 +33,9 @@ export function tourStepsFor({
   mobile: boolean;
   touch?: boolean;
 }): TourStep[] {
-  return TOUR_STEPS.filter((step) => !(step.mobileSkip && mobile)).map((step) => (touch && step.touchBody ? { ...step, body: step.touchBody } : step));
+  return TOUR_STEPS.filter((step) => !(step.mobileSkip && mobile)).map((step) =>
+    touch && step.touchBody ? { ...step, body: step.touchBody } : step,
+  );
 }
 
 // Telemetry `type` token for a step-viewed event: 'selection-modes' → 'TourStepSelectionModes'.

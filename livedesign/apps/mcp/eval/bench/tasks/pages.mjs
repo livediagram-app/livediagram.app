@@ -26,34 +26,27 @@ export default [
     id: 'I1',
     level: 'medium',
     prompt:
-      'A 6-slide pitch deck for a coffee subscription startup: problem, solution, market, business model, traction, ask.',
+      'Wireframe the 5 onboarding screens of a coffee subscription app: welcome, sign up, pick your roast, delivery schedule, payment.',
     checks: [
       [
-        '6 slides',
+        '5 screens',
         ({ snap }) => ({
-          pass: pagesOfKind(snap, 'slide').length === 6,
-          detail: `${pagesOfKind(snap, 'slide').length} slides`,
+          pass: pagesOfKind(snap, 'wireframe').length === 5,
+          detail: `${pagesOfKind(snap, 'wireframe').length} wireframe pages`,
         }),
       ],
       [
-        'problem, solution, market, business model, traction, ask',
+        'welcome, sign up, roast, delivery, payment',
         ({ snap }) =>
-          mentionsAll(snap, [
-            /problem/i,
-            /solution/i,
-            /market/i,
-            /business model|revenue|pricing/i,
-            /traction/i,
-            /\bask\b|raising|invest/i,
-          ]),
+          mentionsAll(snap, [/welcome/i, /sign up|create account/i, /roast/i, /deliver/i, /pay/i]),
       ],
       [
-        'every slide has content',
+        'every screen has content',
         ({ snap }) =>
           atLeast(
-            6,
-            pagesOfKind(snap, 'slide').filter((p) => (p.elements ?? 0) >= 2).length,
-            'slides with 2+ elements',
+            5,
+            pagesOfKind(snap, 'wireframe').filter((p) => (p.elements ?? 0) >= 2).length,
+            'screens with 2+ elements',
           ),
       ],
       ['about coffee subscriptions', ({ snap }) => mentionsAll(snap, [/coffee/i, /subscri/i])],

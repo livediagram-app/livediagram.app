@@ -36,13 +36,13 @@ const size = z
   .enum(PAGE_SIZE_IDS as [PageSizeId, ...PageSizeId[]])
   .describe(
     'Page size: a4, letter, a3, square, social (4:5), wide (9:16, or 16:9 turned) for infographic ' +
-      'pages; slide (16:9) or slide-classic (4:3) for slides; logo (1024) for logo pages; a wireframe page is its ' +
+      'pages; logo (1024) for logo pages; a wireframe page is its ' +
       'device (use device, not size). fit is never chosen.',
   );
 const orientation = z
   .enum(['portrait', 'landscape'])
   .describe(
-    'Portrait or landscape. Slides and logo pages have none; a wireframe page turns while its device is a phone or tablet.',
+    'Portrait or landscape. Logo pages have none; a wireframe page turns while its device is a phone or tablet.',
   );
 // A wireframe page's device (docs/specs/007-editor/wireframe-pages.md "The devices").
 const device = z
@@ -90,7 +90,7 @@ const layout = z
   .string()
   .describe(
     `A ready-made arrangement put onto the page in place of what is on it. Infographic: ${layoutIds('infographic')}. ` +
-      `Slide: ${layoutIds('slide')}. Logo: ${layoutIds('logo')}. Wireframe: ${layoutIds('wireframe')} ` +
+      `Logo: ${layoutIds('logo')}. Wireframe: ${layoutIds('wireframe')} ` +
       '(the wf-watch-* on a watch only, the rest anywhere else).',
   );
 const name = z
@@ -104,7 +104,7 @@ const pageChange = z
       .object({
         op: z.literal('add').describe('Add a page.'),
         kind: z
-          .enum(['infographic', 'slide', 'logo', 'wireframe'])
+          .enum(['infographic', 'logo', 'wireframe'])
           .describe('What the page is for (wireframe: a screen framed as a device).'),
         size: size.optional(),
         orientation: orientation.optional(),
@@ -116,9 +116,7 @@ const pageChange = z
         frameLook: frameLook.optional(),
         systemBars: systemBars.optional(),
       })
-      .describe(
-        'A new page; on a fresh tab its empty first page (or a blank deck’s one empty slide) becomes it.',
-      ),
+      .describe('A new page; on a fresh tab its empty first page becomes it.'),
     z
       .object({
         op: z.literal('set').describe('Change a page.'),
@@ -155,7 +153,7 @@ const pageChange = z
         page: pageRef,
       })
       .describe(
-        'Every other page of the same kind (every slide, say) takes this page’s background and pattern, as the Background tab’s Apply to All; a locked page keeps its own.',
+        'Every other page of the same kind (every logo page, say) takes this page’s background and pattern, as the Background tab’s Apply to All; a locked page keeps its own.',
       ),
     z
       .object({ op: z.literal('delete').describe('Delete a page.'), page: pageRef })
@@ -180,7 +178,7 @@ const pageOut = z
     place: z.number().describe('Its place in the row, 1 first.'),
     id: z.string().describe('The page id.'),
     name: z.string().nullable().describe('Its name, or null.'),
-    kind: z.string().describe('infographic, slide, logo or wireframe.'),
+    kind: z.string().describe('infographic, logo or wireframe.'),
     size: z.string().describe('Its size id.'),
     orientation: z.string().nullable().describe('portrait, landscape, or null for none.'),
     rect: canvasRect.describe(

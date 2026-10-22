@@ -250,7 +250,6 @@ export const FEATURE_ENTITY_HEX: Record<string, string> = {
   visualisations: '#6366f1',
   'colours-borders-opacity': '#9333ea',
   'formatting-label-text': '#0e7490',
-  'slide-pages': '#f97316',
 };
 
 /** Top-level feature category → accent hue, the fallback for a landing with no

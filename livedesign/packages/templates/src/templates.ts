@@ -34,7 +34,6 @@ export type TemplateKind =
   // UI wireframes (use the device-frame shapes added in docs/specs/008-canvas/canvas-and-palette.md's
   // Devices accordion). Situational starters for design / product work,
   // which is why they are extras rather than defaults.
-  | 'slide-deck'
   // A growth / momentum flywheel: a spinning hub and four hue-tinted
   // stage wheels on a flowing clockwise loop, each with its metric, plus
   // push / friction stickies. An extra.
@@ -193,7 +192,6 @@ export type TemplateKind =
   | 'blank-illustration'
   // The blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): one empty page
   // whose kind is already chosen (blank-page-templates.ts), so it never asks what it is for.
-  | 'blank-slide-deck'
   | 'blank-infographic'
   | 'blank-logo'
   | 'blank-wireframe-phone'
@@ -222,10 +220,6 @@ export type TemplateKind =
   | 'versus'
   | 'social-carousel'
   // Slide decks built from the slide layouts (template-builders-layout-decks.ts).
-  | 'launch-keynote'
-  | 'quarterly-review'
-  | 'team-welcome'
-  | 'workshop-kickoff'
   // Workshop mode's blank (docs/specs/012-collaboration/workshop-mode.md "Templates").
   | 'blank-session'
   // Plan templates (docs/specs/026-plan/plan-templates.md): a way of working across several tabs,
@@ -300,12 +294,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'blank-illustration',
     title: 'Blank Illustration',
     description: 'An empty page for an infographic, a slide, a logo or a wireframe.',
-    extra: true,
-  },
-  {
-    kind: 'blank-slide-deck',
-    title: 'Blank Slide Deck',
-    description: 'One empty 16:9 slide, ready for your first idea.',
     extra: true,
   },
   {
@@ -627,13 +615,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     kind: 'pyramid',
     title: 'Pyramid',
     description: 'A five-tier strategy pyramid, purpose down to initiatives, each tier explained.',
-    extra: true,
-  },
-  {
-    kind: 'slide-deck',
-    title: 'Slide Deck',
-    description:
-      'A six-slide pitch (title, problem, solution, traction, team, the ask) on 16:9 slide pages, with speaker notes.',
     extra: true,
   },
   {
@@ -1167,34 +1148,6 @@ export const TEMPLATES: TemplateDescriptor[] = [
     title: 'Social Carousel',
     description:
       'Five square slides for a LinkedIn or Instagram carousel: a hook, three tips and a call to action, swipe cues included.',
-    extra: true,
-  },
-  {
-    kind: 'launch-keynote',
-    title: 'Launch Keynote',
-    description:
-      'A six-slide launch keynote on an animated aurora: the hook, what is new, the beta in three numbers, the launch plan and the ask.',
-    extra: true,
-  },
-  {
-    kind: 'quarterly-review',
-    title: 'Quarterly Review',
-    description:
-      'A six-slide quarterly business review on a moving mesh: the agenda, the quarter in a chart, goals as progress rings and the roadmap.',
-    extra: true,
-  },
-  {
-    kind: 'team-welcome',
-    title: 'Team Welcome',
-    description:
-      'A six-slide welcome for a new joiner on floating bokeh: their manager, their first week, how the team works and who to ask.',
-    extra: true,
-  },
-  {
-    kind: 'workshop-kickoff',
-    title: 'Workshop Kickoff',
-    description:
-      'A six-slide workshop opener on rolling waves: the outcomes, the agenda, how each round runs, the one rule and the close.',
     extra: true,
   },
   ...FORM_TEMPLATES,

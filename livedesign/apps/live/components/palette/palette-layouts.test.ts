@@ -369,30 +369,10 @@ describe('palette layouts', () => {
     expect(tilesOf('write')).toEqual(['tools:text', 'tools:sticky']);
     expect(tilesOf('media')).toEqual(['tools:image']);
     // No Logo category anywhere: its tools are Draw's.
-    for (const kind of ['design', 'slide', 'wireframe', 'logo'] as const)
+    for (const kind of ['design', 'wireframe', 'logo'] as const)
       expect(paletteCategoriesFor('pages', { pagesKind: kind }).map((c) => c.id)).not.toContain(
         'logo',
       );
-  });
-
-  it('gives a slide page words, shapes and media first, then what makes a point (pages-mode.md)', () => {
-    const slide = paletteCategoriesFor('pages', { pagesKind: 'slide' });
-    expect(slide.map((c) => c.id)).toEqual([
-      'popular',
-      'write',
-      'shapes',
-      'media',
-      'data',
-      'concepts',
-      'components',
-      'devices',
-      'icons',
-      'stickers',
-    ]);
-    expect(slide.find((c) => c.id === 'media')!.group).toBe(0);
-    expect(slide.find((c) => c.id === 'components')!.tiles!.map((t) => t.id)).not.toContain(
-      'components:header',
-    );
   });
 });
 
@@ -457,7 +437,7 @@ describe('the Pages kinds', () => {
     expect(tileIds('pages', 'components')).toContain('components:card');
   });
 
-  it.each(['design', 'slide', 'wireframe', 'logo'] as const)(
+  it.each(['design', 'wireframe', 'logo'] as const)(
     'shares no tile between two categories in %s, Popular aside',
     (kind) => {
       const seen = new Map<string, string>();
@@ -472,7 +452,7 @@ describe('the Pages kinds', () => {
   );
 
   it('fills each kind’s Popular from its own categories', () => {
-    for (const kind of ['design', 'slide', 'wireframe', 'logo'] as const) {
+    for (const kind of ['design', 'wireframe', 'logo'] as const) {
       const cats = paletteCategoriesFor('pages', { pagesKind: kind });
       const popular = cats.find((c) => c.id === 'popular')!.tiles!.map((t) => t.id);
       const rest = new Set(

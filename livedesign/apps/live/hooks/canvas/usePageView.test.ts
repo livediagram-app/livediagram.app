@@ -4,12 +4,13 @@
 // on a filled page for.
 import { renderHook } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { createText, layOutPages, newSlidePage, type Element } from '@livedesign/document';
+import { createText, layOutPages, type Element, type Page } from '@livedesign/document';
 import { usePageView } from './usePageView';
 
-const plain = layOutPages([newSlidePage('s', 'slide')]);
+const page: Page = { id: 's', orientation: 'landscape', kind: 'logo', size: 'logo' };
+const plain = layOutPages([page]);
 const filled = layOutPages([
-  { ...newSlidePage('s', 'slide'), background: { fill: { kind: 'solid', color: '#ffffff' } } },
+  { ...page, background: { fill: { kind: 'solid', color: '#ffffff' } } },
 ]);
 const r = filled[0]!.rect;
 const words: Element[] = [{ ...createText(r.x + 40, r.y + 40), id: 'w' }];

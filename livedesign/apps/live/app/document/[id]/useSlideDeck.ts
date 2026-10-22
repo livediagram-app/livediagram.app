@@ -182,8 +182,8 @@ export function useSlideDeck({
     [],
   );
 
-  // The deck follows the slide pages (docs/specs/007-editor/pages-mode.md "Slides"): each in the deck, a tab's
-  // page slides in its page order. An editor saves it; a viewer only sees it, the same deck an editor would store.
+  // The deck follows the pages (docs/specs/012-collaboration/presentation-mode.md "The deck follows the
+  // pages"): each in the deck, a tab's page slides in its page order. An editor saves it; a viewer only sees it, the same deck an editor would store.
   // Built on the deck as it stands when the update runs, so a stored deck hydrated in the same pass is the base.
   // A deleted page takes its slides out of the deck; the session remembers them, so an undo of the delete (or a
   // peer's) brings them back as they were.
@@ -193,7 +193,7 @@ export function useSlideDeck({
     if (isReadOnly) setDeck(follow);
     else commitDeck(follow);
   }, [commitDeck, goneSlides, isReadOnly, tabsRef]);
-  // The slides a slide page holds in the deck, which the panel offers Hide for rather than Delete.
+  // The slides a page holds in the deck as its own, which the panel offers Hide for rather than Delete.
   // One pass over the deck and the loaded Pages tabs' pages: about 0.1 ms at the 100-page cap.
   const ownPageSlideIds = useMemo(() => slidePageOwnSlideIds(deck, tabs), [deck, tabs]);
 

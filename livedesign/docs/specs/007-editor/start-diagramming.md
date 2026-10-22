@@ -57,7 +57,7 @@ draws them.
 Recommended is the mode's Popular shelf (`popularKindsFor`, the picks the marketing gallery leads with), **its blank
 first**, less **Timeline**, which is left to its group. Start Making Pages swaps one of the shelf's picks for a blank
 of a page kind, a page already of its kind being the quicker start: **Blank Infographic** in place of Blank
-Illustration, so it leads Blank Infographic, Blank Slide Deck. The shelf itself (the gallery's) is unchanged. The groups (`components/start/start-template-items.ts`,
+Illustration, so it leads Blank Infographic, Logo Design. The shelf itself (the gallery's) is unchanged. The groups (`components/start/start-template-items.ts`,
 `TEMPLATE_STARTS`):
 
 - **Diagram:** the catalogue's categories that hold a Diagram template ([Canvas and
@@ -65,9 +65,9 @@ Illustration, so it leads Blank Infographic, Blank Slide Deck. The shelf itself 
   (Flowcharts, Org Charts, Timelines and so on).
 - **Draw**, whose templates are drawn, by what each is for: **Visual Notes**, **Exercises**, **Prototypes**.
 - **Workshop**, whose templates nearly all share one category, by the session each runs: **Retrospectives**, **Meetings**, **Spaces** (offices and halls to walk round together in Avatar mode), **Quizzes & Games**, **Ideation**, **Planning** (goals, roadmaps and who does what), **Strategy** (the business, the people and the opportunities) and **Decisions** (the boards with a dot vote).
-- **Pages**, likewise, by what each makes: **Slides**, **Infographics**, **Posters and Social**, **Logos**, **Design** (wireframes, storyboards and floor plans, [Templates by mode](templates-by-mode.md#design-templates)).
-  Slides, Infographics and Logos each lead with their blank of that page kind (Blank Slide Deck, Blank
-  Infographic, Blank Logo: [Templates by mode](templates-by-mode.md#blanks-of-a-page-kind)), one empty
+- **Pages**, likewise, by what each makes: **Infographics**, **Posters and Social**, **Logos**, **Design** (wireframes, storyboards and floor plans, [Templates by mode](templates-by-mode.md#design-templates)).
+  Infographics and Logos each lead with their blank of that page kind (Blank Infographic, Blank
+  Logo: [Templates by mode](templates-by-mode.md#blanks-of-a-page-kind)), one empty
   page of the kind meant.
 
 A template of the mode in none of its groups is placed in the last group, so every listed template is reachable.
@@ -170,7 +170,7 @@ not an empty result: the start finds it in Workshop, shows it, and choosing it t
 The tab's first page is drawn only once the start is done: while Start Making Pages is open there is no page behind
 it (`EditorCanvasHost` passes no pages), so nothing waits under the panel. Picking a template lands its pages;
 closing the panel, or choosing **Blank Illustration**, shows the first page with its own **What Is This Page For?**
-([Pages](pages-mode.md)). A blank of a page kind (Blank Slide Deck, Blank Infographic, Blank Logo) lands one page of that kind, already chosen, so it asks nothing and the start does not come back over it.
+([Pages](pages-mode.md)). A blank of a page kind (Blank Infographic, Blank Logo) lands one page of that kind, already chosen, so it asks nothing and the start does not come back over it.
 
 **The last page can be deleted.** Deleting it clears the tab, its pages and its elements, as one edit that Undo puts back, and brings Start Making Pages back even if it was closed. The agents'
 page edits keep their own rule (`pageRemoved` refuses the last page, `last_page`).

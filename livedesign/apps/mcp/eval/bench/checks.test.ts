@@ -121,7 +121,7 @@ describe('sheet readers', () => {
 describe('pagesOf', () => {
   it('reads every kind of page line', () => {
     const pages = [
-      'page 1 page-1 · slide Slide (16:9) · at -960,-540 1920x1080 · 3 elements',
+      'page 1 page-1 · wireframe iPhone · at -960,-540 1920x1080 · 3 elements',
       'page 2 "Tip 2" page-99 · infographic Square · at 636,-540 1080x1080 · 16 elements',
       'page 3 "Badge" page-3 · logo 1024 x 1024 · at -512,-512 1024x1024 · background #fdf3e3 · 5 elements',
     ].join('\n');
@@ -131,8 +131,8 @@ describe('pagesOf', () => {
         tabId: 't',
         n: 1,
         name: null,
-        kind: 'slide',
-        format: 'Slide (16:9)',
+        kind: 'wireframe',
+        format: 'iPhone',
         x: -960,
         y: -540,
         width: 1920,
@@ -174,13 +174,13 @@ describe('parseTabHeader', () => {
     ).toEqual({ kind: 'form', mode: 'plan' });
     expect(
       parseTabHeader(
-        'tab 3be5 "Deck" · 53 elements: 53 boxes · mode=pages · 6 pages: 5 slide, 1 infographic (view pages) · rev 5',
+        'tab 3be5 "Flow" · 53 elements: 53 boxes · mode=pages · 6 pages: 5 wireframe, 1 infographic (view pages) · rev 5',
       ),
     ).toEqual({
       kind: null,
       mode: 'pages',
       pageCount: 6,
-      pageKinds: { slide: 5, infographic: 1 },
+      pageKinds: { wireframe: 5, infographic: 1 },
     });
   });
 });

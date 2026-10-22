@@ -3,8 +3,8 @@ import type { TemplateKind } from '@livedesign/templates';
 import { pv } from './motion';
 
 // Group 20: the blanks of a page kind (docs/specs/007-editor/templates-by-mode.md "Blanks of a page kind"): Blank
-// Slide Deck, Blank Infographic and Blank Logo. Each draws its one empty page in its own proportions
-// (a 16:9 slide, an A4 page, the square artboard) with the dashed edge, faint guides and sky "+" of Blank
+// Infographic and Blank Logo. Each draws its one empty page in its own proportions (an A4 page, the square
+// artboard) with the dashed edge, faint guides and sky "+" of Blank
 // Illustration's page, so the Pages blanks read as a set. Hover story: the guides light up, what the page is for.
 // Static SVG preview tiles, one branch per TemplateKind; TemplatePreview chains the groups with ??.
 
@@ -38,18 +38,6 @@ function Plus({ cx, cy }: { cx: number; cy: number }) {
 
 export function templatePreviewGroup20(kind: TemplateKind): ReactElement | null {
   switch (kind) {
-    case 'blank-slide-deck':
-      // One empty 16:9 slide: the faint title and subtitle a first slide waits for. Hover story: they light up.
-      return (
-        <svg width="80" height="50" viewBox="0 0 80 50" aria-hidden>
-          <Page x={13} y={10.5} width={54} height={30.4} />
-          <g className="pv-pulse" style={pv({ '--pv-at': '500ms' })}>
-            <rect x="25" y="19" width="30" height="3.2" rx="1" fill={GUIDE} />
-            <rect x="30" y="24.6" width="20" height="1.6" rx="0.8" fill={GUIDE} />
-          </g>
-          <Plus cx={40} cy={33.5} />
-        </svg>
-      );
     case 'blank-infographic':
       // One empty A4 infographic page: faint blocks where a layout goes (a header, a stat, a chart, a strip). Hover
       // story: the blocks light up, the layout it can start from.

@@ -11,10 +11,10 @@ its page, clipping, centring) are in [Editor modes](editor-modes.md) "The pages"
 | Term                | Means                                                                                                                                 |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | **page**            | One sheet of a tab in Pages mode (`Page`), stored in `Tab.pages` in row order.                                                        |
-| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **slide**, **logo** or **wireframe** page.                             |
+| **page kind**       | What a page is for, fixed when it is made: an **infographic**, **logo** or **wireframe** page.                                        |
 | **page size**       | The sheet's format (`PageSizeId`): its short and long side in canvas px, or Fit to Content's own sides.                               |
 | **row anchor**      | Where the row of pages sits on the canvas (`Page.rowAt`): the first page's centre.                                                    |
-| **orientation**     | Portrait (the long side upright) or landscape. A square page, and a slide size, has none.                                             |
+| **orientation**     | Portrait (the long side upright) or landscape. A square page has none.                                                                |
 | **page background** | What the sheet is painted with (`PageBackground`): a solid colour, a two-stop gradient or a picture under an overlay, plus a pattern. |
 | **page layout**     | A ready-made arrangement of elements put onto one page (`PageLayoutId`), to start from and then edit.                                 |
 | **page panel**      | The page's settings, opened from the cog above its top-right corner.                                                                  |
@@ -36,11 +36,6 @@ one category (Popular, a pick from across them, aside).
 
 - **Design** (infographic pages): Popular, Shapes, Library,
   Write, Concepts, Components, Devices, Icons, Stickers, Media, Data.
-- **Slide** (slide pages): Popular (a
-  title, a picture, a chart and a point), then in Common **Write**, **Shapes**, **Media** (with
-  its embeds: a video, a prototype or a page a talk plays) and **Library**; in Structure **Data**,
-  **Concepts**, **Components** (no website Header) and **Devices** (a screenshot in a frame); then
-  **Icons** and **Stickers**.
 - **Wireframe** (wireframe pages): **Components** and **Elements** first, in a band of their own
   (a divider after Elements), then the rest without **Concepts** and **Devices**
   ([Wireframe pages](wireframe-pages.md) "The Elements palette").
@@ -61,15 +56,11 @@ nothing moves under reduced motion.
 
 ## Page kinds
 
-A page is one of four kinds (`Page.kind`), chosen when it is made and never changed
+A page is one of three kinds (`Page.kind`), chosen when it is made and never changed
 afterwards (the one exception: the first page's own choice, below):
 
 - **Infographic** (`kind: 'infographic'`, or absent: unchosen, and every page from before kinds):
   a sheet to lay out elements on, freely, starting from a layout. Everything in this spec applies to it.
-- **Slide** (`kind: 'slide'`): one slide of a deck, to lay out like an infographic page and
-  present. Always landscape, in a slide size (16:9, or the classic 4:3); it offers no orientation
-  and no other size. It starts from the **slide layouts** rather than the infographic ones.
-  Everything in this spec for infographic pages applies to it except where a rule says otherwise.
 - **Logo** (`kind: 'logo'`): a square artboard (1024 x 1024) to design a logo on, laid out like an
   infographic page, with construction guides, mirror drawing, wordmark type, combining shapes,
   and a logo kit export ([Logo pages](logo-pages.md)). Everything in this spec for
@@ -85,15 +76,14 @@ after it, level with its middle, or, zoomed out so far that the gap is narrower 
 screen px clear of the page), held at one screen size:
 
 - **The +** adds **another page like the last one**, at once: its kind and shape (an infographic
-  page's size and orientation, a slide's size, the logo artboard), and a wireframe page's device, frame look, orientation and system bars too
+  page's size and orientation, the logo artboard), and a wireframe page's device, frame look, orientation and system bars too
   ([Wireframe pages](wireframe-pages.md)). It carries the last page's background as every new page
-  does, never its content. Its tooltip and name say what it adds: **Add Another Slide**, **Add
-  Another Infographic Page**, **Add Another Logo Page**, **Add Another iPhone Screen** (a browser's **Browser Page**, a watch's **Watch Face**).
+  does, never its content. Its tooltip and name say what it adds: **Add Another Infographic
+  Page**, **Add Another Logo Page**, **Add Another iPhone Screen** (a browser's **Browser Page**, a watch's **Watch Face**).
 - **The button under it** (a grid, tooltip **Add a Page of Any Kind**) opens **Add a Page**: a
   compact list, one row per kind, its glyph, its name and a short line, so it stays small however
   many kinds there are:
   - **Infographic**: "Lay out icons, charts and media."
-  - **Slide**: "A widescreen slide for a deck."
   - **Logo**: "A square artboard for a mark."
   - **Wireframe**: "A phone, tablet or web screen.", with a chevron: it turns the list to
     **Choose a Device**, a row per device (its miniature, name and screen size) under its family,
@@ -106,8 +96,8 @@ screen px clear of the page), held at one screen size:
 
 The first page's own choice (below) keeps its cards, two by two, arrow keys moving between them. A new
 infographic page takes the last infographic page's size and orientation (else A4 portrait; A4 in
-its orientation after a Fit to Content page, whose sides are that page's alone); a new slide takes the last
-slide's size (else 16:9), landscape; a new logo page is the 1024 x 1024 artboard. Whatever its
+its orientation after a Fit to Content page, whose sides are that page's alone); a new logo page
+is the 1024 x 1024 artboard. Whatever its
 kind, a new page **carries over the background** of the page before it (the last page): its fill
 and pattern, a logo page taking the fill alone (it takes no pattern). It is the new page's own
 from then on.
@@ -116,10 +106,7 @@ from then on.
 paper, or the first page once it is chosen as an infographic, or a Blank Infographic's page)
 starts on the tab theme's **Dusk** gradient (the Gradient category's Theme Dusk: the theme's
 accent shaded 65% toward black at the top into its second colour shaded 40%), so a fresh page looks
-designed rather than bare; light ink reads on it at 4.5:1 or better on every built-in theme. A new
-slide document's slide (a Blank Slide Deck's, or the first page chosen as a slide) starts on the
-**Steel** gradient (a cool light grey, `#f1f5f9` to `#cbd5e1`, where dark ink reads at 7:1); a
-slide added to a deck carries over the slide before it, as every page does. A new logo
+designed rather than bare; light ink reads on it at 4.5:1 or better on every built-in theme. A new logo
 page starts on the plain paper as before, and a template that comes with content keeps the paper it
 was designed on. Every path that makes a page lands the same: adding
 one, choosing the first page's kind, the template picker and an AI tool's template. The popover is the same on
@@ -127,12 +114,11 @@ a phone (a bottom sheet). The + already adds another of the last page's kind, so
 
 A tab entering Pages mode with no pages stored starts with one page, its kind unchosen.
 
-**The first page's choice**: while a tab's only page is unchosen and empty, it offers the four kinds
+**The first page's choice**: while a tab's only page is unchosen and empty, it offers the three kinds
 inside itself, for someone who may edit: a card centred on the page, held at one screen size,
-**What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same four
+**What Is This Page For?** ("Choose now: a page keeps its kind once you start."), over the same three
 cards as the popover. **Infographic** keeps the page, now chosen (`kind: 'infographic'`), and the
-choice goes; **Slide** turns it into a 16:9 landscape slide (`kind: 'slide'`), its slide layouts inviting;
-**Logo** turns it into the artboard (`kind: 'logo'`), its logo layouts inviting; **Wireframe** turns
+choice goes; **Logo** turns it into the artboard (`kind: 'logo'`), its logo layouts inviting; **Wireframe** turns
 the card to Choose a Device, and the device chosen turns it into that device's screen
 (`kind: 'wireframe'`, [Wireframe pages](wireframe-pages.md)). One edit each. Anything put on the page first (a layout, an element) is choosing Infographic by doing: the
 offer goes while the page has content, and comes back if it is emptied while still unchosen. The
@@ -149,8 +135,7 @@ view, nor on a second page (a page added from the + is chosen in the popover).
   page); the **name** field (placeholder `Page n`, or `Untitled page` while there is one
   page; renamed on Enter, on leaving the field, or on closing the panel), then its tabs: **Page**
   alone on an infographic page, with no tab switch (its Layout, Background and Tidy are the
-  buttons beside the cog, "Beside the cog" below); a slide page: **Page** and **Background** (its
-  Layout is the button beside the cog); a logo page: **Background** and **Layouts**, its Layouts the logo layouts, [Logo pages](logo-pages.md)
+  buttons beside the cog, "Beside the cog" below); a logo page: **Background** and **Layouts**, its Layouts the logo layouts, [Logo pages](logo-pages.md)
   "The page panel"; Page is there only while the page has a size or orientation to choose), then the action row (Split Into Pages on a Fit to Content page, Duplicate, Move left, Move right, Delete) as icon buttons
   with tooltips. **Page** holds the **Size** tiles (each drawn to scale) and **Orientation**
   (Portrait / Landscape, absent for a page with no orientation); **Background** holds the
@@ -190,41 +175,30 @@ field after `orientation` is optional and absent on a page that never set it:
 - `locked` is present (`true`) exactly on a locked page ("Locking a page"); `startedBlank` is
   present (`true`) once its in-page layout card was hidden for good.
 - `kind` absent is **infographic**.
-- A **slide** page is always in a slide size and landscape: a stored slide page in any other size
-  is read as 16:9, and its orientation as landscape.
 
 A stored page that is malformed in any optional field keeps its valid fields and drops the rest; a
 page with no valid `id` or `orientation` is skipped (as today), as is a repeat of an id already read.
 A new page's id is random (`page-` and eight hex digits) and never one the tab's pages have had, so
-a slide of a deleted page can never find a new page under the old id.
+a deck slide of a deleted page can never find a new page under the old id.
 
 ## Sizes
 
-| Size id         | Label (portrait / landscape)               | Short x long side (px) | For                       |
-| --------------- | ------------------------------------------ | ---------------------- | ------------------------- |
-| `a4`            | A4                                         | 794 x 1123             | Print, the default        |
-| `letter`        | US Letter                                  | 816 x 1056             | Print in North America    |
-| `a3`            | A3                                         | 1123 x 1587            | Posters                   |
-| `square`        | Square                                     | 1080 x 1080            | Social posts              |
-| `social`        | Portrait post (4:5) / Landscape post (5:4) | 1080 x 1350            | Instagram and LinkedIn    |
-| `wide`          | Story (9:16) / Widescreen (16:9)           | 1080 x 1920            | Stories, and screens wide |
-| `slide`         | Slide (16:9)                               | 1080 x 1920            | Slides, landscape only    |
-| `slide-classic` | Classic slide (4:3)                        | 1080 x 1440            | Slides for 4:3 screens    |
-| `logo`          | 1024 x 1024                                | 1024 x 1024            | Logos, logo pages only    |
-| `fit`           | Fit to Content                             | its own (`fit`)        | A board put onto a page   |
+| Size id  | Label (portrait / landscape)               | Short x long side (px) | For                       |
+| -------- | ------------------------------------------ | ---------------------- | ------------------------- |
+| `a4`     | A4                                         | 794 x 1123             | Print, the default        |
+| `letter` | US Letter                                  | 816 x 1056             | Print in North America    |
+| `a3`     | A3                                         | 1123 x 1587            | Posters                   |
+| `square` | Square                                     | 1080 x 1080            | Social posts              |
+| `social` | Portrait post (4:5) / Landscape post (5:4) | 1080 x 1350            | Instagram and LinkedIn    |
+| `wide`   | Story (9:16) / Widescreen (16:9)           | 1080 x 1920            | Stories, and screens wide |
+| `logo`   | 1024 x 1024                                | 1024 x 1024            | Logos, logo pages only    |
+| `fit`    | Fit to Content                             | its own (`fit`)        | A board put onto a page   |
 
 - **Which sizes a page offers** depends on its kind. An **infographic** page: A4,
-  US Letter, A3, Square, Post and Story (never a slide size: a deck is made of slide pages; an
-  infographic page already on the Slide size keeps that tile until it moves off it). A **slide** page:
-  **Slide** (16:9) and **Classic** (4:3) only. A **logo** page: the `logo` size only, and no Size
+  US Letter, A3, Square, Post and Story. A **logo** page: the `logo` size only, and no Size
   section ([Logo pages](logo-pages.md)).
-- The **slide sizes** (`slide`, `slide-classic`) are **landscape only**: like a square they show no
-  Portrait / Landscape choice, a page in one is always drawn landscape, and a turn is refused. An
-  infographic page left on one keeps whatever orientation it had, so turning it back to a paper
-  size restores it; a slide page's is always landscape.
 - The size tiles sit four to a row. Turned landscape, the Story (9:16) reads **Widescreen
-  (16:9)**; a landscape page still on the Slide size shows its Slide tile in Widescreen's place,
-  never two tiles of one shape.
+  (16:9)**.
 - A page is only ever given a size its kind offers; any other is refused.
 - **Fit to Content** (`fit`) is the page made around a board that does not fit a paper size ("Into
   pages"): its sides are its own (`Page.fit`), the content's bounds plus the page margin
@@ -245,16 +219,16 @@ a slide of a deleted page can never find a new page under the old id.
   one, about the page's centre, until it does: text elements' text scales with it (`textScale`)
   and arrows' bends with their lines; a shape's own label keeps its size. Nothing is cut off. The
   pages after it move along. One edit, one undo.
-- The page label reads `<name> · <size label> · <Portrait|Landscape> · <Slide|Logo|Wireframe>`,
+- The page label reads `<name> · <size label> · <Portrait|Landscape> · <Logo|Wireframe>`,
   the name only where the page has one: never "Page n", which the page navigator shows.
-  Only the paper sizes (A4, US Letter, A3) add the orientation: a square and Fit to Content have none, and the post,
-  story and slide labels already say which way they face. The kind ends it, but for an infographic
+  Only the paper sizes (A4, US Letter, A3) add the orientation: a square and Fit to Content have none, and the post
+  and story labels already say which way they face. The kind ends it, but for an infographic
   page, the plain page, which leaves the kind off so its title bar keeps the room for its
-  controls, and for a slide, whose size already says Slide ("Intro · Slide (16:9)", never "Slide (16:9) · Slide").
+  controls.
 
 ## Backgrounds
 
-Every page kind (infographic, slide and logo) is painted the same way, except that a logo
+Every page kind (infographic, logo and wireframe) is painted the same way, except that a logo
 page takes no pattern and no picture ([Logo pages](logo-pages.md) "A logo page"). The page panel's
 **Background** section sorts its fills into three **categories**, a row of tiles at its top read like the
 Pattern tiles: each a small sheet picturing what it makes (the page's own fill on its category's tile, else
@@ -320,7 +294,7 @@ between categories changes nothing on the page.
 
 ### Re-inking
 
-When a page's fill changes (any page kind: infographic, slide, logo), every colour of its
+When a page's fill changes (any page kind: infographic, logo, wireframe), every colour of its
 own on the page is measured against what it now sits on, and only a colour that falls under its
 **floor** is changed: lightened or darkened, keeping its hue, by the least amount that reaches its
 **target**, whichever way (lighter or darker) needs the smaller change. A colour that still reads
@@ -415,24 +389,23 @@ drawing only, never stored:
 - **The chart's own text** (its axis labels, its key, a Sankey's node names) is held to **4.5:1**, and taken to **7:1** when under it,
   the same way, as re-inked text is.
 - **Everywhere it is drawn alike**: the canvas, the image exports of a page (SVG, PNG, PDF), the
-  slide thumbnails and the minimap use the same adaptation (`chart-ink.ts`), so a chart exports as
+  Slide Deck's thumbnails and the minimap use the same adaptation (`chart-ink.ts`), so a chart exports as
   it shows. A page export also draws its charts in the tab theme's ramp, as the canvas does.
 - The axis lines keep their fixed faint greys: they are guides, not data.
 
 ### Animated backgrounds
 
-A slide page's Background, and a wireframe page's (whose screen it moves, [Wireframe pages](wireframe-pages.md)), has a fourth category, **Animated**, after Solid, Gradient and Image (the
+A wireframe page's Background (whose screen it moves, [Wireframe pages](wireframe-pages.md)) has a fourth category, **Animated**, after Solid, Gradient and Image (the
 four tiles share the row, each a quarter, Animated's sheet a theme gradient under a sparkle). Its **Motion** carousel holds twenty-four
 motions, six to a page across four pages (two rows of three) with the carousel's arrows and page dots, opening on
-the page holding the slide's motion; each tile plays in the tab theme's colours, 16:9 like the
-slide: **Aurora** (soft lights wandering, in the theme's colour and two companion hues turned
+the page holding the page's motion; each tile, 16:9, plays in the tab theme's colours: **Aurora** (soft lights wandering, in the theme's colour and two companion hues turned
 either way round the colour wheel), **Mesh** (the page's colours turning slowly into each other),
 **Starfield** (stars twinkling on their own beats as the sky drifts), **Retro Grid** (a neon grid
 rolling toward a glowing horizon), **Bokeh** (out-of-focus lights floating and breathing),
 **Waves** (three layers rolling along the bottom), **Spotlight** (a stage light sweeping across,
 answered by a softer one), **Beams** (shafts of light gliding past at a slant), **Flow**,
 **Drift**, **Ripple** and **Ribbons** (with Aurora, the animated canvas styles' five, made for a
-slide), **Sunburst** (rays turning slowly from below), **Fireflies** (small lights drifting and
+screen), **Sunburst** (rays turning slowly from below), **Fireflies** (small lights drifting and
 glowing), **Snowfall** (flakes of three sizes falling and drifting), **Lava** (big soft blobs
 rising and sinking), **Dot Wave** (a grid of dots swelling in a wave corner to corner),
 **Clouds** (soft clouds drifting across, the nearer faster), **Warp** (stars streaking out from
@@ -444,14 +417,14 @@ the theme's colours fluttering down, swaying and spinning) and **Threads** (fine
 weaving past each other at their own paces). Under them, **Colours** offers six
 theme colourings (Theme Deep, Night, Vivid, Bright, Soft and Mist, each a pair of stops drawn from
 the theme's accent and its second colour); a press recolours the chosen motion, and the colouring
-carries to the next motion picked. The row ends in **Custom colours** (the rainbow swatch, shown while the slide has
-a motion): it opens the Gradient category's custom editor (From, To, Angle, Swap) on the slide's
+carries to the next motion picked. The row ends in **Custom colours** (the rainbow swatch, shown while the page has
+a motion): it opens the Gradient category's custom editor (From, To, Angle, Swap) on the page's
 two colours; the motion and its speed ride along, a motion picked next keeps them, and as they are
 not the theme's they stay put when the theme changes. Each motion starts in its own colouring. Then **Speed**, while
-the slide has a motion: a slider from 25% to 300% in quarter steps (100% is each motion's own
-pace), as the canvas's animated styles take one; dragging previews on the slide, letting go sets
+the page has a motion: a slider from 25% to 300% in quarter steps (100% is each motion's own
+pace), as the canvas's animated styles take one; dragging previews on the page, letting go sets
 it once (one undo step, `Tab · Changed · PageBackgroundAnimatedSpeed`), and the speed carries to
-the next motion or colouring picked. Hovering a tile or a colouring previews it on the slide; a
+the next motion or colouring picked. Hovering a tile or a colouring previews it on the page; a
 press sets it (`Tab · Changed · PageBackgroundAnimated`).
 
 - **Speed** is stored on the fill (`speed`, absent for 100%; a value outside 25% to 300% is
@@ -461,37 +434,37 @@ press sets it (`Tab · Changed · PageBackgroundAnimated`).
   everything that reads a gradient reads it unchanged: re-inking measures its tones, thumbnails
   draw the still gradient, AI tools see a gradient. A motion the editor does not know is dropped
   on reading, leaving the gradient.
-- **Where it moves**: on the slide on screen and while presenting, its moving parts over the
-  gradient and under everything on the slide. In an export, a thumbnail and with Reduce Motion on
+- **Where it moves**: on the page on screen and while presenting, its moving parts over the
+  gradient and under everything on the page. In an export, a thumbnail and with Reduce Motion on
   it is still: under Reduce Motion each part rests where it stands, a finished background in
   itself (a streak still points its way, a planet keeps its place on its orbit, each bar stands at
-  its own height and the confetti hangs scattered down the slide).
-- **In an export** (PDF, PNG and SVG, and the export's preview) the slide's background is its first
-  frame: every part where it stands as the slide opens, never the bare gradient. The parts are
+  its own height and the confetti hangs scattered down the page).
+- **In an export** (PDF, PNG and SVG, and the export's preview) the page's background is its first
+  frame: every part where it stands as the page opens, never the bare gradient. The parts are
   described once (`motionParts`, `apps/live/lib/page-motion-parts.ts`), so the moving layer and the
   export draw the same ones; where each stands is its loop evaluated at its start
   (`openingPose`, `page-motion-frame.ts`, which restates `app/motion-page.css`'s keyframes and
   matches the browser's own first frame). The PNG and PDF paint it onto the page
   (`paintMotionFrame`, `page-motion-canvas.ts`); the SVG embeds a picture of the gradient with the
-  frame over it (a JPEG, 29 to 141 KiB for a 1920 x 1080 slide, about a fiftieth of a see-through
+  frame over it (a JPEG, 29 to 141 KiB for a 1920 x 1080 page, about a fiftieth of a see-through
   PNG). The picture is opaque, so it takes the fill's place, under the pattern (`pageExportFrame`'s
-  `overFill`): laid over the pattern, as the slide on screen and the PNG and PDF draw the motion, it would
-  hide the pattern entirely. So a patterned animated slide's SVG shows the pattern over the motion. A deck repeats
+  `overFill`): laid over the pattern, as the page on screen and the PNG and PDF draw the motion, it would
+  hide the pattern entirely. So a patterned animated page's SVG shows the pattern over the motion. A set of pages often repeats
   one background, so an export paints each background once (the PDF and a zip of pages keep the
-  last two painted, as a 1920 x 1080 slide at 2x is 33 MB of pixels; the SVG keeps its last eight
+  last two painted, as a 1920 x 1080 page at 2x is 33 MB of pixels; the SVG keeps its last eight
   pictures).
 - **Cost**: every part moves by transform and opacity alone, so the compositor runs it with no
   repaint; soft edges are radial gradients, never blur filters; each motion has at most about a
   hundred parts (Dot Wave's grid); loops run from 4 to 90 seconds, calm rather than busy. Positions come from fixed
-  seeds, so a slide looks the same wherever it is opened.
+  seeds, so a page looks the same wherever it is opened.
 - **Legibility**: the moving parts are faint on a light colouring (70% strength) and lights on a
-  dark one; what sits on the slide is re-inked against the gradient as with any gradient.
+  dark one; what sits on the page is re-inked against the gradient as with any gradient.
 - Infographic and logo pages offer no Animated category.
 - **Share roles**: as any background, an Editor's alone.
 
 ### Image backgrounds
 
-An infographic or slide page can be painted with a picture:
+An infographic or wireframe page can be painted with a picture:
 `PageFill` `{ kind: 'image', imageId, tone?, overlay?, position?, credit? }`. A logo page offers no
 Image category: a logo goes over other things, so its artboard stays a colour or the paper.
 
@@ -505,7 +478,7 @@ Image category: a logo goes over other things, so its artboard stays a colour or
   text, **Source** and **Licence**), then **Overlay**, **Strength** and **Position**, then the
   search, Choose From My Images and Upload again under **Replace Image**.
 - **The search suits a page.** It asks Openverse only for pictures of the page's shape
-  (`aspect_ratio`: `tall` for a portrait page, `wide` for a landscape one and every slide,
+  (`aspect_ratio`: `tall` for a portrait page, `wide` for a landscape one,
   `square` for a square page), so a result covers the page without a lopsided crop. It does not
   ask for large ones (`size=large`): Openverse cannot render thumbnails for most of those, so every
   result drew broken. Everything else is the picker's search: the licences, no mature
@@ -536,7 +509,7 @@ Image category: a logo goes over other things, so its artboard stays a colour or
   overlay, the picture, and its tone under them while it loads). Its bytes are fetched once per
   picture while the editor is open, never per frame, pan or zoom.
 - **Exports** (PNG, PDF, SVG) embed the picture, cropped the same way, under its overlay. The Map,
-  slide thumbnails and layout previews paint the page in its tone: a picture at their size is a
+  the Slide Deck's thumbnails and layout previews paint the page in its tone: a picture at their size is a
   smudge, and they draw without the image store.
 - **Stored like an image element's picture**, never as a web address: `imageId` is a gallery id
   (1 to 128 letters, digits, `-` or `_`) or an Offline Mode document's base64 PNG, JPEG, GIF or WebP
@@ -560,16 +533,16 @@ Image category: a logo goes over other things, so its artboard stays a colour or
 
 A page's **format** is its background: its fill (a colour, a gradient, an animated background with
 its speed, or a picture with its overlay and position) and its pattern. Its size, orientation,
-content, name and lock stay its own. A deck or a set of pages often wears one background, so it is
+content, name and lock stay its own. A set of pages often wears one background, so it is
 given in one go rather than page by page.
 
 - **Apply to All**: at the foot of a page's **Background** (the button beside its cog, and the page
-  panel's Background tab), **Apply to All Slides** (on a slide;
-  **Apply to All Infographic Pages** or **Logo Pages** on the other kinds) gives
+  panel's Background tab), **Apply to All Infographic Pages** (**Logo Pages** or **Wireframe
+  Pages** on the other kinds) gives
   every other page of the same kind this page's background, under a line saying how many it reaches
   and that a locked one keeps its own. Shown only while there is another page of the kind. One edit, one undo, each page re-inked for
-  its new fill ("Re-inking"). A notice says what it did: "Background applied to 35 slides.", adding
-  "2 locked slides kept their own." when it skipped any. A locked page is skipped, never refused
+  its new fill ("Re-inking"). A notice says what it did: "Background applied to 35 infographic pages.", adding
+  "2 locked infographic pages kept their own." when it skipped any. A locked page is skipped, never refused
   whole; a logo page's pattern is never touched.
 - **The Format tool paints pages**: in Pages mode, with the [Format
   tool](../008-canvas/canvas-and-palette.md#format-painter), a press on a page's paper (anywhere on
@@ -579,7 +552,7 @@ given in one go rather than page by page.
   **Paint once** work as for elements; the Format Panel's groups (Fill, Border, Text, Effects, Size)
   are an element's and do not narrow a page's paint. A press on the source page, an element pressed
   under a page brush, or a page pressed under an element's brush is a no-op that keeps the brush
-  (as a shape's look onto an arrow is). Painting crosses kinds (a slide's background onto an
+  (as a shape's look onto an arrow is). Painting crosses kinds (a wireframe page's background onto an
   infographic page), except a picture onto a logo page ("A logo page takes no picture background.");
   a locked target says so ("That page is locked. Unlock it to change its background.") and is left
   as it is. A refused paint keeps a Paint once brush (only a paint empties it), and a brush whose
@@ -600,12 +573,11 @@ the lock, a logo page's Mirror and Guides; Tidy is always its icon alone) name t
 the page is wide enough on screen to hold them named and still leave the label its least room
 (40 px); zoomed out further, they all drop to their icons (with their tooltips), as on a phone.
 
-An infographic or slide page's title bar holds a **Background** button before its lock and cog,
+An infographic or wireframe page's title bar holds a **Background** button before its lock and cog,
 the cog's size with a tooltip, for someone who may edit (an Editor; a Participant or Viewer sees
 no title-bar controls), as a logo page holds its Guides ([Logo pages](logo-pages.md) "Beside the
-cog"). It opens a popover anchored to it holding the **Background** and **Pattern** sections (a
-slide page's panel holds them on its Background tab too; an infographic page's panel has no
-Background tab, this is its one place), with the same hover previews; a press commits, one edit, and the
+cog"). It opens a popover anchored to it holding the **Background** and **Pattern** sections (these
+pages' panels have no Background tab: this is its one place), with the same hover previews; a press commits, one edit, and the
 popover stays open for another pick. Leaving the popover, or closing it (an outside press, Escape,
 the button again), drops any preview. It is tinted while its popover is open. On a desktop it
 names itself beside its icon (**Background**); a phone shows the icon alone. A locked page shows
@@ -615,7 +587,7 @@ pages keep their background in the panel only. Opening it is tracked as
 
 ### Tidy
 
-An infographic or slide page's title bar holds a **Tidy** button, its icon alone (never named,
+An infographic or wireframe page's title bar holds a **Tidy** button, its icon alone (never named,
 on a desktop or a phone), right after Background and left of the lock and the cog, shown only
 while a press would change something (a page already tidy, or empty, shows none), the cog's
 size with a tooltip ("Tidy: align and space what is on this page"), its glyph the diagram Tidy
@@ -655,8 +627,8 @@ one keeps the author's layout and straightens it.
   turned (rotated) one or anything on a locked layer ([Layout cleanup](../008-canvas/layout-cleanup.md#locked-elements-stay-put)),
   which stays where it is and is kept clear of like any other block. Arrows pinned to what moves
   follow their ends; a free arrow end stays. Running it twice changes nothing the second time.
-- **Where it shows**: infographic pages only (a slide page lays out from its own layouts, a logo
-  page has its own Tidy for drawn lines). A locked page shows no
+- **Where it shows**: infographic and wireframe pages only (a logo page has its own Tidy for
+  drawn lines). A locked page shows no
   Tidy, like its Background.
 
 | Role        | Tidy                                                                                    |
@@ -1027,7 +999,7 @@ swipe, with no X.
   content back.
 - **Content carries over** (`carryPageContent`): the words, pictures and figures a person put on
   the page move into the new layout's matching places, each taking its new place's position, size
-  and look, so changing a page's layout never means retyping it. The same holds on slide and logo
+  and look, so changing a page's layout never means retyping it. The same holds on logo
   pages (a wordmark's name carries into the next wordmark).
   - **Only what was written carries.** Placeholder words from any layout ("Your big headline"), an
     empty image placeholder, or a chart, stat row or icon left as a layout made it, stay behind:
@@ -1075,10 +1047,10 @@ swipe, with no X.
   - A picture a layout leaves for the author shows in its tile as a **sample picture** (a soft
     drawn landscape, the palettes taken in turn), so a picture-led layout reads as one; what lands
     is the ordinary picture placeholder.
-- **The Layout button**: an infographic or slide page's title bar always holds a **Layout**
+- **The Layout button**: an infographic or wireframe page's title bar always holds a **Layout**
   button (an icon and its name on a desktop, the icon alone on a phone, tooltip **Layout**) before
   its Background button, for an Editor, on any page that is not locked, empty or not. It opens the
-  page's layout gallery (a slide page's the slide layouts) in a popover anchored to it (580 px,
+  page's layout gallery (a wireframe page's the wireframe layouts) in a popover anchored to it (580 px,
   headed **Layouts**, the search taking the keyboard); on a phone it opens as a bottom sheet.
   Hovering a tile previews it on the page; pressing one places it (over anything there, at once)
   and closes the popover; closing it takes any preview away. Opening it is tracked as
@@ -1087,12 +1059,12 @@ swipe, with no X.
   empty artboard still invites them: a "Start From a Layout" button beside the cog, only while the
   page is empty, opening the panel on Layouts, with its words while the title bar has room for
   them beside its other buttons and the label, else just its icon, else hidden.
-- **An empty page offers its layouts**: while an infographic, slide or logo page is empty (never a
+- **An empty page offers its layouts**: while an infographic or logo page is empty (never a
   wireframe page, whose screen stays clear), on a tab
   the viewer can edit, a **Start From a Layout** card sits centred on the page, held at its screen
   size whatever the zoom, as large as the page on screen leaves room for inside a 16 px margin (at
   most 900 by 660 px): a header (a sparkles badge where the card is 520 px or wider, **Start From a
-  Layout**, "n slide layouts in your theme. Pick one, then make it yours." naming the page's kind,
+  Layout**, "n infographic layouts in your theme. Pick one, then make it yours." naming the page's kind,
   and Hide; no Change Theme, the card keeps to its layouts) over the layout gallery. Pressing a layout places it (the page is empty,
   so at once, as one undo step); there is no hover preview here, since drawn over the page it
   would cover the card's own tiles. The card goes as
@@ -1119,6 +1091,13 @@ swipe, with no X.
   renderer the exports use. Only
   outside the editor (no tab to paint with) is a tile a wireframe (text as bars, images shaded,
   icons as dots).
+
+**Full bleed.** A layout is built in the page's content box, and is told how far the page runs
+past it (the margin, its **bleed**). A picture or panel set to the page's edges reaches exactly that
+far, square-cornered, so it meets the page's own edge; it never stops in the margin short of it, and
+nothing else passes the margins. The words always stay inside them. Words a layout sets over a
+picture carry their own colours on a scrim of their own, so they read on any picture
+in any theme.
 
 ## Contents
 
@@ -1178,8 +1157,8 @@ Both show the same list:
 - **A page's actions** (an Editor's): in the sidebar, a small toolbar at the end of the name's
   line, shown while the row is hovered, focused or marked: **Duplicate**, **Lock** or **Unlock**,
   and **Delete** (not on a locked page), each a glyph with its Tooltip. In the popover, one **⋯**
-  button (shown on hover or focus) opens the same as a menu, a header naming the page, with **Add
-  to Slides** first on a slide page not yet in the deck, and Delete last under its own separator.
+  button (shown on hover or focus) opens the same as a menu, a header naming the page, with Delete
+  last under its own separator.
   Each does exactly what the page's title bar does; none glides to the page. A Participant and a
   Viewer see neither.
 - **Going there**: a press (or Enter) glides the canvas to the page, as the pages row's arrows do,
@@ -1203,7 +1182,7 @@ Both show the same list:
   control. Up, Down, Home and End move between the rows' buttons.
 - **Adding**: an Editor's footer is the same pair as the canvas's + after the last page ("Adding a
   page"): a wide **Add Page** button, with the add icon, that adds another page like the last (its
-  tooltip names what it adds, **Add Another Slide**, **Add Another iPad Screen**: its kind and
+  tooltip names what it adds, **Add Another Infographic Page**, **Add Another iPad Screen**: its kind and
   shape, a wireframe page's device and frame too), and beside it a square button, **Add a Page of
   Any Kind**, opening Add a Page (the kinds as rows, Wireframe stepping on to its devices) beside
   it. A new page lands after the last (carrying the background, theme's Dusk for a new infographic), glides into view and the list scrolls to its new row, marked as here. At the page
@@ -1221,86 +1200,9 @@ Both show the same list:
   docking `UI · Changed · ContentsPlacementSidebar`, before the choice is kept; dragging the sidebar
   across sends `UI · Changed · ContentsSideLeft` or `ContentsSideRight`.
 
-## Slide layouts
-
-A **slide** page's **Layout** button, and its in-page **Start From a Layout** card, offer the **slide
-layouts** in place of the infographic ones, in the same layout gallery (placed at once, hover
-previews and rendered tiles). They are
-built for a landscape slide's content box (16:9 or 4:3), in the tab's theme, with type sized to
-be read across a room:
-
-- **Openers**: **Title Slide** (a large title, a subtitle, an accent rule, and the presenter and
-  date at the foot), **Section Header** (a big section number, an accent rule, the section's title
-  and a line), **Agenda** (the infographic Agenda), **Title and Image** (an eyebrow, a title, a rule
-  and a subtitle on the left half, a picture filling the right), **Keynote Title** (everything
-  centred: an eyebrow, a large title, a rule, a subtitle, the event at the foot), **Opening
-  Question** (an eyebrow, one question set very large, a rule and a line), **About the Speaker** (a
-  round photo, an eyebrow, the name, the role, a rule and three facts), **Objectives** (three
-  numbered cards, each a name and a note), **Agenda Grid** (four cards, two by two, each a large
-  number, the part and its time) and **Agenda and Image** (a picture down the left edge, full
-  bleed, four numbered parts beside it).
-- **Content**: **Title and Bullets** (a title over five bullet points, each a dot beside a line),
-  **Two Columns** (a title over two columns, each a heading and three bullet points), **Image and
-  Text** (an image filling the left half, a title, a line and three bullet points to its right),
-  **Statement** (an accent rule, one sentence set very large, centred, and a line under it),
-  **Quote** (the infographic Quote), **Three Points** (three icons in discs, each a heading and a
-  line), **Full Image** (a picture filling the slide under a caption card at its lower left), **Key
-  Takeaway** (a card holding the one thing to remember, set large, beside three supporting points),
-  **Four Ideas** (four cards, two by two, each an icon in a disc, a heading and a line), **Title
-  Only** (a title, a lead line and a rule, the rest of the slide left for the author's own content),
-  **Sidebar Title** (a panel in the theme's fill down the left edge, full bleed, holding an eyebrow
-  and the title, five bullet points beside it) and **Compare Two** (two cards side by side, each a
-  name, a line and three points, a "vs" disc between them).
-- **Pictures**: slides led by a picture, as a slide app lays them out. **Text and Picture** (an
-  eyebrow, a two-line title, a rule, a lead and three points on the left half, a picture filling
-  the right half to the slide's edges), **Picture and Text** (the same words on the right, a
-  picture filling the left two-fifths), **Hero Picture** (a picture filling the slide under a dark
-  scrim, an eyebrow, a large title and a line centred over it in white), **Picture Band** (a
-  picture across the top half, edge to edge, an eyebrow and title beside a paragraph under it),
-  **Picture and Card** (a picture filling the slide, a full-height card on its right holding an
-  eyebrow, a title, a rule and three points), **Quote and Picture** (a quotation mark, the quote, a
-  rule, the name and role on the left, a picture filling the right to the edges), **Two
-  Pictures** and **Three Pictures** (a title over pictures side by side, a name and a caption under
-  each) and **Picture Mosaic** (an eyebrow, a title, a rule and a line beside one large picture and
-  two small ones stacked).
-- **Data**: **Big Number**, **Number and Picture** (a picture down the left edge, full bleed, an
-  eyebrow, one large figure, a rule, what it counts, a note and a source beside it), **Key Stats**, **Chart Story**, **Comparison**, **KPI Dashboard** and
-  **Market Share** (the infographic ones, side by side), **Three Big Numbers** (three figures
-  across, fitted as the longest so all stand the same size, a rule, a caption and a note under
-  each), **Big Chart** (a full-height bar chart and its headline figure on a card beside it),
-  **Chart and Insights** (an area chart beside three numbered insights) and **Goals Progress**
-  (three progress rings, never wider than their column, each a goal and its target). Each of the
-  slide's own cites its source at the foot.
-- **Steps and Time**: **Process**, **Timeline**, **Roadmap**, **Funnel**, **Cycle** and **Project
-  Plan** (the infographic ones), **Process Flow** (four steps as pills joined by arrows, a note under
-  each), **Milestones** (five years along a rail, a dot on it for each, what happened under it) and
-  **Now, Next, Later** (three cards of bullet points).
-- **Closers**: **Thank You** (a large "Thank you", "Questions?", and a contact line), **Team** (the
-  infographic Team), **Team of Three** (three round photos, each a name, a role and a line), **Summary** (three numbered takeaways, each a bold line and a note), **Call to
-  Action** (an eyebrow, one bold ask centred, a button-like pill and a link), **Next Steps** (four
-  actions, each with a tick, its owner and its date, a hairline between), **Contact** (a round
-  photo, an eyebrow, the name, the role and three ways to get in touch), **Questions** (an icon in
-  a disc over "Questions?" set large and how to ask later), **Thank You and Image** (a thank you
-  beside a full-height picture) and **Resources** (four links, each an icon in a disc, a title and
-  where to find it).
-
-Sixty-one in all, in six categories (Openers, Content, Pictures, Data, Steps and Time, Closers), at
-least nine to a category; a slide layout reused from the infographics is the same layout (same id,
-same build), filed under the slide category. Every one fits a 16:9 and a 4:3 slide inside its
-margins, every icon is one the catalogue draws, and no two of its text boxes overlap on either
-shape.
-
-**Full bleed.** A layout is built in the page's content box, and is told how far the page runs
-past it (the margin, its **bleed**). A picture or panel set to the slide's edges reaches exactly that
-far, square-cornered, so it meets the page's own edge; it never stops in the margin short of it, and
-nothing else passes the margins. The words always stay inside them. Words a layout sets over a
-picture (Hero Picture) carry their own colours on a scrim of their own, so they read on any picture
-in any theme.
-
 ## Page actions
 
-From the page panel's footer. On a **slide page** they read
-**Duplicate slide**, **Move slide left / right**, **Delete slide**.
+From the page panel's footer.
 
 - **Duplicate**: a copy of the page (size, orientation, background, a name with "copy") right
   after it, with a copy of every element on it (new ids; arrows pinned between copied elements stay
@@ -1338,7 +1240,7 @@ lies on; one between pages is on none.
 
 ## Locking a page
 
-Any page, of every kind (infographic, slide, logo), can be **locked**, so it stays as it
+Any page, of every kind (infographic, logo, wireframe), can be **locked**, so it stays as it
 is while the rest of the tab is worked on.
 
 - **Where**: a padlock button in the page's title bar, before its cog (and the logo page's own
@@ -1473,9 +1375,9 @@ offered.
 `PageBackground`, `PageBackgroundImage`, `PagePattern`, `PageBackgroundAppliedToAll` (Apply to All),
 `PageBackgroundPainted` (the Format tool, page onto page), `PageRenamed`, `PageDuplicated`, `PageMoved`, `PageLayout`,
 `PageLayoutSurprise` (the layout gallery's Surprise Me), `PageLocked`, `PageUnlocked`,
-`PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages), `SlidePageAdded`
-(and `ArticleAdded`, `LogoPageAdded`, the other kinds' adds), `PageKindInfographic` / `PageKindArticle` / `PageKindSlide` /
-`PageKindLogo` (the first page's own choice);
+`PageFitToContent` (a board put onto a page on entering the mode), `PagesLaidOut` (Split Into Pages),
+`LogoPageAdded` and `WireframePageAdded` (the other kinds' adds), `PageKindInfographic` / `PageKindLogo` /
+`PageKindWireframe` (the first page's own choice);
 `Document · Exported · PagesPNG / PagesSVG / PagesPDF / PagesGIF` (one page) and
 `PagesPNGPages / PagesSVGPages / PagesPDFPages / PagesGIFPages` (all pages);
 `UI · Added · PageSlide`; `UI · Opened · SlideDeck`; `UI · Used · PageSwipe` (a short pan or a flick
@@ -1502,7 +1404,7 @@ its page is put onto a page made to fit it instead.
     - **No pages stored**, and content that does **not fit inside the first page**: one page is
       made **around all of the content, where it is**. The row anchor (`rowAt`) is the content's
       centre, so the page sits over the content and nothing moves.
-    - **Pages stored**, none of them made anything of (no slide or logo page, no name, no
+    - **Pages stored**, none of them made anything of (no logo or wireframe page, no name, no
       background, no lock), and **no element on any page**: the stored pages are replaced by one
       page made around the content, as above. Pages someone has set up are kept, the content left
       in the surround.
@@ -1543,66 +1445,40 @@ separate pages. It is explicit: never run on entering the mode.
 
 ## Slides
 
-- **Slide pages are the deck's slides, in page order.** Every slide page (`kind: 'slide'`) of an
-  Pages tab has a page slide in the deck, whoever made the page: a Slide Deck template, Add
-  Page, a duplicate, a layout, an agent, a peer or an undo. A Slide Deck template opens ready to
-  present. A tab's page slides run in its page order: move a page and its slide moves with it. The
-  slots those slides take in the deck keep their places among the other slides (another tab's, an
-  element slide, a card); only which page fills which slot follows the pages, and a new slide
-  page's slide joins the tab's run (its last slot, or the deck's end for a tab with none yet).
-  `deckFollowingPages` (`slide-deck-pages.ts`), run whenever a loaded Pages tab's pages or
-  their kinds change (`deckPagesKey`), never on an element edit, and only once the document and
-  its stored deck have loaded, so the pass builds on the stored deck. An Editor's pass is saved; a
-  Viewer or Participant sees the same deck without writing it. A slide page's slide is named by
-  its tab and page (`pageSlideIdFor`), so two editors adding it at once write the same slide.
-  - Dragging a slide page's slide in the Slide Deck moves its page in the tab
-    (`pageMoveForDeckOrder`): just after the page whose slide now comes before it, else before
-    the page whose slide comes after it; nothing moves while it already sits between them.
-  - A slide page's only slide has no Delete (it would come straight back); **Hide** leaves it out
-    of the show. A copy of it, and a slide of any other page, delete as before.
-  - **A deleted page leaves the deck with it.** The follow pass removes every slide of a page its
-    tab no longer has: the slide page's own slide, its copies, and a slide added for a non-slide
-    page. Only on a tab whose pages have loaded, so a tab still loading never loses its slides,
-    and a page's id is never reused, so a missing id is a deleted page. The session remembers
-    the slides it removed (`GoneSlides`, at most `GONE_SLIDES_MAX` = 200), and the page coming
-    back, by an undo or a peer's undo, brings them back as they were, hidden ones hidden, into the
-    tab's run in page order. A slide handed back is forgotten, so one deleted by hand after it came
-    back stays deleted. A reload forgets the memory: a slide page then gets a fresh slide, as any
-    slide page does.
-- In Pages mode the Slide Deck panel also adds slides **a page at a time**, for the pages that
-  are not slide pages (an infographic or logo page): a page picker (each page by its
-  label) and **Add as slide**, in place of "Select elements to make a slide". Such a page slide
-  takes its place in the page order too once it is in the deck.
+Every page of a Pages tab is a slide of the deck, in page order, and presenting the tab shows its
+pages one by one. How the deck follows the pages (a page joining it, moving, being hidden or
+deleted) is in [Presentation mode](../012-collaboration/presentation-mode.md) "The deck follows
+the pages"; this section is what the pages themselves show of it.
+
+- In Pages mode the Slide Deck panel adds slides **a page at a time**: a page picker (each page by
+  its label) and **Add as slide**, in place of "Select elements to make a slide". Every page is in
+  the deck already, so what it adds is a **copy** of a page's slide (to show a page twice), which
+  takes its place in the page order too and deletes as any slide does.
 - A **page slide** (`Slide.pageId`, docs/specs/012-collaboration/presentation-mode.md) is the page,
   resolved live: it shows whatever is on the page now and is framed to exactly the page, so it
   follows the page's edits, reorders and size changes. Its row reads `<tab> · <page label>`, the
   label read from the slide's own tab (so a slide on another tab names its page too), or
   `<tab> · Page deleted` while its page is missing and the deck has not yet followed (its tab still
   loading); its thumbnail is the page on its background, its elements inked for the page's surface
-  as the export inks them. Once the tab's pages are read, a deleted page's slides leave the deck
-  (above).
+  as the export inks them. Once the tab's pages are read, a deleted page's slides leave the deck.
 - Pressing a page slide's row switches to its tab and frames its page, as the page's label does.
   Its `…` menu has no Selection section (the slide is whatever is on its page), its delete confirm
-  says "The page stays.", and a duplicate counts as `UI · Added · PageSlide`.
-- **A slide page's deck button**: first in its title bar, left of Layout and Background, for an
-  editor on a desktop, a slide page shows its place in the deck, named beside its icon while the
-  title bar has room. The deck always has a slide of a slide page, so the button
-  toggles that slide's visibility in the presentation: **Hide in Slides** (an
-  open eye) or **Show in Slides** (a crossed eye), the same as the slide's Visibility in the Slide
-  Deck. Telemetry as the Slide Deck's own (`UI · Added · PageSlide`, `UI · Toggled · SlideHidden /
-SlideShown`).
+  (on a copy) says "The page stays.", and a duplicate counts as `UI · Added · PageSlide`.
+- **A page's deck button**: in every page's title bar, beside its cog, for an editor on a desktop,
+  the page shows its place in the deck, named beside its icon while the title bar has room. The
+  deck always has a slide of every page, so the button toggles that slide's visibility in the
+  presentation: **Hide in Slides** (an open eye) or **Show in Slides** (a crossed eye), the same as
+  the slide's Visibility in the Slide Deck, so wherever a page is presented its visibility is one
+  press away. Telemetry as the Slide Deck's own (`UI · Added · PageSlide`, `UI · Toggled ·
+SlideHidden / SlideShown`).
 - **Add Notes**: beside the deck button once the deck has a slide of the page, **Add Notes** (a
   page glyph) opens a popover holding that slide's speaker notes, the deck slide's own: the same
-  notes the Slide Deck panel writes and the presenter view shows, never drawn on the slide. Once
+  notes the Slide Deck panel writes and the presenter view shows, never drawn on the page. Once
   the slide has notes the button reads **Notes**, pressed. Every keystroke writes the deck (one
   `UI · Changed · SlideNotes` per opening, on the first keystroke); emptying the box removes the
   notes. Telemetry `UI · Opened · PageNotesButton`. An Editor's alone, like the deck button.
-- **Any other page in the deck shows its eye too**: an infographic or logo page offers no
-  Add to Slides in its title bar (the Slide Deck's page picker adds it), but once the deck has a
-  slide of it, the same eye sits beside its cog, so wherever a page is presented its visibility is
-  one press away.
 - **A page slide presents full screen**: it is fitted with no margin, the page edge to edge on the
-  screen's limiting side, and everything round the sheet is black (a letterbox), so a 16:9 slide
+  screen's limiting side, and everything round the sheet is black (a letterbox), so a 16:9 page
   fills a 16:9 screen and any other shape sits between black bars, as a projector shows it.
 - Zen, presenting and the isometric view show the sheets alone: no labels, cogs, layout invites or
   add button. While a
@@ -1613,10 +1489,9 @@ SlideShown`).
 
 - **Slides button**: in the bottom-right cluster, where Layers sits in the other modes (left of
   the brush), joined to Contents in one frame (`PagesClusterStrip`, as Layers and Theme share one), a **Slides** button opens the Slide Deck panel as a popover hanging above it (an
-  outside press closes it; the button shows pressed while open). An infographic is likely to be
-  presented, so its deck is one press away. Desktop only, as the Slide Deck itself is. Shown only
-  while **at least one page is a slide**: until then the deck has nothing to hold, and the
-  Pages tour skips its Slides step. Telemetry: `UI · Opened · SlideDeck`.
+  outside press closes it; the button shows pressed while open). A design is likely to be
+  presented, so its deck is one press away. Desktop only, as the Slide Deck itself is. Shown whenever the tab has pages, as every page is in the deck. Its hover card
+  reads "Order, hide and present your pages." Telemetry: `UI · Opened · SlideDeck`.
 - **No Layers**: the Layers button and panel are not offered (a page is arranged by its pages, not
   layers); the tab's layers are untouched and come back in the other modes.
 

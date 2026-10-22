@@ -23,8 +23,8 @@ const pages = (n: number) =>
     Array.from({ length: n }, (_, i): Page => ({
       id: `p${i + 1}`,
       orientation: 'portrait',
-      kind: i % 2 ? 'slide' : 'infographic',
-      ...(i % 2 ? { size: 'slide' } : {}),
+      kind: i % 2 ? 'logo' : 'infographic',
+      ...(i % 2 ? { size: 'logo' } : {}),
     })),
   );
 
@@ -86,9 +86,9 @@ describe('PageContentsPanel', () => {
     const h = show(2);
     fireEvent.click(screen.getByRole('button', { name: 'Add a Page of Any Kind' }));
     fireEvent.click(
-      screen.getByRole('dialog', { name: 'Add a Page' }).querySelector('[data-add-kind="slide"]')!,
+      screen.getByRole('dialog', { name: 'Add a Page' }).querySelector('[data-add-kind="logo"]')!,
     );
-    expect(h.addPage).toHaveBeenCalledWith('slide');
+    expect(h.addPage).toHaveBeenCalledWith('logo');
     expect(screen.queryByRole('dialog', { name: 'Add a Page' })).toBeNull();
     cleanup();
     show(2, false);
@@ -101,7 +101,7 @@ describe('PageContentsPanel', () => {
     cleanup();
     show(8);
     fireEvent.change(screen.getByRole('searchbox', { name: 'Find a Page' }), {
-      target: { value: 'slide' },
+      target: { value: 'logo' },
     });
     expect(screen.getAllByRole('listitem')).toHaveLength(4);
   });

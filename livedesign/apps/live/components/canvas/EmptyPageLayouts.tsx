@@ -27,11 +27,9 @@ const DESCRIBED_MIN_WIDTH = 520;
 
 // What the card calls a page's layouts, by its kind.
 const KIND_NOUN = {
-  slide: 'slide',
   logo: 'logo',
   wireframe: 'screen',
   infographic: 'page',
-  article: 'page',
 } as const;
 
 export function EmptyPageLayouts({

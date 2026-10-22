@@ -61,7 +61,7 @@ export function FirstPageChoice({
                 <PageKindCard
                   key={k.kind}
                   choice={k}
-                  wide={i === PAGE_KINDS.length - 1}
+                  wide={PAGE_KINDS.length % 2 === 1 && i === PAGE_KINDS.length - 1}
                   ref={(el) => {
                     cards.current[i] = el;
                   }}

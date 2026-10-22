@@ -56,9 +56,9 @@ export function SlideDeckPanel({
   tabs: { id: string; name: string }[];
   activeTabId: string;
   isReadOnly: boolean;
-  // The active tab's pages while it is shown in Pages mode: slides are then added a page at
-  // a time (PageSlidePicker) rather than from a selection, and its slide pages all at once.
-  pages?: readonly { id: string; label: string; slide?: boolean }[];
+  // The active tab's pages while it is shown in Pages mode: every page joins the deck on its own, and
+  // a copy of one is added a page at a time (PageSlidePicker) rather than from a selection.
+  pages?: readonly { id: string; label: string }[];
 } & ModePanelProps) {
   // The Pages popover: room for large pictures, headlines and Present from Here.
   const roomy = placement.asPopover === true;
@@ -182,10 +182,11 @@ export function SlideDeckPanel({
               Build your deck
             </p>
             <p className="max-w-[18rem] text-xs leading-snug text-slate-500 dark:text-slate-400">
-              {/* Each way in names the button it has: on a Pages tab a slide page joins on its own
-                  (docs/specs/007-editor/pages-mode.md "Slides"), any other page a page at a time. */}
+              {/* Each way in names the button it has: on a Pages tab every page joins on its own
+                  (docs/specs/012-collaboration/presentation-mode.md "The deck follows the pages"), a copy a page at a
+                  time. */}
               {pages
-                ? 'Slide pages join the deck on their own. For any other page, pick it below and press'
+                ? 'Pages join the deck on their own. To present one twice, pick it below and press'
                 : 'Select what you want on the first slide, then press'}{' '}
               <span className="font-medium text-slate-700 dark:text-slate-200">
                 {pages ? 'Add as slide' : 'New slide'}

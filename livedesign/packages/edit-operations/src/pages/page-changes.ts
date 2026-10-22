@@ -92,7 +92,7 @@ const describePatch = (input: PageBackgroundInput) =>
 
 function messageFor(why: PageEditRefusal, tab: Tab, page: Pick<Page, 'kind'> | undefined): string {
   const kind = page ? pageKindOf(page) : 'infographic';
-  // "An infographic page", "A slide page".
+  // "An infographic page", "A logo page".
   const aKind = `${/^[aeiou]/.test(kind) ? 'An' : 'A'} ${kind}`;
   // Every reason in words; the page is found before an edit, so `unknown_page` is only a fallback.
   const words: Record<PageEditRefusal, string> = {
@@ -230,8 +230,8 @@ export function applyPageChanges(
             !first.name?.trim() &&
             onPage(first.id) === 0
           ) {
-            // A blank of that kind (the Blank Slide Deck's one empty slide) becomes the page asked for, so a deck made
-            // from it does not open on an empty slide.
+            // A blank of that kind (the Blank Logo's one empty artboard) becomes the page asked for, so a design made
+            // from it does not open on an empty page.
             page = first;
             tookBlank.set(page.id, i + 1);
           } else {

@@ -75,7 +75,7 @@ describe('SlideDeckPanel on a Pages tab', () => {
   it('names the page picker button in the empty hint', () => {
     panel({ slides: [] });
     expect(screen.getByText(/pick it below and press/).textContent).toBe(
-      'Slide pages join the deck on their own. For any other page, pick it below and press Add as slide.',
+      'Pages join the deck on their own. To present one twice, pick it below and press Add as slide.',
     );
   });
 

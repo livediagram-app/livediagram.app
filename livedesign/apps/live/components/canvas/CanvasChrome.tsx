@@ -22,7 +22,7 @@ import { ToolbarPalette } from '@/components/palette/ToolbarPalette';
 import { pickPaletteAddHandlers } from '@/components/palette/palette-add-handlers';
 import { ToolbarExplorerButton } from '@/components/chrome/ToolbarExplorerButton';
 import { WorkbenchBackButton } from '@/components/chrome/WorkbenchChrome';
-import { showsSlidesButton, SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
+import { SlidesClusterSegment } from '@/components/canvas/SlidesClusterSegment';
 import { PlanCardsClusterStrip } from '@/components/canvas/PlanCardsClusterStrip';
 import { useTabShowsCards } from '@/hooks/sheets/card-table-sheets';
 import {
@@ -723,10 +723,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
                   )
                 }
                 slides={
-                  !isMobile &&
-                  !readOnly &&
-                  showsSlidesButton(props.pagesMode.pages) &&
-                  props.slideDeck ? (
+                  !isMobile && !readOnly && props.slideDeck ? (
                     <SlidesClusterSegment
                       popoverOpen={activeDockPanel === 'slides'}
                       onTogglePopover={(button) => handleDockButtonClick('slides', button, true)}

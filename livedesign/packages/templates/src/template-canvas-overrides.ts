@@ -70,7 +70,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   flywheel: 'blank',
   pyramid: 'blank',
   // The templates on pages keep a plain surround, like the Article: the pages are the paper.
-  'slide-deck': 'blank',
   'logo-design': 'blank',
   timeline: 'lines',
   'milestone-timeline': 'lines',
@@ -163,7 +162,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'meeting-agenda': 'grid',
   // The other Pages templates: their pages are the paper.
   'blank-illustration': 'blank',
-  'blank-slide-deck': 'blank',
   'blank-infographic': 'blank',
   'blank-logo': 'blank',
   'blank-wireframe-phone': 'blank',
@@ -184,10 +182,6 @@ const TEMPLATE_PATTERNS: Partial<Record<TemplateKind, BackgroundPattern>> = {
   'how-it-works': 'blank',
   versus: 'blank',
   'social-carousel': 'blank',
-  'launch-keynote': 'blank',
-  'quarterly-review': 'blank',
-  'team-welcome': 'blank',
-  'workshop-kickoff': 'blank',
   // A personal planning sheet, read closely like a page: even dots behind
   // its cards read as noise, so it gets a clean canvas.
   'objectives-planner': 'blank',
