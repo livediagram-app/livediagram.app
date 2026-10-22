@@ -20,13 +20,13 @@ describe('useExplorerPanelSection', () => {
   it('opens on Home, then remembers a pick', () => {
     const { result, unmount } = renderHook(() => useExplorerPanelSection(groups));
     expect(result.current[0]).toEqual({ kind: 'home' });
-    act(() => result.current[1]({ kind: 'timeline' }));
-    expect(result.current[0]).toEqual({ kind: 'timeline' });
-    expect(localStorage.getItem(PANEL_SECTION_STORAGE_KEY)).toBe('timeline');
-    expect(track).toHaveBeenCalledWith('UI', 'Selected', 'ExplorerPanel.Timeline');
+    act(() => result.current[1]({ kind: 'inbox' }));
+    expect(result.current[0]).toEqual({ kind: 'inbox' });
+    expect(localStorage.getItem(PANEL_SECTION_STORAGE_KEY)).toBe('inbox');
+    expect(track).toHaveBeenCalledWith('UI', 'Selected', 'ExplorerPanel.Inbox');
     unmount();
     const again = renderHook(() => useExplorerPanelSection(groups));
-    expect(again.result.current[0]).toEqual({ kind: 'timeline' });
+    expect(again.result.current[0]).toEqual({ kind: 'inbox' });
   });
 
   it("opens a phone's sheet on Home every time, without remembering a pick", () => {
@@ -36,8 +36,8 @@ describe('useExplorerPanelSection', () => {
       { initialProps: { open: true } },
     );
     expect(result.current[0]).toEqual({ kind: 'home' });
-    act(() => result.current[1]({ kind: 'timeline' }));
-    expect(result.current[0]).toEqual({ kind: 'timeline' });
+    act(() => result.current[1]({ kind: 'inbox' }));
+    expect(result.current[0]).toEqual({ kind: 'inbox' });
     expect(localStorage.getItem(PANEL_SECTION_STORAGE_KEY)).toBe('library');
     rerender({ open: false });
     rerender({ open: true });

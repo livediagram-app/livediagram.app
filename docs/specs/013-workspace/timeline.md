@@ -1,10 +1,30 @@
-# Timeline
+# Timeline events
 
-The Timeline is a chronological feed of everything that has happened
-across the user's documents, teams, and account, grouped by day as a
-grid of cards, stacked when a day gets busy, and switchable into a
-calendar month grid. Its page is **Timeline**, with a row of its own in the
-sidebar's Overview group, under the Inbox (§8).
+The **timeline events** are the record of everything that has happened
+across the user's documents, teams, and account. Nobody opens the record
+as a page of its own; three surfaces read it:
+
+- **Explorer Home** ([Explorer Home](explorer-home.md)): What Happened (other
+  people's doings), Jump Back In's use counts, and the Home row's unread
+  badge (§2.5).
+- **A document's History**, a dialog from a row's menu (§3.4).
+- **A team's Team Activity**, a card on the team page (§3.4).
+
+History and Team Activity draw the record as a **feed**: grouped by day as
+a grid of cards, stacked when a day gets busy, and switchable into a
+calendar month grid (§2). The code still calls the feed "the Timeline"
+(`<Timeline>`, `useTimelineFeed`, `/api/timeline`).
+
+**The Explorer's Timeline section is removed** (2026-10-22). It was a
+personal feed of everything, the reader's own doings included, at
+`/explorer/timeline` with a sidebar row under the Inbox, reached from Home's
+**See Timeline** link, with card menus, Remove from Timeline, deep links and
+New pills of its own. Home answers "what happened while I was away", and
+History and Team Activity keep the whole record of a document or a team, so
+the section only repeated them. The record stays because those three read
+it. What went with the section: §2.7, §2.8, §2.9, §5, §6.2, §6.2a, §6.3 and
+the personal read of §6.1. The existing D1 migrations that made its tables
+and columns stay in place.
 
 Modelled on the Timeline subsystem in the Manager Toolkit monorepo
 (`specs/dashboard/timeline/spec.md` + `packages/ui/src/timeline/*` there),
@@ -26,29 +46,28 @@ that happens to a user is invisible until they go looking for it:
 - An API token is about to expire ([Public API and API tokens](../015-api/public-api-and-tokens.md)). One email, seven days out.
 
 Each of those already exists as a write somewhere in the api worker, and
-each is currently a dead end. The Timeline is one surface that collects
-them, so the first thing a user sees on opening the Explorer is **what
-has happened since they were last here**, not just a list of files.
+each was a dead end. The record collects them, so the first thing a user
+sees on opening the Explorer, Home, says **what has happened since they
+were last here**, not just a list of files.
 
 ## Non-goals
 
-- **Not an element-level audit log.** The Timeline never renders an
+- **Not an element-level audit log.** The feed never renders an
   element diff and never offers Revert. Document editing appears here as
   one coalesced "worked on" event per person per document per day (§4.2).
   (The editor's per-tab Activity panel, which did keep element diffs with
   per-entry revert, was removed on 2026-10-03.)
 - **Not realtime.** No Durable Object fan-out, no per-user socket. The
-  feed is read on load, with a Refresh button and a stale-read refresh
-  (§6.3). liveplanner's realtime rooms are per-document; a per-user
+  feed is read on load, on return to the tab and after the reader's own
+  writes (§2.4a, §2.4b). liveplanner's realtime rooms are per-document; a per-user
   channel is a whole new object type for a screen the user looks at
   once a session.
 - **No favourites / starring.** The Manager Toolkit timeline has them
   (they matter when a timeline is evidence for a performance review).
   Here the feed is ambient — you read it and move on — so the table and
   the endpoints aren't earned yet. The schema doesn't preclude them
-  (§3.4). Per-entry removal, which started out in this bullet, has
-  since shipped (§2.9): a busy day needed pruning more than it needed
-  starring.
+  (§3.4). Per-entry removal, which started out in this bullet,
+  shipped (§2.9) and went with the Explorer's Timeline section.
 - **No AI day summary.** Manager Toolkit gates one behind Pro;
   liveplanner has no paid tier ([Business model + licence](../002-project-scope/business-model-and-licence.md)), so it would be free for
   everyone and gated only on the model key. Deferred as its own
@@ -88,8 +107,9 @@ One thing that happened. Carries:
 
 **Who should see this event.** A scope is a `(scopeType, scopeId)` pair.
 
-v1 ships exactly one scope type: `user`, where `scopeId` is an owner id.
-The Timeline page reads `user:<caller>`.
+Three scope types: `user`, where `scopeId` is an owner id (Home's unread
+count reads `user:<caller>`), and `document` and `team` (§3.4), which the
+History and Team Activity feeds read.
 
 `scopeType` is a free-text column with no CHECK constraint, so a later
 per-document timeline (`document:<id>`) or a team activity feed (`team:<id>`) is a new
@@ -106,12 +126,13 @@ would multiply every comment by twelve.
 
 ## 2. What the user sees
 
-`/explorer/timeline`, rendered in the Explorer's right pane using the
-existing `ExplorerPane` dispatch.
+The feed, as a document's History dialog and a team's Team Activity card
+draw it (`ScopedTimeline` in `apps/live/components/panels/ScopedTimeline.tsx`),
+each with its own header row holding the controls (§2.3).
 
 ```
 ┌──────────────────────────────────────────────────────────────────────┐
-│ Timeline           [≡ Cards|▦ Calendar] [⧩ Filter] [? Help] [+ New]  │
+│ History                               [≡ Cards|▦ Calendar] [⧩ Filter] │
 ├──────────────────────────────────────────────────────────────────────┤
 │  ●  ┃  [Today]  Tue, 5 Aug   2026                                    │
 │  │  ┃  ┌──────────────┐ ┌──────────────┐ ┌──────────────┐            │
@@ -119,7 +140,7 @@ existing `ExplorerPane` dispatch.
 │  │  ┃  │  (snapshot)  │ │  (snapshot)  │ │   ║ ✎ ║ ▒▒   │  (stack)   │
 │  │  ┃  │              │ │              │ │   ╚═══╝      │            │
 │  │  ┃  ├──────────────┤ ├──────────────┤ ├──────────────┤            │
-│  │  ┃  │ Payments   ⋯ │ │ Onboarding ⋯ │ │ Documents    │            │
+│  │  ┃  │ Payments     │ │ Onboarding   │ │ Documents    │            │
 │  │  ┃  │ 🗑 Document   │ │ 💬 Comment    │ │ Renamed      │            │
 │  │  ┃  │   Deleted    │ │   Added      │ │ 3 events ·   │            │
 │  │  ┃  │ 09:12        │ │ 10:40 · Priya│ │ click to open│            │
@@ -166,10 +187,10 @@ A card has four regions, top to bottom:
    aligned whatever mix of kinds it holds; a shorter card for pictureless
    events was considered and rejected for exactly that reason.
 2. **Title row.** The **subject** of the event (the document's name, the
-   team's name, the token's name) as the card title, and the **⋯ menu
-   trigger** at the right for cards that have one (§2.8). The title is
-   the thing the reader scans for, and it sits in the same place on
-   every card.
+   team's name, the token's name) as the card title. The title is the
+   thing the reader scans for, and it sits in the same place on every
+   card. (`<Timeline>` still takes an optional `cardSlots` hook for a
+   menu in this row; no feed passes one since §2.8 went.)
 3. **Reason line.** The event's glyph in its tone colour, then the
    **reason the card is on the timeline** in Title Case: "Document
    Created", "Document Updated", "Comment Added", "Member Joined". This
@@ -187,7 +208,8 @@ deliberately omits its id, so the renderer has nothing to link and the
 dimming is structural rather than a rule someone has to remember. (A
 deleted document has no tombstone at all; see §3.5.) For the keyboard and a screen reader the target is one real
 button stretched across the card, named by its subject and reason ("Payments, Document Created"); the card itself is
-no button, and the ⋯ menu and an inline rename sit above that button as controls of their own, never nested in it.
+no button, and anything a host slots into the title row sits above that button as a control of its own, never nested
+in it.
 
 ### Colour means what happened, not where
 
@@ -391,32 +413,12 @@ chip and the list it filters can never disagree.
 Calendar switch leaves the header and moves to the top of the filter
 popover, under a **View** heading, above the filters it applies to.
 Collapsing its labels to icons bought room for a while, but two of
-them beside Filter, Help and New Document still crowded a phone header
+them beside Filter and the host's own title still crowded a phone header
 into a scrum of glyphs — and the mode is a thing you set occasionally,
 not a thing you need permanently on screen. One button that opens
 everything beats five that technically fit. The trigger keeps its
 Filter label and dot; its accessible name says "View and filter
 timeline", because on that width it is both.
-
-**The header also carries New Document**, at the row's right edge where
-every other Explorer section puts its create action. A feed is a record
-of what happened rather than a container you add to, so this page
-originally left creation to the empty state's CTA (§2.4). That was
-wrong once Timeline became the landing page (§8.1): the empty state is
-precisely what a returning user never sees, so the first screen of the
-app offered no way to start a document. Timeline is still not a
-container — the button is a page-level action that navigates to `/new`,
-not an "add to this feed" verb, and it takes no folder or team
-argument the way the browse sections' create action does.
-
-Because Timeline offers no **New folder**, this is the one create verb
-on the page, and `PaneHeader` renders a lone verb as itself rather than
-behind the `+ Create` dropdown (see `pane-create-action.ts`). A
-dropdown holding a single tile costs a click and hides the word
-"document" behind the word "Create". Recent, the other one-verb section,
-gets the same treatment. Below `sm` the label collapses to its icon and
-`aria-label` carries the name — the same idiom, and the same reason, as
-the mode buttons in §2.2.
 
 - **Activity by: Everyone / Other people.** The sharpest filter on the
   feed, so it leads the popover. On an active account your own edits
@@ -472,29 +474,23 @@ the mode buttons in §2.2.
 it** — a reader wondering why the page looks short needs one signal, not
 one per filter.
 
-**There is no Refresh button.** The feed loads on mount, and the worker
-seeds a first-time scope off that same read (§5), so a manual refresh
-had nothing to do that reopening the page doesn't already do. The
-`POST /api/timeline/refresh` endpoint stays part of the documented
-public API for an external caller that wants to force a seed; the app
-simply doesn't need it.
+**There is no Refresh button.** The feed loads on mount and re-reads on
+return to the tab (§2.4a) and after the reader's own writes (§2.4b).
 
 The popover renders into a `document.body` portal at fixed coordinates
-anchored to its trigger, re-anchored on scroll and resize. The Explorer
-pane is a rounded, `overflow: hidden` card, so an in-tree absolute
-popover is clipped no matter its z-index.
+anchored to its trigger, re-anchored on scroll and resize. The History
+dialog and the team card are rounded, `overflow: hidden` surfaces, so an
+in-tree absolute popover is clipped no matter its z-index.
 
 ### 2.4 Empty and loading states
 
 - **Loading**: a skeleton of three day-groups, not a spinner and not
   the empty state. The feed popping in after a fetch reads as a layout
   jump.
-- **Empty (new user)**: the shared `EmptyState` from `@liveplanner/ui`,
-  copy "No activity yet" ("Create a document, comment on one, or join a
-  team, and it will show up here."), with a New Document action. In practice a signed-up user is
-  rarely empty because of the backfill (§5) — which is exactly why this
-  CTA can't be the page's only route to a new document, and why the
-  header carries one too (§2.3).
+- **Empty (nothing yet)**: the shared `CompactEmptyState` from
+  `@liveplanner/ui`, "No activity yet", with the host's line: "What happens
+  to this document will show here." (History) or "What the team does will
+  show here." (Team Activity).
 - **Empty (all filtered out)**: the shared empty state
   ([Empty states](../004-interface-design/empty-states.md)), "No events match these filters", with a
   **Clear Filters** action. Distinct copy from the new-user case, so the
@@ -503,7 +499,7 @@ popover is clipped no matter its z-index.
   copy is "No loaded events match these filters" ("Show More to look further back, or remove a filter.") instead, and Show
   more (§2.3) stays under it: claiming nothing matches while older
   pages are unread is the same lie in a smaller voice.
-- **Failed**: "Couldn't load your timeline", with a Try again action.
+- **Failed**: the feed's error state, with a Try again action.
   **A read that failed must never render as an empty feed.** The first
   version of this surface mapped every failure — offline, an expired
   session token, a worker 500 — onto an empty page, so a reader who
@@ -527,20 +523,15 @@ press anything.
 Rate-limited to one re-read per 30 seconds, because alt-tabbing is not
 a request for fresh data. The merge dedupes on event id and keeps any
 pages the reader had already loaded, so returning to a feed someone had
-scrolled a long way down doesn't throw their place away. The unread
-watermark is captured from the FIRST read of a visit and never moved by
-a re-read (§2.5), so a re-read can't clear the New pills the reader
-came back to look at.
+scrolled a long way down doesn't throw their place away.
 
 ### 2.4b Your own actions
 
-The feed is also where the reader ACTS: every document card carries the
-Recent menu (§2.8), so a delete, a rename, a duplicate or a move can
-start on the Timeline. Those used to be the one kind of change the feed
-never noticed. The worker swept the deleted document's cards, and the
-page sat exactly as it was — the old cards up — until a browser refresh
-proved otherwise. A feed that doesn't show what you just did on it
-reads as broken.
+A History dialog stays open beside the reader's own work: they rename,
+share, or delete from the row menu it was opened from, or the editor
+autosaves under it. Those used to be the one kind of change the feed
+never noticed until a browser refresh proved otherwise. A feed that
+doesn't show what you just did reads as broken.
 
 So **any successful write re-reads the feed.** The api client raises a
 module-level signal after every non-GET that returned 2xx
@@ -582,60 +573,39 @@ document created three months ago has its "Created" card well below page
 one — and it is why the reader sees the cards go as the menu closes
 rather than a second later.
 
-The feed's own endpoints are excluded from the signal: dismissing a
-card (§2.9) must not make the feed re-read itself to notice.
-
 ### 2.5 Unread
 
-The premise is "what happened since I was last here", so something has
-to track _last here_. `timeline_scope_state.last_seen_at` does:
+The premise of Home is "what happened since I was last here", so something
+has to track _last here_. `timeline_scope_state.last_seen_at` on the
+reader's `user` scope does. The feeds (History, Team Activity) carry no New
+pills: "since I was last here" is a question about one reader and one
+place, and a shared document or team history has no single "here" to have
+been last at.
 
-- The read returns the watermark as it stood **before** it, so the
-  response can mark what is new to this reader, and then moves it
-  forward. The client renders from the value it was handed rather than
-  re-deriving one, because a second read would report nothing new.
-- It moves on the **first page only**. Stamping while someone pages
-  backwards through history would mark the whole feed seen halfway down
-  it.
-- And only **once per 60-second visit window**. Without that, a client
-  that fetches twice on mount — React's development double-effect does
-  exactly this — wipes the markers before anyone has read them.
-- Events past the watermark wear a **New** pill. A collapsed stack wears
-  one if _any_ member is unseen, or the marker would hide inside the
-  thing that collapsed it.
-- A reader with **no** watermark has never opened the feed, so nothing
-  is marked: greeting a long-time user with "99+" on a feature they have
-  never seen would be a lie about what they missed.
+- **Home's read moves it** ([Explorer Home](explorer-home.md#unread)), once
+  per 60-second visit window (`isNewVisit`, `apps/api/src/timeline/seen.ts`),
+  and returns the value as it stood **before** the read, so Home can mark
+  what was new to this reader. Without the window, a client that fetches
+  twice on mount (React's development double-effect does exactly this)
+  wipes the markers before anyone has read them.
+- A reader with **no** watermark has never opened Home, so nothing is
+  counted: greeting a long-time user with "99+" would be a lie about what
+  they missed.
 - Unread is bounded at **both** ends: past the watermark **and not in the
   future**. The forward-dated expiry warnings from §4 are recorded at the
-  instant they come due, so they sit in the Upcoming band, and the
-  watermark is only ever written as _now_ — which made
-  `occurred_at > last_seen_at` permanently true for them. One API token
-  lapsing next week pinned the sidebar badge to "1" for seven days, two
-  pinned it to "2", and no amount of reading the feed cleared it; every
-  Upcoming card wore a New pill on every visit for the same reason.
+  instant they come due, and the watermark is only ever written as _now_ —
+  which made `occurred_at > last_seen_at` permanently true for them. One
+  API token lapsing next week pinned the badge to "1" for seven days.
   Something scheduled is not news until it happens, so it starts counting
-  on the day it does. This is bounded by time rather than by switching to
-  the row's arrival timestamp because a coalesced event (§3.2) advances
-  its `occurred_at` on every update while its `created_at` stays at first
-  insert, and comparing arrival would stop genuinely-new activity on an
-  existing row from ever marking the scope unread again. The rule lives in
-  `countUnseen` (server) and `isNewEvent` (client), which are deliberately
-  two implementations of one sentence and are tested as such.
+  on the day it does. This is bounded by time rather than by the row's
+  arrival timestamp because a coalesced event (§3.2) advances its
+  `occurred_at` on every update while its `created_at` stays at first
+  insert. The rule lives in `countUnseen` (server).
 
-The sidebar badge is its own endpoint (`GET /api/timeline/unread`)
-rather than a field on the feed read, because it renders on every
-Explorer section and must not require loading a feed nobody is looking
-at. It counts **only other people's events** — a number that goes up
+The Home row's badge is its own endpoint (`GET /api/timeline/unread`),
+because it renders on every Explorer section and must not require loading
+Home. It counts **only other people's events** — a number that goes up
 because _you_ renamed something is noise — and caps at 99.
-
-Only the `user` scope carries a watermark. A shared team feed has no
-single "here" to have been last at.
-
-Viewing [Explorer Home](explorer-home.md#unread) moves the same mark, by
-the same rules (once per 60-second visit window, returning the value
-from before the read): Home shows the same other-people news, so having
-read it there is having read it.
 
 ### 2.6 Motion
 
@@ -663,7 +633,7 @@ Three details:
   would make a stack halfway down sit still before unfolding.
 
 Keyframes live in the shared Tailwind theme beside the empty-state ones,
-so any app rendering a Timeline gets the motion without a per-app paste.
+so any app rendering the feed gets the motion without a per-app paste.
 `prefers-reduced-motion` cancels all of it, pinning opacity to 1 —
 fill-mode `both` would otherwise strand cards invisible.
 
@@ -687,143 +657,24 @@ it decorates, and fast typing would feel laggy.
 
 ### 2.7 Deep links
 
-`/explorer/timeline#event=<id>` scrolls to that event and rings it. The
-target may sit inside a collapsed stack, so those stacks are forced
-open — otherwise the link lands the reader on a generic "4 events"
-card with no idea which one they came for. That is **derived** from
-the data rather than pushed into the expanded set from an effect, so it
-costs no extra render; the reader can still collapse it afterwards.
-
-The hash is read once at module scope, like the landing-vs-nav
-telemetry: it describes how the page was _opened_, and a later in-app
-navigation should not resurrect an old target.
+Removed with the Explorer's Timeline section: `/explorer/timeline#event=<id>`
+scrolled to an event there. The feeds have no URL of their own.
 
 ### 2.8 The card menu
 
-A document card carries the **same ⋯ menu as a Recent card**, and it is
-the same component: `DocumentActionsMenu` from the Explorer, anchored to
-the same `EllipsisTriggerButton`, opening on the trigger or on
-right-click. Rename, Duplicate, Change Folder, Favourite, History, Hide
-from Recent, Open Team, Sync Document / Take Offline, Delete: whatever
-Recent offers that document, Timeline offers it too. A reader who sees
-yesterday's document on the feed and wants to file it shouldn't have to
-find it again in a folder first. Rename happens inline, in the card's
-title slot, exactly as it does on a Recent card.
-
-**The menu needs a document the event only names.** An event's snapshot
-carries the document's id and name, not its folder, share code, team or
-owner, and the menu's items depend on all of those. So the live app
-resolves the id against the Explorer's already-loaded lists (personal,
-team, and shared-with-you), which is the same set Recent draws from, and
-hands the menu the `PaneDocument` it finds. When nothing is found (the
-document has since been deleted, or a team document the sidebar hasn't
-loaded), the card gets **no menu**: a menu of guesses is worse than
-none, and the card still opens the document on click. Tombstones have no
-id to look up and get no menu for the same reason.
-
-**Where the menu comes from.** The Timeline components in
-`@liveplanner/ui` know nothing about documents, so they can't build this
-menu. `<Timeline>` takes an optional **`cardSlots(event)`** hook
-returning `{ title?, menu? }`; the card places `menu` in its title row
-and stops the card's own click from firing under it, and renders
-`title` in place of the subject when given (the inline rename input).
-The live app's `useTimelineCardSlots` implements it against the Explorer
-context. `ScopedTimeline` (a team's activity, a document's history) passes
-nothing and gets plain cards: those surfaces sit outside the Explorer
-context that supplies the handlers, and on a document's own history page
-every card is the same document.
-
-**A folder card carries the Explorer's folder menu**, by the same
-argument and the same mechanism: `FolderActionsMenu`, the one the
-folder cards, rows and sidebar tree open, resolved from the Explorer's
-personal folder tree by the `folderId` the event names. Rename (inline,
-in the title slot, exactly as a folder card does it), New Subfolder,
-Change Folder, Delete — whatever a folder's card offers, its Timeline
-card offers. A folder the Explorer can't resolve (a tombstone, or a
-team folder) gets the one-verb menu below.
-
-**Every other card's menu offers what the Explorer can do with that
-kind of thing**, resolved from the Explorer's own state and run through
-the Explorer's own handlers (`useTimelineEntityMenus`):
-
-| Card                                   | Verbs                                                                                                    |
-| -------------------------------------- | -------------------------------------------------------------------------------------------------------- |
-| API token (created, expiring)          | Open API Tokens (Settings, in place) · **Revoke Token** (confirmed with the token manager's own warning) |
-| Team (created, renamed, members, role) | Open Team · Edit Team _(admin)_ · Leave Team · Delete Team _(admin)_                                     |
-| Invite received                        | Open Invites · **Accept Invite** · **Decline Invite**                                                    |
-| Theme saved                            | Open Themes · Edit Theme (the same builder modal the Themes pane opens) · Delete Theme                   |
-| Images uploaded                        | Open Images                                                                                              |
-| Document the Explorer can't resolve    | Open Document                                                                                            |
-
-Plus **Remove from Timeline** on all of them (§2.9), and the destructive
-verbs last, under their own separator (never red), the way the document menu
-keeps Delete. The first version gave these cards only the remove verb,
-on the argument that a ⋯ holding a single "Open" that duplicated the
-card's own click was a control that exists to look consistent. Half
-right: the reader who sees "API Token Expiring" wants to revoke it
-_there_, not go and find it. Confirm copy comes from the panes' own
-helpers (`token-copy.ts`, `team-removal.ts`, `ThemeBuilderModal.tsx`),
-so the warning a reader sees is the one they'd see on the Tokens,
-Themes or Team page.
-
-**A tombstone, or an entity the Explorer no longer holds** — a revoked
-token, an answered invite, a team the reader has left, a deleted theme —
-keeps only the "open the section" row: a menu of guesses is worse than
-none. The same `TimelineCardMenu` component renders all three shapes
-(document, folder, items) behind the same trigger, so they can't drift on
-how a menu opens.
-
-**Every document card also offers Share**, which opens the document with
-its Share dialog up (the editor honours `?share=1`). The natural next
-step from a share-link card, and no worse from any other; offline
-documents, which have nothing to share, leave it out.
-
-Telemetry: opening a card menu fires `Timeline` / `Opened` / `Menu`
-(§10).
+Removed with the section. Its cards carried the Explorer's document,
+folder, token, team, invite and theme menus; History and Team Activity
+never did, since they sit outside the Explorer context those menus need,
+and on a document's own history every card is the same document. The
+`cardSlots` and `stackSlots` hooks on `<Timeline>` stay, unused.
 
 ### 2.9 Remove from Timeline
 
-A busy day clutters. A reader who saved six themes, made a folder and
-renamed three documents before lunch has a Today full of cards that were
-all true and are all now noise, and the only way to thin it was to wait
-for tomorrow. **Every card's ⋯ menu ends with "Remove from Timeline"**,
-which takes that one card off the reader's feed.
-
-- **Off the reader's feed, nobody else's.** One event row serves its
-  whole audience (§1, Membership), so the removal is a soft
-  `deleted_at` on the reader's membership row (§3.2), never a delete of
-  the event. A teammate tidying their feed leaves yours alone, and a
-  team's shared activity feed (§3.4) is untouched: this verb only exists
-  on the personal Timeline, which is the only feed with an Explorer
-  context to build the menu from.
-- **Soft so a re-emit can't resurrect it.** An emit attaches its scopes
-  with INSERT OR IGNORE against the composite key, so the coalesced editing
-  event — which re-attaches on every save — finds the dismissed row and
-  leaves it dismissed. Removing today's "Document Updated" and then
-  saving again does not bring it back; the reader said they'd seen
-  enough of that one today.
-- **Invisible everywhere a membership is read.** The feed and the
-  unread count both filter `deleted_at IS NULL`; a removed card that
-  kept pinning the sidebar badge would be the same bug as §2.5's
-  future-dated one.
-- **Optimistic.** The card goes as the menu closes and comes back only
-  if the worker refused. No confirm: the action is ambient tidying,
-  and the card vanishing is its own feedback.
-- On the document and folder menus it sits with the other "how you see
-  it" verbs, apart from Delete: it says nothing about the thing itself.
-- **A stack card has the same ⋯**, and its one verb removes every
-  member of the run at once. A day's "Documents Renamed · 12 events" is
-  one thing to the reader, so it is one click to be rid of. Opening the
-  menu must not expand the run: the card stops the trigger's click at
-  the slot, the same boundary that keeps a single card's menu from
-  opening the document behind it. The `<Timeline>` takes a separate
-  `stackSlots(stack)` hook for this, since a stack has no single event
-  to hand `cardSlots`. The run goes in one request
-  (`POST /api/timeline/events/dismiss`, §6.2a), not one per member.
-
-`DELETE /api/timeline/events/:id` and `POST /api/timeline/events/dismiss`
-(§6.2a). Telemetry: `Timeline` / `Removed` / `Entry` for a card, `Stack`
-for a run (§10).
+Removed with the section, with its endpoints (§6.2a). It soft-deleted the
+reader's own `user` membership row (`timeline_event_scopes.deleted_at`,
+§3.2); nothing writes that column now, and the reads still filter
+`deleted_at IS NULL`, so what a reader removed before stays removed from
+Home's count.
 
 ## 3. Data model
 
@@ -890,7 +741,7 @@ CREATE TABLE timeline_event_scopes (
   scope_type TEXT NOT NULL,               -- v1: 'user'. Reserved: 'diagram', 'team'.
   scope_id   TEXT NOT NULL,               -- an owner id when scope_type = 'user'
   added_at   INTEGER NOT NULL,
-  deleted_at INTEGER,                     -- set by Remove from Timeline (§2.9); migration 0044
+  deleted_at INTEGER,                     -- was set by Remove from Timeline (§2.9, removed); migration 0044
   PRIMARY KEY (scope_type, scope_id, event_id)
 );
 
@@ -916,15 +767,15 @@ measurement, not a hunch.
 CREATE TABLE timeline_scope_state (
   scope_type       TEXT NOT NULL,
   scope_id         TEXT NOT NULL,
-  backfilled_at    INTEGER,               -- NULL until the one-shot backfill has run
+  backfilled_at    INTEGER,               -- was set by the one-shot backfill (§5, removed); no longer written
   last_refreshed_at INTEGER,
   PRIMARY KEY (scope_type, scope_id)
 );
 ```
 
-One row per scope. `backfilled_at` gates the one-shot seeding in §5;
-`last_refreshed_at` backs the "Last refreshed …" line and the
-stale-read threshold.
+One row per scope. `backfilled_at` gated the one-shot seeding (§5, removed)
+and is no longer written; `last_seen_at` (migration 0043, renamed from
+`last_refreshed_at`) is the unread watermark (§2.5).
 
 ### 3.4 What the scope model bought
 
@@ -972,9 +823,9 @@ Still open:
   `(scope_type, scope_id, event_id)` — per viewing scope, not on the
   membership row, so a future composite read can't bleed one scope's
   stars into another's.
-- **Per-entry dismissal** is a `deleted_at` on the membership row,
-  soft so a re-emit doesn't resurrect what the user dismissed. Built,
-  exactly as planned here (§2.9, migration `0045_timeline_dismissal`).
+- **Per-entry dismissal** was a `deleted_at` on the membership row
+  (§2.9, migration `0045_timeline_dismissal`), and went with the Explorer's
+  Timeline section.
 
 Favourites are not built. Everything here is additive.
 
@@ -1258,6 +1109,14 @@ Teams are Clerk-only, so none of these events ever reach a guest scope.
 
 ### 4.5 Account and housekeeping
 
+An account event (a token, a theme, a folder, an upload) reaches only its
+person's own `user` scope, which no feed draws since the Explorer's Timeline
+section went: it is still recorded, and leaves with the account (§3.5). Home's badge counts
+only what someone else did or nobody did, so of these only a token's expiry
+warning, once due, adds to it. A
+`share_link_expiring` warning is a document event, so it shows in that
+document's History.
+
 | `eventType`           | Fires when                                                                            | Notes                                                                             |
 | --------------------- | ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | `token_created`       | `POST /api/tokens` ([Public API and API tokens](../015-api/public-api-and-tokens.md)) |                                                                                   |
@@ -1352,49 +1211,28 @@ breaks rather than after.
 
 ## 5. Backfill
 
-A brand-new Timeline that is empty for an existing user with 60
-documents is a broken-looking feature. On the first read of a scope
-(`timeline_scope_state.backfilled_at IS NULL`), the worker seeds it:
-
-- For the caller's 200 most recently updated documents: a
-  `document_created` event at `documents.created_at`, which never
-  overwrites a creation already recorded (whose snapshot may say the
-  making counts as a use, [Explorer Home](explorer-home.md#making-a-document)), and a
-  `document_edited` event at `updated_at` with the matching
-  `<actorId>:<date>` dedupe key. The worker cannot know who made that
-  last save, so the edit is a reconstruction: its snapshot carries
-  `backfilled: true`, and it never overwrites a real edit already
-  recorded for that day. A real edit landing on it later replaces the
-  snapshot and so the mark. [Explorer Home](explorer-home.md) counts
-  only real edits; rows backfilled before the mark existed were marked
-  once by migration 0063 (an edit stored more than a minute after the
-  time it claims to have happened).
-- For each team the caller has joined: a `team_member_joined` event at
-  their `team_members.created_at`.
-- Nothing else. Comments and actions are inside tab JSON and
-  backfilling them would mean parsing every tab of every document in a
-  request — a cost with no ceiling. The feed's older reaches are
-  thinner than its recent ones; that is the honest trade and it is
-  invisible within a week of use.
-
-The backfill is idempotent by construction (every insert hits the
-`UNIQUE` key), runs inside `ctx.waitUntil` after the response is
-served, and stamps `backfilled_at` so it never runs twice. The 200 cap
-is logged rather than silent — a user with 400 documents should not be
-told their history starts in March when it doesn't.
+Removed with the Explorer's Timeline section. On a personal scope's first
+read the worker used to seed it from the caller's library (a
+`document_created` and a reconstructed `document_edited` per document, a
+`team_member_joined` per team), so a new personal feed wasn't empty. Home
+counts only real edits and real makings, and History and Team Activity
+were never seeded, so nothing reads what it wrote. Rows it wrote stay,
+marked `backfilled: true`, and Home keeps leaving them out.
 
 ## 6. API
 
 One route module, `apps/api/src/routes/timeline.ts`, dispatched from
-`src/index.ts`.
+`src/index.ts`. It serves the scoped feeds and Home's badge; the personal
+feed's read, refresh and dismissal went with the Explorer's Timeline
+section.
 
 ### 6.1 `GET /api/timeline`
 
 Query params:
 
-- `scope` — `<scopeType>:<scopeId>`. Optional; defaults to
-  `user:<caller>`. Present in v1 only so the forward-compatible shape
-  is fixed from the start.
+- `scope` — `<scopeType>:<scopeId>`, `document:<id>` or `team:<id>`.
+  Required: without it, or with a `user` scope, the read is refused (the
+  personal feed it used to default to is gone).
 - `from`, `to` — epoch ms bounds on `occurred_at`. The calendar view
   passes the visible month.
 - `sourceType` — repeatable; narrows to those source types.
@@ -1409,7 +1247,7 @@ Response:
   "items": [
     {
       "id": "...",
-      "sourceType": "diagram",
+      "sourceType": "document",
       "sourceId": "...",
       "eventType": "comment_added",
       "title": "Comment Added",
@@ -1419,51 +1257,35 @@ Response:
       "snapshot": { "documentName": "Payments architecture", "text": "Should the retry budget…" }
     }
   ],
-  "nextCursor": "1754380800000:abc",
-  "lastRefreshedAt": 1754384400000
+  "nextCursor": "1754380800000:abc"
 }
 ```
 
-**Authorisation.** A caller may only read a `user` scope whose
-`scopeId` is their own resolved owner id — the Clerk `sub` for a signed
--in caller, the signed guest participant id otherwise. Any other scope
-is `403`. This is the only gate the endpoint needs in v1, and it is
-worth stating plainly because the scope parameter looks like it invites
-more.
+**Authorisation.** Explicit per scope type, with anything unrecognised
+refused (§3.4): a `document` scope defers to the document's own read gate
+(a missing document is a `403`, so ids can't be probed), a `team` scope
+needs a joined membership. An owner id is a credential, so a `document`
+feed names only the reader themself as an actor; every other actor goes
+out as `null` and renders by its snapshot name.
 
 ### 6.2 `POST /api/timeline/refresh`
 
-Stamps `last_refreshed_at`, runs the backfill if it hasn't run, and
-returns `{ lastRefreshedAt }`. Throttled to one call per scope per 5
-seconds server-side to absorb spam-clicks on the Refresh button.
+Removed with the backfill (§5) it ran.
 
 ### 6.2a `DELETE /api/timeline/events/:id`
 
-Remove from Timeline (§2.9). Marks `deleted_at` on the caller's own
-`user` membership row for that event. `204` on success, and on a repeat
-(the outcome asked for already holds); `404` when the caller's feed
-never held the event, so a guessed id learns nothing beyond "not
-yours". There is no scope parameter: the verb only ever applies to the
-caller's personal feed. In the OpenAPI manifest like every other route.
+Removed with Remove from Timeline (§2.9), as was
+`POST /api/timeline/events/dismiss`. Both are gone from the OpenAPI
+manifest.
 
-`POST /api/timeline/events/dismiss` with `{ ids: string[] }` is the same
-for a whole stack: one request for the run. Up to 200 ids; ids the
-caller's feed never held are ignored rather than refused (the caller is
-describing a stack it can see, and a member that vanished meanwhile is
-not an error). Returns `{ dismissed }`, the number of rows this call
-marked.
+### 6.2b `GET /api/timeline/unread`
 
-There is no other `POST`/`PATCH` for events. Nothing user-authored lives
-on this feed; the dismissal removes, it never adds.
+`{ count }`: other people's unseen events on the caller's own `user` scope
+(§2.5), for the Home row's badge. Zero when the scope has no watermark yet.
 
 ### 6.3 Stale-read refresh
 
-`GET /api/timeline` triggers the backfill (and only the backfill) when
-`backfilled_at` is null. It does **not** rescan anything else — there
-is nothing to rescan, since all emission is inline. The 30-second
-stale threshold Manager Toolkit uses exists to amortise scanner cost;
-here it has nothing to amortise. The Refresh button re-reads, and that
-is the whole story.
+Removed with the backfill (§5): a read seeds nothing.
 
 ### 6.4 Wire types
 
@@ -1479,10 +1301,10 @@ domain. **Offline mode is a no-op here**: `isOfflineId` doesn't apply
 (the scope is an owner, not a document), and an offline-only browser has
 no server events.
 
-`apiListTimeline` returns `null` when the read fails rather than
-throwing OR returning an empty page. Both alternatives were tried and
-both are wrong: throwing pushes an error screen in front of the landing
-page, and an empty page is indistinguishable from a genuinely empty
+`apiListTimeline` takes the scope it reads and returns `null` when the
+read fails rather than throwing OR returning an empty page. Both alternatives were tried and
+both are wrong: throwing pushes an error screen over the dialog or card the feed sits in,
+and an empty page is indistinguishable from a genuinely empty
 feed, which is exactly how "nothing has happened yet" came to be shown
 to people with years of history (§2.4). `null` is the third answer —
 "we don't know" — and the caller keeps what it had. This matches the
@@ -1517,14 +1339,12 @@ types.ts                 TimelineEvent, renderer contracts
 The **renderers** — the functions that turn a `TimelineEvent` into a
 card's parts (`subject`, `label`, `meta`, `preview`, `onClick`), and that know a document event links to `/document/<id>` and a
 team event to `/explorer/team?id=<id>` — live in
-**`apps/live/app/explorer/timeline/renderers.tsx`**, keyed by
-`sourceType`. The package takes a registry prop; it never imports a
-route. The one thing a renderer can't supply, the ⋯ menu, comes in
-through the separate `cardSlots` hook (§2.8), because it needs the
-Explorer's loaded lists and handlers rather than the event alone.
+**`apps/live/app/explorer/timeline/renderers.tsx`** (a folder that is no
+longer a route), keyed by `sourceType`. The package takes a registry prop;
+it never imports a route.
 
-This split is what lets a per-document timeline (§3.4) adopt the same
-components without inheriting Explorer-specific copy.
+This split is what lets History and Team Activity (§3.4) share the same
+components without inheriting any one host's copy.
 
 **Colour.** Each tone gets a CSS variable pair
 (`--ld-timeline-<tone>` and `--ld-timeline-<tone>-soft`) defined in the
@@ -1546,9 +1366,9 @@ feed vanishing and coming back.
 
 ## 8. Explorer integration
 
-### 8.1 Home is the landing view; the feed is the Timeline
+### 8.1 Home is the landing view
 
-The Explorer lands on **Home** ([Explorer Home](explorer-home.md)), not on this feed. A static export has no single
+The Explorer lands on **Home** ([Explorer Home](explorer-home.md)). A static export has no single
 entry point, so the landing is applied in several places, all reading one constant, `EXPLORER_LANDING_PATH`
 (`apps/live/lib/explorer-landing.ts`):
 
@@ -1556,35 +1376,24 @@ entry point, so the landing is applied in several places, all reading one consta
 2. `apps/live/app/explorer/page.tsx`: the client `router.replace` fallback for the dev server and direct asset hits.
 3. `scripts/e2e-stack.mjs`: the end-to-end stack's stand-in for the worker.
 
-`apps/live/app/explorer/routes.ts`'s `selectedFromRoute` `default:` case, which catches mangled URLs and id-less
-`folder`/`team` links, returns `{ kind: 'home' }`; its test holds the route table to the constant.
-
-The feed keeps its route, `/explorer/timeline`, and its page is titled **Timeline** (heading, document title and
-breadcrumb). Home says what the person was working on and what others did; the Timeline is the whole record, the
-person's own doings included, with its filters, calendar and paging.
+`apps/live/app/explorer/routes.ts`'s `selectedFromRoute` `default:` case, which catches mangled URLs (an old
+`/explorer/timeline` link among them) and id-less `folder`/`team` links, returns `{ kind: 'home' }`; its test holds
+the route table to the constant.
 
 **Recent is not removed.** It keeps its route (`/explorer/recent`); it answers a different question ("what did I
 touch last"). It has no sidebar row.
 
 ### 8.2 Sidebar
 
-The feed has a **Timeline** row in the sidebar's Overview group ([Explorer structure](explorer-structure.md)), under
-the Inbox, and Home's What Happened reaches it too, through its quiet **See Timeline** link. The row carries no badge:
-the feed's unread badge sits on the **Home** row, which opens Home:
+The record has no sidebar row. Its unread badge sits on the **Home** row
+([Explorer structure](explorer-structure.md)):
 
 ```text
 Overview
-  ⌂  Home              ← Home, the landing view; badge: unread feed events
+  ⌂  Home              ← the landing view; badge: other people's unseen events (§2.5)
   ◔  Inbox
-  ┆  Timeline          ← this feed
   ↗  Shared With Me
 ```
-
-The badge counts only OTHER people's events since the reader last looked (§2.5). Viewing Home counts as having
-looked, exactly as reading this feed does ([Explorer Home](explorer-home.md) "Unread"). The marker is
-`timeline_scope_state.last_seen_at`, a row the read already touches, so it costs no extra write; the badge reads from
-its own cheap endpoint rather than a field on the feed, because it renders on every Explorer section and must not
-drag a feed nobody is looking at.
 
 ### 8.3 The section checklist
 
@@ -1593,22 +1402,17 @@ Adding an Explorer section touches the same files every section does:
 `apps/live/app/explorer/<section>/page.tsx` (the route stub),
 the sidebar group that holds its row, if it has one (`app/explorer/sidebar/`, [Explorer structure](explorer-structure.md)),
 `components/primitives/explorer-icons.tsx`, `view-titles.ts` and `useExplorerPane.ts` (pane content, title, crumbs),
-`ExplorerPane.tsx` (dispatch; neither Home nor the feed is a `BROWSE_KIND`),
-`ExplorerEmptyState.tsx`, and `routes.test.ts`'s `STATIC_NODES`.
-
-The feed's pane is lazy-loaded like `ProfilePane` / `TeamPane`, so the
-calendar grid and mini-calendar chunk stays off the critical path for
-users who never switch modes.
+`ExplorerPane.tsx` (dispatch), `ExplorerEmptyState.tsx`, and `routes.test.ts`'s `STATIC_NODES`. Removing one
+touches the same files.
 
 ## 9. Guests
 
-Guests get the Timeline, keyed to their signed participant id
-([Auth + guest access](../014-identity/auth-and-guest-access.md)). They see document lifecycle, editing, comments on their own
-documents, and share-link events. Team, invite, and token events never
-reach them because those features are Clerk-only — the feed is simply
-thinner, with no sign-in wall and no empty-section prompt.
+Guests' writes are recorded too, keyed to their signed participant id
+([Auth + guest access](../014-identity/auth-and-guest-access.md)): document lifecycle, editing, comments on their
+own documents, and share-link events. Team, invite, and token events never reach them because those features are
+Clerk-only — Home and a History are simply thinner, with no sign-in wall.
 
-**On sign-up, timeline history migrates.** `POST /api/migrate` already
+**On sign-up, the record migrates.** `POST /api/migrate` already
 moves documents from the guest participant id to the Clerk user id; it
 gains two statements in the same transaction:
 
@@ -1617,30 +1421,27 @@ UPDATE timeline_event_scopes SET scope_id = ?1 WHERE scope_type = 'user' AND sco
 UPDATE timeline_events       SET actor_id = ?1 WHERE actor_id = ?2;
 ```
 
-Plus a move of the `timeline_scope_state` row, so the backfill doesn't
-re-run against the new id and duplicate what already migrated. A user
-who drew for a week as a guest keeps that week when they sign up —
-which is the point of the guest path existing at all.
+Plus a move of the `timeline_scope_state` row, so the Home watermark
+carries over. A user who drew for a week as a guest keeps that week when
+they sign up — which is the point of the guest path existing at all.
 
 ## 10. Telemetry
 
-New category `Timeline` in the closed enum in
-`@liveplanner/api-schema` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)). Existing actions cover it:
+Category `Timeline` in the closed enum in
+`@liveplanner/api-schema` ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)), fired by
+the History and Team Activity feeds:
 
-- `Timeline`/`Opened` — the section is viewed. `type` is `Landing` when
-  the page load started on it, `Nav` when reached from elsewhere (the
-  sidebar's Timeline row, or Home's See Timeline link).
 - `Timeline`/`Changed` with `type` `List` | `Calendar` — mode switch.
 - `Timeline`/`Selected` with `type` the source type — a filter chip
-  toggled.
+  toggled; `Others` | `Everyone` for the Activity by switch.
 - `Timeline`/`Opened` with `type` `Stack` — a stacked run expanded.
   Tells us whether stacking thresholds are right.
-- `Timeline`/`Loaded` with `type` `More` — Show More.
-- `Timeline`/`Opened` with `type` `Menu` — a card's ⋯ menu opened
-  (§2.8), so we can see whether people act on the feed or only read it.
-- `Timeline`/`Removed` with `type` `Entry` | `Stack` — a card, or a
-  whole run, removed from the feed (§2.9). If this is common, the day
-  is too noisy and the answer is a coarser emit, not a faster menu.
+- `Timeline`/`Loaded` with `type` `More` — Show More; `Retry` — a failed
+  read retried.
+
+The section's own events went with it: `Timeline`/`Opened` `Landing` |
+`Nav` | `Menu`, `Timeline`/`Removed` `Entry` | `Stack`, and the sidebar's
+Timeline row.
 
 No event ever carries a document name, team name, or comment text; the
 `type` slot is a fixed token, bounded by the existing
@@ -1666,7 +1467,8 @@ Per [Testing](../003-system-architecture/testing.md):
   because the menu slot is the one place a card's click and a child's
   click compete.
 - **Worker route tests** alongside `teams.test.ts`: scope
-  authorisation (a caller cannot read another owner's scope),
+  authorisation (a `user` or missing scope is refused, a document scope
+  defers to the document's gate, a team scope needs a joined membership),
   pagination and cursor stability, filter params, and the
   `UNIQUE`-constraint idempotence of `emitTimelineEvent` — emit the
   same draft twice, assert one row.
@@ -1675,9 +1477,7 @@ Per [Testing](../003-system-architecture/testing.md):
 - **Coalescing**: three saves in one UTC day produce one row whose
   `occurred_at` advances; a save the next day produces a second row.
 - **Migration**: guest → Clerk id moves scopes, events, and scope
-  state, and the backfill does not re-run afterwards.
-- **Round-trip**: `/explorer/timeline` added to `STATIC_NODES` in
-  `routes.test.ts`.
+  state.
 - **Failed reads never read as empty** (§2.4): `apiListTimeline`
   returns null on a refusal (401), on a worker error, on a thrown fetch
   and on an unparseable body — and an empty page only when the worker
@@ -1698,26 +1498,21 @@ Per [Testing](../003-system-architecture/testing.md):
 
 ## 12. Docs
 
-- A help-centre article under the Explorer / organising category
-  ([Help app](../018-help/help-app.md)), with its registry entry in
-  `packages/help-registry/src/index.ts` — slug, title, short
-  description, and keywords including "feed", "activity", "history",
-  "what's new", "calendar", "notifications" — plus a bump to that
-  category's `articleCount`. Per the repo rule, an unregistered article
-  is invisible to both the help search and the editor's search panel,
-  so it ships in the same change as the page.
-- `README.md` and `docs/development/architecture.md` gain the new tables and the
-  `/api/timeline` route in their existing lists.
+- The help centre's [Home](../../../apps/help/app/explorer/home/page.mdx) article
+  ([Help app](../018-help/help-app.md)) describes Home and, under "Team and
+  document histories", the feeds, registered as `home` in
+  `packages/help-registry/src/index.ts`. Its old URL, `/help/explorer/timeline/`,
+  redirects there.
+- `README.md` and `docs/development/architecture.md` list the tables and the
+  `/api/timeline` routes.
 
 ## 13. Out of scope for v1
 
-- Favourites / starring, manual entries. (Per-entry removal shipped: §2.9.)
-- An unread badge on the Timeline row (the count sits on Home, §8.2).
-- Per-document and per-team timeline scopes (the schema is ready; the
-  renderers, routes, and UI are not).
+- Favourites / starring, manual entries.
+- A personal feed of everything (the Explorer's Timeline section, removed).
 - AI day summaries.
 - Realtime push. A fresh read on mount, the re-read on return to the
   tab (§2.4a), and the re-read after the reader's own write (§2.4b)
   are the whole freshness story.
 - Cross-user search over the feed.
-- Backfilling comments and actions out of historical tab JSON.
+- Backfilling anything (§5).

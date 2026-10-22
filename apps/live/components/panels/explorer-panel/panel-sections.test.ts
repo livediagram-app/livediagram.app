@@ -15,7 +15,7 @@ const groups = panelSectionGroups({ teams: [{ id: 't1' }], hasBrowserDocuments: 
 describe('the editor Explorer sections', () => {
   it("lists the sidebar's groups, This Browser only while it holds documents", () => {
     expect(groups.map((g) => g.sections.map(sectionKey))).toEqual([
-      ['home', 'inbox', 'timeline', 'shared'],
+      ['home', 'inbox', 'shared'],
       ['mine', 'team:t1'],
       ['browser', 'tags', 'library', 'trash'],
     ]);

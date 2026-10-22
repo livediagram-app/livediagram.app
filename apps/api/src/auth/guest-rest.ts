@@ -53,8 +53,8 @@ export const OWNER_SCOPED_SEGMENTS = new Set([
   'participants',
   'preferences',
   'shared',
-  // The feed is keyed on the resolved owner id and returns document
-  // names + comment text, so a harvested guest id must not read it.
+  // A document's History and Home's unread count are keyed on the resolved owner and return
+  // document names + comment text, so a harvested guest id must not read them.
   'timeline',
   // Same shape as the timeline: actions + comment threads (names, text)
   // keyed on the resolved owner, and the owner's starred documents.

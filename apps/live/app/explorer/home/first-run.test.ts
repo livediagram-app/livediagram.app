@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { isBlankTemplate, isTemplateKind } from '@liveplanner/templates';
+import { isBlankTemplate } from '@liveplanner/templates';
 import { isFirstRun, welcomeSearchHref } from './first-run';
 import {
   WELCOME_BLANKS,
-  WELCOME_FAN,
   WELCOME_POPULAR,
   WELCOME_TEMPLATES_MAX,
   welcomeStartHref,
@@ -55,11 +54,6 @@ describe('the starts', () => {
     expect(WELCOME_POPULAR).toHaveLength(WELCOME_TEMPLATES_MAX);
     expect(WELCOME_POPULAR.some(isBlankTemplate)).toBe(false);
     expect(WELCOME_POPULAR.slice(0, 3)).toEqual(['mindmap', 'flowchart', 'kanban']);
-  });
-
-  it('fans three real templates', () => {
-    expect(WELCOME_FAN).toHaveLength(3);
-    expect(WELCOME_FAN.every(isTemplateKind)).toBe(true);
   });
 
   it('makes a start at once through /new', () => {

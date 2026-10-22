@@ -7,15 +7,10 @@ const { store } = vi.hoisted(() => ({
   store: {
     readTimeline: vi.fn(),
     getScopeState: vi.fn(),
-    markScopeSeen: vi.fn(),
     countUnseen: vi.fn(),
-    dismissTimelineEventForScope: vi.fn(),
-    dismissTimelineEventsForScope: vi.fn(),
-    DISMISS_BATCH_MAX: 200,
   },
 }));
 vi.mock('../db/timeline', () => store);
-vi.mock('../timeline', () => ({ backfillUserScope: vi.fn() }));
 const { db } = vi.hoisted(() => ({ db: { getMembership: vi.fn(), getDocument: vi.fn() } }));
 vi.mock('../db', () => db);
 const { gate } = vi.hoisted(() => ({ gate: { gateRead: vi.fn() } }));

@@ -375,11 +375,11 @@ export const LANDING_SECTIONS: LandingSection[] = [
       },
       {
         art: <TimelineFeedArt />,
-        href: '/help/explorer/timeline/',
+        href: '/help/explorer/home/',
         group: 'Work together live',
         title: 'See what happened while you were away',
         description:
-          'The Explorer opens on Home: the projects you return to most, and what your teammates commented and changed while you were away. The Timeline holds the full feed, and the Inbox gathers the threads and form answers still waiting on you, with a count in the sidebar so you can tell without looking.',
+          'The Explorer opens on Home: the projects you return to most, and what your teammates commented and changed while you were away. Every project and team keeps its own history, and the Inbox gathers the threads and form answers still waiting on you, with a count in the sidebar so you can tell without looking.',
       },
       {
         art: <ShareLinksArt />,

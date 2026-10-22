@@ -1844,12 +1844,12 @@ export const articles: Article[] = [
     group: 'Your Library',
   },
   {
-    slug: 'timeline',
+    slug: 'home',
     title: 'Home',
     description:
-      'The Explorer\u2019s landing view and the Timeline: what you use most and last, and what happened.',
+      'The Explorer\u2019s landing view: what you use most and last, what happened, and every history.',
     keywords:
-      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand see timeline timeline all activity landing start feed activity history what happened whats new latest events log stream notifications updates recent changes calendar month view upcoming expiring stacked grouped collapse day colour color red amber green deleted preview thumbnail card cards grid menu ellipsis rename move duplicate created updated unread unseen new badge since last visit who did what other people filter local time remove dismiss hide clutter tidy clean up refresh live update revoke token accept decline invite leave team edit theme share',
+      'home jump back in within reach most used last used recent see more grid strip return often what happened others teammates summary expand landing start banner greeting activity history document history team activity whats new latest events log notifications updates recent changes calendar month view stacked grouped collapse day colour color red amber green unread unseen new badge since last visit who did what other people filter local time board sheet dashboard form',
     category: 'Explorer',
     categorySlug: 'explorer',
     group: 'Activity',

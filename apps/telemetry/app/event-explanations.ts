@@ -686,7 +686,8 @@ export const EXACT: Readonly<Record<string, string>> = {
     "Someone opened the Explorer's old Activity address, which now opens the Inbox. The Inbox was once called Activity; its visits count under /explorer/inbox.",
   'Page|View|/explorer/inbox': "Someone navigated to the Explorer's Inbox.",
   'Page|View|/explorer/shared': "Someone navigated to the Explorer's Shared with You section.",
-  'Page|View|/explorer/timeline': "Someone navigated to the Explorer's Timeline.",
+  'Page|View|/explorer/timeline':
+    "Someone navigated to the Explorer's Timeline. No longer recorded: the Explorer's Timeline was removed.",
   'Page|View|/features/foundations':
     "Someone visited the marketing site's Foundations features page.",
   'Page|View|/features/simple': "Someone visited the marketing site's Simple features page.",
@@ -1011,28 +1012,29 @@ export const EXACT: Readonly<Record<string, string>> = {
   'Theme|Created|Custom': 'Someone created a custom theme with their own colours.',
   'Theme|Deleted|Custom': 'Someone deleted a custom theme they had created.',
   'Timeline|Changed|Calendar':
-    "Someone switched the Explorer's Timeline from list view to calendar view.",
+    "Someone switched a document's History or a team's Activity from list view to calendar view.",
   'Timeline|Changed|List':
-    "Someone switched the Explorer's Timeline from calendar view to list view.",
+    "Someone switched a document's History or a team's Activity from calendar view to list view.",
   'Timeline|Loaded|More':
-    'Someone clicked "Show More" at the bottom of the Timeline, loading the next page of history.',
+    'Someone clicked "Show More" at the bottom of a document\'s History or a team\'s Activity, loading the next page.',
   'Timeline|Loaded|Retry':
-    'Someone clicked "Try again" after the Timeline failed to load, retrying the read.',
+    'Someone clicked "Try again" after a document\'s History or a team\'s Activity failed to load, retrying the read.',
   'Timeline|Opened|Landing':
-    'Someone arrived at the Explorer with the Timeline as the very section that loaded.',
+    "Someone arrived at the Explorer with the Timeline as the very section that loaded. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Opened|Menu':
-    'Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards.',
+    "Someone opened the ⋯ menu on a Timeline card or on a collapsed run of cards. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Opened|Nav':
-    "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See Timeline link.",
+    "Someone went to the Timeline from elsewhere in the Explorer: its sidebar row, or Home's See Timeline link. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Opened|Stack':
-    'Someone expanded a collapsed run of similar Timeline entries (like "12 documents renamed") into its individual cards.',
-  'Timeline|Removed|Entry': 'Someone removed a single entry from their Timeline feed.',
+    'Someone expanded a collapsed run of similar entries (like "12 documents renamed") in a document\'s History or a team\'s Activity into its individual cards.',
+  'Timeline|Removed|Entry':
+    "Someone removed a single entry from their Timeline feed. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Removed|Stack':
-    'Someone removed every entry in a collapsed run from their Timeline feed at once, from its ⋯ menu.',
+    "Someone removed every entry in a collapsed run from their Timeline feed at once, from its ⋯ menu. No longer recorded: the Explorer's Timeline was removed.",
   'Timeline|Selected|Everyone':
-    "Someone switched the Timeline's filter to show everyone's activity, not just their own.",
+    "Someone switched a document's History or a team's Activity to show everyone's activity, not just their own.",
   'Timeline|Selected|Others':
-    "Someone switched the Timeline's filter to show only other people's activity, hiding their own.",
+    "Someone switched a document's History or a team's Activity to show only other people's activity, hiding their own.",
   'Trash|Opened|Settings': 'Someone opened the Trash from Settings, under Account.',
   'Explorer|Selected|Text':
     'Someone typed words into the Explorer search to narrow a list of documents.',

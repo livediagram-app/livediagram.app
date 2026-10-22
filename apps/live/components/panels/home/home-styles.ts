@@ -8,7 +8,7 @@ export const SECTION_HEADER = 'flex items-baseline justify-between gap-4';
 export const SECTION_HEADING =
   'text-2xl font-extrabold tracking-[-0.03em] text-[#17153a] dark:text-slate-100';
 
-/** The quiet link at the end of a heading row: See More, See Timeline. Its line box is padded
+/** The quiet link at the end of a heading row: See More. Its line box is padded
  *  to the 24 px target. */
 export const SECTION_LINK =
   'inline-flex min-h-6 items-center rounded-sm text-sm font-semibold text-brand-700 hover:underline dark:text-brand-300';
@@ -70,15 +70,16 @@ export const STRIP_THUMB = 'h-20 w-32';
 /** The strip's height: a tile (100 px) plus the scroller's padding for focus rings. */
 export const STRIP_HEIGHT = 'h-28';
 
-// ---- The hero's fanned sheets: the newest documents, or on a first run three template previews ----
+// ---- The hero's fanned previews: a Board, a Sheet, a Dashboard and a Form ----
 
 /** A sheet: a white frame round its picture. */
 export const SHEET_FRAME =
   'absolute overflow-hidden rounded-2xl border-[6px] border-white bg-white dark:border-slate-800 dark:bg-slate-800';
 
-/** The three places, the front sheet first, then back left and back right. */
+/** The four places, in HERO_FEATURES' order: two behind, turned out to either side, then two in front. */
 export const SHEET_PLACES = [
-  'left-[20%] top-20 z-10 h-44 w-[62%] shadow-[0_24px_50px_-18px_rgba(2,132,199,0.5)]',
-  'left-[6%] top-12 h-40 w-[58%] -rotate-[8deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
-  'right-[2%] top-8 h-40 w-[58%] rotate-[7deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
+  'left-[2%] top-14 h-32 w-[54%] -rotate-[7deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
+  'right-[2%] top-12 h-32 w-[54%] rotate-[6deg] shadow-[0_14px_34px_-14px_rgba(15,23,42,0.35)]',
+  'left-[8%] top-[9.75rem] z-10 h-32 w-[50%] -rotate-[2deg] shadow-[0_24px_50px_-18px_rgba(2,132,199,0.5)]',
+  'right-[4%] top-[9rem] z-20 h-32 w-[46%] rotate-[3deg] shadow-[0_24px_50px_-18px_rgba(2,132,199,0.5)]',
 ] as const;

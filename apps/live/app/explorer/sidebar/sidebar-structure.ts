@@ -17,7 +17,6 @@ export type SidebarGroupId = keyof typeof SIDEBAR_GROUP_TITLES;
 export const SIDEBAR_LABELS = {
   home: 'Home',
   inbox: 'Inbox',
-  timeline: 'Timeline',
   shared: 'Shared With Me',
   myDocuments: 'My Documents',
   invites: 'Invites',
@@ -34,7 +33,6 @@ export const SIDEBAR_LABELS = {
 export type SidebarRowKind =
   | 'home'
   | 'inbox'
-  | 'timeline'
   | 'shared'
   | 'myDocuments'
   | 'teams'
@@ -82,7 +80,7 @@ export function sidebarGroups(input: SidebarLayoutInput): SidebarGroupLayout[] {
   // Tags lives inside Library (docs/specs/013-workspace/tags.md "The sidebar"), always shown there.
   more.push('library', 'trash');
   return [
-    { id: 'overview', rows: ['home', 'inbox', 'timeline', 'shared'] },
+    { id: 'overview', rows: ['home', 'inbox', 'shared'] },
     { id: 'spaces', rows: spaces },
     { id: 'more', rows: more },
   ];

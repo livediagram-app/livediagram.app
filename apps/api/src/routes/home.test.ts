@@ -9,7 +9,6 @@ import {
   recordDocumentDuplicated,
   recordDocumentEdited,
   recordTeamDocumentAdded,
-  backfillUserScope,
 } from '../timeline';
 import type { Env } from '../types';
 import { makeTestRouteContext } from './test-route-context';
@@ -265,8 +264,16 @@ describe('Jump back in', () => {
     expect((await home()).jumpBackIn).toEqual([]);
   });
 
-  it("leaves out the backfill's reconstructed edits: only real uses count", async () => {
-    await backfillUserScope(db.env, ME);
+  // Rows the retired personal-feed backfill reconstructed (marked by migration 0063) are not uses.
+  it('leaves out reconstructed edits: only real uses count', async () => {
+    db.sql
+      .prepare(
+        `INSERT INTO timeline_events (id, actor_id, source_type, source_id, event_type, dedupe_key, title,
+           occurred_at, snapshot, created_at)
+         VALUES ('old', ?, 'document', 'own1', 'document_edited', 'k', 'Document Updated', ?,
+           '{"documentId":"own1","backfilled":true}', ?)`,
+      )
+      .run(ME, NOW - HOUR, NOW);
     expect((await home()).jumpBackIn).toEqual([]);
   });
 });

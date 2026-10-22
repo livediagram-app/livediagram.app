@@ -69,7 +69,7 @@ test('draws the Google picture in the header and the identity card, without movi
   const pictures = holdPictures(page);
   await pictures.ready;
   await installClerkStub(page, WEBBER);
-  await page.goto('/explorer/timeline', { waitUntil: 'domcontentloaded' });
+  await page.goto('/explorer/recent', { waitUntil: 'domcontentloaded' });
 
   const avatar = avatarIn(trigger(page));
   await expect(avatar).toHaveAttribute('data-avatar-state', 'loading');
@@ -106,7 +106,7 @@ test('keeps the initial when there is no picture, and asks for none', async ({
   const pictures = holdPictures(page);
   await pictures.ready;
   await installClerkStub(page, { ...WEBBER, hasImage: false, externalAccounts: [] });
-  await page.goto('/explorer/timeline', { waitUntil: 'domcontentloaded' });
+  await page.goto('/explorer/recent', { waitUntil: 'domcontentloaded' });
 
   const avatar = avatarIn(trigger(page));
   await expect(avatar).toHaveAttribute('data-avatar-state', 'initial');
@@ -128,7 +128,7 @@ test('falls back to the initial when the picture fails, without moving', async (
   const pictures = holdPictures(page);
   await pictures.ready;
   await installClerkStub(page, WEBBER);
-  await page.goto('/explorer/timeline', { waitUntil: 'domcontentloaded' });
+  await page.goto('/explorer/recent', { waitUntil: 'domcontentloaded' });
 
   const avatar = avatarIn(trigger(page));
   await expect(avatar).toHaveAttribute('data-avatar-state', 'loading');
@@ -160,7 +160,7 @@ test('frames the picture as its source does, crisp at 2x', async ({ browser, pag
     });
   });
   await installClerkStub(page, WEBBER);
-  await page.goto('/explorer/timeline');
+  await page.goto('/explorer/recent');
   await trigger(page).click();
   await page.getByRole('menuitem', { name: 'Account' }).click();
   const card = page.getByRole('dialog').locator('[data-avatar-state]').first();
@@ -209,7 +209,7 @@ test('the switch publishes and withdraws the picture, and never hides it from us
     route.fulfill({ status: 200, contentType: 'image/svg+xml', body: STUB_PICTURE_SVG }),
   );
   await installClerkStub(page, { ...WEBBER, id });
-  await page.goto('/explorer/timeline');
+  await page.goto('/explorer/recent');
   await expect.poll(() => published).toEqual([{ pictureUrl: GOOGLE_PICTURE }]);
 
   await trigger(page).click();

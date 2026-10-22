@@ -75,7 +75,7 @@ never arrives.
   team's library. Personal is the default; a team is opt-in.
 - **Persistence and history**: every change is saved; undo and redo step
   back and forth through your own recent edits, and the
-  [Timeline](../013-workspace/timeline.md) records what happened to each document.
+  [timeline events](../013-workspace/timeline.md) record what happened to each document, shown as its History.
 - **Machine access**: a public REST API with signed-in tokens
   ([Public API and API tokens](../015-api/public-api-and-tokens.md)) and an MCP server so AI tools can
   read and write documents ([MCP server](../015-api/mcp-server.md)).

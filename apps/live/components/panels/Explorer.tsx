@@ -226,7 +226,7 @@ function ExplorerImpl({
     onCreateTeamChild: (teamId, parentId) => void handleCreateTeamChild(teamId, parentId),
   };
 
-  // Every document the reader can reach, by id: Home's and the Timeline's rows carry its menu.
+  // Every document the reader can reach, by id: Home's rows carry its menu.
   const documentsById = useMemo(() => {
     const byId = new Map<string, PaneDocument>();
     for (const d of liveDocs) byId.set(d.id, d);
@@ -412,7 +412,6 @@ function ExplorerImpl({
                 ownerId={ownerId}
                 currentDocumentId={currentDocumentId}
                 onOpenDocument={onOpenDocument}
-                onPick={pick}
                 onNewFolder={newFolder}
                 inFolder={paneFolderId !== null}
                 onLibraryChanged={onLibraryChanged ?? NOOP}

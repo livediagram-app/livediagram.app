@@ -70,8 +70,24 @@ const LOCATION_STEP_AND_QUICK_START_UI = new Set([
 // carries on (UI·Used·TemplateLink).
 const NEW_DOCUMENT_WIZARD_UI = new Set(['Closed|NewDocument', 'Used|JustDraw']);
 
+// The Explorer's Timeline section (removed 2026-10-22, docs/specs/013-workspace/timeline.md): its
+// page arrivals, its card and stack menus and their Remove from Timeline, its sidebar rows and its
+// page view. A document's History and a team's Activity draw the same feed and keep the rest of the
+// Timeline category (Changed, Selected, Loaded, Opened·Stack).
+const EXPLORER_TIMELINE = new Set([
+  'Timeline|Opened|Landing',
+  'Timeline|Opened|Nav',
+  'Timeline|Opened|Menu',
+  'Timeline|Removed|Entry',
+  'Timeline|Removed|Stack',
+  'UI|Selected|Sidebar.Timeline',
+  'UI|Selected|ExplorerPanel.Timeline',
+  'Page|View|/explorer/timeline',
+]);
+
 export function isRetiredEvent(category: string, action: string, type: string | null): boolean {
   if (category === 'Document' && action === 'Reverted') return true;
+  if (EXPLORER_TIMELINE.has(`${category}|${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && PALETTE_FAVOURITES_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && EXPERIMENTAL_SETTINGS_UI.has(`${action}|${type ?? ''}`)) return true;
   if (category === 'UI' && LOCATION_STEP_AND_QUICK_START_UI.has(`${action}|${type ?? ''}`))

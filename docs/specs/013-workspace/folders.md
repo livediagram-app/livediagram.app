@@ -70,7 +70,6 @@ Every Explorer section is its own page under `/explorer` (the chrome — header,
 | -------------------------------------------------------------- | ------------------------------------------------------------------ |
 | Home ([Explorer Home](explorer-home.md))                       | `/explorer/home` (default)                                         |
 | Inbox ([Inbox](inbox.md))                                      | `/explorer/inbox`                                                  |
-| Timeline ([Timeline](timeline.md))                             | `/explorer/timeline`                                               |
 | Shared With Me                                                 | `/explorer/shared`                                                 |
 | Recent documents                                               | `/explorer/recent` (no sidebar row)                                |
 | Favourites ([Favourite documents](favourites.md))              | `/explorer/favourites` (no sidebar row)                            |
@@ -376,7 +375,7 @@ it stays in view as the dashboard scrolls; Settings opens the same synced
 `UserPreferences` dialog the editor uses ([User preferences](../007-editor/user-preferences.md)).
 
 - **Sidebar (left, fixed width):** the navigation tree of [Explorer structure](explorer-structure.md):
-  Overview (Home, Inbox, Timeline, Shared With Me), Spaces (My Documents with
+  Overview (Home, Inbox, Shared With Me), Spaces (My Documents with
   its root folders beneath it, each team with its
   folders, New Team), and More (This Browser, Tags, Library, Trash). Each folder
   row carries an ellipsis menu with Rename, New subfolder, Change Folder,

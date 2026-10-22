@@ -40,12 +40,7 @@ test.describe('explorer sidebar', () => {
     await openExplorer(page);
 
     await expect(nav(page).getByRole('heading')).toHaveText(['Overview', 'Spaces', 'More']);
-    expect(await rowNames(page, 'Overview')).toEqual([
-      'Home',
-      'Inbox',
-      'Timeline',
-      'Shared With Me',
-    ]);
+    expect(await rowNames(page, 'Overview')).toEqual(['Home', 'Inbox', 'Shared With Me']);
     // A guest on a deployment without sign-in: My Documents only, no teams, no New Team.
     expect((await rowNames(page, 'Spaces'))[0]).toBe('My Documents');
     await expect(row(page, 'New Team')).toHaveCount(0);
@@ -240,8 +235,8 @@ test.describe('editor Explorer panel', () => {
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
-    // Timeline, now current.
-    await expect(page.getByRole('heading', { name: 'Timeline', exact: true })).toBeVisible();
+    // Shared With Me, now current.
+    await expect(page.getByRole('heading', { name: 'Shared With Me', exact: true })).toBeVisible();
     await expect(page).toHaveURL(new RegExp(`/document/${id}`));
     // The product's links live in the panel's footer, not the header.
     await expect(

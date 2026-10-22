@@ -140,12 +140,12 @@ describe('back and forward while stale', () => {
 describe('the app’s own navigations', () => {
   it('load in full while stale, and transition when fresh', async () => {
     const stale = setup();
-    await navigateTo('/explorer/timeline', true, stale);
-    expect(stale.load).toHaveBeenCalledWith('/explorer/timeline', true);
+    await navigateTo('/explorer/inbox', true, stale);
+    expect(stale.load).toHaveBeenCalledWith('/explorer/inbox', true);
     expect(stale.navigateClient).not.toHaveBeenCalled();
     const fresh = { ...stale, isStale: () => false, load: vi.fn(), navigateClient: vi.fn() };
-    await navigateTo('/explorer/timeline', false, fresh);
-    expect(fresh.navigateClient).toHaveBeenCalledWith('/explorer/timeline', false);
+    await navigateTo('/explorer/inbox', false, fresh);
+    expect(fresh.navigateClient).toHaveBeenCalledWith('/explorer/inbox', false);
     expect(fresh.load).not.toHaveBeenCalled();
   });
 });

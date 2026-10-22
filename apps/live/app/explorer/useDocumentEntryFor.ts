@@ -1,8 +1,7 @@
 'use client';
 
 // A document's Explorer menu for a surface that names documents by id rather than drawing the Explorer's own rows:
-// Home's Jump Back In cards (docs/specs/013-workspace/explorer-home.md "Jump Back In") and the Timeline's cards
-// (docs/specs/013-workspace/timeline.md §2.8). The id is resolved against the Explorer's already-loaded lists
+// Home's Jump Back In cards (docs/specs/013-workspace/explorer-home.md "Jump Back In"). The id is resolved against the Explorer's already-loaded lists
 // (personal, team and shared-with-you documents), the set Recent draws from, and the Explorer's document actions are
 // bound to it, as documentEntryPropsFor binds them for a view's rows. An id the Explorer has not loaded resolves to
 // nothing: a menu of guesses is worse than none.

@@ -13,7 +13,6 @@ vi.mock('@/hooks/ui/useIsMobileViewport', () => ({ useIsMobileViewport: () => vi
 vi.mock('./explorer-panel/PanelViews', () => ({
   HomeSection: () => <p>home view</p>,
   InboxSection: () => <p>inbox view</p>,
-  TimelineSection: () => <p>timeline view</p>,
   TrashSection: () => <p>trash view</p>,
   LibrarySection: () => <p>library view</p>,
 }));
@@ -115,11 +114,11 @@ describe('Explorer', () => {
 
   it('shows the picked section in the pane, never leaving the editor', async () => {
     show();
-    fireEvent.click(screen.getByRole('button', { name: 'Timeline' }));
-    expect(screen.getByRole('heading', { name: 'Timeline' })).toBeTruthy();
-    expect(await screen.findByText('timeline view')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Inbox' }));
+    expect(screen.getByRole('heading', { name: 'Inbox' })).toBeTruthy();
+    expect(await screen.findByText('inbox view')).toBeTruthy();
     expect(screen.getByRole('link', { name: /Open Page/ }).getAttribute('href')).toBe(
-      '/explorer/timeline',
+      '/explorer/inbox',
     );
   });
 

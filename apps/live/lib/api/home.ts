@@ -2,7 +2,7 @@
 // docs/specs/013-workspace/blueprints/explorer-home.md "Client").
 //
 // Null means the read FAILED (a refusal, offline, an unparseable body), never an empty Home: "we
-// could not ask" and "there is nothing" are different answers, as the Timeline learnt
+// could not ask" and "there is nothing" are different answers, as the event feeds learnt
 // (docs/specs/013-workspace/timeline.md §2.4). The caller keeps what it had and offers a retry.
 //
 // Opens are not sent from here: the editor declares them on its first tab read

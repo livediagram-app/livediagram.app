@@ -10,7 +10,6 @@ type NamedKind = Exclude<SelectedNode['kind'], 'folder' | 'team'>;
 export const VIEW_TITLES: Readonly<Record<NamedKind, string>> = {
   home: SIDEBAR_LABELS.home,
   inbox: SIDEBAR_LABELS.inbox,
-  timeline: SIDEBAR_LABELS.timeline,
   shared: SIDEBAR_LABELS.shared,
   all: SIDEBAR_LABELS.myDocuments,
   offline: SIDEBAR_LABELS.thisBrowser,
