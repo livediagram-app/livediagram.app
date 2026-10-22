@@ -401,7 +401,7 @@ The room's other parts each have a module beside `document-room.ts`: the session
 
 ### What the room writes to D1
 
-- **One telemetry row**: the room counts a multiplayer session once (`Document·Used·Multiplayer`, `reportServerEvent`) into the telemetry events table, when `TELEMETRY_ENABLED` is on ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
+- **One telemetry row**: the room counts a multiplayer session once (`Document·Used·Multiplayer`, `reportServerEvent`) into liveworkspace's telemetry, when `TELEMETRY_ENABLED` is on ([Telemetry + public transparency dashboard](../017-telemetry/telemetry.md)).
 
 Every other document write is a REST call from a client (see the persistence boundary below).
 

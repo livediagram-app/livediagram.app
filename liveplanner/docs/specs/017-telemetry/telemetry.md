@@ -37,7 +37,7 @@ In practice a `type` is either a literal or derived from a closed vocabulary —
 
 Events are stored by liveworkspace's telemetry service in **its own** D1 database (`liveworkspace-telemetry`), one `events` table with an `app` column, so each row says which app sent it ([liveworkspace telemetry](../../../../liveworkspace/docs/telemetry.md) "Storage"). No owner or IP column: rows are anonymous by construction.
 
-The `events` table in liveplanner's own `DB` (baseline migration, `apps/api/migrations/0001_liveplanner_baseline.sql`) is retired: nothing writes or reads it, and it is left in place rather than dropped by a migration.
+liveplanner's own `DB` has no telemetry table: events are stored only by liveworkspace.
 
 <!-- legacy-names -->
 
