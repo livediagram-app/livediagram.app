@@ -405,12 +405,7 @@ describe('resolvePlacement with default folders', () => {
       getFolder: vi.fn(async () => ({ ownerId: 'user_alice', teamId: null })),
     });
     expect(
-      await resolvePlacement(
-        { teamId: null, folderId: 'f-picked', chosen: true },
-        alice,
-        l,
-        plan,
-      ),
+      await resolvePlacement({ teamId: null, folderId: 'f-picked', chosen: true }, alice, l, plan),
     ).toMatchObject({ ok: true, placement: { folderId: 'f-picked' }, via: 'explicit' });
     expect(l.getPlacementDefaults).not.toHaveBeenCalled();
   });

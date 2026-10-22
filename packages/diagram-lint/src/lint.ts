@@ -39,7 +39,8 @@ const PAGE_CHECKS = [
 const TAB_CHECKS = [...LINT_CHECKS, textOverprint];
 
 export function lintTab(
-  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> & Partial<Pick<Tab, 'kind'>> & { opensIn?: string },
+  tab: Pick<Tab, 'elements' | 'layers' | 'theme'> &
+    Partial<Pick<Tab, 'kind'>> & { opensIn?: string },
   options: LintOptions = {},
 ): LintReport {
   const checks = tab.opensIn === 'pages' ? PAGE_CHECKS : TAB_CHECKS;

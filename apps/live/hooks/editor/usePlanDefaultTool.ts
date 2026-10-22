@@ -16,6 +16,7 @@ export function usePlanDefaultTool(
   useEffect(() => {
     const first = !started.current;
     started.current = true;
-    if ((first || PLAN_LEFT_OUT_TOOLS.has(canvasTool)) && canvasTool !== 'pan') setCanvasTool('pan');
+    if ((first || PLAN_LEFT_OUT_TOOLS.has(canvasTool)) && canvasTool !== 'pan')
+      setCanvasTool('pan');
   }, [canvasTool, setCanvasTool]);
 }

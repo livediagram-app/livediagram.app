@@ -57,4 +57,3 @@ first: what the Explorer's welcome and the marketing gallery lead with.
   start gave the document itself (a template's) is kept.
 - It is the document's name like any other: saved with it, shown in the header and the Explorer at once, and changed
   by renaming. No telemetry: it is not a person's rename.
-

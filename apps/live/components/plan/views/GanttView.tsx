@@ -68,8 +68,7 @@ export function GanttView({
   const acceptedKey = accepted.join(',');
   // Add Card under the last row (GanttAddCard): for someone who may add cards, with a type to add.
   // An Editor gets it with no type to draw yet too, for Add New Card Type.
-  const canAdd =
-    !!plan && !!plan.canEditCards && (accepted.length > 0 || !!plan.canEdit);
+  const canAdd = !!plan && !!plan.canEditCards && (accepted.length > 0 || !!plan.canEdit);
   // Recomputed when the cards, the phases, the accepted types or the day change.
   const model = useMemo(
     () => ganttModel(items.values(), phases, new Date(dayKey), acceptedKey.split(',')),
@@ -184,9 +183,7 @@ export function GanttView({
       // Someone who may add cards sees the empty chart with its Add Card row, not the empty note.
       state={viewState(plan, n > 0 || canAdd)}
       empty="No cards of these types yet."
-      aside={
-        plan ? <GanttScaleControls timeline={timeline} palette={palette} /> : undefined
-      }
+      aside={plan ? <GanttScaleControls timeline={timeline} palette={palette} /> : undefined}
     >
       <div
         className="absolute inset-0 grid"

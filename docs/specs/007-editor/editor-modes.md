@@ -11,9 +11,9 @@ tab's start. The other four, the switch and everything that existed only for the
 
 ## Domain language
 
-| Term            | Means                                                                                                               |
-| --------------- | ------------------------------------------------------------------------------------------------------------------- |
-| **tab kind**    | What a tab **is** ([Document](../006-document/document.md)): the general tab, or a Board, Sheet, Dashboard or Form. |
+| Term            | Means                                                                                                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **tab kind**    | What a tab **is** ([Document](../006-document/document.md)): the general tab, or a Board, Sheet, Dashboard or Form.      |
 | **editor mode** | How a tab is worked on: always `plan` (`EditorMode`, `EDITOR_MODE_CATALOGUE` in `packages/document/src/editor-mode.ts`). |
 
 - "Mode" on its own is ambiguous (Zen mode, Presentation mode, Power user mode); in specs and code say **editor

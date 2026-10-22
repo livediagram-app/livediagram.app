@@ -8,10 +8,10 @@ drop it in a column) instead of a drawing. It never decides what the tab is: a t
 
 ## Domain language
 
-| Term          | Means                                                                        |
-| ------------- | ---------------------------------------------------------------------------- |
-| **Plan mode** | The editor mode `plan`, shown as **Plan**: the only one                      |
-| **Plan**      | In the interface, the mode's name; never a tab kind                          |
+| Term          | Means                                                   |
+| ------------- | ------------------------------------------------------- |
+| **Plan mode** | The editor mode `plan`, shown as **Plan**: the only one |
+| **Plan**      | In the interface, the mode's name; never a tab kind     |
 
 - "Board" alone keeps its old meanings elsewhere in the specs; in this folder it is always a **Plan board**.
 - Event-storming boards are a tab kind with their own rules and are untouched by Plan mode.
@@ -150,7 +150,6 @@ Every Project is a Plan document, so what Plan reads is read from the first load
 - **A new tab opens on Start Planning**: adding a tab (the tab bar's **+**, the command palette's **Create New Tab**)
   makes a general tab carrying the active tab's look, straight to **Start Planning**. A new Project opens the same way
   ([New document route](../007-editor/new-document-route.md)).
-
 
 ## Old documents
 

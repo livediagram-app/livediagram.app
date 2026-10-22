@@ -48,9 +48,7 @@ export function convertPlanTab(
   const views = tab.elements.filter((el) => shapeOf(el) === 'plan-view').sort(readingOrder);
   // One board or Sheet alone: the tab becomes its kind.
   if (work.length === 1 && views.length === 0) {
-    return [
-      { ...tab, kind: shapeOf(work[0]!) === 'plan-board' ? 'board' : 'sheet' },
-    ];
+    return [{ ...tab, kind: shapeOf(work[0]!) === 'plan-board' ? 'board' : 'sheet' }];
   }
   const look: Partial<Tab> = {
     theme: tab.theme,

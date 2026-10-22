@@ -4,13 +4,7 @@
 // categories beside a grid of large cards (StartCard), each a picture of what it makes over its name and line; a
 // search across all of them. Choosing a card acts at once. Start Planning says what the categories and cards are; this
 // draws them, in the tab's own light or dark look (the palette).
-import {
-  useEffect,
-  useRef,
-  useState,
-  type CSSProperties,
-  type KeyboardEvent,
-} from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from 'react';
 import {
   CompactEmptyState,
   CountBadge,

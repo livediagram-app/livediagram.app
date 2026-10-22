@@ -2,12 +2,7 @@
 // hidden or locked layers (docs/specs/006-document/layers.md); on a tab with pages only those on the page
 // someone is on (docs/specs/007-editor/pages-mode.md "Selecting on a page"), so a tab of many
 // pages never selects across them. Off every page, or with no page known yet, the whole tab.
-import {
-  elementIdsOnPage,
-  layOutPages,
-  pagesOf,
-  type Tab,
-} from '@liveplanner/document';
+import { elementIdsOnPage, layOutPages, pagesOf, type Tab } from '@liveplanner/document';
 
 export function selectAllIds(
   tab: Pick<Tab, 'elements' | 'pages'> & { pageOrientation?: unknown },

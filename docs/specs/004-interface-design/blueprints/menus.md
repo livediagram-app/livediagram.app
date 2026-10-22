@@ -141,19 +141,19 @@ Options: `onClose()`, `onEscape?()` (default `onClose`), `trigger?`, `label: str
 
 ### Hosts
 
-| Host                                                                           | Kind                                                 | Return target, trigger            |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------- | --------------------------------- |
-| `PortalMenu` (primitives)                                                      | `surface` prop: `'command'` (default) or `'control'` | `anchor` is the trigger           |
-| `MenuFlyoutSection`                                                            | The parent tree's kind                               | Its row is the trigger            |
-| `ContextMenu`                                                                  | Control, `label` prop                                | None: the focused element at open |
-| `TabPortalMenu` `PortalMenu`                                                   | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
-| `LayerRowMenu`                                                                 | Control, "<layer> layer menu"                        | None                              |
-| `ShareCopyMenu`                                                                | Control with a header control, else command          | Its button                        |
-| Custom colour menu (`ColourPicker`)                                            | Command, "<colour> menu"                             | The swatch                        |
-| `ElementEllipsisMenu`                                                          | `kind` prop                                          | Its ⋯                             |
-| `LockedElementMenu`                                                            | Command, labelled by "In use"                        | None                              |
-| `ZoomMenu`                                                                     | Command, `initialFocus` `none` on hover              | The percentage button             |
-| `AuthControls`, `EmbedChrome`, `ProductNav`, `StickyWindowBar`                 | Command                                              | Their trigger                     |
+| Host                                                           | Kind                                                 | Return target, trigger            |
+| -------------------------------------------------------------- | ---------------------------------------------------- | --------------------------------- |
+| `PortalMenu` (primitives)                                      | `surface` prop: `'command'` (default) or `'control'` | `anchor` is the trigger           |
+| `MenuFlyoutSection`                                            | The parent tree's kind                               | Its row is the trigger            |
+| `ContextMenu`                                                  | Control, `label` prop                                | None: the focused element at open |
+| `TabPortalMenu` `PortalMenu`                                   | Control, "Tab menu" / "Canvas menu"                  | `anchor` (tab ⋯) or none (canvas) |
+| `LayerRowMenu`                                                 | Control, "<layer> layer menu"                        | None                              |
+| `ShareCopyMenu`                                                | Control with a header control, else command          | Its button                        |
+| Custom colour menu (`ColourPicker`)                            | Command, "<colour> menu"                             | The swatch                        |
+| `ElementEllipsisMenu`                                          | `kind` prop                                          | Its ⋯                             |
+| `LockedElementMenu`                                            | Command, labelled by "In use"                        | None                              |
+| `ZoomMenu`                                                     | Command, `initialFocus` `none` on hover              | The percentage button             |
+| `AuthControls`, `EmbedChrome`, `ProductNav`, `StickyWindowBar` | Command                                              | Their trigger                     |
 
 ### Row primitives by kind
 

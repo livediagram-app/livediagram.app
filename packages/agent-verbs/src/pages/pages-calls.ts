@@ -11,12 +11,7 @@ import {
   type PageChange,
   type TabResponse,
 } from '@liveplanner/api-schema';
-import {
-  articlesOf,
-  articleTitleOf,
-  articleToMarkdown,
-  type Tab,
-} from '@liveplanner/document';
+import { articlesOf, articleTitleOf, articleToMarkdown, type Tab } from '@liveplanner/document';
 import { apiRefusalOf } from '../plan/api-refusal';
 import { tabPath } from '../verbs/shared';
 

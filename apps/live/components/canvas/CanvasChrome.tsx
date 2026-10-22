@@ -695,11 +695,7 @@ export function CanvasChrome(props: CanvasChromeProps) {
             {/* Layers (docs/specs/006-document/layers.md) and the Theme & Canvas brush
                 (docs/specs/011-theme/canvas-and-theme-dialog.md, its one entry point; read-only sessions
                 pass no handler), one strip in every mode: see LayersThemeStrip. */}
-            {!zenMode ? (
-              <LayersThemeStrip
-                onOpenTheme={onOpenCanvasTheme}
-              />
-            ) : null}
+            {!zenMode ? <LayersThemeStrip onOpenTheme={onOpenCanvasTheme} /> : null}
             <ViewZoomControls
               onZoomIn={handleZoomIn}
               onZoomOut={handleZoomOut}

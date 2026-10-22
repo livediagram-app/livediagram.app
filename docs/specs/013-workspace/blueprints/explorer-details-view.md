@@ -151,17 +151,17 @@ CREATE TABLE tab_stats (
 
 ## Errors and edge cases
 
-| Case                                 | Handling                                                  |
-| ------------------------------------ | --------------------------------------------------------- |
-| Document with no tabs                | `stats: null`, cells `–`                                  |
-| Some tabs not yet counted            | `stats: null` until the backfill reaches them             |
+| Case                                 | Handling                                                   |
+| ------------------------------------ | ---------------------------------------------------------- |
+| Document with no tabs                | `stats: null`, cells `–`                                   |
+| Some tabs not yet counted            | `stats: null` until the backfill reaches them              |
 | A stored row of a retired mode       | Plan (`readDocumentStats` reads through `parseEditorMode`) |
-| Corrupt tab body in the backfill     | Counted empty, warned                                     |
-| Write racing the backfill            | The write's row wins (`DO NOTHING`)                       |
-| Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)     |
-| Offline row                          | Counted in the browser, the first tab's mode (`D152`)     |
-| Unknown stored sort or view mode     | Defaults                                                  |
-| Folder row in Type, Comments, Access | Type "Folder", the others empty; sorted by name for those |
+| Corrupt tab body in the backfill     | Counted empty, warned                                      |
+| Write racing the backfill            | The write's row wins (`DO NOTHING`)                        |
+| Shared row                           | No `stats`: `–`; no Created: `–` "Not known" (`D153`)      |
+| Offline row                          | Counted in the browser, the first tab's mode (`D152`)      |
+| Unknown stored sort or view mode     | Defaults                                                   |
+| Folder row in Type, Comments, Access | Type "Folder", the others empty; sorted by name for those  |
 
 ## Security and trust
 

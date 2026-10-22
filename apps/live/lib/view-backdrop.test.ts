@@ -13,7 +13,10 @@ afterEach(() => resetAppearanceForTests());
 describe('resolveViewBackdrop', () => {
   it('paints the canvas blank while the tab keeps its theme’s pattern', () => {
     const t = tab({ theme: 'slate', backgroundColor: '#fdf2f8' });
-    expect(resolveViewBackdrop(t)).toEqual({ ...resolveTabBackdrop(t), backgroundPattern: 'blank' });
+    expect(resolveViewBackdrop(t)).toEqual({
+      ...resolveTabBackdrop(t),
+      backgroundPattern: 'blank',
+    });
     expect(resolveViewBackdrop(tab()).backgroundPattern).toBe('blank');
   });
 

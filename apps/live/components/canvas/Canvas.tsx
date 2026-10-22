@@ -946,10 +946,7 @@ function CanvasView(props: CanvasProps) {
               drawHover={drawHover}
               stamp={stamp}
               // Off a whiteboard, a marker's live stroke guides off its box as the pencil's does.
-              penPoints={
-                penPoints ??
-                (penStroke ? penStroke.points.slice() : null)
-              }
+              penPoints={penPoints ?? (penStroke ? penStroke.points.slice() : null)}
               polygonVertices={polygonVertices}
               polygonCursor={polygonCursor}
               wrapperRef={wrapperRef}

@@ -49,7 +49,9 @@ describe('placement defaults store', () => {
   it('replaces the folder when a key is set again', async () => {
     await setPlacementDefault(db.env, 'user_a', 'template:kanban', 'f-old');
     await setPlacementDefault(db.env, 'user_a', 'template:kanban', 'f-new');
-    expect(rows()).toEqual([{ owner_id: 'user_a', default_key: 'template:kanban', folder_id: 'f-new' }]);
+    expect(rows()).toEqual([
+      { owner_id: 'user_a', default_key: 'template:kanban', folder_id: 'f-new' },
+    ]);
   });
 
   it('leaves out a stored key that is not in force', async () => {
@@ -71,7 +73,9 @@ describe('placement defaults store', () => {
   });
 
   it('clears a key that has no default without complaint', async () => {
-    await expect(clearPlacementDefault(db.env, 'user_a', 'template:kanban')).resolves.toBeUndefined();
+    await expect(
+      clearPlacementDefault(db.env, 'user_a', 'template:kanban'),
+    ).resolves.toBeUndefined();
   });
 });
 

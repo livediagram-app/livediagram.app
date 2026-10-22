@@ -16,7 +16,11 @@ export const WELCOME_TEMPLATES_MAX = 8;
 export const WELCOME_FAN: readonly TemplateKind[] = ['kanban', 'project-planner', 'budget-planner'];
 
 /** Start Blank: Plan's blanks, a board, a Sheet and a form. */
-export const WELCOME_BLANKS: readonly TemplateKind[] = ['blank-plan', 'blank-spreadsheet', 'blank-form'];
+export const WELCOME_BLANKS: readonly TemplateKind[] = [
+  'blank-plan',
+  'blank-spreadsheet',
+  'blank-form',
+];
 
 /** Popular Templates: the shared Popular list without its blanks, cut to WELCOME_TEMPLATES_MAX. */
 export const WELCOME_POPULAR: readonly TemplateKind[] = POPULAR_TEMPLATE_KINDS.filter(

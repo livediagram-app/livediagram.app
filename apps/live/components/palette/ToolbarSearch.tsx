@@ -129,17 +129,11 @@ export function ToolbarSearchPanel({
         <CompactEmptyState
           size="small"
           icon={<SearchIcon />}
-          title={
-            below > 0 ? 'No Plan elements on this tab yet' : 'No elements on this tab yet'
-          }
+          title={below > 0 ? 'No Plan elements on this tab yet' : 'No elements on this tab yet'}
           description="Type to find any element."
         />
       ) : below > 0 ? (
-        <NoMatches
-          things="Plan elements"
-          query={query}
-          hint={`${below} more below.`}
-        />
+        <NoMatches things="Plan elements" query={query} hint={`${below} more below.`} />
       ) : (
         <NoMatches things="elements" query={query} onClear={() => setQuery('')} />
       )}
